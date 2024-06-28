@@ -1,152 +1,57 @@
-import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
-import { compose, propOr } from 'ramda';
-import withStyles from '@mui/styles/withStyles';
-import * as R from 'ramda';
-import { QueryRenderer } from '../../../relay/environment';
-import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../utils/ListParameters';
-import inject18n from '../../../components/i18n';
+import React from 'react';
+import { useFormatter } from '../../../components/i18n';
 import ListLines from '../../../components/list_lines/ListLines';
 import LabelsLines, { labelsLinesQuery } from './labels/LabelsLines';
 import LabelCreation from './labels/LabelCreation';
 import LabelsVocabulariesMenu from './LabelsVocabulariesMenu';
 import ToolBar from '../data/ToolBar';
 import Breadcrumbs from '../../../components/Breadcrumbs';
-import withRouter from '../../../utils/compat-router/withRouter';
-
-const styles = () => ({
-  container: {
-    margin: 0,
-    padding: '0 200px 50px 0',
-  },
-});
+import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
+import useEntityToggle from '../../../utils/hooks/useEntityToggle';
+import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 
 const LOCAL_STORAGE_KEY = 'Labels';
 
-class Labels extends Component {
-  constructor(props) {
-    super(props);
-    const params = buildViewParamsFromUrlAndStorage(
-      props.navigate,
-      props.location,
-      LOCAL_STORAGE_KEY,
-    );
-    this.state = {
-      sortBy: propOr('value', 'sortBy', params),
-      orderAsc: propOr(true, 'orderAsc', params),
-      searchTerm: propOr('', 'searchTerm', params),
-      view: propOr('lines', 'view', params),
-      numberOfElements: { number: 0, symbol: '' },
-      selectedElements: null,
-      deSelectedElements: null,
-      selectAll: false,
-    };
-  }
+const Labels = () => {
+  const { t_i18n } = useFormatter();
 
-  saveView() {
-    saveViewParameters(
-      this.props.navigate,
-      this.props.location,
-      LOCAL_STORAGE_KEY,
-      this.state,
-    );
-  }
+  const {
+    viewStorage: { searchTerm, sortBy, orderAsc, numberOfElements },
+    paginationOptions,
+    helpers,
+  } = usePaginationLocalStorage(LOCAL_STORAGE_KEY, {
+    sortBy: 'value',
+    orderAsc: true,
+  });
 
-  handleSearch(value) {
-    this.setState({ searchTerm: value }, () => this.saveView());
-  }
+  const {
+    selectAll,
+    selectedElements,
+    deSelectedElements,
+    handleClearSelectedElements,
+    handleToggleSelectAll,
+    onToggleEntity,
+  } = useEntityToggle(LOCAL_STORAGE_KEY);
 
-  handleSort(field, orderAsc) {
-    this.setState({ sortBy: field, orderAsc }, () => this.saveView());
-  }
+  const contextFilters = {
+    mode: 'and',
+    filters: [
+      {
+        key: 'entity_type',
+        values: ['Label'],
+        operator: 'eq',
+        mode: 'or',
+      },
+    ],
+    filterGroups: [],
+  };
+  const queryPaginationOptions = {
+    ...paginationOptions,
+    filters: contextFilters,
+  };
 
-  handleToggleSelectEntity(entity, _, forceRemove = []) {
-    const { selectedElements, deSelectedElements, selectAll } = this.state;
-    if (Array.isArray(entity)) {
-      const currentIds = R.values(selectedElements).map((n) => n.id);
-      const givenIds = entity.map((n) => n.id);
-      const addedIds = givenIds.filter((n) => !currentIds.includes(n));
-      let newSelectedElements = {
-        ...selectedElements,
-        ...R.indexBy(
-          R.prop('id'),
-          entity.filter((n) => addedIds.includes(n.id)),
-        ),
-      };
-      if (forceRemove.length > 0) {
-        newSelectedElements = R.omit(
-          forceRemove.map((n) => n.id),
-          newSelectedElements,
-        );
-      }
-      this.setState({
-        selectAll: false,
-        selectedElements: newSelectedElements,
-        deSelectedElements: null,
-      });
-    } else if (entity.id in (selectedElements || {})) {
-      const newSelectedElements = R.omit([entity.id], selectedElements);
-      this.setState({
-        selectAll: false,
-        selectedElements: newSelectedElements,
-      });
-    } else if (selectAll && entity.id in (deSelectedElements || {})) {
-      const newDeSelectedElements = R.omit([entity.id], deSelectedElements);
-      this.setState({
-        deSelectedElements: newDeSelectedElements,
-      });
-    } else if (selectAll) {
-      const newDeSelectedElements = R.assoc(
-        entity.id,
-        entity,
-        deSelectedElements || {},
-      );
-      this.setState({
-        deSelectedElements: newDeSelectedElements,
-      });
-    } else {
-      const newSelectedElements = R.assoc(
-        entity.id,
-        entity,
-        selectedElements || {},
-      );
-      this.setState({
-        selectAll: false,
-        selectedElements: newSelectedElements,
-      });
-    }
-  }
-
-  handleToggleSelectAll() {
-    this.setState({
-      selectAll: !this.state.selectAll,
-      selectedElements: null,
-      deSelectedElements: null,
-    });
-  }
-
-  handleClearSelectedElements() {
-    this.setState({
-      selectAll: false,
-      selectedElements: null,
-      deSelectedElements: null,
-    });
-  }
-
-  setNumberOfElements(numberOfElements) {
-    this.setState({ numberOfElements });
-  }
-
-  renderLines(queryPaginationOptions, contextFilters) {
-    const {
-      sortBy,
-      orderAsc,
-      searchTerm,
-      numberOfElements,
-      selectedElements,
-      deSelectedElements,
-      selectAll,
-    } = this.state;
+  const queryRef = useQueryLoading(labelsLinesQuery, queryPaginationOptions);
+  const renderLines = () => {
     let numberOfSelectedElements = Object.keys(selectedElements || {}).length;
     if (selectAll) {
       numberOfSelectedElements = numberOfElements.original
@@ -175,9 +80,9 @@ class Labels extends Component {
           sortBy={sortBy}
           orderAsc={orderAsc}
           dataColumns={dataColumns}
-          handleSort={this.handleSort.bind(this)}
-          handleSearch={this.handleSearch.bind(this)}
-          handleToggleSelectAll={this.handleToggleSelectAll.bind(this)}
+          handleSort={helpers.handleSort}
+          handleSearch={helpers.handleSearch}
+          handleToggleSelectAll={handleToggleSelectAll}
           selectAll={selectAll}
           numberOfElements={numberOfElements}
           iconExtension={true}
@@ -185,23 +90,18 @@ class Labels extends Component {
           secondaryAction={true}
           keyword={searchTerm}
         >
-          <QueryRenderer
-            query={labelsLinesQuery}
-            variables={{ count: 25, ...queryPaginationOptions }}
-            render={({ props }) => (
-              <LabelsLines
-                data={props}
-                paginationOptions={queryPaginationOptions}
-                dataColumns={dataColumns}
-                initialLoading={props === null}
-                selectedElements={selectedElements}
-                deSelectedElements={deSelectedElements}
-                onToggleEntity={this.handleToggleSelectEntity.bind(this)}
-                selectAll={selectAll}
-                setNumberOfElements={this.setNumberOfElements.bind(this)}
-              />
-            )}
-          />
+          {queryRef && (
+            <LabelsLines
+              paginationOptions={queryPaginationOptions}
+              dataColumns={dataColumns}
+              selectedElements={selectedElements}
+              deSelectedElements={deSelectedElements}
+              onToggleEntity={onToggleEntity}
+              selectAll={selectAll}
+              setNumberOfElements={helpers.handleSetNumberOfElements}
+              queryRef={queryRef}
+            />
+          )}
         </ListLines>
         <ToolBar
           selectedElements={selectedElements}
@@ -210,53 +110,27 @@ class Labels extends Component {
           selectAll={selectAll}
           filters={contextFilters}
           search={searchTerm}
-          handleClearSelectedElements={this.handleClearSelectedElements.bind(
-            this,
-          )}
+          handleClearSelectedElements={handleClearSelectedElements}
           type="Label"
           variant="medium"
         />
       </>
     );
-  }
+  };
 
-  render() {
-    const { t, classes } = this.props;
-    const { view, sortBy, orderAsc, searchTerm } = this.state;
-    const contextFilters = {
-      mode: 'and',
-      filters: [
-        {
-          key: 'entity_type',
-          values: ['Label'],
-          operator: 'eq',
-          mode: 'or',
-        },
-      ],
-      filterGroups: [],
-    };
-    const paginationOptions = {
-      search: searchTerm,
-      orderBy: sortBy,
-      orderMode: orderAsc ? 'asc' : 'desc',
-      filters: contextFilters,
-    };
-    return (
-      <div className={classes.container}>
-        <LabelsVocabulariesMenu />
-        <Breadcrumbs variant="list" elements={[{ label: t('Settings') }, { label: t('Taxonomies') }, { label: t('Labels'), current: true }]} />
-        {view === 'lines' ? this.renderLines(paginationOptions, contextFilters) : ''}
-        <LabelCreation paginationOptions={paginationOptions} />
-      </div>
-    );
-  }
-}
-
-Labels.propTypes = {
-  classes: PropTypes.object,
-  t: PropTypes.func,
-  navigate: PropTypes.func,
-  location: PropTypes.object,
+  return (
+    <div
+      style={{
+        margin: 0,
+        padding: '0 200px 50px 0',
+      }}
+    >
+      <LabelsVocabulariesMenu />
+      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Taxonomies') }, { label: t_i18n('Labels'), current: true }]} />
+      {renderLines()}
+      <LabelCreation paginationOptions={queryPaginationOptions} />
+    </div>
+  );
 };
 
-export default compose(inject18n, withRouter, withStyles(styles))(Labels);
+export default Labels;

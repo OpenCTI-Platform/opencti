@@ -1346,13 +1346,17 @@ class ToolBar extends Component {
     const notEnrichableTypes = ['Label', 'Vocabulary', 'Case-Template', 'Task', 'DeleteOperation'];
     const isManualEnrichSelect = !selectAll && selectedTypes.length === 1;
     const isAllEnrichSelect = selectAll
-        && entityTypeFilterValues.length === 1
-        && entityTypeFilterValues[0] !== 'Stix-Cyber-Observable'
-        && entityTypeFilterValues[0] !== 'Stix-Domain-Object';
+      && entityTypeFilterValues.length === 1
+      && entityTypeFilterValues[0] !== 'Stix-Cyber-Observable'
+      && entityTypeFilterValues[0] !== 'Stix-Domain-Object';
     const enrichDisable = notEnrichableTypes.includes(selectedTypes[0])
-        || (entityTypeFilterValues.length === 1
-            && notEnrichableTypes.includes(entityTypeFilterValues[0]))
-        || (!isManualEnrichSelect && !isAllEnrichSelect);
+      || (entityTypeFilterValues.length === 1
+        && notEnrichableTypes.includes(entityTypeFilterValues[0]))
+      || (!isManualEnrichSelect && !isAllEnrichSelect);
+    // endregion
+    // region orgaSharing
+    const notShareableTypes = ['Label', 'Vocabulary', 'Case-Template', 'DeleteOperation'];
+    const isShareableType = !notShareableTypes.includes(selectedTypes[0]);
     // endregion
     const typesAreNotMergable = R.includes(
       R.uniq(R.map((o) => o.entity_type, R.values(selectedElements || {})))[0],
@@ -1475,7 +1479,7 @@ class ToolBar extends Component {
                     size="small"
                     color="primary"
                   >
-                    <ClearOutlined fontSize="small"/>
+                    <ClearOutlined fontSize="small" />
                   </IconButton>
                 </Typography>
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
@@ -1485,14 +1489,14 @@ class ToolBar extends Component {
                         <IconButton
                           aria-label="update"
                           disabled={
-                          numberOfSelectedElements === 0
-                          || this.state.processing
-                        }
+                            numberOfSelectedElements === 0
+                            || this.state.processing
+                          }
                           onClick={this.handleOpenUpdate.bind(this)}
                           color="primary"
                           size="small"
                         >
-                          <BrushOutlined fontSize="small"/>
+                          <BrushOutlined fontSize="small" />
                         </IconButton>
                       </span>
                     </Tooltip>
@@ -1516,7 +1520,7 @@ class ToolBar extends Component {
                               color="primary"
                               size="small"
                             >
-                              <AutoFixHighOutlined fontSize="small"/>
+                              <AutoFixHighOutlined fontSize="small" />
                             </IconButton>
                           </span>
                         </Tooltip>
@@ -1529,14 +1533,14 @@ class ToolBar extends Component {
                         <IconButton
                           aria-label="copy"
                           disabled={
-                          numberOfSelectedElements
-                          > maxNumberOfObservablesToCopy
-                        }
+                            numberOfSelectedElements
+                            > maxNumberOfObservablesToCopy
+                          }
                           onClick={this.props.handleCopy}
                           color="primary"
                           size="small"
                         >
-                          <ContentCopyOutlined fontSize="small"/>
+                          <ContentCopyOutlined fontSize="small" />
                         </IconButton>
                       </span>
                     </Tooltip>
@@ -1551,7 +1555,7 @@ class ToolBar extends Component {
                           color="primary"
                           size="small"
                         >
-                          <CloudRefreshOutline fontSize="small"/>
+                          <CloudRefreshOutline fontSize="small" />
                         </IconButton>
                       </span>
                     </Tooltip>
@@ -1566,7 +1570,7 @@ class ToolBar extends Component {
                           color="primary"
                           size="small"
                         >
-                          <TransformOutlined fontSize="small"/>
+                          <TransformOutlined fontSize="small" />
                         </IconButton>
                       </span>
                     </Tooltip>
@@ -1577,18 +1581,18 @@ class ToolBar extends Component {
                         <IconButton
                           aria-label="merge"
                           disabled={
-                          typesAreDifferent
-                          || numberOfSelectedElements < 2
-                          || numberOfSelectedElements > 4
-                          || preventMerge
-                          || selectAll
-                          || this.state.processing
-                        }
+                            typesAreDifferent
+                            || numberOfSelectedElements < 2
+                            || numberOfSelectedElements > 4
+                            || preventMerge
+                            || selectAll
+                            || this.state.processing
+                          }
                           onClick={this.handleOpenMerge.bind(this)}
                           color="primary"
                           size="small"
                         >
-                          <MergeOutlined fontSize="small"/>
+                          <MergeOutlined fontSize="small" />
                         </IconButton>
                       </span>
                     </Tooltip>
@@ -1601,14 +1605,14 @@ class ToolBar extends Component {
                         <IconButton
                           aria-label="input"
                           disabled={
-                          numberOfSelectedElements === 0
-                          || this.state.processing
-                        }
+                            numberOfSelectedElements === 0
+                            || this.state.processing
+                          }
                           onClick={this.handleOpenAddInContainer.bind(this)}
                           color="primary"
                           size="small"
                         >
-                          <MoveToInboxOutlined fontSize="small"/>
+                          <MoveToInboxOutlined fontSize="small" />
                         </IconButton>
                       </span>
                     </Tooltip>
@@ -1621,51 +1625,55 @@ class ToolBar extends Component {
                         <IconButton
                           aria-label="remove"
                           disabled={
-                          numberOfSelectedElements === 0
-                          || this.state.processing
-                        }
+                            numberOfSelectedElements === 0
+                            || this.state.processing
+                          }
                           onClick={this.handleLaunchRemove.bind(this)}
                           color="primary"
                           size="small"
                         >
-                          <LinkOffOutlined fontSize="small"/>
+                          <LinkOffOutlined fontSize="small" />
                         </IconButton>
                       </span>
                     </Tooltip>
                   </Security>
                 )}
-                <Security needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}>
-                  <EETooltip title={t('Share with organizations')}>
-                    <IconButton
-                      color="primary"
-                      aria-label="input"
-                      onClick={isEnterpriseEdition ? this.handleOpenShare.bind(this) : null}
-                      size="small"
-                      disabled={
-                          numberOfSelectedElements === 0
-                          || this.state.processing
-                      }
-                    >
-                      <BankPlus fontSize="small" color={isEnterpriseEdition ? 'primary' : 'disabled'} />
-                    </IconButton>
-                  </EETooltip>
-                </Security>
-                <Security needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}>
-                  <EETooltip title={t('Unshare with organizations')}>
-                    <IconButton
-                      color="primary"
-                      aria-label="input"
-                      onClick={isEnterpriseEdition ? this.handleOpenUnshare.bind(this) : null}
-                      size="small"
-                      disabled={
+                {isShareableType && (
+                  <>
+                    <Security needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}>
+                      <EETooltip title={t('Share with organizations')}>
+                        <IconButton
+                          color="primary"
+                          aria-label="input"
+                          onClick={isEnterpriseEdition ? this.handleOpenShare.bind(this) : null}
+                          size="small"
+                          disabled={
                             numberOfSelectedElements === 0
                             || this.state.processing
-                        }
-                    >
-                      <BankMinus fontSize="small" color={isEnterpriseEdition ? 'primary' : 'disabled'} />
-                    </IconButton>
-                  </EETooltip>
-                </Security>
+                          }
+                        >
+                          <BankPlus fontSize="small" color={isEnterpriseEdition ? 'primary' : 'disabled'} />
+                        </IconButton>
+                      </EETooltip>
+                    </Security>
+                    <Security needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}>
+                      <EETooltip title={t('Unshare with organizations')}>
+                        <IconButton
+                          color="primary"
+                          aria-label="input"
+                          onClick={isEnterpriseEdition ? this.handleOpenUnshare.bind(this) : null}
+                          size="small"
+                          disabled={
+                            numberOfSelectedElements === 0
+                            || this.state.processing
+                          }
+                        >
+                          <BankMinus fontSize="small" color={isEnterpriseEdition ? 'primary' : 'disabled'} />
+                        </IconButton>
+                      </EETooltip>
+                    </Security>
+                  </>
+                )}
                 {deleteDisable !== true && (
                   <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
                     <Tooltip title={warningMessage || t('Delete')}>
@@ -1673,14 +1681,14 @@ class ToolBar extends Component {
                         <IconButton
                           aria-label="delete"
                           disabled={
-                          numberOfSelectedElements === 0
-                          || this.state.processing
-                        }
+                            numberOfSelectedElements === 0
+                            || this.state.processing
+                          }
                           onClick={this.handleLaunchDelete.bind(this)}
                           color={warning ? 'warning' : 'primary'}
                           size="small"
                         >
-                          <DeleteOutlined fontSize="small"/>
+                          <DeleteOutlined fontSize="small" />
                         </IconButton>
                       </span>
                     </Tooltip>
@@ -1693,14 +1701,14 @@ class ToolBar extends Component {
                         <IconButton
                           aria-label="restore"
                           disabled={
-                              numberOfSelectedElements === 0
-                              || this.state.processing
+                            numberOfSelectedElements === 0
+                            || this.state.processing
                           }
                           onClick={this.handleLaunchRestore.bind(this)}
                           color={warning ? 'warning' : 'primary'}
                           size="small"
                         >
-                          <RestoreOutlined fontSize="small"/>
+                          <RestoreOutlined fontSize="small" />
                         </IconButton>
                       </span>
                     </Tooltip>
@@ -1716,7 +1724,7 @@ class ToolBar extends Component {
                           color={warning ? 'warning' : 'primary'}
                           size="small"
                         >
-                          <DeleteOutlined fontSize="small"/>
+                          <DeleteOutlined fontSize="small" />
                         </IconButton>
                       </span>
                     </Tooltip>
@@ -1786,7 +1794,7 @@ class ToolBar extends Component {
                             </span>
                           </TableCell>
                           <TableCell>
-                            <Chip style={{ borderRadius: 4 }} label="SCOPE"/>
+                            <Chip style={{ borderRadius: 4 }} label="SCOPE" />
                           </TableCell>
                           <TableCell>{t('N/A')}</TableCell>
                           <TableCell>
@@ -1800,7 +1808,7 @@ class ToolBar extends Component {
                                         <div>
                                           <strong>{t('Search')}</strong>: {search}
                                         </div>
-                                    }
+                                      }
                                     />
                                     {filters.filters.length > 0 && (
                                       <Chip
@@ -1856,7 +1864,7 @@ class ToolBar extends Component {
                                 </span>
                               </TableCell>
                               <TableCell>
-                                <Chip label={o.type}/>
+                                <Chip label={o.type} />
                               </TableCell>
                               <TableCell>
                                 {R.pathOr(t('N/A'), ['context', 'field'], o)}
@@ -1914,7 +1922,7 @@ class ToolBar extends Component {
                     size="large"
                     color="primary"
                   >
-                    <CloseOutlined fontSize="small" color="primary"/>
+                    <CloseOutlined fontSize="small" color="primary" />
                   </IconButton>
                   <Typography variant="h6">{t('Update entities')}</Typography>
                 </div>
@@ -1930,7 +1938,7 @@ class ToolBar extends Component {
                           onClick={this.handleRemoveStep.bind(this, i)}
                           size="small"
                         >
-                          <CancelOutlined fontSize="small"/>
+                          <CancelOutlined fontSize="small" />
                         </IconButton>
                         <Grid container={true} spacing={3}>
                           <Grid item={true} xs={3}>
@@ -1974,7 +1982,7 @@ class ToolBar extends Component {
                       onClick={this.handleAddStep.bind(this)}
                       classes={{ root: classes.buttonAdd }}
                     >
-                      <AddOutlined fontSize="small"/>
+                      <AddOutlined fontSize="small" />
                     </Button>
                   </div>
                   <div className={classes.buttons}>
@@ -2006,7 +2014,7 @@ class ToolBar extends Component {
                     size="large"
                     color="primary"
                   >
-                    <CloseOutlined fontSize="small" color="primary"/>
+                    <CloseOutlined fontSize="small" color="primary" />
                   </IconButton>
                   <Typography variant="h6">{t('Merge entities')}</Typography>
                 </div>
@@ -2022,7 +2030,7 @@ class ToolBar extends Component {
                     {selectedElementsList.map((element) => (
                       <ListItem key={element.id} dense={true} divider={true}>
                         <ListItemIcon>
-                          <ItemIcon type={element.entity_type}/>
+                          <ItemIcon type={element.entity_type} />
                         </ListItemIcon>
                         <ListItemText
                           sx={{
@@ -2167,7 +2175,7 @@ class ToolBar extends Component {
                     size="large"
                     color="primary"
                   >
-                    <CloseOutlined fontSize="small" color="primary"/>
+                    <CloseOutlined fontSize="small" color="primary" />
                   </IconButton>
                   <Typography variant="h6">{t('Entity enrichment')}</Typography>
                 </div>
@@ -2188,9 +2196,9 @@ class ToolBar extends Component {
                     {this.state.enrichConnectors.map((connector) => (
                       <ListItem key={connector.id} dense={true} divider={true}>
                         <ListItemIcon>
-                          <CloudRefreshOutline/>
+                          <CloudRefreshOutline />
                         </ListItemIcon>
-                        <ListItemText primary={connector.name}/>
+                        <ListItemText primary={connector.name} />
                         <ListItemSecondaryAction>
                           <MuiSwitch
                             checked={this.state.enrichSelected.includes(
@@ -2247,7 +2255,7 @@ class ToolBar extends Component {
                     size="large"
                     color="primary"
                   >
-                    <CloseOutlined fontSize="small" color="primary"/>
+                    <CloseOutlined fontSize="small" color="primary" />
                   </IconButton>
                   <Typography variant="h6">{t('Rule entity rescan')}</Typography>
                 </div>
@@ -2336,7 +2344,7 @@ class ToolBar extends Component {
                     renderOption={(props, option) => (
                       <li {...props}>
                         <div className={classes.icon}>
-                          <ItemIcon type={option.type}/>
+                          <ItemIcon type={option.type} />
                         </div>
                         <div className={classes.text}>{option.label}</div>
                       </li>
@@ -2365,7 +2373,7 @@ class ToolBar extends Component {
                     style={{ position: 'absolute', top: 68, right: 48 }}
                     size="large"
                   >
-                    <AddOutlined/>
+                    <AddOutlined />
                   </IconButton>
                 </DialogContent>
                 <DialogActions>
@@ -2453,7 +2461,7 @@ class ToolBar extends Component {
                     renderOption={(props, option) => (
                       <li {...props}>
                         <div className={classes.icon}>
-                          <ItemIcon type={option.type}/>
+                          <ItemIcon type={option.type} />
                         </div>
                         <div className={classes.text}>{option.label}</div>
                       </li>
@@ -2466,7 +2474,7 @@ class ToolBar extends Component {
                     style={{ position: 'absolute', top: 68, right: 48 }}
                     size="large"
                   >
-                    <AddOutlined/>
+                    <AddOutlined />
                   </IconButton>
                 </DialogContent>
                 <DialogActions>
@@ -2525,7 +2533,7 @@ class ToolBar extends Component {
                     renderOption={(props, option) => (
                       <li {...props}>
                         <div className={classes.icon}>
-                          <ItemIcon type={option.type}/>
+                          <ItemIcon type={option.type} />
                         </div>
                         <div className={classes.text}>{option.label}</div>
                       </li>
