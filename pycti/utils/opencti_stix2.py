@@ -1516,7 +1516,16 @@ class OpenCTIStix2:
             and "valid_until" in entity
             and entity["valid_from"] == entity["valid_until"]
         ):
-            del entity["valid_from"]
+            valid_until_converted_datetime = datetime.datetime.strptime(
+                entity["valid_until"], "%Y-%m-%dT%H:%M:%S.%fZ"
+            )
+            new_valid_until = valid_until_converted_datetime + datetime.timedelta(
+                seconds=1
+            )
+            valid_until_converted_string = new_valid_until.strftime(
+                "%Y-%m-%dT%H:%M:%S.%fZ"
+            )
+            entity["valid_until"] = valid_until_converted_string
 
         # Flatten
         if "tasks" in entity:
