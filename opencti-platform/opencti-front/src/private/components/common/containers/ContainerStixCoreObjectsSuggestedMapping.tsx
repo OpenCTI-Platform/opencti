@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent, useEffect, useRef, useState } from 'react';
 import { graphql } from 'react-relay';
 import {
   ContainerStixCoreObjectsSuggestedMappingLine,
@@ -89,6 +89,14 @@ ContainerStixCoreObjectsSuggestedMappingProps
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
   const isRuntimeSort = isRuntimeFieldEnable() ?? false;
+
+  // The container ref is not defined on first render, causing infinite scroll issue in the ListLinesContent
+  // we force re-render when the ref is ready
+  const ref = useRef(null);
+  const [, forceUpdate] = React.useReducer((o) => !o, true);
+  useEffect(() => {
+    forceUpdate();
+  }, [ref?.current, askingSuggestion]);
 
   const LOCAL_STORAGE_KEY = `container-${container.id}-stixCoreObjectsSuggestedMapping`;
   const {
@@ -246,11 +254,7 @@ ContainerStixCoreObjectsSuggestedMappingProps
           </Tooltip>
         </Box>
       </Box>
-      <div style={{
-        margin: 0,
-        padding: '15px 0 0 0',
-      }}
-      >
+      <div style={{ margin: 0, padding: '15px 0 0 0' }} ref={ref} >
         {askingSuggestion
           ? <Loader variant={LoaderVariant.inElement}/>
           : (
@@ -286,6 +290,7 @@ ContainerStixCoreObjectsSuggestedMappingProps
                 contentMappingCount={suggestedMappingCount}
                 handleRemoveSuggestedMappingLine={handleRemoveSuggestedMappingLine}
                 height={height}
+                containerRef={ref}
               />
             </ListLines>
           )
