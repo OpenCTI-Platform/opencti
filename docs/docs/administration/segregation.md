@@ -67,7 +67,27 @@ To apply a default marking when creating a new entity or relationship, you can c
     Simply adding markings as default markings is insufficient to display the markings when creating an entity or relationship. You also need to enable default markings in the customization settings of an entity or relationship. For example, to enable default markings for a new report, navigate to "Settings > Customization > Report > Markings" and toggle the option to `Activate/Desactivate default values`.
 
 
-## Management of multiple markings
+### Maximum shareable marking definitions
+
+This configuration allows to define, for each type of marking definitions, until which level
+we allow to share data externally (via Public dashboard or file export).
+
+The marking definitions that can be shared by a group are the ones
+
+- that are allowed for this group
+- and whose order are inferior or equal to the order of the maximum shareable markings defined for each marking type.
+
+Users with the Bypass capability can share all the markings.
+
+By default, every marking of a given marking type is shareable.
+
+For example in the capture below, for the type of marking `TLP`, only data  with a marking
+definition that is allowed and has a level equal or below `GREEN` will be shareable. And no data with marking
+definition `statement` will be shared at all.
+
+![Maximum marking definitions shareable](./assets/max-marking-shareable.png)
+
+### Management of multiple markings
 
 In scenarios where multiple markings of the same type but different orders are added, the platform will retain only the marking with the highest order for each type. This consolidation can occurs in various instances:
 
