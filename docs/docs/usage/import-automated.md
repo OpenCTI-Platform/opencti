@@ -96,20 +96,33 @@ CSV feed ingester enables users to import CSV files exposed on URLs. Here's a st
 
 Additional configuration options:
 
-- User responsible for data creation: Define the user responsible for creating data received from this RSS feed. Best practice is to dedicate one user per source for organizational clarity. Please [see the section "Best practices" below](import-automated.md#best-practices-section) for more information.
+- User responsible for data creation: Define the user responsible for creating data received from this CSV feed. Best practice is to dedicate one user per source for organizational clarity. Please [see the section "Best practices" below](import-automated.md#best-practices-section) for more information.
 - Import from date: Specify the date of the oldest data to retrieve. Leave the field empty to import everything.
 
-![CSV feeds creation: prior CSV mapper test](assets/csv-feeds-creation.png)
+![CSV feeds creation: prior CSV mapper test](assets/csv-feeds-creation-prior-test.png)
+
+
+in CSV Mappers, if you created a representative for Marking definition, you could have chosen between 2 options:
+
+ - let the user choose  marking definitions
+ - Use default marking definitions of the user
+
+This configuration applies when using a CSV Mapper for a CSV Ingester. If you select a CSV Mapper containing the option "Use default marking definitions of the user", the default marking definitions of the user you chose to be responsible for the data creation will be applied to all data imported. If you select a CSV Mapper containing the option "let the user choose  marking definitions", you will be presented with the list of all the marking definitions of the user you chose to be responsible for the data creation (and not yours!)
 
 To finalize the creation, click on "Verify" to run a check on the submitted URL with the selected CSV mapper. A valid URL-CSV mapper combination results in the identification of up to 50 entities.
 
-![CSV feeds creation: csv mapper test](assets/csv-feeds-creation-test.png)
+![CSV feeds creation: CSV mapper test](assets/csv-feeds-creation-after-test.png)
+
+
+![CSV feeds creation: list](assets/csv-feeds-creation-list.png)
 
 To start your new ingester, click on "Start", in the burger menu.
 
 ![CSV feeds creation: start](assets/csv-feeds-creation-start.png)
 
 CSV feed ingestion is made possible thanks to the connector "ImportCSV". So you can track the progress in "Data > Ingestion > Connectors". On a regular basis, the ingestion is updated when new data is added to the CSV feed.
+
+![CSV feeds creation: connectors](assets/csv-feeds-connectors.png)
 
 ![CSV feeds creation: tracking](assets/csv-feeds-importCSV-connector-tracking.png)
 
