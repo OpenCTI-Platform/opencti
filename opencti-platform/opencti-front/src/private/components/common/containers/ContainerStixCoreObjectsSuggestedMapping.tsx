@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useEffect, useRef, useState } from 'react';
+import React, { FunctionComponent, useState } from 'react';
 import { graphql } from 'react-relay';
 import {
   ContainerStixCoreObjectsSuggestedMappingLine,
@@ -69,9 +69,7 @@ interface ContainerStixCoreObjectsSuggestedMappingProps {
 
 type MappedEntityType = NonNullable<NonNullable<ContainerStixCoreObjectsSuggestedMappingQuery$data['stixCoreObjectAnalysis']>['mappedEntities']>[number];
 
-const ContainerStixCoreObjectsSuggestedMapping: FunctionComponent<
-ContainerStixCoreObjectsSuggestedMappingProps
-> = ({
+const ContainerStixCoreObjectsSuggestedMapping: FunctionComponent<ContainerStixCoreObjectsSuggestedMappingProps> = ({
   container,
   suggestedMapping,
   suggestedMappingCount,
@@ -89,14 +87,6 @@ ContainerStixCoreObjectsSuggestedMappingProps
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
   const isRuntimeSort = isRuntimeFieldEnable() ?? false;
-
-  // The container ref is not defined on first render, causing infinite scroll issue in the ListLinesContent
-  // we force re-render when the ref is ready
-  const ref = useRef(null);
-  const [, forceUpdate] = React.useReducer((o) => !o, true);
-  useEffect(() => {
-    forceUpdate();
-  }, [ref?.current, askingSuggestion]);
 
   const LOCAL_STORAGE_KEY = `container-${container.id}-stixCoreObjectsSuggestedMapping`;
   const {
@@ -199,6 +189,8 @@ ContainerStixCoreObjectsSuggestedMappingProps
 
   const suggestDisabled = !hasConnectorsAvailable || askingSuggestion;
 
+  const [ref, setRef] = useState<HTMLDivElement | null>(null);
+
   return (
     <div>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '4px' }}>
@@ -254,7 +246,13 @@ ContainerStixCoreObjectsSuggestedMappingProps
           </Tooltip>
         </Box>
       </Box>
-      <div style={{ margin: 0, padding: '15px 0 0 0' }} ref={ref} >
+      <div
+        style={{
+          margin: 0,
+          padding: '15px 0 0 0',
+        }}
+        ref={(node) => setRef(node)}
+      >
         {askingSuggestion
           ? <Loader variant={LoaderVariant.inElement}/>
           : (
@@ -278,6 +276,7 @@ ContainerStixCoreObjectsSuggestedMappingProps
               disableCards
             >
               <ListLinesContent
+                containerRef={ref}
                 initialLoading={false}
                 loadMore={() => {}}
                 hasMore={() => {}}
@@ -290,7 +289,6 @@ ContainerStixCoreObjectsSuggestedMappingProps
                 contentMappingCount={suggestedMappingCount}
                 handleRemoveSuggestedMappingLine={handleRemoveSuggestedMappingLine}
                 height={height}
-                containerRef={ref}
               />
             </ListLines>
           )
