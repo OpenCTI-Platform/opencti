@@ -2461,6 +2461,7 @@
   "The token is missing in your platform configuration, please ask your Filigran representative to provide you with it or with on-premise deployment instructions. Your can open a support ticket to do so.": "お客様のプラットフォーム構成にトークンがありません。フィリグランの担当者にトークンの提供、またはオンプレミスでの展開方法をお問い合わせください。サポートチケットでお問い合わせください。",
   "The user has BYPASS capability, their max confidence level is set to 100.": "ユーザーはBYPASS能力を持っており、最大信頼度は100に設定されている。",
   "The user’s Max Confidence Level overrides Max Confidence Level inherited from user’s groups": "ユーザーの最大信頼度はユーザーのグループから継承された最大信頼度より優先されます。",
+  "The valid until date must be greater than the valid from date": "有効期限の日付は、有効期限の日付より大きくなければならない。",
   "The value is too long": "文字数が上限を超えています",
   "The value is too short": "文字数が不足しています",
   "The value must be a date (yyyy-MM-dd)": "日付(yyyy-MM-dd)を入力してください",

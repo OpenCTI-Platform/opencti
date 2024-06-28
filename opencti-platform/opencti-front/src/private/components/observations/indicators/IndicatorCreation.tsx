@@ -131,11 +131,11 @@ export const IndicatorCreationForm: FunctionComponent<IndicatorFormProps> = ({
       .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
     valid_until: Yup.date()
       .nullable()
-      .min(
-        Yup.ref('valid_from'),
-        'The valid until date can\'t be before valid from date',
-      )
-      .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
+      .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
+      .test('is-greater', t_i18n('The valid until date must be greater than the valid from date'), function isGreater(value) {
+        const { valid_from } = this.parent;
+        return !valid_from || !value || value > valid_from;
+      }),
     x_mitre_platforms: Yup.array().nullable(),
     x_opencti_score: Yup.number().nullable(),
     description: Yup.string().nullable(),

@@ -2461,6 +2461,7 @@
   "The token is missing in your platform configuration, please ask your Filigran representative to provide you with it or with on-premise deployment instructions. Your can open a support ticket to do so.": "The token is missing in your platform configuration, please ask your Filigran representative to provide you with it or with on-premise deployment instructions. Your can open a support ticket to do so.",
   "The user has BYPASS capability, their max confidence level is set to 100.": "The user has BYPASS capability, their max confidence level is set to 100.",
   "The user’s Max Confidence Level overrides Max Confidence Level inherited from user’s groups": "The user’s Max Confidence Level overrides Max Confidence Level inherited from user’s groups",
+  "The valid until date must be greater than the valid from date": "The valid until date must be greater than the valid from date",
   "The value is too long": "The value is too long",
   "The value is too short": "The value is too short",
   "The value must be a date (yyyy-MM-dd)": "The value must be a date (yyyy-MM-dd)",

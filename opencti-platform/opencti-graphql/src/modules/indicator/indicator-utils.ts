@@ -7,6 +7,7 @@ import type { IndicatorAddInput } from '../../generated/graphql';
 import type { BasicStoreEntity } from '../../types/store';
 import { isEmptyField, isNotEmptyField } from '../../database/utils';
 import { utcDate } from '../../utils/format';
+import { ValidationError } from '../../config/errors';
 
 interface TTL_DEFINITION {
   target: Array<string>;
@@ -79,15 +80,24 @@ const computeValidFrom = (indicator: IndicatorAddInput): Moment => {
 };
 
 const computeValidUntil = (indicator: IndicatorAddInput, validFrom: Moment, lifetimeInDays: number): Moment => {
+  let validUntil: Moment;
   if (indicator.revoked && isEmptyField(indicator.valid_until)) {
     // If indicator is explicitly revoked and not valid_until is specified
     // Ensure the valid_until will be revoked by the time computation.
-    return validFrom;
+    // Adding one second to the validFrom if valid_until is empty,
+    // because according to STIX 2.1 specification the valid_until must be greater than the valid_from.
+    validUntil = validFrom.clone().add(1, 'seconds');
+  } else if (isNotEmptyField(indicator.valid_until)) {
+    // Ensure valid_until is strictly greater than valid_from
+    if (indicator.valid_until <= validFrom) {
+      throw ValidationError('valid_until', { message: 'The valid until date must be greater than the valid from date' });
+    } else {
+      validUntil = utcDate(indicator.valid_until);
+    }
+  } else {
+    validUntil = validFrom.clone().add(lifetimeInDays, 'days');
   }
-  if (isNotEmptyField(indicator.valid_until)) {
-    return utcDate(indicator.valid_until);
-  }
-  return validFrom.clone().add(lifetimeInDays, 'days');
+  return validUntil;
 };
 
 export const computeValidPeriod = async (indicator: IndicatorAddInput, lifetimeInDays: number) => {
@@ -97,6 +107,6 @@ export const computeValidPeriod = async (indicator: IndicatorAddInput, lifetimeI
     validFrom,
     validUntil,
     revoked: validUntil.isSameOrBefore(utcDate()),
-    validPeriod: validFrom.isSameOrBefore(validUntil)
+    validPeriod: validFrom.isBefore(validUntil),
   };
 };
