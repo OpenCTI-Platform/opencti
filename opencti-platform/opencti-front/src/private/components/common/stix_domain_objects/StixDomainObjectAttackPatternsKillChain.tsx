@@ -31,6 +31,20 @@ import { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
 import { UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
 
 const useStyles = makeStyles(() => ({
+  filters: {
+    display: 'flex',
+    float: 'left',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    marginRight: 20,
+    marginLeft: 20,
+    gap: 10,
+  },
+  buttons: {
+    float: 'left',
+    display: 'flex',
+    margin: '-6px 4px 0 0',
+  },
   container: {
     width: '100%',
     height: '100%',
@@ -40,6 +54,7 @@ const useStyles = makeStyles(() => ({
   parameters: {
     marginBottom: 20,
     padding: 0,
+    marginTop: -12,
   },
   export: {
     float: 'right',
@@ -157,10 +172,7 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
 
   return (
     <>
-      <div
-        className={classes.parameters}
-        style={{ marginTop: -12 }}
-      >
+      <div className={classes.parameters} >
         <div style={{ float: 'left', marginRight: 20 }}>
           <SearchInput
             variant="small"
@@ -168,9 +180,7 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
             onSubmit={handleSearch}
           />
         </div>
-        <div
-          style={{ float: 'left', display: 'flex', margin: '-6px 4px 0 0' }}
-        >
+        <div className={classes.buttons} >
           <Tooltip
             title={
                 currentModeOnlyActive
@@ -206,14 +216,14 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
             </span>
           </Tooltip>
         </div>
-        <Box style={{ float: 'left', marginRight: 20, display: 'flex' }}>
+        <Box className={classes.filters} >
           <Filters
             availableFilterKeys={availableFilterKeys}
             helpers={helpers}
             searchContext={{ entityTypes: ['Attack-Pattern'] }}
           />
         </Box>
-        <div style={{ float: 'left', display: 'flex', margin: '-6px 4px 0 0' }} >
+        <div className={classes.buttons} >
           <FilterIconButton
             filters={filters}
             helpers={helpers}
