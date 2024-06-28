@@ -5014,32 +5014,60 @@
 <td style="text-align: left;">Delete entities and relationships.</td>
 </tr>
 <tr>
+<td style="text-align: left;">&nbsp;&nbsp;&nbsp;&nbsp;<code>Manage authorized members</code></td>
+<td style="text-align: left;">Restrict the access to an entity to a user, group or organization.</td>
+</tr>
+<tr>
+<td style="text-align: left;">&nbsp;&nbsp;&nbsp;&nbsp;<code>Bypass enforced reference</code></td>
+<td style="text-align: left;">If external references enforced in a type of entity, be able to bypass the enforcement.</td>
+</tr>
+<tr>
 <td style="text-align: left;">&nbsp;&nbsp;<code>Upload knowledge files</code></td>
 <td style="text-align: left;">Upload files in the <code>Data</code> and <code>Content</code> section of entities.</td>
+</tr>
+<tr>
+<td style="text-align: left;">&nbsp;&nbsp;<code>Import knowledge</code></td>
+<td style="text-align: left;">Trigger the ingestion of an uploaded file.</td>
 </tr>
 <tr>
 <td style="text-align: left;">&nbsp;&nbsp;<code>Download knowledge export</code></td>
 <td style="text-align: left;">Download the exports generated in the entities (in the <code>Data</code> section).</td>
 </tr>
 <tr>
+<td style="text-align: left;">&nbsp;&nbsp;&nbsp;&nbsp;<code>Generate knowledge export</code></td>
+<td style="text-align: left;">Trigger the export of the knowledge of an entity.</td>
+</tr>
+<tr>
 <td style="text-align: left;">&nbsp;&nbsp;<code>Ask for knowledge enrichment</code></td>
 <td style="text-align: left;">Trigger an enrichment for a given entity.</td>
 </tr>
 <tr>
-<td style="text-align: left;"><code>Access Dashboards and investigations</code></td>
-<td style="text-align: left;">Access to existing custom dashboards and investigations.</td>
+<td style="text-align: left;"><code>Access dashboards</code></td>
+<td style="text-align: left;">Access to existing custom dashboards.</td>
 </tr>
 <tr>
-<td style="text-align: left;">&nbsp;&nbsp;<code>Create / Update Dashboards and investigations</code></td>
-<td style="text-align: left;">Create and update custom dashboards and investigations.</td>
+<td style="text-align: left;">&nbsp;&nbsp;<code>Create / Update dashboards</code></td>
+<td style="text-align: left;">Create and update custom dashboards.</td>
 </tr>
 <tr>
-<td style="text-align: left;">&nbsp;&nbsp;&nbsp;&nbsp;<code>Delete Dashboards and investigations</code></td>
-<td style="text-align: left;">Delete existing custom dashboards and investigations.</td>
+<td style="text-align: left;">&nbsp;&nbsp;&nbsp;&nbsp;<code>Delete dashboards</code></td>
+<td style="text-align: left;">Delete existing custom dashboards.</td>
 </tr>
 <tr>
-<td style="text-align: left;">&nbsp;&nbsp;&nbsp;&nbsp;<code>Manage Public Dashboards</code></td>
-<td style="text-align: left;">Manage public dashboards</td>
+<td style="text-align: left;">&nbsp;&nbsp;&nbsp;&nbsp;<code>Manage public dashboards</code></td>
+<td style="text-align: left;">Manage public dashboards.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>Access investigations</code></td>
+<td style="text-align: left;">Access to existing investigations.</td>
+</tr>
+<tr>
+<td style="text-align: left;">&nbsp;&nbsp;<code>Create / Update investigations</code></td>
+<td style="text-align: left;">Create and update investigations.</td>
+</tr>
+<tr>
+<td style="text-align: left;">&nbsp;&nbsp;&nbsp;&nbsp;<code>Delete investigations</code></td>
+<td style="text-align: left;">Delete existing investigations.</td>
 </tr>
 <tr>
 <td style="text-align: left;"><code>Access connectors</code></td>
@@ -5050,19 +5078,35 @@
 <td style="text-align: left;">Reset the connector state to restart ingestion from the beginning.</td>
 </tr>
 <tr>
-<td style="text-align: left;"><code>Access data sharing &amp; ingestion</code></td>
-<td style="text-align: left;">Access and consume data such as TAXII collections.</td>
+<td style="text-align: left;"><code>Connectors API usage: register, ping, export push ...</code></td>
+<td style="text-align: left;">Connectors specific permissions for register, ping, push export files, etc.</td>
 </tr>
 <tr>
-<td style="text-align: left;">&nbsp;&nbsp;<code>Manage data sharing &amp; ingestion</code></td>
-<td style="text-align: left;">Share data such as TAXII collections or custom dashboards.</td>
+<td style="text-align: left;"><code>Access data sharing</code></td>
+<td style="text-align: left;">Access and consume data such as TAXII collections, CSV feeds and live streams.</td>
 </tr>
 <tr>
-<td style="text-align: left;">&nbsp;&nbsp;<code>Manage CSV mappers</code></td>
+<td style="text-align: left;">&nbsp;&nbsp;<code>Manage data sharing</code></td>
+<td style="text-align: left;">Share data such as TAXII collections, CSV feeds and live streams or custom dashboards.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>Access ingestion</code></td>
+<td style="text-align: left;">Access (read only) remote OCTI streams, TAXII feeds, RSS feeds, CSV feeds.</td>
+</tr>
+<tr>
+<td style="text-align: left;">&nbsp;&nbsp;<code>Manage ingestion</code></td>
+<td style="text-align: left;">Create, update, delete any remote OCTI streams, TAXII feeds, RSS feeds, CSV feeds.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>Manage CSV mappers</code></td>
 <td style="text-align: left;">Create, update and delete CSV mappers.</td>
 </tr>
 <tr>
-<td style="text-align: left;"><code>Access administration</code></td>
+<td style="text-align: left;"><code>Access to admin functionalities</code></td>
+<td style="text-align: left;">Parent capability allowing users to only view the settings.</td>
+</tr>
+<tr>
+<td style="text-align: left;">&nbsp;&nbsp;<code>Access administration parameters</code></td>
 <td style="text-align: left;">Access and manage overall parameters of the platform in <code>Settings &gt; Parameters</code>.</td>
 </tr>
 <tr>
@@ -5074,20 +5118,24 @@
 <td style="text-align: left;">Update and delete marking definitions.</td>
 </tr>
 <tr>
-<td style="text-align: left;">&nbsp;&nbsp;<code>Manage labels &amp; Attributes</code></td>
-<td style="text-align: left;">Update and delete labels, custom taxonomies, workflow and case templates.</td>
+<td style="text-align: left;">&nbsp;&nbsp;<code>Manage customization</code></td>
+<td style="text-align: left;">Customize entity types, rules, notifiers retention policies and decays rules.</td>
 </tr>
 <tr>
-<td style="text-align: left;"><code>Connectors API usage: register, ping, export push ...</code></td>
-<td style="text-align: left;">Connectors specific permissions for register, ping, push export files, etc.</td>
+<td style="text-align: left;">&nbsp;&nbsp;<code>Manage taxonomies</code></td>
+<td style="text-align: left;">Manage labels, kill chain phases, vocabularies, status templates, cases templates.</td>
 </tr>
 <tr>
-<td style="text-align: left;"><code>Connect and consume the platform streams (/stream, /stream/live)</code></td>
-<td style="text-align: left;">List and consume the OpenCTI live streams.</td>
+<td style="text-align: left;">&nbsp;&nbsp;<code>Access to security activity</code></td>
+<td style="text-align: left;">Access to activity log.</td>
 </tr>
 <tr>
-<td style="text-align: left;"><code>Bypass mandatory references if any</code></td>
-<td style="text-align: left;">If external references enforced in a type of entity, be able to bypass the enforcement.</td>
+<td style="text-align: left;">&nbsp;&nbsp;<code>Access to file indexing</code></td>
+<td style="text-align: left;">Manage file indexing.</td>
+</tr>
+<tr>
+<td style="text-align: left;">&nbsp;&nbsp;<code>Access to support</code></td>
+<td style="text-align: left;">Generate and download support packages.</td>
 </tr>
 </tbody>
 </table>
@@ -5218,7 +5266,7 @@ For instance, if a user is part of group A (max confidence level = 100) and grou
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1-2.1-2M12.5 7v5.2l4 2.4-1 1L11 13V7h1.5M11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2v1.8Z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2024-05-31T08:02:03+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2024-05-31</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2024-06-28T09:34:47+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2024-06-28</span>
   </span>
 
     
@@ -5246,6 +5294,16 @@ For instance, if a user is part of group A (max confidence level = 100) and grou
     
     <nav>
       
+        <a href="https://github.com/frapuks" class="md-author" title="@frapuks">
+          
+          <img src="https://avatars.githubusercontent.com/u/102748848?v=4&size=72" alt="frapuks">
+        </a>
+      
+        <a href="https://github.com/Archidoit" class="md-author" title="@Archidoit">
+          
+          <img src="https://avatars.githubusercontent.com/u/75783086?v=4&size=72" alt="Archidoit">
+        </a>
+      
         <a href="https://github.com/labo-flg" class="md-author" title="@labo-flg">
           
           <img src="https://avatars.githubusercontent.com/u/146674147?v=4&size=72" alt="labo-flg">
@@ -5256,21 +5314,11 @@ For instance, if a user is part of group A (max confidence level = 100) and grou
           <img src="https://avatars.githubusercontent.com/u/70956706?v=4&size=72" alt="Lhorus6">
         </a>
       
-        <a href="https://github.com/marieflorescontact" class="md-author" title="@marieflorescontact">
-          
-          <img src="https://avatars.githubusercontent.com/u/73853856?v=4&size=72" alt="marieflorescontact">
-        </a>
-      
-        <a href="https://github.com/nino-filigran" class="md-author" title="@nino-filigran">
-          
-          <img src="https://avatars.githubusercontent.com/u/148041607?v=4&size=72" alt="nino-filigran">
-        </a>
-      
       
       
         
           <a href="https://github.com/OpenCTI-Platform/docs/blob/main/docs/administration/users.md" class="md-author md-author--more">
-            +3
+            +5
           </a>
         
       
