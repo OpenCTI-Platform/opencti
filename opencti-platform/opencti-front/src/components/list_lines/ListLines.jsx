@@ -190,6 +190,7 @@ class ListLines extends Component {
       searchVariant,
       message,
       enableGraph,
+      enableSubEntityLines,
       availableEntityTypes,
       availableRelationshipTypes,
       availableRelationFilterTypes,
@@ -335,6 +336,20 @@ class ListLines extends Component {
                           />
                         </Tooltip>
                       </ToggleButton>
+                  )}
+                  {typeof handleChangeView === 'function' && enableSubEntityLines && (
+                    <ToggleButton value="subEntityLines" aria-label="subEntityLines">
+                      <Tooltip title={t('Sub Entity Lines view')}>
+                        <ViewListOutlined
+                          fontSize="small"
+                          color={
+                              currentView === 'subEntityLines'
+                                ? 'secondary'
+                                : 'primary'
+                            }
+                        />
+                      </Tooltip>
+                    </ToggleButton>
                   )}
                   {typeof handleChangeView === 'function' && enableGraph && (
                     <ToggleButton value="graph" aria-label="graph">
@@ -694,6 +709,7 @@ ListLines.propTypes = {
   availableRelationFilterTypes: PropTypes.object,
   enableNestedView: PropTypes.bool,
   enableEntitiesView: PropTypes.bool,
+  enableSubEntityLines: PropTypes.bool,
   enableContextualView: PropTypes.bool,
   currentView: PropTypes.string,
   handleSwitchRedirectionMode: PropTypes.func,

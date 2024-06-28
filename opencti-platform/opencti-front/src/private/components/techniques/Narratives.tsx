@@ -1,26 +1,37 @@
 import React, { FunctionComponent } from 'react';
 import { NarrativeLine_node$data } from '@components/techniques/narratives/__generated__/NarrativeLine_node.graphql';
 import ToolBar from '@components/data/ToolBar';
+import makeStyles from '@mui/styles/makeStyles';
 import ExportContextProvider from '../../../utils/ExportContextProvider';
 import { NarrativeLineDummy } from './narratives/NarrativeLine';
 import NarrativesLines, { narrativesLinesQuery } from './narratives/NarrativesLines';
+import NarrativesWithSubnarrativesLines from './narratives/NarrativesWithSubnarrativesLines';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import ListLines from '../../../components/list_lines/ListLines';
 import Security from '../../../utils/Security';
 import { KNOWLEDGE_KNPARTICIPATE, KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import NarrativeCreation from './narratives/NarrativeCreation';
-import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../utils/filters/filtersUtils';
+import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext, useGetDefaultFilterObject } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import { NarrativesLinesPaginationQuery, NarrativesLinesPaginationQuery$variables } from './narratives/__generated__/NarrativesLinesPaginationQuery.graphql';
 import useEntityToggle from '../../../utils/hooks/useEntityToggle';
 import useHelper from '../../../utils/hooks/useHelper';
+import SearchInput from '../../../components/SearchInput';
 
 const LOCAL_STORAGE_KEY = 'narratives';
 
+const useStyles = makeStyles(() => ({
+  parameters: {
+    float: 'left',
+    marginTop: -10,
+  },
+}));
+
 const Narratives: FunctionComponent = () => {
   const { t_i18n } = useFormatter();
+  const classes = useStyles();
   const { isFeatureEnable } = useHelper();
   const FAB_REPLACED = isFeatureEnable('FAB_REPLACEMENT');
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<NarrativesLinesPaginationQuery$variables>(
@@ -30,7 +41,11 @@ const Narratives: FunctionComponent = () => {
       sortBy: 'name',
       orderAsc: true,
       openExports: false,
-      filters: emptyFilterGroup,
+      filters: {
+        ...emptyFilterGroup,
+        filters: useGetDefaultFilterObject(['In regards of'], ['Narrative']),
+      },
+      view: 'lines',
     },
   );
   const {
@@ -40,6 +55,7 @@ const Narratives: FunctionComponent = () => {
     filters,
     openExports,
     numberOfElements,
+    view,
   } = viewStorage;
 
   const {
@@ -57,10 +73,52 @@ const Narratives: FunctionComponent = () => {
     ...paginationOptions,
     filters: contextFilters,
   } as unknown as NarrativesLinesPaginationQuery$variables;
+
   const queryRef = useQueryLoading<NarrativesLinesPaginationQuery>(
     narrativesLinesQuery,
     queryPaginationOptions,
   );
+  const renderSubEntityLines = () => {
+    return (
+      <>
+        <Breadcrumbs variant="list" elements={[{ label: t_i18n('Techniques') }, { label: t_i18n('Narratives'), current: true }]} />
+        <div className={classes.parameters}>
+          <div style={{ float: 'left', marginRight: 20 }}>
+            <SearchInput
+              variant="small"
+              onSubmit={helpers.handleSearch}
+              keyword={searchTerm}
+            />
+          </div>
+        </div>
+        <div className="clearfix" />
+        {queryRef && (
+        <React.Suspense
+          fallback={
+            <>
+              {Array(20)
+                .fill(0)
+                .map((_, idx) => (
+                  <NarrativeLineDummy key={idx}/>
+                ))}
+            </>
+                    }
+        >
+          <NarrativesWithSubnarrativesLines
+            queryRef={queryRef}
+            setNumberOfElements={helpers.handleSetNumberOfElements}
+            paginationOptions={queryPaginationOptions}
+            onToggleEntity={onToggleEntity}
+          />
+        </React.Suspense>
+        )}
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <NarrativeCreation />
+        </Security>
+      </>
+    );
+  };
+
   const renderLines = () => {
     const dataColumns = {
       name: {
@@ -89,7 +147,6 @@ const Narratives: FunctionComponent = () => {
         isSortable: true,
       },
     };
-
     return (
       <>
         <ListLines
@@ -104,6 +161,10 @@ const Narratives: FunctionComponent = () => {
           handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
           handleSwitchLocalMode={helpers.handleSwitchLocalMode}
           handleToggleExports={helpers.handleToggleExports}
+          handleChangeView={helpers.handleChangeView}
+          enableSubEntityLines={true}
+          currentView={view}
+          disableCards={true}
           openExports={openExports}
           handleToggleSelectAll={handleToggleSelectAll}
           selectAll={selectAll}
@@ -159,7 +220,8 @@ const Narratives: FunctionComponent = () => {
   return (
     <ExportContextProvider>
       <Breadcrumbs variant="list" elements={[{ label: t_i18n('Techniques') }, { label: t_i18n('Narratives'), current: true }]} />
-      {renderLines()}
+      {view === 'lines' ? renderLines() : ''}
+      {view === 'subEntityLines' ? renderSubEntityLines() : ''}
       {!FAB_REPLACED
           && <Security needs={[KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNPARTICIPATE]}>
             <NarrativeCreation paginationOptions={queryPaginationOptions} />
