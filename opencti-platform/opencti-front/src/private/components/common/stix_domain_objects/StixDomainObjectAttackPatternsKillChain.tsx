@@ -14,6 +14,7 @@ import {
 import {
   StixDomainObjectAttackPatternsKillChainContainer_data$data,
 } from '@components/common/stix_domain_objects/__generated__/StixDomainObjectAttackPatternsKillChainContainer_data.graphql';
+import Box from '@mui/material/Box';
 import StixCoreObjectsExports from '../stix_core_objects/StixCoreObjectsExports';
 import SearchInput from '../../../../components/SearchInput';
 import Security from '../../../../utils/Security';
@@ -204,11 +205,15 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
               </IconButton>
             </span>
           </Tooltip>
+        </div>
+        <Box style={{ float: 'left', marginRight: 20, display: 'flex' }}>
           <Filters
             availableFilterKeys={availableFilterKeys}
             helpers={helpers}
             searchContext={{ entityTypes: ['Attack-Pattern'] }}
           />
+        </Box>
+        <div style={{ float: 'left', display: 'flex', margin: '-6px 4px 0 0' }} >
           <FilterIconButton
             filters={filters}
             helpers={helpers}
