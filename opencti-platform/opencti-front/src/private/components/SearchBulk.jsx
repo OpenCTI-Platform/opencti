@@ -392,8 +392,6 @@ const SearchBulk = () => {
   const reverseBy = (field) => {
     setSortBy(field);
     setOrderAsc((prevOrderAsc) => !prevOrderAsc);
-    console.log('field', field);
-    console.log('resolvedEntities', resolvedEntities);
     const newOrder = !orderAsc;
     const sort = (a, b) => {
       if (a[field] < b[field]) {
@@ -543,7 +541,7 @@ const SearchBulk = () => {
                       {SortHeader('value', 'Value', true)}
                       {SortHeader('author', 'Author', true)}
                       {SortHeader('creator', 'Creators', true)}
-                      {SortHeader('labels', 'Labels', true)}
+                      {SortHeader('labels', 'Labels', false)}
                       {SortHeader('created_at', 'Creation date', true)}
                       {SortHeader('analyses', 'Analyses', true)}
                       {SortHeader('markings', 'Markings', true)}
