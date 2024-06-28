@@ -208,6 +208,7 @@ class ListLines extends Component {
       additionalFilterKeys,
       createButton,
     } = this.props;
+    console.log('currentView', currentView);
     const exportDisabled = numberOfElements
       && ((selectedIds.length > export_max_size
         && numberOfElements.number > export_max_size)
