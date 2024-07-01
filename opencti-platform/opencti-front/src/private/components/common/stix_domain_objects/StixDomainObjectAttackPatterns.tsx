@@ -32,7 +32,6 @@ const useStyles = makeStyles(() => ({
 
 interface StixDomainObjectAttackPatternsProps {
   stixDomainObjectId: string,
-  entityLink: string,
   defaultStartTime: string,
   defaultStopTime: string,
   disableExport: boolean,
@@ -40,7 +39,6 @@ interface StixDomainObjectAttackPatternsProps {
 
 const StixDomainObjectAttackPatterns: FunctionComponent<StixDomainObjectAttackPatternsProps> = ({
   stixDomainObjectId,
-  entityLink,
   defaultStartTime,
   defaultStopTime,
   disableExport,
@@ -88,7 +86,6 @@ const StixDomainObjectAttackPatterns: FunctionComponent<StixDomainObjectAttackPa
           <StixDomainObjectAttackPatternsKillChainContainer
             helpers={helpers}
             queryRef={queryRef}
-            entityLink={entityLink}
             queryPaginationOptions={queryPaginationOptions}
             stixDomainObjectId={stixDomainObjectId}
             filters={filters}

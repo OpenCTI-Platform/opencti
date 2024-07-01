@@ -15,7 +15,6 @@ import { UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage'
 interface StixDomainObjectAttackPatternsKillChainProps {
   helpers: UseLocalStorageHelpers;
   queryRef: PreloadedQuery<StixDomainObjectAttackPatternsKillChainQuery>;
-  entityLink: string;
   queryPaginationOptions: StixDomainObjectAttackPatternsKillChainQuery$variables;
   stixDomainObjectId: string;
   filters?: FilterGroup;
@@ -106,7 +105,6 @@ const stixDomainObjectAttackPatternsKillChainContainerFragment = graphql`
 const StixDomainObjectAttackPatternsKillChainContainer: FunctionComponent<StixDomainObjectAttackPatternsKillChainProps> = ({
   helpers,
   queryRef,
-  entityLink,
   queryPaginationOptions,
   stixDomainObjectId,
   filters,
@@ -129,7 +127,6 @@ const StixDomainObjectAttackPatternsKillChainContainer: FunctionComponent<StixDo
   return (
     <StixDomainObjectAttackPatternsKillChain
       data={data}
-      entityLink={entityLink}
       paginationOptions={queryPaginationOptions}
       stixDomainObjectId={stixDomainObjectId}
       handleChangeView={helpers.handleChangeView}

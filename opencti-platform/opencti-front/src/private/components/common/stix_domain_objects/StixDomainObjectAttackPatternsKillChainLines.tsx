@@ -19,7 +19,6 @@ import { StixDomainObjectAttackPatternsKillChainQuery$variables } from '@compone
 import { Theme } from '@mui/material/styles/createTheme';
 import { ListItemButton } from '@mui/material';
 import StixCoreRelationshipPopover from '../stix_core_relationships/StixCoreRelationshipPopover';
-import ItemYears from '../../../../components/ItemYears';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 import { useFormatter } from '../../../../components/i18n';
@@ -38,16 +37,14 @@ const useStyles = makeStyles<Theme>((theme) => ({
 
 interface StixDomainObjectAttackPatternsKillChainLinesProps {
   data: StixDomainObjectAttackPatternsKillChainContainer_data$data;
-  entityLink: string;
   paginationOptions: StixDomainObjectAttackPatternsKillChainQuery$variables;
   onDelete: () => void;
   searchTerm: string;
-  coursesOfAction: boolean;
+  coursesOfAction?: boolean;
 }
 
 const StixDomainObjectAttackPatternsKillChainLines: FunctionComponent<StixDomainObjectAttackPatternsKillChainLinesProps> = ({
   data,
-  entityLink,
   paginationOptions,
   onDelete,
   searchTerm,
@@ -110,14 +107,14 @@ const StixDomainObjectAttackPatternsKillChainLines: FunctionComponent<StixDomain
   )(groupedAttackPatterns) as { id: string, phase_name: string, x_opencti_order: number, attackPatterns: AttackPatternNode[] }[];
   const sortedAttackPatternsElement = finalAttackPatternsElement
     .sort((a, b) => (b.x_opencti_order ?? Number.POSITIVE_INFINITY) - (a.x_opencti_order ?? Number.POSITIVE_INFINITY));
+  console.log('sorted', sortedAttackPatternsElement);
   return (
     <div>
       <div className={classes.container} id="container">
         <List id="test">
           {sortedAttackPatternsElement.map((element) => (
             <div key={element.id}>
-              <ListItem
-                button={true}
+              <ListItemButton
                 divider={true}
                 onClick={() => handleToggleLine(element.id)}
               >
@@ -139,14 +136,14 @@ const StixDomainObjectAttackPatternsKillChainLines: FunctionComponent<StixDomain
                       )}
                   </IconButton>
                 </ListItemSecondaryAction>
-              </ListItem>
+              </ListItemButton>
               <Collapse
                 in={expandedLines[element.id] !== false}
               >
                 <List>
                   {(element.attackPatterns ?? []).map(
                     (attackPattern) => {
-                      const link = `${entityLink}/relations/${attackPattern.id}`;
+                      const link = `/dashboard/techniques/attack_patterns/${attackPattern.id}`;
                       return (
                         <div key={attackPattern.id}>
                           <ListItemButton
@@ -193,33 +190,29 @@ const StixDomainObjectAttackPatternsKillChainLines: FunctionComponent<StixDomain
                                 }
                               limit={1}
                             />
-                            {!coursesOfAction && (
-                              <ItemYears
-                                variant="inList"
-                                years={attackPattern.years}
-                              />
-                            )}
-                            <ListItemSecondaryAction>
-                              {coursesOfAction ? (
-                                <IconButton
-                                  onClick={() => handleToggleLine(attackPattern.id)}
-                                  aria-haspopup="true"
-                                  size="large"
-                                >
-                                  {expandedLines[attackPattern.id] === false ? (
-                                    <ExpandMore />
-                                  ) : (
-                                    <ExpandLess />
-                                  )}
-                                </IconButton>
-                              ) : (
-                                <StixCoreRelationshipPopover
-                                  stixCoreRelationshipId={attackPattern.id}
-                                  paginationOptions={paginationOptions}
-                                  onDelete={onDelete}
-                                />
-                              )}
-                            </ListItemSecondaryAction>
+                            <div className={classes.nested} >
+                              <ListItemSecondaryAction>
+                                {coursesOfAction ? (
+                                  <IconButton
+                                    onClick={() => handleToggleLine(attackPattern.id)}
+                                    aria-haspopup="true"
+                                    size="large"
+                                  >
+                                    {expandedLines[attackPattern.id] === false ? (
+                                      <ExpandMore />
+                                    ) : (
+                                      <ExpandLess />
+                                    )}
+                                  </IconButton>
+                                ) : (
+                                  <StixCoreRelationshipPopover
+                                    stixCoreRelationshipId={attackPattern.id}
+                                    paginationOptions={paginationOptions}
+                                    onDelete={onDelete}
+                                  />
+                                )}
+                              </ListItemSecondaryAction>
+                            </div>
                           </ListItemButton>
                           {coursesOfAction && (
                             <Collapse

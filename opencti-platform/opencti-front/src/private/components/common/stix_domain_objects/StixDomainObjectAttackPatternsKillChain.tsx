@@ -82,7 +82,6 @@ export const stixDomainObjectAttackPatternsKillChainQuery = graphql`
 interface StixDomainObjectAttackPatternsKillChainProps {
   data: StixDomainObjectAttackPatternsKillChainContainer_data$data;
   stixDomainObjectId: string;
-  entityLink: string;
   handleSearch: (value: string) => void;
   helpers: UseLocalStorageHelpers;
   filters?: FilterGroup;
@@ -101,7 +100,6 @@ interface StixDomainObjectAttackPatternsKillChainProps {
 const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjectAttackPatternsKillChainProps> = ({
   data,
   stixDomainObjectId,
-  entityLink,
   handleSearch,
   helpers,
   filters,
@@ -319,7 +317,6 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
         {currentView === 'list' && (
           <StixDomainObjectAttackPatternsKillChainLines
             data={data}
-            entityLink={entityLink}
             paginationOptions={paginationOptions}
             onDelete={refetch}
             searchTerm={searchTerm}
@@ -339,7 +336,6 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
         {currentView === 'courses-of-action' && (
           <StixDomainObjectAttackPatternsKillChainLines
             data={data}
-            entityLink={entityLink}
             paginationOptions={paginationOptions}
             onDelete={refetch}
             searchTerm={searchTerm}

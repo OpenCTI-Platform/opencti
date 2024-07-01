@@ -111,7 +111,6 @@ const IncidentKnowledge = ({
           element={ (
             <StixDomainObjectAttackPatterns
               stixDomainObjectId={incident.id}
-              entityLink={link}
               defaultStartTime={incident.first_seen}
               defaultStopTime={incident.last_seen}
               disableExport={undefined}

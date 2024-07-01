@@ -118,7 +118,6 @@ class ThreatActorGroupKnowledgeComponent extends Component {
             element={
               <StixDomainObjectAttackPatterns
                 stixDomainObjectId={threatActorGroup.id}
-                entityLink={link}
                 defaultStartTime={threatActorGroup.first_seen}
                 defaultStopTime={threatActorGroup.last_seen}
               />
