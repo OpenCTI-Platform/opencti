@@ -2695,7 +2695,7 @@ export const elHistogramCount = async (context, user, indexName, options = {}) =
   });
 };
 export const elAggregationCount = async (context, user, indexName, options = {}) => {
-  const { field, types = null } = options;
+  const { field, types = null, weightField = 'i_inference_weight', normalizeLabel = true } = options;
   const isIdFields = field.endsWith('internal_id') || field.endsWith('.id');
   const body = await elQueryBodyBuilder(context, user, { ...options, noSize: true, noSort: true });
   body.size = 0;
@@ -2708,7 +2708,7 @@ export const elAggregationCount = async (context, user, indexName, options = {})
       aggs: {
         weight: {
           sum: {
-            field: 'i_inference_weight',
+            field: weightField,
             missing: 1,
           },
         },
@@ -2727,10 +2727,10 @@ export const elAggregationCount = async (context, user, indexName, options = {})
         let label = b.key;
         if (typeof label === 'number') {
           label = String(b.key);
-        } else if (!isIdFields) {
+        } else if (!isIdFields && normalizeLabel) {
           label = pascalize(b.key);
         }
-        return { label, value: b.weight.value };
+        return { label, value: b.weight.value, count: b.doc_count };
       });
     })
     .catch((err) => {
