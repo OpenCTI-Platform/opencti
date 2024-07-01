@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import moment from 'moment';
 import { generateFileIndexId } from '../../../schema/identifier';
 import { ENTITY_TYPE_INTERNAL_FILE } from '../../../schema/internalObject';
-import { elCount, elDeleteInstances, elIndex } from '../../../database/engine';
+import { elAggregationCount, elCount, elDeleteInstances, elIndex } from '../../../database/engine';
 import { INDEX_INTERNAL_OBJECTS, isEmptyField, isNotEmptyField, READ_INDEX_INTERNAL_OBJECTS } from '../../../database/utils';
 import { type EntityOptions, type FilterGroupWithNested, internalLoadById, listAllEntities, listEntitiesPaginated, storeLoadById } from '../../../database/middleware-loader';
 import type { AuthContext, AuthUser } from '../../../types/user';
@@ -129,6 +129,20 @@ export const allRemainingFilesCount = async (context: AuthContext, user: AuthUse
   };
   const remainingOpts = { ...findOpts, types: [ENTITY_TYPE_INTERNAL_FILE] };
   return elCount(context, user, [READ_INDEX_INTERNAL_OBJECTS], remainingOpts);
+};
+
+export const allFilesMimeTypeDistribution = async (context: AuthContext, user: AuthUser, paths: string[], opts?: FilesOptions<BasicStoreEntityDocument>) => {
+  const findOpts: EntityOptions<BasicStoreEntityDocument> = {
+    filters: buildFileFilters(paths, opts),
+    noFiltersChecking: true // No associated model
+  };
+  return elAggregationCount(context, user, READ_INDEX_INTERNAL_OBJECTS, {
+    ...findOpts,
+    types: [ENTITY_TYPE_INTERNAL_FILE],
+    field: 'metaData.mimetype',
+    weightField: 'size',
+    normalizeLabel: false,
+  });
 };
 
 export const checkFileAccess = async (context: AuthContext, user: AuthUser, scope: string, { entity_id, filename, id }: { entity_id?: string, filename: string, id: string }) => {

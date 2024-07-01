@@ -5,7 +5,7 @@ import { internalLoadById } from '../database/middleware-loader';
 import { buildContextDataForFile, completeContextDataForEntity, publishUserAction } from '../listener/UserActionListener';
 import { stixCoreObjectImportDelete } from './stixCoreObject';
 import { extractEntityRepresentativeName } from '../database/entity-representative';
-import { allFilesForPaths, allRemainingFilesCount } from '../modules/internal/document/document-domain';
+import { allFilesMimeTypeDistribution, allRemainingFilesCount } from '../modules/internal/document/document-domain';
 import { getManagerConfigurationFromCache } from '../modules/managerConfiguration/managerConfiguration-domain';
 import { supportedMimeTypes } from '../modules/managerConfiguration/managerConfiguration-utils';
 import { SYSTEM_USER } from '../utils/access';
@@ -45,22 +45,22 @@ export const filesMetrics = async (context, user) => {
   const metrics = await getStats([READ_INDEX_FILES]);
   const indexedFilesCount = metrics.docs.count;
   const fileOptions = await buildOptionsFromFileManager(context);
-  const potentialIndexingFiles = await allFilesForPaths(context, user, fileOptions.paths, fileOptions.opts);
+  const filesMimeTypesDistribution = await allFilesMimeTypeDistribution(context, user, fileOptions.paths, fileOptions.opts);
   const remainingFilesCount = await allRemainingFilesCount(context, user, fileOptions.paths, fileOptions.opts);
   const metricsByMimeType = [];
   supportedMimeTypes.forEach((mimeType) => {
-    const mimeTypeFiles = potentialIndexingFiles.filter((file) => file.metaData.mimetype?.startsWith(mimeType));
-    if (mimeTypeFiles.length > 0) {
+    const mimeTypeDistribution = filesMimeTypesDistribution.filter((dist) => dist.label.startsWith(mimeType));
+    if (mimeTypeDistribution.length > 0) {
       metricsByMimeType.push({
         mimeType,
-        count: mimeTypeFiles.length,
-        size: R.sum(mimeTypeFiles.map((file) => file.size)),
+        count: R.sum(mimeTypeDistribution.map((dist) => dist.count)),
+        size: R.sum(mimeTypeDistribution.map((dist) => dist.value)),
       });
     }
   });
   return {
     globalCount: indexedFilesCount + remainingFilesCount,
-    globalSize: R.sum(potentialIndexingFiles.map((file) => file.size)),
+    globalSize: R.sum(filesMimeTypesDistribution.map((dist) => dist.value)),
     metricsByMimeType,
   };
 };
