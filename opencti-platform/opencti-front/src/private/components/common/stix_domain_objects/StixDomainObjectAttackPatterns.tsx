@@ -1,8 +1,5 @@
 import React, { FunctionComponent } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
-import {
-  StixDomainObjectAttackPatternsKillChainStixCoreRelationshipsQuery$variables,
-} from '@components/common/stix_domain_objects/__generated__/StixDomainObjectAttackPatternsKillChainStixCoreRelationshipsQuery.graphql';
 import StixDomainObjectAttackPatternsKillChainContainer from '@components/common/stix_domain_objects/StixDomainObjectAttackPatternsKillChainContainer';
 import {
   StixDomainObjectAttackPatternsKillChainQuery,
@@ -73,8 +70,8 @@ const StixDomainObjectAttackPatterns: FunctionComponent<StixDomainObjectAttackPa
   const queryPaginationOptions = {
     ...paginationOptions,
     filters: contextFilters,
-    search: searchTerm } as unknown as StixDomainObjectAttackPatternsKillChainStixCoreRelationshipsQuery$variables;
-  const availableFilterKeys = useAvailableFilterKeysForEntityTypes(['stix-core-relationship']);
+    search: searchTerm } as unknown as StixDomainObjectAttackPatternsKillChainQuery$variables;
+  const availableFilterKeys = useAvailableFilterKeysForEntityTypes(['Attack-Pattern']);
   const queryRef = useQueryLoading<StixDomainObjectAttackPatternsKillChainQuery>(
     stixDomainObjectAttackPatternsKillChainQuery,
     { first: 500, ...queryPaginationOptions },

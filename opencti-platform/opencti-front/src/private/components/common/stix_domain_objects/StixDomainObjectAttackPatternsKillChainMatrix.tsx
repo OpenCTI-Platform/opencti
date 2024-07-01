@@ -25,7 +25,7 @@ const StixDomainObjectAttackPatternsKillChainMatrix: FunctionComponent<StixDomai
     handleAdd,
   },
 ) => {
-  const attackPatterns = (data.attackPatterns.edges ?? []).map((n) => n.node);
+  const attackPatterns = (data.attackPatterns?.edges ?? []).map((n) => n.node);
   return (
     <AttackPatternsMatrix
       attackPatterns={attackPatterns}
