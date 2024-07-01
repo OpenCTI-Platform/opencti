@@ -1,6 +1,7 @@
 import { Page } from '@playwright/test';
 import FiltersPageModel from './filters.pageModel';
 import TextFieldPageModel from './field/TextField.pageModel';
+import SelectFieldPageModel from './field/SelectField.pageModel';
 
 type WidgetPerspective = 'Entities' | 'Knowledge graph' | 'Activity & history';
 
@@ -9,6 +10,7 @@ export default class DashboardWidgetsPageModel {
 
   filters = new FiltersPageModel(this.page);
   titleField = new TextFieldPageModel(this.page, 'Title', 'text');
+  dateAttribute = new SelectFieldPageModel(this.page, 'Relative time', false);
 
   constructor(private page: Page) {}
 
@@ -65,19 +67,11 @@ export default class DashboardWidgetsPageModel {
     return this.page.getByTestId('BiohazardIcon').first();
   }
 
-  // region Premade widgets
-
-  async createNumberOfMalwaresWidget() {
-    await this.openWidgetModal();
-    await this.selectWidget('Number');
-    await this.selectPerspective('Entities');
-    await this.fillLabel('Number of malwares');
-    await this.filters.addFilter('Entity type', 'Malware', false);
-    await this.filters.addFilter('Label', 'e2e');
-    await this.validateFilters();
-    await this.titleField.fill('Number of malwares');
-    return this.createWidget();
+  getWidgetNumberValue(name: string, value: string) {
+    return this.page.getByRole('heading', { name }).locator('..').getByText(value);
   }
+
+  // region Premade widgets
 
   async createListOfMalwaresWidget() {
     await this.openWidgetModal();
@@ -102,5 +96,18 @@ export default class DashboardWidgetsPageModel {
     await this.titleField.fill('Timeline of malwares');
     await this.createWidget();
   }
+
+  async createNumberOfEntities() {
+    await this.openWidgetModal();
+    await this.selectWidget('Number');
+    await this.selectPerspective('Entities');
+    await this.filters.addFilter('Entity type', 'Entity', false);
+    await this.filters.addFilter('Label', 'e2e');
+    await this.validateFilters();
+    await this.titleField.fill('Number of entities');
+    await this.dateAttribute.selectOption('created (Functional date)');
+    await this.createWidget();
+  }
+
   // endregion
 }

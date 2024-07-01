@@ -335,6 +335,7 @@ services:
       RABBITMQ__QUEUE_PREFIX: e2e-start
       EXPIRATION_SCHEDULER__ENABLED: false
       SUBSCRIPTION_SCHEDULER__ENABLED: false
+      PUBLISHER_MANAGER__ENABLED: false
     commands:
       - cp -a opencti-platform/* /tmp/e2e-start-platform/
       - apk add build-base git libffi-dev cargo

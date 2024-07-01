@@ -27,6 +27,6 @@ export default class DateFieldPageModel {
 
   async fill(input: string) {
     await this.inputLocator.click();
-    return this.page.keyboard.type(input);
+    return this.page.keyboard.type(input, { delay: 100 });
   }
 }

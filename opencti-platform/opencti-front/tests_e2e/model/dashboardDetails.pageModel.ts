@@ -5,7 +5,7 @@ import DateFieldPageModel from './field/DateField.pageModel';
 export default class DashboardDetailsPage {
   accessSelect = new SelectFieldPageModel(this.page, 'Relative time', false);
   startDateField = new DateFieldPageModel(this.page, 'Start date');
-
+  endDateField = new DateFieldPageModel(this.page, 'End date');
   constructor(private page: Page) {}
 
   getDashboardDetailsPage() {
