@@ -107,7 +107,6 @@ const StixDomainObjectAttackPatternsKillChainLines: FunctionComponent<StixDomain
   )(groupedAttackPatterns) as { id: string, phase_name: string, x_opencti_order: number, attackPatterns: AttackPatternNode[] }[];
   const sortedAttackPatternsElement = finalAttackPatternsElement
     .sort((a, b) => (b.x_opencti_order ?? Number.POSITIVE_INFINITY) - (a.x_opencti_order ?? Number.POSITIVE_INFINITY));
-  console.log('sorted', sortedAttackPatternsElement);
   return (
     <div>
       <div className={classes.container} id="container">
