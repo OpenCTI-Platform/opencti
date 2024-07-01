@@ -12,6 +12,7 @@ import type { PublicManifest } from './dashboard/PublicManifest';
 import usePublicDashboardWidgets from './dashboard/usePublicDashboardWidgets';
 import PublicTopBar from './PublicTopBar';
 import PublicDashboardHeader from './dashboard/PublicDashboardHeader';
+import useNormalizedUriKey from '../../utils/hooks/useNormalizedUriKey';
 
 const publicDashboardQuery = graphql`
   query PublicDashboardQuery($uri_key: String!) {
@@ -41,14 +42,10 @@ const PublicDashboardComponent = ({
   const { widgets, config } = parsedManifest;
 
   useEffect(() => {
-    if (publicDashboardByUriKey === null) {
+    if (publicDashboardByUriKey === null || !publicDashboardByUriKey?.enabled) {
       navigate('/');
     }
-    const enabled = publicDashboardByUriKey?.enabled;
-    if (!enabled) {
-      navigate('/');
-    }
-  }, [publicDashboardByUriKey]);
+  }, [publicDashboardByUriKey, navigate]);
 
   const {
     entityWidget,
@@ -116,16 +113,18 @@ const PublicDashboard = () => {
   const { uriKey } = useParams();
   if (!uriKey) return null;
 
+  const normalizedUriKey = useNormalizedUriKey(uriKey);
+
   const queryRef = useQueryLoading<PublicDashboardQuery>(
     publicDashboardQuery,
-    { uri_key: uriKey },
+    { uri_key: normalizedUriKey },
   );
 
   return queryRef ? (
     <React.Suspense fallback={<Loader variant={LoaderVariant.container} />}>
       <PublicDashboardComponent
         queryRef={queryRef}
-        uriKey={uriKey}
+        uriKey={normalizedUriKey}
       />
     </React.Suspense>
   ) : (
