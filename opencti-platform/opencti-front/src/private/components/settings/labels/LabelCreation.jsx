@@ -6,7 +6,6 @@ import Button from '@mui/material/Button';
 import { compose } from 'ramda';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
-import { ConnectionHandler } from 'relay-runtime';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
@@ -16,6 +15,7 @@ import SimpleTextField from '../../../../components/SimpleTextField';
 import ColorPickerField from '../../../../components/ColorPickerField';
 import { commitMutation } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
+import { insertNode } from '../../../../utils/store';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -85,16 +85,6 @@ const labelValidation = (t) => Yup.object().shape({
   color: Yup.string().required(t('This field is required')),
 });
 
-const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
-  const userProxy = store.get(userId);
-  const conn = ConnectionHandler.getConnection(
-    userProxy,
-    'Pagination_labels',
-    paginationOptions,
-  );
-  ConnectionHandler.insertEdgeBefore(conn, newEdge);
-};
-
 class LabelCreation extends Component {
   onSubmit(values, { setSubmitting, resetForm }) {
     if (this.props.dryrun && this.props.contextual) {
@@ -108,14 +98,11 @@ class LabelCreation extends Component {
       },
       updater: (store) => {
         if (!this.props.contextual) {
-          const payload = store.getRootField('labelAdd');
-          const newEdge = payload.setLinkedRecord(payload, 'node');
-          const container = store.getRoot();
-          sharedUpdater(
+          insertNode(
             store,
-            container.getDataID(),
+            'Pagination_labels',
             this.props.paginationOptions,
-            newEdge,
+            'labelAdd',
           );
         }
       },

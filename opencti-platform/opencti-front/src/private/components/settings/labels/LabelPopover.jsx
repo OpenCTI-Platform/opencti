@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { graphql } from 'react-relay';
-import { ConnectionHandler } from 'relay-runtime';
 import withStyles from '@mui/styles/withStyles';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
@@ -17,6 +16,7 @@ import inject18n from '../../../../components/i18n';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import LabelEdition from './LabelEdition';
 import Transition from '../../../../components/Transition';
+import { deleteNode } from '../../../../utils/store';
 
 const styles = () => ({
   container: {
@@ -84,17 +84,12 @@ class LabelPopover extends Component {
       variables: {
         id: this.props.labelId,
       },
-      updater: (store) => {
-        const container = store.getRoot();
-        const payload = store.getRootField('labelEdit');
-        const userProxy = store.get(container.getDataID());
-        const conn = ConnectionHandler.getConnection(
-          userProxy,
-          'Pagination_labels',
-          this.props.paginationOptions,
-        );
-        ConnectionHandler.deleteNode(conn, payload.getValue('delete'));
-      },
+      updater: (store) => deleteNode(
+        store,
+        'Pagination_labels',
+        this.props.paginationOptions,
+        this.props.labelId,
+      ),
       onCompleted: () => {
         this.setState({ deleting: false });
         this.handleCloseDelete();
