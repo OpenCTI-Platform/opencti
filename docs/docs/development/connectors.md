@@ -296,6 +296,19 @@ If you are still unsure about how to implement certain things in your connector,
 
 OpenCTI sends the connector a few instructions via the `data` dictionary in the callback function. Depending on the connector type, the data dictionary content is a bit different. Here are a few examples for each connector type.
 
+Internal Analysis Connector
+
+```json
+{
+   "entity_id": "<stixCoreObjectId>", // StixID of the object wanting to be analyzed
+   "entity_type": "<stixCoreObjectEntityType>",
+   "content_type": "FIELDS", // Analysis can be run on FIELDS or FILE
+   "content_source": "content_mapping", 
+   "content_fields": ["description","content"],
+   "analysis_name": "<analysisName>", // Analysis expected file name
+}
+```
+
 Internal Import Connector
 
 ```json
