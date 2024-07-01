@@ -416,7 +416,6 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineFragment = creat
                 }
                 ... on BasicRelationship {
                   id
-                  entity_type
                 }
                 ... on StixCyberObservable {
                   representative {
