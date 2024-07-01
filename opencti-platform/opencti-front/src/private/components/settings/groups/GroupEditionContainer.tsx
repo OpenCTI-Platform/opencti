@@ -22,6 +22,7 @@ import GroupEditionMarkings from './GroupEditionMarkings';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import useGranted, { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
+import SearchInput from '../../../../components/SearchInput';
 
 export const groupEditionContainerQuery = graphql`
   query GroupEditionContainerQuery($id: String!) {
@@ -78,7 +79,6 @@ const GroupEditionContainer: FunctionComponent<GroupEditionContainerProps> = ({
   const hasSetAccess = useGranted([SETTINGS_SETACCESSES]);
   const groupData = usePreloadedQuery<GroupEditionContainerQuery>(groupEditionContainerQuery, groupQueryRef);
   const roleQueryRef = useQueryLoading<GroupEditionRolesLinesSearchQuery>(groupEditionRolesLinesSearchQuery);
-  const userQueryRef = useQueryLoading<UsersLinesSearchQuery>(usersLinesSearchQuery);
 
   const group = useFragment<GroupEditionContainer_group$key>(
     GroupEditionContainerFragment,
@@ -89,7 +89,7 @@ const GroupEditionContainer: FunctionComponent<GroupEditionContainerProps> = ({
     return <ErrorNotFound />;
   }
 
-  const { paginationOptions: paginationOptionsForUserEdition } = usePaginationLocalStorage<GroupUsersLinesQuery$variables>(
+  const { viewStorage: { searchTerm }, paginationOptions: paginationOptionsForUserEdition, helpers } = usePaginationLocalStorage<GroupUsersLinesQuery$variables>(
     `group-${group.id}-users`,
     {
       id: group.id,
@@ -97,6 +97,7 @@ const GroupEditionContainer: FunctionComponent<GroupEditionContainerProps> = ({
     },
     true,
   );
+  const userQueryRef = useQueryLoading<UsersLinesSearchQuery>(usersLinesSearchQuery, { search: searchTerm });
 
   const { editContext } = group;
   return (
@@ -132,7 +133,17 @@ const GroupEditionContainer: FunctionComponent<GroupEditionContainerProps> = ({
           <React.Suspense
             fallback={<Loader variant={LoaderVariant.inElement} />}
           >
-            <GroupEditionUsers group={group} queryRef={userQueryRef} paginationOptionsForUpdater={paginationOptionsForUserEdition} />
+            <GroupEditionUsers group={group} queryRef={userQueryRef} paginationOptionsForUpdater={paginationOptionsForUserEdition}>
+              <SearchInput
+                variant="thin"
+                onSubmit={helpers.handleSearch}
+                keyword={searchTerm}
+                sx={{
+                  marginTop: 2,
+                  marginBottom: 1,
+                }}
+              />
+            </GroupEditionUsers>
           </React.Suspense>
         )}
         {hasSetAccess && currentTab === 4 && (

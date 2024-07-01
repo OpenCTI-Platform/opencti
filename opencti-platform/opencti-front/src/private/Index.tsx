@@ -1,8 +1,8 @@
-import React, { Suspense, lazy, useEffect } from 'react';
+import React, { lazy, Suspense, useEffect } from 'react';
 import { Route, Routes } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import CssBaseline from '@mui/material/CssBaseline';
-import { useTheme, makeStyles } from '@mui/styles';
+import { useTheme } from '@mui/styles';
 import { boundaryWrapper, NoMatch } from '@components/Error';
 import PlatformCriticalAlertDialog from '@components/settings/platform_alerts/PlatformCriticalAlertDialog';
 import TopBar from './components/nav/TopBar';
@@ -36,32 +36,29 @@ const RootWorkspaces = lazy(() => import('./components/workspaces/Root'));
 const RootSettings = lazy(() => import('./components/settings/Root'));
 const RootAudit = lazy(() => import('./components/settings/activity/audit/Root'));
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles((theme: Theme) => ({
-  toolbar: theme.mixins.toolbar,
-}));
-
 interface IndexProps {
   settings: RootSettings$data
 }
 
 const Index = ({ settings }: IndexProps) => {
   const theme = useTheme<Theme>();
-  const classes = useStyles();
   const {
     bannerSettings: { bannerHeight },
   } = useAuth();
+  const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
   const boxSx = {
     flexGrow: 1,
-    padding: 3,
+    paddingLeft: 3,
+    paddingRight: 3,
+    paddingBottom: 1,
     transition: theme.transitions.create('width', {
       easing: theme.transitions.easing.easeInOut,
       duration: theme.transitions.duration.enteringScreen,
     }),
-    overflowX: 'hidden',
+    overflowY: 'hidden',
+    minHeight: '100vh',
+    paddingTop: `calc( 16px + 64px + ${settingsMessagesBannerHeight ?? 0}px)`, // 24 for margin, 48 for top bar
   };
-  const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
   // Change the theme body attribute when the mode changes in
   // the palette because some components like CKEditor uses this
   // body attribute to display correct styles.
@@ -94,10 +91,6 @@ const Index = ({ settings }: IndexProps) => {
         <LeftBar />
         <Message />
         <Box component="main" sx={boxSx}>
-          <div
-            className={classes.toolbar}
-            style={{ marginTop: settingsMessagesBannerHeight }}
-          />
           <Suspense fallback={<Loader />}>
             <Routes>
               <Route path="/" Component={boundaryWrapper(Dashboard)}/>

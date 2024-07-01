@@ -29,7 +29,7 @@ Transition.displayName = 'TransitionSlide';
 
 const styles = (theme) => ({
   bottomNav: {
-    zIndex: 1040,
+    zIndex: 1,
     display: 'flex',
     height: 50,
     overflow: 'hidden',

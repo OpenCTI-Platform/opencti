@@ -2,6 +2,10 @@
   scrollbar-width: thin;
 }
 
+#root{
+  height: 100vh;
+}
+
 :focus {
   outline: 0;
 }

@@ -17,7 +17,7 @@ import { Filter, FilterGroup } from '../../../../utils/filters/filtersHelpers-ty
 // Do not use it for new code.
 const useStyles = makeStyles(() => ({
   bottomNav: {
-    zIndex: 1000,
+    zIndex: 1,
     display: 'flex',
     overflow: 'hidden',
   },

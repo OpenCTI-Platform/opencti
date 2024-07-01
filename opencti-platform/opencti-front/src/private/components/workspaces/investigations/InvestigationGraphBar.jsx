@@ -57,7 +57,7 @@ import StixSightingRelationshipEdition from '../../events/stix_sighting_relation
 
 const styles = () => ({
   bottomNav: {
-    zIndex: 1000,
+    zIndex: 1,
     display: 'flex',
     overflow: 'hidden',
   },
@@ -368,7 +368,9 @@ class InvestigationGraphBar extends Component {
             PaperProps={{
               variant: 'elevation',
               elevation: 1,
-              style: { bottom: bannerSettings.bannerHeightNumber },
+              style: {
+                bottom: bannerSettings.bannerHeightNumber,
+              },
             }}
           >
             <div

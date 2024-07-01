@@ -66,19 +66,18 @@ const useStyles = makeStyles<Theme>((theme) => ({
     marginRight: 4,
   },
   menuContainer: {
-    width: '50%',
-    float: 'left',
+    width: '30%',
   },
   barRight: {
     position: 'absolute',
     top: 0,
     right: 13,
     height: '100%',
+    display: 'flex',
+    alignItems: 'center',
   },
   barRightContainer: {
     float: 'left',
-    height: '100%',
-    paddingTop: 12,
   },
   subtitle: {
     color: theme.palette.text?.secondary,

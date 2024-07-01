@@ -39,7 +39,7 @@ import { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
 const useStyles = makeStyles<Theme>((theme) => ({
   bottomNav: {
     padding: 0,
-    zIndex: 1100,
+    zIndex: 1,
     display: 'flex',
     height: 50,
     overflow: 'hidden',

@@ -5776,6 +5776,7 @@ enum ThreatActorsOrdering {
   x_opencti_workflow_id
   confidence
   _score
+  threat_actor_types
 }
 type ThreatActorGroupConnection {
   pageInfo: PageInfo!

@@ -1,44 +1,63 @@
 import React from 'react';
 import Grid from '@mui/material/Grid';
+import ToggleButton from '@mui/material/ToggleButton';
+import Tooltip from '@mui/material/Tooltip';
+import { ViewListOutlined, ViewModuleOutlined } from '@mui/icons-material';
+import { ThreatActorIndividualCardFragment } from '@components/threats/threat_actors_individual/ThreatActorIndividualCard';
+import { ThreatActorsIndividualCards_data$data } from '@components/threats/threat_actors_individual/__generated__/ThreatActorsIndividualCards_data.graphql';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import ListCards from '../../../components/list_cards/ListCards';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import Security from '../../../utils/Security';
 import { GenericAttackCardDummy } from '../common/cards/GenericAttackCard';
-import ThreatActorsIndividualCards, { threatActorsIndividualCardsPaginationQuery } from './threat_actors_individual/ThreatActorsIndividualCards';
+import ThreatActorsIndividualCards, {
+  ThreatActorsIndividualCardsFragment,
+  threatActorsIndividualCardsPaginationQuery,
+} from './threat_actors_individual/ThreatActorsIndividualCards';
 import {
   ThreatActorsIndividualCardsPaginationQuery,
   ThreatActorsIndividualCardsPaginationQuery$variables,
 } from './threat_actors_individual/__generated__/ThreatActorsIndividualCardsPaginationQuery.graphql';
 import ThreatActorIndividualCreation from './threat_actors_individual/ThreatActorIndividualCreation';
-import { emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../utils/filters/filtersUtils';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import { useFormatter } from '../../../components/i18n';
+import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
+import DataTable from '../../../components/dataGrid/DataTable';
+import useHelper from '../../../utils/hooks/useHelper';
 
 const LOCAL_STORAGE_KEY_THREAT_ACTORS_INDIVIDUAL = 'threatActorsIndividuals';
 
 const ThreatActorsIndividual = () => {
   const { t_i18n } = useFormatter();
+  const initialValues = {
+    filters: emptyFilterGroup,
+    searchTerm: '',
+    sortBy: 'name',
+    orderAsc: true,
+    openExports: false,
+    view: 'cards',
+  };
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<ThreatActorsIndividualCardsPaginationQuery$variables>(
     LOCAL_STORAGE_KEY_THREAT_ACTORS_INDIVIDUAL,
-    {
-      numberOfElements: {
-        number: 0,
-        symbol: '',
-      },
-      filters: emptyFilterGroup,
-      searchTerm: '',
-      sortBy: 'name',
-      orderAsc: true,
-      openExports: false,
-      view: 'cards',
-    },
+    initialValues,
   );
+
+  const contextFilters = useBuildEntityTypeBasedFilterContext('Threat-Actor-Individual', viewStorage.filters);
+  const queryPaginationOptions = {
+    ...paginationOptions,
+    filters: contextFilters,
+  } as unknown as ThreatActorsIndividualCardsPaginationQuery$variables;
+
   const queryRef = useQueryLoading<ThreatActorsIndividualCardsPaginationQuery>(
     threatActorsIndividualCardsPaginationQuery,
-    paginationOptions,
+    queryPaginationOptions,
   );
+
+  const { isFeatureEnable } = useHelper();
+  const dataTableEnabled = isFeatureEnable('DATA_TABLES');
+
   const renderCards = () => {
     const {
       numberOfElements,
@@ -78,6 +97,7 @@ const ThreatActorsIndividual = () => {
         filters={filters}
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
+        handleChangeView={dataTableEnabled ? helpers.handleChangeView : undefined}
       >
         {queryRef && (
           <React.Suspense
@@ -107,12 +127,66 @@ const ThreatActorsIndividual = () => {
       </ListCards>
     );
   };
+
+  const renderList = () => {
+    const dataColumns = {
+      name: {
+        flexSize: 30,
+      },
+      threat_actor_types: {
+        label: 'Type',
+        flexSize: 15,
+      },
+      objectMarking: { flexSize: 13 },
+      objectLabel: {},
+      x_opencti_workflow_id: { flexSize: 12 },
+      modified: {},
+    };
+
+    const preloadedPaginationProps = {
+      linesQuery: threatActorsIndividualCardsPaginationQuery,
+      linesFragment: ThreatActorsIndividualCardsFragment,
+      queryRef,
+      nodePath: ['threatActorsIndividuals', 'pageInfo', 'globalCount'],
+      setNumberOfElements: helpers.handleSetNumberOfElements,
+    } as UsePreloadedPaginationFragment<ThreatActorsIndividualCardsPaginationQuery>;
+
+    return (
+      <>
+        {queryRef && (
+          <DataTable
+            dataColumns={dataColumns}
+            resolvePath={(data: ThreatActorsIndividualCards_data$data) => data.threatActorsIndividuals?.edges?.map((n) => n?.node)}
+            storageKey={LOCAL_STORAGE_KEY_THREAT_ACTORS_INDIVIDUAL}
+            initialValues={initialValues}
+            toolbarFilters={contextFilters}
+            preloadedPaginationProps={preloadedPaginationProps}
+            lineFragment={ThreatActorIndividualCardFragment}
+            exportContext={{ entity_type: 'Threat-Actor-Individual' }}
+            additionalHeaderButtons={[
+              (<ToggleButton key="cards" value="cards" aria-label="cards">
+                <Tooltip title={t_i18n('Cards view')}>
+                  <ViewModuleOutlined fontSize="small" color="primary" />
+                </Tooltip>
+              </ToggleButton>),
+              (<ToggleButton key="lines" value="lines" aria-label="lines">
+                <Tooltip title={t_i18n('Lines view')}>
+                  <ViewListOutlined color="primary" fontSize="small" />
+                </Tooltip>
+              </ToggleButton>),
+            ]}
+          />
+        )}
+      </>
+    );
+  };
+
   return (
     <>
       <Breadcrumbs variant="list" elements={[{ label: t_i18n('Threats') }, { label: t_i18n('Threat actors (individual)'), current: true }]} />
-      {renderCards()}
+      {viewStorage.view === 'lines' || !dataTableEnabled ? renderList() : renderCards()}
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
-        <ThreatActorIndividualCreation paginationOptions={paginationOptions} />
+        <ThreatActorIndividualCreation paginationOptions={queryPaginationOptions} />
       </Security>
     </>
   );

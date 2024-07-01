@@ -1,8 +1,8 @@
 import React, { Dispatch, ReactNode, useState } from 'react';
 
 export interface ExportContextType {
-  selectedIds: string[];
-  setSelectedIds: Dispatch<string[]>;
+  selectedIds: string[]
+  setSelectedIds?: Dispatch<string[]>
 }
 
 const defaultContext = {
