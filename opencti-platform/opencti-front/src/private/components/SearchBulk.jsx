@@ -153,6 +153,7 @@ const inlineStylesHeaders = {
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     paddingRight: 10,
+    cursor: 'default',
   },
   created_at: {
     float: 'left',
@@ -347,9 +348,9 @@ const SearchBulk = () => {
                           labels: resolvedStixCoreObject.objectLabel,
                           markings: resolvedStixCoreObject.objectMarking,
                           analyses: resolvedStixCoreObject.containersNumber.total,
-                          updated_at: resolvedStixCoreObject.updated_at,
+                          created_at: resolvedStixCoreObject.created_at,
                           author: R.pathOr(
-                            '',
+                            '-',
                             ['createdBy', 'name'],
                             resolvedStixCoreObject,
                           ),
