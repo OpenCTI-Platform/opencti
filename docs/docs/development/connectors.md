@@ -14,13 +14,14 @@ In the beginning first think about your use-case to choose an appropriate connec
 
 **Connector types**
 
-| Type                 | Typical use cases                                              | Example connector |
-| :------------------- |:---------------------------------------------------------------|:------------------|
-| EXTERNAL_IMPORT      | Integrate external TI provider, Integrate external TI platform | AlienVault        |
-| INTERNAL_ENRICHMENT  | Enhance existing data with additional knowledge                | AbuseIP           |
-| INTERNAL_IMPORT_FILE | (Bulk) import knowledge from files                             | Import document   |
-| INTERNAL_EXPORT_FILE | (Bulk) export knowledge to files                               | STIX 2.1, CSV.    |
-| STREAM               | Integrate external TI provider, Integrate external TI platform | Elastic Security  |
+| Type                 | Typical use cases                                                      | Example connector |
+|:---------------------|:-----------------------------------------------------------------------|:------------------|
+| EXTERNAL_IMPORT      | Integrate external TI provider, Integrate external TI platform         | AlienVault        |
+| INTERNAL_ANALYSIS    | Map unstructured data from files or entity fields to existing entities | Import document   |
+| INTERNAL_ENRICHMENT  | Enhance existing data with additional knowledge                        | AbuseIP           |
+| INTERNAL_IMPORT_FILE | (Bulk) import knowledge from files                                     | Import document   |
+| INTERNAL_EXPORT_FILE | (Bulk) export knowledge to files                                       | STIX 2.1, CSV.    |
+| STREAM               | Integrate external TI provider, Integrate external TI platform         | Elastic Security  |
 
 
 After you've selected your connector type make yourself familiar with STIX2 and the supported relationships in OpenCTI. Having some knowledge about the internal data models with help you a lot with the implementation of your idea.
@@ -101,6 +102,7 @@ Required changes:
 - [ ]  Change `Template_Scope` mentions to the required scope of your connector. For processing imported files, that can be the Mime type e.g. `application/pdf` or for enriching existing information in OpenCTI, define the STIX object's name e.g. `Report`. Multiple scopes can be separated by a simple `,`
 - [ ]  Change `Template_Type` to the connector type you wish to develop. The OpenCTI types are defined hereafter:
     - EXTERNAL_IMPORT
+    - INTERNAL_ANALYSIS
     - INTERNAL_ENRICHMENT
     - INTERNAL_EXPORT_FILE
     - INTERNAL_IMPORT_FILE 
@@ -139,6 +141,7 @@ Self-triggered Connectors
 
 OpenCTI triggered
 
+- internal-analysis
 - internal-enrichment
 - internal-import
 - internal-export

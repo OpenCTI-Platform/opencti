@@ -126,10 +126,25 @@ The `Content mapping view` and the `Suggested mapping view`  are available for a
 
 ![Content mapping view of a Case](assets/case-content-mapping.png)
 
-Through this view, you can map existing or new Objects directly from a readable content, allowing you to quickly append structured Knowledge in your Case before refining it with relationships and details.
-This view is a great place to see the continuum between unstructured and structured Knowledge.
+The `Content mapping view` displays the mappable content of your container on the left (Description and Content), and the objects contained in the container on the right.
+
+This view allows you to map readable content to existing or new Objects by selecting text on the left. Mapping an object will add it to your container, and the object will then be displayed on the right.
+You can clear all mappings that you added by clicking on the `Clear mappings` button. This action will only remove the mapping: the objects will still be contained in your container.
+
+This allows you to quickly append structured Knowledge in your Case before refining it with relationships and details, and makes it a great place to see the continuum between unstructured and structured Knowledge.
 
 #### Suggested mapping view
+
+![Suggested mapping view of a Report](assets/suggested-mapping.png)
+
+The `Suggested mapping view` displays the mappable content of your container on the left (Description and Content), and the suggested entity mapping on the right.
+
+This view allows you to get a suggestion list of existing Objects based on your mappable content by clicking on `Suggest new mapping`. 
+To be able to get a suggestion, you need to have at least one analysis connector of type `INTERNAL_ANALYSIS` configured. 
+Once the suggestion has been computed by the connector, it will be available on the right.
+You can the remove the suggestion that you are not interested in, and click on the `Validate` button to add the mapped objects to your container.
+
+This allows you to quickly fill your Container with the data that you need, without having to manually map every related Objects.
 
 <a id="analyses-section"></a>
 ### Analyses
