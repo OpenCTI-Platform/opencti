@@ -276,8 +276,7 @@ export const itemColor = (type, dark = false, reversed = false) => {
       if (dark) {
         return '#84ffff';
       }
-      // return stringToColour(type);
-      return '#03a9f4';
+      return stringToColour(type);
     case 'Stix-Core-Relationship':
     case 'Relationship':
     case 'stix-core-relationship':
