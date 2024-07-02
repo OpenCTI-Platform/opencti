@@ -50,6 +50,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
     margin: 0,
     paddingTop: '7px',
     paddingBottom: '4px',
+    textWrap: 'nowrap',
   },
 }));
 

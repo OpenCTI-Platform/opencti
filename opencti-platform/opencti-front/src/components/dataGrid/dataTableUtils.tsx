@@ -17,6 +17,8 @@ import ItemPatternType from '../ItemPatternType';
 import type { Theme } from '../Theme';
 import { getMainRepresentative } from '../../utils/defaultRepresentatives';
 import ItemEntityType from '../ItemEntityType';
+import ItemOpenVocab from '../ItemOpenVocab';
+import ItemBoolean from '../ItemBoolean';
 
 const MAGICAL_SIZE = 0.113;
 
@@ -117,7 +119,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     isSortable: true,
     render: ({ attribute_abstract, content }, { column: { size } }) => {
       const data = attribute_abstract || content;
-      return (<Tooltip title={data}><>{truncate(data, size * MAGICAL_SIZE)}</></Tooltip>);
+      return (<Tooltip title={data}><div>{truncate(data, size * MAGICAL_SIZE)}</div></Tooltip>);
     },
   },
   attribute_count: {
@@ -134,7 +136,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     isSortable: true,
     render: ({ channel_types }, { column: { size } }) => {
       const value = channel_types ? channel_types.join(', ') : '-';
-      return (<Tooltip title={value}><>{truncate(value, size * MAGICAL_SIZE)}</></Tooltip>);
+      return (<Tooltip title={value}><div>{truncate(value, size * MAGICAL_SIZE)}</div></Tooltip>);
     },
   },
   color: {
@@ -212,7 +214,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     flexSize: 12,
     render: ({ creators }, { column: { size } }) => {
       const value = isNotEmptyField(creators) ? creators.map((c: { name: string }) => c.name).join(', ') : '-';
-      return (<Tooltip title={value}><>{truncate(value, size * MAGICAL_SIZE)}</></Tooltip>);
+      return (<Tooltip title={value}><div>{truncate(value, size * MAGICAL_SIZE)}</div></Tooltip>);
     },
   },
   entity_type: {
@@ -229,7 +231,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     isSortable: true,
     render: ({ event_types }, { column: { size } }) => {
       const value = event_types ? event_types.join(', ') : '-';
-      return (<Tooltip title={value}><>{truncate(value, size * MAGICAL_SIZE)}</></Tooltip>);
+      return (<Tooltip title={value}><div>{truncate(value, size * MAGICAL_SIZE)}</div></Tooltip>);
     },
   },
   external_id: {
@@ -238,7 +240,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     flexSize: 10,
     isSortable: true,
     render: ({ external_id }, { column: { size } }) => (
-      <Tooltip title={external_id}><>{truncate(external_id, size * MAGICAL_SIZE)}</></Tooltip>
+      <Tooltip title={external_id}><div>{truncate(external_id, size * MAGICAL_SIZE)}</div></Tooltip>
     ),
   },
   first_observed: {
@@ -262,7 +264,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     isSortable: false,
     render: ({ from }, { column: { size }, t_i18n }) => {
       const value = from ? getMainRepresentative(from) : t_i18n('Restricted');
-      return (<Tooltip title={value}><>{truncate(value, size * MAGICAL_SIZE)}</></Tooltip>);
+      return (<Tooltip title={value}><div>{truncate(value, size * MAGICAL_SIZE)}</div></Tooltip>);
     },
   },
   incident_type: {
@@ -299,6 +301,18 @@ const defaultColumns: DataTableProps['dataColumns'] = {
       );
     },
   },
+  is_family: {
+    id: 'is_family',
+    label: 'Is family',
+    flexSize: 8,
+    isSortable: true,
+    render: ({ is_family }, { t_i18n }) => (
+      <ItemBoolean
+        status={is_family}
+        label={is_family ? t_i18n('Yes') : t_i18n('No')}
+      />
+    ),
+  },
   killChainPhase: {
     id: 'killChainPhase',
     label: 'Kill chain phase',
@@ -329,7 +343,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     isSortable: true,
     render: ({ malware_types }, { column: { size } }) => {
       const value = malware_types ? malware_types.join(', ') : '-';
-      return (<Tooltip title={value}><>{truncate(value, size * MAGICAL_SIZE)}</></Tooltip>);
+      return (<Tooltip title={value}><div>{truncate(value, size * MAGICAL_SIZE)}</div></Tooltip>);
     },
   },
   modified: {
@@ -346,7 +360,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     isSortable: true,
     render: (data, { column: { size } }) => (
       <Tooltip title={getMainRepresentative(data)}>
-        <>{truncate(getMainRepresentative(data), size * MAGICAL_SIZE)}</>
+        <div>{truncate(getMainRepresentative(data), size * MAGICAL_SIZE)}</div>
       </Tooltip>
     ),
   },
@@ -381,7 +395,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     isSortable: false,
     render: ({ objectAssignee }, { column: { size } }) => {
       const value = isNotEmptyField(objectAssignee) ? objectAssignee.map((c: { name: string }) => c.name).join(', ') : '-';
-      return (<Tooltip title={value}><>{truncate(value, size * MAGICAL_SIZE)}</></Tooltip>);
+      return (<Tooltip title={value}><div>{truncate(value, size * MAGICAL_SIZE)}</div></Tooltip>);
     },
   },
   objectLabel: {
@@ -417,7 +431,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     flexSize: 20,
     isSortable: false,
     render: ({ observable_value }, { column: { size } }) => (
-      <Tooltip title={observable_value}><>{truncate(observable_value, size * MAGICAL_SIZE)}</></Tooltip>
+      <Tooltip title={observable_value}><div>{truncate(observable_value, size * MAGICAL_SIZE)}</div></Tooltip>
     ),
   },
   operatingSystem: {
@@ -433,6 +447,18 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     flexSize: 10,
     isSortable: true,
     render: ({ pattern_type }) => (<ItemPatternType variant="inList" label={pattern_type} />),
+  },
+  primary_motivation: {
+    id: 'primary_motivation',
+    label: 'Primary motivation',
+    flexSize: 10,
+    isSortable: true,
+    render: ({ primary_motivation }) => (
+      <ItemOpenVocab
+        type="attack-motivation-ov"
+        value={primary_motivation}
+      />
+    ),
   },
   priority: {
     id: 'priority',
@@ -453,7 +479,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     flexSize: 15,
     isSortable: true,
     render: ({ product }, { column: { size } }) => (
-      <Tooltip title={product}><>{truncate(product, size * MAGICAL_SIZE)}</></Tooltip>
+      <Tooltip title={product}><div>{truncate(product, size * MAGICAL_SIZE)}</div></Tooltip>
     ),
   },
   published: {
@@ -511,14 +537,36 @@ const defaultColumns: DataTableProps['dataColumns'] = {
       );
     },
   },
+  resource_level: {
+    id: 'resource_level',
+    label: 'Resource level',
+    flexSize: 10,
+    isSortable: true,
+    render: (threatActorGroup) => (
+      <ItemOpenVocab
+        type="attack-resource-level-ov"
+        value={threatActorGroup.resource_level}
+      />
+    ),
+  },
   result_name: {
     id: 'result_name',
     label: 'Result name',
     flexSize: 15,
     isSortable: true,
     render: ({ result_name }, { column: { size } }) => (
-      <Tooltip title={result_name}><>{truncate(result_name, size * MAGICAL_SIZE)}</></Tooltip>
+      <Tooltip title={result_name}><div>{truncate(result_name, size * MAGICAL_SIZE)}</div></Tooltip>
     ),
+  },
+  secondary_motivations: {
+    id: 'secondary_motivations',
+    label: 'Secondary motivations',
+    flexSize: 10,
+    isSortable: true,
+    render: ({ secondary_motivations }, { column: { size } }) => {
+      const value = secondary_motivations ? secondary_motivations.join(', ') : '-';
+      return (<Tooltip title={value}><div>{truncate(value, size * MAGICAL_SIZE)}</div></Tooltip>);
+    },
   },
   severity: {
     id: 'severity',
@@ -533,13 +581,25 @@ const defaultColumns: DataTableProps['dataColumns'] = {
       />
     ),
   },
+  sophistication: {
+    id: 'sophistication',
+    label: 'Sophistication',
+    flexSize: 10,
+    isSortable: true,
+    render: (threatActorGroup) => (
+      <ItemOpenVocab
+        type="threat-actor-group-sophistication-ov"
+        value={threatActorGroup.sophistication}
+      />
+    ),
+  },
   source_name: {
     id: 'source_name',
     label: 'Source name',
     flexSize: 15,
     isSortable: true,
     render: ({ source_name }, { column: { size } }) => (
-      <Tooltip title={source_name}><>{truncate(source_name, size * MAGICAL_SIZE)}</></Tooltip>
+      <Tooltip title={source_name}><div>{truncate(source_name, size * MAGICAL_SIZE)}</div></Tooltip>
     ),
   },
   start_time: {
@@ -570,7 +630,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     isSortable: true,
     render: ({ threat_actor_types }, { column: { size } }) => {
       const value = threat_actor_types ? threat_actor_types.join(', ') : '-';
-      return (<Tooltip title={value}><>{truncate(value, size * MAGICAL_SIZE)}</></Tooltip>);
+      return (<Tooltip title={value}><div>{truncate(value, size * MAGICAL_SIZE)}</div></Tooltip>);
     },
   },
   toName: {
@@ -580,7 +640,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     isSortable: false,
     render: ({ to }, { column: { size }, t_i18n }) => {
       const value = to ? getMainRepresentative(to) : t_i18n('Restricted');
-      return (<Tooltip title={value}><>{truncate(value, size * MAGICAL_SIZE)}</></Tooltip>);
+      return (<Tooltip title={value}><div>{truncate(value, size * MAGICAL_SIZE)}</div></Tooltip>);
     },
   },
   url: {
@@ -588,7 +648,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'URL',
     flexSize: 45,
     isSortable: true,
-    render: ({ url }, { column: { size } }) => (<Tooltip title={url}><>{truncate(url, size * MAGICAL_SIZE)}</></Tooltip>),
+    render: ({ url }, { column: { size } }) => (<Tooltip title={url}><div>{truncate(url, size * MAGICAL_SIZE)}</div></Tooltip>),
   },
   user_email: {
     id: 'user_email',
@@ -596,7 +656,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     flexSize: 50,
     isSortable: false,
     render: ({ user_email }, { column: { size } }) => (
-      <Tooltip title={user_email}><>{truncate(user_email, size * MAGICAL_SIZE)}</></Tooltip>
+      <Tooltip title={user_email}><div>{truncate(user_email, size * MAGICAL_SIZE)}</div></Tooltip>
     ),
   },
   value: {
@@ -606,7 +666,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     isSortable: false,
     render: (node, { column: { size } }) => {
       const value = getMainRepresentative(node);
-      return (<Tooltip title={value}><>{truncate(value, size * MAGICAL_SIZE)}</></Tooltip>);
+      return (<Tooltip title={value}><div>{truncate(value, size * MAGICAL_SIZE)}</div></Tooltip>);
     },
   },
   x_mitre_id: {
