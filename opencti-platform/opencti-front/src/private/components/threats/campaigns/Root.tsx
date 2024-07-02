@@ -11,6 +11,8 @@ import Tab from '@mui/material/Tab';
 import useQueryLoading from 'src/utils/hooks/useQueryLoading';
 import useForceUpdate from '@components/common/bulk/useForceUpdate';
 import BulkRelationDialogContainer from '@components/common/bulk/dialog/BulkRelationDialogContainer';
+import { GraphQLSubscriptionConfig } from 'relay-runtime';
+import { RootCampaignSubscription } from '@components/threats/campaigns/__generated__/RootCampaignSubscription.graphql';
 import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreObjectContentRoot';
 import StixCoreObjectSimulationResult from '../../common/stix_core_objects/StixCoreObjectSimulationResult';
 import Campaign from './Campaign';
@@ -79,7 +81,7 @@ type RootCampaignProps = {
 };
 
 const RootCampaign = ({ campaignId, queryRef }: RootCampaignProps) => {
-  const subConfig = useMemo(() => ({
+  const subConfig = useMemo<GraphQLSubscriptionConfig<RootCampaignSubscription>>(() => ({
     subscription,
     variables: { id: campaignId },
   }), [campaignId]);
@@ -102,164 +104,168 @@ const RootCampaign = ({ campaignId, queryRef }: RootCampaignProps) => {
   const isKnowledge = location.pathname.startsWith(`/dashboard/threats/campaigns/${campaignId}/knowledge`);
   const paddingRight = getPaddingRight(location.pathname, campaignId, '/dashboard/threats/campaigns');
 
-  return campaign ? (
+  return (
     <>
-      <Routes>
-        <Route
-          path="/knowledge/*"
-          element={
-            <StixCoreObjectKnowledgeBar
-              stixCoreObjectLink={link}
-              availableSections={[
-                'attribution',
-                'victimology',
-                'incidents',
-                'malwares',
-                'tools',
-                'channels',
-                'narratives',
-                'attack_patterns',
-                'vulnerabilities',
-                'indicators',
-                'observables',
-                'infrastructures',
-                'sightings',
-              ]}
-              stixCoreObjectsDistribution={campaign.stixCoreObjectsDistribution}
-              attribution={['Intrusion-Set', 'Threat-Actor-Individual', 'Threat-Actor-Group']}
+      {campaign ? (
+        <>
+          <Routes>
+            <Route
+              path="/knowledge/*"
+              element={
+                <StixCoreObjectKnowledgeBar
+                  stixCoreObjectLink={link}
+                  availableSections={[
+                    'attribution',
+                    'victimology',
+                    'incidents',
+                    'malwares',
+                    'tools',
+                    'channels',
+                    'narratives',
+                    'attack_patterns',
+                    'vulnerabilities',
+                    'indicators',
+                    'observables',
+                    'infrastructures',
+                    'sightings',
+                  ]}
+                  stixCoreObjectsDistribution={campaign.stixCoreObjectsDistribution}
+                  attribution={['Intrusion-Set', 'Threat-Actor-Individual', 'Threat-Actor-Group']}
+                />
+              }
             />
-          }
-        />
-      </Routes>
-      <div style={{ paddingRight }}>
-        <Breadcrumbs variant="object" elements={[
-          { label: t_i18n('Threats') },
-          { label: t_i18n('Campaigns'), link: '/dashboard/threats/campaigns' },
-          { label: campaign.name, current: true },
-        ]}
-        />
-        <StixDomainObjectHeader
-          entityType="Campaign"
-          stixDomainObject={campaign}
-          PopoverComponent={<CampaignPopover />}
-          enableQuickSubscription={true}
-        />
-        <Box
-          sx={{
-            borderBottom: 1,
-            borderColor: 'divider',
-            marginBottom: 4,
-          }}
-        >
-          <Tabs
-            value={getCurrentTab(location.pathname, campaign.id, '/dashboard/threats/campaigns')}
-          >
-            <Tab
-              component={Link}
-              to={`/dashboard/threats/campaigns/${campaign.id}`}
-              value={`/dashboard/threats/campaigns/${campaign.id}`}
-              label={t_i18n('Overview')}
+          </Routes>
+          <div style={{ paddingRight }}>
+            <Breadcrumbs variant="object" elements={[
+              { label: t_i18n('Threats') },
+              { label: t_i18n('Campaigns'), link: '/dashboard/threats/campaigns' },
+              { label: campaign.name, current: true },
+            ]}
             />
-            <Tab
-              component={Link}
-              to={`/dashboard/threats/campaigns/${campaign.id}/knowledge/overview`}
-              value={`/dashboard/threats/campaigns/${campaign.id}/knowledge`}
-              label={t_i18n('Knowledge')}
+            <StixDomainObjectHeader
+              entityType="Campaign"
+              stixDomainObject={campaign}
+              PopoverComponent={<CampaignPopover />}
+              enableQuickSubscription={true}
             />
-            <Tab
-              component={Link}
-              to={`/dashboard/threats/campaigns/${campaign.id}/content`}
-              value={`/dashboard/threats/campaigns/${campaign.id}/content`}
-              label={t_i18n('Content')}
-            />
-            <Tab
-              component={Link}
-              to={`/dashboard/threats/campaigns/${campaign.id}/analyses`}
-              value={`/dashboard/threats/campaigns/${campaign.id}/analyses`}
-              label={t_i18n('Analyses')}
-            />
-            <Tab
-              component={Link}
-              to={`/dashboard/threats/campaigns/${campaign.id}/files`}
-              value={`/dashboard/threats/campaigns/${campaign.id}/files`}
-              label={t_i18n('Data')}
-            />
-            <Tab
-              component={Link}
-              to={`/dashboard/threats/campaigns/${campaign.id}/history`}
-              value={`/dashboard/threats/campaigns/${campaign.id}/history`}
-              label={t_i18n('History')}
-            />
-          </Tabs>
-          {isKnowledge && (
-            <BulkRelationDialogContainer
-              stixDomainObjectId={campaignId}
-              stixDomainObjectName={campaign.name}
-              stixDomainObjectType="Campaign"
-              handleRefetch={handleForceUpdate}
-            />
-          )}
-          {isOverview && (
-            <StixCoreObjectSimulationResult id={campaign.id} type="threat" />
-          )}
-        </Box>
-        <Routes>
-          <Route
-            path="/"
-            element={
-              <Campaign campaign={campaign} />
-            }
-          />
-          <Route
-            path="/knowledge"
-            element={
-              <Navigate to={`/dashboard/threats/campaigns/${campaignId}/knowledge/overview`} replace={true} />
-            }
-          />
-          <Route
-            path="/knowledge/*"
-            element={
-              <div key={forceUpdate}>
-                <CampaignKnowledge campaign={campaign} />
-              </div>
-            }
-          />
-          <Route
-            path="/content/*"
-            element={
-              <StixCoreObjectContentRoot
-                stixCoreObject={campaign}
+            <Box
+              sx={{
+                borderBottom: 1,
+                borderColor: 'divider',
+                marginBottom: 4,
+              }}
+            >
+              <Tabs
+                value={getCurrentTab(location.pathname, campaign.id, '/dashboard/threats/campaigns')}
+              >
+                <Tab
+                  component={Link}
+                  to={`/dashboard/threats/campaigns/${campaign.id}`}
+                  value={`/dashboard/threats/campaigns/${campaign.id}`}
+                  label={t_i18n('Overview')}
+                />
+                <Tab
+                  component={Link}
+                  to={`/dashboard/threats/campaigns/${campaign.id}/knowledge/overview`}
+                  value={`/dashboard/threats/campaigns/${campaign.id}/knowledge`}
+                  label={t_i18n('Knowledge')}
+                />
+                <Tab
+                  component={Link}
+                  to={`/dashboard/threats/campaigns/${campaign.id}/content`}
+                  value={`/dashboard/threats/campaigns/${campaign.id}/content`}
+                  label={t_i18n('Content')}
+                />
+                <Tab
+                  component={Link}
+                  to={`/dashboard/threats/campaigns/${campaign.id}/analyses`}
+                  value={`/dashboard/threats/campaigns/${campaign.id}/analyses`}
+                  label={t_i18n('Analyses')}
+                />
+                <Tab
+                  component={Link}
+                  to={`/dashboard/threats/campaigns/${campaign.id}/files`}
+                  value={`/dashboard/threats/campaigns/${campaign.id}/files`}
+                  label={t_i18n('Data')}
+                />
+                <Tab
+                  component={Link}
+                  to={`/dashboard/threats/campaigns/${campaign.id}/history`}
+                  value={`/dashboard/threats/campaigns/${campaign.id}/history`}
+                  label={t_i18n('History')}
+                />
+              </Tabs>
+              {isKnowledge && (
+                <BulkRelationDialogContainer
+                  stixDomainObjectId={campaignId}
+                  stixDomainObjectName={campaign.name}
+                  stixDomainObjectType="Campaign"
+                  handleRefetch={handleForceUpdate}
+                />
+              )}
+              {isOverview && (
+                <StixCoreObjectSimulationResult id={campaign.id} type="threat" />
+              )}
+            </Box>
+            <Routes>
+              <Route
+                path="/"
+                element={
+                  <Campaign campaign={campaign} />
+                }
               />
-            }
-          />
-          <Route
-            path="/analyses"
-            element={
-              <StixCoreObjectOrStixCoreRelationshipContainers stixDomainObjectOrStixCoreRelationship={campaign} />
-            }
-          />
-          <Route
-            path="/files"
-            element={
-              <FileManager
-                id={campaignId}
-                connectorsImport={connectorsForImport}
-                connectorsExport={connectorsForExport}
-                entity={campaign}
+              <Route
+                path="/knowledge"
+                element={
+                  <Navigate to={`/dashboard/threats/campaigns/${campaignId}/knowledge/overview`} replace={true} />
+                }
               />
-            }
-          />
-          <Route
-            path="/history"
-            element={
-              <StixCoreObjectHistory stixCoreObjectId={campaignId} />
-            }
-          />
-        </Routes>
-      </div>
+              <Route
+                path="/knowledge/*"
+                element={
+                  <div key={forceUpdate}>
+                    <CampaignKnowledge campaign={campaign} />
+                  </div>
+                }
+              />
+              <Route
+                path="/content/*"
+                element={
+                  <StixCoreObjectContentRoot
+                    stixCoreObject={campaign}
+                  />
+                }
+              />
+              <Route
+                path="/analyses"
+                element={
+                  <StixCoreObjectOrStixCoreRelationshipContainers stixDomainObjectOrStixCoreRelationship={campaign} />
+                }
+              />
+              <Route
+                path="/files"
+                element={
+                  <FileManager
+                    id={campaignId}
+                    connectorsImport={connectorsForImport}
+                    connectorsExport={connectorsForExport}
+                    entity={campaign}
+                  />
+                }
+              />
+              <Route
+                path="/history"
+                element={
+                  <StixCoreObjectHistory stixCoreObjectId={campaignId} />
+                }
+              />
+            </Routes>
+          </div>
+        </>
+      ) : (
+        <ErrorNotFound />
+      )}
     </>
-  ) : (
-    <ErrorNotFound />
   );
 };
 
