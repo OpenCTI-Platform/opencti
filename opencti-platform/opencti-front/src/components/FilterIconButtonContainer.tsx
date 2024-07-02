@@ -122,9 +122,10 @@ interface FilterIconButtonContainerProps {
   availableRelationFilterTypes?: Record<string, string[]>;
   entityTypes?: string[];
   filtersRestrictions?: FiltersRestrictions;
-  searchContext?: FilterSearchContext
-  availableEntityTypes?: string[]
-  availableRelationshipTypes?: string[]
+  searchContext?: FilterSearchContext;
+  availableEntityTypes?: string[];
+  availableRelationshipTypes?: string[];
+  noMultiSelect?: boolean;
 }
 
 const FilterIconButtonContainer: FunctionComponent<
@@ -148,6 +149,7 @@ FilterIconButtonContainerProps
   searchContext,
   availableEntityTypes,
   availableRelationshipTypes,
+  noMultiSelect,
 }) => {
   const { t_i18n } = useFormatter();
   const classes = useStyles();
@@ -390,6 +392,7 @@ FilterIconButtonContainerProps
             searchContext={searchContext}
             availableEntityTypes={availableEntityTypes}
             availableRelationshipTypes={availableRelationshipTypes}
+            noMultiSelect={noMultiSelect}
           />
         </Box>
       )}

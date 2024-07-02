@@ -1,10 +1,11 @@
 import React, { FunctionComponent, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { graphql } from 'react-relay';
 import { CloudUploadOutlined } from '@mui/icons-material';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import CircularProgress from '@mui/material/CircularProgress';
-import { File } from 'mdi-material-ui';
+import { resolveLink } from 'src/utils/Entity';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import { FileUploaderEntityMutation$data } from './__generated__/FileUploaderEntityMutation.graphql';
@@ -61,16 +62,17 @@ const FileUploader: FunctionComponent<FileUploaderProps> = ({
   const [upload, setUpload] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File>();
   const handleOpenUpload = () => uploadRef.current?.click();
+  const navigate = useNavigate();
 
   const closeFileImportMarkingSelectionPopup = () => setSelectedFile(undefined);
 
-  const handleUpload = (fileMarkings: string[]) => {
+  const handleUpload = (fileMarkings: string[], associatedEntityId: string | undefined) => {
     if (!selectedFile) return;
     commitMutation({
-      mutation: entityId
+      mutation: associatedEntityId
         ? fileUploaderEntityMutation
         : fileUploaderGlobalMutation,
-      variables: { file: selectedFile, fileMarkings, id: entityId },
+      variables: { file: selectedFile, fileMarkings, id: associatedEntityId },
       optimisticUpdater: () => {
         setUpload(selectedFile.name);
       },
@@ -84,7 +86,7 @@ const FileUploader: FunctionComponent<FileUploaderProps> = ({
         }
         setUpload(null);
         MESSAGING$.notifySuccess(t_i18n('File successfully uploaded'));
-        const fileId = entityId
+        const fileId = associatedEntityId
           ? (result as FileUploaderEntityMutation$data).stixCoreObjectEdit
             ?.importPush?.id
           : (result as FileUploaderGlobalMutation$data).uploadImport?.id;
@@ -92,6 +94,14 @@ const FileUploader: FunctionComponent<FileUploaderProps> = ({
           onUploadSuccess(fileId);
         } else {
           onUploadSuccess();
+        }
+        if ((entityId === undefined) && (associatedEntityId !== undefined)) { // if adding upload context, redirect to that entity
+          const entityType = fileId?.split('/')[1];
+          if (entityType) {
+            navigate(`${resolveLink(entityType)}/${associatedEntityId}/files`);
+          } else {
+            navigate(`/dashboard/id/${associatedEntityId}`);
+          }
         }
       },
       updater: undefined,
@@ -132,6 +142,7 @@ const FileUploader: FunctionComponent<FileUploaderProps> = ({
           isOpen={hasSelectedFile}
           handleUpload={handleUpload}
           closePopup={closeFileImportMarkingSelectionPopup}
+          entityId={entityId}
         />
       )}
       {upload ? (
