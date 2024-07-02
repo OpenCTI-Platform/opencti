@@ -5,9 +5,11 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContentText from '@mui/material/DialogContentText';
+import { useNavigate } from 'react-router-dom';
 import { useFormatter } from '../../components/i18n';
 import { formatSeconds, ONE_SECOND, secondsBetweenDates } from '../../utils/Time';
 import useAuth from '../../utils/hooks/useAuth';
+import { APP_BASE_PATH } from '../../relay/environment';
 
 /**
  * Gets timeout and banner settings from react relay and return those values.
@@ -80,6 +82,8 @@ const TimeoutLock: React.FunctionComponent = () => {
   const [resetCounter, triggerReset] = useState(false);
   const interval = useRef<NodeJS.Timeout | null>(null);
 
+  const navigate = useNavigate();
+
   /**
    * Decrements the idle timeout counter by one until it is zero.
    */
@@ -124,7 +128,7 @@ const TimeoutLock: React.FunctionComponent = () => {
    * Referrer is kept so user will be redirected there on next login.
    */
   const handleLogout = () => {
-    window.location.pathname = '/logout';
+    navigate(`${APP_BASE_PATH}/logout`);
   };
 
   /**
@@ -237,7 +241,7 @@ const TimeoutLock: React.FunctionComponent = () => {
       <DialogContent>
         <DialogContentText sx={{ textAlign: 'center' }}>
           {t_i18n('You will be automatically logged out at end of the timer.')}
-          <br/>
+          <br />
           {t_i18n('Select')} <code>{t_i18n('CONTINUE')}</code>{' '}
           {t_i18n('to keep working or select')} <code>{t_i18n('LOGOUT')}</code>{' '}
           {t_i18n('to terminate your session.')}
