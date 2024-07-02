@@ -65,9 +65,11 @@ interface ContainerStixCoreObjectsSuggestedMappingProps {
   handleAskNewSuggestedMapping: () => void;
   askingSuggestion: boolean;
   handleValidateSuggestedMapping: (mappingToAdd: { matchedString: string, matchedEntityId: string }[]) => void;
+  removedEntities: string[];
+  handleRemoveSuggestedMappingLine: (entityId: string) => void;
 }
 
-type MappedEntityType = NonNullable<NonNullable<ContainerStixCoreObjectsSuggestedMappingQuery$data['stixCoreObjectAnalysis']>['mappedEntities']>[number];
+export type MappedEntityType = NonNullable<NonNullable<ContainerStixCoreObjectsSuggestedMappingQuery$data['stixCoreObjectAnalysis']>['mappedEntities']>[number];
 
 const ContainerStixCoreObjectsSuggestedMapping: FunctionComponent<
 ContainerStixCoreObjectsSuggestedMappingProps
@@ -79,8 +81,9 @@ ContainerStixCoreObjectsSuggestedMappingProps
   handleAskNewSuggestedMapping,
   askingSuggestion,
   handleValidateSuggestedMapping,
+  removedEntities,
+  handleRemoveSuggestedMappingLine,
 }) => {
-  const [removedEntities, setRemovedEntities] = useState<string[]>([]);
   const [onlyNotContainedEntities, setOnlyNotContainedEntities] = useState(true);
   const [openValidate, setOpenValidate] = useState(false);
   const [validating, setValidating] = useState(false);
@@ -177,10 +180,6 @@ ContainerStixCoreObjectsSuggestedMappingProps
     symbol: '',
     original: filteredMappedEntities.length,
   });
-
-  const handleRemoveSuggestedMappingLine = (matchedId: string) => {
-    setRemovedEntities([...removedEntities, matchedId]);
-  };
 
   const handleAskValidateSuggestedMapping = () => {
     setOpenValidate(true);

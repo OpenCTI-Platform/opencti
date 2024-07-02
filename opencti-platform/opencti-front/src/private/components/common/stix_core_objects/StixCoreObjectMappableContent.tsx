@@ -238,7 +238,7 @@ const StixCoreObjectMappableContent: FunctionComponent<StixCoreObjectMappableCon
                 />
               }
             />
-            {enableReferences && (
+            {editionMode && enableReferences && (
             <CommitMessage
               submitForm={submitForm}
               disabled={isSubmitting || !isValid || !dirty}

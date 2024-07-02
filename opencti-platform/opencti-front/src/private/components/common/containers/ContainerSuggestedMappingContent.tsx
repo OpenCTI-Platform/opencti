@@ -87,6 +87,7 @@ ContainerSuggestedMappingContentComponentProps
     : false;
 
   const [askingSuggestion, setAskingSuggestion] = useState(workInProgress);
+  const [removedEntities, setRemovedEntities] = useState<string[]>([]);
   const analysisStatus = useRef('');
 
   const [commitFieldPatch] = useApiMutation<ContainerContentFieldPatchMutation>(contentMutationFieldPatch);
@@ -130,7 +131,13 @@ ContainerSuggestedMappingContentComponentProps
     return contentMapping;
   };
 
-  const suggestedMappedStrings = data.stixCoreObjectAnalysis?.mappedEntities?.map((e) => e?.matchedString);
+  const handleRemoveSuggestedMappingLine = (matchedId: string) => {
+    setRemovedEntities([...removedEntities, matchedId]);
+  };
+
+  const suggestedMappedStrings = data.stixCoreObjectAnalysis?.mappedEntities
+    ?.filter((e) => !removedEntities.find((r) => r === e.matchedEntity?.id))
+    .map((e) => e?.matchedString);
   const suggestedMappingCount = countMappingMatch(suggestedMappedStrings ?? []);
 
   const handleAskNewSuggestedMapping = () => {
@@ -234,6 +241,8 @@ ContainerSuggestedMappingContentComponentProps
             handleAskNewSuggestedMapping={handleAskNewSuggestedMapping}
             handleValidateSuggestedMapping={validateSuggestedMapping}
             askingSuggestion={askingSuggestion}
+            removedEntities={removedEntities}
+            handleRemoveSuggestedMappingLine={handleRemoveSuggestedMappingLine}
           />
         </Paper>
       </Grid>
