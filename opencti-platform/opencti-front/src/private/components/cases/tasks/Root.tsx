@@ -23,7 +23,7 @@ import { RootTaskSubscription } from './__generated__/RootTaskSubscription.graph
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
-import useGranted, { BYPASSREFERENCE } from '../../../../utils/hooks/useGranted';
+import useGranted, { KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE } from '../../../../utils/hooks/useGranted';
 import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 
 const subscription = graphql`
@@ -72,7 +72,7 @@ const RootTaskComponent = ({ queryRef, taskId }) => {
     [taskId],
   );
   const location = useLocation();
-  const enableReferences = useIsEnforceReference('Task') && !useGranted([BYPASSREFERENCE]);
+  const enableReferences = useIsEnforceReference('Task') && !useGranted([KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE]);
   const { t_i18n } = useFormatter();
   useSubscription(subConfig);
   const {
