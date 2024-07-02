@@ -27,9 +27,9 @@ import {
   StixDomainObjectThreatKnowledgeQueryStixRelationshipsQuery$data,
   StixDomainObjectThreatKnowledgeQueryStixRelationshipsQuery$variables,
 } from '@components/common/stix_domain_objects/__generated__/StixDomainObjectThreatKnowledgeQueryStixRelationshipsQuery.graphql';
+import StixDomainObjectDiamond from '@components/common/stix_domain_objects/StixDomainObjectDiamond';
 import { stixDomainObjectThreatDiamondQuery } from '@components/common/stix_domain_objects/StixDomainObjectThreatDiamondQuery';
 import { StixDomainObjectThreatDiamondQuery$data } from '@components/common/stix_domain_objects/__generated__/StixDomainObjectThreatDiamondQuery.graphql';
-import StixDomainObjectDiamond from '@components/common/stix_domain_objects/StixDomainObjectDiamond';
 import { QueryRenderer } from '../../../../relay/environment';
 import { monthsAgo } from '../../../../utils/Time';
 import { useFormatter } from '../../../../components/i18n';
@@ -146,6 +146,12 @@ interface StixDomainObjectThreatKnowledgeProps {
 const StixDomainObjectThreatKnowledge: FunctionComponent<
 StixDomainObjectThreatKnowledgeProps
 > = ({ stixDomainObjectId, stixDomainObjectType, displayObservablesStats }) => {
+  /*
+    TODO
+    we should reword the component to be able to manipulate data easier
+    in fact, page update is complicated, if not impossible
+    it could be interesting to use the relay provider and rework the uses of graphql queries
+  */
   const classes = useStyles();
   const { n, t_i18n } = useFormatter();
   const [viewType, setViewType] = useState('diamond');
