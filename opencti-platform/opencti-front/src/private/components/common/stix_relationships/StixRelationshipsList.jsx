@@ -3390,6 +3390,9 @@ const stixRelationshipsListQuery = graphql`
             ... on Malware {
               name
             }
+            ... on MalwareAnalysis {
+              result_name
+            }
             ... on ThreatActor {
               name
             }
