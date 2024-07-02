@@ -12,7 +12,6 @@ import type { PublicManifest } from './dashboard/PublicManifest';
 import usePublicDashboardWidgets from './dashboard/usePublicDashboardWidgets';
 import PublicTopBar from './PublicTopBar';
 import PublicDashboardHeader from './dashboard/PublicDashboardHeader';
-import useNormalizedUriKey from '../../utils/hooks/useNormalizedUriKey';
 
 const publicDashboardQuery = graphql`
   query PublicDashboardQuery($uri_key: String!) {
@@ -113,7 +112,7 @@ const PublicDashboard = () => {
   const { uriKey } = useParams();
   if (!uriKey) return null;
 
-  const normalizedUriKey = useNormalizedUriKey(uriKey);
+  const normalizedUriKey = uriKey.toLowerCase();
 
   const queryRef = useQueryLoading<PublicDashboardQuery>(
     publicDashboardQuery,
