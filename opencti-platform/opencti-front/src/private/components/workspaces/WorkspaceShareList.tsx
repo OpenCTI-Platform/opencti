@@ -64,7 +64,7 @@ const WorkspaceShareList = ({ queryRef, onDelete, onToggleEnabled }: WorkspaceSh
   const copyLinkUrl = (uriKey: string) => {
     copyToClipboard(
       t_i18n,
-      `${window.location.origin}/public/dashboard/${uriKey}`,
+      `${window.location.origin}/public/dashboard/${uriKey.toLowerCase()}`,
     );
   };
 

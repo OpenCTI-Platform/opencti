@@ -145,7 +145,7 @@ export const addPublicDashboard = async (
     await checkUserCanShareMarkings(context, user, markingLevels);
   }
 
-  const uriKey = input.uri_key.replace(/[^a-zA-Z0-9\s-]+/g, '').replace(/\s+/g, '-');
+  const uriKey = input.uri_key.replace(/[^a-zA-Z0-9\s-]+/g, '').replace(/\s+/g, '-').toLowerCase();
   const existingDashboard = await getPublicDashboardByUriKey(context, uriKey);
   if (existingDashboard) {
     throw FunctionalError(`Cannot publish this dashboard, uri key ${uriKey} already used.`);

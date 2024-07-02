@@ -41,14 +41,10 @@ const PublicDashboardComponent = ({
   const { widgets, config } = parsedManifest;
 
   useEffect(() => {
-    if (publicDashboardByUriKey === null) {
+    if (publicDashboardByUriKey === null || !publicDashboardByUriKey?.enabled) {
       navigate('/');
     }
-    const enabled = publicDashboardByUriKey?.enabled;
-    if (!enabled) {
-      navigate('/');
-    }
-  }, [publicDashboardByUriKey]);
+  }, [publicDashboardByUriKey, navigate]);
 
   const {
     entityWidget,
@@ -116,16 +112,18 @@ const PublicDashboard = () => {
   const { uriKey } = useParams();
   if (!uriKey) return null;
 
+  const normalizedUriKey = uriKey.toLowerCase();
+
   const queryRef = useQueryLoading<PublicDashboardQuery>(
     publicDashboardQuery,
-    { uri_key: uriKey },
+    { uri_key: normalizedUriKey },
   );
 
   return queryRef ? (
     <React.Suspense fallback={<Loader variant={LoaderVariant.container} />}>
       <PublicDashboardComponent
         queryRef={queryRef}
-        uriKey={uriKey}
+        uriKey={normalizedUriKey}
       />
     </React.Suspense>
   ) : (
