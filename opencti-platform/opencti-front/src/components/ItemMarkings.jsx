@@ -109,9 +109,10 @@ const ItemMarkings = ({ variant, markingDefinitions, limit }) => {
     border: `2px solid ${color}`,
   });
 
-  const renderChip = (markingDefinition, isTooltip = false) => {
+  const renderChip = (markingDefinition, opts = {}) => {
+    const { isInTooltip = false, showTitle = false } = opts;
     let className = classes.chip;
-    if (isTooltip) {
+    if (isInTooltip) {
       className = classes.chipInToolTip;
     } else if (variant === 'inList') {
       className = classes.chipInList;
@@ -138,6 +139,7 @@ const ItemMarkings = ({ variant, markingDefinitions, limit }) => {
             border,
           }}
           label={markingDefinition.definition}
+          title={showTitle ? markingDefinition.definition : undefined}
         />
       );
     }
@@ -157,6 +159,7 @@ const ItemMarkings = ({ variant, markingDefinitions, limit }) => {
             className={className}
             style={monochromeStyle(inlineStyles.red.backgroundColor)}
             label={markingDefinition.definition}
+            title={showTitle ? markingDefinition.definition : undefined}
           />
         );
       case 'TLP:AMBER':
@@ -166,6 +169,7 @@ const ItemMarkings = ({ variant, markingDefinitions, limit }) => {
             className={className}
             style={monochromeStyle(inlineStyles.orange.backgroundColor)}
             label={markingDefinition.definition}
+            title={showTitle ? markingDefinition.definition : undefined}
           />
         );
       case 'NP':
@@ -176,6 +180,7 @@ const ItemMarkings = ({ variant, markingDefinitions, limit }) => {
             className={className}
             style={monochromeStyle(inlineStyles.green.backgroundColor)}
             label={markingDefinition.definition}
+            title={showTitle ? markingDefinition.definition : undefined}
           />
         );
       case 'SF':
@@ -185,6 +190,7 @@ const ItemMarkings = ({ variant, markingDefinitions, limit }) => {
             className={className}
             style={monochromeStyle(inlineStyles.blue.backgroundColor)}
             label={markingDefinition.definition}
+            title={showTitle ? markingDefinition.definition : undefined}
           />
         );
       case 'NONE':
@@ -194,6 +200,7 @@ const ItemMarkings = ({ variant, markingDefinitions, limit }) => {
             className={className}
             style={inlineStyles.transparent}
             label={t_i18n(markingDefinition.definition)}
+            title={showTitle ? markingDefinition.definition : undefined}
             variant="outlined"
           />
         );
@@ -204,6 +211,7 @@ const ItemMarkings = ({ variant, markingDefinitions, limit }) => {
             className={className}
             style={inlineStyles.white}
             label={markingDefinition.definition}
+            title={showTitle ? markingDefinition.definition : undefined}
           />
         );
     }
@@ -212,8 +220,8 @@ const ItemMarkings = ({ variant, markingDefinitions, limit }) => {
     return (
       <span>
         {markings.length === 0
-          ? renderChip({ definition: 'NONE' }, false)
-          : markings.map((markingDefinition) => renderChip(markingDefinition, false))}
+          ? renderChip({ definition: 'NONE' }, { showTitle: true })
+          : markings.map((markingDefinition) => renderChip(markingDefinition, { showTitle: true }))}
       </span>
     );
   }
@@ -223,7 +231,7 @@ const ItemMarkings = ({ variant, markingDefinitions, limit }) => {
         <Grid container={true} spacing={3}>
           {markings.map((markingDefinition) => (
             <Grid key={markingDefinition.id} item={true} xs={6}>
-              {renderChip(markingDefinition, true)}
+              {renderChip(markingDefinition, { isInTooltip: true, showTitle: true })}
             </Grid>
           ))}
         </Grid>
@@ -232,7 +240,7 @@ const ItemMarkings = ({ variant, markingDefinitions, limit }) => {
     >
       <span>
         <StyledBadge variant="dot" color="primary">
-          {R.take(limit, markings).map((markingDefinition) => renderChip(markingDefinition, false))}
+          {R.take(limit, markings).map((markingDefinition) => renderChip(markingDefinition))}
         </StyledBadge>
       </span>
     </EnrichedTooltip>
