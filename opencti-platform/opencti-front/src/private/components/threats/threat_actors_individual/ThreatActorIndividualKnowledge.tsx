@@ -137,7 +137,6 @@ const ThreatActorIndividualKnowledgeComponent = ({
           element={
             <StixDomainObjectAttackPatterns
               stixDomainObjectId={threatActorIndividual.id}
-              entityLink={link}
               defaultStartTime={threatActorIndividual.first_seen}
               defaultStopTime={threatActorIndividual.last_seen}
             />

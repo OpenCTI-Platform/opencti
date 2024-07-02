@@ -256,20 +256,14 @@ class AttackPatternsMatrixColumnsComponent extends Component {
       attackPatterns: selectedPatterns,
       marginRight,
       searchTerm,
-      handleChangeKillChain,
       handleToggleModeOnlyActive,
       handleToggleColorsReversed,
-      currentKillChain,
       currentColorsReversed,
       currentModeOnlyActive,
       hideBar,
       handleAdd,
     } = this.props;
     const { hover, menuElement, navOpen } = this.state;
-    let changeKillChain = handleChangeKillChain;
-    if (typeof changeKillChain !== 'function') {
-      changeKillChain = this.handleChangeKillChain;
-    }
     let toggleModeOnlyActive = handleToggleModeOnlyActive;
     if (typeof toggleModeOnlyActive !== 'function') {
       toggleModeOnlyActive = this.handleToggleModeOnlyActive;
@@ -277,10 +271,6 @@ class AttackPatternsMatrixColumnsComponent extends Component {
     let toggleColorsReversed = handleToggleColorsReversed;
     if (typeof toggleColorsReversed !== 'function') {
       toggleColorsReversed = this.handleToggleColorsReversed;
-    }
-    let killChain = currentKillChain;
-    if (R.isNil(killChain)) {
-      killChain = this.state.currentKillChain;
     }
     let modeOnlyActive = currentModeOnlyActive;
     if (R.isNil(modeOnlyActive)) {
@@ -348,7 +338,7 @@ class AttackPatternsMatrixColumnsComponent extends Component {
       R.map((n) => n.node.killChainPhases),
       R.flatten,
       R.uniq,
-      R.filter((n) => n.kill_chain_name === killChain),
+      R.filter((n) => n.kill_chain_name === this.state.currentKillChain),
       sortByOrder,
     )(data.attackPatterns.edges);
     const killChains = R.uniq([
@@ -407,8 +397,8 @@ class AttackPatternsMatrixColumnsComponent extends Component {
                     <InputLabel>{t('Kill chain')}</InputLabel>
                     <Select
                       size="small"
-                      value={killChain}
-                      onChange={changeKillChain.bind(this)}
+                      value={this.state.currentKillChain}
+                      onChange={this.handleChangeKillChain.bind(this)}
                     >
                       {killChains.map((killChainName) => (
                         <MenuItem key={killChainName} value={killChainName}>
@@ -424,8 +414,8 @@ class AttackPatternsMatrixColumnsComponent extends Component {
                   handleToggleModeOnlyActive={toggleModeOnlyActive.bind(this)}
                   currentColorsReversed={modeColorsReversed}
                   handleToggleColorsReversed={toggleColorsReversed.bind(this)}
-                  currentKillChain={killChain}
-                  handleChangeKillChain={changeKillChain.bind(this)}
+                  currentKillChain={this.state.currentKillChain}
+                  handleChangeKillChain={this.handleChangeKillChain.bind(this)}
                   killChains={killChains}
                   navOpen={navOpen}
                 />
@@ -537,10 +527,8 @@ AttackPatternsMatrixColumnsComponent.propTypes = {
   attackPatterns: PropTypes.array,
   marginRight: PropTypes.bool,
   searchTerm: PropTypes.string,
-  handleChangeKillChain: PropTypes.func,
   handleToggleModeOnlyActive: PropTypes.func,
   handleToggleColorsReversed: PropTypes.func,
-  currentKillChain: PropTypes.bool,
   currentColorsReversed: PropTypes.bool,
   currentModeOnlyActive: PropTypes.bool,
   hideBar: PropTypes.bool,

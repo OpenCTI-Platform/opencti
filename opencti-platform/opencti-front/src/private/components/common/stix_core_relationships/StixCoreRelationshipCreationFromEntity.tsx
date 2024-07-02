@@ -234,7 +234,7 @@ interface StixCoreRelationshipCreationFromEntityForm {
   objectMarking: Option[];
   externalReferences: Option[];
 }
-interface TargetEntity {
+export interface TargetEntity {
   id: string;
   entity_type: string;
 }
