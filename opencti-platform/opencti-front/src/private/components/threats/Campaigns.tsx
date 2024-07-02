@@ -129,15 +129,20 @@ const Campaigns = () => {
   const renderList = () => {
     const dataColumns = {
       name: {
-        flexSize: 30,
-      },
-      created: {
         flexSize: 15,
       },
-      objectMarking: { flexSize: 13 },
-      objectLabel: {},
-      x_opencti_workflow_id: { flexSize: 12 },
+      creator: {},
+      created: {
+        flexSize: 10,
+      },
       modified: {},
+      createdBy: {},
+      objectMarking: { flexSize: 10 },
+      objectLabel: {},
+      x_opencti_workflow_id: {
+        label: 'Processing status',
+        flexSize: 10,
+      },
     };
 
     const preloadedPaginationProps = {
@@ -181,7 +186,7 @@ const Campaigns = () => {
   return (
     <>
       <Breadcrumbs variant="list" elements={[{ label: t_i18n('Threats') }, { label: t_i18n('Campaigns'), current: true }]} />
-      {viewStorage.view === 'lines' || !dataTableEnabled ? renderList() : renderCards()}
+      {viewStorage.view !== 'lines' || !dataTableEnabled ? renderCards() : renderList()}
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
         <CampaignCreation paginationOptions={queryPaginationOptions} />
       </Security>

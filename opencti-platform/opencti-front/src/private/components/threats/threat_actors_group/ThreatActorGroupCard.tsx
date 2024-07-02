@@ -13,6 +13,8 @@ export const ThreatActorGroupCardFragment = graphql`
     modified
     entity_type
     threat_actor_types
+    sophistication
+    resource_level
     creators {
       id
       name

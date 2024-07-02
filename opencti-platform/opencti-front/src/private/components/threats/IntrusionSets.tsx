@@ -31,6 +31,7 @@ const IntrusionSets = () => {
     orderAsc: true,
     openExports: false,
     filters: emptyFilterGroup,
+    view: 'cards',
   };
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<IntrusionSetsCardsPaginationQuery$variables>(
     LOCAL_STORAGE_KEY,
@@ -125,15 +126,15 @@ const IntrusionSets = () => {
   const renderList = () => {
     const dataColumns = {
       name: {
-        flexSize: 30,
-      },
-      created: {
         flexSize: 15,
       },
-      objectMarking: { flexSize: 13 },
-      objectLabel: {},
-      x_opencti_workflow_id: { flexSize: 12 },
+      resource_level: {},
+      primary_motivation: {},
+      secondary_motivation: {},
+      creator: {},
       modified: {},
+      objectMarking: { flexSize: 10 },
+      objectLabel: {},
     };
 
     const preloadedPaginationProps = {
@@ -177,7 +178,7 @@ const IntrusionSets = () => {
   return (
     <>
       <Breadcrumbs variant="list" elements={[{ label: t_i18n('Threats') }, { label: t_i18n('Intrusion sets'), current: true }]} />
-      {viewStorage.view === 'lines' || !dataTableEnabled ? renderList() : renderCards()}
+      {viewStorage.view !== 'lines' || !dataTableEnabled ? renderCards() : renderList()}
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
         <IntrusionSetCreation paginationOptions={queryPaginationOptions} />
       </Security>
