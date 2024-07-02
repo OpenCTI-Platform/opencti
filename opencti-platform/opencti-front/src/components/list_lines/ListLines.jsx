@@ -229,6 +229,7 @@ class ListLines extends Component {
                 : classes.parameters
             }
           >
+
             {typeof handleSearch === 'function' && (
               <SearchInput
                 variant={searchVariant || 'small'}
@@ -236,6 +237,7 @@ class ListLines extends Component {
                 keyword={keyword}
               />
             )}
+
             {extraFields}
             {availableFilterKeys && availableFilterKeys.length > 0 && (
               <Filters
@@ -253,7 +255,9 @@ class ListLines extends Component {
               />
             )}
             <div className={classes.filler} />
+
             <div className={classes.views}>
+
               {numberOfElements && (
                 <div
                   style={

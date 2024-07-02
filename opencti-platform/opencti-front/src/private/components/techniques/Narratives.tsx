@@ -30,6 +30,10 @@ const useStyles = makeStyles(() => ({
     float: 'left',
     marginTop: -10,
   },
+  views: {
+    marginTop: -5,
+    display: 'flex',
+  },
 }));
 
 const Narratives: FunctionComponent = () => {
@@ -93,21 +97,23 @@ const Narratives: FunctionComponent = () => {
               keyword={searchTerm}
             />
           </div>
+          <div className={classes.views}>
+            <ToggleButtonGroup
+              size="small"
+              color="secondary"
+              value={view || 'lines'}
+              exclusive={true}
+              style={{ margin: '0 0 0 5px' }}
+            >
+              <ViewSwitchingButtons
+                handleChangeView={helpers.handleChangeView}
+                disableCards={true}
+                currentView={view}
+                enableSubEntityLines={true}
+              />
+            </ToggleButtonGroup>
+          </div>
         </div>
-        <ToggleButtonGroup
-          size="small"
-          color="secondary"
-          value={view || 'lines'}
-          exclusive={true}
-          style={{ margin: '0 0 0 5px' }}
-        >
-          <ViewSwitchingButtons
-            handleChangeView={helpers.handleChangeView}
-            disableCards={true}
-            currentView={view}
-            enableSubEntityLines={true}
-          />
-        </ToggleButtonGroup>
         <div className="clearfix" />
         {queryRef && (
         <React.Suspense
