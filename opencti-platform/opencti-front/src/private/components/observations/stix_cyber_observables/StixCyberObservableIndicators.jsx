@@ -117,7 +117,7 @@ const StixCyberObservableIndicatorsComponent = ({ stixCyberObservable }) => {
           stixCyberObservable.id,
           undefined,
           undefined,
-          'promote',
+          'promoteToIndicator',
         );
       },
       onCompleted: () => {
