@@ -49,6 +49,13 @@ import ReactMde from 'react-mde';
 import SpeedDial from '@mui/material/SpeedDial';
 import { SpeedDialIcon } from '@mui/material';
 import SpeedDialAction from '@mui/material/SpeedDialAction';
+import ButtonGroup from '@mui/material/ButtonGroup';
+import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
+import ClickAwayListener from '@mui/material/ClickAwayListener';
+import Grow from '@mui/material/Grow';
+import Paper from '@mui/material/Paper';
+import Popper from '@mui/material/Popper';
+import MenuList from '@mui/material/MenuList';
 import { graphql } from 'react-relay';
 import WidgetFilters from './WidgetFilters';
 import VisuallyHiddenInput from '../../common/VisuallyHiddenInput';
@@ -59,6 +66,7 @@ import { capitalizeFirstLetter, toB64 } from '../../../../utils/String';
 import { handleError, QueryRenderer } from '../../../../relay/environment';
 import { stixCyberObservablesLinesAttributesQuery } from '../../observations/stix_cyber_observables/StixCyberObservablesLines';
 import { isNotEmptyField } from '../../../../utils/utils';
+import useHelper from '../../../../utils/hooks/useHelper';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 import useAttributes from '../../../../utils/hooks/useAttributes';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
@@ -337,6 +345,8 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
     initialStep = 2;
   }
   const classes = useStyles();
+  const { isFeatureEnable } = useHelper();
+  const FAB_REPLACED = isFeatureEnable('FAB_REPLACEMENT');
   const { t_i18n } = useFormatter();
   const { ignoredAttributesInDashboards } = useAttributes();
   const [open, setOpen] = useState(false);
@@ -344,6 +354,19 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
   const [stepIndex, setStepIndex] = useState(initialStep);
   const [type, setType] = useState(widget?.type ?? null);
   const inputRef = useRef();
+  const widgetActionMenuAnchorRef = useRef();
+  const [widgetActionSelectedIndex, setWidgetActionSelectedIndex] = useState(0);
+  const [widgetActionMenuOpen, setWidgetActionMenuOpen] = React.useState(false);
+  const widgetActionOptions = [
+    {
+      text: t_i18n('Create a Widget'),
+      action: () => setOpen(true),
+    },
+    {
+      text: t_i18n('Import a Widget'),
+      action: () => inputRef.current?.click(),
+    },
+  ];
   const [perspective, setPerspective] = useState(widget?.perspective ?? null);
   const initialSelection = {
     label: '',
@@ -549,6 +572,22 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
   };
   const handleChangeParameter = (parameter, value) => {
     setParameters({ ...parameters, [parameter]: value });
+  };
+  const handleWidgetActionClick = () => {
+    widgetActionOptions[widgetActionSelectedIndex].action();
+  };
+  const handleToggleWidgetActionMenuOpen = () => {
+    setWidgetActionMenuOpen(!widgetActionMenuOpen);
+  };
+  const handleWidgetActionMenuItemClick = (event, index) => {
+    setWidgetActionSelectedIndex(index);
+    setWidgetActionMenuOpen(false);
+  };
+  const handleWidgetActionMenuClose = (event) => {
+    if (widgetActionMenuAnchorRef.current && widgetActionMenuAnchorRef.current.contains(event.target)) {
+      return;
+    }
+    setWidgetActionMenuOpen(false);
   };
   const renderIcon = (key) => {
     switch (key) {
@@ -1326,33 +1365,92 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
         return 'Go away!';
     }
   };
+
   return (
     <>
       {!widget && (
         <>
           <VisuallyHiddenInput type="file" accept={'application/JSON'} ref={inputRef} onChange={handleWidgetImport} />
           <Security needs={[EXPLORE_EXUPDATE]}>
-            <SpeedDial
-              className={classes.createButton}
-              ariaLabel="Create"
-              icon={<SpeedDialIcon />}
-              FabProps={{ color: 'primary' }}
-            >
-              <SpeedDialAction
-                title={t_i18n('Create a widget')}
-                icon={<WidgetsOutlined />}
-                tooltipTitle={t_i18n('Create a widget')}
-                onClick={() => setOpen(true)}
-                FabProps={{ classes: { root: classes.speedDialButton } }}
-              />
-              <SpeedDialAction
-                title={t_i18n('Import a widget')}
-                icon={<CloudUploadOutlined />}
-                tooltipTitle={t_i18n('Import a widget')}
-                onClick={() => inputRef.current?.click()}
-                FabProps={{ classes: { root: classes.speedDialButton } }}
-              />
-            </SpeedDial>
+          {FAB_REPLACED && (
+            <div>
+              <ButtonGroup
+                variant='contained'
+                ref={widgetActionMenuAnchorRef}
+                disableElevation
+              >
+                <Button onClick={handleWidgetActionClick}>
+                  {widgetActionOptions[widgetActionSelectedIndex].text}
+                </Button>
+                <Button
+                  size='small'
+                  onClick={handleToggleWidgetActionMenuOpen}
+                  data-testid="widget-action-selection"
+                >
+                  <ArrowDropDownIcon/>
+                </Button>
+              </ButtonGroup>
+              <Popper
+                sx={{ zIndex: 1 }}
+                open={widgetActionMenuOpen}
+                anchorEl={widgetActionMenuAnchorRef.current}
+                role={undefined}
+                transition
+                disablePortal
+              >
+                {({ TransitionProps, placement }) => (
+                  <Grow
+                    {...TransitionProps}
+                    style={{
+                      transformOrigin:
+                        placement === 'bottom' ? 'center top' : 'center bottom',
+                    }}
+                  >
+                    <Paper>
+                      <ClickAwayListener onClickAway={handleWidgetActionMenuClose}>
+                        <MenuList id="split-button-menu" autoFocusItem>
+                          {widgetActionOptions.map((option, index) => (
+                            <MenuItem
+                              key={option}
+                              selected={index === widgetActionSelectedIndex}
+                              onClick={(event) => handleWidgetActionMenuItemClick(event, index)}
+                            >
+                              {option.text}
+                            </MenuItem>
+                          ))}
+                        </MenuList>
+                      </ClickAwayListener>
+                    </Paper>
+                  </Grow>
+                )}
+              </Popper>
+            </div>
+          )
+         }
+          {!FAB_REPLACED && (
+          <SpeedDial
+            className={classes.createButton}
+            ariaLabel="Create"
+            icon={<SpeedDialIcon />}
+            FabProps={{ color: 'primary' }}
+          >
+            <SpeedDialAction
+              title={t_i18n('Create a widget')}
+              icon={<WidgetsOutlined />}
+              tooltipTitle={t_i18n('Create a widget')}
+              onClick={() => setOpen(true)}
+              FabProps={{ classes: { root: classes.speedDialButton } }}
+            />
+            <SpeedDialAction
+              title={t_i18n('Import a widget')}
+              icon={<CloudUploadOutlined />}
+              tooltipTitle={t_i18n('Import a widget')}
+              onClick={() => inputRef.current?.click()}
+              FabProps={{ classes: { root: classes.speedDialButton } }}
+            />
+          </SpeedDial>
+          )
+        }
           </Security>
         </>
       )}
@@ -1422,6 +1520,7 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
               || (getCurrentAvailableParameters().includes('attribute')
                 && !isDataSelectionAttributesValid())
             }
+            data-testid="widget-submit-button"
           >
             {widget ? t_i18n('Update') : t_i18n('Create')}
           </Button>

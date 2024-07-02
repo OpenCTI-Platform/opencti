@@ -14,9 +14,21 @@ export default class DashboardWidgetsPageModel {
 
   constructor(private page: Page) {}
 
-  getCreateWidgetButton() {
-    return this.page.getByLabel('Create', { exact: true });
+  getWidgetActionSelection() {
+    return this.page.getByTestId('widget-action-selection');
   }
+
+  getCreateWidget() {
+    return this.page.getByRole('menuitem', {name: "Create a Widget"});
+  }
+
+  getCreateWidgetButton() {
+    return this.page.getByRole('button', {name: "Create a Widget"});
+  }
+
+  // getCreateWidgetButton() {
+  //   return this.page.getByLabel('Create', { exact: true });
+  // }
 
   async openWidgetModal() {
     await this.page.getByLabel('Create', { exact: true }).hover();
