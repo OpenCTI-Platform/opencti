@@ -91,8 +91,6 @@ steps:
     volumes:
     - name: cache-node-frontend-e2e
       path: /drone/src/opencti-platform/opencti-front/node_modules
-    - name: cache-python-frontend-e2e
-      path: /usr/lib/python3.11
     environment:
       BACK_END_URL: http://opencti-e2e-start:4500
       E2E_TEST: true
