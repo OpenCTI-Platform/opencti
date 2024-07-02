@@ -273,7 +273,7 @@ const BulkRelationDialog : FunctionComponent<BulkRelationDialogProps> = ({ stixD
         await commit(finalValues);
       } catch (error) {
         const { errors } = (error as unknown as RelayError).res;
-        MESSAGING$.notifyError(errors.at(0)?.data.reason);
+        MESSAGING$.notifyError(errors.at(0)?.message);
         setIsSubmitting(false);
       }
     }
