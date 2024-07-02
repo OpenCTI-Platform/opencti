@@ -27,17 +27,17 @@ const dataColumns = {
     isSortable: true,
   },
   name: {
-    label: 'Name',
+    label: 'Source entity',
     width: '15%',
     isSortable: false,
   },
   entity_type: {
-    label: 'Entity type',
+    label: 'Source type',
     width: '12%',
     isSortable: false,
   },
   entity: {
-    label: 'Entity',
+    label: 'Target entity',
     width: '12%',
     isSortable: false,
   },
