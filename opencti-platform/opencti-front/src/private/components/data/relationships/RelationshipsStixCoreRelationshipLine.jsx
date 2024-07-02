@@ -336,6 +336,12 @@ export const RelationshipsStixCoreRelationshipLine = createFragmentContainer(
                   stop_time
                   created
                 }
+                ... on StixCyberObservable {
+                  observable_value
+                  representative {
+                    main
+                  }
+                }
                 ... on AttackPattern {
                   name
                 }
@@ -568,14 +574,28 @@ export const RelationshipsStixCoreRelationshipLine = createFragmentContainer(
                       id
                       entity_type
                     }
+                    ... on StixDomainObject {
+                      representative {
+                        main
+                      }
+                    }
                     ... on StixCoreObject {
                       created_at
+                      representative {
+                        main
+                      }
                     }
                     ... on StixCoreRelationship {
                       created_at
                       start_time
                       stop_time
                       created
+                    }
+                    ... on StixCyberObservable {
+                      observable_value
+                      representative {
+                        main
+                      }
                     }
                     ... on AttackPattern {
                       name
@@ -664,6 +684,12 @@ export const RelationshipsStixCoreRelationshipLine = createFragmentContainer(
                       start_time
                       stop_time
                       created
+                    }
+                    ... on StixCyberObservable {
+                      observable_value
+                      representative {
+                        main
+                      }
                     }
                     ... on AttackPattern {
                       name
@@ -2960,6 +2986,9 @@ export const RelationshipsStixCoreRelationshipLine = createFragmentContainer(
           }
           ... on StixCyberObservable {
             observable_value
+            representative {
+              main
+            }
           }
           ... on DataComponent {
               name
@@ -3119,6 +3148,12 @@ export const RelationshipsStixCoreRelationshipLine = createFragmentContainer(
                 id
                 entity_type
               }
+              ... on StixCyberObservable {
+                observable_value
+                representative {
+                  main
+                }
+              }
               ... on BasicRelationship {
                 id
                 entity_type
@@ -3216,6 +3251,12 @@ export const RelationshipsStixCoreRelationshipLine = createFragmentContainer(
                 start_time
                 stop_time
                 created
+              }
+              ... on StixCyberObservable {
+                observable_value
+                representative {
+                  main
+                }
               }
               ... on AttackPattern {
                 name
@@ -3404,6 +3445,9 @@ export const RelationshipsStixCoreRelationshipLine = createFragmentContainer(
           }
           ... on StixCyberObservable {
             observable_value
+            representative {
+              main
+            }
           }
           ... on ObservedData {
             name
@@ -3631,6 +3675,9 @@ export const RelationshipsStixCoreRelationshipLine = createFragmentContainer(
               }
               ... on StixCyberObservable {
                 observable_value
+                representative {
+                  main
+                }
               }
             }
             to {
