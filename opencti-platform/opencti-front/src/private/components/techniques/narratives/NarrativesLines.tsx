@@ -48,7 +48,7 @@ export const narrativesLinesQuery = graphql`
   }
 `;
 
-const narrativesLinesFragment = graphql`
+export const narrativesLinesFragment = graphql`
   fragment NarrativesLines_data on Query
   @argumentDefinitions(
     search: { type: "String" }
@@ -69,9 +69,6 @@ const narrativesLinesFragment = graphql`
     ) @connection(key: "Pagination_narratives") {
       edges {
         node {
-          id
-          name
-          description
           ...NarrativeLine_node
         }
       }

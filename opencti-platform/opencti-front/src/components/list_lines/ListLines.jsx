@@ -8,12 +8,12 @@ import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
-import { ArrowDropDown, ArrowDropUp, FileDownloadOutlined, LibraryBooksOutlined, SettingsOutlined, ViewListOutlined, ViewModuleOutlined } from '@mui/icons-material';
+import { ArrowDropDown, ArrowDropUp, FileDownloadOutlined, SettingsOutlined } from '@mui/icons-material';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import Checkbox from '@mui/material/Checkbox';
 import Alert from '@mui/material/Alert';
-import { FileDelimitedOutline, FormatListGroup, Group, RelationManyToMany, VectorPolygon } from 'mdi-material-ui';
+import { FileDelimitedOutline } from 'mdi-material-ui';
 import DialogTitle from '@mui/material/DialogTitle';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
@@ -39,6 +39,7 @@ import FilterIconButton from '../FilterIconButton';
 import { ExportContext } from '../../utils/ExportContextProvider';
 import { export_max_size } from '../../utils/utils';
 import Transition from '../Transition';
+import ViewSwitchingButtons from '../ViewSwitchingButtons';
 
 const styles = (theme) => ({
   container: {
@@ -284,106 +285,16 @@ class ListLines extends Component {
                   }}
                   style={{ margin: '0 0 0 5px' }}
                 >
-                  {typeof handleChangeView === 'function' && !disableCards && (
-                    <ToggleButton value="cards" aria-label="cards">
-                      <Tooltip title={t('Cards view')}>
-                        <ViewModuleOutlined fontSize="small" color="primary" />
-                      </Tooltip>
-                    </ToggleButton>
-                  )}
-                  {typeof handleChangeView === 'function'
-                    && enableEntitiesView && (
-                      <ToggleButton value="entities" aria-label="entities">
-                        <Tooltip title={t('Entities view')}>
-                          <LibraryBooksOutlined
-                            fontSize="small"
-                            color={
-                              currentView === 'entities'
-                                ? 'secondary'
-                                : 'primary'
-                            }
-                          />
-                        </Tooltip>
-                      </ToggleButton>
-                  )}
-                  {enableEntitiesView && (
-                    <ToggleButton
-                      value="relationships"
-                      aria-label="relationships"
-                    >
-                      <Tooltip title={t('Relationships view')}>
-                        <RelationManyToMany
-                          fontSize="small"
-                          color={
-                            currentView === 'relationships' || !currentView
-                              ? 'secondary'
-                              : 'primary'
-                          }
-                        />
-                      </Tooltip>
-                    </ToggleButton>
-                  )}
-                  {typeof handleChangeView === 'function'
-                    && !enableEntitiesView && (
-                      <ToggleButton value="lines" aria-label="lines">
-                        <Tooltip title={t('Lines view')}>
-                          <ViewListOutlined
-                            fontSize="small"
-                            color={
-                              currentView === 'lines' || !currentView
-                                ? 'secondary'
-                                : 'primary'
-                            }
-                          />
-                        </Tooltip>
-                      </ToggleButton>
-                  )}
-                  {typeof handleChangeView === 'function' && enableSubEntityLines && (
-                    <ToggleButton value="subEntityLines" aria-label="subEntityLines">
-                      <Tooltip title={t('Sub Entity Lines view')}>
-                        <ViewListOutlined
-                          fontSize="small"
-                          color={
-                              currentView === 'subEntityLines'
-                                ? 'secondary'
-                                : 'primary'
-                            }
-                        />
-                      </Tooltip>
-                    </ToggleButton>
-                  )}
-                  {typeof handleChangeView === 'function' && enableGraph && (
-                    <ToggleButton value="graph" aria-label="graph">
-                      <Tooltip title={t('Graph view')}>
-                        <VectorPolygon fontSize="small" color="primary" />
-                      </Tooltip>
-                    </ToggleButton>
-                  )}
-                  {typeof handleChangeView === 'function'
-                    && enableNestedView && (
-                      <ToggleButton value="nested" aria-label="nested">
-                        <Tooltip title={t('Nested view')}>
-                          <FormatListGroup fontSize="small" color="primary" />
-                        </Tooltip>
-                      </ToggleButton>
-                  )}
-                  {typeof handleChangeView === 'function'
-                    && enableContextualView && (
-                      <ToggleButton value="contextual" aria-label="contextual">
-                        <Tooltip
-                          title={t('Knowledge from related containers view')}
-                        >
-                          <Group
-                            fontSize="small"
-                            color={
-                              currentView === 'contextual' || !currentView
-                                ? 'secondary'
-                                : 'primary'
-                            }
-                          />
-                        </Tooltip>
-                      </ToggleButton>
-                  )}
+                  <ViewSwitchingButtons
+                    handleChangeView={handleChangeView}
+                    disableCards={disableCards}
+                    enableEntitiesView={enableEntitiesView}
+                    currentView={currentView}
+                    enableSubEntityLines={enableSubEntityLines}
+                    enableGraph={enableGraph}
+                    enableNestedView={enableNestedView}
+                    enableContextualView={enableContextualView}
+                  />
                   {handleSwitchRedirectionMode && (
                     <ToggleButton
                       size="small"

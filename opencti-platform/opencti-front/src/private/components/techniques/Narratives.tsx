@@ -2,6 +2,8 @@ import React, { FunctionComponent } from 'react';
 import { NarrativeLine_node$data } from '@components/techniques/narratives/__generated__/NarrativeLine_node.graphql';
 import ToolBar from '@components/data/ToolBar';
 import makeStyles from '@mui/styles/makeStyles';
+import { NarrativeWithSubnarrativeLineDummy } from '@components/techniques/narratives/NarrativeWithSubnarrativeLine';
+import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import ExportContextProvider from '../../../utils/ExportContextProvider';
 import { NarrativeLineDummy } from './narratives/NarrativeLine';
 import NarrativesLines, { narrativesLinesQuery } from './narratives/NarrativesLines';
@@ -19,6 +21,7 @@ import { NarrativesLinesPaginationQuery, NarrativesLinesPaginationQuery$variable
 import useEntityToggle from '../../../utils/hooks/useEntityToggle';
 import useHelper from '../../../utils/hooks/useHelper';
 import SearchInput from '../../../components/SearchInput';
+import ViewSwitchingButtons from '../../../components/ViewSwitchingButtons';
 
 const LOCAL_STORAGE_KEY = 'narratives';
 
@@ -91,6 +94,20 @@ const Narratives: FunctionComponent = () => {
             />
           </div>
         </div>
+        <ToggleButtonGroup
+          size="small"
+          color="secondary"
+          value={view || 'lines'}
+          exclusive={true}
+          style={{ margin: '0 0 0 5px' }}
+        >
+          <ViewSwitchingButtons
+            handleChangeView={helpers.handleChangeView}
+            disableCards={true}
+            currentView={view}
+            enableSubEntityLines={true}
+          />
+        </ToggleButtonGroup>
         <div className="clearfix" />
         {queryRef && (
         <React.Suspense
@@ -99,16 +116,16 @@ const Narratives: FunctionComponent = () => {
               {Array(20)
                 .fill(0)
                 .map((_, idx) => (
-                  <NarrativeLineDummy key={idx}/>
+                  <NarrativeWithSubnarrativeLineDummy key={idx}/>
                 ))}
             </>
                     }
         >
           <NarrativesWithSubnarrativesLines
             queryRef={queryRef}
-            setNumberOfElements={helpers.handleSetNumberOfElements}
             paginationOptions={queryPaginationOptions}
             onToggleEntity={onToggleEntity}
+            keyword={searchTerm || ''}
           />
         </React.Suspense>
         )}

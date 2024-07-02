@@ -61,6 +61,16 @@ const narrativeLineFragment = graphql`
       value
       color
     }
+    isSubNarrative
+    subNarratives {
+      edges {
+        node {
+          id
+          name
+          description
+        }
+      }
+    }
   }
 `;
 
