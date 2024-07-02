@@ -349,11 +349,7 @@ const SearchBulk = () => {
                           markings: resolvedStixCoreObject.objectMarking,
                           analyses: resolvedStixCoreObject.containersNumber.total,
                           created_at: resolvedStixCoreObject.created_at,
-                          author: R.pathOr(
-                            '-',
-                            ['createdBy', 'name'],
-                            resolvedStixCoreObject,
-                          ),
+                          author: resolvedStixCoreObject.createdBy?.name ?? '-',
                           creators: (resolvedStixCoreObject.creators ?? [])
                             .map((c) => c?.name)
                             .join(', '),
@@ -372,8 +368,9 @@ const SearchBulk = () => {
                   });
                 })
             ).flat();
+            const finalResult = R.uniqBy((o) => o.id, result);
             setLoading(false);
-            setResolvedEntities(result);
+            setResolvedEntities(finalResult);
             setPaginationOptions(searchPaginationOptions);
           } else {
             setResolvedEntities([]);
