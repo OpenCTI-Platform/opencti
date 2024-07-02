@@ -11,12 +11,14 @@ import * as Yup from 'yup';
 import { graphql } from 'react-relay';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
+import Tooltip from '@mui/material/Tooltip';
+import PropTypes from 'prop-types';
 import Dialog from '@mui/material/Dialog';
 import List from '@mui/material/List';
 import ListItemText from '@mui/material/ListItemText';
 import makeStyles from '@mui/styles/makeStyles';
 import { ListItemButton } from '@mui/material';
-import { commitMutation, handleErrorInForm, QueryRenderer } from '../../../../relay/environment';
+import { commitMutation, handleErrorInForm, QueryRenderer, MESSAGING$, commitMutationWithPromise } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import SwitchField from '../../../../components/fields/SwitchField';
 import CreatedByField from '../../common/form/CreatedByField';
@@ -36,6 +38,16 @@ import useVocabularyCategory from '../../../../utils/hooks/useVocabularyCategory
 import { convertMarking } from '../../../../utils/edition';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
 import useAttributes from '../../../../utils/hooks/useAttributes';
+import ProgressDialogContainer, { progressDialogStats } from '../../../../components/ProgressDialog';
+import BulkAddComponent from '../../../../components/BulkAddComponent';
+
+// Sleep Function used to:
+// Impacting User Perceived Performance (UPP) to see progress bar movement and encourage
+// the use of the System Import. This was discussed at one point - but is maybe no longer
+// a requirement. This can be removed after testing, if desired, or left in with the purpose
+// of forcing the user to see progress.
+// eslint-disable-next-line no-promise-executor-return
+const sleepCustomFunction = (ms = 0) => new Promise((resolve) => setTimeout(resolve, ms));
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -203,12 +215,6 @@ const stixCyberObservableMutation = graphql`
   }
 `;
 
-const stixCyberObservableValidation = () => Yup.object().shape({
-  x_opencti_score: Yup.number().nullable(),
-  x_opencti_description: Yup.string().nullable(),
-  createIndicator: Yup.boolean(),
-});
-
 const StixCyberObservableCreation = ({
   contextual,
   open,
@@ -227,110 +233,279 @@ const StixCyberObservableCreation = ({
   const { isVocabularyField, fieldToCategory } = useVocabularyCategory();
   const { booleanAttributes, dateAttributes, multipleAttributes, numberAttributes, ignoredAttributes } = useAttributes();
   const [status, setStatus] = useState({ open: false, type: type ?? null });
-
+  const [openProgressDialog, setOpenProgressDialog] = useState(false);
   const handleOpen = () => setStatus({ open: true, type: status.type });
   const localHandleClose = () => setStatus({ open: false, type: type ?? null });
   const selectType = (selected) => setStatus({ open: status.open, type: selected });
+  const [genericValueFieldDisabled, setGenericValueFieldDisabled] = useState(false);
+  const bulkAddMsg = t_i18n('Multiple values entered. Edit with the TT button');
+  const [genericValueFieldValue, setGenericValueFieldValue] = React.useState('');
+  const [bulkValueFieldValue, setBulkValueFieldValue] = React.useState('');
+  const [openBulkModal, setOpenBulkModal] = React.useState(false);
+  let totalObservables = 0;
 
+  const progressReset = () => {
+    setOpenProgressDialog(false);
+    progressDialogStats.resetCurrentIncrement();
+    progressDialogStats.resetCurrentMaxIncrement(100);
+    progressDialogStats.resetSuccessCount();
+    progressDialogStats.resetErrorCount();
+    progressDialogStats.setBatchingCompleted(false);
+    progressDialogStats.setBatchingCancelled(false);
+    setGenericValueFieldValue('');
+    setBulkValueFieldValue('');
+    totalObservables = 0;
+  };
+  const handleClickCloseProgress = () => {
+    setOpenProgressDialog(false);
+    progressDialogStats.setBatchingCancelled(true);
+  };
   const onSubmit = (values, { setSubmitting, setErrors, resetForm }) => {
     let adaptedValues = values;
-    // Potential dicts
-    if (
-      adaptedValues.hashes_MD5
-      || adaptedValues['hashes_SHA-1']
-      || adaptedValues['hashes_SHA-256']
-      || adaptedValues['hashes_SHA-512']
-    ) {
-      adaptedValues.hashes = [];
-      if (adaptedValues.hashes_MD5.length > 0) {
-        adaptedValues.hashes.push({
-          algorithm: 'MD5',
-          hash: adaptedValues.hashes_MD5,
-        });
+    function handlePromiseResult(valueList) {
+      totalObservables = valueList.length;
+      let closeFormWithAnySuccess = false;
+      if (progressDialogStats.getBatchingCompleted() === true) {
+        if (progressDialogStats.getErrorCount() > 0) {
+          let message_string = '';
+          if (progressDialogStats.getSuccessCount() > 0) {
+            message_string = `${progressDialogStats.getSuccessCount()}/${totalObservables} ${t_i18n('were added successfully.')}`;
+            closeFormWithAnySuccess = true;
+          }
+          message_string += ` ${progressDialogStats.getErrorCount()}/${totalObservables} ${t_i18n('observables contained errors and were not added.')} `;
+          const consolidated_errors = { res: { errors: [{ message: '' }] } };
+          // Short Error message, just has total success and failure counts with translation support
+          consolidated_errors.res.errors[0].message = message_string;
+          handleErrorInForm(consolidated_errors, setErrors);
+          const combinedObservables = progressDialogStats.getSuccessCount() + progressDialogStats.getErrorCount();
+          if (combinedObservables === totalObservables && progressDialogStats.getBatchingCompleted() === true) {
+            progressReset();
+          }
+        } else {
+          let bulk_success_message = `${progressDialogStats.getSuccessCount()}/${totalObservables} ${t_i18n('were added successfully.')}`;
+          if (totalObservables === 1) {
+            // This is for consistent messaging when adding just (1) Observable
+            bulk_success_message = t_i18n('Observable successfully added');
+            progressDialogStats.setBatchingCompleted(true);
+            progressReset();
+          }
+          // Toast Message on Bulk Add Success
+          MESSAGING$.notifySuccess(bulk_success_message);
+          closeFormWithAnySuccess = true;
+        }
       }
-      if (adaptedValues['hashes_SHA-1'].length > 0) {
-        adaptedValues.hashes.push({
-          algorithm: 'SHA-1',
-          hash: adaptedValues['hashes_SHA-1'],
-        });
-      }
-      if (adaptedValues['hashes_SHA-256'].length > 0) {
-        adaptedValues.hashes.push({
-          algorithm: 'SHA-256',
-          hash: adaptedValues['hashes_SHA-256'],
-        });
-      }
-      if (adaptedValues['hashes_SHA-512'].length > 0) {
-        adaptedValues.hashes.push({
-          algorithm: 'SHA-512',
-          hash: adaptedValues['hashes_SHA-512'],
-        });
-      }
-    }
-    adaptedValues = pipe(
-      dissoc('x_opencti_description'),
-      dissoc('x_opencti_score'),
-      dissoc('createdBy'),
-      dissoc('objectMarking'),
-      dissoc('objectLabel'),
-      dissoc('externalReferences'),
-      dissoc('createIndicator'),
-      dissoc('hashes_MD5'),
-      dissoc('hashes_SHA-1'),
-      dissoc('hashes_SHA-256'),
-      dissoc('hashes_SHA-512'),
-      toPairs,
-      map((n) => (includes(n[0], dateAttributes)
-        ? [n[0], n[1] ? parse(n[1]).format() : null]
-        : n)),
-      map((n) => (includes(n[0], numberAttributes)
-        ? [n[0], n[1] ? parseInt(n[1], 10) : null]
-        : n)),
-      map((n) => (includes(n[0], multipleAttributes)
-        ? [n[0], n[1] ? n[1].split(',') : null]
-        : n)),
-      fromPairs,
-    )(adaptedValues);
-    const finalValues = {
-      type: status.type,
-      x_opencti_description:
-        values.x_opencti_description.length > 0
-          ? values.x_opencti_description
-          : null,
-      x_opencti_score: parseInt(values.x_opencti_score, 10),
-      createdBy: propOr(null, 'value', values.createdBy),
-      objectMarking: pluck('value', values.objectMarking),
-      objectLabel: pluck('value', values.objectLabel),
-      externalReferences: pluck('value', values.externalReferences),
-      createIndicator: values.createIndicator,
-      [status.type.replace(/(?:^|-|_)(\w)/g, (matches, letter) => letter.toUpperCase())]: {
-        ...adaptedValues,
-        obsContent: values.obsContent?.value,
-      },
-    };
-    if (values.file) {
-      finalValues.file = values.file;
-    }
-    commitMutation({
-      mutation: stixCyberObservableMutation,
-      variables: finalValues,
-      updater: (store) => insertNode(
-        store,
-        paginationKey,
-        paginationOptions,
-        'stixCyberObservableAdd',
-      ),
-      onError: (error) => {
-        handleErrorInForm(error, setErrors);
-        setSubmitting(false);
-      },
-      setSubmitting,
-      onCompleted: () => {
-        setSubmitting(false);
-        resetForm();
+      // Close the form if any observables were successfully added.
+      if (closeFormWithAnySuccess === true && progressDialogStats.getBatchingCompleted() === true) {
+        setGenericValueFieldDisabled(false);
         localHandleClose();
-      },
-    });
+        setOpenProgressDialog(false);
+        progressReset();
+      }
+    }
+    function updateProgress(position, batchSize) {
+      if (position % batchSize === 0) {
+        progressDialogStats.setCurrentIncrement(1);
+      }
+    }
+    async function processPromises(chunkValueList, observableType, finalValues, position, batchSize, valueList) {
+      // If batching has not been cancelled with the close button on the progress widget - continue processing
+      if (!progressDialogStats.getBatchingCancelled()) {
+        const promises = chunkValueList.map((value) => commitMutationWithPromise({
+          mutation: stixCyberObservableMutation,
+          variables: {
+            ...finalValues,
+            [observableType]: {
+              ...adaptedValues,
+              obsContent: values.obsContent?.value,
+              value,
+            },
+          },
+          updater: (store) => insertNode(
+            store,
+            paginationKey,
+            paginationOptions,
+            'stixCyberObservableAdd',
+          ),
+          onCompleted: () => {
+            setSubmitting(false);
+            resetForm();
+            localHandleClose();
+          },
+          onError: () => {
+            setSubmitting(false);
+          },
+        }));
+        // Send out a batchSize of promises and await their return
+        await Promise.allSettled(promises).then((results) => {
+          results.forEach(({ status: promiseStatus }) => {
+            if (promiseStatus === 'fulfilled') {
+              progressDialogStats.updateSuccessCount(1);
+            } else {
+              progressDialogStats.updateErrorCount(1);
+            }
+          });
+        });
+        // Update progress based on batchSize returned
+        updateProgress(position, batchSize);
+        handlePromiseResult(valueList);
+      }
+    }
+    if (adaptedValues) { // Verify not null for DeepScan compliance
+      // Bulk Add Modal was used
+      if (adaptedValues.bulk_value_field && (adaptedValues.value || genericValueFieldValue === bulkAddMsg)) {
+        const array_of_bulk_values = adaptedValues.bulk_value_field.split(/\r?\n/);
+        // Trim them just to remove any extra spacing on front or rear of string
+        const trimmed_bulk_values = array_of_bulk_values.map((s) => s.trim());
+        // Remove any "" or empty resulting elements
+        const cleaned_bulk_values = trimmed_bulk_values.reduce((elements, i) => (i ? [...elements, i] : elements), []);
+        // De-duplicate by unique then rejoin
+        adaptedValues.value = [...new Set(cleaned_bulk_values)].join('\n');
+      }
+
+      // Potential dicts
+      if (
+        adaptedValues.hashes_MD5
+        || adaptedValues['hashes_SHA-1']
+        || adaptedValues['hashes_SHA-256']
+        || adaptedValues['hashes_SHA-512']
+      ) {
+        adaptedValues.hashes = [];
+        if (adaptedValues.hashes_MD5.length > 0) {
+          adaptedValues.hashes.push({
+            algorithm: 'MD5',
+            hash: adaptedValues.hashes_MD5,
+          });
+        }
+        if (adaptedValues['hashes_SHA-1'].length > 0) {
+          adaptedValues.hashes.push({
+            algorithm: 'SHA-1',
+            hash: adaptedValues['hashes_SHA-1'],
+          });
+        }
+        if (adaptedValues['hashes_SHA-256'].length > 0) {
+          adaptedValues.hashes.push({
+            algorithm: 'SHA-256',
+            hash: adaptedValues['hashes_SHA-256'],
+          });
+        }
+        if (adaptedValues['hashes_SHA-512'].length > 0) {
+          adaptedValues.hashes.push({
+            algorithm: 'SHA-512',
+            hash: adaptedValues['hashes_SHA-512'],
+          });
+        }
+      }
+      adaptedValues = pipe(
+        dissoc('x_opencti_description'),
+        dissoc('x_opencti_score'),
+        dissoc('createdBy'),
+        dissoc('objectMarking'),
+        dissoc('objectLabel'),
+        dissoc('externalReferences'),
+        dissoc('createIndicator'),
+        dissoc('hashes_MD5'),
+        dissoc('hashes_SHA-1'),
+        dissoc('hashes_SHA-256'),
+        dissoc('hashes_SHA-512'),
+        toPairs,
+        map((n) => (includes(n[0], dateAttributes)
+          ? [n[0], n[1] ? parse(n[1]).format() : null]
+          : n)),
+        map((n) => (includes(n[0], numberAttributes)
+          ? [n[0], n[1] ? parseInt(n[1], 10) : null]
+          : n)),
+        map((n) => (includes(n[0], multipleAttributes)
+          ? [n[0], n[1] ? n[1].split(',') : null]
+          : n)),
+        fromPairs,
+      )(adaptedValues);
+      const observableType = status.type.replace(/(?:^|-|_)(\w)/g, (matches, letter) => letter.toUpperCase());
+      const finalValues = {
+        type: status.type,
+        x_opencti_description:
+          values.x_opencti_description.length > 0
+            ? values.x_opencti_description
+            : null,
+        x_opencti_score: parseInt(values.x_opencti_score, 10),
+        createdBy: propOr(null, 'value', values.createdBy),
+        objectMarking: pluck('value', values.objectMarking),
+        objectLabel: pluck('value', values.objectLabel),
+        externalReferences: pluck('value', values.externalReferences),
+        createIndicator: values.createIndicator,
+        [observableType]: {
+          ...adaptedValues,
+          obsContent: values.obsContent?.value,
+        },
+      };
+      if (values.file) {
+        finalValues.file = values.file;
+      }
+
+      const commit = async () => {
+        const valueList = values?.value !== '' ? values?.value?.split('\n') || values?.value : undefined;
+        // Launch Progress Bar, as value data is about to be processed.
+        // Only need Progress Bar, if more than 1 element being processed
+        if (valueList !== undefined && valueList.length > 1) {
+          setOpenProgressDialog(true);
+        }
+        if (valueList) {
+          delete adaptedValues.value;
+          delete adaptedValues.bulk_value_field;
+          const batchSize = 5;
+          let currentBatch = 0;
+          let position = 0;
+          // Determine the number of batches required to help compute % complete rate
+          const totalBatches = Math.ceil(valueList.length / batchSize);
+          progressDialogStats.resetCurrentMaxIncrement(totalBatches);
+          while (position < valueList.length) {
+            const chunkValueList = valueList.slice(position, position + batchSize);
+            currentBatch += 1;
+            if (currentBatch === totalBatches) {
+              progressDialogStats.setBatchingCompleted(true);
+            }
+            processPromises(chunkValueList, observableType, finalValues, position, batchSize, valueList);
+            position += batchSize;
+            if (progressDialogStats.getBatchingCancelled()) {
+              position = valueList.length + 1; // Stop looping by moving position to end due to cancel button clicked
+              progressReset();
+            }
+            // Impacting User Perceived Performance (UPP) to see progress bar movement and encourage
+            // the use of the System Import. This was discussed at one point - but is maybe no longer
+            // a requirement. This can be removed after testing, if desired, or left in with the purpose
+            // of forcing the user to see progress.
+            await sleepCustomFunction(2000); // eslint-disable-line no-await-in-loop
+          }
+        } else {
+          // No 'values' were submitted to save, but other parts of form were possibly filled out for different
+          // Observable type like File Hash or something that are not currently bulk addable.
+          // No promise required here, just send the data for saving, as it is a singular add
+          commitMutation({
+            mutation: stixCyberObservableMutation,
+            variables: finalValues,
+            updater: (store) => insertNode(
+              store,
+              paginationKey,
+              paginationOptions,
+              'stixCyberObservableAdd',
+            ),
+            onError: (error) => {
+              handleErrorInForm(error, setErrors);
+              setSubmitting(false);
+            },
+            setSubmitting,
+            onCompleted: () => {
+              // Toast Message on Add Success
+              MESSAGING$.notifySuccess(t_i18n('Observable successfully added'));
+              setSubmitting(false);
+              resetForm();
+              setGenericValueFieldDisabled(false);
+              localHandleClose();
+            },
+          });
+        }
+      };
+      commit();
+    }
   };
 
   const onReset = () => {
@@ -377,6 +552,55 @@ const StixCyberObservableCreation = ({
     );
   };
 
+  function BulkAdd(props) {
+    const handleOpenBulkModal = () => {
+      if (genericValueFieldValue != null && genericValueFieldValue.length > 0 && genericValueFieldValue !== bulkAddMsg) {
+        // Trim the field to avoid inserting whitespace as a default population value
+        setBulkValueFieldValue(genericValueFieldValue.trim());
+      }
+      setOpenBulkModal(true);
+    };
+    const handleCloseBulkModal = (val) => {
+      setOpenBulkModal(false);
+      if (val != null && val.length > 0) {
+        setBulkValueFieldValue(val);
+        // Clear Attached File marker used by CustomFileUploader interaction to indicate a file need processing
+        props.setValue('file', null);
+        // This will disable the file upload button in addition disabling the value box for direct input.
+        setGenericValueFieldDisabled(true);
+        // Swap value box message to display that TT was used to input multiple values.
+        setGenericValueFieldValue(bulkAddMsg);
+      } else {
+        setBulkValueFieldValue('');
+        setGenericValueFieldValue('');
+        setGenericValueFieldDisabled(false);
+      }
+    };
+    const localHandleCancelClearBulkModal = () => {
+      setOpenBulkModal(false);
+      if (!genericValueFieldDisabled) {
+        // If one-liner field isn't disabled, then you are it seems deciding
+        // not to use the bulk add feature, so we will clear the field, since its population
+        // is used to process the bul_value_field versus the generic_value_field
+        setBulkValueFieldValue('');
+        setGenericValueFieldValue('');
+      }
+      // else - you previously entered data and you just are canceling out of the popup window
+      // but keeping your entry in the form.
+    };
+    return (
+      <BulkAddComponent
+        openBulkModal={openBulkModal}
+        bulkValueFieldValue={bulkValueFieldValue}
+        handleOpenBulkModal={handleOpenBulkModal}
+        handleCloseBulkModal={handleCloseBulkModal}
+        localHandleCancelClearBulkModal={localHandleCancelClearBulkModal}
+      />
+    );
+  }
+  BulkAdd.propTypes = {
+    setValue: PropTypes.func,
+  };
   const renderForm = () => {
     return (
       <QueryRenderer
@@ -407,6 +631,9 @@ const StixCyberObservableCreation = ({
                   && !n.value.startsWith('i_'),
               ),
             )(props.schemaAttributeNames.edges);
+
+            let extraFieldsToValidate = null;
+            let requiredOneOfFields = [];
             for (const attribute of attributes) {
               if (isVocabularyField(status.type, attribute.value)) {
                 initialValues[attribute.value] = null;
@@ -419,16 +646,101 @@ const StixCyberObservableCreation = ({
                 initialValues['hashes_SHA-1'] = '';
                 initialValues['hashes_SHA-256'] = '';
                 initialValues['hashes_SHA-512'] = '';
+                // Dynamically include validation options for File Hash Options.
+                const md5Regex = /^[a-f0-9]{32}$/i;
+                const sha1Regex = /^[a-f0-9]{40}$/i;
+                const sha256Regex = /^[a-f0-9]{64}$/i;
+                const sha512Regex = /^[a-f0-9]{128}$/i;
+                extraFieldsToValidate = {
+                  hashes_MD5: Yup
+                    .string()
+                    .when(['hashes_SHA-1', 'hashes_SHA-256', 'hashes_SHA-512', 'name'], {
+                      is: (a, b, c, d) => !a && !b && !c && !d,
+                      then: () => Yup.string().matches(md5Regex, t_i18n('MD5 values can only include A-F and 0-9, 32 characters')).required(t_i18n('MD5, SHA-1, SHA-256, SHA-512, or name is required')),
+                    }),
+                  'hashes_SHA-1': Yup
+                    .string()
+                    .when(['hashes_MD5', 'hashes_SHA-256', 'hashes_SHA-512', 'name'], {
+                      is: (a, b, c, d) => !a && !b && !c && !d,
+                      then: () => Yup.string().matches(sha1Regex, t_i18n('SHA-1 values can only include A-F and 0-9, 40 characters')).required(t_i18n('MD5, SHA-1, SHA-256, SHA-512, or name is required')),
+                    }),
+                  'hashes_SHA-256': Yup
+                    .string()
+                    .when(['hashes_MD5', 'hashes_SHA-1', 'hashes_SHA-512', 'name'], {
+                      is: (a, b, c, d) => !a && !b && !c && !d,
+                      then: () => Yup.string().matches(sha256Regex, t_i18n('SHA-256 values can only include A-F and 0-9, 64 characters')).required(t_i18n('MD5, SHA-1, SHA-256, SHA-512, or name is required')),
+                    }),
+                  'hashes_SHA-512': Yup
+                    .string()
+                    .when(['hashes_MD5', 'hashes_SHA-1', 'hashes_SHA-256', 'name'], {
+                      is: (a, b, c, d) => !a && !b && !c && !d,
+                      then: () => Yup.string().matches(sha512Regex, t_i18n('SHA-512 values can only include A-F and 0-9, 128 characters')).required(t_i18n('MD5, SHA-1, SHA-256, SHA-512, or name is required')),
+                    }),
+                  name: Yup
+                    .string()
+                    .when(['hashes_MD5', 'hashes_SHA-1', 'hashes_SHA-256', 'hashes_SHA-512'], {
+                      is: (a, b, c, d) => !a && !b && !c && !d,
+                      then: () => Yup.string().required(t_i18n('MD5, SHA-1, SHA-256, SHA-512, or name is required')),
+                    }),
+                };
+
+                requiredOneOfFields = [
+                  ['hashes_MD5', 'hashes_SHA-1'],
+                  ['hashes_MD5', 'hashes_SHA-256'],
+                  ['hashes_MD5', 'hashes_SHA-512'],
+                  ['hashes_MD5', 'name'],
+                  // ['hashes_SHA-1', 'hashes_MD5'],
+                  ['hashes_SHA-1', 'hashes_SHA-256'],
+                  ['hashes_SHA-1', 'hashes_SHA-512'],
+                  ['hashes_SHA-1', 'name'],
+                  // ['hashes_SHA-256', 'hashes_MD5'],
+                  // ['hashes_SHA-256', 'hashes_SHA-1'],
+                  ['hashes_SHA-256', 'hashes_SHA-512'],
+                  ['hashes_SHA-256', 'name'],
+                  // ['hashes_SHA-512', 'hashes_MD5'],
+                  // ['hashes_SHA-512', 'hashes_SHA-1'],
+                  // ['hashes_SHA-512', 'hashes_SHA-256']
+                  ['hashes_SHA-512', 'name'],
+                ];
               } else if (attribute.value === 'value') {
                 initialValues[attribute.value] = inputValue || '';
+                // Dynamically include value field for Singular Observable type Object form validation
+                const exceededMessage = t_i18n('You have exceeded the max number of values.');
+                extraFieldsToValidate = {
+                  [attribute.value]: Yup
+                    .string()
+                    .when(['bulk_value_field'], {
+                      is: (a) => !a,
+                      then: () => Yup.string().required(t_i18n('A value is required')),
+                    }),
+                  bulk_value_field: Yup
+                    .string()
+                    .when([attribute.value], {
+                      is: (a) => !a,
+                      then: () => Yup.string().required(t_i18n('Multiple value entry is required or Cancel this form')).test('len', exceededMessage, (val) => val.split('\n').length < 51),
+                    }),
+                };
+                requiredOneOfFields = [
+                  [attribute.value, 'bulk_value_field'],
+                ];
               } else {
                 initialValues[attribute.value] = '';
               }
             }
+            const stixCyberObservableValidationBaseFields = {
+              x_opencti_score: Yup.number().nullable(),
+              x_opencti_description: Yup.string().nullable(),
+              createIndicator: Yup.boolean(),
+            };
+            const stixCyberObservableValidationFinal = (extraRequiredFields = null) => Yup.object().shape({
+              ...stixCyberObservableValidationBaseFields,
+              ...extraRequiredFields,
+            }, requiredOneOfFields);
+
             return (
               <Formik
                 initialValues={initialValues}
-                validationSchema={stixCyberObservableValidation()}
+                validationSchema={stixCyberObservableValidationFinal(extraFieldsToValidate)}
                 onSubmit={onSubmit}
                 onReset={onReset}
               >
@@ -437,6 +749,7 @@ const StixCyberObservableCreation = ({
                   handleReset,
                   isSubmitting,
                   setFieldValue,
+                  isValid,
                   values,
                 }) => (
                   <Form
@@ -570,6 +883,34 @@ const StixCyberObservableCreation = ({
                             />
                           );
                         }
+                        if (attribute.value === 'value') {
+                          return (
+                            <div key={attribute.value}>
+                              <Tooltip title="Copy/paste text content">
+                                <BulkAdd
+                                  setValue={(field_name, new_value) => setFieldValue(field_name, new_value)}
+                                />
+                              </Tooltip>
+
+                              <Field
+                                id="generic_value_field"
+                                label="value" // For unit test to locate in tests_e2e/model/containerAddObservables.pageModel.ts
+                                aria-labelledby="value" // For unit test to locate in tests_e2e/model/containerAddObservables.pageModel.ts
+                                aria-label="value" // For unit test to locate in tests_e2e/model/containerAddObservables.pageModel.ts
+                                disabled={genericValueFieldDisabled}
+                                component={TextField}
+                                variant="standard"
+                                value={genericValueFieldValue}
+                                key={attribute.value}
+                                name={attribute.value}
+                                fullWidth={true}
+                                multiline={true}
+                                rows="1"
+                                onChange={(name, value) => setGenericValueFieldValue(value)}
+                              />
+                            </div>
+                          );
+                        }
                         return (
                           <Field
                             component={TextField}
@@ -579,8 +920,7 @@ const StixCyberObservableCreation = ({
                             label={attribute.value}
                             fullWidth={true}
                             style={{ marginTop: 20 }}
-                          />
-                        );
+                          />);
                       })}
                     </div>
                     <CreatedByField
@@ -604,7 +944,10 @@ const StixCyberObservableCreation = ({
                       setFieldValue={setFieldValue}
                       values={values.externalReferences}
                     />
-                    <CustomFileUploader setFieldValue={setFieldValue} />
+                    <CustomFileUploader
+                      setFieldValue={setFieldValue}
+                      disabled={genericValueFieldDisabled}
+                    />
                     <Field
                       component={SwitchField}
                       type="checkbox"
@@ -624,8 +967,8 @@ const StixCyberObservableCreation = ({
                       <Button
                         variant={contextual ? 'text' : 'contained'}
                         color="secondary"
-                        onClick={submitForm}
-                        disabled={isSubmitting}
+                        disabled={isSubmitting && isValid}
+                        onClick={() => { submitForm(); }}
                         classes={{ root: classes.button }}
                       >
                         {t_i18n('Create')}
@@ -677,6 +1020,13 @@ const StixCyberObservableCreation = ({
             {!status.type ? renderList() : renderForm()}
           </div>
         </Drawer>
+
+        <ProgressDialogContainer
+          openProgressDialog={openProgressDialog}
+          bulkValueFieldValue={bulkValueFieldValue}
+          handleClickCloseProgress={handleClickCloseProgress}
+        />
+
       </>
     );
   };
