@@ -1,11 +1,11 @@
 import { ApolloServerErrorCode } from '@apollo/server/errors';
 import { GraphQLError, GraphQLScalarType, Kind } from 'graphql';
 import { GraphQLDateTime } from 'graphql-scalars';
-import { mergeResolvers } from 'merge-graphql-schemas';
 import { makeExecutableSchema } from '@graphql-tools/schema';
 import { constraintDirectiveTypeDefs } from 'graphql-constraint-directive';
 import { validate as uuidValidate } from 'uuid';
 import GraphQLUpload from 'graphql-upload/GraphQLUpload.mjs';
+import { mergeResolvers } from '@graphql-tools/merge';
 import settingsResolvers from '../resolvers/settings';
 import logResolvers from '../resolvers/log';
 import attributeResolvers from '../resolvers/attribute';
