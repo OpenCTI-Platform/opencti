@@ -3611,6 +3611,8 @@ const elUpdateConnectionsOfElement = async (documentId, documentBody) => {
     index: READ_RELATIONSHIPS_INDICES,
     refresh: true,
     conflicts: 'proceed',
+    slices: 'auto', // improve performance by slicing the request
+    wait_for_completion: false, // async (query can update a lot of elements)
     body: {
       script: { source, params: { id: documentId, changes: documentBody } },
       query: {
