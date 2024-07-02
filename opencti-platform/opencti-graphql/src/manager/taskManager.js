@@ -280,8 +280,9 @@ export const executeReplace = async (context, user, actionContext, element) => {
   await patchAttribute(context, user, element.id, element.entity_type, patch);
 };
 const executeMerge = async (context, user, actionContext, element) => {
-  const { values } = actionContext;
-  await mergeEntities(context, user, element.internal_id, values);
+  const { values, options } = actionContext;
+  const { safeAction = false } = options;
+  await mergeEntities(context, user, element.internal_id, values, { safeMerge: safeAction });
 };
 const executeEnrichment = async (context, user, actionContext, element) => {
   const askConnectors = await internalFindByIds(context, user, actionContext.values);
