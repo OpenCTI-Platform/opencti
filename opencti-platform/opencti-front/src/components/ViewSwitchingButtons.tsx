@@ -70,7 +70,7 @@ const ViewSwitchingButtons: FunctionComponent<ViewSwitchingButtonsProps> = ({
       )}
       {typeof handleChangeView === 'function'
         && !enableEntitiesView && (
-        <ToggleButton value="lines" aria-label="lines">
+        <ToggleButton value="lines" onClick={() => handleChangeView('lines')} aria-label="lines">
           <Tooltip title={t_i18n('Lines view')}>
             <ViewListOutlined
               fontSize="small"
