@@ -218,7 +218,7 @@ export const buildRelationData = async (context, user, input, opts = {}) => {
     data.modified = R.isNil(input.modified) ? today : input.modified;
     //* v8 ignore if */
     if (data.start_time > data.stop_time) {
-      throw DatabaseError('You cant create a relation with a start_time less than the stop_time', {
+      throw DatabaseError('You cant create a relation with a stop_time less than the start_time', {
         from: input.fromId,
         to: input.toId,
         type: relationshipType
@@ -232,7 +232,7 @@ export const buildRelationData = async (context, user, input, opts = {}) => {
     data.stop_time = isEmptyField(input.stop_time) ? new Date(UNTIL_END) : input.stop_time;
     //* v8 ignore if */
     if (data.start_time > data.stop_time) {
-      throw DatabaseError('You cant create a relation with a start_time less than the stop_time', {
+      throw DatabaseError('You cant create a relation with a stop_time less than the start_time', {
         from: input.fromId,
         to: input.toId,
         type: relationshipType

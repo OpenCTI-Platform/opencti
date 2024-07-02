@@ -110,7 +110,7 @@ const platformInit = async (withMarkings = true) => {
       await initDecayRules(context, SYSTEM_USER);
     }
   } catch (e) {
-    if (e.name === TYPE_LOCK_ERROR) {
+    if (e.extensions.name === TYPE_LOCK_ERROR) {
       const reason = 'Platform cant get the lock for initialization (can be due to other instance currently migrating/initializing)';
       throw LockTimeoutError({ participantIds: [PLATFORM_LOCK_ID] }, reason);
     } else {

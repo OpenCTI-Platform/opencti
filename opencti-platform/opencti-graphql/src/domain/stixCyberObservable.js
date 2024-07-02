@@ -6,7 +6,8 @@ import unzipper from 'unzipper';
 import { streamToBuffer } from '@jorgeferrero/stream-to-buffer';
 import { fileTypeFromBuffer } from 'file-type';
 import { v4 as uuidv4 } from 'uuid';
-import { UserInputError } from 'apollo-server-express';
+import { GraphQLError } from 'graphql';
+import { ApolloServerErrorCode } from '@apollo/server/errors';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import { createEntity, deleteElementById, distributionEntities, storeLoadByIdWithRefs, timeSeriesEntities, updateAttribute } from '../database/middleware';
 import {
@@ -157,7 +158,7 @@ export const createIndicatorFromObservable = async (context, user, input, observ
 export const promoteObservableToIndicator = async (context, user, observableId) => {
   const observable = await storeLoadByIdWithRefs(context, user, observableId);
   if (!observable) {
-    throw new UserInputError('Observable not found', { id: observableId });
+    throw new GraphQLError('Observable not found', { id: observableId, extensions: { code: ApolloServerErrorCode.BAD_USER_INPUT } });
   }
   controlUserConfidenceAgainstElement(user, observable);
   const objectLabel = (observable[INPUT_LABELS] ?? []).map((n) => n.internal_id);

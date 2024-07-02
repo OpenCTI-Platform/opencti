@@ -179,7 +179,7 @@ const initHistoryManager = () => {
       }
       logApp.info('[OPENCTI-MODULE] End of history manager processing');
     } catch (e: any) {
-      if (e.name === TYPE_LOCK_ERROR) {
+      if (e.extensions.name === TYPE_LOCK_ERROR) {
         logApp.debug('[OPENCTI-MODULE] History manager already started by another API');
       } else {
         logApp.error(e, { manager: 'HISTORY_MANAGER' });

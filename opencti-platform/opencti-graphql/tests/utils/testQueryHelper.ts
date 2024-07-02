@@ -41,12 +41,12 @@ export const queryAsUserWithSuccess = async (client: AxiosInstance, request: { q
  * @param client
  * @param request
  */
-export const queryAsUserIsExpectedForbidden = async (client: AxiosInstance, request: any) => {
+export const queryAsUserIsExpectedForbidden = async (client: AxiosInstance, request: any, message?: string) => {
   const queryResult = await executeInternalQuery(client, print(request.query), request.variables);
   logApp.info('queryAsUserIsExpectedForbidden=> queryResult:', queryResult);
   expect(queryResult.errors, 'FORBIDDEN_ACCESS is expected.').toBeDefined();
-  expect(queryResult.errors?.length, `FORBIDDEN_ACCESS is expected, but got ${queryResult.errors?.length} errors`).toBe(1);
-  expect(queryResult.errors[0].name, `FORBIDDEN_ACCESS is expected but got ${queryResult.errors[0].name}`).toBe(FORBIDDEN_ACCESS);
+  expect(queryResult.errors?.length, message ?? `FORBIDDEN_ACCESS is expected, but got ${queryResult.errors?.length} errors`).toBe(1);
+  expect(queryResult.errors[0].extensions.code, `FORBIDDEN_ACCESS is expected but got ${queryResult.errors[0].name}`).toBe(FORBIDDEN_ACCESS);
 };
 
 /**
@@ -59,7 +59,7 @@ export const queryUnauthenticatedIsExpectedForbidden = async (request: any) => {
   const queryResult = await executeInternalQuery(anonymous, print(request.query), request.variables);
   expect(queryResult.errors, 'AUTH_REQUIRED error is expected but got zero errors.').toBeDefined();
   expect(queryResult.errors?.length, `AUTH_REQUIRED is expected, but got ${queryResult.errors?.length} errors`).toBe(1);
-  expect(queryResult.errors[0].name, `AUTH_REQUIRED is expected but got ${queryResult.errors[0].name}`).toBe(AUTH_REQUIRED);
+  expect(queryResult.errors[0].extensions.code, `AUTH_REQUIRED is expected but got ${queryResult.errors[0].name}`).toBe(AUTH_REQUIRED);
 };
 
 export const requestFileFromStorageAsAdmin = async (storageId: string) => {

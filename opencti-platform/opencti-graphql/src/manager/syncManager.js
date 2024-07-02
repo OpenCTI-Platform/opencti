@@ -220,7 +220,7 @@ const initSyncManager = () => {
       managerRunning = true;
       await processingLoop(lock);
     } catch (e) {
-      if (e.name === TYPE_LOCK_ERROR) {
+      if (e.extensions.name === TYPE_LOCK_ERROR) {
         logApp.debug('[OPENCTI-MODULE] Sync manager already in progress by another API');
       } else {
         logApp.error(e, { manager: 'SYNC_MANAGER' });

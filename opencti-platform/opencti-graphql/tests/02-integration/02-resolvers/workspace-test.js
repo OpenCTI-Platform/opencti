@@ -7,6 +7,7 @@ import { ADMIN_USER, editorQuery, getUserIdByEmail, queryAsAdmin, testContext, U
 import { elLoadById } from '../../../src/database/engine';
 import { MEMBER_ACCESS_ALL } from '../../../src/utils/access';
 import { toBase64 } from '../../../src/database/utils';
+import { queryAsUserIsExpectedForbidden } from '../../utils/testQueryHelper';
 
 const LIST_QUERY = gql`
   query workspaces(
@@ -934,16 +935,13 @@ describe('Workspace member access behavior', () => {
   });
 
   it('User with view access right cannot update workspace3', async () => {
-    const queryResult = await editorQuery({
+    await queryAsUserIsExpectedForbidden(USER_EDITOR.client, {
       query: UPDATE_QUERY,
       variables: {
         id: workspace3InternalId,
         input: { key: 'name', value: ['custom dashboard3'] },
       },
     });
-    expect(queryResult).not.toBeNull();
-    expect(queryResult.errors.length).toEqual(1);
-    expect(queryResult.errors.at(0).name).toEqual('FORBIDDEN_ACCESS');
   });
 
   it('User with edit access right updates workspace2', async () => {
@@ -1000,10 +998,8 @@ describe('Workspace member access behavior', () => {
     });
     expect(queryResult).not.toBeNull();
     expect(queryResult.errors.length).toEqual(1);
-    expect(queryResult.errors.at(0).name).toEqual('FUNCTIONAL_ERROR');
-    expect(queryResult.errors.at(0).message).toEqual(
-      'Workspace should have at least one admin',
-    );
+    expect(queryResult.errors.at(0).extensions.code).toEqual('FUNCTIONAL_ERROR');
+    expect(queryResult.errors.at(0).message).toEqual('Workspace should have at least one admin');
   });
 
   it('User with edit access right should not update workspace members', async () => {
@@ -1017,13 +1013,10 @@ describe('Workspace member access behavior', () => {
         access_right: 'admin',
       },
     ];
-    const queryResult = await editorQuery({
+    await queryAsUserIsExpectedForbidden(USER_EDITOR.client, {
       query: UPDATE_MEMBERS_QUERY,
       variables: { id: workspace2InternalId, input: authorizedMembersUpdate },
     });
-    expect(queryResult).not.toBeNull();
-    expect(queryResult.errors.length).toEqual(1);
-    expect(queryResult.errors.at(0).name).toEqual('FORBIDDEN_ACCESS');
   });
 
   it('User with admin access right deletes workspace1', async () => {

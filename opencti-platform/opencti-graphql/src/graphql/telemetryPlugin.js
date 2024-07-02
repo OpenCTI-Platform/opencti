@@ -28,7 +28,7 @@ export default {
       didResolveOperation: (resolveContext) => {
         const isWrite = resolveContext.operation && resolveContext.operation.operation === 'mutation';
         const operationType = `${isWrite ? 'INSERT' : 'SELECT'}`;
-        const { context } = resolveContext;
+        const { contextValue: context } = resolveContext;
         const endUserId = context.user?.origin?.user_id ?? 'anonymous';
         tracingSpan = context.tracing.getTracer().startSpan(`${operationType} ${resolveContext.operationName}`, {
           attributes: {

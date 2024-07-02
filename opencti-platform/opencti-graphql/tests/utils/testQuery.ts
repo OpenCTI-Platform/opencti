@@ -1,4 +1,4 @@
-import { ApolloServer } from 'apollo-server-express';
+import { ApolloServer } from '@apollo/server';
 import { wrapper } from 'axios-cookiejar-support';
 import { CookieJar } from 'tough-cookie';
 import { print } from 'graphql';
@@ -9,7 +9,7 @@ import { ADMINISTRATOR_ROLE, BYPASS, DEFAULT_ROLE, executionContext } from '../.
 
 // region static graphql modules
 import '../../src/modules/index';
-import type { AuthUser } from '../../src/types/user';
+import type { AuthContext, AuthUser } from '../../src/types/user';
 import type { StoreMarkingDefinition } from '../../src/types/store';
 import { generateStandardId, MARKING_TLP_AMBER, MARKING_TLP_AMBER_STRICT, MARKING_TLP_CLEAR, MARKING_TLP_GREEN } from '../../src/schema/identifier';
 import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE, ENTITY_TYPE_USER } from '../../src/schema/internalObject';
@@ -654,19 +654,19 @@ export const isPlatformAlive = async () => {
   return !!data?.about.version;
 };
 
-export const serverFromUser = (user = ADMIN_USER) => {
-  return new ApolloServer({
-    schema: createSchema(),
-    introspection: true,
-    persistedQueries: false,
-    context: () => {
-      return executionContext('test', user);
-    },
-  });
-};
+const serverFromUser = new ApolloServer<AuthContext>({
+  schema: createSchema(),
+  introspection: true,
+  persistedQueries: false,
+});
 
-const adminApolloServer = serverFromUser();
-export const queryAsAdmin = (request: any) => adminApolloServer.executeOperation(request);
+export const queryAsAdmin = async <T = Record<string, any>>(request: any) => {
+  const { body } = await serverFromUser.executeOperation<T>(request, { contextValue: executionContext('test', ADMIN_USER) });
+  if (body.kind === 'single') {
+    return body.singleResult;
+  }
+  return body.initialResult;
+};
 
 export const isSorted = (arr: []) => {
   let second_index;

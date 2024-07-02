@@ -636,7 +636,7 @@ const initNotificationManager = () => {
       }
       logApp.info('[OPENCTI-MODULE] End of notification manager processing (live)');
     } catch (e: any) {
-      if (e.name === TYPE_LOCK_ERROR) {
+      if (e.extensions.name === TYPE_LOCK_ERROR) {
         logApp.debug('[OPENCTI-MODULE] Notification manager already started by another API');
       } else {
         logApp.error(e, { manager: 'NOTIFICATION_MANAGER' });
@@ -661,7 +661,7 @@ const initNotificationManager = () => {
       }
       logApp.info('[OPENCTI-MODULE] End of notification manager processing (digest)');
     } catch (e: any) {
-      if (e.name === TYPE_LOCK_ERROR) {
+      if (e.extensions.name === TYPE_LOCK_ERROR) {
         logApp.debug('[OPENCTI-MODULE] Notification manager (digest) already started by another API');
       } else {
         logApp.error(e, { manager: 'NOTIFICATION_MANAGER' });

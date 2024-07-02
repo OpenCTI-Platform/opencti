@@ -1,10 +1,11 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
-import { ADMIN_USER, editorQuery, getUserIdByEmail, participantQuery, queryAsAdmin, USER_EDITOR } from '../../utils/testQuery';
+import { ADMIN_USER, editorQuery, getUserIdByEmail, queryAsAdmin, USER_EDITOR, USER_PARTICIPATE } from '../../utils/testQuery';
 import { toBase64 } from '../../../src/database/utils';
 import { PRIVATE_DASHBOARD_MANIFEST } from './publicDashboard-data';
 import { resetCacheForEntity } from '../../../src/database/cache';
 import { ENTITY_TYPE_PUBLIC_DASHBOARD } from '../../../src/modules/publicDashboard/publicDashboard-types';
+import { queryAsUserIsExpectedForbidden } from '../../utils/testQueryHelper';
 
 const LIST_QUERY = gql`
   query publicDashboards(
@@ -242,14 +243,10 @@ describe('PublicDashboard resolver', () => {
             enabled: true,
           },
         };
-        const publicDashboard = await participantQuery({
+        await queryAsUserIsExpectedForbidden(USER_PARTICIPATE.client, {
           query: CREATE_QUERY,
           variables: PUBLICDASHBOARD2_TO_CREATE,
         });
-
-        expect(publicDashboard).not.toBeNull();
-        expect(publicDashboard.errors.length).toEqual(1);
-        expect(publicDashboard.errors.at(0).name).toEqual('FORBIDDEN_ACCESS');
       });
 
       it('User with EXPLORE_EXUPDATE_PUBLISH capability but private dashboard view access right cannot create public dashboard', async () => {

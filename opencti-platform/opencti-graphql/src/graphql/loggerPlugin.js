@@ -80,7 +80,7 @@ export default {
         const contextVariables = context.request.variables || {};
         const size = Buffer.byteLength(JSON.stringify(contextVariables));
         const isWrite = context.operation && context.operation.operation === 'mutation';
-        const contextUser = context.context.user;
+        const contextUser = context.contextValue.user;
         const origin = contextUser ? contextUser.origin : undefined;
         const [variables] = await tryResolveKeyPromises(contextVariables);
         // Compute inner relations

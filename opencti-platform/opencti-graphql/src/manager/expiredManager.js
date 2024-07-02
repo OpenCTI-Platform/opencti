@@ -79,7 +79,7 @@ const expireHandler = async () => {
     const expiredAccountsPromise = expiredAccounts(context);
     await Promise.all([revokedInstancesPromise, expiredAccountsPromise]);
   } catch (e) {
-    if (e.name === TYPE_LOCK_ERROR) {
+    if (e.extensions.name === TYPE_LOCK_ERROR) {
       logApp.debug('[OPENCTI-MODULE] Expiration manager already started by another API');
     } else {
       logApp.error(e, { manager: 'EXPIRATION_SCHEDULER' });

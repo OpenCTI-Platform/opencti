@@ -71,7 +71,7 @@ const retentionHandler = async () => {
     }
   } catch (e) {
     // We dont care about failing to get the lock.
-    if (e.name === TYPE_LOCK_ERROR) {
+    if (e.extensions.name === TYPE_LOCK_ERROR) {
       logApp.debug('[OPENCTI-MODULE] Retention manager already in progress by another API');
     } else {
       logApp.error(e, { manager: 'RETENTION_MANAGER' });
