@@ -1,5 +1,5 @@
 import type { AttributeDefinition, IdAttribute, NestedObjectAttribute } from '../../schema/attribute-definition';
-import { internalId } from '../../schema/attribute-definition';
+import { entityType, internalId } from '../../schema/attribute-definition';
 import { schemaAttributesDefinition } from '../../schema/schema-attributes';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
 import { connections } from './basicRelationship-registrationAttributes';
@@ -14,6 +14,7 @@ import {
 } from '../../utils/filtering/filtering-constants';
 
 export const stixSightingRelationshipsAttributes: Array<AttributeDefinition> = [
+  { ...entityType, isFilterable: false },
   { name: 'attribute_count', label: 'Count', type: 'numeric', precision: 'integer', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true, isFilterable: true },
   { name: 'first_seen', label: 'First seen', type: 'date', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true, isFilterable: true },
   { name: 'last_seen', label: 'Last seen', type: 'date', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true, isFilterable: true },
