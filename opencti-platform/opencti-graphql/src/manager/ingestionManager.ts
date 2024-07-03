@@ -40,6 +40,7 @@ import { connectorIdFromIngestId } from '../domain/connector';
 // If the lock is free, every API as the right to take it.
 const SCHEDULE_TIME = conf.get('ingestion_manager:interval') || 300000;
 const INGESTION_MANAGER_KEY = conf.get('ingestion_manager:lock_key') || 'ingestion_manager_lock';
+const CSV_MAX_BUNDLE_SIZE_GENERATION = conf.get('ingestion_manager:csv_max_bundle_generation') || 1000;
 
 let running = false;
 
@@ -391,12 +392,11 @@ const taxiiExecutor = async (context: AuthContext) => {
 // endregion
 
 // region Csv ingestion
-const csvDataToObjects = async (csvBuffer: Buffer | string, ingestion: BasicStoreEntityIngestionCsv, csvMapper: CsvMapperParsed, context: AuthContext) => {
+const csvDataToObjects = async (csvLines: string[], ingestion: BasicStoreEntityIngestionCsv, csvMapper: CsvMapperParsed, context: AuthContext) => {
   const ingestionUser = await findUserById(context, context.user ?? SYSTEM_USER, ingestion.user_id) ?? SYSTEM_USER;
-  const { objects } = await bundleProcess(context, ingestionUser, csvBuffer, csvMapper);
+  const { objects } = await bundleProcess(context, ingestionUser, csvLines, csvMapper);
   if (objects === undefined) {
-    logApp.error(`[OPENCTI-MODULE] INGESTION - Undefined bundle objects for csv ingest: ${ingestion.name}`);
-    const error = UnknownError('Undefined CSV objects', { data: csvBuffer.toString() });
+    const error = UnknownError('Undefined CSV objects', { data: csvLines });
     logApp.error(error, { name: ingestion.name, context: 'CSV transform' });
   } else {
     logApp.info(`[OPENCTI-MODULE] INGESTION - CSV ingestion execution for: ${ingestion.name} with: ${objects.length} items`);
@@ -410,9 +410,9 @@ const csvDataHandler = async (context: AuthContext, ingestion: BasicStoreEntityI
   const csvMapperParsed = parseCsvMapper(csvMapper);
   csvMapperParsed.user_chosen_markings = ingestion.markings ?? [];
 
-  let data: Buffer | undefined;
-  let addedLast: string | null | undefined;
-  try {
+  const { csvLines, addedLast } = await fetchCsvFromUrl(csvMapperParsed, ingestion);
+  const linesContent = csvLines.join('');
+  const isUnchangedData = bcrypt.compareSync(linesContent, ingestion.current_state_hash ?? '');
     const csvResponse = await fetchCsvFromUrl(csvMapperParsed, ingestion);
     data = csvResponse.data;
     addedLast = csvResponse.addedLast;
@@ -422,18 +422,16 @@ const csvDataHandler = async (context: AuthContext, ingestion: BasicStoreEntityI
     throw e;
   }
 
-  const hashedIncomingData = hashSHA256(data.toString());
-  const isUnchangedData = compareHashSHA256(data.toString(), ingestion.current_state_hash ?? '');
+  const objects = await csvDataToObjects(csvLines, ingestion, csvMapperParsed, context);
+  for (let index = 0; index < objects.length; index += CSV_MAX_BUNDLE_SIZE_GENERATION) {
   if (isUnchangedData) {
     logApp.info(`[OPENCTI-MODULE] INGESTION - Unchanged data for csv ingest: ${ingestion.name}`);
     await updateBuiltInConnectorInfo(context, ingestion.user_id, ingestion.id);
   } else {
-    const objects = await csvDataToObjects(data, ingestion, csvMapperParsed, context);
-    const bundle: StixBundle = { type: 'bundle', spec_version: '2.1', id: `bundle--${uuidv4()}`, objects };
-    // Push the bundle to absorption queue
     await pushBundleToConnectorQueue(context, ingestion, bundle);
+    const splitBundle = objects.slice(index, index + CSV_MAX_BUNDLE_SIZE_GENERATION);
     // Update the state
-    const state = { current_state_hash: hashedIncomingData, added_after_start: utcDate(addedLast) };
+  const hashedIncomingData = bcrypt.hashSync(linesContent);
     await patchCsvIngestion(context, SYSTEM_USER, ingestion.internal_id, state);
     await updateBuiltInConnectorInfo(context, ingestion.user_id, ingestion.id, state);
   }

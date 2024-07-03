@@ -5,6 +5,7 @@ import { ENTITY_TYPE_CSV_MAPPER } from './csvMapper-types';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../../schema/general';
 import { NAME_FIELD, normalizeName } from '../../../schema/identifier';
 import convertCsvMapperToStix from './csvMapper-converter';
+import './deprecated/csvMapper-deprecated';
 
 const CSV_MAPPER_DEFINITION: ModuleDefinition<StoreEntityCsvMapper, StixCsvMapper> = {
   type: {

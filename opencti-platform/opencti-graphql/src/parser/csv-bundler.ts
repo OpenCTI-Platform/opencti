@@ -1,3 +1,4 @@
+import fs from 'node:fs';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE } from '../schema/stixMetaObject';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { CsvMapperParsed } from '../modules/internal/csvMapper/csvMapper-types';
@@ -6,7 +7,7 @@ import { BundleBuilder } from './bundle-creator';
 import { handleRefEntities, mappingProcess } from './csv-mapper';
 import { convertStoreToStix } from '../database/stix-converter';
 import type { BasicStoreBase, StoreCommon } from '../types/store';
-import { parsingProcess } from './csv-parser';
+import { parseReadableToLines, parsingProcess } from './csv-parser';
 import { isStixDomainObjectContainer } from '../schema/stixDomainObject';
 import { objects } from '../schema/stixRefRelationship';
 import { isEmptyField } from '../database/utils';
@@ -24,7 +25,7 @@ interface BundleProcessOpts {
 export const bundleProcess = async (
   context: AuthContext,
   user: AuthUser,
-  content: Buffer | string,
+  lines: string[],
   mapper: CsvMapperParsed,
   opts: BundleProcessOpts = {}
 ) => {
@@ -33,7 +34,7 @@ export const bundleProcess = async (
   const sanitizedMapper = sanitized(mapper);
   const bundleBuilder = new BundleBuilder();
   let skipLine = sanitizedMapper.has_header;
-  const rawRecords = await parsingProcess(content, mapper.separator, mapper.skipLineChar);
+  const rawRecords = await parsingProcess(lines, mapper.separator, mapper.skipLineChar);
   const records = maxRecordNumber ? rawRecords.slice(0, maxRecordNumber) : rawRecords;
   const refEntities = await handleRefEntities(context, user, mapper);
   if (records) {
@@ -70,4 +71,14 @@ export const bundleProcess = async (
   }
   // Build and return the result
   return bundleBuilder.build();
+};
+
+export const bundleProcessFromFile = async (
+  context: AuthContext,
+  user: AuthUser,
+  filePath: string,
+  mapper: CsvMapperParsed
+) => {
+  const csvLines = await parseReadableToLines(fs.createReadStream(filePath));
+  return bundleProcess(context, user, csvLines, mapper);
 };

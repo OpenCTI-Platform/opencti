@@ -1,11 +1,9 @@
-import fs from 'node:fs';
 // import/no-unresolved https://github.com/import-js/eslint-plugin-import/issues/1810
 // eslint-disable-next-line
 import { parse } from 'csv-parse/sync';
 import * as readline from 'readline';
-import { Readable } from 'stream';
 
-const parserOption = (delimiter: string, comment: string) => ({
+const parserOption = (delimiter: string, comment?: string) => ({
   delimiter,
   comment,
   comment_no_infix: true,
@@ -13,52 +11,20 @@ const parserOption = (delimiter: string, comment: string) => ({
   relax_column_count: true,
 });
 
-const parseCsvFile = (filePath: string, delimiter: string, skipLineChar: string): Promise<string[][]> => {
-  return new Promise((resolve, reject) => {
-    const readLine = readline.createInterface({
-      input: fs.createReadStream(filePath),
-      crlfDelay: Infinity
-    });
-    const records: string[] = [];
-    readLine.on('line', (line) => {
-      records.push(`${line}\n`);
-    })
-      .on('error', (err) => {
-        reject(err);
-      })
-      .on('close', () => {
-        try {
-          const parsing = parse(records.join(''), parserOption(delimiter, skipLineChar));
-          resolve(parsing);
-        } catch (err) {
-          reject(err);
-        }
-      });
-  });
-};
-
-export const parseCsvBufferContent = (buffer: Buffer, delimiter: string, skipLineChar: string): Promise<string[][]> => {
-  return new Promise((resolve, reject) => {
-    const readable = Readable.from(buffer);
-    const chunks: Uint8Array[] = [];
-    readable.on('data', (chunk: Uint8Array) => {
-      chunks.push(new Uint8Array([...chunk]));
-    }).on('error', (err) => {
-      reject(err);
-    }).on('end', () => {
-      try {
-        const parsing = parse(Buffer.concat(chunks).toString('utf8'), parserOption(delimiter, skipLineChar));
-        resolve(parsing);
-      } catch (error) {
-        reject(error);
-      }
-    });
-  });
-};
-
-export const parsingProcess = async (content: Buffer | string, delimiter: string, skipLineChar: string): Promise<string[][]> => {
-  if (content instanceof Buffer) {
-    return parseCsvBufferContent(content, delimiter, skipLineChar);
+export const parseReadableToLines = async (input: NodeJS.ReadableStream, maxRecordNumber?: number): Promise<string[]> => {
+  const records: string[] = [];
+  const rl = readline.createInterface({ input, crlfDelay: 5000 });
+  // Need an async interator to prevent blocking
+  // eslint-disable-next-line no-restricted-syntax
+  for await (const line of rl) {
+    records.push(line);
+    if (maxRecordNumber && records.length > maxRecordNumber) {
+      break;
+    }
   }
-  return parseCsvFile(content, delimiter, skipLineChar);
+  return records;
+};
+
+export const parsingProcess = async (lines: string[], delimiter: string, skipLineChar?: string): Promise<string[][]> => {
+  return parse(lines.join('\n'), parserOption(delimiter, skipLineChar));
 };
