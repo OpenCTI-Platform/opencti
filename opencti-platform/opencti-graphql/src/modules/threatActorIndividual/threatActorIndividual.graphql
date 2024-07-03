@@ -149,6 +149,8 @@ enum ThreatActorsIndividualOrdering {
   created_at
   updated_at
   x_opencti_workflow_id
+  sophistication
+  resource_level
   confidence
   _score
 }

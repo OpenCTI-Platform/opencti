@@ -7,7 +7,6 @@ import { createStyles } from '@mui/styles';
 import { Theme as MuiTheme } from '@mui/material/styles/createTheme';
 import { useDataTableContext } from '../dataTableUtils';
 import { DataTableColumn, DataTableHeaderProps, DataTableVariant, LocalStorageColumns } from '../dataTableTypes';
-import { isNotEmptyField } from '../../../utils/utils';
 
 export const SELECT_COLUMN_SIZE = 42;
 
@@ -96,7 +95,7 @@ const DataTableHeader: FunctionComponent<DataTableHeaderProps> = ({
         {sortBy && (orderAsc ? <ArrowDropUp /> : <ArrowDropDown />)}
       </div>
       <>
-        {(column.isSortable || isNotEmptyField(availableFilterKeys)) && (
+        {(column.isSortable || (availableFilterKeys ?? []).includes(column.id)) && (
           <>
             <IconButton
               disableRipple

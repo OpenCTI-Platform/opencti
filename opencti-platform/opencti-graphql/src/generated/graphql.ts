@@ -1709,6 +1709,7 @@ export enum CampaignsOrdering {
   LastSeen = 'last_seen',
   Modified = 'modified',
   Name = 'name',
+  ObjectMarking = 'objectMarking',
   RolePlayed = 'role_played',
   UpdatedAt = 'updated_at',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
@@ -10586,6 +10587,8 @@ export enum IntrusionSetsOrdering {
   CreatedAt = 'created_at',
   Modified = 'modified',
   Name = 'name',
+  PrimaryMotivation = 'primary_motivation',
+  ResourceLevel = 'resource_level',
   UpdatedAt = 'updated_at',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
@@ -12032,6 +12035,7 @@ export enum MalwaresOrdering {
   Created = 'created',
   CreatedAt = 'created_at',
   FirstSeen = 'first_seen',
+  IsFamily = 'is_family',
   LastSeen = 'last_seen',
   MalwareTypes = 'malware_types',
   Modified = 'modified',
@@ -26112,6 +26116,8 @@ export enum ThreatActorsIndividualOrdering {
   CreatedAt = 'created_at',
   Modified = 'modified',
   Name = 'name',
+  ResourceLevel = 'resource_level',
+  Sophistication = 'sophistication',
   UpdatedAt = 'updated_at',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
@@ -26123,6 +26129,8 @@ export enum ThreatActorsOrdering {
   CreatedAt = 'created_at',
   Modified = 'modified',
   Name = 'name',
+  ResourceLevel = 'resource_level',
+  Sophistication = 'sophistication',
   ThreatActorTypes = 'threat_actor_types',
   UpdatedAt = 'updated_at',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
