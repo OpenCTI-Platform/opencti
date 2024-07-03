@@ -11,7 +11,7 @@ import { CsvMapperTestDialogQuery$data } from '@components/data/csvMapper/__gene
 import { InformationOutline } from 'mdi-material-ui';
 import Box from '@mui/material/Box';
 import { useFormatter } from '../../../../components/i18n';
-import {commitMutation, fetchQuery, handleError} from '../../../../relay/environment';
+import { commitMutation, handleError } from '../../../../relay/environment';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 
 const csvMapperTestQuery = graphql`
