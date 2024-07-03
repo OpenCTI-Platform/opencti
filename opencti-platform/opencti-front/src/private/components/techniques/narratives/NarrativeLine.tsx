@@ -42,7 +42,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
-const narrativeLineFragment = graphql`
+export const narrativeLineFragment = graphql`
   fragment NarrativeLine_node on Narrative {
     id
     name

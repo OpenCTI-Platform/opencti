@@ -8,8 +8,11 @@ import List from '@mui/material/List';
 import { makeStyles } from '@mui/styles';
 import { Theme } from '@mui/material/styles/createTheme';
 import Skeleton from '@mui/material/Skeleton';
-import { useFormatter } from '../../../../components/i18n';
+import { useFragment } from 'react-relay';
+import { narrativeLineFragment } from '@components/techniques/narratives/NarrativeLine';
+import { NarrativeLine_node$key } from '@components/techniques/narratives/__generated__/NarrativeLine_node.graphql';
 import ItemIcon from '../../../../components/ItemIcon';
+import { useFormatter } from '../../../../components/i18n';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   item: {},
@@ -48,12 +51,13 @@ const useStyles = makeStyles<Theme>((theme) => ({
 interface NarrativeWithSubnarrativeLineProps {
   isSubNarrative?: boolean;
   subNarratives?: any[];
-  node: any;
+  node: NarrativeLine_node$key;
 }
 
 const NarrativeWithSubnarrativeLine: FunctionComponent<NarrativeWithSubnarrativeLineProps> = ({ node, subNarratives, isSubNarrative }) => {
   const { t_i18n } = useFormatter();
   const classes = useStyles();
+  const data = useFragment(narrativeLineFragment, node);
 
   return (
     <div>
@@ -62,7 +66,7 @@ const NarrativeWithSubnarrativeLine: FunctionComponent<NarrativeWithSubnarrative
         divider
         button
         component={Link}
-        to={`/dashboard/techniques/narratives/${node.id}`}
+        to={`/dashboard/techniques/narratives/${data.id}`}
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
           <ItemIcon
@@ -73,9 +77,9 @@ const NarrativeWithSubnarrativeLine: FunctionComponent<NarrativeWithSubnarrative
         <ListItemText
           primary={
             <>
-              <div className={classes.name}>{node.name}</div>
+              <div className={classes.name}>{data.name}</div>
               <div className={classes.description}>
-                {node.description?.length ? node.description : t_i18n('This narrative does not have any description.')}
+                {data.description?.length ? data.description : t_i18n('This narrative does not have any description.')}
               </div>
             </>
               }
@@ -85,13 +89,12 @@ const NarrativeWithSubnarrativeLine: FunctionComponent<NarrativeWithSubnarrative
         </ListItemIcon>
       </ListItem>
       {subNarratives && subNarratives.length > 0 && (
-      <List style={{ margin: 0, padding: 0 }}>
+      <List style={{ margin: 0, padding: 20 }}>
         {subNarratives.map((subNarrative) => (
           <NarrativeWithSubnarrativeLine key={subNarrative.id} node={subNarrative} isSubNarrative={true} />
         ))}
       </List>
       )}
-
     </div>
   );
 };
