@@ -65,7 +65,7 @@ const CsvMapperTestDialog: FunctionComponent<CsvMapperTestDialogProps> = ({
         }
         setLoading(false);
       },
-      onError: (error: any) => {
+      onError: (error: Error) => {
         handleError(error);
         setLoading(false);
       },
