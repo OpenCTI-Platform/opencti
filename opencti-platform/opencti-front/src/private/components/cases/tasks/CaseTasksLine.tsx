@@ -79,12 +79,14 @@ interface CaseTasksLineProps {
   node: CaseTasksLine_data$key;
   entityId?: string;
   paginationOptions: CaseTasksLinesQuery$variables;
+  enableReferences: boolean;
 }
 
 export const CaseTasksLine: FunctionComponent<CaseTasksLineProps> = ({
   node,
   entityId,
   paginationOptions,
+  enableReferences,
 }) => {
   const classes = useStyles();
   const { fld } = useFormatter();
@@ -141,7 +143,7 @@ export const CaseTasksLine: FunctionComponent<CaseTasksLineProps> = ({
           </IconButton>
         }
       >
-        <CaseTaskOverview tasksData={task} />
+        <CaseTaskOverview tasksData={task} enableReferences={enableReferences} />
       </Drawer>
     </>
   );

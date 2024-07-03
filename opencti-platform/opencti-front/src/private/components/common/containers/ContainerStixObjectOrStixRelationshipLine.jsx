@@ -50,6 +50,7 @@ const ContainerStixObjectOrStixRelationshipLineComponent = ({
   dataColumns,
   containerId,
   paginationOptions,
+  enableReferences,
 }) => {
   const classes = useStyles();
   const { fd } = useFormatter();
@@ -137,6 +138,7 @@ const ContainerStixObjectOrStixRelationshipLineComponent = ({
             relationshipType="object"
             paginationKey="Pagination_objects"
             paginationOptions={paginationOptions}
+            enableReferences={enableReferences}
           />
         </Security>
       </ListItemSecondaryAction>

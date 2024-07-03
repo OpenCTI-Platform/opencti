@@ -41,7 +41,9 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import Slide from '@mui/material/Slide';
+import { Form, Formik } from 'formik';
 import StixNestedRefRelationshipCreationFromKnowledgeGraph from '../../common/stix_nested_ref_relationships/StixNestedRefRelationshipCreationFromKnowledgeGraph';
+import CommitMessage from '../../common/form/CommitMessage';
 import inject18n from '../../../../components/i18n';
 import ContainerAddStixCoreObjects from '../../common/containers/ContainerAddStixCoreObjects';
 import StixCoreRelationshipCreation from '../../common/stix_core_relationships/StixCoreRelationshipCreation';
@@ -104,6 +106,7 @@ class CaseRfiKnowledgeGraphBar extends Component {
       openEditObservable: false,
       displayRemove: false,
       deleteObject: false,
+      referenceDialogOpened: false,
     };
   }
 
@@ -306,6 +309,29 @@ class CaseRfiKnowledgeGraphBar extends Component {
     this.handleCloseSelectByType();
   }
 
+  closeReferencesPopup() {
+    this.setState({ referenceDialogOpened: false });
+  }
+
+  submitReference(values, { setSubmitting, resetForm }) {
+    const { handleDeleteSelected } = this.props;
+    const { deleteObject } = this.state;
+    const references = (values.references || []).map((ref) => ref.value);
+    this.handleCloseRemove();
+    handleDeleteSelected(deleteObject, values.message, references, setSubmitting, resetForm);
+  }
+
+  handleSubmitRemoveElements() {
+    const { enableReferences, handleDeleteSelected } = this.props;
+    const { deleteObject } = this.state;
+    if (enableReferences) {
+      this.setState({ referenceDialogOpened: true });
+    } else {
+      this.handleCloseRemove();
+      handleDeleteSelected(deleteObject);
+    }
+  }
+
   render() {
     const {
       t,
@@ -376,6 +402,7 @@ class CaseRfiKnowledgeGraphBar extends Component {
       openEditObservable,
       openEditNested,
       deleteObject,
+      referenceDialogOpened,
     } = this.state;
     const isInferred = selectedNodes.filter((n) => n.inferred || n.isNestedInferred).length
         > 0
@@ -1100,16 +1127,39 @@ class CaseRfiKnowledgeGraphBar extends Component {
                           {t('Cancel')}
                         </Button>
                         <Button
-                          onClick={() => {
-                            this.handleCloseRemove();
-                            handleDeleteSelected(deleteObject);
-                          }}
+                          onClick={ this.handleSubmitRemoveElements.bind(this)}
                           color="secondary"
                         >
                           {t('Remove')}
                         </Button>
                       </DialogActions>
                     </Dialog>
+                    {enableReferences && (
+                    <Formik
+                      initialValues={{ message: '', references: [] }}
+                      onSubmit={this.submitReference.bind(this)}
+                    >
+                      {({
+                        submitForm,
+                        isSubmitting,
+                        setFieldValue,
+                        values,
+                      }) => (
+                        <Form>
+                          <CommitMessage
+                            handleClose={this.closeReferencesPopup.bind(this)}
+                            open={referenceDialogOpened}
+                            submitForm={submitForm}
+                            disabled={isSubmitting}
+                            setFieldValue={setFieldValue}
+                            values={values.references}
+                            id={caseData.id}
+                            noStoreUpdate={true}
+                          />
+                        </Form>
+                      )}
+                    </Formik>
+                    )}
                   </div>
                 )}
                 <div className="clearfix" />

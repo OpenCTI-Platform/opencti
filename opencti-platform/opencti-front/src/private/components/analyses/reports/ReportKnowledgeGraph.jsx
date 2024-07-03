@@ -628,7 +628,7 @@ class ReportKnowledgeGraphComponent extends Component {
     });
   }
 
-  async handleDeleteSelected(deleteObject = false) {
+  async handleDeleteSelected(deleteObject = false, commitMessage = '', references = [], setSubmitting = null, resetForm = null) {
     const checkedContainerTypes = containerTypes.filter((type) => !ignoredStixCoreObjectsTypes.includes(type)); // containers checked when cascade delete
     // Remove selected links
     const selectedLinks = Array.from(this.selectedLinks);
@@ -650,6 +650,7 @@ class ReportKnowledgeGraphComponent extends Component {
               variables: {
                 id: n.id,
               },
+              setSubmitting,
             });
           } else {
             commitMutation({
@@ -658,7 +659,10 @@ class ReportKnowledgeGraphComponent extends Component {
                 id: this.props.report.id,
                 toId: n.id,
                 relationship_type: 'object',
+                commitMessage,
+                references,
               },
+              setSubmitting,
             });
           }
         });
@@ -690,7 +694,10 @@ class ReportKnowledgeGraphComponent extends Component {
           id: this.props.report.id,
           toId: n.id,
           relationship_type: 'object',
+          commitMessage,
+          references,
         },
+        setSubmitting,
       });
     }, relationshipsToRemove);
     R.forEach((n) => {
@@ -710,6 +717,7 @@ class ReportKnowledgeGraphComponent extends Component {
               variables: {
                 id: n.id,
               },
+              setSubmitting,
             });
           } else {
             commitMutation({
@@ -718,7 +726,10 @@ class ReportKnowledgeGraphComponent extends Component {
                 id: this.props.report.id,
                 toId: n.id,
                 relationship_type: 'object',
+                commitMessage,
+                references,
               },
+              setSubmitting,
             });
           }
         });
@@ -742,6 +753,8 @@ class ReportKnowledgeGraphComponent extends Component {
       numberOfSelectedNodes: this.selectedNodes.size,
       numberOfSelectedLinks: this.selectedLinks.size,
     });
+    if (setSubmitting) setSubmitting(false);
+    if (resetForm) resetForm(true);
   }
 
   handleCloseEntityEdition(entityId) {

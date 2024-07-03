@@ -16,6 +16,8 @@ import DialogContentText from '@mui/material/DialogContentText';
 import MoreVert from '@mui/icons-material/MoreVert';
 import { ConnectionHandler } from 'relay-runtime';
 import Alert from '@mui/material/Alert';
+import { Form, Formik } from 'formik';
+import CommitMessage from '../form/CommitMessage';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
@@ -46,9 +48,11 @@ export const containerStixCoreObjectPopoverRemoveMutation = graphql`
     $id: ID!
     $toId: StixRef!
     $relationship_type: String!
+    $commitMessage: String
+    $references: [String]
   ) {
     containerEdit(id: $id) {
-      relationDelete(toId: $toId, relationship_type: $relationship_type) {
+      relationDelete(toId: $toId, relationship_type: $relationship_type, commitMessage: $commitMessage, references: $references) {
         id
       }
     }
@@ -59,9 +63,11 @@ export const containerStixCoreObjectPopoverFieldPatchMutation = graphql`
   mutation ContainerStixCoreObjectPopoverFieldPatchMutation(
     $id: ID!
     $input: [EditInput!]!
+    $commitMessage: String
+    $references: [String]
   ) {
     stixDomainObjectEdit(id: $id) {
-      fieldPatch(input: $input) {
+      fieldPatch(input: $input, commitMessage: $commitMessage, references: $references) {
         ... on Report {
           content_mapping
         }
@@ -95,6 +101,7 @@ class ContainerStixCoreObjectPopover extends Component {
       removing: false,
       deleting: false,
       deletingMapping: false,
+      referenceDialogOpened: false,
     };
   }
 
@@ -116,6 +123,15 @@ class ContainerStixCoreObjectPopover extends Component {
     this.setState({ removing: false, displayRemove: false });
   }
 
+  handleSubmitRemove() {
+    const { enableReferences } = this.props;
+    if (enableReferences) {
+      this.setState({ referenceDialogOpened: true });
+    } else {
+      this.submitRemove();
+    }
+  }
+
   handleOpenDeleteMapping() {
     this.setState({ displayDeleteMapping: true });
     this.handleClose();
@@ -123,6 +139,15 @@ class ContainerStixCoreObjectPopover extends Component {
 
   handleCloseDeleteMapping() {
     this.setState({ deletingMapping: false, displayDeleteMapping: false });
+  }
+
+  handleSubmitDeleteMapping() {
+    const { enableReferences } = this.props;
+    if (enableReferences) {
+      this.setState({ referenceDialogOpened: true });
+    } else {
+      this.submitDeleteMapping();
+    }
   }
 
   handleOpenDelete() {
@@ -134,9 +159,9 @@ class ContainerStixCoreObjectPopover extends Component {
     this.setState({ deleting: false, displayDelete: false });
   }
 
-  submitDeleteMapping() {
+  submitDeleteMapping(commitMessage = '', references = [], setSubmitting = null, resetForm = null) {
     const { containerId, toStandardId, contentMappingData } = this.props;
-    this.setState({ removing: true });
+    this.setState({ deletingMapping: true });
     const newMappingData = deleteElementByValue(contentMappingData, toStandardId);
     commitMutation({
       mutation: containerStixCoreObjectPopoverFieldPatchMutation,
@@ -146,14 +171,18 @@ class ContainerStixCoreObjectPopover extends Component {
           key: 'content_mapping',
           value: encodeMappingData(newMappingData),
         },
+        commitMessage,
+        references,
       },
       onCompleted: () => {
         this.handleCloseDeleteMapping();
+        if (setSubmitting) setSubmitting(false);
+        if (resetForm) resetForm(true);
       },
     });
   }
 
-  submitRemove() {
+  submitRemove(commitMessage = '', references = [], setSubmitting = null, resetForm = null) {
     const {
       containerId,
       toId,
@@ -170,6 +199,8 @@ class ContainerStixCoreObjectPopover extends Component {
         id: containerId,
         toId,
         relationship_type: relationshipType,
+        commitMessage,
+        references,
       },
       updater: (store) => {
         // ID is not valid pagination options, will be handled better when hooked
@@ -186,11 +217,12 @@ class ContainerStixCoreObjectPopover extends Component {
         }
       },
       onCompleted: () => {
-        this.submitDeleteMapping();
+        this.submitDeleteMapping(commitMessage, references, setSubmitting, resetForm);
         this.handleCloseRemove();
         const newSelectedElements = R.omit([toId], selectedElements);
         setSelectedElements?.(newSelectedElements);
       },
+      setSubmitting,
     });
   }
 
@@ -231,8 +263,20 @@ class ContainerStixCoreObjectPopover extends Component {
     });
   }
 
+  closeReferencesPopup() {
+    this.setState({ referenceDialogOpened: false });
+  }
+
+  submitReference(values, { setSubmitting, resetForm }) {
+    const { displayRemove, displayDeleteMapping } = this.state;
+    const references = (values.references || []).map((ref) => ref.value);
+    if (displayRemove) this.submitRemove(values.message, references, setSubmitting, resetForm);
+    else if (displayDeleteMapping) this.submitDeleteMapping(values.message, references, setSubmitting, resetForm);
+  }
+
   render() {
-    const { classes, t, theme, contentMappingData, mapping } = this.props;
+    const { classes, t, theme, contentMappingData, mapping, containerId, enableReferences } = this.props;
+    const { referenceDialogOpened } = this.state;
     return (
       <div className={classes.container}>
         <IconButton
@@ -287,7 +331,7 @@ class ContainerStixCoreObjectPopover extends Component {
             </Button>
             <Button
               color="secondary"
-              onClick={this.submitDeleteMapping.bind(this)}
+              onClick={this.handleSubmitDeleteMapping.bind(this)}
               disabled={this.state.deletingMapping}
             >
               {t('Delete mapping')}
@@ -315,13 +359,39 @@ class ContainerStixCoreObjectPopover extends Component {
             </Button>
             <Button
               color="secondary"
-              onClick={this.submitRemove.bind(this)}
+              onClick={this.handleSubmitRemove.bind(this)}
               disabled={this.state.removing}
             >
               {t('Remove')}
             </Button>
           </DialogActions>
         </Dialog>
+        {enableReferences && (
+          <Formik
+            initialValues={{ message: '', references: [] }}
+            onSubmit={this.submitReference.bind(this)}
+          >
+            {({
+              submitForm,
+              isSubmitting,
+              setFieldValue,
+              values,
+            }) => (
+              <Form>
+                <CommitMessage
+                  handleClose={this.closeReferencesPopup.bind(this)}
+                  open={referenceDialogOpened}
+                  submitForm={submitForm}
+                  disabled={isSubmitting}
+                  setFieldValue={setFieldValue}
+                  values={values.references}
+                  id={containerId}
+                  noStoreUpdate={true}
+                />
+              </Form>
+            )}
+          </Formik>
+        )}
         <Dialog
           PaperProps={{ elevation: 1 }}
           open={this.state.displayDelete}
@@ -373,6 +443,7 @@ ContainerStixCoreObjectPopover.propTypes = {
   setSelectedElements: PropTypes.func,
   contentMappingData: PropTypes.object,
   mapping: PropTypes.number,
+  enableReferences: PropTypes.bool,
 };
 
 export default compose(

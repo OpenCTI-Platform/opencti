@@ -22,7 +22,7 @@ const styles = () => ({
 
 class NoteComponent extends Component {
   render() {
-    const { classes, note } = this.props;
+    const { classes, note, enableReferences } = this.props;
     return (
       <>
         <Grid
@@ -47,6 +47,7 @@ class NoteComponent extends Component {
             <ContainerStixObjectsOrStixRelationships
               isSupportParticipation={true}
               container={note}
+              enableReferences={enableReferences}
             />
           </Grid>
         </Grid>
@@ -74,6 +75,7 @@ class NoteComponent extends Component {
 NoteComponent.propTypes = {
   note: PropTypes.object,
   classes: PropTypes.object,
+  enableReferences: PropTypes.bool,
   t: PropTypes.func,
 };
 

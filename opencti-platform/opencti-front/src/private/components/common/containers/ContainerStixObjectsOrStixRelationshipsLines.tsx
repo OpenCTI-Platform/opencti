@@ -11,11 +11,12 @@ interface ContainerStixObjectsOrStixRelationshipsLinesProps {
   dataColumns: DataColumns;
   container: ContainerStixObjectsOrStixRelationshipsLines_container$data;
   paginationOptions?: ContainerStixObjectsOrStixRelationshipsLinesQuery$variables;
+  enableReferences: boolean;
 }
 
 const ContainerStixObjectsOrStixRelationshipsLines: FunctionComponent<
 ContainerStixObjectsOrStixRelationshipsLinesProps
-> = ({ dataColumns, container, paginationOptions }) => {
+> = ({ dataColumns, container, paginationOptions, enableReferences }) => {
   const { t_i18n } = useFormatter();
   return (
     <div style={{ height: '100%' }}>
@@ -30,6 +31,7 @@ ContainerStixObjectsOrStixRelationshipsLinesProps
                 node={object}
                 dataColumns={dataColumns}
                 paginationOptions={paginationOptions}
+                enableReferences={enableReferences}
               />
             );
           })}

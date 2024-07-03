@@ -162,7 +162,7 @@ const RootCaseRfiComponent = ({ queryRef, caseId }) => {
           <Routes>
             <Route
               path="/"
-              element={<CaseRfi data={caseData} />}
+              element={<CaseRfi data={caseData} enableReferences={enableReferences} />}
             />
             <Route
               path="/entities"

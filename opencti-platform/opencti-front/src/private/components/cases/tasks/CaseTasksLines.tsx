@@ -111,6 +111,7 @@ interface CaseTasksLinesProps {
   orderAsc: boolean | undefined;
   handleSort?: (field: string, order: boolean) => void;
   containerRef: MutableRefObject<GridTypeMap | null>;
+  enableReferences: boolean;
 }
 
 const CaseTasksLines: FunctionComponent<CaseTasksLinesProps> = ({
@@ -122,6 +123,7 @@ const CaseTasksLines: FunctionComponent<CaseTasksLinesProps> = ({
   orderAsc,
   handleSort,
   containerRef,
+  enableReferences,
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
@@ -265,6 +267,7 @@ const CaseTasksLines: FunctionComponent<CaseTasksLinesProps> = ({
             entityId={caseId}
             paginationOptions={tasksFilters}
             containerRef={containerRef}
+            enableReferences={enableReferences}
           />
         </ListLines>
       </Paper>

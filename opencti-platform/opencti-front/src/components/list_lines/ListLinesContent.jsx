@@ -144,6 +144,7 @@ class ListLinesContent extends Component {
       contentMappingCount,
       contentMappingData,
       bypassEditionRestriction,
+      enableReferences,
     } = this.props;
     const edge = dataList[index];
     if (!edge) {
@@ -187,6 +188,7 @@ class ListLinesContent extends Component {
             contentMappingCount={contentMappingCount}
             contentMappingData={contentMappingData}
             bypassEditionRestriction={bypassEditionRestriction}
+            enableReferences={enableReferences}
           />
         ) : (
           React.cloneElement(LineComponent, {
@@ -212,6 +214,7 @@ class ListLinesContent extends Component {
             contentMappingCount,
             contentMappingData,
             bypassEditionRestriction,
+            enableReferences,
           })
         )}
       </div>
@@ -354,6 +357,7 @@ ListLinesContent.propTypes = {
   contentMappingData: PropTypes.object,
   handleRemoveSuggestedMappingLine: PropTypes.func,
   bypassEditionRestriction: PropTypes.bool,
+  enableReferences: PropTypes.bool,
 };
 
 export default R.compose(inject18n, withStyles(styles))(ListLinesContent);

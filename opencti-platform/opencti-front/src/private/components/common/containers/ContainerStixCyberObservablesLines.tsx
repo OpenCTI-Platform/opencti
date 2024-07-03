@@ -178,6 +178,7 @@ ContainerStixCyberObservablesLinesProps
         deSelectedElements={deSelectedElements}
         selectAll={selectAll}
         onToggleEntity={onToggleEntity}
+        enableReferences={enableReferences}
       />
       {data?.container && (
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
