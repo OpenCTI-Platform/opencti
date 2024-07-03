@@ -4,7 +4,7 @@
     "base_path": "",
     "base_url": "http://localhost:4000/",
     "enabled": true,
-    "disabled_dev_features": ["FAB_REPLACEMENT", "DATA_TABLES"],
+    "disabled_dev_features": ["FAB_REPLACEMENT", "DATA_TABLES", "4352_BULK_RELATIONS"],
     "https_cert": {
       "ca": [],
       "key": null,

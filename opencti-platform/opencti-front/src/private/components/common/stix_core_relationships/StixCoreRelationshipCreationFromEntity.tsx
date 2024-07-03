@@ -188,7 +188,7 @@ const stixCoreRelationshipCreationFromEntityQuery = graphql`
   }
 `;
 
-const stixCoreRelationshipCreationFromEntityFromMutation = graphql`
+export const stixCoreRelationshipCreationFromEntityFromMutation = graphql`
   mutation StixCoreRelationshipCreationFromEntityFromMutation(
     $input: StixCoreRelationshipAddInput!
   ) {

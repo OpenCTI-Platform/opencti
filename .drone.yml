@@ -320,7 +320,7 @@ services:
       path: /usr/lib/python3.11
     environment:
       APP__PORT: 4500
-      APP__DISABLED_DEV_FEATURES: '[]'
+      APP__DISABLED_DEV_FEATURES: '["4352_BULK_RELATIONS"]'
       APP__ADMIN__PASSWORD: admin
       APP__ADMIN__TOKEN: bfa014e0-e02e-4aa6-a42b-603b19dcf159
       REDIS__HOSTNAME: redis
