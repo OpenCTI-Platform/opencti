@@ -340,7 +340,7 @@ class ImportContentComponent extends Component {
           classes={{ container: classes.gridContainer }}
           style={{ marginTop: 0 }}
         >
-          <Grid item={true} xs={8}>
+          <Grid item={true} xs={8} style={{ paddingTop: 0 }}>
             <div style={{ height: '100%' }} className="break">
               <Typography
                 variant="h4"
@@ -392,7 +392,7 @@ class ImportContentComponent extends Component {
               </Paper>
             </div>
           </Grid>
-          <Grid item={true} xs={4}>
+          <Grid item={true} xs={4} style={{ paddingTop: 0 }}>
             <Typography variant="h4" gutterBottom={true}>
               {t('Enabled import connectors')}
             </Typography>
