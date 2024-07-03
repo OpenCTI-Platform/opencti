@@ -17,6 +17,7 @@ import { useBuildEntityTypeBasedFilterContext, emptyFilterGroup, useGetDefaultFi
 import { useFormatter } from '../../../components/i18n';
 import ExportContextProvider from '../../../utils/ExportContextProvider';
 import Breadcrumbs from '../../../components/Breadcrumbs';
+import useDynamicHeader from '../../../utils/hooks/useDynamicHeader';
 
 const LOCAL_STORAGE_KEY = 'groupings';
 
@@ -26,6 +27,8 @@ interface GroupingsProps {
 
 const Groupings: FunctionComponent<GroupingsProps> = () => {
   const { t_i18n } = useFormatter();
+  const { setTitle } = useDynamicHeader();
+  setTitle(t_i18n('OpenCTI - Analyses: Groupings'));
   const { isFeatureEnable } = useHelper();
   const FAB_REPLACED = isFeatureEnable('FAB_REPLACEMENT');
   const {
