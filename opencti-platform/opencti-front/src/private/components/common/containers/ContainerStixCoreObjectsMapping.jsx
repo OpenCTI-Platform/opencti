@@ -172,11 +172,11 @@ const ContainerStixCoreObjectsMapping = ({
                 height={height}
                 contentMappingData={contentMappingData}
                 contentMappingCount={contentMappingCount}
-            enableReferences={enableReferences}
-          />
-        </React.Suspense>
-        )}
-      </ListLines></div>
+                enableReferences={enableReferences}
+              />
+            </React.Suspense>
+          )}
+        </ListLines></div>
       <ContainerAddStixCoreObjects
         containerId={container.id}
         mapping={true}
