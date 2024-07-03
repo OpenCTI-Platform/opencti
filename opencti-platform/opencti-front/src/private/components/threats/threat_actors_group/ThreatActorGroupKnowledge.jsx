@@ -43,6 +43,7 @@ class ThreatActorGroupKnowledgeComponent extends Component {
             element={
               <StixDomainObjectThreatKnowledge
                 stixDomainObjectId={threatActorGroup.id}
+                stixDomainObjectName={threatActorGroup.name}
                 stixDomainObjectType="Threat-Actor-Group"
               />
             }

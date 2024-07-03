@@ -43,6 +43,7 @@ class ToolKnowledgeComponent extends Component {
             element={
               <StixDomainObjectThreatKnowledge
                 stixDomainObjectId={tool.id}
+                stixDomainObjectName={tool.name}
                 stixDomainObjectType="Tool"
               />
             }

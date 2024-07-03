@@ -59,6 +59,7 @@ const IncidentKnowledge = ({
           element={ (
             <StixDomainObjectThreatKnowledge
               stixDomainObjectId={incident.id}
+              stixDomainObjectName={incident.name}
               stixDomainObjectType="Incident"
               displayObservablesStats={true}
             />

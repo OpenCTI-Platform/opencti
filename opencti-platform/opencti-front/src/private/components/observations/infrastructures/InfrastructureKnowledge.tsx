@@ -75,7 +75,8 @@ const InfrastructureKnowledge = ({ infrastructure }: { infrastructure: Infrastru
           element={
             <StixDomainObjectThreatKnowledge
               stixDomainObjectId={infrastructureData.id}
-              stixDomainObjectType="Intrusion-Set"
+              stixDomainObjectName={infrastructureData.name}
+              stixDomainObjectType="Infrastructure"
             />
         }
         />

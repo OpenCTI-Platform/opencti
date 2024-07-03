@@ -62,6 +62,7 @@ const ThreatActorIndividualKnowledgeComponent = ({
           element={
             <StixDomainObjectThreatKnowledge
               stixDomainObjectId={threatActorIndividual.id}
+              stixDomainObjectName={threatActorIndividual.name}
               stixDomainObjectType="Threat-Actor-Individual"
             />
           }

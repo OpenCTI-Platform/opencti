@@ -33,7 +33,7 @@ const ThemeLight = (
       main: '#f44336',
       dark: '#c62828',
     },
-    success: { main: '#03A847' },
+    success: { main: '#03a847' },
     primary: { main: THEME_LIGHT_DEFAULT_PRIMARY || '#0066ff' },
     secondary: { main: secondary || THEME_LIGHT_DEFAULT_SECONDARY },
     pagination: {

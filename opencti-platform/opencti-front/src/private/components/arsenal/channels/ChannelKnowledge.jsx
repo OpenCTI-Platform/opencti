@@ -43,6 +43,7 @@ class ChannelKnowledgeComponent extends Component {
             element={
               <StixDomainObjectThreatKnowledge
                 stixDomainObjectId={channel.id}
+                stixDomainObjectName={channel.name}
                 stixDomainObjectType="Channel"
               />
             }

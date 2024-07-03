@@ -43,6 +43,7 @@ class CampaignKnowledgeComponent extends Component {
             element={
               <StixDomainObjectThreatKnowledge
                 stixDomainObjectId={campaign.id}
+                stixDomainObjectName={campaign.name}
                 stixDomainObjectType="Campaign"
               />
             }
