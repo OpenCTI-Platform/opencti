@@ -13185,6 +13185,7 @@ export type Mutation = {
   csvMapperAdd?: Maybe<CsvMapper>;
   csvMapperDelete?: Maybe<Scalars['ID']['output']>;
   csvMapperFieldPatch?: Maybe<CsvMapper>;
+  csvMapperTest?: Maybe<CsvMapperTestResult>;
   dataComponentAdd?: Maybe<DataComponent>;
   dataComponentContextClean?: Maybe<DataComponent>;
   dataComponentContextPatch?: Maybe<DataComponent>;
@@ -13819,6 +13820,12 @@ export type MutationCsvMapperDeleteArgs = {
 export type MutationCsvMapperFieldPatchArgs = {
   id: Scalars['ID']['input'];
   input: Array<EditInput>;
+};
+
+
+export type MutationCsvMapperTestArgs = {
+  configuration: Scalars['String']['input'];
+  file: Scalars['Upload']['input'];
 };
 
 
@@ -18855,6 +18862,7 @@ export type Query = {
   creators?: Maybe<CreatorConnection>;
   csvMapper?: Maybe<CsvMapper>;
   csvMapperSchemaAttributes: Array<CsvMapperSchemaAttributes>;
+  /** @deprecated [>=6.3 & <6.6]. Use `csvMapperTest mutation`. */
   csvMapperTest?: Maybe<CsvMapperTestResult>;
   csvMappers?: Maybe<CsvMapperConnection>;
   dataComponent?: Maybe<DataComponent>;
@@ -36026,6 +36034,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   csvMapperAdd?: Resolver<Maybe<ResolversTypes['CsvMapper']>, ParentType, ContextType, RequireFields<MutationCsvMapperAddArgs, 'input'>>;
   csvMapperDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationCsvMapperDeleteArgs, 'id'>>;
   csvMapperFieldPatch?: Resolver<Maybe<ResolversTypes['CsvMapper']>, ParentType, ContextType, RequireFields<MutationCsvMapperFieldPatchArgs, 'id' | 'input'>>;
+  csvMapperTest?: Resolver<Maybe<ResolversTypes['CsvMapperTestResult']>, ParentType, ContextType, RequireFields<MutationCsvMapperTestArgs, 'configuration' | 'file'>>;
   dataComponentAdd?: Resolver<Maybe<ResolversTypes['DataComponent']>, ParentType, ContextType, RequireFields<MutationDataComponentAddArgs, 'input'>>;
   dataComponentContextClean?: Resolver<Maybe<ResolversTypes['DataComponent']>, ParentType, ContextType, RequireFields<MutationDataComponentContextCleanArgs, 'id'>>;
   dataComponentContextPatch?: Resolver<Maybe<ResolversTypes['DataComponent']>, ParentType, ContextType, RequireFields<MutationDataComponentContextPatchArgs, 'id' | 'input'>>;

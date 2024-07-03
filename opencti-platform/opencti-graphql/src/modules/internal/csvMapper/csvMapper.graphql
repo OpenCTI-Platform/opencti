@@ -115,10 +115,6 @@ type Query {
     filters: FilterGroup
     search: String
   ): CsvMapperConnection @auth(for: [CSVMAPPERS, INGESTION_SETINGESTIONS])
-  csvMapperTest(
-    configuration: String!
-    content: String!
-  ): CsvMapperTestResult @auth(for: [CSVMAPPERS])
   csvMapperSchemaAttributes: [CsvMapperSchemaAttributes!]! @auth(for: [KNOWLEDGE, CSVMAPPERS])
 }
 
@@ -176,6 +172,7 @@ input CsvMapperAddInput {
 
 type Mutation {
   csvMapperAdd(input: CsvMapperAddInput!): CsvMapper @auth(for: [CSVMAPPERS])
+  csvMapperTest(configuration: String!, file: Upload!): CsvMapperTestResult @auth(for: [CSVMAPPERS])
   csvMapperDelete(id: ID!): ID @auth(for: [CSVMAPPERS])
   csvMapperFieldPatch(id: ID!, input: [EditInput!]!): CsvMapper @auth(for: [CSVMAPPERS])
 }
