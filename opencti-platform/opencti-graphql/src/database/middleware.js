@@ -2502,6 +2502,7 @@ const isOutdatedUpdate = (context, element, attributeKey) => {
 };
 
 const upsertElement = async (context, user, element, type, basePatch, opts = {}) => {
+  console.log('ANGIE - upsertElement', element);
   // -- Independent update
   const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   const updatePatch = { ...basePatch };

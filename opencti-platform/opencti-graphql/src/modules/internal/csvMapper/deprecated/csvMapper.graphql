@@ -1,0 +1,7 @@
+# Queries
+type Query {
+  csvMapperTest(
+    configuration: String!
+    content: String!
+  ): CsvMapperTestResult @auth(for: [CSVMAPPERS]) @deprecated(reason: "[>=6.3 & <6.6]. Use `csvMapperTest mutation`.")
+}

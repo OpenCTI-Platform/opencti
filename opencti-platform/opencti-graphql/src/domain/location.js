@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 import { createEntity } from '../database/middleware';
 import { listEntities, storeLoadById } from '../database/middleware-loader';
-import { BUS_TOPICS } from '../config/conf';
+import { BUS_TOPICS, logApp } from '../config/conf';
 import { notify } from '../database/redis';
 import { ABSTRACT_STIX_DOMAIN_OBJECT, ENTITY_TYPE_LOCATION } from '../schema/general';
 import { isStixDomainObjectLocation } from '../schema/stixDomainObject';
@@ -24,6 +24,7 @@ export const findAll = async (context, user, args) => {
 };
 
 export const addLocation = async (context, user, location) => {
+  logApp.info('ANGIE - locationAdd', location);
   const { type } = location;
   if (!isStixDomainObjectLocation(type)) {
     const supportedTypes = schemaTypesDefinition.get(ENTITY_TYPE_LOCATION).join(', ');

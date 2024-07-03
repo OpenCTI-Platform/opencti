@@ -179,6 +179,8 @@ export const indicatorsWithExternalReferencesCsvMapper: Partial<CsvMapperParsed>
     '446c6e54-0f9b-442e-abe9-81508bd54b4a'
   ]
 };
-export const indicatorsWithExternalReferencesCsvContent = `pattern,main_obs_type,reference
-[ipv4-addr:value = '198.168.8.1'],IPv4-Addr,http://twitter.com/filigraner
-[ipv4-addr:value = '198.168.8.2'],IPv4-Addr,http://twitter.com/filigraner`;
+export const indicatorsWithExternalReferencesCsvContent = [
+  'pattern,main_obs_type,reference',
+  "[ipv4-addr:value = '198.168.8.1'],IPv4-Addr,http://twitter.com/filigraner",
+  "[ipv4-addr:value = '198.168.8.2'],IPv4-Addr,http://twitter.com/filigraner"
+];

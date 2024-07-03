@@ -191,6 +191,8 @@ export const indicatorsWithLabelsCsvMapper: Partial<CsvMapperParsed> = {
   ]
 };
 
-export const indicatorsWithLabelsCsvContent = `pattern,main_obs_type,label,color
-[ipv4-addr:value = '198.168.8.5'],IPv4-Addr,filigran,0b41f3
-[ipv4-addr:value = '198.168.8.6'],IPv4-Addr,filigran,0b41f3`;
+export const indicatorsWithLabelsCsvContent: string[] = [
+  'pattern,main_obs_type,label,color',
+  '[ipv4-addr:value = \'198.168.8.5\'],IPv4-Addr,filigran,0b41f3',
+  '[ipv4-addr:value = \'198.168.8.6\'],IPv4-Addr,filigran,0b41f3',
+];

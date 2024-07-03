@@ -201,6 +201,8 @@ export const indicatorsWithKillChainPhasesCsvMapper: Partial<CsvMapperParsed> = 
   ],
 };
 
-export const indicatorsWithKillChainPhasesCsvContent = `pattern,main_obs_type,kill_chain_name,kill_chain_phase_name,order
-[ipv4-addr:value = '198.168.8.3'],IPv4-Addr,kill_chain_name_1,kill_chain_phase_name_1,1
-[ipv4-addr:value = '198.168.8.4'],IPv4-Addr,kill_chain_name_1,kill_chain_phase_name_1,1`;
+export const indicatorsWithKillChainPhasesCsvContent:string[] = [
+  'pattern,main_obs_type,kill_chain_name,kill_chain_phase_name,order',
+  '[ipv4-addr:value = \'198.168.8.3\'],IPv4-Addr,kill_chain_name_1,kill_chain_phase_name_1,1',
+
+];
