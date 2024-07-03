@@ -6,7 +6,6 @@ const csvMapperResolvers: Resolvers = {
   Query: {
     csvMapper: (_, { id }, context) => findById(context, context.user, id),
     csvMappers: (_, args, context) => findAll(context, context.user, args),
-    csvMapperTest: (_, { configuration, content }, context) => csvMapperTest(context, context.user, configuration, content),
     csvMapperSchemaAttributes: (_, __, context) => csvMapperSchemaAttributes(context, context.user),
   },
   CsvMapper: {
@@ -19,6 +18,9 @@ const csvMapperResolvers: Resolvers = {
     },
     csvMapperDelete: (_, { id }, context) => {
       return deleteCsvMapper(context, context.user, id);
+    },
+    csvMapperTest: (_, { configuration, file }, context) => {
+      return csvMapperTest(context, context.user, configuration, file);
     },
     csvMapperFieldPatch: (_, { id, input }, context) => {
       return fieldPatchCsvMapper(context, context.user, id, input);

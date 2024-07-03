@@ -1,7 +1,8 @@
 import { describe, expect, it, beforeAll, afterAll } from 'vitest';
+import fs from 'node:fs';
 import { ADMIN_USER, internalAdminQuery, testContext } from '../../utils/testQuery';
 import { csvMapperAreaMalware, csvMapperAreaMalwareDefault } from './default-values/mapper-area-malware';
-import { parsingProcess } from '../../../src/parser/csv-parser';
+import { parseReadableToLines, parsingProcess } from '../../../src/parser/csv-parser';
 import { handleRefEntities, mappingProcess } from '../../../src/parser/csv-mapper';
 import { ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA } from '../../../src/modules/administrativeArea/administrativeArea-types';
 import { ENTITY_TYPE_MALWARE } from '../../../src/schema/stixDomainObject';
@@ -54,9 +55,10 @@ const GET_QUERY = `
 `;
 
 const mapData = async (fileName, mapper, user = ADMIN_USER) => {
-  const [_, ...records] = await parsingProcess(fileName, mapper.separator);
+  const lines = await parseReadableToLines(fs.createReadStream(fileName));
+  const [_, ...records] = await parsingProcess(lines, mapper.separator, mapper.skipLineChar);
   return await Promise.all((records.map(async (record) => {
-    const refEntities = await handleRefEntities(testContext, user, mapper)
+    const refEntities = await handleRefEntities(testContext, user, mapper);
     return await mappingProcess(testContext, user, mapper, record, refEntities);
   })));
 };

@@ -79,7 +79,7 @@ export const deleteIngestionCsv = async (context: AuthContext, user: AuthUser, i
 };
 
 interface CsvResponseData {
-  data: Buffer,
+  csvLines: string[],
   addedLast: string | undefined | null
 }
 
@@ -103,14 +103,13 @@ export const fetchCsvFromUrl = async (csvMapper: CsvMapperParsed, ingestion: Bas
   const httpClient = getHttpClient(httpClientOptions);
   const { data, headers: resultHeaders } = await httpClient.get(ingestion.uri);
   const dataLines = data.toString().split('\n');
-  const dataExtract = dataLines
+  const csvLines = dataLines
     .filter((line: string) => (
       (!!csvMapper.skipLineChar && !line.startsWith(csvMapper.skipLineChar))
           || (!csvMapper.skipLineChar && !!line)
     ))
-    .slice(0, limit ?? dataLines.length)
-    .join('\n');
-  return { data: Buffer.from(dataExtract), addedLast: resultHeaders['x-csv-date-added-last'] };
+    .slice(0, limit ?? dataLines.length);
+  return { csvLines, addedLast: resultHeaders['x-csv-date-added-last'] };
 };
 
 export const testCsvIngestionMapping = async (context: AuthContext, user: AuthUser, input: IngestionCsvAddInput): Promise<CsvMapperTestResult> => {
@@ -122,8 +121,8 @@ export const testCsvIngestionMapping = async (context: AuthContext, user: AuthUs
     authentication_type: input.authentication_type,
     authentication_value: input.authentication_value
   } as BasicStoreEntityIngestionCsv;
-  const { data } = await fetchCsvFromUrl(parsedMapper, ingestion, { limit: 50 });
-  const bundle = await bundleProcess(context, user, data, parsedMapper); // pass ingestion creator user
+  const { csvLines } = await fetchCsvFromUrl(parsedMapper, ingestion, { limit: 50 });
+  const bundle = await bundleProcess(context, user, csvLines, parsedMapper); // pass ingestion creator user
   return {
     objects: JSON.stringify(bundle.objects, null, 2),
     nbRelationships: bundle.objects.filter((object) => object.type === 'relationship').length,

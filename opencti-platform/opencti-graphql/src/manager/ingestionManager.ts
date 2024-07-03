@@ -37,6 +37,7 @@ import { findById as findUserById } from '../domain/user';
 // If the lock is free, every API as the right to take it.
 const SCHEDULE_TIME = conf.get('ingestion_manager:interval') || 300000;
 const INGESTION_MANAGER_KEY = conf.get('ingestion_manager:lock_key') || 'ingestion_manager_lock';
+const CSV_MAX_BUNDLE_SIZE_GENERATION = conf.get('ingestion_manager:csv_max_bundle_generation') || 1000;
 
 let running = false;
 
@@ -286,11 +287,11 @@ const taxiiExecutor = async (context: AuthContext) => {
 // endregion
 
 // region Csv ingestion
-const csvDataToObjects = async (csvBuffer: Buffer | string, ingestion: BasicStoreEntityIngestionCsv, csvMapper: CsvMapperParsed, context: AuthContext) => {
+const csvDataToObjects = async (csvLines: string[], ingestion: BasicStoreEntityIngestionCsv, csvMapper: CsvMapperParsed, context: AuthContext) => {
   const ingestionUser = await findUserById(context, context.user ?? SYSTEM_USER, ingestion.user_id) ?? SYSTEM_USER;
-  const { objects } = await bundleProcess(context, ingestionUser, csvBuffer, csvMapper);
+  const { objects } = await bundleProcess(context, ingestionUser, csvLines, csvMapper);
   if (objects === undefined) {
-    const error = UnknownError('Undefined CSV objects', { data: csvBuffer.toString() });
+    const error = UnknownError('Undefined CSV objects', { data: csvLines });
     logApp.error(error, { name: ingestion.name, context: 'CSV transform' });
   } else {
     logApp.info(`[OPENCTI-MODULE] CSV ingestion execution for ${objects.length} items`);
@@ -304,17 +305,17 @@ const csvDataHandler = async (context: AuthContext, ingestion: BasicStoreEntityI
   const csvMapperParsed = parseCsvMapper(csvMapper);
   csvMapperParsed.user_chosen_markings = ingestion.markings ?? [];
 
-  const { data, addedLast } = await fetchCsvFromUrl(csvMapperParsed, ingestion);
-  const isUnchangedData = bcrypt.compareSync(data.toString(), ingestion.current_state_hash ?? '');
+  const { csvLines, addedLast } = await fetchCsvFromUrl(csvMapperParsed, ingestion);
+  const linesContent = csvLines.join('');
+  const isUnchangedData = bcrypt.compareSync(linesContent, ingestion.current_state_hash ?? '');
   if (isUnchangedData) {
     return;
   }
 
-  const objects = await csvDataToObjects(data, ingestion, csvMapperParsed, context);
-  const bundleSize = 1000;
-  for (let index = 0; index < objects.length; index += bundleSize) {
+  const objects = await csvDataToObjects(csvLines, ingestion, csvMapperParsed, context);
+  for (let index = 0; index < objects.length; index += CSV_MAX_BUNDLE_SIZE_GENERATION) {
     // Filter objects already added to queue
-    const splitBundle = objects.slice(index, index + bundleSize);
+    const splitBundle = objects.slice(index, index + CSV_MAX_BUNDLE_SIZE_GENERATION);
     const bundle = { type: 'bundle', id: `bundle--${uuidv4()}`, objects: splitBundle };
     const stixBundle = JSON.stringify(bundle);
     const content = Buffer.from(stixBundle, 'utf-8').toString('base64');
@@ -325,7 +326,7 @@ const csvDataHandler = async (context: AuthContext, ingestion: BasicStoreEntityI
   }
 
   // Update the state
-  const hashedIncomingData = bcrypt.hashSync(data.toString());
+  const hashedIncomingData = bcrypt.hashSync(linesContent);
   await patchCsvIngestion(context, SYSTEM_USER, ingestion.internal_id, {
     current_state_hash: hashedIncomingData,
     added_after_start: utcDate(addedLast)

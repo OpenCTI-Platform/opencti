@@ -17,10 +17,12 @@ import { schemaTypesDefinition } from '../../../schema/schema-types';
 import { ABSTRACT_STIX_CORE_RELATIONSHIP, ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_DOMAIN_OBJECT, ABSTRACT_STIX_META_OBJECT } from '../../../schema/general';
 import { type BasicStoreEntityIngestionCsv, ENTITY_TYPE_INGESTION_CSV } from '../../ingestion/ingestion-types';
 import { FunctionalError } from '../../../config/errors';
+import { parseReadableToLines } from '../../../parser/csv-parser';
+import type { FileUploadData } from '../../../database/file-storage-helper';
 
 // -- UTILS --
 
-export const csvMapperTest = async (context: AuthContext, user: AuthUser, configuration: string, content: string) => {
+export const csvMapperTest = async (context: AuthContext, user: AuthUser, configuration: string, fileUpload: Promise<FileUploadData>) => {
   let parsedConfiguration;
   try {
     parsedConfiguration = JSON.parse(configuration);
@@ -28,7 +30,9 @@ export const csvMapperTest = async (context: AuthContext, user: AuthUser, config
     throw FunctionalError('Could not parse CSV mapper configuration', { error });
   }
   const csvMapper = parseCsvMapper(parsedConfiguration);
-  const bundle = await bundleProcess(context, user, Buffer.from(content), csvMapper, { maxRecordNumber: 100 });
+  const { createReadStream } = await fileUpload;
+  const csvLines = await parseReadableToLines(createReadStream(), 100);
+  const bundle = await bundleProcess(context, user, csvLines, csvMapper);
   return {
     objects: JSON.stringify(bundle.objects, null, 2),
     nbRelationships: bundle.objects.filter((object) => object.type === 'relationship').length,
