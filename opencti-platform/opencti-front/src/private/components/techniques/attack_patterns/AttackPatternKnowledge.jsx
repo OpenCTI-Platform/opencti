@@ -21,7 +21,7 @@ class AttackPatternKnowledgeComponent extends Component {
           <Route
             path="/relations/:relationId"
             element={
-              <StixCoreRelationship entityId={attackPattern.id} />
+              <StixCoreRelationship entityId={attackPattern.id} paddingRight />
             }
           />
           <Route
