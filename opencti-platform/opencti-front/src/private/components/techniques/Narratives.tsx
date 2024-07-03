@@ -32,7 +32,8 @@ const useStyles = makeStyles(() => ({
   },
   views: {
     marginTop: -5,
-    display: 'flex',
+    position: 'absolute',
+    right: 60,
   },
 }));
 
@@ -88,7 +89,6 @@ const Narratives: FunctionComponent = () => {
   const renderSubEntityLines = () => {
     return (
       <>
-        <Breadcrumbs variant="list" elements={[{ label: t_i18n('Techniques') }, { label: t_i18n('Narratives'), current: true }]} />
         <div className={classes.parameters}>
           <div style={{ float: 'left', marginRight: 20 }}>
             <SearchInput
