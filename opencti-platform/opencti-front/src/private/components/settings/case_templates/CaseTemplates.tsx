@@ -46,13 +46,13 @@ const CaseTemplates = () => {
       },
       description: {
         label: 'Description',
-        width: '40%',
+        width: '50%',
         isSortable: false,
         render: (data: CaseTemplateLine_node$data) => data.description,
       },
       tasks: {
         label: 'Tasks',
-        width: '10%',
+        width: '20%',
         isSortable: false,
         render: (data: CaseTemplateLine_node$data) => data.tasks.pageInfo.globalCount,
       },

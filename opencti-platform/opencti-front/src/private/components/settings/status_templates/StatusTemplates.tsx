@@ -48,7 +48,7 @@ const StatusTemplates = () => {
       },
       usages: {
         label: 'Usages',
-        width: '5%',
+        width: '20%',
         isSortable: false,
       },
     };

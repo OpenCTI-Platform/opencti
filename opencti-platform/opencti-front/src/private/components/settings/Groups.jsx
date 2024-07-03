@@ -101,7 +101,7 @@ class Groups extends Component {
       },
       group_confidence_level: {
         label: 'Max Confidence',
-        width: '10%',
+        width: '15%',
         isSortable: true,
       },
       created_at: {

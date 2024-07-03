@@ -180,7 +180,7 @@ class RoleLineDummyComponent extends Component {
                 <Skeleton
                   animation="wave"
                   variant="rectangular"
-                  width={80}
+                  width="90%"
                   height="100%"
                 />
               </div>
@@ -191,7 +191,7 @@ class RoleLineDummyComponent extends Component {
                 <Skeleton
                   animation="wave"
                   variant="rectangular"
-                  width={80}
+                  width="90%"
                   height="100%"
                 />
               </div>
@@ -202,7 +202,7 @@ class RoleLineDummyComponent extends Component {
                 <Skeleton
                   animation="wave"
                   variant="rectangular"
-                  width={80}
+                  width="90%"
                   height="100%"
                 />
               </div>

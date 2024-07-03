@@ -59,22 +59,22 @@ class Roles extends Component {
     const dataColumns = {
       name: {
         label: 'Name',
-        width: '45%',
+        width: '40%',
         isSortable: true,
       },
       groups: {
         label: 'Groups with this role',
-        width: '15%',
+        width: '20%',
         isSortable: false,
       },
       created_at: {
         label: 'Platform creation date',
-        width: '15%',
+        width: '20%',
         isSortable: true,
       },
       updated_at: {
         label: 'Modification date',
-        width: '15%',
+        width: '20%',
         isSortable: true,
       },
     };
