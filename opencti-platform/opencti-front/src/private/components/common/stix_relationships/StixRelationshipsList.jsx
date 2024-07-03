@@ -4503,7 +4503,6 @@ const StixRelationshipsList = ({
             && props.stixRelationships.edges.length > 0
           ) {
             const data = props.stixRelationships.edges;
-            console.log('data : ', data);
             return <WidgetListRelationships data={data} dateAttribute={dateAttribute} />;
           }
           if (props) {
