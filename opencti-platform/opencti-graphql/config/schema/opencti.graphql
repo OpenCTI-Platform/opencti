@@ -2587,6 +2587,7 @@ enum CampaignsOrdering {
   modified
   created_at
   updated_at
+  objectMarking
   x_opencti_workflow_id
   confidence
   _score
@@ -4632,6 +4633,8 @@ enum IntrusionSetsOrdering {
   created_at
   updated_at
   x_opencti_workflow_id
+  resource_level
+  primary_motivation
   confidence
   _score
 }
@@ -5603,6 +5606,7 @@ enum MalwaresOrdering {
   objectMarking
   objectLabel
   x_opencti_workflow_id
+  is_family
   confidence
   _score
 }
@@ -5775,6 +5779,8 @@ enum ThreatActorsOrdering {
   updated_at
   x_opencti_workflow_id
   confidence
+  sophistication
+  resource_level
   _score
   threat_actor_types
 }

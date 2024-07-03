@@ -417,6 +417,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     id: 'objectMarking',
     label: 'Marking',
     flexSize: 8,
+    isSortable: true,
     render: ({ objectMarking }) => (
       <ItemMarkings
         variant="inList"
@@ -562,7 +563,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     id: 'secondary_motivations',
     label: 'Secondary motivations',
     flexSize: 10,
-    isSortable: true,
+    isSortable: false,
     render: ({ secondary_motivations }, { column: { size } }) => {
       const value = secondary_motivations ? secondary_motivations.join(', ') : '-';
       return (<Tooltip title={value}><div>{truncate(value, size * MAGICAL_SIZE)}</div></Tooltip>);

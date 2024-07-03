@@ -130,7 +130,7 @@ const IntrusionSets = () => {
       },
       resource_level: {},
       primary_motivation: {},
-      secondary_motivation: {},
+      secondary_motivations: {},
       creator: {},
       modified: {},
       objectMarking: { flexSize: 10 },
