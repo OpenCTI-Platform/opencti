@@ -135,9 +135,6 @@ const Narratives: FunctionComponent = () => {
           />
         </React.Suspense>
         )}
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <NarrativeCreation />
-        </Security>
       </>
     );
   };

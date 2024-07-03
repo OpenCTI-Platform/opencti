@@ -10,7 +10,6 @@ import { Theme } from '@mui/material/styles/createTheme';
 import Skeleton from '@mui/material/Skeleton';
 import { useFragment } from 'react-relay';
 import { narrativeLineFragment } from '@components/techniques/narratives/NarrativeLine';
-import { NarrativeLine_node$key } from '@components/techniques/narratives/__generated__/NarrativeLine_node.graphql';
 import ItemIcon from '../../../../components/ItemIcon';
 import { useFormatter } from '../../../../components/i18n';
 
@@ -51,7 +50,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
 interface NarrativeWithSubnarrativeLineProps {
   isSubNarrative?: boolean;
   subNarratives?: any[];
-  node: NarrativeLine_node$key;
+  node: any;
 }
 
 const NarrativeWithSubnarrativeLine: FunctionComponent<NarrativeWithSubnarrativeLineProps> = ({ node, subNarratives, isSubNarrative }) => {
