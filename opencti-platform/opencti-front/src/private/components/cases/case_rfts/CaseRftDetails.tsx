@@ -133,7 +133,7 @@ const CaseRftDetailsFragment = graphql`
       first: 10
       orderBy: created
       orderMode: desc
-      types: ["Case-Rft"]
+      types: ["Case"]
       viaTypes: ["Indicator", "Stix-Cyber-Observable"]
     ) {
       edges {
