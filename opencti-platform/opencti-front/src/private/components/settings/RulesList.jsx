@@ -310,7 +310,7 @@ const RulesListComponent = ({ relay, data, keyword }) => {
             <Grid item={true} xs={6}>
               <Card
                 classes={{ root: classes.card }}
-                style={{ height: 110 }}
+                style={{ height: 114 }}
                 variant="outlined"
               >
                 <CardContent>
@@ -331,7 +331,7 @@ const RulesListComponent = ({ relay, data, keyword }) => {
             <Grid item={true} xs={6}>
               <Card
                 classes={{ root: classes.card }}
-                style={{ height: 110 }}
+                style={{ height: 114 }}
                 variant="outlined"
               >
                 <CardContent>
@@ -352,7 +352,7 @@ const RulesListComponent = ({ relay, data, keyword }) => {
             <Grid item={true} xs={6}>
               <Card
                 classes={{ root: classes.card }}
-                style={{ height: 110 }}
+                style={{ height: 114 }}
                 variant="outlined"
               >
                 <CardContent>
@@ -374,7 +374,7 @@ const RulesListComponent = ({ relay, data, keyword }) => {
             <Grid item={true} xs={6}>
               <Card
                 classes={{ root: classes.card }}
-                style={{ height: 110 }}
+                style={{ height: 114 }}
                 variant="outlined"
               >
                 <CardContent>
@@ -426,7 +426,7 @@ const RulesListComponent = ({ relay, data, keyword }) => {
                 ]}
                 type="area"
                 width="100%"
-                height={240}
+                height={220}
               />
             </div>
           </Paper>
