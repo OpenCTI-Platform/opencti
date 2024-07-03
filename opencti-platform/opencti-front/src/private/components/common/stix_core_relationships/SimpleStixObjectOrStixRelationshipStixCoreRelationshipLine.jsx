@@ -362,6 +362,9 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineFragment = creat
               entity_type
               parent_types
               observable_value
+              representative {
+                main
+              }
               objectMarking {
                 id
                 definition_type
@@ -406,6 +409,44 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineFragment = creat
             }
             ... on StixCoreRelationship {
               relationship_type
+              from {
+                ... on BasicObject {
+                  id
+                  entity_type
+                }
+                ... on BasicRelationship {
+                  id
+                }
+                ... on StixCyberObservable {
+                  representative {
+                    main
+                  }
+                }
+                ... on StixDomainObject {
+                  representative {
+                    main
+                  }
+                }
+              }
+              to {
+                ... on BasicObject {
+                  id
+                  entity_type
+                }
+                ... on BasicRelationship {
+                  id
+                }
+                ... on StixCyberObservable {
+                  representative {
+                    main
+                  }
+                }
+                ... on StixDomainObject {
+                  representative {
+                    main
+                  }
+                }
+              }
             }
           }
           fromId
@@ -569,6 +610,9 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineFragment = creat
               entity_type
               parent_types
               observable_value
+              representative {
+                main
+              }
               objectMarking {
                 id
                 definition_type

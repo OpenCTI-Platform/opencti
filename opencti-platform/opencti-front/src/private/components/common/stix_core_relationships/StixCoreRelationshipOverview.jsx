@@ -3897,6 +3897,12 @@ const StixCoreRelationshipOverview = createFragmentContainer(
             stop_time
             created
           }
+          ... on StixCyberObservable {
+            observable_value
+            representative {
+              main
+            }
+          }
           ... on AttackPattern {
             name
           }
@@ -3981,8 +3987,10 @@ const StixCoreRelationshipOverview = createFragmentContainer(
           ... on Case {
             name
           }
-          ... on StixCyberObservable {
-            observable_value
+          ... on StixDomainObject {
+            representative {
+              main
+            }
           }
           ... on ObservedData {
             name
@@ -4181,6 +4189,12 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                 stop_time
                 created
               }
+              ... on StixCyberObservable {
+                observable_value
+                representative {
+                  main
+                }
+              }
               ... on AttackPattern {
                 name
               }
@@ -4283,6 +4297,12 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                 start_time
                 stop_time
                 created
+              }
+              ... on StixCyberObservable {
+                observable_value
+                representative {
+                  main
+                }
               }
               ... on AttackPattern {
                 name
