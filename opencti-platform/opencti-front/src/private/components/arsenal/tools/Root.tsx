@@ -2,52 +2,52 @@
 // TODO Remove this when V6
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
-import React, { Suspense, useMemo } from 'react';
-import { Route, Routes, Link, Navigate, useParams, useLocation } from 'react-router-dom';
-import { graphql, PreloadedQuery, useSubscription, usePreloadedQuery } from 'react-relay';
+import React, { useMemo, Suspense } from 'react';
+import { Route, Routes, Link, Navigate, useLocation, useParams } from 'react-router-dom';
+import { graphql, useSubscription, usePreloadedQuery, PreloadedQuery } from 'react-relay';
+import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import useQueryLoading from 'src/utils/hooks/useQueryLoading';
 import useForceUpdate from '@components/common/bulk/useForceUpdate';
 import BulkRelationDialogContainer from '@components/common/bulk/dialog/BulkRelationDialogContainer';
-import { GraphQLSubscriptionConfig } from 'relay-runtime';
-import { RootCampaignSubscription } from '@components/threats/campaigns/__generated__/RootCampaignSubscription.graphql';
 import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreObjectContentRoot';
-import StixCoreObjectSimulationResult from '../../common/stix_core_objects/StixCoreObjectSimulationResult';
-import Campaign from './Campaign';
-import CampaignKnowledge from './CampaignKnowledge';
+import Tool from './Tool';
+import ToolKnowledge from './ToolKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import FileManager from '../../common/files/FileManager';
-import CampaignPopover from './CampaignPopover';
+import ToolPopover from './ToolPopover';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
 import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
-import ErrorNotFound from '../../../../components/ErrorNotFound';
 import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
+import ErrorNotFound from '../../../../components/ErrorNotFound';
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
-import { RootCampaignQuery } from './__generated__/RootCampaignQuery.graphql';
+import { RootToolQuery } from './__generated__/RootToolQuery.graphql';
+import { RootToolSubscription } from './__generated__/RootToolSubscription.graphql';
 
 const subscription = graphql`
-  subscription RootCampaignSubscription($id: ID!) {
+  subscription RootToolSubscription($id: ID!) {
     stixDomainObject(id: $id) {
-      ... on Campaign {
-        ...Campaign_campaign
-        ...CampaignEditionContainer_campaign
+      ... on Tool {
+        ...Tool_tool
+        ...ToolEditionContainer_tool
       }
       ...FileImportViewer_entity
       ...FileExportViewer_entity
       ...FileExternalReferencesViewer_entity
       ...WorkbenchFileViewer_entity
+      ...PictureManagementViewer_entity
     }
   }
 `;
 
-const campaignQuery = graphql`
-  query RootCampaignQuery($id: String!) {
-    campaign(id: $id) {
+const toolQuery = graphql`
+  query RootToolQuery($id: String!) {
+    tool(id: $id) {
       id
       standard_id
       entity_type
@@ -58,12 +58,13 @@ const campaignQuery = graphql`
         label
         value
       }
-      ...Campaign_campaign
-      ...CampaignKnowledge_campaign
+      ...Tool_tool
+      ...ToolKnowledge_tool
       ...FileImportViewer_entity
       ...FileExportViewer_entity
       ...FileExternalReferencesViewer_entity
       ...WorkbenchFileViewer_entity
+      ...PictureManagementViewer_entity
       ...StixCoreObjectContent_stixCoreObject
     }
     connectorsForImport {
@@ -75,38 +76,35 @@ const campaignQuery = graphql`
   }
 `;
 
-type RootCampaignProps = {
-  campaignId: string;
-  queryRef: PreloadedQuery<RootCampaignQuery>
+type RootToolProps = {
+  toolId: string;
+  queryRef: PreloadedQuery<RootToolQuery>;
 };
 
-const RootCampaign = ({ campaignId, queryRef }: RootCampaignProps) => {
-  const subConfig = useMemo<GraphQLSubscriptionConfig<RootCampaignSubscription>>(() => ({
+const RootTool = ({ queryRef, toolId }: RootToolProps) => {
+  const subConfig = useMemo<GraphQLSubscriptionConfig<RootToolSubscription>>(() => ({
     subscription,
-    variables: { id: campaignId },
-  }), [campaignId]);
+    variables: { id: toolId },
+  }), [toolId]);
 
   const location = useLocation();
   const { t_i18n } = useFormatter();
-
   useSubscription(subConfig);
 
   const {
-    campaign,
+    tool,
     connectorsForExport,
     connectorsForImport,
-  } = usePreloadedQuery<RootCampaignQuery>(campaignQuery, queryRef);
+  } = usePreloadedQuery<RootToolQuery>(toolQuery, queryRef);
 
   const { forceUpdate, handleForceUpdate } = useForceUpdate();
 
-  const link = `/dashboard/threats/campaigns/${campaignId}/knowledge`;
-  const isOverview = location.pathname === `/dashboard/threats/campaigns/${campaignId}`;
-  const isKnowledge = location.pathname.startsWith(`/dashboard/threats/campaigns/${campaignId}/knowledge`);
-  const paddingRight = getPaddingRight(location.pathname, campaignId, '/dashboard/threats/campaigns');
-
+  const isKnowledge = location.pathname.startsWith(`/dashboard/arsenal/tools/${toolId}/knowledge`);
+  const paddingRight = getPaddingRight(location.pathname, toolId, '/dashboard/arsenal/tools');
+  const link = `/dashboard/arsenal/tools/${toolId}/knowledge`;
   return (
     <>
-      {campaign ? (
+      {tool ? (
         <>
           <Routes>
             <Route
@@ -115,37 +113,34 @@ const RootCampaign = ({ campaignId, queryRef }: RootCampaignProps) => {
                 <StixCoreObjectKnowledgeBar
                   stixCoreObjectLink={link}
                   availableSections={[
-                    'attribution',
-                    'victimology',
+                    'threats',
+                    'threat_actors',
+                    'intrusion_sets',
+                    'campaigns',
                     'incidents',
                     'malwares',
-                    'tools',
-                    'channels',
-                    'narratives',
                     'attack_patterns',
                     'vulnerabilities',
                     'indicators',
                     'observables',
-                    'infrastructures',
                     'sightings',
                   ]}
-                  stixCoreObjectsDistribution={campaign.stixCoreObjectsDistribution}
-                  attribution={['Intrusion-Set', 'Threat-Actor-Individual', 'Threat-Actor-Group']}
+                  stixCoreObjectsDistribution={tool.stixCoreObjectsDistribution}
                 />
               }
             />
           </Routes>
           <div style={{ paddingRight }}>
             <Breadcrumbs variant="object" elements={[
-              { label: t_i18n('Threats') },
-              { label: t_i18n('Campaigns'), link: '/dashboard/threats/campaigns' },
-              { label: campaign.name, current: true },
+              { label: t_i18n('Arsenal') },
+              { label: t_i18n('Tools'), link: '/dashboard/arsenal/tools' },
+              { label: tool.name, current: true },
             ]}
             />
             <StixDomainObjectHeader
-              entityType="Campaign"
-              stixDomainObject={campaign}
-              PopoverComponent={<CampaignPopover />}
+              entityType="Tool"
+              stixDomainObject={tool}
+              PopoverComponent={<ToolPopover />}
               enableQuickSubscription={true}
             />
             <Box
@@ -156,108 +151,112 @@ const RootCampaign = ({ campaignId, queryRef }: RootCampaignProps) => {
               }}
             >
               <Tabs
-                value={getCurrentTab(location.pathname, campaign.id, '/dashboard/threats/campaigns')}
+                value={getCurrentTab(location.pathname, tool.id, '/dashboard/arsenal/tools')}
               >
                 <Tab
                   component={Link}
-                  to={`/dashboard/threats/campaigns/${campaign.id}`}
-                  value={`/dashboard/threats/campaigns/${campaign.id}`}
+                  to={`/dashboard/arsenal/tools/${tool.id}`}
+                  value={`/dashboard/arsenal/tools/${tool.id}`}
                   label={t_i18n('Overview')}
                 />
                 <Tab
                   component={Link}
-                  to={`/dashboard/threats/campaigns/${campaign.id}/knowledge/overview`}
-                  value={`/dashboard/threats/campaigns/${campaign.id}/knowledge`}
+                  to={`/dashboard/arsenal/tools/${tool.id}/knowledge/overview`}
+                  value={`/dashboard/arsenal/tools/${tool.id}/knowledge`}
                   label={t_i18n('Knowledge')}
                 />
                 <Tab
                   component={Link}
-                  to={`/dashboard/threats/campaigns/${campaign.id}/content`}
-                  value={`/dashboard/threats/campaigns/${campaign.id}/content`}
+                  to={`/dashboard/arsenal/tools/${tool.id}/content`}
+                  value={`/dashboard/arsenal/tools/${tool.id}/content`}
                   label={t_i18n('Content')}
                 />
                 <Tab
                   component={Link}
-                  to={`/dashboard/threats/campaigns/${campaign.id}/analyses`}
-                  value={`/dashboard/threats/campaigns/${campaign.id}/analyses`}
+                  to={`/dashboard/arsenal/tools/${tool.id}/analyses`}
+                  value={`/dashboard/arsenal/tools/${tool.id}/analyses`}
                   label={t_i18n('Analyses')}
                 />
                 <Tab
                   component={Link}
-                  to={`/dashboard/threats/campaigns/${campaign.id}/files`}
-                  value={`/dashboard/threats/campaigns/${campaign.id}/files`}
+                  to={`/dashboard/arsenal/tools/${tool.id}/files`}
+                  value={`/dashboard/arsenal/tools/${tool.id}/files`}
                   label={t_i18n('Data')}
                 />
                 <Tab
                   component={Link}
-                  to={`/dashboard/threats/campaigns/${campaign.id}/history`}
-                  value={`/dashboard/threats/campaigns/${campaign.id}/history`}
+                  to={`/dashboard/arsenal/tools/${tool.id}/history`}
+                  value={`/dashboard/arsenal/tools/${tool.id}/history`}
                   label={t_i18n('History')}
                 />
               </Tabs>
               {isKnowledge && (
                 <BulkRelationDialogContainer
-                  stixDomainObjectId={campaignId}
-                  stixDomainObjectName={campaign.name}
-                  stixDomainObjectType="Campaign"
+                  stixDomainObjectId={tool.id}
+                  stixDomainObjectName={tool.name}
+                  stixDomainObjectType="Tool"
                   handleRefetch={handleForceUpdate}
                 />
-              )}
-              {isOverview && (
-                <StixCoreObjectSimulationResult id={campaign.id} type="threat" />
               )}
             </Box>
             <Routes>
               <Route
                 path="/"
-                element={
-                  <Campaign campaign={campaign} />
-                }
+                element={ (
+                  <Tool tool={tool} />
+                )}
               />
               <Route
                 path="/knowledge"
                 element={
-                  <Navigate to={`/dashboard/threats/campaigns/${campaignId}/knowledge/overview`} replace={true} />
+                  <Navigate
+                    replace={true}
+                    to={`/dashboard/arsenal/tools/${toolId}/knowledge/overview`}
+                  />
                 }
               />
               <Route
                 path="/knowledge/*"
-                element={
+                element={(
                   <div key={forceUpdate}>
-                    <CampaignKnowledge campaign={campaign} />
+                    <ToolKnowledge tool={tool} />
                   </div>
-                }
+                )}
               />
               <Route
                 path="/content/*"
                 element={
                   <StixCoreObjectContentRoot
-                    stixCoreObject={campaign}
+                    stixCoreObject={tool}
                   />
                 }
               />
               <Route
-                path="/analyses"
-                element={
-                  <StixCoreObjectOrStixCoreRelationshipContainers stixDomainObjectOrStixCoreRelationship={campaign} />
-                }
+                path="/analyses/*"
+                element={(
+                  <StixCoreObjectOrStixCoreRelationshipContainers
+                    stixDomainObjectOrStixCoreRelationship={tool}
+                  />
+                )}
               />
               <Route
                 path="/files"
-                element={
+                element={(
                   <FileManager
-                    id={campaignId}
+                    id={toolId}
                     connectorsImport={connectorsForImport}
                     connectorsExport={connectorsForExport}
-                    entity={campaign}
+                    entity={tool}
                   />
-                }
+                )}
               />
               <Route
                 path="/history"
-                element={
-                  <StixCoreObjectHistory stixCoreObjectId={campaignId} />
-                }
+                element={ (
+                  <StixCoreObjectHistory
+                    stixCoreObjectId={toolId}
+                  />
+                )}
               />
             </Routes>
           </div>
@@ -270,16 +269,16 @@ const RootCampaign = ({ campaignId, queryRef }: RootCampaignProps) => {
 };
 
 const Root = () => {
-  const { campaignId } = useParams() as { campaignId: string; };
-  const queryRef = useQueryLoading<RootCampaignQuery>(campaignQuery, {
-    id: campaignId,
+  const { toolId } = useParams() as { toolId: string; };
+  const queryRef = useQueryLoading<RootToolQuery>(toolQuery, {
+    id: toolId,
   });
 
   return (
     <>
       {queryRef && (
         <Suspense fallback={<Loader variant={LoaderVariant.container} />}>
-          <RootCampaign queryRef={queryRef} campaignId={campaignId} />
+          <RootTool queryRef={queryRef} toolId={toolId} />
         </Suspense>
       )}
     </>

@@ -108,8 +108,8 @@ const RootThreatActorIndividualComponent = ({
 
   const isOverview = location.pathname === `/dashboard/threats/threat_actors_individual/${threatActorIndividual.id}`;
   const isKnowledge = location.pathname.startsWith(`/dashboard/threats/threat_actors_individual/${threatActorIndividualId}/knowledge`);
-  const link = `/dashboard/threats/threat_actors_individual/${threatActorIndividual.id}/knowledge`;
   const paddingRight = getPaddingRight(location.pathname, threatActorIndividual.id, '/dashboard/threats/threat_actors_individual');
+  const link = `/dashboard/threats/threat_actors_individual/${threatActorIndividual.id}/knowledge`;
   return (
     <>
       {threatActorIndividual ? (

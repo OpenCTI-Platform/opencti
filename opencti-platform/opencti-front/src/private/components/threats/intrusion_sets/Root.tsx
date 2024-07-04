@@ -275,9 +275,9 @@ const RootIntrusionSet = ({ intrusionSetId, queryRef }: RootIntrusionSetProps) =
 };
 
 const Root = () => {
-  const { intrusionSetId } = useParams();
+  const { intrusionSetId } = useParams() as { intrusionSetId: string; };
   const queryRef = useQueryLoading<RootIntrusionSetQuery>(intrusionSetQuery, {
-    id: intrusionSetId ?? '',
+    id: intrusionSetId,
   });
 
   return (

@@ -78,6 +78,7 @@ type RootChannelProps = {
   channelId: string;
   queryRef: PreloadedQuery<RootChannelQuery>;
 };
+
 const RootChannel = ({ queryRef, channelId }: RootChannelProps) => {
   const subConfig = useMemo<GraphQLSubscriptionConfig<RootChannelSubscription>>(() => ({
     subscription,
@@ -96,9 +97,9 @@ const RootChannel = ({ queryRef, channelId }: RootChannelProps) => {
 
   const { forceUpdate, handleForceUpdate } = useForceUpdate();
 
-  const link = `/dashboard/arsenal/channels/${channelId}/knowledge`;
   const isKnowledge = location.pathname.startsWith(`/dashboard/arsenal/channels/${channelId}/knowledge`);
   const paddingRight = getPaddingRight(location.pathname, channelId, '/dashboard/arsenal/channels');
+  const link = `/dashboard/arsenal/channels/${channelId}/knowledge`;
   return (
     <>
       {channel ? (
@@ -269,10 +270,9 @@ const RootChannel = ({ queryRef, channelId }: RootChannelProps) => {
 };
 
 const Root = () => {
-  const { channelId } = useParams();
-  console.log('channelId : ', channelId);
+  const { channelId } = useParams() as { channelId: string; };
   const queryRef = useQueryLoading<RootChannelQuery>(channelQuery, {
-    id: channelId ?? '',
+    id: channelId,
   });
 
   return (
