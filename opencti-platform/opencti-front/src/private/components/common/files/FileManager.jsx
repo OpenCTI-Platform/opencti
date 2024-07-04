@@ -455,12 +455,7 @@ const FileManager = ({
                           </Field>
                           <ObjectMarkingField
                             name="contentMaxMarkings"
-                            label={
-                              <>
-                                {t_i18n('Content max marking definition levels')}
-                                <Tooltip title={'Coucou'}>Coucou</Tooltip>
-                              </>
-                            }
+                            label={t_i18n('Content max marking definition levels')}
                             onChange={(_, values) => handleSelectedContentMaxMarkingsChange(values)}
                             style={fieldSpacingContainerStyle}
                             setFieldValue={setFieldValue}
