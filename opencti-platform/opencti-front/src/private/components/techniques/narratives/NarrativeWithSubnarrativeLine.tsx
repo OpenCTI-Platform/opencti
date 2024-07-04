@@ -8,6 +8,7 @@ import List from '@mui/material/List';
 import { makeStyles } from '@mui/styles';
 import { Theme } from '@mui/material/styles/createTheme';
 import Skeleton from '@mui/material/Skeleton';
+import { ListItemButton } from '@mui/material';
 import ItemIcon from '../../../../components/ItemIcon';
 import { useFormatter } from '../../../../components/i18n';
 
@@ -57,10 +58,9 @@ const NarrativeWithSubnarrativeLine: FunctionComponent<NarrativeWithSubnarrative
 
   return (
     <div>
-      <ListItem
+      <ListItemButton
         classes={{ root: isSubNarrative ? classes.itemNested : classes.item }}
         divider
-        button
         component={Link}
         to={`/dashboard/techniques/narratives/${node.id}`}
       >
@@ -83,9 +83,9 @@ const NarrativeWithSubnarrativeLine: FunctionComponent<NarrativeWithSubnarrative
         <ListItemIcon classes={{ root: classes.goIcon }}>
           <KeyboardArrowRightOutlined />
         </ListItemIcon>
-      </ListItem>
+      </ListItemButton>
       {subNarratives && subNarratives.length > 0 && (
-      <List style={{ margin: 0, padding: 20 }}>
+      <List style={{ marginTop: 0, padding: 0 }}>
         {subNarratives.map((subNarrative) => (
           <NarrativeWithSubnarrativeLine key={subNarrative.id} node={subNarrative} isSubNarrative={true} />
         ))}
