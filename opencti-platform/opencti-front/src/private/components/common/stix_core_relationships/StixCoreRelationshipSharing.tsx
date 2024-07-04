@@ -28,7 +28,6 @@ import type { Theme } from '../../../../components/Theme';
 // region types
 interface ContainerHeaderSharedProps {
   elementId: string;
-  disabled: boolean;
 }
 
 interface OrganizationForm {
@@ -96,7 +95,7 @@ const containerHeaderSharedGroupAddMutation = graphql`
 
 const StixCoreRelationshipSharing: FunctionComponent<
 ContainerHeaderSharedProps
-> = ({ elementId, disabled }) => {
+> = ({ elementId }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const [displaySharing, setDisplaySharing] = useState(false);
@@ -159,7 +158,6 @@ ContainerHeaderSharedProps
             onClick={isEnterpriseEdition ? handleOpenSharing : () => {}}
             style={{ float: 'left', margin: '-6px 0 0 3px' }}
             size="small"
-            disabled={disabled}
           >
             <BankPlus fontSize="small" color={isEnterpriseEdition ? 'primary' : 'disabled'} />
           </IconButton>

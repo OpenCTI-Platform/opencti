@@ -401,9 +401,6 @@ class StixSightingRelationshipContainer extends Component {
                     <div>
                       <StixSightingRelationshipSharing
                         elementId={stixSightingRelationship.id}
-                        disabled={
-                          stixSightingRelationship.x_opencti_inferences !== null
-                        }
                       />
                       <Typography
                         variant="h3"
