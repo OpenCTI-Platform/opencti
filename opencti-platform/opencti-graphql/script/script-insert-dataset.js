@@ -30,16 +30,9 @@ const scriptInsertDataset = async () => {
     // Check python availability
     await checkPythonAvailability(executeContext, ADMIN_USER);
     // Insert dataset
-    for (let i = 0; i < samples.length; i += 1) {
-      const sample = samples[i];
-      logApp.info('[OPENCTI] Dataset importing from', { sample });
-      await execChildPython(executeContext, ADMIN_USER, PYTHON_PATH, 'local_importer.py', sample);
-    }
-
-    /*
     await Promise.all(samples.map(async (sample) => {
       return execChildPython(executeContext, ADMIN_USER, PYTHON_PATH, 'local_importer.py', sample);
-    })); */
+    }));
     logApp.info('[OPENCTI] Dataset insertion succeeded');
   } catch (e) {
     logApp.error('[OPENCTI] Dataset insertion failed', { error: e });
