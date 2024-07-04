@@ -146,13 +146,13 @@ interface StixDomainObjectThreatKnowledgeProps {
 
 const StixDomainObjectThreatKnowledge: FunctionComponent<
 StixDomainObjectThreatKnowledgeProps
-> = ({ stixDomainObjectId, stixDomainObjectType, displayObservablesStats }) => {
-  /*
-    TODO
-    we should reword the component to be able to manipulate data easier
-    in fact, page update is complicated, if not impossible
-    it could be interesting to use the relay provider and rework the uses of graphql queries
-  */
+/*
+  TODO
+  we should reword the component to be able to manipulate data easier
+  in fact, page update is complicated, if not impossible
+  it could be interesting to use the relay provider and rework the uses of graphql queries
+*/
+> = ({ stixDomainObjectId, stixDomainObjectName, stixDomainObjectType, displayObservablesStats }) => {
   const classes = useStyles();
   const { n, t_i18n } = useFormatter();
   const [viewType, setViewType] = useState('diamond');
