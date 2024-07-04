@@ -7,9 +7,8 @@ import { KeyboardArrowRightOutlined } from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
 import makeStyles from '@mui/styles/makeStyles';
 import { Theme } from '@mui/material/styles/createTheme';
-import { graphql, useFragment } from 'react-relay';
 import StixCoreObjectLabels from '@components/common/stix_core_objects/StixCoreObjectLabels';
-import { NarrativeLine_node$data, NarrativeLine_node$key } from '@components/techniques/narratives/__generated__/NarrativeLine_node.graphql';
+import { NarrativeLine_node$data } from '@components/techniques/narratives/__generated__/NarrativeLine_node.graphql';
 import Tooltip from '@mui/material/Tooltip';
 import Checkbox from '@mui/material/Checkbox';
 import { useFormatter } from '../../../../components/i18n';
@@ -42,40 +41,8 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
-export const narrativeLineFragment = graphql`
-  fragment NarrativeLine_node on Narrative {
-    id
-    name
-    description
-    created
-    modified
-    objectMarking {
-      id
-      definition_type
-      definition
-      x_opencti_order
-      x_opencti_color
-    }
-    objectLabel {
-      id
-      value
-      color
-    }
-    isSubNarrative
-    subNarratives {
-      edges {
-        node {
-          id
-          name
-          description
-        }
-      }
-    }
-  }
-`;
-
 interface NarrativeLineProps {
-  node: NarrativeLine_node$key;
+  node: NarrativeLine_node$data;
   dataColumns: DataColumns;
   onLabelClick: HandleAddFilter;
   selectedElements: Record<string, NarrativeLine_node$data>;
@@ -106,27 +73,26 @@ export const NarrativeLine: FunctionComponent<NarrativeLineProps> = ({
 }) => {
   const classes = useStyles();
   const { fd } = useFormatter();
-  const data = useFragment(narrativeLineFragment, node);
   return (
     <ListItem
       classes={{ root: classes.item }}
       divider={true}
       component={Link}
-      to={`/dashboard/techniques/narratives/${data.id}`}
+      to={`/dashboard/techniques/narratives/${node.id}`}
     >
       <ListItemIcon
         classes={{ root: classes.itemIcon }}
         style={{ minWidth: 40 }}
         onClick={(event) => (event.shiftKey
-          ? onToggleShiftEntity(index, data, event)
-          : onToggleEntity(data, event))
+          ? onToggleShiftEntity(index, node, event)
+          : onToggleEntity(node, event))
           }
       >
         <Checkbox
           edge="start"
           checked={
-            (selectAll && !(data.id in (deSelectedElements || {})))
-            || data.id in (selectedElements || {})
+            (selectAll && !(node.id in (deSelectedElements || {})))
+            || node.id in (selectedElements || {})
           }
           disableRipple={true}
         />
@@ -137,19 +103,19 @@ export const NarrativeLine: FunctionComponent<NarrativeLineProps> = ({
       <ListItemText
         primary={
           <>
-            <Tooltip title={data.name}>
+            <Tooltip title={node.name}>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.name.width }}
               >
-                {data.name}
+                {node.name}
               </div>
             </Tooltip>
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.description.width }}
             >
-              {emptyFilled(data.description)}
+              {emptyFilled(node.description)}
             </div>
             <div
               className={classes.bodyItem}
@@ -157,7 +123,7 @@ export const NarrativeLine: FunctionComponent<NarrativeLineProps> = ({
             >
               <StixCoreObjectLabels
                 variant="inList"
-                labels={data.objectLabel}
+                labels={node.objectLabel}
                 onClick={onLabelClick}
               />
             </div>
@@ -165,13 +131,13 @@ export const NarrativeLine: FunctionComponent<NarrativeLineProps> = ({
               className={classes.bodyItem}
               style={{ width: dataColumns.created.width }}
             >
-              {fd(data.created)}
+              {fd(node.created)}
             </div>
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.modified.width }}
             >
-              {fd(data.modified)}
+              {fd(node.modified)}
             </div>
           </>
             }

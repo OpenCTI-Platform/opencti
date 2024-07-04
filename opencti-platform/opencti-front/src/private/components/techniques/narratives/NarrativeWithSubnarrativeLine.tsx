@@ -8,8 +8,6 @@ import List from '@mui/material/List';
 import { makeStyles } from '@mui/styles';
 import { Theme } from '@mui/material/styles/createTheme';
 import Skeleton from '@mui/material/Skeleton';
-import { useFragment } from 'react-relay';
-import { narrativeLineFragment } from '@components/techniques/narratives/NarrativeLine';
 import ItemIcon from '../../../../components/ItemIcon';
 import { useFormatter } from '../../../../components/i18n';
 
@@ -56,7 +54,6 @@ interface NarrativeWithSubnarrativeLineProps {
 const NarrativeWithSubnarrativeLine: FunctionComponent<NarrativeWithSubnarrativeLineProps> = ({ node, subNarratives, isSubNarrative }) => {
   const { t_i18n } = useFormatter();
   const classes = useStyles();
-  const data = useFragment(narrativeLineFragment, node);
 
   return (
     <div>
@@ -65,7 +62,7 @@ const NarrativeWithSubnarrativeLine: FunctionComponent<NarrativeWithSubnarrative
         divider
         button
         component={Link}
-        to={`/dashboard/techniques/narratives/${data.id}`}
+        to={`/dashboard/techniques/narratives/${node.id}`}
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
           <ItemIcon
@@ -76,9 +73,9 @@ const NarrativeWithSubnarrativeLine: FunctionComponent<NarrativeWithSubnarrative
         <ListItemText
           primary={
             <>
-              <div className={classes.name}>{data.name}</div>
+              <div className={classes.name}>{node.name}</div>
               <div className={classes.description}>
-                {data.description?.length ? data.description : t_i18n('This narrative does not have any description.')}
+                {node.description?.length ? node.description : t_i18n('This narrative does not have any description.')}
               </div>
             </>
               }

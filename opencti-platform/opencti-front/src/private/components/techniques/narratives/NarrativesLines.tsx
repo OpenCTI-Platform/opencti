@@ -69,7 +69,33 @@ export const narrativesLinesFragment = graphql`
     ) @connection(key: "Pagination_narratives") {
       edges {
         node {
-          ...NarrativeLine_node
+          id
+          name
+          description
+          created
+          modified
+          objectMarking {
+            id
+            definition_type
+            definition
+            x_opencti_order
+            x_opencti_color
+          }
+          objectLabel {
+            id
+            value
+            color
+          }
+          isSubNarrative
+          subNarratives {
+            edges {
+              node {
+                id
+                name
+                description
+              }
+            }
+          }
         }
       }
       pageInfo {
