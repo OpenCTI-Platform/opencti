@@ -38,6 +38,7 @@ const useStyles = makeStyles((theme) => ({
   card: {
     width: '100%',
     borderRadius: 4,
+    height: 114,
     position: 'relative',
   },
   number: {
@@ -310,7 +311,6 @@ const RulesListComponent = ({ relay, data, keyword }) => {
             <Grid item={true} xs={6}>
               <Card
                 classes={{ root: classes.card }}
-                style={{ height: 110 }}
                 variant="outlined"
               >
                 <CardContent>
@@ -331,7 +331,6 @@ const RulesListComponent = ({ relay, data, keyword }) => {
             <Grid item={true} xs={6}>
               <Card
                 classes={{ root: classes.card }}
-                style={{ height: 110 }}
                 variant="outlined"
               >
                 <CardContent>
@@ -352,7 +351,6 @@ const RulesListComponent = ({ relay, data, keyword }) => {
             <Grid item={true} xs={6}>
               <Card
                 classes={{ root: classes.card }}
-                style={{ height: 110 }}
                 variant="outlined"
               >
                 <CardContent>
@@ -374,7 +372,6 @@ const RulesListComponent = ({ relay, data, keyword }) => {
             <Grid item={true} xs={6}>
               <Card
                 classes={{ root: classes.card }}
-                style={{ height: 110 }}
                 variant="outlined"
               >
                 <CardContent>
