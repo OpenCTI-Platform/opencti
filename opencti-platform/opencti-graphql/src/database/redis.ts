@@ -29,6 +29,7 @@ import { enrichWithRemoteCredentials } from '../config/credentials';
 
 const USE_SSL = booleanConf('redis:use_ssl', false);
 const REDIS_CA = conf.get('redis:ca').map((path: string) => loadCert(path));
+const REDIS_DB = conf.get('redis:db') || 0;
 export const REDIS_STREAM_NAME = `${REDIS_PREFIX}stream.opencti`;
 
 export const EVENT_CURRENT_VERSION = '4';
@@ -43,6 +44,7 @@ const redisOptions = async (autoReconnect = false): Promise<RedisOptions> => {
   return {
     keyPrefix: REDIS_PREFIX,
     ...userPasswordAuth,
+    db: REDIS_DB,
     tls: USE_SSL ? { ...configureCA(REDIS_CA), servername: conf.get('redis:hostname') } : undefined,
     retryStrategy: /* v8 ignore next */ (times) => {
       if (getStoppingState()) {
