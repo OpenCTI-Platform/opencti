@@ -11,6 +11,7 @@ import { Select } from '@mui/material';
 import makeStyles from '@mui/styles/makeStyles';
 import { ConnectionHandler } from 'relay-runtime';
 import { useFormatter } from '../../../../components/i18n';
+import { MalwareAnalysisCreationForm } from '../../analyses/malware_analyses/MalwareAnalysisCreation';
 import { MalwareCreationForm } from '../../arsenal/malwares/MalwareCreation';
 import { AdministrativeAreaCreationForm } from '../../locations/administrative_areas/AdministrativeAreaCreation';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
@@ -622,7 +623,20 @@ const StixDomainPanel = ({
         />
       );
     }
-    return <div>{t_i18n('Unsupported')}</div>;
+    if (type === 'Malware-Analysis') {
+      // Malware-Analysis
+      return (
+        <MalwareAnalysisCreationForm
+          inputValue={inputValue}
+          defaultConfidence={confidence}
+          defaultCreatedBy={baseCreatedBy}
+          defaultMarkingDefinitions={baseMarkingDefinitions}
+          onClose={onClose}
+          updater={creationUpdater}
+        />
+      );
+    }
+    return <div style={{ marginTop: 10 }}>{t_i18n('Unsupported')}</div>;
   };
 
   return (
