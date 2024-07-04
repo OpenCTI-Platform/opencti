@@ -70,7 +70,12 @@ export const externalReferenceCreationMutation = graphql`
 const externalReferenceValidation = (t: (value: string) => string) => Yup.object().shape({
   source_name: Yup.string().required(t('This field is required')),
   external_id: Yup.string().nullable(),
-  url: Yup.string().url(t('The value must be an URL')).nullable(),
+  url: Yup.string()
+    .nullable()
+    .matches(
+      /^(https?:\/\/[^\s/$.?#].[^\s]*)$/,
+      t('The value must be a valid URL'),
+    ),
   description: Yup.string().nullable(),
   file: Yup.mixed().nullable(),
 });
