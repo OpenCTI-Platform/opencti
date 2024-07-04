@@ -68,13 +68,15 @@ interface TaskCreationProps {
     key: string,
   ) => void;
   onClose?: () => void;
-  defaultMarkings?: { value: string, label: string }[]
+  defaultMarkings?: { value: string, label: string }[];
+  inputValue?: string;
 }
 
-const TaskCreationForm: FunctionComponent<TaskCreationProps> = ({
+export const TaskCreationForm: FunctionComponent<TaskCreationProps> = ({
   updater,
   onClose,
   defaultMarkings,
+  inputValue,
 }) => {
   const { t_i18n } = useFormatter();
   const classes = useStyles();
@@ -93,7 +95,7 @@ const TaskCreationForm: FunctionComponent<TaskCreationProps> = ({
   const [commit] = useApiMutation<TaskCreationMutation>(taskAddMutation);
 
   const initialValues: FormikTaskAddInput = {
-    name: '',
+    name: inputValue ?? '',
     description: '',
     due_date: null,
     objectAssignee: [],
