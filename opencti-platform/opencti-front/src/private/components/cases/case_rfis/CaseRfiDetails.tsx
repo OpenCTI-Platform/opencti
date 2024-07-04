@@ -20,6 +20,7 @@ import ItemMarkings from '../../../../components/ItemMarkings';
 import ItemOpenVocab from '../../../../components/ItemOpenVocab';
 import type { Theme } from '../../../../components/Theme';
 import { CaseRfiDetails_case$key } from './__generated__/CaseRfiDetails_case.graphql';
+import { resolveLink } from '../../../../utils/Entity';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -132,32 +133,70 @@ const CaseRfiDetailsFragment = graphql`
       first: 10
       orderBy: created
       orderMode: desc
-      types: ["Case-Rfi"]
+      types: ["Case"]
       viaTypes: ["Indicator", "Stix-Cyber-Observable"]
     ) {
       edges {
         node {
           id
           entity_type
-          ... on CaseRfi {
-            name
-            description
-            created
-            createdBy {
-              ... on Identity {
+            ... on CaseIncident {
+              name
+              description
+              created
+              createdBy {
+                ... on Identity {
+                  id
+                  name
+                  entity_type
+                }
+              }
+              objectMarking {
                 id
-                name
-                entity_type
+                definition_type
+                definition
+                x_opencti_order
+                x_opencti_color
               }
             }
-            objectMarking {
-              id
-              definition_type
-              definition
-              x_opencti_order
-              x_opencti_color
+            ... on CaseRfi {
+              name
+              description
+              created
+              createdBy {
+                ... on Identity {
+                  id
+                  name
+                  entity_type
+                }
+              }
+              objectMarking {
+                id
+                definition_type
+                definition
+                x_opencti_order
+                x_opencti_color
+              }
             }
-          }
+            ... on CaseRft {
+              name
+              description
+              created
+              createdBy {
+                ... on Identity {
+                  id
+                  name
+                  entity_type
+                }
+              }
+              objectMarking {
+                id
+                definition_type
+                definition
+                x_opencti_order
+                x_opencti_color
+              }
+            }
         }
       }
     }
@@ -254,7 +293,7 @@ const CaseRfiDetails: FunctionComponent<CaseRfiDetailsProps> = ({
                   classes={{ root: classes.item }}
                   divider={true}
                   component={Link}
-                  to={`/dashboard/cases/rfis/${relatedContainer?.id}`}
+                  to={`${resolveLink(relatedContainer?.entity_type)}/${relatedContainer?.id}`}
                 >
                   <ListItemIcon>
                     <ItemIcon type={relatedContainer?.entity_type} />
