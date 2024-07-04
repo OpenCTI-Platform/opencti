@@ -130,7 +130,7 @@
     "eslint-plugin-react": "7.34.3",
     "express": "4.19.2",
     "fs-extra": "11.2.0",
-    "http-proxy-middleware": "2.0.6",
+    "http-proxy-middleware": "3.0.0",
     "i18n-auto-translation": "1.4.0",
     "jsdom": "24.0.0",
     "monocart-reporter": "2.4.5",
