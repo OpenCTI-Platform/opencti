@@ -149,6 +149,8 @@ const createApp = async (app) => {
   const sseMiddleware = createSseMiddleware();
   sseMiddleware.applyMiddleware({ app });
 
+  // test
+
   // -- Init Taxii rest api
   initTaxiiApi(app);
 
