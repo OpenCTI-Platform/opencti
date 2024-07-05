@@ -346,7 +346,16 @@
       "modified": "2023-12-18T14:00:00.000Z",
       "name": "E2E dashboard - Vulnerability - 6 months ago"
     },
-
+    {
+      "id": "identity--d37acc64-4a6f-4dc2-879a-a4c138d0a27f",
+      "type": "identity",
+      "spec_version": "2.1",
+      "name": "John Doe",
+      "identity_class": "individual",
+      "labels": ["identity"],
+      "created": "2020-03-27T08:39:45.676Z",
+      "modified": "2020-03-27T08:39:45.676Z"
+    },
     {
       "id": "identity--c30e7bd9-7ef9-433e-aa4a-53bf3639ef61",
       "type": "identity",
@@ -391,7 +400,6 @@
       "modified": "2023-12-18T14:00:00.000Z",
       "name": "Healthcare"
     },
-
     {
       "id": "relationship--c4d77cf8-057c-4f2e-8004-c229ccd2ef7d",
       "type": "relationship",
@@ -400,7 +408,7 @@
       "modified": "2024-05-20T14:00:00.000Z",
       "relationship_type": "targets",
       "source_ref": "intrusion-set--11c8c39b-5524-59f0-92f8-a97b2608c0e5",
-      "target_ref": "identity--1df6172c-3a40-508a-8038-c49e6188bd62"
+      "target_ref": "identity--d37acc64-4a6f-4dc2-879a-a4c138d0a27f"
     },
     {
       "id": "relationship--b621057d-d59b-4a79-84ed-330798f8df3e",
@@ -410,7 +418,7 @@
       "modified": "2024-05-20T14:00:00.000Z",
       "relationship_type": "targets",
       "source_ref": "intrusion-set--30d24545-e3da-5da7-97f9-c487f5ea52b7",
-      "target_ref": "identity--283d4ea0-b6f1-5421-bdab-117a33fdb2b7"
+      "target_ref": "identity--d37acc64-4a6f-4dc2-879a-a4c138d0a27f"
     },
     {
       "id": "relationship--d4dc19ed-863f-414e-a11f-6967ac27f675",
@@ -420,7 +428,7 @@
       "modified": "2024-05-20T14:00:00.000Z",
       "relationship_type": "targets",
       "source_ref": "intrusion-set--69697775-6d83-54e3-a8f2-a96fb3e81a8d",
-      "target_ref": "identity--c62b0780-4313-514d-a30b-0b50a231c1c4"
+      "target_ref": "identity--d37acc64-4a6f-4dc2-879a-a4c138d0a27f"
     },
     {
       "id": "relationship--250772bb-a9bf-4e66-aa99-6a62d4edb101",
@@ -430,7 +438,7 @@
       "modified": "2024-05-20T14:00:00.000Z",
       "relationship_type": "targets",
       "source_ref": "intrusion-set--d9e1f317-2b86-54bb-baa5-de8ed52f99c1",
-      "target_ref": "identity--554aff4c-0922-5beb-a533-3d9c599969d5"
+      "target_ref": "identity--d37acc64-4a6f-4dc2-879a-a4c138d0a27f"
     },
 
     {
@@ -440,8 +448,8 @@
       "created": "2024-05-20T14:00:00.000Z",
       "modified": "2024-05-20T14:00:00.000Z",
       "relationship_type": "targets",
-      "source_ref": "malware--f87bf39d-fbbe-5b26-87db-366c4f5fac00",
-      "target_ref": "identity--1df6172c-3a40-508a-8038-c49e6188bd62"
+      "source_ref": "malware--60252469-6811-46df-9a17-c711dd6962fa",
+      "target_ref": "identity--d37acc64-4a6f-4dc2-879a-a4c138d0a27f"
     },
     {
       "id": "relationship--34feb56e-5faf-42c4-b4a6-dd324d793a5b",
@@ -450,8 +458,8 @@
       "created": "2024-05-20T14:00:00.000Z",
       "modified": "2024-05-20T14:00:00.000Z",
       "relationship_type": "targets",
-      "source_ref": "malware--53326e81-a840-53f1-aef5-51e75c8836e0",
-      "target_ref": "identity--283d4ea0-b6f1-5421-bdab-117a33fdb2b7"
+      "source_ref": "malware--d6292a08-8865-493e-a4ee-8540d52cafa2",
+      "target_ref": "identity--d37acc64-4a6f-4dc2-879a-a4c138d0a27f"
     },
     {
       "id": "relationship--85f1d0a7-6b0e-4ded-9487-adc748907f2f",
@@ -460,8 +468,8 @@
       "created": "2024-05-20T14:00:00.000Z",
       "modified": "2024-05-20T14:00:00.000Z",
       "relationship_type": "targets",
-      "source_ref": "malware--6a313d3d-637d-589f-9ad2-89b17a8cde26",
-      "target_ref": "identity--c62b0780-4313-514d-a30b-0b50a231c1c4"
+      "source_ref": "malware--48534a79-a9d7-4c34-a292-f5f102d26dea",
+      "target_ref": "identity--d37acc64-4a6f-4dc2-879a-a4c138d0a27f"
     },
     {
       "id": "relationship--b16cd571-deb6-4df7-b111-d0d65993ffb1",
@@ -470,8 +478,8 @@
       "created": "2024-05-20T14:00:00.000Z",
       "modified": "2024-05-20T14:00:00.000Z",
       "relationship_type": "targets",
-      "source_ref": "malware--1ca58606-0c10-58b9-a235-2864d7a125bb",
-      "target_ref": "identity--554aff4c-0922-5beb-a533-3d9c599969d5"
+      "source_ref": "malware--baa06f60-ea33-44ef-9914-cc3136c5ec40",
+      "target_ref": "identity--d37acc64-4a6f-4dc2-879a-a4c138d0a27f"
     },
 
     {
@@ -482,7 +490,7 @@
       "modified": "2024-05-20T14:00:00.000Z",
       "relationship_type": "targets",
       "source_ref": "malware--f87bf39d-fbbe-5b26-87db-366c4f5fac00",
-      "target_ref": "location--b8d0549f-de06-5ebd-a6e9-d31a581dba5d"
+      "target_ref": "location--0a44ffcb-a76b-47d0-aabe-bb485d12e725"
     },
     {
       "id": "relationship--f3d33f2b-8c57-46ff-97b0-a6f4f9c62930",
@@ -491,8 +499,8 @@
       "created": "2024-05-20T14:00:00.000Z",
       "modified": "2024-05-20T14:00:00.000Z",
       "relationship_type": "targets",
-      "source_ref": "malware--53326e81-a840-53f1-aef5-51e75c8836e0",
-      "target_ref": "location--7215cb31-5700-55b2-81b3-633c09c0351d"
+      "source_ref": "malware--60252469-6811-46df-9a17-c711dd6962fa",
+      "target_ref": "location--0a44ffcb-a76b-47d0-aabe-bb485d12e725"
     },
     {
       "id": "relationship--afa2573c-909c-4bcb-b4a9-cf1c803db10f",
@@ -501,8 +509,8 @@
       "created": "2024-05-20T14:00:00.000Z",
       "modified": "2024-05-20T14:00:00.000Z",
       "relationship_type": "targets",
-      "source_ref": "malware--6a313d3d-637d-589f-9ad2-89b17a8cde26",
-      "target_ref": "location--d4fdf10e-4bb7-50d7-8ee3-4186168343d2"
+      "source_ref": "malware--d6292a08-8865-493e-a4ee-8540d52cafa2",
+      "target_ref": "location--0a44ffcb-a76b-47d0-aabe-bb485d12e725"
     },
     {
       "id": "relationship--cd5af15f-7f47-46e8-9637-6f70aef563c2",
@@ -511,8 +519,8 @@
       "created": "2024-05-20T14:00:00.000Z",
       "modified": "2024-05-20T14:00:00.000Z",
       "relationship_type": "targets",
-      "source_ref": "malware--1ca58606-0c10-58b9-a235-2864d7a125bb",
-      "target_ref": "location--a7e4728d-e904-51c3-8e73-392940c6287c"
+      "source_ref": "malware--48534a79-a9d7-4c34-a292-f5f102d26dea",
+      "target_ref": "location--0a44ffcb-a76b-47d0-aabe-bb485d12e725"
     },
 
     {
@@ -522,8 +530,8 @@
       "created": "2024-05-20T14:00:00.000Z",
       "modified": "2024-05-20T14:00:00.000Z",
       "relationship_type": "located-at",
-      "source_ref": "ipv4-addr--0198f97b-e65d-5025-87e5-58bc39d4bdb4",
-      "target_ref": "location--b8d0549f-de06-5ebd-a6e9-d31a581dba5d"
+      "source_ref": "ipv4-addr--43cea04e-eaf6-40fb-b89a-9ac8e62cf628",
+      "target_ref": "location--0a44ffcb-a76b-47d0-aabe-bb485d12e725"
     },
     {
       "id": "relationship--78508f0a-8c1e-47c1-89e4-c98bc7aa078b",
@@ -532,8 +540,8 @@
       "created": "2024-05-20T14:00:00.000Z",
       "modified": "2024-05-20T14:00:00.000Z",
       "relationship_type": "located-at",
-      "source_ref": "ipv4-addr--2a20be58-fd0f-5a24-ac7a-f65ce409d7e4",
-      "target_ref": "location--7215cb31-5700-55b2-81b3-633c09c0351d"
+      "source_ref": "ipv4-addr--0bed963d-fd24-499d-a923-46193580f574",
+      "target_ref": "location--0a44ffcb-a76b-47d0-aabe-bb485d12e725"
     },
     {
       "id": "relationship--87c4614e-c6ab-43f9-81b5-40546f2e1114",
@@ -542,8 +550,8 @@
       "created": "2024-05-20T14:00:00.000Z",
       "modified": "2024-05-20T14:00:00.000Z",
       "relationship_type": "located-at",
-      "source_ref": "ipv4-addr--33bbaa37-94b2-5faa-90e2-2b18f32c981f",
-      "target_ref": "location--d4fdf10e-4bb7-50d7-8ee3-4186168343d2"
+      "source_ref": "ipv4-addr--98802e10-1a10-4c25-afeb-ffde92202b11",
+      "target_ref": "location--0a44ffcb-a76b-47d0-aabe-bb485d12e725"
     },
     {
       "id": "relationship--851cfc5f-4846-4e31-b372-10b938f58737",
@@ -552,8 +560,8 @@
       "created": "2024-05-20T14:00:00.000Z",
       "modified": "2024-05-20T14:00:00.000Z",
       "relationship_type": "located-at",
-      "source_ref": "ipv4-addr--2d34d3d0-bb49-53ca-9319-276c443b3ee9",
-      "target_ref": "location--a7e4728d-e904-51c3-8e73-392940c6287c"
+      "source_ref": "ipv4-addr--344ec8a8-e211-4e1d-b2e2-02e0562726be",
+      "target_ref": "location--0a44ffcb-a76b-47d0-aabe-bb485d12e725"
     },
 
     {
@@ -564,7 +572,7 @@
       "modified": "2024-05-20T14:00:00.000Z",
       "relationship_type": "targets",
       "source_ref": "threat-actor--88f99ab2-b5b1-5ee1-bb4b-7d814eab23d9",
-      "target_ref": "vulnerability--f9c68857-95ae-5f6f-8845-9710d5353cff"
+      "target_ref": "vulnerability--efa26bb3-e08f-4806-b50f-60a8b2860298"
     },
     {
       "id": "relationship--66eaad1c-3a24-447d-9a1c-322acb53ddac",
@@ -574,7 +582,7 @@
       "modified": "2024-05-20T14:00:00.000Z",
       "relationship_type": "targets",
       "source_ref": "threat-actor--e0e37f0f-1c1d-5cc6-b752-56b0f1e1c740",
-      "target_ref": "vulnerability--358ba355-4380-5d36-9dd5-7a48e8516a11"
+      "target_ref": "vulnerability--efa26bb3-e08f-4806-b50f-60a8b2860298"
     },
     {
       "id": "relationship--56a34f90-9bb3-40ff-9a13-a7bccc0dbdf7",
@@ -584,7 +592,7 @@
       "modified": "2024-05-20T14:00:00.000Z",
       "relationship_type": "targets",
       "source_ref": "threat-actor--3ad6196f-a190-5fba-883d-30f0813423b2",
-      "target_ref": "vulnerability--3cfdcf03-292b-5748-aa6d-7ac3368f8afa"
+      "target_ref": "vulnerability--efa26bb3-e08f-4806-b50f-60a8b2860298"
     },
     {
       "id": "relationship--20346da6-4c10-46a9-beb9-285eff8e42bf",
@@ -594,7 +602,7 @@
       "modified": "2024-05-20T14:00:00.000Z",
       "relationship_type": "targets",
       "source_ref": "threat-actor--aaf90e45-36b8-5ba1-8038-ff420802c5b2",
-      "target_ref": "vulnerability--33846028-64c7-5679-ad23-300a052b5b2f"
+      "target_ref": "vulnerability--efa26bb3-e08f-4806-b50f-60a8b2860298"
     },
 
     {
@@ -605,7 +613,7 @@
       "modified": "2024-05-20T14:00:00.000Z",
       "relationship_type": "based-on",
       "source_ref": "indicator--274128a4-2ad4-50b5-ae7b-b0dea1fa9861",
-      "target_ref": "ipv4-addr--0198f97b-e65d-5025-87e5-58bc39d4bdb4"
+      "target_ref": "ipv4-addr--43cea04e-eaf6-40fb-b89a-9ac8e62cf628"
     },
     {
       "id": "relationship--ba5f370b-fc52-498e-8002-be16992bb7dc",
@@ -615,7 +623,7 @@
       "modified": "2024-05-20T14:00:00.000Z",
       "relationship_type": "based-on",
       "source_ref": "indicator--c9db3414-6f04-5d58-925d-55b506a474a1",
-      "target_ref": "ipv4-addr--2a20be58-fd0f-5a24-ac7a-f65ce409d7e4"
+      "target_ref": "ipv4-addr--0bed963d-fd24-499d-a923-46193580f574"
     },
     {
       "id": "relationship--a3d78329-7a58-4294-8515-f69431f7fe39",
@@ -625,7 +633,7 @@
       "modified": "2024-05-20T14:00:00.000Z",
       "relationship_type": "based-on",
       "source_ref": "indicator--5ffbb8e4-8ede-5cb2-b08f-719a77498fca",
-      "target_ref": "ipv4-addr--33bbaa37-94b2-5faa-90e2-2b18f32c981f"
+      "target_ref": "ipv4-addr--98802e10-1a10-4c25-afeb-ffde92202b11"
     },
     {
       "id": "relationship--aaa32dc4-da8a-40dd-a3e0-5763d597d20f",
@@ -635,7 +643,7 @@
       "modified": "2024-05-20T14:00:00.000Z",
       "relationship_type": "based-on",
       "source_ref": "indicator--beb43a71-5d51-5a38-b655-3bd7f54be5da",
-      "target_ref": "ipv4-addr--2d34d3d0-bb49-53ca-9319-276c443b3ee9"
+      "target_ref": "ipv4-addr--344ec8a8-e211-4e1d-b2e2-02e0562726be"
     },
 
     {
@@ -646,7 +654,7 @@
       "modified": "2024-05-20T14:00:00.000Z",
       "relationship_type": "uses",
       "source_ref": "intrusion-set--11c8c39b-5524-59f0-92f8-a97b2608c0e5",
-      "target_ref": "malware--1ca58606-0c10-58b9-a235-2864d7a125bb"
+      "target_ref": "malware--60252469-6811-46df-9a17-c711dd6962fa"
     },
     {
       "id": "relationship--5124c8a8-5f74-4336-ba1f-92d9bff67ea0",
@@ -656,7 +664,7 @@
       "modified": "2024-05-20T14:00:00.000Z",
       "relationship_type": "uses",
       "source_ref": "intrusion-set--30d24545-e3da-5da7-97f9-c487f5ea52b7",
-      "target_ref": "malware--6a313d3d-637d-589f-9ad2-89b17a8cde26"
+      "target_ref": "malware--d6292a08-8865-493e-a4ee-8540d52cafa2"
     },
     {
       "id": "relationship--0dc7e451-3c91-44a6-99ab-9f924d70ac17",
@@ -666,7 +674,7 @@
       "modified": "2024-05-20T14:00:00.000Z",
       "relationship_type": "uses",
       "source_ref": "intrusion-set--69697775-6d83-54e3-a8f2-a96fb3e81a8d",
-      "target_ref": "malware--53326e81-a840-53f1-aef5-51e75c8836e0"
+      "target_ref": "malware--48534a79-a9d7-4c34-a292-f5f102d26dea"
     },
     {
       "id": "relationship--287114bf-499e-438d-a04b-772e62c54d05",
@@ -676,7 +684,7 @@
       "modified": "2024-05-20T14:00:00.000Z",
       "relationship_type": "uses",
       "source_ref": "intrusion-set--d9e1f317-2b86-54bb-baa5-de8ed52f99c1",
-      "target_ref": "malware--f87bf39d-fbbe-5b26-87db-366c4f5fac00"
+      "target_ref": "malware--baa06f60-ea33-44ef-9914-cc3136c5ec40"
     },
 
     {
@@ -694,10 +702,10 @@
       "report_types": ["threat-report"],
       "confidence": 4,
       "object_refs": [
-        "malware--1ca58606-0c10-58b9-a235-2864d7a125bb",
-        "malware--6a313d3d-637d-589f-9ad2-89b17a8cde26",
-        "malware--53326e81-a840-53f1-aef5-51e75c8836e0",
-        "malware--f87bf39d-fbbe-5b26-87db-366c4f5fac00",
+        "malware--60252469-6811-46df-9a17-c711dd6962fa",
+        "malware--d6292a08-8865-493e-a4ee-8540d52cafa2",
+        "malware--48534a79-a9d7-4c34-a292-f5f102d26dea",
+        "malware--baa06f60-ea33-44ef-9914-cc3136c5ec40",
         "threat-actor--88f99ab2-b5b1-5ee1-bb4b-7d814eab23d9",
         "threat-actor--e0e37f0f-1c1d-5cc6-b752-56b0f1e1c740",
         "threat-actor--3ad6196f-a190-5fba-883d-30f0813423b2",
@@ -706,14 +714,14 @@
         "intrusion-set--30d24545-e3da-5da7-97f9-c487f5ea52b7",
         "intrusion-set--30d24545-e3da-5da7-97f9-c487f5ea52b7",
         "intrusion-set--d9e1f317-2b86-54bb-baa5-de8ed52f99c1",
-        "vulnerability--f9c68857-95ae-5f6f-8845-9710d5353cff",
-        "vulnerability--358ba355-4380-5d36-9dd5-7a48e8516a11",
-        "vulnerability--3cfdcf03-292b-5748-aa6d-7ac3368f8afa",
-        "vulnerability--33846028-64c7-5679-ad23-300a052b5b2f",
-        "ipv4-addr--0198f97b-e65d-5025-87e5-58bc39d4bdb4",
-        "ipv4-addr--2a20be58-fd0f-5a24-ac7a-f65ce409d7e4",
-        "ipv4-addr--33bbaa37-94b2-5faa-90e2-2b18f32c981f",
-        "ipv4-addr--2d34d3d0-bb49-53ca-9319-276c443b3ee9",
+        "vulnerability--efa26bb3-e08f-4806-b50f-60a8b2860298",
+        "vulnerability--0281a78c-ac6c-402d-b14a-4b336a1735e3",
+        "vulnerability--d0ad508b-76e7-428f-a081-91c4fc97a700",
+        "vulnerability--8058095d-7b24-487e-92c1-fabe7bcd6428",
+        "ipv4-addr--43cea04e-eaf6-40fb-b89a-9ac8e62cf628",
+        "ipv4-addr--0bed963d-fd24-499d-a923-46193580f574",
+        "ipv4-addr--98802e10-1a10-4c25-afeb-ffde92202b11",
+        "ipv4-addr--344ec8a8-e211-4e1d-b2e2-02e0562726be",
         "indicator--274128a4-2ad4-50b5-ae7b-b0dea1fa9861",
         "indicator--c9db3414-6f04-5d58-925d-55b506a474a1",
         "indicator--5ffbb8e4-8ede-5cb2-b08f-719a77498fca",
@@ -735,10 +743,10 @@
       "report_types": ["threat-report"],
       "confidence": 4,
       "object_refs": [
-        "malware--1ca58606-0c10-58b9-a235-2864d7a125bb",
-        "malware--6a313d3d-637d-589f-9ad2-89b17a8cde26",
-        "malware--53326e81-a840-53f1-aef5-51e75c8836e0",
-        "malware--f87bf39d-fbbe-5b26-87db-366c4f5fac00",
+        "malware--60252469-6811-46df-9a17-c711dd6962fa",
+        "malware--d6292a08-8865-493e-a4ee-8540d52cafa2",
+        "malware--48534a79-a9d7-4c34-a292-f5f102d26dea",
+        "malware--baa06f60-ea33-44ef-9914-cc3136c5ec40",
         "threat-actor--88f99ab2-b5b1-5ee1-bb4b-7d814eab23d9",
         "threat-actor--e0e37f0f-1c1d-5cc6-b752-56b0f1e1c740",
         "threat-actor--3ad6196f-a190-5fba-883d-30f0813423b2",
@@ -747,14 +755,14 @@
         "intrusion-set--30d24545-e3da-5da7-97f9-c487f5ea52b7",
         "intrusion-set--30d24545-e3da-5da7-97f9-c487f5ea52b7",
         "intrusion-set--d9e1f317-2b86-54bb-baa5-de8ed52f99c1",
-        "vulnerability--f9c68857-95ae-5f6f-8845-9710d5353cff",
-        "vulnerability--358ba355-4380-5d36-9dd5-7a48e8516a11",
-        "vulnerability--3cfdcf03-292b-5748-aa6d-7ac3368f8afa",
-        "vulnerability--33846028-64c7-5679-ad23-300a052b5b2f",
-        "ipv4-addr--0198f97b-e65d-5025-87e5-58bc39d4bdb4",
-        "ipv4-addr--2a20be58-fd0f-5a24-ac7a-f65ce409d7e4",
-        "ipv4-addr--33bbaa37-94b2-5faa-90e2-2b18f32c981f",
-        "ipv4-addr--2d34d3d0-bb49-53ca-9319-276c443b3ee9",
+        "vulnerability--efa26bb3-e08f-4806-b50f-60a8b2860298",
+        "vulnerability--0281a78c-ac6c-402d-b14a-4b336a1735e3",
+        "vulnerability--d0ad508b-76e7-428f-a081-91c4fc97a700",
+        "vulnerability--8058095d-7b24-487e-92c1-fabe7bcd6428",
+        "ipv4-addr--43cea04e-eaf6-40fb-b89a-9ac8e62cf628",
+        "ipv4-addr--0bed963d-fd24-499d-a923-46193580f574",
+        "ipv4-addr--98802e10-1a10-4c25-afeb-ffde92202b11",
+        "ipv4-addr--344ec8a8-e211-4e1d-b2e2-02e0562726be",
         "indicator--274128a4-2ad4-50b5-ae7b-b0dea1fa9861",
         "indicator--c9db3414-6f04-5d58-925d-55b506a474a1",
         "indicator--5ffbb8e4-8ede-5cb2-b08f-719a77498fca",
@@ -776,10 +784,10 @@
       "report_types": ["threat-report"],
       "confidence": 4,
       "object_refs": [
-        "malware--1ca58606-0c10-58b9-a235-2864d7a125bb",
-        "malware--6a313d3d-637d-589f-9ad2-89b17a8cde26",
-        "malware--53326e81-a840-53f1-aef5-51e75c8836e0",
-        "malware--f87bf39d-fbbe-5b26-87db-366c4f5fac00",
+        "malware--60252469-6811-46df-9a17-c711dd6962fa",
+        "malware--d6292a08-8865-493e-a4ee-8540d52cafa2",
+        "malware--48534a79-a9d7-4c34-a292-f5f102d26dea",
+        "malware--baa06f60-ea33-44ef-9914-cc3136c5ec40",
         "threat-actor--88f99ab2-b5b1-5ee1-bb4b-7d814eab23d9",
         "threat-actor--e0e37f0f-1c1d-5cc6-b752-56b0f1e1c740",
         "threat-actor--3ad6196f-a190-5fba-883d-30f0813423b2",
@@ -788,14 +796,14 @@
         "intrusion-set--30d24545-e3da-5da7-97f9-c487f5ea52b7",
         "intrusion-set--30d24545-e3da-5da7-97f9-c487f5ea52b7",
         "intrusion-set--d9e1f317-2b86-54bb-baa5-de8ed52f99c1",
-        "vulnerability--f9c68857-95ae-5f6f-8845-9710d5353cff",
-        "vulnerability--358ba355-4380-5d36-9dd5-7a48e8516a11",
-        "vulnerability--3cfdcf03-292b-5748-aa6d-7ac3368f8afa",
-        "vulnerability--33846028-64c7-5679-ad23-300a052b5b2f",
-        "ipv4-addr--0198f97b-e65d-5025-87e5-58bc39d4bdb4",
-        "ipv4-addr--2a20be58-fd0f-5a24-ac7a-f65ce409d7e4",
-        "ipv4-addr--33bbaa37-94b2-5faa-90e2-2b18f32c981f",
-        "ipv4-addr--2d34d3d0-bb49-53ca-9319-276c443b3ee9",
+        "vulnerability--efa26bb3-e08f-4806-b50f-60a8b2860298",
+        "vulnerability--0281a78c-ac6c-402d-b14a-4b336a1735e3",
+        "vulnerability--d0ad508b-76e7-428f-a081-91c4fc97a700",
+        "vulnerability--8058095d-7b24-487e-92c1-fabe7bcd6428",
+        "ipv4-addr--43cea04e-eaf6-40fb-b89a-9ac8e62cf628",
+        "ipv4-addr--0bed963d-fd24-499d-a923-46193580f574",
+        "ipv4-addr--98802e10-1a10-4c25-afeb-ffde92202b11",
+        "ipv4-addr--344ec8a8-e211-4e1d-b2e2-02e0562726be",
         "indicator--274128a4-2ad4-50b5-ae7b-b0dea1fa9861",
         "indicator--c9db3414-6f04-5d58-925d-55b506a474a1",
         "indicator--5ffbb8e4-8ede-5cb2-b08f-719a77498fca",
@@ -817,10 +825,10 @@
       "report_types": ["threat-report"],
       "confidence": 4,
       "object_refs": [
-        "malware--1ca58606-0c10-58b9-a235-2864d7a125bb",
-        "malware--6a313d3d-637d-589f-9ad2-89b17a8cde26",
-        "malware--53326e81-a840-53f1-aef5-51e75c8836e0",
-        "malware--f87bf39d-fbbe-5b26-87db-366c4f5fac00",
+        "malware--60252469-6811-46df-9a17-c711dd6962fa",
+        "malware--d6292a08-8865-493e-a4ee-8540d52cafa2",
+        "malware--48534a79-a9d7-4c34-a292-f5f102d26dea",
+        "malware--baa06f60-ea33-44ef-9914-cc3136c5ec40",
         "threat-actor--88f99ab2-b5b1-5ee1-bb4b-7d814eab23d9",
         "threat-actor--e0e37f0f-1c1d-5cc6-b752-56b0f1e1c740",
         "threat-actor--3ad6196f-a190-5fba-883d-30f0813423b2",
@@ -829,14 +837,14 @@
         "intrusion-set--30d24545-e3da-5da7-97f9-c487f5ea52b7",
         "intrusion-set--30d24545-e3da-5da7-97f9-c487f5ea52b7",
         "intrusion-set--d9e1f317-2b86-54bb-baa5-de8ed52f99c1",
-        "vulnerability--f9c68857-95ae-5f6f-8845-9710d5353cff",
-        "vulnerability--358ba355-4380-5d36-9dd5-7a48e8516a11",
-        "vulnerability--3cfdcf03-292b-5748-aa6d-7ac3368f8afa",
-        "vulnerability--33846028-64c7-5679-ad23-300a052b5b2f",
-        "ipv4-addr--0198f97b-e65d-5025-87e5-58bc39d4bdb4",
-        "ipv4-addr--2a20be58-fd0f-5a24-ac7a-f65ce409d7e4",
-        "ipv4-addr--33bbaa37-94b2-5faa-90e2-2b18f32c981f",
-        "ipv4-addr--2d34d3d0-bb49-53ca-9319-276c443b3ee9",
+        "vulnerability--efa26bb3-e08f-4806-b50f-60a8b2860298",
+        "vulnerability--0281a78c-ac6c-402d-b14a-4b336a1735e3",
+        "vulnerability--d0ad508b-76e7-428f-a081-91c4fc97a700",
+        "vulnerability--8058095d-7b24-487e-92c1-fabe7bcd6428",
+        "ipv4-addr--43cea04e-eaf6-40fb-b89a-9ac8e62cf628",
+        "ipv4-addr--0bed963d-fd24-499d-a923-46193580f574",
+        "ipv4-addr--98802e10-1a10-4c25-afeb-ffde92202b11",
+        "ipv4-addr--344ec8a8-e211-4e1d-b2e2-02e0562726be",
         "indicator--274128a4-2ad4-50b5-ae7b-b0dea1fa9861",
         "indicator--c9db3414-6f04-5d58-925d-55b506a474a1",
         "indicator--5ffbb8e4-8ede-5cb2-b08f-719a77498fca",
