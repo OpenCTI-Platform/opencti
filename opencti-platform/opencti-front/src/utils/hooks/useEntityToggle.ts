@@ -8,7 +8,7 @@ export interface UseEntityToggle<T> {
   selectAll: boolean;
   numberOfSelectedElements: number;
   onToggleEntity: (
-    entity: T,
+    entity: T | T[],
     _?: React.SyntheticEvent,
     forceRemove?: T[]
   ) => void;
@@ -45,7 +45,7 @@ const useEntityToggle = <T extends { id: string }>(
   const dispatch = useBus(busKey, callback);
 
   const onToggleEntity = (
-    entity: T,
+    entity: T | T[],
     event?: React.SyntheticEvent,
     forceRemove: T[] = [],
   ) => {
@@ -57,7 +57,7 @@ const useEntityToggle = <T extends { id: string }>(
       const currentIds = R.values(selectedElements).map((n) => n.id);
       const givenIds = entity.map((n) => n.id);
       const addedIds = givenIds.filter((n) => !currentIds.includes(n));
-      let newSelectedElements = {
+      let newSelectedElements: Record<string, T> = {
         ...selectedElements,
         ...R.indexBy(
           R.prop('id'),
@@ -68,7 +68,7 @@ const useEntityToggle = <T extends { id: string }>(
         newSelectedElements = R.omit(
           forceRemove.map((n) => n.id),
           newSelectedElements,
-        );
+        ) as Record<string, T>;
       }
       setSelectAll(false);
       setSelectedElements(newSelectedElements);
