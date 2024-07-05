@@ -182,7 +182,7 @@ export const stixCoreRelationshipEditionOverviewQuery = graphql`
   }
 `;
 
-interface StixCoreRelationshipEditionOverviewProps {
+export interface StixCoreRelationshipEditionOverviewProps {
   handleClose: () => void;
   handleDelete: () => void;
   queryRef: PreloadedQuery<StixCoreRelationshipEditionOverviewQuery>;

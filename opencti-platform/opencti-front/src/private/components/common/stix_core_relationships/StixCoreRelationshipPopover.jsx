@@ -141,7 +141,7 @@ class StixCoreRelationshipPopover extends Component {
             {t('Delete')}
           </MenuItem>
         </Menu>
-        {stixCoreRelationshipId && this.state.displayUpdate && (
+        {stixCoreRelationshipId && (
           <StixCoreRelationshipEdition
             variant="noGraph"
             stixCoreRelationshipId={stixCoreRelationshipId}
