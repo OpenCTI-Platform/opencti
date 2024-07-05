@@ -1,9 +1,9 @@
 import React, { FunctionComponent } from 'react';
-import { NarrativeLine_node$data } from '@components/techniques/narratives/__generated__/NarrativeLine_node.graphql';
 import ToolBar from '@components/data/ToolBar';
 import makeStyles from '@mui/styles/makeStyles';
 import { NarrativeWithSubnarrativeLineDummy } from '@components/techniques/narratives/NarrativeWithSubnarrativeLine';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
+import { NarrativeLine_node$data } from './narratives/__generated__/NarrativeLine_node.graphql';
 import ExportContextProvider from '../../../utils/ExportContextProvider';
 import { NarrativeLineDummy } from './narratives/NarrativeLine';
 import NarrativesLines, { narrativesLinesQuery } from './narratives/NarrativesLines';

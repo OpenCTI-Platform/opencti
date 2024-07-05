@@ -8966,7 +8966,7 @@ enum NarrativesOrdering {
 
 type NarrativeConnection {
   pageInfo: PageInfo!
-  edges: [NarrativeEdge]
+  edges: [NarrativeEdge!]!
 }
 
 type NarrativeEdge {
