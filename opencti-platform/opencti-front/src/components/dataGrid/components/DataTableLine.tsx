@@ -94,7 +94,14 @@ const DataTableCell = ({
   );
 };
 
-const DataTableLine = ({ row, redirectionMode, storageHelpers, effectiveColumns }: DataTableLineProps) => {
+const DataTableLine = ({
+  row,
+  redirectionMode,
+  storageHelpers,
+  effectiveColumns,
+  index,
+  onToggleShiftEntity,
+}: DataTableLineProps) => {
   const theme = useTheme<Theme>();
 
   const {
@@ -145,7 +152,15 @@ const DataTableLine = ({ row, redirectionMode, storageHelpers, effectiveColumns 
             sx={{
               color: theme.palette.primary.main,
             }}
-            onClick={(event) => onToggleEntity(data, event)}
+            onClick={(event) => {
+              event.preventDefault();
+              event.stopPropagation();
+              if (event.shiftKey) {
+                onToggleShiftEntity(index, data, event);
+              } else {
+                onToggleEntity(data, event);
+              }
+            }}
             checked={
               (selectAll
                 && !((data.id || 'id') in (deSelectedElements || {})))

@@ -14,7 +14,6 @@ import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
-import Tooltip from '@mui/material/Tooltip';
 import ObjectMarkingField from '../form/ObjectMarkingField';
 import FileExportViewer from './FileExportViewer';
 import FileImportViewer from './FileImportViewer';
@@ -455,12 +454,7 @@ const FileManager = ({
                           </Field>
                           <ObjectMarkingField
                             name="contentMaxMarkings"
-                            label={
-                              <>
-                                {t_i18n('Content max marking definition levels')}
-                                <Tooltip title={'Coucou'}>Coucou</Tooltip>
-                              </>
-                            }
+                            label={t_i18n('Content max marking definition levels')}
                             onChange={(_, values) => handleSelectedContentMaxMarkingsChange(values)}
                             style={fieldSpacingContainerStyle}
                             setFieldValue={setFieldValue}
