@@ -6,7 +6,7 @@ import { NarrativesLinesPaginationQuery, NarrativesLinesPaginationQuery$variable
 import { NarrativeLine_node$data } from './__generated__/NarrativeLine_node.graphql';
 import { narrativesLinesFragment, narrativesLinesQuery } from './NarrativesLines';
 import { NarrativesWithSubnarrativesLines_data$key } from './__generated__/NarrativesWithSubnarrativesLines_data.graphql';
-import NarrativeWithSubnarrativeLine, { NarrativeWithSubnarrativeLineDummy } from './NarrativeWithSubnarrativeLine';
+import NarrativeWithSubnarrativeLine, { ExtendedNarrativeNode, NarrativeWithSubnarrativeLineDummy, SubNarrativeNode } from './NarrativeWithSubnarrativeLine';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
 
 const useStyles = makeStyles(() => ({
@@ -41,22 +41,22 @@ const NarrativesWithSubnarrativesLines: FunctionComponent<NarrativesWithSubnarra
     nodePath: ['narratives', 'pageInfo', 'globalCount'],
   });
 
-  const filterByKeyword = (n) => keyword === ''
+  const filterByKeyword = (n: ExtendedNarrativeNode | SubNarrativeNode) => keyword === ''
         || n.name.toLowerCase().indexOf(keyword.toLowerCase()) !== -1
         || (n.description ?? '').toLowerCase().indexOf(keyword.toLowerCase())
         !== -1
-        || (n.subnarratives_text ?? '')
+        || ('subnarratives_text' in n && ((n.subnarratives_text ?? '')
           .toLowerCase()
-          .indexOf(keyword.toLowerCase()) !== -1;
+          .indexOf(keyword.toLowerCase()) !== -1));
 
-  const narratives = (data?.narratives?.edges ?? []).map((n) => n?.node)
+  const narratives = ((data?.narratives?.edges ?? []).map((n) => n?.node)
     .map((n) => ({
       ...n,
       isSubNarrative: n?.isSubNarrative ?? false,
       subNarratives: n?.subNarratives ?? { edges: [] },
       subnarratives_text: ((n?.subNarratives ?? {}).edges ?? []).map((o) => `${o?.node.name} ${o?.node.description}`).join(' | '),
-    }))
-    .filter((n) => n.isSubNarrative === false)
+    })) as ExtendedNarrativeNode[])
+    .filter((n) => !n.isSubNarrative)
     .filter(filterByKeyword)
     .sort((a, b) => (a?.name ?? '').localeCompare(b?.name ?? ''));
 
@@ -68,8 +68,8 @@ const NarrativesWithSubnarrativesLines: FunctionComponent<NarrativesWithSubnarra
     >
       {data
         ? narratives.map((narrative) => {
-          const subNarratives = (narrative.subNarratives.edges ?? [])
-            .map((n) => n?.node)
+          const subNarratives = ((narrative.subNarratives?.edges ?? [])
+            .map((n) => n?.node) as SubNarrativeNode[])
             .filter(filterByKeyword)
             .sort((a, b) => (a?.name ?? '').localeCompare(b?.name ?? ''));
           return (
