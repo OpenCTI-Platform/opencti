@@ -24,8 +24,9 @@ import Box from '@mui/material/Box';
 import makeStyles from '@mui/styles/makeStyles';
 import { FormikConfig } from 'formik/dist/types';
 import { FeedCreationAllTypesQuery$data } from '@components/data/feeds/__generated__/FeedCreationAllTypesQuery.graphql';
-import { FeedAttributeMappingInput, MemberAccessInput } from '@components/data/feeds/__generated__/FeedEditionMutation.graphql';
+import { FeedAttributeMappingInput } from '@components/data/feeds/__generated__/FeedEditionMutation.graphql';
 import { StixCyberObservablesLinesAttributesQuery$data } from '@components/observations/stix_cyber_observables/__generated__/StixCyberObservablesLinesAttributesQuery.graphql';
+import { Option } from '@components/common/form/ReferenceField';
 import ObjectMembersField from '../../common/form/ObjectMembersField';
 import { useFormatter } from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
@@ -36,10 +37,10 @@ import useAttributes from '../../../../utils/hooks/useAttributes';
 import { stixCyberObservablesLinesAttributesQuery } from '../../observations/stix_cyber_observables/StixCyberObservablesLines';
 import Filters from '../../common/lists/Filters';
 import {
-  useAvailableFilterKeysForEntityTypes,
   cleanFilters,
   emptyFilterGroup,
   serializeFilterGroupForBackend,
+  useAvailableFilterKeysForEntityTypes,
   useFetchFilterKeysSchema,
 } from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
@@ -136,7 +137,7 @@ interface FeedAddInput {
   feed_types: string[];
   feed_public: boolean;
   feed_attributes: FeedAttributeMappingInput[];
-  authorized_members: MemberAccessInput[];
+  authorized_members: Option[];
 }
 
 interface FeedCreationFormProps {
@@ -206,8 +207,8 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
       R.assoc('filters', serializeFilterGroupForBackend(filters)),
       R.assoc(
         'authorized_members',
-        values.authorized_members.map(({ id }) => ({
-          id,
+        values.authorized_members.map(({ value }) => ({
+          id: value,
           access_right: 'view',
         })),
       ),
@@ -235,9 +236,9 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
             }
           }
         }
+        setSubmitting(false);
       },
       onCompleted: () => {
-        setSubmitting(false);
         resetForm();
       },
     });
