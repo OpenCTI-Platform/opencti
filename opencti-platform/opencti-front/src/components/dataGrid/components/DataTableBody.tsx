@@ -167,8 +167,7 @@ const DataTableBody = ({
         let entities: { id: string }[] = [];
         while (firstIndex <= currentIndex) {
           entities = [...entities, resolvedData[firstIndex]];
-          // eslint-disable-next-line no-plusplus
-          firstIndex++;
+          firstIndex += 1;
         }
         const forcedRemove = R.values(selectedElements).filter(
           (n) => !entities.map((o) => o.id).includes(n.id),
