@@ -85,7 +85,7 @@ const ViewSwitchingButtons: FunctionComponent<ViewSwitchingButtonsProps> = ({
       )}
       {typeof handleChangeView === 'function' && enableSubEntityLines && (
         <ToggleButton value="subEntityLines" aria-label="subEntityLines">
-          <Tooltip title={t_i18n('Sub Entity Lines view')}>
+          <Tooltip title={t_i18n('Sub entity lines view')}>
             <ViewListOutlined
               fontSize="small"
               color={
