@@ -85,6 +85,7 @@ export interface BulkEntityTypeInfo {
 
 type entityTypeListType = {
   entity_type: string;
+  representative: string;
   id: string;
 };
 
@@ -172,6 +173,7 @@ const BulkRelationDialog : FunctionComponent<BulkRelationDialogProps> = ({ stixD
           const stixObject = edges[0].node;
           const entityTypeList = edges.map(({ node }) => ({
             entity_type: node.entity_type,
+            representative: node.representative.main,
             id: node.id,
           }));
           const foundEntityType = entityList.filter((entityType) => entityType.toEntitytype === entityTypeList[0].entity_type);
@@ -234,6 +236,8 @@ const BulkRelationDialog : FunctionComponent<BulkRelationDialogProps> = ({ stixD
   const onChangeEntityType = (value: RelationsToEntity, entityIndex: number) => {
     const bulkEntityListToEdit = bulkEntityList;
     const { entityTypeList } = bulkEntityListToEdit[entityIndex];
+    const foundEntityType = (entityTypeList ?? []).find((item) => item.entity_type === value.toEntitytype);
+    if (foundEntityType) bulkEntityListToEdit[entityIndex].representative = foundEntityType.representative;
     bulkEntityListToEdit[entityIndex].selectedEntityType = value;
     bulkEntityListToEdit[entityIndex].isMatchingEntity = getRelationMatchStatus(value, entityTypeList ?? []);
     setBulkEntityList([...bulkEntityListToEdit]);
