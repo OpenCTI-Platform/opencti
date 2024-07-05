@@ -395,9 +395,6 @@ class StixCoreRelationshipContainer extends Component {
                   <Grid item={true} xs={6}>
                     <StixCoreRelationshipSharing
                       elementId={stixCoreRelationship.id}
-                      disabled={
-                        stixCoreRelationship.x_opencti_inferences !== null
-                      }
                     />
                     <Typography
                       variant="h3"
