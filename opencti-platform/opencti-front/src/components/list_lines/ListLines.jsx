@@ -638,7 +638,7 @@ class ListLines extends Component {
             });
             availableFilterKeys = uniq(Array.from(filterKeysMap.keys())); // keys of the entity type if availableFilterKeys is not specified
           }
-          if (additionalFilterKeys) availableFilterKeys = uniq(availableFilterKeys.concat(additionalFilterKeys.filterKeys));
+          if (additionalFilterKeys && additionalFilterKeys.filterKeys) availableFilterKeys = uniq(availableFilterKeys.concat(additionalFilterKeys.filterKeys));
           if (disableExport) {
             return this.renderContent(availableFilterKeys, entityTypes);
           }
