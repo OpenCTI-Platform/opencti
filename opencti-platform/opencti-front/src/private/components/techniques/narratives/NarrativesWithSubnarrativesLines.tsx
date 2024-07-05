@@ -11,7 +11,7 @@ import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloaded
 
 const useStyles = makeStyles(() => ({
   root: {
-    margin: 0,
+    marginTop: 30,
   },
 }));
 

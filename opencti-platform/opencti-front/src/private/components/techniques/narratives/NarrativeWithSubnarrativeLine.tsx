@@ -10,7 +10,7 @@ import { Theme } from '@mui/material/styles/createTheme';
 import Skeleton from '@mui/material/Skeleton';
 import { ListItemButton } from '@mui/material';
 import ItemIcon from '../../../../components/ItemIcon';
-import { useFormatter } from '../../../../components/i18n';
+import { emptyFilled } from '../../../../utils/String';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   item: {},
@@ -21,7 +21,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
     color: theme.palette.primary.main,
   },
   name: {
-    width: '20%',
+    width: '30%',
     height: 20,
     lineHeight: '20px',
     float: 'left',
@@ -30,15 +30,14 @@ const useStyles = makeStyles<Theme>((theme) => ({
     textOverflow: 'ellipsis',
   },
   description: {
-    width: '70%',
     height: 20,
-    lineHeight: '20px',
+    fontSize: 13,
     float: 'left',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
-    color: '#a5a5a5',
-    fontSize: 12,
+    paddingRight: 10,
+    color: theme.palette.text.primary,
   },
   goIcon: {
     position: 'absolute',
@@ -53,7 +52,6 @@ interface NarrativeWithSubnarrativeLineProps {
 }
 
 const NarrativeWithSubnarrativeLine: FunctionComponent<NarrativeWithSubnarrativeLineProps> = ({ node, subNarratives, isSubNarrative }) => {
-  const { t_i18n } = useFormatter();
   const classes = useStyles();
 
   return (
@@ -75,7 +73,7 @@ const NarrativeWithSubnarrativeLine: FunctionComponent<NarrativeWithSubnarrative
             <>
               <div className={classes.name}>{node.name}</div>
               <div className={classes.description}>
-                {node.description?.length ? node.description : t_i18n('This narrative does not have any description.')}
+                {emptyFilled(node.description)}
               </div>
             </>
               }
