@@ -1,8 +1,8 @@
 import React from 'react';
 import makeStyles from '@mui/styles/makeStyles';
+import { SettingsOrganizationLineDummy } from '@components/settings/organizations/SettingsOrganizationLine';
 import ListLines from '../../../components/list_lines/ListLines';
 import SettingsOrganizationsLines, { settingsOrganizationsLinesQuery } from './organizations/SettingsOrganizationsLines';
-import Loader, { LoaderVariant } from '../../../components/Loader';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import {
   SettingsOrganizationsLinesPaginationQuery,
@@ -64,13 +64,13 @@ const SettingsOrganizations = () => {
     },
     created: {
       label: 'Original creation date',
-      width: '15%',
+      width: '25%',
       isSortable: true,
       render: (node: Organization) => fd(node.created),
     },
     modified: {
       label: 'Modification date',
-      width: '15%',
+      width: '25%',
       isSortable: true,
       render: (node: Organization) => fd(node.modified),
     },
@@ -91,7 +91,15 @@ const SettingsOrganizations = () => {
         {queryRef && (
           <>
             <React.Suspense
-              fallback={<Loader variant={LoaderVariant.inElement} />}
+              fallback={
+                <>
+                  {Array(20)
+                    .fill(0)
+                    .map((_, idx) => (
+                      <SettingsOrganizationLineDummy key={idx} dataColumns={dataColumns} />
+                    ))}
+                </>
+            }
             >
               <SettingsOrganizationsLines
                 queryRef={queryRef}
