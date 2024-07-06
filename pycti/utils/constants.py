@@ -429,3 +429,28 @@ class CustomObservableUserAgent:
     """User-Agent observable."""
 
     pass
+
+
+@CustomObservable(
+    "media-content",
+    [
+        ("title", StringProperty()),
+        ("description", StringProperty()),
+        ("content", StringProperty()),
+        ("media_category", StringProperty()),
+        ("url", StringProperty(required=True)),
+        ("publication_date", TimestampProperty()),
+        ("spec_version", StringProperty(fixed="2.1")),
+        (
+            "object_marking_refs",
+            ListProperty(
+                ReferenceProperty(valid_types="marking-definition", spec_version="2.1")
+            ),
+        ),
+    ],
+    ["url"],
+)
+class CustomObservableMediaContent:
+    """Media-Content observable."""
+
+    pass
