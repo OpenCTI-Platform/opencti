@@ -222,6 +222,25 @@ class CustomObjectTask:
     pass
 
 
+@CustomObject(
+    "channel",
+    [
+        ("name", StringProperty(required=True)),
+        ("spec_version", StringProperty(fixed="2.1")),
+        ("description", StringProperty()),
+        ("aliases", ListProperty(StringProperty)),
+        ("channel_types", ListProperty(StringProperty)),
+        ("x_opencti_workflow_id", StringProperty()),
+        ("x_opencti_assignee_ids", ListProperty(StringProperty)),
+        ("external_references", ListProperty(ExternalReference)),
+    ],
+)
+class CustomObjectChannel:
+    """Channel object."""
+
+    pass
+
+
 # Custom observables
 
 
