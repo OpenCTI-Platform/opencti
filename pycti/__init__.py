@@ -52,8 +52,8 @@ from .entities.opencti_tool import Tool
 from .entities.opencti_vulnerability import Vulnerability
 from .utils.constants import (
     CustomObjectCaseIncident,
-    CustomObjectTask,
     CustomObjectChannel,
+    CustomObjectTask,
     CustomObservableBankAccount,
     CustomObservableCredential,
     CustomObservableCryptocurrencyWallet,
