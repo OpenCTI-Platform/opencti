@@ -880,6 +880,12 @@ class Report:
                 stix_object["x_opencti_reliability"] = (
                     self.opencti.get_attribute_in_extension("reliability", stix_object)
                 )
+            if "x_opencti_content" not in stix_object or "content" not in stix_object:
+                stix_object["content"] = self.opencti.get_attribute_in_extension(
+                    "content", stix_object
+                )
+            if "x_opencti_content" in stix_object:
+                stix_object["content"] = stix_object["x_opencti_content"]
 
             return self.create(
                 stix_id=stix_object["id"],
