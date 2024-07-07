@@ -162,6 +162,7 @@ Here are the configuration keys, for both containers (environment variables) and
 | redis:use_ssl              | REDIS__USE_SSL              | `false`       | Is the Redis Server has TLS enabled                                                   |
 | redis:username             | REDIS__USERNAME             |               | Username of the Redis Server                                                          |
 | redis:password             | REDIS__PASSWORD             |               | Password of the Redis Server                                                          |
+| redis:database             | REDIS__DATABASE             |               | Database of the Redis Server (only work in single mode)                               |
 | redis:ca                   | REDIS__CA                   | []            | List of path(s) of the CA certificate(s)                                              |
 | redis:trimming             | REDIS__TRIMMING             | 2000000       | Number of elements to maintain in the stream. (0 = unlimited)                         |
 
