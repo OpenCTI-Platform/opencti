@@ -17,14 +17,14 @@ import { useBuildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../..
 import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import ExportContextProvider from '../../../utils/ExportContextProvider';
-import useDynamicHeader from '../../../utils/hooks/useDynamicHeader';
+import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 
 const LOCAL_STORAGE_KEY = 'reports';
 
 const Reports: FunctionComponent = () => {
   const { t_i18n } = useFormatter();
-  const { setTitle } = useDynamicHeader();
-  setTitle(t_i18n('OpenCTI - Analyses: Reports'));
+  const { setTitle } = useConnectedDocumentModifier();
+  setTitle(t_i18n('Reports | Analyses'));
   const { isFeatureEnable } = useHelper();
   const FAB_REPLACED = isFeatureEnable('FAB_REPLACEMENT');
   const {

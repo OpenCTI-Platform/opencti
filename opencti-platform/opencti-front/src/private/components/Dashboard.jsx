@@ -27,7 +27,7 @@ import LocationMiniMapTargets from './common/location/LocationMiniMapTargets';
 import StixRelationshipsHorizontalBars from './common/stix_relationships/StixRelationshipsHorizontalBars';
 import DashboardView from './workspaces/dashboards/Dashboard';
 import useQueryLoading from '../../utils/hooks/useQueryLoading';
-import useDynamicHeader from '../../utils/hooks/useDynamicHeader';
+import useConnectedDocumentModifier from '../../utils/hooks/useConnectedDocumentModifier';
 
 // region styles
 // Deprecated - https://mui.com/system/styles/basics/
@@ -595,8 +595,8 @@ const DashboardComponent = ({ queryRef }) => {
     LOCAL_STORAGE_KEY,
     {},
   );
-  const { setTitle } = useDynamicHeader();
-  setTitle(t_i18n('OpenCTI - Dashboard'));
+  const { setTitle } = useConnectedDocumentModifier();
+  setTitle(t_i18n('Dashboard'));
   const { dashboard } = localTimeFieldPreferences;
   let defaultDashboard = default_dashboard?.id;
   if (!defaultDashboard) {

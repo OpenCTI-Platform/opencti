@@ -21,6 +21,7 @@ import messages_ja_back from '../../lang/back/ja.json';
 import messages_zh_back from '../../lang/back/zh.json';
 import messages_en_back from '../../lang/back/en.json';
 import messages_de_back from '../../lang/back/de.json';
+import { useDocumentLangModifier } from '../utils/hooks/useDocumentModifier';
 
 type PlatformLang = 'es-es' | 'fr-fr' | 'ja-jp' | 'zh-cn' | 'en-us' | 'de-de';
 
@@ -64,15 +65,12 @@ const AppIntlProvider: FunctionComponent<AppIntlProviderProps> = ({ settings, ch
   const platformLang = platformLanguage !== null && platformLanguage !== 'auto'
     ? settings.platform_language
     : locale;
-
   const lang: PlatformLang = me?.language && me.language !== 'auto' ? me.language : platformLang;
-
   const baseMessages = i18n.messages[lang] || i18n.messages[DEFAULT_LANG as keyof typeof i18n.messages];
-
   const supportedLocales: PlatformLang[] = availableLanguage.map(({ value }) => value);
   const selectedLocale = supportedLocales.includes(lang) ? lang : 'en-us';
-
   moment.locale(selectedLocale);
+  useDocumentLangModifier(lang.split('-')[0]);
   return (
     <IntlProvider
       locale={lang}
