@@ -29,7 +29,6 @@ import Transition from '../../../../components/Transition';
 interface ContainerHeaderSharedProps {
   elementId: string;
   variant: string;
-  disabled: boolean;
 }
 
 interface OrganizationForm {
@@ -97,7 +96,7 @@ const containerHeaderSharedGroupAddMutation = graphql`
 
 const StixSightingRelationshipSharing: FunctionComponent<
 ContainerHeaderSharedProps
-> = ({ elementId, disabled }) => {
+> = ({ elementId }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const [displaySharing, setDisplaySharing] = useState(false);
@@ -161,7 +160,6 @@ ContainerHeaderSharedProps
             onClick={isEnterpriseEdition ? handleOpenSharing : () => {}}
             style={{ float: 'left', margin: '-6px 0 0 3px' }}
             size="small"
-            disabled={disabled}
           >
             <BankPlus fontSize="small" color={isEnterpriseEdition ? 'primary' : 'disabled'} />
           </IconButton>

@@ -4,6 +4,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import { FiligranLoader } from 'filigran-icon';
 import { isNotEmptyField } from '../utils/utils';
 import { UserContext } from '../utils/hooks/useAuth';
+import platformModuleHelper from '../utils/platformModulesHelper';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -59,7 +60,15 @@ const Loader: FunctionComponent<LoaderProps> = ({
   const classes = useStyles();
 
   const { settings } = useContext(UserContext);
-  const hasFiligranLoader = isNotEmptyField(settings?.enterprise_edition) || !settings?.platform_whitemark;
+
+  let loaderEnabled = false;
+  if (settings) {
+    const { isFeatureEnable } = platformModuleHelper(settings);
+    loaderEnabled = isFeatureEnable('FILIGRAN_LOADER');
+  }
+
+  const hasFiligranLoader = loaderEnabled && (isNotEmptyField(settings?.enterprise_edition) || !settings?.platform_whitemark);
+
   return (
     <div
       className={variant === 'inElement' ? classes.containerInElement : classes.container}

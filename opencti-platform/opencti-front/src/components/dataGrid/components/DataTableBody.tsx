@@ -2,11 +2,13 @@ import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 're
 import makeStyles from '@mui/styles/makeStyles';
 import { createStyles } from '@mui/styles';
 import { Theme as MuiTheme } from '@mui/material/styles/createTheme';
+import * as R from 'ramda';
 import DataTableHeaders from './DataTableHeaders';
 import { useDataTableContext } from '../dataTableUtils';
-import { ColumnSizeVars, DataTableBodyProps, DataTableVariant, LocalStorageColumns } from '../dataTableTypes';
+import { ColumnSizeVars, DataTableBodyProps, DataTableLineProps, DataTableVariant, LocalStorageColumns } from '../dataTableTypes';
 import DataTableLine, { DataTableLinesDummy } from './DataTableLine';
 import { SELECT_COLUMN_SIZE } from './DataTableHeader';
+import { useDataTableToggle } from '../dataTableHooks';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -150,6 +152,41 @@ const DataTableBody = ({
   ]);
   const classes = useStyles({ columnSizeVars });
 
+  const {
+    selectedElements,
+    onToggleEntity,
+  } = useDataTableToggle(storageKey);
+  const onToggleShiftEntity: DataTableLineProps['onToggleShiftEntity'] = (currentIndex, currentEntity, event) => {
+    if (selectedElements && !R.isEmpty(selectedElements)) {
+      // Find the indexes of the first and last selected entities
+      let firstIndex = R.findIndex(
+        (n: { id: string }) => n.id === R.head(R.values(selectedElements))?.id,
+        resolvedData,
+      );
+      if (currentIndex > firstIndex) {
+        let entities: { id: string }[] = [];
+        while (firstIndex <= currentIndex) {
+          entities = [...entities, resolvedData[firstIndex]];
+          firstIndex += 1;
+        }
+        const forcedRemove = R.values(selectedElements).filter(
+          (n) => !entities.map((o) => o.id).includes(n.id),
+        );
+        return onToggleEntity(entities, event, forcedRemove);
+      }
+      let entities: { id: string }[] = [];
+      while (firstIndex >= currentIndex) {
+        entities = [...entities, resolvedData[firstIndex]];
+        firstIndex -= 1;
+      }
+      const forcedRemove = R.values(selectedElements).filter(
+        (n) => !entities.map((o) => o.id).includes(n.id),
+      );
+      return onToggleEntity(entities, event, forcedRemove);
+    }
+    return onToggleEntity(currentEntity, event);
+  };
+
   useLayoutEffect(() => {
     const handleResize = () => setResize(true);
     const handleStorage = ({ key }: StorageEvent) => setTimeout(() => {
@@ -200,7 +237,7 @@ const DataTableBody = ({
         {computeState && (
           <>
             {/* If we have perf issues we should find a way to memoize this */}
-            {resolvedData.map((row: { id: string }) => {
+            {resolvedData.map((row: { id: string }, index: number) => {
               return (
                 <DataTableLine
                   key={row.id}
@@ -208,6 +245,8 @@ const DataTableBody = ({
                   redirectionMode={redirectionMode}
                   storageHelpers={storageHelpers}
                   effectiveColumns={effectiveColumns}
+                  index={index}
+                  onToggleShiftEntity={onToggleShiftEntity}
                 />
               );
             })}

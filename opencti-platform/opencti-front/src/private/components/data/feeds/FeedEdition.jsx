@@ -132,6 +132,7 @@ const feedEditionMutation = graphql`
   mutation FeedEditionMutation($id: ID!, $input: FeedAddInput!) {
     feedEdit(id: $id, input: $input) {
       ...FeedLine_node
+      ...FeedEdition_feed
     }
   }
 `;

@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { isNotEmptyField } from '../utils';
 
-export const useDocumentModifier = (title: string) => {
+export const useDocumentTitleModifier = (title: string) => {
   useEffect(() => {
     const prevTitle = document.title;
     if (prevTitle !== title) {
@@ -9,6 +9,18 @@ export const useDocumentModifier = (title: string) => {
     }
     return () => {
       document.title = prevTitle;
+    };
+  });
+};
+
+export const useDocumentLangModifier = (lang: string) => {
+  useEffect(() => {
+    const prevLang = document.documentElement.lang;
+    if (prevLang !== lang) {
+      document.documentElement.lang = lang;
+    }
+    return () => {
+      document.documentElement.lang = prevLang;
     };
   });
 };

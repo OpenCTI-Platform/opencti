@@ -171,6 +171,8 @@ export interface DataTableLineProps {
   redirectionMode?: string | undefined
   effectiveColumns: DataTableColumns
   storageHelpers: DataTableProps['storageHelpers']
+  index: number
+  onToggleShiftEntity: (currentIndex: number, currentEntity: { id: string }, event?: React.SyntheticEvent) => void
 }
 
 export interface DataTableCellProps {

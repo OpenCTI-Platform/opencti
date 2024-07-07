@@ -1059,11 +1059,11 @@ const WorkbenchFileContentComponent = ({
     };
     if (updatedEntity.type === 'identity' && !updatedEntity.identity_class) {
       updatedEntity.identity_class = resolveIdentityClass(entityType);
-    } else if (
-      updatedEntity.type === 'location'
-      && !updatedEntity.x_opencti_location_type
-    ) {
+    } else if (updatedEntity.type === 'location' && !updatedEntity.x_opencti_location_type) {
       updatedEntity.x_opencti_location_type = entityType;
+    }
+    if (updatedEntity.type === 'threat-actor' && !updatedEntity.x_opencti_type) {
+      updatedEntity.x_opencti_type = entityType;
     }
     setStixDomainObjects(
       uniqWithByFields(

@@ -10,13 +10,16 @@ import { Add } from '@mui/icons-material';
 import { Select } from '@mui/material';
 import makeStyles from '@mui/styles/makeStyles';
 import { ConnectionHandler } from 'relay-runtime';
+
 import { useFormatter } from '../../../../components/i18n';
+import { MalwareAnalysisCreationForm } from '../../analyses/malware_analyses/MalwareAnalysisCreation';
 import { MalwareCreationForm } from '../../arsenal/malwares/MalwareCreation';
 import { AdministrativeAreaCreationForm } from '../../locations/administrative_areas/AdministrativeAreaCreation';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { AttackPatternCreationForm } from '../../techniques/attack_patterns/AttackPatternCreation';
 import { CampaignCreationForm } from '../../threats/campaigns/CampaignCreation';
 import { ChannelCreationForm } from '../../arsenal/channels/ChannelCreation';
+import { TaskCreationForm } from '../../cases/tasks/TaskCreation';
 import { CityCreationForm } from '../../locations/cities/CityCreation';
 import { CountryCreationForm } from '../../locations/countries/CountryCreation';
 import { EventCreationForm } from '../../entities/events/EventCreation';
@@ -622,7 +625,31 @@ const StixDomainPanel = ({
         />
       );
     }
-    return <div>{t_i18n('Unsupported')}</div>;
+    if (type === 'Malware-Analysis') {
+      // Malware-Analysis
+      return (
+        <MalwareAnalysisCreationForm
+          inputValue={inputValue}
+          defaultConfidence={confidence}
+          defaultCreatedBy={baseCreatedBy}
+          defaultMarkingDefinitions={baseMarkingDefinitions}
+          onClose={onClose}
+          updater={creationUpdater}
+        />
+      );
+    }
+    if (type === 'Task') {
+      // Task
+      return (
+        <TaskCreationForm
+          inputValue={inputValue}
+          defaultMarkings={baseMarkingDefinitions}
+          onClose={onClose}
+          updater={creationUpdater}
+        />
+      );
+    }
+    return <div style={{ marginTop: 10 }}>{t_i18n('Unsupported')}</div>;
   };
 
   return (
