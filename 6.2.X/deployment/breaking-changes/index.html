@@ -775,13 +775,58 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#how-to-migrate-from-opencti-62" class="md-nav__link">
+  <a href="#change-to-the-observable-promote" class="md-nav__link">
     <span class="md-ellipsis">
       
-        How to migrate from OpenCTI &lt; 6.2
+        Change to the observable "promote"
       
     </span>
   </a>
+  
+    <nav class="md-nav" aria-label="Change to the observable "promote"">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#how-to-migrate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How to migrate
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#change-to-saml-authentication" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Change to SAML authentication
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Change to SAML authentication">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#how-to-migrate_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How to migrate
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
         
@@ -803,13 +848,30 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#how-to-migrate-from-opencti-512" class="md-nav__link">
+  <a href="#major-changes-to-the-filtering-api" class="md-nav__link">
     <span class="md-ellipsis">
       
-        How to migrate from OpenCTI &lt; 5.12
+        Major changes to the filtering APi
       
     </span>
   </a>
+  
+    <nav class="md-nav" aria-label="Major changes to the filtering APi">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#how-to-migrate_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How to migrate
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
         
@@ -4680,13 +4742,58 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#how-to-migrate-from-opencti-62" class="md-nav__link">
+  <a href="#change-to-the-observable-promote" class="md-nav__link">
     <span class="md-ellipsis">
       
-        How to migrate from OpenCTI &lt; 6.2
+        Change to the observable "promote"
       
     </span>
   </a>
+  
+    <nav class="md-nav" aria-label="Change to the observable "promote"">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#how-to-migrate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How to migrate
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#change-to-saml-authentication" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Change to SAML authentication
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Change to SAML authentication">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#how-to-migrate_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How to migrate
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
         
@@ -4708,13 +4815,30 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#how-to-migrate-from-opencti-512" class="md-nav__link">
+  <a href="#major-changes-to-the-filtering-api" class="md-nav__link">
     <span class="md-ellipsis">
       
-        How to migrate from OpenCTI &lt; 5.12
+        Major changes to the filtering APi
       
     </span>
   </a>
+  
+    <nav class="md-nav" aria-label="Major changes to the filtering APi">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#how-to-migrate_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How to migrate
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
         
@@ -4830,29 +4954,36 @@
 <p>This section lists breaking changes introduced in OpenCTI, per version starting with the latest.</p>
 <p>Please follow the migration guides if you need to upgrade your platform. </p>
 <h2 id="opencti-62">OpenCTI 6.2</h2>
-<p>Change to the observable "promote" return value: the API now returns the created Indicator instead of the original Observable.</p>
+<h3 id="change-to-the-observable-promote">Change to the observable "promote"</h3>
+<p>The API calls that promote an Observable to Indicator now return the created Indicator instead of the original Observable.</p>
+<p><strong>GraphQL API</strong></p>
 <ul>
-<li>GraphQL Mutation <code>StixCyberObservableEditMutations.promote</code> is now deprecated</li>
-<li>
-<p>New GraphQL Mutation <code>StixCyberObservableEditMutations.promoteToIndicator</code> introduced</p>
-</li>
-<li>
-<p>Client-python method <code>client.stix_cyber_observable.promote_to_indicator</code> is now deprecated</p>
-</li>
+<li>Mutation <code>StixCyberObservableEditMutations.promote</code> is now deprecated</li>
+<li>New Mutation <code>StixCyberObservableEditMutations.promoteToIndicator</code> introduced</li>
+</ul>
+<p><strong>Client-Python API</strong></p>
+<ul>
+<li>Client-python method <code>client.stix_cyber_observable.promote_to_indicator</code> is now deprecated</li>
 <li>New Client-python method <code>client.stix_cyber_observable.promote_to_indicator_v2</code> introduced</li>
 </ul>
-<p>Change to the SAML authentication: when <code>want_assertions_signed</code> and <code>want_authn_response_signed</code> SAML parameter are not present in OpenCTI configuration, the default is set to "true" by the underlaying library (passport-saml) when previously it was false by default. If you have issues after upgrade, you can try with both of them set to false.</p>
 <div class="admonition warning">
 <p class="admonition-title">Discontinued Support</p>
 <p>Please note that the deprecated methods will be permanently removed in OpenCTI 6.5.</p>
 </div>
-<h3 id="how-to-migrate-from-opencti-62">How to migrate from OpenCTI &lt; 6.2</h3>
+<h4 id="how-to-migrate">How to migrate</h4>
 <p>If you are using custom scripts that make use of the deprecated API methods, please update these scripts.</p>
-<p>The changes are straightforward: if you are using the return value of the method, you should now expect the new Indicator instead of the Observable being promoted; adapt your code accordingly.</p>
+<p>The changes are straightforward: if you are using the return value of the method, you should now expect the new Indicator 
+instead of the Observable being promoted; adapt your code accordingly.</p>
+<h3 id="change-to-saml-authentication">Change to SAML authentication</h3>
+<p>When <code>want_assertions_signed</code> and <code>want_authn_response_signed</code> SAML parameter are not present in OpenCTI configuration, 
+the default is now set to <code>true</code> by the underlying library (passport-saml) when previously it was <code>false</code> by default.</p>
+<h4 id="how-to-migrate_1">How to migrate</h4>
+<p>If you have issues after upgrade, you can try with both parameters set to <code>false</code>.</p>
 <h2 id="opencti-512">OpenCTI 5.12</h2>
-<p>This version introduces a major rework of the <strong>filter engine</strong> with breaking changes to the model.</p>
+<h3 id="major-changes-to-the-filtering-api">Major changes to the filtering APi</h3>
+<p>OpenCTI 5.12 introduces a major rework of the <strong>filter engine</strong> with breaking changes to the model.</p>
 <p>A <a href="https://blog.filigran.io/introducing-advanced-filtering-possibilities-in-opencti-552147565faf">dedicated blog post</a> describes the reasons behind these changes.</p>
-<h3 id="how-to-migrate-from-opencti-512">How to migrate from OpenCTI &lt; 5.12</h3>
+<h4 id="how-to-migrate_2">How to migrate</h4>
 <p>Please read the dedicated <a href="../../reference/filters-migration/">migration guide</a>.</p>
 
 
@@ -4876,7 +5007,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1-2.1-2M12.5 7v5.2l4 2.4-1 1L11 13V7h1.5M11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2v1.8Z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2024-06-28T09:39:43+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2024-06-28</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2024-06-28T10:19:22+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2024-06-28</span>
   </span>
 
     
