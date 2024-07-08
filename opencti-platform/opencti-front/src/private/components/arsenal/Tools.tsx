@@ -13,7 +13,6 @@ import { ToolsLinesPaginationQuery, ToolsLinesPaginationQuery$variables } from '
 import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
-import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 import useHelper from '../../../utils/hooks/useHelper';
 import useEntityToggle from '../../../utils/hooks/useEntityToggle';
 import ExportContextProvider from '../../../utils/ExportContextProvider';
@@ -22,8 +21,6 @@ const LOCAL_STORAGE_KEY = 'tools';
 
 const Tools = () => {
   const { t_i18n } = useFormatter();
-  const { setTitle } = useConnectedDocumentModifier();
-  setTitle(t_i18n('Tools | Arsenal'));
   const { isFeatureEnable } = useHelper();
   const FAB_REPLACED = isFeatureEnable('FAB_REPLACEMENT');
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<ToolsLinesPaginationQuery$variables>(
