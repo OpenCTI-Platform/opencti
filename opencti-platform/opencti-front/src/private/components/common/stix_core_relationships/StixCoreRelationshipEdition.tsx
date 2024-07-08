@@ -91,7 +91,8 @@ const StixCoreRelationshipEditionContainer = (props: StixCoreRelationshipEdition
     stixCoreRelationshipId,
     handleClose,
     handleDelete,
-    noStoreUpdate } = props;
+    noStoreUpdate,
+  } = props;
 
   return (
     <Drawer
