@@ -74,7 +74,7 @@ const externalReferenceValidation = (t: (value: string) => string) => Yup.object
     .nullable()
     .matches(
       /^(https?:\/\/[^\s/$.?#].[^\s]*)$/,
-      t('The value must be a valid URL'),
+      t('The value must be an URL'),
     ),
   description: Yup.string().nullable(),
   file: Yup.mixed().nullable(),
