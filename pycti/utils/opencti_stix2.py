@@ -536,8 +536,6 @@ class OpenCTIStix2:
                     )
                     if generated_ref_id is None:
                         continue
-                    if generated_ref_id in self.mapping_cache:
-                        external_reference_id = self.mapping_cache[generated_ref_id]
                     else:
                         external_reference_id = self.opencti.external_reference.create(
                             source_name=source_name,
@@ -582,7 +580,6 @@ class OpenCTIStix2:
                                         "no_trigger_import", False
                                     ),
                                 )
-                    self.mapping_cache[generated_ref_id] = generated_ref_id
                     external_references_ids.append(external_reference_id)
                     if stix_object["type"] in [
                         "threat-actor",
@@ -713,8 +710,6 @@ class OpenCTIStix2:
                 )
                 if generated_ref_id is None:
                     continue
-                if generated_ref_id in self.mapping_cache:
-                    external_reference_id = self.mapping_cache[generated_ref_id]
                 else:
                     external_reference_id = self.opencti.external_reference.create(
                         source_name=source_name,
@@ -753,7 +748,6 @@ class OpenCTIStix2:
                                 mime_type=file["mime_type"],
                                 no_trigger_import=file.get("no_trigger_import", False),
                             )
-                self.mapping_cache[generated_ref_id] = generated_ref_id
                 external_references_ids.append(external_reference_id)
         # Granted refs
         granted_refs_ids = []
