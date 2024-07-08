@@ -167,6 +167,22 @@ export interface StixFile extends StixCyberObject {
   };
 }
 
+// Custom object extension - Cryptocurrency Wallet
+// value
+export interface StixCryptocurrencyWallet extends StixCyberObject {
+  value: string;
+  description: string;
+  score: number;
+  labels: Array<string>;
+  created_by_ref: StixId | undefined,
+  object_marking_refs: Array<StixId>;
+  external_references: Array<StixInternalExternalReference>;
+  extensions: {
+    [STIX_EXT_OCTI] : StixOpenctiExtension
+    [STIX_EXT_OCTI_SCO] : { extension_type : 'new-sco' }
+  }
+}
+
 // Simple custom object extension
 // Custom object extension - Cryptographic Key
 // value

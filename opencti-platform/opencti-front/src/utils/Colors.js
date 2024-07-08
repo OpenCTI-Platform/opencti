@@ -264,6 +264,7 @@ export const itemColor = (type, dark = false, reversed = false) => {
     case 'Windows-Registry-Key':
     case 'Windows-Registry-Value-Type':
     case 'Cryptographic-Key':
+    case 'Cryptocurrency-Wallet':
     case 'Text':
     case 'User-Agent':
     case 'Credential':

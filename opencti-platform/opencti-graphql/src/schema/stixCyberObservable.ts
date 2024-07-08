@@ -22,6 +22,7 @@ export const ENTITY_USER_ACCOUNT = 'User-Account';
 export const ENTITY_WINDOWS_REGISTRY_KEY = 'Windows-Registry-Key';
 export const ENTITY_WINDOWS_REGISTRY_VALUE_TYPE = 'Windows-Registry-Value-Type';
 export const ENTITY_CRYPTOGRAPHIC_KEY = 'Cryptographic-Key'; // Custom
+export const ENTITY_CRYPTOGRAPHIC_WALLET = 'Cryptocurrency-Wallet'; // Custom
 export const ENTITY_HOSTNAME = 'Hostname'; // Custom
 export const ENTITY_TEXT = 'Text'; // Custom
 export const ENTITY_CREDENTIAL = 'Credential'; // Custom
@@ -62,6 +63,7 @@ export const STIX_CYBER_OBSERVABLES = [
   ENTITY_WINDOWS_REGISTRY_KEY,
   ENTITY_WINDOWS_REGISTRY_VALUE_TYPE,
   ENTITY_CRYPTOGRAPHIC_KEY,
+  ENTITY_CRYPTOGRAPHIC_WALLET,
   ENTITY_HOSTNAME,
   ENTITY_USER_AGENT,
   ENTITY_TEXT,

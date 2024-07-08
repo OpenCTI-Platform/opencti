@@ -75,6 +75,7 @@ import {
   ENTITY_AUTONOMOUS_SYSTEM,
   ENTITY_CREDENTIAL,
   ENTITY_CRYPTOGRAPHIC_KEY,
+  ENTITY_CRYPTOGRAPHIC_WALLET,
   ENTITY_DIRECTORY,
   ENTITY_DOMAIN_NAME,
   ENTITY_EMAIL_ADDR,
@@ -686,6 +687,23 @@ const convertAutonomousSystemToStix = (instance: StoreCyberObservable, type: str
     number: instance.number,
     name: instance.name,
     rir: instance.rir,
+  };
+};
+const convertCryptocurrencyWalletToStix = (instance: StoreCyberObservable, type: string): SCO.StixCryptocurrencyWallet => {
+  assertType(ENTITY_CRYPTOGRAPHIC_WALLET, type);
+  const stixCyberObject = buildStixCyberObservable(instance);
+  return {
+    ...stixCyberObject,
+    value: instance.value,
+    labels: (instance[INPUT_LABELS] ?? []).map((m) => m.value),
+    description: instance.x_opencti_description,
+    score: instance.x_opencti_score,
+    created_by_ref: instance[INPUT_CREATED_BY]?.standard_id,
+    external_references: buildExternalReferences(instance),
+    extensions: {
+      [STIX_EXT_OCTI]: stixCyberObject.extensions[STIX_EXT_OCTI],
+      [STIX_EXT_OCTI_SCO]: { extension_type: 'new-sco' }
+    }
   };
 };
 const convertCryptographicKeyToStix = (instance: StoreCyberObservable, type: string): SCO.StixCryptographicKey => {
@@ -1494,6 +1512,9 @@ const convertToStix = (instance: StoreCommon): S.StixObject => {
     }
     if (ENTITY_TRACKING_NUMBER === type) {
       return convertTrackingNumberToStix(cyber, type);
+    }
+    if (ENTITY_CRYPTOGRAPHIC_WALLET === type) {
+      return convertCryptocurrencyWalletToStix(cyber, type);
     }
     if (ENTITY_CRYPTOGRAPHIC_KEY === type) {
       return convertCryptographicKeyToStix(cyber, type);
