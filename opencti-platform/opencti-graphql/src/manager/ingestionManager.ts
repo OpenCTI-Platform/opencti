@@ -248,10 +248,16 @@ const taxiiV21DataHandler: TaxiiHandlerFn = async (context: AuthContext, ingesti
     const content = Buffer.from(stixBundle, 'utf-8').toString('base64');
     await pushToSync({ type: 'bundle', applicant_id: ingestion.user_id ?? OPENCTI_SYSTEM_UUID, content, update: true });
     // Update the state
-    await patchTaxiiIngestion(context, SYSTEM_USER, ingestion.internal_id, {
-      current_state_cursor: data.next ? String(data.next) : '',
-      added_after_start: data.next ? ingestion.added_after_start : utcDate(addedLast)
-    });
+    if (data.next) {
+      await patchTaxiiIngestion(context, SYSTEM_USER, ingestion.internal_id, {
+        current_state_cursor: String(data.next),
+        added_after_start: ingestion.added_after_start
+      });
+    } else {
+      await patchTaxiiIngestion(context, SYSTEM_USER, ingestion.internal_id, {
+        added_after_start: utcDate(addedLast)
+      });
+    }
   } else if (data.objects === undefined) {
     const error = UnknownError('Undefined taxii objects', data);
     logApp.error(error, { name: ingestion.name, context: 'Taxii 2.1 transform' });
