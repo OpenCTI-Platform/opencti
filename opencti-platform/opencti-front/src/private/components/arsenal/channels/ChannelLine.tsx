@@ -7,12 +7,14 @@ import ListItemText from '@mui/material/ListItemText';
 import { KeyboardArrowRight } from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
 import makeStyles from '@mui/styles/makeStyles';
+import Checkbox from '@mui/material/Checkbox';
+import Tooltip from '@mui/material/Tooltip';
 import { useFormatter } from '../../../../components/i18n';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
 import ItemIcon from '../../../../components/ItemIcon';
 import { DataColumns } from '../../../../components/list_lines';
 import type { Theme } from '../../../../components/Theme';
-import { ChannelLine_node$key } from './__generated__/ChannelLine_node.graphql';
+import { ChannelLine_node$data, ChannelLine_node$key } from './__generated__/ChannelLine_node.graphql';
 import { HandleAddFilter } from '../../../../utils/hooks/useLocalStorage';
 
 // Deprecated - https://mui.com/system/styles/basics/
@@ -44,6 +46,20 @@ interface ChannelLineProps {
   node: ChannelLine_node$key;
   dataColumns: DataColumns;
   onLabelClick: HandleAddFilter;
+  selectedElements: Record<string, ChannelLine_node$data>;
+  deSelectedElements: Record<string, ChannelLine_node$data>;
+  onToggleEntity: (
+    entity: ChannelLine_node$data,
+    event?: React.SyntheticEvent
+  ) => void;
+  selectAll: boolean;
+  onToggleShiftEntity: (
+    index: number,
+    entity: ChannelLine_node$data,
+    event?: React.SyntheticEvent
+  ) => void;
+  index: number;
+  redirectionMode: string;
 }
 
 const channelLineFragment = graphql`
@@ -69,9 +85,17 @@ const channelLineFragment = graphql`
   }
 `;
 
-export const ChannelLine: FunctionComponent<ChannelLineProps> = (
-  { node, dataColumns, onLabelClick },
-) => {
+export const ChannelLine: FunctionComponent<ChannelLineProps> = ({
+  dataColumns,
+  node,
+  onLabelClick,
+  onToggleEntity,
+  selectedElements,
+  deSelectedElements,
+  selectAll,
+  onToggleShiftEntity,
+  index,
+}) => {
   const classes = useStyles();
   const { fd } = useFormatter();
   const data = useFragment(channelLineFragment, node);
@@ -83,18 +107,37 @@ export const ChannelLine: FunctionComponent<ChannelLineProps> = (
       component={Link}
       to={`/dashboard/arsenal/channels/${data.id}`}
     >
+      <ListItemIcon
+        classes={{ root: classes.itemIcon }}
+        style={{ minWidth: 40 }}
+        onClick={(event) => (event.shiftKey
+          ? onToggleShiftEntity(index, data, event)
+          : onToggleEntity(data, event))
+          }
+      >
+        <Checkbox
+          edge="start"
+          checked={
+                (selectAll && !(data.id in (deSelectedElements || {})))
+                || data.id in (selectedElements || {})
+            }
+          disableRipple={true}
+        />
+      </ListItemIcon>
       <ListItemIcon classes={{ root: classes.itemIcon }}>
         <ItemIcon type="Channel"/>
       </ListItemIcon>
       <ListItemText
         primary={
           <div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.name.width }}
-            >
-              {data.name}
-            </div>
+            <Tooltip title={data.name}>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.name.width }}
+              >
+                {data.name}
+              </div>
+            </Tooltip>
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.channel_types.width }}

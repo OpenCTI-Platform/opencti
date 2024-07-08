@@ -1,5 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import { graphql, PreloadedQuery } from 'react-relay';
+import { ChannelLine_node$data } from '@components/arsenal/channels/__generated__/ChannelLine_node.graphql';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import { ChannelLine, ChannelLineDummy } from './ChannelLine';
 import { DataColumns } from '../../../../components/list_lines';
@@ -15,7 +16,15 @@ interface ChannelsLinesProps {
   dataColumns: DataColumns;
   paginationOptions?: ChannelsLinesPaginationQuery$variables;
   setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements'];
-  onLabelClick: HandleAddFilter;
+  selectedElements: Record<string, ChannelLine_node$data>;
+  deSelectedElements: Record<string, ChannelLine_node$data>;
+  onToggleEntity: (
+    entity: ChannelLine_node$data,
+    event: React.SyntheticEvent
+  ) => void;
+  selectAll: boolean;
+  onLabelClick?: HandleAddFilter;
+  redirectionMode?: string;
 }
 
 export const channelsLinesQuery = graphql`
@@ -79,6 +88,10 @@ const ChannelsLines: FunctionComponent<ChannelsLinesProps> = ({
   setNumberOfElements,
   queryRef,
   dataColumns,
+  onToggleEntity,
+  selectedElements,
+  deSelectedElements,
+  selectAll,
   paginationOptions,
   onLabelClick,
 }) => {
@@ -109,6 +122,10 @@ const ChannelsLines: FunctionComponent<ChannelsLinesProps> = ({
       nbOfRowsToLoad={nbOfRowsToLoad}
       paginationOptions={paginationOptions}
       onLabelClick={onLabelClick}
+      selectedElements={selectedElements}
+      deSelectedElements={deSelectedElements}
+      selectAll={selectAll}
+      onToggleEntity={onToggleEntity}
     />
   );
 };
