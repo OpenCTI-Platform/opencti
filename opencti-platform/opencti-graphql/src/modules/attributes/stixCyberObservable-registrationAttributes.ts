@@ -5,6 +5,7 @@ import {
   ENTITY_AUTONOMOUS_SYSTEM,
   ENTITY_CREDENTIAL,
   ENTITY_CRYPTOGRAPHIC_KEY,
+  ENTITY_CRYPTOGRAPHIC_WALLET,
   ENTITY_DIRECTORY,
   ENTITY_DOMAIN_NAME,
   ENTITY_EMAIL_ADDR,
@@ -256,6 +257,9 @@ const stixCyberObservablesAttributes: { [k: string]: Array<AttributeDefinition> 
     { name: 'data_type', label: 'Data type', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
   ],
   [ENTITY_CRYPTOGRAPHIC_KEY]: [
+    { name: 'value', label: 'Value', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: false, upsert: true, isFilterable: true },
+  ],
+  [ENTITY_CRYPTOGRAPHIC_WALLET]: [
     { name: 'value', label: 'Value', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: false, upsert: true, isFilterable: true },
   ],
   [ENTITY_HOSTNAME]: [

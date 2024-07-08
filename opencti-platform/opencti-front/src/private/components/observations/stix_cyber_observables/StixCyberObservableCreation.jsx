@@ -122,6 +122,7 @@ const stixCyberObservableMutation = graphql`
     $WindowsRegistryValueType: WindowsRegistryValueTypeAddInput
     $Hostname: HostnameAddInput
     $CryptographicKey: CryptographicKeyAddInput
+    $CryptocurrencyWallet: CryptocurrencyWalletAddInput
     $Text: TextAddInput
     $UserAgent: UserAgentAddInput
     $PhoneNumber: PhoneNumberAddInput
@@ -164,6 +165,7 @@ const stixCyberObservableMutation = graphql`
       WindowsRegistryValueType: $WindowsRegistryValueType
       Hostname: $Hostname
       CryptographicKey: $CryptographicKey
+      CryptocurrencyWallet: $CryptocurrencyWallet
       Text: $Text
       UserAgent: $UserAgent
       PhoneNumber: $PhoneNumber

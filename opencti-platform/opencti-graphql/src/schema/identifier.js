@@ -117,6 +117,7 @@ const stixBaseCyberObservableContribution = {
     [C.ENTITY_WINDOWS_REGISTRY_KEY]: [{ src: 'attribute_key', dst: 'key' }, { src: 'values' }], // key, values
     // Added types
     [C.ENTITY_CRYPTOGRAPHIC_KEY]: [{ src: 'value' }],
+    [C.ENTITY_CRYPTOGRAPHIC_WALLET]: [{ src: 'value' }],
     [C.ENTITY_HOSTNAME]: [{ src: 'value' }],
     [C.ENTITY_USER_AGENT]: [{ src: 'value' }],
     [C.ENTITY_TEXT]: [{ src: 'value' }],

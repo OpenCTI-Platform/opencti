@@ -115,6 +115,7 @@ export const resolveLink = (type = 'unknown'): string | null => {
     case 'Windows-Registry-Key':
     case 'Windows-Registry-Value-Type':
     case 'Cryptographic-Key':
+    case 'Cryptocurrency-Wallet':
     case 'Hostname':
     case 'Text':
     case 'Credential':

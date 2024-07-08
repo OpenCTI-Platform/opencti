@@ -444,6 +444,9 @@ const StixCyberObservableDetails = createFragmentContainer(
         ... on CryptographicKey {
           value
         }
+        ... on CryptocurrencyWallet {
+          value
+        }
         ... on Text {
           value
         }

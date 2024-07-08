@@ -38,6 +38,7 @@ import {
   ENTITY_AUTONOMOUS_SYSTEM,
   ENTITY_CREDENTIAL,
   ENTITY_CRYPTOGRAPHIC_KEY,
+  ENTITY_CRYPTOGRAPHIC_WALLET,
   ENTITY_DIRECTORY,
   ENTITY_DOMAIN_NAME,
   ENTITY_EMAIL_ADDR,
@@ -140,7 +141,7 @@ schemaRelationsRefDefinition.registerRelationsRef(ENTITY_USER_AGENT, []);
 // schemaRelationsRefDefinition.registerRelationsRef(ENTITY_BANK_ACCOUNT, []);
 schemaRelationsRefDefinition.registerRelationsRef(ENTITY_AUTONOMOUS_SYSTEM, []);
 schemaRelationsRefDefinition.registerRelationsRef(ENTITY_CREDENTIAL, []);
-// schemaRelationsRefDefinition.registerRelationsRef(ENTITY_CRYPTOGRAPHIC_WALLET, []);
+schemaRelationsRefDefinition.registerRelationsRef(ENTITY_CRYPTOGRAPHIC_WALLET, []);
 schemaRelationsRefDefinition.registerRelationsRef(ENTITY_CRYPTOGRAPHIC_KEY, []);
 schemaRelationsRefDefinition.registerRelationsRef(ENTITY_DIRECTORY, []);
 schemaRelationsRefDefinition.registerRelationsRef(ENTITY_HOSTNAME, []);

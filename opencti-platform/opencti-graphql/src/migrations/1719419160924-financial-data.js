@@ -319,22 +319,23 @@ export const up = async (next) => {
   // Query for all existing Cryptocurrency-Wallet and Bank-Account Observables and migrate with a equivalent
   // new Financial-Account Observable
   const ENTITY_BANK_ACCOUNT = 'Bank-Account';
-  const ENTITY_CRYPTOGRAPHIC_WALLET = 'Cryptocurrency-Wallet';
+  // const ENTITY_CRYPTOGRAPHIC_WALLET = 'Cryptocurrency-Wallet';
   const updateQuery = {
     script: {
       source:
+        // `
+        //   if (ctx._source.entity_type == 'Cryptocurrency-Wallet') {
+        //     ctx._source.entity_type = 'Financial-Account';
+        //     ctx._source.account_type = 'cryptocurrency_wallet';
+        //     ctx._source.account_number = ctx._source.value;
+        //     ctx._source.standard_id = ctx._source.standard_id.replace('cryptocurrency-wallet', 'financial-account');
+        //     ctx._source.account_status = 'active';
+        //     ctx._source.currency_code = null;
+        //     ctx._source.bic_number = "";
+        //     ctx._source.iban_number = "";
+        //     ctx._source.remove('value');
+        //   }
         `
-          if (ctx._source.entity_type == 'Cryptocurrency-Wallet') {
-            ctx._source.entity_type = 'Financial-Account';
-            ctx._source.account_type = 'cryptocurrency_wallet';
-            ctx._source.account_number = ctx._source.value;
-            ctx._source.standard_id = ctx._source.standard_id.replace('cryptocurrency-wallet', 'financial-account');
-            ctx._source.account_status = 'active';
-            ctx._source.currency_code = null;
-            ctx._source.bic_number = "";
-            ctx._source.iban_number = "";
-            ctx._source.remove('value');
-          } 
           if (ctx._source.entity_type == 'Bank-Account') { 
             ctx._source.entity_type = 'Financial-Account';
             ctx._source.account_type = 'depository_bank_account';
@@ -351,7 +352,7 @@ export const up = async (next) => {
     query: {
       bool: {
         should: [
-          { term: { 'entity_type.keyword': { value: ENTITY_CRYPTOGRAPHIC_WALLET } } },
+          // { term: { 'entity_type.keyword': { value: ENTITY_CRYPTOGRAPHIC_WALLET } } },
           { term: { 'entity_type.keyword': { value: ENTITY_BANK_ACCOUNT } } },
         ]
       }
@@ -359,7 +360,8 @@ export const up = async (next) => {
   };
   // Run _update_by_query
   await elUpdateByQueryForMigration(
-    '[MIGRATION] Migrating Cryptocurrency-Wallet and Bank-Account to Financial-Account Observables',
+    // '[MIGRATION] Migrating Cryptocurrency-Wallet and Bank-Account to Financial-Account Observables',
+    '[MIGRATION] Migrating Bank-Account to Financial-Account Observables',
     [READ_INDEX_STIX_CYBER_OBSERVABLES],
     updateQuery
   );
@@ -370,17 +372,16 @@ export const up = async (next) => {
   const updateQueryHistoryIndex = {
     script: {
       source:
-          "if (ctx._source.context_data.entity_type == 'based-on') { ctx._source.context_data.message = ctx._source.context_data.message.replace('Cryptocurrency-Wallet', 'Financial-Account'); ctx._source.context_data.message = ctx._source.context_data.message.replace('Bank-Account', 'Financial-Account')} "
-          + "if (ctx._source.context_data.entity_type == 'Cryptocurrency-Wallet') { ctx._source.context_data.entity_type = 'Financial-Account'; ctx._source.context_data.message = ctx._source.context_data.message.replace('Cryptocurrency-Wallet', 'Financial-Account')} "
+          "if (ctx._source.context_data.entity_type == 'based-on') { ctx._source.context_data.message = ctx._source.context_data.message.replace('Bank-Account', 'Financial-Account')} "
           + "if (ctx._source.context_data.entity_type == 'Bank-Account') { ctx._source.context_data.entity_type = 'Financial-Account'; ctx._source.context_data.message = ctx._source.context_data.message.replace('Bank-Account', 'Financial-Account')} "
     },
     query: {
       bool: {
         should: [
-          { query_string: {
-            query: ENTITY_CRYPTOGRAPHIC_WALLET,
-            default_operator: 'AND'
-          } },
+          // { query_string: {
+          //   query: ENTITY_CRYPTOGRAPHIC_WALLET,
+          //   default_operator: 'AND'
+          // } },
           { query_string: {
             query: ENTITY_BANK_ACCOUNT,
             default_operator: 'AND'
@@ -392,7 +393,8 @@ export const up = async (next) => {
 
   // Run _update_by_query
   await elUpdateByQueryForMigration(
-    '[MIGRATION] Migrating Cryptocurrency-Wallet and Bank-Account to Financial-Account in History Records',
+    // '[MIGRATION] Migrating Cryptocurrency-Wallet and Bank-Account to Financial-Account in History Records',
+    '[MIGRATION] Migrating Bank-Account to Financial-Account in History Records',
     [READ_INDEX_HISTORY],
     updateQueryHistoryIndex
   );
@@ -403,22 +405,23 @@ export const up = async (next) => {
   const updateQuerySTIXCoreRelationshipsIndex = {
     script: {
       source:
+        // `
+        // if (ctx._source.fromType == 'Cryptocurrency-Wallet' || ctx._source.toType == 'Cryptocurrency-Wallet' ) {
+        //   if (ctx._source.fromType == 'Cryptocurrency-Wallet') {
+        //       ctx._source.fromType = 'Financial-Account';
+        //   } else
+        //   {
+        //     ctx._source.toType = 'Financial-Account';
+        //   }
+        //   for (int i = 0; i < ctx._source['connections'].length; ++i) {
+        //     for (int x = 0; x < ctx._source['connections'][i]['types'].length; ++x) {
+        //       if (ctx._source.connections[i].types[x] == 'Cryptocurrency-Wallet') {
+        //         ctx._source.connections[i].types[x] = 'Financial-Account'
+        //       }
+        //     }
+        //   }
+        // }
         `
-        if (ctx._source.fromType == 'Cryptocurrency-Wallet' || ctx._source.toType == 'Cryptocurrency-Wallet' ) { 
-          if (ctx._source.fromType == 'Cryptocurrency-Wallet') {
-              ctx._source.fromType = 'Financial-Account'; 
-          } else
-          {
-            ctx._source.toType = 'Financial-Account';
-          }
-          for (int i = 0; i < ctx._source['connections'].length; ++i) {
-            for (int x = 0; x < ctx._source['connections'][i]['types'].length; ++x) {
-              if (ctx._source.connections[i].types[x] == 'Cryptocurrency-Wallet') {
-                ctx._source.connections[i].types[x] = 'Financial-Account'
-              }
-            }
-          }
-        }
         if (ctx._source.fromType == 'Bank-Account') { 
           if (ctx._source.fromType == 'Bank-Account') {
               ctx._source.fromType = 'Financial-Account'; 
@@ -439,10 +442,10 @@ export const up = async (next) => {
     query: {
       bool: {
         should: [
-          { query_string: {
-            query: ENTITY_CRYPTOGRAPHIC_WALLET,
-            default_operator: 'AND'
-          } },
+          // { query_string: {
+          //   query: ENTITY_CRYPTOGRAPHIC_WALLET,
+          //   default_operator: 'AND'
+          // } },
           { query_string: {
             query: ENTITY_BANK_ACCOUNT,
             default_operator: 'AND'
@@ -454,7 +457,8 @@ export const up = async (next) => {
 
   // Run _update_by_query
   await elUpdateByQueryForMigration(
-    '[MIGRATION] Migrating Cryptocurrency-Wallet and Bank-Account to Financial-Account in STIX Core Relationship Records',
+    // '[MIGRATION] Migrating Cryptocurrency-Wallet and Bank-Account to Financial-Account in STIX Core Relationship Records',
+    '[MIGRATION] Migrating Bank-Account to Financial-Account in STIX Core Relationship Records',
     [READ_INDEX_STIX_CORE_RELATIONSHIPS],
     updateQuerySTIXCoreRelationshipsIndex
   );
@@ -465,22 +469,23 @@ export const up = async (next) => {
   const updateQuerySTIXMetaRelationshipsIndex = {
     script: {
       source:
+        // `
+        // if (ctx._source.fromType == 'Cryptocurrency-Wallet' || ctx._source.toType == 'Cryptocurrency-Wallet' ) {
+        //   if (ctx._source.fromType == 'Cryptocurrency-Wallet') {
+        //       ctx._source.fromType = 'Financial-Account';
+        //   } else
+        //   {
+        //     ctx._source.toType = 'Financial-Account';
+        //   }
+        //   for (int i = 0; i < ctx._source['connections'].length; ++i) {
+        //     for (int x = 0; x < ctx._source['connections'][i]['types'].length; ++x) {
+        //       if (ctx._source.connections[i].types[x] == 'Cryptocurrency-Wallet') {
+        //         ctx._source.connections[i].types[x] = 'Financial-Account'
+        //       }
+        //     }
+        //   }
+        // }
         `
-        if (ctx._source.fromType == 'Cryptocurrency-Wallet' || ctx._source.toType == 'Cryptocurrency-Wallet' ) { 
-          if (ctx._source.fromType == 'Cryptocurrency-Wallet') {
-              ctx._source.fromType = 'Financial-Account'; 
-          } else
-          {
-            ctx._source.toType = 'Financial-Account';
-          }
-          for (int i = 0; i < ctx._source['connections'].length; ++i) {
-            for (int x = 0; x < ctx._source['connections'][i]['types'].length; ++x) {
-              if (ctx._source.connections[i].types[x] == 'Cryptocurrency-Wallet') {
-                ctx._source.connections[i].types[x] = 'Financial-Account'
-              }
-            }
-          }
-        }
         if (ctx._source.fromType == 'Bank-Account') { 
           if (ctx._source.fromType == 'Bank-Account') {
               ctx._source.fromType = 'Financial-Account'; 
@@ -501,10 +506,10 @@ export const up = async (next) => {
     query: {
       bool: {
         should: [
-          { query_string: {
-            query: ENTITY_CRYPTOGRAPHIC_WALLET,
-            default_operator: 'AND'
-          } },
+          // { query_string: {
+          //   query: ENTITY_CRYPTOGRAPHIC_WALLET,
+          //   default_operator: 'AND'
+          // } },
           { query_string: {
             query: ENTITY_BANK_ACCOUNT,
             default_operator: 'AND'
@@ -516,7 +521,8 @@ export const up = async (next) => {
 
   // Run _update_by_query
   await elUpdateByQueryForMigration(
-    '[MIGRATION] Migrating Cryptocurrency-Wallet and Bank-Account to Financial-Account in STIX META Relationship Records',
+    // '[MIGRATION] Migrating Cryptocurrency-Wallet and Bank-Account to Financial-Account in STIX META Relationship Records',
+    '[MIGRATION] Migrating Bank-Account to Financial-Account in STIX META Relationship Records',
     [READ_INDEX_STIX_META_RELATIONSHIPS],
     updateQuerySTIXMetaRelationshipsIndex
   );
