@@ -14258,6 +14258,7 @@ type Mutation {
     WindowsRegistryKey: WindowsRegistryKeyAddInput
     WindowsRegistryValueType: WindowsRegistryValueTypeAddInput
     CryptographicKey: CryptographicKeyAddInput
+    CryptocurrencyWallet: CryptocurrencyWalletAddInput
     Hostname: HostnameAddInput
     Text: TextAddInput
     UserAgent: UserAgentAddInput

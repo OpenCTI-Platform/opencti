@@ -29,6 +29,7 @@ import {
   ENTITY_AUTONOMOUS_SYSTEM,
   ENTITY_CREDENTIAL,
   ENTITY_CRYPTOGRAPHIC_KEY,
+  ENTITY_CRYPTOGRAPHIC_WALLET,
   ENTITY_DIRECTORY,
   ENTITY_DOMAIN_NAME,
   ENTITY_EMAIL_ADDR,
@@ -193,6 +194,9 @@ export const extractStixRepresentative = (
   }
   if (entityType === ENTITY_CRYPTOGRAPHIC_KEY) {
     return (stix as SCO.StixCryptographicKey).value ?? 'Unknown';
+  }
+  if (entityType === ENTITY_CRYPTOGRAPHIC_WALLET) {
+    return (stix as SCO.StixCryptocurrencyWallet).value ?? 'Unknown';
   }
   if (entityType === ENTITY_DIRECTORY) {
     return (stix as SCO.StixDirectory).path ?? 'Unknown';

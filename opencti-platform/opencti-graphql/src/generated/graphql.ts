@@ -15205,6 +15205,7 @@ export type MutationStixCyberObservableAddArgs = {
   Artifact?: InputMaybe<ArtifactAddInput>;
   AutonomousSystem?: InputMaybe<AutonomousSystemAddInput>;
   Credential?: InputMaybe<CredentialAddInput>;
+  CryptocurrencyWallet?: InputMaybe<CryptocurrencyWalletAddInput>;
   CryptographicKey?: InputMaybe<CryptographicKeyAddInput>;
   Directory?: InputMaybe<DirectoryAddInput>;
   DomainName?: InputMaybe<DomainNameAddInput>;
