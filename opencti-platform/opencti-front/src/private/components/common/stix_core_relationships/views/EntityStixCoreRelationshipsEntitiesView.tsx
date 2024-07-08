@@ -13,7 +13,7 @@ import { PaginationLocalStorage } from '../../../../../utils/hooks/useLocalStora
 import { DataColumns, PaginationOptions } from '../../../../../components/list_lines';
 import { EntityStixCoreRelationshipsEntitiesViewLinesPaginationQuery$variables } from './__generated__/EntityStixCoreRelationshipsEntitiesViewLinesPaginationQuery.graphql';
 import { isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../../utils/filters/filtersUtils';
-import { FilterGroup } from '../../../../../utils/filters/filtersHelpers-types';
+import { Filter, FilterGroup } from '../../../../../utils/filters/filtersHelpers-types';
 
 interface EntityStixCoreRelationshipsEntitiesViewProps {
   entityId: string;
@@ -110,12 +110,25 @@ EntityStixCoreRelationshipsEntitiesViewProps
 
   // Filters due to screen context
   const userFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, stixCoreObjectTypes.length > 0 ? stixCoreObjectTypes : ['Stix-Core-Object']);
+  const stixCoreObjectFilter: Filter[] = stixCoreObjectTypes.length > 0
+    ? [{ key: 'entity_type', operator: 'eq', mode: 'or', values: stixCoreObjectTypes }]
+    : [];
+  // contextFilters are used for background tasks and export
   const contextFilters: FilterGroup = {
     mode: 'and',
-    filters: [],
+    filters: [
+      ...stixCoreObjectFilter,
+      { key: 'regardingOf',
+        operator: 'eq',
+        mode: 'and',
+        values: [
+          { key: 'id', values: [entityId], operator: 'eq', mode: 'or' },
+          { key: 'relationship_type', values: relationshipTypes, operator: 'eq', mode: 'or' },
+        ] as unknown as string[], // Workaround for typescript waiting for better solution
+      },
+    ],
     filterGroups: userFilters && isFilterGroupNotEmpty(userFilters) ? [userFilters] : [],
   };
-
   const paginationOptions = {
     entityId,
     relationshipTypes,
@@ -123,7 +136,7 @@ EntityStixCoreRelationshipsEntitiesViewProps
     search: searchTerm,
     orderBy: sortBy && sortBy in dataColumns && dataColumns[sortBy].isSortable ? sortBy : 'name',
     orderMode: orderAsc ? 'asc' : 'desc',
-    filters: contextFilters,
+    filters: userFilters,
   } as unknown as EntityStixCoreRelationshipsEntitiesViewLinesPaginationQuery$variables; // Because of FilterMode
 
   const {
