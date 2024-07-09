@@ -9,7 +9,7 @@ import { makeStyles } from '@mui/styles';
 import { Theme } from '@mui/material/styles/createTheme';
 import Skeleton from '@mui/material/Skeleton';
 import { ListItemButton } from '@mui/material';
-import { NarrativesWithSubnarrativesLines_data$data } from '@components/techniques/narratives/__generated__/NarrativesWithSubnarrativesLines_data.graphql';
+import { NarrativesWithSubnarrativesLines_data$data } from './__generated__/NarrativesWithSubnarrativesLines_data.graphql';
 import ItemIcon from '../../../../components/ItemIcon';
 import { emptyFilled } from '../../../../utils/String';
 
