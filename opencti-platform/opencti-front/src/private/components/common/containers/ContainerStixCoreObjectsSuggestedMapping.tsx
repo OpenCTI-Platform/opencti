@@ -64,7 +64,6 @@ ContainerStixCoreObjectsSuggestedMappingProps
   suggestedMapping,
   suggestedMappingCount,
   height,
-  handleAskNewSuggestedMapping,
   askingSuggestion,
   removedEntities,
   handleRemoveSuggestedMappingLine,

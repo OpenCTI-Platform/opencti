@@ -274,7 +274,7 @@ ContainerSuggestedMappingContentComponentProps
       const suggestedMapping = filteredSuggestedMappedEntities[i];
       newMappingData = {
         ...newMappingData,
-        [suggestedMapping.matchedString]: suggestedMapping.matchedEntity.id,
+        [suggestedMapping.matchedString]: suggestedMapping.matchedEntity.standard_id,
       };
     }
     commitFieldPatch({
@@ -300,6 +300,7 @@ ContainerSuggestedMappingContentComponentProps
       },
       onCompleted: () => {
         setValidating(false);
+        setRemovedEntities([]);
       },
     });
   };
@@ -507,7 +508,7 @@ ContainerSuggestedMappingContentComponentProps
                     <Button
                       variant="contained"
                       color="secondary"
-                      onClick={validateSuggestedMapping}
+                      onClick={() => setOpenValidate(true)}
                       startIcon={<CheckCircleOutlined />}
                       size="small"
                       disabled={askingSuggestion || filteredSuggestedMappedEntities.length === 0}
