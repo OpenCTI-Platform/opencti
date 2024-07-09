@@ -1,4 +1,78 @@
 import type { CsvMapperParsed, CsvMapperRepresentation } from "../../../src/modules/internal/csvMapper/csvMapper-types";
+import type {StixBundle, StixDomainObject} from "../../../src/types/stix-common";
+
+export const indicatorsWithKillChainPhasesExpectedBundle: StixBundle = {
+  id: "bundle--a58ed5eb-8881-475f-933a-098221a2052f",
+  spec_version: "2.1",
+  type: "bundle",
+  objects: [
+    {
+      extensions: {
+        "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba": {
+          converter_csv: "[ipv4-addr:value = '198.168.8.3'],IPv4-Addr,kill_chain_name_1,kill_chain_phase_name_1,1",
+          extension_type: "new-sdo",
+          type: "Kill-Chain-Phase",
+        },
+      },
+      id: "kill-chain-phase--e0cf81cd-fad2-5e07-bed5-06d4556e8ac1",
+      kill_chain_name: "kill_chain_name_1",
+      order: 1,
+      phase_name: "kill_chain_phase_name_1",
+      spec_version: "2.1",
+      type: "kill-chain-phase",
+    },
+    {
+      extensions: {
+        "extension-definition--322b8f77-262a-4cb8-a915-1e441e00329b": {
+          extension_type: "property-extension",
+        },
+        "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba": {
+          converter_csv: "[ipv4-addr:value = '198.168.8.3'],IPv4-Addr,kill_chain_name_1,kill_chain_phase_name_1,1",
+          extension_type: "property-extension",
+          main_observable_type: "IPv4-Addr",
+          type: "Indicator",
+        },
+      },
+      id: "indicator--71e02a09-dea3-5336-ade3-9f397e6f1184",
+      kill_chain_phases: [
+        {
+          kill_chain_name: "kill_chain_name_1",
+          phase_name: "kill_chain_phase_name_1",
+        },
+      ],
+      name: "[ipv4-addr:value = '198.168.8.3']",
+      pattern: "[ipv4-addr:value = '198.168.8.3']",
+      pattern_type: "stix",
+      spec_version: "2.1",
+      type: "indicator",
+    },
+    {
+      extensions: {
+        "extension-definition--322b8f77-262a-4cb8-a915-1e441e00329b": {
+          extension_type: "property-extension",
+        },
+        "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba": {
+          converter_csv: "[ipv4-addr:value = '198.168.8.4'],IPv4-Addr,kill_chain_name_1,kill_chain_phase_name_1,1",
+          extension_type: "property-extension",
+          main_observable_type: "IPv4-Addr",
+          type: "Indicator",
+        },
+      },
+      id: "indicator--43f6ef9e-ea3c-5e64-9898-f635ead37622",
+      kill_chain_phases: [
+        {
+          kill_chain_name: "kill_chain_name_1",
+          phase_name: "kill_chain_phase_name_1",
+        },
+      ],
+      name: "[ipv4-addr:value = '198.168.8.4']",
+      pattern: "[ipv4-addr:value = '198.168.8.4']",
+      pattern_type: "stix",
+      spec_version: "2.1",
+      type: "indicator",
+    },
+  ] as unknown as StixDomainObject[],
+}
 
 export const indicatorsWithKillChainPhasesCsvMapper: Partial<CsvMapperParsed> = {
   _index: "opencti_internal_objects-000001",

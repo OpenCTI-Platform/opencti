@@ -1,4 +1,77 @@
 import type { CsvMapperParsed, CsvMapperRepresentation } from '../../../src/modules/internal/csvMapper/csvMapper-types';
+import type {StixBundle, StixDomainObject} from "../../../src/types/stix-common";
+
+export const indicatorsWithLabelsExpectedBundle: StixBundle = {
+  id: "bundle--c8593959-d4b1-4ccf-95d5-bee644cf2c9b",
+  spec_version: "2.1",
+  type: "bundle",
+  objects: [
+    {
+      color: "0b41f3",
+      extensions: {
+        "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba": {
+          converter_csv: "[ipv4-addr:value = '198.168.8.5'],IPv4-Addr,filigran,0b41f3",
+          extension_type: "new-sdo",
+          type: "Label",
+        },
+      },
+      id: "label--a70c2bda-5811-5dee-bd73-c19aa48f15df",
+      spec_version: "2.1",
+      type: "label",
+      value: "filigran",
+    },
+    {
+      extensions: {
+        "extension-definition--322b8f77-262a-4cb8-a915-1e441e00329b": {
+          extension_type: "property-extension",
+        },
+        "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba": {
+          converter_csv: "[ipv4-addr:value = '198.168.8.5'],IPv4-Addr,filigran,0b41f3",
+          extension_type: "property-extension",
+          labels_ids: [
+            undefined,
+          ],
+          main_observable_type: "IPv4-Addr",
+          type: "Indicator",
+        },
+      },
+      id: "indicator--c23d17a1-d085-51a3-8774-84627a986061",
+      spec_version: "2.1",
+      pattern_type: "stix",
+      pattern: "[ipv4-addr:value = '198.168.8.5']",
+      name: "[ipv4-addr:value = '198.168.8.5']",
+      labels: [
+        "filigran"
+      ],
+      type: "indicator"
+    },
+    {
+      extensions: {
+        "extension-definition--322b8f77-262a-4cb8-a915-1e441e00329b": {
+          extension_type: "property-extension",
+        },
+        "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba": {
+          converter_csv: "[ipv4-addr:value = '198.168.8.6'],IPv4-Addr,filigran,0b41f3",
+          extension_type: "property-extension",
+          labels_ids: [
+            undefined,
+          ],
+          main_observable_type: "IPv4-Addr",
+          type: "Indicator",
+        },
+      },
+      id: "indicator--62a69445-3d8e-5ade-9f75-986ab8ce5494",
+      spec_version: "2.1",
+      pattern_type: "stix",
+      pattern: "[ipv4-addr:value = '198.168.8.6']",
+      name: "[ipv4-addr:value = '198.168.8.6']",
+      labels: [
+        "filigran"
+      ],
+      type: "indicator"
+    }
+  ] as unknown as StixDomainObject[]
+}
 
 export const indicatorsWithLabelsCsvMapper: Partial<CsvMapperParsed> = {
   _index: "opencti_internal_objects-000001",
