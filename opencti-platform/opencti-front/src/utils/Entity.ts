@@ -265,10 +265,6 @@ export const observableValue = (stixCyberObservable: Record<string, never>) => {
         || stixCyberObservable.user_id
         || 'Unknown'
       );
-    case 'Bank-Account'.toLowerCase():
-      return (
-        stixCyberObservable.iban || stixCyberObservable.number || 'Unknown'
-      );
     case 'Payment-Card'.toLowerCase():
       return (
         stixCyberObservable.card_number
@@ -288,8 +284,7 @@ export const observableValue = (stixCyberObservable: Record<string, never>) => {
       );
     case 'Financial-Account'.toLowerCase():
       return (
-        stixCyberObservable.iban_number
-        || stixCyberObservable.iban
+        stixCyberObservable.iban
         || stixCyberObservable.account_number
         || 'Unknown'
       );

@@ -7661,7 +7661,7 @@ export type FinancialAccount = BasicObject & HashedObservable & StixCoreObject &
   account_number?: Maybe<Scalars['String']['output']>;
   account_status?: Maybe<Scalars['String']['output']>;
   account_type?: Maybe<Scalars['String']['output']>;
-  bic_number?: Maybe<Scalars['String']['output']>;
+  bic?: Maybe<Scalars['String']['output']>;
   cases?: Maybe<CaseConnection>;
   connectors?: Maybe<Array<Maybe<Connector>>>;
   containers?: Maybe<ContainerConnection>;
@@ -7676,7 +7676,7 @@ export type FinancialAccount = BasicObject & HashedObservable & StixCoreObject &
   externalReferences?: Maybe<ExternalReferenceConnection>;
   groupings?: Maybe<GroupingConnection>;
   hashes?: Maybe<Array<Maybe<Hash>>>;
-  iban_number?: Maybe<Scalars['String']['output']>;
+  iban?: Maybe<Scalars['String']['output']>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
   indicators?: Maybe<IndicatorConnection>;
@@ -7859,10 +7859,10 @@ export type FinancialAccountAddInput = {
   account_number?: InputMaybe<Scalars['String']['input']>;
   account_status?: InputMaybe<Scalars['String']['input']>;
   account_type?: InputMaybe<Scalars['String']['input']>;
-  bic_number?: InputMaybe<Scalars['String']['input']>;
+  bic?: InputMaybe<Scalars['String']['input']>;
   currency_code?: InputMaybe<Scalars['String']['input']>;
   hashes?: InputMaybe<Array<InputMaybe<HashInput>>>;
-  iban_number?: InputMaybe<Scalars['String']['input']>;
+  iban?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type FinancialAsset = BasicObject & HashedObservable & StixCoreObject & StixCyberObservable & StixObject & {
@@ -34159,7 +34159,7 @@ export type FinancialAccountResolvers<ContextType = any, ParentType extends Reso
   account_number?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   account_status?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   account_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  bic_number?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  bic?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   cases?: Resolver<Maybe<ResolversTypes['CaseConnection']>, ParentType, ContextType, Partial<FinancialAccountCasesArgs>>;
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<FinancialAccountConnectorsArgs>>;
   containers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<FinancialAccountContainersArgs>>;
@@ -34174,7 +34174,7 @@ export type FinancialAccountResolvers<ContextType = any, ParentType extends Reso
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<FinancialAccountExternalReferencesArgs>>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<FinancialAccountGroupingsArgs>>;
   hashes?: Resolver<Maybe<Array<Maybe<ResolversTypes['Hash']>>>, ParentType, ContextType>;
-  iban_number?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  iban?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<FinancialAccountImportFilesArgs>>;
   indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<FinancialAccountIndicatorsArgs>>;

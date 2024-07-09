@@ -259,6 +259,13 @@ const stixCoreObjectFilterKeys: string[] = [
   'title',
   'media_category',
   'publication_date',
+  "account_status",
+  "currency_code",
+  "asset_name",
+  "asset_type",
+  "asset_value",
+  "transaction_date",
+  "transaction_value",
 ];
 
 export default stixCoreObjectFilterKeys;

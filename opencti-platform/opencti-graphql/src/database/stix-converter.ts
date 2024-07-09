@@ -1026,8 +1026,8 @@ const convertFinancialAccountToStix = (instance: StoreCyberObservable, type: str
   return {
     ...stixCyberObject,
     account_number: instance.value,
-    bic_number: instance.bic,
-    iban_number: instance.iban,
+    bic: instance.bic,
+    iban: instance.iban,
     account_type: instance.account_type,
     account_status: instance.account_status,
     currency_code: instance.currency_code,
