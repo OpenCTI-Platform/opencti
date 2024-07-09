@@ -53,6 +53,7 @@ class ToolBar extends Component {
       numberOfSelectedElements,
       handleClearSelectedElements,
       selectedElements,
+      deSelectedElements,
       selectAll,
       filters,
       container,
@@ -101,6 +102,7 @@ class ToolBar extends Component {
               numberOfSelectedElements={numberOfSelectedElements}
               handleClearSelectedElements={handleClearSelectedElements}
               selectedElements={selectedElements}
+              deSelectedElements={deSelectedElements}
               selectAll={selectAll}
               filters={filters}
               container={container}
