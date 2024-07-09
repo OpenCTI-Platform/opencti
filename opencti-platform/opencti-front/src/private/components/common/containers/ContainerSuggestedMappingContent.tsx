@@ -5,16 +5,14 @@ import StixCoreObjectMappableContent from '@components/common/stix_core_objects/
 import Paper from '@mui/material/Paper';
 import { Link } from 'react-router-dom';
 import { containerContentFragment, contentMutationFieldPatch } from '@components/common/containers/ContainerContent';
-import ContainerStixCoreObjectsSuggestedMapping, {
-  containerStixCoreObjectsSuggestedMappingQuery,
-  MappedEntityType,
-} from '@components/common/containers/ContainerStixCoreObjectsSuggestedMapping';
+import ContainerStixCoreObjectsSuggestedMapping, { containerStixCoreObjectsSuggestedMappingQuery } from '@components/common/containers/ContainerStixCoreObjectsSuggestedMapping';
 import {
   ContainerSuggestedMappingContentAddSuggestedMappingRelationsMutation,
 } from '@components/common/containers/__generated__/ContainerSuggestedMappingContentAddSuggestedMappingRelationsMutation.graphql';
 import { ContainerContentFieldPatchMutation } from '@components/common/containers/__generated__/ContainerContentFieldPatchMutation.graphql';
 import {
   ContainerStixCoreObjectsSuggestedMappingQuery,
+  ContainerStixCoreObjectsSuggestedMappingQuery$data,
   ContainerStixCoreObjectsSuggestedMappingQuery$variables,
 } from '@components/common/containers/__generated__/ContainerStixCoreObjectsSuggestedMappingQuery.graphql';
 import { ContainerContent_container$data, ContainerContent_container$key } from '@components/common/containers/__generated__/ContainerContent_container.graphql';
@@ -112,6 +110,8 @@ interface ContainerSuggestedMappingContentComponentProps {
   queryRef: PreloadedQuery<ContainerStixCoreObjectsSuggestedMappingQuery>
   loadQuery: (variables: ContainerStixCoreObjectsSuggestedMappingQuery$variables, options?: (UseQueryLoaderLoadQueryOptions | undefined)) => void
 }
+
+export type MappedEntityType = NonNullable<NonNullable<ContainerStixCoreObjectsSuggestedMappingQuery$data['stixCoreObjectAnalysis']>['mappedEntities']>[number];
 
 const ContainerSuggestedMappingContentComponent: FunctionComponent<
 ContainerSuggestedMappingContentComponentProps
@@ -287,6 +287,8 @@ ContainerSuggestedMappingContentComponentProps
       },
       onCompleted: () => {
         setInSuggestedMode(false);
+        setValidating(false);
+        setRemovedEntities([]);
       },
     });
   };
@@ -297,10 +299,6 @@ ContainerSuggestedMappingContentComponentProps
         id: containerData.id,
         contentSource: 'content_mapping',
         contentType: 'fields',
-      },
-      onCompleted: () => {
-        setValidating(false);
-        setRemovedEntities([]);
       },
     });
   };
@@ -451,14 +449,15 @@ ContainerSuggestedMappingContentComponentProps
               borderRadius: 4,
             }}
           >
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'end' }}>
-              <Box sx={{ flex: 1 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              <Box sx={{}}>
                 <FormGroup>
                   <FormControlLabel
                     control={
                       <Switch
                         checked={inSuggestedMode}
                         onChange={() => { setInSuggestedMode(!inSuggestedMode); }}
+                        disabled={askingSuggestion || suggestedMappingData?.stixCoreObjectAnalysis?.analysisStatus != 'complete' }
                       />
                     }
                     label={t_i18n('Show suggested mapping')}
@@ -531,14 +530,10 @@ ContainerSuggestedMappingContentComponentProps
             {inSuggestedMode && (
               <ContainerStixCoreObjectsSuggestedMapping
                 container={containerData}
-                suggestedMapping={suggestedMappingData}
+                suggestedEntities={filteredSuggestedMappedEntities}
                 suggestedMappingCount={suggestedMappingCount}
                 height={listHeight}
-                handleAskNewSuggestedMapping={handleAskNewSuggestedMapping}
-                handleValidateSuggestedMapping={validateSuggestedMapping}
                 askingSuggestion={askingSuggestion}
-                removedEntities={removedEntities}
-                changeToMappingMode={() => { setInSuggestedMode(false); }}
                 handleRemoveSuggestedMappingLine={handleRemoveSuggestedMappingLine}
               />
             )}

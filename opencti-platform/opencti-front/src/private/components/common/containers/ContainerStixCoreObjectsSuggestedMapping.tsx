@@ -44,28 +44,21 @@ export const containerStixCoreObjectsSuggestedMappingQuery = graphql`
 
 interface ContainerStixCoreObjectsSuggestedMappingProps {
   container: ContainerContent_container$data;
-  suggestedMapping: ContainerStixCoreObjectsSuggestedMappingQuery$data
   suggestedMappingCount: Record<string, number>;
+  suggestedEntities: NonNullable<NonNullable<ContainerStixCoreObjectsSuggestedMappingQuery$data['stixCoreObjectAnalysis']>['mappedEntities']>
   height: number;
-  handleAskNewSuggestedMapping: () => void;
   askingSuggestion: boolean;
-  handleValidateSuggestedMapping: (mappingToAdd: { matchedString: string, matchedEntityId: string }[]) => void;
-  removedEntities: string[];
   handleRemoveSuggestedMappingLine: (entityId: string) => void;
-  changeToMappingMode: () => void;
 }
-
-export type MappedEntityType = NonNullable<NonNullable<ContainerStixCoreObjectsSuggestedMappingQuery$data['stixCoreObjectAnalysis']>['mappedEntities']>[number];
 
 const ContainerStixCoreObjectsSuggestedMapping: FunctionComponent<
 ContainerStixCoreObjectsSuggestedMappingProps
 > = ({
   container,
-  suggestedMapping,
   suggestedMappingCount,
+  suggestedEntities,
   height,
   askingSuggestion,
-  removedEntities,
   handleRemoveSuggestedMappingLine,
 }) => {
   const {
@@ -143,17 +136,12 @@ ContainerStixCoreObjectsSuggestedMappingProps
     },
   };
 
-  const mappedEntities = (suggestedMapping?.stixCoreObjectAnalysis?.mappedEntities ?? []);
-  const filterMappedEntities = (mappedEntity: MappedEntityType) => {
-    return !removedEntities.find((r) => r === mappedEntity.matchedEntity?.id);
-  };
-  const filteredMappedEntities = mappedEntities.filter((e) => filterMappedEntities(e));
-  const mappedEntitiesWithNode = filteredMappedEntities.map((e) => { return { node: e }; });
+  const suggestedEntitiesWithNode = suggestedEntities.map((e) => { return { node: e }; });
 
   handleSetNumberOfElements({
-    number: filteredMappedEntities.length,
+    number: suggestedEntitiesWithNode.length,
     symbol: '',
-    original: filteredMappedEntities.length,
+    original: suggestedEntitiesWithNode.length,
   });
 
   return (
@@ -174,8 +162,7 @@ ContainerStixCoreObjectsSuggestedMappingProps
               secondaryAction={true}
               numberOfElements={numberOfElements}
               noPadding={true}
-              mappingCount={filteredMappedEntities.length}
-              disabledValidate={filteredMappedEntities.length <= 0}
+              mappingCount={suggestedEntitiesWithNode.length}
               enableMappingView
               disableCards
             >
@@ -184,8 +171,8 @@ ContainerStixCoreObjectsSuggestedMappingProps
                 loadMore={() => {}}
                 hasMore={() => {}}
                 isLoading={() => false}
-                dataList={mappedEntitiesWithNode}
-                globalCount={mappedEntitiesWithNode.length}
+                dataList={suggestedEntitiesWithNode}
+                globalCount={suggestedEntitiesWithNode.length}
                 LineComponent={ContainerStixCoreObjectsSuggestedMappingLine}
                 DummyLineComponent={ContainerStixCoreObjectsSuggestedMappingLineDummy}
                 dataColumns={dataColumns}
