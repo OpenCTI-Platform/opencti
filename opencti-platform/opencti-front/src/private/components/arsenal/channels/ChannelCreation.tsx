@@ -109,7 +109,7 @@ export const ChannelCreationForm: FunctionComponent<ChannelFormProps> = ({
     values,
     { setSubmitting, setErrors, resetForm },
   ) => {
-    const allNames = values.name.split('\n');
+    const allNames = values.name.split('\n').filter((v) => !!v);
     const inputs: ChannelCreationMutation$variables['input'][] = allNames.map((name) => ({
       name,
       description: values.description,
