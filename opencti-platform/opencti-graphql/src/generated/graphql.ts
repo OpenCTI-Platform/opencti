@@ -27641,6 +27641,7 @@ export type Vulnerability = BasicObject & StixCoreObject & StixDomainObject & St
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   x_opencti_aliases?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+  x_opencti_cisa_kev_exploited?: Maybe<Scalars['Boolean']['output']>;
   x_opencti_cvss_attack_vector?: Maybe<Scalars['String']['output']>;
   x_opencti_cvss_availability_impact?: Maybe<Scalars['String']['output']>;
   x_opencti_cvss_base_score?: Maybe<Scalars['Float']['output']>;
@@ -27808,6 +27809,7 @@ export type VulnerabilityAddInput = {
   stix_id?: InputMaybe<Scalars['StixId']['input']>;
   update?: InputMaybe<Scalars['Boolean']['input']>;
   x_opencti_aliases?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  x_opencti_cisa_kev_exploited?: InputMaybe<Scalars['Boolean']['input']>;
   x_opencti_cvss_attack_vector?: InputMaybe<Scalars['String']['input']>;
   x_opencti_cvss_availability_impact?: InputMaybe<Scalars['String']['input']>;
   x_opencti_cvss_base_score?: InputMaybe<Scalars['Float']['input']>;
@@ -38687,6 +38689,7 @@ export type VulnerabilityResolvers<ContextType = any, ParentType extends Resolve
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   x_opencti_aliases?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  x_opencti_cisa_kev_exploited?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   x_opencti_cvss_attack_vector?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_cvss_availability_impact?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_cvss_base_score?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
