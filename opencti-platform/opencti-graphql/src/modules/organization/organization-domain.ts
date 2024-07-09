@@ -110,22 +110,22 @@ export const buildAdministratedOrganizations = async (context: AuthContext, user
 
 export const organizationSectorsPaginated = async <T extends BasicStoreCommon> (context: AuthContext, user: AuthUser, organizationId: string,
   args: EntityOptions<T>) => {
-  return listEntitiesThroughRelationsPaginated<T>(context, user, organizationId, RELATION_PART_OF, ENTITY_TYPE_IDENTITY_SECTOR, false, false, args);
+  return listEntitiesThroughRelationsPaginated<T>(context, user, organizationId, RELATION_PART_OF, ENTITY_TYPE_IDENTITY_SECTOR, false, args);
 };
 
 export const organizationMembersPaginated = async <T extends BasicStoreCommon> (context: AuthContext, user: AuthUser, organizationId: string,
   args: EntityOptions<T>) => {
-  return listEntitiesThroughRelationsPaginated<T>(context, user, organizationId, RELATION_PARTICIPATE_TO, ENTITY_TYPE_USER, true, false, args);
+  return listEntitiesThroughRelationsPaginated<T>(context, user, organizationId, RELATION_PARTICIPATE_TO, ENTITY_TYPE_USER, true, args);
 };
 
 export const parentOrganizationsPaginated = async <T extends BasicStoreCommon> (context: AuthContext, user: AuthUser, organizationId: string,
   args: EntityOptions<T>) => {
-  return listEntitiesThroughRelationsPaginated<T>(context, user, organizationId, RELATION_PART_OF, ENTITY_TYPE_IDENTITY_ORGANIZATION, false, false, args);
+  return listEntitiesThroughRelationsPaginated<T>(context, user, organizationId, RELATION_PART_OF, ENTITY_TYPE_IDENTITY_ORGANIZATION, false, args);
 };
 
 export const childOrganizationsPaginated = async <T extends BasicStoreCommon> (context: AuthContext, user: AuthUser, organizationId: string,
   args: EntityOptions<T>) => {
-  return listEntitiesThroughRelationsPaginated<T>(context, user, organizationId, RELATION_PART_OF, ENTITY_TYPE_IDENTITY_ORGANIZATION, true, false, args);
+  return listEntitiesThroughRelationsPaginated<T>(context, user, organizationId, RELATION_PART_OF, ENTITY_TYPE_IDENTITY_ORGANIZATION, true, args);
 };
 
 // endregion

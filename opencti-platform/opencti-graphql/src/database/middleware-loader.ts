@@ -449,16 +449,14 @@ export const listEntitiesPaginated = async <T extends BasicStoreEntity>(context:
   return elPaginate(context, user, indices, paginateArgs);
 };
 
-export const listEntitiesThroughRelationsPaginated = async <T extends BasicStoreCommon>(context: AuthContext, user: AuthUser,
-  connectedEntityId: string, relationType: string | string[], entityType: string | string[],
-  reverse_relation: boolean, both_ways: boolean, args: EntityOptions<T> = {}): Promise<StoreCommonConnection<T>> => {
+export const listEntitiesThroughRelationsPaginated = async <T extends BasicStoreCommon>(context: AuthContext, user: AuthUser, connectedEntityId: string,
+  relationType: string, entityType: string | string[], reverse_relation: boolean, args: EntityOptions<T> = {}): Promise<StoreCommonConnection<T>> => {
   const entityTypes = Array.isArray(entityType) ? entityType : [entityType];
-  const relationTypes = Array.isArray(relationType) ? relationType : [relationType];
   const { indices = READ_ENTITIES_INDICES, connectionFormat } = args;
   if (connectionFormat === false) {
     throw UnsupportedError('List connected entities paginated require connectionFormat option to true');
   }
-  if (relationTypes.some((t) => UNIMPACTED_ENTITIES_ROLE.includes(`${t}_to`))) {
+  if (UNIMPACTED_ENTITIES_ROLE.includes(`${relationType}_to`)) {
     throw UnsupportedError('List connected entities paginated cant be used', { type: entityType });
   }
   const connectedFilters: FilterGroup = {
@@ -468,7 +466,7 @@ export const listEntitiesThroughRelationsPaginated = async <T extends BasicStore
         key: [INSTANCE_REGARDING_OF],
         values: [
           { key: 'id', values: [connectedEntityId] },
-          { key: 'relationship_type', values: relationTypes }
+          { key: 'relationship_type', values: [relationType] }
         ]
       }
     ],
@@ -485,93 +483,36 @@ export const listEntitiesThroughRelationsPaginated = async <T extends BasicStore
   // As rel de-normalization are currently not directional, we need to post filters the result
   // Some entities could be found because of the none-directionality.
   const entityIds = entityPagination.edges.map((e) => e.node.internal_id);
-  let filters: FilterGroupWithNested;
-  if (both_ways) {
-    const normalFilter: FilterGroupWithNested = {
-      mode: FilterMode.And,
-      filters: [{
+  const filters: FilterGroupWithNested = {
+    mode: FilterMode.And,
+    filters: [
+      {
         key: ['connections'],
         values: [],
         nested: [
-          { key: 'internal_id', values: [connectedEntityId] },
+          { key: 'internal_id', values: reverse_relation ? entityIds : [connectedEntityId] },
+          ...(reverse_relation ? [{ key: 'types', values: entityTypes }] : []),
           { key: 'role', values: ['*_from'], operator: FilterOperator.Wildcard },
         ]
       }, {
         key: ['connections'],
         values: [],
         nested: [
-          { key: 'internal_id', values: entityIds },
-          { key: 'types', values: entityTypes },
+          { key: 'internal_id', values: reverse_relation ? [connectedEntityId] : entityIds },
+          ...(reverse_relation ? [] : [{ key: 'types', values: entityTypes }]),
           { key: 'role', values: ['*_to'], operator: FilterOperator.Wildcard },
         ],
       }],
-      filterGroups: [],
-    };
-    const reverseFilter: FilterGroupWithNested = {
-      mode: FilterMode.And,
-      filters: [{
-        key: ['connections'],
-        values: [],
-        nested: [
-          { key: 'internal_id', values: entityIds },
-          { key: 'types', values: entityTypes },
-          { key: 'role', values: ['*_from'], operator: FilterOperator.Wildcard },
-        ]
-      }, {
-        key: ['connections'],
-        values: [],
-        nested: [
-          { key: 'internal_id', values: [connectedEntityId] },
-          { key: 'role', values: ['*_to'], operator: FilterOperator.Wildcard },
-        ],
-      }],
-      filterGroups: [],
-    };
-    filters = {
-      mode: FilterMode.Or,
-      filters: [],
-      filterGroups: [normalFilter, reverseFilter],
-    };
-  } else {
-    filters = {
-      mode: FilterMode.And,
-      filters: [
-        {
-          key: ['connections'],
-          values: [],
-          nested: [
-            { key: 'internal_id', values: reverse_relation ? entityIds : [connectedEntityId] },
-            ...(reverse_relation ? [{ key: 'types', values: entityTypes }] : []),
-            { key: 'role', values: ['*_from'], operator: FilterOperator.Wildcard },
-          ]
-        }, {
-          key: ['connections'],
-          values: [],
-          nested: [
-            { key: 'internal_id', values: reverse_relation ? [connectedEntityId] : entityIds },
-            ...(reverse_relation ? [] : [{ key: 'types', values: entityTypes }]),
-            { key: 'role', values: ['*_to'], operator: FilterOperator.Wildcard },
-          ],
-        }],
-      filterGroups: [],
-    };
-  }
-  const connectedRelations = await listAllRelations<BasicStoreRelation>(context, user, relationTypes, { filters, connectionFormat: false });
+    filterGroups: [],
+  };
+  const connectedRelations = await listAllRelations<BasicStoreRelation>(context, user, relationType, { filters, connectionFormat: false });
   const relationsEntityMap = new Map();
   connectedRelations.forEach((relation) => {
-    if (entityIds.some((i) => i === relation.fromId)) {
-      if (relationsEntityMap.has(relation.fromId)) {
-        relationsEntityMap.set(relation.fromId, [...relationsEntityMap.get(relation.fromId), relation]);
-      } else {
-        relationsEntityMap.set(relation.fromId, [relation]);
-      }
-    }
-    if (entityIds.some((i) => i === relation.toId)) {
-      if (relationsEntityMap.has(relation.toId)) {
-        relationsEntityMap.set(relation.toId, [...relationsEntityMap.get(relation.toId), relation]);
-      } else {
-        relationsEntityMap.set(relation.toId, [relation]);
-      }
+    const id = reverse_relation ? relation.fromId : relation.toId;
+    if (relationsEntityMap.has(id)) {
+      relationsEntityMap.set(id, [...relationsEntityMap.get(id), relation]);
+    } else {
+      relationsEntityMap.set(id, [relation]);
     }
   });
   const rebuildEdges: BasicStoreCommonEdge<T>[] = [];
@@ -592,7 +533,7 @@ export const listEntitiesThroughRelationsPaginated = async <T extends BasicStore
 export const loadEntityThroughRelationsPaginated = async <T extends BasicStoreCommon>(context: AuthContext, user: AuthUser, connectedEntityId: string,
   relationType: string, entityType: string | string[], reverse_relation: boolean): Promise<T> => {
   const args = { first: 1 };
-  const pagination = await listEntitiesThroughRelationsPaginated<T>(context, user, connectedEntityId, relationType, entityType, reverse_relation, false, args);
+  const pagination = await listEntitiesThroughRelationsPaginated<T>(context, user, connectedEntityId, relationType, entityType, reverse_relation, args);
   return pagination.edges[0]?.node;
 };
 
