@@ -124,6 +124,7 @@ const Vulnerabilities = () => {
           filters={filters}
           paginationOptions={queryPaginationOptions}
           numberOfElements={numberOfElements}
+          iconExtension={true}
           createButton={FAB_REPLACED && <Security needs={[KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNPARTICIPATE]}>
             <VulnerabilityCreation paginationOptions={queryPaginationOptions} />
             </Security>}
