@@ -225,8 +225,6 @@ export const runtimeFieldObservableValueScript = () => {
       emit(getFieldValue(doc, 'name'))
     } else if (type == 'user-account') {
       emit(getFieldsValue(doc, ['account_login', 'user_id']))
-    } else if (type == 'bank-account') {
-      emit(getFieldValue(doc, 'iban'))
     } else if (type == 'payment-card') {
       emit(getFieldValue(doc, 'card_number'))
     } else if (type == 'media-content') {
