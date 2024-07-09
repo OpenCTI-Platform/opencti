@@ -591,8 +591,8 @@ export interface StixMediaContent extends StixCyberObject {
 // value
 export interface StixFinancialAccount extends StixCyberObject {
   account_number: string;
-  bic_number: string;
-  iban_number: string;
+  bic: string;
+  iban: string;
   account_type: string;
   account_status: string;
   currency_code: string;

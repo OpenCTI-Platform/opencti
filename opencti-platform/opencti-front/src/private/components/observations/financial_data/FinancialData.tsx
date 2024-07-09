@@ -64,8 +64,8 @@ const financialAccountFragment = graphql`
     account_number
     account_status
     account_type
-    iban_number
-    bic_number
+    iban
+    bic
     currency_code
   }
 `;

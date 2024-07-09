@@ -5543,8 +5543,8 @@ type FinancialAccount implements BasicObject & StixObject & StixCoreObject & Sti
   indicators(first: Int): IndicatorConnection
   hashes: [Hash]
   account_number: String
-  bic_number: String
-  iban_number: String
+  bic: String
+  iban: String
   account_type: String
   account_status: String
   currency_code: String
@@ -5656,8 +5656,8 @@ type FinancialTransaction implements BasicObject & StixObject & StixCoreObject &
 input FinancialAccountAddInput {
   hashes: [HashInput]
   account_number: String
-  bic_number: String
-  iban_number: String
+  bic: String
+  iban: String
   account_type: String
   account_status: String
   currency_code: String

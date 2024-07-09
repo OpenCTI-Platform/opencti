@@ -166,7 +166,7 @@ export const observableValue = (stixCyberObservable) => {
     case ENTITY_MEDIA_CONTENT:
       return stixCyberObservable.content || stixCyberObservable.title || stixCyberObservable.url || 'Unknown';
     case ENTITY_FINANCIAL_ACCOUNT:
-      return stixCyberObservable.iban_number || stixCyberObservable.account_number || 'Unknown';
+      return stixCyberObservable.iban || stixCyberObservable.account_number || 'Unknown';
     case ENTITY_FINANCIAL_ASSET:
       return stixCyberObservable.asset_name || stixCyberObservable.asset_type || 'Unknown';
     case ENTITY_FINANCIAL_TRANSACTION:
