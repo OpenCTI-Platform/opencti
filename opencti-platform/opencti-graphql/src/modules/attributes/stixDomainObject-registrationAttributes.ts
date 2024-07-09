@@ -239,7 +239,7 @@ const stixDomainObjectsAttributes: { [k: string]: Array<AttributeDefinition> } =
     { name: 'x_opencti_cvss_integrity_impact', label: 'CVSS3 Integrity impact', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
     { name: 'x_opencti_cvss_availability_impact', label: 'CVSS3 Availability impact', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
     { name: 'x_opencti_cvss_confidentiality_impact', label: 'CVSS3 Confidentiality impact', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
-    { name: 'x_opencti_cisa_kev_exploited', label: 'CISA KEV Exploited', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
+    { name: 'x_opencti_cisa_kev', label: 'CISA KEV', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
   ],
   [ENTITY_TYPE_INCIDENT]: [
     // Check Name, type, mandatory, multiple, upsert
