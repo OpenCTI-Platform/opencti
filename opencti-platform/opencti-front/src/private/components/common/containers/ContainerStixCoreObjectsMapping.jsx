@@ -3,11 +3,15 @@ import makeStyles from '@mui/styles/makeStyles';
 import { LayersClearOutlined } from '@mui/icons-material';
 import Button from '@mui/material/Button';
 import Box from '@mui/material/Box';
+import FormGroup from '@mui/material/FormGroup';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import Switch from '@mui/material/Switch';
+import Tooltip from '@mui/material/Tooltip';
+import { InformationOutline } from 'mdi-material-ui';
 import { ContainerStixCoreObjectsMappingLineDummy } from './ContainerStixCoreObjectsMappingLine';
 import ListLines from '../../../../components/list_lines/ListLines';
 import ContainerStixCoreObjectsMappingLines, { containerStixCoreObjectsMappingLinesQuery } from './ContainerStixCoreObjectsMappingLines';
 import useAuth from '../../../../utils/hooks/useAuth';
-import ContainerAddStixCoreObjects from './ContainerAddStixCoreObjects';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { emptyFilterGroup } from '../../../../utils/filters/filtersUtils';
@@ -25,14 +29,9 @@ const useStyles = makeStyles(() => ({
 const ContainerStixCoreObjectsMapping = ({
   container,
   height,
-  addMapping,
   contentMappingData,
   contentMappingCount,
-  openDrawer,
-  selectedText,
-  handleClose,
   enableReferences,
-  handleClearMapping,
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
@@ -109,6 +108,7 @@ const ContainerStixCoreObjectsMapping = ({
       isSortable: false,
     },
   };
+
   const queryRef = useQueryLoading(
     containerStixCoreObjectsMappingLinesQuery,
     paginationOptions,
@@ -116,16 +116,6 @@ const ContainerStixCoreObjectsMapping = ({
 
   return (
     <div>
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'end' }}>
-        <Button
-          variant="contained"
-          onClick={handleClearMapping}
-          startIcon={<LayersClearOutlined />}
-          size="small"
-        >
-          {t_i18n('Clear mappings')}
-        </Button>
-      </Box>
       <div className={classes.container}>
         <ListLines
           helpers={helpers}
@@ -177,24 +167,6 @@ const ContainerStixCoreObjectsMapping = ({
             </React.Suspense>
           )}
         </ListLines></div>
-      <ContainerAddStixCoreObjects
-        containerId={container.id}
-        mapping={true}
-        selectedText={selectedText}
-        openDrawer={openDrawer}
-        handleClose={handleClose}
-        defaultCreatedBy={container.createdBy ?? null}
-        defaultMarkingDefinitions={container.objectMarking ?? []}
-        targetStixCoreObjectTypes={[
-          'Stix-Domain-Object',
-          'Stix-Cyber-Observable',
-        ]}
-        confidence={container.confidence}
-        paginationOptions={paginationOptions}
-        onAdd={addMapping}
-        enableReferences={enableReferences}
-        containerStixCoreObjects={Object.values(contentMappingData).map((c) => ({ node: { id: c } }))}
-      />
     </div>
   );
 };
