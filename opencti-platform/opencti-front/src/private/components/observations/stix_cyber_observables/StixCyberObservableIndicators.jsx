@@ -158,7 +158,7 @@ const StixCyberObservableIndicatorsComponent = ({ stixCyberObservable }) => {
       </Security>
       <div className="clearfix" />
       <List style={{ marginTop: -15 }} aria-label='Stix cyber observable indicators list'>
-        {stixCyberObservable.indicators.edges.map((indicatorEdge) => (
+        {(stixCyberObservable.indicators?.edges ?? []).map((indicatorEdge) => (
           <ListItem
             aria-label={'stix cyber observable indicators item'}
             key={indicatorEdge.node.id}
