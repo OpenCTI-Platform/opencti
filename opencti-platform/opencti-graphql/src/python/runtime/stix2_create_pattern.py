@@ -40,7 +40,6 @@ PATTERN_MAPPING = {
     "User-Agent": ["value"],
     "Windows-Registry-Key": ["key"],
     "Windows-Registry-Value-Type": ["name"],
-    "Bank-Account": ["iban"],
     "Phone-Number": ["value"],
     "Tracking-Number": ["value"],
     "Credential": ["value"],
