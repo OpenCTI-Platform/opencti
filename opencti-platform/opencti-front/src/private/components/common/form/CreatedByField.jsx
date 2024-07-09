@@ -126,8 +126,8 @@ class CreatedByField extends Component {
           onInputChange={this.handleSearch.bind(this)}
           openCreate={this.handleOpenIdentityCreation.bind(this)}
           onChange={typeof onChange === 'function' ? onChange.bind(this) : null}
-          renderOption={(props, option) => (
-            <li {...props}>
+          renderOption={({ key, ...props }, option) => (
+            <li key={key} {...props}>
               <div className={classes.icon}>
                 <ItemIcon type={option.type} />
               </div>

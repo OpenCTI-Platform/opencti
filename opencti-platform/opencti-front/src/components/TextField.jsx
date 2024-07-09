@@ -7,13 +7,13 @@ import TextFieldAskAI from '../private/components/common/form/TextFieldAskAI';
 import StixDomainObjectDetectDuplicate from '../private/components/common/stix_domain_objects/StixDomainObjectDetectDuplicate';
 
 const TextField = (props) => {
+  const { detectDuplicate, ...htmlProps } = props;
   const {
     form: { setFieldValue, setFieldTouched },
     field: { name },
     onChange,
     onFocus,
     onSubmit,
-    detectDuplicate,
     askAi,
   } = props;
   const internalOnChange = React.useCallback(
@@ -42,7 +42,7 @@ const TextField = (props) => {
     [onSubmit, setFieldTouched, name],
   );
   const [, meta] = useField(name);
-  const { value, ...otherProps } = fieldToTextField(props);
+  const { value, ...otherProps } = fieldToTextField(htmlProps);
   return (
     <MuiTextField
       {...otherProps}
