@@ -16,6 +16,7 @@ import { DataColumns } from '../../../../components/list_lines';
 import type { Theme } from '../../../../components/Theme';
 import { ChannelLine_node$data, ChannelLine_node$key } from './__generated__/ChannelLine_node.graphql';
 import { HandleAddFilter } from '../../../../utils/hooks/useLocalStorage';
+import { emptyFilled } from '../../../../utils/String';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -143,6 +144,7 @@ export const ChannelLine: FunctionComponent<ChannelLineProps> = ({
               style={{ width: dataColumns.channel_types.width }}
             >
               {data.channel_types?.join(', ')}
+              {emptyFilled(data.channel_types)}
             </div>
             <div
               className={classes.bodyItem}
