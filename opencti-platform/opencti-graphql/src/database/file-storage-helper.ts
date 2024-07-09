@@ -133,6 +133,7 @@ export const deleteAllBucketContent = async (context: AuthContext, user: AuthUse
   }
 
   // Once all files are deleted, then bucket can be removed.
+  // -- commented because not working --
   // await deleteBucket();
 };
 
