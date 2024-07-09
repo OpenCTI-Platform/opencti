@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { graphql, createPaginationContainer } from 'react-relay';
-import { pathOr } from 'ramda';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import { RetentionLine, RetentionLineDummy } from './RetentionLine';
 
@@ -16,12 +15,8 @@ class RetentionLines extends Component {
         loadMore={relay.loadMore.bind(this)}
         hasMore={relay.hasMore.bind(this)}
         isLoading={relay.isLoading.bind(this)}
-        dataList={pathOr([], ['retentionRules', 'edges'], this.props.data)}
-        globalCount={pathOr(
-          nbOfRowsToLoad,
-          ['retentionRules', 'pageInfo', 'globalCount'],
-          this.props.data,
-        )}
+        dataList={this.props.data?.retentionRules?.edges ?? []}
+        globalCount={this.props.data?.retentionRules?.pageInfo?.globalCount ?? nbOfRowsToLoad}
         LineComponent={<RetentionLine />}
         DummyLineComponent={<RetentionLineDummy />}
         dataColumns={dataColumns}
