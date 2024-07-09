@@ -1046,6 +1046,7 @@ input RetentionRuleAddInput {
   name: String! @constraint(minLength:2, format: "not-blank")
   filters: String!
   max_retention: Int! @constraint(min: 1)
+  scope: RetentionRuleScope!
 }
 enum RetentionRuleScope {
   knowledge

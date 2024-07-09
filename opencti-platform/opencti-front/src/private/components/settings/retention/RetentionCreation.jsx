@@ -19,6 +19,7 @@ import { serializeFilterGroupForBackend, useAvailableFilterKeysForEntityTypes } 
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { insertNode } from '../../../../utils/store';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
+import AutocompleteField from '../../../../components/AutocompleteField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -64,6 +65,15 @@ const styles = (theme) => ({
   title: {
     float: 'left',
   },
+  icon: {
+    paddingTop: 4,
+    display: 'inline-block',
+  },
+  text: {
+    display: 'inline-block',
+    flexGrow: 1,
+    marginLeft: 10,
+  },
 });
 
 const RetentionCreationMutation = graphql`
@@ -92,9 +102,13 @@ const RetentionCreation = (props) => {
   const [verified, setVerified] = useState(false);
   const availableFilterKeys = useAvailableFilterKeysForEntityTypes(['Stix-Core-Object', 'stix-core-relationship']);
   const onSubmit = (values, { setSubmitting, resetForm }) => {
-    const finalValues = R.pipe(
-      R.assoc('max_retention', Number(values.max_retention)),
-    )(values);
+    const scope = values.scope.value;
+    const finalValues = {
+      ...values,
+      max_retention: Number(values.max_retention),
+      scope,
+      filters: scope === 'knowledge' ? values.filters : '',
+    };
     const jsonFilters = serializeFilterGroupForBackend(filters);
     commitMutation({
       mutation: RetentionCreationMutation,
@@ -118,9 +132,13 @@ const RetentionCreation = (props) => {
   };
 
   const handleVerify = (values) => {
-    const finalValues = R.pipe(
-      R.assoc('max_retention', Number(values.max_retention)),
-    )(values);
+    const scope = values.scope.value;
+    const finalValues = {
+      ...values,
+      max_retention: Number(values.max_retention),
+      scope,
+      filters: scope === 'knowledge' ? values.filters : '',
+    };
     const jsonFilters = serializeFilterGroupForBackend(filters);
     commitMutation({
       mutation: RetentionCheckMutation,
@@ -152,7 +170,7 @@ const RetentionCreation = (props) => {
           onSubmit={onSubmit}
           onReset={onClose}
         >
-          {({ submitForm, handleReset, isSubmitting, values: formValues }) => (
+          {({ submitForm, handleReset, isSubmitting, values: formValues, setFieldValue }) => (
             <Form style={{ margin: '20px 0 20px 0' }}>
               <Field
                 component={TextField}
@@ -187,20 +205,47 @@ const RetentionCreation = (props) => {
                   ),
                 }}
               />
-              <Box sx={{ paddingTop: 4, display: 'flex', gap: 1 }}>
-                <Filters
-                  availableFilterKeys={availableFilterKeys}
-                  helpers={helpers}
+              <Field
+                component={AutocompleteField}
+                variant="standard"
+                name="scope"
+                style={{ marginTop: 10 }}
+                fullWidth={true}
+                onChange={setFieldValue}
+                options={[
+                  { value: 'knowledge', label: 'Knowledge' },
+                  { value: 'file', label: 'File' },
+                  { value: 'workbench', label: 'Workbench' },
+                ]}
+                renderOption={(prop, option) => (
+                  <li {...prop}>
+                    <div className={classes.text}>{t(option.label)}</div>
+                  </li>
+                )}
+                textfieldprops={{
+                  label: t('Scope'),
+                }}
+              />
+              {formValues.scope?.value === 'knowledge' && <>
+                <Box sx={{
+                  paddingTop: 4,
+                  display: 'flex',
+                  gap: 1,
+                }}
+                >
+                  <Filters
+                    availableFilterKeys={availableFilterKeys}
+                    helpers={helpers}
+                    searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship'] }}
+                  />
+                </Box>
+                <FilterIconButton
+                  filters={filters}
+                  helpers={helpers}styleNumber={2}
+                  redirection
                   searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship'] }}
                 />
-              </Box>
-              <FilterIconButton
-                filters={filters}
-                helpers={helpers}
-                styleNumber={2}
-                redirection
-                searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship'] }}
-              />
+              </>}
               <div className={classes.buttons}>
                 <Button
                   variant="contained"

@@ -80,6 +80,12 @@ class RetentionLineComponent extends Component {
               >
                 {n(node.remaining_count)}
               </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.scope.width }}
+              >
+                {t(node.scope.toUpperCase())}
+              </div>
               {isFilterGroupNotEmpty(filters) ? (
                 <FilterIconButton
                   filters={filters}
@@ -124,6 +130,7 @@ const RetentionLineFragment = createFragmentContainer(RetentionLineComponent, {
       last_execution_date
       remaining_count
       filters
+      scope
     }
   `,
 });

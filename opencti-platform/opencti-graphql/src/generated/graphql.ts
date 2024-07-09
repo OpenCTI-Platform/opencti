@@ -21373,6 +21373,7 @@ export type RetentionRuleAddInput = {
   filters: Scalars['String']['input'];
   max_retention: Scalars['Int']['input'];
   name: Scalars['String']['input'];
+  scope: RetentionRuleScope;
 };
 
 export type RetentionRuleConnection = {

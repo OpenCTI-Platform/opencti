@@ -41,14 +41,18 @@ const Retention = () => {
     },
     retention: {
       label: 'Max retention',
-      width: '20%',
+      width: '15%',
     },
     last_execution_date: {
       label: 'Last execution',
-      width: '20%',
+      width: '15%',
     },
     remaining_count: {
       label: 'Remaining',
+      width: '10%',
+    },
+    scope: {
+      label: 'Scope',
       width: '10%',
     },
     filters: {
