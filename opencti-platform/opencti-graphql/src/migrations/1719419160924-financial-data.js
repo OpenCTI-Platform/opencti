@@ -331,8 +331,8 @@ export const up = async (next) => {
         //     ctx._source.standard_id = ctx._source.standard_id.replace('cryptocurrency-wallet', 'financial-account');
         //     ctx._source.account_status = 'active';
         //     ctx._source.currency_code = null;
-        //     ctx._source.bic_number = "";
-        //     ctx._source.iban_number = "";
+        //     ctx._source.bic = "";
+        //     ctx._source.iban = "";
         //     ctx._source.remove('value');
         //   }
         `
@@ -343,8 +343,8 @@ export const up = async (next) => {
             ctx._source.standard_id = ctx._source.standard_id.replace('bank-account', 'financial-account');
             ctx._source.account_status = 'active';
             ctx._source.currency_code = null;
-            ctx._source.bic_number = "";
-            ctx._source.iban_number = "";
+            ctx._source.bic = "";
+            ctx._source.iban = "";
             ctx._source.remove('value');
           }
         `.trim()

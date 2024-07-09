@@ -254,8 +254,8 @@ const StixCyberObservableDetails = createFragmentContainer(
         }
         ... on FinancialAccount {
           account_number
-          bic_number
-          iban_number
+          bic
+          iban
           account_type
           account_status
           currency_code
