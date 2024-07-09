@@ -19,6 +19,8 @@ import { FinancialDataLinesSearchQuery$data } from './financial_data/__generated
 import { FinancialDataLine_node$data } from './financial_data/__generated__/FinancialDataLine_node.graphql';
 import FinancialDataRightBar from './financial_data/FinancialDataRightBar';
 import FinancialDataCreation from './financial_data/FinancialDataCreation';
+import Breadcrumbs from '../../../components/Breadcrumbs';
+import { useFormatter } from '../../../components/i18n';
 
 const LOCAL_STORAGE_KEY = 'financialData';
 
@@ -29,6 +31,7 @@ const useStyles = makeStyles<Theme>(() => ({
 }));
 
 const FinancialData: FunctionComponent = () => {
+  const { t_i18n } = useFormatter();
   const classes = useStyles();
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
@@ -238,6 +241,7 @@ const FinancialData: FunctionComponent = () => {
   return (
     <ExportContextProvider>
       <div className={classes.container}>
+        <Breadcrumbs variant="list" elements={[{ label: t_i18n('Observations') }, { label: t_i18n('Financial Data'), current: true }]} />
         {renderLines()}
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <FinancialDataCreation
