@@ -1,4 +1,63 @@
 import type { CsvMapperParsed, CsvMapperRepresentation } from "../../../src/modules/internal/csvMapper/csvMapper-types";
+import type {StixBundle, StixDomainObject} from "../../../src/types/stix-common";
+
+export const indicatorsWithExternalReferencesExpectedBundle: StixBundle = {
+  id: "bundle--bfb3d6f4-6961-4fd0-8fb6-afbcbf2e0d59",
+  spec_version: "2.1",
+  type: "bundle",
+  objects: [
+    {
+      id: "indicator--7be2cb5d-ec2b-5bdd-89eb-5802b71faabd",
+      spec_version: "2.1",
+      type: "indicator",
+      extensions: {
+        "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba": {
+          extension_type: "property-extension",
+          type: "Indicator",
+          main_observable_type: "IPv4-Addr",
+          converter_csv: "[ipv4-addr:value = '198.168.8.1'],IPv4-Addr,http://twitter.com/filigraner"
+        },
+        "extension-definition--322b8f77-262a-4cb8-a915-1e441e00329b": {
+          extension_type: "property-extension"
+        }
+      },
+      external_references: [
+        {
+          source_name: "http://twitter.com/filigraner",
+          url: "http://twitter.com/filigraner"
+        }
+      ],
+      name: "[ipv4-addr:value = '198.168.8.1']",
+      pattern: "[ipv4-addr:value = '198.168.8.1']",
+      pattern_type: "stix"
+    },
+    {
+      id: "indicator--adf3f1be-c67d-5f8a-85fb-3668f411d8b8",
+      spec_version: "2.1",
+      type: "indicator",
+      extensions: {
+        "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba": {
+          extension_type: "property-extension",
+          type: "Indicator",
+          main_observable_type: "IPv4-Addr",
+          converter_csv: "[ipv4-addr:value = '198.168.8.2'],IPv4-Addr,http://twitter.com/filigraner"
+        },
+        "extension-definition--322b8f77-262a-4cb8-a915-1e441e00329b": {
+          extension_type: "property-extension"
+        }
+      },
+      external_references: [
+        {
+          source_name: "http://twitter.com/filigraner",
+          url: "http://twitter.com/filigraner"
+        }
+      ],
+      name: "[ipv4-addr:value = '198.168.8.2']",
+      pattern: "[ipv4-addr:value = '198.168.8.2']",
+      pattern_type: "stix"
+    }
+  ] as unknown as StixDomainObject[]
+}
 
 export const indicatorsWithExternalReferencesCsvMapper: Partial<CsvMapperParsed> = { // retrieved from debugging console but typing seems not to correspond to CsvMapperParsed
   _index: "opencti_internal_objects-000001",
