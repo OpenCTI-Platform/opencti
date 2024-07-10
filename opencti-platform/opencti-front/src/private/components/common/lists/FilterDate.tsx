@@ -1,4 +1,4 @@
-import React, { FunctionComponent, KeyboardEvent } from 'react';
+import React, { FunctionComponent, useState, KeyboardEvent } from 'react';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 
 interface FilterDateProps {
@@ -23,6 +23,8 @@ const FilterDate: FunctionComponent<FilterDateProps> = ({
   setInputValues,
   filterLabel,
 }) => {
+  const [dateState, setDateState] = useState<Date | null>(null);
+
   const findFilterFromKey = (filters: {
     key: string,
     values: (string | Date)[],
@@ -38,34 +40,30 @@ const FilterDate: FunctionComponent<FilterDateProps> = ({
     return null;
   };
 
-  const handleChangeDate = (date: Date) => {
-    const newInputValue = { key: filterKey, values: [date.toString()], operator };
-    const newInputValues = inputValues.filter((f) => f.key !== filterKey || (operator && f.operator !== operator));
-    setInputValues([...newInputValues, newInputValue]);
+  const handleChangeDate = (date: Date | null) => {
+    setDateState(date);
   };
 
-  const handleAcceptDate = (date: Date) => {
+  const handleAcceptDate = (date: Date | null) => {
     if (date && date.toISOString()) {
+      const newInputValue = { key: filterKey, values: [date.toString()], operator };
+      const newInputValues = inputValues.filter((f) => f.key !== filterKey || (operator && f.operator !== operator));
+      setInputValues([...newInputValues, newInputValue]);
       defaultHandleAddFilter(filterKey, date.toISOString(), operator);
     }
   };
 
   const handleValidateDate = (event: KeyboardEvent<HTMLElement>) => {
-    if (event.key === 'Enter') {
-      const dateValue = findFilterFromKey(inputValues, filterKey, operator)?.values[0];
-      if (dateValue
-        && dateValue.toString() !== 'Invalid Date'
-        && dateValue instanceof Date
-      ) {
-        handleAcceptDate(dateValue as Date);
-      }
+    if (event.key === 'Enter' && dateState) {
+      handleAcceptDate(dateState as Date);
     }
   };
+
   return (
     <DatePicker
       key={filterKey}
       label={filterLabel}
-      value={findFilterFromKey(inputValues, filterKey, operator)?.values[0] || null}
+      value={dateState || findFilterFromKey(inputValues, filterKey, operator)?.values[0] || null}
       onChange={(value) => handleChangeDate(value as Date)}
       onAccept={(value) => handleAcceptDate(value as Date)}
       slotProps={{
