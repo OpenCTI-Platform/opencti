@@ -284,7 +284,7 @@ class ReportKnowledgeComponent extends Component {
                   return (
                     <Loader
                       variant={LoaderVariant.inElement}
-                      withTopMargin={true}
+                      withTopMargin={false}
                     />
                   );
                 }}
@@ -332,7 +332,7 @@ class ReportKnowledgeComponent extends Component {
                     return (
                       <Loader
                         variant={LoaderVariant.inElement}
-                        withTopMargin={true}
+                        withTopMargin={false}
                       />
                     );
                   }}
@@ -353,7 +353,7 @@ class ReportKnowledgeComponent extends Component {
                   return (
                     <Loader
                       variant={LoaderVariant.inElement}
-                      withTopMargin={true}
+                      withTopMargin={false}
                     />
                   );
                 }}
@@ -395,7 +395,7 @@ class ReportKnowledgeComponent extends Component {
                   return (
                     <Loader
                       variant={LoaderVariant.inElement}
-                      withTopMargin={true}
+                      withTopMargin={false}
                     />
                   );
                 }}
