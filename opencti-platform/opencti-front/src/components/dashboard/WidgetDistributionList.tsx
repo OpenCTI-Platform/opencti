@@ -45,18 +45,32 @@ const WidgetDistributionList = ({
 
           let link: string | null = null;
           if (!publicWidget) {
-            if (entry.type !== 'User') {
-              if (hasSettingAccess) {
-                link = entry.id && entry.label !== 'Restricted' ? computeLink({
-                  id: entry.id,
-                  entity_type: entry.type,
-                }) : null;
-              }
-            } else {
-              link = computeLink({
+            if (entry.type !== 'User' && hasSettingAccess) {
+              const node: {
+                id: string;
+                entity_type: string;
+                relationship_type?: string;
+                from?: { entity_type: string; id: string };
+              } = {
                 id: entry.id,
                 entity_type: entry.type,
-              });
+                relationship_type: entry.relationship_type,
+                from: entry.from,
+              };
+              link = entry.id && entry.label !== 'Restricted' ? computeLink(node) : null;
+            } else if (entry.type === 'User') {
+              const node: {
+                id: string;
+                entity_type: string;
+                relationship_type?: string;
+                from?: { entity_type: string; id: string };
+              } = {
+                id: entry.id,
+                entity_type: entry.type,
+                relationship_type: entry.relationship_type,
+                from: entry.from,
+              };
+              link = computeLink(node);
             }
           }
 
@@ -70,7 +84,6 @@ const WidgetDistributionList = ({
             };
             cursorStyle = 'pointer';
           }
-
           return (
             <ListItemButton
               key={entry.id ?? entry.label}
