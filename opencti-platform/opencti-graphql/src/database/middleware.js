@@ -2174,8 +2174,10 @@ export const updateAttribute = async (context, user, id, type, inputs, opts = {}
     throw FunctionalError('Cant find element to update', { id, type });
   }
   // Validate input attributes
-  const entitySetting = await getEntitySettingFromCache(context, initial.entity_type);
-  await validateInputUpdate(context, user, initial.entity_type, initial, inputs, entitySetting);
+  if (!isUserHasCapability(user, KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS)) {
+    const entitySetting = await getEntitySettingFromCache(context, initial.entity_type);
+    await validateInputUpdate(context, user, initial.entity_type, initial, inputs, entitySetting);
+  }
   // Continue update
   return updateAttributeFromLoadedWithRefs(context, user, initial, inputs, opts);
 };
