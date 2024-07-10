@@ -1765,7 +1765,7 @@ input ConnectorInfoInput {
   buffering: Boolean!
   queue_threshold: Int!
   queue_messages_size: Int!
-  next_run_datetime: String!
+  next_run_datetime: String
 }
 
 type ConnectorInfo {
@@ -1773,7 +1773,7 @@ type ConnectorInfo {
   buffering: Boolean!
   queue_threshold: Int!
   queue_messages_size: Int!
-  next_run_datetime: String!
+  next_run_datetime: String
 }
 
 type ConnectorConfig {
@@ -8245,7 +8245,7 @@ type Mutation {
   sessionKill(id: ID!): ID
   userSessionsKill(id: ID!): [ID]
   roleEdit(id: ID!): RoleEditMutations
-  pingConnector(id: ID!, state: String, connector_info: ConnectorInfoInput!): Connector
+  pingConnector(id: ID!, state: String, connectorInfo: ConnectorInfoInput): Connector
   registerConnector(input: RegisterConnectorInput): Connector
   resetStateConnector(id: ID!): Connector
   deleteConnector(id: ID!): ID!

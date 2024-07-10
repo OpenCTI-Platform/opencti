@@ -37,8 +37,8 @@ export const computeWorkStatus = async (work) => {
 export const connectorsForExport = async (context, user, scope = null, onlyAlive = false) => {
   return connectorsFor(context, user, CONNECTOR_INTERNAL_EXPORT_FILE, scope, onlyAlive);
 };
-export const pingConnector = async (context, user, id, state, connector_info) => {
-  console.log(connector_info);
+export const pingConnector = async (context, user, id, state, connectorInfo) => {
+  console.log('pingConnector, connectorInfo:', { connectorInfo });
   const creation = now();
   const conn = await storeLoadById(context, user, id, ENTITY_TYPE_CONNECTOR);
   if (!conn) {

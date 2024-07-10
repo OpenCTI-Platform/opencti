@@ -3477,7 +3477,7 @@ export type ConnectorConfiguration = {
 export type ConnectorInfo = {
   __typename?: 'ConnectorInfo';
   buffering: Scalars['Boolean']['output'];
-  next_run_datetime: Scalars['String']['output'];
+  next_run_datetime?: Maybe<Scalars['String']['output']>;
   queue_messages_size: Scalars['Int']['output'];
   queue_threshold: Scalars['Int']['output'];
   run_and_terminate: Scalars['Boolean']['output'];
@@ -3485,7 +3485,7 @@ export type ConnectorInfo = {
 
 export type ConnectorInfoInput = {
   buffering: Scalars['Boolean']['input'];
-  next_run_datetime: Scalars['String']['input'];
+  next_run_datetime?: InputMaybe<Scalars['String']['input']>;
   queue_messages_size: Scalars['Int']['input'];
   queue_threshold: Scalars['Int']['input'];
   run_and_terminate: Scalars['Boolean']['input'];
@@ -14055,7 +14055,7 @@ export type MutationOtpUserDeactivationArgs = {
 
 
 export type MutationPingConnectorArgs = {
-  connector_info: ConnectorInfoInput;
+  connectorInfo?: InputMaybe<ConnectorInfoInput>;
   id: Scalars['ID']['input'];
   state?: InputMaybe<Scalars['String']['input']>;
 };
@@ -31510,7 +31510,7 @@ export type ConnectorConfigurationResolvers<ContextType = any, ParentType extend
 
 export type ConnectorInfoResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConnectorInfo'] = ResolversParentTypes['ConnectorInfo']> = ResolversObject<{
   buffering?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
-  next_run_datetime?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  next_run_datetime?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   queue_messages_size?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   queue_threshold?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   run_and_terminate?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
@@ -34860,7 +34860,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   otpDeactivation?: Resolver<Maybe<ResolversTypes['MeUser']>, ParentType, ContextType>;
   otpLogin?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, Partial<MutationOtpLoginArgs>>;
   otpUserDeactivation?: Resolver<Maybe<ResolversTypes['MeUser']>, ParentType, ContextType, RequireFields<MutationOtpUserDeactivationArgs, 'id'>>;
-  pingConnector?: Resolver<Maybe<ResolversTypes['Connector']>, ParentType, ContextType, RequireFields<MutationPingConnectorArgs, 'connector_info' | 'id'>>;
+  pingConnector?: Resolver<Maybe<ResolversTypes['Connector']>, ParentType, ContextType, RequireFields<MutationPingConnectorArgs, 'id'>>;
   playbookAdd?: Resolver<Maybe<ResolversTypes['Playbook']>, ParentType, ContextType, RequireFields<MutationPlaybookAddArgs, 'input'>>;
   playbookAddLink?: Resolver<ResolversTypes['String'], ParentType, ContextType, RequireFields<MutationPlaybookAddLinkArgs, 'id' | 'input'>>;
   playbookAddNode?: Resolver<ResolversTypes['String'], ParentType, ContextType, RequireFields<MutationPlaybookAddNodeArgs, 'id' | 'input'>>;

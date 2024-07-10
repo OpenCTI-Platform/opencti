@@ -70,7 +70,7 @@ const connectorResolvers = {
     deleteConnector: (_, { id }, context) => connectorDelete(context, context.user, id),
     registerConnector: (_, { input }, context) => registerConnector(context, context.user, input),
     resetStateConnector: (_, { id }, context) => resetStateConnector(context, context.user, id),
-    pingConnector: (_, { id, state, connector_info }, context) => pingConnector(context, context.user, id, state, connector_info),
+    pingConnector: (_, { id, state, connectorInfo }, context) => pingConnector(context, context.user, id, state, connectorInfo),
     updateConnectorTrigger: (_, { id, input }, context) => connectorTriggerUpdate(context, context.user, id, input),
     // Work part
     workAdd: async (_, { connectorId, friendlyName }, context) => {
