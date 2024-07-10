@@ -6,10 +6,6 @@ import Paper from '@mui/material/Paper';
 import { Link } from 'react-router-dom';
 import ContainerStixCoreObjectsSuggestedMapping, { containerStixCoreObjectsSuggestedMappingQuery } from '@components/common/containers/ContainerStixCoreObjectsSuggestedMapping';
 import {
-  ContainerSuggestedMappingContentAddSuggestedMappingRelationsMutation,
-} from '@components/common/containers/__generated__/ContainerSuggestedMappingContentAddSuggestedMappingRelationsMutation.graphql';
-import { ContainerContentFieldPatchMutation } from '@components/common/containers/__generated__/ContainerContentFieldPatchMutation.graphql';
-import {
   ContainerStixCoreObjectsSuggestedMappingQuery,
   ContainerStixCoreObjectsSuggestedMappingQuery$data,
   ContainerStixCoreObjectsSuggestedMappingQuery$variables,
@@ -31,20 +27,22 @@ import Switch from '@mui/material/Switch';
 import Tooltip from '@mui/material/Tooltip';
 import { InformationOutline } from 'mdi-material-ui';
 import { CheckCircleOutlined, LayersClearOutlined } from '@mui/icons-material';
-import {
-  ContainerSuggestedMappingContentClearSuggestedMappingMutation,
-} from '@components/common/containers/__generated__/ContainerSuggestedMappingContentClearSuggestedMappingMutation.graphql';
 import DialogTitle from '@mui/material/DialogTitle';
 import {
   ContainerMappingContent_container$data,
   ContainerMappingContent_container$key,
 } from '@components/common/containers/__generated__/ContainerMappingContent_container.graphql';
 import { ContainerMappingContentQuery$data } from '@components/common/containers/__generated__/ContainerMappingContentQuery.graphql';
+import { ContainerMappingContentFieldPatchMutation } from '@components/common/containers/__generated__/ContainerMappingContentFieldPatchMutation.graphql';
+import {
+  ContainerMappingContentAddSuggestedMappingRelationsMutation,
+} from '@components/common/containers/__generated__/ContainerMappingContentAddSuggestedMappingRelationsMutation.graphql';
+import { ContainerMappingContentAskSuggestedMappingMutation } from '@components/common/containers/__generated__/ContainerMappingContentAskSuggestedMappingMutation.graphql';
+import { ContainerMappingContentClearSuggestedMappingMutation } from '@components/common/containers/__generated__/ContainerMappingContentClearSuggestedMappingMutation.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import { MESSAGING$ } from '../../../../relay/environment';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { decodeMappingData, encodeMappingData } from '../../../../utils/Graph';
-import { ContainerSuggestedMappingContentAskSuggestedMappingMutation } from './__generated__/ContainerSuggestedMappingContentAskSuggestedMappingMutation.graphql';
 import Transition from '../../../../components/Transition';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
@@ -210,7 +208,7 @@ ContainerMappingContentComponentProps
     ? suggestedMappingData.stixCoreObjectAnalysis?.analysisStatus === 'wait' || suggestedMappingData.stixCoreObjectAnalysis?.analysisStatus === 'progress'
     : false;
 
-  const LOCAL_STORAGE_KEY = `container-${containerData.id}-stixCoreObjectsMapping`;
+  const LOCAL_STORAGE_KEY = `container-${containerData.id}-mapping`;
   const {
     paginationOptions,
   } = usePaginationLocalStorage(
@@ -249,10 +247,10 @@ ContainerMappingContentComponentProps
   const [inSuggestedMode, setInSuggestedMode] = useState(false);
   const analysisStatus = useRef('');
 
-  const [commitFieldPatch] = useApiMutation<ContainerContentFieldPatchMutation>(contentMutationFieldPatch);
-  const [commitRelationsAdd] = useApiMutation<ContainerSuggestedMappingContentAddSuggestedMappingRelationsMutation>(addSuggestedMappingRelationsMutation);
-  const [commitAnalysisAsk] = useApiMutation<ContainerSuggestedMappingContentAskSuggestedMappingMutation>(askSuggestedMappingMutation);
-  const [commitAnalysisClear] = useApiMutation<ContainerSuggestedMappingContentClearSuggestedMappingMutation>(clearSuggestedMappingMutation);
+  const [commitFieldPatch] = useApiMutation<ContainerMappingContentFieldPatchMutation>(contentMutationFieldPatch);
+  const [commitRelationsAdd] = useApiMutation<ContainerMappingContentAddSuggestedMappingRelationsMutation>(addSuggestedMappingRelationsMutation);
+  const [commitAnalysisAsk] = useApiMutation<ContainerMappingContentAskSuggestedMappingMutation>(askSuggestedMappingMutation);
+  const [commitAnalysisClear] = useApiMutation<ContainerMappingContentClearSuggestedMappingMutation>(clearSuggestedMappingMutation);
 
   const mappedEntities = (suggestedMappingData.stixCoreObjectAnalysis?.mappedEntities ?? []);
   const filterRemovedEntities = (mappedEntity: MappedEntityType) => {
