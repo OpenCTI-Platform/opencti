@@ -44,24 +44,31 @@ const WidgetDistributionList = ({
           const label = getMainRepresentative(entry.entity) || entry.label;
 
           let link: string | null = null;
-          if (!publicWidget && (entry.type !== 'User' || hasSettingAccess)) {
-            const node: {
-              id: string;
-              entity_type: string;
-              relationship_type?: string;
-              from?: { entity_type: string; id: string };
-            } = {
-              id: entry.id,
-              entity_type: entry.type,
-            };
-            link = entry.id && entry.label !== 'Restricted' ? computeLink(node) : null;
+          if (!publicWidget) {
+            if (entry.type !== 'User') {
+              if (hasSettingAccess) {
+                link = entry.id && entry.label !== 'Restricted' ? computeLink({
+                  id: entry.id,
+                  entity_type: entry.type,
+                }) : null;
+              }
+            } else {
+              link = computeLink({
+                id: entry.id,
+                entity_type: entry.type,
+              });
+            }
           }
+
           let linkProps = {};
+          let cursorStyle = 'default';
+
           if (link) {
             linkProps = {
               component: Link,
               to: link,
             };
+            cursorStyle = 'pointer';
           }
 
           return (
@@ -77,6 +84,7 @@ const WidgetDistributionList = ({
                 minHeight: 50,
                 maxHeight: 50,
                 paddingRight: 0,
+                cursor: cursorStyle,
               }}
               style={overflow === 'hidden' && key === data.length - 1 ? { borderBottom: 0 } : {}}
             >
