@@ -209,13 +209,17 @@ const EntityStixCoreRelationshipsIndicatorsContextualViewComponent: FunctionComp
 
   const containers = stixDomainObject.containers?.edges?.map((e) => e?.node)
     .filter((r) => isNotEmptyField(r)) as { id: string }[] ?? [];
+  const containersIds = containers.map((r) => r.id);
+  const containersSubFilter = containers.length > 0
+    ? { key: 'objects', operator: 'eq', mode: 'or', values: containersIds }
+    : { key: 'objects', operator: 'nil', mode: 'or', values: [] };
 
   const userFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, stixCoreObjectTypes);
   const contextFilters: FilterGroup = {
     mode: 'and',
     filters: [
       { key: 'entity_type', operator: 'eq', mode: 'or', values: stixCoreObjectTypes },
-      { key: 'objects', operator: 'eq', mode: 'or', values: containers.map((r) => r.id) },
+      containersSubFilter,
     ],
     filterGroups: userFilters && isFilterGroupNotEmpty(userFilters) ? [userFilters] : [],
   };
@@ -269,6 +273,9 @@ const EntityStixCoreRelationshipsIndicatorsContextualViewComponent: FunctionComp
         enableContextualView
         currentView={currentView}
         searchContext={{ elementId: [entityId] }}
+        additionalFilterKeys={{
+          filtersRestrictions: { preventFilterValuesEditionFor: new Map([['objects', containersIds]]) } }
+        }
       >
         {queryRef ? (
           <React.Suspense fallback={<Loader variant={LoaderVariant.inElement}/>}>
