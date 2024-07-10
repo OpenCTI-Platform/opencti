@@ -641,7 +641,7 @@ export const stixCoreObjectImportPush = async (context, user, id, file, args = {
     // Patch the updated_at to force live stream evolution
     const eventFile = storeFileConverter(user, up);
     const files = [...(previous.x_opencti_files ?? []).filter((f) => f.id !== up.id), eventFile];
-    await elUpdateElement({
+    await elUpdateElement(context, user, {
       _index: previous._index,
       internal_id: internalId,
       entity_type: previous.entity_type, // required for schema validation
@@ -715,7 +715,7 @@ export const stixCoreObjectImportDelete = async (context, user, fileId) => {
     await deleteFile(context, user, fileId);
     // Patch the updated_at to force live stream evolution
     const files = (previous.x_opencti_files ?? []).filter((f) => f.id !== fileId);
-    await elUpdateElement({
+    await elUpdateElement(context, user,{
       _index: previous._index,
       internal_id: entityId,
       updated_at: now(),

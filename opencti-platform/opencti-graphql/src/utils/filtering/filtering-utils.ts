@@ -258,7 +258,7 @@ export const checkAndConvertFilters = (filterGroup: FilterGroup | null | undefin
         .concat(availableConvertedStixCoreRelationships)
         .concat(specialFilterKeys);
       keys.forEach((k) => {
-        if (availableKeys.includes(k) || k.startsWith(RULE_PREFIX)) {
+        if (availableKeys.includes(k) || k.startsWith(RULE_PREFIX) || k === INSTANCE_REGARDING_OF) {
           incorrectKeys = incorrectKeys.filter((n) => n !== k);
         }
       });

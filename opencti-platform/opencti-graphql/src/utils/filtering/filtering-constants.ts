@@ -74,7 +74,7 @@ export const complexConversionFilterKeys = [
   IDS_FILTER, // values should match any id (internal_id, standard_id, or stix_id)
   TYPE_FILTER, // values should match any parent_types
   RELATION_TYPE_FILTER, // values should match any parent_types
-  INSTANCE_REGARDING_OF,
+  // INSTANCE_REGARDING_OF,
   WORKFLOW_FILTER, // values should match the parent workflow pattern id
   X_OPENCTI_WORKFLOW_ID, // values should match the parent workflow pattern id
   SOURCE_RELIABILITY_FILTER, // reliability of the author

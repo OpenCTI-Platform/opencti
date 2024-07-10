@@ -11,6 +11,11 @@ export const shortMapping = {
     },
   },
 };
+export const keywordMapping = {
+  type: 'keyword',
+  ignore_above: 512,
+  normalizer: 'string_normalizer'
+};
 export const textMapping = { type: 'text' };
 export const dateMapping = { type: 'date' };
 export const booleanMapping = { type: 'boolean' };

@@ -3,7 +3,6 @@ import {
   buildPagination,
   emptyPaginationResult,
   isEmptyField,
-  isInferredIndex,
   isNotEmptyField,
   READ_DATA_INDICES,
   READ_DATA_INDICES_WITHOUT_INFERRED,
@@ -27,7 +26,6 @@ import type { AuthContext, AuthUser } from '../types/user';
 import type {
   BasicStoreBase,
   BasicStoreCommon,
-  BasicStoreCommonEdge,
   BasicStoreEntity,
   BasicStoreObject,
   BasicStoreRelation,
@@ -88,6 +86,7 @@ interface EntityFilters<T extends BasicStoreCommon> extends ListFilter<T> {
   relationshipTypes?: Array<string>;
   elementWithTargetTypes?: Array<string>;
   filters?: FilterGroupWithNested | null;
+  aggregations?: object | null;
 }
 
 export interface EntityOptions<T extends BasicStoreCommon> extends EntityFilters<T> {
@@ -477,7 +476,8 @@ export const listEntitiesThroughRelationsPaginated = async <T extends BasicStore
         key: [INSTANCE_REGARDING_OF],
         values: [
           { key: 'id', values: [connectedEntityId] },
-          { key: 'relationship_type', values: [relationType] }
+          { key: 'relationship_type', values: [relationType] },
+          { key: 'role', values: reverse_relation ? ['to'] : ['from'] }
         ]
       }
     ],
@@ -485,68 +485,61 @@ export const listEntitiesThroughRelationsPaginated = async <T extends BasicStore
   };
   const paginateArgs = buildEntityFilters(entityType, {
     ...args,
+    types: entityTypes,
     first: args.first ?? ES_MINIMUM_FIXED_PAGINATION,
     orderBy: args.orderBy ?? 'created_at',
     orderMode: args.orderMode ?? OrderingMode.Desc,
     filters: connectedFilters
   });
-  const entityPagination = await elPaginate(context, user, indices, { ...paginateArgs }) as StoreCommonConnection<T>;
-  if (entityPagination.edges.length === 0) {
-    // no result, just return entityPagination, there is no relationships to find
-    return entityPagination;
-  }
-  // As rel de-normalization are currently not directional, we need to post filters the result
-  // Some entities could be found because of the none-directionality.
-  const entityIds = entityPagination.edges.map((e) => e.node.internal_id);
-  const filters: FilterGroupWithNested = {
-    mode: FilterMode.And,
-    filters: [
-      {
-        key: ['connections'],
-        values: [],
-        nested: [
-          { key: 'internal_id', values: reverse_relation ? entityIds : [connectedEntityId] },
-          ...(reverse_relation ? [{ key: 'types', values: entityTypes }] : []),
-          { key: 'role', values: ['*_from'], operator: FilterOperator.Wildcard },
-        ]
-      }, {
-        key: ['connections'],
-        values: [],
-        nested: [
-          { key: 'internal_id', values: reverse_relation ? [connectedEntityId] : entityIds },
-          ...(reverse_relation ? [] : [{ key: 'types', values: entityTypes }]),
-          { key: 'role', values: ['*_to'], operator: FilterOperator.Wildcard },
-        ],
-      }],
-    filterGroups: [],
-  };
-  const connectedRelations = await listAllRelations<BasicStoreRelation>(context, user, relationType, { filters, connectionFormat: false });
-  if (connectedRelations.length === 0) {
-    // no connection found (because of relation direction), just return an empty result
-    return emptyPaginationResult();
-  }
-  const relationsEntityMap = new Map();
-  connectedRelations.forEach((relation) => {
-    const id = reverse_relation ? relation.fromId : relation.toId;
-    if (relationsEntityMap.has(id)) {
-      relationsEntityMap.set(id, [...relationsEntityMap.get(id), relation]);
-    } else {
-      relationsEntityMap.set(id, [relation]);
-    }
-  });
-  const rebuildEdges: BasicStoreCommonEdge<T>[] = [];
-  entityPagination.edges.forEach((edge) => {
-    const relatedRelations = relationsEntityMap.get(edge.node.id);
-    if (relatedRelations) {
-      const types = relatedRelations.map((relation: BasicStoreRelation) => (isInferredIndex(relation._index) ? 'inferred' : 'manual'));
-      const newEdge: BasicStoreCommonEdge<T> = { types, node: edge.node, cursor: edge.cursor };
-      rebuildEdges.push(newEdge);
-    }
-  });
-  return {
-    edges: rebuildEdges,
-    pageInfo: { ...entityPagination.pageInfo, globalCount: entityPagination.pageInfo.globalCount - (entityPagination.edges.length - rebuildEdges.length) },
-  };
+  return elPaginate(context, user, indices, paginateArgs) as Promise<StoreCommonConnection<T>>;
+  // // As rel de-normalization are currently not directional, we need to post filters the result
+  // // Some entities could be found because of the none-directionality.
+  // const entityIds = entityPagination.edges.map((e) => e.node.internal_id);
+  // const filters: FilterGroupWithNested = {
+  //   mode: FilterMode.And,
+  //   filters: [
+  //     {
+  //       key: ['connections'],
+  //       values: [],
+  //       nested: [
+  //         { key: 'internal_id', values: reverse_relation ? entityIds : [connectedEntityId] },
+  //         ...(reverse_relation ? [{ key: 'types', values: entityTypes }] : []),
+  //         { key: 'role', values: ['*_from'], operator: FilterOperator.Wildcard },
+  //       ]
+  //     }, {
+  //       key: ['connections'],
+  //       values: [],
+  //       nested: [
+  //         { key: 'internal_id', values: reverse_relation ? [connectedEntityId] : entityIds },
+  //         ...(reverse_relation ? [] : [{ key: 'types', values: entityTypes }]),
+  //         { key: 'role', values: ['*_to'], operator: FilterOperator.Wildcard },
+  //       ],
+  //     }],
+  //   filterGroups: [],
+  // };
+  // const connectedRelations = await listAllRelations<BasicStoreRelation>(context, user, relationType, { filters, connectionFormat: false });
+  // const relationsEntityMap = new Map();
+  // connectedRelations.forEach((relation) => {
+  //   const id = reverse_relation ? relation.fromId : relation.toId;
+  //   if (relationsEntityMap.has(id)) {
+  //     relationsEntityMap.set(id, [...relationsEntityMap.get(id), relation]);
+  //   } else {
+  //     relationsEntityMap.set(id, [relation]);
+  //   }
+  // });
+  // const rebuildEdges: BasicStoreCommonEdge<T>[] = [];
+  // entityPagination.edges.forEach((edge) => {
+  //   const relatedRelations = relationsEntityMap.get(edge.node.id);
+  //   if (relatedRelations) {
+  //     const types = relatedRelations.map((relation: BasicStoreRelation) => (isInferredIndex(relation._index) ? 'inferred' : 'manual'));
+  //     const newEdge: BasicStoreCommonEdge<T> = { types, node: edge.node, cursor: edge.cursor };
+  //     rebuildEdges.push(newEdge);
+  //   }
+  // });
+  // return {
+  //   edges: rebuildEdges,
+  //   pageInfo: { ...entityPagination.pageInfo, globalCount: entityPagination.pageInfo.globalCount - (entityPagination.edges.length - rebuildEdges.length) },
+  // };
 };
 
 export const findEntitiesIdsWithRelations = async (

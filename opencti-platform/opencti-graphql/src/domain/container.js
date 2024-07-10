@@ -2,7 +2,7 @@ import * as R from 'ramda';
 import { v4 as uuidv4 } from 'uuid';
 import { RELATION_CREATED_BY, RELATION_OBJECT } from '../schema/stixRefRelationship';
 import { listAllThings, timeSeriesEntities } from '../database/middleware';
-import { internalFindByIds, internalLoadById, listEntities, listEntitiesThroughRelationsPaginated, storeLoadById } from '../database/middleware-loader';
+import { internalFindByIds, internalLoadById, listEntities, storeLoadById } from '../database/middleware-loader';
 import {
   ABSTRACT_BASIC_RELATIONSHIP,
   ABSTRACT_STIX_CORE_OBJECT,
@@ -14,7 +14,7 @@ import {
 import { isStixDomainObjectContainer } from '../schema/stixDomainObject';
 import { buildPagination, READ_ENTITIES_INDICES, READ_INDEX_STIX_DOMAIN_OBJECTS, READ_RELATIONSHIPS_INDICES } from '../database/utils';
 import { now } from '../utils/format';
-import { elCount, elFindByIds, ES_DEFAULT_PAGINATION, MAX_RELATED_CONTAINER_RESOLUTION } from '../database/engine';
+import { elCount, elFindByIds, elList, elPaginate, MAX_RELATED_CONTAINER_RESOLUTION } from '../database/engine';
 import { findById as findInvestigationById } from '../modules/workspace/workspace-domain';
 import { stixCoreObjectAddRelations } from './stixCoreObject';
 import { editAuthorizedMembers } from '../utils/authorizedMembers';
@@ -54,33 +54,13 @@ export const numberOfContainersForObject = (context, user, args) => {
 
 export const objects = async (context, user, containerId, args) => {
   const types = args.types ? args.types : ['Stix-Core-Object', 'stix-relationship'];
-  const baseOpts = { ...args, indices: [...READ_ENTITIES_INDICES, ...READ_RELATIONSHIPS_INDICES] };
+  const baseOpts = { ...args, types, indices: [...READ_ENTITIES_INDICES, ...READ_RELATIONSHIPS_INDICES] };
   if (args.all) {
     // TODO Should be handled by the frontend to split the load
-    // As we currently handle it in the back, just do a standard iteration
-    // Then return the complete result set
-    let hasNextPage = true;
-    let searchAfter = args.after;
-    const paginatedElements = {};
-    while (hasNextPage) {
-      // Force options to prevent connection format and manage search after
-      const paginateOpts = { ...baseOpts, first: args.first ?? ES_DEFAULT_PAGINATION, after: searchAfter };
-      const currentPagination = await listEntitiesThroughRelationsPaginated(context, user, containerId, RELATION_OBJECT, types, false, paginateOpts);
-      const noMoreElements = currentPagination.edges.length === 0 || currentPagination.edges.length < paginateOpts.first;
-      if (noMoreElements) {
-        hasNextPage = false;
-        paginatedElements.pageInfo = currentPagination.pageInfo;
-        paginatedElements.edges = [...(paginatedElements.edges ?? []), ...currentPagination.edges];
-      } else if (currentPagination.edges.length > 0) {
-        const { cursor } = currentPagination.edges[currentPagination.edges.length - 1];
-        searchAfter = cursor;
-        paginatedElements.pageInfo = currentPagination.pageInfo;
-        paginatedElements.edges = [...(paginatedElements.edges ?? []), ...currentPagination.edges];
-      }
-    }
-    return paginatedElements;
+    const allObjects = await elList(context, user, baseOpts.indices, baseOpts);
+    return buildPagination(0, null, allObjects.map((o) => ({ node: o })), allObjects.length);
   }
-  return listEntitiesThroughRelationsPaginated(context, user, containerId, RELATION_OBJECT, types, false, baseOpts);
+  return elPaginate(context, user, baseOpts.indices, baseOpts);
 };
 
 export const containersNumber = (context, user, args) => {
