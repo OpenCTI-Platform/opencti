@@ -21,7 +21,7 @@ describe('Case Incident Response resolver standard behavior', () => {
     }
 `;
 
-  it('should case incident response created', async () => {
+  it('should Case Incident Response created', async () => {
     const CREATE_QUERY = gql`
       mutation CaseIncidentAdd($input: CaseIncidentAddInput!) {
         caseIncidentAdd(input: $input){
@@ -92,7 +92,7 @@ describe('Case Incident Response resolver standard behavior', () => {
     const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 10 } });
     expect(queryResult?.data?.caseIncidents.edges.length).toEqual(1);
   });
-  it('should update case', async () => {
+  it('should update Case Incident Response', async () => {
     const UPDATE_QUERY = gql`
       mutation CaseIncident($id: ID!, $input: [EditInput]!) {
         stixDomainObjectEdit(id: $id) {
