@@ -70,9 +70,9 @@ ENV NODE_OPTIONS="--force-fips --max_old_space_size=12288"
 ENV NODE_ENV=production
 
 RUN set -ex; \
-    install -m 0777 -d '/opt/opencti/logs' \
-    && install -m 0777 -d '/opt/opencti/telemetry' \
-    && install -m 0777 -d '/opt/opencti/.support'
+    install -m 0766 -d '/opt/opencti/logs' \
+    && install -m 0766 -d '/opt/opencti/telemetry' \
+    && install -m 0766 -d '/opt/opencti/.support'
 
 VOLUME ["/opt/opencti/logs", "/opt/opencti/telemetry", "/opt/opencti/.support"]
 

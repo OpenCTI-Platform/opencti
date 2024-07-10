@@ -42,12 +42,12 @@ RUN set -ex; \
     apk add --no-cache git tini gcc g++ make musl-dev cargo python3 python3-dev postfix postfix-pcre \
     && rm -f /usr/lib/python3.11/EXTERNALLY-MANAGED \
     && rm -f /usr/lib/python3.12/EXTERNALLY-MANAGED \
-    && npm install -g node-gyp
+    && npm install -g node-gyp \
+&& yarn install
 
 COPY opencti-front /opt/opencti-build/opencti-front
 COPY opencti-graphql/config/schema/opencti.graphql /opt/opencti-build/opencti-graphql/config/schema/opencti.graphql
 
-RUN yarn install
 RUN yarn build:standalone
 
 
@@ -85,9 +85,9 @@ ENV NODE_OPTIONS=--max_old_space_size=12288
 ENV NODE_ENV=production
 
 RUN set -ex; \
-    install -m 0777 -d '/opt/opencti/logs' \
-    && install -m 0777 -d '/opt/opencti/telemetry' \
-    && install -m 0777 -d '/opt/opencti/.support'
+    install -m 0766 -d '/opt/opencti/logs' \
+    && install -m 0766 -d '/opt/opencti/telemetry' \
+    && install -m 0766 -d '/opt/opencti/.support'
 
 VOLUME ["/opt/opencti/logs", "/opt/opencti/telemetry", "/opt/opencti/.support"]
 
