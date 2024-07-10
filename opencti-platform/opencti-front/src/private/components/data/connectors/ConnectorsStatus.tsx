@@ -96,6 +96,14 @@ const inlineStyles: Record<string, CSSProperties> = {
     overflow: 'hidden',
     textOverflow: 'ellipsis',
   },
+  connector_status: {
+    float: 'left',
+    width: '10%',
+    height: 20,
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+  },
   updated_at: {
     float: 'left',
     width: '15%',
@@ -336,12 +344,29 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
               </ListItemIcon>
               <ListItemText
                 primary={
-                  <div>
-                    <SortConnectorsHeader field="name" label="Name" isSortable orderAsc={orderAsc} sortBy={sortBy} reverseBy={reverseBy} />
-                    <SortConnectorsHeader field="connector_type" label="Type" isSortable orderAsc={orderAsc} sortBy={sortBy} reverseBy={reverseBy} />
-                    <SortConnectorsHeader field="auto" label="Automatic trigger" isSortable orderAsc={orderAsc} sortBy={sortBy} reverseBy={reverseBy} />
-                    <SortConnectorsHeader field="messages" label="Messages" isSortable orderAsc={orderAsc} sortBy={sortBy} reverseBy={reverseBy} />
-                    <SortConnectorsHeader field="updated_at" label="Modified" isSortable orderAsc={orderAsc} sortBy={sortBy} reverseBy={reverseBy} />
+                  <div style={{
+                    display: 'flex',
+                    width: '100%',
+                  }}
+                  >
+                    <div style={{ flexBasis: '20%' }}>
+                      <SortConnectorsHeader field="name" label="Name" isSortable orderAsc={orderAsc} sortBy={sortBy} reverseBy={reverseBy} />
+                    </div>
+                    <div style={{ flexBasis: '20%' }}>
+                      <SortConnectorsHeader field="connector_type" label="Type" isSortable orderAsc={orderAsc} sortBy={sortBy} reverseBy={reverseBy} />
+                    </div>
+                    <div style={{ flexBasis: '20%' }}>
+                      <SortConnectorsHeader field="auto" label="Automatic trigger" isSortable orderAsc={orderAsc} sortBy={sortBy} reverseBy={reverseBy} />
+                    </div>
+                    <div style={{ flexBasis: '10%' }}>
+                      <SortConnectorsHeader field="messages" label="Messages" isSortable orderAsc={orderAsc} sortBy={sortBy} reverseBy={reverseBy} />
+                    </div>
+                    <div style={{ flexBasis: '10%' }}>
+                      <SortConnectorsHeader field="connector_status" label="Status" isSortable orderAsc={orderAsc} sortBy={sortBy} reverseBy={reverseBy} />
+                    </div>
+                    <div style={{ flexBasis: '20%' }}>
+                      <SortConnectorsHeader field="updated_at" label="Modified" isSortable orderAsc={orderAsc} sortBy={sortBy} reverseBy={reverseBy} />
+                    </div>
                   </div>
                   }
               />
@@ -391,6 +416,12 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
                         style={inlineStyles.messages}
                       >
                         {n(connector.messages)}
+                      </div>
+                      <div
+                        className={classes.bodyItem}
+                        style={inlineStyles.connector_status}
+                      >
+                        {t_i18n((connector.active ? 'Active' : 'Inactive'))}
                       </div>
                       <div
                         className={classes.bodyItem}

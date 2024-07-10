@@ -3428,12 +3428,14 @@ export type Connector = BasicObject & InternalObject & {
   built_in?: Maybe<Scalars['Boolean']['output']>;
   config?: Maybe<ConnectorConfig>;
   configurations?: Maybe<Array<ConnectorConfiguration>>;
+  connector_info: ConnectorInfo;
   connector_queue_details: ConnectorQueueDetails;
   connector_schema?: Maybe<Scalars['String']['output']>;
   connector_schema_ui?: Maybe<Scalars['String']['output']>;
   connector_scope?: Maybe<Array<Scalars['String']['output']>>;
   connector_state?: Maybe<Scalars['String']['output']>;
   connector_state_reset?: Maybe<Scalars['Boolean']['output']>;
+  connector_status: ConnectorStatus;
   connector_trigger_filters?: Maybe<Scalars['String']['output']>;
   connector_type?: Maybe<Scalars['String']['output']>;
   connector_user_id?: Maybe<Scalars['ID']['output']>;
@@ -3472,6 +3474,23 @@ export type ConnectorConfiguration = {
   name: Scalars['String']['output'];
 };
 
+export type ConnectorInfo = {
+  __typename?: 'ConnectorInfo';
+  buffering: Scalars['Boolean']['output'];
+  next_run_datetime: Scalars['String']['output'];
+  queue_messages_size: Scalars['Int']['output'];
+  queue_threshold: Scalars['Int']['output'];
+  run_and_terminate: Scalars['Boolean']['output'];
+};
+
+export type ConnectorInfoInput = {
+  buffering: Scalars['Boolean']['input'];
+  next_run_datetime: Scalars['String']['input'];
+  queue_messages_size: Scalars['Int']['input'];
+  queue_threshold: Scalars['Int']['input'];
+  run_and_terminate: Scalars['Boolean']['input'];
+};
+
 export type ConnectorMetadata = {
   __typename?: 'ConnectorMetadata';
   configuration: Scalars['String']['output'];
@@ -3482,6 +3501,14 @@ export type ConnectorQueueDetails = {
   messages_number: Scalars['Float']['output'];
   messages_size: Scalars['Float']['output'];
 };
+
+export enum ConnectorStatus {
+  Active = 'ACTIVE',
+  Buffering = 'BUFFERING',
+  BufferingRunAndTerminate = 'BUFFERING_RUN_AND_TERMINATE',
+  Inactive = 'INACTIVE',
+  RunAndTerminate = 'RUN_AND_TERMINATE'
+}
 
 export enum ConnectorType {
   ExternalImport = 'EXTERNAL_IMPORT',
@@ -14028,6 +14055,7 @@ export type MutationOtpUserDeactivationArgs = {
 
 
 export type MutationPingConnectorArgs = {
+  connector_info: ConnectorInfoInput;
   id: Scalars['ID']['input'];
   state?: InputMaybe<Scalars['String']['input']>;
 };
@@ -28916,8 +28944,11 @@ export type ResolversTypes = ResolversObject<{
   Connector: ResolverTypeWrapper<Connector>;
   ConnectorConfig: ResolverTypeWrapper<ConnectorConfig>;
   ConnectorConfiguration: ResolverTypeWrapper<ConnectorConfiguration>;
+  ConnectorInfo: ResolverTypeWrapper<ConnectorInfo>;
+  ConnectorInfoInput: ConnectorInfoInput;
   ConnectorMetadata: ResolverTypeWrapper<ConnectorMetadata>;
   ConnectorQueueDetails: ResolverTypeWrapper<ConnectorQueueDetails>;
+  ConnectorStatus: ConnectorStatus;
   ConnectorType: ConnectorType;
   ConstraintNumber: ResolverTypeWrapper<Scalars['ConstraintNumber']['output']>;
   ConstraintString: ResolverTypeWrapper<Scalars['ConstraintString']['output']>;
@@ -29716,6 +29747,8 @@ export type ResolversParentTypes = ResolversObject<{
   Connector: Connector;
   ConnectorConfig: ConnectorConfig;
   ConnectorConfiguration: ConnectorConfiguration;
+  ConnectorInfo: ConnectorInfo;
+  ConnectorInfoInput: ConnectorInfoInput;
   ConnectorMetadata: ConnectorMetadata;
   ConnectorQueueDetails: ConnectorQueueDetails;
   ConstraintNumber: Scalars['ConstraintNumber']['output'];
@@ -31433,12 +31466,14 @@ export type ConnectorResolvers<ContextType = any, ParentType extends ResolversPa
   built_in?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   config?: Resolver<Maybe<ResolversTypes['ConnectorConfig']>, ParentType, ContextType>;
   configurations?: Resolver<Maybe<Array<ResolversTypes['ConnectorConfiguration']>>, ParentType, ContextType>;
+  connector_info?: Resolver<ResolversTypes['ConnectorInfo'], ParentType, ContextType>;
   connector_queue_details?: Resolver<ResolversTypes['ConnectorQueueDetails'], ParentType, ContextType>;
   connector_schema?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   connector_schema_ui?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   connector_scope?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   connector_state?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   connector_state_reset?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  connector_status?: Resolver<ResolversTypes['ConnectorStatus'], ParentType, ContextType>;
   connector_trigger_filters?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   connector_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   connector_user_id?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
@@ -31470,6 +31505,15 @@ export type ConnectorConfigurationResolvers<ContextType = any, ParentType extend
   configuration?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type ConnectorInfoResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConnectorInfo'] = ResolversParentTypes['ConnectorInfo']> = ResolversObject<{
+  buffering?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  next_run_datetime?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  queue_messages_size?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  queue_threshold?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  run_and_terminate?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -34816,7 +34860,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   otpDeactivation?: Resolver<Maybe<ResolversTypes['MeUser']>, ParentType, ContextType>;
   otpLogin?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, Partial<MutationOtpLoginArgs>>;
   otpUserDeactivation?: Resolver<Maybe<ResolversTypes['MeUser']>, ParentType, ContextType, RequireFields<MutationOtpUserDeactivationArgs, 'id'>>;
-  pingConnector?: Resolver<Maybe<ResolversTypes['Connector']>, ParentType, ContextType, RequireFields<MutationPingConnectorArgs, 'id'>>;
+  pingConnector?: Resolver<Maybe<ResolversTypes['Connector']>, ParentType, ContextType, RequireFields<MutationPingConnectorArgs, 'connector_info' | 'id'>>;
   playbookAdd?: Resolver<Maybe<ResolversTypes['Playbook']>, ParentType, ContextType, RequireFields<MutationPlaybookAddArgs, 'input'>>;
   playbookAddLink?: Resolver<ResolversTypes['String'], ParentType, ContextType, RequireFields<MutationPlaybookAddLinkArgs, 'id' | 'input'>>;
   playbookAddNode?: Resolver<ResolversTypes['String'], ParentType, ContextType, RequireFields<MutationPlaybookAddNodeArgs, 'id' | 'input'>>;
@@ -39136,6 +39180,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   Connector?: ConnectorResolvers<ContextType>;
   ConnectorConfig?: ConnectorConfigResolvers<ContextType>;
   ConnectorConfiguration?: ConnectorConfigurationResolvers<ContextType>;
+  ConnectorInfo?: ConnectorInfoResolvers<ContextType>;
   ConnectorMetadata?: ConnectorMetadataResolvers<ContextType>;
   ConnectorQueueDetails?: ConnectorQueueDetailsResolvers<ContextType>;
   ConstraintNumber?: GraphQLScalarType;
