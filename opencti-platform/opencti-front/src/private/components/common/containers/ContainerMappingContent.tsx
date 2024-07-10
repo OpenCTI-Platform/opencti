@@ -4,7 +4,6 @@ import Grid from '@mui/material/Grid';
 import StixCoreObjectMappableContent from '@components/common/stix_core_objects/StixCoreObjectMappableContent';
 import Paper from '@mui/material/Paper';
 import { Link } from 'react-router-dom';
-import { containerContentFragment, contentMutationFieldPatch } from '@components/common/containers/ContainerContent';
 import ContainerStixCoreObjectsSuggestedMapping, { containerStixCoreObjectsSuggestedMappingQuery } from '@components/common/containers/ContainerStixCoreObjectsSuggestedMapping';
 import {
   ContainerSuggestedMappingContentAddSuggestedMappingRelationsMutation,
@@ -15,8 +14,6 @@ import {
   ContainerStixCoreObjectsSuggestedMappingQuery$data,
   ContainerStixCoreObjectsSuggestedMappingQuery$variables,
 } from '@components/common/containers/__generated__/ContainerStixCoreObjectsSuggestedMappingQuery.graphql';
-import { ContainerContent_container$data, ContainerContent_container$key } from '@components/common/containers/__generated__/ContainerContent_container.graphql';
-import { ContainerContentQuery$data } from '@components/common/containers/__generated__/ContainerContentQuery.graphql';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
@@ -38,6 +35,11 @@ import {
   ContainerSuggestedMappingContentClearSuggestedMappingMutation,
 } from '@components/common/containers/__generated__/ContainerSuggestedMappingContentClearSuggestedMappingMutation.graphql';
 import DialogTitle from '@mui/material/DialogTitle';
+import {
+  ContainerMappingContent_container$data,
+  ContainerMappingContent_container$key,
+} from '@components/common/containers/__generated__/ContainerMappingContent_container.graphql';
+import { ContainerMappingContentQuery$data } from '@components/common/containers/__generated__/ContainerMappingContentQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import { MESSAGING$ } from '../../../../relay/environment';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
@@ -50,8 +52,85 @@ import { emptyFilterGroup } from '../../../../utils/filters/filtersUtils';
 
 const OPEN$ = new Subject().pipe(debounce(() => timer(500)));
 
+export const contentMutationFieldPatch = graphql`
+  mutation ContainerMappingContentFieldPatchMutation(
+    $id: ID!
+    $input: [EditInput]!
+    $commitMessage: String
+    $references: [String]
+  ) {
+    stixDomainObjectEdit(id: $id) {
+      fieldPatch(
+        input: $input
+        commitMessage: $commitMessage
+        references: $references
+      ) {
+        ...ContainerMappingContent_container
+      }
+    }
+  }
+`;
+
+export const containerContentQuery = graphql`
+  query ContainerMappingContentQuery($id: String!) {
+    container(id: $id) {
+      ...ContainerMappingContent_container
+    }
+  }
+`;
+
+export const containerContentFragment = graphql`
+  fragment ContainerMappingContent_container on Container {
+    id
+    standard_id
+    entity_type
+    confidence
+    createdBy {
+      ... on Identity {
+        id
+        name
+        entity_type
+      }
+    }
+    objectMarking {
+      id
+      definition_type
+      definition
+      x_opencti_order
+      x_opencti_color
+    }
+    ... on Report {
+      description
+      contentField: content
+      content_mapping
+      editContext {
+        name
+        focusOn
+      }
+    }
+    ... on Case {
+      description
+      contentField: content
+      content_mapping
+      editContext {
+        name
+        focusOn
+      }
+    }
+    ... on Grouping {
+      description
+      contentField: content
+      content_mapping
+      editContext {
+        name
+        focusOn
+      }
+    }
+  }
+`;
+
 const addSuggestedMappingRelationsMutation = graphql`
-  mutation ContainerSuggestedMappingContentAddSuggestedMappingRelationsMutation(
+  mutation ContainerMappingContentAddSuggestedMappingRelationsMutation(
     $id: ID!
     $input: StixRefRelationshipsAddInput!
     $commitMessage: String
@@ -70,7 +149,7 @@ const addSuggestedMappingRelationsMutation = graphql`
 `;
 
 const askSuggestedMappingMutation = graphql`
-  mutation ContainerSuggestedMappingContentAskSuggestedMappingMutation(
+  mutation ContainerMappingContentAskSuggestedMappingMutation(
     $id: ID!
     $contentSource: String!
     $contentType: AnalysisContentType!
@@ -91,7 +170,7 @@ const askSuggestedMappingMutation = graphql`
 `;
 
 const clearSuggestedMappingMutation = graphql`
-  mutation ContainerSuggestedMappingContentClearSuggestedMappingMutation(
+  mutation ContainerMappingContentClearSuggestedMappingMutation(
     $id: ID!
     $contentSource: String!
     $contentType: AnalysisContentType!
@@ -105,16 +184,16 @@ const clearSuggestedMappingMutation = graphql`
   }
 `;
 
-interface ContainerSuggestedMappingContentComponentProps {
-  containerData: ContainerContent_container$data;
+interface ContainerMappingContentComponentProps {
+  containerData: ContainerMappingContent_container$data;
   queryRef: PreloadedQuery<ContainerStixCoreObjectsSuggestedMappingQuery>
   loadQuery: (variables: ContainerStixCoreObjectsSuggestedMappingQuery$variables, options?: (UseQueryLoaderLoadQueryOptions | undefined)) => void
 }
 
 export type MappedEntityType = NonNullable<NonNullable<ContainerStixCoreObjectsSuggestedMappingQuery$data['stixCoreObjectAnalysis']>['mappedEntities']>[number];
 
-const ContainerSuggestedMappingContentComponent: FunctionComponent<
-ContainerSuggestedMappingContentComponentProps
+const ContainerMappingContentComponent: FunctionComponent<
+ContainerMappingContentComponentProps
 > = ({ containerData, queryRef, loadQuery }) => {
   const { t_i18n } = useFormatter();
   const enableReferences = useIsEnforceReference(containerData.entity_type);
@@ -150,10 +229,10 @@ ContainerSuggestedMappingContentComponentProps
   );
 
   const [open, setOpen] = useState(false);
-  const [openClearMapping, setOpenClearMapping] = useState(false);
   const [openValidate, setOpenValidate] = useState(false);
   const [validating, setValidating] = useState(false);
   const [selectedText, setSelectedText] = useState('');
+  const [openClearMapping, setOpenClearMapping] = useState(false);
   const [clearing, setClearing] = useState(false);
   useEffect(() => {
     const subscription = OPEN$.subscribe({
@@ -232,7 +311,10 @@ ContainerSuggestedMappingContentComponentProps
   const mappedStringsCount = countMappingMatch(mappedStrings);
 
   const handleAskNewSuggestedMapping = () => {
+    setValidating(false);
     setAskingSuggestion(true);
+    setInSuggestedMode(false);
+    setRemovedEntities([]);
     analysisStatus.current = '';
     commitAnalysisAsk({
       variables: {
@@ -287,7 +369,7 @@ ContainerSuggestedMappingContentComponentProps
       },
       onCompleted: () => {
         setInSuggestedMode(false);
-        setValidating(false);
+        setOpenValidate(false);
         setRemovedEntities([]);
       },
     });
@@ -335,6 +417,7 @@ ContainerSuggestedMappingContentComponentProps
       onCompleted: () => {
         setOpen(false);
         setSelectedText('');
+        setInSuggestedMode(false);
       },
     });
   };
@@ -375,7 +458,7 @@ ContainerSuggestedMappingContentComponentProps
             handleTextSelection={handleTextSelection}
             askAi={false}
             editionMode={false}
-            mappedStrings={mappedStrings}
+            mappedStrings={inSuggestedMode ? [] : mappedStrings}
             suggestedMappedStrings={inSuggestedMode ? suggestedMappedStrings : []}
           />
         </Grid>
@@ -450,22 +533,19 @@ ContainerSuggestedMappingContentComponentProps
             }}
           >
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <Box sx={{}}>
-                <FormGroup>
-                  <FormControlLabel
-                    control={
-                      <Switch
-                        checked={inSuggestedMode}
-                        onChange={() => { setInSuggestedMode(!inSuggestedMode); }}
-                        disabled={askingSuggestion || suggestedMappingData?.stixCoreObjectAnalysis?.analysisStatus != 'complete' }
-                      />
-                    }
-                    label={t_i18n('Show suggested mapping')}
-                  />
-                </FormGroup>
-              </Box>
-
-              <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+              <FormGroup>
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={inSuggestedMode}
+                      onChange={() => { setInSuggestedMode(!inSuggestedMode); }}
+                      disabled={askingSuggestion || validating || suggestedMappingData?.stixCoreObjectAnalysis?.analysisStatus !== 'complete' }
+                    />
+                  }
+                  label={t_i18n('Show suggested mapping')}
+                />
+              </FormGroup>
+              <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', marginLeft: 'auto' }}>
                 {!hasConnectorsAvailable && (
                   <Tooltip
                     title={t_i18n('An analysis connector needs to be available to ask for a mapping suggestion.')}
@@ -565,12 +645,12 @@ ContainerSuggestedMappingContentComponentProps
   );
 };
 
-interface ContainerSuggestedMappingContentProps {
-  containerFragment: ContainerContentQuery$data['container'];
+interface ContainerMappingContentProps {
+  containerFragment: ContainerMappingContentQuery$data['container'];
 }
 
-const ContainerSuggestedMappingContent = ({ containerFragment }: ContainerSuggestedMappingContentProps) => {
-  const containerData = useFragment<ContainerContent_container$key>(containerContentFragment, containerFragment);
+const ContainerMappingContent = ({ containerFragment }: ContainerMappingContentProps) => {
+  const containerData = useFragment<ContainerMappingContent_container$key>(containerContentFragment, containerFragment);
   const [queryRef, loadQuery] = useQueryLoader<ContainerStixCoreObjectsSuggestedMappingQuery>(
     containerStixCoreObjectsSuggestedMappingQuery,
   );
@@ -589,7 +669,7 @@ const ContainerSuggestedMappingContent = ({ containerFragment }: ContainerSugges
   }
 
   return (
-    <ContainerSuggestedMappingContentComponent
+    <ContainerMappingContentComponent
       containerData={containerData}
       queryRef={queryRef}
       loadQuery={loadQuery}
@@ -597,4 +677,4 @@ const ContainerSuggestedMappingContent = ({ containerFragment }: ContainerSugges
   );
 };
 
-export default ContainerSuggestedMappingContent;
+export default ContainerMappingContent;

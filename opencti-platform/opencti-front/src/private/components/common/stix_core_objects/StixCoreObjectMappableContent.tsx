@@ -7,7 +7,7 @@ import { graphql } from 'react-relay';
 import { FormikConfig } from 'formik/dist/types';
 import { ExternalReferencesValues } from '@components/common/form/ExternalReferencesField';
 import { StixCoreObjectMappableContentFieldPatchMutation } from '@components/common/stix_core_objects/__generated__/StixCoreObjectMappableContentFieldPatchMutation.graphql';
-import { ContainerContent_container$data } from '@components/common/containers/__generated__/ContainerContent_container.graphql';
+import { ContainerMappingContent_container$data } from '@components/common/containers/__generated__/ContainerMappingContent_container.graphql';
 import MarkdownField from '../../../../components/fields/MarkdownField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import RichTextField from '../../../../components/fields/RichTextField';
@@ -33,7 +33,7 @@ export const stixCoreObjectMappableContentFieldPatchMutation = graphql`
 `;
 
 interface StixCoreObjectMappableContentProps {
-  containerData: ContainerContent_container$data;
+  containerData: ContainerMappingContent_container$data;
   handleDownloadPdf?: () => void;
   handleTextSelection?: (t: string) => void;
   askAi: boolean;

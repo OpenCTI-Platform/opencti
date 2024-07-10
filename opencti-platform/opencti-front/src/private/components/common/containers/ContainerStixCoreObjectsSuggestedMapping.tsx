@@ -5,7 +5,7 @@ import {
   ContainerStixCoreObjectsSuggestedMappingLineDummy,
 } from '@components/common/containers/ContainerStixCoreObjectsSuggestedMappingLine';
 import { ContainerStixCoreObjectsSuggestedMappingQuery$data } from '@components/common/containers/__generated__/ContainerStixCoreObjectsSuggestedMappingQuery.graphql';
-import { ContainerContent_container$data } from '@components/common/containers/__generated__/ContainerContent_container.graphql';
+import { ContainerMappingContent_container$data } from '@components/common/containers/__generated__/ContainerMappingContent_container.graphql';
 import ListLines from '../../../../components/list_lines/ListLines';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
@@ -43,7 +43,7 @@ export const containerStixCoreObjectsSuggestedMappingQuery = graphql`
 `;
 
 interface ContainerStixCoreObjectsSuggestedMappingProps {
-  container: ContainerContent_container$data;
+  container: ContainerMappingContent_container$data;
   suggestedMappingCount: Record<string, number>;
   suggestedEntities: NonNullable<NonNullable<ContainerStixCoreObjectsSuggestedMappingQuery$data['stixCoreObjectAnalysis']>['mappedEntities']>
   height: number;
