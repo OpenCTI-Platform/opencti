@@ -2174,10 +2174,8 @@ export const updateAttribute = async (context, user, id, type, inputs, opts = {}
     throw FunctionalError('Cant find element to update', { id, type });
   }
   // Validate input attributes
-  if (!isUserHasCapability(user, KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS)) {
-    const entitySetting = await getEntitySettingFromCache(context, initial.entity_type);
-    await validateInputUpdate(context, user, initial.entity_type, initial, inputs, entitySetting);
-  }
+  const entitySetting = await getEntitySettingFromCache(context, initial.entity_type);
+  await validateInputUpdate(context, user, initial.entity_type, initial, inputs, entitySetting);
   // Continue update
   return updateAttributeFromLoadedWithRefs(context, user, initial, inputs, opts);
 };
@@ -2885,9 +2883,7 @@ const createEntityRaw = async (context, user, rawInput, type, opts = {}) => {
   // region - Pre-Check
   const entitySetting = await getEntitySettingFromCache(context, type);
   const filledInput = fillDefaultValues(user, input, entitySetting);
-  if (!isUserHasCapability(user, KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS)) {
-    await validateEntityAndRelationCreation(context, user, filledInput, type, entitySetting, opts);
-  }
+  await validateEntityAndRelationCreation(context, user, filledInput, type, entitySetting, opts);
   // endregion
   const { fromRule } = opts;
   // We need to check existing dependencies

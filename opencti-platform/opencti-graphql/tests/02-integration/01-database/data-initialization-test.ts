@@ -7,7 +7,7 @@ import type { BasicStoreEntity } from '../../../src/types/store';
 describe('Data initialization test', () => {
   it('should create all capabilities', async () => {
     const capabilities = await listAllEntities<BasicStoreEntity>(testContext, ADMIN_USER, [ENTITY_TYPE_CAPABILITY]);
-    expect(capabilities.length).toEqual(37);
+    expect(capabilities.length).toEqual(38);
     const capabilitiesNames = capabilities.map((capa) => capa.name).sort();
     const allExpectedNames = [
       'BYPASS',
@@ -29,6 +29,7 @@ describe('Data initialization test', () => {
       'KNOWLEDGE_KNGETEXPORT_KNASKEXPORT',
       'KNOWLEDGE_KNPARTICIPATE',
       'KNOWLEDGE_KNUPDATE',
+      'KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS',
       'KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE',
       'KNOWLEDGE_KNUPDATE_KNDELETE',
       'KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS',
