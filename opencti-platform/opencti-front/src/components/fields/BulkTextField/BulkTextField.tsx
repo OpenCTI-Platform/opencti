@@ -3,6 +3,7 @@ import { FieldProps } from 'formik';
 import { Alert, Typography } from '@mui/material';
 import TextField from '../../TextField';
 import { useFormatter } from '../../i18n';
+import { splitMultilines } from '../../../utils/String';
 
 // TODO make TextField component as typescript and reuse its props
 interface BulkTextFieldProps extends FieldProps<string> {
@@ -13,7 +14,7 @@ const BulkTextField = (props: BulkTextFieldProps) => {
   const { t_i18n } = useFormatter();
   const { field: { value }, detectDuplicate } = props;
 
-  const values = value.split('\n');
+  const values = splitMultilines(value);
   const hasMultipleValues = values.length > 1;
 
   return (

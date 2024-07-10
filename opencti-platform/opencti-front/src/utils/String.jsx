@@ -124,3 +124,9 @@ export const renderObservableValue = (observable) => {
 };
 
 export const emptyFilled = (str) => (isNotEmptyField(str) ? str : '-');
+
+/**
+ * @param str {string}
+ * @returns {string[]}
+ */
+export const splitMultilines = (str) => str.split('\n').filter((v) => !!v);

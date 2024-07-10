@@ -30,6 +30,7 @@ import BulkTextModalButton from '../../../../components/fields/BulkTextField/Bul
 import useBulkCommit from '../../../../utils/hooks/useBulkCommit';
 import useHelper from '../../../../utils/hooks/useHelper';
 import TextField from '../../../../components/TextField';
+import { splitMultilines } from '../../../../utils/String';
 
 const channelMutation = graphql`
   mutation ChannelCreationMutation($input: ChannelAddInput!) {
@@ -109,7 +110,7 @@ export const ChannelCreationForm: FunctionComponent<ChannelFormProps> = ({
     values,
     { setSubmitting, setErrors, resetForm },
   ) => {
-    const allNames = values.name.split('\n').filter((v) => !!v);
+    const allNames = splitMultilines(values.name);
     const inputs: ChannelCreationMutation$variables['input'][] = allNames.map((name) => ({
       name,
       description: values.description,
@@ -162,7 +163,12 @@ export const ChannelCreationForm: FunctionComponent<ChannelFormProps> = ({
             <BulkTextModal
               open={bulkModalOpen}
               onClose={onBulkModalClose}
-              onValidate={((val) => setFieldValue('name', val))}
+              onValidate={((val) => {
+                setFieldValue('name', val);
+                if (splitMultilines(val).length > 1) {
+                  setFieldValue('file', null);
+                }
+              })}
               formValue={values.name}
             />
           )}
@@ -229,7 +235,12 @@ export const ChannelCreationForm: FunctionComponent<ChannelFormProps> = ({
               setFieldValue={setFieldValue}
               values={values.externalReferences}
             />
-            <CustomFileUploader setFieldValue={setFieldValue} />
+            <Field
+              component={CustomFileUploader}
+              name="file"
+              setFieldValue={setFieldValue}
+              disabled={splitMultilines(values.name).length > 1}
+            />
             <div style={{
               marginTop: '20px',
               textAlign: 'right',

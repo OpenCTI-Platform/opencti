@@ -2,6 +2,7 @@ import { DialogTitle, DialogContent, Alert, Dialog, DialogActions, TextField, Bu
 import React, { useEffect, useState } from 'react';
 import Typography from '@mui/material/Typography';
 import { useFormatter } from '../../i18n';
+import { splitMultilines } from '../../../utils/String';
 
 interface BulkTextModalProps {
   open: boolean
@@ -15,7 +16,7 @@ const MAX_LINES = 50;
 const BulkTextModal = ({ open, onClose, onValidate, formValue }: BulkTextModalProps) => {
   const { t_i18n } = useFormatter();
   const [value, setValue] = useState('');
-  const nbLines = value.split('\n').filter((v) => !!v).length;
+  const nbLines = splitMultilines(value).length;
 
   useEffect(() => {
     setValue(formValue);
