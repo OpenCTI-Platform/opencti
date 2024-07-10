@@ -1,6 +1,6 @@
 import EventSource from 'eventsource';
 import { createEntity, deleteElementById, internalDeleteElementById, patchAttribute, updateAttribute } from '../database/middleware';
-import { getHttpClient } from '../utils/http-client';
+import { type GetHttpClient, getHttpClient } from '../utils/http-client';
 import { completeConnector, connector, connectors, connectorsFor } from '../database/repository';
 import { getConnectorQueueDetails, purgeConnectorQueues, registerConnectorQueues, unregisterConnector, unregisterExchanges } from '../database/rabbitmq';
 import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_SYNC, ENTITY_TYPE_WORK } from '../schema/internalObject';
@@ -13,19 +13,23 @@ import { INTERNAL_SYNC_QUEUE, isEmptyField, READ_INDEX_HISTORY } from '../databa
 import { ABSTRACT_INTERNAL_OBJECT, CONNECTOR_INTERNAL_EXPORT_FILE } from '../schema/general';
 import { SYSTEM_USER } from '../utils/access';
 import { delEditContext, notify, redisGetWork, setEditContext } from '../database/redis';
-import { BUS_TOPICS, getPlatformHttpProxyAgent, logApp } from '../config/conf';
-import { deleteWorkForConnector } from './work';
 import { listEntities, storeLoadById } from '../database/middleware-loader';
 import { publishUserAction } from '../listener/UserActionListener';
+import type { AuthContext, AuthUser } from '../types/user';
+import type { ConnectorInfo } from '../types/connector';
+import type { BasicStoreEntityConnector } from '../connector/connector';
+import type { EditInput, RegisterConnectorInput, Synchronizer, SynchronizerAddInput, SynchronizerFetchInput, EditContext } from '../generated/graphql';
+import { BUS_TOPICS, getPlatformHttpProxyAgent, logApp } from '../config/conf';
+import { deleteWorkForConnector } from './work';
 
 // region connectors
-export const connectorForWork = async (context, user, id) => {
-  const work = await elLoadById(context, user, id, { type: ENTITY_TYPE_WORK, indices: READ_INDEX_HISTORY });
+export const connectorForWork = async (context: AuthContext, user: AuthUser, id: string) => {
+  const work = await elLoadById(context, user, id, { type: ENTITY_TYPE_WORK, indices: READ_INDEX_HISTORY }) as unknown as Work;
   if (work) return connector(context, user, work.connector_id);
   return null;
 };
 
-export const computeWorkStatus = async (work) => {
+export const computeWorkStatus = async (work: Work) => {
   if (work.status === 'complete') {
     return { import_processed_number: work.completed_number, import_expected_number: work.import_expected_number };
   }
@@ -34,13 +38,13 @@ export const computeWorkStatus = async (work) => {
   // If data in redis not exist, just send default values
   return redisData ?? { import_processed_number: null, import_expected_number: null };
 };
-export const connectorsForExport = async (context, user, scope = null, onlyAlive = false) => {
+export const connectorsForExport = async (context: AuthContext, user: AuthUser, scope = null, onlyAlive = false) => {
   return connectorsFor(context, user, CONNECTOR_INTERNAL_EXPORT_FILE, scope, onlyAlive);
 };
-export const pingConnector = async (context, user, id, state, connectorInfo) => {
-  console.log('pingConnector, connectorInfo:', { connectorInfo });
+export const pingConnector = async (context: AuthContext, user: AuthUser, id: string, state: string, connectorInfo: ConnectorInfo) => {
+  logApp.info('pingConnector, connectorInfo:', { connectorInfo });
   const creation = now();
-  const conn = await storeLoadById(context, user, id, ENTITY_TYPE_CONNECTOR);
+  const conn = await storeLoadById(context, user, id, ENTITY_TYPE_CONNECTOR) as unknown as BasicStoreEntityConnector;
   if (!conn) {
     throw FunctionalError('No connector found with the specified ID', { id });
   }
@@ -48,16 +52,22 @@ export const pingConnector = async (context, user, id, state, connectorInfo) => 
   const scopes = conn.connector_scope ? conn.connector_scope.split(',') : [];
   await registerConnectorQueues(conn.id, conn.name, conn.connector_type, scopes);
   // Patch the updated_at and the state if needed
+  let connectorPatch;
+
   if (conn.connector_state_reset === true) {
-    const statePatch = { connector_state_reset: false };
-    await patchAttribute(context, user, id, ENTITY_TYPE_CONNECTOR, statePatch);
+    connectorPatch = { connector_state_reset: false };
   } else {
-    const updatePatch = { updated_at: creation, connector_state: state };
-    await patchAttribute(context, user, id, ENTITY_TYPE_CONNECTOR, updatePatch);
+    connectorPatch = { updated_at: creation, connector_state: state };
   }
+
+  if (connectorInfo) {
+    connectorPatch = { ...connectorPatch, connectorInfo };
+  }
+  logApp.info('pingConnector, connectorPatch:', { connectorPatch });
+  await patchAttribute(context, user, id, ENTITY_TYPE_CONNECTOR, connectorPatch);
   return storeLoadById(context, user, id, 'Connector').then((data) => completeConnector(data));
 };
-export const resetStateConnector = async (context, user, id) => {
+export const resetStateConnector = async (context: AuthContext, user: AuthUser, id: string) => {
   const patch = { connector_state: '', connector_state_reset: true };
   const { element } = await patchAttribute(context, user, id, ENTITY_TYPE_CONNECTOR, patch);
   await publishUserAction({
@@ -71,7 +81,7 @@ export const resetStateConnector = async (context, user, id) => {
   await purgeConnectorQueues(element);
   return storeLoadById(context, user, id, ENTITY_TYPE_CONNECTOR).then((data) => completeConnector(data));
 };
-export const registerConnector = async (context, user, connectorData) => {
+export const registerConnector = async (context: AuthContext, user:AuthUser, connectorData:RegisterConnectorInput) => {
   // eslint-disable-next-line camelcase
   const { id, name, type, scope, auto = null, only_contextual = null, playbook_compatible = false } = connectorData;
   const conn = await storeLoadById(context, user, id, ENTITY_TYPE_CONNECTOR);
@@ -119,7 +129,7 @@ export const registerConnector = async (context, user, connectorData) => {
   // Return the connector
   return completeConnector(createdConnector);
 };
-export const connectorDelete = async (context, user, connectorId) => {
+export const connectorDelete = async (context: AuthContext, user:AuthUser, connectorId: string) => {
   await deleteWorkForConnector(context, user, connectorId);
   await unregisterConnector(connectorId);
   const { element } = await internalDeleteElementById(context, user, connectorId);
@@ -136,8 +146,8 @@ export const connectorDelete = async (context, user, connectorId) => {
   return element.internal_id;
 };
 
-export const connectorTriggerUpdate = async (context, user, connectorId, input) => {
-  const conn = await storeLoadById(context, user, connectorId, ENTITY_TYPE_CONNECTOR);
+export const connectorTriggerUpdate = async (context: AuthContext, user: AuthUser, connectorId: string, input: EditInput[]) => {
+  const conn = await storeLoadById(context, user, connectorId, ENTITY_TYPE_CONNECTOR) as unknown as BasicStoreEntityConnector;
   if (!conn) {
     throw FunctionalError('Cant find element to update', { id: connectorId, type: ENTITY_TYPE_CONNECTOR });
   }
@@ -148,14 +158,14 @@ export const connectorTriggerUpdate = async (context, user, connectorId, input) 
   if (input.some((item) => !supportedInputKeys.includes(item.key))) {
     throw FunctionalError(`Update is only possible on these input keys: ${supportedInputKeys.join(', ')}`);
   }
-  const filtersItem = input.find((item) => item.key === 'connector_trigger_filters');
-  if (filtersItem?.value) {
-    const jsonFilters = JSON.parse(filtersItem.value);
+  const filtersItem: EditInput | undefined = input.find((item: EditInput) => item.key === 'connector_trigger_filters');
+  if (filtersItem && filtersItem.value.length > 0) {
+    const jsonFilters = JSON.parse(filtersItem.value[0]);
     if (isFilterGroupNotEmpty(jsonFilters)) {
       // our stix matching is currently limited, we need to validate the input filters
       validateFilterGroupForStixMatch(jsonFilters);
     } else {
-      filtersItem.value = ''; // empty filter
+      filtersItem.value[0] = ''; // empty filter
     }
   }
   const { element } = await updateAttribute(context, user, connectorId, ENTITY_TYPE_CONNECTOR, input);
@@ -173,18 +183,18 @@ export const connectorTriggerUpdate = async (context, user, connectorId, input) 
 // endregion
 
 // region syncs
-export const patchSync = async (context, user, id, patch) => {
+export const patchSync = async (context: AuthContext, user: AuthUser, id: string, patch: { runnning: boolean }) => {
   const patched = await patchAttribute(context, user, id, ENTITY_TYPE_SYNC, patch);
   return patched.element;
 };
-export const findSyncById = (context, user, syncId) => {
+export const findSyncById = (context: AuthContext, user: AuthUser, syncId: string) => {
   return storeLoadById(context, user, syncId, ENTITY_TYPE_SYNC);
 };
-export const findAllSync = async (context, user, opts = {}) => {
+export const findAllSync = async (context: AuthContext, user: AuthUser, opts = {}) => {
   return listEntities(context, SYSTEM_USER, [ENTITY_TYPE_SYNC], opts);
 };
-export const httpBase = (baseUri) => (baseUri.endsWith('/') ? baseUri : `${baseUri}/`);
-export const createSyncHttpUri = (sync, state, testMode) => {
+export const httpBase = (baseUri: string) => (baseUri.endsWith('/') ? baseUri : `${baseUri}/`);
+export const createSyncHttpUri = (sync: SynchronizerAddInput, state: string, testMode: boolean) => {
   const { uri, stream_id: stream, no_dependencies: dep, listen_deletion: del } = sync;
   if (testMode) {
     logApp.debug(`[OPENCTI] Testing sync url with ${httpBase(uri)}stream/${stream}`);
@@ -198,17 +208,17 @@ export const createSyncHttpUri = (sync, state, testMode) => {
   }
   return streamUri;
 };
-export const testSync = async (context, user, sync) => {
+export const testSync = async (context: AuthContext, user: AuthUser, sync: Synchronizer) => {
   const eventSourceUri = createSyncHttpUri(sync, now(), true);
-  const { token, ssl_verify: ssl = false } = sync;
+  const { token, ssl_verify = false } = sync;
   return new Promise((resolve, reject) => {
     try {
       const eventSource = new EventSource(eventSourceUri, {
-        rejectUnauthorized: ssl,
+        rejectUnauthorized: ssl_verify ?? false,
         headers: !isEmptyField(token) ? { authorization: `Bearer ${token}` } : undefined,
-        agent: getPlatformHttpProxyAgent(eventSourceUri)
+        proxy: getPlatformHttpProxyAgent(eventSourceUri)
       });
-      eventSource.on('connected', (d) => {
+      eventSource.on('connected', (d: any) => {
         const { connectionId } = JSON.parse(d.data);
         if (connectionId) {
           eventSource.close();
@@ -218,7 +228,7 @@ export const testSync = async (context, user, sync) => {
           reject(UnsupportedError('Server cant generate connection id'));
         }
       });
-      eventSource.on('error', (e) => {
+      eventSource.on('error', (e: any) => {
         eventSource.close();
         reject(UnsupportedError(`Cant connect to remote opencti, ${e.message}`));
       });
@@ -227,7 +237,7 @@ export const testSync = async (context, user, sync) => {
     }
   });
 };
-export const fetchRemoteStreams = async (context, user, { uri, token, ssl_verify }) => {
+export const fetchRemoteStreams = async (context: AuthContext, user: AuthUser, input:SynchronizerFetchInput) => {
   try {
     const query = `
     query SyncCreationStreamCollectionQuery {
@@ -243,17 +253,18 @@ export const fetchRemoteStreams = async (context, user, { uri, token, ssl_verify
       }
     }
   `;
+    const { token, uri, ssl_verify } = input;
     const headers = !isEmptyField(token) ? { authorization: `Bearer ${token}` } : undefined;
-    const httpClientOptions = { headers, rejectUnauthorized: ssl_verify ?? false, responseType: 'json' };
+    const httpClientOptions: GetHttpClient = { headers, rejectUnauthorized: ssl_verify ?? false, responseType: 'json' };
     const httpClient = getHttpClient(httpClientOptions);
     const remoteUri = `${uri.endsWith('/') ? uri.slice(0, -1) : uri}/graphql`;
     const { data } = await httpClient.post(remoteUri, { query });
-    return data.data.streamCollections.edges.map((e) => e.node);
+    return data.data.streamCollections.edges.map((e: any) => e.node);
   } catch (e) {
     throw ValidationError('uri', { message: 'Error getting the streams from remote OpenCTI', cause: e });
   }
 };
-export const registerSync = async (context, user, syncData) => {
+export const registerSync = async (context: AuthContext, user: AuthUser, syncData: Synchronizer) => {
   const data = { ...syncData, running: false };
   await testSync(context, user, data);
   const { element, isCreation } = await createEntity(context, user, data, ENTITY_TYPE_SYNC, { complete: true });
@@ -269,7 +280,7 @@ export const registerSync = async (context, user, syncData) => {
   }
   return element;
 };
-export const syncEditField = async (context, user, syncId, input) => {
+export const syncEditField = async (context: AuthContext, user: AuthUser, syncId: string, input: EditInput[]) => {
   const { element } = await updateAttribute(context, user, syncId, ENTITY_TYPE_SYNC, input);
   await publishUserAction({
     user,
@@ -281,7 +292,7 @@ export const syncEditField = async (context, user, syncId, input) => {
   });
   return notify(BUS_TOPICS[ENTITY_TYPE_SYNC].EDIT_TOPIC, element, user);
 };
-export const syncDelete = async (context, user, syncId) => {
+export const syncDelete = async (context: AuthContext, user: AuthUser, syncId: string) => {
   const deleted = await deleteElementById(context, user, syncId, ENTITY_TYPE_SYNC);
   await publishUserAction({
     user,
@@ -293,12 +304,12 @@ export const syncDelete = async (context, user, syncId) => {
   });
   return syncId;
 };
-export const syncCleanContext = async (context, user, syncId) => {
+export const syncCleanContext = async (context: AuthContext, user: AuthUser, syncId: string) => {
   await delEditContext(user, syncId);
   return storeLoadById(context, user, syncId, ENTITY_TYPE_SYNC)
     .then((syncToReturn) => notify(BUS_TOPICS[ENTITY_TYPE_SYNC].EDIT_TOPIC, syncToReturn, user));
 };
-export const syncEditContext = async (context, user, syncId, input) => {
+export const syncEditContext = async (context: AuthContext, user: AuthUser, syncId: string, input: EditContext) => {
   await setEditContext(user, syncId, input);
   return storeLoadById(context, user, syncId, ENTITY_TYPE_SYNC)
     .then((syncToReturn) => notify(BUS_TOPICS[ENTITY_TYPE_SYNC].EDIT_TOPIC, syncToReturn, user));
@@ -306,7 +317,7 @@ export const syncEditContext = async (context, user, syncId, input) => {
 // endregion
 
 // region testing
-export const deleteQueues = async (context, user) => {
+export const deleteQueues = async (context: AuthContext, user: AuthUser) => {
   try { await unregisterConnector(INTERNAL_SYNC_QUEUE); } catch (e) { /* nothing */ }
   const platformConnectors = await connectors(context, user);
   for (let index = 0; index < platformConnectors.length; index += 1) {
@@ -317,6 +328,6 @@ export const deleteQueues = async (context, user) => {
 };
 // endregion
 
-export const queueDetails = async (connectorId) => {
-  return await getConnectorQueueDetails(connectorId);
+export const queueDetails = async (connectorId: string) => {
+  return getConnectorQueueDetails(connectorId);
 };

@@ -4718,6 +4718,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/eventsource@npm:1.1.15":
+  version: 1.1.15
+  resolution: "@types/eventsource@npm:1.1.15"
+  checksum: 10/52e024f5aebfd6bc166f2162d6e408cf788886007e571519c75f8c3623feaa3c5a74681fd3a128de6d21b28ef88dd683421264f10d5c98728959b99b1229b85e
+  languageName: node
+  linkType: hard
+
 "@types/express-serve-static-core@npm:4.17.31":
   version: 4.17.31
   resolution: "@types/express-serve-static-core@npm:4.17.31"
@@ -11612,6 +11619,7 @@ __metadata:
     "@types/bluebird": "npm:3.5.42"
     "@types/dot-object": "npm:2.1.6"
     "@types/ejs": "npm:3.1.5"
+    "@types/eventsource": "npm:1.1.15"
     "@types/express": "npm:4.17.21"
     "@types/graphql-upload": "npm:16.0.7"
     "@types/mime-types": "npm:2.1.4"
