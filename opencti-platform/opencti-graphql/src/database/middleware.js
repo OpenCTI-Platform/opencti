@@ -2883,7 +2883,9 @@ const createEntityRaw = async (context, user, rawInput, type, opts = {}) => {
   // region - Pre-Check
   const entitySetting = await getEntitySettingFromCache(context, type);
   const filledInput = fillDefaultValues(user, input, entitySetting);
-  await validateEntityAndRelationCreation(context, user, filledInput, type, entitySetting, opts);
+  if (!isUserHasCapability(user, KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS)) {
+    await validateEntityAndRelationCreation(context, user, filledInput, type, entitySetting, opts);
+  }
   // endregion
   const { fromRule } = opts;
   // We need to check existing dependencies

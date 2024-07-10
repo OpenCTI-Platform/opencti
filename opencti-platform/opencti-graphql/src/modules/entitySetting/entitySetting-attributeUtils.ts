@@ -9,6 +9,7 @@ import type { AttributeDefinition, RefAttribute } from '../../schema/attribute-d
 import { isNotEmptyField } from '../../database/utils';
 import { internalFindByIdsMapped } from '../../database/middleware-loader';
 import { extractRepresentative } from '../../database/entity-representative';
+import { isUserHasCapability, KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS } from '../../utils/access';
 
 // ==================================================================
 // Need a specific utils file to those functions because
@@ -123,5 +124,8 @@ export const getMandatoryAttributesForSetting = async (
   entitySetting: BasicStoreEntityEntitySetting
 ) => {
   const attributes = await getEntitySettingSchemaAttributes(context, user, entitySetting);
+  if (isUserHasCapability(user, KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS)) {
+    return attributes.filter((a) => a.mandatory && a.mandatoryType !== 'customizable').map((a) => a.name);
+  }
   return attributes.filter((a) => a.mandatory).map((a) => a.name);
 };
