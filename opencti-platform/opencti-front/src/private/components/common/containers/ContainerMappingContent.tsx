@@ -254,7 +254,7 @@ ContainerMappingContentComponentProps
   const [commitAnalysisAsk] = useApiMutation<ContainerSuggestedMappingContentAskSuggestedMappingMutation>(askSuggestedMappingMutation);
   const [commitAnalysisClear] = useApiMutation<ContainerSuggestedMappingContentClearSuggestedMappingMutation>(clearSuggestedMappingMutation);
 
-  const mappedEntities = (suggestedMappingData?.stixCoreObjectAnalysis?.mappedEntities ?? []);
+  const mappedEntities = (suggestedMappingData.stixCoreObjectAnalysis?.mappedEntities ?? []);
   const filterRemovedEntities = (mappedEntity: MappedEntityType) => {
     return !removedEntities.find((r) => r === mappedEntity.matchedEntity?.id);
   };
@@ -444,7 +444,7 @@ ContainerMappingContentComponentProps
     validateSuggestedMapping();
   };
 
-  const hasConnectorsAvailable = suggestedMappingData?.connectorsForAnalysis?.length && suggestedMappingData?.connectorsForAnalysis?.length > 0;
+  const hasConnectorsAvailable = suggestedMappingData.connectorsForAnalysis?.length && suggestedMappingData.connectorsForAnalysis?.length > 0;
   const suggestDisabled = !hasConnectorsAvailable || askingSuggestion;
   return (
     <div>
@@ -539,7 +539,7 @@ ContainerMappingContentComponentProps
                     <Switch
                       checked={inSuggestedMode}
                       onChange={() => { setInSuggestedMode(!inSuggestedMode); }}
-                      disabled={askingSuggestion || validating || suggestedMappingData?.stixCoreObjectAnalysis?.analysisStatus !== 'complete' }
+                      disabled={askingSuggestion || validating || suggestedMappingData.stixCoreObjectAnalysis?.analysisStatus !== 'complete' }
                     />
                   }
                   label={t_i18n('Show suggested mapping')}
