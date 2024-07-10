@@ -114,14 +114,14 @@ export const ChannelLine: FunctionComponent<ChannelLineProps> = ({
         onClick={(event) => (event.shiftKey
           ? onToggleShiftEntity(index, data, event)
           : onToggleEntity(data, event))
-          }
+        }
       >
         <Checkbox
           edge="start"
           checked={
                 (selectAll && !(data.id in (deSelectedElements || {})))
                 || data.id in (selectedElements || {})
-            }
+          }
           disableRipple={true}
         />
       </ListItemIcon>

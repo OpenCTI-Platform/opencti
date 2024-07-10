@@ -63,26 +63,26 @@ interface ToolLineProps {
 }
 
 const toolLineFragment = graphql`
-      fragment ToolLine_node on Tool {
-          id
-          name
-          created
-          modified
-          confidence
-          objectMarking {
-              id
-              definition_type
-              definition
-              x_opencti_order
-              x_opencti_color
-          }
-          objectLabel {
-              id
-              value
-              color
-          }
-      }
-  `;
+  fragment ToolLine_node on Tool {
+    id
+    name
+    created
+    modified
+    confidence
+    objectMarking {
+      id
+      definition_type
+      definition
+      x_opencti_order
+      x_opencti_color
+    }
+    objectLabel {
+      id
+      value
+      color
+    }
+  }
+`;
 
 export const ToolLine: FunctionComponent<ToolLineProps> = ({
   dataColumns,
@@ -112,14 +112,14 @@ export const ToolLine: FunctionComponent<ToolLineProps> = ({
         onClick={(event) => (event.shiftKey
           ? onToggleShiftEntity(index, data, event)
           : onToggleEntity(data, event))
-            }
+        }
       >
         <Checkbox
           edge="start"
           checked={
-                    (selectAll && !(data.id in (deSelectedElements || {})))
-                    || data.id in (selectedElements || {})
-                }
+            (selectAll && !(data.id in (deSelectedElements || {})))
+            || data.id in (selectedElements || {})
+          }
           disableRipple={true}
         />
       </ListItemIcon>

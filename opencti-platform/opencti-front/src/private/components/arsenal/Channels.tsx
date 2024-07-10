@@ -132,9 +132,10 @@ const Channels = () => {
                         key={idx}
                         dataColumns={dataColumns}
                       />
-                    ))}
+                    ))
+                  }
                 </>
-            }
+              }
             >
               <ChannelsLines
                 queryRef={queryRef}
@@ -169,10 +170,10 @@ const Channels = () => {
       <Breadcrumbs variant="list" elements={[{ label: t_i18n('Arsenal') }, { label: t_i18n('Channels'), current: true }]} />
       {renderLines()}
       {!FAB_REPLACED
-            && <Security needs={[KNOWLEDGE_KNUPDATE]}>
-              <ChannelCreation paginationOptions={queryPaginationOptions} />
-            </Security>
-        }
+        && <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <ChannelCreation paginationOptions={queryPaginationOptions} />
+        </Security>
+      }
     </ExportContextProvider>
   );
 };

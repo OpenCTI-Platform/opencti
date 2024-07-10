@@ -126,9 +126,10 @@ const Tools = () => {
                         key={idx}
                         dataColumns={dataColumns}
                       />
-                    ))}
+                    ))
+                  }
                 </>
-            }
+              }
             >
               <ToolsLines
                 queryRef={queryRef}
@@ -162,10 +163,10 @@ const Tools = () => {
       <Breadcrumbs variant="list" elements={[{ label: t_i18n('Arsenal') }, { label: t_i18n('Tools'), current: true }]} />
       {renderLines()}
       {!FAB_REPLACED
-            && <Security needs={[KNOWLEDGE_KNUPDATE]}>
-              <ToolCreation paginationOptions={queryPaginationOptions} />
-            </Security>
-        }
+        && <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <ToolCreation paginationOptions={queryPaginationOptions} />
+        </Security>
+      }
     </ExportContextProvider>
   );
 };

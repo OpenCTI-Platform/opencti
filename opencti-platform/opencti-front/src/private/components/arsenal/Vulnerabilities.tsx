@@ -16,6 +16,7 @@ import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import useHelper from '../../../utils/hooks/useHelper';
 import useEntityToggle from '../../../utils/hooks/useEntityToggle';
+import ExportContextProvider from '../../../utils/ExportContextProvider';
 
 const LOCAL_STORAGE_KEY = 'vulnerabilities';
 
@@ -140,9 +141,10 @@ const Vulnerabilities = () => {
                         key={idx}
                         dataColumns={dataColumns}
                       />
-                    ))}
+                    ))
+                  }
                 </>
-            }
+              }
             >
               <VulnerabilitiesLines
                 queryRef={queryRef}
@@ -173,13 +175,15 @@ const Vulnerabilities = () => {
   };
 
   return (
-    <>
+    <ExportContextProvider>
       <Breadcrumbs variant="list" elements={[{ label: t_i18n('Arsenal') }, { label: t_i18n('Vulnerabilities'), current: true }]} />
       {renderLines()}
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
-        <VulnerabilityCreation paginationOptions={queryPaginationOptions} />
-      </Security>
-    </>
+      {!FAB_REPLACED
+        && <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <VulnerabilityCreation paginationOptions={queryPaginationOptions} />
+        </Security>
+      }
+    </ExportContextProvider>
   );
 };
 

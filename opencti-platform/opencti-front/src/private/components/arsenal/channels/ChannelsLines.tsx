@@ -44,8 +44,7 @@ export const channelsLinesQuery = graphql`
       orderBy: $orderBy
       orderMode: $orderMode
       filters: $filters
-    )
-  }
+    )}
 `;
 
 const channelsLinesFragment = graphql`
