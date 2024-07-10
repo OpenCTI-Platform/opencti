@@ -102,9 +102,9 @@ const RootThreatActorIndividualComponent = ({
     queryRef,
   );
 
-  const isOverview = location.pathname === `/dashboard/threats/threat_actors_individual/${threatActorIndividual.id}`;
-  const paddingRight = getPaddingRight(location.pathname, threatActorIndividual.id, '/dashboard/threats/threat_actors_individual');
-  const link = `/dashboard/threats/threat_actors_individual/${threatActorIndividual.id}/knowledge`;
+  const isOverview = location.pathname === `/dashboard/threats/threat_actors_individual/${threatActorIndividualId}`;
+  const paddingRight = getPaddingRight(location.pathname, threatActorIndividualId, '/dashboard/threats/threat_actors_individual');
+  const link = `/dashboard/threats/threat_actors_individual/${threatActorIndividualId}/knowledge`;
   return (
     <>
       {threatActorIndividual ? (
