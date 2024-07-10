@@ -17,7 +17,6 @@ import { utcDate } from '../utils/format';
 import { schemaRelationsRefDefinition } from './schema-relationsRef';
 import { extendedErrors } from '../config/conf';
 import { isUserHasCapability, KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS } from '../utils/access';
-import type { Attributes } from '@opentelemetry/api';
 
 const ajv = new Ajv();
 
