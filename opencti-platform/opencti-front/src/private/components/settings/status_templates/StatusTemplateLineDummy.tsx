@@ -71,12 +71,23 @@ StatusTemplateLineDummyProps
                 height="100%"
               />
             </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.usages.width }}
+            >
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width="90%"
+                height="100%"
+              />
+            </div>
           </div>
         }
       />
       <ListItemSecondaryAction classes={{ root: classes.itemIconDisabled }}>
         <IconButton disabled={true} aria-haspopup="true" size="large">
-          <MoreVert />
+          <MoreVert/>
         </IconButton>
       </ListItemSecondaryAction>
     </ListItem>
