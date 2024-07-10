@@ -10,8 +10,6 @@ import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import useQueryLoading from 'src/utils/hooks/useQueryLoading';
 import { RootThreatActorGroupQuery } from '@components/threats/threat_actors_group/__generated__/RootThreatActorGroupQuery.graphql';
-import useForceUpdate from '@components/common/bulk/useForceUpdate';
-import BulkRelationDialogContainer from '@components/common/bulk/dialog/BulkRelationDialogContainer';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import { RootThreatActorsGroupSubscription } from '@components/threats/threat_actors_group/__generated__/RootThreatActorsGroupSubscription.graphql';
 import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreObjectContentRoot';
@@ -98,10 +96,7 @@ const RootThreatActorGroup = ({ queryRef, threatActorGroupId }: RootThreatActorG
     connectorsForImport,
   } = usePreloadedQuery<RootThreatActorGroupQuery>(ThreatActorGroupQuery, queryRef);
 
-  const { forceUpdate, handleForceUpdate } = useForceUpdate();
-
   const isOverview = location.pathname === `/dashboard/threats/threat_actors_group/${threatActorGroupId}`;
-  const isKnowledge = location.pathname.startsWith(`/dashboard/threats/threat_actors_group/${threatActorGroupId}/knowledge`);
   const paddingRight = getPaddingRight(location.pathname, threatActorGroupId, '/dashboard/threats/threat_actors_group');
   const link = `/dashboard/threats/threat_actors_group/${threatActorGroupId}/knowledge`;
   return (
@@ -196,14 +191,6 @@ const RootThreatActorGroup = ({ queryRef, threatActorGroupId }: RootThreatActorG
                   label={t_i18n('History')}
                 />
               </Tabs>
-              {isKnowledge && (
-                <BulkRelationDialogContainer
-                  stixDomainObjectId={threatActorGroup.id}
-                  stixDomainObjectName={threatActorGroup.name}
-                  stixDomainObjectType="Threat-Actor-Group"
-                  handleRefetch={handleForceUpdate}
-                />
-              )}
               {isOverview && (
                 <StixCoreObjectSimulationResult id={threatActorGroup.id} type="threat" />
               )}
@@ -223,11 +210,7 @@ const RootThreatActorGroup = ({ queryRef, threatActorGroupId }: RootThreatActorG
               />
               <Route
                 path="/knowledge/*"
-                element={
-                  <div key={forceUpdate}>
-                    <ThreatActorGroupKnowledge threatActorGroup={threatActorGroup} />
-                  </div>
-                }
+                element={<ThreatActorGroupKnowledge threatActorGroup={threatActorGroup} />}
               />
               <Route
                 path="/content/*"

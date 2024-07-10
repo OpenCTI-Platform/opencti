@@ -10,8 +10,6 @@ import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
-import BulkRelationDialogContainer from '@components/common/bulk/dialog/BulkRelationDialogContainer';
-import useForceUpdate from '@components/common/bulk/useForceUpdate';
 import StixCoreObjectSimulationResult from '../../common/stix_core_objects/StixCoreObjectSimulationResult';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
@@ -104,10 +102,7 @@ const RootThreatActorIndividualComponent = ({
     queryRef,
   );
 
-  const { forceUpdate, handleForceUpdate } = useForceUpdate();
-
   const isOverview = location.pathname === `/dashboard/threats/threat_actors_individual/${threatActorIndividual.id}`;
-  const isKnowledge = location.pathname.startsWith(`/dashboard/threats/threat_actors_individual/${threatActorIndividualId}/knowledge`);
   const paddingRight = getPaddingRight(location.pathname, threatActorIndividual.id, '/dashboard/threats/threat_actors_individual');
   const link = `/dashboard/threats/threat_actors_individual/${threatActorIndividual.id}/knowledge`;
   return (
@@ -200,14 +195,6 @@ const RootThreatActorIndividualComponent = ({
                   label={t_i18n('History')}
                 />
               </Tabs>
-              {isKnowledge && (
-                <BulkRelationDialogContainer
-                  stixDomainObjectId={threatActorIndividual.id}
-                  stixDomainObjectName={threatActorIndividual.name}
-                  stixDomainObjectType="Threat-Actor-Individual"
-                  handleRefetch={handleForceUpdate}
-                />
-              )}
               {isOverview && (
                 <StixCoreObjectSimulationResult id={threatActorIndividual.id} type="threat" />
               )}
@@ -227,11 +214,7 @@ const RootThreatActorIndividualComponent = ({
               />
               <Route
                 path="/knowledge/*"
-                element={
-                  <div key={forceUpdate}>
-                    <ThreatActorIndividualKnowledge threatActorIndividualData={threatActorIndividual} />
-                  </div>
-                }
+                element={<ThreatActorIndividualKnowledge threatActorIndividualData={threatActorIndividual} />}
               />
               <Route
                 path="/content/*"

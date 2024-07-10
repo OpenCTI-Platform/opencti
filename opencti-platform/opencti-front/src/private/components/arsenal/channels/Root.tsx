@@ -10,8 +10,6 @@ import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import useQueryLoading from 'src/utils/hooks/useQueryLoading';
-import useForceUpdate from '@components/common/bulk/useForceUpdate';
-import BulkRelationDialogContainer from '@components/common/bulk/dialog/BulkRelationDialogContainer';
 import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreObjectContentRoot';
 import Channel from './Channel';
 import ChannelKnowledge from './ChannelKnowledge';
@@ -95,9 +93,6 @@ const RootChannel = ({ queryRef, channelId }: RootChannelProps) => {
     connectorsForImport,
   } = usePreloadedQuery<RootChannelQuery>(channelQuery, queryRef);
 
-  const { forceUpdate, handleForceUpdate } = useForceUpdate();
-
-  const isKnowledge = location.pathname.startsWith(`/dashboard/arsenal/channels/${channelId}/knowledge`);
   const paddingRight = getPaddingRight(location.pathname, channelId, '/dashboard/arsenal/channels');
   const link = `/dashboard/arsenal/channels/${channelId}/knowledge`;
   return (
@@ -189,14 +184,6 @@ const RootChannel = ({ queryRef, channelId }: RootChannelProps) => {
                   label={t_i18n('History')}
                 />
               </Tabs>
-              {isKnowledge && (
-                <BulkRelationDialogContainer
-                  stixDomainObjectId={channel.id}
-                  stixDomainObjectName={channel.name}
-                  stixDomainObjectType="Channel"
-                  handleRefetch={handleForceUpdate}
-                />
-              )}
             </Box>
             <Routes>
               <Route
@@ -216,13 +203,7 @@ const RootChannel = ({ queryRef, channelId }: RootChannelProps) => {
               />
               <Route
                 path="/knowledge/*"
-                element={(
-                  <div key={forceUpdate}>
-                    <ChannelKnowledge
-                      channel={channel}
-                    />
-                  </div>
-                )}
+                element={<ChannelKnowledge channel={channel} />}
               />
               <Route
                 path="/content/*"

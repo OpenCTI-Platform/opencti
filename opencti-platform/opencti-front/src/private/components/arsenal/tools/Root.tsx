@@ -10,8 +10,6 @@ import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import useQueryLoading from 'src/utils/hooks/useQueryLoading';
-import useForceUpdate from '@components/common/bulk/useForceUpdate';
-import BulkRelationDialogContainer from '@components/common/bulk/dialog/BulkRelationDialogContainer';
 import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreObjectContentRoot';
 import Tool from './Tool';
 import ToolKnowledge from './ToolKnowledge';
@@ -97,9 +95,6 @@ const RootTool = ({ queryRef, toolId }: RootToolProps) => {
     connectorsForImport,
   } = usePreloadedQuery<RootToolQuery>(toolQuery, queryRef);
 
-  const { forceUpdate, handleForceUpdate } = useForceUpdate();
-
-  const isKnowledge = location.pathname.startsWith(`/dashboard/arsenal/tools/${toolId}/knowledge`);
   const paddingRight = getPaddingRight(location.pathname, toolId, '/dashboard/arsenal/tools');
   const link = `/dashboard/arsenal/tools/${toolId}/knowledge`;
   return (
@@ -190,14 +185,6 @@ const RootTool = ({ queryRef, toolId }: RootToolProps) => {
                   label={t_i18n('History')}
                 />
               </Tabs>
-              {isKnowledge && (
-                <BulkRelationDialogContainer
-                  stixDomainObjectId={tool.id}
-                  stixDomainObjectName={tool.name}
-                  stixDomainObjectType="Tool"
-                  handleRefetch={handleForceUpdate}
-                />
-              )}
             </Box>
             <Routes>
               <Route
@@ -217,11 +204,7 @@ const RootTool = ({ queryRef, toolId }: RootToolProps) => {
               />
               <Route
                 path="/knowledge/*"
-                element={(
-                  <div key={forceUpdate}>
-                    <ToolKnowledge tool={tool} />
-                  </div>
-                )}
+                element={<ToolKnowledge tool={tool} />}
               />
               <Route
                 path="/content/*"

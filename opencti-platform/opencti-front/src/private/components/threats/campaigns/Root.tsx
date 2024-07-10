@@ -9,8 +9,6 @@ import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import useQueryLoading from 'src/utils/hooks/useQueryLoading';
-import useForceUpdate from '@components/common/bulk/useForceUpdate';
-import BulkRelationDialogContainer from '@components/common/bulk/dialog/BulkRelationDialogContainer';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import { RootCampaignSubscription } from '@components/threats/campaigns/__generated__/RootCampaignSubscription.graphql';
 import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreObjectContentRoot';
@@ -97,13 +95,9 @@ const RootCampaign = ({ campaignId, queryRef }: RootCampaignProps) => {
     connectorsForImport,
   } = usePreloadedQuery<RootCampaignQuery>(campaignQuery, queryRef);
 
-  const { forceUpdate, handleForceUpdate } = useForceUpdate();
-
   const link = `/dashboard/threats/campaigns/${campaignId}/knowledge`;
   const isOverview = location.pathname === `/dashboard/threats/campaigns/${campaignId}`;
-  const isKnowledge = location.pathname.startsWith(`/dashboard/threats/campaigns/${campaignId}/knowledge`);
   const paddingRight = getPaddingRight(location.pathname, campaignId, '/dashboard/threats/campaigns');
-
   return (
     <>
       {campaign ? (
@@ -195,14 +189,6 @@ const RootCampaign = ({ campaignId, queryRef }: RootCampaignProps) => {
                   label={t_i18n('History')}
                 />
               </Tabs>
-              {isKnowledge && (
-                <BulkRelationDialogContainer
-                  stixDomainObjectId={campaignId}
-                  stixDomainObjectName={campaign.name}
-                  stixDomainObjectType="Campaign"
-                  handleRefetch={handleForceUpdate}
-                />
-              )}
               {isOverview && (
                 <StixCoreObjectSimulationResult id={campaign.id} type="threat" />
               )}
@@ -222,11 +208,7 @@ const RootCampaign = ({ campaignId, queryRef }: RootCampaignProps) => {
               />
               <Route
                 path="/knowledge/*"
-                element={
-                  <div key={forceUpdate}>
-                    <CampaignKnowledge campaign={campaign} />
-                  </div>
-                }
+                element={<CampaignKnowledge campaign={campaign} />}
               />
               <Route
                 path="/content/*"
