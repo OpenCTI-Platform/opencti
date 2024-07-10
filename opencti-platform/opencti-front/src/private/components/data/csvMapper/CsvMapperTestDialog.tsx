@@ -41,7 +41,7 @@ const CsvMapperTestDialog: FunctionComponent<CsvMapperTestDialogProps> = ({
   const [result, setResult] = useState<CsvMapperTestDialogQuery$data | undefined>(undefined);
   const [loading, setLoading] = useState<boolean>(false);
 
-  const onChange = async (field: string, v: string | File | undefined) => {
+  const onChange = async (field: string, v: string | File | undefined | null) => {
     if (field === 'file' && v instanceof File) {
       if (v.type === 'text/csv' || v.type === 'application/vnd.ms-excel') {
         const fileValue = await v.text();
