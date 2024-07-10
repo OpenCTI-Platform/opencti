@@ -33,7 +33,7 @@ const externalReferenceResolvers = {
       }
       return externalReference.url;
     },
-    references: (container, args, context) => references(context, context.user, container.id, args),
+    references: (externalReference, args, context) => references(context, context.user, externalReference.id, args),
     editContext: (externalReference) => fetchEditContext(externalReference.id),
     jobs: (externalReference, args, context) => worksForSource(context, context.user, externalReference.standard_id, args),
     connectors: (externalReference, { onlyAlive = false }, context) => connectorsForEnrichment(context, context.user, externalReference.entity_type, onlyAlive),

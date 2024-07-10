@@ -200,7 +200,7 @@ import {
   controlUpsertInputWithUserConfidence,
   controlUserConfidenceAgainstElement
 } from '../utils/confidence-level';
-import { buildEntityData, buildInnerRelation, buildRelationData } from './data-builder';
+import { buildEntityData, buildInnerRelation, buildRelationData, LIST_REFS } from './data-builder';
 import { deleteAllObjectFiles, moveAllFilesFromEntityToAnother, uploadToStorage } from './file-storage-helper';
 import { storeFileConverter } from './file-storage';
 
@@ -887,12 +887,26 @@ export const mergeInstanceWithInputs = (instance, inputs) => {
 };
 const partialInstanceWithInputs = (instance, inputs) => {
   const inputData = updatedInputsToData(instance, inputs);
-  return {
+  const baseElement = {
     _index: instance._index,
     internal_id: instance.internal_id,
     entity_type: instance.entity_type,
+    base_type: instance.base_type,
     ...inputData,
   };
+  if (baseElement.base_type === BASE_TYPE_RELATION) {
+    baseElement.from = instance.from;
+    baseElement.fromId = instance.fromId;
+    baseElement.fromRole = instance.fromRole;
+    baseElement.fromName = instance.fromName;
+    baseElement.fromType = instance.fromType;
+    baseElement.to = instance.to;
+    baseElement.toId = instance.toId;
+    baseElement.toRole = instance.toRole;
+    baseElement.toName = instance.toName;
+    baseElement.toType = instance.toType;
+  }
+  return baseElement;
 };
 const rebuildAndMergeInputFromExistingData = (rawInput, instance) => {
   const { key, value, object_path, operation = UPDATE_OPERATION_REPLACE } = rawInput; // value can be multi valued
@@ -1361,9 +1375,9 @@ const mergeEntitiesRaw = async (context, user, targetEntity, sourceEntities, tar
   // region Update elasticsearch
   // Elastic update with partial instance to prevent data override
   if (impactedInputs.length > 0) {
-    const updateAsInstance = partialInstanceWithInputs(targetEntity, impactedInputs);
-    await elUpdateElement(updateAsInstance);
-    logApp.info(`[OPENCTI] Merging attributes success for ${targetEntity.internal_id}`, { update: updateAsInstance });
+    const updateData = partialInstanceWithInputs(targetEntity, impactedInputs);
+    await elUpdateElement(context, user, updateData);
+    logApp.info(`[OPENCTI] Merging attributes success for ${targetEntity.internal_id}`, { update: updateData });
   }
 };
 
@@ -1840,6 +1854,7 @@ const updateAttributeRaw = async (context, user, instance, inputs, opts = {}) =>
 };
 
 export const updateAttributeMetaResolved = async (context, user, initial, inputs, opts = {}) => {
+  logApp.info('initial', { json: JSON.stringify(initial) });
   const { locks = [], impactStandardId = true } = opts;
   const updates = Array.isArray(inputs) ? inputs : [inputs];
   const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
@@ -2131,9 +2146,26 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
     }
     // endregion
     // Impacting information
-    if (impactedInputs.length > 0) {
+    if (impactedInputs.length > 0 || relationsToDelete.length > 0 || relationsToCreate.length > 0) {
+      for (let i = 0; i < LIST_REFS.length; i += 1) {
+        const inputRef = LIST_REFS[i];
+        const dbRef = schemaRelationsRefDefinition.getRelationRef(initial.entity_type, inputRef);
+        if (dbRef) {
+          logApp.info('updatedInstance', { json: JSON.stringify(updatedInstance) });
+          // console.log(initial.entity_type, inputRef, dbRef, schemaRelationsRefDefinition.getRelationsRef(initial.entity_type));
+          const relIds = [];
+          if (dbRef.multiple) {
+            const values = updatedInstance[inputRef] ?? [];
+            relIds.push(...values.map((o) => o.internal_id));
+          } else if (updatedInstance[inputRef]) {
+            relIds.push(updatedInstance[inputRef].internal_id);
+          }
+          // console.log(`rel_${dbRef.databaseName}.internal_id`, relIds);
+          impactedInputs.push({ key: `rel_${dbRef.databaseName}.internal_id`, value: [relIds] });
+        }
+      }
       const updateAsInstance = partialInstanceWithInputs(updatedInstance, impactedInputs);
-      await elUpdateElement(updateAsInstance);
+      await elUpdateElement(context, user, updateAsInstance);
     }
     if (relationsToDelete.length > 0) {
       await elDeleteElements(context, user, relationsToDelete);
@@ -2762,8 +2794,8 @@ export const createRelationRaw = async (context, user, rawInput, opts = {}) => {
 
   // Build lock ids
   const inputIds = getInputIds(relationshipType, resolvedInput, fromRule);
-  if (isImpactedTypeAndSide(relationshipType, ROLE_FROM)) inputIds.push(from.internal_id);
-  if (isImpactedTypeAndSide(relationshipType, ROLE_TO)) inputIds.push(to.internal_id);
+  // if (isImpactedTypeAndSide(relationshipType, ROLE_FROM)) inputIds.push(from.internal_id);
+  // if (isImpactedTypeAndSide(relationshipType, ROLE_TO)) inputIds.push(to.internal_id);
   const participantIds = inputIds.filter((e) => !locks.includes(e));
   try {
     // Try to get the lock in redis

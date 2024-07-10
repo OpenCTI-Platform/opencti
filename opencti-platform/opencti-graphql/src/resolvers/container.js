@@ -49,6 +49,9 @@ const containerResolvers = {
     objects: (container, args, context) => objects(context, context.user, container.id, args),
     relatedContainers: (container, args, context) => relatedContainers(context, context.user, container.id, args),
   },
+  StixObjectOrStixRelationshipRefConnection: {
+    edges: (c) => c.edges.map((e) => ({ ...e, types: ['manual'] }))
+  },
   // TODO Reactivate after official release of graphQL 17
   // StixObjectOrStixRelationshipRefConnection: {
   //   edges: async function* generateEdges(connection) {

@@ -52,7 +52,7 @@ import {
   RELATION_OBJECT_ASSIGNEE,
   RELATION_OBJECT_LABEL,
   RELATION_OBJECT_MARKING,
-  RELATION_OBJECT_PARTICIPANT,
+  RELATION_OBJECT_PARTICIPANT
 } from '../schema/stixRefRelationship';
 import {
   ABSTRACT_BASIC_RELATIONSHIP,
@@ -69,7 +69,6 @@ import {
   REL_INDEX_PREFIX,
   RULE_PREFIX
 } from '../schema/general';
-import { isModifiedObject, isUpdatedAtObject, } from '../schema/fieldDataAdapter';
 import { getParentTypes, keepMostRestrictiveTypes } from '../schema/schemaUtils';
 import {
   ATTRIBUTE_ABSTRACT,
@@ -148,6 +147,7 @@ import {
   dateMapping,
   iAliasedIds,
   internalId,
+  keywordMapping,
   longStringFormats,
   numericMapping,
   shortMapping,
@@ -720,7 +720,31 @@ const denormalizeRelationsMappingGenerator = () => {
       }
     };
   }
-  return schemaProperties;
+  return {
+    ...schemaProperties,
+    denorm_id: keywordMapping,
+    denorm_role: keywordMapping,
+    denorm_type: keywordMapping,
+    relation_genre: keywordMapping,
+    element_to_denorm: {
+      type: 'join',
+      relations: {
+        element: 'denorm'
+      }
+    },
+    // element_to_source: {
+    //   type: 'join',
+    //   relations: {
+    //     element: 'source'
+    //   }
+    // },
+    // element_to_target: {
+    //   type: 'join',
+    //   relations: {
+    //     element: 'target'
+    //   }
+    // }
+  };
 };
 const attributesMappingGenerator = () => {
   const entityAttributes = schemaAttributesDefinition.getAllAttributes();
@@ -1861,7 +1885,7 @@ const buildFieldForQuery = (field) => {
     ? field
     : `${field}.keyword`;
 };
-const buildLocalMustFilter = async (validFilter) => {
+const buildLocalMustFilter = async (context, user, validFilter) => {
   const valuesFiltering = [];
   const noValuesFiltering = [];
   const { key, values, nested, operator = 'eq', mode: localFilterMode = 'or' } = validFilter;
@@ -1873,6 +1897,72 @@ const buildLocalMustFilter = async (validFilter) => {
   const dontHandleMultipleKeys = nested || operator === 'nil' || operator === 'not_nil';
   if (dontHandleMultipleKeys && arrayKeys.length > 1) {
     throw UnsupportedError('Filter must have only one field', { keys: arrayKeys, operator });
+  }
+  // 01. Handle stix relationships
+  for (let keyIndex = 0; keyIndex < arrayKeys.length; keyIndex += 1) {
+    let localKey = arrayKeys[keyIndex];
+    let localValues = values;
+    if (localKey.startsWith(REL_INDEX_PREFIX) && !localKey.includes(RELATION_OBJECT_MARKING) && !localKey.includes(RELATION_GRANTED_TO)) {
+      localValues = [
+        { key: 'id', values },
+        { key: 'relationship_type', values: [localKey.substring(4).split('.')[0]] },
+        { key: 'role', values: ['*'] },
+      ];
+      localKey = INSTANCE_REGARDING_OF;
+    }
+    if (localKey === INSTANCE_REGARDING_OF) {
+      const regardingIds = localValues.find((v) => v.key === 'id')?.values ?? [];
+      const regardingTypes = localValues.find((v) => v.key === 'relationship_type')?.values ?? [];
+      // const regardingRoles = localValues.find((v) => v.key === 'role')?.values ?? [];
+      const restrictionOptions = { includeAuthorities: true }; // By default include authorized through capabilities
+      // If an admin ask for a specific element, there is no need to ask him to explicitly extends his visibility to doing it.
+      const markingRestrictions = await buildDataRestrictions(context, user, restrictionOptions);
+      const regardingMust = [{
+        terms: {
+          denorm_id: regardingIds
+        }
+      }];
+      // regardingMust.push({
+      //   nested: {
+      //     path: 'connections',
+      //     query: {
+      //       wildcard: {
+      //         'connections.role.keyword': {
+      //           value: `*_${regardingRoles.length > 0 ? regardingRoles[0] : 'from'}`
+      //         }
+      //       }
+      //     }
+      //   }
+      // });
+      regardingMust.push(...markingRestrictions.must);
+      if (regardingTypes.length > 0) {
+        regardingMust.push({
+          term: {
+            denorm_type: {
+              value: regardingTypes[0]
+            }
+          }
+        });
+      }
+      valuesFiltering.push({
+        has_child: {
+          type: 'denorm',
+          query: {
+            bool: {
+              must: regardingMust
+            }
+          }
+        }
+      });
+    }
+  }
+  if (valuesFiltering.length > 0) {
+    return {
+      bool: {
+        should: valuesFiltering,
+        minimum_should_match: localFilterMode === 'or' ? 1 : valuesFiltering.length,
+      },
+    };
   }
   // 01. Handle nested filters
   // TODO IF KEY is PART OF Rule we need to add extra fields search
@@ -2212,7 +2302,7 @@ const buildSubQueryForFilterGroup = async (context, user, inputFilters) => {
     const filter = filters[index];
     const isValidFilter = filter?.values || filter?.nested?.length > 0;
     if (isValidFilter) {
-      const localMustFilter = await buildLocalMustFilter(filter);
+      const localMustFilter = await buildLocalMustFilter(context, user, filter);
       localMustFilters.push(localMustFilter);
     }
   }
@@ -2656,33 +2746,33 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
         throw UnsupportedError('A filter with these multiple keys is not supported}', { keys: arrayKeys });
       }
       const filterKey = arrayKeys[0];
-      if (filterKey === INSTANCE_REGARDING_OF) {
-        const regardingFilters = [];
-        const id = filter.values.find((i) => i.key === 'id');
-        const type = filter.values.find((i) => i.key === 'relationship_type');
-        if (!id && !type) {
-          throw UnsupportedError('Id or relationship type are needed for this filtering key', { key: INSTANCE_REGARDING_OF });
-        }
-        const ids = id?.values;
-        const operator = id?.operator ?? 'eq';
-        if (type && type.operator && type.operator !== 'eq') {
-          throw UnsupportedError('regardingOf only support types equality restriction');
-        }
-        const types = type?.values;
-        const keys = isEmptyField(types) ? buildRefRelationKey('*', '*') : types.map((t) => buildRefRelationKey(t, '*'));
-        if (isEmptyField(ids)) {
-          keys.forEach((relKey) => {
-            regardingFilters.push({ key: [relKey], operator, values: ['EXISTS'] });
-          });
-        } else {
-          regardingFilters.push({ key: keys, operator, values: ids });
-        }
-        finalFilterGroups.push({
-          mode: filter.mode,
-          filters: regardingFilters,
-          filterGroups: []
-        });
-      }
+      // if (filterKey === INSTANCE_REGARDING_OF) {
+      //   const regardingFilters = [];
+      //   const id = filter.values.find((i) => i.key === 'id');
+      //   const type = filter.values.find((i) => i.key === 'relationship_type');
+      //   if (!id && !type) {
+      //     throw UnsupportedError('Id or relationship type are needed for this filtering key', { key: INSTANCE_REGARDING_OF });
+      //   }
+      //   const ids = id?.values;
+      //   const operator = id?.operator ?? 'eq';
+      //   if (type && type.operator && type.operator !== 'eq') {
+      //     throw UnsupportedError('regardingOf only support types equality restriction');
+      //   }
+      //   const types = type?.values;
+      //   const keys = isEmptyField(types) ? buildRefRelationKey('*', '*') : types.map((t) => buildRefRelationKey(t, '*'));
+      //   if (isEmptyField(ids)) {
+      //     keys.forEach((relKey) => {
+      //       regardingFilters.push({ key: [relKey], operator, values: ['EXISTS'] });
+      //     });
+      //   } else {
+      //     regardingFilters.push({ key: keys, operator, values: ids });
+      //   }
+      //   finalFilterGroups.push({
+      //     mode: filter.mode,
+      //     filters: regardingFilters,
+      //     filterGroups: []
+      //   });
+      // }
       if (filterKey === IDS_FILTER) {
         // the special filter key 'ids' take all the ids into account
         const { newFilter, newFilterGroup } = adaptFilterToIdsFilterKey(filter);
@@ -2830,6 +2920,14 @@ const elQueryBodyBuilder = async (context, user, options) => {
   const accessMust = markingRestrictions.must;
   const accessMustNot = markingRestrictions.must_not;
   const mustFilters = [];
+  // if (options.parent) {
+  //   mustFilters.push({
+  //     has_child: {
+  //       type: 'denorm',
+  //       query: { term: { 'denorm_internal_id.keyword': { value: options.parent } } },
+  //     }
+  //   });
+  // }
   // Add special keys to filters
   const specialFiltersContent = [];
   if (ids.length > 0 || startDate || endDate || (types !== null && types.length > 0)) {
@@ -2914,7 +3012,7 @@ const elQueryBodyBuilder = async (context, user, options) => {
         must: [...accessMust, ...mustFilters],
         must_not: accessMustNot,
       },
-    },
+    }
   };
   if (!noSize) {
     body.size = first;
@@ -2933,6 +3031,7 @@ const elQueryBodyBuilder = async (context, user, options) => {
   if (searchAfter) {
     body.search_after = searchAfter;
   }
+  // console.log(JSON.stringify(body));
   return body;
 };
 export const elRawCount = async (query) => {
@@ -3756,16 +3855,19 @@ const prepareRelation = (thing) => {
   });
   return R.pipe(
     R.assoc('connections', connections),
+    R.assoc('_routing', thing.from.internal_id),
     R.dissoc(INTERNAL_TO_FIELD),
     R.dissoc(INTERNAL_FROM_FIELD),
     // Dissoc from
     R.dissoc('from'),
     R.dissoc('fromId'),
+    R.dissoc('fromName'),
     R.dissoc('fromRole'),
     R.dissoc('fromType'),
     // Dissoc to
     R.dissoc('to'),
     R.dissoc('toId'),
+    R.dissoc('toName'),
     R.dissoc('toRole'),
     R.dissoc('toType'),
   )(thing);
@@ -3794,88 +3896,80 @@ export const elIndexElements = async (context, user, indexingType, elements) => 
   const elIndexElementsFn = async () => {
     // 00. Relations must be transformed before indexing.
     const transformedElements = await prepareIndexing(elements);
-    // 01. Bulk the indexing of row elements
-    const body = transformedElements.flatMap((doc) => [
-      { index: { _index: doc._index, _id: doc.internal_id, retry_on_conflict: ES_RETRY_ON_CONFLICT } },
-      R.pipe(R.dissoc('_index'))(doc),
-    ]);
-    if (body.length > 0) {
-      meterManager.directBulk(body.length, { type: indexingType });
-      await elBulk({ refresh: true, timeout: BULK_TIMEOUT, body });
-    }
-    // 02. If relation, generate impacts for from and to sides
-    const cache = {};
-    const impactedEntities = R.pipe(
-      R.filter((e) => e.base_type === BASE_TYPE_RELATION),
-      R.map((e) => {
-        const { fromType, fromRole, toRole } = e;
-        const impacts = [];
-        // We impact target entities of the relation only if not global entities like
-        // MarkingDefinition (marking) / KillChainPhase (kill_chain_phase) / Label (tagging)
-        cache[e.fromId] = e.from;
-        cache[e.toId] = e.to;
-        const refField = isStixRefRelationship(e.entity_type) && isInferredIndex(e._index) ? ID_INFERRED : ID_INTERNAL;
-        const relationshipType = e.entity_type;
-        const isRelatedToFromObservable = isStixCyberObservable(fromType) && relationshipType === RELATION_RELATED_TO;
-        if (isImpactedRole(fromRole)) {
-          impacts.push({ refField, from: e.fromId, relationshipType, to: e.to, type: e.to.entity_type, side: 'from' });
+    // 01. Bulk the indexing of row elements (entities and relations).
+    const bodyElements = transformedElements.flatMap((doc) => {
+      // const indexDoc = {
+      //  _index: doc._index,
+      //  _id: doc.internal_id,
+      //  routing: doc._routing,
+      //  retry_on_conflict: ES_RETRY_ON_CONFLICT
+      // ;
+      // return [
+      //   { index: indexDoc },
+      //   R.pipe(R.dissoc('_index'), R.dissoc('_routing'))(doc),
+      // ];
+      return [
+        { update: { _index: doc._index, _id: doc.internal_id, routing: doc._routing, retry_on_conflict: ES_RETRY_ON_CONFLICT } },
+        {
+          doc: R.pipe(R.dissoc('_index'), R.dissoc('_routing'))(doc),
+          doc_as_upsert: true
         }
-        // Waiting for JRI work, we need to avoid impact rel on very large entities
-        // Slowing down the performances due to original misconception
-        if (isImpactedRole(toRole) && !isRelatedToFromObservable) {
-          impacts.push({ refField, from: e.toId, relationshipType, to: e.from, type: e.from.entity_type, side: 'to' });
-        }
-        return impacts;
-      }),
-      R.flatten,
-      R.groupBy((i) => i.from)
-    )(elements);
-    const elementsToUpdate = Object.keys(impactedEntities).map((entityId) => {
-      const entity = cache[entityId];
-      const targets = impactedEntities[entityId];
-      // Build document fields to update ( per relation type )
-      const targetsByRelation = R.groupBy((i) => `${i.relationshipType}|${i.refField}`, targets);
-      const targetsElements = R.map((relTypeAndField) => {
-        const [relType, refField] = relTypeAndField.split('|');
-        const data = targetsByRelation[relTypeAndField];
-        const resolvedData = R.map((d) => {
-          return { id: d.to.internal_id, side: d.side, type: d.type };
-        }, data);
-        return { relation: relType, field: refField, elements: resolvedData };
-      }, Object.keys(targetsByRelation));
-      // Create params and scripted update
-      const params = { updated_at: now() };
-      const sources = targetsElements.map((t) => {
-        const field = buildRefRelationKey(t.relation, t.field);
-        let script = `if (ctx._source['${field}'] == null) ctx._source['${field}'] = [];`;
-        script += `ctx._source['${field}'].addAll(params['${field}'])`;
-        if (isStixRefRelationship(t.relation)) {
-          const fromSide = R.find((e) => e.side === 'from', t.elements);
-          if (fromSide && isUpdatedAtObject(fromSide.type)) {
-            script += '; ctx._source[\'updated_at\'] = params.updated_at';
-          }
-          if (fromSide && isModifiedObject(fromSide.type)) {
-            script += '; ctx._source[\'modified\'] = params.updated_at';
-          }
-        }
-        return script;
-      });
-      const source = sources.length > 1 ? R.join(';', sources) : `${R.head(sources)};`;
-      for (let index = 0; index < targetsElements.length; index += 1) {
-        const targetElement = targetsElements[index];
-        params[buildRefRelationKey(targetElement.relation, targetElement.field)] = targetElement.elements.map((e) => e.id);
-      }
-      return { ...entity, id: entityId, data: { script: { source, params } } };
+      ];
     });
-    const bodyUpdate = elementsToUpdate.flatMap((doc) => [
-      { update: { _index: doc._index, _id: doc.id, retry_on_conflict: ES_RETRY_ON_CONFLICT } },
-      R.dissoc('_index', doc.data),
-    ]);
-    if (bodyUpdate.length > 0) {
-      meterManager.sideBulk(bodyUpdate.length, { type: indexingType });
-      const bulkPromise = elBulk({ refresh: true, timeout: BULK_TIMEOUT, body: bodyUpdate });
-      await Promise.all([bulkPromise]);
+    if (bodyElements.length > 0) {
+      meterManager.directBulk(bodyElements.length, { type: indexingType });
+      await elBulk({ refresh: true, timeout: BULK_TIMEOUT, body: bodyElements });
     }
+    // 02. Bulk indexing of relations denorm child
+    const bodyChildFrom = elements.filter((e) => (e.base_type === BASE_TYPE_RELATION)).map((e) => {
+      const { fromRole, toRole } = e;
+      const impacts = [];
+      if (isImpactedRole(fromRole)) {
+        // console.log(e);
+        impacts.push(...[
+          { update: { _index: e.from._index, _id: `${e.internal_id}_${e.from.internal_id}`, routing: e.from.internal_id, retry_on_conflict: ES_RETRY_ON_CONFLICT } },
+          {
+            doc: {
+              entity_type: 'denorm',
+              denorm_id: e.to.internal_id,
+              denorm_role: toRole,
+              denorm_type: e.entity_type,
+              'rel_object-marking.internal_id': e['rel_object-marking.internal_id'],
+              'rel_granted.internal_id': e['rel_granted.internal_id'],
+              element_to_denorm: { name: 'denorm', parent: e.from.internal_id }
+            },
+            doc_as_upsert: true
+          }
+        ]);
+      }
+      return impacts;
+    }).flat();
+    const bodyChildTo = elements.filter((e) => (e.base_type === BASE_TYPE_RELATION)).map((e) => {
+      const { fromRole, toRole } = e;
+      const impacts = [];
+      if (isImpactedRole(toRole)) {
+        impacts.push(...[
+          { update: { _index: e.to._index, _id: `${e.internal_id}_${e.to.internal_id}`, routing: e.to.internal_id, retry_on_conflict: ES_RETRY_ON_CONFLICT } },
+          {
+            doc: {
+              entity_type: 'denorm',
+              denorm_id: e.from.internal_id,
+              denorm_role: fromRole,
+              denorm_type: e.entity_type,
+              'rel_object-marking.internal_id': e['rel_object-marking.internal_id'],
+              'rel_granted.internal_id': e['rel_granted.internal_id'],
+              element_to_denorm: { name: 'denorm', parent: e.to.internal_id },
+            },
+            doc_as_upsert: true
+          },
+        ]);
+      }
+      return impacts;
+    }).flat();
+    // console.log(bodyChildFrom, bodyChildTo);
+    const promiseFrom = bodyChildFrom.length > 0 ? elBulk({ refresh: true, timeout: BULK_TIMEOUT, body: bodyChildFrom }) : Promise.resolve();
+    const promiseTo = bodyChildTo.length > 0 ? elBulk({ refresh: true, timeout: BULK_TIMEOUT, body: bodyChildTo }) : Promise.resolve();
+    await Promise.all([promiseFrom, promiseTo]);
     return transformedElements.length;
   };
   return telemetry(context, user, `INSERT ${indexingType}`, {
@@ -3960,11 +4054,13 @@ const elUpdateConnectionsOfElement = async (documentId, documentBody) => {
     throw DatabaseError('Error updating connections', { cause: err, documentId, body: documentBody });
   });
 };
-export const elUpdateElement = async (instance) => {
+export const elUpdateElement = async (context, user, instance) => {
   const esData = prepareElementForIndexing(instance);
   validateDataBeforeIndexing(esData);
   const dataToReplace = R.dissoc('representative', esData);
-  const replacePromise = elReplace(instance._index, instance.internal_id, { doc: dataToReplace });
+  // const replacePromise = elReplace(instance._index, instance.internal_id, { doc: dataToReplace });
+  const data = { _index: instance._index, base_type: instance.base_type, internal_id: instance.internal_id, ...dataToReplace };
+  const replacePromise = elIndexElements(context, user, 'update element', [data]);
   // If entity with a name, must update connections
   let connectionPromise = Promise.resolve();
   if (esData.name && isStixObject(instance.entity_type)) {
