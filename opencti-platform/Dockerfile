@@ -42,12 +42,12 @@ RUN set -ex; \
     apk add --no-cache git tini gcc g++ make musl-dev cargo python3 python3-dev postfix postfix-pcre \
     && rm -f /usr/lib/python3.11/EXTERNALLY-MANAGED \
     && rm -f /usr/lib/python3.12/EXTERNALLY-MANAGED \
-    && npm install -g node-gyp \
-&& yarn install
+    && npm install -g node-gyp
 
 COPY opencti-front /opt/opencti-build/opencti-front
 COPY opencti-graphql/config/schema/opencti.graphql /opt/opencti-build/opencti-graphql/config/schema/opencti.graphql
 
+RUN yarn install
 RUN yarn build:standalone
 
 
@@ -80,31 +80,16 @@ COPY opencti-graphql/src ./src
 COPY opencti-graphql/config ./config
 COPY opencti-graphql/script ./script
 
-ARG UID=10000
-ARG GID=10001
-ARG USERNAME="_opencti"
-
 ENV PYTHONUNBUFFERED=1
 ENV NODE_OPTIONS=--max_old_space_size=12288
 ENV NODE_ENV=production
 
-RUN set -ex \
-    ; addgroup -g "${GID}" -S "${USERNAME}" \
-    && adduser \
-        -h /opt/opencti \
-        -g "OpenCTI privsep user" \
-        -s "/sbin/nologin" \
-        -G "${USERNAME}" \
-        -S \
-        -u "${UID}" \
-        "${USERNAME}" \
-    && install -o "${UID}" -g "${GID}" -m 0755 -d '/opt/opencti/logs' \
-    && install -o "${UID}" -g "${GID}" -m 0755 -d '/opt/opencti/telemetry' \
-    && install -o "${UID}" -g "${GID}" -m 0755 -d '/opt/opencti/.support'
+RUN set -ex; \
+    install -m 0777 -d '/opt/opencti/logs' \
+    && install -m 0777 -d '/opt/opencti/telemetry' \
+    && install -m 0777 -d '/opt/opencti/.support'
 
 VOLUME ["/opt/opencti/logs", "/opt/opencti/telemetry", "/opt/opencti/.support"]
-
-USER "${USERNAME}"
 
 ENTRYPOINT ["/sbin/tini", "--"]
 CMD ["node", "build/back.js"]
