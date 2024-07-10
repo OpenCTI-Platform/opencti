@@ -2005,6 +2005,7 @@ export type CaseEdge = {
 
 export type CaseIncident = BasicObject & Case & Container & StixCoreObject & StixDomainObject & StixObject & {
   __typename?: 'CaseIncident';
+  authorized_members?: Maybe<Array<MemberAccess>>;
   avatar?: Maybe<OpenCtiFile>;
   cases?: Maybe<CaseConnection>;
   confidence?: Maybe<Scalars['Int']['output']>;
@@ -30997,6 +30998,7 @@ export type CaseEdgeResolvers<ContextType = any, ParentType extends ResolversPar
 }>;
 
 export type CaseIncidentResolvers<ContextType = any, ParentType extends ResolversParentTypes['CaseIncident'] = ResolversParentTypes['CaseIncident']> = ResolversObject<{
+  authorized_members?: Resolver<Maybe<Array<ResolversTypes['MemberAccess']>>, ParentType, ContextType>;
   avatar?: Resolver<Maybe<ResolversTypes['OpenCtiFile']>, ParentType, ContextType>;
   cases?: Resolver<Maybe<ResolversTypes['CaseConnection']>, ParentType, ContextType, Partial<CaseIncidentCasesArgs>>;
   confidence?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;

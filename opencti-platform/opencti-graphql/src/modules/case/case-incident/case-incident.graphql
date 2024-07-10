@@ -137,6 +137,7 @@ type CaseIncident implements BasicObject & StixObject & StixCoreObject & StixDom
   response_types: [String!]
   severity: String
   priority: String
+  authorized_members: [MemberAccess!]
 }
 
 # Ordering

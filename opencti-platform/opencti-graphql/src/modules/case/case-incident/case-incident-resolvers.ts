@@ -3,6 +3,7 @@ import { buildRefRelationKey } from '../../../schema/general';
 import { RELATION_OBJECT_ASSIGNEE } from '../../../schema/stixRefRelationship';
 import { stixDomainObjectDelete } from '../../../domain/stixDomainObject';
 import { addCaseIncident, caseIncidentContainsStixObjectOrStixRelationship, findAll, findById } from './case-incident-domain';
+import { getAuthorizedMembers } from '../../../utils/authorizedMembers';
 
 const caseIncidentResolvers: Resolvers = {
   Query: {
@@ -11,6 +12,9 @@ const caseIncidentResolvers: Resolvers = {
     caseIncidentContainsStixObjectOrStixRelationship: (_, args, context) => {
       return caseIncidentContainsStixObjectOrStixRelationship(context, context.user, args.id, args.stixObjectOrStixRelationshipId);
     },
+  },
+  CaseIncident: {
+    authorized_members: (caseIncidentResponse, _, context) => getAuthorizedMembers(context, context.user, caseIncidentResponse),
   },
   CaseIncidentsOrdering: {
     creator: 'creator_id',
