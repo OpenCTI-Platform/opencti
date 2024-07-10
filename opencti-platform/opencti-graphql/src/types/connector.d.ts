@@ -10,5 +10,5 @@ export interface ConnectorInfo {
 
 export interface StoreConnector extends StoreEntity {
   active: boolean,
-  connectorInfo: ConnectorInfo,
+  connector_info: ConnectorInfo,
 }

@@ -1,10 +1,9 @@
-import EventSource from 'eventsource';
 import { createEntity, deleteElementById, internalDeleteElementById, patchAttribute, updateAttribute } from '../database/middleware';
 import { type GetHttpClient, getHttpClient } from '../utils/http-client';
 import { completeConnector, connector, connectors, connectorsFor } from '../database/repository';
 import { getConnectorQueueDetails, purgeConnectorQueues, registerConnectorQueues, unregisterConnector, unregisterExchanges } from '../database/rabbitmq';
 import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_SYNC, ENTITY_TYPE_WORK } from '../schema/internalObject';
-import { FunctionalError, UnsupportedError, ValidationError } from '../config/errors';
+import { FunctionalError, ValidationError } from '../config/errors';
 import { validateFilterGroupForStixMatch } from '../utils/filtering/filtering-stix/stix-filtering';
 import { isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
 import { now } from '../utils/format';
@@ -18,9 +17,10 @@ import { publishUserAction } from '../listener/UserActionListener';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { ConnectorInfo } from '../types/connector';
 import type { BasicStoreEntityConnector } from '../connector/connector';
-import type { EditInput, RegisterConnectorInput, Synchronizer, SynchronizerAddInput, SynchronizerFetchInput, EditContext } from '../generated/graphql';
-import { BUS_TOPICS, getPlatformHttpProxyAgent, logApp } from '../config/conf';
+import type { EditInput, RegisterConnectorInput, SynchronizerAddInput, SynchronizerFetchInput, EditContext, MutationSynchronizerTestArgs } from '../generated/graphql';
+import { BUS_TOPICS, logApp } from '../config/conf';
 import { deleteWorkForConnector } from './work';
+import { testSync as testSyncUtils } from './connector-utils';
 
 // region connectors
 export const connectorForWork = async (context: AuthContext, user: AuthUser, id: string) => {
@@ -54,14 +54,21 @@ export const pingConnector = async (context: AuthContext, user: AuthUser, id: st
   // Patch the updated_at and the state if needed
   let connectorPatch;
 
-  if (conn.connector_state_reset === true) {
+  if (conn.connector_state_reset) {
     connectorPatch = { connector_state_reset: false };
   } else {
     connectorPatch = { updated_at: creation, connector_state: state };
   }
 
   if (connectorInfo) {
-    connectorPatch = { ...connectorPatch, connectorInfo };
+    const connectorInfoData: ConnectorInfo = {
+      run_and_terminate: connectorInfo.run_and_terminate,
+      buffering: connectorInfo.buffering,
+      queue_threshold: connectorInfo.queue_threshold,
+      queue_messages_size: connectorInfo.queue_messages_size,
+      next_run_datetime: connectorInfo.next_run_datetime,
+    };
+    connectorPatch = { ...connectorPatch, connector_info: connectorInfoData };
   }
   logApp.info('pingConnector, connectorPatch:', { connectorPatch });
   await patchAttribute(context, user, id, ENTITY_TYPE_CONNECTOR, connectorPatch);
@@ -193,50 +200,11 @@ export const findSyncById = (context: AuthContext, user: AuthUser, syncId: strin
 export const findAllSync = async (context: AuthContext, user: AuthUser, opts = {}) => {
   return listEntities(context, SYSTEM_USER, [ENTITY_TYPE_SYNC], opts);
 };
-export const httpBase = (baseUri: string) => (baseUri.endsWith('/') ? baseUri : `${baseUri}/`);
-export const createSyncHttpUri = (sync: SynchronizerAddInput, state: string, testMode: boolean) => {
-  const { uri, stream_id: stream, no_dependencies: dep, listen_deletion: del } = sync;
-  if (testMode) {
-    logApp.debug(`[OPENCTI] Testing sync url with ${httpBase(uri)}stream/${stream}`);
-    return `${httpBase(uri)}stream/${stream}`;
-  }
-  const from = isEmptyField(state) ? '0-0' : state;
-  const recover = sync.recover ?? now();
-  let streamUri = `${httpBase(uri)}stream/${stream}?from=${from}&listen-delete=${del}&no-dependencies=${dep}`;
-  if (recover) {
-    streamUri += `&recover=${recover}`;
-  }
-  return streamUri;
+
+export const testSync = async (context: AuthContext, user: AuthUser, sync: MutationSynchronizerTestArgs) => {
+  return testSyncUtils(context, user, sync);
 };
-export const testSync = async (context: AuthContext, user: AuthUser, sync: Synchronizer) => {
-  const eventSourceUri = createSyncHttpUri(sync, now(), true);
-  const { token, ssl_verify = false } = sync;
-  return new Promise((resolve, reject) => {
-    try {
-      const eventSource = new EventSource(eventSourceUri, {
-        rejectUnauthorized: ssl_verify ?? false,
-        headers: !isEmptyField(token) ? { authorization: `Bearer ${token}` } : undefined,
-        proxy: getPlatformHttpProxyAgent(eventSourceUri)
-      });
-      eventSource.on('connected', (d: any) => {
-        const { connectionId } = JSON.parse(d.data);
-        if (connectionId) {
-          eventSource.close();
-          resolve('Connection success');
-        } else {
-          eventSource.close();
-          reject(UnsupportedError('Server cant generate connection id'));
-        }
-      });
-      eventSource.on('error', (e: any) => {
-        eventSource.close();
-        reject(UnsupportedError(`Cant connect to remote opencti, ${e.message}`));
-      });
-    } catch (e) {
-      reject(UnsupportedError('Cant connect to remote opencti, check your configuration'));
-    }
-  });
-};
+
 export const fetchRemoteStreams = async (context: AuthContext, user: AuthUser, input:SynchronizerFetchInput) => {
   try {
     const query = `
@@ -264,9 +232,9 @@ export const fetchRemoteStreams = async (context: AuthContext, user: AuthUser, i
     throw ValidationError('uri', { message: 'Error getting the streams from remote OpenCTI', cause: e });
   }
 };
-export const registerSync = async (context: AuthContext, user: AuthUser, syncData: Synchronizer) => {
+export const registerSync = async (context: AuthContext, user: AuthUser, syncData: SynchronizerAddInput) => {
   const data = { ...syncData, running: false };
-  await testSync(context, user, data);
+  await testSyncUtils(context, user, data);
   const { element, isCreation } = await createEntity(context, user, data, ENTITY_TYPE_SYNC, { complete: true });
   if (isCreation) {
     await publishUserAction({
