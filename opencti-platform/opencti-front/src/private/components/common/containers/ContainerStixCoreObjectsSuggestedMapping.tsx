@@ -145,46 +145,44 @@ ContainerStixCoreObjectsSuggestedMappingProps
   });
 
   return (
-    <div>
-      <div style={{ margin: 0, padding: '15px 0 0 0' }} ref={ref} >
-        {askingSuggestion
-          ? <Loader variant={LoaderVariant.inElement}/>
-          : (
-            <ListLines
-              helpers={helpers}
-              sortBy={sortBy}
-              orderAsc={orderAsc}
+    <div ref={ref} >
+      {askingSuggestion
+        ? <Loader variant={LoaderVariant.inElement}/>
+        : (
+          <ListLines
+            helpers={helpers}
+            sortBy={sortBy}
+            orderAsc={orderAsc}
+            dataColumns={dataColumns}
+            iconExtension={false}
+            filters={filters}
+            availableEntityTypes={['Stix-Core-Object']}
+            keyword={searchTerm}
+            secondaryAction={true}
+            numberOfElements={numberOfElements}
+            noPadding={true}
+            mappingCount={suggestedEntitiesWithNode.length}
+            enableMappingView
+            disableCards
+          >
+            <ListLinesContent
+              initialLoading={false}
+              loadMore={() => {}}
+              hasMore={() => {}}
+              isLoading={() => false}
+              dataList={suggestedEntitiesWithNode}
+              globalCount={suggestedEntitiesWithNode.length}
+              LineComponent={ContainerStixCoreObjectsSuggestedMappingLine}
+              DummyLineComponent={ContainerStixCoreObjectsSuggestedMappingLineDummy}
               dataColumns={dataColumns}
-              iconExtension={false}
-              filters={filters}
-              availableEntityTypes={['Stix-Core-Object']}
-              keyword={searchTerm}
-              secondaryAction={true}
-              numberOfElements={numberOfElements}
-              noPadding={true}
-              mappingCount={suggestedEntitiesWithNode.length}
-              enableMappingView
-              disableCards
-            >
-              <ListLinesContent
-                initialLoading={false}
-                loadMore={() => {}}
-                hasMore={() => {}}
-                isLoading={() => false}
-                dataList={suggestedEntitiesWithNode}
-                globalCount={suggestedEntitiesWithNode.length}
-                LineComponent={ContainerStixCoreObjectsSuggestedMappingLine}
-                DummyLineComponent={ContainerStixCoreObjectsSuggestedMappingLineDummy}
-                dataColumns={dataColumns}
-                contentMappingCount={suggestedMappingCount}
-                handleRemoveSuggestedMappingLine={handleRemoveSuggestedMappingLine}
-                height={height}
-                containerRef={ref}
-              />
-            </ListLines>
-          )
+              contentMappingCount={suggestedMappingCount}
+              handleRemoveSuggestedMappingLine={handleRemoveSuggestedMappingLine}
+              height={height}
+              containerRef={ref}
+            />
+          </ListLines>
+        )
         }
-      </div>
     </div>
   );
 };

@@ -597,7 +597,8 @@ ContainerMappingContentComponentProps
                 )}
               </Box>
             </Box>
-            {!inSuggestedMode && (
+            <div style={{ margin: 0, padding: '15px 0 0 0' }}>
+              {!inSuggestedMode && (
               <ContainerStixCoreObjectsMapping
                 container={containerData}
                 height={listHeight}
@@ -605,8 +606,8 @@ ContainerMappingContentComponentProps
                 contentMappingCount={mappedStringsCount}
                 enableReferences={enableReferences}
               />
-            )}
-            {inSuggestedMode && (
+              )}
+              {inSuggestedMode && (
               <ContainerStixCoreObjectsSuggestedMapping
                 container={containerData}
                 suggestedEntities={filteredSuggestedMappedEntities}
@@ -615,7 +616,8 @@ ContainerMappingContentComponentProps
                 askingSuggestion={askingSuggestion}
                 handleRemoveSuggestedMappingLine={handleRemoveSuggestedMappingLine}
               />
-            )}
+              )}
+            </div>
           </Paper>
         </Grid>
       </Grid>

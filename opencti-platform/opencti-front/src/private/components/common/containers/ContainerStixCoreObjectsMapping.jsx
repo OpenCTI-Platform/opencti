@@ -1,5 +1,4 @@
 import React from 'react';
-import makeStyles from '@mui/styles/makeStyles';
 import { ContainerStixCoreObjectsMappingLineDummy } from './ContainerStixCoreObjectsMappingLine';
 import ListLines from '../../../../components/list_lines/ListLines';
 import ContainerStixCoreObjectsMappingLines, { containerStixCoreObjectsMappingLinesQuery } from './ContainerStixCoreObjectsMappingLines';
@@ -8,15 +7,6 @@ import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStora
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { emptyFilterGroup } from '../../../../utils/filters/filtersUtils';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  container: {
-    margin: 0,
-    padding: '15px 0 0 0',
-  },
-}));
-
 const ContainerStixCoreObjectsMapping = ({
   container,
   height,
@@ -24,7 +14,6 @@ const ContainerStixCoreObjectsMapping = ({
   contentMappingCount,
   enableReferences,
 }) => {
-  const classes = useStyles();
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
@@ -106,57 +95,56 @@ const ContainerStixCoreObjectsMapping = ({
 
   return (
     <div>
-      <div className={classes.container}>
-        <ListLines
-          helpers={helpers}
-          sortBy={sortBy}
-          orderAsc={orderAsc}
-          dataColumns={dataColumns}
-          handleSort={handleSort}
-          handleSearch={handleSearch}
-          handleAddFilter={handleAddFilter}
-          handleRemoveFilter={handleRemoveFilter}
-          handleSwitchGlobalMode={handleSwitchGlobalMode}
-          handleSwitchLocalMode={handleSwitchLocalMode}
-          iconExtension={false}
-          filters={filters}
-          availableEntityTypes={['Stix-Core-Object']}
-          keyword={searchTerm}
-          secondaryAction={true}
-          numberOfElements={numberOfElements}
-          noPadding={true}
-          disableCards
-        >
-          {queryRef && (
-            <React.Suspense
-              fallback={
-                <>
-                  {Array(20)
-                    .fill(0)
-                    .map((_, idx) => (
-                      <ContainerStixCoreObjectsMappingLineDummy
-                        key={idx}
-                        dataColumns={dataColumns}
-                      />
-                    ))}
-                </>
+      <ListLines
+        helpers={helpers}
+        sortBy={sortBy}
+        orderAsc={orderAsc}
+        dataColumns={dataColumns}
+        handleSort={handleSort}
+        handleSearch={handleSearch}
+        handleAddFilter={handleAddFilter}
+        handleRemoveFilter={handleRemoveFilter}
+        handleSwitchGlobalMode={handleSwitchGlobalMode}
+        handleSwitchLocalMode={handleSwitchLocalMode}
+        iconExtension={false}
+        filters={filters}
+        availableEntityTypes={['Stix-Core-Object']}
+        keyword={searchTerm}
+        secondaryAction={true}
+        numberOfElements={numberOfElements}
+        noPadding={true}
+        disableCards
+      >
+        {queryRef && (
+        <React.Suspense
+          fallback={
+            <>
+              {Array(20)
+                .fill(0)
+                .map((_, idx) => (
+                  <ContainerStixCoreObjectsMappingLineDummy
+                    key={idx}
+                    dataColumns={dataColumns}
+                  />
+                ))}
+            </>
                   }
-            >
-              <ContainerStixCoreObjectsMappingLines
-                container={container}
-                queryRef={queryRef}
-                paginationOptions={paginationOptions}
-                searchTerm={searchTerm}
-                dataColumns={dataColumns}
-                setNumberOfElements={handleSetNumberOfElements}
-                height={height}
-                contentMappingData={contentMappingData}
-                contentMappingCount={contentMappingCount}
-                enableReferences={enableReferences}
-              />
-            </React.Suspense>
-          )}
-        </ListLines></div>
+        >
+          <ContainerStixCoreObjectsMappingLines
+            container={container}
+            queryRef={queryRef}
+            paginationOptions={paginationOptions}
+            searchTerm={searchTerm}
+            dataColumns={dataColumns}
+            setNumberOfElements={handleSetNumberOfElements}
+            height={height}
+            contentMappingData={contentMappingData}
+            contentMappingCount={contentMappingCount}
+            enableReferences={enableReferences}
+          />
+        </React.Suspense>
+        )}
+      </ListLines>
     </div>
   );
 };
