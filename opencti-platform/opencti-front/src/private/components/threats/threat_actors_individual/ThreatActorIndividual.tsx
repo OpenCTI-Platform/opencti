@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Fragment } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import makeStyles from '@mui/styles/makeStyles';
@@ -18,6 +18,7 @@ import {
   ThreatActorIndividual_ThreatActorIndividual$data,
   ThreatActorIndividual_ThreatActorIndividual$key,
 } from './__generated__/ThreatActorIndividual_ThreatActorIndividual.graphql';
+import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -156,6 +157,7 @@ const ThreatActorIndividualComponent = ({
     threatActorIndividualFragment,
     data,
   );
+  const threatActorIndividualOverviewLayoutCustomization = useOverviewLayoutCustomization(threatActorIndividual.entity_type);
   return (
     <>
       <Grid
@@ -164,55 +166,94 @@ const ThreatActorIndividualComponent = ({
         rowSpacing={3}
         classes={{ container: classes.gridContainer }}
       >
-        <Grid item xs={6}>
-          <ThreatActorIndividualDetails
-            threatActorIndividualData={threatActorIndividual}
-          />
-        </Grid>
-        <Grid item xs={6}>
-          <StixDomainObjectOverview stixDomainObject={threatActorIndividual} />
-        </Grid>
-        {hasDemographicsOrBiographics(threatActorIndividual) && (
-          <>
-            <Grid item xs={6}>
-              <ThreatActorIndividualDemographics
-                threatActorIndividual={threatActorIndividual}
-              />
-            </Grid>
-            <Grid item xs={6}>
-              <ThreatActorIndividualBiographics
-                threatActorIndividual={threatActorIndividual}
-              />
-            </Grid>
-          </>
-        )}
-        <Grid item xs={6}>
-          <SimpleStixObjectOrStixRelationshipStixCoreRelationships
-            stixObjectOrStixRelationshipId={threatActorIndividual.id}
-            stixObjectOrStixRelationshipLink={`/dashboard/threats/threat_actors_individual/${threatActorIndividual.id}/knowledge`}
-          />
-        </Grid>
-        <Grid item xs={6}>
-          <StixCoreObjectOrStixRelationshipLastContainers
-            stixCoreObjectOrStixRelationshipId={threatActorIndividual.id}
-          />
-        </Grid>
-        <Grid item xs={6}>
-          <StixCoreObjectExternalReferences
-            stixCoreObjectId={threatActorIndividual.id}
-          />
-        </Grid>
-        <Grid item xs={6}>
-          <StixCoreObjectLatestHistory
-            stixCoreObjectId={threatActorIndividual.id}
-          />
-        </Grid>
-        <Grid item xs={12}>
-          <StixCoreObjectOrStixCoreRelationshipNotes
-            stixCoreObjectOrStixCoreRelationshipId={threatActorIndividual.id}
-            defaultMarkings={threatActorIndividual.objectMarking ?? []}
-          />
-        </Grid>
+        {
+          Array.from(threatActorIndividualOverviewLayoutCustomization.entries()).map(([key, { width }]) => {
+            switch (key) {
+              case 'details':
+                return (
+                  <Grid key={'details'} item xs={width}>
+                    <ThreatActorIndividualDetails
+                      threatActorIndividualData={threatActorIndividual}
+                    />
+                  </Grid>
+                );
+              case 'basicInformation':
+                return (
+                  <Grid key={'basicInformation'} item xs={width}>
+                    <StixDomainObjectOverview stixDomainObject={threatActorIndividual} />
+                  </Grid>
+                );
+              case 'demographics':
+                return (
+                  <Fragment key={'demographics'} >
+                    { hasDemographicsOrBiographics(threatActorIndividual) && (
+                      <Grid key={'demographics'} item xs={width}>
+                        <ThreatActorIndividualDemographics
+                          threatActorIndividual={threatActorIndividual}
+                        />
+                      </Grid>
+                    ) }
+                  </Fragment>
+                );
+              case 'biographics':
+                return (
+                  <Fragment key={'biographics'} >
+                    { hasDemographicsOrBiographics(threatActorIndividual) && (
+                      <Grid item={true} xs={width}>
+                        <ThreatActorIndividualBiographics
+                          threatActorIndividual={threatActorIndividual}
+                        />
+                      </Grid>
+                    ) }
+                  </Fragment>
+                );
+              case 'latestCreatedRelationships':
+                return (
+                  <Grid key={'latestCreatedRelationships'} item xs={width}>
+                    <SimpleStixObjectOrStixRelationshipStixCoreRelationships
+                      stixObjectOrStixRelationshipId={threatActorIndividual.id}
+                      stixObjectOrStixRelationshipLink={`/dashboard/threats/threat_actors_individual/${threatActorIndividual.id}/knowledge`}
+                    />
+                  </Grid>
+                );
+              case 'latestContainers':
+                return (
+                  <Grid key={'latestContainers'} item xs={width}>
+                    <StixCoreObjectOrStixRelationshipLastContainers
+                      stixCoreObjectOrStixRelationshipId={threatActorIndividual.id}
+                    />
+                  </Grid>
+                );
+              case 'externalReferences':
+                return (
+                  <Grid key={'externalReferences'} item xs={width}>
+                    <StixCoreObjectExternalReferences
+                      stixCoreObjectId={threatActorIndividual.id}
+                    />
+                  </Grid>
+                );
+              case 'mostRecentHistory':
+                return (
+                  <Grid key={'mostRecentHistory'} item xs={width}>
+                    <StixCoreObjectLatestHistory
+                      stixCoreObjectId={threatActorIndividual.id}
+                    />
+                  </Grid>
+                );
+              case 'notes':
+                return (
+                  <Grid key={'notes'} item xs={width}>
+                    <StixCoreObjectOrStixCoreRelationshipNotes
+                      stixCoreObjectOrStixCoreRelationshipId={threatActorIndividual.id}
+                      defaultMarkings={threatActorIndividual.objectMarking ?? []}
+                    />
+                  </Grid>
+                );
+              default:
+                return null;
+            }
+          })
+        }
       </Grid>
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
         <ThreatActorIndividualEdition

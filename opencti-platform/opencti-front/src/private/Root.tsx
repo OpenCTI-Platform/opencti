@@ -3,6 +3,8 @@ import React, { FunctionComponent, useMemo } from 'react';
 import { graphql, PreloadedQuery, useFragment, usePreloadedQuery, useSubscription } from 'react-relay';
 import { AnalyticsProvider } from 'use-analytics';
 import Analytics from 'analytics';
+import { EntitySettingSettings_entitySetting$key } from '@components/settings/sub_types/entity_setting/__generated__/EntitySettingSettings_entitySetting.graphql';
+import { entitySettingFragment } from '@components/settings/sub_types/entity_setting/EntitySettingSettings';
 import { ConnectedIntlProvider } from '../components/AppIntlProvider';
 import { ConnectedThemeProvider } from '../components/AppThemeProvider';
 import { SYSTEM_BANNER_HEIGHT } from '../public/components/SystemBanners';
@@ -277,6 +279,7 @@ const RootComponent: FunctionComponent<RootComponentProps> = ({ queryRef }) => {
   const settings = useFragment<RootSettings$key>(rootSettingsFragment, settingsFragment);
   const me = useFragment<RootMe_data$key>(meUserFragment, meFragment);
 
+  const entitySettingsData = entitySettings?.edges?.map((setting) => (useFragment<EntitySettingSettings_entitySetting$key>(entitySettingFragment, setting.node)));
   const subConfig = useMemo(
     () => ({
       subscription,
@@ -303,6 +306,11 @@ const RootComponent: FunctionComponent<RootComponentProps> = ({ queryRef }) => {
   const bannerSettings = computeBannerSettings(settings);
   const platformModuleHelpers = platformModuleHelper(settings);
   const platformAnalyticsConfiguration = generateAnalyticsConfig(settings);
+  const overviewLayoutCustomizationEntries = entitySettingsData
+    ?.map(({ target_type, overviewLayoutCustomization }) => ({ key: target_type, values: overviewLayoutCustomization }))
+    .filter((entry) => !!entry.values)
+    .map(({ key: entityTypeKey, values: widgetsValues }) => [entityTypeKey, new Map(widgetsValues?.map(({ key, values }) => [key, values]))]);
+  const overviewLayoutCustomization = overviewLayoutCustomizationEntries ? new Map(overviewLayoutCustomizationEntries.map(([key, values]) => [key, values])) : new Map();
   return (
     <UserContext.Provider
       value={{
@@ -312,6 +320,7 @@ const RootComponent: FunctionComponent<RootComponentProps> = ({ queryRef }) => {
         entitySettings,
         platformModuleHelpers,
         schema,
+        overviewLayoutCustomization,
       }}
     >
       <StyledEngineProvider injectFirst={true}>

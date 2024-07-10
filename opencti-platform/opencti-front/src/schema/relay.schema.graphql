@@ -10321,6 +10321,15 @@ type DefaultValueAttribute {
   defaultValues: [DefaultValue!]!
 }
 
+type OverviewLayoutCustomizationParameter {
+  width: Int!
+}
+
+type OverviewLayoutCustomization {
+  key: String!
+  values: OverviewLayoutCustomizationParameter!
+}
+
 type EntitySetting implements InternalObject & BasicObject {
   id: ID!
   entity_type: String!
@@ -10338,6 +10347,7 @@ type EntitySetting implements InternalObject & BasicObject {
   availableSettings: [String!]!
   created_at: DateTime!
   updated_at: DateTime!
+  overviewLayoutCustomization: [OverviewLayoutCustomization!]
 }
 
 enum EntitySettingsOrdering {

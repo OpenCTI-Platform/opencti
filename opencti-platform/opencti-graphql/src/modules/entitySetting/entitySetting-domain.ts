@@ -17,6 +17,7 @@ import { INPUT_AUTHORIZED_MEMBERS } from '../../schema/general';
 import { containsValidAdmin } from '../../utils/authorizedMembers';
 import { FunctionalError } from '../../config/errors';
 import { getEntitySettingSchemaAttributes, getMandatoryAttributesForSetting } from './entitySetting-attributeUtils';
+import { schemaOverviewLayoutCustomization } from '../../schema/schema-overviewLayoutCustomization';
 
 // -- LOADING --
 
@@ -89,6 +90,10 @@ export const entitySettingEditField = async (context: AuthContext, user: AuthUse
     context_data: { id: entitySettingId, entity_type: element.target_type, input }
   });
   return notify(BUS_TOPICS[ENTITY_TYPE_ENTITY_SETTING].EDIT_TOPIC, element, user);
+};
+
+export const getOverviewLayoutCustomization = (entitySetting: BasicStoreEntityEntitySetting) => {
+  return entitySetting.overviewLayoutCustomization ?? schemaOverviewLayoutCustomization.get(entitySetting.target_type);
 };
 
 export const entitySettingsEditField = async (context: AuthContext, user: AuthUser, entitySettingIds: string[], input: EditInput[]) => {
