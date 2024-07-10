@@ -37,6 +37,16 @@ export const queryAsUserWithSuccess = async (client: AxiosInstance, request: { q
 };
 
 /**
+ * Execute the query as some User, and just return response (no validation).
+ * @param client
+ * @param request
+ */
+export const queryAsUser = async (client: AxiosInstance, request: { query: any, variables: any }) => {
+  const result = await executeInternalQuery(client, print(request.query), request.variables);
+  return result;
+};
+
+/**
  * Execute the query as some User (see testQuery.ts), and verify that access is forbidden.
  * @param client
  * @param request
