@@ -299,14 +299,15 @@ ContainerMappingContentComponentProps
     setRemovedEntities([...removedEntities, matchedId]);
   };
 
+  const contentMappingData = decodeMappingData(content_mapping);
+  const mappedStrings = Object.keys(contentMappingData);
+  const mappedStringsCount = countMappingMatch(mappedStrings);
+
   const suggestedMappedStrings = suggestedMappingData.stixCoreObjectAnalysis?.mappedEntities
     ?.filter((e) => !removedEntities.find((r) => r === e.matchedEntity?.id))
     .map((e) => e?.matchedString);
   const suggestedMappingCount = countMappingMatch(suggestedMappedStrings ?? []);
-
-  const contentMappingData = decodeMappingData(content_mapping);
-  const mappedStrings = Object.keys(contentMappingData);
-  const mappedStringsCount = countMappingMatch(mappedStrings);
+  const filteredSuggestedMappedStrings = suggestedMappedStrings?.filter((s) => !mappedStrings.includes(s));
 
   const handleAskNewSuggestedMapping = () => {
     setValidating(false);
@@ -456,8 +457,8 @@ ContainerMappingContentComponentProps
             handleTextSelection={handleTextSelection}
             askAi={false}
             editionMode={false}
-            mappedStrings={inSuggestedMode ? [] : mappedStrings}
-            suggestedMappedStrings={inSuggestedMode ? suggestedMappedStrings : []}
+            mappedStrings={mappedStrings}
+            suggestedMappedStrings={inSuggestedMode ? filteredSuggestedMappedStrings : []}
           />
         </Grid>
 
