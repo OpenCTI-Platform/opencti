@@ -34,7 +34,6 @@ import {
   stixCoreObjectsMultiNumber,
   stixCoreObjectsMultiTimeSeries,
   stixCoreObjectsNumber,
-  stixCoreObjectsPaginated,
   stixCoreObjectsTimeSeries,
   stixCoreObjectsTimeSeriesByAuthor,
   stixCoreRelationships
@@ -61,7 +60,6 @@ const stixCoreObjectResolvers = {
     stixCoreObjectRaw: (_, { id }, context) => stixLoadByIdStringify(context, context.user, id),
     globalSearch: (_, args, context) => findAll(context, context.user, { ...args, globalSearch: true }),
     stixCoreObjects: (_, args, context) => findAll(context, context.user, args),
-    stixCoreObjectsRegardingOf: (_, args, context) => stixCoreObjectsPaginated(context, context.user, args),
     stixCoreObjectsTimeSeries: (_, args, context) => {
       if (args.authorId && args.authorId.length > 0) {
         return stixCoreObjectsTimeSeriesByAuthor(context, context.user, args);
