@@ -3435,7 +3435,6 @@ export type Connector = BasicObject & InternalObject & {
   connector_scope?: Maybe<Array<Scalars['String']['output']>>;
   connector_state?: Maybe<Scalars['String']['output']>;
   connector_state_reset?: Maybe<Scalars['Boolean']['output']>;
-  connector_status?: Maybe<ConnectorStatus>;
   connector_trigger_filters?: Maybe<Scalars['String']['output']>;
   connector_type?: Maybe<Scalars['String']['output']>;
   connector_user_id?: Maybe<Scalars['ID']['output']>;
@@ -3501,14 +3500,6 @@ export type ConnectorQueueDetails = {
   messages_number: Scalars['Float']['output'];
   messages_size: Scalars['Float']['output'];
 };
-
-export enum ConnectorStatus {
-  Active = 'ACTIVE',
-  Buffering = 'BUFFERING',
-  BufferingRunAndTerminate = 'BUFFERING_RUN_AND_TERMINATE',
-  Inactive = 'INACTIVE',
-  RunAndTerminate = 'RUN_AND_TERMINATE'
-}
 
 export enum ConnectorType {
   ExternalImport = 'EXTERNAL_IMPORT',
@@ -28948,7 +28939,6 @@ export type ResolversTypes = ResolversObject<{
   ConnectorInfoInput: ConnectorInfoInput;
   ConnectorMetadata: ResolverTypeWrapper<ConnectorMetadata>;
   ConnectorQueueDetails: ResolverTypeWrapper<ConnectorQueueDetails>;
-  ConnectorStatus: ConnectorStatus;
   ConnectorType: ConnectorType;
   ConstraintNumber: ResolverTypeWrapper<Scalars['ConstraintNumber']['output']>;
   ConstraintString: ResolverTypeWrapper<Scalars['ConstraintString']['output']>;
@@ -31473,7 +31463,6 @@ export type ConnectorResolvers<ContextType = any, ParentType extends ResolversPa
   connector_scope?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   connector_state?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   connector_state_reset?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
-  connector_status?: Resolver<Maybe<ResolversTypes['ConnectorStatus']>, ParentType, ContextType>;
   connector_trigger_filters?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   connector_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   connector_user_id?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;

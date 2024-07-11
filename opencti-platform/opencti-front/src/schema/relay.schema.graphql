@@ -1801,14 +1801,6 @@ type ConnectorQueueDetails {
   messages_size: Float!
 }
 
-enum ConnectorStatus {
-  ACTIVE
-  INACTIVE
-  RUN_AND_TERMINATE
-  BUFFERING
-  BUFFERING_RUN_AND_TERMINATE
-}
-
 type Connector implements BasicObject & InternalObject {
   id: ID!
   standard_id: String!
@@ -1829,7 +1821,6 @@ type Connector implements BasicObject & InternalObject {
   connector_user_id: ID
   connector_queue_details: ConnectorQueueDetails!
   connector_info: ConnectorInfo
-  connector_status: ConnectorStatus
   updated_at: DateTime
   created_at: DateTime
   config: ConnectorConfig
