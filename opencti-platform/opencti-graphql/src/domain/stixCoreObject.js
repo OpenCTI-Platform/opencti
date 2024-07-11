@@ -14,8 +14,7 @@ import {
   CONNECTOR_INTERNAL_ANALYSIS,
   CONNECTOR_INTERNAL_ENRICHMENT,
   ENTITY_TYPE_CONTAINER,
-  INPUT_EXTERNAL_REFS,
-  REL_INDEX_PREFIX
+  INPUT_EXTERNAL_REFS
 } from '../schema/general';
 import { RELATION_CREATED_BY, RELATION_EXTERNAL_REFERENCE, RELATION_OBJECT, RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
 import {
@@ -30,7 +29,7 @@ import { createWork, worksForSource, workToExportFile } from './work';
 import { pushToConnector } from '../database/rabbitmq';
 import { now } from '../utils/format';
 import { ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
-import { deleteFile, loadFile, getFileContent, storeFileConverter } from '../database/file-storage';
+import { deleteFile, getFileContent, loadFile, storeFileConverter } from '../database/file-storage';
 import { findById as documentFindById, paginatedForPathWithEnrichment } from '../modules/internal/document/document-domain';
 import { elCount, elFindByIds, elUpdateElement } from '../database/engine';
 import { generateStandardId, getInstanceIds } from '../schema/identifier';
@@ -297,11 +296,18 @@ export const stixCoreObjectsMultiNumber = (context, user, args) => {
   }));
 };
 
-export const stixCoreObjectsConnectedNumber = (stixCoreObject) => {
-  return Object.entries(stixCoreObject)
-    .filter(([key]) => key.startsWith(REL_INDEX_PREFIX))
-    .map(([, value]) => value.length)
-    .reduce((a, b) => a + b, 0);
+export const stixCoreObjectsConnectedNumber = (context, user, stixCoreObject) => {
+  const filters = {
+    mode: 'and',
+    filters: [{
+      key: [INSTANCE_REGARDING_OF],
+      values: [
+        { key: 'id', values: [stixCoreObject.id] },
+      ]
+    }],
+    filterGroups: [],
+  };
+  return elCount(context, user, READ_ENTITIES_INDICES, { filters });
 };
 
 export const stixCoreObjectsDistribution = async (context, user, args) => {
