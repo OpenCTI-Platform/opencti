@@ -21,6 +21,7 @@ import type { EditInput, RegisterConnectorInput, SynchronizerAddInput, Synchroni
 import { BUS_TOPICS, logApp } from '../config/conf';
 import { deleteWorkForConnector } from './work';
 import { testSync as testSyncUtils } from './connector-utils';
+import { ConnectorStatus } from '../generated/graphql';
 
 // region connectors
 export const connectorForWork = async (context: AuthContext, user: AuthUser, id: string) => {
@@ -41,23 +42,15 @@ export const computeWorkStatus = async (work: Work) => {
 export const connectorsForExport = async (context: AuthContext, user: AuthUser, scope = null, onlyAlive = false) => {
   return connectorsFor(context, user, CONNECTOR_INTERNAL_EXPORT_FILE, scope, onlyAlive);
 };
-export const pingConnector = async (context: AuthContext, user: AuthUser, id: string, state: string, connectorInfo: ConnectorInfo) => {
-  logApp.info('pingConnector, connectorInfo:', { connectorInfo });
-  const creation = now();
-  const conn = await storeLoadById(context, user, id, ENTITY_TYPE_CONNECTOR) as unknown as BasicStoreEntityConnector;
-  if (!conn) {
-    throw FunctionalError('No connector found with the specified ID', { id });
-  }
-  // Ensure queue are correctly setup
-  const scopes = conn.connector_scope ? conn.connector_scope.split(',') : [];
-  await registerConnectorQueues(conn.id, conn.name, conn.connector_type, scopes);
+
+export const updateConnectorWithConnectorInfo = async (context: AuthContext, user: AuthUser, connectorEntity: BasicStoreEntityConnector, state: string, connectorInfo: ConnectorInfo) => {
   // Patch the updated_at and the state if needed
   let connectorPatch;
 
-  if (conn.connector_state_reset) {
+  if (connectorEntity.connector_state_reset) {
     connectorPatch = { connector_state_reset: false };
   } else {
-    connectorPatch = { updated_at: creation, connector_state: state };
+    connectorPatch = { updated_at: now(), connector_state: state };
   }
 
   if (connectorInfo) {
@@ -68,10 +61,40 @@ export const pingConnector = async (context: AuthContext, user: AuthUser, id: st
       queue_messages_size: connectorInfo.queue_messages_size,
       next_run_datetime: connectorInfo.next_run_datetime,
     };
-    connectorPatch = { ...connectorPatch, connector_info: connectorInfoData };
+
+    let status: string;
+    if (connectorEntity.active) {
+      status = ConnectorStatus.Active;
+      if (connectorInfo.run_and_terminate && connectorInfo.buffering) {
+        status = ConnectorStatus.BufferingRunAndTerminate;
+      } else if (connectorInfo.run_and_terminate && !connectorInfo.buffering) {
+        status = ConnectorStatus.RunAndTerminate;
+      } else if (!connectorInfo.run_and_terminate && connectorInfo.buffering) {
+        status = ConnectorStatus.Buffering;
+      }
+    } else {
+      status = ConnectorStatus.Inactive;
+    }
+
+    connectorPatch = { ...connectorPatch, connector_info: connectorInfoData, connector_status: status.toString() };
   }
-  logApp.info('pingConnector, connectorPatch:', { connectorPatch });
-  await patchAttribute(context, user, id, ENTITY_TYPE_CONNECTOR, connectorPatch);
+  // FIXME need to add connector_state in patch
+
+  logApp.debug('pingConnector, connectorPatch:', { connectorPatch });
+  const patchResult = await patchAttribute(context, user, connectorEntity.id, ENTITY_TYPE_CONNECTOR, connectorPatch);
+  logApp.debug('pingConnector, connectorPatchpatchResult:', { patchResult });
+};
+
+export const pingConnector = async (context: AuthContext, user: AuthUser, id: string, state: string, connectorInfo: ConnectorInfo) => {
+  const connectorEntity = await storeLoadById(context, user, id, ENTITY_TYPE_CONNECTOR) as unknown as BasicStoreEntityConnector;
+  if (!connectorEntity) {
+    throw FunctionalError('No connector found with the specified ID', { id });
+  }
+  // Ensure queue are correctly setup
+  const scopes = connectorEntity.connector_scope ? connectorEntity.connector_scope.split(',') : [];
+  await registerConnectorQueues(connectorEntity.id, connectorEntity.name, connectorEntity.connector_type, scopes);
+
+  await updateConnectorWithConnectorInfo(context, user, connectorEntity, state, connectorInfo);
   return storeLoadById(context, user, id, 'Connector').then((data) => completeConnector(data));
 };
 export const resetStateConnector = async (context: AuthContext, user: AuthUser, id: string) => {

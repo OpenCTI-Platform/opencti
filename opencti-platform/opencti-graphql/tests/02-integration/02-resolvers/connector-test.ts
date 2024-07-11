@@ -3,6 +3,7 @@ import gql from 'graphql-tag';
 import { queryAsAdmin, USER_CONNECTOR, USER_EDITOR } from '../../utils/testQuery';
 import { queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
 import type { ConnectorInfo } from '../../../src/generated/graphql';
+import { ConnectorStatus } from '../../../src/generated/graphql';
 
 const CREATE_WORK_QUERY = gql`
   mutation workAdd($connectorId: String!, $friendlyName: String) {
@@ -205,7 +206,7 @@ describe('Connector resolver standard behaviour', () => {
     expect(queryResult.data.connector.connector_queue_details.messages_size).toBe(0);
   });
 
-  it('should legacy ping still works', async () => {
+  it('should legacy ping still works (without connector_info)', async () => {
     const PING_CONNECTOR_LEGACY_QUERY = gql`
       mutation PingConnector($id: ID!, $state: String) {
         pingConnector(id: $id, state: $state) {
@@ -218,7 +219,7 @@ describe('Connector resolver standard behaviour', () => {
     expect(queryResult.data.pingConnector.id).toBeDefined();
   });
 
-  it('should get buffering data from ping', async () => {
+  it('should store buffering data from ping', async () => {
     const PING_CONNECTOR_QUERY = gql`
       mutation PingConnector($id: ID!, $state: String, $connectorInfo: ConnectorInfoInput) {
         pingConnector(id: $id, state: $state, connectorInfo:$connectorInfo) {
@@ -236,7 +237,7 @@ describe('Connector resolver standard behaviour', () => {
     `;
 
     const connectorInfo: ConnectorInfo = {
-      buffering: false,
+      buffering: true,
       queue_messages_size: 200,
       queue_threshold: 500000,
       run_and_terminate: true,
@@ -245,7 +246,13 @@ describe('Connector resolver standard behaviour', () => {
     const state = '{"last_run": 1718010586.1741812}';
 
     const queryResult = await queryAsUserWithSuccess(USER_CONNECTOR.client, { query: PING_CONNECTOR_QUERY, variables: { id: TEST_CN_ID, state, connectorInfo } });
-    console.log('queryResult', queryResult);
+
+    expect(queryResult.data.pingConnector).toBeDefined();
+    expect(queryResult.data.pingConnector.connector_info.run_and_terminate).toBeTruthy();
+    expect(queryResult.data.pingConnector.connector_info.buffering).toBeTruthy();
+
+    // FIXME need to implement connector state value computation.
+    expect(queryResult.data.pingConnector.connector_state).toBe(ConnectorStatus.BufferingRunAndTerminate);
   });
 });
 

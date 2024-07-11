@@ -214,6 +214,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
     if (strategy === STRATEGY_SAML) {
       const providerRef = identifier || 'saml';
       const samlOptions = { ...mappedConfig };
+      logApp.info('[SAML] samlOptions', { samlOptions });
       const samlStrategy = new SamlStrategy(samlOptions, (profile, done) => {
         logApp.info('[SAML] Successfully logged', { profile });
         const samlAttributes = profile.attributes ? profile.attributes : profile;

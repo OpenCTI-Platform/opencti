@@ -1828,8 +1828,8 @@ type Connector implements BasicObject & InternalObject {
   connector_state_reset: Boolean
   connector_user_id: ID
   connector_queue_details: ConnectorQueueDetails!
-  connector_info: ConnectorInfo!
-  connector_status: ConnectorStatus!
+  connector_info: ConnectorInfo
+  connector_status: ConnectorStatus
   updated_at: DateTime
   created_at: DateTime
   config: ConnectorConfig
