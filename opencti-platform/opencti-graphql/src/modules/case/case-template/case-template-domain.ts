@@ -21,7 +21,7 @@ export const findAll = (context: AuthContext, user: AuthUser, opts: EntityOption
 };
 
 export const taskTemplatesPaginated = async (context: AuthContext, user: AuthUser, caseId: string, opts: EntityOptions<BasicStoreEntityCase>) => {
-  return listEntitiesThroughRelationsPaginated(context, user, caseId, TEMPLATE_TASK_RELATION, ENTITY_TYPE_TASK_TEMPLATE, false, opts);
+  return listEntitiesThroughRelationsPaginated(context, user, caseId, TEMPLATE_TASK_RELATION, ENTITY_TYPE_TASK_TEMPLATE, false, false, opts);
 };
 
 export const caseTemplateAdd = async (context: AuthContext, user: AuthUser, input: CaseTemplateAddInput) => {

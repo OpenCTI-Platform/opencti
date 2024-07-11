@@ -7444,6 +7444,7 @@ type Query {
   stixCoreObject(id: String!): StixCoreObject
   stixCoreObjectAnalysis(id: ID!, contentSource: String!, contentType: AnalysisContentType!): Analysis
   stixCoreObjects(first: Int, after: ID, types: [String], orderBy: StixCoreObjectsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): StixCoreObjectConnection
+  stixCoreObjectsRegardingOf(entityId: ID, relationshipTypes: [String], first: Int, after: ID, types: [String], orderBy: StixCoreObjectsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): StixCoreObjectConnection
   globalSearch(first: Int, after: ID, search: String, types: [String], orderBy: StixCoreObjectsOrdering, orderMode: OrderingMode, filters: FilterGroup): StixCoreObjectConnection
   stixCoreObjectsExportFiles(first: Int, exportContext: ExportContext!): FileConnection
   stixCoreObjectsTimeSeries(authorId: String, field: String!, operation: StatsOperation!, startDate: DateTime!, endDate: DateTime, interval: String!, onlyInferred: Boolean, types: [String], filters: FilterGroup, search: String): [TimeSeries]

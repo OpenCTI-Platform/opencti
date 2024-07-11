@@ -11423,6 +11423,17 @@ type Query {
     filters: FilterGroup
     search: String
   ): StixCoreObjectConnection @auth(for: [KNOWLEDGE])
+  stixCoreObjectsRegardingOf(
+    entityId: ID,
+    relationshipTypes: [String],
+    first: Int
+    after: ID
+    types: [String]
+    orderBy: StixCoreObjectsOrdering
+    orderMode: OrderingMode
+    filters: FilterGroup
+    search: String
+  ): StixCoreObjectConnection @auth(for: [KNOWLEDGE])
   globalSearch(
     first: Int
     after: ID

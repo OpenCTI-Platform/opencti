@@ -20,5 +20,5 @@ export const addCourseOfAction = async (context, user, courseOfAction) => {
 };
 
 export const attackPatternsPaginated = async (context, user, attackPatternId, args) => {
-  return listEntitiesThroughRelationsPaginated(context, user, attackPatternId, RELATION_MITIGATES, ENTITY_TYPE_ATTACK_PATTERN, false, args);
+  return listEntitiesThroughRelationsPaginated(context, user, attackPatternId, RELATION_MITIGATES, ENTITY_TYPE_ATTACK_PATTERN, false, false, args);
 };

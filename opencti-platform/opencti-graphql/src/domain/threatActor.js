@@ -12,9 +12,9 @@ export const findAll = (context, user, args) => {
 };
 
 export const threatActorLocationsPaginated = async (context, user, threatActorId, opts) => {
-  return listEntitiesThroughRelationsPaginated(context, user, threatActorId, RELATION_LOCATED_AT, ENTITY_TYPE_LOCATION, false, opts);
+  return listEntitiesThroughRelationsPaginated(context, user, threatActorId, RELATION_LOCATED_AT, ENTITY_TYPE_LOCATION, false, false, opts);
 };
 
 export const threatActorCountriesPaginated = async (context, user, threatActorId, opts) => {
-  return listEntitiesThroughRelationsPaginated(context, user, threatActorId, RELATION_LOCATED_AT, ENTITY_TYPE_LOCATION_COUNTRY, true, opts);
+  return listEntitiesThroughRelationsPaginated(context, user, threatActorId, RELATION_LOCATED_AT, ENTITY_TYPE_LOCATION_COUNTRY, true, false, opts);
 };
