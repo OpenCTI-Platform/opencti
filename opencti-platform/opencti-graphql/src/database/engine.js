@@ -3642,7 +3642,12 @@ export const elReindexElements = async (context, user, ids, sourceIndex, destInd
 };
 
 const elDenormEntities = async (context, user, elements, relations) => {
-  const denormIds = [...elements, ...relations].map((o) => [o.fromId, o.toId]).flat();
+  const denormIds = [...elements, ...relations]
+    .filter((e) => e.base_type === BASE_TYPE_RELATION)
+    .map((o) => [o.fromId, o.toId]).flat();
+  if (denormIds.length === 0) {
+    return [];
+  }
   const query = {
     index: READ_DATA_INDICES,
     track_total_hits: true,
