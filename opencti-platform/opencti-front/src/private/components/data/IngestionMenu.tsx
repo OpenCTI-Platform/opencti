@@ -1,11 +1,10 @@
 import React from 'react';
 import NavToolbarMenu, { MenuEntry } from '@components/common/menus/NavToolbarMenu';
-import useGranted, { MODULES, SETTINGS, INGESTION, INGESTION_SETINGESTIONS } from '../../../utils/hooks/useGranted';
+import useGranted, { MODULES, INGESTION } from '../../../utils/hooks/useGranted';
 
 const IngestionMenu = () => {
   const isConnectorReader = useGranted([MODULES]);
-  const isGrantedSettings = useGranted([SETTINGS]);
-  const isGrantedIngestion = useGranted([INGESTION, INGESTION_SETINGESTIONS]);
+  const isGrantedIngestion = useGranted([INGESTION]);
   const settingsEntries: MenuEntry[] = [
     {
       path: '/dashboard/data/ingestion/sync',
@@ -24,7 +23,7 @@ const IngestionMenu = () => {
       label: 'CSV Feeds',
     },
   ];
-  const entries: MenuEntry[] = isGrantedSettings || isGrantedIngestion ? [...settingsEntries] : [];
+  const entries: MenuEntry[] = isGrantedIngestion ? [...settingsEntries] : [];
   if (isConnectorReader) {
     entries.push({
       path: '/dashboard/data/ingestion/connectors',
