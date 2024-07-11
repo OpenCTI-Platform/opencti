@@ -65,6 +65,13 @@ import {
   ID_INTERNAL,
   ID_STANDARD,
   IDS_STIX,
+  INPUT_ASSIGNEE,
+  INPUT_CREATED_BY,
+  INPUT_GRANTED_REFS,
+  INPUT_KILLCHAIN,
+  INPUT_LABELS,
+  INPUT_MARKINGS,
+  INPUT_PARTICIPANT,
   isAbstract,
   REL_INDEX_PREFIX,
   RULE_PREFIX
@@ -1886,6 +1893,9 @@ const buildFieldForQuery = (field) => {
     ? field
     : `${field}.keyword`;
 };
+
+const LIST_REFS = [RELATION_OBJECT_PARTICIPANT, RELATION_OBJECT_ASSIGNEE, RELATION_KILL_CHAIN_PHASE,
+  RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_GRANTED_TO, RELATION_OBJECT_MARKING];
 const buildLocalMustFilter = async (context, user, validFilter) => {
   const valuesFiltering = [];
   const noValuesFiltering = [];
@@ -1903,7 +1913,7 @@ const buildLocalMustFilter = async (context, user, validFilter) => {
   for (let keyIndex = 0; keyIndex < arrayKeys.length; keyIndex += 1) {
     let localKey = arrayKeys[keyIndex];
     let localValues = values;
-    if (localKey.startsWith(REL_INDEX_PREFIX) && !localKey.includes(RELATION_OBJECT_MARKING) && !localKey.includes(RELATION_GRANTED_TO)) {
+    if (localKey.startsWith(REL_INDEX_PREFIX) && !LIST_REFS.some((o) => localKey.includes(o))) {
       localValues = [
         { key: 'id', values },
         { key: 'relationship_type', values: [localKey.substring(4).split('.')[0]] },
