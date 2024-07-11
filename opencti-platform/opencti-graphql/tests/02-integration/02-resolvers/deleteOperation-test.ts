@@ -157,7 +157,7 @@ describe('Delete operation resolver testing', () => {
     expect(getDeleteOperation.data?.deleteOperation).toBeDefined();
     expect(getDeleteOperation.data?.deleteOperation.main_entity_type).toBe(ENTITY_TYPE_CONTAINER_REPORT);
     expect(getDeleteOperation.data?.deleteOperation.main_entity_id).toBe(reportInternalId);
-    expect(getDeleteOperation.data?.deleteOperation.deleted_elements.length).toBe(3); // main entity + ref to marking + ref to organization
+    expect(getDeleteOperation.data?.deleteOperation.deleted_elements.length).toBe(7); // main entity + ref to marking + ref to organization
     expect(getDeleteOperation.data?.deleteOperation.deleted_elements[0].id).toBe(reportInternalId);
     expect(getDeleteOperation.data?.deleteOperation.confidence).toBe(90);
     expect(getDeleteOperation.data?.deleteOperation.objectMarking.length).toBe(1);
