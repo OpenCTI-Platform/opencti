@@ -19,7 +19,7 @@ import { buildContextDataForFile, publishUserAction } from '../../../listener/Us
 import type { UserAction } from '../../../listener/UserActionListener';
 import { ForbiddenAccess } from '../../../config/errors';
 import { RELATION_OBJECT_MARKING } from '../../../schema/stixRefRelationship';
-import { buildRefRelationKey } from '../../../schema/general';
+import { BASE_TYPE_ENTITY, buildRefRelationKey } from '../../../schema/general';
 
 export const SUPPORT_STORAGE_PATH = 'support';
 export const IMPORT_STORAGE_PATH = 'import';
@@ -48,6 +48,7 @@ export const buildFileDataForIndexing = (file: File) => {
     ...fileData,
     internal_id: file.id,
     standard_id: standardId,
+    base_type: BASE_TYPE_ENTITY,
     entity_type: ENTITY_TYPE_INTERNAL_FILE,
     [buildRefRelationKey(RELATION_OBJECT_MARKING)]: file.metaData?.file_markings ?? []
   };

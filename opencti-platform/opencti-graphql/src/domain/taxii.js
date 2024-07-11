@@ -14,6 +14,7 @@ import { addFilter } from '../utils/filtering/filtering-utils';
 import { convertFiltersToQueryOptions } from '../utils/filtering/filtering-resolution';
 import { publishUserAction } from '../listener/UserActionListener';
 import { MEMBER_ACCESS_RIGHT_VIEW, SYSTEM_USER, TAXIIAPI_SETCOLLECTIONS } from '../utils/access';
+import { BASE_TYPE_ENTITY } from '../schema/general';
 
 const MAX_TAXII_PAGINATION = conf.get('app:data_sharing:taxii:max_pagination_result') || 500;
 const STIX_MEDIA_TYPE = 'application/stix+json;version=2.1';
@@ -25,6 +26,7 @@ export const createTaxiiCollection = async (context, user, input) => {
     id: collectionId,
     internal_id: collectionId,
     standard_id: generateStandardId(ENTITY_TYPE_TAXII_COLLECTION, input),
+    base_type: BASE_TYPE_ENTITY,
     entity_type: ENTITY_TYPE_TAXII_COLLECTION,
     authorized_authorities: [TAXIIAPI_SETCOLLECTIONS],
     ...input,

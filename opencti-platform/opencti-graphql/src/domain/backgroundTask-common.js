@@ -5,7 +5,7 @@ import { generateInternalId, generateStandardId } from '../schema/identifier';
 import { ENTITY_TYPE_BACKGROUND_TASK } from '../schema/internalObject';
 import { now } from '../utils/format';
 import { isUserHasCapability, MEMBER_ACCESS_RIGHT_ADMIN, SETTINGS_SET_ACCESSES, KNOWLEDGE_KNASKIMPORT, SETTINGS_SETLABELS, KNOWLEDGE_KNUPDATE } from '../utils/access';
-import { isKnowledge, KNOWLEDGE_DELETE, KNOWLEDGE_UPDATE } from '../schema/general';
+import { BASE_TYPE_ENTITY, isKnowledge, KNOWLEDGE_DELETE, KNOWLEDGE_UPDATE } from '../schema/general';
 import { ForbiddenAccess, UnsupportedError } from '../config/errors';
 import { elIndex } from '../database/engine';
 import { INDEX_INTERNAL_OBJECTS } from '../database/utils';
@@ -225,6 +225,7 @@ export const createDefaultTask = (user, input, taskType, taskExpectedNumber, sco
     internal_id: taskId,
     standard_id: generateStandardId(ENTITY_TYPE_BACKGROUND_TASK, input),
     entity_type: ENTITY_TYPE_BACKGROUND_TASK,
+    base_type: BASE_TYPE_ENTITY,
     initiator_id: user.internal_id,
     created_at: now(),
     completed: false,
