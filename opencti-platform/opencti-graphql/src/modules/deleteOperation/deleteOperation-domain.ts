@@ -207,7 +207,8 @@ export const findById = async (context: AuthContext, user: AuthUser, id: string)
 };
 
 export const findAll = async (context: AuthContext, user: AuthUser, args: QueryDeleteOperationsArgs) => {
-  return listEntitiesPaginated<BasicStoreEntityDeleteOperation>(context, user, [ENTITY_TYPE_DELETE_OPERATION], args);
+  const test = await listEntitiesPaginated<BasicStoreEntityDeleteOperation>(context, user, [ENTITY_TYPE_DELETE_OPERATION], args);
+  return test;
 };
 
 export const findOldDeleteOperations = (context: AuthContext, user: AuthUser, daysOld: number, maxSize: number) => {

@@ -1907,14 +1907,14 @@ const buildLocalMustFilter = async (context, user, validFilter) => {
       localValues = [
         { key: 'id', values },
         { key: 'relationship_type', values: [localKey.substring(4).split('.')[0]] },
-        { key: 'role', values: ['*'] },
+        { key: 'role', values: [] }, // TODO Default listing elements that are targets report -> object_refs -> entity ???
       ];
       localKey = INSTANCE_REGARDING_OF;
     }
     if (localKey === INSTANCE_REGARDING_OF) {
       const regardingIds = localValues.find((v) => v.key === 'id')?.values ?? [];
       const regardingTypes = localValues.find((v) => v.key === 'relationship_type')?.values ?? [];
-      // const regardingRoles = localValues.find((v) => v.key === 'role')?.values ?? [];
+      const regardingRoles = localValues.find((v) => v.key === 'role')?.values ?? [];
       const restrictionOptions = { includeAuthorities: true }; // By default include authorized through capabilities
       // If an admin ask for a specific element, there is no need to ask him to explicitly extends his visibility to doing it.
       const markingRestrictions = await buildDataRestrictions(context, user, restrictionOptions);
@@ -1923,25 +1923,27 @@ const buildLocalMustFilter = async (context, user, validFilter) => {
           denorm_id: regardingIds
         }
       }];
-      // regardingMust.push({
-      //   nested: {
-      //     path: 'connections',
-      //     query: {
-      //       wildcard: {
-      //         'connections.role.keyword': {
-      //           value: `*_${regardingRoles.length > 0 ? regardingRoles[0] : 'from'}`
-      //         }
-      //       }
-      //     }
-      //   }
-      // });
+      if (regardingRoles.length > 0) {
+        regardingMust.push({
+          wildcard: {
+            denorm_role: {
+              value: `*_${regardingRoles[0]}`
+            }
+          }
+        });
+      }
       regardingMust.push(...markingRestrictions.must);
       if (regardingTypes.length > 0) {
         regardingMust.push({
-          term: {
-            denorm_type: {
-              value: regardingTypes[0]
-            }
+          bool: {
+            should: regardingTypes.map((v) => ({
+              term: {
+                denorm_type: {
+                  value: v
+                }
+              }
+            })),
+            minimum_should_match: 1,
           }
         });
       }
@@ -3607,7 +3609,7 @@ export const elDeleteInstances = async (instances) => {
     for (let i = 0; i < groupsOfInstances.length; i += 1) {
       const instancesBulk = groupsOfInstances[i];
       const bodyDelete = instancesBulk.flatMap((doc) => {
-        return [{ delete: { _index: doc._index, _id: doc.internal_id, retry_on_conflict: ES_RETRY_ON_CONFLICT } }];
+        return [{ delete: { _index: doc._index, _id: doc.id, retry_on_conflict: ES_RETRY_ON_CONFLICT } }];
       });
       await elBulk({ refresh: true, timeout: BULK_TIMEOUT, body: bodyDelete });
     }
@@ -3640,7 +3642,7 @@ export const elReindexElements = async (context, user, ids, sourceIndex, destInd
 };
 
 const elDenormEntities = async (context, user, elements, relations) => {
-  const denormIds = [...elements, ...relations].map((o) => o.internal_id);
+  const denormIds = [...elements, ...relations].map((o) => [o.fromId, o.toId]).flat();
   const query = {
     index: READ_DATA_INDICES,
     track_total_hits: true,
@@ -3664,8 +3666,15 @@ const elDenormEntities = async (context, user, elements, relations) => {
       }
     },
   };
+  const result = [];
+  // TODO Get all results
   const data = await elRawSearch(context, user, 'denorm', query);
-  return elConvertHits(data.hits.hits);
+  for (let i = 0; i < data.hits.hits.length; i += 1) {
+    const hit = data.hits.hits[i];
+    result.push({ _index: hit._index, id: hit._id, sort: hit.sort, ...hit._source });
+    // TODO Spit with set imediate
+  }
+  return result;
 };
 
 export const elDeleteElements = async (context, user, elements, opts = {}) => {
@@ -3719,7 +3728,7 @@ export const elDeleteElements = async (context, user, elements, opts = {}) => {
 
 const createDeleteOperationElement = async (context, user, mainElement, deletedElements) => {
   // We currently only handle deleteOperations of 1 element
-  const deleteOperationDeletedElements = deletedElements.map((e) => ({ id: e.internal_id, source_index: e._index }));
+  const deleteOperationDeletedElements = deletedElements.map((e) => ({ id: e.id, source_index: e._index }));
   const deleteOperationInput = {
     entity_type: ENTITY_TYPE_DELETE_OPERATION,
     main_entity_type: mainElement.entity_type,
@@ -3869,7 +3878,7 @@ export const elIndexElements = async (context, user, indexingType, elements) => 
     }
     // 02. Bulk indexing of relations denorm child
     const bodyChildFrom = elements.filter((e) => (e.base_type === BASE_TYPE_RELATION)).map((e) => {
-      const { fromRole, toRole } = e;
+      const { fromRole } = e;
       const impacts = [];
       if (isImpactedRole(fromRole)) {
         // console.log(e);
@@ -3879,7 +3888,7 @@ export const elIndexElements = async (context, user, indexingType, elements) => 
             doc: {
               entity_type: 'denorm',
               denorm_id: e.to.internal_id,
-              denorm_role: toRole,
+              denorm_role: fromRole,
               denorm_type: e.entity_type,
               'rel_object-marking.internal_id': e['rel_object-marking.internal_id'],
               'rel_granted.internal_id': e['rel_granted.internal_id'],
@@ -3892,7 +3901,7 @@ export const elIndexElements = async (context, user, indexingType, elements) => 
       return impacts;
     }).flat();
     const bodyChildTo = elements.filter((e) => (e.base_type === BASE_TYPE_RELATION)).map((e) => {
-      const { fromRole, toRole } = e;
+      const { toRole } = e;
       const impacts = [];
       if (isImpactedRole(toRole)) {
         impacts.push(...[
@@ -3901,7 +3910,7 @@ export const elIndexElements = async (context, user, indexingType, elements) => 
             doc: {
               entity_type: 'denorm',
               denorm_id: e.from.internal_id,
-              denorm_role: fromRole,
+              denorm_role: toRole,
               denorm_type: e.entity_type,
               'rel_object-marking.internal_id': e['rel_object-marking.internal_id'],
               'rel_granted.internal_id': e['rel_granted.internal_id'],

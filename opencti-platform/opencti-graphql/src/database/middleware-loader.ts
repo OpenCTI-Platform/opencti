@@ -477,7 +477,7 @@ export const listEntitiesThroughRelationsPaginated = async <T extends BasicStore
         values: [
           { key: 'id', values: [connectedEntityId] },
           { key: 'relationship_type', values: [relationType] },
-          { key: 'role', values: reverse_relation ? ['to'] : ['from'] }
+          { key: 'role', values: reverse_relation ? ['from'] : ['to'] }
         ]
       }
     ],
