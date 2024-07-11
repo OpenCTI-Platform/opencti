@@ -2923,14 +2923,6 @@ const elQueryBodyBuilder = async (context, user, options) => {
   const accessMust = markingRestrictions.must;
   const accessMustNot = markingRestrictions.must_not;
   const mustFilters = [];
-  // if (options.parent) {
-  //   mustFilters.push({
-  //     has_child: {
-  //       type: 'denorm',
-  //       query: { term: { 'denorm_internal_id.keyword': { value: options.parent } } },
-  //     }
-  //   });
-  // }
   // Add special keys to filters
   const specialFiltersContent = [];
   if (ids.length > 0 || startDate || endDate || (types !== null && types.length > 0)) {
@@ -3013,7 +3005,7 @@ const elQueryBodyBuilder = async (context, user, options) => {
     query: {
       bool: {
         must: [...accessMust, ...mustFilters],
-        must_not: accessMustNot,
+        must_not: [...accessMustNot, { term: { 'entity_type.keyword': { value: 'denorm' } } }],
       },
     }
   };
@@ -3382,6 +3374,8 @@ export const elPaginate = async (context, user, indexName, options = {}) => {
     })
     .catch(
       /* v8 ignore next */ (err) => {
+        console.log(err);
+
         const root_cause = err.meta?.body?.error?.caused_by?.type;
         if (root_cause === TOO_MANY_CLAUSES) throw ComplexSearchError();
         throw DatabaseError('Fail to execute engine pagination', { cause: err, root_cause, query });
