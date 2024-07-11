@@ -54,7 +54,8 @@ export const numberOfContainersForObject = (context, user, args) => {
 
 export const objects = async (context, user, containerId, args) => {
   const types = args.types ? args.types : ['Stix-Core-Object', 'stix-relationship'];
-  const baseOpts = { ...args, types, indices: [...READ_ENTITIES_INDICES, ...READ_RELATIONSHIPS_INDICES] };
+  const filters = addFilter(args.filters, buildRefRelationKey(RELATION_OBJECT, '*'), containerId);
+  const baseOpts = { ...args, types, filters, indices: [...READ_ENTITIES_INDICES, ...READ_RELATIONSHIPS_INDICES] };
   if (args.all) {
     // TODO Should be handled by the frontend to split the load
     const allObjects = await elList(context, user, baseOpts.indices, baseOpts);
