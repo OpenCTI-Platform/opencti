@@ -9,7 +9,7 @@ import { makeStyles } from '@mui/styles';
 import { Theme } from '@mui/material/styles/createTheme';
 import Skeleton from '@mui/material/Skeleton';
 import { ListItemButton } from '@mui/material';
-import { NarrativesWithSubnarrativesLines_data$data } from './__generated__/NarrativesWithSubnarrativesLines_data.graphql';
+import { NarrativeNode, SubNarrativeNode } from '@components/techniques/narratives/NarrativesWithSubnarrativesLines';
 import ItemIcon from '../../../../components/ItemIcon';
 import { emptyFilled } from '../../../../utils/String';
 
@@ -46,19 +46,10 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
-type NarrativeNode = NonNullable<NonNullable<NonNullable<NarrativesWithSubnarrativesLines_data$data['narratives']>['edges']>[number]>['node'];
-export interface ExtendedNarrativeNode extends NarrativeNode {
-  isSubNarrative: boolean;
-  subNarratives: NonNullable<NarrativeNode>['subNarratives'];
-  subnarratives_text: string;
-}
-
-export type SubNarrativeNode = NonNullable<NonNullable<NonNullable<NonNullable<NarrativeNode>['subNarratives']>['edges']>[number]>['node'];
-
 interface NarrativeWithSubnarrativeLineProps {
   isSubNarrative?: boolean;
   subNarratives?: SubNarrativeNode[];
-  node: ExtendedNarrativeNode | SubNarrativeNode;
+  node: NarrativeNode | SubNarrativeNode;
 }
 
 const NarrativeWithSubnarrativeLine: FunctionComponent<NarrativeWithSubnarrativeLineProps> = ({ node, subNarratives, isSubNarrative }) => {
