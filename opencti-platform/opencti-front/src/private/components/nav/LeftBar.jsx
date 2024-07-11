@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { createStyles, makeStyles, styled, useTheme } from '@mui/styles';
 import MenuList from '@mui/material/MenuList';
 import MenuItem from '@mui/material/MenuItem';
@@ -76,26 +76,26 @@ import Collapse from '@mui/material/Collapse';
 import { useFormatter } from '../../../components/i18n';
 import Security from '../../../utils/Security';
 import useGranted, {
+  CSVMAPPERS,
   EXPLORE,
+  INGESTION,
+  INGESTION_SETINGESTIONS,
   INVESTIGATION,
   KNOWLEDGE,
   KNOWLEDGE_KNASKIMPORT,
   KNOWLEDGE_KNUPDATE,
   KNOWLEDGE_KNUPDATE_KNDELETE,
   MODULES,
-  SETTINGS_SETPARAMETERS,
+  SETTINGS_FILEINDEXING,
   SETTINGS_SECURITYACTIVITY,
   SETTINGS_SETACCESSES,
-  SETTINGS_SETLABELS,
   SETTINGS_SETCUSTOMIZATION,
+  SETTINGS_SETLABELS,
   SETTINGS_SETMARKINGS,
-  SETTINGS_FILEINDEXING,
+  SETTINGS_SETPARAMETERS,
   SETTINGS_SUPPORT,
-  CSVMAPPERS,
-  VIRTUAL_ORGANIZATION_ADMIN,
-  INGESTION,
-  INGESTION_SETINGESTIONS,
   TAXIIAPI,
+  VIRTUAL_ORGANIZATION_ADMIN,
 } from '../../../utils/hooks/useGranted';
 import { fileUri, MESSAGING$ } from '../../../relay/environment';
 import { useHiddenEntities, useIsHiddenEntities } from '../../../utils/hooks/useEntitySettings';
@@ -349,6 +349,10 @@ const LeftBar = () => {
     'Country',
     'City',
     'Position',
+  );
+  const hideDashboards = useIsHiddenEntities(
+    'Dashboards',
+    'Public dashboards',
   );
   const {
     bannerSettings: { bannerHeightNumber },
@@ -797,6 +801,9 @@ const LeftBar = () => {
                   selected={!navOpen && location.pathname.includes('/dashboard/workspaces/dashboards')}
                   dense={true}
                   classes={{ root: classes.menuItem }}
+                  onClick={() => (isMobile || navOpen ? handleSelectedMenuToggle('dashboards') : handleGoToPage('/dashboard/dashboards'))}
+                  onMouseEnter={() => !navOpen && handleSelectedMenuOpen('dashboards')}
+                  onMouseLeave={() => !navOpen && handleSelectedMenuClose()}
                 >
                   <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
                     <InsertChartOutlinedOutlined />
@@ -807,9 +814,17 @@ const LeftBar = () => {
                       primary={t_i18n('Dashboards')}
                     />
                   )}
+                  {navOpen && (selectedMenu.includes('dashboards') ? <ExpandLessOutlined/> : <ExpandMoreOutlined/>)}
                 </MenuItem>
               </StyledTooltip>
             </Security>
+            {generateSubMenu(
+              'dashboards',
+              [
+                { type: 'Dashboard', link: '/dashboard/workspaces/dashboards', label: 'Dashboards' },
+                { type: 'Dashboard', link: '/dashboard/workspaces/publicdashboards', label: 'Public Dashboards' },
+              ],
+            )}
             <Security needs={[INVESTIGATION]}>
               <StyledTooltip title={!navOpen && t_i18n('Investigations')} placement="right">
                 <MenuItem
