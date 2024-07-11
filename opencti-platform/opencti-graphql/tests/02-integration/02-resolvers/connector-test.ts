@@ -231,7 +231,6 @@ describe('Connector resolver standard behaviour', () => {
             run_and_terminate
             queue_threshold
           }
-          connector_status
         }
       }
     `;
