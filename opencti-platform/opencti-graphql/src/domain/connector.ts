@@ -18,10 +18,9 @@ import type { AuthContext, AuthUser } from '../types/user';
 import type { ConnectorInfo } from '../types/connector';
 import type { BasicStoreEntityConnector } from '../connector/connector';
 import type { EditInput, RegisterConnectorInput, SynchronizerAddInput, SynchronizerFetchInput, EditContext, MutationSynchronizerTestArgs } from '../generated/graphql';
-import { BUS_TOPICS, logApp } from '../config/conf';
+import { BUS_TOPICS } from '../config/conf';
 import { deleteWorkForConnector } from './work';
 import { testSync as testSyncUtils } from './connector-utils';
-import { ConnectorStatus } from '../generated/graphql';
 
 // region connectors
 export const connectorForWork = async (context: AuthContext, user: AuthUser, id: string) => {
@@ -43,7 +42,13 @@ export const connectorsForExport = async (context: AuthContext, user: AuthUser, 
   return connectorsFor(context, user, CONNECTOR_INTERNAL_EXPORT_FILE, scope, onlyAlive);
 };
 
-export const updateConnectorWithConnectorInfo = async (context: AuthContext, user: AuthUser, connectorEntity: BasicStoreEntityConnector, state: string, connectorInfo: ConnectorInfo) => {
+export const updateConnectorWithConnectorInfo = async (
+  context: AuthContext,
+  user: AuthUser,
+  connectorEntity: BasicStoreEntityConnector,
+  state: string,
+  connectorInfo: ConnectorInfo
+) => {
   // Patch the updated_at and the state if needed
   let connectorPatch;
 
@@ -62,27 +67,9 @@ export const updateConnectorWithConnectorInfo = async (context: AuthContext, use
       next_run_datetime: connectorInfo.next_run_datetime,
     };
 
-    let status: string;
-    if (connectorEntity.active) {
-      status = ConnectorStatus.Active;
-      if (connectorInfo.run_and_terminate && connectorInfo.buffering) {
-        status = ConnectorStatus.BufferingRunAndTerminate;
-      } else if (connectorInfo.run_and_terminate && !connectorInfo.buffering) {
-        status = ConnectorStatus.RunAndTerminate;
-      } else if (!connectorInfo.run_and_terminate && connectorInfo.buffering) {
-        status = ConnectorStatus.Buffering;
-      }
-    } else {
-      status = ConnectorStatus.Inactive;
-    }
-
-    connectorPatch = { ...connectorPatch, connector_info: connectorInfoData, connector_status: status.toString() };
+    connectorPatch = { ...connectorPatch, connector_info: connectorInfoData };
   }
-  // FIXME need to add connector_state in patch
-
-  logApp.debug('pingConnector, connectorPatch:', { connectorPatch });
-  const patchResult = await patchAttribute(context, user, connectorEntity.id, ENTITY_TYPE_CONNECTOR, connectorPatch);
-  logApp.debug('pingConnector, connectorPatchpatchResult:', { patchResult });
+  await patchAttribute(context, user, connectorEntity.id, ENTITY_TYPE_CONNECTOR, connectorPatch);
 };
 
 export const pingConnector = async (context: AuthContext, user: AuthUser, id: string, state: string, connectorInfo: ConnectorInfo) => {

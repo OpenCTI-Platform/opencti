@@ -3,7 +3,7 @@ import gql from 'graphql-tag';
 import { queryAsAdmin, USER_CONNECTOR, USER_EDITOR } from '../../utils/testQuery';
 import { queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
 import type { ConnectorInfo } from '../../../src/generated/graphql';
-import { ConnectorStatus } from '../../../src/generated/graphql';
+import { utcDate } from '../../../src/utils/format';
 
 const CREATE_WORK_QUERY = gql`
   mutation workAdd($connectorId: String!, $friendlyName: String) {
@@ -219,7 +219,7 @@ describe('Connector resolver standard behaviour', () => {
     expect(queryResult.data.pingConnector.id).toBeDefined();
   });
 
-  it('should store buffering data from ping', async () => {
+  it('should store buffering data and run and terminate info from ping', async () => {
     const PING_CONNECTOR_QUERY = gql`
       mutation PingConnector($id: ID!, $state: String, $connectorInfo: ConnectorInfoInput) {
         pingConnector(id: $id, state: $state, connectorInfo:$connectorInfo) {
@@ -236,11 +236,14 @@ describe('Connector resolver standard behaviour', () => {
       }
     `;
 
+    const dateNextRun = utcDate().toISOString();
+
     const connectorInfo: ConnectorInfo = {
       buffering: true,
       queue_messages_size: 200,
-      queue_threshold: 500000,
+      queue_threshold: 500000000,
       run_and_terminate: true,
+      next_run_datetime: dateNextRun
     };
 
     const state = '{"last_run": 1718010586.1741812}';
@@ -250,9 +253,8 @@ describe('Connector resolver standard behaviour', () => {
     expect(queryResult.data.pingConnector).toBeDefined();
     expect(queryResult.data.pingConnector.connector_info.run_and_terminate).toBeTruthy();
     expect(queryResult.data.pingConnector.connector_info.buffering).toBeTruthy();
-
-    // FIXME need to implement connector state value computation.
-    expect(queryResult.data.pingConnector.connector_state).toBe(ConnectorStatus.BufferingRunAndTerminate);
+    expect(queryResult.data.pingConnector.connector_info.queue_messages_size).toBe(200);
+    expect(queryResult.data.pingConnector.connector_info.queue_threshold).toBe(500000000); // big number in purpose
   });
 });
 
