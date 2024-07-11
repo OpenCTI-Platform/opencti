@@ -1,8 +1,7 @@
-import React, { Component } from 'react';
+import React, { useEffect, useState } from 'react';
 import * as PropTypes from 'prop-types';
-import { Route, Routes } from 'react-router-dom';
+import { Route, Routes, useParams } from 'react-router-dom';
 import { graphql } from 'react-relay';
-import withRouter from '../../../../utils/compat-router/withRouter';
 import { QueryRenderer, requestSubscription } from '../../../../relay/environment';
 import Dashboard from './Dashboard';
 import Loader from '../../../../components/Loader';
@@ -31,61 +30,53 @@ const dashboardQuery = graphql`
   }
 `;
 
-class RootDashboard extends Component {
-  constructor(props) {
-    super(props);
-    const {
-      params: { workspaceId },
-    } = props;
-    this.sub = requestSubscription({
+const RootDashboard = () => {
+  const { workspaceId } = useParams();
+  const [workspace, setWorkspace] = useState(null);
+  const [settings, setSettings] = useState(null);
+
+  useEffect(() => {
+    const sub = requestSubscription({
       subscription,
       variables: { id: workspaceId },
     });
-  }
 
-  componentWillUnmount() {
-    this.sub.dispose();
-  }
+    return () => {
+      sub.dispose();
+    };
+  }, [workspaceId]);
 
-  render() {
-    const {
-      params: { workspaceId },
-    } = this.props;
-    return (
-      <div data-testid="dashboard-details-page">
-        <QueryRenderer
-          query={dashboardQuery}
-          variables={{ id: workspaceId }}
-          render={({ props }) => {
-            if (props) {
-              if (props.workspace) {
-                return (
-                  <Routes>
-                    <Route
-                      path="/"
-                      element={
-                        <Dashboard
-                          workspace={props.workspace}
-                          settings={props.settings}
-                        />
-                    }
-                    />
-                  </Routes>
-                );
-              }
-              return <ErrorNotFound />;
+  return (
+    <div data-testid="dashboard-details-page">
+      <QueryRenderer
+        query={dashboardQuery}
+        variables={{ id: workspaceId }}
+        render={({ props }) => {
+          if (props) {
+            if (props.workspace) {
+              setWorkspace(props.workspace);
+              setSettings(props.settings);
             }
-            return <Loader />;
-          }}
-        />
-      </div>
-    );
-  }
-}
+            return <Loader/>;
+          }
+          return <ErrorNotFound/>;
+        }}
+      />
+      {workspace && (
+        <Routes>
+          <Route
+            path="/"
+            element={<Dashboard workspace={workspace} settings={settings}/>}
+          />
+        </Routes>
+      )}
+    </div>
+  );
+};
 
 RootDashboard.propTypes = {
   children: PropTypes.node,
   params: PropTypes.object,
 };
 
-export default withRouter(RootDashboard);
+export default RootDashboard;
