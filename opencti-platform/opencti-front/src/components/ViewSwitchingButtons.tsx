@@ -3,6 +3,7 @@ import ToggleButton from '@mui/material/ToggleButton';
 import Tooltip from '@mui/material/Tooltip';
 import { LibraryBooksOutlined, ViewListOutlined, ViewModuleOutlined } from '@mui/icons-material';
 import { FormatListGroup, Group, RelationManyToMany, VectorPolygon } from 'mdi-material-ui';
+import { ToggleButtonGroup } from '@mui/material';
 import { useFormatter } from './i18n';
 
 interface ViewSwitchingButtonsProps {
@@ -29,14 +30,20 @@ const ViewSwitchingButtons: FunctionComponent<ViewSwitchingButtonsProps> = ({
   const { t_i18n } = useFormatter();
   return (
     <>
-      {typeof handleChangeView === 'function' && !disableCards && (
+      <ToggleButtonGroup
+        size="small"
+        color="secondary"
+        exclusive={true}
+        style={{ margin: '0 0 0 5px' }}
+      >
+        {typeof handleChangeView === 'function' && !disableCards && (
         <ToggleButton value="cards" aria-label="cards">
           <Tooltip title={t_i18n('Cards view')}>
             <ViewModuleOutlined fontSize="small" color="primary" />
           </Tooltip>
         </ToggleButton>
-      )}
-      {typeof handleChangeView === 'function'
+        )}
+        {typeof handleChangeView === 'function'
         && enableEntitiesView && (
         <ToggleButton value="entities" aria-label="entities">
           <Tooltip title={t_i18n('Entities view')}>
@@ -50,8 +57,8 @@ const ViewSwitchingButtons: FunctionComponent<ViewSwitchingButtonsProps> = ({
             />
           </Tooltip>
         </ToggleButton>
-      )}
-      {enableEntitiesView && (
+        )}
+        {enableEntitiesView && (
         <ToggleButton
           value="relationships"
           aria-label="relationships"
@@ -67,8 +74,8 @@ const ViewSwitchingButtons: FunctionComponent<ViewSwitchingButtonsProps> = ({
             />
           </Tooltip>
         </ToggleButton>
-      )}
-      {typeof handleChangeView === 'function'
+        )}
+        {typeof handleChangeView === 'function'
         && !enableEntitiesView && (
         <ToggleButton value="lines" onClick={() => handleChangeView('lines')} aria-label="lines">
           <Tooltip title={t_i18n('Lines view')}>
@@ -82,8 +89,8 @@ const ViewSwitchingButtons: FunctionComponent<ViewSwitchingButtonsProps> = ({
             />
           </Tooltip>
         </ToggleButton>
-      )}
-      {typeof handleChangeView === 'function' && enableSubEntityLines && (
+        )}
+        {typeof handleChangeView === 'function' && enableSubEntityLines && (
         <ToggleButton value="subEntityLines" aria-label="subEntityLines">
           <Tooltip title={t_i18n('Sub entity lines view')}>
             <ViewListOutlined
@@ -96,23 +103,23 @@ const ViewSwitchingButtons: FunctionComponent<ViewSwitchingButtonsProps> = ({
             />
           </Tooltip>
         </ToggleButton>
-      )}
-      {typeof handleChangeView === 'function' && enableGraph && (
+        )}
+        {typeof handleChangeView === 'function' && enableGraph && (
         <ToggleButton value="graph" aria-label="graph">
           <Tooltip title={t_i18n('Graph view')}>
             <VectorPolygon fontSize="small" color="primary" />
           </Tooltip>
         </ToggleButton>
-      )}
-      {typeof handleChangeView === 'function'
+        )}
+        {typeof handleChangeView === 'function'
         && enableNestedView && (
         <ToggleButton value="nested" aria-label="nested">
           <Tooltip title={t_i18n('Nested view')}>
             <FormatListGroup fontSize="small" color="primary" />
           </Tooltip>
         </ToggleButton>
-      )}
-      {typeof handleChangeView === 'function'
+        )}
+        {typeof handleChangeView === 'function'
         && enableContextualView && (
         <ToggleButton value="contextual" aria-label="contextual">
           <Tooltip
@@ -128,7 +135,8 @@ const ViewSwitchingButtons: FunctionComponent<ViewSwitchingButtonsProps> = ({
             />
           </Tooltip>
         </ToggleButton>
-      )}
+        )}
+      </ToggleButtonGroup>
     </>
   );
 };
