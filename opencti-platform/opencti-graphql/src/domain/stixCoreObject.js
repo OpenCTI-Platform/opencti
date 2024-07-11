@@ -14,7 +14,8 @@ import {
   CONNECTOR_INTERNAL_ANALYSIS,
   CONNECTOR_INTERNAL_ENRICHMENT,
   ENTITY_TYPE_CONTAINER,
-  INPUT_EXTERNAL_REFS
+  INPUT_EXTERNAL_REFS,
+  REL_INDEX_PREFIX
 } from '../schema/general';
 import { RELATION_CREATED_BY, RELATION_EXTERNAL_REFERENCE, RELATION_OBJECT, RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
 import {
@@ -296,7 +297,11 @@ export const stixCoreObjectsMultiNumber = (context, user, args) => {
   }));
 };
 
-export const stixCoreObjectsConnectedNumber = (context, user, stixCoreObject) => {
+export const stixCoreObjectsConnectedNumber = async (context, user, stixCoreObject) => {
+  const relCount = Object.entries(stixCoreObject)
+    .filter(([key]) => key.startsWith(REL_INDEX_PREFIX))
+    .map(([, value]) => value.length)
+    .reduce((a, b) => a + b, 0);
   const filters = {
     mode: 'and',
     filters: [{
@@ -307,7 +312,8 @@ export const stixCoreObjectsConnectedNumber = (context, user, stixCoreObject) =>
     }],
     filterGroups: [],
   };
-  return elCount(context, user, READ_DATA_INDICES, { filters });
+  const denormCount = await elCount(context, user, READ_DATA_INDICES, { filters });
+  return relCount + denormCount;
 };
 
 export const stixCoreObjectsDistribution = async (context, user, args) => {
