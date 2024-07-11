@@ -194,6 +194,11 @@ export const addStixCyberObservable = async (context, user, input) => {
   if (!input[graphQLType]) {
     throw FunctionalError(`Expecting variable ${graphQLType} in the input, got nothing.`);
   }
+  const lowerCaseTypes = ['Domain-Name', 'Url', 'Email-Addr'];
+  if (lowerCaseTypes.includes(type) && input[graphQLType].value) {
+    // eslint-disable-next-line no-param-reassign
+    input[graphQLType].value = input[graphQLType].value.toLowerCase();
+  }
   if (type === 'Artifact' && input[graphQLType].file && isEmptyField(payload_bin)) {
     return artifactImport(context, user, { ...input, ...input[graphQLType] });
   }
