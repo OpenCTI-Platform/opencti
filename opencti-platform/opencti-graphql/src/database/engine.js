@@ -1913,7 +1913,7 @@ const buildLocalMustFilter = async (context, user, validFilter) => {
     }
     if (localKey === INSTANCE_REGARDING_OF) {
       const regardingIds = localValues.find((v) => v.key === 'id')?.values ?? [];
-      const regardingTypes = localValues.find((v) => v.key === 'relationship_type')?.values ?? [];
+      const regardingTypes = (localValues.find((v) => v.key === 'relationship_type')?.values ?? []).filter((t) => t !== '*');
       const regardingRoles = localValues.find((v) => v.key === 'role')?.values ?? [];
       const restrictionOptions = { includeAuthorities: true }; // By default include authorized through capabilities
       // If an admin ask for a specific element, there is no need to ask him to explicitly extends his visibility to doing it.
