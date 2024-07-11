@@ -2832,7 +2832,6 @@ const elQueryBodyBuilder = async (context, user, options) => {
   if (searchAfter) {
     body.search_after = searchAfter;
   }
-  // console.log(JSON.stringify(body));
   return body;
 };
 export const elRawCount = async (query) => {
@@ -3180,8 +3179,6 @@ export const elPaginate = async (context, user, indexName, options = {}) => {
     })
     .catch(
       /* v8 ignore next */ (err) => {
-        console.log(err);
-
         const root_cause = err.meta?.body?.error?.caused_by?.type;
         if (root_cause === TOO_MANY_CLAUSES) throw ComplexSearchError();
         throw DatabaseError('Fail to execute engine pagination', { cause: err, root_cause, query });
@@ -3685,7 +3682,6 @@ export const elIndexElements = async (context, user, indexingType, elements) => 
       const { fromRole } = e;
       const impacts = [];
       if (isImpactedRole(fromRole)) {
-        // console.log(e);
         impacts.push(...[
           { update: { _index: e.from._index, _id: `${e.internal_id}_${e.from.internal_id}`, routing: e.from.internal_id, retry_on_conflict: ES_RETRY_ON_CONFLICT } },
           {
@@ -3726,7 +3722,6 @@ export const elIndexElements = async (context, user, indexingType, elements) => 
       }
       return impacts;
     }).flat();
-    // console.log(bodyChildFrom, bodyChildTo);
     const promiseFrom = bodyChildFrom.length > 0 ? elBulk({ refresh: true, timeout: BULK_TIMEOUT, body: bodyChildFrom }) : Promise.resolve();
     const promiseTo = bodyChildTo.length > 0 ? elBulk({ refresh: true, timeout: BULK_TIMEOUT, body: bodyChildTo }) : Promise.resolve();
     await Promise.all([promiseFrom, promiseTo]);
