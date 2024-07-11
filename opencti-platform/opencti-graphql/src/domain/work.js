@@ -6,7 +6,7 @@ import { INDEX_HISTORY, isNotEmptyField, READ_INDEX_HISTORY } from '../database/
 import { isWorkCompleted, redisDeleteWorks, redisUpdateActionExpectation, redisUpdateWorkFigures } from '../database/redis';
 import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_WORK } from '../schema/internalObject';
 import { now, sinceNowInMinutes } from '../utils/format';
-import { buildRefRelationKey, CONNECTOR_INTERNAL_EXPORT_FILE } from '../schema/general';
+import { BASE_TYPE_ENTITY, buildRefRelationKey, CONNECTOR_INTERNAL_EXPORT_FILE } from '../schema/general';
 import { publishUserAction } from '../listener/UserActionListener';
 import { AlreadyDeletedError, DatabaseError } from '../config/errors';
 import { addFilter } from '../utils/filtering/filtering-utils';
@@ -177,6 +177,7 @@ export const createWork = async (context, user, connector, friendlyName, sourceI
     timestamp,
     updated_at: now(),
     name: friendlyName,
+    base_type: BASE_TYPE_ENTITY,
     entity_type: ENTITY_TYPE_WORK,
     // For specific type, specific id is required
     event_type: connector.connector_type,
