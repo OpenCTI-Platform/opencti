@@ -1,22 +1,17 @@
-import React, { FunctionComponent } from 'react';
+import React from 'react';
 import { Button } from '@mui/material';
+import { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
+import { CommonProps } from '@mui/material/OverridableComponent';
+import { ButtonOwnProps } from '@mui/material/Button/Button';
 import { useFormatter } from './i18n';
-import { DrawerControlledDialProps } from '../private/components/common/drawer/Drawer';
 
-interface EditEntityControlledDialProps extends DrawerControlledDialProps {
-  color?: 'primary' | 'inherit' | 'secondary' | 'success' | 'error' | 'info' | 'warning';
-  size?: 'small' | 'medium' | 'large';
-  variant?: 'text' | 'contained' | 'outlined';
-  style?: React.CSSProperties;
-}
-
-const EditEntityControlledDial: FunctionComponent<EditEntityControlledDialProps> = ({
+const EditEntityControlledDial = ({
   onOpen,
   color = 'primary',
   size = 'small',
-  variant = 'contained',
+  variant = 'outlined',
   style,
-}) => {
+}: ButtonOwnProps & CommonProps & DrawerControlledDialProps) => {
   const { t_i18n } = useFormatter();
   const buttonLabel = t_i18n('Update');
   return (
