@@ -1854,7 +1854,6 @@ const updateAttributeRaw = async (context, user, instance, inputs, opts = {}) =>
 };
 
 export const updateAttributeMetaResolved = async (context, user, initial, inputs, opts = {}) => {
-  logApp.info('initial', { json: JSON.stringify(initial) });
   const { locks = [], impactStandardId = true } = opts;
   const updates = Array.isArray(inputs) ? inputs : [inputs];
   const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
@@ -2151,7 +2150,6 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
         const inputRef = LIST_REFS[i];
         const dbRef = schemaRelationsRefDefinition.getRelationRef(initial.entity_type, inputRef);
         if (dbRef) {
-          logApp.info('updatedInstance', { json: JSON.stringify(updatedInstance) });
           // console.log(initial.entity_type, inputRef, dbRef, schemaRelationsRefDefinition.getRelationsRef(initial.entity_type));
           const relIds = [];
           if (dbRef.multiple) {
