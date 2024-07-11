@@ -323,7 +323,7 @@ const executeEnrichment = async (context, user, actionContext, element) => {
 export const executePromoteIndicatorToObservables = async (context, user, element, containerId) => {
   const createdObservables = await promoteIndicatorToObservables(context, user, element.internal_id);
   if (containerId && createdObservables.length > 0) {
-    await Promise.all(
+    const relations = await Promise.all(
       createdObservables.map((observable) => {
         const relationInput = {
           toId: observable.id,
@@ -332,7 +332,9 @@ export const executePromoteIndicatorToObservables = async (context, user, elemen
         return stixDomainObjectAddRelation(context, user, containerId, relationInput);
       })
     );
+    return { observables: createdObservables, relations };
   }
+  return { observables: [], relations: [] };
 };
 
 export const executePromoteObservableToIndicator = async (context, user, element, containerId) => {
@@ -342,8 +344,10 @@ export const executePromoteObservableToIndicator = async (context, user, element
       toId: createdIndicator.id,
       relationship_type: 'object'
     };
-    await stixDomainObjectAddRelation(context, user, containerId, relationInput);
+    const relation = await stixDomainObjectAddRelation(context, user, containerId, relationInput);
+    return { indicators: [createdIndicator], relations: [relation] };
   }
+  return { indicators: [], relations: [] };
 };
 
 export const executePromote = async (context, user, element, containerId) => {

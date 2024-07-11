@@ -1,5 +1,4 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import type { BasicStoreEntity } from '../../../src/types/store';
 import { addIndicator, promoteIndicatorToObservables } from '../../../src/modules/indicator/indicator-domain';
 import { addStixCyberObservable, promoteObservableToIndicator, stixCyberObservableDelete } from '../../../src/domain/stixCyberObservable';
 import { executePromoteIndicatorToObservables, executePromoteObservableToIndicator, executeReplace } from '../../../src/manager/taskManager';
@@ -11,7 +10,6 @@ import { findById as findMarkingById } from '../../../src/domain/markingDefiniti
 import { addOrganization, findById as findOrganizationById } from '../../../src/modules/organization/organization-domain';
 import { stixDomainObjectDelete } from '../../../src/domain/stixDomainObject';
 import { type OrganizationAddInput } from '../../../src/generated/graphql';
-import { RELATION_OBJECT } from '../../../src/schema/stixRefRelationship';
 import { promoteObservableInput, promoteIndicatorInput, promoteReportInput } from './taskManager-promote-values/promoteValues';
 
 describe('TaskManager executeReplace tests ', () => {
@@ -299,7 +297,6 @@ describe('TaskManager executePromote tests', () => {
   };
 
   describe('PROMOTE IN CONTAINER', () => {
-    let reportObjectCount = 0;
     let indicatorId = '';
     let observableId = '';
     let containerId = '';
@@ -310,8 +307,6 @@ describe('TaskManager executePromote tests', () => {
       indicatorId = createdIndicator.id;
       observableId = createObservable.id;
       containerId = createdReport.id;
-
-      reportObjectCount = createdReport[RELATION_OBJECT].length;
     });
 
     afterAll(async () => {
@@ -319,15 +314,15 @@ describe('TaskManager executePromote tests', () => {
     });
 
     it('PROMOTE indicator to observable', async () => {
-      await executePromoteIndicatorToObservables(testContext, ADMIN_USER, { internal_id: indicatorId }, containerId);
-      const report = await findReportById(testContext, ADMIN_USER, containerId) as BasicStoreEntity;
-      expect(report[RELATION_OBJECT].length).greaterThan(reportObjectCount);
+      const { observables, relations } = await executePromoteIndicatorToObservables(testContext, ADMIN_USER, { internal_id: indicatorId }, containerId);
+      expect(observables.length).toEqual(1);
+      expect(relations.length).toEqual(1);
     });
 
     it('PROMOTE observable to indicator', async () => {
-      await executePromoteObservableToIndicator(testContext, ADMIN_USER, { internal_id: observableId }, containerId);
-      const report = await findReportById(testContext, ADMIN_USER, containerId) as BasicStoreEntity;
-      expect(report[RELATION_OBJECT].length).greaterThan(reportObjectCount);
+      const { indicators, relations } = await executePromoteObservableToIndicator(testContext, ADMIN_USER, { internal_id: observableId }, containerId);
+      expect(indicators.length).toEqual(1);
+      expect(relations.length).toEqual(1);
     });
   });
 

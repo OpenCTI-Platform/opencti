@@ -2,7 +2,7 @@ import * as R from 'ramda';
 import { v4 as uuidv4 } from 'uuid';
 import { RELATION_CREATED_BY, RELATION_OBJECT } from '../schema/stixRefRelationship';
 import { listAllThings, timeSeriesEntities } from '../database/middleware';
-import { internalFindByIds, internalLoadById, listAllRelations, listEntities, storeLoadById } from '../database/middleware-loader';
+import { internalFindByIds, internalLoadById, listEntities, storeLoadById } from '../database/middleware-loader';
 import {
   ABSTRACT_BASIC_RELATIONSHIP,
   ABSTRACT_STIX_CORE_OBJECT,
@@ -19,6 +19,7 @@ import { findById as findInvestigationById } from '../modules/workspace/workspac
 import { stixCoreObjectAddRelations } from './stixCoreObject';
 import { editAuthorizedMembers } from '../utils/authorizedMembers';
 import { addFilter } from '../utils/filtering/filtering-utils';
+import { INSTANCE_REGARDING_OF } from '../utils/filtering/filtering-constants';
 import { FunctionalError, UnsupportedError } from '../config/errors';
 import { isFeatureEnabled } from '../config/conf';
 import { ENTITY_TYPE_CONTAINER_FEEDBACK } from '../modules/case/feedback/feedback-types';
@@ -54,7 +55,10 @@ export const numberOfContainersForObject = (context, user, args) => {
 
 export const objects = async (context, user, containerId, args) => {
   const types = args.types ? args.types : ['Stix-Core-Object', 'stix-relationship'];
-  const filters = addFilter(args.filters, buildRefRelationKey(RELATION_OBJECT, '*'), containerId);
+  const filters = addFilter(args.filters, INSTANCE_REGARDING_OF, [
+    { key: 'id', values: [containerId] },
+    { key: 'role', values: ['to'] }
+  ]);
   const baseOpts = { ...args, types, filters, indices: [...READ_ENTITIES_INDICES, ...READ_RELATIONSHIPS_INDICES] };
   if (args.all) {
     // TODO Should be handled by the frontend to split the load
