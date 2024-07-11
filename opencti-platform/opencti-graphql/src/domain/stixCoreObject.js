@@ -715,7 +715,7 @@ export const stixCoreObjectImportDelete = async (context, user, fileId) => {
     await deleteFile(context, user, fileId);
     // Patch the updated_at to force live stream evolution
     const files = (previous.x_opencti_files ?? []).filter((f) => f.id !== fileId);
-    await elUpdateElement(context, user,{
+    await elUpdateElement(context, user, {
       _index: previous._index,
       internal_id: entityId,
       updated_at: now(),
