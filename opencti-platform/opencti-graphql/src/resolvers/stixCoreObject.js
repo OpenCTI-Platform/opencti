@@ -130,7 +130,7 @@ const stixCoreObjectResolvers = {
     stixCoreObjectsDistribution: (stixCoreObject, args, context) => stixCoreObjectsDistributionByEntity(context, context.user, { ...args, objectId: stixCoreObject.id }),
     stixCoreRelationshipsDistribution: (stixCoreObject, args, context) => distributionRelations(context, context.user, { ...args, fromOrToId: stixCoreObject.id }),
     containersNumber: (stixCoreObject, args, context) => numberOfContainersForObject(context, context.user, { ...args, objectId: stixCoreObject.id }),
-    numberOfConnectedElement: (stixCoreObject) => stixCoreObjectsConnectedNumber(stixCoreObject),
+    numberOfConnectedElement: (stixCoreObject, _, context) => stixCoreObjectsConnectedNumber(context, context.user, stixCoreObject),
     // Retro compatibility
     spec_version: getSpecVersionOrDefault
   },
