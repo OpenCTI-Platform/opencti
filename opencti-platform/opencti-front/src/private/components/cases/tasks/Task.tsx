@@ -29,6 +29,10 @@ export const taskFragment = graphql`
     description
     workflowEnabled
     revoked
+    created_at
+    updated_at
+    created
+    modified
     creators {
       id
       name
