@@ -796,8 +796,7 @@ const LeftBar = () => {
             <Security needs={[EXPLORE]}>
               <StyledTooltip title={!navOpen && t_i18n('Dashboards')} placement="right">
                 <MenuItem
-                  component={Link}
-                  to="/dashboard/workspaces/dashboards"
+                  ref={anchors.dashboards}
                   selected={!navOpen && location.pathname.includes('/dashboard/workspaces/dashboards')}
                   dense={true}
                   classes={{ root: classes.menuItem }}
@@ -822,7 +821,7 @@ const LeftBar = () => {
               'dashboards',
               [
                 { type: 'Dashboard', link: '/dashboard/workspaces/dashboards', label: 'Dashboards' },
-                { type: 'Dashboard', link: '/dashboard/workspaces/publicdashboards', label: 'Public Dashboards' },
+                { type: 'Dashboard', link: '/dashboard/workspaces/public', label: 'Public Dashboards' },
               ],
             )}
             <Security needs={[INVESTIGATION]}>
