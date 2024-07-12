@@ -171,7 +171,6 @@ class RootIndividual extends Component {
                       />
                       <StixDomainObjectHeader
                         entityType="Individual"
-                        disableSharing={true}
                         stixDomainObject={individual}
                         isOpenctiAlias={true}
                         enableQuickSubscription={true}

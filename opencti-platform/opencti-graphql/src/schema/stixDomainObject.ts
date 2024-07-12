@@ -21,6 +21,7 @@ import { ENTITY_TYPE_CONTAINER_FEEDBACK } from '../modules/case/feedback/feedbac
 import { ENTITY_TYPE_CONTAINER_TASK } from '../modules/task/task-types';
 import { ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL } from '../modules/threatActorIndividual/threatActorIndividual-types';
 import { ENTITY_TYPE_DELETE_OPERATION } from '../modules/deleteOperation/deleteOperation-types';
+import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
 
 export const ATTRIBUTE_NAME = 'name';
 export const ATTRIBUTE_ABSTRACT = 'attribute_abstract';
@@ -183,7 +184,8 @@ export const STIX_ORGANIZATIONS_UNRESTRICTED = [
   ABSTRACT_INTERNAL_RELATIONSHIP,
   ABSTRACT_STIX_META_OBJECT,
   ABSTRACT_STIX_REF_RELATIONSHIP,
-  ENTITY_TYPE_IDENTITY,
+  ENTITY_TYPE_IDENTITY_ORGANIZATION,
+  ENTITY_TYPE_IDENTITY_SECTOR,
   ENTITY_TYPE_LOCATION,
   ENTITY_TYPE_WORK, // Work is defined as an history object
   ENTITY_TYPE_TAXII_COLLECTION, // TODO TaxiiCollection must be migrate to add according parent types

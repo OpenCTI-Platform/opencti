@@ -92,7 +92,7 @@ class RootNote extends Component {
               if (props.note) {
                 const { note } = props;
                 return (
-                  <div>
+                  <>
                     <CollaborativeSecurity
                       data={note}
                       needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}
@@ -178,7 +178,7 @@ class RootNote extends Component {
                         }
                       />
                     </Routes>
-                  </div>
+                  </>
                 );
               }
               return <ErrorNotFound />;
