@@ -2,9 +2,10 @@ import React, { FunctionComponent } from 'react';
 import { PreloadedQuery } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import List from '@mui/material/List';
-import { NarrativesLines_data$key } from '@components/techniques/narratives/__generated__/NarrativesLines_data.graphql';
-import { NarrativesLinesPaginationQuery, NarrativesLinesPaginationQuery$variables } from './__generated__/NarrativesLinesPaginationQuery.graphql';
-import { NarrativeLine_node$data } from './__generated__/NarrativeLine_node.graphql';
+import { NarrativesLines_data$data, NarrativesLines_data$key } from '@components/techniques/narratives/__generated__/NarrativesLines_data.graphql';
+import * as R from 'ramda';
+import { NarrativeLine_node$key } from '@components/techniques/narratives/__generated__/NarrativeLine_node.graphql';
+import { NarrativesLinesPaginationQuery } from './__generated__/NarrativesLinesPaginationQuery.graphql';
 import { narrativesLinesFragment, narrativesLinesQuery } from './NarrativesLines';
 import NarrativeWithSubnarrativeLine, { NarrativeWithSubnarrativeLineDummy } from './NarrativeWithSubnarrativeLine';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
@@ -32,18 +33,10 @@ export interface NarrativeNode {
 
 interface NarrativesWithSubnarrativesLinesProps {
   queryRef: PreloadedQuery<NarrativesLinesPaginationQuery>;
-  paginationOptions: NarrativesLinesPaginationQuery$variables;
-  onToggleEntity: (
-    entity: NarrativeLine_node$data,
-    event: React.SyntheticEvent
-  ) => void;
-  redirectionMode?: string;
-  keyword: string;
 }
 
 const NarrativesWithSubnarrativesLines: FunctionComponent<NarrativesWithSubnarrativesLinesProps> = ({
   queryRef,
-  keyword,
 }) => {
   const classes = useStyles();
   const { data } = usePreloadedPaginationFragment<
@@ -56,52 +49,16 @@ const NarrativesWithSubnarrativesLines: FunctionComponent<NarrativesWithSubnarra
     nodePath: ['narratives', 'pageInfo', 'globalCount'],
   });
 
-  const filterByKeyword = (n: NarrativeNode) => {
-    console.log('filterByKeyword', n);
-    return keyword === ''
-    || n.name.toLowerCase().indexOf(keyword.toLowerCase()) !== -1
-    || (n.description ?? '').toLowerCase().indexOf(keyword.toLowerCase()) !== -1
-    || (n?.subNarrativesText ?? '').toLowerCase().indexOf(keyword.toLowerCase()) !== -1;
-  };
+  const allNarratives = ((data?.narratives?.edges ?? []).map((nnode) => nnode?.node));
 
-  const filterSubNarrativeByKeyword = (n: SubNarrativeNode) => {
-    console.log('filterSubNarrativeByKeyword', n);
-    return keyword === ''
-        || n.name.toLowerCase().indexOf(keyword.toLowerCase()) !== -1
-        || (n.description ?? '').toLowerCase().indexOf(keyword.toLowerCase()) !== -1;
-  };
+  const narratives = allNarratives.filter((n) => !n.isSubNarrative);
 
-  console.log('data?.narratives?.edges', { plouf: data?.narratives?.edges });
+  const subNarrativesOnly = allNarratives
+    .filter((n) => n.isSubNarrative)
+    .filter((n) => n.parentNarratives)
+    .filter(({ parentNarratives }) => (parentNarratives?.edges ?? []).some(({ node }) => !narratives.some(({ id }) => id === node.id)));
 
-  const narratives = ((data?.narratives?.edges ?? []).map((nnode) => nnode?.node)
-    /* .map((n) => ({
-      ...n,
-      isSubNarrative: n?.isSubNarrative ?? false,
-      subNarratives: n?.subNarratives ?? { edges: [] },
-      subNarrativesText: ((n?.subNarratives ?? {}).edges ?? []).map((o) => `${o?.node.name} ${o?.node.description}`).join(' | '),
-    }))) */
-    .map((n) => {
-      console.log('Mapping', n);
-      const subNarratives: SubNarrativeNode[] = [];
-      if (n?.subNarratives?.edges) {
-        for (let i = 0; i < n?.subNarratives?.edges?.length; i += 1) {
-          subNarratives.push(n?.subNarratives?.edges[i].node as SubNarrativeNode);
-        }
-      }
-      const narrativeNode: NarrativeNode = {
-        description: n.description,
-        id: n.id,
-        name: n.name,
-        isSubNarrative: n?.isSubNarrative ?? false,
-        subNarrativesText: ((n?.subNarratives ?? {}).edges ?? []).map((o) => `${o?.node.name} ${o?.node.description}`).join(' | '),
-        subNarratives,
-      };
-      console.log('Mapping to', narrativeNode);
-      return narrativeNode;
-    })
-    // .filter((n) => !n.isSubNarrative)
-    .filter(filterByKeyword)
-    .sort((a, b) => (a?.name ?? '').localeCompare(b?.name ?? '')));
+  const parentOnlyNarratives = R.uniq(subNarrativesOnly.flatMap(({ parentNarratives }) => parentNarratives?.edges?.map(({ node }) => node)));
 
   return (
     <List
@@ -110,16 +67,11 @@ const NarrativesWithSubnarrativesLines: FunctionComponent<NarrativesWithSubnarra
       className={classes.root}
     >
       {data
-        ? narratives.map((narrative) => {
-          const subNarratives = ((narrative.subNarratives ?? [])
-            // .filter(filterSubNarrativeByKeyword)
-            .sort((a, b) => (a?.name ?? '').localeCompare(b?.name ?? '')));
-          console.log('RENDER narrative', narrative);
+        ? ([...narratives, ...parentOnlyNarratives] as unknown as SubNarrativeNode[]).map((narrative) => {
           return (
             <NarrativeWithSubnarrativeLine
               key={narrative.id}
               node={narrative}
-              subNarratives={subNarratives}
             />
           );
         })

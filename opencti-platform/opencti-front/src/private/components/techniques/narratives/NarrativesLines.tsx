@@ -2,12 +2,12 @@ import React, { FunctionComponent } from 'react';
 import { graphql, PreloadedQuery } from 'react-relay';
 import { NarrativesLinesPaginationQuery, NarrativesLinesPaginationQuery$variables } from '@components/techniques/narratives/__generated__/NarrativesLinesPaginationQuery.graphql';
 import { NarrativesLines_data$key } from '@components/techniques/narratives/__generated__/NarrativesLines_data.graphql';
-import { NarrativeLine_node$data } from './__generated__/NarrativeLine_node.graphql';
 import { NarrativeLine, NarrativeLineDummy } from './NarrativeLine';
 import { DataColumns } from '../../../../components/list_lines';
 import { HandleAddFilter, UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
+import { NarrativeLine_node$data } from './__generated__/NarrativeLine_node.graphql';
 
 const nbOfRowsToLoad = 50;
 
@@ -70,32 +70,16 @@ export const narrativesLinesFragment = graphql`
       edges {
         node {
           id
-          name
-          description
-          created
-          modified
-          objectMarking {
-            id
-            definition_type
-            definition
-            x_opencti_order
-            x_opencti_color
-          }
-          objectLabel {
-            id
-            value
-            color
-          }
           isSubNarrative
-          subNarratives {
+          parentNarratives {
             edges {
               node {
                 id
-                name
-                description
+                ...NarrativeLine_node
               }
             }
           }
+          ...NarrativeLine_node
         }
       }
       pageInfo {

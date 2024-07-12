@@ -116,24 +116,21 @@ const Narratives: FunctionComponent = () => {
         </div>
         <div className="clearfix" />
         {queryRef && (
-        <React.Suspense
-          fallback={
-            <>
-              {Array(20)
-                .fill(0)
-                .map((_, idx) => (
-                  <NarrativeWithSubnarrativeLineDummy key={idx}/>
-                ))}
-            </>
-                    }
-        >
-          <NarrativesWithSubnarrativesLines
-            queryRef={queryRef}
-            paginationOptions={queryPaginationOptions}
-            onToggleEntity={onToggleEntity}
-            keyword={searchTerm || ''}
-          />
-        </React.Suspense>
+          <React.Suspense
+            fallback={
+              <>
+                {Array(20)
+                  .fill(0)
+                  .map((_, idx) => (
+                    <NarrativeWithSubnarrativeLineDummy key={idx} />
+                  ))}
+              </>
+            }
+          >
+            <NarrativesWithSubnarrativesLines
+              queryRef={queryRef}
+            />
+          </React.Suspense>
         )}
       </>
     );
@@ -196,7 +193,7 @@ const Narratives: FunctionComponent = () => {
           iconExtension={true}
           createButton={FAB_REPLACED && <Security needs={[KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNPARTICIPATE]}>
             <NarrativeCreation paginationOptions={queryPaginationOptions} />
-            </Security>}
+          </Security>}
         >
           {queryRef && (
             <React.Suspense
@@ -208,7 +205,7 @@ const Narratives: FunctionComponent = () => {
                       <NarrativeLineDummy key={idx} dataColumns={dataColumns} />
                     ))}
                 </>
-                  }
+              }
             >
               <NarrativesLines
                 queryRef={queryRef}
@@ -243,9 +240,9 @@ const Narratives: FunctionComponent = () => {
       {view === 'lines' ? renderLines() : ''}
       {view === 'subEntityLines' ? renderSubEntityLines() : ''}
       {!FAB_REPLACED
-          && <Security needs={[KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNPARTICIPATE]}>
-            <NarrativeCreation paginationOptions={queryPaginationOptions} />
-          </Security>
+        && <Security needs={[KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNPARTICIPATE]}>
+          <NarrativeCreation paginationOptions={queryPaginationOptions} />
+        </Security>
       }
     </ExportContextProvider>
   );

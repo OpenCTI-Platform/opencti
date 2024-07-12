@@ -24,6 +24,7 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import Box from '@mui/material/Box';
+import { SublistViewIcon } from 'filigran-icon';
 import { ErrorBoundary } from '../../private/components/Error';
 import { UserContext } from '../../utils/hooks/useAuth';
 import Filters from '../../private/components/common/lists/Filters';
@@ -376,14 +377,7 @@ class ListLines extends Component {
                   {typeof handleChangeView === 'function' && enableSubEntityLines && (
                     <ToggleButton value="subEntityLines" aria-label="subEntityLines">
                       <Tooltip title={t('Sub entity lines view')}>
-                        <ViewListOutlined
-                          fontSize="small"
-                          color={
-                            currentView === 'subEntityLines'
-                              ? 'secondary'
-                              : 'primary'
-                          }
-                        />
+                        <SublistViewIcon />
                       </Tooltip>
                     </ToggleButton>
                   )}

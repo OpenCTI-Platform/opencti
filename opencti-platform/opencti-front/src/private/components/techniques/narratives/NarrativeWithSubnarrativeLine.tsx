@@ -10,8 +10,11 @@ import { Theme } from '@mui/material/styles/createTheme';
 import Skeleton from '@mui/material/Skeleton';
 import { ListItemButton } from '@mui/material';
 import { NarrativeNode, SubNarrativeNode } from '@components/techniques/narratives/NarrativesWithSubnarrativesLines';
+import { useFragment } from 'react-relay';
 import ItemIcon from '../../../../components/ItemIcon';
 import { emptyFilled } from '../../../../utils/String';
+import { narrativeLineFragment } from './NarrativeLine';
+import { NarrativeLine_node$data, NarrativeLine_node$key } from '@components/techniques/narratives/__generated__/NarrativeLine_node.graphql';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   item: {},
@@ -49,11 +52,18 @@ const useStyles = makeStyles<Theme>((theme) => ({
 interface NarrativeWithSubnarrativeLineProps {
   isSubNarrative?: boolean;
   subNarratives?: SubNarrativeNode[];
-  node: NarrativeNode | SubNarrativeNode;
+  node: SubNarrativeNode | NarrativeLine_node$key;
 }
 
-const NarrativeWithSubnarrativeLine: FunctionComponent<NarrativeWithSubnarrativeLineProps> = ({ node, subNarratives, isSubNarrative }) => {
+const NarrativeWithSubnarrativeLine: FunctionComponent<NarrativeWithSubnarrativeLineProps> = ({ node, isSubNarrative }) => {
   const classes = useStyles();
+
+  let data: SubNarrativeNode | NarrativeLine_node$data = node as SubNarrativeNode;
+  if (!isSubNarrative) {
+    data = useFragment(narrativeLineFragment, node as NarrativeLine_node$key);
+  }
+
+  const subNarratives: NarrativeWithSubnarrativeLineProps['subNarratives'] = ((data as NarrativeLine_node$data).subNarratives?.edges ?? []).map(({ node }) => node);
 
   return (
     <div>
@@ -61,7 +71,7 @@ const NarrativeWithSubnarrativeLine: FunctionComponent<NarrativeWithSubnarrative
         classes={{ root: isSubNarrative ? classes.itemNested : classes.item }}
         divider
         component={Link}
-        to={`/dashboard/techniques/narratives/${node.id}`}
+        to={`/dashboard/techniques/narratives/${data.id}`}
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
           <ItemIcon
@@ -72,9 +82,9 @@ const NarrativeWithSubnarrativeLine: FunctionComponent<NarrativeWithSubnarrative
         <ListItemText
           primary={
             <>
-              <div className={classes.name}>{node.name}</div>
+              <div className={classes.name}>{data.name}</div>
               <div className={classes.description}>
-                {emptyFilled(node.description)}
+                {emptyFilled(data.description)}
               </div>
             </>
               }

@@ -10,7 +10,8 @@ import { Theme } from '@mui/material/styles/createTheme';
 import StixCoreObjectLabels from '@components/common/stix_core_objects/StixCoreObjectLabels';
 import Tooltip from '@mui/material/Tooltip';
 import Checkbox from '@mui/material/Checkbox';
-import { NarrativeLine_node$data } from './__generated__/NarrativeLine_node.graphql';
+import { graphql, useFragment } from 'react-relay';
+import { NarrativeLine_node$data, NarrativeLine_node$key } from './__generated__/NarrativeLine_node.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import { DataColumns } from '../../../../components/list_lines';
@@ -42,7 +43,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 interface NarrativeLineProps {
-  node: NarrativeLine_node$data;
+  node: NarrativeLine_node$key;
   dataColumns: DataColumns;
   onLabelClick: HandleAddFilter;
   selectedElements: Record<string, NarrativeLine_node$data>;
@@ -60,6 +61,48 @@ interface NarrativeLineProps {
   index: number;
   redirectionMode: string;
 }
+
+export const narrativeLineFragment = graphql`
+  fragment NarrativeLine_node on Narrative {
+    id
+    name
+    description
+    created
+    modified
+    objectMarking {
+      id
+      definition_type
+      definition
+      x_opencti_order
+      x_opencti_color
+    }
+    objectLabel {
+      id
+      value
+      color
+    }
+    isSubNarrative
+    parentNarratives {
+      edges {
+        node {
+          id
+          name
+          description
+        }
+      }
+    }
+    subNarratives {
+      edges {
+        node {
+          id
+          name
+          description
+        }
+      }
+    }
+  }
+`;
+
 export const NarrativeLine: FunctionComponent<NarrativeLineProps> = ({
   dataColumns,
   node,
@@ -73,26 +116,27 @@ export const NarrativeLine: FunctionComponent<NarrativeLineProps> = ({
 }) => {
   const classes = useStyles();
   const { fd } = useFormatter();
+  const data = useFragment(narrativeLineFragment, node);
   return (
     <ListItem
       classes={{ root: classes.item }}
       divider={true}
       component={Link}
-      to={`/dashboard/techniques/narratives/${node.id}`}
+      to={`/dashboard/techniques/narratives/${data.id}`}
     >
       <ListItemIcon
         classes={{ root: classes.itemIcon }}
         style={{ minWidth: 40 }}
         onClick={(event) => (event.shiftKey
-          ? onToggleShiftEntity(index, node, event)
-          : onToggleEntity(node, event))
+          ? onToggleShiftEntity(index, data, event)
+          : onToggleEntity(data, event))
           }
       >
         <Checkbox
           edge="start"
           checked={
-            (selectAll && !(node.id in (deSelectedElements || {})))
-            || node.id in (selectedElements || {})
+            (selectAll && !(data.id in (deSelectedElements || {})))
+            || data.id in (selectedElements || {})
           }
           disableRipple={true}
         />
@@ -103,19 +147,19 @@ export const NarrativeLine: FunctionComponent<NarrativeLineProps> = ({
       <ListItemText
         primary={
           <>
-            <Tooltip title={node.name}>
+            <Tooltip title={data.name}>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.name.width }}
               >
-                {node.name}
+                {data.name}
               </div>
             </Tooltip>
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.description.width }}
             >
-              {emptyFilled(node.description)}
+              {emptyFilled(data.description)}
             </div>
             <div
               className={classes.bodyItem}
@@ -123,7 +167,7 @@ export const NarrativeLine: FunctionComponent<NarrativeLineProps> = ({
             >
               <StixCoreObjectLabels
                 variant="inList"
-                labels={node.objectLabel}
+                labels={data.objectLabel}
                 onClick={onLabelClick}
               />
             </div>
@@ -131,13 +175,13 @@ export const NarrativeLine: FunctionComponent<NarrativeLineProps> = ({
               className={classes.bodyItem}
               style={{ width: dataColumns.created.width }}
             >
-              {fd(node.created)}
+              {fd(data.created)}
             </div>
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.modified.width }}
             >
-              {fd(node.modified)}
+              {fd(data.modified)}
             </div>
           </>
             }

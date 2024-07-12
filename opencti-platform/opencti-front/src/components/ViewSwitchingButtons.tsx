@@ -4,6 +4,7 @@ import Tooltip from '@mui/material/Tooltip';
 import { LibraryBooksOutlined, ViewListOutlined, ViewModuleOutlined } from '@mui/icons-material';
 import { FormatListGroup, Group, RelationManyToMany, VectorPolygon } from 'mdi-material-ui';
 import { ToggleButtonGroup } from '@mui/material';
+import { SublistViewIcon } from 'filigran-icon';
 import { useFormatter } from './i18n';
 
 interface ViewSwitchingButtonsProps {
@@ -93,14 +94,7 @@ const ViewSwitchingButtons: FunctionComponent<ViewSwitchingButtonsProps> = ({
         {typeof handleChangeView === 'function' && enableSubEntityLines && (
         <ToggleButton value="subEntityLines" aria-label="subEntityLines">
           <Tooltip title={t_i18n('Sub entity lines view')}>
-            <ViewListOutlined
-              fontSize="small"
-              color={
-                currentView === 'subEntityLines'
-                  ? 'secondary'
-                  : 'primary'
-                }
-            />
+            <SublistViewIcon />
           </Tooltip>
         </ToggleButton>
         )}
