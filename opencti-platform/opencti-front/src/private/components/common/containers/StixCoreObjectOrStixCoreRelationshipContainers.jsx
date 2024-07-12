@@ -34,6 +34,13 @@ const useStyles = makeStyles(() => ({
     paddingBottom: 0,
   },
 }));
+
+/**
+ * @param stixDomainObjectOrStixCoreRelationship {any}
+ * @param authorId {string | undefined}
+ * @param onChangeOpenExports {Function | undefined}
+ * @param reportType {string | undefined}
+ */
 const StixCoreObjectOrStixCoreRelationshipContainers = ({
   stixDomainObjectOrStixCoreRelationship,
   authorId,

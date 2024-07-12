@@ -1,7 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-// TODO Remove this when V6
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-nocheck
 import React, { Suspense, useMemo } from 'react';
 import { Link, Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom';
 import { graphql, useSubscription, usePreloadedQuery, PreloadedQuery } from 'react-relay';
@@ -85,7 +81,7 @@ const RootChannel = ({ queryRef, channelId }: RootChannelProps) => {
 
   const location = useLocation();
   const { t_i18n } = useFormatter();
-  useSubscription(subConfig);
+  useSubscription<RootChannelSubscription>(subConfig);
 
   const {
     channel,
@@ -251,7 +247,7 @@ const RootChannel = ({ queryRef, channelId }: RootChannelProps) => {
 };
 
 const Root = () => {
-  const { channelId } = useParams() as { channelId: string; };
+  const { channelId } = useParams() as { channelId: string };
   const queryRef = useQueryLoading<RootChannelQuery>(channelQuery, {
     id: channelId,
   });
