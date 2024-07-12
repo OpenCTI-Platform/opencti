@@ -487,6 +487,8 @@ export const buildDataRestrictions = async (context, user, opts = {}) => {
           should.push({ match: { 'internal_id.keyword': user.individual_id } });
           should.push({ match: { [buildRefRelationSearchKey(RELATION_CREATED_BY)]: user.individual_id } });
         }
+        // For tasks
+        should.push({ match: { 'initiator_id.keyword': user.internal_id } });
         // Finally build the bool should search
         must.push({ bool: { should, minimum_should_match: 1 } });
       }
@@ -505,6 +507,8 @@ export const buildDataRestrictions = async (context, user, opts = {}) => {
         should.push({ match: { 'internal_id.keyword': user.individual_id } });
         should.push({ match: { [buildRefRelationSearchKey(RELATION_CREATED_BY)]: user.individual_id } });
       }
+      // For tasks
+      should.push({ match: { 'initiator_id.keyword': user.internal_id } });
       // Finally build the bool should search
       must.push({ bool: { should, minimum_should_match: 1 } });
     }
