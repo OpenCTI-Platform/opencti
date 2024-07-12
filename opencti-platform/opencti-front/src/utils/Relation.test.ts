@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { getRelationsFromOneEntityToAny, resolveRelationsTypes } from './Relation';
+import { getRelationsFromOneEntityToAny, resolveRelationsTypes, resolveTypesForRelationshipRef } from './Relation';
 import { type SchemaType } from './hooks/useAuth';
 
 // Subset of schemas to tests utilities
@@ -26,6 +26,7 @@ const testSchema: SchemaType = {
     ['*_Case-Incident', [{ name: 'createdBy', toTypes: ['Individual'] }]],
     ['*_Case-Rfi', [{ name: 'createdBy', toTypes: ['Individual'] }]],
     ['*_Case-Rft', [{ name: 'createdBy', toTypes: ['Individual'] }]],
+    ['Report', [{ name: 'objects', toTypes: ['Stix-Core-Object'] }]],
   ]),
   scos: [
     { id: 'Artifact', label: 'Artifact' },
@@ -107,5 +108,10 @@ describe('Test schema utilities functions', () => {
     expect(result.allPossibleRelations.length).toBe(1);
     expect(result.allPossibleRelations[0]).toBe('related-to');
     expect(result.allRelationsToEntity.length).toBe(20);
+  });
+
+  it('should resolve relationship types for ref with a container', () => {
+    const result = resolveTypesForRelationshipRef(testSchema.schemaRelationsRefTypesMapping, 'Report', 'objects');
+    expect(result).toEqual(['Stix-Core-Object']);
   });
 });
