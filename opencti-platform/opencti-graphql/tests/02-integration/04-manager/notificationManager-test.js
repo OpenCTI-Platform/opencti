@@ -483,7 +483,7 @@ describe('Notification manager behaviors test', async () => {
     result = await generateNotificationMessageForInstanceWithRefs(context, adminUser, stixCoreRelationship, [stixGreenOrganization, stixMalware]);
     expect(result).toEqual('[relationship] attack-pattern_entity delivers malware_entity containing [organization] greenOrganization_name,[malware] malware_name');
     result = await generateNotificationMessageForInstanceWithRefs(context, greenUser, stixCoreRelationship, [stixGreenOrganization, stixMalware]);
-    expect(result).toEqual('[relationship] Restricted delivers malware_entity containing [organization] greenOrganization_name,[malware] malware_name');
+    expect(result).toEqual('[relationship] attack-pattern_entity delivers malware_entity containing [organization] greenOrganization_name,[malware] malware_name');
 
     result = await generateNotificationMessageForInstanceWithRefsUpdate(context, adminUser, stixReport, [{
       instance: stixGreenOrganization,
