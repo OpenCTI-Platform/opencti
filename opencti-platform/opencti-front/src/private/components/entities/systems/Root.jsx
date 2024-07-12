@@ -166,7 +166,6 @@ class RootSystem extends Component {
                       />
                       <StixDomainObjectHeader
                         entityType="System"
-                        disableSharing={true}
                         stixDomainObject={system}
                         isOpenctiAlias={true}
                         enableQuickSubscription={true}
