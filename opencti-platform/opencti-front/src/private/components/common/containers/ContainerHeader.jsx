@@ -727,7 +727,7 @@ const ContainerHeader = (props) => {
     // container knowledge / graph style
     containerStyle = {
       position: 'absolute',
-      top: 165 + settingsMessagesBannerHeight,
+      top: 158 + settingsMessagesBannerHeight,
       right: 24,
     };
   }

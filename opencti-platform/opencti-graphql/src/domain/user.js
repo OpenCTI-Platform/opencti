@@ -54,7 +54,6 @@ import {
   INTERNAL_USERS,
   isBypassUser,
   isUserHasCapability,
-  KNOWLEDGE_ORGANIZATION_RESTRICT,
   REDACTED_USER,
   SETTINGS_SET_ACCESSES,
   SYSTEM_USER,
@@ -352,7 +351,7 @@ export const getRoles = async (context, userGroups) => {
   return listAllToEntitiesThroughRelations(context, SYSTEM_USER, groupIds, RELATION_HAS_ROLE, ENTITY_TYPE_ROLE);
 };
 
-export const getCapabilities = async (context, userId, userRoles, isUserPlatform) => {
+export const getCapabilities = async (context, userId, userRoles) => {
   const roleIds = userRoles.map((r) => r.id);
   const capabilities = await listAllToEntitiesThroughRelations(context, SYSTEM_USER, roleIds, RELATION_HAS_CAPABILITY, ENTITY_TYPE_CAPABILITY);
   // Force push the bypass for default admin
@@ -362,7 +361,7 @@ export const getCapabilities = async (context, userId, userRoles, isUserPlatform
     capabilities.push({ id, standard_id: id, internal_id: id, name: BYPASS });
     return capabilities;
   }
-  return isUserPlatform ? capabilities : capabilities.filter((c) => c.name !== KNOWLEDGE_ORGANIZATION_RESTRICT);
+  return capabilities;
 };
 
 export const roleCapabilities = async (context, user, roleId) => {
@@ -1281,7 +1280,7 @@ export const buildCompleteUser = async (context, client) => {
   const isUserPlatform = settings.platform_organization ? userOrganizations.includes(settings.platform_organization) : true;
   const [individuals, organizations, groups] = await Promise.all([individualsPromise, organizationsPromise, userGroupsPromise]);
   const roles = await getRoles(context, groups);
-  const capabilities = await getCapabilities(context, client.id, roles, isUserPlatform);
+  const capabilities = await getCapabilities(context, client.id, roles);
   const marking = await getUserAndGlobalMarkings(context, client.id, groups, capabilities);
   const administrated_organizations = organizations.filter((o) => o.authorized_authorities?.includes(client.id));
   if (administrated_organizations.length > 0) {
