@@ -1,10 +1,10 @@
 import React, { FunctionComponent } from 'react';
 import ToggleButton from '@mui/material/ToggleButton';
 import Tooltip from '@mui/material/Tooltip';
-import { LibraryBooksOutlined, ViewListOutlined, ViewModuleOutlined } from '@mui/icons-material';
+import { LibraryBooksOutlined, ViewModuleOutlined } from '@mui/icons-material';
 import { FormatListGroup, Group, RelationManyToMany, VectorPolygon } from 'mdi-material-ui';
 import { ToggleButtonGroup } from '@mui/material';
-import { SublistViewIcon } from 'filigran-icon';
+import { ListViewIcon, SublistViewIcon } from 'filigran-icon';
 import { useFormatter } from './i18n';
 
 interface ViewSwitchingButtonsProps {
@@ -80,13 +80,13 @@ const ViewSwitchingButtons: FunctionComponent<ViewSwitchingButtonsProps> = ({
         && !enableEntitiesView && (
         <ToggleButton value="lines" onClick={() => handleChangeView('lines')} aria-label="lines">
           <Tooltip title={t_i18n('Lines view')}>
-            <ViewListOutlined
-              fontSize="small"
+            <ListViewIcon
+              style={{ height: 16, width: 16 }}
               color={
                 currentView === 'lines' || !currentView
                   ? 'secondary'
                   : 'primary'
-                }
+              }
             />
           </Tooltip>
         </ToggleButton>
@@ -94,7 +94,14 @@ const ViewSwitchingButtons: FunctionComponent<ViewSwitchingButtonsProps> = ({
         {typeof handleChangeView === 'function' && enableSubEntityLines && (
         <ToggleButton value="subEntityLines" aria-label="subEntityLines">
           <Tooltip title={t_i18n('Sub entity lines view')}>
-            <SublistViewIcon />
+            <SublistViewIcon
+              style={{ height: 16, width: 16 }}
+              color={
+                currentView === 'subEntityLines' || !currentView
+                  ? 'secondary'
+                  : 'primary'
+              }
+            />
           </Tooltip>
         </ToggleButton>
         )}

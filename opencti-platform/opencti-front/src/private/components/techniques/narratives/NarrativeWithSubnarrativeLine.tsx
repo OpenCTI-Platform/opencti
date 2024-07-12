@@ -9,12 +9,12 @@ import { makeStyles } from '@mui/styles';
 import { Theme } from '@mui/material/styles/createTheme';
 import Skeleton from '@mui/material/Skeleton';
 import { ListItemButton } from '@mui/material';
-import { NarrativeNode, SubNarrativeNode } from '@components/techniques/narratives/NarrativesWithSubnarrativesLines';
+import { SubNarrativeNode } from '@components/techniques/narratives/NarrativesWithSubnarrativesLines';
 import { useFragment } from 'react-relay';
+import { NarrativeLine_node$data, NarrativeLine_node$key } from '@components/techniques/narratives/__generated__/NarrativeLine_node.graphql';
 import ItemIcon from '../../../../components/ItemIcon';
 import { emptyFilled } from '../../../../utils/String';
 import { narrativeLineFragment } from './NarrativeLine';
-import { NarrativeLine_node$data, NarrativeLine_node$key } from '@components/techniques/narratives/__generated__/NarrativeLine_node.graphql';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   item: {},

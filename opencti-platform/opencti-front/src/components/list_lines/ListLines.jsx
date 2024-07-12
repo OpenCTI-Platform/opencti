@@ -8,7 +8,7 @@ import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
-import { ArrowDropDown, ArrowDropUp, FileDownloadOutlined, LibraryBooksOutlined, SettingsOutlined, ViewListOutlined, ViewModuleOutlined } from '@mui/icons-material';
+import { ArrowDropDown, ArrowDropUp, FileDownloadOutlined, LibraryBooksOutlined, SettingsOutlined, ViewModuleOutlined } from '@mui/icons-material';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import Checkbox from '@mui/material/Checkbox';
@@ -24,7 +24,7 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import Box from '@mui/material/Box';
-import { SublistViewIcon } from 'filigran-icon';
+import { ListViewIcon, SublistViewIcon } from 'filigran-icon';
 import { ErrorBoundary } from '../../private/components/Error';
 import { UserContext } from '../../utils/hooks/useAuth';
 import Filters from '../../private/components/common/lists/Filters';
@@ -331,8 +331,8 @@ class ListLines extends Component {
                     && !enableEntitiesView && (
                       <ToggleButton value="lines" aria-label="lines">
                         <Tooltip title={t('Lines view')}>
-                          <ViewListOutlined
-                            fontSize="small"
+                          <ListViewIcon
+                            style={{ height: 16, width: 16 }}
                             color={
                               currentView === 'lines' || !currentView
                                 ? 'secondary'
@@ -377,7 +377,14 @@ class ListLines extends Component {
                   {typeof handleChangeView === 'function' && enableSubEntityLines && (
                     <ToggleButton value="subEntityLines" aria-label="subEntityLines">
                       <Tooltip title={t('Sub entity lines view')}>
-                        <SublistViewIcon />
+                        <SublistViewIcon
+                          style={{ height: 16, width: 16 }}
+                          color={
+                            currentView === 'subEntityLines' || !currentView
+                              ? 'secondary'
+                              : 'primary'
+                          }
+                        />
                       </Tooltip>
                     </ToggleButton>
                   )}
