@@ -19,7 +19,7 @@ import ErrorNotFound from '../../../../components/ErrorNotFound';
 import CourseOfActionKnowledge from './CourseOfActionKnowledge';
 import inject18n from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
-import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
+import { getCurrentTab } from '../../../../utils/utils';
 
 const subscription = graphql`
   subscription RootCoursesOfActionSubscription($id: ID!) {
@@ -92,9 +92,8 @@ class RootCourseOfAction extends Component {
             if (props) {
               if (props.courseOfAction) {
                 const { courseOfAction } = props;
-                const paddingRight = getPaddingRight(location.pathname, courseOfAction.id, '/dashboard/techniques/courses_of_action');
                 return (
-                  <div style={{ paddingRight }}>
+                  <div>
                     <Breadcrumbs variant="object" elements={[
                       { label: t('Techniques') },
                       { label: t('Courses of action'), link: '/dashboard/techniques/courses_of_action' },

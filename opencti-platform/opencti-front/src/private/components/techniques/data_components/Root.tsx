@@ -23,7 +23,7 @@ import DataComponentKnowledge from './DataComponentKnowledge';
 import { RootDataComponentSubscription } from './__generated__/RootDataComponentSubscription.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
-import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
+import { getCurrentTab } from '../../../../utils/utils';
 
 const subscription = graphql`
   subscription RootDataComponentSubscription($id: ID!) {
@@ -88,9 +88,8 @@ const RootDataComponent = () => {
           if (props) {
             if (props.dataComponent) {
               const { dataComponent } = props;
-              const paddingRight = getPaddingRight(location.pathname, dataComponent.id, '/dashboard/techniques/data_components');
               return (
-                <div style={{ paddingRight }}>
+                <div>
                   <Breadcrumbs variant="object" elements={[
                     { label: t_i18n('Techniques') },
                     { label: t_i18n('Data components'), link: '/dashboard/techniques/data_components' },

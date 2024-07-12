@@ -23,7 +23,7 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
-import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
+import { getCurrentTab } from '../../../../utils/utils';
 
 const subscription = graphql`
   subscription RootDataSourcesSubscription($id: ID!) {
@@ -79,11 +79,10 @@ const RootDataSourceComponent = ({ queryRef, dataSourceId }) => {
   const { t_i18n } = useFormatter();
   const data = usePreloadedQuery(dataSourceQuery, queryRef);
   const { dataSource, connectorsForImport, connectorsForExport, settings } = data;
-  const paddingRight = getPaddingRight(location.pathname, dataSource?.id, '/dashboard/techniques/data_sources');
   return (
     <>
       {dataSource ? (
-        <div style={{ paddingRight }}>
+        <div>
           <Breadcrumbs variant="object" elements={[
             { label: t_i18n('Techniques') },
             { label: t_i18n('Data sources'), link: '/dashboard/techniques/data_sources' },
