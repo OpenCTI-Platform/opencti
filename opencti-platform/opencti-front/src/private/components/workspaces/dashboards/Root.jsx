@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import * as PropTypes from 'prop-types';
 import { Route, Routes, useParams } from 'react-router-dom';
 import { graphql } from 'react-relay';
@@ -32,8 +32,6 @@ const dashboardQuery = graphql`
 
 const RootDashboard = () => {
   const { workspaceId } = useParams();
-  const [workspace, setWorkspace] = useState(null);
-  const [settings, setSettings] = useState(null);
 
   useEffect(() => {
     const sub = requestSubscription({
@@ -54,22 +52,25 @@ const RootDashboard = () => {
         render={({ props }) => {
           if (props) {
             if (props.workspace) {
-              setWorkspace(props.workspace);
-              setSettings(props.settings);
+              return (
+                <Routes>
+                  <Route
+                    path="/"
+                    element={
+                      <Dashboard
+                        workspace={props.workspace}
+                        settings={props.settings}
+                      />
+                        }
+                  />
+                </Routes>
+              );
             }
-            return <Loader/>;
+            return <ErrorNotFound/>;
           }
-          return <ErrorNotFound/>;
+          return <Loader/>;
         }}
       />
-      {workspace && (
-        <Routes>
-          <Route
-            path="/"
-            element={<Dashboard workspace={workspace} settings={settings}/>}
-          />
-        </Routes>
-      )}
     </div>
   );
 };
