@@ -31,6 +31,7 @@ import useBulkCommit from '../../../../utils/hooks/useBulkCommit';
 import useHelper from '../../../../utils/hooks/useHelper';
 import TextField from '../../../../components/TextField';
 import { splitMultilines } from '../../../../utils/String';
+import ProgressBar from '../../../../components/ProgressBar';
 
 const channelMutation = graphql`
   mutation ChannelCreationMutation($input: ChannelAddInput!) {
@@ -97,7 +98,12 @@ export const ChannelCreationForm: FunctionComponent<ChannelFormProps> = ({
   );
 
   const [commit] = useApiMutation<ChannelCreationMutation>(channelMutation);
-  const { bulkCommit } = useBulkCommit({
+  const {
+    bulkCommit,
+    bulkCount,
+    bulkCurrentCount,
+    BulkResult,
+  } = useBulkCommit<ChannelCreationMutation$variables['input'], ChannelCreationMutation>({
     commit,
     relayUpdater: (store) => {
       if (updater) {
@@ -128,11 +134,11 @@ export const ChannelCreationForm: FunctionComponent<ChannelFormProps> = ({
       onStepError: (error) => {
         handleErrorInForm(error, setErrors);
       },
-      onCompleted: () => {
+      onCompleted: (total: number) => {
         setSubmitting(false);
-        resetForm();
-        if (onCompleted) {
-          onCompleted();
+        if (total < 2) {
+          resetForm();
+          onCompleted?.();
         }
       },
     });
@@ -157,20 +163,34 @@ export const ChannelCreationForm: FunctionComponent<ChannelFormProps> = ({
       onSubmit={onSubmit}
       onReset={onReset}
     >
-      {({ submitForm, handleReset, isSubmitting, setFieldValue, values }) => (
+      {({ submitForm, handleReset, isSubmitting, setFieldValue, values, resetForm }) => (
         <>
           {isFeatureEnable('BULK_ENTITIES') && (
-            <BulkTextModal
-              open={bulkModalOpen}
-              onClose={onBulkModalClose}
-              onValidate={((val) => {
-                setFieldValue('name', val);
-                if (splitMultilines(val).length > 1) {
-                  setFieldValue('file', null);
-                }
-              })}
-              formValue={values.name}
-            />
+            <>
+              <BulkTextModal
+                open={bulkModalOpen}
+                onClose={onBulkModalClose}
+                onValidate={((val) => {
+                  setFieldValue('name', val);
+                  if (splitMultilines(val).length > 1) {
+                    setFieldValue('file', null);
+                  }
+                })}
+                formValue={values.name}
+              />
+              <ProgressBar
+                open={bulkCount > 1}
+                value={(bulkCurrentCount / bulkCount) * 100}
+                label={`${bulkCurrentCount}/${bulkCount}`}
+                title={t_i18n('Create multiple entities')}
+                onClose={() => {
+                  resetForm();
+                  onCompleted?.();
+                }}
+              >
+                <BulkResult inputToString={(input) => input.name} />
+              </ProgressBar>
+            </>
           )}
           <Form style={{ margin: '20px 0 20px 0' }}>
             <Field
@@ -240,6 +260,10 @@ export const ChannelCreationForm: FunctionComponent<ChannelFormProps> = ({
               name="file"
               setFieldValue={setFieldValue}
               disabled={splitMultilines(values.name).length > 1}
+              noFileSelectedLabel={splitMultilines(values.name).length > 1
+                ? t_i18n('File upload not allowed in bulk creation')
+                : undefined
+              }
             />
             <div style={{
               marginTop: '20px',
