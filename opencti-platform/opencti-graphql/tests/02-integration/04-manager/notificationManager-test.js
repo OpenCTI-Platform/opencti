@@ -506,7 +506,7 @@ describe('Notification manager behaviors test', async () => {
       instance: stixGreenOrganization,
       action: 'removed from'
     }, { instance: stixMalware, action: 'removed from' }]);
-    expect(result).toEqual('[organization] greenOrganization_name,[malware] malware_name removed from [relationship] Restricted delivers malware_entity');
+    expect(result).toEqual('[organization] greenOrganization_name,[malware] malware_name removed from [relationship] attack-pattern_entity delivers malware_entity');
   });
 
   it('Should generate a notification message for an instance', async () => {
