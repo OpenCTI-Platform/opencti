@@ -77,6 +77,7 @@ const WidgetDistributionList = ({
                 minHeight: 50,
                 maxHeight: 50,
                 paddingRight: 0,
+                cursor: 'default',
               }}
               style={overflow === 'hidden' && key === data.length - 1 ? { borderBottom: 0 } : {}}
             >
