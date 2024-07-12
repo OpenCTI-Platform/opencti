@@ -396,6 +396,10 @@ export const userFilterStoreElements = async (context: AuthContext, user: AuthUs
         if (user.inside_platform_organization) {
           return true;
         }
+        // Grant access to the user individual
+        if (element.internal_id === user.individual_id) {
+          return true;
+        }
         // If not, user is by design inside an organization
         // If element has no current sharing organization, it can be accessed (secure by default)
         // If element is shared, user must have a matching sharing organization

@@ -483,7 +483,7 @@ describe('Notification manager behaviors test', async () => {
     result = await generateNotificationMessageForInstanceWithRefs(context, adminUser, stixCoreRelationship, [stixGreenOrganization, stixMalware]);
     expect(result).toEqual('[relationship] attack-pattern_entity delivers malware_entity containing [organization] greenOrganization_name,[malware] malware_name');
     result = await generateNotificationMessageForInstanceWithRefs(context, greenUser, stixCoreRelationship, [stixGreenOrganization, stixMalware]);
-    expect(result).toEqual('[relationship] attack-pattern_entity delivers malware_entity containing [organization] greenOrganization_name,[malware] malware_name');
+    expect(result).toEqual('[relationship] Restricted delivers malware_entity containing [organization] greenOrganization_name,[malware] malware_name');
 
     result = await generateNotificationMessageForInstanceWithRefsUpdate(context, adminUser, stixReport, [{
       instance: stixGreenOrganization,
@@ -506,7 +506,7 @@ describe('Notification manager behaviors test', async () => {
       instance: stixGreenOrganization,
       action: 'removed from'
     }, { instance: stixMalware, action: 'removed from' }]);
-    expect(result).toEqual('[organization] greenOrganization_name,[malware] malware_name removed from [relationship] attack-pattern_entity delivers malware_entity');
+    expect(result).toEqual('[organization] greenOrganization_name,[malware] malware_name removed from [relationship] Restricted delivers malware_entity');
   });
 
   it('Should generate a notification message for an instance', async () => {
@@ -1273,7 +1273,7 @@ describe('Notification manager behaviors test', async () => {
     expect(result[0].type).toEqual(EVENT_TYPE_CREATE);
     expect(result[0].user.user_id).toEqual(adminUser.id);
     expect(result[1].type).toEqual(EVENT_TYPE_CREATE);
-    expect(result[1].message).toEqual('[sighting] malware_entity sighted in/at report_entity');
+    expect(result[1].message).toEqual('[sighting] malware_entity sighted in/at Restricted');
     expect(result[1].user.user_id).toEqual(greenUser.id);
 
     // trigger on M, delete event only, side events only
