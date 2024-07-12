@@ -109,7 +109,7 @@ const ExternalReferenceCreation: FunctionComponent<ExternalReferenceCreationProp
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const { isFeatureEnable } = useHelper();
-  const FABReplaced = isFeatureEnable('FAB_REPLACEMENT');
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   const [open, setOpen] = useState(false);
 
@@ -211,8 +211,8 @@ const ExternalReferenceCreation: FunctionComponent<ExternalReferenceCreationProp
     return (
       <Drawer
         title={t_i18n('Create an external reference')}
-        variant={FABReplaced ? undefined : DrawerVariant.create}
-        controlledDial={FABReplaced ? CreateEntityControlledDial('entity_External-Reference') : undefined}
+        variant={isFABReplaced ? undefined : DrawerVariant.create}
+        controlledDial={isFABReplaced ? CreateEntityControlledDial('entity_External-Reference') : undefined}
       >
         {({ onClose }) => (
           <Formik
@@ -298,7 +298,7 @@ const ExternalReferenceCreation: FunctionComponent<ExternalReferenceCreationProp
   const renderContextual = () => {
     return (
       <div style={{ display: display ? 'block' : 'none' }}>
-        {!handleCloseContextual && !FABReplaced && (
+        {!handleCloseContextual && !isFABReplaced && (
           <Fab
             onClick={handleOpen}
             color="secondary"
@@ -310,12 +310,12 @@ const ExternalReferenceCreation: FunctionComponent<ExternalReferenceCreationProp
         )}
         <Dialog
           PaperProps={{ elevation: 1 }}
-          open={FABReplaced || handleCloseContextual ? openContextual : open}
-          onClose={FABReplaced || handleCloseContextual ? handleCloseContextual : handleClose}
+          open={isFABReplaced || handleCloseContextual ? openContextual : open}
+          onClose={isFABReplaced || handleCloseContextual ? handleCloseContextual : handleClose}
         >
           <Formik
             enableReinitialize={true}
-            onSubmit={!creationCallback && (FABReplaced || !handleCloseContextual) ? onSubmit : onSubmitContextual}
+            onSubmit={!creationCallback && (isFABReplaced || !handleCloseContextual) ? onSubmit : onSubmitContextual}
             initialValues={{
               source_name: inputValue || '',
               external_id: '',

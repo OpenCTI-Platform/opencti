@@ -316,7 +316,7 @@ const NoteCreation: FunctionComponent<NoteCreationProps> = ({
 }) => {
   const { t_i18n } = useFormatter();
   const { isFeatureEnable } = useHelper();
-  const FAB_REPLACED = isFeatureEnable('FAB_REPLACEMENT');
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const classes = useStyles();
   const [open, setOpen] = useState(false);
   const updater = (store: RecordSourceSelectorProxy, key: string) => {
@@ -326,8 +326,8 @@ const NoteCreation: FunctionComponent<NoteCreationProps> = ({
     return (
       <Drawer
         title={t_i18n('Create a note')}
-        variant={FAB_REPLACED ? undefined : DrawerVariant.create}
-        controlledDial={FAB_REPLACED ? CreateEntityControlledDial('entity_Note') : undefined}
+        variant={isFABReplaced ? undefined : DrawerVariant.create}
+        controlledDial={isFABReplaced ? CreateEntityControlledDial('entity_Note') : undefined}
       >
         <NoteCreationForm inputValue={inputValue} updater={updater} />
       </Drawer>

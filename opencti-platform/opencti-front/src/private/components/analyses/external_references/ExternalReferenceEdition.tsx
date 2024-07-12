@@ -5,6 +5,7 @@ import ExternalReferenceEditionContainer from './ExternalReferenceEditionContain
 import { externalReferenceEditionOverviewFocus } from './ExternalReferenceEditionOverview';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { ExternalReferenceEditionContainerQuery$data } from './__generated__/ExternalReferenceEditionContainerQuery.graphql';
+import EditEntityControlledDial from '../../../../components/EditEntityControlledDial';
 
 export const externalReferenceEditionQuery = graphql`
   query ExternalReferenceEditionContainerQuery($id: String!) {
@@ -51,6 +52,7 @@ ExternalReferenceEditionProps
             <ExternalReferenceEditionContainer
               externalReference={props.externalReference}
               handleClose={handleClose}
+              controlledDial={EditEntityControlledDial}
             />
           );
         }

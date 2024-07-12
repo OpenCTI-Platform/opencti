@@ -11,6 +11,7 @@ import Tab from '@mui/material/Tab';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import { RootReportSubscription } from '@components/analyses/reports/__generated__/RootReportSubscription.graphql';
 import StixCoreObjectSimulationResult from '@components/common/stix_core_objects/StixCoreObjectSimulationResult';
+import Security from 'src/utils/Security';
 import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
 import { QueryRenderer } from '../../../../relay/environment';
 import Grouping from './Grouping';
@@ -25,8 +26,9 @@ import StixCoreObjectFilesAndHistory from '../../common/stix_core_objects/StixCo
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
-import useGranted, { KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE } from '../../../../utils/hooks/useGranted';
+import useGranted, { KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE, KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
+import GroupingEdition from './GroupingEdition';
 
 const subscription = graphql`
   subscription RootGroupingSubscription($id: ID!) {
@@ -111,6 +113,11 @@ const RootGrouping = () => {
                   <ContainerHeader
                     container={grouping}
                     PopoverComponent={<GroupingPopover />}
+                    EditComponent={(
+                      <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                        <GroupingEdition groupingId={grouping.id} />
+                      </Security>
+                    )}
                     enableQuickSubscription={true}
                     enableQuickExport={true}
                     enableAskAi={true}

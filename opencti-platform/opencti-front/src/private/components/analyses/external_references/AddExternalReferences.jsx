@@ -37,7 +37,7 @@ const AddExternalReferences = ({
   const [open, setOpen] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [search, setSearch] = useState('');
-  const FABReplaced = isFeatureEnable('FAB_REPLACEMENT');
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   const handleOpen = () => {
     setOpen(true);
@@ -82,7 +82,7 @@ const AddExternalReferences = ({
               variant="inDrawer"
               onSubmit={handleSearch}
             />
-            {FABReplaced
+            {isFABReplaced
               && <Button sx={{ margin: '5px 0 0 5px' }}
                 onClick={() => setDialogOpen(true)}
                 color='primary'
@@ -114,9 +114,9 @@ const AddExternalReferences = ({
                     }
                     data={props}
                     paginationOptions={paginationOptions}
-                    open={FABReplaced ? false : open}
+                    open={isFABReplaced ? false : open}
                     openContextual={dialogOpen}
-                    handleCloseContextual={FABReplaced ? () => setDialogOpen(false) : undefined}
+                    handleCloseContextual={isFABReplaced ? () => setDialogOpen(false) : undefined}
                     search={search}
                   />
                 );

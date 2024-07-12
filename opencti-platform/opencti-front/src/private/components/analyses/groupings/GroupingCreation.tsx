@@ -290,13 +290,13 @@ const GroupingCreation = ({
 }) => {
   const { t_i18n } = useFormatter();
   const { isFeatureEnable } = useHelper();
-  const FAB_REPLACED = isFeatureEnable('FAB_REPLACEMENT');
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_groupings', paginationOptions, 'groupingAdd');
   return (
     <Drawer
       title={t_i18n('Create a grouping')}
-      variant={FAB_REPLACED ? undefined : DrawerVariant.create}
-      controlledDial={FAB_REPLACED ? CreateEntityControlledDial('entity_Grouping') : undefined}
+      variant={isFABReplaced ? undefined : DrawerVariant.create}
+      controlledDial={isFABReplaced ? CreateEntityControlledDial('entity_Grouping') : undefined}
     >
       <GroupingCreationForm updater={updater} />
     </Drawer>

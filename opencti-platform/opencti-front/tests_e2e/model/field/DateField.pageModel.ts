@@ -21,7 +21,7 @@ export default class DateFieldPageModel {
 
   async clear() {
     await this.inputLocator.click();
-    await this.page.keyboard.press('Control+A');
+    await this.page.keyboard.press('ControlOrMeta+A');
     return this.page.keyboard.press('Backspace');
   }
 

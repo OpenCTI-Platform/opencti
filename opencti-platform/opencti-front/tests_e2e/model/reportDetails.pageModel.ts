@@ -15,7 +15,7 @@ export default class ReportDetailsPage {
   }
 
   getEditButton() {
-    return this.page.getByLabel('Edit');
+    return this.page.getByLabel('Update', { exact: true });
   }
 
   goToOverviewTab() {
