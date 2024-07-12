@@ -101,6 +101,7 @@
   "Configuration": "Konfiguration",
   "Configuration version": "Version der Konfiguration",
   "Connector ID": "Anschluss-ID",
+  "Connector information": "Informationen zum Anschluss",
   "Connector name": "Name des Verbinders",
   "Connector scope": "Konnektorumfang",
   "Connector state": "Zustand des Verbinders",
