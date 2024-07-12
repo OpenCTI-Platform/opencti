@@ -5,14 +5,15 @@ import { Theme } from '@mui/material/styles/createTheme';
 import makeStyles from '@mui/styles/makeStyles';
 import classNames from 'classnames';
 import InputLabel from '@mui/material/InputLabel';
+import { FieldProps } from 'formik';
 import VisuallyHiddenInput from '../VisuallyHiddenInput';
 import { useFormatter } from '../../../../components/i18n';
 import { truncate } from '../../../../utils/String';
 
-interface CustomFileUploadProps {
+interface CustomFileUploadProps extends Partial<FieldProps<File | null | undefined>> {
   setFieldValue: (
     field: string,
-    value: File | string | undefined,
+    value: File | string | null | undefined,
     shouldValidate?: boolean | undefined,
   ) => Promise<unknown>;
   isEmbeddedInExternalReferenceCreation?: boolean;
@@ -22,6 +23,7 @@ interface CustomFileUploadProps {
   }
   acceptMimeTypes?: string; // html input "accept" with MIME types only
   sizeLimit?: number; // in bytes
+  disabled?: boolean;
 }
 
 // Deprecated - https://mui.com/system/styles/basics/
@@ -66,11 +68,22 @@ const CustomFileUploader: FunctionComponent<CustomFileUploadProps> = ({
   acceptMimeTypes,
   sizeLimit = 0, // defaults to 0 = no limit
   formikErrors,
+  disabled = false,
+  field,
 }) => {
   const { t_i18n } = useFormatter();
   const classes = useStyles();
   const [fileNameForDisplay, setFileNameForDisplay] = useState('');
   const [errorText, setErrorText] = useState('');
+
+  useEffect(() => {
+    if (field) {
+      const fileName = field.value?.name ?? '';
+      if (fileName !== fileNameForDisplay) {
+        setFileNameForDisplay(fileName);
+      }
+    }
+  }, [field, fileNameForDisplay, setFileNameForDisplay]);
 
   useEffect(() => {
     if (formikErrors?.file) {
@@ -137,6 +150,7 @@ const CustomFileUploader: FunctionComponent<CustomFileUploadProps> = ({
           variant="contained"
           onChange={onChange}
           className={classes.button}
+          disabled={disabled}
         >
           {t_i18n('Select your file')}
           <VisuallyHiddenInput type="file" accept={acceptMimeTypes} />

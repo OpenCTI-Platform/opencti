@@ -4,7 +4,13 @@
     "base_path": "",
     "base_url": "http://localhost:4000/",
     "enabled": true,
-    "disabled_dev_features": ["FAB_REPLACEMENT", "DATA_TABLES", "4352_BULK_RELATIONS", "FILIGRAN_LOADER"],
+    "disabled_dev_features": [
+      "FAB_REPLACEMENT",
+      "DATA_TABLES",
+      "4352_BULK_RELATIONS",
+      "FILIGRAN_LOADER",
+      "BULK_ENTITIES"
+    ],
     "https_cert": {
       "ca": [],
       "key": null,

@@ -1,15 +1,13 @@
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useState } from 'react';
 import { Field, Form, Formik } from 'formik';
 import Button from '@mui/material/Button';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
-import makeStyles from '@mui/styles/makeStyles';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { FormikConfig } from 'formik/dist/types';
 import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
 import { handleErrorInForm } from '../../../../relay/environment';
-import TextField from '../../../../components/TextField';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
@@ -24,21 +22,15 @@ import OpenVocabField from '../../common/form/OpenVocabField';
 import { Option } from '../../common/form/ReferenceField';
 import { ChannelCreationMutation, ChannelCreationMutation$variables } from './__generated__/ChannelCreationMutation.graphql';
 import { ChannelsLinesPaginationQuery$variables } from './__generated__/ChannelsLinesPaginationQuery.graphql';
-import type { Theme } from '../../../../components/Theme';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  buttons: {
-    marginTop: 20,
-    textAlign: 'right',
-  },
-  button: {
-    marginLeft: theme.spacing(2),
-  },
-}));
+import BulkTextField from '../../../../components/fields/BulkTextField/BulkTextField';
+import BulkTextModal from '../../../../components/fields/BulkTextField/BulkTextModal';
+import BulkTextModalButton from '../../../../components/fields/BulkTextField/BulkTextModalButton';
+import useBulkCommit from '../../../../utils/hooks/useBulkCommit';
+import useHelper from '../../../../utils/hooks/useHelper';
+import TextField from '../../../../components/TextField';
+import { splitMultilines } from '../../../../utils/String';
 
 const channelMutation = graphql`
   mutation ChannelCreationMutation($input: ChannelAddInput!) {
@@ -60,12 +52,12 @@ interface ChannelAddInput {
   name: string;
   channel_types: string[];
   description: string;
-  createdBy: Option | undefined;
+  createdBy: Option | null;
   objectMarking: Option[];
   objectLabel: Option[];
   externalReferences: { value: string }[];
-  confidence: number | undefined;
-  file: File | undefined;
+  confidence: number | null;
+  file: File | null;
 }
 
 interface ChannelFormProps {
@@ -76,6 +68,8 @@ interface ChannelFormProps {
   defaultMarkingDefinitions?: { value: string; label: string }[];
   defaultConfidence?: number;
   inputValue?: string;
+  bulkModalOpen?: boolean;
+  onBulkModalClose: () => void;
 }
 
 export const ChannelCreationForm: FunctionComponent<ChannelFormProps> = ({
@@ -86,8 +80,10 @@ export const ChannelCreationForm: FunctionComponent<ChannelFormProps> = ({
   defaultCreatedBy,
   defaultMarkingDefinitions,
   inputValue,
+  bulkModalOpen = false,
+  onBulkModalClose,
 }) => {
-  const classes = useStyles();
+  const { isFeatureEnable } = useHelper();
   const { t_i18n } = useFormatter();
   const basicShape = {
     name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
@@ -99,13 +95,24 @@ export const ChannelCreationForm: FunctionComponent<ChannelFormProps> = ({
     CHANNEL_TYPE,
     basicShape,
   );
+
   const [commit] = useApiMutation<ChannelCreationMutation>(channelMutation);
+  const { bulkCommit } = useBulkCommit({
+    commit,
+    relayUpdater: (store) => {
+      if (updater) {
+        updater(store, 'channelAdd');
+      }
+    },
+  });
+
   const onSubmit: FormikConfig<ChannelAddInput>['onSubmit'] = (
     values,
     { setSubmitting, setErrors, resetForm },
   ) => {
-    const input: ChannelCreationMutation$variables['input'] = {
-      name: values.name,
+    const allNames = splitMultilines(values.name);
+    const inputs: ChannelCreationMutation$variables['input'][] = allNames.map((name) => ({
+      name,
       description: values.description,
       channel_types: values.channel_types,
       confidence: parseInt(String(values.confidence), 10),
@@ -114,19 +121,12 @@ export const ChannelCreationForm: FunctionComponent<ChannelFormProps> = ({
       objectLabel: values.objectLabel.map((v) => v.value),
       externalReferences: values.externalReferences.map(({ value }) => value),
       file: values.file,
-    };
-    commit({
-      variables: {
-        input,
-      },
-      updater: (store) => {
-        if (updater) {
-          updater(store, 'channelAdd');
-        }
-      },
-      onError: (error) => {
+    }));
+
+    bulkCommit({
+      inputs,
+      onStepError: (error) => {
         handleErrorInForm(error, setErrors);
-        setSubmitting(false);
       },
       onCompleted: () => {
         setSubmitting(false);
@@ -137,17 +137,19 @@ export const ChannelCreationForm: FunctionComponent<ChannelFormProps> = ({
       },
     });
   };
+
   const initialValues = useDefaultValues(CHANNEL_TYPE, {
     name: inputValue ?? '',
     channel_types: [],
     description: '',
-    createdBy: defaultCreatedBy,
+    createdBy: defaultCreatedBy ?? null,
     objectMarking: defaultMarkingDefinitions ?? [],
     objectLabel: [],
     externalReferences: [],
-    confidence: defaultConfidence,
-    file: undefined,
+    confidence: defaultConfidence ?? null,
+    file: null,
   });
+
   return (
     <Formik
       initialValues={initialValues}
@@ -156,90 +158,114 @@ export const ChannelCreationForm: FunctionComponent<ChannelFormProps> = ({
       onReset={onReset}
     >
       {({ submitForm, handleReset, isSubmitting, setFieldValue, values }) => (
-        <Form style={{ margin: '20px 0 20px 0' }}>
-          <Field
-            component={TextField}
-            name="name"
-            label={t_i18n('Name')}
-            fullWidth={true}
-            detectDuplicate={['Channel', 'Malware']}
-          />
-          <OpenVocabField
-            type="channel_types_ov"
-            name="channel_types"
-            label={t_i18n('Channel type')}
-            multiple
-            containerStyle={fieldSpacingContainerStyle}
-            onChange={setFieldValue}
-          />
-          <Field
-            component={MarkdownField}
-            name="description"
-            label={t_i18n('Description')}
-            fullWidth={true}
-            multiline={true}
-            rows="4"
-            style={{ marginTop: 20 }}
-          />
-          <ConfidenceField
-            entityType="Channel"
-            containerStyle={fieldSpacingContainerStyle}
-          />
-          <CreatedByField
-            name="createdBy"
-            style={{
-              marginTop: 20,
-              width: '100%',
+        <>
+          {isFeatureEnable('BULK_ENTITIES') && (
+            <BulkTextModal
+              open={bulkModalOpen}
+              onClose={onBulkModalClose}
+              onValidate={((val) => {
+                setFieldValue('name', val);
+                if (splitMultilines(val).length > 1) {
+                  setFieldValue('file', null);
+                }
+              })}
+              formValue={values.name}
+            />
+          )}
+          <Form style={{ margin: '20px 0 20px 0' }}>
+            <Field
+              component={isFeatureEnable('BULK_ENTITIES') ? BulkTextField : TextField}
+              name="name"
+              label={t_i18n('Name')}
+              fullWidth={true}
+              detectDuplicate={['Channel', 'Malware']}
+            />
+            <OpenVocabField
+              type="channel_types_ov"
+              name="channel_types"
+              label={t_i18n('Channel type')}
+              multiple
+              containerStyle={fieldSpacingContainerStyle}
+              onChange={setFieldValue}
+            />
+            <Field
+              component={MarkdownField}
+              name="description"
+              label={t_i18n('Description')}
+              fullWidth={true}
+              multiline={true}
+              rows="4"
+              style={{ marginTop: 20 }}
+            />
+            <ConfidenceField
+              entityType="Channel"
+              containerStyle={fieldSpacingContainerStyle}
+            />
+            <CreatedByField
+              name="createdBy"
+              style={{
+                marginTop: 20,
+                width: '100%',
+              }}
+              setFieldValue={setFieldValue}
+            />
+            <ObjectLabelField
+              name="objectLabel"
+              style={{
+                marginTop: 20,
+                width: '100%',
+              }}
+              setFieldValue={setFieldValue}
+              values={values.objectLabel}
+            />
+            <ObjectMarkingField
+              name="objectMarking"
+              style={{
+                marginTop: 20,
+                width: '100%',
+              }}
+              setFieldValue={setFieldValue}
+            />
+            <ExternalReferencesField
+              name="externalReferences"
+              style={{
+                marginTop: 20,
+                width: '100%',
+              }}
+              setFieldValue={setFieldValue}
+              values={values.externalReferences}
+            />
+            <Field
+              component={CustomFileUploader}
+              name="file"
+              setFieldValue={setFieldValue}
+              disabled={splitMultilines(values.name).length > 1}
+            />
+            <div style={{
+              marginTop: '20px',
+              textAlign: 'right',
             }}
-            setFieldValue={setFieldValue}
-          />
-          <ObjectLabelField
-            name="objectLabel"
-            style={{
-              marginTop: 20,
-              width: '100%',
-            }}
-            setFieldValue={setFieldValue}
-            values={values.objectLabel}
-          />
-          <ObjectMarkingField
-            name="objectMarking"
-            style={{
-              marginTop: 20,
-              width: '100%',
-            }}
-            setFieldValue={setFieldValue}
-          />
-          <ExternalReferencesField
-            name="externalReferences"
-            style={{
-              marginTop: 20,
-              width: '100%',
-            }}
-            setFieldValue={setFieldValue}
-            values={values.externalReferences}
-          />
-          <CustomFileUploader setFieldValue={setFieldValue} />
-          <div className={classes.buttons}>
-            <Button
-              variant="contained"
-              onClick={handleReset}
-              disabled={isSubmitting}
-              classes={{ root: classes.button }}
             >
-              {t_i18n('Cancel')}
-            </Button>
-            <Button
-              variant="contained"
-              color="secondary"
-              onClick={submitForm}
-              disabled={isSubmitting}
-              classes={{ root: classes.button }}
-            >
-              {t_i18n('Create')}
-            </Button>
-          </div>
-        </Form>
+              <Button
+                variant="contained"
+                onClick={handleReset}
+                disabled={isSubmitting}
+                sx={{ marginLeft: 2 }}
+              >
+                {t_i18n('Cancel')}
+              </Button>
+              <Button
+                variant="contained"
+                color="secondary"
+                onClick={submitForm}
+                disabled={isSubmitting}
+                sx={{ marginLeft: 2 }}
+              >
+                {t_i18n('Create')}
+              </Button>
+            </div>
+          </Form>
+        </>
       )}
     </Formik>
   );
@@ -250,18 +276,27 @@ const ChannelCreation = ({
 }: {
   paginationOptions: ChannelsLinesPaginationQuery$variables;
 }) => {
+  const { isFeatureEnable } = useHelper();
   const { t_i18n } = useFormatter();
   const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_channels', paginationOptions, 'channelAdd');
+  const [bulkOpen, setBulkOpen] = useState(false);
+
   return (
     <Drawer
       title={t_i18n('Create a channel')}
       variant={DrawerVariant.create}
+      header={isFeatureEnable('BULK_ENTITIES')
+        ? <BulkTextModalButton onClick={() => setBulkOpen(true)} />
+        : <></>
+      }
     >
       {({ onClose }) => (
         <ChannelCreationForm
           updater={updater}
           onCompleted={onClose}
           onReset={onClose}
+          bulkModalOpen={bulkOpen}
+          onBulkModalClose={() => setBulkOpen(false)}
         />
       )}
     </Drawer>
