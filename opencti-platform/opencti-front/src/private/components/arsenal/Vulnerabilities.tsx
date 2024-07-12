@@ -178,11 +178,11 @@ const Vulnerabilities = () => {
     <ExportContextProvider>
       <Breadcrumbs variant="list" elements={[{ label: t_i18n('Arsenal') }, { label: t_i18n('Vulnerabilities'), current: true }]} />
       {renderLines()}
-      {!FAB_REPLACED
-        && <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <VulnerabilityCreation paginationOptions={queryPaginationOptions} />
-        </Security>
-      }
+      {!FAB_REPLACED && (
+      <Security needs={[KNOWLEDGE_KNUPDATE]}>
+        <VulnerabilityCreation paginationOptions={queryPaginationOptions} />
+      </Security>
+      )}
     </ExportContextProvider>
   );
 };

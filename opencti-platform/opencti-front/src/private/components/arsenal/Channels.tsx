@@ -169,11 +169,11 @@ const Channels = () => {
     <ExportContextProvider>
       <Breadcrumbs variant="list" elements={[{ label: t_i18n('Arsenal') }, { label: t_i18n('Channels'), current: true }]} />
       {renderLines()}
-      {!FAB_REPLACED
-        && <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <ChannelCreation paginationOptions={queryPaginationOptions} />
-        </Security>
-      }
+      {!FAB_REPLACED && (
+      <Security needs={[KNOWLEDGE_KNUPDATE]}>
+        <ChannelCreation paginationOptions={queryPaginationOptions} />
+      </Security>
+      )}
     </ExportContextProvider>
   );
 };
