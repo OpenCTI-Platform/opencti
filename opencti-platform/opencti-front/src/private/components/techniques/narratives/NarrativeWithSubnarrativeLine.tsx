@@ -63,7 +63,7 @@ const NarrativeWithSubnarrativeLine: FunctionComponent<NarrativeWithSubnarrative
     data = useFragment(narrativeLineFragment, node as NarrativeLine_node$key);
   }
 
-  const subNarratives: NarrativeWithSubnarrativeLineProps['subNarratives'] = ((data as NarrativeLine_node$data).subNarratives?.edges ?? []).map(({ node }) => node);
+  const subNarratives: NarrativeWithSubnarrativeLineProps['subNarratives'] = ((data as NarrativeLine_node$data).subNarratives?.edges ?? []).map(({ node: subNode }) => subNode);
 
   return (
     <div>
