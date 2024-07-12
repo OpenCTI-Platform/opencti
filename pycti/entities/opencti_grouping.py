@@ -1,5 +1,6 @@
 # coding: utf-8
 
+import datetime
 import json
 import uuid
 
@@ -395,10 +396,12 @@ class Grouping:
         """
 
     @staticmethod
-    def generate_id(name, context):
+    def generate_id(name, context, created):
         name = name.lower().strip()
         context = context.lower().strip()
-        data = {"name": name, "context": context}
+        if isinstance(created, datetime.datetime):
+            created = created.isoformat()
+        data = {"name": name, "context": context, "created": created}
         data = canonicalize(data, utf8=False)
         id = str(uuid.uuid5(uuid.UUID("00abedb4-aa42-466c-9c01-fed23315a9b7"), data))
         return "grouping--" + id
