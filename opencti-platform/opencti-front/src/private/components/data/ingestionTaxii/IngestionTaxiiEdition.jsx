@@ -202,12 +202,6 @@ const IngestionTaxiiEditionContainer = ({
                 marginTop: 20,
               }}
             >
-              <MenuItem value="v1" disabled={true}>
-                {t('TAXII 1.0')}
-              </MenuItem>
-              <MenuItem value="v2" disabled={true}>
-                {t('TAXII 2.0')}
-              </MenuItem>
               <MenuItem value="v21">{t('TAXII 2.1')}</MenuItem>
             </Field>
             <Field
