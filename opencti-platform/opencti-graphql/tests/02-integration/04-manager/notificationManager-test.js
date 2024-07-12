@@ -1273,7 +1273,7 @@ describe('Notification manager behaviors test', async () => {
     expect(result[0].type).toEqual(EVENT_TYPE_CREATE);
     expect(result[0].user.user_id).toEqual(adminUser.id);
     expect(result[1].type).toEqual(EVENT_TYPE_CREATE);
-    expect(result[1].message).toEqual('[sighting] malware_entity sighted in/at Restricted');
+    expect(result[1].message).toEqual('[sighting] malware_entity sighted in/at report_entity');
     expect(result[1].user.user_id).toEqual(greenUser.id);
 
     // trigger on M, delete event only, side events only

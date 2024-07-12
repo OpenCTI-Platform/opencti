@@ -373,10 +373,6 @@ export const userFilterStoreElements = async (context: AuthContext, user: AuthUs
     const settings = await getEntityFromCache<BasicStoreSettings>(context, user, ENTITY_TYPE_SETTINGS);
     const authorizedMarkings = user.allowed_marking.map((a) => a.internal_id);
     return elements.filter((element) => {
-      // Grant access to the user individual
-      if (element.internal_id === user.individual_id) {
-        return true;
-      }
       // 1. Check markings
       const elementMarkings = element[RELATION_OBJECT_MARKING] ?? [];
       if (elementMarkings.length > 0) {

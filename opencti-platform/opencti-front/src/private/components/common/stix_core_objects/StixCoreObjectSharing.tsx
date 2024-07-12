@@ -113,6 +113,7 @@ const StixCoreObjectSharing: FunctionComponent<ContainerHeaderSharedProps> = ({
   const userIsOrganizationEditor = useGranted([
     KNOWLEDGE_KNUPDATE_KNORGARESTRICT,
   ]);
+  console.log(userIsOrganizationEditor);
   const isEnterpriseEdition = useEnterpriseEdition();
   // If user not an organization organizer, return empty div
   if (!userIsOrganizationEditor) {
