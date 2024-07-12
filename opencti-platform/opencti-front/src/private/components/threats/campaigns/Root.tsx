@@ -1,7 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-// TODO Remove this when V6
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-nocheck
 import React, { Suspense, useMemo } from 'react';
 import { Route, Routes, Link, Navigate, useParams, useLocation } from 'react-router-dom';
 import { graphql, PreloadedQuery, useSubscription, usePreloadedQuery } from 'react-relay';
@@ -87,7 +83,7 @@ const RootCampaign = ({ campaignId, queryRef }: RootCampaignProps) => {
   const location = useLocation();
   const { t_i18n } = useFormatter();
 
-  useSubscription(subConfig);
+  useSubscription<RootCampaignSubscription>(subConfig);
 
   const {
     campaign,

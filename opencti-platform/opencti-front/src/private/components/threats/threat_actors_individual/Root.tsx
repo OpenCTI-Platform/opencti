@@ -1,10 +1,6 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-// TODO Remove this when V6
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-nocheck
 import React, { useMemo } from 'react';
 import { Link, Route, Routes, useParams, useLocation, Navigate } from 'react-router-dom';
-import { graphql, usePreloadedQuery, useSubscription } from 'react-relay';
+import { graphql, PreloadedQuery, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
@@ -75,10 +71,15 @@ const ThreatActorIndividualQuery = graphql`
   }
 `;
 
+type RootThreatActorIndividualProps = {
+  threatActorIndividualId: string;
+  queryRef: PreloadedQuery<RootThreatActorIndividualQuery>
+};
+
 const RootThreatActorIndividualComponent = ({
   queryRef,
   threatActorIndividualId,
-}) => {
+}: RootThreatActorIndividualProps) => {
   const subConfig = useMemo<
   GraphQLSubscriptionConfig<RootThreatActorIndividualSubscription>
   >(
@@ -91,7 +92,7 @@ const RootThreatActorIndividualComponent = ({
 
   const location = useLocation();
   const { t_i18n } = useFormatter();
-  useSubscription(subConfig);
+  useSubscription<RootThreatActorIndividualSubscription>(subConfig);
 
   const {
     threatActorIndividual,
