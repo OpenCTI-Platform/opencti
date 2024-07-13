@@ -21,17 +21,9 @@ import { findById as findStatusById, getTypeStatuses } from '../domain/status';
 import { addOrganizationRestriction, removeOrganizationRestriction } from '../domain/stix';
 import { batchCreators } from '../domain/user';
 import { numberOfContainersForObject } from '../domain/container';
-import {
-  batchMarkingDefinitions,
-  casesPaginated,
-  containersPaginated,
-  externalReferencesPaginated,
-  notesPaginated,
-  opinionsPaginated,
-  reportsPaginated
-} from '../domain/stixCoreObject';
-import { loadThroughDenormalized } from './stix';
-import { INPUT_CREATED_BY, INPUT_GRANTED_REFS, INPUT_LABELS } from '../schema/general';
+import { batchMarkingDefinitions, casesPaginated, containersPaginated, notesPaginated, opinionsPaginated, reportsPaginated } from '../domain/stixCoreObject';
+import { loadThroughDenormalized, loadThroughDenormalizedConnections } from './stix';
+import { INPUT_CREATED_BY, INPUT_EXTERNAL_REFS, INPUT_GRANTED_REFS, INPUT_LABELS } from '../schema/general';
 
 const loadByIdLoader = batchLoader(elBatchIds);
 const markingDefinitionsLoader = batchLoader(batchMarkingDefinitions);
@@ -60,7 +52,7 @@ const stixSightingRelationshipResolvers = {
     objectOrganization: (rel, _, context) => loadThroughDenormalized(context, context.user, rel, INPUT_GRANTED_REFS, { sortBy: 'name' }),
     // endregion
     // region inner listing - cant be batch loaded
-    externalReferences: (rel, args, context) => externalReferencesPaginated(context, context.user, rel.id, args),
+    externalReferences: (rel, _, context) => loadThroughDenormalizedConnections(context, context.user, rel, INPUT_EXTERNAL_REFS, { sortBy: 'created_at' }),
     containers: (rel, args, context) => containersPaginated(context, context.user, rel.id, args),
     reports: (rel, args, context) => reportsPaginated(context, context.user, rel.id, args),
     cases: (rel, args, context) => casesPaginated(context, context.user, rel.id, args),

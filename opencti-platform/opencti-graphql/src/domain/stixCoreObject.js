@@ -167,10 +167,6 @@ export const observedDataPaginated = async (context, user, stixCoreObjectId, opt
   return listEntitiesThroughRelationsPaginated(context, user, stixCoreObjectId, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_OBSERVED_DATA, true, opts);
 };
 
-export const externalReferencesPaginated = async (context, user, stixCoreObjectId, opts) => {
-  return listEntitiesThroughRelationsPaginated(context, user, stixCoreObjectId, RELATION_EXTERNAL_REFERENCE, ENTITY_TYPE_EXTERNAL_REFERENCE, false, opts);
-};
-
 export const stixCoreRelationships = (context, user, stixCoreObjectId, args) => {
   const finalArgs = R.assoc('fromOrToId', stixCoreObjectId, args);
   return relationFindAll(context, user, finalArgs);

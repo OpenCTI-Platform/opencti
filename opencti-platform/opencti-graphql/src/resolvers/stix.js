@@ -6,6 +6,7 @@ import { batchInternalRels } from '../domain/stixCoreObject';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { INPUT_GRANTED_REFS } from '../schema/general';
 import { isUserHasCapability, KNOWLEDGE_ORGANIZATION_RESTRICT } from '../utils/access';
+import { buildPagination } from '../database/utils';
 
 const creatorsLoader = batchLoader(batchCreators);
 const relBatchLoader = batchLoader(batchInternalRels);
@@ -26,6 +27,13 @@ export const loadThroughDenormalized = (context, user, element, inputName, args 
   // If not, reload through denormalized relationships
   const ref = schemaRelationsRefDefinition.getRelationRef(element.entity_type, inputName);
   return relBatchLoader.load({ element, definition: ref }, context, user, args);
+};
+
+// Load everything but return a connection format - for retro compatibility
+export const loadThroughDenormalizedConnections = async (context, user, element, inputName, args = {}) => {
+  const externalRefs = await loadThroughDenormalized(context, user, element, inputName, args);
+  const nodeElements = externalRefs.map((externalRef) => ({ node: externalRef }));
+  return buildPagination(0, null, nodeElements, nodeElements.length);
 };
 
 const stixResolvers = {
