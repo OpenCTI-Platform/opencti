@@ -40,7 +40,12 @@ import { getEntitiesListFromCache } from './cache';
 import { isUserHasCapability, KNOWLEDGE_ORGANIZATION_RESTRICT } from '../utils/access';
 import { cleanMarkings } from '../utils/markingDefinition-utils';
 
-export const LIST_REFS = [INPUT_PARTICIPANT, INPUT_ASSIGNEE, INPUT_KILLCHAIN, INPUT_CREATED_BY, INPUT_LABELS, INPUT_GRANTED_REFS, INPUT_MARKINGS];
+export const LIST_REFS = [
+  INPUT_PARTICIPANT, INPUT_ASSIGNEE,
+  INPUT_KILLCHAIN, INPUT_CREATED_BY,
+  INPUT_LABELS, INPUT_GRANTED_REFS,
+  INPUT_MARKINGS
+];
 
 export const buildEntityData = async (context, user, input, type, opts = {}) => {
   const { fromRule } = opts;
