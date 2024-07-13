@@ -19,7 +19,7 @@ import {
 import { fetchEditContext } from '../database/redis';
 import { subscribeToInstanceEvents } from '../graphql/subscriptionWrapper';
 import { batchLoader, stixLoadByIdStringify, timeSeriesRelations } from '../database/middleware';
-import { ABSTRACT_STIX_CORE_RELATIONSHIP, INPUT_CREATED_BY, INPUT_GRANTED_REFS, INPUT_KILLCHAIN, INPUT_LABELS } from '../schema/general';
+import { ABSTRACT_STIX_CORE_RELATIONSHIP, INPUT_CREATED_BY, INPUT_EXTERNAL_REFS, INPUT_GRANTED_REFS, INPUT_KILLCHAIN, INPUT_LABELS } from '../schema/general';
 import { elBatchIds } from '../database/engine';
 import { findById as findStatusById, getTypeStatuses } from '../domain/status';
 import { batchCreators } from '../domain/user';
@@ -29,7 +29,6 @@ import {
   batchMarkingDefinitions,
   casesPaginated,
   containersPaginated,
-  externalReferencesPaginated,
   groupingsPaginated,
   notesPaginated,
   opinionsPaginated,
@@ -38,7 +37,7 @@ import {
 } from '../domain/stixCoreObject';
 import { numberOfContainersForObject } from '../domain/container';
 import { paginatedForPathWithEnrichment } from '../modules/internal/document/document-domain';
-import { loadThroughDenormalized } from './stix';
+import { loadThroughDenormalized, loadThroughDenormalizedConnections } from './stix';
 
 const loadByIdLoader = batchLoader(elBatchIds);
 const markingDefinitionsLoader = batchLoader(batchMarkingDefinitions);
@@ -72,7 +71,7 @@ const stixCoreRelationshipResolvers = {
     objectMarking: (rel, _, context) => markingDefinitionsLoader.load(rel, context, context.user),
     // endregion
     // region inner listing - cant be batch loaded
-    externalReferences: (rel, args, context) => externalReferencesPaginated(context, context.user, rel.id, args),
+    externalReferences: (rel, _, context) => loadThroughDenormalizedConnections(context, context.user, rel, INPUT_EXTERNAL_REFS, { sortBy: 'created_at' }),
     containers: (rel, args, context) => containersPaginated(context, context.user, rel.id, args),
     reports: (rel, args, context) => reportsPaginated(context, context.user, rel.id, args),
     groupings: (rel, args, context) => groupingsPaginated(context, context.user, rel.id, args),

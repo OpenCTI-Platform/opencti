@@ -5,7 +5,6 @@ import {
   batchMarkingDefinitions,
   casesPaginated,
   containersPaginated,
-  externalReferencesPaginated,
   findAll,
   findById,
   groupingsPaginated,
@@ -41,7 +40,7 @@ import { fetchEditContext } from '../database/redis';
 import { batchLoader, distributionRelations, stixLoadByIdStringify } from '../database/middleware';
 import { worksForSource } from '../domain/work';
 import { BUS_TOPICS } from '../config/conf';
-import { ABSTRACT_STIX_CORE_OBJECT, INPUT_CREATED_BY, INPUT_GRANTED_REFS, INPUT_LABELS } from '../schema/general';
+import { ABSTRACT_STIX_CORE_OBJECT, INPUT_CREATED_BY, INPUT_EXTERNAL_REFS, INPUT_GRANTED_REFS, INPUT_LABELS } from '../schema/general';
 import { subscribeToInstanceEvents } from '../graphql/subscriptionWrapper';
 import { connectorsForEnrichment } from '../database/repository';
 import { addOrganizationRestriction, removeOrganizationRestriction } from '../domain/stix';
@@ -49,7 +48,7 @@ import { stixCoreObjectOptions } from '../schema/stixCoreObject';
 import { numberOfContainersForObject } from '../domain/container';
 import { paginatedForPathWithEnrichment } from '../modules/internal/document/document-domain';
 import { getSpecVersionOrDefault } from '../domain/stixRelationship';
-import { loadThroughDenormalized } from './stix';
+import { loadThroughDenormalized, loadThroughDenormalizedConnections } from './stix';
 
 const markingDefinitionsLoader = batchLoader(batchMarkingDefinitions);
 
@@ -102,7 +101,7 @@ const stixCoreObjectResolvers = {
     // endregion
     // region inner listing - cant be batch loaded
     stixCoreRelationships: (stixCoreObject, args, context) => stixCoreRelationships(context, context.user, stixCoreObject.id, args),
-    externalReferences: (stixCoreObject, args, context) => externalReferencesPaginated(context, context.user, stixCoreObject.id, args),
+    externalReferences: (stixCoreObject, _, context) => loadThroughDenormalizedConnections(context, context.user, stixCoreObject, INPUT_EXTERNAL_REFS, { sortBy: 'created_at' }),
     containers: (stixCoreObject, args, context) => containersPaginated(context, context.user, stixCoreObject.id, args),
     reports: (stixCoreObject, args, context) => reportsPaginated(context, context.user, stixCoreObject.id, args),
     groupings: (stixCoreObject, args, context) => groupingsPaginated(context, context.user, stixCoreObject.id, args),
