@@ -164,7 +164,7 @@ workflows:
             - build_frontend
           filters:
             tags:
-              only: filigran-beta-denorm3
+              only: filigran-beta-denorm4
             branches:
               ignore: /.*/
       - docker_build_worker:
@@ -172,6 +172,6 @@ workflows:
             - build_frontend
           filters:
             tags:
-              only: filigran-beta-denorm3
+              only: filigran-beta-denorm4
             branches:
               ignore: /.*/

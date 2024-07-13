@@ -3891,52 +3891,49 @@ export const elIndexElements = async (context, user, indexingType, elements) => 
       await elBulk({ refresh: true, timeout: BULK_TIMEOUT, body: bodyElements });
     }
     // 02. Bulk indexing of relations denorm child
-    const bodyChildFrom = elements.filter((e) => (e.base_type === BASE_TYPE_RELATION)).map((e) => {
-      const { fromRole } = e;
-      const impacts = [];
-      if (isImpactedRole(fromRole)) {
-        impacts.push(...[
-          { update: { _index: e.from._index, _id: `${e.internal_id}_${e.from.internal_id}`, routing: e.from.internal_id, retry_on_conflict: ES_RETRY_ON_CONFLICT } },
-          {
-            doc: {
-              entity_type: 'denorm',
-              denorm_id: e.to.internal_id,
-              denorm_role: fromRole,
-              denorm_type: e.entity_type,
-              'rel_object-marking.internal_id': e['rel_object-marking.internal_id'],
-              'rel_granted.internal_id': e['rel_granted.internal_id'],
-              element_to_denorm: { name: 'denorm', parent: e.from.internal_id }
-            },
-            doc_as_upsert: true
-          }
-        ]);
-      }
-      return impacts;
-    }).flat();
-    const bodyChildTo = elements.filter((e) => (e.base_type === BASE_TYPE_RELATION)).map((e) => {
-      const { toRole } = e;
-      const impacts = [];
-      if (isImpactedRole(toRole)) {
-        impacts.push(...[
-          { update: { _index: e.to._index, _id: `${e.internal_id}_${e.to.internal_id}`, routing: e.to.internal_id, retry_on_conflict: ES_RETRY_ON_CONFLICT } },
-          {
-            doc: {
-              entity_type: 'denorm',
-              denorm_id: e.from.internal_id,
-              denorm_role: toRole,
-              denorm_type: e.entity_type,
-              'rel_object-marking.internal_id': e['rel_object-marking.internal_id'],
-              'rel_granted.internal_id': e['rel_granted.internal_id'],
-              element_to_denorm: { name: 'denorm', parent: e.to.internal_id },
-            },
-            doc_as_upsert: true
+    let bulkDenormRefresh = false;
+    const bodyChildFrom = elements.filter((e) => (e.base_type === BASE_TYPE_RELATION && isImpactedRole(e.fromRole))).map((e) => {
+      const { fromRole, fromType } = e;
+      bulkDenormRefresh = bulkDenormRefresh || isInternalObject(fromType);
+      return [
+        { update: { _index: e.from._index, _id: `${e.internal_id}_${e.from.internal_id}`, routing: e.from.internal_id, retry_on_conflict: ES_RETRY_ON_CONFLICT } },
+        {
+          doc: {
+            entity_type: 'denorm',
+            denorm_id: e.to.internal_id,
+            denorm_role: fromRole,
+            denorm_type: e.entity_type,
+            'rel_object-marking.internal_id': e['rel_object-marking.internal_id'],
+            'rel_granted.internal_id': e['rel_granted.internal_id'],
+            element_to_denorm: { name: 'denorm', parent: e.from.internal_id }
           },
-        ]);
-      }
-      return impacts;
+          doc_as_upsert: true
+        }
+      ];
     }).flat();
-    const promiseFrom = bodyChildFrom.length > 0 ? elBulk({ refresh: false, timeout: BULK_TIMEOUT, body: bodyChildFrom }) : Promise.resolve();
-    const promiseTo = bodyChildTo.length > 0 ? elBulk({ refresh: false, timeout: BULK_TIMEOUT, body: bodyChildTo }) : Promise.resolve();
+    const promiseFrom = bodyChildFrom.length > 0
+      ? elBulk({ refresh: bulkDenormRefresh, timeout: BULK_TIMEOUT, body: bodyChildFrom }) : Promise.resolve();
+    const bodyChildTo = elements.filter((e) => (e.base_type === BASE_TYPE_RELATION && isImpactedRole(e.toRole))).map((e) => {
+      const { toRole, toType } = e;
+      bulkDenormRefresh = bulkDenormRefresh || isInternalObject(toType);
+      return [
+        { update: { _index: e.to._index, _id: `${e.internal_id}_${e.to.internal_id}`, routing: e.to.internal_id, retry_on_conflict: ES_RETRY_ON_CONFLICT } },
+        {
+          doc: {
+            entity_type: 'denorm',
+            denorm_id: e.from.internal_id,
+            denorm_role: toRole,
+            denorm_type: e.entity_type,
+            'rel_object-marking.internal_id': e['rel_object-marking.internal_id'],
+            'rel_granted.internal_id': e['rel_granted.internal_id'],
+            element_to_denorm: { name: 'denorm', parent: e.to.internal_id },
+          },
+          doc_as_upsert: true
+        },
+      ];
+    }).flat();
+    const promiseTo = bodyChildTo.length > 0
+      ? elBulk({ refresh: bulkDenormRefresh, timeout: BULK_TIMEOUT, body: bodyChildTo }) : Promise.resolve();
     await Promise.all([promiseFrom, promiseTo]);
     return transformedElements.length;
   };
