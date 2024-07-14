@@ -1,4 +1,4 @@
-import { stixDelete, stixObjectMerge } from '../domain/stix';
+import {sendStixBundle, stixDelete, stixObjectMerge} from '../domain/stix';
 import { batchLoader, stixLoadByIdStringify } from '../database/middleware';
 import { connectorsForEnrichment } from '../database/repository';
 import { batchCreators } from '../domain/user';
@@ -38,6 +38,7 @@ const stixResolvers = {
       delete: () => stixDelete(context, context.user, id),
       merge: ({ stixObjectsIds }) => stixObjectMerge(context, context.user, id, stixObjectsIds),
     }),
+    stixBundlePush: (_, { connectorId, bundle }, context) => sendStixBundle(context, context.user, connectorId, bundle),
   },
   StixObject: {
     // eslint-disable-next-line

@@ -244,12 +244,17 @@ export const rabbitMQIsAlive = async () => {
   );
 };
 
-export const pushToSync = (message) => {
+export const pushToWorkerForSync = (message) => {
   return send(WORKER_EXCHANGE, pushRouting(INTERNAL_SYNC_QUEUE), JSON.stringify(message));
 };
 
-export const pushToPlaybook = (message) => {
+export const pushToWorkerForPlaybook = (message) => {
   return send(WORKER_EXCHANGE, pushRouting(INTERNAL_PLAYBOOK_QUEUE), JSON.stringify(message));
+};
+
+export const pushToWorkerForConnector = (connectorId, message) => {
+  const routingKey = pushRouting(connectorId);
+  return send(WORKER_EXCHANGE, routingKey, JSON.stringify(message));
 };
 
 export const pushToConnector = (connectorId, message) => {

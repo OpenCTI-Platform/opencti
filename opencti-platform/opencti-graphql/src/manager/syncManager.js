@@ -11,7 +11,7 @@ import { STIX_EXT_OCTI } from '../types/stix-extensions';
 import { utcDate } from '../utils/format';
 import { listEntities, storeLoadById } from '../database/middleware-loader';
 import { isEmptyField, wait } from '../database/utils';
-import { pushToSync } from '../database/rabbitmq';
+import { pushToWorkerForSync } from '../database/rabbitmq';
 import { OPENCTI_SYSTEM_UUID } from '../schema/general';
 import { getHttpClient } from '../utils/http-client';
 
@@ -137,7 +137,7 @@ const syncManagerInstance = (syncId) => {
               const enrichedEvent = JSON.stringify({ id: eventId, type: eventType, data: syncData, context: eventContext });
               const content = Buffer.from(enrichedEvent, 'utf-8').toString('base64');
               // Applicant_id should be a userId coming from synchronizer
-              await pushToSync({
+              await pushToWorkerForSync({
                 type: 'event',
                 synchronized,
                 previous_standard,

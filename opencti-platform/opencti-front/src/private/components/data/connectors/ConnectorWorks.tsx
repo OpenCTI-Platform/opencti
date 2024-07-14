@@ -199,9 +199,7 @@ const ConnectorWorksComponent: FunctionComponent<ConnectorWorksComponentProps> =
                       {t_i18n('Total number of operations')}
                     </Typography>
                     <span className={classes.number}>
-                      {work.status === 'wait'
-                        ? '-'
-                        : tracking?.import_expected_number ?? '-'}
+                      {tracking?.import_expected_number ?? '-'}
                     </span>
                   </Grid>
                   <Grid item={true} xs={11}>
