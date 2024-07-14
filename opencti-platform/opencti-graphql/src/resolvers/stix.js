@@ -1,4 +1,4 @@
-import {sendStixBundle, stixDelete, stixObjectMerge} from '../domain/stix';
+import { sendStixBundle, stixDelete, stixObjectMerge } from '../domain/stix';
 import { batchLoader, stixLoadByIdStringify } from '../database/middleware';
 import { connectorsForEnrichment } from '../database/repository';
 import { batchCreators } from '../domain/user';
