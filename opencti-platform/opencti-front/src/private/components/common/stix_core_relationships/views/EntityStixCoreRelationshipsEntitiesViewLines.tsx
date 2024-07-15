@@ -123,7 +123,7 @@ EntityStixCoreRelationshipsEntitiesProps
         data?.stixCoreObjects?.pageInfo?.globalCount ?? nbOfRowsToLoad
       }
       LineComponent={EntityStixCoreRelationshipsEntitiesViewLine}
-      DummyLineComponent={EntityStixCoreRelationshipsEntitiesLineDummy}
+      DummyLineComponent={(props: DataColumns) => <EntityStixCoreRelationshipsEntitiesLineDummy {...props} dataColumns={dataColumns} />}
       dataColumns={dataColumns}
       nbOfRowsToLoad={nbOfRowsToLoad}
       paginationOptions={paginationOptions}
@@ -145,7 +145,14 @@ Omit<EntityStixCoreRelationshipsEntitiesProps, 'queryRef'>
     { count: 25, ...props.paginationOptions },
   );
   return queryRef ? (
-    <React.Suspense fallback={<Loader variant={LoaderVariant.inElement}/>}>
+    <React.Suspense fallback={<>
+      {Array(20)
+        .fill(0)
+        .map((_, idx) => (
+          <EntityStixCoreRelationshipsEntitiesLineDummy key={idx} dataColumns={props.dataColumns} />
+        ))}
+    </>}
+    >
       <EntityStixCoreRelationshipsEntitiesComponent
         {...props}
         queryRef={queryRef}
