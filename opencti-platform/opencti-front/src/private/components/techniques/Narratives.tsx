@@ -27,13 +27,13 @@ const LOCAL_STORAGE_KEY = 'narratives';
 
 const useStyles = makeStyles(() => ({
   parameters: {
-    float: 'left',
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     marginTop: -10,
   },
   views: {
-    marginTop: -5,
-    position: 'absolute',
-    right: 60,
+    marginRight: 35,
   },
 }));
 
@@ -90,20 +90,17 @@ const Narratives: FunctionComponent = () => {
     return (
       <>
         <div className={classes.parameters}>
-          <div style={{ float: 'left', marginRight: 20 }}>
-            <SearchInput
-              variant="small"
-              onSubmit={helpers.handleSearch}
-              keyword={searchTerm}
-            />
-          </div>
-          <div className={classes.views}>
+          <SearchInput
+            variant="small"
+            onSubmit={helpers.handleSearch}
+            keyword={searchTerm}
+          />
+          <div className={classes.views} style={{ marginTop: -5 }}>
             <ToggleButtonGroup
               size="small"
               color="secondary"
               value={view || 'lines'}
               exclusive={true}
-              style={{ margin: '0 0 0 5px' }}
             >
               <ViewSwitchingButtons
                 handleChangeView={helpers.handleChangeView}

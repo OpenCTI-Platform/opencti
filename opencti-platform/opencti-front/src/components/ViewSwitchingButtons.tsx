@@ -5,7 +5,24 @@ import { LibraryBooksOutlined, ViewModuleOutlined } from '@mui/icons-material';
 import { FormatListGroup, Group, RelationManyToMany, VectorPolygon } from 'mdi-material-ui';
 import { ToggleButtonGroup } from '@mui/material';
 import { ListViewIcon, SublistViewIcon } from 'filigran-icon';
+import { makeStyles } from '@mui/styles';
 import { useFormatter } from './i18n';
+
+const useStyles = makeStyles({
+  EntityIcon: {
+    height: 16,
+    width: 16,
+  },
+  subEntityButton: {
+    height: 36,
+    backgroundColor: 'rgba(0, 241, 189, 0.24)',
+  },
+  subEntityIcon: {
+    color: 'rgb(0, 241, 189)',
+    height: 16,
+    width: 16,
+  },
+});
 
 interface ViewSwitchingButtonsProps {
   handleChangeView?: (value: string) => void;
@@ -29,6 +46,7 @@ const ViewSwitchingButtons: FunctionComponent<ViewSwitchingButtonsProps> = ({
   enableContextualView,
 }) => {
   const { t_i18n } = useFormatter();
+  const classes = useStyles();
   return (
     <>
       <ToggleButtonGroup
@@ -80,28 +98,18 @@ const ViewSwitchingButtons: FunctionComponent<ViewSwitchingButtonsProps> = ({
         && !enableEntitiesView && (
         <ToggleButton value="lines" onClick={() => handleChangeView('lines')} aria-label="lines">
           <Tooltip title={t_i18n('Lines view')}>
-            <ListViewIcon
-              style={{ height: 16, width: 16 }}
-              color={
-                currentView === 'lines' || !currentView
-                  ? 'secondary'
-                  : 'primary'
-              }
-            />
+            <ListViewIcon className={classes.EntityIcon}/>
           </Tooltip>
         </ToggleButton>
         )}
         {typeof handleChangeView === 'function' && enableSubEntityLines && (
-        <ToggleButton value="subEntityLines" aria-label="subEntityLines">
+        <ToggleButton
+          value="subEntityLines"
+          aria-label="subEntityLines"
+          className={classes.subEntityButton}
+        >
           <Tooltip title={t_i18n('Sub entity lines view')}>
-            <SublistViewIcon
-              style={{ height: 16, width: 16 }}
-              color={
-                currentView === 'subEntityLines' || !currentView
-                  ? 'secondary'
-                  : 'primary'
-              }
-            />
+            <SublistViewIcon className={classes.subEntityIcon} />
           </Tooltip>
         </ToggleButton>
         )}
