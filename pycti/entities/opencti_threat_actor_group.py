@@ -140,7 +140,7 @@ class ThreatActorGroup:
     @staticmethod
     def generate_id(name):
         name = name.lower().strip()
-        data = {"name": name}
+        data = {"name": name, "opencti_type": "Threat-Actor-Group"}
         data = canonicalize(data, utf8=False)
         id = str(uuid.uuid5(uuid.UUID("00abedb4-aa42-466c-9c01-fed23315a9b7"), data))
         return "threat-actor--" + id
