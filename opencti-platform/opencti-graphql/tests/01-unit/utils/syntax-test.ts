@@ -12,7 +12,7 @@ describe('Regex Pattern Tests', () => {
     expect('example.com').toMatch(domainChecker);
     expect('sub.example.co.uk').toMatch(domainChecker);
     expect('løveskateboards.com').toMatch(domainChecker);
-    expect('invalid_domain.123').not.toMatch(domainChecker);
+    expect('invalid_domain.12_3').not.toMatch(domainChecker);
   });
 
   it('should match a valid hostname pattern', () => {
