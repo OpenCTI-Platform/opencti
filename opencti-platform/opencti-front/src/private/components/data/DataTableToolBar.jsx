@@ -55,7 +55,6 @@ import Chip from '@mui/material/Chip';
 import DialogTitle from '@mui/material/DialogTitle';
 import Alert from '@mui/material/Alert';
 import TextField from '@mui/material/TextField';
-import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import Avatar from '@mui/material/Avatar';
 import FormControlLabel from '@mui/material/FormControlLabel';
@@ -1394,7 +1393,7 @@ class DataTableToolBar extends Component {
           return (
             <>
               <Toolbar style={{ minHeight: 40, marginTop: 2, display: 'flex', justifyContent: 'space-between', height: '100%' }} data-testid='opencti-toolbar'>
-                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <div style={{ display: 'flex', alignItems: 'center' }}>
                   <Typography
                     className={classes.title}
                     color="inherit"
@@ -1423,8 +1422,8 @@ class DataTableToolBar extends Component {
                   >
                     <ClearOutlined fontSize="small" />
                   </IconButton>
-                </Box>
-                <Box>
+                </div>
+                <div>
                   <Security needs={[KNOWLEDGE_KNUPDATE]}>
                     {!typesAreNotUpdatable && (
                       <Tooltip title={t('Update')}>
@@ -1673,7 +1672,7 @@ class DataTableToolBar extends Component {
                       </Tooltip>
                     </Security>
                   )}
-                </Box>
+                </div>
               </Toolbar>
               <Dialog
                 PaperProps={{ elevation: 1 }}
