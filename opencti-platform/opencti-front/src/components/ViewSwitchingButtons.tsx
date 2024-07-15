@@ -6,6 +6,7 @@ import { FormatListGroup, Group, RelationManyToMany, VectorPolygon } from 'mdi-m
 import { ToggleButtonGroup } from '@mui/material';
 import { ListViewIcon, SublistViewIcon } from 'filigran-icon';
 import { makeStyles } from '@mui/styles';
+import FiligranIcon from '@components/common/FiligranIcon';
 import { useFormatter } from './i18n';
 
 const useStyles = makeStyles({
@@ -15,12 +16,6 @@ const useStyles = makeStyles({
   },
   subEntityButton: {
     height: 36,
-    backgroundColor: 'rgba(0, 241, 189, 0.24)',
-  },
-  subEntityIcon: {
-    color: 'rgb(0, 241, 189)',
-    height: 16,
-    width: 16,
   },
 });
 
@@ -98,7 +93,7 @@ const ViewSwitchingButtons: FunctionComponent<ViewSwitchingButtonsProps> = ({
         && !enableEntitiesView && (
         <ToggleButton value="lines" onClick={() => handleChangeView('lines')} aria-label="lines">
           <Tooltip title={t_i18n('Lines view')}>
-            <ListViewIcon className={classes.EntityIcon}/>
+            <FiligranIcon icon={ListViewIcon} color='primary' size='small'/>
           </Tooltip>
         </ToggleButton>
         )}
@@ -109,7 +104,7 @@ const ViewSwitchingButtons: FunctionComponent<ViewSwitchingButtonsProps> = ({
           className={classes.subEntityButton}
         >
           <Tooltip title={t_i18n('Sub entity lines view')}>
-            <SublistViewIcon className={classes.subEntityIcon} />
+            <FiligranIcon icon={SublistViewIcon} color='secondary' size='small'/>
           </Tooltip>
         </ToggleButton>
         )}

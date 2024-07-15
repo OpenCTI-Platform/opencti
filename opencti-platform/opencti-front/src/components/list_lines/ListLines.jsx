@@ -25,6 +25,7 @@ import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import Box from '@mui/material/Box';
 import { ListViewIcon, SublistViewIcon } from 'filigran-icon';
+import FiligranIcon from '../../private/components/common/FiligranIcon';
 import { ErrorBoundary } from '../../private/components/Error';
 import { UserContext } from '../../utils/hooks/useAuth';
 import Filters from '../../private/components/common/lists/Filters';
@@ -331,14 +332,7 @@ class ListLines extends Component {
                     && !enableEntitiesView && (
                       <ToggleButton value="lines" aria-label="lines">
                         <Tooltip title={t('Lines view')}>
-                          <ListViewIcon
-                            style={{ height: 16, width: 16 }}
-                            color={
-                              currentView === 'lines' || !currentView
-                                ? 'secondary'
-                                : 'primary'
-                            }
-                          />
+                          <FiligranIcon icon={ListViewIcon} color='secondary' size='small'/>
                         </Tooltip>
                       </ToggleButton>
                   )}
@@ -377,14 +371,7 @@ class ListLines extends Component {
                   {typeof handleChangeView === 'function' && enableSubEntityLines && (
                     <ToggleButton value="subEntityLines" aria-label="subEntityLines">
                       <Tooltip title={t('Sub entity lines view')}>
-                        <SublistViewIcon
-                          style={{ height: 16, width: 16 }}
-                          color={
-                            currentView === 'subEntityLines' || !currentView
-                              ? 'secondary'
-                              : 'primary'
-                          }
-                        />
+                        <FiligranIcon icon={SublistViewIcon} color='primary' size='small'/>
                       </Tooltip>
                     </ToggleButton>
                   )}
