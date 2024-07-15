@@ -39,6 +39,9 @@ import {
 } from '@components/common/containers/__generated__/ContainerMappingContentAddSuggestedMappingRelationsMutation.graphql';
 import { ContainerMappingContentAskSuggestedMappingMutation } from '@components/common/containers/__generated__/ContainerMappingContentAskSuggestedMappingMutation.graphql';
 import { ContainerMappingContentClearSuggestedMappingMutation } from '@components/common/containers/__generated__/ContainerMappingContentClearSuggestedMappingMutation.graphql';
+import {
+  ContainerStixCoreObjectsSuggestedMappingLine_mappedEntity$data,
+} from '@components/common/containers/__generated__/ContainerStixCoreObjectsSuggestedMappingLine_mappedEntity.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import { MESSAGING$ } from '../../../../relay/environment';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
@@ -295,8 +298,8 @@ ContainerMappingContentComponentProps
     return contentMapping;
   };
 
-  const handleRemoveSuggestedMappingLine = (matchedId: string) => {
-    setRemovedEntities([...removedEntities, matchedId]);
+  const handleRemoveSuggestedMappingLine = (removedEntity: NonNullable<ContainerStixCoreObjectsSuggestedMappingLine_mappedEntity$data['matchedEntity']>) => {
+    setRemovedEntities([...removedEntities, removedEntity.id]);
   };
 
   const contentMappingData = decodeMappingData(content_mapping);
