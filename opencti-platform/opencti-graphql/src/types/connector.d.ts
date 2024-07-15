@@ -5,7 +5,7 @@ export interface ConnectorInfo {
   buffering: boolean,
   queue_threshold: number,
   queue_messages_size: number,
-  next_run_datetime: string, // TODO datetime instead of string
+  next_run_datetime: DateTime,
 }
 
 export interface StoreConnector extends StoreEntity {

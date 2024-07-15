@@ -1763,17 +1763,17 @@ type RabbitMQConnection {
 input ConnectorInfoInput {
   run_and_terminate: Boolean!
   buffering: Boolean!
-  queue_threshold: Int!
-  queue_messages_size: Int!
-  next_run_datetime: String
+  queue_threshold: Float!
+  queue_messages_size: Float!
+  next_run_datetime: DateTime
 }
 
 type ConnectorInfo {
   run_and_terminate: Boolean!
   buffering: Boolean!
-  queue_threshold: Int!
-  queue_messages_size: Int!
-  next_run_datetime: String
+  queue_threshold: Float!
+  queue_messages_size: Float!
+  next_run_datetime: DateTime
 }
 
 type ConnectorConfig {

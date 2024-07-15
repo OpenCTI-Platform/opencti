@@ -3,7 +3,6 @@ import gql from 'graphql-tag';
 import { queryAsAdmin, USER_CONNECTOR, USER_EDITOR } from '../../utils/testQuery';
 import { queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
 import type { ConnectorInfo } from '../../../src/generated/graphql';
-import { utcDate } from '../../../src/utils/format';
 
 const CREATE_WORK_QUERY = gql`
   mutation workAdd($connectorId: String!, $friendlyName: String) {
@@ -235,14 +234,14 @@ describe('Connector resolver standard behaviour', () => {
       }
     `;
 
-    const dateNextRun = utcDate().toISOString();
+    const datetimeTest = new Date();
 
     const connectorInfo: ConnectorInfo = {
       buffering: true,
-      queue_messages_size: 200,
-      queue_threshold: 500000000,
+      queue_messages_size: 20.50,
+      queue_threshold: 490.2,
       run_and_terminate: true,
-      next_run_datetime: dateNextRun
+      next_run_datetime: datetimeTest,
     };
 
     const state = '{"last_run": 1718010586.1741812}';
@@ -252,8 +251,9 @@ describe('Connector resolver standard behaviour', () => {
     expect(queryResult.data.pingConnector).toBeDefined();
     expect(queryResult.data.pingConnector.connector_info.run_and_terminate).toBeTruthy();
     expect(queryResult.data.pingConnector.connector_info.buffering).toBeTruthy();
-    expect(queryResult.data.pingConnector.connector_info.queue_messages_size).toBe(200);
-    expect(queryResult.data.pingConnector.connector_info.queue_threshold).toBe(500000000); // big number in purpose
+    expect(queryResult.data.pingConnector.connector_info.queue_messages_size).toBe(20.50);
+    expect(queryResult.data.pingConnector.connector_info.queue_threshold).toBe(490.2);
+    expect(queryResult.data.pingConnector.connector_info.next_run_datetime).toBe(datetimeTest.toISOString());
   });
 });
 

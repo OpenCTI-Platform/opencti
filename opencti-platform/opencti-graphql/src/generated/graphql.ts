@@ -3476,17 +3476,17 @@ export type ConnectorConfiguration = {
 export type ConnectorInfo = {
   __typename?: 'ConnectorInfo';
   buffering: Scalars['Boolean']['output'];
-  next_run_datetime?: Maybe<Scalars['String']['output']>;
-  queue_messages_size: Scalars['Int']['output'];
-  queue_threshold: Scalars['Int']['output'];
+  next_run_datetime?: Maybe<Scalars['DateTime']['output']>;
+  queue_messages_size: Scalars['Float']['output'];
+  queue_threshold: Scalars['Float']['output'];
   run_and_terminate: Scalars['Boolean']['output'];
 };
 
 export type ConnectorInfoInput = {
   buffering: Scalars['Boolean']['input'];
-  next_run_datetime?: InputMaybe<Scalars['String']['input']>;
-  queue_messages_size: Scalars['Int']['input'];
-  queue_threshold: Scalars['Int']['input'];
+  next_run_datetime?: InputMaybe<Scalars['DateTime']['input']>;
+  queue_messages_size: Scalars['Float']['input'];
+  queue_threshold: Scalars['Float']['input'];
   run_and_terminate: Scalars['Boolean']['input'];
 };
 
@@ -31499,9 +31499,9 @@ export type ConnectorConfigurationResolvers<ContextType = any, ParentType extend
 
 export type ConnectorInfoResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConnectorInfo'] = ResolversParentTypes['ConnectorInfo']> = ResolversObject<{
   buffering?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
-  next_run_datetime?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  queue_messages_size?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
-  queue_threshold?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  next_run_datetime?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  queue_messages_size?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+  queue_threshold?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
   run_and_terminate?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;

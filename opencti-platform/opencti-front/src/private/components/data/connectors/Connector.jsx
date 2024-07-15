@@ -567,6 +567,13 @@ const Connector = createRefetchContainer(
         connector_type
         connector_scope
         connector_state
+        connector_info {
+          run_and_terminate
+          buffering
+          queue_threshold
+          queue_messages_size
+          next_run_datetime
+        }
         connector_queue_details {
           messages_number
           messages_size
