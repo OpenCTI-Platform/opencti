@@ -13,7 +13,7 @@ import validator from 'validator';
 import archiverZipEncrypted from 'archiver-zip-encrypted';
 import rateLimit from 'express-rate-limit';
 import contentDisposition from 'content-disposition';
-import { basePath, booleanConf, DEV_MODE, logApp, OPENCTI_SESSION } from '../config/conf';
+import { basePath, booleanConf, DEV_MODE, ENABLED_UI, logApp, OPENCTI_SESSION } from '../config/conf';
 import passport, { isStrategyActivated, STRATEGY_CERT } from '../config/providers';
 import { authenticateUser, authenticateUserFromRequest, HEADERS_AUTHENTICATORS, loginFromProvider, userWithOrigin } from '../domain/user';
 import { downloadFile, getFileContent, loadFile, isStorageAlive } from '../database/file-storage';
@@ -134,14 +134,16 @@ const createApp = async (app) => {
   app.use(securityMiddleware);
   app.use(compression({}));
 
-  // -- Serv playground resources
-  app.use(`${basePath}/static/@apollographql/graphql-playground-react@1.7.42/build/static`, express.static('static/playground'));
+  if (ENABLED_UI) {
+    // -- Serv playground resources
+    app.use(`${basePath}/static/@apollographql/graphql-playground-react@1.7.42/build/static`, express.static('static/playground'));
 
-  // -- Serv flags resources
-  app.use(`${basePath}/static/flags`, express.static('static/flags'));
+    // -- Serv flags resources
+    app.use(`${basePath}/static/flags`, express.static('static/flags'));
 
-  // -- Serv frontend static resources
-  app.use(`${basePath}/static`, express.static(path.join(__dirname, '../public/static')));
+    // -- Serv frontend static resources
+    app.use(`${basePath}/static`, express.static(path.join(__dirname, '../public/static')));
+  }
 
   const requestSizeLimit = nconf.get('app:max_payload_body_size') || '15mb';
   app.use(bodyParser.json({ limit: requestSizeLimit }));
@@ -432,25 +434,28 @@ const createApp = async (app) => {
 
   // Other routes - Render index.html
   app.get('*', async (_, res) => {
-    const context = executionContext('app_loading');
-    const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
-    const data = readFileSync(`${__dirname}/../public/index.html`, 'utf8');
-    const settingsTitle = settings?.platform_title;
-    const description = 'OpenCTI is an open source platform allowing organizations'
-      + ' to manage their cyber threat intelligence knowledge and observables.';
-    const settingFavicon = settings?.platform_favicon;
-    const withOptionValued = data
-      .replace(/%BASE_PATH%/g, basePath)
-      .replace(/%APP_TITLE%/g, isNotEmptyField(settingsTitle) ? validator.escape(settingsTitle)
-        : 'OpenCTI - Cyber Threat Intelligence Platform')
-      .replace(/%APP_DESCRIPTION%/g, validator.escape(description))
-      .replace(/%APP_FAVICON%/g, isNotEmptyField(settingFavicon) ? validator.escape(settingFavicon)
-        : `${basePath}/static/ext/favicon.png`)
-      .replace(/%APP_MANIFEST%/g, `${basePath}/static/ext/manifest.json`);
-    res.set('Cache-Control', 'private, no-cache, no-store, must-revalidate');
-    res.set('Expires', '-1');
-    res.set('Pragma', 'no-cache');
-    return res.send(withOptionValued);
+    if (ENABLED_UI) {
+      const context = executionContext('app_loading');
+      const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+      const data = readFileSync(`${__dirname}/../public/index.html`, 'utf8');
+      const settingsTitle = settings?.platform_title;
+      const description = 'OpenCTI is an open source platform allowing organizations'
+          + ' to manage their cyber threat intelligence knowledge and observables.';
+      const settingFavicon = settings?.platform_favicon;
+      const withOptionValued = data
+        .replace(/%BASE_PATH%/g, basePath)
+        .replace(/%APP_TITLE%/g, isNotEmptyField(settingsTitle) ? validator.escape(settingsTitle)
+          : 'OpenCTI - Cyber Threat Intelligence Platform')
+        .replace(/%APP_DESCRIPTION%/g, validator.escape(description))
+        .replace(/%APP_FAVICON%/g, isNotEmptyField(settingFavicon) ? validator.escape(settingFavicon)
+          : `${basePath}/static/ext/favicon.png`)
+        .replace(/%APP_MANIFEST%/g, `${basePath}/static/ext/manifest.json`);
+      res.set('Cache-Control', 'private, no-cache, no-store, must-revalidate');
+      res.set('Expires', '-1');
+      res.set('Pragma', 'no-cache');
+      return res.send(withOptionValued);
+    }
+    return res.status(503).send({ status: 'error', error: 'Interface is disabled by configuration' });
   });
 
   // Error handling
