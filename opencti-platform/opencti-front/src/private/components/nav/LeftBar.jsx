@@ -821,7 +821,7 @@ const LeftBar = () => {
               'dashboards',
               [
                 { type: 'Dashboard', link: '/dashboard/workspaces/dashboards', label: 'Dashboards' },
-                { type: 'Dashboard', link: '/dashboard/workspaces/public', label: 'Public Dashboards' },
+                { type: 'Dashboard', link: '/dashboard/workspaces/public_dashboards', label: 'Public Dashboards' },
               ],
             )}
             <Security needs={[INVESTIGATION]}>
