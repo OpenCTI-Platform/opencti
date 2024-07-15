@@ -70,7 +70,6 @@ const WidgetDistributionList = ({
               dense={true}
               className="noDrag"
               divider={true}
-              disableRipple={publicWidget}
               {...linkProps}
               sx={{
                 height: 50,
