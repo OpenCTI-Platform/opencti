@@ -1,10 +1,6 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-// TODO Remove this when V6
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-nocheck
 import React, { useMemo } from 'react';
 import { Link, Route, Routes, useParams, useLocation, Navigate } from 'react-router-dom';
-import { graphql, usePreloadedQuery, useSubscription } from 'react-relay';
+import { graphql, PreloadedQuery, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
@@ -75,10 +71,15 @@ const ThreatActorIndividualQuery = graphql`
   }
 `;
 
+type RootThreatActorIndividualProps = {
+  threatActorIndividualId: string;
+  queryRef: PreloadedQuery<RootThreatActorIndividualQuery>
+};
+
 const RootThreatActorIndividualComponent = ({
   queryRef,
   threatActorIndividualId,
-}) => {
+}: RootThreatActorIndividualProps) => {
   const subConfig = useMemo<
   GraphQLSubscriptionConfig<RootThreatActorIndividualSubscription>
   >(
@@ -88,23 +89,26 @@ const RootThreatActorIndividualComponent = ({
     }),
     [threatActorIndividualId],
   );
-  useSubscription(subConfig);
+
   const location = useLocation();
   const { t_i18n } = useFormatter();
+  useSubscription<RootThreatActorIndividualSubscription>(subConfig);
+
   const {
-    threatActorIndividual: data,
+    threatActorIndividual,
     connectorsForExport,
     connectorsForImport,
   } = usePreloadedQuery<RootThreatActorIndividualQuery>(
     ThreatActorIndividualQuery,
     queryRef,
   );
-  const isOverview = location.pathname === `/dashboard/threats/threat_actors_individual/${data.id}`;
-  const link = `/dashboard/threats/threat_actors_individual/${data.id}/knowledge`;
-  const paddingRight = getPaddingRight(location.pathname, data.id, '/dashboard/threats/threat_actors_individual');
+
+  const isOverview = location.pathname === `/dashboard/threats/threat_actors_individual/${threatActorIndividualId}`;
+  const paddingRight = getPaddingRight(location.pathname, threatActorIndividualId, '/dashboard/threats/threat_actors_individual');
+  const link = `/dashboard/threats/threat_actors_individual/${threatActorIndividualId}/knowledge`;
   return (
     <>
-      {data ? (
+      {threatActorIndividual ? (
         <>
           <Routes>
             <Route
@@ -131,7 +135,7 @@ const RootThreatActorIndividualComponent = ({
                     'sightings',
                     'countries',
                   ]}
-                  stixCoreObjectsDistribution={data.stixCoreObjectsDistribution}
+                  stixCoreObjectsDistribution={threatActorIndividual.stixCoreObjectsDistribution}
                 />
              }
             />
@@ -140,12 +144,12 @@ const RootThreatActorIndividualComponent = ({
             <Breadcrumbs variant="object" elements={[
               { label: t_i18n('Threats') },
               { label: t_i18n('Threat actors (individual)'), link: '/dashboard/threats/threat_actors_individual' },
-              { label: data.name, current: true },
+              { label: threatActorIndividual.name, current: true },
             ]}
             />
             <StixDomainObjectHeader
               entityType="Threat-Actor-Individual"
-              stixDomainObject={data}
+              stixDomainObject={threatActorIndividual}
               PopoverComponent={ThreatActorIndividualPopover}
               enableQuickSubscription={true}
             />
@@ -153,80 +157,78 @@ const RootThreatActorIndividualComponent = ({
               sx={{ borderBottom: 1, borderColor: 'divider', marginBottom: 4 }}
             >
               <Tabs
-                value={getCurrentTab(location.pathname, data.id, '/dashboard/threats/threat_actors_individual')}
+                value={getCurrentTab(location.pathname, threatActorIndividual.id, '/dashboard/threats/threat_actors_individual')}
               >
                 <Tab
                   component={Link}
-                  to={`/dashboard/threats/threat_actors_individual/${data.id}`}
-                  value={`/dashboard/threats/threat_actors_individual/${data.id}`}
+                  to={`/dashboard/threats/threat_actors_individual/${threatActorIndividual.id}`}
+                  value={`/dashboard/threats/threat_actors_individual/${threatActorIndividual.id}`}
                   label={t_i18n('Overview')}
                 />
                 <Tab
                   component={Link}
-                  to={`/dashboard/threats/threat_actors_individual/${data.id}/knowledge/overview`}
-                  value={`/dashboard/threats/threat_actors_individual/${data.id}/knowledge`}
+                  to={`/dashboard/threats/threat_actors_individual/${threatActorIndividual.id}/knowledge/overview`}
+                  value={`/dashboard/threats/threat_actors_individual/${threatActorIndividual.id}/knowledge`}
                   label={t_i18n('Knowledge')}
                 />
                 <Tab
                   component={Link}
-                  to={`/dashboard/threats/threat_actors_individual/${data.id}/content`}
-                  value={`/dashboard/threats/threat_actors_individual/${data.id}/content`}
+                  to={`/dashboard/threats/threat_actors_individual/${threatActorIndividual.id}/content`}
+                  value={`/dashboard/threats/threat_actors_individual/${threatActorIndividual.id}/content`}
                   label={t_i18n('Content')}
                 />
                 <Tab
                   component={Link}
-                  to={`/dashboard/threats/threat_actors_individual/${data.id}/analyses`}
-                  value={`/dashboard/threats/threat_actors_individual/${data.id}/analyses`}
+                  to={`/dashboard/threats/threat_actors_individual/${threatActorIndividual.id}/analyses`}
+                  value={`/dashboard/threats/threat_actors_individual/${threatActorIndividual.id}/analyses`}
                   label={t_i18n('Analyses')}
                 />
                 <Tab
                   component={Link}
-                  to={`/dashboard/threats/threat_actors_individual/${data.id}/files`}
-                  value={`/dashboard/threats/threat_actors_individual/${data.id}/files`}
+                  to={`/dashboard/threats/threat_actors_individual/${threatActorIndividual.id}/files`}
+                  value={`/dashboard/threats/threat_actors_individual/${threatActorIndividual.id}/files`}
                   label={t_i18n('Data')}
                 />
                 <Tab
                   component={Link}
-                  to={`/dashboard/threats/threat_actors_individual/${data.id}/history`}
-                  value={`/dashboard/threats/threat_actors_individual/${data.id}/history`}
+                  to={`/dashboard/threats/threat_actors_individual/${threatActorIndividual.id}/history`}
+                  value={`/dashboard/threats/threat_actors_individual/${threatActorIndividual.id}/history`}
                   label={t_i18n('History')}
                 />
               </Tabs>
               {isOverview && (
-              <StixCoreObjectSimulationResult id={data.id} type="threat" />
+                <StixCoreObjectSimulationResult id={threatActorIndividual.id} type="threat" />
               )}
             </Box>
             <Routes>
               <Route
                 path="/"
                 element={
-                  <ThreatActorIndividual data={data} />
+                  <ThreatActorIndividual data={threatActorIndividual} />
                 }
               />
               <Route
                 path="/knowledge"
                 element={
-                  <Navigate to={`/dashboard/threats/threat_actors_individual/${data.id}/knowledge/overview`} replace={true} />
+                  <Navigate to={`/dashboard/threats/threat_actors_individual/${threatActorIndividual.id}/knowledge/overview`} replace={true} />
                 }
               />
               <Route
                 path="/knowledge/*"
-                element={
-                  <ThreatActorIndividualKnowledge threatActorIndividualData={data} />
-                }
+                element={<ThreatActorIndividualKnowledge threatActorIndividualData={threatActorIndividual} />}
               />
               <Route
                 path="/content/*"
                 element={
                   <StixCoreObjectContentRoot
-                    stixCoreObject={data}
+                    stixCoreObject={threatActorIndividual}
                   />
                 }
               />
               <Route
                 path="/analyses"
                 element={
-                  <StixCoreObjectOrStixCoreRelationshipContainers stixDomainObjectOrStixCoreRelationship={data} />
+                  <StixCoreObjectOrStixCoreRelationshipContainers stixDomainObjectOrStixCoreRelationship={threatActorIndividual} />
                 }
               />
               <Route
@@ -236,7 +238,7 @@ const RootThreatActorIndividualComponent = ({
                     id={threatActorIndividualId}
                     connectorsImport={connectorsForImport}
                     connectorsExport={connectorsForExport}
-                    entity={data}
+                    entity={threatActorIndividual}
                   />
                 }
               />

@@ -4,13 +4,13 @@ import { Route, Routes, useLocation } from 'react-router-dom';
 import ContainerContent, { containerContentQuery } from '@components/common/containers/ContainerContent';
 import StixCoreObjectContent from '@components/common/stix_core_objects/StixCoreObjectContent';
 import { ContainerContentQuery$data } from '@components/common/containers/__generated__/ContainerContentQuery.graphql';
-import { StixCoreObjectContent_stixCoreObject$data } from '@components/common/stix_core_objects/__generated__/StixCoreObjectContent_stixCoreObject.graphql';
+import { StixCoreObjectContent_stixCoreObject$key } from '@components/common/stix_core_objects/__generated__/StixCoreObjectContent_stixCoreObject.graphql';
 import ContainerSuggestedMappingContent from '@components/common/containers/ContainerSuggestedMappingContent';
 import { QueryRenderer } from '../../../../relay/environment';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 
 interface StixCoreObjectContentRootProps {
-  stixCoreObject: StixCoreObjectContent_stixCoreObject$data;
+  stixCoreObject: { id: string } & StixCoreObjectContent_stixCoreObject$key;
   isContainer?: boolean;
 }
 
