@@ -4,7 +4,7 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import React from 'react';
 import { useTheme } from '@mui/styles';
-import { ListItemButton } from '@mui/material';
+import ListItem from '@mui/material/ListItem';
 import ItemIcon from '../ItemIcon';
 import { computeLink } from '../../utils/Entity';
 import type { Theme } from '../Theme';
@@ -65,18 +65,18 @@ const WidgetDistributionList = ({
           }
 
           return (
-            <ListItemButton
+            <ListItem
               key={entry.id ?? entry.label}
               dense={true}
               className="noDrag"
               divider={true}
-              disableRipple={publicWidget}
               {...linkProps}
               sx={{
                 height: 50,
                 minHeight: 50,
                 maxHeight: 50,
                 paddingRight: 0,
+                cursor: 'default',
               }}
               style={overflow === 'hidden' && key === data.length - 1 ? { borderBottom: 0 } : {}}
             >
@@ -119,7 +119,7 @@ const WidgetDistributionList = ({
               >
                 {n(entry.value)}
               </div>
-            </ListItemButton>
+            </ListItem>
           );
         })}
       </List>
