@@ -79,7 +79,7 @@ const RootDataSourceComponent = ({ queryRef, dataSourceId }) => {
   const { t_i18n } = useFormatter();
   const data = usePreloadedQuery(dataSourceQuery, queryRef);
   const { dataSource, connectorsForImport, connectorsForExport, settings } = data;
-  const paddingRight = getPaddingRight(location.pathname, dataSource?.id, '/dashboard/techniques/data_sources');
+  const paddingRight = getPaddingRight(location.pathname, dataSource?.id, '/dashboard/techniques/data_sources', false);
   return (
     <>
       {dataSource ? (
@@ -95,7 +95,7 @@ const RootDataSourceComponent = ({ queryRef, dataSourceId }) => {
             disableSharing={true}
             noAliases={true}
             stixDomainObject={dataSource}
-            PopoverComponent={<DataSourcePopover id={dataSource.id} />}
+            PopoverComponent={<DataSourcePopover id={dataSource.id}/>}
           />
           <Box
             sx={{ borderBottom: 1, borderColor: 'divider', marginBottom: 4 }}
@@ -133,7 +133,7 @@ const RootDataSourceComponent = ({ queryRef, dataSourceId }) => {
             <Route
               path="/"
               element={
-                <DataSource data={dataSource} />
+                <DataSource data={dataSource}/>
               }
             />
             <Route
@@ -169,13 +169,13 @@ const RootDataSourceComponent = ({ queryRef, dataSourceId }) => {
             <Route
               path="/history"
               element={
-                <StixCoreObjectHistory stixCoreObjectId={dataSourceId} />
+                <StixCoreObjectHistory stixCoreObjectId={dataSourceId}/>
               }
             />
           </Routes>
         </div>
       ) : (
-        <ErrorNotFound />
+        <ErrorNotFound/>
       )}
     </>
   );

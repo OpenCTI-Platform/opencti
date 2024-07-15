@@ -92,7 +92,7 @@ class RootCourseOfAction extends Component {
             if (props) {
               if (props.courseOfAction) {
                 const { courseOfAction } = props;
-                const paddingRight = getPaddingRight(location.pathname, courseOfAction.id, '/dashboard/techniques/courses_of_action');
+                const paddingRight = getPaddingRight(location.pathname, courseOfAction.id, '/dashboard/techniques/courses_of_action', false);
                 return (
                   <div style={{ paddingRight }}>
                     <Breadcrumbs variant="object" elements={[
@@ -105,7 +105,7 @@ class RootCourseOfAction extends Component {
                       entityType="Course-Of-Action"
                       disableSharing={true}
                       stixDomainObject={courseOfAction}
-                      PopoverComponent={<CourseOfActionPopover />}
+                      PopoverComponent={<CourseOfActionPopover/>}
                       isOpenctiAlias={true}
                     />
                     <Box
@@ -148,13 +148,13 @@ class RootCourseOfAction extends Component {
                       <Route
                         path="/"
                         element={
-                          <CourseOfAction courseOfAction={props.courseOfAction} />
+                          <CourseOfAction courseOfAction={props.courseOfAction}/>
                         }
                       />
                       <Route
                         path="/knowledge/*"
                         element={
-                          <CourseOfActionKnowledge courseOfAction={props.courseOfAction} />
+                          <CourseOfActionKnowledge courseOfAction={props.courseOfAction}/>
                         }
                       />
                       <Route
@@ -179,7 +179,7 @@ class RootCourseOfAction extends Component {
                       <Route
                         path="/history"
                         element={
-                          <StixCoreObjectHistory stixCoreObjectId={courseOfActionId} />
+                          <StixCoreObjectHistory stixCoreObjectId={courseOfActionId}/>
                         }
                       />
                     </Routes>
