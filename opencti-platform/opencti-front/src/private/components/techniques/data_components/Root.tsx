@@ -23,7 +23,7 @@ import DataComponentKnowledge from './DataComponentKnowledge';
 import { RootDataComponentSubscription } from './__generated__/RootDataComponentSubscription.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
-import { getCurrentTab } from '../../../../utils/utils';
+import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 
 const subscription = graphql`
   subscription RootDataComponentSubscription($id: ID!) {
@@ -88,8 +88,9 @@ const RootDataComponent = () => {
           if (props) {
             if (props.dataComponent) {
               const { dataComponent } = props;
+              const paddingRight = getPaddingRight(location.pathname, dataComponent.id, '/dashboard/techniques/data_components', false);
               return (
-                <div>
+                <div style={{ paddingRight }}>
                   <Breadcrumbs variant="object" elements={[
                     { label: t_i18n('Techniques') },
                     { label: t_i18n('Data components'), link: '/dashboard/techniques/data_components' },
@@ -100,7 +101,7 @@ const RootDataComponent = () => {
                     entityType="Data-Component"
                     stixDomainObject={props.dataComponent}
                     PopoverComponent={
-                      <DataComponentPopover dataComponentId={dataComponentId} />
+                      <DataComponentPopover dataComponentId={dataComponentId}/>
                     }
                     noAliases={true}
                   />
@@ -144,13 +145,13 @@ const RootDataComponent = () => {
                     <Route
                       path="/"
                       element={
-                        <DataComponent data={dataComponent} />
+                        <DataComponent data={dataComponent}/>
                       }
                     />
                     <Route
                       path="/knowledge/*"
                       element={
-                        <DataComponentKnowledge data={dataComponent} />
+                        <DataComponentKnowledge data={dataComponent}/>
                       }
                     />
                     <Route
@@ -175,7 +176,7 @@ const RootDataComponent = () => {
                     <Route
                       path="/history"
                       element={
-                        <StixCoreObjectHistory stixCoreObjectId={dataComponentId} />
+                        <StixCoreObjectHistory stixCoreObjectId={dataComponentId}/>
                       }
                     />
                   </Routes>
