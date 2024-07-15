@@ -103,7 +103,6 @@ class RootCourseOfAction extends Component {
                     />
                     <StixDomainObjectHeader
                       entityType="Course-Of-Action"
-                      disableSharing={true}
                       stixDomainObject={courseOfAction}
                       PopoverComponent={<CourseOfActionPopover/>}
                       isOpenctiAlias={true}

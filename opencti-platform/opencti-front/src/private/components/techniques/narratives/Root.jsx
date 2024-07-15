@@ -133,7 +133,6 @@ class RootNarrative extends Component {
                       />
                       <StixDomainObjectHeader
                         entityType="Narrative"
-                        disableSharing={true}
                         stixDomainObject={props.narrative}
                         PopoverComponent={<NarrativePopover />}
                       />

@@ -129,7 +129,7 @@ const RootFeedbackComponent = ({ queryRef, caseId }) => {
             container={feedbackData}
             PopoverComponent={<FeedbackPopover id={feedbackData.id} />}
             enableSuggestions={false}
-            disableSharing
+            disableSharing={true}
             enableQuickSubscription
             enableManageAuthorizedMembers={canManage}
             authorizedMembersMutation={feedbackAuthorizedMembersMutation}
