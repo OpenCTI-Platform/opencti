@@ -111,9 +111,6 @@ const WidgetDistributionList = ({
                   marginRight: 20,
                   fontSize: 18,
                   fontWeight: 600,
-                  whiteSpace: 'nowrap',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
                   color: theme.palette.primary.main,
                 }}
               >
