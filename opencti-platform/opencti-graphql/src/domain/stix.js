@@ -60,12 +60,12 @@ export const sendStixBundle = async (context, user, connectorId, bundle) => {
     // 01. Simple check bundle
     const jsonBundle = JSON.parse(bundle);
     if (jsonBundle.type !== 'bundle' || !jsonBundle.objects || jsonBundle.objects.length === 0) {
-      throw new UnsupportedError('Invalid stix bundle');
+      throw UnsupportedError('Invalid stix bundle');
     }
     // 02. Create work and send the bundle to ingestion
     const connector = await storeLoadById(context, user, connectorId, ENTITY_TYPE_CONNECTOR);
     if (!connector) {
-      throw new UnsupportedError('Invalid connector');
+      throw UnsupportedError('Invalid connector');
     }
     const workName = `${connector.name} run @ ${now()}`;
     const work = await createWork(context, user, connector, workName, connector.internal_id);
