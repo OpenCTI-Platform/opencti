@@ -17,6 +17,7 @@ import { isEmptyField } from '../../../../../../utils/utils';
 import useAuth from '../../../../../../utils/hooks/useAuth';
 import { resolveTypesForRelationship, resolveTypesForRelationshipRef } from '../../../../../../utils/Relation';
 import { useFormatter } from '../../../../../../components/i18n';
+import { isStixCoreObjects } from '../../../../../../utils/stixTypeUtils';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -108,9 +109,17 @@ CsvMapperRepresentationAttributeRefFormProps
       representation.target_type,
       schemaAttribute.name,
     );
+    const everyRepresentationTypes = [
+      ...relationshipTypes,
+      ...relationshipRefTypes,
+    ];
+    if (isStixCoreObjects(everyRepresentationTypes)) {
+      schema.sdos.map((sdo) => sdo.label).forEach((sdoType) => everyRepresentationTypes.push(sdoType));
+      schema.scos.map((sco) => sco.label).forEach((scoType) => everyRepresentationTypes.push(scoType));
+    }
     options = filterOptions(
       entity_representations
-        .filter((r) => r.target_type && [...relationshipTypes, ...relationshipRefTypes].includes(r.target_type)),
+        .filter((r) => r.target_type && everyRepresentationTypes.includes(r.target_type)),
     );
   }
 

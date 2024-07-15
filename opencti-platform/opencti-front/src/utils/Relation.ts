@@ -51,11 +51,11 @@ export const resolveTypesForRelationship = (
 };
 
 export const resolveTypesForRelationshipRef = (
-  schemaRelationsTypesMapping: Map<string, readonly { readonly name: string, readonly toTypes: readonly string[] }[]>,
+  schemaRelationsRefTypesMapping: Map<string, readonly { readonly name: string, readonly toTypes: readonly string[] }[]>,
   entityType: string,
   relationshipRefKey: string,
 ) => {
-  return schemaRelationsTypesMapping
+  return schemaRelationsRefTypesMapping
     .get(entityType)
     ?.find((ref) => ref.name === relationshipRefKey)
     ?.toTypes ?? [];
