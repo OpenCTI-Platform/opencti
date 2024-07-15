@@ -350,10 +350,7 @@ const LeftBar = () => {
     'City',
     'Position',
   );
-  const hideDashboards = useIsHiddenEntities(
-    'Dashboards',
-    'Public dashboards',
-  );
+
   const {
     bannerSettings: { bannerHeightNumber },
   } = useAuth();
@@ -821,7 +818,7 @@ const LeftBar = () => {
               'dashboards',
               [
                 { type: 'Dashboard', link: '/dashboard/workspaces/dashboards', label: 'Dashboards' },
-                { type: 'Dashboard', link: '/dashboard/workspaces/public_dashboards', label: 'Public Dashboards' },
+                { type: 'Dashboard', link: '/dashboard/workspaces/public_dashboards', label: 'Public dashboards' },
               ],
             )}
             <Security needs={[INVESTIGATION]}>
