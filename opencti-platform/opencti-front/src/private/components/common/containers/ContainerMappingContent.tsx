@@ -10,24 +10,11 @@ import {
   ContainerStixCoreObjectsSuggestedMappingQuery$data,
   ContainerStixCoreObjectsSuggestedMappingQuery$variables,
 } from '@components/common/containers/__generated__/ContainerStixCoreObjectsSuggestedMappingQuery.graphql';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
-import DialogActions from '@mui/material/DialogActions';
-import Button from '@mui/material/Button';
-import Dialog from '@mui/material/Dialog';
 import { Subject, timer } from 'rxjs';
 import { debounce } from 'rxjs/operators';
 import ContainerStixCoreObjectsMapping from '@components/common/containers/ContainerStixCoreObjectsMapping';
 import { ContainerAddStixCoreObjectsLine_node$data } from '@components/common/containers/__generated__/ContainerAddStixCoreObjectsLine_node.graphql';
 import ContainerAddStixCoreObjects from '@components/common/containers/ContainerAddStixCoreObjects';
-import Box from '@mui/material/Box';
-import FormGroup from '@mui/material/FormGroup';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Switch from '@mui/material/Switch';
-import Tooltip from '@mui/material/Tooltip';
-import { InformationOutline } from 'mdi-material-ui';
-import { CheckCircleOutlined, LayersClearOutlined } from '@mui/icons-material';
-import DialogTitle from '@mui/material/DialogTitle';
 import {
   ContainerMappingContent_container$data,
   ContainerMappingContent_container$key,
@@ -42,11 +29,11 @@ import { ContainerMappingContentClearSuggestedMappingMutation } from '@component
 import {
   ContainerStixCoreObjectsSuggestedMappingLine_mappedEntity$data,
 } from '@components/common/containers/__generated__/ContainerStixCoreObjectsSuggestedMappingLine_mappedEntity.graphql';
+import ContainerStixCoreObjectsMappingHeader from '@components/common/containers/ContainerStixCoreObjectsMappingHeader';
 import { useFormatter } from '../../../../components/i18n';
 import { MESSAGING$ } from '../../../../relay/environment';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { decodeMappingData, encodeMappingData } from '../../../../utils/Graph';
-import Transition from '../../../../components/Transition';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import { emptyFilterGroup } from '../../../../utils/filters/filtersUtils';
@@ -446,8 +433,7 @@ ContainerMappingContentComponentProps
     validateSuggestedMapping();
   };
 
-  const hasConnectorsAvailable = suggestedMappingData.connectorsForAnalysis?.length && suggestedMappingData.connectorsForAnalysis?.length > 0;
-  const suggestDisabled = !hasConnectorsAvailable || askingSuggestion;
+  const hasConnectorsAvailable = suggestedMappingData.connectorsForAnalysis?.length ? suggestedMappingData.connectorsForAnalysis.length > 0 : false;
   return (
     <div>
       <Grid
@@ -466,65 +452,6 @@ ContainerMappingContentComponentProps
         </Grid>
 
         <Grid item xs={6} style={{ marginTop: 0, paddingTop: 0 }}>
-          <Dialog
-            PaperProps={{ elevation: 1 }}
-            open={openValidate}
-            keepMounted
-            TransitionComponent={Transition}
-            onClose={() => setOpenValidate(false)}
-          >
-            <DialogTitle>
-              {t_i18n('Are you sure?')}
-            </DialogTitle>
-            <DialogContent>
-              <DialogContentText>
-                {t_i18n('You are about to validate this mapping, it will add suggested entities to your container.')}
-              </DialogContentText>
-            </DialogContent>
-            <DialogActions>
-              <Button
-                onClick={() => setOpenValidate(false)}
-                disabled={validating}
-              >
-                {t_i18n('Cancel')}
-              </Button>
-              <Button
-                color="secondary"
-                onClick={handleValidate}
-                disabled={validating}
-              >
-                {t_i18n('Validate')}
-              </Button>
-            </DialogActions>
-          </Dialog>
-          <Dialog
-            PaperProps={{ elevation: 1 }}
-            open={openClearMapping}
-            keepMounted
-            TransitionComponent={Transition}
-            onClose={() => setOpenClearMapping(false)}
-          >
-            <DialogContent>
-              <DialogContentText>
-                {t_i18n('Do you want to delete the mapping of this content?')}
-              </DialogContentText>
-            </DialogContent>
-            <DialogActions>
-              <Button
-                onClick={() => setOpenClearMapping(false)}
-                disabled={clearing}
-              >
-                {t_i18n('Cancel')}
-              </Button>
-              <Button
-                color="secondary"
-                onClick={() => clearMapping()}
-                disabled={clearing}
-              >
-                {t_i18n('Clear')}
-              </Button>
-            </DialogActions>
-          </Dialog>
           <Paper
             variant="outlined"
             style={{
@@ -534,72 +461,23 @@ ContainerMappingContentComponentProps
               borderRadius: 4,
             }}
           >
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <FormGroup>
-                <FormControlLabel
-                  control={
-                    <Switch
-                      checked={inSuggestedMode}
-                      onChange={() => { setInSuggestedMode(!inSuggestedMode); }}
-                      disabled={askingSuggestion || validating || suggestedMappingData.stixCoreObjectAnalysis?.analysisStatus !== 'complete' }
-                    />
-                  }
-                  label={t_i18n('Show suggested mapping')}
-                />
-              </FormGroup>
-              <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', marginLeft: 'auto' }}>
-                {!hasConnectorsAvailable && (
-                  <Tooltip
-                    title={t_i18n('An analysis connector needs to be available to ask for a mapping suggestion.')}
-                  >
-                    <InformationOutline fontSize="small" color="primary" />
-                  </Tooltip>
-                )}
-                {askingSuggestion && (
-                  <Tooltip
-                    title={t_i18n('An analysis is ongoing, waiting for results.')}
-                  >
-                    <InformationOutline fontSize="small" color="primary" />
-                  </Tooltip>
-                )}
-                <Tooltip title={t_i18n('Suggest new mapping')}>
-                  <Button
-                    variant="contained"
-                    size="small"
-                    onClick={handleAskNewSuggestedMapping}
-                    disabled={suggestDisabled}
-                  >
-                    {t_i18n('Suggest new mapping')}
-                  </Button>
-                </Tooltip>
-                {!inSuggestedMode && (
-                  <Tooltip title={t_i18n('Clear mappings')}>
-                    <Button
-                      variant="contained"
-                      onClick={() => setOpenClearMapping(true)}
-                      startIcon={<LayersClearOutlined />}
-                      size="small"
-                    >
-                      {t_i18n('Clear mappings')}
-                    </Button>
-                  </Tooltip>
-                )}
-                {inSuggestedMode && (
-                  <Tooltip title={t_i18n('Validate suggested mapping')}>
-                    <Button
-                      variant="contained"
-                      color="secondary"
-                      onClick={() => setOpenValidate(true)}
-                      startIcon={<CheckCircleOutlined />}
-                      size="small"
-                      disabled={askingSuggestion || filteredSuggestedMappedEntities.length === 0}
-                    >
-                      {t_i18n('Validate')}
-                    </Button>
-                  </Tooltip>
-                )}
-              </Box>
-            </Box>
+            <ContainerStixCoreObjectsMappingHeader
+              suggestedMappingData={suggestedMappingData}
+              validateDisabled={askingSuggestion || filteredSuggestedMappedEntities.length === 0}
+              validating={validating}
+              openValidate={openValidate}
+              setOpenValidate={setOpenValidate}
+              handleValidateMapping={handleValidate}
+              openClearMapping={openClearMapping}
+              setOpenClearMapping={setOpenClearMapping}
+              clearing={clearing}
+              handleClearMapping={clearMapping}
+              inSuggestedMode={inSuggestedMode}
+              setInSuggestedMode={setInSuggestedMode}
+              askingSuggestion={askingSuggestion}
+              handleAskNewSuggestion={handleAskNewSuggestedMapping}
+              hasConnectorsAvailable={hasConnectorsAvailable}
+            />
             <div style={{ margin: 0, padding: '15px 0 0 0' }}>
               {!inSuggestedMode && (
               <ContainerStixCoreObjectsMapping
