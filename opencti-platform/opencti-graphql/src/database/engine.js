@@ -147,7 +147,6 @@ import {
   booleanMapping,
   dateMapping,
   iAliasedIds,
-  internalId,
   keywordMapping,
   longStringFormats,
   numericMapping,
@@ -1554,10 +1553,10 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
     const mustTerms = [];
     const workingIds = groupIds[index];
     const idsTermsPerType = [];
-    const elementTypes = [internalId.name, standardId.name, xOpenctiStixIds.name, iAliasedIds.name];
+    const elementTypes = ['_id', standardId.name, xOpenctiStixIds.name, iAliasedIds.name];
     for (let indexType = 0; indexType < elementTypes.length; indexType += 1) {
       const elementType = elementTypes[indexType];
-      const terms = { [`${elementType}.keyword`]: workingIds };
+      const terms = { [elementType === '_id' ? elementType : `${elementType}.keyword`]: workingIds };
       idsTermsPerType.push({ terms });
     }
     const should = {
@@ -3653,42 +3652,11 @@ export const elReindexElements = async (context, user, ids, sourceIndex, destInd
 const elDenormEntities = async (context, user, elements, relations) => {
   const denormIds = [...elements, ...relations]
     .filter((e) => e.base_type === BASE_TYPE_RELATION)
-    .map((o) => [o.fromId, o.toId]).flat();
+    .map((o) => [`${o.internal_id}_${o.fromId}`, `${o.internal_id}_${o.toId}`]).flat();
   if (denormIds.length === 0) {
     return [];
   }
-  const query = {
-    index: READ_DATA_INDICES,
-    track_total_hits: true,
-    _source: true,
-    body: {
-      query: {
-        has_parent: {
-          parent_type: 'element',
-          query: {
-            bool: {
-              must: [
-                {
-                  terms: {
-                    'internal_id.keyword': denormIds
-                  }
-                }
-              ]
-            }
-          }
-        }
-      }
-    },
-  };
-  const result = [];
-  // TODO Get all results
-  const data = await elRawSearch(context, user, 'denorm', query);
-  for (let i = 0; i < data.hits.hits.length; i += 1) {
-    const hit = data.hits.hits[i];
-    result.push({ _index: hit._index, id: hit._id, sort: hit.sort, ...hit._source });
-    // TODO Spit with set imediate
-  }
-  return result;
+  return await elFindByIds(context, user, denormIds, { baseData: true });
 };
 
 export const elDeleteElements = async (context, user, elements, opts = {}) => {
