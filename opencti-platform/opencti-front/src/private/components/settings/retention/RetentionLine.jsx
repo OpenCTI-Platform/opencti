@@ -10,6 +10,7 @@ import { LayersClearOutlined, MoreVert } from '@mui/icons-material';
 import * as R from 'ramda';
 import Slide from '@mui/material/Slide';
 import Skeleton from '@mui/material/Skeleton';
+import Chip from '@mui/material/Chip';
 import inject18n from '../../../../components/i18n';
 import RetentionPopover from './RetentionPopover';
 import { deserializeFilterGroupForFrontend, isFilterGroupNotEmpty } from '../../../../utils/filters/filtersUtils';
@@ -45,12 +46,26 @@ const styles = (theme) => ({
     height: '1em',
     backgroundColor: theme.palette.grey[700],
   },
+  chipInList: {
+    fontSize: 12,
+    height: 20,
+    float: 'left',
+    width: 100,
+    textTransform: 'uppercase',
+    borderRadius: 4,
+  },
 });
 
 class RetentionLineComponent extends Component {
   render() {
     const { t, classes, node, dataColumns, paginationOptions, nsdt, n } = this.props;
     const filters = deserializeFilterGroupForFrontend(node.filters);
+    let scopeColor = 'warning';
+    if (node.scope === 'file') {
+      scopeColor = 'secondary';
+    } else if (node.scope === 'workbench') {
+      scopeColor = 'primary';
+    }
     return (
       <ListItem classes={{ root: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIcon }}>
@@ -84,7 +99,12 @@ class RetentionLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.scope.width }}
               >
-                {t(node.scope.toUpperCase())}
+                <Chip
+                  color={scopeColor}
+                  classes={{ root: classes.chipInList }}
+                  label={t(node.scope.toUpperCase())}
+                  variant="outlined"
+                />
               </div>
               {isFilterGroupNotEmpty(filters) ? (
                 <FilterIconButton
