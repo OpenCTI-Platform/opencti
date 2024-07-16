@@ -9,7 +9,6 @@ import conf, {
   ENABLED_NOTIFICATION_MANAGER,
   ENABLED_PLAYBOOK_MANAGER,
   ENABLED_PUBLISHER_MANAGER,
-  ENABLED_RETENTION_MANAGER,
   ENABLED_RULE_ENGINE,
   ENABLED_SYNC_MANAGER,
   ENABLED_TASK_SCHEDULER,
@@ -20,7 +19,6 @@ import expiredManager from './manager/expiredManager';
 import connectorManager from './manager/connectorManager';
 import { ENABLED_IMPORT_CSV_BUILT_IN_CONNECTOR } from './connector/importCsv/importCsv-configuration';
 import importCsvConnector from './connector/importCsv/importCsv-connector';
-import retentionManager from './manager/retentionManager';
 import taskManager from './manager/taskManager';
 import ruleEngine from './manager/ruleManager';
 import syncManager from './manager/syncManager';
@@ -65,13 +63,6 @@ export const startModules = async () => {
     await importCsvConnector.start();
   } else {
     logApp.info('[OPENCTI-MODULE] Connector built in manager not started (disabled by configuration)');
-  }
-  // endregion
-  // region Retention manager
-  if (ENABLED_RETENTION_MANAGER) {
-    await retentionManager.start();
-  } else {
-    logApp.info('[OPENCTI-MODULE] Retention manager not started (disabled by configuration)');
   }
   // endregion
   // region Task manager
@@ -169,11 +160,6 @@ export const shutdownModules = async () => {
   // region import csv built in connector
   if (ENABLED_IMPORT_CSV_BUILT_IN_CONNECTOR) {
     stoppingPromises.push(importCsvConnector.shutdown());
-  }
-  // endregion
-  // region Retention manager
-  if (ENABLED_RETENTION_MANAGER) {
-    stoppingPromises.push(retentionManager.shutdown());
   }
   // endregion
   // region Task manager

@@ -14,6 +14,7 @@ import type { AuthContext } from '../types/user';
 import type { RetentionRule } from '../generated/graphql';
 
 const RETENTION_MANAGER_ENABLED = booleanConf('retention_manager:enabled', false);
+const RETENTION_MANAGER_START_ENABLED = booleanConf('retention_manager:enabled', true);
 // Retention manager responsible to cleanup old data
 // Each API will start is retention manager.
 // If the lock is free, every API as the right to take it.
@@ -78,7 +79,7 @@ const RETENTION_MANAGER_DEFINITION: ManagerDefinition = {
   },
   enabledByConfig: RETENTION_MANAGER_ENABLED,
   enabledToStart(): boolean {
-    return this.enabledByConfig;
+    return RETENTION_MANAGER_START_ENABLED;
   },
   enabled(): boolean {
     return this.enabledByConfig;
