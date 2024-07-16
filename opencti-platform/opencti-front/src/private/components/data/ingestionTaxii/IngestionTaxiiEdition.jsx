@@ -14,7 +14,7 @@ import { convertUser } from '../../../../utils/edition';
 import SelectField from '../../../../components/fields/SelectField';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import Drawer from '../../common/drawer/Drawer';
-import { BASIC_AUTH, BEARER_AUTH, CERT_AUTH } from './IngestionTaxiiCreation';
+import { BASIC_AUTH, BEARER_AUTH, CERT_AUTH, extractCA, extractCert, extractKey, extractPassword, extractUsername } from '../../../../utils/ingestionAuthentificationUtils';
 
 export const ingestionTaxiiMutationFieldPatch = graphql`
   mutation IngestionTaxiiEditionFieldPatchMutation(
@@ -61,36 +61,37 @@ const IngestionTaxiiEditionContainer = ({
         if (name === 'user_id') {
           finalValue = value?.value;
         }
+
+        // region authentication  -- If you change something here, please have a look at IngestionCsvEdition
+        const backendAuthValue = ingestionTaxii.authentication_value;
+        // re-compose username:password
         if (name === 'username') {
           finalName = 'authentication_value';
-          finalValue = `${value}:${
-            ingestionTaxii.authentication_value.split(':')[1]
-          }`;
+          finalValue = `${value}:${extractPassword(backendAuthValue)}`;
         }
+
         if (name === 'password') {
           finalName = 'authentication_value';
-          finalValue = `${
-            ingestionTaxii.authentication_value.split(':')[0]
-          }:${value}`;
+          finalValue = `${extractUsername(backendAuthValue)}:${value}`;
         }
+
+        // re-compose cert:key:ca
         if (name === 'cert') {
           finalName = 'authentication_value';
-          finalValue = `${value}:${
-            ingestionTaxii.authentication_value.split(':')[1]
-          }:${ingestionTaxii.authentication_value.split(':')[2]}`;
+          finalValue = `${value}:${extractKey(backendAuthValue)}:${extractCA(backendAuthValue)}`;
         }
+
         if (name === 'key') {
           finalName = 'authentication_value';
-          finalValue = `${
-            ingestionTaxii.authentication_value.split(':')[0]
-          }:${value}:${ingestionTaxii.authentication_value.split(':')[2]}`;
+          finalValue = `${extractCert(backendAuthValue)}:${value}:${extractCA(backendAuthValue)}`;
         }
+
         if (name === 'ca') {
           finalName = 'authentication_value';
-          finalValue = `${ingestionTaxii.authentication_value.split(':')[0]}:${
-            ingestionTaxii.authentication_value.split(':')[1]
-          }:${value}`;
+          finalValue = `${extractCert(backendAuthValue)}:${extractKey(backendAuthValue)}:${value}`;
         }
+        // end region authentication
+
         commitMutation({
           mutation: ingestionTaxiiMutationFieldPatch,
           variables: {

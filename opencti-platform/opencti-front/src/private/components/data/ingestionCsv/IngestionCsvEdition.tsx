@@ -32,6 +32,7 @@ import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useAuth from '../../../../utils/hooks/useAuth';
 import useGranted, { SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN } from '../../../../utils/hooks/useGranted';
 import { USER_CHOICE_MARKING_CONFIG } from '../../../../utils/csvMapperUtils';
+import { BASIC_AUTH, BEARER_AUTH, CERT_AUTH, extractCA, extractCert, extractKey, extractPassword, extractUsername } from '../../../../utils/ingestionAuthentificationUtils';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -185,6 +186,38 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
     value: Option | Option[] | CsvMapperFieldOption | string | string[] | number | number[] | null,
   ) => {
     let finalValue = value as string;
+    let finalName = name;
+
+    // region authentication -- If you change something here, please have a look at IngestionTaxiiEdition
+    const backendAuthValue = ingestionCsvData.authentication_value;
+    // re-compose username:password
+    if (name === 'username') {
+      finalName = 'authentication_value';
+      finalValue = `${value}:${extractPassword(backendAuthValue)}`;
+    }
+
+    if (name === 'password') {
+      finalName = 'authentication_value';
+      finalValue = `${extractUsername(backendAuthValue)}:${value}`;
+    }
+
+    // re-compose cert:key:ca
+    if (name === 'cert') {
+      finalName = 'authentication_value';
+      finalValue = `${value}:${extractKey(backendAuthValue)}:${extractCA(backendAuthValue)}`;
+    }
+
+    if (name === 'key') {
+      finalName = 'authentication_value';
+      finalValue = `${extractCert(backendAuthValue)}:${value}:${extractCA(backendAuthValue)}`;
+    }
+
+    if (name === 'ca') {
+      finalName = 'authentication_value';
+      finalValue = `${extractCert(backendAuthValue)}:${extractKey(backendAuthValue)}:${value}`;
+    }
+    // end region authentication
+
     if (name === 'csv_mapper_id' || name === 'user_id') {
       finalValue = (value as Option).value;
     }
@@ -201,7 +234,7 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
         commitUpdate({
           variables: {
             id: ingestionCsvData.id,
-            input: [{ key: name, value: finalValue || '' }],
+            input: [{ key: finalName, value: finalValue || '' }],
           },
         });
       })
@@ -212,7 +245,12 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
     description: ingestionCsvData.description,
     uri: ingestionCsvData.uri,
     authentication_type: ingestionCsvData.authentication_type,
-    authentication_value: ingestionCsvData.authentication_value,
+    authentication_value: ingestionCsvData.authentication_type === BEARER_AUTH ? ingestionCsvData.authentication_value : undefined,
+    username: ingestionCsvData.authentication_type === BASIC_AUTH ? extractUsername(ingestionCsvData.authentication_value) : undefined,
+    password: ingestionCsvData.authentication_type === BASIC_AUTH ? extractPassword(ingestionCsvData.authentication_value) : undefined,
+    cert: ingestionCsvData.authentication_type === CERT_AUTH ? extractCert(ingestionCsvData.authentication_value) : undefined,
+    key: ingestionCsvData.authentication_type === CERT_AUTH ? extractKey(ingestionCsvData.authentication_value) : undefined,
+    ca: ingestionCsvData.authentication_type === CERT_AUTH ? extractCA(ingestionCsvData.authentication_value) : undefined,
     current_state_date: ingestionCsvData.current_state_date,
     ingestion_running: ingestionCsvData.ingestion_running,
     csv_mapper_id: convertMapper(ingestionCsvData, 'csvMapper'),
@@ -369,7 +407,7 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
               {t_i18n('Client certificate')}
             </MenuItem>
           </Field>
-          {values.authentication_type === 'basic' && (
+          {values.authentication_type === BASIC_AUTH && (
             <>
               <Field
                 component={TextField}
@@ -391,7 +429,7 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
               />
             </>
           )}
-          {values.authentication_type === 'bearer' && (
+          {values.authentication_type === BEARER_AUTH && (
             <Field
               component={TextField}
               variant="standard"
@@ -402,7 +440,7 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
               style={fieldSpacingContainerStyle}
             />
           )}
-          {values.authentication_type === 'certificate' && (
+          {values.authentication_type === CERT_AUTH && (
             <>
               <Field
                 component={TextField}

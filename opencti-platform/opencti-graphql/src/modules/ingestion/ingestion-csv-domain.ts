@@ -12,7 +12,8 @@ import { bundleProcess } from '../../parser/csv-bundler';
 import { findById as findCsvMapperById } from '../internal/csvMapper/csvMapper-domain';
 import { parseCsvMapper } from '../internal/csvMapper/csvMapper-utils';
 import { type GetHttpClient, getHttpClient, OpenCTIHeaders } from '../../utils/http-client';
-import { CsvAuthType } from '../../generated/graphql';
+import { verifyIngestionAuthenticationContent } from './ingestion-common';
+import { IngestionAuthType } from '../../generated/graphql';
 
 export const findById = (context: AuthContext, user: AuthUser, ingestionId: string) => {
   return storeLoadById<BasicStoreEntityIngestionCsv>(context, user, ingestionId, ENTITY_TYPE_INGESTION_CSV);
@@ -33,6 +34,9 @@ export const findCsvMapperForIngestionById = (context: AuthContext, user: AuthUs
 };
 
 export const addIngestionCsv = async (context: AuthContext, user: AuthUser, input: IngestionCsvAddInput) => {
+  if (input.authentication_value) {
+    verifyIngestionAuthenticationContent(input.authentication_type, input.authentication_value);
+  }
   const { element, isCreation } = await createEntity(context, user, input, ENTITY_TYPE_INGESTION_CSV, { complete: true });
   if (isCreation) {
     await publishUserAction({
@@ -53,6 +57,14 @@ export const patchCsvIngestion = async (context: AuthContext, user: AuthUser, id
 };
 
 export const ingestionCsvEditField = async (context: AuthContext, user: AuthUser, ingestionId: string, input: EditInput[]) => {
+  if (input.some(((editInput) => editInput.key === 'authentication_value'))) {
+    const ingestionConfiguration = await findById(context, user, ingestionId);
+    const authenticationValueField = input.find(((editInput) => editInput.key === 'authentication_value'));
+    if (authenticationValueField && authenticationValueField.value[0]) {
+      verifyIngestionAuthenticationContent(ingestionConfiguration.authentication_type, authenticationValueField.value[0]);
+    }
+  }
+
   const { element } = await updateAttribute(context, user, ingestionId, ENTITY_TYPE_INGESTION_CSV, input);
   await publishUserAction({
     user,
@@ -87,15 +99,15 @@ export const fetchCsvFromUrl = async (csvMapper: CsvMapperParsed, ingestion: Bas
   const { limit = undefined } = opts;
   const headers = new OpenCTIHeaders();
   headers.Accept = 'application/csv';
-  if (ingestion.authentication_type === CsvAuthType.Basic) {
+  if (ingestion.authentication_type === IngestionAuthType.Basic) {
     const auth = Buffer.from(ingestion.authentication_value || '', 'utf-8').toString('base64');
     headers.Authorization = `Basic ${auth}`;
   }
-  if (ingestion.authentication_type === CsvAuthType.Bearer) {
+  if (ingestion.authentication_type === IngestionAuthType.Bearer) {
     headers.Authorization = `Bearer ${ingestion.authentication_value}`;
   }
   let certificates;
-  if (ingestion.authentication_type === CsvAuthType.Certificate) {
+  if (ingestion.authentication_type === IngestionAuthType.Certificate) {
     const [cert, key, ca] = (ingestion.authentication_value || '').split(':');
     certificates = { cert, key, ca };
   }
@@ -114,6 +126,10 @@ export const fetchCsvFromUrl = async (csvMapper: CsvMapperParsed, ingestion: Bas
 };
 
 export const testCsvIngestionMapping = async (context: AuthContext, user: AuthUser, input: IngestionCsvAddInput): Promise<CsvMapperTestResult> => {
+  if (input.authentication_value) {
+    verifyIngestionAuthenticationContent(input.authentication_type, input.authentication_value);
+  }
+
   const csvMapper = await findCsvMapperById(context, user, input.csv_mapper_id);
   const parsedMapper = parseCsvMapper(csvMapper);
   const ingestion = {

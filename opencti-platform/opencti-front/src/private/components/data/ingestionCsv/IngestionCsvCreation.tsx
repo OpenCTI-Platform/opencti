@@ -10,7 +10,7 @@ import Box from '@mui/material/Box';
 import { IngestionCsvLinesPaginationQuery$variables } from '@components/data/ingestionCsv/__generated__/IngestionCsvLinesPaginationQuery.graphql';
 import { FormikConfig } from 'formik/dist/types';
 import { Option } from '@components/common/form/ReferenceField';
-import { CsvAuthType } from '@components/data/ingestionCsv/__generated__/IngestionCsvCreationMutation.graphql';
+import { IngestionAuthType } from '@components/data/ingestionCsv/__generated__/IngestionCsvCreationMutation.graphql';
 import CsvMapperField, { csvMapperQuery } from '@components/common/form/CsvMapperField';
 import IngestionCsvMapperTestDialog from '@components/data/ingestionCsv/IngestionCsvMapperTestDialog';
 import { CsvMapperFieldSearchQuery } from '@components/common/form/__generated__/CsvMapperFieldSearchQuery.graphql';
@@ -59,7 +59,7 @@ export interface IngestionCsvCreationForm {
   description: string
   uri: string
   csv_mapper_id: string | Option
-  authentication_type: CsvAuthType
+  authentication_type: IngestionAuthType
   authentication_value: string
   current_state_date: Date | null
   user_id: string | Option

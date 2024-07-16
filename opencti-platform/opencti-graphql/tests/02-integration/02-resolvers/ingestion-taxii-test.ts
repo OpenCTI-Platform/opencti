@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
 import type { GraphQLFormattedError } from 'graphql/error';
 import { queryAsAdminWithSuccess } from '../../utils/testQueryHelper';
-import { TaxiiAuthType, TaxiiVersion } from '../../../src/generated/graphql';
+import { IngestionAuthType, TaxiiVersion } from '../../../src/generated/graphql';
 import { queryAsAdmin } from '../../utils/testQuery';
 
 describe('TAXII ingestion resolver standard behavior', () => {
@@ -10,7 +10,7 @@ describe('TAXII ingestion resolver standard behavior', () => {
   it('should create a TAXII ingester', async () => {
     const INGESTER_TO_CREATE = {
       input: {
-        authentication_type: TaxiiAuthType.Basic,
+        authentication_type: IngestionAuthType.Basic,
         authentication_value: 'username:P@ssw0rd!',
         name: 'Taxii ingester for integration test',
         version: TaxiiVersion.V21,
@@ -48,7 +48,7 @@ describe('TAXII ingestion resolver standard behavior', () => {
       variables: { id: createdTaxiiIngesterId, input: [{ key: 'authentication_value', value: ['username:P@ssw0rd!'] }] }
     });
     expect(ingesterQueryResult.data?.ingestionTaxiiFieldPatch.id).toBeDefined();
-    expect(ingesterQueryResult.data?.ingestionTaxiiFieldPatch.authentication_type).toEqual(TaxiiAuthType.Basic);
+    expect(ingesterQueryResult.data?.ingestionTaxiiFieldPatch.authentication_type).toEqual(IngestionAuthType.Basic);
     expect(ingesterQueryResult.data?.ingestionTaxiiFieldPatch.authentication_value).toEqual('username:P@ssw0rd!');
   });
 

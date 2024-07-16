@@ -4849,13 +4849,6 @@ export type CryptographicKeyAddInput = {
   value?: InputMaybe<Scalars['String']['input']>;
 };
 
-export enum CsvAuthType {
-  Basic = 'basic',
-  Bearer = 'bearer',
-  Certificate = 'certificate',
-  None = 'none'
-}
-
 export type CsvMapper = BasicObject & InternalObject & {
   __typename?: 'CsvMapper';
   entity_type: Scalars['String']['output'];
@@ -10127,9 +10120,16 @@ export enum InfrastructuresOrdering {
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
+export enum IngestionAuthType {
+  Basic = 'basic',
+  Bearer = 'bearer',
+  Certificate = 'certificate',
+  None = 'none'
+}
+
 export type IngestionCsv = BasicObject & InternalObject & {
   __typename?: 'IngestionCsv';
-  authentication_type: CsvAuthType;
+  authentication_type: IngestionAuthType;
   authentication_value?: Maybe<Scalars['String']['output']>;
   created_at?: Maybe<Scalars['DateTime']['output']>;
   csvMapper: CsvMapper;
@@ -10150,7 +10150,7 @@ export type IngestionCsv = BasicObject & InternalObject & {
 };
 
 export type IngestionCsvAddInput = {
-  authentication_type: CsvAuthType;
+  authentication_type: IngestionAuthType;
   authentication_value?: InputMaybe<Scalars['String']['input']>;
   csv_mapper_id: Scalars['String']['input'];
   current_state_date?: InputMaybe<Scalars['DateTime']['input']>;
@@ -10237,7 +10237,7 @@ export enum IngestionRssOrdering {
 export type IngestionTaxii = BasicObject & InternalObject & {
   __typename?: 'IngestionTaxii';
   added_after_start?: Maybe<Scalars['DateTime']['output']>;
-  authentication_type: TaxiiAuthType;
+  authentication_type: IngestionAuthType;
   authentication_value?: Maybe<Scalars['String']['output']>;
   collection: Scalars['String']['output'];
   created_at?: Maybe<Scalars['DateTime']['output']>;
@@ -10258,7 +10258,7 @@ export type IngestionTaxii = BasicObject & InternalObject & {
 
 export type IngestionTaxiiAddInput = {
   added_after_start?: InputMaybe<Scalars['DateTime']['input']>;
-  authentication_type: TaxiiAuthType;
+  authentication_type: IngestionAuthType;
   authentication_value?: InputMaybe<Scalars['String']['input']>;
   collection: Scalars['String']['input'];
   description?: InputMaybe<Scalars['String']['input']>;
@@ -25109,13 +25109,6 @@ export enum TasksOrdering {
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
-export enum TaxiiAuthType {
-  Basic = 'basic',
-  Bearer = 'bearer',
-  Certificate = 'certificate',
-  None = 'none'
-}
-
 export type TaxiiCollection = {
   __typename?: 'TaxiiCollection';
   authorized_members?: Maybe<Array<MemberAccess>>;
@@ -28897,7 +28890,6 @@ export type ResolversTypes = ResolversObject<{
   CryptocurrencyWalletAddInput: CryptocurrencyWalletAddInput;
   CryptographicKey: ResolverTypeWrapper<Omit<CryptographicKey, 'cases' | 'containers' | 'createdBy' | 'groupings' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, containers?: Maybe<ResolversTypes['ContainerConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<Array<ResolversTypes['Organization']>>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']> }>;
   CryptographicKeyAddInput: CryptographicKeyAddInput;
-  CsvAuthType: CsvAuthType;
   CsvMapper: ResolverTypeWrapper<BasicStoreEntityCsvMapper>;
   CsvMapperAddInput: CsvMapperAddInput;
   CsvMapperConnection: ResolverTypeWrapper<Omit<CsvMapperConnection, 'edges'> & { edges: Array<ResolversTypes['CsvMapperEdge']> }>;
@@ -29080,6 +29072,7 @@ export type ResolversTypes = ResolversObject<{
   InfrastructureEdge: ResolverTypeWrapper<Omit<InfrastructureEdge, 'node'> & { node: ResolversTypes['Infrastructure'] }>;
   InfrastructureEditMutations: ResolverTypeWrapper<Omit<InfrastructureEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['Infrastructure']>, contextPatch?: Maybe<ResolversTypes['Infrastructure']>, fieldPatch?: Maybe<ResolversTypes['Infrastructure']>, relationAdd?: Maybe<ResolversTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversTypes['Infrastructure']> }>;
   InfrastructuresOrdering: InfrastructuresOrdering;
+  IngestionAuthType: IngestionAuthType;
   IngestionCsv: ResolverTypeWrapper<BasicStoreEntityIngestionCsv>;
   IngestionCsvAddInput: IngestionCsvAddInput;
   IngestionCsvConnection: ResolverTypeWrapper<Omit<IngestionCsvConnection, 'edges'> & { edges: Array<ResolversTypes['IngestionCsvEdge']> }>;
@@ -29467,7 +29460,6 @@ export type ResolversTypes = ResolversObject<{
   TaskTemplateEdge: ResolverTypeWrapper<TaskTemplateEdge>;
   TaskTemplatesOrdering: TaskTemplatesOrdering;
   TasksOrdering: TasksOrdering;
-  TaxiiAuthType: TaxiiAuthType;
   TaxiiCollection: ResolverTypeWrapper<TaxiiCollection>;
   TaxiiCollectionAddInput: TaxiiCollectionAddInput;
   TaxiiCollectionConnection: ResolverTypeWrapper<TaxiiCollectionConnection>;
@@ -33593,7 +33585,7 @@ export type InfrastructureEditMutationsResolvers<ContextType = any, ParentType e
 }>;
 
 export type IngestionCsvResolvers<ContextType = any, ParentType extends ResolversParentTypes['IngestionCsv'] = ResolversParentTypes['IngestionCsv']> = ResolversObject<{
-  authentication_type?: Resolver<ResolversTypes['CsvAuthType'], ParentType, ContextType>;
+  authentication_type?: Resolver<ResolversTypes['IngestionAuthType'], ParentType, ContextType>;
   authentication_value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   created_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   csvMapper?: Resolver<ResolversTypes['CsvMapper'], ParentType, ContextType>;
@@ -33659,7 +33651,7 @@ export type IngestionRssEdgeResolvers<ContextType = any, ParentType extends Reso
 
 export type IngestionTaxiiResolvers<ContextType = any, ParentType extends ResolversParentTypes['IngestionTaxii'] = ResolversParentTypes['IngestionTaxii']> = ResolversObject<{
   added_after_start?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
-  authentication_type?: Resolver<ResolversTypes['TaxiiAuthType'], ParentType, ContextType>;
+  authentication_type?: Resolver<ResolversTypes['IngestionAuthType'], ParentType, ContextType>;
   authentication_value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   collection?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   created_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;

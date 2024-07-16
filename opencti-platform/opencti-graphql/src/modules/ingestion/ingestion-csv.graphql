@@ -1,9 +1,3 @@
-enum CsvAuthType {
-    none
-    basic
-    bearer
-    certificate
-}
 
 type IngestionCsv implements InternalObject & BasicObject {
     id: ID!
@@ -16,7 +10,7 @@ type IngestionCsv implements InternalObject & BasicObject {
     description: String
     uri: String!
     csvMapper: CsvMapper!
-    authentication_type: CsvAuthType!
+    authentication_type: IngestionAuthType!
     authentication_value: String
     user_id: String!
     user: Creator
@@ -63,7 +57,7 @@ type Query {
 input IngestionCsvAddInput {
     name: String! @constraint(minLength: 2, format: "not-blank")
     description: String
-    authentication_type: CsvAuthType!
+    authentication_type: IngestionAuthType!
     authentication_value: String
     current_state_date: DateTime
     uri: String! @constraint(minLength: 5)

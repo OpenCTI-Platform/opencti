@@ -4,7 +4,7 @@ enum TaxiiVersion {
     v21
 }
 
-enum TaxiiAuthType {
+enum IngestionAuthType {
     none
     basic
     bearer
@@ -23,7 +23,7 @@ type IngestionTaxii implements InternalObject & BasicObject {
     uri: String!
     collection: String!
     version: TaxiiVersion!
-    authentication_type: TaxiiAuthType!
+    authentication_type: IngestionAuthType!
     authentication_value: String
     user_id: String
     user: Creator
@@ -67,7 +67,7 @@ input IngestionTaxiiAddInput {
     name: String! @constraint(minLength: 2, format: "not-blank")
     description: String
     version: TaxiiVersion!
-    authentication_type: TaxiiAuthType!
+    authentication_type: IngestionAuthType!
     authentication_value: String
     uri: String! @constraint(minLength: 5)
     collection: String! @constraint(minLength: 5)

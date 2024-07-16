@@ -13,6 +13,7 @@ import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { useFormatter } from '../../../../components/i18n';
 import { handleError } from '../../../../relay/environment';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import { getAuthenticationValue } from '../../../../utils/ingestionAuthentificationUtils';
 
 const ingestionCsvMapperTestMutation = graphql`
   mutation IngestionCsvMapperTestDialogMutation($input: IngestionCsvAddInput!) {
@@ -58,6 +59,8 @@ const IngestionCsvMapperTestDialog: FunctionComponent<IngestionCsvMapperTestDial
     onClose();
   };
 
+  const authentifcationValueResolved = getAuthenticationValue(values);
+
   const onTest = () => {
     setLoading(true);
     commitTest({
@@ -66,7 +69,7 @@ const IngestionCsvMapperTestDialog: FunctionComponent<IngestionCsvMapperTestDial
           name: values.name,
           description: values.description,
           authentication_type: values.authentication_type,
-          authentication_value: values.authentication_value,
+          authentication_value: authentifcationValueResolved,
           current_state_date: values.current_state_date,
           uri: values.uri,
           ingestion_running: values.ingestion_running,

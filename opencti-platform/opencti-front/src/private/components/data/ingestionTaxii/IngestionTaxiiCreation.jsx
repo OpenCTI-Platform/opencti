@@ -7,6 +7,7 @@ import * as Yup from 'yup';
 import { graphql } from 'react-relay';
 import * as R from 'ramda';
 import MenuItem from '@mui/material/MenuItem';
+import { BASIC_AUTH, BEARER_AUTH, CERT_AUTH, getAuthenticationValue } from '../../../../utils/ingestionAuthentificationUtils';
 import Drawer, { DrawerVariant } from '../../common/drawer/Drawer';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
@@ -16,10 +17,6 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { insertNode } from '../../../../utils/store';
 import SelectField from '../../../../components/fields/SelectField';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
-
-export const BASIC_AUTH = 'basic';
-export const CERT_AUTH = 'certificate';
-export const BEARER_AUTH = 'bearer';
 
 const styles = (theme) => ({
   buttons: {
@@ -61,12 +58,7 @@ const ingestionTaxiiCreationValidation = (t) => Yup.object().shape({
 const IngestionTaxiiCreation = (props) => {
   const { t, classes } = props;
   const onSubmit = (values, { setSubmitting, resetForm }) => {
-    let authentifcationValue = values.authentication_value;
-    if (values.authentication_type === BASIC_AUTH) {
-      authentifcationValue = `${values.username}:${values.password}`;
-    } else if (values.authentication_type === CERT_AUTH) {
-      authentifcationValue = `${values.cert}:${values.key}:${values.ca}`;
-    }
+    const authentifcationValueResolved = getAuthenticationValue(values);
 
     const input = {
       name: values.name,
@@ -75,7 +67,7 @@ const IngestionTaxiiCreation = (props) => {
       version: values.version,
       collection: values.collection,
       authentication_type: values.authentication_type,
-      authentication_value: authentifcationValue,
+      authentication_value: authentifcationValueResolved,
       added_after_start: values.added_after_start,
       user_id: values.user_id?.value,
     };
