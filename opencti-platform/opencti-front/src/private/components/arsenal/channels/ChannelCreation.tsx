@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent, useEffect, useState } from 'react';
 import { Field, Form, Formik } from 'formik';
 import Button from '@mui/material/Button';
 import * as Yup from 'yup';
@@ -86,6 +86,8 @@ export const ChannelCreationForm: FunctionComponent<ChannelFormProps> = ({
 }) => {
   const { isFeatureEnable } = useHelper();
   const { t_i18n } = useFormatter();
+  const [progressBarOpen, setProgressBarOpen] = useState(false);
+
   const basicShape = {
     name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
     channel_types: Yup.array().nullable(),
@@ -111,6 +113,12 @@ export const ChannelCreationForm: FunctionComponent<ChannelFormProps> = ({
       }
     },
   });
+
+  useEffect(() => {
+    if (bulkCount > 1) {
+      setProgressBarOpen(true);
+    }
+  }, [bulkCount]);
 
   const onSubmit: FormikConfig<ChannelAddInput>['onSubmit'] = (
     values,
@@ -179,11 +187,12 @@ export const ChannelCreationForm: FunctionComponent<ChannelFormProps> = ({
                 formValue={values.name}
               />
               <ProgressBar
-                open={bulkCount > 1}
+                open={progressBarOpen}
                 value={(bulkCurrentCount / bulkCount) * 100}
                 label={`${bulkCurrentCount}/${bulkCount}`}
                 title={t_i18n('Create multiple entities')}
                 onClose={() => {
+                  setProgressBarOpen(false);
                   resetForm();
                   onCompleted?.();
                 }}
