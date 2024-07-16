@@ -1,17 +1,21 @@
 import React, { useState } from 'react';
-import * as PropTypes from 'prop-types';
 import { Field, Form, Formik } from 'formik';
-import withStyles from '@mui/styles/withStyles';
 import Button from '@mui/material/Button';
 import InputAdornment from '@mui/material/InputAdornment';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
-import * as R from 'ramda';
 import Tooltip from '@mui/material/Tooltip';
 import { InformationOutline } from 'mdi-material-ui';
 import Box from '@mui/material/Box';
+import makeStyles from '@mui/styles/makeStyles';
+import { Theme } from '@mui/material/styles/createTheme';
+import { RetentionLinesPaginationQuery$variables } from '@components/settings/retention/__generated__/RetentionLinesPaginationQuery.graphql';
+import { FormikConfig } from 'formik/dist/types';
+import { Option } from '@components/common/form/ReferenceField';
+import { RetentionCreationCheckMutation$data } from '@components/settings/retention/__generated__/RetentionCreationCheckMutation.graphql';
+import { RecordSourceSelectorProxy } from 'relay-runtime';
 import Drawer, { DrawerVariant } from '../../common/drawer/Drawer';
-import inject18n from '../../../../components/i18n';
+import { useFormatter } from '../../../../components/i18n';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import Filters from '../../common/lists/Filters';
@@ -21,22 +25,7 @@ import { insertNode } from '../../../../utils/store';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
 import AutocompleteField from '../../../../components/AutocompleteField';
 
-const styles = (theme) => ({
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: 0,
-  },
-  createButton: {
-    position: 'fixed',
-    bottom: 30,
-    right: 230,
-  },
+const useStyles = makeStyles<Theme>((theme) => ({
   buttons: {
     marginTop: 20,
     textAlign: 'right',
@@ -44,37 +33,12 @@ const styles = (theme) => ({
   button: {
     marginLeft: theme.spacing(2),
   },
-  header: {
-    backgroundColor: theme.palette.background.nav,
-    padding: '20px 20px 20px 60px',
-  },
-  closeButton: {
-    position: 'absolute',
-    top: 12,
-    left: 5,
-    color: 'inherit',
-  },
-  importButton: {
-    position: 'absolute',
-    top: 15,
-    right: 20,
-  },
-  container: {
-    padding: '10px 20px 20px 20px',
-  },
-  title: {
-    float: 'left',
-  },
-  icon: {
-    paddingTop: 4,
-    display: 'inline-block',
-  },
   text: {
     display: 'inline-block',
     flexGrow: 1,
     marginLeft: 10,
   },
-});
+}));
 
 const RetentionCreationMutation = graphql`
     mutation RetentionCreationMutation($input: RetentionRuleAddInput!) {
@@ -90,18 +54,25 @@ const RetentionCheckMutation = graphql`
     }
 `;
 
-const RetentionCreationValidation = (t) => Yup.object().shape({
+const RetentionCreationValidation = (t: (text: string) => string) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   max_retention: Yup.number().min(1, t('This field must be >= 1')),
 });
 
-const RetentionCreation = (props) => {
-  const { t, classes } = props;
-  const [filters, helpers] = useFiltersState();
+interface RetentionFormValues {
+  name: string,
+  max_retention: string,
+  scope: { value: string },
+  filters: string,
+}
 
+const RetentionCreation = ({ paginationOptions }: { paginationOptions: RetentionLinesPaginationQuery$variables }) => {
+  const classes = useStyles();
+  const { t_i18n } = useFormatter();
+  const [filters, helpers] = useFiltersState();
   const [verified, setVerified] = useState(false);
   const availableFilterKeys = useAvailableFilterKeysForEntityTypes(['Stix-Core-Object', 'stix-core-relationship']);
-  const onSubmit = (values, { setSubmitting, resetForm }) => {
+  const onSubmit: FormikConfig<RetentionFormValues>['onSubmit'] = (values, { setSubmitting, resetForm }) => {
     const scope = values.scope.value;
     const finalValues = {
       ...values,
@@ -115,11 +86,11 @@ const RetentionCreation = (props) => {
       variables: {
         input: { ...finalValues, filters: jsonFilters },
       },
-      updater: (store) => {
+      updater: (store: RecordSourceSelectorProxy) => {
         insertNode(
           store,
           'Pagination_retentionRules',
-          props.paginationOptions,
+          paginationOptions,
           'retentionRuleAdd',
         );
       },
@@ -128,10 +99,13 @@ const RetentionCreation = (props) => {
         setSubmitting(false);
         resetForm();
       },
+      onError: undefined,
+      optimisticResponse: undefined,
+      optimisticUpdater: undefined,
     });
   };
 
-  const handleVerify = (values) => {
+  const handleVerify = (values: RetentionFormValues) => {
     const scope = values.scope.value;
     const finalValues = {
       ...values,
@@ -145,28 +119,32 @@ const RetentionCreation = (props) => {
       variables: {
         input: { ...finalValues, filters: jsonFilters },
       },
-      onCompleted: (data) => {
+      onCompleted: (data: RetentionCreationCheckMutation$data) => {
         setVerified(true);
         MESSAGING$.notifySuccess(
-          t(`Retention policy will delete ${data.retentionRuleCheck} elements`),
+          t_i18n(`Retention policy will delete ${data.retentionRuleCheck} elements`),
         );
       },
       onError: () => {
         setVerified(false);
       },
+      optimisticResponse: undefined,
+      optimisticUpdater: undefined,
+      updater: undefined,
+      setSubmitting: undefined,
     });
   };
 
   return (
     <Drawer
-      title={t('Create a retention policy')}
+      title={t_i18n('Create a retention policy')}
       variant={DrawerVariant.createWithPanel}
       onClose={helpers.handleClearAllFilters}
     >
       {({ onClose }) => (
         <Formik
-          initialValues={{ name: '', max_retention: '31' }}
-          validationSchema={RetentionCreationValidation(t)}
+          initialValues={{ name: '', max_retention: '31', scope: { value: 'knowledge' }, filters: '' }}
+          validationSchema={RetentionCreationValidation(t_i18n)}
           onSubmit={onSubmit}
           onReset={onClose}
         >
@@ -176,14 +154,14 @@ const RetentionCreation = (props) => {
                 component={TextField}
                 variant="standard"
                 name="name"
-                label={t('Name')}
+                label={t_i18n('Name')}
                 fullWidth={true}
               />
               <Field
                 component={TextField}
                 variant="standard"
                 name="max_retention"
-                label={t('Maximum retention days')}
+                label={t_i18n('Maximum retention days')}
                 fullWidth={true}
                 onChange={() => setVerified(false)}
                 style={{ marginTop: 20 }}
@@ -191,7 +169,7 @@ const RetentionCreation = (props) => {
                   endAdornment: (
                     <InputAdornment position="end">
                       <Tooltip
-                        title={t(
+                        title={t_i18n(
                           'All objects matching the filters that have not been updated since this amount of days will be deleted',
                         )}
                       >
@@ -217,13 +195,13 @@ const RetentionCreation = (props) => {
                   { value: 'file', label: 'File' },
                   { value: 'workbench', label: 'Workbench' },
                 ]}
-                renderOption={(prop, option) => (
+                renderOption={(prop: Record<string, unknown>, option: Option) => (
                   <li {...prop}>
-                    <div className={classes.text}>{t(option.label)}</div>
+                    <div className={classes.text}>{t_i18n(option.label)}</div>
                   </li>
                 )}
                 textfieldprops={{
-                  label: t('Scope'),
+                  label: t_i18n('Scope'),
                 }}
               />
               {formValues.scope?.value === 'knowledge' && <>
@@ -253,7 +231,7 @@ const RetentionCreation = (props) => {
                   disabled={isSubmitting}
                   classes={{ root: classes.button }}
                 >
-                  {t('Cancel')}
+                  {t_i18n('Cancel')}
                 </Button>
                 <Button
                   variant="contained"
@@ -262,7 +240,7 @@ const RetentionCreation = (props) => {
                   disabled={isSubmitting}
                   classes={{ root: classes.button }}
                 >
-                  {t('Verify')}
+                  {t_i18n('Verify')}
                 </Button>
                 <Button
                   variant="contained"
@@ -271,7 +249,7 @@ const RetentionCreation = (props) => {
                   disabled={!verified || isSubmitting}
                   classes={{ root: classes.button }}
                 >
-                  {t('Create')}
+                  {t_i18n('Create')}
                 </Button>
               </div>
             </Form>
@@ -282,14 +260,4 @@ const RetentionCreation = (props) => {
   );
 };
 
-RetentionCreation.propTypes = {
-  paginationOptions: PropTypes.object,
-  classes: PropTypes.object,
-  theme: PropTypes.object,
-  t: PropTypes.func,
-};
-
-export default R.compose(
-  inject18n,
-  withStyles(styles, { withTheme: true }),
-)(RetentionCreation);
+export default RetentionCreation;
