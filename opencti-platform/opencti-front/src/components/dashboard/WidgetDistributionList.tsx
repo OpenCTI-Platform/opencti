@@ -4,7 +4,7 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import React from 'react';
 import { useTheme } from '@mui/styles';
-import ListItem from '@mui/material/ListItem';
+import { ListItemButton } from '@mui/material';
 import ItemIcon from '../ItemIcon';
 import { computeLink } from '../../utils/Entity';
 import type { Theme } from '../Theme';
@@ -63,20 +63,24 @@ const WidgetDistributionList = ({
               to: link,
             };
           }
+          const cursorStyle = link ? 'pointer' : 'default';
+          const hoverStyle = !link ? { '&.MuiListItemButton-root:hover': { backgroundColor: 'transparent' } } : {};
 
           return (
-            <ListItem
+            <ListItemButton
               key={entry.id ?? entry.label}
               dense={true}
               className="noDrag"
               divider={true}
+              disableRipple={publicWidget || !link}
               {...linkProps}
               sx={{
                 height: 50,
                 minHeight: 50,
                 maxHeight: 50,
                 paddingRight: 0,
-                cursor: 'default',
+                cursor: cursorStyle,
+                ...hoverStyle,
               }}
               style={overflow === 'hidden' && key === data.length - 1 ? { borderBottom: 0 } : {}}
             >
@@ -111,15 +115,12 @@ const WidgetDistributionList = ({
                   marginRight: 20,
                   fontSize: 18,
                   fontWeight: 600,
-                  whiteSpace: 'nowrap',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
                   color: theme.palette.primary.main,
                 }}
               >
                 {n(entry.value)}
               </div>
-            </ListItem>
+            </ListItemButton>
           );
         })}
       </List>
