@@ -46,7 +46,7 @@ export const ThreatActorIndividualCardFragment = graphql`
     targetedCountries: stixCoreRelationships(
       relationship_type: "targets"
       toTypes: ["Country"]
-      first: 5
+      first: 10
       orderBy: created_at
       orderMode: desc
     ) {
@@ -81,7 +81,7 @@ export const ThreatActorIndividualCardFragment = graphql`
     targetedSectors: stixCoreRelationships(
       relationship_type: "targets"
       toTypes: ["Sector"]
-      first: 5
+      first: 10
       orderBy: created_at
       orderMode: desc
     ) {
@@ -98,7 +98,7 @@ export const ThreatActorIndividualCardFragment = graphql`
     usedMalware: stixCoreRelationships(
       relationship_type: "uses"
       toTypes: ["Malware"]
-      first: 5
+      first: 10
       orderBy: created_at
       orderMode: desc
     ) {

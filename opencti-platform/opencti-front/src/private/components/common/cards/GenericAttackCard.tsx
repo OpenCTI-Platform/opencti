@@ -1,4 +1,5 @@
 import React, { FunctionComponent } from 'react';
+import * as R from 'ramda';
 import Card from '@mui/material/Card';
 import CardActionArea from '@mui/material/CardActionArea';
 import { Link } from 'react-router-dom';
@@ -128,17 +129,17 @@ export const GenericAttackCard: FunctionComponent<GenericAttackCardProps> = ({
 }) => {
   const classes = useStyles();
   const { t_i18n, fld } = useFormatter();
-  const relatedIntrusionSets = (cardData.relatedIntrusionSets?.edges ?? [])
-    .map((n) => n?.node?.from?.name)
+  const relatedIntrusionSets = R.uniq((cardData.relatedIntrusionSets?.edges ?? [])
+    .map((n) => n?.node?.from?.name))
     .join(', ');
-  const usedMalware = (cardData.usedMalware?.edges ?? [])
-    .map((n) => n?.node?.to?.name)
+  const usedMalware = R.uniq((cardData.usedMalware?.edges ?? [])
+    .map((n) => n?.node?.to?.name))
     .join(', ');
-  const targetedCountries = (cardData.targetedCountries?.edges ?? [])
-    .map((n) => n?.node?.to?.name)
+  const targetedCountries = R.uniq((cardData.targetedCountries?.edges ?? [])
+    .map((n) => n?.node?.to?.name))
     .join(', ');
-  const targetedSectors = (cardData.targetedSectors?.edges ?? [])
-    .map((n) => n?.node?.to?.name)
+  const targetedSectors = R.uniq((cardData.targetedSectors?.edges ?? [])
+    .map((n) => n?.node?.to?.name))
     .join(', ');
   const handleBookmarksIds = (e: React.MouseEvent<HTMLElement>) => {
     e.preventDefault();

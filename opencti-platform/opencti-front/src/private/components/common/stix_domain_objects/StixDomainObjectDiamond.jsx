@@ -181,7 +181,7 @@ const StixDomainObjectDiamond = createRefetchContainer(
             targetedCountries: stixCoreRelationships(
               relationship_type: "targets"
               toTypes: ["Country"]
-              first: 5
+              first: 10
               orderBy: created_at
               orderMode: desc
             ) {
@@ -198,7 +198,7 @@ const StixDomainObjectDiamond = createRefetchContainer(
             targetedSectors: stixCoreRelationships(
               relationship_type: "targets"
               toTypes: ["Sector"]
-              first: 5
+              first: 10
               orderBy: created_at
               orderMode: desc
             ) {
@@ -215,7 +215,7 @@ const StixDomainObjectDiamond = createRefetchContainer(
             targetedOrganizations: stixCoreRelationships(
               relationship_type: "targets"
               toTypes: ["Organization"]
-              first: 5
+              first: 10
               orderBy: created_at
               orderMode: desc
             ) {
@@ -232,7 +232,7 @@ const StixDomainObjectDiamond = createRefetchContainer(
             attributedTo: stixCoreRelationships(
               relationship_type: "attributed-to"
               toTypes: ["Campaign", "Intrusion-Set", "Threat-Actor-Group", "Threat-Actor-Individual"]
-              first: 5
+              first: 10
               orderBy: created_at
               orderMode: desc
             ) {
@@ -255,7 +255,7 @@ const StixDomainObjectDiamond = createRefetchContainer(
             attackPatternsUsed: stixCoreRelationships(
               relationship_type: "uses"
               toTypes: ["Attack-Pattern"]
-              first: 5
+              first: 10
               orderBy: created_at
               orderMode: desc
             ) {
@@ -273,7 +273,7 @@ const StixDomainObjectDiamond = createRefetchContainer(
             malwaresUsed: stixCoreRelationships(
               relationship_type: "uses"
               toTypes: ["Malware"]
-              first: 5
+              first: 10
               orderBy: created_at
               orderMode: desc
             ) {
@@ -290,7 +290,7 @@ const StixDomainObjectDiamond = createRefetchContainer(
             toolsAndChannelsUsed: stixCoreRelationships(
               relationship_type: "uses"
               toTypes: ["Tool", "Channel"]
-              first: 5
+              first: 10
               orderBy: created_at
               orderMode: desc
             ) {
@@ -310,7 +310,7 @@ const StixDomainObjectDiamond = createRefetchContainer(
             relatedDomains: stixCoreRelationships(
               relationship_type: "related-to"
               fromTypes: ["Domain-Name", "Hostname"]
-              first: 5
+              first: 10
               orderBy: created_at
               orderMode: desc
             ) {
@@ -329,7 +329,7 @@ const StixDomainObjectDiamond = createRefetchContainer(
             relatedIPs: stixCoreRelationships(
               relationship_type: "related-to"
               fromTypes: ["IPv4-Addr", "IPv6-Addr"]
-              first: 5
+              first: 10
               orderBy: created_at
               orderMode: desc
             ) {
@@ -348,7 +348,7 @@ const StixDomainObjectDiamond = createRefetchContainer(
             infrastructuresUsed: stixCoreRelationships(
               relationship_type: "uses"
               toTypes: ["Infrastructure"]
-              first: 5
+              first: 10
               orderBy: created_at
               orderMode: desc
             ) {
@@ -369,7 +369,7 @@ const StixDomainObjectDiamond = createRefetchContainer(
             targetedCountries: stixCoreRelationships(
               relationship_type: "targets"
               toTypes: ["Country"]
-              first: 5
+              first: 10
               orderBy: created_at
               orderMode: desc
             ) {
@@ -386,7 +386,7 @@ const StixDomainObjectDiamond = createRefetchContainer(
             targetedSectors: stixCoreRelationships(
               relationship_type: "targets"
               toTypes: ["Sector"]
-              first: 5
+              first: 10
               orderBy: created_at
               orderMode: desc
             ) {
@@ -403,7 +403,7 @@ const StixDomainObjectDiamond = createRefetchContainer(
             targetedOrganizations: stixCoreRelationships(
               relationship_type: "targets"
               toTypes: ["Organization"]
-              first: 5
+              first: 10
               orderBy: created_at
               orderMode: desc
             ) {
@@ -420,7 +420,7 @@ const StixDomainObjectDiamond = createRefetchContainer(
             attributedTo: stixCoreRelationships(
               relationship_type: "attributed-to"
               toTypes: ["Intrusion-Set", "Threat-Actor-Group", "Threat-Actor-Individual"]
-              first: 5
+              first: 10
               orderBy: created_at
               orderMode: desc
             ) {
@@ -440,7 +440,7 @@ const StixDomainObjectDiamond = createRefetchContainer(
             attackPatternsUsed: stixCoreRelationships(
               relationship_type: "uses"
               toTypes: ["Attack-Pattern"]
-              first: 5
+              first: 10
               orderBy: created_at
               orderMode: desc
             ) {
@@ -458,7 +458,7 @@ const StixDomainObjectDiamond = createRefetchContainer(
             malwaresUsed: stixCoreRelationships(
               relationship_type: "uses"
               toTypes: ["Malware"]
-              first: 5
+              first: 10
               orderBy: created_at
               orderMode: desc
             ) {
@@ -475,7 +475,7 @@ const StixDomainObjectDiamond = createRefetchContainer(
             toolsAndChannelsUsed: stixCoreRelationships(
               relationship_type: "uses"
               toTypes: ["Tool", "Channel"]
-              first: 5
+              first: 10
               orderBy: created_at
               orderMode: desc
             ) {
@@ -495,7 +495,7 @@ const StixDomainObjectDiamond = createRefetchContainer(
             relatedDomains: stixCoreRelationships(
               relationship_type: "related-to"
               fromTypes: ["Domain-Name", "Hostname"]
-              first: 5
+              first: 10
               orderBy: created_at
               orderMode: desc
             ) {
@@ -514,7 +514,7 @@ const StixDomainObjectDiamond = createRefetchContainer(
             relatedIPs: stixCoreRelationships(
               relationship_type: "related-to"
               fromTypes: ["IPv4-Addr", "IPv6-Addr"]
-              first: 5
+              first: 10
               orderBy: created_at
               orderMode: desc
             ) {
@@ -533,7 +533,7 @@ const StixDomainObjectDiamond = createRefetchContainer(
             infrastructuresUsed: stixCoreRelationships(
               relationship_type: "uses"
               toTypes: ["Infrastructure"]
-              first: 5
+              first: 10
               orderBy: created_at
               orderMode: desc
             ) {
@@ -554,7 +554,7 @@ const StixDomainObjectDiamond = createRefetchContainer(
             targetedCountries: stixCoreRelationships(
               relationship_type: "targets"
               toTypes: ["Country"]
-              first: 5
+              first: 10
               orderBy: created_at
               orderMode: desc
             ) {
@@ -571,7 +571,7 @@ const StixDomainObjectDiamond = createRefetchContainer(
             targetedSectors: stixCoreRelationships(
               relationship_type: "targets"
               toTypes: ["Sector"]
-              first: 5
+              first: 10
               orderBy: created_at
               orderMode: desc
             ) {
@@ -588,7 +588,7 @@ const StixDomainObjectDiamond = createRefetchContainer(
             targetedOrganizations: stixCoreRelationships(
               relationship_type: "targets"
               toTypes: ["Organization"]
-              first: 5
+              first: 10
               orderBy: created_at
               orderMode: desc
             ) {
@@ -605,7 +605,7 @@ const StixDomainObjectDiamond = createRefetchContainer(
             attributedTo: stixCoreRelationships(
               relationship_type: "attributed-to"
               toTypes: ["Threat-Actor-Group", "Threat-Actor-Individual"]
-              first: 5
+              first: 10
               orderBy: created_at
               orderMode: desc
             ) {
@@ -622,7 +622,7 @@ const StixDomainObjectDiamond = createRefetchContainer(
             attackPatternsUsed: stixCoreRelationships(
               relationship_type: "uses"
               toTypes: ["Attack-Pattern"]
-              first: 5
+              first: 10
               orderBy: created_at
               orderMode: desc
             ) {
@@ -640,7 +640,7 @@ const StixDomainObjectDiamond = createRefetchContainer(
             malwaresUsed: stixCoreRelationships(
               relationship_type: "uses"
               toTypes: ["Malware"]
-              first: 5
+              first: 10
               orderBy: created_at
               orderMode: desc
             ) {
@@ -657,7 +657,7 @@ const StixDomainObjectDiamond = createRefetchContainer(
             toolsAndChannelsUsed: stixCoreRelationships(
               relationship_type: "uses"
               toTypes: ["Tool", "Channel"]
-              first: 5
+              first: 10
               orderBy: created_at
               orderMode: desc
             ) {
@@ -677,7 +677,7 @@ const StixDomainObjectDiamond = createRefetchContainer(
             relatedDomains: stixCoreRelationships(
               relationship_type: "related-to"
               fromTypes: ["Domain-Name", "Hostname"]
-              first: 5
+              first: 10
               orderBy: created_at
               orderMode: desc
             ) {
@@ -696,7 +696,7 @@ const StixDomainObjectDiamond = createRefetchContainer(
             relatedIPs: stixCoreRelationships(
               relationship_type: "related-to"
               fromTypes: ["IPv4-Addr", "IPv6-Addr"]
-              first: 5
+              first: 10
               orderBy: created_at
               orderMode: desc
             ) {
@@ -715,7 +715,7 @@ const StixDomainObjectDiamond = createRefetchContainer(
             infrastructuresUsed: stixCoreRelationships(
               relationship_type: "uses"
               toTypes: ["Infrastructure"]
-              first: 5
+              first: 10
               orderBy: created_at
               orderMode: desc
             ) {
@@ -736,7 +736,7 @@ const StixDomainObjectDiamond = createRefetchContainer(
             targetedCountries: stixCoreRelationships(
               relationship_type: "targets"
               toTypes: ["Country"]
-              first: 5
+              first: 10
               orderBy: created_at
               orderMode: desc
             ) {
@@ -753,7 +753,7 @@ const StixDomainObjectDiamond = createRefetchContainer(
             targetedSectors: stixCoreRelationships(
               relationship_type: "targets"
               toTypes: ["Sector"]
-              first: 5
+              first: 10
               orderBy: created_at
               orderMode: desc
             ) {
@@ -770,7 +770,7 @@ const StixDomainObjectDiamond = createRefetchContainer(
             targetedOrganizations: stixCoreRelationships(
               relationship_type: "targets"
               toTypes: ["Organization"]
-              first: 5
+              first: 10
               orderBy: created_at
               orderMode: desc
             ) {
@@ -787,7 +787,7 @@ const StixDomainObjectDiamond = createRefetchContainer(
             attackPatternsUsed: stixCoreRelationships(
               relationship_type: "uses"
               toTypes: ["Attack-Pattern"]
-              first: 5
+              first: 10
               orderBy: created_at
               orderMode: desc
             ) {
@@ -805,7 +805,7 @@ const StixDomainObjectDiamond = createRefetchContainer(
             malwaresUsed: stixCoreRelationships(
               relationship_type: "uses"
               toTypes: ["Malware"]
-              first: 5
+              first: 10
               orderBy: created_at
               orderMode: desc
             ) {
@@ -822,7 +822,7 @@ const StixDomainObjectDiamond = createRefetchContainer(
             toolsAndChannelsUsed: stixCoreRelationships(
               relationship_type: "uses"
               toTypes: ["Tool", "Channel"]
-              first: 5
+              first: 10
               orderBy: created_at
               orderMode: desc
             ) {
@@ -842,7 +842,7 @@ const StixDomainObjectDiamond = createRefetchContainer(
             relatedDomains: stixCoreRelationships(
               relationship_type: "related-to"
               fromTypes: ["Domain-Name", "Hostname"]
-              first: 5
+              first: 10
               orderBy: created_at
               orderMode: desc
             ) {
@@ -861,7 +861,7 @@ const StixDomainObjectDiamond = createRefetchContainer(
             relatedIPs: stixCoreRelationships(
               relationship_type: "related-to"
               fromTypes: ["IPv4-Addr", "IPv6-Addr"]
-              first: 5
+              first: 10
               orderBy: created_at
               orderMode: desc
             ) {
@@ -880,7 +880,7 @@ const StixDomainObjectDiamond = createRefetchContainer(
             infrastructuresUsed: stixCoreRelationships(
               relationship_type: "uses"
               toTypes: ["Infrastructure"]
-              first: 5
+              first: 10
               orderBy: created_at
               orderMode: desc
             ) {
@@ -901,7 +901,7 @@ const StixDomainObjectDiamond = createRefetchContainer(
             targetedCountries: stixCoreRelationships(
               relationship_type: "targets"
               toTypes: ["Country"]
-              first: 5
+              first: 10
               orderBy: created_at
               orderMode: desc
             ) {
@@ -918,7 +918,7 @@ const StixDomainObjectDiamond = createRefetchContainer(
             targetedSectors: stixCoreRelationships(
               relationship_type: "targets"
               toTypes: ["Sector"]
-              first: 5
+              first: 10
               orderBy: created_at
               orderMode: desc
             ) {
@@ -935,7 +935,7 @@ const StixDomainObjectDiamond = createRefetchContainer(
             targetedOrganizations: stixCoreRelationships(
               relationship_type: "targets"
               toTypes: ["Organization"]
-              first: 5
+              first: 10
               orderBy: created_at
               orderMode: desc
             ) {
@@ -952,7 +952,7 @@ const StixDomainObjectDiamond = createRefetchContainer(
             usedBy: stixCoreRelationships(
               relationship_type: "uses"
               fromTypes: ["Threat-Actor-Group", "Threat-Actor-Individual", "Intrusion-Set", "Campaign"]
-              first: 5
+              first: 10
               orderBy: created_at
               orderMode: desc
             ) {
@@ -975,7 +975,7 @@ const StixDomainObjectDiamond = createRefetchContainer(
             attackPatternsUsed: stixCoreRelationships(
               relationship_type: "uses"
               toTypes: ["Attack-Pattern"]
-              first: 5
+              first: 10
               orderBy: created_at
               orderMode: desc
             ) {
@@ -993,7 +993,7 @@ const StixDomainObjectDiamond = createRefetchContainer(
             malwaresUsed: stixCoreRelationships(
               relationship_type: "uses"
               toTypes: ["Malware"]
-              first: 5
+              first: 10
               orderBy: created_at
               orderMode: desc
             ) {
@@ -1010,7 +1010,7 @@ const StixDomainObjectDiamond = createRefetchContainer(
             toolsAndChannelsUsed: stixCoreRelationships(
               relationship_type: "uses"
               toTypes: ["Tool", "Channel"]
-              first: 5
+              first: 10
               orderBy: created_at
               orderMode: desc
             ) {
@@ -1030,7 +1030,7 @@ const StixDomainObjectDiamond = createRefetchContainer(
             relatedDomains: stixCoreRelationships(
               relationship_type: "related-to"
               fromTypes: ["Domain-Name", "Hostname"]
-              first: 5
+              first: 10
               orderBy: created_at
               orderMode: desc
             ) {
@@ -1049,7 +1049,7 @@ const StixDomainObjectDiamond = createRefetchContainer(
             relatedIPs: stixCoreRelationships(
               relationship_type: "related-to"
               fromTypes: ["IPv4-Addr", "IPv6-Addr"]
-              first: 5
+              first: 10
               orderBy: created_at
               orderMode: desc
             ) {
@@ -1068,7 +1068,7 @@ const StixDomainObjectDiamond = createRefetchContainer(
             infrastructuresUsed: stixCoreRelationships(
               relationship_type: "uses"
               toTypes: ["Infrastructure"]
-              first: 5
+              first: 10
               orderBy: created_at
               orderMode: desc
             ) {
@@ -1089,7 +1089,7 @@ const StixDomainObjectDiamond = createRefetchContainer(
             targetedCountries: stixCoreRelationships(
               relationship_type: "targets"
               toTypes: ["Country"]
-              first: 5
+              first: 10
               orderBy: created_at
               orderMode: desc
             ) {
@@ -1106,7 +1106,7 @@ const StixDomainObjectDiamond = createRefetchContainer(
             targetedSectors: stixCoreRelationships(
               relationship_type: "targets"
               toTypes: ["Sector"]
-              first: 5
+              first: 10
               orderBy: created_at
               orderMode: desc
             ) {
@@ -1123,7 +1123,7 @@ const StixDomainObjectDiamond = createRefetchContainer(
             targetedOrganizations: stixCoreRelationships(
               relationship_type: "targets"
               toTypes: ["Organization"]
-              first: 5
+              first: 10
               orderBy: created_at
               orderMode: desc
             ) {
@@ -1140,7 +1140,7 @@ const StixDomainObjectDiamond = createRefetchContainer(
             usedBy: stixCoreRelationships(
               relationship_type: "uses"
               fromTypes: ["Threat-Actor-Group", "Threat-Actor-Individual", "Intrusion-Set", "Campaign"]
-              first: 5
+              first: 10
               orderBy: created_at
               orderMode: desc
             ) {
@@ -1163,7 +1163,7 @@ const StixDomainObjectDiamond = createRefetchContainer(
             attackPatternsUsed: stixCoreRelationships(
               relationship_type: "uses"
               toTypes: ["Attack-Pattern"]
-              first: 5
+              first: 10
               orderBy: created_at
               orderMode: desc
             ) {
@@ -1181,7 +1181,7 @@ const StixDomainObjectDiamond = createRefetchContainer(
             malwaresUsed: stixCoreRelationships(
               relationship_type: "uses"
               toTypes: ["Malware"]
-              first: 5
+              first: 10
               orderBy: created_at
               orderMode: desc
             ) {
@@ -1198,7 +1198,7 @@ const StixDomainObjectDiamond = createRefetchContainer(
             toolsAndChannelsUsed: stixCoreRelationships(
               relationship_type: "uses"
               toTypes: ["Tool", "Channel"]
-              first: 5
+              first: 10
               orderBy: created_at
               orderMode: desc
             ) {
@@ -1218,7 +1218,7 @@ const StixDomainObjectDiamond = createRefetchContainer(
             relatedDomains: stixCoreRelationships(
               relationship_type: "related-to"
               fromTypes: ["Domain-Name", "Hostname"]
-              first: 5
+              first: 10
               orderBy: created_at
               orderMode: desc
             ) {
@@ -1237,7 +1237,7 @@ const StixDomainObjectDiamond = createRefetchContainer(
             relatedIPs: stixCoreRelationships(
               relationship_type: "related-to"
               fromTypes: ["IPv4-Addr", "IPv6-Addr"]
-              first: 5
+              first: 10
               orderBy: created_at
               orderMode: desc
             ) {
@@ -1256,7 +1256,7 @@ const StixDomainObjectDiamond = createRefetchContainer(
             infrastructuresUsed: stixCoreRelationships(
               relationship_type: "uses"
               toTypes: ["Infrastructure"]
-              first: 5
+              first: 10
               orderBy: created_at
               orderMode: desc
             ) {
@@ -1277,7 +1277,7 @@ const StixDomainObjectDiamond = createRefetchContainer(
             targetedCountries: stixCoreRelationships(
               relationship_type: "targets"
               toTypes: ["Country"]
-              first: 5
+              first: 10
               orderBy: created_at
               orderMode: desc
             ) {
@@ -1294,7 +1294,7 @@ const StixDomainObjectDiamond = createRefetchContainer(
             targetedSectors: stixCoreRelationships(
               relationship_type: "targets"
               toTypes: ["Sector"]
-              first: 5
+              first: 10
               orderBy: created_at
               orderMode: desc
             ) {
@@ -1311,7 +1311,7 @@ const StixDomainObjectDiamond = createRefetchContainer(
             targetedOrganizations: stixCoreRelationships(
               relationship_type: "targets"
               toTypes: ["Organization"]
-              first: 5
+              first: 10
               orderBy: created_at
               orderMode: desc
             ) {
@@ -1328,7 +1328,7 @@ const StixDomainObjectDiamond = createRefetchContainer(
             usedBy: stixCoreRelationships(
               relationship_type: "uses"
               fromTypes: ["Threat-Actor-Group", "Threat-Actor-Individual", "Intrusion-Set", "Campaign"]
-              first: 5
+              first: 10
               orderBy: created_at
               orderMode: desc
             ) {
@@ -1351,7 +1351,7 @@ const StixDomainObjectDiamond = createRefetchContainer(
             attackPatternsUsed: stixCoreRelationships(
               relationship_type: "uses"
               toTypes: ["Attack-Pattern"]
-              first: 5
+              first: 10
               orderBy: created_at
               orderMode: desc
             ) {
@@ -1369,7 +1369,7 @@ const StixDomainObjectDiamond = createRefetchContainer(
             malwaresUsed: stixCoreRelationships(
               relationship_type: "uses"
               toTypes: ["Malware"]
-              first: 5
+              first: 10
               orderBy: created_at
               orderMode: desc
             ) {
@@ -1386,7 +1386,7 @@ const StixDomainObjectDiamond = createRefetchContainer(
             toolsAndChannelsUsed: stixCoreRelationships(
               relationship_type: "uses"
               toTypes: ["Tool", "Channel"]
-              first: 5
+              first: 10
               orderBy: created_at
               orderMode: desc
             ) {
@@ -1406,7 +1406,7 @@ const StixDomainObjectDiamond = createRefetchContainer(
             relatedDomains: stixCoreRelationships(
               relationship_type: "related-to"
               fromTypes: ["Domain-Name", "Hostname"]
-              first: 5
+              first: 10
               orderBy: created_at
               orderMode: desc
             ) {
@@ -1425,7 +1425,7 @@ const StixDomainObjectDiamond = createRefetchContainer(
             relatedIPs: stixCoreRelationships(
               relationship_type: "related-to"
               fromTypes: ["IPv4-Addr", "IPv6-Addr"]
-              first: 5
+              first: 10
               orderBy: created_at
               orderMode: desc
             ) {
@@ -1444,7 +1444,7 @@ const StixDomainObjectDiamond = createRefetchContainer(
             infrastructuresUsed: stixCoreRelationships(
               relationship_type: "uses"
               toTypes: ["Infrastructure"]
-              first: 5
+              first: 10
               orderBy: created_at
               orderMode: desc
             ) {

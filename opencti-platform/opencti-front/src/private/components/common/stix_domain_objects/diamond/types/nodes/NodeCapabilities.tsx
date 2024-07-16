@@ -1,4 +1,5 @@
 import React, { memo } from 'react';
+import * as R from 'ramda';
 import { Handle, NodeProps, Position } from 'reactflow';
 import { makeStyles } from '@mui/styles';
 import Typography from '@mui/material/Typography';
@@ -60,14 +61,14 @@ const useStyles = makeStyles<Theme>((theme) => ({
 const NodeCapabilities = ({ data }: NodeProps) => {
   const classes = useStyles();
   const { stixDomainObject, entityLink } = data;
-  const usedAttackPatterns = (stixDomainObject.attackPatternsUsed?.edges ?? [])
-    .map((n: { node: { to: { name: string, x_mitre_id: string } } }) => (n?.node?.to?.x_mitre_id ? `[${n?.node?.to?.x_mitre_id}] ${n?.node?.to?.name}` : n?.node?.to?.name))
+  const usedAttackPatterns = R.uniq((stixDomainObject.attackPatternsUsed?.edges ?? [])
+    .map((n: { node: { to: { name: string, x_mitre_id: string } } }) => (n?.node?.to?.x_mitre_id ? `[${n?.node?.to?.x_mitre_id}] ${n?.node?.to?.name}` : n?.node?.to?.name)))
     .join(', ');
-  const usedMalwares = (stixDomainObject.malwaresUsed?.edges ?? [])
-    .map((n: { node: { to: { name: string } } }) => n?.node?.to?.name)
+  const usedMalwares = R.uniq((stixDomainObject.malwaresUsed?.edges ?? [])
+    .map((n: { node: { to: { name: string } } }) => n?.node?.to?.name))
     .join(', ');
-  const usedToolsAndChannels = (stixDomainObject.toolsAndChannelsUsed?.edges ?? [])
-    .map((n: { node: { to: { name: string } } }) => n?.node?.to?.name)
+  const usedToolsAndChannels = R.uniq((stixDomainObject.toolsAndChannelsUsed?.edges ?? [])
+    .map((n: { node: { to: { name: string } } }) => n?.node?.to?.name))
     .join(', ');
   const { t_i18n } = useFormatter();
   return (

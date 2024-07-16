@@ -1,4 +1,5 @@
 import React, { memo } from 'react';
+import * as R from 'ramda';
 import { Handle, NodeProps, Position } from 'reactflow';
 import { makeStyles } from '@mui/styles';
 import Typography from '@mui/material/Typography';
@@ -62,11 +63,11 @@ const NodeAdversary = ({ data }: NodeProps) => {
   const { stixDomainObject, entityLink } = data;
   const isArsenal = ['Malware', 'Tool', 'Channel'].includes(stixDomainObject.entity_type);
   const aliases = stixDomainObject.aliases?.slice(0, 5).join(', ');
-  const attributedTo = (stixDomainObject.attributedTo?.edges ?? [])
-    .map((n: { node: { to: { name: string } } }) => n?.node?.to?.name)
+  const attributedTo = R.uniq((stixDomainObject.attributedTo?.edges ?? [])
+    .map((n: { node: { to: { name: string } } }) => n?.node?.to?.name))
     .join(', ');
-  const usedBy = (stixDomainObject.usedBy?.edges ?? [])
-    .map((n: { node: { from: { name: string } } }) => n?.node?.from?.name)
+  const usedBy = R.uniq((stixDomainObject.usedBy?.edges ?? [])
+    .map((n: { node: { from: { name: string } } }) => n?.node?.from?.name))
     .join(', ');
   const { t_i18n } = useFormatter();
   return (

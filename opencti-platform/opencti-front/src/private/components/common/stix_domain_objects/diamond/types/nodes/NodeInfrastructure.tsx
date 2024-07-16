@@ -1,4 +1,5 @@
 import React, { memo } from 'react';
+import * as R from 'ramda';
 import { Handle, NodeProps, Position } from 'reactflow';
 import { makeStyles } from '@mui/styles';
 import Typography from '@mui/material/Typography';
@@ -60,14 +61,14 @@ const useStyles = makeStyles<Theme>((theme) => ({
 const NodeInfrastructure = ({ data }: NodeProps) => {
   const classes = useStyles();
   const { stixDomainObject, entityLink } = data;
-  const usedIPs = (stixDomainObject.relatedIPs?.edges ?? [])
-    .map((n: { node: { from: { representative: { main: string } } } }) => n?.node?.from?.representative?.main)
+  const usedIPs = R.uniq((stixDomainObject.relatedIPs?.edges ?? [])
+    .map((n: { node: { from: { representative: { main: string } } } }) => n?.node?.from?.representative?.main))
     .join(', ');
-  const usedDomains = (stixDomainObject.relatedDomains?.edges ?? [])
-    .map((n: { node: { from: { representative: { main: string } } } }) => n?.node?.from?.representative?.main)
+  const usedDomains = R.uniq((stixDomainObject.relatedDomains?.edges ?? [])
+    .map((n: { node: { from: { representative: { main: string } } } }) => n?.node?.from?.representative?.main))
     .join(', ');
-  const usedInfrastructures = (stixDomainObject.infrastructuresUsed?.edges ?? [])
-    .map((n: { node: { to: { name: string } } }) => n?.node?.to?.name)
+  const usedInfrastructures = R.uniq((stixDomainObject.infrastructuresUsed?.edges ?? [])
+    .map((n: { node: { to: { name: string } } }) => n?.node?.to?.name))
     .join(', ');
   const { t_i18n } = useFormatter();
   return (

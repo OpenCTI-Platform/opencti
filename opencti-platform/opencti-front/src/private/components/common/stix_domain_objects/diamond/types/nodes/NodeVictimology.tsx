@@ -1,4 +1,5 @@
 import React, { memo } from 'react';
+import * as R from 'ramda';
 import { Handle, NodeProps, Position } from 'reactflow';
 import { makeStyles } from '@mui/styles';
 import Typography from '@mui/material/Typography';
@@ -60,14 +61,14 @@ const useStyles = makeStyles<Theme>((theme) => ({
 const NodeVictimology = ({ data }: NodeProps) => {
   const classes = useStyles();
   const { stixDomainObject, entityLink } = data;
-  const targetedCountries = (stixDomainObject.targetedCountries?.edges ?? [])
-    .map((n: { node: { to: { name: string } } }) => n?.node?.to?.name)
+  const targetedCountries = R.uniq((stixDomainObject.targetedCountries?.edges ?? [])
+    .map((n: { node: { to: { name: string } } }) => n?.node?.to?.name))
     .join(', ');
-  const targetedSectors = (stixDomainObject.targetedSectors?.edges ?? [])
-    .map((n: { node: { to: { name: string } } }) => n?.node?.to?.name)
+  const targetedSectors = R.uniq((stixDomainObject.targetedSectors?.edges ?? [])
+    .map((n: { node: { to: { name: string } } }) => n?.node?.to?.name))
     .join(', ');
-  const targetedOrganizations = (stixDomainObject.targetedOrganizations?.edges ?? [])
-    .map((n: { node: { to: { name: string } } }) => n?.node?.to?.name)
+  const targetedOrganizations = R.uniq((stixDomainObject.targetedOrganizations?.edges ?? [])
+    .map((n: { node: { to: { name: string } } }) => n?.node?.to?.name))
     .join(', ');
   const { t_i18n } = useFormatter();
   return (
