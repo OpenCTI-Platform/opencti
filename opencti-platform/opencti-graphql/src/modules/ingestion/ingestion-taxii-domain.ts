@@ -7,8 +7,7 @@ import { notify } from '../../database/redis';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import type { AuthContext, AuthUser } from '../../types/user';
 import type { EditInput, IngestionTaxiiAddInput } from '../../generated/graphql';
-import { TaxiiAuthType } from '../../generated/graphql';
-import { FunctionalError } from '../../config/errors';
+import { verifyIngestionAuthenticationContent } from './ingestion-common';
 
 export const findById = (context: AuthContext, user: AuthUser, ingestionId: string) => {
   return storeLoadById<BasicStoreEntityIngestionTaxii>(context, user, ingestionId, ENTITY_TYPE_INGESTION_TAXII);
@@ -22,21 +21,9 @@ export const findAllTaxiiIngestions = async (context: AuthContext, user: AuthUse
   return listAllEntities<BasicStoreEntityIngestionTaxii>(context, user, [ENTITY_TYPE_INGESTION_TAXII], opts);
 };
 
-export const verifyTaxiiAuthenticationContent = (authenticationType: string, authenticationValue: string) => {
-  if (authenticationType && authenticationValue) {
-    if (authenticationType === TaxiiAuthType.Basic && authenticationValue.split(':').length !== 2) {
-      throw FunctionalError('Username and password cannot have : character.', { authenticationType });
-    }
-
-    if (authenticationType === TaxiiAuthType.Certificate && authenticationValue.split(':').length !== 3) {
-      throw FunctionalError('Certificate, CA and Key cannot have : character.', { authenticationType });
-    }
-  }
-};
-
 export const addIngestion = async (context: AuthContext, user: AuthUser, input: IngestionTaxiiAddInput) => {
   if (input.authentication_value) {
-    verifyTaxiiAuthenticationContent(input.authentication_type, input.authentication_value);
+    verifyIngestionAuthenticationContent(input.authentication_type, input.authentication_value);
   }
 
   const { element, isCreation } = await createEntity(context, user, input, ENTITY_TYPE_INGESTION_TAXII, { complete: true });
@@ -63,7 +50,7 @@ export const ingestionEditField = async (context: AuthContext, user: AuthUser, i
     const ingestionConfiguration = await findById(context, user, ingestionId);
     const authenticationValueField = input.find(((editInput) => editInput.key === 'authentication_value'));
     if (authenticationValueField && authenticationValueField.value[0]) {
-      verifyTaxiiAuthenticationContent(ingestionConfiguration.authentication_type, authenticationValueField.value[0]);
+      verifyIngestionAuthenticationContent(ingestionConfiguration.authentication_type, authenticationValueField.value[0]);
     }
   }
 
