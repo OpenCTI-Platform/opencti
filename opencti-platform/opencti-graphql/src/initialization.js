@@ -28,20 +28,22 @@ const PLATFORM_LOCK_ID = 'platform_init_lock';
 export const checkSystemDependencies = async () => {
   logApp.info('[OPENCTI] Checking dependencies statuses');
   // Check if elasticsearch is available
+  logApp.info('[CHECK] checking if Search engine is alive');
   await searchEngineInit();
-  logApp.info('[CHECK] Search engine is alive');
   // Check if minio is here
+  logApp.info('[CHECK] Search engine ok, checking if File storage is alive');
   await storageInit();
-  logApp.info('[CHECK] File engine is alive');
   // Check if RabbitMQ is here and create the logs exchange/queue
+  logApp.info('[CHECK] File storage ok, checking if RabbitMQ is alive');
   await rabbitMQIsAlive();
-  logApp.info('[CHECK] RabbitMQ engine is alive');
+  logApp.info('[CHECK] RabbitMQ ok, checking if Redis is alive');
   // Check if redis is here
   await redisInit();
-  logApp.info('[CHECK] Redis engine is alive');
+  logApp.info('[CHECK] Redis ok, checking if SMTP is alive');
   // Check if SMTP is here
   await smtpIsAlive();
   // Check if Python is available
+  logApp.info('[CHECK] SMTP done, checking if python is available');
   const context = executionContext('system_dependencies');
   await checkPythonAvailability(context, SYSTEM_USER);
   logApp.info('[CHECK] Python3 is available');
