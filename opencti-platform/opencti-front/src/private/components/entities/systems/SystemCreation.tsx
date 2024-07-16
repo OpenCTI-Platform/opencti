@@ -1,9 +1,8 @@
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useEffect, useState } from 'react';
 import { Field, Form, Formik } from 'formik';
 import Button from '@mui/material/Button';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
-import makeStyles from '@mui/styles/makeStyles';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { FormikConfig } from 'formik/dist/types';
 import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
@@ -18,7 +17,6 @@ import MarkdownField from '../../../../components/fields/MarkdownField';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
 import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
 import { insertNode } from '../../../../utils/store';
-import type { Theme } from '../../../../components/Theme';
 import { Option } from '../../common/form/ReferenceField';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { SystemCreationMutation, SystemCreationMutation$variables } from './__generated__/SystemCreationMutation.graphql';
@@ -27,18 +25,13 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  buttons: {
-    marginTop: 20,
-    textAlign: 'right',
-  },
-  button: {
-    marginLeft: theme.spacing(2),
-  },
-}));
+import useHelper from '../../../../utils/hooks/useHelper';
+import useBulkCommit from '../../../../utils/hooks/useBulkCommit';
+import { splitMultilines } from '../../../../utils/String';
+import BulkTextModal from '../../../../components/fields/BulkTextField/BulkTextModal';
+import ProgressBar from '../../../../components/ProgressBar';
+import BulkTextField from '../../../../components/fields/BulkTextField/BulkTextField';
+import BulkTextModalButton from '../../../../components/fields/BulkTextField/BulkTextModalButton';
 
 const systemMutation = graphql`
   mutation SystemCreationMutation($input: SystemAddInput!) {
@@ -60,13 +53,13 @@ const SYSTEM_TYPE = 'System';
 interface SystemAddInput {
   name: string;
   description: string;
-  confidence: number | undefined;
+  confidence: number | null;
   x_opencti_reliability: string | undefined;
-  createdBy: Option | undefined;
+  createdBy: Option | null;
   objectMarking: Option[];
   objectLabel: Option[];
   externalReferences: { value: string }[];
-  file: File | undefined;
+  file: File | null;
 }
 
 interface SystemFormProps {
@@ -76,6 +69,8 @@ interface SystemFormProps {
   defaultCreatedBy?: { value: string; label: string };
   defaultMarkingDefinitions?: { value: string; label: string }[];
   inputValue?: string;
+  bulkModalOpen?: boolean;
+  onBulkModalClose: () => void;
 }
 
 export const SystemCreationForm: FunctionComponent<SystemFormProps> = ({
@@ -85,9 +80,13 @@ export const SystemCreationForm: FunctionComponent<SystemFormProps> = ({
   defaultCreatedBy,
   defaultMarkingDefinitions,
   inputValue,
+  bulkModalOpen = false,
+  onBulkModalClose,
 }) => {
-  const classes = useStyles();
+  const { isFeatureEnable } = useHelper();
   const { t_i18n } = useFormatter();
+  const [progressBarOpen, setProgressBarOpen] = useState(false);
+
   const basicShape = {
     name: Yup.string()
       .min(2)
@@ -101,6 +100,25 @@ export const SystemCreationForm: FunctionComponent<SystemFormProps> = ({
   const systemValidator = useSchemaCreationValidation(SYSTEM_TYPE, basicShape);
 
   const [commit] = useApiMutation<SystemCreationMutation>(systemMutation);
+  const {
+    bulkCommit,
+    bulkCount,
+    bulkCurrentCount,
+    BulkResult,
+  } = useBulkCommit<SystemCreationMutation$variables['input'], SystemCreationMutation>({
+    commit,
+    relayUpdater: (store) => {
+      if (updater) {
+        updater(store, 'systemAdd');
+      }
+    },
+  });
+
+  useEffect(() => {
+    if (bulkCount > 1) {
+      setProgressBarOpen(true);
+    }
+  }, [bulkCount]);
 
   const onSubmit: FormikConfig<SystemAddInput>['onSubmit'] = (
     values,
@@ -110,8 +128,9 @@ export const SystemCreationForm: FunctionComponent<SystemFormProps> = ({
       resetForm,
     },
   ) => {
-    const input: SystemCreationMutation$variables['input'] = {
-      name: values.name,
+    const allNames = splitMultilines(values.name);
+    const inputs: SystemCreationMutation$variables['input'][] = allNames.map((name) => ({
+      name,
       description: values.description,
       x_opencti_reliability: values.x_opencti_reliability,
       createdBy: values.createdBy?.value,
@@ -120,25 +139,18 @@ export const SystemCreationForm: FunctionComponent<SystemFormProps> = ({
       objectLabel: values.objectLabel.map((v) => v.value),
       externalReferences: values.externalReferences.map(({ value }) => value),
       file: values.file,
-    };
-    commit({
-      variables: {
-        input,
-      },
-      updater: (store) => {
-        if (updater) {
-          updater(store, 'systemAdd');
-        }
-      },
-      onError: (error) => {
+    }));
+
+    bulkCommit({
+      inputs,
+      onStepError: (error) => {
         handleErrorInForm(error, setErrors);
-        setSubmitting(false);
       },
-      onCompleted: () => {
+      onCompleted: (total: number) => {
         setSubmitting(false);
-        resetForm();
-        if (onCompleted) {
-          onCompleted();
+        if (total < 2) {
+          resetForm();
+          onCompleted?.();
         }
       },
     });
@@ -149,13 +161,13 @@ export const SystemCreationForm: FunctionComponent<SystemFormProps> = ({
     {
       name: inputValue ?? '',
       description: '',
-      confidence: undefined,
+      confidence: null,
       x_opencti_reliability: undefined,
-      createdBy: defaultCreatedBy,
+      createdBy: defaultCreatedBy ?? null,
       objectMarking: defaultMarkingDefinitions ?? [],
       objectLabel: [],
       externalReferences: [],
-      file: undefined,
+      file: null,
     },
   );
 
@@ -172,80 +184,124 @@ export const SystemCreationForm: FunctionComponent<SystemFormProps> = ({
         isSubmitting,
         setFieldValue,
         values,
+        resetForm,
       }) => (
-        <Form style={{ margin: '20px 0 20px 0' }}>
-          <Field
-            component={TextField}
-            variant="standard"
-            name="name"
-            label={t_i18n('Name')}
-            fullWidth={true}
-            detectDuplicate={['User']}
-          />
-          <Field
-            component={MarkdownField}
-            name="description"
-            label={t_i18n('Description')}
-            fullWidth={true}
-            multiline={true}
-            rows="4"
-            style={{ marginTop: 20 }}
-          />
-          <ConfidenceField
-            entityType="System"
-            containerStyle={fieldSpacingContainerStyle}
-          />
-          <OpenVocabField
-            label={t_i18n('Reliability')}
-            type="reliability_ov"
-            name="x_opencti_reliability"
-            containerStyle={fieldSpacingContainerStyle}
-            multiple={false}
-            onChange={setFieldValue}
-          />
-          <CreatedByField
-            name="createdBy"
-            style={fieldSpacingContainerStyle}
-            setFieldValue={setFieldValue}
-          />
-          <ObjectLabelField
-            name="objectLabel"
-            style={fieldSpacingContainerStyle}
-            setFieldValue={setFieldValue}
-            values={values.objectLabel}
-          />
-          <ObjectMarkingField
-            name="objectMarking"
-            style={fieldSpacingContainerStyle}
-            setFieldValue={setFieldValue}
-          />
-          <ExternalReferencesField
-            name="externalReferences"
-            style={fieldSpacingContainerStyle}
-            setFieldValue={setFieldValue}
-            values={values.externalReferences}
-          />
-          <CustomFileUploader setFieldValue={setFieldValue} />
-          <div className={classes.buttons}>
-            <Button
-              variant="contained"
-              onClick={handleReset}
-              disabled={isSubmitting}
-              classes={{ root: classes.button }}
+        <>
+          {isFeatureEnable('BULK_ENTITIES') && (
+            <>
+              <BulkTextModal
+                open={bulkModalOpen}
+                onClose={onBulkModalClose}
+                onValidate={((val) => {
+                  setFieldValue('name', val);
+                  if (splitMultilines(val).length > 1) {
+                    setFieldValue('file', null);
+                  }
+                })}
+                formValue={values.name}
+              />
+              <ProgressBar
+                open={progressBarOpen}
+                value={(bulkCurrentCount / bulkCount) * 100}
+                label={`${bulkCurrentCount}/${bulkCount}`}
+                title={t_i18n('Create multiple entities')}
+                onClose={() => {
+                  setProgressBarOpen(false);
+                  resetForm();
+                  onCompleted?.();
+                }}
+              >
+                <BulkResult inputToString={(input) => input.name} />
+              </ProgressBar>
+            </>
+          )}
+          <Form style={{ margin: '20px 0 20px 0' }}>
+            <Field
+              component={isFeatureEnable('BULK_ENTITIES') ? BulkTextField : TextField}
+              variant="standard"
+              name="name"
+              label={t_i18n('Name')}
+              fullWidth={true}
+              detectDuplicate={['User']}
+            />
+            <Field
+              component={MarkdownField}
+              name="description"
+              label={t_i18n('Description')}
+              fullWidth={true}
+              multiline={true}
+              rows="4"
+              style={{ marginTop: 20 }}
+            />
+            <ConfidenceField
+              entityType="System"
+              containerStyle={fieldSpacingContainerStyle}
+            />
+            <OpenVocabField
+              label={t_i18n('Reliability')}
+              type="reliability_ov"
+              name="x_opencti_reliability"
+              containerStyle={fieldSpacingContainerStyle}
+              multiple={false}
+              onChange={setFieldValue}
+            />
+            <CreatedByField
+              name="createdBy"
+              style={fieldSpacingContainerStyle}
+              setFieldValue={setFieldValue}
+            />
+            <ObjectLabelField
+              name="objectLabel"
+              style={fieldSpacingContainerStyle}
+              setFieldValue={setFieldValue}
+              values={values.objectLabel}
+            />
+            <ObjectMarkingField
+              name="objectMarking"
+              style={fieldSpacingContainerStyle}
+              setFieldValue={setFieldValue}
+            />
+            <ExternalReferencesField
+              name="externalReferences"
+              style={fieldSpacingContainerStyle}
+              setFieldValue={setFieldValue}
+              values={values.externalReferences}
+            />
+            <Field
+              component={CustomFileUploader}
+              name="file"
+              setFieldValue={setFieldValue}
+              disabled={splitMultilines(values.name).length > 1}
+              noFileSelectedLabel={splitMultilines(values.name).length > 1
+                ? t_i18n('File upload not allowed in bulk creation')
+                : undefined
+              }
+            />
+            <div style={{
+              marginTop: '20px',
+              textAlign: 'right',
+            }}
             >
-              {t_i18n('Cancel')}
-            </Button>
-            <Button
-              variant="contained"
-              color="secondary"
-              onClick={submitForm}
-              disabled={isSubmitting}
-              classes={{ root: classes.button }}
-            >
-              {t_i18n('Create')}
-            </Button>
-          </div>
-        </Form>
+              <Button
+                variant="contained"
+                onClick={handleReset}
+                disabled={isSubmitting}
+                sx={{ marginLeft: 2 }}
+              >
+                {t_i18n('Cancel')}
+              </Button>
+              <Button
+                variant="contained"
+                color="secondary"
+                onClick={submitForm}
+                disabled={isSubmitting}
+                sx={{ marginLeft: 2 }}
+              >
+                {t_i18n('Create')}
+              </Button>
+            </div>
+          </Form>
+        </>
       )}
     </Formik>
   );
@@ -256,19 +312,27 @@ const SystemCreation = ({
 }: {
   paginationOptions: SystemsLinesPaginationQuery$variables;
 }) => {
+  const { isFeatureEnable } = useHelper();
   const { t_i18n } = useFormatter();
+  const [bulkOpen, setBulkOpen] = useState(false);
   const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_systems', paginationOptions, 'systemAdd');
 
   return (
     <Drawer
       title={t_i18n('Create a system')}
       variant={DrawerVariant.create}
+      header={isFeatureEnable('BULK_ENTITIES')
+        ? <BulkTextModalButton onClick={() => setBulkOpen(true)} />
+        : <></>
+      }
     >
       {({ onClose }) => (
         <SystemCreationForm
           updater={updater}
           onCompleted={onClose}
           onReset={onClose}
+          bulkModalOpen={bulkOpen}
+          onBulkModalClose={() => setBulkOpen(false)}
         />
       )}
     </Drawer>
