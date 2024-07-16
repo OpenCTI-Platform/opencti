@@ -102,7 +102,12 @@ export const buildEntityData = async (context, user, input, type, opts = {}) => 
       const uniqAliases = R.uniqBy((e) => normalizeName(e), preparedAliases);
       data[aliasField] = uniqAliases.filter((e) => normalizeName(e) !== normalizeName(input.name));
     }
-    data = R.assoc(INTERNAL_IDS_ALIASES, generateAliasesIdsForInstance(data), data);
+    const aliasIds = generateAliasesIdsForInstance(data);
+    data[INTERNAL_IDS_ALIASES] = aliasIds;
+    // Do not cumulate alias standard IDs in other STIX IDs
+    if (data[IDS_STIX]) {
+      data[IDS_STIX] = data[IDS_STIX].filter((id) => !aliasIds.includes(id));
+    }
   }
   // Create the meta relationships (ref, refs)
   const relToCreate = [];
