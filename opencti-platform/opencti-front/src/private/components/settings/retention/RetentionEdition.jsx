@@ -15,7 +15,7 @@ import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import Filters from '../../common/lists/Filters';
 import { adaptFieldValue } from '../../../../utils/String';
-import { deserializeFilterGroupForFrontend, serializeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
+import { deserializeFilterGroupForFrontend, isFilterGroupNotEmpty, serializeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import Drawer from '../../common/drawer/Drawer';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
@@ -83,14 +83,11 @@ const RetentionEditionContainer = (props) => {
   const [filters, helpers] = useFiltersState(deserializeFilterGroupForFrontend(props.retentionRule?.filters ?? undefined));
   const [verified, setVerified] = useState(true);
   const onSubmit = (values, { setSubmitting }) => {
-    const inputValues = R.pipe(
-      R.assoc('filters', serializeFilterGroupForBackend(filters)),
-      R.toPairs,
-      R.map((n) => ({
-        key: n[0],
-        value: adaptFieldValue(n[1]),
-      })),
-    )(values);
+    const inputValues = Object.entries({
+      ...values,
+      filters: isFilterGroupNotEmpty(filters) ? serializeFilterGroupForBackend(filters) : '',
+    })
+      .map(([key, value]) => ({ key, value: adaptFieldValue(value) }));
     commitMutation({
       mutation: retentionMutationFieldPatch,
       variables: {
@@ -106,9 +103,11 @@ const RetentionEditionContainer = (props) => {
   };
 
   const handleVerify = (values) => {
-    const finalValues = R.pipe(
-      R.assoc('max_retention', Number(values.max_retention)),
-    )(values);
+    const finalValues = {
+      ...values,
+      max_retention: Number(values.max_retention),
+      scope: retentionRule.scope,
+    };
     const jsonFilters = serializeFilterGroupForBackend(filters);
     commitMutation({
       mutation: RetentionCheckMutation,
@@ -173,44 +172,48 @@ const RetentionEditionContainer = (props) => {
                 ),
               }}
             />
-            <Box sx={{ paddingTop: 4,
-              display: 'flex',
-              gap: 1 }}
-            >
-              <Filters
-                availableFilterKeys={[
-                  'entity_type',
-                  'workflow_id',
-                  'objectAssignee',
-                  'objects',
-                  'objectMarking',
-                  'objectLabel',
-                  'creator_id',
-                  'createdBy',
-                  'priority',
-                  'severity',
-                  'x_opencti_score',
-                  'x_opencti_detection',
-                  'x_opencti_main_observable_type',
-                  'revoked',
-                  'confidence',
-                  'indicator_types',
-                  'pattern_type',
-                  'fromId',
-                  'toId',
-                  'fromTypes',
-                  'toTypes',
-                ]}
+            {retentionRule.scope === 'knowledge' && <>
+              <Box sx={{
+                paddingTop: 4,
+                display: 'flex',
+                gap: 1,
+              }}
+              >
+                <Filters
+                  availableFilterKeys={[
+                    'entity_type',
+                    'workflow_id',
+                    'objectAssignee',
+                    'objects',
+                    'objectMarking',
+                    'objectLabel',
+                    'creator_id',
+                    'createdBy',
+                    'priority',
+                    'severity',
+                    'x_opencti_score',
+                    'x_opencti_detection',
+                    'x_opencti_main_observable_type',
+                    'revoked',
+                    'confidence',
+                    'indicator_types',
+                    'pattern_type',
+                    'fromId',
+                    'toId',
+                    'fromTypes',
+                    'toTypes',
+                  ]}
+                  helpers={helpers}
+                  searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship'] }}
+                />
+              </Box>
+              <FilterIconButton
+                filters={filters}
                 helpers={helpers}
+                redirection
                 searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship'] }}
               />
-            </Box>
-            <FilterIconButton
-              filters={filters}
-              helpers={helpers}
-              redirection
-              searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship'] }}
-            />
+            </>}
             <div className={classes.buttons}>
               <Button
                 variant="contained"
@@ -255,6 +258,7 @@ const RetentionEditionFragment = createFragmentContainer(
                 name
                 max_retention
                 filters
+                scope
             }
         `,
   },
