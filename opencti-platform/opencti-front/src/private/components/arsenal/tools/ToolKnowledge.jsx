@@ -134,7 +134,7 @@ class ToolKnowledgeComponent extends Component {
                 relationshipTypes={['delivers', 'drops', 'uses']}
                 stixCoreObjectTypes={['Malware']}
                 entityLink={link}
-                isRelationReversed={false}
+                allDirections={true}
               />
             }
           />

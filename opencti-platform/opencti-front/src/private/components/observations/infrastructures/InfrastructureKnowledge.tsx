@@ -240,6 +240,7 @@ const InfrastructureKnowledge = ({ infrastructure }: { infrastructure: Infrastru
               entityLink={link}
               defaultStartTime={infrastructureData.first_seen}
               defaultStopTime={infrastructureData.last_seen}
+              allDirections={true}
             />
         }
         />
@@ -248,11 +249,12 @@ const InfrastructureKnowledge = ({ infrastructure }: { infrastructure: Infrastru
           element={
             <EntityStixCoreRelationships
               entityId={infrastructureData.id}
-              stixCoreObjectTypes={['Tool', 'uses']}
-              relationshipTypes={['hosts']}
+              stixCoreObjectTypes={['Tool']}
+              relationshipTypes={['hosts', 'uses']}
               entityLink={link}
               defaultStartTime={infrastructureData.first_seen}
               defaultStopTime={infrastructureData.last_seen}
+              allDirections={true}
             />
         }
         />
