@@ -6,7 +6,7 @@ import {
   listAllToEntitiesThroughRelations,
   listEntities,
   listEntitiesThroughRelationsPaginated,
-  storeLoadById
+  storeLoadById,
 } from '../database/middleware-loader';
 import { BUS_TOPICS } from '../config/conf';
 import { delEditContext, notify, setEditContext } from '../database/redis';
@@ -29,6 +29,7 @@ const groupSessionRefresh = async (context, user, groupId) => {
   const members = await listAllFromEntitiesThroughRelations(context, user, groupId, RELATION_MEMBER_OF, ENTITY_TYPE_USER);
   const sessions = await findSessionsForUsers(members.map((e) => e.internal_id));
   await Promise.all(sessions.map((s) => markSessionForRefresh(s.id)));
+  members.map((m) => notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, m, user));
 };
 
 export const findById = (context, user, groupId) => {

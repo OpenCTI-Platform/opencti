@@ -15,6 +15,7 @@ import {
   batchCreator,
   batchRolesForUsers,
   bookmarks,
+  buildCompleteUser,
   deleteBookmark,
   findAll,
   findAllMembers,
@@ -52,7 +53,7 @@ import {
   userRenewToken,
   userWithOrigin
 } from '../domain/user';
-import { subscribeToInstanceEvents } from '../graphql/subscriptionWrapper';
+import { subscribeToInstanceEvents, subscribeToUserEvents } from '../graphql/subscriptionWrapper';
 import { publishUserAction } from '../listener/UserActionListener';
 import { findById as findWorskpaceById } from '../modules/workspace/workspace-domain';
 import { ENTITY_TYPE_USER } from '../schema/internalObject';
@@ -239,6 +240,15 @@ const userResolvers = {
     bookmarkDelete: (_, { id }, context) => deleteBookmark(context, context.user, id),
   },
   Subscription: {
+    me: {
+      resolve: /* v8 ignore next */ (payload, _, context) => {
+        return buildCompleteUser(context, payload.instance);
+      },
+      subscribe: /* v8 ignore next */ (_, __, context) => {
+        const bus = BUS_TOPICS[ENTITY_TYPE_USER];
+        return subscribeToUserEvents(context, [bus.EDIT_TOPIC]);
+      },
+    },
     user: {
       resolve: /* v8 ignore next */ (payload) => payload.instance,
       subscribe: /* v8 ignore next */ (_, { id }, context) => {

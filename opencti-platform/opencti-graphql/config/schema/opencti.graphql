@@ -12316,6 +12316,7 @@ type Query {
 ### SUBSCRIPTIONS
 
 type Subscription {
+  me: MeUser @auth
   settings(id: ID!): Settings @auth(for: [SETTINGS_SETPARAMETERS])
   settingsMessages(id: ID!): Settings @auth
   group(id: ID!): Group @auth(for: [SETTINGS_SETACCESSES])

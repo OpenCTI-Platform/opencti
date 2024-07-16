@@ -5,9 +5,9 @@ import {
 } from '@components/threats/threat_actors_individual/__generated__/ThreatActorIndividualEditionBiographics_ThreatActorIndividual.graphql';
 import { MeasureInput } from '@components/threats/threat_actors_individual/__generated__/ThreatActorIndividualCreationMutation.graphql';
 import useAuth from './useAuth';
-import { UnitSystem } from '../../private/__generated__/RootPrivateQuery.graphql';
 import { DEFAULT_LANG, LANGUAGES } from '../BrowserLanguage';
 import { isEmptyField } from '../utils';
+import { UnitSystem } from '../../private/__generated__/RootMe_data.graphql';
 
 export const BASE_LENGTH_TYPE: Length = 'm';
 export const BASE_WEIGHT_TYPE: Mass = 'kg';
