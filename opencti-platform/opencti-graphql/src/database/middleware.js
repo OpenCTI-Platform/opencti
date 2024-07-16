@@ -1648,6 +1648,14 @@ const updateAttributeRaw = async (context, user, instance, inputs, opts = {}) =>
         const aliasesId = generateAliasesId(aliasesInput.value, instance);
         const aliasIdsInput = { key: INTERNAL_IDS_ALIASES, value: aliasesId };
         preparedElements.push(aliasIdsInput);
+        // Purge removed alias IDs from other stix IDS
+        const currentStixIds = instance[IDS_STIX];
+        const removedAliasesIds = instance[INTERNAL_IDS_ALIASES].filter((aid) => !aliasesId.includes(aid));
+        const newStixIds = currentStixIds.filter((sid) => !removedAliasesIds.includes(sid));
+        if (newStixIds.length !== currentStixIds.length) {
+          const stixIdsInput = { key: IDS_STIX, value: newStixIds };
+          preparedElements.push(stixIdsInput);
+        }
       }
     }
   }
