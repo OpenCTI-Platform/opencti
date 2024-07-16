@@ -24,6 +24,7 @@ interface CustomFileUploadProps extends Partial<FieldProps<File | null | undefin
   acceptMimeTypes?: string; // html input "accept" with MIME types only
   sizeLimit?: number; // in bytes
   disabled?: boolean;
+  noFileSelectedLabel?: string
 }
 
 // Deprecated - https://mui.com/system/styles/basics/
@@ -70,6 +71,7 @@ const CustomFileUploader: FunctionComponent<CustomFileUploadProps> = ({
   formikErrors,
   disabled = false,
   field,
+  noFileSelectedLabel,
 }) => {
   const { t_i18n } = useFormatter();
   const classes = useStyles();
@@ -134,6 +136,8 @@ const CustomFileUploader: FunctionComponent<CustomFileUploadProps> = ({
     }
   };
 
+  const noFileLabel = noFileSelectedLabel ?? t_i18n('No file selected.');
+
   return (
     <div className={classes.div}>
       <InputLabel shrink={true} variant="standard">
@@ -156,10 +160,10 @@ const CustomFileUploader: FunctionComponent<CustomFileUploadProps> = ({
           <VisuallyHiddenInput type="file" accept={acceptMimeTypes} />
         </Button>
         <span
-          title={fileNameForDisplay || t_i18n('No file selected.')}
+          title={fileNameForDisplay || noFileLabel}
           className={classes.span}
         >
-          {fileNameForDisplay || t_i18n('No file selected.')}
+          {fileNameForDisplay || noFileLabel}
         </span>
       </Box>
       {!!errorText && (
