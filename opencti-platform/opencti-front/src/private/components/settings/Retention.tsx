@@ -1,7 +1,8 @@
 import React from 'react';
 import Alert from '@mui/material/Alert';
 import makeStyles from '@mui/styles/makeStyles';
-import { QueryRenderer } from '../../../relay/environment';
+import { RetentionLinesPaginationQuery, RetentionLinesPaginationQuery$variables } from '@components/settings/retention/__generated__/RetentionLinesPaginationQuery.graphql';
+import { RetentionLineDummy } from './retention/RetentionLine';
 import ListLines from '../../../components/list_lines/ListLines';
 import RetentionLines, { RetentionLinesQuery } from './retention/RetentionLines';
 import RetentionCreation from './retention/RetentionCreation';
@@ -11,6 +12,7 @@ import { useFormatter } from '../../../components/i18n';
 import { RETENTION_MANAGER } from '../../../utils/platformModulesHelper';
 import CustomizationMenu from './CustomizationMenu';
 import Breadcrumbs from '../../../components/Breadcrumbs';
+import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 
 const LOCAL_STORAGE_KEY = 'retention';
 
@@ -31,33 +33,39 @@ const Retention = () => {
     viewStorage,
     paginationOptions,
     helpers: storageHelpers,
-  } = usePaginationLocalStorage(LOCAL_STORAGE_KEY, {
+  } = usePaginationLocalStorage<RetentionLinesPaginationQuery$variables>(LOCAL_STORAGE_KEY, {
     searchTerm: '',
   });
   const dataColumns = {
     name: {
       label: 'Name',
       width: '15%',
+      isSortable: false,
     },
     retention: {
       label: 'Max retention',
       width: '15%',
+      isSortable: false,
     },
     last_execution_date: {
       label: 'Last execution',
       width: '15%',
+      isSortable: false,
     },
     remaining_count: {
       label: 'Remaining',
       width: '10%',
+      isSortable: false,
     },
     scope: {
       label: 'Scope',
       width: '10%',
+      isSortable: false,
     },
     filters: {
       label: 'Apply on',
       width: '35%',
+      isSortable: false,
     },
   };
   if (!platformModuleHelpers.isRetentionManagerEnable()) {
@@ -70,6 +78,7 @@ const Retention = () => {
       </div>
     );
   }
+  const queryRef = useQueryLoading<RetentionLinesPaginationQuery>(RetentionLinesQuery, paginationOptions);
   return (
     <div className={classes.container}>
       <CustomizationMenu />
@@ -81,18 +90,25 @@ const Retention = () => {
         secondaryAction={true}
         keyword={viewStorage.searchTerm}
       >
-        <QueryRenderer
-          query={RetentionLinesQuery}
-          variables={paginationOptions}
-          render={({ props }) => (
+        {queryRef && (
+          <React.Suspense
+            fallback={
+              <>
+                {Array(20)
+                  .fill(0)
+                  .map((_, idx) => (
+                    <RetentionLineDummy key={idx} dataColumns={dataColumns} />
+                  ))}
+              </>
+            }
+          >
             <RetentionLines
-              data={props}
+              queryRef={queryRef}
               paginationOptions={paginationOptions}
               dataColumns={dataColumns}
-              initialLoading={props === null}
             />
-          )}
-        />
+          </React.Suspense>
+        )}
       </ListLines>
       <RetentionCreation paginationOptions={paginationOptions} />
     </div>
