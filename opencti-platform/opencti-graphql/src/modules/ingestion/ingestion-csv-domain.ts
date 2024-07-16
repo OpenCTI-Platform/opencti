@@ -5,7 +5,7 @@ import { createEntity, deleteElementById, patchAttribute, updateAttribute } from
 import { publishUserAction } from '../../listener/UserActionListener';
 import type { CsvMapperTestResult, EditInput, IngestionCsvAddInput } from '../../generated/graphql';
 import { notify } from '../../database/redis';
-import { BUS_TOPICS, logApp } from '../../config/conf';
+import { BUS_TOPICS } from '../../config/conf';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import { type BasicStoreEntityCsvMapper, type CsvMapperParsed, ENTITY_TYPE_CSV_MAPPER } from '../internal/csvMapper/csvMapper-types';
 import { bundleProcess } from '../../parser/csv-bundler';
