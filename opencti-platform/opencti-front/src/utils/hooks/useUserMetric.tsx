@@ -1,6 +1,8 @@
 import { FormatNumberOptions, useIntl } from 'react-intl';
 import convert, { Length, Mass, Unit } from 'convert';
-import { ThreatActorIndividualEditionBiographics_ThreatActorIndividual$data, } from '@components/threats/threat_actors_individual/__generated__/ThreatActorIndividualEditionBiographics_ThreatActorIndividual.graphql';
+import {
+  ThreatActorIndividualEditionBiographics_ThreatActorIndividual$data,
+} from '@components/threats/threat_actors_individual/__generated__/ThreatActorIndividualEditionBiographics_ThreatActorIndividual.graphql';
 import { MeasureInput } from '@components/threats/threat_actors_individual/__generated__/ThreatActorIndividualCreationMutation.graphql';
 import useAuth from './useAuth';
 import { DEFAULT_LANG, LANGUAGES } from '../BrowserLanguage';
