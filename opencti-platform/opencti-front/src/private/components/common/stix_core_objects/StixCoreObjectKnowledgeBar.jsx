@@ -41,7 +41,7 @@ const StixCoreObjectKnowledgeBar = ({
   const { t_i18n, n } = useFormatter();
   const classes = useStyles();
   const location = useLocation();
-  const { bannerSettings } = useAuth();
+  const { bannerSettings, schema } = useAuth();
   const isInAvailableSection = (sections) => R.any((filter) => R.includes(filter, sections), availableSections);
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
   const statistics = stixCoreObjectsDistribution ? R.indexBy(R.prop('label'), stixCoreObjectsDistribution) : {};
@@ -50,6 +50,7 @@ const StixCoreObjectKnowledgeBar = ({
   const statisticsVictims = R.sum(R.values(R.pick(['Sector', 'Organization', 'Individual', 'Region', 'Country', 'City', 'Position', 'Administrative-Area'], statistics)).map((o) => o.value));
   const statisticsAttributions = R.sum(R.values(R.pick(attribution, statistics)).map((o) => o.value));
   const statisticsLocations = R.sum(R.values(R.pick(['Region', 'Country', 'City', 'Position', 'Administrative-Area'], statistics)).map((o) => o.value));
+  const statisticsObservables = R.sum(R.values(R.pick([...schema.scos.map((s) => s.id), 'Ipv4-Addr', 'Ipv6-Addr'], statistics)).map((o) => o.value));
   return (
     <Drawer
       variant="permanent"
@@ -651,7 +652,7 @@ const StixCoreObjectKnowledgeBar = ({
               <ListItemIcon style={{ minWidth: 28 }}>
                 <ItemIcon size="small" type="Stix-Cyber-Observable" />
               </ListItemIcon>
-              <ListItemText primary={t_i18n('Observables')} />
+              <ListItemText primary={`${t_i18n('Observables')}${statisticsObservables > 0 ? ` (${n(statisticsObservables)})` : ''}`} />
             </MenuItem>
           )}
           {R.includes('infrastructures', availableSections) && (
