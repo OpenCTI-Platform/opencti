@@ -10912,7 +10912,7 @@ enum TaxiiVersion {
   v21
 }
 
-enum TaxiiAuthType {
+enum IngestionAuthType {
   none
   basic
   bearer
@@ -10931,7 +10931,7 @@ type IngestionTaxii implements InternalObject & BasicObject {
   uri: String!
   collection: String!
   version: TaxiiVersion!
-  authentication_type: TaxiiAuthType!
+  authentication_type: IngestionAuthType!
   authentication_value: String
   user_id: String
   user: Creator
@@ -10963,20 +10963,13 @@ input IngestionTaxiiAddInput {
   name: String!
   description: String
   version: TaxiiVersion!
-  authentication_type: TaxiiAuthType!
+  authentication_type: IngestionAuthType!
   authentication_value: String
   uri: String!
   collection: String!
   added_after_start: DateTime
   ingestion_running: Boolean
   user_id: String
-}
-
-enum CsvAuthType {
-  none
-  basic
-  bearer
-  certificate
 }
 
 type IngestionCsv implements InternalObject & BasicObject {
@@ -10990,7 +10983,7 @@ type IngestionCsv implements InternalObject & BasicObject {
   description: String
   uri: String!
   csvMapper: CsvMapper!
-  authentication_type: CsvAuthType!
+  authentication_type: IngestionAuthType!
   authentication_value: String
   user_id: String!
   user: Creator
@@ -11022,7 +11015,7 @@ type IngestionCsvEdge {
 input IngestionCsvAddInput {
   name: String!
   description: String
-  authentication_type: CsvAuthType!
+  authentication_type: IngestionAuthType!
   authentication_value: String
   current_state_date: DateTime
   uri: String!
