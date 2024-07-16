@@ -433,7 +433,6 @@ ContainerMappingContentComponentProps
     validateSuggestedMapping();
   };
 
-  const hasConnectorsAvailable = suggestedMappingData.connectorsForAnalysis?.length ? suggestedMappingData.connectorsForAnalysis.length > 0 : false;
   return (
     <div>
       <Grid
@@ -476,7 +475,6 @@ ContainerMappingContentComponentProps
               setInSuggestedMode={setInSuggestedMode}
               askingSuggestion={askingSuggestion}
               handleAskNewSuggestion={handleAskNewSuggestedMapping}
-              hasConnectorsAvailable={hasConnectorsAvailable}
             />
             <div style={{ margin: 0, padding: '15px 0 0 0' }}>
               {!inSuggestedMode && (

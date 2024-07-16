@@ -31,7 +31,6 @@ interface ContainerStixCoreObjectsMappingHeaderProps {
   setInSuggestedMode: (inSuggestedMode: boolean) => void;
   askingSuggestion: boolean,
   handleAskNewSuggestion: () => void;
-  hasConnectorsAvailable: boolean
 }
 
 const ContainerStixCoreObjectsMappingHeader: FunctionComponent<ContainerStixCoreObjectsMappingHeaderProps> = ({
@@ -49,9 +48,9 @@ const ContainerStixCoreObjectsMappingHeader: FunctionComponent<ContainerStixCore
   setInSuggestedMode,
   askingSuggestion,
   handleAskNewSuggestion,
-  hasConnectorsAvailable,
 }) => {
   const { t_i18n } = useFormatter();
+  const hasConnectorsAvailable = suggestedMappingData.connectorsForAnalysis?.length ? suggestedMappingData.connectorsForAnalysis.length > 0 : false;
 
   return (
     <><Dialog
