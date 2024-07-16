@@ -1,6 +1,6 @@
 import { StyledEngineProvider } from '@mui/material/styles';
-import React, { FunctionComponent } from 'react';
-import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
+import React, { FunctionComponent, useMemo } from 'react';
+import { graphql, PreloadedQuery, useFragment, usePreloadedQuery, useSubscription } from 'react-relay';
 import { AnalyticsProvider } from 'use-analytics';
 import Analytics from 'analytics';
 import { ConnectedIntlProvider } from '../components/AppIntlProvider';
@@ -16,6 +16,7 @@ import useQueryLoading from '../utils/hooks/useQueryLoading';
 import Loader from '../components/Loader';
 import generateAnalyticsConfig from './Analytics';
 import { RootSettings$data, RootSettings$key } from './__generated__/RootSettings.graphql';
+import { RootMe_data$key } from './__generated__/RootMe_data.graphql';
 
 const rootSettingsFragment = graphql`
   fragment RootSettings on Settings {
@@ -70,72 +71,86 @@ const rootSettingsFragment = graphql`
   }
 `;
 
+const meUserFragment = graphql`
+  fragment RootMe_data on MeUser {
+    id
+    name
+    lastname
+    language
+    theme
+    user_email
+    individual_id
+    effective_confidence_level {
+      max_confidence
+      overrides {
+        entity_type
+        max_confidence
+      }
+    }
+    capabilities {
+      name
+    }
+    unit_system
+    submenu_show_icons
+    submenu_auto_collapse
+    monochrome_labels
+    default_dashboards {
+      id
+      name
+    }
+    default_dashboard {
+      id
+    }
+    default_time_field
+    default_hidden_types
+    effective_confidence_level {
+      max_confidence
+    }
+    default_marking {
+      entity_type
+      values {
+        id
+        definition
+      }
+    }
+    administrated_organizations {
+      id
+      name
+      authorized_authorities
+    }
+    allowed_marking {
+      id
+      entity_type
+      standard_id
+      definition_type
+      definition
+      x_opencti_color
+      x_opencti_order
+    }
+    max_shareable_marking {
+      id
+      definition_type
+      x_opencti_order
+    }
+    personal_notifiers {
+      id
+      name
+    }
+  }
+`;
+
+const subscription = graphql`
+  subscription RootMeSubscription {
+    me {
+      ...RootMe_data
+    }
+  }
+`;
+
 const rootPrivateQuery = graphql`
   query RootPrivateQuery {
     me {
-      id
-      name
-      lastname
-      language
-      theme
-      user_email
-      individual_id
-      effective_confidence_level {
-        max_confidence
-        overrides {
-          entity_type
-          max_confidence
-        }
-      }
-      capabilities {
-        name
-      }
-      unit_system
-      submenu_show_icons
-      submenu_auto_collapse
-      monochrome_labels
-      default_dashboards {
-        id
-        name
-      }
-      default_dashboard {
-        id
-      }
-      default_time_field
-      default_hidden_types
-      effective_confidence_level {
-        max_confidence
-      }
-      default_marking {
-        entity_type
-        values {
-          id
-          definition
-        }
-      }
-      administrated_organizations {
-        id
-        name
-        authorized_authorities
-      }
-      allowed_marking {
-        id
-        entity_type
-        standard_id
-        definition_type
-        definition
-        x_opencti_color
-        x_opencti_order
-      }
-      max_shareable_marking {
-        id
-        definition_type
-        x_opencti_order
-      }
-      personal_notifiers {
-        id
-        name
-      }
+      ...RootMe_data
     }
     settings {
       ...RootSettings
@@ -248,7 +263,7 @@ interface RootComponentProps {
 const RootComponent: FunctionComponent<RootComponentProps> = ({ queryRef }) => {
   const queryData = usePreloadedQuery(rootPrivateQuery, queryRef);
   const {
-    me,
+    me: meFragment,
     settings: settingsFragment,
     entitySettings,
     schemaSCOs,
@@ -260,6 +275,17 @@ const RootComponent: FunctionComponent<RootComponentProps> = ({ queryRef }) => {
     filterKeysSchema,
   } = queryData;
   const settings = useFragment<RootSettings$key>(rootSettingsFragment, settingsFragment);
+  const me = useFragment<RootMe_data$key>(meUserFragment, meFragment);
+
+  const subConfig = useMemo(
+    () => ({
+      subscription,
+      variables: {},
+    }),
+    [me.id],
+  );
+  useSubscription(subConfig);
+
   const schema = {
     scos: schemaSCOs.edges.map((sco) => sco.node),
     sdos: schemaSDOs.edges.map((sco) => sco.node),

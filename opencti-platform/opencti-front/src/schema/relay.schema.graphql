@@ -7679,6 +7679,7 @@ type Query {
 }
 
 type Subscription {
+  me: MeUser
   settings(id: ID!): Settings
   settingsMessages(id: ID!): Settings
   group(id: ID!): Group

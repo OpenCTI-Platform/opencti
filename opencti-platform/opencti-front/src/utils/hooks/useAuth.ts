@@ -2,6 +2,7 @@ import React, { useContext } from 'react';
 import { RootPrivateQuery$data } from '../../private/__generated__/RootPrivateQuery.graphql';
 import { ModuleHelper } from '../platformModulesHelper';
 import { RootSettings$data } from '../../private/__generated__/RootSettings.graphql';
+import { RootMe_data$data } from '../../private/__generated__/RootMe_data.graphql';
 
 export interface BannerSettings {
   bannerLevel?: string | null;
@@ -33,7 +34,7 @@ export type SchemaType = {
 };
 
 export interface UserContextType {
-  me: RootPrivateQuery$data['me'] | undefined;
+  me: RootMe_data$data | undefined;
   settings: RootSettings$data | undefined;
   bannerSettings: BannerSettings | undefined;
   entitySettings: RootPrivateQuery$data['entitySettings'] | undefined;

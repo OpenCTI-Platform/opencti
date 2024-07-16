@@ -40,7 +40,7 @@ export const subscribeToUserEvents = async (context, topics) => {
       // When disconnected, an empty payload is dispatched.
       return false;
     }
-    return payload.instance.user_id === context.user.id;
+    return [payload.instance.user_id, payload.instance.id].includes(context.user.id);
   })();
   return {
     [Symbol.asyncIterator]() {
