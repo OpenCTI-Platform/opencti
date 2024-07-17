@@ -13,4 +13,7 @@ export default class FiltersPageModel {
     await this.page.getByLabel(filterLabel, { exact: true }).getByRole('checkbox').check();
     return this.page.mouse.click(10, 10);
   }
+  async removeLastFilter() {
+    await this.page.getByTestId('CancelIcon').last().click();
+  }
 }

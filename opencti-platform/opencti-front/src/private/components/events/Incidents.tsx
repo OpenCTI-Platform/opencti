@@ -116,7 +116,7 @@ const Incidents: FunctionComponent = () => {
   const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const renderLines = () => {
     return (
-      <>
+      <div data-testid='incident-page'>
         <ListLines
           helpers={helpers}
           sortBy={sortBy}
@@ -180,7 +180,7 @@ const Incidents: FunctionComponent = () => {
           handleClearSelectedElements={handleClearSelectedElements}
           type="Incident"
         />
-      </>
+      </div>
     );
   };
   return (

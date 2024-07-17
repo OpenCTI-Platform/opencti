@@ -108,7 +108,7 @@ const Entities = () => {
       },
     };
     return (
-      <>
+      <div data-testid='data-entities-page'>
         <ListLines
           helpers={storageHelpers}
           sortBy={sortBy}
@@ -172,7 +172,7 @@ const Entities = () => {
             </React.Suspense>
           )}
         </ListLines>
-      </>
+      </div>
     );
   };
   return (

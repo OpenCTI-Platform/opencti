@@ -77,7 +77,6 @@
       "modified": "2023-12-18T14:00:00.000Z",
       "value": "13.14.15.16"
     },
-
     {
       "id": "malware--60252469-6811-46df-9a17-c711dd6962fa",
       "type": "malware",
@@ -850,6 +849,59 @@
         "indicator--5ffbb8e4-8ede-5cb2-b08f-719a77498fca",
         "indicator--beb43a71-5d51-5a38-b655-3bd7f54be5da"
       ]
+    },
+    {
+      "id": "incident--2d577823-1986-5c93-8304-84504f6cccaa",
+      "spec_version": "2.1",
+      "revoked": false,
+      "confidence": 100,
+      "created": "2024-07-22T11:36:51.368Z",
+      "modified": "2024-07-22T11:36:51.376Z",
+      "name": "Incident for background task test - not selected by label or search",
+      "labels": ["background-task-filter-add-label", "background-task-search-add-label"],
+      "x_opencti_id": "7c685f09-91c5-4f72-89cc-9b87c3bca7c4",
+      "x_opencti_type": "Incident",
+      "type": "incident"
+    },
+    {
+      "id": "incident--4809c0ec-a273-5e2c-836c-18888ef8b8cc",
+      "spec_version": "2.1",
+      "revoked": false,
+      "confidence": 100,
+      "created": "2024-07-22T11:34:27.675Z",
+      "modified": "2024-07-22T11:34:27.680Z",
+      "name": "Incident for background task test - search by text 1",
+      "description": "Find this incident in test please.",
+      "x_opencti_id": "2f7b477c-41c2-4d27-854b-99ed35dd5403",
+      "x_opencti_type": "Incident",
+      "type": "incident"
+    },
+    {
+      "id": "incident--e22c5f2c-a85f-5ba1-94bd-359f64a62f70",
+      "spec_version": "2.1",
+      "revoked": false,
+      "confidence": 100,
+      "created": "2024-07-22T11:32:38.904Z",
+      "modified": "2024-07-22T11:34:57.326Z",
+      "name": "Incident for background task test - filter by label 2",
+      "labels": ["background-task"],
+      "x_opencti_id": "1cfe56ff-587a-49ff-88b8-fbeb7b13d9e9",
+      "x_opencti_type": "Incident",
+      "type": "incident"
+    },
+    {
+      "id": "incident--e6fc2d85-c07e-55cc-b0ae-2af54339913e",
+      "spec_version": "2.1",
+      "revoked": false,
+      "confidence": 100,
+      "created": "2024-07-22T11:32:09.208Z",
+      "modified": "2024-07-22T11:34:44.813Z",
+      "name": "Incident for background task test - filter by label 1",
+      "incident_type": "compromise",
+      "labels": ["background-task"],
+      "x_opencti_id": "057e0f4e-34cf-45c5-bef4-cfc3cf5ae4ec",
+      "x_opencti_type": "Incident",
+      "type": "incident"
     }
   ]
 }

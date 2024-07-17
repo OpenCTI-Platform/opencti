@@ -5,7 +5,7 @@ export default class ContainerObservablesPage {
   constructor(private page: Page) {
   }
 
-  getContainerObservablesPage() {
+  getPage() {
     return this.page.getByTestId('container-observables-pages');
   }
 

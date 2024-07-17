@@ -535,7 +535,7 @@ class StixCoreObjectContentComponent extends Component {
     const height = innerHeight - 270;
     const isContentCompatible = isContainerWithContent(stixCoreObject.entity_type);
     return (
-      <div className={classes.container} data-testid="sdo-content-page">
+      <div className={classes.container} data-testid='sco-content-page'>
         <StixCoreObjectContentFiles
           stixCoreObjectId={stixCoreObject.id}
           content={isContentCompatible ? stixCoreObject.contentField ?? '' : null}
