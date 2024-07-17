@@ -28,6 +28,7 @@ import { createFragmentContainer, graphql } from 'react-relay';
 import { useNavigate } from 'react-router-dom';
 import { v4 as uuid } from 'uuid';
 import * as Yup from 'yup';
+import Alert from '@mui/material/Alert';
 import DateTimePickerField from '../../../../../components/DateTimePickerField';
 import { useFormatter } from '../../../../../components/i18n';
 import ItemBoolean from '../../../../../components/ItemBoolean';
@@ -232,8 +233,8 @@ export const workbenchFileContentAttributesQuery = graphql`
 `;
 
 const workbenchFileContentMutation = graphql`
-  mutation WorkbenchFileContentMutation($file: Upload!, $entityId: String) {
-    uploadPending(file: $file, entityId: $entityId) {
+  mutation WorkbenchFileContentMutation($file: Upload!, $entityId: String, $refreshEntity: Boolean) {
+    uploadPending(file: $file, entityId: $entityId, refreshEntity: $refreshEntity) {
       id
     }
   }
@@ -796,7 +797,11 @@ const WorkbenchFileContentComponent = ({
     });
     commitMutation({
       mutation: workbenchFileContentMutation,
-      variables: { file: fileToUpload, entityId: currentEntityId },
+      variables: {
+        file: fileToUpload,
+        entityId: currentEntityId,
+        refreshEntity: values.refreshEntity,
+      },
       onCompleted: () => {
         setTimeout(() => {
           commitMutation({
@@ -4086,6 +4091,7 @@ const WorkbenchFileContentComponent = ({
       <Formik
         enableReinitialize={true}
         initialValues={{
+          refreshEntity: !!file.metaData.entity_id && !!file.metaData.entity,
           connector_id: connectors.length > 0 ? connectors[0].id : '',
         }}
         validationSchema={importValidation(t_i18n)}
@@ -4103,6 +4109,24 @@ const WorkbenchFileContentComponent = ({
             >
               <DialogTitle>{t_i18n('Validate and send for import')}</DialogTitle>
               <DialogContent>
+                {!!file.metaData.entity_id && !!file.metaData.entity && (
+                  <>
+                    <Alert severity="info" variant="outlined">
+                      <Typography>
+                        {t_i18n('Having this checked means the last version of the entity linked to the workbench will be fetched from database before executing the workbench.')}
+                      </Typography>
+                      <Typography>
+                        {t_i18n('Because by default the workbench won\'t include the updates made on the entity after the creation of the workbench.')}
+                      </Typography>
+                    </Alert>
+                    <Field
+                      component={SwitchField}
+                      type="checkbox"
+                      name="refreshEntity"
+                      label={t_i18n('Refresh entity')}
+                    />
+                  </>
+                )}
                 <Field
                   component={SelectField}
                   variant="standard"

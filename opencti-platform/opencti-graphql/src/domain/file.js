@@ -13,6 +13,8 @@ import { isEmptyField, isNotEmptyField, READ_INDEX_FILES } from '../database/uti
 import { getStats } from '../database/engine';
 import { controlUserConfidenceAgainstElement } from '../utils/confidence-level';
 import { uploadToStorage } from '../database/file-storage-helper';
+import { extractContentFrom } from '../utils/fileToContent';
+import { convertStoreToStix } from '../database/stix-converter';
 
 export const buildOptionsFromFileManager = async (context) => {
   let importPaths = ['import/'];
@@ -114,9 +116,20 @@ export const uploadImport = async (context, user, args) => {
   return up;
 };
 
-export const uploadPending = async (context, user, file, entityId = null, labels = null, errorOnExisting = false) => {
+export const uploadPending = async (context, user, file, entityId = null, labels = null, errorOnExisting = false, refreshEntity = false) => {
   const meta = { labels_text: labels ? labels.join(';') : undefined };
   const entity = entityId ? await internalLoadById(context, user, entityId) : undefined;
+
+  if (refreshEntity && entity) {
+    const content = await extractContentFrom(file);
+    if (content.objects && content.objects.length > 0) {
+      const stixToRefresh = content.objects.find((o) => o.id === entity.standard_id);
+      const entityAsStix = convertStoreToStix(entity);
+      console.log(stixToRefresh);
+      console.log(entityAsStix);
+    }
+  }
+
   const { upload: up } = await uploadToStorage(context, user, 'import/pending', file, { meta, errorOnExisting, entity });
   const contextData = buildContextDataForFile(entity, 'import/pending', up.name);
   await publishUserAction({
