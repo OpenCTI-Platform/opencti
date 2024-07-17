@@ -131,7 +131,7 @@ export const RetentionLine: FunctionComponent<RetentionLineProps> = ({ dataColum
               />
             ) : (
               <div className={classes.bodyItem} style={{ width: dataColumns.filters.width }}>
-                <span>{t_i18n('Everything')}</span>
+                <span>{data.scope === 'knowledge' ? t_i18n('Everything') : t_i18n('Global files')}</span>
               </div>
             )}
           </div>

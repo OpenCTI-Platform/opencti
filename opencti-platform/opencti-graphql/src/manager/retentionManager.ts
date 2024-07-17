@@ -24,68 +24,70 @@ const SCHEDULE_TIME = conf.get('retention_manager:interval') || 60000;
 const RETENTION_MANAGER_KEY = conf.get('retention_manager:lock_key') || 'retention_manager_lock';
 const RETENTION_BATCH_SIZE = conf.get('retention_manager:batch_size') || 100;
 
-const executeProcessingForGlobalImport = async (context: AuthContext, path: string, before: Moment, type: string) => {
-  const result = await paginatedForPathWithEnrichment(
-    context,
-    RETENTION_MANAGER_USER,
-    path,
-    undefined,
-    { first: RETENTION_BATCH_SIZE, notModifiedSince: before.toISOString() }
-  );
-  const files = result.edges;
-  logApp.debug(`[OPENCTI] Retention manager clearing ${files.length} ${type}`);
-  for (let index = 0; index < files.length; index += 1) {
-    const { node } = files[index];
-    const { lastModified: up } = node;
-    const humanDuration = moment.duration(utcDate(up).diff(utcDate())).humanize();
-    try {
-      await deleteFile(context, RETENTION_MANAGER_USER, node.id);
-      logApp.debug(`[OPENCTI] Retention manager deleting ${node.id} after ${humanDuration}`);
-    } catch (e) {
-      logApp.error(e, { id: node.id, manager: 'RETENTION_MANAGER' });
-    }
+const deleteElements = async (context: AuthContext, scope: string, nodeId: string, nodeEntityType?: string) => {
+  if (scope === 'knowledge') {
+    await deleteElementById(context, RETENTION_MANAGER_USER, nodeId, nodeEntityType, { forceDelete: true });
+  } else if (scope === 'file' || scope === 'workbench') {
+    await deleteFile(context, RETENTION_MANAGER_USER, nodeId);
+  } else {
+    throw Error(`[Retention manager] Scope ${scope} not existing for Retention Rule.`);
   }
+};
+
+const elementsToDelete = async (context: AuthContext, scope: string, before: Moment, filters?: string) => {
+  let result;
+  if (scope === 'knowledge') {
+    const jsonFilters = filters ? JSON.parse(filters) : null;
+    const queryOptions = await convertFiltersToQueryOptions(jsonFilters, { before });
+    result = await elPaginate(context, RETENTION_MANAGER_USER, READ_STIX_INDICES, { ...queryOptions, first: RETENTION_BATCH_SIZE });
+  } else if (scope === 'file') {
+    result = await paginatedForPathWithEnrichment(
+      context,
+      RETENTION_MANAGER_USER,
+      'import/global',
+      undefined,
+      { first: RETENTION_BATCH_SIZE, notModifiedSince: before.toISOString() }
+    );
+  } else if (scope === 'workbench') {
+    result = await paginatedForPathWithEnrichment(
+      context,
+      RETENTION_MANAGER_USER,
+      'import/pending',
+      undefined,
+      { first: RETENTION_BATCH_SIZE, notModifiedSince: before.toISOString() }
+    );
+  } else {
+    throw Error(`[Retention manager] Scope ${scope} not existing for Retention Rule.`);
+  }
+  return result;
 };
 
 const executeProcessing = async (context: AuthContext, retentionRule: RetentionRule) => {
   const { id, name, max_retention: maxDays, filters, scope } = retentionRule;
   logApp.debug(`[OPENCTI] Executing retention manager rule ${name}`);
   const before = utcDate().subtract(maxDays, 'days');
-
-  // delete elements according to the retention rule scope
-  if (scope === 'knowledge') {
-    const jsonFilters = filters ? JSON.parse(filters) : null;
-    const queryOptions = await convertFiltersToQueryOptions(jsonFilters, { before });
-    const opts = { ...queryOptions, first: RETENTION_BATCH_SIZE };
-    const result = await elPaginate(context, RETENTION_MANAGER_USER, READ_STIX_INDICES, opts);
-    const remainingDeletions = result.pageInfo.globalCount;
-    const elements = result.edges;
-    logApp.debug(`[OPENCTI] Retention manager clearing ${elements.length} elements`);
-    for (let index = 0; index < elements.length; index += 1) {
-      const { node } = elements[index];
-      const { updated_at: up } = node;
-      const humanDuration = moment.duration(utcDate(up).diff(utcDate())).humanize();
-      try {
-        await deleteElementById(context, RETENTION_MANAGER_USER, node.internal_id, node.entity_type, { forceDelete: true });
-        logApp.debug(`[OPENCTI] Retention manager deleting ${node.id} after ${humanDuration}`);
-      } catch (e) {
-        logApp.error(e, { id: node.id, manager: 'RETENTION_MANAGER' });
-      }
+  const result = await elementsToDelete(context, scope, before, filters);
+  const remainingDeletions = result.pageInfo.globalCount;
+  const elements = result.edges;
+  logApp.debug(`[OPENCTI] Retention manager clearing ${elements.length} elements`);
+  for (let index = 0; index < elements.length; index += 1) {
+    const { node } = elements[index];
+    const { updated_at: up } = node;
+    const humanDuration = moment.duration(utcDate(up).diff(utcDate())).humanize();
+    try {
+      await deleteElements(context, scope, scope === 'knowledge' ? node.internal_id : node.id, node.entity_type);
+      logApp.debug(`[OPENCTI] Retention manager deleting ${node.id} after ${humanDuration}`);
+    } catch (e) {
+      logApp.error(e, { id: node.id, manager: 'RETENTION_MANAGER' });
     }
-    // Patch the last execution of the rule
-    const patch = {
-      last_execution_date: now(),
-      remaining_count: remainingDeletions,
-      last_deleted_count: elements.length,
-    };
-    await patchAttribute(context, RETENTION_MANAGER_USER, id, ENTITY_TYPE_RETENTION_RULE, patch);
-  } else if (scope === 'file') {
-    await executeProcessingForGlobalImport(context, 'import/global', before, 'files');
-  } else if (scope === 'workbench') {
-    await executeProcessingForGlobalImport(context, 'import/pending', before, 'workbenches');
-  } else {
-    logApp.error(`[Retention manager] Scope ${scope} not existing for Retention Rule.`);
   }
+  // Patch the last execution of the rule
+  const patch = {
+    last_execution_date: now(),
+    remaining_count: remainingDeletions,
+    last_deleted_count: elements.length,
+  };
+  await patchAttribute(context, RETENTION_MANAGER_USER, id, ENTITY_TYPE_RETENTION_RULE, patch);
 };
 
 const retentionHandler = async (lock: { signal: AbortSignal, extend: () => Promise<void>, unlock: () => Promise<void> }) => {
