@@ -26,7 +26,8 @@ const retentionLinesFragment = graphql`
         search: { type: "String" }
         count: { type: "Int", defaultValue: 25 }
         cursor: { type: "ID" }
-    ) {
+    )
+    @refetchable(queryName: "RetentionLinesQueryRefetchQuery") {
         retentionRules(search: $search, first: $count, after: $cursor)
         @connection(key: "Pagination_retentionRules") {
             edges {
