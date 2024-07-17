@@ -16,6 +16,7 @@ class OrganizationAnalysisComponent extends Component {
           />
         ) : (
           <StixCoreObjectOrStixCoreRelationshipContainers
+            stixDomainObjectOrStixCoreRelationship={organization}
             authorId={organization.id}
             viewAs={viewAs}
           />

@@ -18,6 +18,7 @@ class SystemAnalysisComponent extends Component {
           />
         ) : (
           <StixCoreObjectOrStixCoreRelationshipContainers
+            stixDomainObjectOrStixCoreRelationship={system}
             authorId={system.id}
             viewAs={viewAs}
           />
