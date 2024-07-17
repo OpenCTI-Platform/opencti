@@ -9,13 +9,36 @@ import { utcDate } from '../utils/format';
 import { RETENTION_MANAGER_USER } from '../utils/access';
 import { convertFiltersToQueryOptions } from '../utils/filtering/filtering-resolution';
 import { publishUserAction } from '../listener/UserActionListener';
+import { paginatedForPathWithEnrichment } from '../modules/internal/document/document-domain';
+import { logApp } from '../config/conf';
 
 export const checkRetentionRule = async (context, input) => {
-  const { filters, max_retention: maxDays } = input;
+  const { filters, max_retention: maxDays, scope } = input;
   const jsonFilters = filters ? JSON.parse(filters) : null;
   const before = utcDate().subtract(maxDays, 'days');
   const queryOptions = await convertFiltersToQueryOptions(jsonFilters, { before });
-  const result = await elPaginate(context, RETENTION_MANAGER_USER, READ_DATA_INDICES_WITHOUT_INFERRED, queryOptions);
+  let result = [];
+  if (scope === 'knowledge') {
+    result = await elPaginate(context, RETENTION_MANAGER_USER, READ_DATA_INDICES_WITHOUT_INFERRED, queryOptions);
+  } else if (scope === 'file') {
+    result = await paginatedForPathWithEnrichment(
+      context,
+      RETENTION_MANAGER_USER,
+      'import/global',
+      undefined,
+      { notModifiedSince: before.toISOString() }
+    );
+  } else if (scope === 'workbench') {
+    result = await paginatedForPathWithEnrichment(
+      context,
+      RETENTION_MANAGER_USER,
+      'import/pending',
+      undefined,
+      { notModifiedSince: before.toISOString() }
+    );
+  } else {
+    logApp.error(`[Retention manager] Scope ${scope} not existing for Retention Rule.`);
+  }
   return result.pageInfo.globalCount;
 };
 
