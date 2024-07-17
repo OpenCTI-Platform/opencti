@@ -16,6 +16,7 @@ class IndividualAnalysisComponent extends Component {
           />
         ) : (
           <StixCoreObjectOrStixCoreRelationshipContainers
+            stixDomainObjectOrStixCoreRelationship={individual}
             authorId={individual.id}
             viewAs={viewAs}
           />
