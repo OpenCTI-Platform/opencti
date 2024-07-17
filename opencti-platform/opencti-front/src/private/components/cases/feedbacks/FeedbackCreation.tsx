@@ -7,7 +7,6 @@ import makeStyles from '@mui/styles/makeStyles';
 import { FormikConfig } from 'formik/dist/types';
 import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
-import { MESSAGING$ } from '../../../../relay/environment';
 import StixCoreObjectsField from '../../common/form/StixCoreObjectsField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import RatingField from '../../../../components/fields/RatingField';
@@ -64,7 +63,11 @@ const FeedbackCreation: FunctionComponent<{
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const { me } = useAuth();
-  const [commit] = useApiMutation(feedbackMutation);
+  const [commit] = useApiMutation(
+    feedbackMutation,
+    undefined,
+    { successMessage: 'Thank you for your feedback!' },
+  );
   const userIsKnowledgeEditor = useGranted([KNOWLEDGE_KNUPDATE]);
 
   const basicShape = {
@@ -95,7 +98,6 @@ const FeedbackCreation: FunctionComponent<{
         setSubmitting(false);
         resetForm();
         handleCloseDrawer();
-        MESSAGING$.notifySuccess('Thank you for your feedback!');
       },
     });
   };

@@ -81,7 +81,11 @@ const CaseTaskCreation: FunctionComponent<CaseTaskCreationProps> = ({
   };
   const taskValidator = useSchemaEditionValidation('Task', basicShape);
 
-  const [addTask] = useApiMutation(caseTaskAddMutation);
+  const [addTask] = useApiMutation(
+    caseTaskAddMutation,
+    undefined,
+    { successMessage: `${t_i18n('entity_Task')} ${t_i18n('successfully created')}` },
+  );
 
   const onSubmit: FormikConfig<FormikCaseTaskAddInput>['onSubmit'] = (
     values,

@@ -1,4 +1,5 @@
 import React, { FunctionComponent } from 'react';
+import useHelper from 'src/utils/hooks/useHelper';
 import ListLines from '../../../components/list_lines/ListLines';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
@@ -28,6 +29,7 @@ export const LOCAL_STORAGE_KEY_CASE_INCIDENT = 'caseIncidents';
 
 const CaseIncidents: FunctionComponent<CaseIncidentsProps> = () => {
   const { t_i18n } = useFormatter();
+  const { isFeatureEnable } = useHelper();
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
@@ -45,6 +47,7 @@ const CaseIncidents: FunctionComponent<CaseIncidentsProps> = () => {
       filters: emptyFilterGroup,
     },
   );
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   const {
     sortBy,
@@ -126,7 +129,7 @@ const CaseIncidents: FunctionComponent<CaseIncidentsProps> = () => {
       },
     };
 
-    return (
+    return (<div data-testid="incident-page">
       <ListLines
         helpers={helpers}
         sortBy={sortBy}
@@ -148,6 +151,9 @@ const CaseIncidents: FunctionComponent<CaseIncidentsProps> = () => {
         paginationOptions={queryPaginationOptions}
         numberOfElements={numberOfElements}
         iconExtension={true}
+        createButton={isFABReplaced && <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <CaseIncidentCreation paginationOptions={queryPaginationOptions} />
+        </Security>}
       >
         {queryRef && (
           <React.Suspense
@@ -186,15 +192,17 @@ const CaseIncidents: FunctionComponent<CaseIncidentsProps> = () => {
           </React.Suspense>
         )}
       </ListLines>
-    );
+    </div>);
   };
   return (
     <ExportContextProvider>
       <Breadcrumbs variant="list" elements={[{ label: t_i18n('Cases') }, { label: t_i18n('Incident responses'), current: true }]} />
       {renderLines()}
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
-        <CaseIncidentCreation paginationOptions={queryPaginationOptions} />
-      </Security>
+      {!isFABReplaced
+        && <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <CaseIncidentCreation paginationOptions={queryPaginationOptions} />
+        </Security>
+      }
     </ExportContextProvider>
   );
 };
