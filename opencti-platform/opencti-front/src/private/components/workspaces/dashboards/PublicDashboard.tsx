@@ -12,8 +12,6 @@ import Breadcrumbs from '../../../../components/Breadcrumbs';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 
-const LOCAL_STORAGE_KEY = 'publicDashboards';
-
 const publicDashboardFragment = graphql`
   fragment PublicDashboard on PublicDashboard {
     id
@@ -23,6 +21,7 @@ const publicDashboardFragment = graphql`
     user_id
     created_at
     updated_at
+    private_manifest
     allowed_markings {
       id
       definition
@@ -84,6 +83,7 @@ const publicDashboardsListQuery = graphql`
     )
   }
 `;
+const LOCAL_STORAGE_KEY = 'publicDashboards';
 
 const PublicDashboardComponent = () => {
   const { t_i18n } = useFormatter();
@@ -98,16 +98,8 @@ const PublicDashboardComponent = () => {
     LOCAL_STORAGE_KEY,
     initialValues,
   );
-  // const {
-  //   sortBy,
-  //   orderAsc,
-  //   searchTerm,
-  //   filters,
-  //   openExports,
-  //   numberOfElements,
-  // } = viewStorage;
 
-  // const contextFilters = useBuildEntityTypeBasedFilterContext('Public dashboards', viewStorage.filters);
+  // const contextFilters = useBuildEntityTypeBasedFilterContext('publicDashboards', viewStorage.filters);
   const queryPaginationOptions = {
     ...paginationOptions,
   };
@@ -121,16 +113,20 @@ const PublicDashboardComponent = () => {
   const dataColumns = {
     name: {
       flexSize: 15,
+      label: 'Public Dashboard name',
     },
-    publicDashboard_types: {
+    private_manifest: {
       flexSize: 10,
+      label: 'Original dashboard',
     },
-    is_family: {},
-    created: {},
-    modified: {},
-    createdBy: {},
-    objectMarking: { flexSize: 10 },
-    objectLabel: {},
+    allowed_markings: {
+      flexSize: 10,
+      label: 'Maximum marking shared',
+    },
+    enabled: {
+      flexSize: 10,
+      label: 'Link enabled',
+    },
   };
 
   return (
