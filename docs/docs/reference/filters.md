@@ -86,7 +86,7 @@ The available operators are:
 |---------|-----------------------|-----------------------------------------------------------|
 | eq      | equal                 |                                                           |
 | not_eq  | different             |                                                           |
-| gl      | greater than          | against textual values, the alphabetical ordering is used |
+| gt      | greater than          | against textual values, the alphabetical ordering is used |
 | gte     | greater than or equal | against textual values, the alphabetical ordering is used |
 | lt      | lower than            | against textual values, the alphabetical ordering is used |
 | lte     | lower than or equal   | against textual values, the alphabetical ordering is used |
