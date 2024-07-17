@@ -10,11 +10,13 @@ interface IconProps {
   | 'success'
   size: 'small' | 'medium' | 'large'
 }
-const Icon = forwardRef<HTMLElement, IconProps>(({ icon, ...props }) => {
+const Icon = forwardRef<HTMLElement, IconProps>((props, ref) => {
+  const { icon, ...otherProps } = props;
   const Component = icon;
   // eslint-disable-next-line react/react-in-jsx-scope
-  return <Component {...props} />;
+  return <Component ref={ref} {...otherProps} />;
 });
+
 Icon.displayName = 'Icon';
 
 interface FiligranIconProps extends IconProps {
