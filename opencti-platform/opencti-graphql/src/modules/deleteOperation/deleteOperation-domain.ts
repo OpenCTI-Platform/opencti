@@ -325,7 +325,7 @@ export const restoreDelete = async (context: AuthContext, user: AuthUser, id: st
       else {
         const rule = Object.keys(relationToRestore).find((k) => k.startsWith(RULE_PREFIX));
         if (rule === undefined) {
-          logApp.warn('Inferred rule could not be found');
+          logApp.warn('Inferred rule could not be found', { relation: relationToRestore });
         } else {
           const ruleID = rule.substring(RULE_PREFIX.length);
           const ruleValues = (relationToRestore as Record<string, any>)[rule][0];
@@ -335,11 +335,11 @@ export const restoreDelete = async (context: AuthContext, user: AuthUser, id: st
       }
       if (result.id && result.id !== relationshipInput.id) {
         upsertedElements[relationshipInput.id] = result.id;
-        logApp.warn('Relationship has been restored with with different id (upsert)');
+        logApp.warn('Relationship has been restored with different id (upsert)', { upsertId: result.id, originalId: relationshipInput.id });
       }
       if (result.element && result.element.id && result.element.id !== relationshipInput.id) {
         upsertedElements[relationshipInput.id] = result.element.id;
-        logApp.warn('Relationship has been restored with with different id (upsert)');
+        logApp.warn('Relationship has been restored with different id (upsert)', { upsertId: result.element.id, originalId: relationshipInput.id });
       }
     }
 
