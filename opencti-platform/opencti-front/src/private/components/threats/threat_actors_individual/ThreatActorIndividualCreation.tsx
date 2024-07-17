@@ -12,7 +12,6 @@ import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import CountryField from '@components/common/form/CountryField';
-import useHelper from 'src/utils/hooks/useHelper';
 import { useFormatter } from '../../../../components/i18n';
 import { handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';

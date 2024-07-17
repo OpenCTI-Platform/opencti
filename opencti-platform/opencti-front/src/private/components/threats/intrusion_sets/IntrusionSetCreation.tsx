@@ -6,7 +6,6 @@ import { graphql } from 'react-relay';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { FormikConfig } from 'formik/dist/types';
 import Drawer, { DrawerControlledDialProps, DrawerVariant } from '@components/common/drawer/Drawer';
-import useHelper from 'src/utils/hooks/useHelper';
 import { useFormatter } from '../../../../components/i18n';
 import { handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
@@ -311,7 +310,6 @@ const IntrusionSetCreation = ({
   const CreateIntrusionSetControlledDial = (props: DrawerControlledDialProps) => (
     <CreateEntityControlledDial entityType='Intrusion-Set' {...props} />
   );
-
 
   return (
     <Drawer
