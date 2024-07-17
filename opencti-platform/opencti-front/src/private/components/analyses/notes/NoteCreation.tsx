@@ -192,7 +192,7 @@ export const NoteCreationForm: FunctionComponent<NoteFormProps> = ({
   const initialValues = useDefaultValues<NoteAddInput>(NOTE_TYPE, {
     created: null,
     attribute_abstract: '',
-    content: inputValue || '',
+    content: inputValue ?? '',
     note_types: [],
     confidence: defaultConfidence,
     likelihood: 50,

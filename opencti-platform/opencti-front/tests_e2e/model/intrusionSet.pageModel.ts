@@ -8,7 +8,7 @@ export default class IntrusionSetPage {
   }
 
   addNewIntrusionSet() {
-    return this.page.getByLabel('Add', { exact: true }).click();
+    return this.page.getByLabel('Create Intrusion Set', { exact: true }).click();
   }
 
   getCreateIntrusionSetButton() {

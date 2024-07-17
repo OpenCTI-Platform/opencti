@@ -6,13 +6,14 @@ import { graphql } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { FormikConfig } from 'formik/dist/types';
-import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
+import Drawer, { DrawerControlledDialProps, DrawerVariant } from '@components/common/drawer/Drawer';
 import { styled } from '@mui/material/styles';
 import { Badge, BadgeProps } from '@mui/material';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import CountryField from '@components/common/form/CountryField';
+import useHelper from 'src/utils/hooks/useHelper';
 import { useFormatter } from '../../../../components/i18n';
 import { handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
@@ -41,6 +42,7 @@ import CustomFileUploader from '../../common/files/CustomFileUploader';
 import useUserMetric from '../../../../utils/hooks/useUserMetric';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -203,6 +205,8 @@ ThreatActorIndividualFormProps
   );
   const [commit] = useApiMutation<ThreatActorIndividualCreationMutation>(
     ThreatActorIndividualMutation,
+    undefined,
+    { successMessage: `${t_i18n('entity_Threat-Actor-Individual')} ${t_i18n('successfully created')}` },
   );
 
   const onSubmit: FormikConfig<ThreatActorIndividualAddInput>['onSubmit'] = (
@@ -604,16 +608,22 @@ const ThreatActorIndividualCreation = ({
   paginationOptions: ThreatActorsIndividualCardsPaginationQuery$variables;
 }) => {
   const { t_i18n } = useFormatter();
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const updater = (store: RecordSourceSelectorProxy) => insertNode(
     store,
     'Pagination_threatActorsIndividuals',
     paginationOptions,
     'threatActorIndividualAdd',
   );
+  const CreateThreatActorIndividualControlledDial = (props: DrawerControlledDialProps) => (
+    <CreateEntityControlledDial entityType='Threat-Actor-Individual' {...props} />
+  );
   return (
     <Drawer
       title={t_i18n('Create a threat actor individual')}
-      variant={DrawerVariant.create}
+      variant={isFABReplaced ? undefined : DrawerVariant.create}
+      controlledDial={isFABReplaced ? CreateThreatActorIndividualControlledDial : undefined}
     >
       {({ onClose }) => (
         <ThreatActorIndividualCreationForm

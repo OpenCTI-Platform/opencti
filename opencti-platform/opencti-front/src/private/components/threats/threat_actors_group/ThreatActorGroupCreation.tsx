@@ -6,7 +6,8 @@ import { graphql } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { FormikConfig } from 'formik/dist/types';
-import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
+import Drawer, { DrawerControlledDialProps, DrawerVariant } from '@components/common/drawer/Drawer';
+import useHelper from 'src/utils/hooks/useHelper';
 import { useFormatter } from '../../../../components/i18n';
 import { handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
@@ -27,6 +28,7 @@ import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import { ThreatActorGroupCreationMutation, ThreatActorGroupCreationMutation$variables } from './__generated__/ThreatActorGroupCreationMutation.graphql';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -102,6 +104,8 @@ ThreatActorGroupFormProps
 
   const [commit] = useApiMutation<ThreatActorGroupCreationMutation>(
     ThreatActorGroupMutation,
+    undefined,
+    { successMessage: `${t_i18n('entity_Threat-Actor-Group')} ${t_i18n('successfully created')}` },
   );
 
   const onSubmit: FormikConfig<ThreatActorGroupAddInput>['onSubmit'] = (
@@ -252,16 +256,22 @@ const ThreatActorGroupCreation = ({
   paginationOptions: ThreatActorsGroupCardsPaginationQuery$variables;
 }) => {
   const { t_i18n } = useFormatter();
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const updater = (store: RecordSourceSelectorProxy) => insertNode(
     store,
     'Pagination_threatActorsGroup',
     paginationOptions,
     'threatActorGroupAdd',
   );
+  const CreateThreatActorGroupControlledDial = (props: DrawerControlledDialProps) => (
+    <CreateEntityControlledDial entityType='Threat-Actor-Group' {...props} />
+  );
   return (
     <Drawer
       title={t_i18n('Create a threat actor group')}
-      variant={DrawerVariant.create}
+      variant={isFABReplaced ? undefined : DrawerVariant.create}
+      controlledDial={isFABReplaced ? CreateThreatActorGroupControlledDial : undefined}
     >
       {({ onClose }) => (
         <ThreatActorGroupCreationForm

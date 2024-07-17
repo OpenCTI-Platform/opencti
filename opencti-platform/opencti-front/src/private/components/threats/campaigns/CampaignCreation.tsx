@@ -6,7 +6,8 @@ import { graphql } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { FormikConfig } from 'formik/dist/types';
-import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
+import Drawer, { DrawerControlledDialProps, DrawerVariant } from '@components/common/drawer/Drawer';
+import useHelper from 'src/utils/hooks/useHelper';
 import { useFormatter } from '../../../../components/i18n';
 import { handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
@@ -26,6 +27,7 @@ import { CampaignCreationMutation, CampaignCreationMutation$variables } from './
 import { CampaignsCardsPaginationQuery$variables } from './__generated__/CampaignsCardsPaginationQuery.graphql';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -97,7 +99,11 @@ export const CampaignCreationForm: FunctionComponent<CampaignFormProps> = ({
     basicShape,
   );
 
-  const [commit] = useApiMutation<CampaignCreationMutation>(campaignMutation);
+  const [commit] = useApiMutation<CampaignCreationMutation>(
+    campaignMutation,
+    undefined,
+    { successMessage: `${t_i18n('entity_Campaign')} ${t_i18n('successfully created')}` },
+  );
 
   const onSubmit: FormikConfig<CampaignAddInput>['onSubmit'] = (
     values,
@@ -237,9 +243,18 @@ const CampaignCreation = ({
   paginationOptions: CampaignsCardsPaginationQuery$variables;
 }) => {
   const { t_i18n } = useFormatter();
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_campaigns', paginationOptions, 'campaignAdd');
+  const CreateCampaignControlledDial = (props: DrawerControlledDialProps) => (
+    <CreateEntityControlledDial entityType='Campaign' {...props} />
+  );
   return (
-    <Drawer title={t_i18n('Create a campaign')} variant={DrawerVariant.create}>
+    <Drawer
+      title={t_i18n('Create a campaign')}
+      variant={isFABReplaced ? undefined : DrawerVariant.create}
+      controlledDial={isFABReplaced ? CreateCampaignControlledDial : undefined}
+    >
       {({ onClose }) => (
         <CampaignCreationForm
           updater={updater}
