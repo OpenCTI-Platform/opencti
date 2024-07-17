@@ -45,7 +45,6 @@ import { Form, Formik } from 'formik';
 import StixNestedRefRelationshipCreationFromKnowledgeGraph from '../../common/stix_nested_ref_relationships/StixNestedRefRelationshipCreationFromKnowledgeGraph';
 import CommitMessage from '../../common/form/CommitMessage';
 import inject18n from '../../../../components/i18n';
-import ContainerAddStixCoreObjects from '../../common/containers/ContainerAddStixCoreObjects';
 import StixCoreRelationshipCreation from '../../common/stix_core_relationships/StixCoreRelationshipCreation';
 import { dateFormat } from '../../../../utils/Time';
 import { truncate } from '../../../../utils/String';
@@ -61,6 +60,7 @@ import StixCyberObservableEdition from '../../observations/stix_cyber_observable
 import { isStixNestedRefRelationship } from '../../../../utils/Relation';
 import { convertCreatedBy, convertMarkings } from '../../../../utils/edition';
 import { UserContext } from '../../../../utils/hooks/useAuth';
+import ContainerAddStixCoreObjectsInGraph from '../../common/containers/ContainerAddStixCoreObjectsInGraph';
 
 const styles = () => ({
   bottomNav: {
@@ -895,7 +895,7 @@ class IncidentKnowledgeGraphBar extends Component {
                     }}
                   >
                     {onAdd && (
-                      <ContainerAddStixCoreObjects
+                      <ContainerAddStixCoreObjectsInGraph
                         containerId={caseData.id}
                         containerStixCoreObjects={caseData.objects.edges}
                         knowledgeGraph={true}

@@ -18,6 +18,10 @@ import useEntityToggle from '../../../../utils/hooks/useEntityToggle';
 import { ContainerStixCyberObservableLine_node$data } from './__generated__/ContainerStixCyberObservableLine_node.graphql';
 import { emptyFilterGroup, isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../../components/i18n';
+import useHelper from '../../../../utils/hooks/useHelper';
+import Security from '../../../../utils/Security';
+import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import ContainerAddStixCoreObjectsInLine from './ContainerAddStixCoreObjectsInLine';
 
 export const ContainerStixCyberObservablesLinesSearchQuery = graphql`
   query ContainerStixCyberObservablesLinesSearchQuery(
@@ -63,6 +67,8 @@ const ContainerStixCyberObservablesComponent: FunctionComponent<
 ContainerStixCyberObservablesComponentProps
 > = ({ container, enableReferences }) => {
   const { t_i18n } = useFormatter();
+  const { isFeatureEnable } = useHelper();
+  const FABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   const LOCAL_STORAGE_KEY = `container-${container.id}-stixCyberObservables`;
   const {
@@ -245,6 +251,15 @@ ContainerStixCyberObservablesComponentProps
               filters={filters}
               paginationOptions={queryPaginationOptions}
               availableEntityTypes={['Stix-Cyber-Observable']}
+              createButton={FABReplaced && <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                <ContainerAddStixCoreObjectsInLine
+                  containerId={container.id}
+                  targetStixCoreObjectTypes={['Stix-Cyber-Observable']}
+                  containerStixCoreObjects={[...(container.objects?.edges ?? [])]}
+                  paginationOptions={queryPaginationOptions}
+                  enableReferences={enableReferences}
+                />
+              </Security>}
             >
               {queryRef && (
                 <React.Suspense
@@ -330,6 +345,16 @@ const ContainerStixCyberObservables = createFragmentContainer(
           last_observed
         }
         ...ContainerHeader_container
+        objects {
+          edges {
+            types
+            node {
+              ... on BasicObject {
+                id
+              }
+            }
+          }
+        }
       }
     `,
   },
