@@ -1,4 +1,5 @@
 import React, { FunctionComponent } from 'react';
+import useHelper from 'src/utils/hooks/useHelper';
 import { QueryRenderer } from '../../../relay/environment';
 import ListLines from '../../../components/list_lines/ListLines';
 import ObservedDatasLines, { observedDatasLinesQuery } from './observed_data/ObservedDatasLines';
@@ -21,6 +22,7 @@ const LOCAL_STORAGE_KEY = 'observedDatas';
 
 const ObservedDatas: FunctionComponent = () => {
   const { t_i18n } = useFormatter();
+  const { isFeatureEnable } = useHelper();
   const {
     viewStorage,
     helpers: storageHelpers,
@@ -57,6 +59,8 @@ const ObservedDatas: FunctionComponent = () => {
   const queryPaginationOptions = {
     ...paginationOptions, filters: contextFilters,
   } as unknown as ObservedDatasLinesPaginationQuery$variables;
+
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   const renderLines = (helper: ModuleHelper | undefined) => {
     const isRuntimeSort = helper?.isRuntimeFieldEnable();
@@ -119,6 +123,11 @@ const ObservedDatas: FunctionComponent = () => {
           paginationOptions={queryPaginationOptions}
           numberOfElements={numberOfElements}
           iconExtension={true}
+          createButton={isFABReplaced && (
+            <Security needs={[KNOWLEDGE_KNUPDATE]}>
+              <ObservedDataCreation paginationOptions={queryPaginationOptions}/>
+            </Security>
+          )}
         >
           <QueryRenderer
             query={observedDatasLinesQuery}
@@ -163,9 +172,11 @@ const ObservedDatas: FunctionComponent = () => {
         <ExportContextProvider>
           <Breadcrumbs variant="list" elements={[{ label: t_i18n('Events') }, { label: t_i18n('Observed datas'), current: true }]} />
           {renderLines(platformModuleHelpers)}
-          <Security needs={[KNOWLEDGE_KNUPDATE]}>
-            <ObservedDataCreation paginationOptions={queryPaginationOptions}/>
-          </Security>
+          {!isFABReplaced && (
+            <Security needs={[KNOWLEDGE_KNUPDATE]}>
+              <ObservedDataCreation paginationOptions={queryPaginationOptions}/>
+            </Security>
+          )}
         </ExportContextProvider>
       )}
     </UserContext.Consumer>

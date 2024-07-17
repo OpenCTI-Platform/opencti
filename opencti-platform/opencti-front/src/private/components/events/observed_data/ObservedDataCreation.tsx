@@ -6,7 +6,8 @@ import Button from '@mui/material/Button';
 import makeStyles from '@mui/styles/makeStyles';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { FormikConfig } from 'formik/dist/types';
-import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
+import Drawer, { DrawerControlledDialProps, DrawerVariant } from '@components/common/drawer/Drawer';
+import useHelper from 'src/utils/hooks/useHelper';
 import { handleErrorInForm } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
@@ -28,6 +29,7 @@ import { ObservedDatasLinesPaginationQuery$variables } from './__generated__/Obs
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -111,6 +113,8 @@ ObservedDataFormProps
   );
   const [commit] = useApiMutation<ObservedDataCreationMutation>(
     observedDataCreationMutation,
+    undefined,
+    { successMessage: `${t_i18n('entity_Observed-Data')} ${t_i18n('successfully created')}` },
   );
   const onSubmit: FormikConfig<ObservedDataAddInput>['onSubmit'] = (
     values,
@@ -264,16 +268,22 @@ const ObservedDataCreation = ({
   paginationOptions: ObservedDatasLinesPaginationQuery$variables;
 }) => {
   const { t_i18n } = useFormatter();
+  const { isFeatureEnable } = useHelper();
   const updater = (store: RecordSourceSelectorProxy) => insertNode(
     store,
     'Pagination_observedDatas',
     paginationOptions,
     'observedDataAdd',
   );
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
+  const CreateObservedDataControlledDial = (props: DrawerControlledDialProps) => (
+    <CreateEntityControlledDial entityType='Observed-Data' {...props} />
+  );
   return (
     <Drawer
       title={t_i18n('Create an observed data')}
-      variant={DrawerVariant.create}
+      variant={isFABReplaced ? undefined : DrawerVariant.create}
+      controlledDial={isFABReplaced ? CreateObservedDataControlledDial : undefined}
     >
       {({ onClose }) => (
         <ObservedDataCreationForm

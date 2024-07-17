@@ -7,7 +7,8 @@ import * as R from 'ramda';
 import makeStyles from '@mui/styles/makeStyles';
 import { FormikConfig } from 'formik/dist/types';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
-import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
+import Drawer, { DrawerControlledDialProps, DrawerVariant } from '@components/common/drawer/Drawer';
+import useHelper from 'src/utils/hooks/useHelper';
 import { useFormatter } from '../../../../components/i18n';
 import { handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
@@ -30,6 +31,7 @@ import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import ObjectParticipantField from '../../common/form/ObjectParticipantField';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -96,7 +98,11 @@ export const IncidentCreationForm: FunctionComponent<IncidentCreationProps> = ({
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
-  const [commit] = useApiMutation(IncidentMutation);
+  const [commit] = useApiMutation(
+    IncidentMutation,
+    undefined,
+    { successMessage: `${t_i18n('entity_Incident')} ${t_i18n('successfully created')}` },
+  );
   const basicShape = {
     name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
     confidence: Yup.number().nullable(),
@@ -284,11 +290,17 @@ const IncidentCreation = ({
   paginationOptions: IncidentsLinesPaginationQuery$variables;
 }) => {
   const { t_i18n } = useFormatter();
+  const { isFeatureEnable } = useHelper();
   const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_incidents', paginationOptions, 'incidentAdd');
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
+  const CreateIncidentControlledDial = (props: DrawerControlledDialProps) => (
+    <CreateEntityControlledDial entityType='Incident' {...props} />
+  );
   return (
     <Drawer
       title={t_i18n('Create an incident')}
-      variant={DrawerVariant.create}
+      variant={isFABReplaced ? undefined : DrawerVariant.create}
+      controlledDial={isFABReplaced ? CreateIncidentControlledDial : undefined}
     >
       {({ onClose }) => (
         <IncidentCreationForm

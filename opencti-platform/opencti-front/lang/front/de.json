@@ -410,6 +410,7 @@
   "Courses of action": "Handlungsabläufe",
   "Courses of action view": "Ansicht der Handlungsabläufe",
   "Create": "Erstellen",
+  "Create ...": "{entity_type} erstellen",
   "create": "Erstellungsereignisse",
   "CREATE": "CREATE",
   "Create / Update dashboards": "Erstellen / Aktualisieren von Dashboards",

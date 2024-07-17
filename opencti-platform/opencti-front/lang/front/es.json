@@ -410,6 +410,7 @@
   "Courses of action": "Contramedidas",
   "Courses of action view": "Vista de las contramedidas",
   "Create": "Crear",
+  "Create ...": "Crear {entity_type}",
   "CREATE": "CREAR",
   "create": "crear",
   "Create / Update dashboards": "Crear / Actualizar paneles",
