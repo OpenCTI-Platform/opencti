@@ -77,12 +77,13 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
   filtersRestrictions,
 }) => {
   const { t_i18n } = useFormatter();
+  const classes = useStyles();
+
   const filterKey = currentFilter.key;
   const filterOperator = currentFilter.operator;
   const filterValues = currentFilter.values;
   const isOperatorNil = ['nil', 'not_nil'].includes(filterOperator ?? 'eq');
-  const classes = useStyles();
-  const deactivatePopoverMenu = !isFilterEditable(filtersRestrictions, filterKey, filterValues);
+  const deactivatePopoverMenu = !isFilterEditable(filtersRestrictions, filterKey, filterValues) || !isReadWriteFilter;
   const onCLick = deactivatePopoverMenu ? () => {} : onClickLabel;
   const menuClassName = deactivatePopoverMenu ? '' : classes.label;
   if (isOperatorNil) {
