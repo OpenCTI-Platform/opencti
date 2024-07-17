@@ -48,6 +48,7 @@ const ViewSwitchingButtons: FunctionComponent<ViewSwitchingButtonsProps> = ({
         size="small"
         color="secondary"
         exclusive={true}
+        value={currentView}
         style={{ margin: '0 0 0 5px' }}
       >
         {typeof handleChangeView === 'function' && !disableCards && (
