@@ -12,6 +12,8 @@ import makeStyles from '@mui/styles/makeStyles';
 import { Theme } from '@mui/material/styles/createTheme';
 import { RetentionLinesPaginationQuery$variables } from '@components/settings/retention/__generated__/RetentionLinesPaginationQuery.graphql';
 import { RetentionLine_node$key } from '@components/settings/retention/__generated__/RetentionLine_node.graphql';
+import { InformationOutline } from 'mdi-material-ui';
+import Tooltip from '@mui/material/Tooltip';
 import { useFormatter } from '../../../../components/i18n';
 import RetentionPopover from './RetentionPopover';
 import { deserializeFilterGroupForFrontend, isFilterGroupNotEmpty } from '../../../../utils/filters/filtersUtils';
@@ -77,10 +79,13 @@ export const RetentionLine: FunctionComponent<RetentionLineProps> = ({ dataColum
   const data = useFragment(RetentionLineFragment, node);
   const filters = deserializeFilterGroupForFrontend(data.filters);
   let scopeColor = 'warning';
+  let appliedOnContent = t_i18n('Everything');
   if (data.scope === 'file') {
     scopeColor = 'secondary';
+    appliedOnContent = t_i18n('Global files');
   } else if (data.scope === 'workbench') {
     scopeColor = 'primary';
+    appliedOnContent = t_i18n('Global workbenches');
   }
   return (
     <ListItem classes={{ root: classes.item }} divider={true}>
@@ -131,7 +136,19 @@ export const RetentionLine: FunctionComponent<RetentionLineProps> = ({ dataColum
               />
             ) : (
               <div className={classes.bodyItem} style={{ width: dataColumns.filters.width }}>
-                <span>{data.scope === 'knowledge' ? t_i18n('Everything') : t_i18n('Global files')}</span>
+                <span>{appliedOnContent}</span>
+                {data.scope !== 'knowledge' && <Tooltip
+                  title={t_i18n(
+                    'i.e. contained in Data/Import',
+                  )}
+                                               >
+                  <InformationOutline
+                    fontSize="small"
+                    color="primary"
+                    style={{ position: 'absolute', marginLeft: 10 }}
+                  />
+                </Tooltip>
+                }
               </div>
             )}
           </div>

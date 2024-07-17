@@ -14,6 +14,8 @@ import { FormikConfig } from 'formik/dist/types';
 import { Option } from '@components/common/form/ReferenceField';
 import { RetentionCreationCheckMutation$data } from '@components/settings/retention/__generated__/RetentionCreationCheckMutation.graphql';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
+import { instanceTriggerDescription } from '@components/profile/triggers/TriggerLiveCreation';
+import Alert from '@mui/material/Alert';
 import Drawer, { DrawerVariant } from '../../common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
@@ -204,6 +206,16 @@ const RetentionCreation = ({ paginationOptions }: { paginationOptions: Retention
                   label: t_i18n('Scope'),
                 }}
               />
+              {formValues.scope?.value === 'file'
+                && <Alert severity="info" style={{ margin: '15px 15px 0 15px' }}>
+                  {t_i18n('The retention policy will be applied on global files (i.e. files contained in Data/Import)')}
+                </Alert>
+              }
+              {formValues.scope?.value === 'workbench'
+                && <Alert severity="info" style={{ margin: '15px 15px 0 15px' }}>
+                  {t_i18n('The retention policy will be applied on global workbenches (i.e. workbenches contained in Data/Import)')}
+                </Alert>
+              }
               {formValues.scope?.value === 'knowledge' && <>
                 <Box sx={{
                   paddingTop: 4,
