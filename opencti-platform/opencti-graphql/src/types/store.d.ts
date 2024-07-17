@@ -325,6 +325,7 @@ interface BasicStoreEntity extends BasicStoreCommon {
   x_opencti_cvss_base_severity: string;
   x_opencti_cvss_confidentiality_impact: string;
   x_opencti_cvss_integrity_impact: string;
+  x_opencti_cisa_kev: boolean;
   x_opencti_main_observable_type: string;
   x_opencti_lastname: string;
   x_opencti_firstname: string;
