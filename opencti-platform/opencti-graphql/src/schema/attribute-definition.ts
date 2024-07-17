@@ -95,6 +95,69 @@ export const id: AttributeDefinition = {
   entityTypes: [ABSTRACT_BASIC_OBJECT, ABSTRACT_BASIC_RELATIONSHIP]
 };
 
+export const liveId: AttributeDefinition = {
+  name: 'live_id',
+  label: 'Live id',
+  type: 'string',
+  format: 'id',
+  update: false,
+  mandatoryType: 'no',
+  multiple: false,
+  editDefault: false,
+  upsert: false,
+  isFilterable: false,
+  entityTypes: [ABSTRACT_BASIC_OBJECT, ABSTRACT_BASIC_RELATIONSHIP]
+};
+
+export const draftIds: AttributeDefinition = {
+  name: 'draft_ids',
+  label: 'Draft ids',
+  type: 'string',
+  format: 'id',
+  update: false,
+  mandatoryType: 'no',
+  multiple: true,
+  editDefault: false,
+  upsert: false,
+  isFilterable: false,
+  entityTypes: [ABSTRACT_BASIC_OBJECT, ABSTRACT_BASIC_RELATIONSHIP]
+};
+
+export const draftUpdates: AttributeDefinition = {
+  name: 'draft_updates',
+  label: 'Draft updates',
+  type: 'object',
+  format: 'standard',
+  update: false,
+  mandatoryType: 'no',
+  editDefault: false,
+  multiple: true,
+  upsert: false,
+  isFilterable: false,
+  mappings: [
+    { name: 'draft_update_operation', label: 'Draft update operation', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    { name: 'draft_update_field', label: 'Draft update field', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    { name: 'draft_update_values', label: 'Draft update field', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: true, upsert: false, isFilterable: false },
+  ]
+};
+
+export const draftChange: AttributeDefinition = {
+  name: 'draft_change',
+  label: 'Draft change',
+  type: 'object',
+  format: 'standard',
+  update: false,
+  mandatoryType: 'no',
+  editDefault: false,
+  multiple: false,
+  upsert: false,
+  isFilterable: false,
+  mappings: [
+    { name: 'draft_operation', label: 'Draft operation', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: false, upsert: true, isFilterable: false },
+    draftUpdates
+  ]
+};
+
 export const iAttributes: AttributeDefinition = {
   name: 'i_attributes',
   label: 'Attributes',

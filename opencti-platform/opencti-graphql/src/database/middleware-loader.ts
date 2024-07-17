@@ -12,14 +12,15 @@ import {
   READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED
 } from './utils';
 import {
-  elAggregationNestedTermsWithFilter,
-  elAggregationsList,
+ elAggregationNestedTermsWithFilter, elAggregationsList,
   elCount,
   elFindByIds,
   elList,
   elLoadById,
   elPaginate,
   ES_MINIMUM_FIXED_PAGINATION,
+  getLiveIdsFromIds,
+  inDraftContext,
   UNIMPACTED_ENTITIES_ROLE
 } from './engine';
 import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CORE_RELATIONSHIP, ABSTRACT_STIX_OBJECT, ABSTRACT_STIX_RELATIONSHIP, buildRefRelationKey } from '../schema/general';
@@ -42,6 +43,7 @@ import { ASSIGNEE_FILTER, CREATOR_FILTER, INSTANCE_REGARDING_OF, PARTICIPANT_FIL
 import { completeContextDataForEntity, publishUserAction } from '../listener/UserActionListener';
 import type { UserReadActionContextData } from '../listener/UserActionListener';
 import { extractEntityRepresentativeName } from './entity-representative';
+import { isFeatureEnabled } from '../config/conf';
 
 export interface FiltersWithNested extends Filter {
   nested?: Array<{
@@ -498,6 +500,15 @@ export const listEntitiesThroughRelationsPaginated = async <T extends BasicStore
   // As rel de-normalization are currently not directional, we need to post filters the result
   // Some entities could be found because of the none-directionality.
   const entityIds = entityPagination.edges.map((e) => e.node.internal_id);
+
+  let connectedEntityIds = [connectedEntityId];
+  const draftContext = inDraftContext(context, user);
+  const isDraftNewID = isFeatureEnabled('DRAFT_NEW_ID');
+  if (draftContext && isDraftNewID) {
+    const idMap = await getLiveIdsFromIds(context, user, connectedEntityIds);
+    const valuesMapped = connectedEntityIds.map((v) => idMap[v]).filter((d) => d);
+    connectedEntityIds = [connectedEntityId, ...valuesMapped];
+  }
   const filters: FilterGroupWithNested = {
     mode: FilterMode.And,
     filters: [
@@ -505,7 +516,7 @@ export const listEntitiesThroughRelationsPaginated = async <T extends BasicStore
         key: ['connections'],
         values: [],
         nested: [
-          { key: 'internal_id', values: reverse_relation ? entityIds : [connectedEntityId] },
+          { key: 'internal_id', values: reverse_relation ? entityIds : connectedEntityIds },
           ...(reverse_relation ? [{ key: 'types', values: entityTypes }] : []),
           { key: 'role', values: ['*_from'], operator: FilterOperator.Wildcard },
         ]
@@ -513,7 +524,7 @@ export const listEntitiesThroughRelationsPaginated = async <T extends BasicStore
         key: ['connections'],
         values: [],
         nested: [
-          { key: 'internal_id', values: reverse_relation ? [connectedEntityId] : entityIds },
+          { key: 'internal_id', values: reverse_relation ? connectedEntityIds : entityIds },
           ...(reverse_relation ? [] : [{ key: 'types', values: entityTypes }]),
           { key: 'role', values: ['*_to'], operator: FilterOperator.Wildcard },
         ],

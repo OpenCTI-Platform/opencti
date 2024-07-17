@@ -339,7 +339,7 @@ const loadElementMetaDependencies = async (context, user, elements, args = {}) =
   return loadedElementMap;
 };
 
-const loadElementsWithDependencies = async (context, user, elements, opts = {}) => {
+export const loadElementsWithDependencies = async (context, user, elements, opts = {}) => {
   const elementsToDeps = [...elements];
   let fromAndToPromise = Promise.resolve();
   const targetsToResolved = [];
@@ -353,7 +353,7 @@ const loadElementsWithDependencies = async (context, user, elements, opts = {}) 
   });
   const depsPromise = loadElementMetaDependencies(context, user, elementsToDeps, opts);
   if (targetsToResolved.length > 0) {
-    const args = { toMap: true, connectionFormat: false };
+    const args = { toMap: true, connectionFormat: false, draftID: opts.draftID };
     // Load with System user, access rights will be dynamically change after
     fromAndToPromise = elFindByIds(context, SYSTEM_USER, targetsToResolved, args);
   }
@@ -887,10 +887,12 @@ export const mergeInstanceWithInputs = (instance, inputs) => {
 };
 const partialInstanceWithInputs = (instance, inputs) => {
   const inputData = updatedInputsToData(instance, inputs);
+  const { draft_change } = instance;
   return {
     _index: instance._index,
     internal_id: instance.internal_id,
     entity_type: instance.entity_type,
+    ...(draft_change ? { draft_change } : {}),
     ...inputData,
   };
 };
@@ -1362,7 +1364,7 @@ const mergeEntitiesRaw = async (context, user, targetEntity, sourceEntities, tar
   // Elastic update with partial instance to prevent data override
   if (impactedInputs.length > 0) {
     const updateAsInstance = partialInstanceWithInputs(targetEntity, impactedInputs);
-    await elUpdateElement(updateAsInstance);
+    await elUpdateElement(context, user, targetEntity, updateAsInstance, updateAsInstance, impactedInputs);
     logApp.info(`[OPENCTI] Merging attributes success for ${targetEntity.internal_id}`, { update: updateAsInstance });
   }
 };
@@ -2133,7 +2135,7 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
     // Impacting information
     if (impactedInputs.length > 0) {
       const updateAsInstance = partialInstanceWithInputs(updatedInstance, impactedInputs);
-      await elUpdateElement(updateAsInstance);
+      await elUpdateElement(context, user, initial, updatedInstance, updateAsInstance, impactedInputs);
     }
     if (relationsToDelete.length > 0) {
       await elDeleteElements(context, user, relationsToDelete);

@@ -66,6 +66,7 @@ type Vocabulary implements BasicObject & StixObject & StixMetaObject {
   parent_types: [String]!
   # StixObject
   representative: Representative!
+  inDraft: Boolean
   creators: [Creator!]
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!

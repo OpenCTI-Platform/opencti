@@ -1,0 +1,58 @@
+# Type
+type DraftWorkspace implements InternalObject & BasicObject {
+    id: ID!
+    entity_type: String!
+    standard_id: String!
+    parent_types: [String!]!
+    # DraftWorkspace
+    name: String!
+}
+
+# Ordering
+enum DraftWorkspacesOrdering {
+    name
+}
+
+# Relay connections
+type DraftWorkspaceConnection {
+    pageInfo: PageInfo!
+    edges: [DraftWorkspaceEdge!]!
+}
+
+type DraftWorkspaceEdge {
+    cursor: String!
+    node: DraftWorkspace!
+}
+
+# Queries
+type Query {
+    draftWorkspace(id: String!): DraftWorkspace @auth
+    draftWorkspaces(
+        first: Int
+        after: ID
+        types: [String]
+        orderBy: DraftWorkspacesOrdering
+        orderMode: OrderingMode
+        filters: FilterGroup
+        search: String
+    ): DraftWorkspaceConnection @auth
+    draftWorkspaceEntities(
+        types: [String]
+        first: Int
+        after: ID
+        orderBy: StixDomainObjectsOrdering
+        orderMode: OrderingMode
+        filters: FilterGroup
+        search: String
+    ): StixCoreObjectConnection @auth
+}
+
+input DraftWorkspaceAddInput {
+    name: String!
+}
+
+type Mutation {
+    draftWorkspaceAdd(input: DraftWorkspaceAddInput!): DraftWorkspace @auth
+    draftWorkspaceDelete(id: ID!): ID @auth
+    draftWorkspaceValidate(id: ID!): String @auth
+}

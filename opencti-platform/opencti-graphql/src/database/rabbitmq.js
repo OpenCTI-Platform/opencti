@@ -6,7 +6,13 @@ import conf, { booleanConf, configureCA, loadCert, logApp } from '../config/conf
 import { DatabaseError } from '../config/errors';
 import { SYSTEM_USER } from '../utils/access';
 import { telemetry } from '../config/tracing';
-import { isEmptyField, RABBIT_QUEUE_PREFIX } from './utils';
+import {
+  INTERNAL_DRAFT_QUEUE,
+  INTERNAL_PLAYBOOK_QUEUE,
+  INTERNAL_SYNC_QUEUE,
+  isEmptyField,
+  RABBIT_QUEUE_PREFIX
+} from './utils';
 import { getHttpClient } from '../utils/http-client';
 import { listEntities } from './middleware-loader';
 import { ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
@@ -239,6 +245,7 @@ export const registerConnectorQueues = async (id, name, type, scope) => {
 export const initializeInternalQueues = async () => {
   await registerConnectorQueues('playbook', 'Internal playbook manager', 'internal', 'playbook');
   await registerConnectorQueues('sync', 'Internal sync manager', 'internal', 'sync');
+  await registerConnectorQueues(INTERNAL_DRAFT_QUEUE, 'Internal draft', 'internal', 'sync');
 };
 
 export const initializeConnectorQueues = async (context, user) => {
@@ -283,6 +290,18 @@ export const rabbitMQIsAlive = async () => {
       throw DatabaseError('RabbitMQ seems down', { cause: e });
     }
   );
+};
+
+export const pushToWorkerForSync = (message) => {
+  return send(WORKER_EXCHANGE, pushRouting(INTERNAL_SYNC_QUEUE), JSON.stringify(message));
+};
+
+export const pushToWorkerForPlaybook = (message) => {
+  return send(WORKER_EXCHANGE, pushRouting(INTERNAL_PLAYBOOK_QUEUE), JSON.stringify(message));
+};
+
+export const pushToWorkerForDraft = (message) => {
+  return send(WORKER_EXCHANGE, pushRouting(INTERNAL_DRAFT_QUEUE), JSON.stringify(message));
 };
 
 export const pushToWorkerForConnector = (connectorId, message) => {

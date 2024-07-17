@@ -232,7 +232,7 @@ export const askEntityExport = async (context, user, format, entity, type, conte
   return worksForExport;
 };
 
-export const exportTransformFilters = (filteringArgs, orderOptions) => {
+export const exportTransformFilters = async (context, user, filteringArgs, orderOptions) => {
   const orderingInversed = invertObj(orderOptions);
   const { filters } = filteringArgs;
   return {
@@ -240,7 +240,7 @@ export const exportTransformFilters = (filteringArgs, orderOptions) => {
     orderBy: filteringArgs.orderBy in orderingInversed
       ? orderingInversed[filteringArgs.orderBy]
       : filteringArgs.orderBy,
-    filters: checkAndConvertFilters(filters),
+    filters: await checkAndConvertFilters(context, user, filters),
   };
 };
 
