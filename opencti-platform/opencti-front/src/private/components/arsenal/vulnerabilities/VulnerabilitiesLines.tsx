@@ -1,5 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import { graphql, PreloadedQuery } from 'react-relay';
+import { VulnerabilityLine_node$data } from '@components/arsenal/vulnerabilities/__generated__/VulnerabilityLine_node.graphql';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import { VulnerabilityLine, VulnerabilityLineDummy } from './VulnerabilityLine';
 import { DataColumns } from '../../../../components/list_lines';
@@ -15,7 +16,15 @@ interface VulnerabilityLinesProps {
   dataColumns: DataColumns;
   paginationOptions?: VulnerabilitiesLinesPaginationQuery$variables;
   setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements'];
-  onLabelClick: HandleAddFilter;
+  selectedElements: Record<string, VulnerabilityLine_node$data>;
+  deSelectedElements: Record<string, VulnerabilityLine_node$data>;
+  onToggleEntity: (
+    entity: VulnerabilityLine_node$data,
+    event: React.SyntheticEvent
+  ) => void;
+  selectAll: boolean;
+  onLabelClick?: HandleAddFilter;
+  redirectionMode?: string;
 }
 
 export const vulnerabilitiesLinesQuery = graphql`
@@ -79,6 +88,10 @@ const VulnerabilitiesLines: FunctionComponent<VulnerabilityLinesProps> = ({
   setNumberOfElements,
   queryRef,
   dataColumns,
+  onToggleEntity,
+  selectedElements,
+  deSelectedElements,
+  selectAll,
   paginationOptions,
   onLabelClick,
 }) => {
@@ -109,6 +122,10 @@ const VulnerabilitiesLines: FunctionComponent<VulnerabilityLinesProps> = ({
       nbOfRowsToLoad={nbOfRowsToLoad}
       paginationOptions={paginationOptions}
       onLabelClick={onLabelClick}
+      selectedElements={selectedElements}
+      deSelectedElements={deSelectedElements}
+      selectAll={selectAll}
+      onToggleEntity={onToggleEntity}
     />
   );
 };

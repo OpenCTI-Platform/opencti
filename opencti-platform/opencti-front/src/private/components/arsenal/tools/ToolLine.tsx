@@ -8,11 +8,14 @@ import { KeyboardArrowRight } from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
 import makeStyles from '@mui/styles/makeStyles';
 import { Theme } from '@mui/material/styles/createTheme';
+import Checkbox from '@mui/material/Checkbox';
+import Tooltip from '@mui/material/Tooltip';
 import { useFormatter } from '../../../../components/i18n';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
 import ItemIcon from '../../../../components/ItemIcon';
 import { DataColumns } from '../../../../components/list_lines';
-import { ToolLine_node$key } from './__generated__/ToolLine_node.graphql';
+import { ToolLine_node$data, ToolLine_node$key } from './__generated__/ToolLine_node.graphql';
+import { HandleAddFilter } from '../../../../utils/hooks/useLocalStorage';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -42,40 +45,55 @@ const useStyles = makeStyles<Theme>((theme) => ({
 interface ToolLineProps {
   node: ToolLine_node$key;
   dataColumns: DataColumns;
-  onLabelClick: (
-    k: string,
-    id: string,
-    value: Record<string, unknown>,
-    event: React.KeyboardEvent
+  onLabelClick: HandleAddFilter;
+  selectedElements: Record<string, ToolLine_node$data>;
+  deSelectedElements: Record<string, ToolLine_node$data>;
+  onToggleEntity: (
+    entity: ToolLine_node$data,
+    event?: React.SyntheticEvent
   ) => void;
+  selectAll: boolean;
+  onToggleShiftEntity: (
+    index: number,
+    entity: ToolLine_node$data,
+    event?: React.SyntheticEvent
+  ) => void;
+  index: number;
+  redirectionMode: string;
 }
 
 const toolLineFragment = graphql`
-      fragment ToolLine_node on Tool {
-          id
-          name
-          created
-          modified
-          confidence
-          objectMarking {
-              id
-              definition_type
-              definition
-              x_opencti_order
-              x_opencti_color
-          }
-          objectLabel {
-              id
-              value
-              color
-          }
-      }
-  `;
+  fragment ToolLine_node on Tool {
+    id
+    name
+    created
+    modified
+    confidence
+    objectMarking {
+      id
+      definition_type
+      definition
+      x_opencti_order
+      x_opencti_color
+    }
+    objectLabel {
+      id
+      value
+      color
+    }
+  }
+`;
 
 export const ToolLine: FunctionComponent<ToolLineProps> = ({
   dataColumns,
   node,
   onLabelClick,
+  onToggleEntity,
+  selectedElements,
+  deSelectedElements,
+  selectAll,
+  onToggleShiftEntity,
+  index,
 }) => {
   const classes = useStyles();
   const { fd } = useFormatter();
@@ -88,18 +106,37 @@ export const ToolLine: FunctionComponent<ToolLineProps> = ({
       component={Link}
       to={`/dashboard/arsenal/tools/${data.id}`}
     >
+      <ListItemIcon
+        classes={{ root: classes.itemIcon }}
+        style={{ minWidth: 40 }}
+        onClick={(event) => (event.shiftKey
+          ? onToggleShiftEntity(index, data, event)
+          : onToggleEntity(data, event))
+        }
+      >
+        <Checkbox
+          edge="start"
+          checked={
+            (selectAll && !(data.id in (deSelectedElements || {})))
+            || data.id in (selectedElements || {})
+          }
+          disableRipple={true}
+        />
+      </ListItemIcon>
       <ListItemIcon classes={{ root: classes.itemIcon }}>
         <ItemIcon type="Tool" />
       </ListItemIcon>
       <ListItemText
         primary={
           <div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.name.width }}
-            >
-              {data.name}
-            </div>
+            <Tooltip title={data.name}>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.name.width }}
+              >
+                {data.name}
+              </div>
+            </Tooltip>
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.objectLabel.width }}
@@ -107,7 +144,7 @@ export const ToolLine: FunctionComponent<ToolLineProps> = ({
               <StixCoreObjectLabels
                 variant="inList"
                 labels={data.objectLabel}
-                onClick={onLabelClick.bind(this)}
+                onClick={onLabelClick}
               />
             </div>
             <div
