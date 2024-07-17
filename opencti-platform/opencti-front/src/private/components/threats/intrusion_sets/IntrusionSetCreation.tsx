@@ -1,9 +1,8 @@
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useEffect, useState } from 'react';
 import { Field, Form, Formik } from 'formik';
 import Button from '@mui/material/Button';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
-import makeStyles from '@mui/styles/makeStyles';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { FormikConfig } from 'formik/dist/types';
 import Drawer, { DrawerControlledDialProps, DrawerVariant } from '@components/common/drawer/Drawer';
@@ -20,26 +19,20 @@ import { insertNode } from '../../../../utils/store';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
-import type { Theme } from '../../../../components/Theme';
 import { Option } from '../../common/form/ReferenceField';
 import { IntrusionSetCreationMutation, IntrusionSetCreationMutation$variables } from './__generated__/IntrusionSetCreationMutation.graphql';
 import { IntrusionSetsCardsPaginationQuery$variables } from './__generated__/IntrusionSetsCardsPaginationQuery.graphql';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import useHelper from '../../../../utils/hooks/useHelper';
+import useBulkCommit from '../../../../utils/hooks/useBulkCommit';
+import { splitMultilines } from '../../../../utils/String';
+import BulkTextField from '../../../../components/fields/BulkTextField/BulkTextField';
+import BulkTextModal from '../../../../components/fields/BulkTextField/BulkTextModal';
+import ProgressBar from '../../../../components/ProgressBar';
+import BulkTextModalButton from '../../../../components/fields/BulkTextField/BulkTextModalButton';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  buttons: {
-    marginTop: 20,
-    textAlign: 'right',
-  },
-  button: {
-    marginLeft: theme.spacing(2),
-  },
-}));
 
 const intrusionSetMutation = graphql`
   mutation IntrusionSetCreationMutation($input: IntrusionSetAddInput!) {
@@ -60,12 +53,12 @@ const INTRUSION_SET_TYPE = 'Intrusion-Set';
 interface IntrusionSetAddInput {
   name: string;
   description: string;
-  confidence: number | undefined;
-  createdBy: Option | undefined;
+  confidence: number | null;
+  createdBy: Option | null;
   objectMarking: Option[];
   objectLabel: Option[];
   externalReferences: { value: string }[];
-  file: File | undefined;
+  file: File | null;
 }
 
 interface IntrusionSetFormProps {
@@ -76,6 +69,8 @@ interface IntrusionSetFormProps {
   defaultMarkingDefinitions?: { value: string; label: string }[];
   defaultConfidence?: number;
   inputValue?: string;
+  bulkModalOpen?: boolean;
+  onBulkModalClose: () => void;
 }
 
 export const IntrusionSetCreationForm: FunctionComponent<
@@ -87,9 +82,13 @@ IntrusionSetFormProps
   defaultConfidence,
   defaultCreatedBy,
   defaultMarkingDefinitions,
+  bulkModalOpen = false,
+  onBulkModalClose,
 }) => {
-  const classes = useStyles();
+  const { isFeatureEnable } = useHelper();
   const { t_i18n } = useFormatter();
+  const [progressBarOpen, setProgressBarOpen] = useState(false);
+
   const basicShape = {
     name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
     confidence: Yup.number(),
@@ -104,12 +103,33 @@ IntrusionSetFormProps
     undefined,
     { successMessage: `${t_i18n('entity_Intrusion-Set')} ${t_i18n('successfully created')}` },
   );
+  const {
+    bulkCommit,
+    bulkCount,
+    bulkCurrentCount,
+    BulkResult,
+  } = useBulkCommit<IntrusionSetCreationMutation$variables['input'], IntrusionSetCreationMutation>({
+    commit,
+    relayUpdater: (store) => {
+      if (updater) {
+        updater(store, 'intrusionSetAdd');
+      }
+    },
+  });
+
+  useEffect(() => {
+    if (bulkCount > 1) {
+      setProgressBarOpen(true);
+    }
+  }, [bulkCount]);
+
   const onSubmit: FormikConfig<IntrusionSetAddInput>['onSubmit'] = (
     values,
     { setSubmitting, setErrors, resetForm },
   ) => {
-    const input: IntrusionSetCreationMutation$variables['input'] = {
-      name: values.name,
+    const allNames = splitMultilines(values.name);
+    const inputs: IntrusionSetCreationMutation$variables['input'][] = allNames.map((name) => ({
+      name,
       description: values.description,
       confidence: parseInt(String(values.confidence), 10),
       createdBy: values.createdBy?.value,
@@ -117,25 +137,18 @@ IntrusionSetFormProps
       objectLabel: values.objectLabel.map((v) => v.value),
       externalReferences: values.externalReferences.map(({ value }) => value),
       file: values.file,
-    };
-    commit({
-      variables: {
-        input,
-      },
-      updater: (store) => {
-        if (updater) {
-          updater(store, 'intrusionSetAdd');
-        }
-      },
-      onError: (error) => {
+    }));
+
+    bulkCommit({
+      inputs,
+      onStepError: (error) => {
         handleErrorInForm(error, setErrors);
-        setSubmitting(false);
       },
-      onCompleted: () => {
+      onCompleted: (total: number) => {
         setSubmitting(false);
-        resetForm();
-        if (onCompleted) {
-          onCompleted();
+        if (total < 2) {
+          resetForm();
+          onCompleted?.();
         }
       },
     });
@@ -143,13 +156,13 @@ IntrusionSetFormProps
 
   const initialValues = useDefaultValues(INTRUSION_SET_TYPE, {
     name: '',
-    confidence: defaultConfidence,
+    confidence: defaultConfidence ?? null,
     description: '',
-    createdBy: defaultCreatedBy,
+    createdBy: defaultCreatedBy ?? null,
     objectMarking: defaultMarkingDefinitions ?? [],
     objectLabel: [],
     externalReferences: [],
-    file: undefined,
+    file: null,
   });
 
   return (
@@ -159,77 +172,120 @@ IntrusionSetFormProps
       onSubmit={onSubmit}
       onReset={onReset}
     >
-      {({ submitForm, handleReset, isSubmitting, setFieldValue, values }) => (
-        <Form style={{ margin: '20px 0 20px 0' }}>
-          <Field
-            component={TextField}
-            name="name"
-            label={t_i18n('Name')}
-            fullWidth={true}
-            askAi={true}
-            detectDuplicate={[
-              'Threat-Actor',
-              'Intrusion-Set',
-              'Campaign',
-              'Malware',
-            ]}
-          />
-          <ConfidenceField
-            entityType="Intrusion-Set"
-            containerStyle={fieldSpacingContainerStyle}
-          />
-          <Field
-            component={MarkdownField}
-            name="description"
-            label={t_i18n('Description')}
-            fullWidth={true}
-            multiline={true}
-            rows="4"
-            style={{ marginTop: 20 }}
-          />
-          <CreatedByField
-            name="createdBy"
-            style={fieldSpacingContainerStyle}
-            setFieldValue={setFieldValue}
-          />
-          <ObjectLabelField
-            name="objectLabel"
-            style={fieldSpacingContainerStyle}
-            setFieldValue={setFieldValue}
-            values={values.objectLabel}
-          />
-          <ObjectMarkingField
-            name="objectMarking"
-            style={fieldSpacingContainerStyle}
-            setFieldValue={setFieldValue}
-          />
-          <ExternalReferencesField
-            name="externalReferences"
-            style={fieldSpacingContainerStyle}
-            setFieldValue={setFieldValue}
-            values={values.externalReferences}
-          />
-          <CustomFileUploader setFieldValue={setFieldValue} />
-          <div className={classes.buttons}>
-            <Button
-              variant="contained"
-              onClick={handleReset}
-              disabled={isSubmitting}
-              classes={{ root: classes.button }}
+      {({ submitForm, handleReset, isSubmitting, setFieldValue, values, resetForm }) => (
+        <>
+          {isFeatureEnable('BULK_ENTITIES') && (
+            <>
+              <BulkTextModal
+                open={bulkModalOpen}
+                onClose={onBulkModalClose}
+                onValidate={((val) => {
+                  setFieldValue('name', val);
+                  if (splitMultilines(val).length > 1) {
+                    setFieldValue('file', null);
+                  }
+                })}
+                formValue={values.name}
+              />
+              <ProgressBar
+                open={progressBarOpen}
+                value={(bulkCurrentCount / bulkCount) * 100}
+                label={`${bulkCurrentCount}/${bulkCount}`}
+                title={t_i18n('Create multiple entities')}
+                onClose={() => {
+                  setProgressBarOpen(false);
+                  resetForm();
+                  onCompleted?.();
+                }}
+              >
+                <BulkResult inputToString={(input) => input.name} />
+              </ProgressBar>
+            </>
+          )}
+          <Form style={{ margin: '20px 0 20px 0' }}>
+            <Field
+              component={isFeatureEnable('BULK_ENTITIES') ? BulkTextField : TextField}
+              name="name"
+              label={t_i18n('Name')}
+              fullWidth={true}
+              askAi={true}
+              detectDuplicate={[
+                'Threat-Actor',
+                'Intrusion-Set',
+                'Campaign',
+                'Malware',
+              ]}
+            />
+            <ConfidenceField
+              entityType="Intrusion-Set"
+              containerStyle={fieldSpacingContainerStyle}
+            />
+            <Field
+              component={MarkdownField}
+              name="description"
+              label={t_i18n('Description')}
+              fullWidth={true}
+              multiline={true}
+              rows="4"
+              style={{ marginTop: 20 }}
+            />
+            <CreatedByField
+              name="createdBy"
+              style={fieldSpacingContainerStyle}
+              setFieldValue={setFieldValue}
+            />
+            <ObjectLabelField
+              name="objectLabel"
+              style={fieldSpacingContainerStyle}
+              setFieldValue={setFieldValue}
+              values={values.objectLabel}
+            />
+            <ObjectMarkingField
+              name="objectMarking"
+              style={fieldSpacingContainerStyle}
+              setFieldValue={setFieldValue}
+            />
+            <ExternalReferencesField
+              name="externalReferences"
+              style={fieldSpacingContainerStyle}
+              setFieldValue={setFieldValue}
+              values={values.externalReferences}
+            />
+            <Field
+              component={CustomFileUploader}
+              name="file"
+              setFieldValue={setFieldValue}
+              disabled={splitMultilines(values.name).length > 1}
+              noFileSelectedLabel={splitMultilines(values.name).length > 1
+                ? t_i18n('File upload not allowed in bulk creation')
+                : undefined
+              }
+            />
+            <div style={{
+              marginTop: '20px',
+              textAlign: 'right',
+            }}
             >
-              {t_i18n('Cancel')}
-            </Button>
-            <Button
-              variant="contained"
-              color="secondary"
-              onClick={submitForm}
-              disabled={isSubmitting}
-              classes={{ root: classes.button }}
-            >
-              {t_i18n('Create')}
-            </Button>
-          </div>
-        </Form>
+              <Button
+                variant="contained"
+                onClick={handleReset}
+                disabled={isSubmitting}
+                sx={{ marginLeft: 2 }}
+              >
+                {t_i18n('Cancel')}
+              </Button>
+              <Button
+                variant="contained"
+                color="secondary"
+                onClick={submitForm}
+                disabled={isSubmitting}
+                sx={{ marginLeft: 2 }}
+              >
+                {t_i18n('Create')}
+              </Button>
+            </div>
+          </Form>
+        </>
       )}
     </Formik>
   );
@@ -240,29 +296,40 @@ const IntrusionSetCreation = ({
 }: {
   paginationOptions: IntrusionSetsCardsPaginationQuery$variables;
 }) => {
-  const { t_i18n } = useFormatter();
   const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
+  const { t_i18n } = useFormatter();
+  const [bulkOpen, setBulkOpen] = useState(false);
+
   const updater = (store: RecordSourceSelectorProxy) => insertNode(
     store,
     'Pagination_intrusionSets',
     paginationOptions,
     'intrusionSetAdd',
   );
+
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const CreateIntrusionSetControlledDial = (props: DrawerControlledDialProps) => (
     <CreateEntityControlledDial entityType='Intrusion-Set' {...props} />
   );
+
+
   return (
     <Drawer
       title={t_i18n('Create an intrusion set')}
       variant={isFABReplaced ? undefined : DrawerVariant.create}
       controlledDial={isFABReplaced ? CreateIntrusionSetControlledDial : undefined}
+      header={isFeatureEnable('BULK_ENTITIES')
+        ? <BulkTextModalButton onClick={() => setBulkOpen(true)} />
+        : <></>
+      }
     >
       {({ onClose }) => (
         <IntrusionSetCreationForm
           updater={updater}
           onCompleted={onClose}
           onReset={onClose}
+          bulkModalOpen={bulkOpen}
+          onBulkModalClose={() => setBulkOpen(false)}
         />
       )}
     </Drawer>
