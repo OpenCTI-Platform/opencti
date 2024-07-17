@@ -62,7 +62,7 @@ const RetentionCreationValidation = (t: (text: string) => string) => Yup.object(
 interface RetentionFormValues {
   name: string,
   max_retention: string,
-  scope: { value: string },
+  scope: { value: string, label: string },
   filters: string,
 }
 
@@ -143,7 +143,7 @@ const RetentionCreation = ({ paginationOptions }: { paginationOptions: Retention
     >
       {({ onClose }) => (
         <Formik
-          initialValues={{ name: '', max_retention: '31', scope: { value: 'knowledge' }, filters: '' }}
+          initialValues={{ name: '', max_retention: '31', scope: { value: 'knowledge', label: 'Knowledge' }, filters: '' }}
           validationSchema={RetentionCreationValidation(t_i18n)}
           onSubmit={onSubmit}
           onReset={onClose}
