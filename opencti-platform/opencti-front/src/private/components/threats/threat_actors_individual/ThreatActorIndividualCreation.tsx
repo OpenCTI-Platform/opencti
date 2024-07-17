@@ -426,7 +426,7 @@ ThreatActorIndividualFormProps
                   name="objectLabel"
                   style={fieldSpacingContainerStyle}
                   setFieldValue={setFieldValue}
-                  values={values?.objectLabel}
+                  values={values.objectLabel}
                 />
                 <ObjectMarkingField
                   name="objectMarking"
@@ -437,7 +437,7 @@ ThreatActorIndividualFormProps
                   name="externalReferences"
                   style={fieldSpacingContainerStyle}
                   setFieldValue={setFieldValue}
-                  values={values?.externalReferences}
+                  values={values.externalReferences}
                 />
                 <Field
                   component={CustomFileUploader}
