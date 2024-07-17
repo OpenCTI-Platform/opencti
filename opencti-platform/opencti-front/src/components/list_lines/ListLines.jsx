@@ -330,11 +330,11 @@ class ListLines extends Component {
                   )}
                   {typeof handleChangeView === 'function'
                     && !enableEntitiesView && (
-                      <ToggleButton value="lines" aria-label="lines">
-                        <Tooltip title={t('Lines view')}>
+                      <Tooltip title={t('Lines view')}>
+                        <ToggleButton value="lines" aria-label="lines">
                           <FiligranIcon icon={ListViewIcon} color='secondary' size='small'/>
-                        </Tooltip>
-                      </ToggleButton>
+                        </ToggleButton>
+                      </Tooltip>
                   )}
                   {typeof handleChangeView === 'function' && enableGraph && (
                     <ToggleButton value="graph" aria-label="graph">
@@ -369,11 +369,11 @@ class ListLines extends Component {
                       </ToggleButton>
                   )}
                   {typeof handleChangeView === 'function' && enableSubEntityLines && (
-                    <ToggleButton value="subEntityLines" aria-label="subEntityLines">
-                      <Tooltip title={t('Sub entity lines view')}>
+                    <Tooltip title={t('Sub entity lines view')}>
+                      <ToggleButton value="subEntityLines" aria-label="subEntityLines">
                         <FiligranIcon icon={SublistViewIcon} color='primary' size='small'/>
-                      </Tooltip>
-                    </ToggleButton>
+                      </ToggleButton>
+                    </Tooltip>
                   )}
                   {handleSwitchRedirectionMode && (
                     <ToggleButton

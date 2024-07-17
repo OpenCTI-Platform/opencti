@@ -1,5 +1,5 @@
-import { styled } from '@mui/styles';
-import { FunctionComponent } from 'react';
+import { styled } from '@mui/material/styles';
+import { forwardRef } from 'react';
 import type { Theme } from '../../../components/Theme';
 
 interface IconProps {
@@ -10,14 +10,18 @@ interface IconProps {
   | 'success'
   size: 'small' | 'medium' | 'large'
 }
-const Icon: FunctionComponent<IconProps> = ({ icon, ...props }) => {
+const Icon = forwardRef<HTMLElement, IconProps>(({ icon, ...props }) => {
   const Component = icon;
   // eslint-disable-next-line react/react-in-jsx-scope
   return <Component {...props} />;
-};
+});
+Icon.displayName = 'Icon';
 
-interface FiligranIconProps extends IconProps, Theme {}
-const FiligranIcon = styled(Icon)<FiligranIconProps>(({ theme, color, size }) => {
+interface FiligranIconProps extends IconProps {
+  theme?: Theme;
+}
+
+const FiligranIcon = styled((Icon))<FiligranIconProps>(({ theme, color, size }) => {
   const sizeMap = {
     small: '1rem',
     medium: '1.25rem',

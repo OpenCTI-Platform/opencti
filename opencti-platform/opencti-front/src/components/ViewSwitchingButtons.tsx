@@ -90,24 +90,27 @@ const ViewSwitchingButtons: FunctionComponent<ViewSwitchingButtonsProps> = ({
           </Tooltip>
         </ToggleButton>
         )}
-        {typeof handleChangeView === 'function'
-        && !enableEntitiesView && (
-        <ToggleButton value="lines" onClick={() => handleChangeView('lines')} aria-label="lines">
+        {typeof handleChangeView === 'function' && !enableEntitiesView && (
           <Tooltip title={t_i18n('Lines view')}>
-            <FiligranIcon icon={ListViewIcon} color='primary' size='small'/>
+            <ToggleButton
+              value="lines"
+              onClick={() => handleChangeView('lines')}
+              aria-label="lines"
+            >
+              <FiligranIcon icon={ListViewIcon} color="primary" size="small" />
+            </ToggleButton>
           </Tooltip>
-        </ToggleButton>
         )}
         {typeof handleChangeView === 'function' && enableSubEntityLines && (
-        <ToggleButton
-          value="subEntityLines"
-          aria-label="subEntityLines"
-          className={classes.subEntityButton}
-        >
           <Tooltip title={t_i18n('Sub entity lines view')}>
-            <FiligranIcon icon={SublistViewIcon} color='secondary' size='small'/>
+            <ToggleButton
+              value="subEntityLines"
+              aria-label="subEntityLines"
+              className={classes.subEntityButton}
+            >
+              <FiligranIcon icon={SublistViewIcon} color="secondary" size="small" />
+            </ToggleButton>
           </Tooltip>
-        </ToggleButton>
         )}
         {typeof handleChangeView === 'function' && enableGraph && (
         <ToggleButton value="graph" aria-label="graph">
