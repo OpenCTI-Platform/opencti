@@ -10,7 +10,7 @@ import { controlUserConfidenceAgainstElement } from '../../utils/confidence-leve
 import { prepareDate } from '../../utils/format';
 import { schemaAttributesDefinition } from '../../schema/schema-attributes';
 import { schemaRelationsRefDefinition } from '../../schema/schema-relationsRef';
-import { createEntity, createRelation, getExistingEntities, getExistingRelations } from '../../database/middleware';
+import { createEntity, createInferredRelation, createRelation, getExistingEntities, getExistingRelations } from '../../database/middleware';
 import type { BasicStoreObject, BasicStoreRelation } from '../../types/store';
 import { isStixRelationship } from '../../schema/stixRelationship';
 import { isStixObject } from '../../schema/stixCoreObject';
@@ -19,6 +19,8 @@ import { logApp } from '../../config/conf';
 import { extractRepresentative } from '../../database/entity-representative';
 import { isStixSightingRelationship } from '../../schema/stixSightingRelationship';
 import { lockResource } from '../../database/redis';
+import { RULE_PREFIX } from '../../schema/general';
+import { createRuleContent } from '../../rules/rules-utils';
 
 type ConfirmDeleteOptions = {
   isRestoring?: boolean
@@ -42,7 +44,7 @@ const pick = (object: any, keys: string[] = []) => {
 /**
  * Convert an element as stored in database to an input for the createEntity / createRelation middleware functions
  */
-const convertStoreEntityToInput = (element: BasicStoreObject) => {
+const convertStoreEntityToInput = (element: BasicStoreObject, upsertedElements: Record<string, string> = {}) => {
   const { entity_type } = element;
   // forge input from the object in DB, as we want to "create" the element to trigger the full chain of events
   // start with the attributes defined in schema
@@ -70,6 +72,13 @@ const convertStoreEntityToInput = (element: BasicStoreObject) => {
   }
   if (isStixRelationship(entity_type)) {
     const connectionInput = pick(element, ['fromId', 'toId']);
+    if (connectionInput.fromId && upsertedElements[connectionInput.fromId] !== undefined) {
+      connectionInput.fromId = upsertedElements[connectionInput.fromId];
+    }
+    if (connectionInput.toId && upsertedElements[connectionInput.toId] !== undefined) {
+      connectionInput.toId = upsertedElements[connectionInput.toId];
+    }
+
     return {
       ...directInputs,
       ...refInputs,
@@ -300,16 +309,36 @@ export const restoreDelete = async (context: AuthContext, user: AuthUser, id: st
       result = await createRelation(context, user, mainElementToRestoreInput, { restore: true });
     }
 
+    const upsertedElements: Record<string, string> = {};
     const mainEntityRestoredId = result.id;
     if (mainEntityRestoredId !== main_entity_id) {
+      upsertedElements[main_entity_id] = mainEntityRestoredId;
       logApp.warn('Main entity has been restored with with different id (upsert)');
     }
 
     // restore the relationships
     for (let i = 0; i < orderedRelationshipsToRestore.length; i += 1) {
-      const relationshipInput = convertStoreEntityToInput(orderedRelationshipsToRestore[i] as BasicStoreObject);
-      result = await createRelation(context, user, relationshipInput); // created with same id as part of relationshipInput
-      if (result.id !== relationshipInput.id) {
+      const relationToRestore = orderedRelationshipsToRestore[i] as BasicStoreRelation;
+      const isInferredRelation = Object.keys(relationToRestore).some((k) => k.startsWith(RULE_PREFIX));
+      const relationshipInput = convertStoreEntityToInput(relationToRestore, upsertedElements);
+      if (!isInferredRelation) result = await createRelation(context, user, relationshipInput); // created with same id as part of relationshipInput
+      else {
+        const rule = Object.keys(relationToRestore).find((k) => k.startsWith(RULE_PREFIX));
+        if (rule === undefined) {
+          logApp.warn('Inferred rule could not be found');
+        } else {
+          const ruleID = rule.substring(RULE_PREFIX.length);
+          const ruleValues = (relationToRestore as Record<string, any>)[rule][0];
+          const ruleContent = createRuleContent(ruleID, ruleValues.dependencies, ruleValues.explanation, ruleValues.data);
+          result = await createInferredRelation(context, relationshipInput, ruleContent);
+        }
+      }
+      if (result.id && result.id !== relationshipInput.id) {
+        upsertedElements[relationshipInput.id] = result.id;
+        logApp.warn('Relationship has been restored with with different id (upsert)');
+      }
+      if (result.element && result.element.id && result.element.id !== relationshipInput.id) {
+        upsertedElements[relationshipInput.id] = result.element.id;
         logApp.warn('Relationship has been restored with with different id (upsert)');
       }
     }
