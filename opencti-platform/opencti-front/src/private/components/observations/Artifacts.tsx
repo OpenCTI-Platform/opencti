@@ -2,6 +2,7 @@ import React, { FunctionComponent } from 'react';
 import { ArtifactLine_node$data } from '@components/observations/artifacts/__generated__/ArtifactLine_node.graphql';
 import { ArtifactsLinesPaginationQuery, ArtifactsLinesPaginationQuery$variables } from '@components/observations/artifacts/__generated__/ArtifactsLinesPaginationQuery.graphql';
 import { ArtifactLineDummy } from '@components/observations/artifacts/ArtifactLine';
+import useHelper from 'src/utils/hooks/useHelper';
 import ListLines from '../../../components/list_lines/ListLines';
 import Security from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
@@ -21,6 +22,7 @@ const LOCAL_STORAGE_KEY = 'artifacts';
 
 const Artifacts: FunctionComponent = () => {
   const { t_i18n } = useFormatter();
+  const { isFeatureEnable } = useHelper();
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
@@ -64,6 +66,8 @@ const Artifacts: FunctionComponent = () => {
     artifactsLinesQuery,
     queryPaginationOptions,
   );
+
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   const dataColumns = {
     observable_value: {
@@ -115,65 +119,68 @@ const Artifacts: FunctionComponent = () => {
 
   const renderLines = () => {
     return (
-      <>
-        <ListLines
-          helpers={helpers}
-          sortBy={sortBy}
-          orderAsc={orderAsc}
-          dataColumns={dataColumns}
-          handleSort={helpers.handleSort}
-          handleSearch={helpers.handleSearch}
-          handleAddFilter={helpers.handleAddFilter}
-          handleRemoveFilter={helpers.handleRemoveFilter}
-          handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
-          handleSwitchLocalMode={helpers.handleSwitchLocalMode}
-          handleToggleExports={helpers.handleToggleExports}
-          openExports={openExports}
-          handleToggleSelectAll={handleToggleSelectAll}
-          selectAll={selectAll}
-          exportContext={{ entity_type: 'Artifact' }}
-          keyword={searchTerm}
-          filters={filters}
-          iconExtension={true}
-          paginationOptions={queryPaginationOptions}
-          numberOfElements={numberOfElements}
+      <ListLines
+        helpers={helpers}
+        sortBy={sortBy}
+        orderAsc={orderAsc}
+        dataColumns={dataColumns}
+        handleSort={helpers.handleSort}
+        handleSearch={helpers.handleSearch}
+        handleAddFilter={helpers.handleAddFilter}
+        handleRemoveFilter={helpers.handleRemoveFilter}
+        handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
+        handleSwitchLocalMode={helpers.handleSwitchLocalMode}
+        handleToggleExports={helpers.handleToggleExports}
+        openExports={openExports}
+        handleToggleSelectAll={handleToggleSelectAll}
+        selectAll={selectAll}
+        exportContext={{ entity_type: 'Artifact' }}
+        keyword={searchTerm}
+        filters={filters}
+        iconExtension={true}
+        paginationOptions={queryPaginationOptions}
+        numberOfElements={numberOfElements}
+        createButton={isFABReplaced && <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <ArtifactCreation
+            paginationOptions={queryPaginationOptions}
+          />
+        </Security>}
+      >
+        {queryRef && (
+        <React.Suspense
+          fallback={
+            <>
+              {Array(20)
+                .fill(0)
+                .map((_, idx) => (
+                  <ArtifactLineDummy key={idx} dataColumns={dataColumns} />
+                ))}
+            </>
+                    }
         >
-          {queryRef && (
-          <React.Suspense
-            fallback={
-              <>
-                {Array(20)
-                  .fill(0)
-                  .map((_, idx) => (
-                    <ArtifactLineDummy key={idx} dataColumns={dataColumns} />
-                  ))}
-              </>
-                      }
-          >
-            <ArtifactsLines
-              queryRef={queryRef}
-              paginationOptions={queryPaginationOptions}
-              dataColumns={dataColumns}
-              onLabelClick={helpers.handleAddFilter}
-              selectedElements={selectedElements}
-              deSelectedElements={deSelectedElements}
-              onToggleEntity={onToggleEntity}
-              selectAll={selectAll}
-              setNumberOfElements={helpers.handleSetNumberOfElements}
-            />
-            <ToolBar
-              selectedElements={selectedElements}
-              deSelectedElements={deSelectedElements}
-              numberOfSelectedElements={numberOfSelectedElements}
-              selectAll={selectAll}
-              filters={contextFilters}
-              search={searchTerm}
-              handleClearSelectedElements={handleClearSelectedElements}
-            />
-          </React.Suspense>
-          )}
-        </ListLines>
-      </>
+          <ArtifactsLines
+            queryRef={queryRef}
+            paginationOptions={queryPaginationOptions}
+            dataColumns={dataColumns}
+            onLabelClick={helpers.handleAddFilter}
+            selectedElements={selectedElements}
+            deSelectedElements={deSelectedElements}
+            onToggleEntity={onToggleEntity}
+            selectAll={selectAll}
+            setNumberOfElements={helpers.handleSetNumberOfElements}
+          />
+          <ToolBar
+            selectedElements={selectedElements}
+            deSelectedElements={deSelectedElements}
+            numberOfSelectedElements={numberOfSelectedElements}
+            selectAll={selectAll}
+            filters={contextFilters}
+            search={searchTerm}
+            handleClearSelectedElements={handleClearSelectedElements}
+          />
+        </React.Suspense>
+        )}
+      </ListLines>
     );
   };
 
@@ -182,11 +189,11 @@ const Artifacts: FunctionComponent = () => {
       <ExportContextProvider>
         <Breadcrumbs variant="list" elements={[{ label: t_i18n('Observations') }, { label: t_i18n('Artifacts'), current: true }]} />
         {renderLines()}
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+        {!isFABReplaced && <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <ArtifactCreation
             paginationOptions={queryPaginationOptions}
           />
-        </Security>
+        </Security>}
       </ExportContextProvider>
     </div>
   );

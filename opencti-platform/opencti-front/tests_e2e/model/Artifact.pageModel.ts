@@ -8,6 +8,6 @@ export default class ArtifactPage {
   }
 
   addNewArtifactImport() {
-    return this.page.getByLabel('Add', { exact: true });
+    return this.page.getByLabel('Create Artifact', { exact: true });
   }
 }

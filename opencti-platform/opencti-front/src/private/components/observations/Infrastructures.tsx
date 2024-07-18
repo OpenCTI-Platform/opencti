@@ -1,4 +1,5 @@
 import React from 'react';
+import useHelper from 'src/utils/hooks/useHelper';
 import useAuth from '../../../utils/hooks/useAuth';
 import ListLines from '../../../components/list_lines/ListLines';
 import InfrastructuresLines, { infrastructuresLinesQuery } from './infrastructures/InfrastructuresLines';
@@ -21,6 +22,7 @@ export const LOCAL_STORAGE_KEY_INFRASTRUCTURES = 'infrastructures';
 
 const Infrastructures = () => {
   const { t_i18n } = useFormatter();
+  const { isFeatureEnable } = useHelper();
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
@@ -66,6 +68,7 @@ const Infrastructures = () => {
   } = useEntityToggle<InfrastructureLine_node$data>(
     LOCAL_STORAGE_KEY_INFRASTRUCTURES,
   );
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const renderLines = () => {
     const isRuntimeSort = isRuntimeFieldEnable() ?? false;
     const dataColumns = {
@@ -128,6 +131,9 @@ const Infrastructures = () => {
         paginationOptions={queryPaginationOptions}
         numberOfElements={numberOfElements}
         iconExtension={true}
+        createButton={isFABReplaced && <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <InfrastructureCreation paginationOptions={queryPaginationOptions} />
+        </Security>}
       >
         {queryRef && (
           <React.Suspense
@@ -174,9 +180,9 @@ const Infrastructures = () => {
     <ExportContextProvider>
       <Breadcrumbs variant="list" elements={[{ label: t_i18n('Observations') }, { label: t_i18n('Infrastructures'), current: true }]} />
       {renderLines()}
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
+      {!isFABReplaced && <Security needs={[KNOWLEDGE_KNUPDATE]}>
         <InfrastructureCreation paginationOptions={queryPaginationOptions} />
-      </Security>
+      </Security>}
     </ExportContextProvider>
   );
 };

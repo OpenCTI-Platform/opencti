@@ -1,4 +1,5 @@
 import React from 'react';
+import useHelper from 'src/utils/hooks/useHelper';
 import ListLines from '../../../components/list_lines/ListLines';
 import IndicatorsLines, { indicatorsLinesQuery } from './indicators/IndicatorsLines';
 import IndicatorCreation from './indicators/IndicatorCreation';
@@ -21,6 +22,7 @@ const LOCAL_STORAGE_KEY = 'indicators-list';
 
 const Indicators = () => {
   const { t_i18n } = useFormatter();
+  const { isFeatureEnable } = useHelper();
   const {
     viewStorage,
     paginationOptions,
@@ -72,6 +74,7 @@ const Indicators = () => {
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
   const isRuntimeSort = isRuntimeFieldEnable() ?? false;
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   const renderLines = () => {
     let numberOfSelectedElements = Object.keys(selectedElements || {}).length;
@@ -144,6 +147,9 @@ const Indicators = () => {
           filters={filters}
           paginationOptions={queryPaginationOptions}
           numberOfElements={numberOfElements}
+          createButton={isFABReplaced && <Security needs={[KNOWLEDGE_KNUPDATE]}>
+            <IndicatorCreation paginationOptions={queryPaginationOptions}/>
+          </Security>}
         >
           {queryRef && (
           <React.Suspense
@@ -192,9 +198,9 @@ const Indicators = () => {
       <div>
         <Breadcrumbs variant="list" elements={[{ label: t_i18n('Observations') }, { label: t_i18n('Indicators'), current: true }]} />
         {renderLines()}
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+        {!isFABReplaced && <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <IndicatorCreation paginationOptions={queryPaginationOptions}/>
-        </Security>
+        </Security>}
       </div>
     </ExportContextProvider>
   );
