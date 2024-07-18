@@ -195,12 +195,12 @@ export const DataComponentCreationForm: FunctionComponent<DataComponentFormProps
               <BulkTextModal
                 open={bulkModalOpen}
                 onClose={onBulkModalClose}
-                onValidate={((val) => {
-                  setFieldValue('name', val);
+                onValidate={async (val) => {
+                  await setFieldValue('name', val);
                   if (splitMultilines(val).length > 1) {
-                    setFieldValue('file', null);
+                    await setFieldValue('file', null);
                   }
-                })}
+                }}
                 formValue={values.name}
               />
               <ProgressBar
