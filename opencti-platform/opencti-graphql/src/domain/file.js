@@ -144,7 +144,7 @@ export const uploadPending = async (context, user, file, entityId = null, labels
     const json = JSON.stringify(bundle);
     const fileData = await file;
     finalFile = {
-      createReadStream: () => Readable.from(Buffer.from(json)),
+      createReadStream: () => Readable.from(Buffer.from(json, 'utf-8')),
       filename: fileData.filename,
       mimetype: fileData.mimetype
     };
