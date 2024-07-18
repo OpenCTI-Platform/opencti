@@ -8,18 +8,19 @@ type BulkRelationDialogContainerProps = {
   stixDomainObjectId: string;
   stixDomainObjectName: string;
   stixDomainObjectType: string;
-  handleRefetch: () => void;
+  selectedEntities: string[];
+  defaultRelationshipType?: string;
 };
 
 const inlinedStyle = {
   button: {
     display: 'flex',
-    margin: '-45px 0px 0 0',
     float: 'right',
     alignItems: 'center',
+    margin: '0 10px',
   },
 };
-const BulkRelationDialogContainer = ({ stixDomainObjectId, stixDomainObjectName, stixDomainObjectType, handleRefetch }: BulkRelationDialogContainerProps) => {
+const BulkRelationDialogContainer = ({ stixDomainObjectId, stixDomainObjectName, stixDomainObjectType, selectedEntities, defaultRelationshipType }: BulkRelationDialogContainerProps) => {
   const { isFeatureEnable } = useHelper();
   const { t_i18n } = useFormatter();
 
@@ -35,7 +36,7 @@ const BulkRelationDialogContainer = ({ stixDomainObjectId, stixDomainObjectName,
 
   return (
     <>
-      <Button onClick={handleOpenDialog} variant="outlined" sx={inlinedStyle.button}>
+      <Button onClick={handleOpenDialog} color="secondary" variant="outlined" sx={inlinedStyle.button} size="small">
         {t_i18n('Create bulk relations')}
       </Button>
       {isDialogOpen && (
@@ -43,9 +44,10 @@ const BulkRelationDialogContainer = ({ stixDomainObjectId, stixDomainObjectName,
         stixDomainObjectId={stixDomainObjectId}
         stixDomainObjectName={stixDomainObjectName}
         stixDomainObjectType={stixDomainObjectType}
+        defaultRelationshipType={defaultRelationshipType}
         isOpen={isDialogOpen}
         onClose={handleCloseDialog}
-        handleRefetch={handleRefetch}
+        selectedEntities={selectedEntities}
       />
       )}
     </>

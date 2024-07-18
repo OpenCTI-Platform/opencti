@@ -20,6 +20,7 @@ import { StixCoreRelationshipAddInput } from '@components/common/stix_core_relat
 import { RelayError } from 'src/relay/relayTypes';
 import Loader from 'src/components/Loader';
 import { graphql } from 'react-relay';
+import { ForceUpdateEvent } from '@components/common/bulk/useForceUpdate';
 import { allEntitiesKeyList, type StixCoreResultsType } from '../utils/querySearchEntityByText';
 import { getRelationsFromOneEntityToAny, RelationsDataFromEntity, RelationsToEntity } from '../../../../../utils/Relation';
 
@@ -68,7 +69,8 @@ interface BulkRelationDialogProps {
   stixDomainObjectType: string;
   isOpen: boolean;
   onClose: () => void;
-  handleRefetch: () => void;
+  selectedEntities: string[];
+  defaultRelationshipType?: string;
 }
 
 export interface BulkEntityTypeInfo {
@@ -134,9 +136,17 @@ export const entityTypeHeaderWidth = 180;
 export const entityNameHeaderWidth = 180;
 export const matchHeaderWidth = 180;
 
-const BulkRelationDialog : FunctionComponent<BulkRelationDialogProps> = ({ stixDomainObjectId, stixDomainObjectType, stixDomainObjectName, isOpen, onClose, handleRefetch }) => {
+const BulkRelationDialog : FunctionComponent<BulkRelationDialogProps> = ({
+  stixDomainObjectId,
+  stixDomainObjectType,
+  stixDomainObjectName,
+  isOpen,
+  onClose,
+  selectedEntities,
+  defaultRelationshipType,
+}) => {
   const { t_i18n } = useFormatter();
-  const [textAreaValue, setTextAreaValue] = useState<string[]>([]);
+  const [textAreaValue, setTextAreaValue] = useState<string[]>([...selectedEntities]);
   const [entityToSearch, setEntityToSearch] = useState<string[]>([]);
   const [bulkEntityList, setBulkEntityList] = useState<BulkEntityTypeInfo[]>([]);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
@@ -155,7 +165,14 @@ const BulkRelationDialog : FunctionComponent<BulkRelationDialogProps> = ({ stixD
   const entityList = resolvedRelations.allRelationsToEntity;
   const relationListArray = resolvedRelations.allPossibleRelations;
 
-  const [selectedRelationType, setSelectedRelationType] = useState<string>(relationListArray[0]);
+  const getDefaultSelectedRelationshipType = () => {
+    if (defaultRelationshipType && relationListArray.includes(defaultRelationshipType.toLowerCase())) {
+      return defaultRelationshipType.toLowerCase();
+    }
+    return relationListArray[0];
+  };
+
+  const [selectedRelationType, setSelectedRelationType] = useState<string>(getDefaultSelectedRelationshipType());
 
   const getRelationMatchStatus = (selectedEntityType: RelationsToEntity, entityTypeList: entityTypeListType[]): boolean => {
     const matchingEntity = entityTypeList?.find((foundEntity) => foundEntity.entity_type === selectedEntityType?.toEntitytype);
@@ -282,8 +299,8 @@ const BulkRelationDialog : FunctionComponent<BulkRelationDialogProps> = ({ stixD
       }
     }
     setIsSubmitting(false);
-    handleRefetch();
     onClose();
+    dispatchEvent(new CustomEvent(ForceUpdateEvent));
   };
   const getTextAreaValue = () => textAreaValue.join('\n');
 

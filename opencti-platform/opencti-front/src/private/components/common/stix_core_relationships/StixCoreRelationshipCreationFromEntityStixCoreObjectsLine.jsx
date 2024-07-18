@@ -139,195 +139,197 @@ const StixCoreRelationshipCreationFromEntityStixCoreObjectsLineComponent = ({
   );
 };
 
+export const stixCoreRelationshipCreationFromEntityStixCoreObjectsLineFragment = graphql`
+  fragment StixCoreRelationshipCreationFromEntityStixCoreObjectsLine_node on StixCoreObject {
+    id
+    standard_id
+    parent_types
+    entity_type
+    created_at
+    ... on AttackPattern {
+      name
+      description
+      aliases
+      x_mitre_id
+    }
+    ... on Campaign {
+      name
+      description
+      aliases
+    }
+    ... on Note {
+      attribute_abstract
+      content
+    }
+    ... on ObservedData {
+      name
+      first_observed
+      last_observed
+    }
+    ... on Opinion {
+      opinion
+      explanation
+    }
+    ... on Report {
+      name
+      description
+    }
+    ... on Grouping {
+      name
+      description
+    }
+    ... on CourseOfAction {
+      name
+      description
+      x_opencti_aliases
+      x_mitre_id
+    }
+    ... on Individual {
+      name
+      description
+      x_opencti_aliases
+    }
+    ... on Organization {
+      name
+      description
+      x_opencti_aliases
+    }
+    ... on Sector {
+      name
+      description
+      x_opencti_aliases
+    }
+    ... on System {
+      name
+      description
+      x_opencti_aliases
+    }
+    ... on Indicator {
+      name
+      description
+    }
+    ... on Infrastructure {
+      name
+      description
+    }
+    ... on IntrusionSet {
+      name
+      aliases
+      description
+    }
+    ... on Position {
+      name
+      description
+      x_opencti_aliases
+    }
+    ... on City {
+      name
+      description
+      x_opencti_aliases
+    }
+    ... on AdministrativeArea {
+      name
+      description
+      x_opencti_aliases
+    }
+    ... on Country {
+      name
+      description
+      x_opencti_aliases
+    }
+    ... on Region {
+      name
+      description
+      x_opencti_aliases
+    }
+    ... on Malware {
+      name
+      aliases
+      description
+    }
+    ... on MalwareAnalysis {
+      result_name
+    }
+    ... on ThreatActor {
+      name
+      aliases
+      description
+    }
+    ... on Tool {
+      name
+      aliases
+      description
+    }
+    ... on Vulnerability {
+      name
+      description
+    }
+    ... on Incident {
+      name
+      aliases
+      description
+    }
+    ... on Event {
+      name
+      description
+      aliases
+    }
+    ... on Channel {
+      name
+      description
+      aliases
+    }
+    ... on Narrative {
+      name
+      description
+      aliases
+    }
+    ... on Language {
+      name
+      aliases
+    }
+    ... on DataComponent {
+      name
+    }
+    ... on DataSource {
+      name
+    }
+    ... on Case {
+      name
+    }
+    ... on StixCyberObservable {
+      observable_value
+    }
+    createdBy {
+      id
+      entity_type
+      ... on Identity {
+        name
+      }
+    }
+    objectMarking {
+      id
+      definition_type
+      definition
+      x_opencti_order
+      x_opencti_color
+    }
+    objectLabel {
+      id
+      value
+      color
+    }
+    creators {
+      id
+      name
+    }
+  }
+`;
+
 export const StixCoreRelationshipCreationFromEntityStixCoreObjectsLine = createFragmentContainer(
   StixCoreRelationshipCreationFromEntityStixCoreObjectsLineComponent,
   {
-    node: graphql`
-        fragment StixCoreRelationshipCreationFromEntityStixCoreObjectsLine_node on StixCoreObject {
-          id
-          standard_id
-          parent_types
-          entity_type
-          created_at
-          ... on AttackPattern {
-            name
-            description
-            aliases
-            x_mitre_id
-          }
-          ... on Campaign {
-            name
-            description
-            aliases
-          }
-          ... on Note {
-            attribute_abstract
-            content
-          }
-          ... on ObservedData {
-            name
-            first_observed
-            last_observed
-          }
-          ... on Opinion {
-            opinion
-            explanation
-          }
-          ... on Report {
-            name
-            description
-          }
-          ... on Grouping {
-            name
-            description
-          }
-          ... on CourseOfAction {
-            name
-            description
-            x_opencti_aliases
-            x_mitre_id
-          }
-          ... on Individual {
-            name
-            description
-            x_opencti_aliases
-          }
-          ... on Organization {
-            name
-            description
-            x_opencti_aliases
-          }
-          ... on Sector {
-            name
-            description
-            x_opencti_aliases
-          }
-          ... on System {
-            name
-            description
-            x_opencti_aliases
-          }
-          ... on Indicator {
-            name
-            description
-          }
-          ... on Infrastructure {
-            name
-            description
-          }
-          ... on IntrusionSet {
-            name
-            aliases
-            description
-          }
-          ... on Position {
-            name
-            description
-            x_opencti_aliases
-          }
-          ... on City {
-            name
-            description
-            x_opencti_aliases
-          }
-          ... on AdministrativeArea {
-            name
-            description
-            x_opencti_aliases
-          }
-          ... on Country {
-            name
-            description
-            x_opencti_aliases
-          }
-          ... on Region {
-            name
-            description
-            x_opencti_aliases
-          }
-          ... on Malware {
-            name
-            aliases
-            description
-          }
-          ... on MalwareAnalysis {
-            result_name
-          }
-          ... on ThreatActor {
-            name
-            aliases
-            description
-          }
-          ... on Tool {
-            name
-            aliases
-            description
-          }
-          ... on Vulnerability {
-            name
-            description
-          }
-          ... on Incident {
-            name
-            aliases
-            description
-          }
-          ... on Event {
-            name
-            description
-            aliases
-          }
-          ... on Channel {
-            name
-            description
-            aliases
-          }
-          ... on Narrative {
-            name
-            description
-            aliases
-          }
-          ... on Language {
-            name
-            aliases
-          }
-          ... on DataComponent {
-            name
-          }
-          ... on DataSource {
-            name
-          }
-          ... on Case {
-            name
-          }
-          ... on StixCyberObservable {
-            observable_value
-          }
-          createdBy {
-            id
-            entity_type
-            ... on Identity {
-              name
-            }
-          }
-          objectMarking {
-            id
-            definition_type
-            definition
-            x_opencti_order
-            x_opencti_color
-          }
-          objectLabel {
-            id
-            value
-            color
-          }
-          creators {
-            id
-            name
-          }
-        }
-      `,
+    node: stixCoreRelationshipCreationFromEntityStixCoreObjectsLineFragment,
   },
 );
 

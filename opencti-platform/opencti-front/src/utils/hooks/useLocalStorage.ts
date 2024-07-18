@@ -674,16 +674,14 @@ export const usePaginationLocalStorage = <U>(
       dispatch(`${key}_paginationStorage`, newValue);
     },
     handleAddFilterWithEmptyValue: (filter: Filter) => {
-      if (viewStorage?.filters) {
-        const { filters } = viewStorage;
-        const newValue = {
-          ...viewStorage,
-          filters: handleAddFilterWithEmptyValueUtil({ filters, filter }),
-          latestAddFilterId: filter.id,
-        };
-        setValue(newValue);
-        dispatch(`${key}_paginationStorage`, newValue);
-      }
+      const { filters } = viewStorage;
+      const newValue = {
+        ...viewStorage,
+        filters: handleAddFilterWithEmptyValueUtil({ filters: filters ?? emptyFilterGroup, filter }),
+        latestAddFilterId: filter.id,
+      };
+      setValue(newValue);
+      dispatch(`${key}_paginationStorage`, newValue);
     },
     handleChangeOperatorFilters: (id: string, operator: string) => {
       if (viewStorage?.filters) {

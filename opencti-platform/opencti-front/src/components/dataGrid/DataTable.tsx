@@ -135,7 +135,7 @@ const DataTable = (props: OCTIDataTableProps) => {
           <div
             style={{
               display: 'flex',
-              ...(variant === DataTableVariant.default ? { marginTop: -10 } : { marginTop: 10, marginLeft: 10 }),
+              ...(variant === DataTableVariant.default ? { marginTop: -10 } : { marginTop: 10, marginLeft: 10, marginRight: 10 }),
             }}
           >
             <SearchInput
