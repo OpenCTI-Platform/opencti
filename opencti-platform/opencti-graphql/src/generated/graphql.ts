@@ -12758,6 +12758,7 @@ export type Mutation = {
   statusTemplateContextPatch: StatusTemplate;
   statusTemplateDelete: Scalars['ID']['output'];
   statusTemplateFieldPatch: StatusTemplate;
+  stixBundlePush?: Maybe<Scalars['Boolean']['output']>;
   stixCoreObjectEdit?: Maybe<StixCoreObjectEditMutations>;
   stixCoreObjectsExportAsk?: Maybe<Array<File>>;
   stixCoreObjectsExportPush?: Maybe<Scalars['Boolean']['output']>;
@@ -14222,6 +14223,12 @@ export type MutationStatusTemplateDeleteArgs = {
 export type MutationStatusTemplateFieldPatchArgs = {
   id: Scalars['ID']['input'];
   input: Array<EditInput>;
+};
+
+
+export type MutationStixBundlePushArgs = {
+  bundle: Scalars['String']['input'];
+  connectorId: Scalars['String']['input'];
 };
 
 
@@ -34785,6 +34792,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   statusTemplateContextPatch?: Resolver<ResolversTypes['StatusTemplate'], ParentType, ContextType, RequireFields<MutationStatusTemplateContextPatchArgs, 'id' | 'input'>>;
   statusTemplateDelete?: Resolver<ResolversTypes['ID'], ParentType, ContextType, RequireFields<MutationStatusTemplateDeleteArgs, 'id'>>;
   statusTemplateFieldPatch?: Resolver<ResolversTypes['StatusTemplate'], ParentType, ContextType, RequireFields<MutationStatusTemplateFieldPatchArgs, 'id' | 'input'>>;
+  stixBundlePush?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationStixBundlePushArgs, 'bundle' | 'connectorId'>>;
   stixCoreObjectEdit?: Resolver<Maybe<ResolversTypes['StixCoreObjectEditMutations']>, ParentType, ContextType, RequireFields<MutationStixCoreObjectEditArgs, 'id'>>;
   stixCoreObjectsExportAsk?: Resolver<Maybe<Array<ResolversTypes['File']>>, ParentType, ContextType, RequireFields<MutationStixCoreObjectsExportAskArgs, 'input'>>;
   stixCoreObjectsExportPush?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationStixCoreObjectsExportPushArgs, 'entity_type' | 'file' | 'file_markings'>>;

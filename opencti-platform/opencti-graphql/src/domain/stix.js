@@ -7,8 +7,8 @@ import { FunctionalError, UnsupportedError } from '../config/errors';
 import { connectorsForExport } from './connector';
 import { findById as findMarkingDefinitionById } from './markingDefinition';
 import { now, observableValue } from '../utils/format';
-import { createWork } from './work';
-import { pushToConnector } from '../database/rabbitmq';
+import { createWork, updateExpectationsNumber } from './work';
+import { pushToConnector, pushToWorkerForConnector } from '../database/rabbitmq';
 import { ENTITY_TYPE_CONTAINER_NOTE, ENTITY_TYPE_CONTAINER_OPINION, isStixDomainObjectShareableContainer, STIX_ORGANIZATIONS_UNRESTRICTED } from '../schema/stixDomainObject';
 import {
   ABSTRACT_STIX_CORE_OBJECT,
@@ -17,7 +17,7 @@ import {
   ABSTRACT_STIX_OBJECT,
   ABSTRACT_STIX_RELATIONSHIP,
   CONNECTOR_INTERNAL_EXPORT_FILE,
-  INPUT_GRANTED_REFS
+  INPUT_GRANTED_REFS,
 } from '../schema/general';
 import { UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE } from '../database/utils';
 import { extractEntityRepresentativeName } from '../database/entity-representative';
@@ -34,6 +34,7 @@ import { getExportFilter } from '../utils/getExportFilter';
 import { getEntitiesListFromCache } from '../database/cache';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { checkUserCanShareMarkings } from './user';
+import { ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
 
 export const stixDelete = async (context, user, id) => {
   const element = await internalLoadById(context, user, id);
@@ -52,6 +53,35 @@ export const stixDelete = async (context, user, id) => {
 
 export const stixObjectMerge = async (context, user, targetId, sourceIds) => {
   return mergeEntities(context, user, targetId, sourceIds);
+};
+
+export const sendStixBundle = async (context, user, connectorId, bundle) => {
+  try {
+    // 01. Simple check bundle
+    const jsonBundle = JSON.parse(bundle);
+    if (jsonBundle.type !== 'bundle' || !jsonBundle.objects || jsonBundle.objects.length === 0) {
+      throw UnsupportedError('Invalid stix bundle');
+    }
+    // 02. Create work and send the bundle to ingestion
+    const connector = await storeLoadById(context, user, connectorId, ENTITY_TYPE_CONNECTOR);
+    if (!connector) {
+      throw UnsupportedError('Invalid connector');
+    }
+    const workName = `${connector.name} run @ ${now()}`;
+    const work = await createWork(context, user, connector, workName, connector.internal_id);
+    const content = Buffer.from(bundle, 'utf-8').toString('base64');
+    await updateExpectationsNumber(context, context.user, work.id, jsonBundle.objects.length);
+    await pushToWorkerForConnector(connectorId, {
+      type: 'bundle',
+      applicant_id: user.internal_id,
+      content,
+      work_id: work.id,
+      update: true
+    });
+    return true;
+  } catch (err) {
+    throw UnsupportedError('Invalid bundle', { cause: err });
+  }
 };
 
 export const askListExport = async (context, user, exportContext, format, selectedIds, listParams, type, contentMaxMarkings, fileMarkings) => {

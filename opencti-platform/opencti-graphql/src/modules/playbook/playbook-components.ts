@@ -18,7 +18,7 @@ import type { JSONSchemaType } from 'ajv';
 import * as jsonpatch from 'fast-json-patch';
 import { type BasicStoreEntityPlaybook, ENTITY_TYPE_PLAYBOOK, type PlaybookComponent } from './playbook-types';
 import { AUTOMATION_MANAGER_USER, AUTOMATION_MANAGER_USER_UUID, executionContext, INTERNAL_USERS, isUserCanAccessStixElement, SYSTEM_USER } from '../../utils/access';
-import { pushToConnector, pushToPlaybook } from '../../database/rabbitmq';
+import { pushToConnector, pushToWorkerForPlaybook } from '../../database/rabbitmq';
 import {
   ABSTRACT_STIX_CORE_OBJECT,
   ABSTRACT_STIX_CORE_RELATIONSHIP,
@@ -167,7 +167,7 @@ const PLAYBOOK_INGESTION_COMPONENT: PlaybookComponent<IngestionConfiguration> = 
   schema: async () => undefined,
   executor: async ({ eventId, bundle, playbookId }) => {
     const content = Buffer.from(JSON.stringify(bundle), 'utf-8').toString('base64');
-    await pushToPlaybook({
+    await pushToWorkerForPlaybook({
       type: 'bundle',
       event_id: eventId,
       playbook_id: playbookId,

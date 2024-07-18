@@ -16,7 +16,7 @@ import { isEmptyField, isNotEmptyField } from '../database/utils';
 import { FROM_START_STR, sanitizeForMomentParsing, utcDate } from '../utils/format';
 import { generateStandardId } from '../schema/identifier';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../schema/stixDomainObject';
-import { pushToSync } from '../database/rabbitmq';
+import { pushToWorkerForSync } from '../database/rabbitmq';
 import { OPENCTI_SYSTEM_UUID } from '../schema/general';
 import { findAllRssIngestions, patchRssIngestion } from '../modules/ingestion/ingestion-rss-domain';
 import type { AuthContext } from '../types/user';
@@ -174,7 +174,7 @@ const rssDataHandler = async (context: AuthContext, httpRssGet: Getter, turndown
     // Push the bundle to absorption queue
     const stixBundle = JSON.stringify(bundle);
     const content = Buffer.from(stixBundle, 'utf-8').toString('base64');
-    await pushToSync({ type: 'bundle', applicant_id: ingestion.user_id ?? OPENCTI_SYSTEM_UUID, content, update: true });
+    await pushToWorkerForSync({ type: 'bundle', applicant_id: ingestion.user_id ?? OPENCTI_SYSTEM_UUID, content, update: true });
     // Update the state
     const lastPubDate = R.last(items)?.pubDate;
     await patchRssIngestion(context, SYSTEM_USER, ingestion.internal_id, { current_state_date: lastPubDate });
@@ -246,7 +246,7 @@ const taxiiV21DataHandler: TaxiiHandlerFn = async (context: AuthContext, ingesti
     // Push the bundle to absorption queue
     const stixBundle = JSON.stringify(bundle);
     const content = Buffer.from(stixBundle, 'utf-8').toString('base64');
-    await pushToSync({ type: 'bundle', applicant_id: ingestion.user_id ?? OPENCTI_SYSTEM_UUID, content, update: true });
+    await pushToWorkerForSync({ type: 'bundle', applicant_id: ingestion.user_id ?? OPENCTI_SYSTEM_UUID, content, update: true });
     // Update the state
     await patchTaxiiIngestion(context, SYSTEM_USER, ingestion.internal_id, {
       current_state_cursor: data.next ? String(data.next) : undefined,
@@ -321,7 +321,7 @@ const csvDataHandler = async (context: AuthContext, ingestion: BasicStoreEntityI
     const friendlyName = 'CSV feed Ingestion';
     const work = await createWork(context, user, IMPORT_CSV_CONNECTOR, friendlyName, IMPORT_CSV_CONNECTOR.id) as unknown as Work;
     await updateExpectationsNumber(context, user, work.id, 1);
-    await pushToSync({ type: 'bundle', applicant_id: ingestion.user_id ?? OPENCTI_SYSTEM_UUID, work_id: work.id, content, update: true });
+    await pushToWorkerForSync({ type: 'bundle', applicant_id: ingestion.user_id ?? OPENCTI_SYSTEM_UUID, work_id: work.id, content, update: true });
   }
 
   // Update the state
