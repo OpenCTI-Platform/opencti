@@ -131,7 +131,7 @@ class RootOrganization extends Component {
             if (props) {
               if (props.organization) {
                 const { organization } = props;
-                const paddingRight = getPaddingRight(location.pathname, organization.id, '/dashboard/entities/organizations');
+                const paddingRight = getPaddingRight(location.pathname, organization.id, '/dashboard/entities/organizations', viewAs === 'knowledge');
                 return (
                   <>
                     <Routes>
