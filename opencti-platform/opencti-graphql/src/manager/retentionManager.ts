@@ -34,7 +34,7 @@ const deleteElements = async (context: AuthContext, scope: string, nodeId: strin
   }
 };
 
-const elementsToDelete = async (context: AuthContext, scope: string, before: Moment, filters?: string) => {
+export const elementsToDelete = async (context: AuthContext, scope: string, before: Moment, filters?: string) => {
   let result;
   if (scope === 'knowledge') {
     const jsonFilters = filters ? JSON.parse(filters) : null;

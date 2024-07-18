@@ -11,7 +11,7 @@ import { uploadToStorage } from '../../../src/database/file-storage-helper';
 import { getManagerConfigurationFromCache, updateManagerConfigurationLastRun } from '../../../src/modules/managerConfiguration/managerConfiguration-domain';
 import { SYSTEM_USER } from '../../../src/utils/access';
 
-const indexFile = async (fileName, mimetype, documentId) => {
+const indexFile = async (fileName, mimetype, documentId, lastModifiedOverride) => {
   const file = {
     createReadStream: () => createReadStream(`./tests/data/${fileName}`),
     filename: fileName,
@@ -29,7 +29,7 @@ const indexFile = async (fileName, mimetype, documentId) => {
     file_data: fileContent,
     entity_id: '',
     name: fileName,
-    uploaded_at: file.lastModified,
+    uploaded_at: lastModifiedOverride ?? file.lastModified,
   };
 
   // index file content
@@ -96,7 +96,7 @@ describe('Indexing file test', () => {
   });
   it('Should index html file', async () => {
     const mimeType = 'text/html';
-    const result = await indexFile('test-file-to-index.html', mimeType, 'TEST_FILE_7');
+    const result = await indexFile('test-file-to-index.html', mimeType, 'TEST_FILE_7', '2022-01-01T00:00:00.000Z');
     await testFileIndexing(result, mimeType);
   });
   it('Should find document by search query', async () => {

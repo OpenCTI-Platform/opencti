@@ -14,7 +14,6 @@ import { FormikConfig } from 'formik/dist/types';
 import { Option } from '@components/common/form/ReferenceField';
 import { RetentionCreationCheckMutation$data } from '@components/settings/retention/__generated__/RetentionCreationCheckMutation.graphql';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
-import { instanceTriggerDescription } from '@components/profile/triggers/TriggerLiveCreation';
 import Alert from '@mui/material/Alert';
 import Drawer, { DrawerVariant } from '../../common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
