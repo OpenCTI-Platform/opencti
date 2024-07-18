@@ -6,7 +6,6 @@ import { graphql } from 'react-relay';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { FormikConfig } from 'formik/dist/types';
 import Drawer, { DrawerControlledDialProps, DrawerVariant } from '@components/common/drawer/Drawer';
-import useHelper from 'src/utils/hooks/useHelper';
 import { useFormatter } from '../../../../components/i18n';
 import { handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
@@ -121,7 +120,6 @@ export const InfrastructureCreationForm: FunctionComponent<InfrastructureFormPro
     undefined,
     { successMessage: `${t_i18n('entity_Infrastructure')} ${t_i18n('successfully created')}` },
   );
-  const [commit] = useApiMutation<InfrastructureCreationMutation>(infrastructureMutation);
   const {
     bulkCommit,
     bulkCount,
