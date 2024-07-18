@@ -17,7 +17,7 @@ export interface UseEntityToggle<T> {
   setSelectedElements: (selectedElements: Record<string, T>) => void;
 }
 
-const useEntityToggle = <T extends { id: string }>(
+const useEntityToggle = <T extends { id: string, name?: string, entity_type?: string }>(
   key: string,
 ): UseEntityToggle<T> => {
   const { numberOfElements } = JSON.parse(window.localStorage.getItem(key) ?? '{}');

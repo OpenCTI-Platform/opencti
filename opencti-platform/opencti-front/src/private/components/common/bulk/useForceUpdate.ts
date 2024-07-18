@@ -1,18 +1,23 @@
-import { useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 
 type UseForceUpdateType = {
   forceUpdate: string;
-  handleForceUpdate: () => void;
 };
+
+export const ForceUpdateEvent = 'ForceUpdateEvent';
 
 const useForceUpdate = (): UseForceUpdateType => {
   const [forceUpdate, setForceUpdate] = useState(String(new Date()));
 
-  const handleForceUpdate = () => setForceUpdate(String(new Date()));
+  const onForceUpdateEventTriggered = useCallback(() => setForceUpdate(String(new Date())), [setForceUpdate]);
+
+  useEffect(() => {
+    window.addEventListener(ForceUpdateEvent, onForceUpdateEventTriggered);
+    return () => window.removeEventListener(ForceUpdateEvent, onForceUpdateEventTriggered);
+  }, []);
 
   return {
     forceUpdate,
-    handleForceUpdate,
   };
 };
 

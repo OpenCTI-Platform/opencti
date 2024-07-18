@@ -135,62 +135,63 @@ export const stixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery = g
   }
 `;
 
+export const stixCoreRelationshipCreationFromEntityStixCoreObjectsLinesFragment= graphql`
+  fragment StixCoreRelationshipCreationFromEntityStixCoreObjectsLines_data on Query
+  @argumentDefinitions(
+    types: { type: "[String]" }
+    search: { type: "String" }
+    count: { type: "Int", defaultValue: 25 }
+    cursor: { type: "ID" }
+    orderBy: { type: "StixCoreObjectsOrdering", defaultValue: created_at }
+    orderMode: { type: "OrderingMode", defaultValue: asc }
+    filters: { type: "FilterGroup" }
+  ) @refetchable(queryName: "StixCoreRelationshipCreationFromEntityStixCoreObjectsLinesRefetchQuery") {
+    stixCoreObjects(
+      types: $types
+      search: $search
+      first: $count
+      after: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+      filters: $filters
+    ) @connection(key: "Pagination_stixCoreObjects") {
+      edges {
+        node {
+          id
+          standard_id
+          entity_type
+          created_at
+          createdBy {
+            ... on Identity {
+              name
+            }
+          }
+          creators {
+            id
+            name
+          }
+          objectMarking {
+            id
+            definition_type
+            definition
+            x_opencti_order
+            x_opencti_color
+          }
+          ...StixCoreRelationshipCreationFromEntityStixCoreObjectsLine_node
+        }
+      }
+      pageInfo {
+        endCursor
+        hasNextPage
+        globalCount
+      }
+    }
+  }
+`;
 const StixCoreRelationshipCreationFromEntityStixCoreObjectsLines = createPaginationContainer(
   StixCoreRelationshipCreationFromEntityStixCoreObjectsLinesComponent,
   {
-    data: graphql`
-        fragment StixCoreRelationshipCreationFromEntityStixCoreObjectsLines_data on Query
-        @argumentDefinitions(
-          types: { type: "[String]" }
-          search: { type: "String" }
-          count: { type: "Int", defaultValue: 25 }
-          cursor: { type: "ID" }
-          orderBy: { type: "StixCoreObjectsOrdering", defaultValue: created_at }
-          orderMode: { type: "OrderingMode", defaultValue: asc }
-          filters: { type: "FilterGroup" }
-        ) {
-          stixCoreObjects(
-            types: $types
-            search: $search
-            first: $count
-            after: $cursor
-            orderBy: $orderBy
-            orderMode: $orderMode
-            filters: $filters
-          ) @connection(key: "Pagination_stixCoreObjects") {
-            edges {
-              node {
-                id
-                standard_id
-                entity_type
-                created_at
-                createdBy {
-                  ... on Identity {
-                    name
-                  }
-                }
-                creators {
-                  id
-                  name
-                }
-                objectMarking {
-                  id
-                  definition_type
-                  definition
-                  x_opencti_order
-                  x_opencti_color
-                }
-                ...StixCoreRelationshipCreationFromEntityStixCoreObjectsLine_node
-              }
-            }
-            pageInfo {
-              endCursor
-              hasNextPage
-              globalCount
-            }
-          }
-        }
-      `,
+    data: stixCoreRelationshipCreationFromEntityStixCoreObjectsLinesFragment,
   },
   {
     direction: 'forward',

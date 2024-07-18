@@ -22,7 +22,6 @@ import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreO
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
-import BulkRelationDialogContainer from '../../common/bulk/dialog/BulkRelationDialogContainer';
 import { RootIntrusionSetQuery } from './__generated__/RootIntrusionSetQuery.graphql';
 import { RootIntrusionSetSubscription } from './__generated__/RootIntrusionSetSubscription.graphql';
 
@@ -97,10 +96,9 @@ const RootIntrusionSet = ({ intrusionSetId, queryRef }: RootIntrusionSetProps) =
     connectorsForImport,
   } = usePreloadedQuery<RootIntrusionSetQuery>(intrusionSetQuery, queryRef);
 
-  const { forceUpdate, handleForceUpdate } = useForceUpdate();
+  const { forceUpdate } = useForceUpdate();
 
   const isOverview = location.pathname === `/dashboard/threats/intrusion_sets/${intrusionSetId}`;
-  const isKnowledge = location.pathname.startsWith(`/dashboard/threats/intrusion_sets/${intrusionSetId}/knowledge`);
   const paddingRight = getPaddingRight(location.pathname, intrusionSetId, '/dashboard/threats/intrusion_sets');
   const link = `/dashboard/threats/intrusion_sets/${intrusionSetId}/knowledge`;
   return (
@@ -199,14 +197,6 @@ const RootIntrusionSet = ({ intrusionSetId, queryRef }: RootIntrusionSetProps) =
                   label={t_i18n('History')}
                 />
               </Tabs>
-              {isKnowledge && (
-                <BulkRelationDialogContainer
-                  stixDomainObjectId={intrusionSet.id}
-                  stixDomainObjectName={intrusionSet.name}
-                  stixDomainObjectType="Intrusion-Set"
-                  handleRefetch={handleForceUpdate}
-                />
-              )}
               {isOverview && (
                 <StixCoreObjectSimulationResult id={intrusionSet.id} type="threat" />
               )}
@@ -227,10 +217,10 @@ const RootIntrusionSet = ({ intrusionSetId, queryRef }: RootIntrusionSetProps) =
               <Route
                 path="/knowledge/*"
                 element={
-                  <div data-testid="instrusionSet-knowledge" key={forceUpdate}>
+                  <div key={forceUpdate}>
                     <IntrusionSetKnowledge intrusionSet={intrusionSet} />
                   </div>
-                }
+              }
               />
               <Route
                 path="/content/*"
