@@ -4,6 +4,7 @@ import {
   connectorForWork,
   connectorsForExport,
   connectorTriggerUpdate,
+  connectorUser,
   fetchRemoteStreams,
   findAllSync,
   findSyncById,
@@ -57,6 +58,7 @@ const connectorResolvers = {
   Connector: {
     works: (cn, args, context) => worksForConnector(context, context.user, cn.id, args),
     connector_queue_details: (cn) => queueDetails(cn.id),
+    connector_user: (cn, _, context) => connectorUser(context, context.user, cn.connector_user_id),
   },
   Work: {
     connector: (work, _, context) => connectorForWork(context, context.user, work.id),

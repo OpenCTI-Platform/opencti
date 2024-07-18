@@ -6,6 +6,7 @@ export interface ConnectorInfo {
   queue_threshold: number,
   queue_messages_size: number,
   next_run_datetime: DateTime,
+  last_run_datetime: DateTime,
 }
 
 export interface StoreConnector extends StoreEntity {

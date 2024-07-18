@@ -25,11 +25,17 @@ const sortHeaderStyle: Record<string, CSSProperties> = {
   },
   auto: {
     float: 'left',
-    width: '20%',
+    width: '70%',
     fontSize: 12,
     fontWeight: '700',
   },
   messages: {
+    float: 'left',
+    width: '10%',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  connector_status: {
     float: 'left',
     width: '10%',
     fontSize: 12,

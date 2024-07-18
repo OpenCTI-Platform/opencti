@@ -21,6 +21,7 @@ import type { EditInput, RegisterConnectorInput, SynchronizerAddInput, Synchroni
 import { BUS_TOPICS } from '../config/conf';
 import { deleteWorkForConnector } from './work';
 import { testSync as testSyncUtils } from './connector-utils';
+import {findById} from "./user";
 
 // region connectors
 export const connectorForWork = async (context: AuthContext, user: AuthUser, id: string) => {
@@ -65,6 +66,7 @@ export const updateConnectorWithConnectorInfo = async (
       queue_threshold: connectorInfo.queue_threshold,
       queue_messages_size: connectorInfo.queue_messages_size,
       next_run_datetime: connectorInfo.next_run_datetime,
+      last_run_datetime: connectorInfo.last_run_datetime,
     };
 
     connectorPatch = { ...connectorPatch, connector_info: connectorInfoData };
@@ -308,4 +310,8 @@ export const deleteQueues = async (context: AuthContext, user: AuthUser) => {
 
 export const queueDetails = async (connectorId: string) => {
   return getConnectorQueueDetails(connectorId);
+};
+
+export const connectorUser = async (context: AuthContext, user: AuthUser, userId: string) => {
+  return findById(context, user, userId);
 };

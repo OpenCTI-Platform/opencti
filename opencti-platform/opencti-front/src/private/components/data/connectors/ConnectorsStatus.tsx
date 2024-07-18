@@ -89,7 +89,7 @@ const inlineStyles: Record<string, CSSProperties> = {
   },
   messages: {
     float: 'left',
-    width: '10%',
+    width: '8%',
     paddingLeft: 5,
     height: 20,
     whiteSpace: 'nowrap',
@@ -98,11 +98,7 @@ const inlineStyles: Record<string, CSSProperties> = {
   },
   connector_status: {
     float: 'left',
-    width: '10%',
-    height: 20,
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
+    width: '10.3%',
   },
   updated_at: {
     float: 'left',
@@ -381,9 +377,7 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
                 component={Link}
                 to={`/dashboard/data/ingestion/connectors/${connector.id}`}
               >
-                <ListItemIcon
-                  style={{ color: connector.active ? '#4caf50' : '#f44336' }}
-                >
+                <ListItemIcon>
                   <ExtensionOutlined />
                 </ListItemIcon>
                 <ListItemText
@@ -421,7 +415,10 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
                         className={classes.bodyItem}
                         style={inlineStyles.connector_status}
                       >
-                        {t_i18n((connector.active ? 'Active' : 'Inactive'))}
+                        <ItemBoolean
+                          status={connector.active}
+                          label={connector.active ? t_i18n('Active') : t_i18n('Inactive')}
+                        />
                       </div>
                       <div
                         className={classes.bodyItem}
