@@ -143,8 +143,7 @@ export const ChannelLine: FunctionComponent<ChannelLineProps> = ({
               className={classes.bodyItem}
               style={{ width: dataColumns.channel_types.width }}
             >
-              {data.channel_types?.join(', ')}
-              {emptyFilled(data.channel_types)}
+              {emptyFilled(data.channel_types?.join(', '))}
             </div>
             <div
               className={classes.bodyItem}
