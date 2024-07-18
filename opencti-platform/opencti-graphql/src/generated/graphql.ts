@@ -23415,6 +23415,7 @@ export enum StixDomainObjectsOrdering {
   ValidFrom = 'valid_from',
   ValidUntil = 'valid_until',
   XOpenctiBaseSeverity = 'x_opencti_base_severity',
+  XOpenctiCvssBaseSeverity = 'x_opencti_cvss_base_severity',
   XOpenctiNegative = 'x_opencti_negative',
   XOpenctiOrganizationType = 'x_opencti_organization_type',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'

@@ -2265,6 +2265,7 @@ enum StixDomainObjectsOrdering {
   product
   result_name
   operatingSystem
+  x_opencti_cvss_base_severity
 }
 
 type StixDomainObjectConnection {
