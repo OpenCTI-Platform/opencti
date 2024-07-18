@@ -85,6 +85,7 @@ __all__ = [
     "CaseIncident",
     "CaseRfi",
     "CaseRft",
+    "Channel",
     "Task",
     "ConnectorType",
     "CourseOfAction",
