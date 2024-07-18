@@ -171,7 +171,7 @@ export const ChannelCreationForm: FunctionComponent<ChannelFormProps> = ({
       onSubmit={onSubmit}
       onReset={onReset}
     >
-      {({ submitForm, handleReset, isSubmitting, setFieldValue, values, resetForm, validateField }) => (
+      {({ submitForm, handleReset, isSubmitting, setFieldValue, values, resetForm }) => (
         <>
           {isFeatureEnable('BULK_ENTITIES') && (
             <>
