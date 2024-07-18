@@ -1,4 +1,5 @@
 import * as R from 'ramda';
+import { Readable } from 'stream';
 import { logApp } from '../config/conf';
 import { deleteFile, loadFile, uploadJobImport } from '../database/file-storage';
 import { internalLoadById } from '../database/middleware-loader';
@@ -13,6 +14,8 @@ import { isEmptyField, isNotEmptyField, READ_INDEX_FILES } from '../database/uti
 import { getStats } from '../database/engine';
 import { controlUserConfidenceAgainstElement } from '../utils/confidence-level';
 import { uploadToStorage } from '../database/file-storage-helper';
+import { extractContentFrom } from '../utils/fileToContent';
+import { stixLoadById } from '../database/middleware';
 
 export const buildOptionsFromFileManager = async (context) => {
   let importPaths = ['import/'];
@@ -114,10 +117,40 @@ export const uploadImport = async (context, user, args) => {
   return up;
 };
 
-export const uploadPending = async (context, user, file, entityId = null, labels = null, errorOnExisting = false) => {
+export const uploadPending = async (context, user, file, entityId = null, labels = null, errorOnExisting = false, refreshEntity = false) => {
+  let finalFile = file;
   const meta = { labels_text: labels ? labels.join(';') : undefined };
   const entity = entityId ? await internalLoadById(context, user, entityId) : undefined;
-  const { upload: up } = await uploadToStorage(context, user, 'import/pending', file, { meta, errorOnExisting, entity });
+
+  // In the case of a workbench of an entity, if we want to refresh the entity data contains in
+  // the workbench before uploading the file then we fetch data from Elastic, replace old
+  // workbench data and recreate a readable stream for upload.
+  if (refreshEntity && !!entity) {
+    let bundle = await extractContentFrom(file);
+    if (bundle.objects && bundle.objects.length > 0) {
+      const entityAsStix = await stixLoadById(context, user, entityId);
+      if (entityAsStix) {
+        bundle = {
+          ...bundle,
+          objects: bundle.objects.map((o) => (
+            o.id === entity.standard_id
+              ? { ...entityAsStix, object_refs: o.object_refs }
+              : o
+          ))
+        };
+      }
+    }
+    // Retransform the bundle into a readable stream for upload.
+    const json = JSON.stringify(bundle);
+    const fileData = await file;
+    finalFile = {
+      createReadStream: () => Readable.from(Buffer.from(json, 'utf-8')),
+      filename: fileData.filename,
+      mimetype: fileData.mimetype
+    };
+  }
+
+  const { upload: up } = await uploadToStorage(context, user, 'import/pending', finalFile, { meta, errorOnExisting, entity });
   const contextData = buildContextDataForFile(entity, 'import/pending', up.name);
   await publishUserAction({
     user,

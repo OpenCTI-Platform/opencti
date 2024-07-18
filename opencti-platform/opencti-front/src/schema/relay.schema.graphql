@@ -8159,7 +8159,7 @@ type StixRefRelationshipEditMutations {
 type Mutation {
   deleteImport(fileName: String): ID
   uploadImport(file: Upload!, fileMarkings: [String]): File
-  uploadPending(file: Upload!, entityId: String, labels: [String], errorOnExisting: Boolean): File
+  uploadPending(file: Upload!, entityId: String, labels: [String], errorOnExisting: Boolean, refreshEntity: Boolean): File
   askJobImport(fileName: ID!, connectorId: String, configuration: String, bypassEntityId: String, bypassValidation: Boolean): File
   resetFileIndexing: Boolean
   synchronizerAdd(input: SynchronizerAddInput!): Synchronizer

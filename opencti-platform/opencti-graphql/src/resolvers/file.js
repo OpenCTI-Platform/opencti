@@ -29,8 +29,8 @@ const fileResolvers = {
   },
   Mutation: {
     uploadImport: (_, args, context) => uploadImport(context, context.user, args),
-    uploadPending: (_, { file, entityId, labels, errorOnExisting }, context) => {
-      return uploadPending(context, context.user, file, entityId, labels, errorOnExisting);
+    uploadPending: (_, { file, entityId, labels, errorOnExisting, refreshEntity }, context) => {
+      return uploadPending(context, context.user, file, entityId, labels, errorOnExisting, refreshEntity);
     },
     deleteImport: (_, { fileName }, context) => deleteImport(context, context.user, fileName),
     askJobImport: (_, args, context) => askJobImport(context, context.user, args),
