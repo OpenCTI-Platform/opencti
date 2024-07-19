@@ -51,7 +51,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
     borderRight: 0,
     borderTop: 0,
     color: theme.palette.text?.primary,
-    height: 96,
   },
   logoContainer: {
     margin: '2px 0 0 10px',
@@ -374,13 +373,6 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
               anchorEl={menuOpen.anchorEl}
               open={menuOpen.open}
               onClose={handleCloseMenu}
-              slotProps={{
-                paper: {
-                  sx: {
-                    height: 'unset',
-                  },
-                },
-              }}
             >
               <MenuItem
                 component={Link}
