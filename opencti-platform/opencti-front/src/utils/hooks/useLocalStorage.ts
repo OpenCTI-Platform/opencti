@@ -262,10 +262,17 @@ export const usePaginationLocalStorage = <U>(
     ...viewStorage,
   });
   const { filterKeysSchema } = useAuth().schema;
+  const [storedSortBy, setStoredSortBy] = useState(viewStorage.sortBy);
+  const [storedOrderAsc, setStoredOrderAsc] = useState(viewStorage.orderAsc);
 
   const helpers: UseLocalStorageHelpers = {
     handleSearch: (value: string) => {
-      const newValue = {
+      const newValue = (value === '') ? {
+        ...viewStorage,
+        searchTerm: value,
+        sortBy: storedSortBy,
+        orderAsc: storedOrderAsc,
+      } : {
         ...viewStorage,
         searchTerm: value,
         sortBy: '_score',
@@ -351,6 +358,8 @@ export const usePaginationLocalStorage = <U>(
         sortBy: field,
         orderAsc: order,
       };
+      setStoredSortBy(field);
+      setStoredOrderAsc(order);
       setValue(newValue);
       dispatch(`${key}_paginationStorage`, newValue);
     },
