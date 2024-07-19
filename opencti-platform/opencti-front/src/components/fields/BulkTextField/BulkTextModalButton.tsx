@@ -4,9 +4,10 @@ import { useFormatter } from '../../i18n';
 
 interface BulkTextModalButtonProps {
   onClick: ButtonProps['onClick']
+  sx?: ButtonProps['sx']
 }
 
-const BulkTextModalButton = ({ onClick }: BulkTextModalButtonProps) => {
+const BulkTextModalButton = ({ onClick, sx = {} }: BulkTextModalButtonProps) => {
   const { t_i18n } = useFormatter();
 
   return (
@@ -14,7 +15,7 @@ const BulkTextModalButton = ({ onClick }: BulkTextModalButtonProps) => {
       color="primary"
       variant="contained"
       onClick={onClick}
-      sx={{ marginLeft: 'auto', marginRight: 2 }}
+      sx={{ marginLeft: 'auto', marginRight: 2, ...sx }}
     >
       {t_i18n('Create multiple entities')}
     </Button>
