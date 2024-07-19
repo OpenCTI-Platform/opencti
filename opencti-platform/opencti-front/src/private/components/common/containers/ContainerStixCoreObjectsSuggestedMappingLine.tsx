@@ -11,6 +11,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import Chip from '@mui/material/Chip';
 import IconButton from '@mui/material/IconButton';
 import {
+  ContainerStixCoreObjectsSuggestedMappingLine_mappedEntity$data,
   ContainerStixCoreObjectsSuggestedMappingLine_mappedEntity$key,
 } from '@components/common/containers/__generated__/ContainerStixCoreObjectsSuggestedMappingLine_mappedEntity.graphql';
 import { Theme } from '@mui/material/styles/createTheme';
@@ -57,7 +58,7 @@ interface ContainerStixCoreObjectsSuggestedMappingLineComponentProps {
   dataColumns: DataColumns;
   node: ContainerStixCoreObjectsSuggestedMappingLine_mappedEntity$key;
   contentMappingCount: Record<string, number>;
-  handleRemoveSuggestedMappingLine: (matchedId: string) => void;
+  handleRemoveSuggestedMappingLine: (entityToRemove: NonNullable<ContainerStixCoreObjectsSuggestedMappingLine_mappedEntity$data['matchedEntity']>) => void;
 }
 
 const ContainerStixCoreObjectsSuggestedMappingFragment = graphql`
@@ -171,7 +172,7 @@ ContainerStixCoreObjectsSuggestedMappingLineComponentProps
       />
       <ListItemSecondaryAction>
         <IconButton
-          onClick={() => handleRemoveSuggestedMappingLine(matchedEntity.id)}
+          onClick={() => handleRemoveSuggestedMappingLine(matchedEntity)}
         >
           <CloseOutlined/>
         </IconButton>
