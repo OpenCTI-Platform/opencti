@@ -30,7 +30,7 @@ class IndicatorComponent extends Component {
           spacing={3}
           classes={{ container: classes.gridContainer }}
         >
-          <Grid item xs={6} style={{ paddingTop: 10 }}>
+          <Grid item xs={6}>
             <IndicatorDetails indicator={indicator} />
           </Grid>
           <Grid item xs={6}>
@@ -56,11 +56,13 @@ class IndicatorComponent extends Component {
           <Grid item xs={6}>
             <StixCoreObjectLatestHistory stixCoreObjectId={indicator.id} />
           </Grid>
+          <Grid item xs={12}>
+            <StixCoreObjectOrStixCoreRelationshipNotes
+              stixCoreObjectOrStixCoreRelationshipId={indicator.id}
+              defaultMarkings={indicator.objectMarking ?? []}
+            />
+          </Grid>
         </Grid>
-        <StixCoreObjectOrStixCoreRelationshipNotes
-          stixCoreObjectOrStixCoreRelationshipId={indicator.id}
-          defaultMarkings={indicator.objectMarking ?? []}
-        />
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <IndicatorEdition indicatorId={indicator.id} />
         </Security>

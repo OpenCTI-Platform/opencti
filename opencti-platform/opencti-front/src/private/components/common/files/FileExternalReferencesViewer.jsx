@@ -51,41 +51,39 @@ const FileExternalReferencesViewerBase = ({
     };
   });
   return (
-    <Grid item xs={6} style={{ marginTop: 40 }}>
-      <div style={{ height: '100%' }}>
-        <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
-          {t('External references files')}
-        </Typography>
-        <div className="clearfix" />
-        <Paper classes={{ root: classes.paper }} variant="outlined">
-          {allFiles.length ? (
-            <List>
-              {allFiles.map((file) => file && (
-                <FileLine
-                  key={file.id}
-                  dense={true}
-                  disableImport={isContainer || disableImport}
-                  file={file}
-                  connectors={connectors && connectors[file.metaData.mimetype]}
-                  handleOpenImport={handleOpenImport}
-                />
-              ))}
-            </List>
-          ) : (
-            <div style={{ display: 'table', height: '100%', width: '100%' }}>
-              <span
-                style={{
-                  display: 'table-cell',
-                  verticalAlign: 'middle',
-                  textAlign: 'center',
-                }}
-              >
-                {t('No file for the moment')}
-              </span>
-            </div>
-          )}
-        </Paper>
-      </div>
+    <Grid item xs={6}>
+      <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
+        {t('External references files')}
+      </Typography>
+      <div className="clearfix" />
+      <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
+        {allFiles.length ? (
+          <List>
+            {allFiles.map((file) => file && (
+              <FileLine
+                key={file.id}
+                dense={true}
+                disableImport={isContainer || disableImport}
+                file={file}
+                connectors={connectors && connectors[file.metaData.mimetype]}
+                handleOpenImport={handleOpenImport}
+              />
+            ))}
+          </List>
+        ) : (
+          <div style={{ display: 'table', height: '100%', width: '100%' }}>
+            <span
+              style={{
+                display: 'table-cell',
+                verticalAlign: 'middle',
+                textAlign: 'center',
+              }}
+            >
+              {t('No file for the moment')}
+            </span>
+          </div>
+        )}
+      </Paper>
     </Grid>
   );
 };
@@ -118,7 +116,7 @@ const FileExternalReferencesViewer = createRefetchContainer(
               url
               description
               importFiles(first: 500)
-                @connection(key: "Pagination_importFiles") {
+              @connection(key: "Pagination_importFiles") {
                 edges {
                   node {
                     id

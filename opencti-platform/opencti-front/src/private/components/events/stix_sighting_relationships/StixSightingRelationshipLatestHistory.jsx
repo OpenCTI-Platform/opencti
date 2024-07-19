@@ -9,7 +9,7 @@ class StixSightingRelationshipLatestHistory extends Component {
   render() {
     const { t, stixSightingRelationshipId } = this.props;
     return (
-      <div style={{ height: '100%' }} className="break">
+      <>
         <Typography variant="h4" gutterBottom={true}>
           {t('Most recent history')}
         </Typography>
@@ -41,7 +41,7 @@ class StixSightingRelationshipLatestHistory extends Component {
             return <div />;
           }}
         />
-      </div>
+      </>
     );
   }
 }

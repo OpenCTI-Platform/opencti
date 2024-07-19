@@ -30,7 +30,7 @@ class ObservedDataComponent extends Component {
           spacing={3}
           classes={{ container: classes.gridContainer }}
         >
-          <Grid item xs={6} style={{ paddingTop: 10 }}>
+          <Grid item xs={6}>
             <ObservedDataDetails observedData={observedData} />
           </Grid>
           <Grid item xs={6}>
@@ -55,11 +55,13 @@ class ObservedDataComponent extends Component {
           <Grid item xs={6}>
             <StixCoreObjectLatestHistory stixCoreObjectId={observedData.id} />
           </Grid>
+          <Grid item xs={12}>
+            <StixCoreObjectOrStixCoreRelationshipNotes
+              stixCoreObjectOrStixCoreRelationshipId={observedData.id}
+              defaultMarkings={observedData.objectMarking ?? []}
+            />
+          </Grid>
         </Grid>
-        <StixCoreObjectOrStixCoreRelationshipNotes
-          stixCoreObjectOrStixCoreRelationshipId={observedData.id}
-          defaultMarkings={observedData.objectMarking ?? []}
-        />
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <ObservedDataEdition observedDataId={observedData.id} />
         </Security>

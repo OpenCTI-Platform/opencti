@@ -43,11 +43,13 @@ const GroupingComponent = ({ grouping }) => {
         <Grid item xs={6}>
           <StixCoreObjectLatestHistory stixCoreObjectId={grouping.id} />
         </Grid>
+        <Grid item xs={12}>
+          <StixCoreObjectOrStixCoreRelationshipNotes
+            stixCoreObjectOrStixCoreRelationshipId={grouping.id}
+            defaultMarkings={grouping.objectMarking ?? []}
+          />
+        </Grid>
       </Grid>
-      <StixCoreObjectOrStixCoreRelationshipNotes
-        stixCoreObjectOrStixCoreRelationshipId={grouping.id}
-        defaultMarkings={grouping.objectMarking ?? []}
-      />
       {!isFABReplaced && (
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <GroupingEdition groupingId={grouping.id} />

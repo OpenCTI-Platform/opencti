@@ -30,12 +30,12 @@ class StixCyberObservableComponent extends Component {
           spacing={3}
           classes={{ container: classes.gridContainer }}
         >
-          <Grid item xs={6} style={{ paddingTop: 10 }}>
+          <Grid item xs={6}>
             <StixCyberObservableDetails
               stixCyberObservable={stixCyberObservable}
             />
           </Grid>
-          <Grid item xs={6} style={{ paddingTop: 10 }}>
+          <Grid item xs={6}>
             <StixCyberObservableOverview
               stixCyberObservable={stixCyberObservable}
             />
@@ -61,11 +61,13 @@ class StixCyberObservableComponent extends Component {
               stixCoreObjectId={stixCyberObservable.id}
             />
           </Grid>
+          <Grid item xs={12}>
+            <StixCoreObjectOrStixCoreRelationshipNotes
+              stixCoreObjectOrStixCoreRelationshipId={stixCyberObservable.id}
+              defaultMarkings={stixCyberObservable.objectMarking ?? []}
+            />
+          </Grid>
         </Grid>
-        <StixCoreObjectOrStixCoreRelationshipNotes
-          stixCoreObjectOrStixCoreRelationshipId={stixCyberObservable.id}
-          defaultMarkings={stixCyberObservable.objectMarking ?? []}
-        />
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <StixCyberObservableEdition
             stixCyberObservableId={stixCyberObservable.id}

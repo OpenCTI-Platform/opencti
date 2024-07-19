@@ -127,11 +127,13 @@ const Incident = ({
         <Grid item xs={6}>
           <StixCoreObjectLatestHistory stixCoreObjectId={incident.id} />
         </Grid>
+        <Grid item xs={12}>
+          <StixCoreObjectOrStixCoreRelationshipNotes
+            stixCoreObjectOrStixCoreRelationshipId={incident.id}
+            defaultMarkings={incident.objectMarking ?? []}
+          />
+        </Grid>
       </Grid>
-      <StixCoreObjectOrStixCoreRelationshipNotes
-        stixCoreObjectOrStixCoreRelationshipId={incident.id}
-        defaultMarkings={incident.objectMarking ?? []}
-      />
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
         <IncidentEdition incidentId={incident.id} />
       </Security>

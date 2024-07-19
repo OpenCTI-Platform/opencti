@@ -108,11 +108,13 @@ const TaskComponent = ({ data, enableReferences }: { data: Tasks_tasks$key, enab
         <Grid item xs={6}>
           <StixCoreObjectLatestHistory stixCoreObjectId={task.id} />
         </Grid>
+        <Grid item xs={12}>
+          <StixCoreObjectOrStixCoreRelationshipNotes
+            stixCoreObjectOrStixCoreRelationshipId={task.id}
+            defaultMarkings={task.objectMarking ?? []}
+          />
+        </Grid>
       </Grid>
-      <StixCoreObjectOrStixCoreRelationshipNotes
-        stixCoreObjectOrStixCoreRelationshipId={task.id}
-        defaultMarkings={task.objectMarking ?? []}
-      />
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
         <TaskEdition caseId={task.id} />
       </Security>

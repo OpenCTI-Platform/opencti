@@ -172,11 +172,13 @@ const CaseRftComponent: FunctionComponent<CaseRftProps> = ({ data, enableReferen
         <Grid item xs={6}>
           <StixCoreObjectLatestHistory stixCoreObjectId={caseRftData.id} />
         </Grid>
+        <Grid item xs={12}>
+          <StixCoreObjectOrStixCoreRelationshipNotes
+            stixCoreObjectOrStixCoreRelationshipId={caseRftData.id}
+            defaultMarkings={caseRftData.objectMarking ?? []}
+          />
+        </Grid>
       </Grid>
-      <StixCoreObjectOrStixCoreRelationshipNotes
-        stixCoreObjectOrStixCoreRelationshipId={caseRftData.id}
-        defaultMarkings={caseRftData.objectMarking ?? []}
-      />
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
         <CaseRftEdition caseId={caseRftData.id} />
       </Security>

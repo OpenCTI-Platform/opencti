@@ -91,7 +91,7 @@ const Infrastructure = ({
         spacing={3}
         classes={{ container: classes.gridContainer }}
       >
-        <Grid item xs={6} style={{ paddingTop: 10 }}>
+        <Grid item xs={6}>
           <InfrastructureDetails infrastructure={infrastructureData} />
         </Grid>
         <Grid item xs={6}>
@@ -118,11 +118,13 @@ const Infrastructure = ({
             stixCoreObjectId={infrastructureData.id}
           />
         </Grid>
+        <Grid item xs={12}>
+          <StixCoreObjectOrStixCoreRelationshipNotes
+            stixCoreObjectOrStixCoreRelationshipId={infrastructureData.id}
+            defaultMarkings={infrastructureData.objectMarking ?? []}
+          />
+        </Grid>
       </Grid>
-      <StixCoreObjectOrStixCoreRelationshipNotes
-        stixCoreObjectOrStixCoreRelationshipId={infrastructureData.id}
-        defaultMarkings={infrastructureData.objectMarking ?? []}
-      />
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
         <InfrastructureEdition infrastructureId={infrastructureData.id} />
       </Security>

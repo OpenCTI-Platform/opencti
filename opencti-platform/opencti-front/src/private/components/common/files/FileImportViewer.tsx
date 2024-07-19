@@ -60,8 +60,8 @@ FileImportViewerComponentProps
     };
   }, []);
   return (
-    <Grid item xs={6} style={{ paddingTop: 10 }}>
-      <div style={{ height: '100%' }} className="break">
+    <Grid item xs={6}>
+      <>
         <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
           {t_i18n('Uploaded files')}
         </Typography>
@@ -78,7 +78,7 @@ FileImportViewerComponentProps
           />
         </div>
         <div className="clearfix" />
-        <Paper classes={{ root: classes.paper }} variant="outlined">
+        <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
           {importFiles?.edges?.length ? (
             <List>
               {importFiles?.edges?.map((file) => {
@@ -115,7 +115,7 @@ FileImportViewerComponentProps
             </div>
           )}
         </Paper>
-      </div>
+      </>
     </Grid>
   );
 };

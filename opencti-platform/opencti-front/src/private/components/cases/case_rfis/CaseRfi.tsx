@@ -174,11 +174,13 @@ const CaseRfiComponent: FunctionComponent<CaseRfiProps> = ({ data, enableReferen
         <Grid item xs={6}>
           <StixCoreObjectLatestHistory stixCoreObjectId={caseRfiData.id} />
         </Grid>
+        <Grid item xs={12}>
+          <StixCoreObjectOrStixCoreRelationshipNotes
+            stixCoreObjectOrStixCoreRelationshipId={caseRfiData.id}
+            defaultMarkings={caseRfiData.objectMarking ?? []}
+          />
+        </Grid>
       </Grid>
-      <StixCoreObjectOrStixCoreRelationshipNotes
-        stixCoreObjectOrStixCoreRelationshipId={caseRfiData.id}
-        defaultMarkings={caseRfiData.objectMarking ?? []}
-      />
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
         <CaseRfiEdition caseId={caseRfiData.id} />
       </Security>
