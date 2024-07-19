@@ -627,7 +627,7 @@ const ConnectorComponent = ({ connector, relay }) => {
                   )
                 )}
                 {connector.connector_info && (
-                  (connector.connector_info.last_run_datetime && connector.connector_info.last_run_datetime !== null ? (
+                  connector.connector_info.last_run_datetime ? (
                     <>
                       <Typography variant="h3" gutterBottom={true}>
                         {t_i18n('Last run')}
@@ -646,7 +646,6 @@ const ConnectorComponent = ({ connector, relay }) => {
                       </Typography>
                     </>
                   )
-                  )
                 )}
               </Grid>
 
@@ -661,7 +660,7 @@ const ConnectorComponent = ({ connector, relay }) => {
                       {t_i18n('External schedule')}
                     </Typography>
                   ) : (
-                    (connector.connector_info.next_run_datetime !== null ? (
+                    connector.connector_info.next_run_datetime !== null ? (
                       <Typography variant="body1" gutterBottom={true}>
                         {nsdt(connector.connector_info?.next_run_datetime)}
                       </Typography>
@@ -669,7 +668,7 @@ const ConnectorComponent = ({ connector, relay }) => {
                       <Typography variant="body1" gutterBottom={true}>
                         {t_i18n('Not provided')}
                       </Typography>
-                    ))
+                    )
                   )
                 )}
                 {!connector.connector_info && (
