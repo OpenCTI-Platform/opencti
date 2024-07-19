@@ -276,6 +276,7 @@
   "By enabling the OpenCTI Enterprise Edition, you (and your organization) agrees to the OpenCTI Enterprise Edition (EE) supplemental license terms and conditions of usage:": "By enabling the OpenCTI Enterprise Edition, you (and your organization) agrees to the OpenCTI Enterprise Edition (EE) supplemental license terms and conditions of usage:",
   "Bypass all capabilities": "Bypass all capabilities",
   "Bypass enforced reference": "Bypass enforced reference",
+  "Bypass merge dependencies access check": "Bypass merge dependencies access check",
   "CA certificate (base64)": "CA certificate (base64)",
   "Campaign": "Campaign",
   "Campaigns": "Campaigns",

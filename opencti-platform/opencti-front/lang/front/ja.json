@@ -276,6 +276,7 @@
   "By enabling the OpenCTI Enterprise Edition, you (and your organization) agrees to the OpenCTI Enterprise Edition (EE) supplemental license terms and conditions of usage:": "OpenCTI Enterprise Editionを有効にすることで、あなた（およびあなたの組織）はOpenCTI Enterprise Edition (EE)の補足ライセンス条項と使用条件に同意することになります：",
   "Bypass all capabilities": "すべての機能をバイパス",
   "Bypass enforced reference": "バイパス強制リファレンス",
+  "Bypass merge dependencies access check": "マージ依存関係のアクセスチェックをバイパスする",
   "CA certificate (base64)": "CA 証明書 (base64)",
   "Campaign": "キャンペーン",
   "Campaigns": "キャンペーン",

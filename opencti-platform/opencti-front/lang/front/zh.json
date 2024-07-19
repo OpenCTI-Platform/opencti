@@ -276,6 +276,7 @@
   "By enabling the OpenCTI Enterprise Edition, you (and your organization) agrees to the OpenCTI Enterprise Edition (EE) supplemental license terms and conditions of usage:": "启用 OpenCTI 企业版，即表示您（和您的组织）同意 OpenCTI 企业版 (EE) 补充许可条款和使用条件：",
   "Bypass all capabilities": "绕过所有功能",
   "Bypass enforced reference": "旁路强制参考",
+  "Bypass merge dependencies access check": "绕过合并依赖访问检查",
   "CA certificate (base64)": "CA 证书（base64）",
   "Campaign": "攻击活动",
   "Campaigns": "攻击活动",
