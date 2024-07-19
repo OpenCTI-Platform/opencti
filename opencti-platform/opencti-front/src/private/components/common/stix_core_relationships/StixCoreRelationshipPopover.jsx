@@ -17,6 +17,7 @@ import { ConnectionHandler } from 'relay-runtime';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import StixCoreRelationshipEdition from './StixCoreRelationshipEdition';
+import { deleteNode } from '../../../../utils/store';
 
 const styles = (theme) => ({
   container: {
@@ -95,15 +96,16 @@ class StixCoreRelationshipPopover extends Component {
       },
       updater: (store) => {
         if (typeof this.props.onDelete !== 'function') {
-          const container = store.getRoot();
-          const payload = store.getRootField('stixCoreRelationshipEdit');
-          const userProxy = store.get(container.getDataID());
-          const conn = ConnectionHandler.getConnection(
-            userProxy,
-            this.props.connectionKey || 'Pagination_stixCoreRelationships',
-            this.props.paginationOptions,
-          );
-          ConnectionHandler.deleteNode(conn, payload.getValue('delete'));
+          const { stixCoreRelationshipId, paginationOptions, connectionKey } = this.props;
+          const currentConnectionKey = connectionKey || 'Pagination_stixCoreRelationships';
+          if (stixCoreRelationshipId) {
+            deleteNode(
+              store,
+              currentConnectionKey,
+              paginationOptions,
+              stixCoreRelationshipId,
+            );
+          }
         }
       },
       onCompleted: () => {
