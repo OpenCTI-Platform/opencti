@@ -358,7 +358,7 @@ class ImportContentComponent extends Component {
                 />
               </div>
               <div className="clearfix" />
-              <Paper classes={{ root: classes.paper }} variant="outlined">
+              <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
                 {importFilesEdges.length ? (
                   <List>
                     {importFilesEdges.map((file) => file?.node && (
@@ -398,6 +398,7 @@ class ImportContentComponent extends Component {
               classes={{ root: classes.paper }}
               variant="outlined"
               style={{ marginTop: 12 }}
+              className={'paper-for-grid'}
             >
               {connectors.length ? (
                 <List>
@@ -457,7 +458,7 @@ class ImportContentComponent extends Component {
               )}
             </Paper>
           </Grid>
-          <Grid item xs={12} style={{ marginTop: 40 }}>
+          <Grid item xs={12}>
             <div style={{ height: '100%' }} className="break">
               <Typography
                 variant="h4"

@@ -200,6 +200,7 @@ FileIndexingMonitoringComponentProps
             variant="outlined"
             classes={{ root: classes.metric }}
             style={{ display: 'flex' }}
+            className={'paper-for-grid'}
           >
             <div className={classes.icon}>
               {isStarted ? (
@@ -243,7 +244,7 @@ FileIndexingMonitoringComponentProps
           </Paper>
         </Grid>
         <Grid item xs={3}>
-          <Paper variant="outlined" classes={{ root: classes.metric }}>
+          <Paper variant="outlined" classes={{ root: classes.metric }} className={'paper-for-grid'}>
             <div className={classes.icon}>
               <FolderOutlined color="primary" sx={{ fontSize: 40 }} />
             </div>
@@ -254,7 +255,7 @@ FileIndexingMonitoringComponentProps
           </Paper>
         </Grid>
         <Grid item xs={3}>
-          <Paper variant="outlined" classes={{ root: classes.metric }}>
+          <Paper variant="outlined" classes={{ root: classes.metric }} className={'paper-for-grid'}>
             <div className={classes.icon}>
               <StorageOutlined color="primary" sx={{ fontSize: 40 }} />
             </div>
@@ -268,7 +269,7 @@ FileIndexingMonitoringComponentProps
           <Typography variant="h4" gutterBottom={true}>
             {t_i18n('Control')}
           </Typography>
-          <Paper classes={{ root: classes.paper }} variant="outlined">
+          <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
             <Grid container={true} spacing={3}>
               <Grid item xs={6}>
                 <Typography variant="h3" gutterBottom={true}>
@@ -330,7 +331,7 @@ FileIndexingMonitoringComponentProps
           <Typography variant="h4" gutterBottom={true}>
             {t_i18n('Information')}
           </Typography>
-          <Paper classes={{ root: classes.paper }} variant="outlined">
+          <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
             <Grid container={true} spacing={3}>
               <Grid item xs={6}>
                 <Typography variant="h3" gutterBottom={true}>

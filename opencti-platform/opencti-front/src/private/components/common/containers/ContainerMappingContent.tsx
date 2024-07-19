@@ -434,12 +434,12 @@ ContainerMappingContentComponentProps
   };
 
   return (
-    <div>
+    <>
       <Grid
         container
-        spacing={3}
+        spacing={2}
       >
-        <Grid item={true} xs={6} style={{ marginTop: 0, paddingTop: 0 }}>
+        <Grid item xs={6}>
           <StixCoreObjectMappableContent
             containerData={containerData}
             handleTextSelection={handleTextSelection}
@@ -450,12 +450,10 @@ ContainerMappingContentComponentProps
           />
         </Grid>
 
-        <Grid item xs={6} style={{ marginTop: 0, paddingTop: 0 }}>
+        <Grid item xs={6}>
           <Paper
             variant="outlined"
             style={{
-              height: '100%',
-              minHeight: '100%',
               padding: '15px',
               borderRadius: 4,
             }}
@@ -521,7 +519,7 @@ ContainerMappingContentComponentProps
         enableReferences={enableReferences}
         containerStixCoreObjects={Object.values(contentMappingData).map((c) => ({ node: { id: c } }))}
       />
-    </div>
+    </>
   );
 };
 

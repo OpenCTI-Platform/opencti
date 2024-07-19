@@ -67,7 +67,7 @@ class StixCoreRelationshipStixCoreRelationshipsLinesContainer extends Component 
           />
         </Security>
         <div className="clearfix" />
-        <Paper classes={{ root: classes.paper }} variant="outlined">
+        <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
           <List classes={{ root: classes.list }}>
             {data.stixCoreRelationships.edges.map(
               (stixCoreRelationshipEdge) => {

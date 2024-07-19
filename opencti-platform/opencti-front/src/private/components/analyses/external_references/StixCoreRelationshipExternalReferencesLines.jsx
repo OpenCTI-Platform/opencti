@@ -193,7 +193,7 @@ class StixCoreRelationshipExternalReferencesLinesContainer extends Component {
           />
         </Security>
         <div className="clearfix" />
-        <Paper classes={{ root: classes.paper }} variant="outlined">
+        <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
           {externalReferencesEdges.length > 0 ? (
             <List style={{ marginBottom: 0 }}>
               {R.take(expanded ? 200 : 7, externalReferencesEdges).map(

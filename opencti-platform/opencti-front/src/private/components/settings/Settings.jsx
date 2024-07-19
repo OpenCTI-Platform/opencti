@@ -304,7 +304,7 @@ const Settings = () => {
                     <Paper
                       classes={{ root: classes.paper }}
                       variant="outlined"
-                      style={{ marginTop: 15 }}
+                      className={'paper-for-grid'}
                     >
                       <Formik
                         onSubmit={() => {}}
@@ -433,7 +433,7 @@ const Settings = () => {
                       </Button>
                     )}
                     <div className="clearfix" />
-                    <Paper classes={{ root: classes.paper }} variant="outlined">
+                    <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
                       <Formik
                         onSubmit={() => {}}
                         enableReinitialize={true}
@@ -562,7 +562,7 @@ const Settings = () => {
                     <Typography variant="h4" gutterBottom={true}>
                       {t_i18n('Dark theme')}
                     </Typography>
-                    <Paper classes={{ root: classes.paper }} variant="outlined">
+                    <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
                       <Formik
                         onSubmit={() => {}}
                         enableReinitialize={true}
@@ -768,7 +768,7 @@ const Settings = () => {
                     <Typography variant="h4" gutterBottom={true}>
                       {t_i18n('Light theme')}
                     </Typography>
-                    <Paper classes={{ root: classes.paper }} variant="outlined">
+                    <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
                       <Formik
                         onSubmit={() => {}}
                         enableReinitialize={true}
@@ -974,7 +974,7 @@ const Settings = () => {
                     <Typography variant="h4" gutterBottom={true}>
                       {t_i18n('Tools')}
                     </Typography>
-                    <Paper classes={{ root: classes.paper }} variant="outlined">
+                    <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
                       <List style={{ marginTop: -20 }}>
                         {modules.map((module) => {
                           const isEeModule = ['ACTIVITY_MANAGER', 'PLAYBOOK_MANAGER', 'FILE_INDEX_MANAGER'].includes(module.id);

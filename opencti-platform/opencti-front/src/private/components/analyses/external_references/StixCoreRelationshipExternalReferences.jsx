@@ -62,7 +62,7 @@ class StixCoreRelationshipExternalReferences extends Component {
                 {t('External references')}
               </Typography>
               <div className="clearfix" />
-              <Paper classes={{ root: classes.paper }} variant="outlined">
+              <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
                 <List>
                   {Array.from(Array(5), (e, i) => (
                     <ListItem

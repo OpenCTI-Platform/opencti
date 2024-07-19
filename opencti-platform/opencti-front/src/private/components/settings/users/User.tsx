@@ -396,7 +396,7 @@ const User: FunctionComponent<UserProps> = ({ data }) => {
           <Typography variant="h4" gutterBottom={true}>
             {t_i18n('Permissions')}
           </Typography>
-          <Paper classes={{ root: classes.paper }} variant="outlined">
+          <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
             <Grid container={true} spacing={3}>
               <Grid item xs={6}>
                 <Typography variant="h3" gutterBottom={true}>
@@ -583,14 +583,15 @@ const User: FunctionComponent<UserProps> = ({ data }) => {
           </Paper>
         </Grid>
         <Triggers recipientId={user.id} filterKey="authorized_members.id" />
-        <Grid item xs={6} style={{ marginTop: 35 }}>
+        <Grid item xs={6} style={{ marginTop: 10 }}>
           <Typography variant="h4" gutterBottom={true}>
             {t_i18n('Operations')}
           </Typography>
           <Paper
             classes={{ root: classes.paper }}
             variant="outlined"
-            style={{ marginTop: 14, minHeight: 500 }}
+            style={{ minHeight: 500 }}
+            className={'paper-for-grid'}
           >
             {!isEnterpriseEdition ? (
               <div style={{ display: 'table', height: '100%', width: '100%' }}>
@@ -663,7 +664,7 @@ const User: FunctionComponent<UserProps> = ({ data }) => {
             )}
           </Paper>
         </Grid>
-        <Grid item xs={6} style={{ marginTop: 35 }}>
+        <Grid item xs={6} style={{ marginTop: 10 }}>
           {isGrantedToAudit ? (
             <UserHistory userId={user.id} />
           ) : (
@@ -675,6 +676,7 @@ const User: FunctionComponent<UserProps> = ({ data }) => {
                 <Paper
                   classes={{ root: classes.paper }}
                   variant="outlined"
+                  className={'paper-for-grid'}
                 >
                   <span
                     style={{

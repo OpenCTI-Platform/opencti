@@ -59,8 +59,9 @@ const UserAnalytics: FunctionComponent<UserAnalyticsProps> = ({ data }) => {
   return (
     <>
       <Grid
-        container={true}
-        spacing={3}
+        container
+        rowSpacing={5}
+        columnSpacing={2}
         classes={{ container: classes.gridContainer }}
       >
         <Grid item xs={6}>

@@ -71,7 +71,7 @@ const SettingsAnalytics: FunctionComponent<SettingsAnalyticsProps> = ({
         </Tooltip>
       </div>
       <div className="clearfix" />
-      <Paper classes={{ root: classes.paper }} variant="outlined">
+      <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
         <Formik
           onSubmit={() => {}}
           enableReinitialize={true}

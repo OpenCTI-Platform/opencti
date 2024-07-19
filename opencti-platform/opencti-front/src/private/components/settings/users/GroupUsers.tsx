@@ -103,7 +103,7 @@ const GroupUsers: FunctionComponent<GroupUsersProps> = ({ groupId }) => {
     },
   };
   return (
-    <Grid item xs={12} style={{ marginTop: 37 }}>
+    <Grid item xs={12} style={{ marginTop: 10 }}>
       <Typography
         variant="h4"
         gutterBottom={true}

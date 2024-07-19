@@ -96,7 +96,7 @@ MembersListContainerProps
   };
 
   return (
-    <Grid item xs={12} style={{ marginTop: 40 }}>
+    <Grid item xs={12} style={{ marginTop: 0 }}>
       <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
         {t_i18n('Users')}
       </Typography>
@@ -112,7 +112,7 @@ MembersListContainerProps
           keyword={searchTerm}
         />
       </div>
-      <Paper classes={{ root: classes.paper }} variant="outlined">
+      <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
         <ListLines
           handleSort={helpers.handleSort}
           handleSearch={helpers.handleSearch}
