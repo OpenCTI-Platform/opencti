@@ -10,6 +10,7 @@ import StixCoreObjectLabels from '@components/common/stix_core_objects/StixCoreO
 import Tooltip from '@mui/material/Tooltip';
 import Checkbox from '@mui/material/Checkbox';
 import { graphql, useFragment } from 'react-relay';
+import { Theme } from '@mui/material/styles/createTheme';
 import { NarrativeLine_node$data, NarrativeLine_node$key } from './__generated__/NarrativeLine_node.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
@@ -88,6 +89,12 @@ const commonBodyItemStyle: CSSProperties = {
   paddingRight: 10,
 };
 
+const commonTextStyle = (theme: Theme, width: string): CSSProperties => ({
+  ...commonBodyItemStyle,
+  color: theme.palette.text.primary,
+  width,
+});
+
 export const NarrativeLine: FunctionComponent<NarrativeLineProps> = ({
   dataColumns,
   node,
@@ -132,54 +139,24 @@ export const NarrativeLine: FunctionComponent<NarrativeLineProps> = ({
         primary={
           <>
             <Tooltip title={data.name}>
-              <div
-                style={{
-                  ...commonBodyItemStyle,
-                  color: theme.palette.text.primary,
-                  width: dataColumns.name.width,
-                }}
-              >
+              <div style={commonTextStyle(theme, dataColumns.name.width as string)}>
                 {data.name}
               </div>
             </Tooltip>
-            <div
-              style={{
-                ...commonBodyItemStyle,
-                color: theme.palette.text.primary,
-                width: dataColumns.description.width,
-              }}
-            >
+            <div style={commonTextStyle(theme, dataColumns.description.width as string)}>
               {emptyFilled(data.description)}
             </div>
-            <div
-              style={{
-                ...commonBodyItemStyle,
-                color: theme.palette.text.primary,
-                width: dataColumns.objectLabel.width,
-              }}
-            >
+            <div style={commonTextStyle(theme, dataColumns.objectLabel.width as string)}>
               <StixCoreObjectLabels
                 variant="inList"
                 labels={data.objectLabel}
                 onClick={onLabelClick}
               />
             </div>
-            <div
-              style={{
-                ...commonBodyItemStyle,
-                color: theme.palette.text.primary,
-                width: dataColumns.created.width,
-              }}
-            >
+            <div style={commonTextStyle(theme, dataColumns.created.width as string)}>
               {fd(data.created)}
             </div>
-            <div
-              style={{
-                ...commonBodyItemStyle,
-                color: theme.palette.text.primary,
-                width: dataColumns.modified.width,
-              }}
-            >
+            <div style={commonTextStyle(theme, dataColumns.modified.width as string)}>
               {fd(data.modified)}
             </div>
           </>
@@ -212,13 +189,7 @@ export const NarrativeLineDummy = ({
       <ListItemText
         primary={
           <>
-            <div
-              style={{
-                ...commonBodyItemStyle,
-                color: theme.palette.text.primary,
-                width: dataColumns.name.width,
-              }}
-            >
+            <div style={commonTextStyle(theme, dataColumns.name.width as string)}>
               <Skeleton
                 animation="wave"
                 variant="rectangular"
@@ -226,19 +197,7 @@ export const NarrativeLineDummy = ({
                 height="100%"
               />
             </div>
-            <div
-              style={{
-                height: 20,
-                fontSize: 13,
-                float: 'left',
-                whiteSpace: 'nowrap',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                paddingRight: 10,
-                color: theme.palette.text.primary,
-                width: dataColumns.description.width,
-              }}
-            >
+            <div style={commonTextStyle(theme, dataColumns.description.width as string)}>
               <Skeleton
                 animation="wave"
                 variant="rectangular"
@@ -246,13 +205,7 @@ export const NarrativeLineDummy = ({
                 height="100%"
               />
             </div>
-            <div
-              style={{
-                ...commonBodyItemStyle,
-                color: theme.palette.text.primary,
-                width: dataColumns.description.width,
-              }}
-            >
+            <div style={commonTextStyle(theme, dataColumns.objectLabel.width as string)}>
               <Skeleton
                 animation="wave"
                 variant="rectangular"
@@ -260,27 +213,7 @@ export const NarrativeLineDummy = ({
                 height="100%"
               />
             </div>
-            <div
-              style={{
-                ...commonBodyItemStyle,
-                color: theme.palette.text.primary,
-                width: dataColumns.objectLabel.width,
-              }}
-            >
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width="90%"
-                height="100%"
-              />
-            </div>
-            <div
-              style={{
-                ...commonBodyItemStyle,
-                color: theme.palette.text.primary,
-                width: dataColumns.created.width,
-              }}
-            >
+            <div style={commonTextStyle(theme, dataColumns.created.width as string)}>
               <Skeleton
                 animation="wave"
                 variant="rectangular"
