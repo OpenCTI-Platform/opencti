@@ -358,7 +358,7 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
                       <SortConnectorsHeader field="messages" label="Messages" isSortable orderAsc={orderAsc} sortBy={sortBy} reverseBy={reverseBy} />
                     </div>
                     <div style={{ flexBasis: '10%' }}>
-                      <SortConnectorsHeader field="connector_status" label="Status" isSortable orderAsc={orderAsc} sortBy={sortBy} reverseBy={reverseBy} />
+                      <SortConnectorsHeader field="active" label="Status" isSortable orderAsc={orderAsc} sortBy={sortBy} reverseBy={reverseBy} />
                     </div>
                     <div style={{ flexBasis: '20%' }}>
                       <SortConnectorsHeader field="updated_at" label="Modified" isSortable orderAsc={orderAsc} sortBy={sortBy} reverseBy={reverseBy} />

@@ -420,137 +420,159 @@ const ConnectorComponent = ({ connector, relay }) => {
                 <Typography variant="h3" gutterBottom={true}>
                   {t_i18n('Associated user')}
                 </Typography>
-                <FieldOrEmpty source={connector.connector_user}>
-                  <List>
-                    {[connector.connector_user].map((user) => (userHasSettingsCapability ? (
-                      <ListItemButton
-                        key={user.id}
-                        dense={true}
-                        divider={true}
-                        component={Link}
-                        to={`/dashboard/settings/accesses/users/${user.id}`}
-                      >
-                        <ListItemIcon>
-                          <ItemIcon type="user" color={theme.palette.primary.main} />
-                        </ListItemIcon>
-                        <ListItemText primary={user.name}/>
-                      </ListItemButton>
-                    ) : (
-                      <ListItem
-                        key={user.id}
-                        dense={true}
-                        divider={true}
-                      >
-                        <ListItemIcon>
-                          <ItemIcon type="user" color={theme.palette.primary.main} />
-                        </ListItemIcon>
-                        <ListItemText primary={user.name}/>
-                      </ListItem>
-                    )))}
-                  </List>
-                </FieldOrEmpty>
+                {connector.connector_user ? (
+                  <FieldOrEmpty source={connector.connector_user}>
+                    <List>
+                      {[connector.connector_user].map((user) => (userHasSettingsCapability ? (
+                        <ListItemButton
+                          key={user.id}
+                          dense={true}
+                          divider={true}
+                          component={Link}
+                          to={`/dashboard/settings/accesses/users/${user.id}`}
+                        >
+                          <ListItemIcon>
+                            <ItemIcon type="user" color={theme.palette.primary.main} />
+                          </ListItemIcon>
+                          <ListItemText primary={user.name}/>
+                        </ListItemButton>
+                      ) : (
+                        <ListItem
+                          key={user.id}
+                          dense={true}
+                          divider={true}
+                        >
+                          <ListItemIcon>
+                            <ItemIcon type="user" color={theme.palette.primary.main} />
+                          </ListItemIcon>
+                          <ListItemText primary={user.name}/>
+                        </ListItem>
+                      )))}
+                    </List>
+                  </FieldOrEmpty>
+                ) : (
+                  <FieldOrEmpty source={connector.connector_user}></FieldOrEmpty>
+                )}
               </Grid>
               <Grid item xs={6}>
                 <Typography variant="h3" gutterBottom={true}>
                   {t_i18n('Max confidence level')}
                 </Typography>
-                {connector.connector_user.effective_confidence_level.max_confidence}
+                {connector.connector_user ? (
+                  <FieldOrEmpty source={connector.connector_user?.effective_confidence_level.max_confidence}>
+                    {connector.connector_user.effective_confidence_level.max_confidence}
+                  </FieldOrEmpty>
+
+                ) : (
+                  <FieldOrEmpty source={connector.connector_user}></FieldOrEmpty>
+                )}
               </Grid>
               <Grid item xs={6}>
                 <Typography variant="h3" gutterBottom={true}>
                   {t_i18n("User's roles")}
                 </Typography>
-                <FieldOrEmpty source={connector.connector_user.roles ?? []}>
-                  <List>
-                    {(connector.connector_user.roles ?? []).map((role) => (userHasSettingsCapability ? (
-                      <ListItemButton
-                        key={role?.id}
-                        dense={true}
-                        divider={true}
-                        component={Link}
-                        to={`/dashboard/settings/accesses/roles/${role?.id}`}
-                      >
-                        <ListItemIcon>
-                          <ItemIcon type="Role" />
-                        </ListItemIcon>
-                        <ListItemText primary={role?.name} />
-                      </ListItemButton>
-                    ) : (
-                      <ListItem key={role?.id} dense={true} divider={true}>
-                        <ListItemIcon>
-                          <ItemIcon type="Role" />
-                        </ListItemIcon>
-                        <ListItemText primary={role?.name} />
-                      </ListItem>
-                    )))}
-                  </List>
-                </FieldOrEmpty>
+                {connector.connector_user ? (
+                  <FieldOrEmpty source={connector.connector_user.roles ?? []}>
+                    <List>
+                      {(connector.connector_user.roles ?? []).map((role) => (userHasSettingsCapability ? (
+                        <ListItemButton
+                          key={role?.id}
+                          dense={true}
+                          divider={true}
+                          component={Link}
+                          to={`/dashboard/settings/accesses/roles/${role?.id}`}
+                        >
+                          <ListItemIcon>
+                            <ItemIcon type="Role" />
+                          </ListItemIcon>
+                          <ListItemText primary={role?.name} />
+                        </ListItemButton>
+                      ) : (
+                        <ListItem key={role?.id} dense={true} divider={true}>
+                          <ListItemIcon>
+                            <ItemIcon type="Role" />
+                          </ListItemIcon>
+                          <ListItemText primary={role?.name} />
+                        </ListItem>
+                      )))}
+                    </List>
+                  </FieldOrEmpty>
+                ) : (
+                  <FieldOrEmpty source={connector.connector_user}></FieldOrEmpty>
+                )}
               </Grid>
               <Grid item xs={6}>
                 <Typography variant="h3" gutterBottom={true}>
                   {t_i18n("User's groups")}
                 </Typography>
-                <FieldOrEmpty source={connector.connector_user.groups?.edges}>
-                  <List>
-                    {(connector.connector_user.groups?.edges ?? []).map((groupEdge) => (userHasSettingsCapability ? (
-                      <ListItemButton
-                        key={groupEdge?.node.id}
-                        dense={true}
-                        divider={true}
-                        component={Link}
-                        to={`/dashboard/settings/accesses/groups/${groupEdge?.node.id}`}
-                      >
-                        <ListItemIcon>
-                          <ItemIcon type="Group" />
-                        </ListItemIcon>
-                        <ListItemText primary={groupEdge?.node.name} />
-                      </ListItemButton>
-                    ) : (
-                      <ListItem
-                        key={groupEdge?.node.id}
-                        dense={true}
-                        divider={true}
-                      >
-                        <ListItemIcon>
-                          <ItemIcon type="Group" />
-                        </ListItemIcon>
-                        <ListItemText primary={groupEdge?.node.name} />
-                      </ListItem>
-                    )))}
-                  </List>
-                </FieldOrEmpty>
+                {connector.connector_user ? (
+                  <FieldOrEmpty source={connector.connector_user.groups?.edges}>
+                    <List>
+                      {(connector.connector_user.groups?.edges ?? []).map((groupEdge) => (userHasSettingsCapability ? (
+                        <ListItemButton
+                          key={groupEdge?.node.id}
+                          dense={true}
+                          divider={true}
+                          component={Link}
+                          to={`/dashboard/settings/accesses/groups/${groupEdge?.node.id}`}
+                        >
+                          <ListItemIcon>
+                            <ItemIcon type="Group" />
+                          </ListItemIcon>
+                          <ListItemText primary={groupEdge?.node.name} />
+                        </ListItemButton>
+                      ) : (
+                        <ListItem
+                          key={groupEdge?.node.id}
+                          dense={true}
+                          divider={true}
+                        >
+                          <ListItemIcon>
+                            <ItemIcon type="Group" />
+                          </ListItemIcon>
+                          <ListItemText primary={groupEdge?.node.name} />
+                        </ListItem>
+                      )))}
+                    </List>
+                  </FieldOrEmpty>
+                ) : (
+                  <FieldOrEmpty source={connector.connector_user}></FieldOrEmpty>
+                )}
               </Grid>
               <Grid item xs={6}>
                 <Typography variant="h3" gutterBottom={true}>
                   {t_i18n("User's organizations")}
                 </Typography>
-                <FieldOrEmpty source={connector.connector_user.objectOrganization?.edges}>
-                  <List>
-                    {connector.connector_user.objectOrganization?.edges.map((organizationEdge) => (
-                      <ListItemButton
-                        key={organizationEdge.node.id}
-                        dense={true}
-                        divider={true}
-                        component={Link}
-                        to={`/dashboard/settings/accesses/organizations/${organizationEdge.node.id}`}
-                      >
-                        <ListItemIcon>
-                          <ItemIcon
-                            type="Organization"
-                            color={
-                                  (organizationEdge.node.authorized_authorities ?? []).includes(connector.connector_user.id)
-                                    ? theme.palette.warning.main
-                                    : theme.palette.primary.main
-                                }
-                          />
-                        </ListItemIcon>
-                        <ListItemText primary={organizationEdge.node.name} />
-                      </ListItemButton>
-                    ))}
-                  </List>
-                </FieldOrEmpty>
+                {connector.connector_user ? (
+                  <FieldOrEmpty source={connector.connector_user.objectOrganization?.edges}>
+                    <List>
+                      {connector.connector_user.objectOrganization?.edges.map((organizationEdge) => (
+                        <ListItemButton
+                          key={organizationEdge.node.id}
+                          dense={true}
+                          divider={true}
+                          component={Link}
+                          to={`/dashboard/settings/accesses/organizations/${organizationEdge.node.id}`}
+                        >
+                          <ListItemIcon>
+                            <ItemIcon
+                              type="Organization"
+                              color={
+                                        (organizationEdge.node.authorized_authorities ?? []).includes(connector.connector_user.id)
+                                          ? theme.palette.warning.main
+                                          : theme.palette.primary.main
+                                      }
+                            />
+                          </ListItemIcon>
+                          <ListItemText primary={organizationEdge.node.name} />
+                        </ListItemButton>
+                      ))}
+                    </List>
+                  </FieldOrEmpty>
+                ) : (
+                  <FieldOrEmpty source={connector.connector_user}></FieldOrEmpty>
+                )}
               </Grid>
-
             </Grid>
           </Paper>
         </Grid>
@@ -605,16 +627,26 @@ const ConnectorComponent = ({ connector, relay }) => {
                   )
                 )}
                 {connector.connector_info && (
-                <>
-                  <Typography variant="h3" gutterBottom={true}>
-                    {t_i18n('Last run')}
-                  </Typography>
-                  <FieldOrEmpty source={connector.connector_info?.last_run_datetime}>
-                    <Typography variant="body1" gutterBottom={true}>
-                      {nsdt(connector.connector_info?.last_run_datetime)}
-                    </Typography>
-                  </FieldOrEmpty>
-                </>
+                  (connector.connector_info.last_run_datetime && connector.connector_info.last_run_datetime !== null ? (
+                    <>
+                      <Typography variant="h3" gutterBottom={true}>
+                        {t_i18n('Last run')}
+                      </Typography>
+                      <Typography variant="body1" gutterBottom={true}>
+                        {nsdt(connector.connector_info?.last_run_datetime)}
+                      </Typography>
+                    </>
+                  ) : (
+                    <>
+                      <Typography variant="h3" gutterBottom={true}>
+                        {t_i18n('Last run')}
+                      </Typography>
+                      <Typography variant="body1" gutterBottom={true}>
+                        {t_i18n('Not provided')}
+                      </Typography>
+                    </>
+                  )
+                  )
                 )}
               </Grid>
 
@@ -623,16 +655,21 @@ const ConnectorComponent = ({ connector, relay }) => {
                   {t_i18n('Next run')}
                 </Typography>
                 {connector.connector_info && (
+                  // eslint-disable-next-line no-nested-ternary
                   connector.connector_info.run_and_terminate ? (
                     <Typography variant="body1" gutterBottom={true}>
                       {t_i18n('External schedule')}
                     </Typography>
                   ) : (
-                    <FieldOrEmpty source={connector.connector_info?.next_run_datetime}>
+                    (connector.connector_info.next_run_datetime !== null ? (
                       <Typography variant="body1" gutterBottom={true}>
                         {nsdt(connector.connector_info?.next_run_datetime)}
                       </Typography>
-                    </FieldOrEmpty>
+                    ) : (
+                      <Typography variant="body1" gutterBottom={true}>
+                        {t_i18n('Not provided')}
+                      </Typography>
+                    ))
                   )
                 )}
                 {!connector.connector_info && (
@@ -645,7 +682,7 @@ const ConnectorComponent = ({ connector, relay }) => {
                 <Typography variant="h3" gutterBottom={true} >
                   {t_i18n('Server capacity')}
                 </Typography>
-                {connector.connector_info ? (
+                {connector.connector_info && connector.connector_info.queue_messages_size !== 0 ? (
                   <FieldOrEmpty source={connector.connector_info?.queue_messages_size}>
                     <span style={isBuffering() ? { color: theme.palette.warning.main } : {}}>{connector.connector_info?.queue_messages_size.toFixed(2)}</span>
                     <span> / {connector.connector_info?.queue_threshold} Mo</span>
