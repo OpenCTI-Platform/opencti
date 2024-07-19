@@ -2018,6 +2018,7 @@ export type CaseIncident = BasicObject & Case & Container & StixCoreObject & Sti
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
+  currentUserAccessRight?: Maybe<Scalars['String']['output']>;
   description?: Maybe<Scalars['String']['output']>;
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String']['output'];
@@ -12563,6 +12564,7 @@ export type Mutation = {
   caseDelete?: Maybe<Scalars['ID']['output']>;
   caseIncidentAdd?: Maybe<CaseIncident>;
   caseIncidentDelete?: Maybe<Scalars['ID']['output']>;
+  caseIncidentEditAuthorizedMembers?: Maybe<CaseIncident>;
   caseRfiAdd?: Maybe<CaseRfi>;
   caseRfiDelete?: Maybe<Scalars['ID']['output']>;
   caseRftAdd?: Maybe<CaseRft>;
@@ -13070,6 +13072,12 @@ export type MutationCaseIncidentAddArgs = {
 
 export type MutationCaseIncidentDeleteArgs = {
   id: Scalars['ID']['input'];
+};
+
+
+export type MutationCaseIncidentEditAuthorizedMembersArgs = {
+  id: Scalars['ID']['input'];
+  input?: InputMaybe<Array<MemberAccessInput>>;
 };
 
 
@@ -31011,6 +31019,7 @@ export type CaseIncidentResolvers<ContextType = any, ParentType extends Resolver
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
+  currentUserAccessRight?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -34626,6 +34635,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   caseDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationCaseDeleteArgs, 'id'>>;
   caseIncidentAdd?: Resolver<Maybe<ResolversTypes['CaseIncident']>, ParentType, ContextType, RequireFields<MutationCaseIncidentAddArgs, 'input'>>;
   caseIncidentDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationCaseIncidentDeleteArgs, 'id'>>;
+  caseIncidentEditAuthorizedMembers?: Resolver<Maybe<ResolversTypes['CaseIncident']>, ParentType, ContextType, RequireFields<MutationCaseIncidentEditAuthorizedMembersArgs, 'id'>>;
   caseRfiAdd?: Resolver<Maybe<ResolversTypes['CaseRfi']>, ParentType, ContextType, RequireFields<MutationCaseRfiAddArgs, 'input'>>;
   caseRfiDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationCaseRfiDeleteArgs, 'id'>>;
   caseRftAdd?: Resolver<Maybe<ResolversTypes['CaseRft']>, ParentType, ContextType, RequireFields<MutationCaseRftAddArgs, 'input'>>;

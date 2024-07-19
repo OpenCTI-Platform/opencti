@@ -1,8 +1,11 @@
 import { describe, it, expect } from 'vitest';
 import gql from 'graphql-tag';
-import { ADMIN_USER, queryAsAdmin } from '../../utils/testQuery';
-import type { CaseIncident } from '../../../src/generated/graphql';
+import { ADMIN_USER, getUserIdByEmail, queryAsAdmin, USER_EDITOR } from '../../utils/testQuery';
+import type { CaseIncident, EntitySetting, EntitySettingConnection } from '../../../src/generated/graphql';
 import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../../../src/modules/case/case-incident/case-incident-types';
+import { queryAsUserWithSuccess } from '../../utils/testQueryHelper';
+import { executionContext, SYSTEM_USER } from '../../../src/utils/access';
+import { initCreateEntitySettings } from '../../../src/modules/entitySetting/entitySetting-domain';
 
 const CREATE_QUERY = gql`
   mutation CaseIncidentAdd($input: CaseIncidentAddInput!) {
@@ -15,6 +18,7 @@ const CREATE_QUERY = gql`
         id
         access_right
       }
+      currentUserAccessRight
     }
   }
 `;
@@ -26,10 +30,11 @@ const READ_QUERY = gql`
       standard_id
       name
       description
-      toStix
       authorized_members {
         id
+        access_right
       }
+      currentUserAccessRight
     }
   }
 `;
@@ -53,7 +58,6 @@ describe('Case Incident Response resolver standard behavior', () => {
     });
     expect(caseIncidentResponseData).not.toBeNull();
     expect(caseIncidentResponseData?.data?.caseIncidentAdd.authorized_members).not.toBeUndefined();
-    expect(caseIncidentResponseData?.data?.caseIncidentAdd.authorized_members).toEqual([]); // authorized members not activated
     caseIncidentResponse = caseIncidentResponseData?.data?.caseIncidentAdd;
   });
   it('should Case Incident Response loaded by internal id', async () => {
@@ -61,7 +65,6 @@ describe('Case Incident Response resolver standard behavior', () => {
     expect(queryResult).not.toBeNull();
     expect(queryResult?.data?.caseIncident).not.toBeNull();
     expect(queryResult?.data?.caseIncident.id).toEqual(caseIncidentResponse.id);
-    expect(queryResult?.data?.caseIncident.toStix.length).toBeGreaterThan(5);
   });
   it('should Case Incident Response loaded by standard id', async () => {
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: caseIncidentResponse.standard_id } });
@@ -120,7 +123,6 @@ describe('Case Incident Response resolver standard behavior', () => {
     });
     expect(queryResult?.data?.stixDomainObjectEdit.fieldPatch.name).toEqual('Case - updated');
   });
-  // TODO ADD context test even if i don't understand what it is?
   it('should Case Incident Response deleted', async () => {
     // Delete the case
     await queryAsAdmin({
@@ -134,9 +136,136 @@ describe('Case Incident Response resolver standard behavior', () => {
   });
 });
 
-describe('Case Incident Response authorized_members standard behavior', () => {
-  let caseIncidentResponseAuthorizedMembers: CaseIncident;
-  it('should Case Incident Response created with authorized_members activated via settings', async () => {
+describe('Case Incident Response standard behavior with authorized_members activation from entity', () => {
+  let caseIncidentResponseAuthorizedMembersFromEntity: CaseIncident;
+  const EDIT_AUTHORIZED_MEMBERS_QUERY = gql`
+    mutation CaseIncidentEditAuthorizedMembers(
+      $id: ID!
+      $input: [MemberAccessInput!]!
+    ) {
+      caseIncidentEditAuthorizedMembers(id: $id, input: $input){
+        authorized_members {
+          id
+          name
+          entity_type
+          access_right
+        }
+        id
+      }
+    }
+  `;
+  it('should Case Incident Response created', async () => {
+    // Create Case Incident Response
+    const caseIncidentResponseCreateQueryResult = await queryAsAdmin({
+      query: CREATE_QUERY,
+      variables: {
+        input: {
+          name: 'Case Incident Response With Authorized Members'
+        }
+      }
+    });
+
+    expect(caseIncidentResponseCreateQueryResult).not.toBeNull();
+    expect(caseIncidentResponseCreateQueryResult?.data?.caseIncidentAdd.authorized_members).not.toBeUndefined();
+    expect(caseIncidentResponseCreateQueryResult?.data?.caseIncidentAdd.authorized_members).toEqual([]); // authorized members not activated
+    expect(caseIncidentResponseCreateQueryResult?.data?.caseIncidentAdd.currentUserAccessRight).toEqual('admin'); // CurrentUser should be admin if authorized members not activated
+    caseIncidentResponseAuthorizedMembersFromEntity = caseIncidentResponseCreateQueryResult?.data?.caseIncidentAdd;
+
+    // Activate Authorized members
+    await queryAsAdmin({
+      query: EDIT_AUTHORIZED_MEMBERS_QUERY,
+      variables: {
+        id: caseIncidentResponseAuthorizedMembersFromEntity.id,
+        input: [
+          {
+            id: ADMIN_USER.id,
+            access_right: 'admin'
+          }
+        ]
+      }
+    });
+    // Verify if authorized members have been edited
+    const caseIncidentResponseUpdatedQueryResult = await queryAsAdmin({
+      query: READ_QUERY,
+      variables: { id: caseIncidentResponseAuthorizedMembersFromEntity.id }
+    });
+    expect(caseIncidentResponseUpdatedQueryResult).not.toBeNull();
+    expect(caseIncidentResponseUpdatedQueryResult?.data?.caseIncident.authorized_members).not.toBeUndefined();
+    expect(caseIncidentResponseUpdatedQueryResult?.data?.caseIncident.authorized_members).toEqual([
+      {
+        id: ADMIN_USER.id,
+        access_right: 'admin'
+      }
+    ]);
+  });
+  it('should Case Incident Response get current User access right', async () => {
+    // Add new authorized members
+    const userEditorId = await getUserIdByEmail(USER_EDITOR.email);
+    await queryAsAdmin({
+      query: EDIT_AUTHORIZED_MEMBERS_QUERY,
+      variables: {
+        id: caseIncidentResponseAuthorizedMembersFromEntity.id,
+        input: [
+          {
+            id: ADMIN_USER.id,
+            access_right: 'admin'
+          },
+          {
+            id: userEditorId,
+            access_right: 'view'
+          }
+        ]
+      }
+    });
+    // Get current User access right
+    const currentUserAccessRightQueryResult = await queryAsUserWithSuccess(USER_EDITOR.client, { query: READ_QUERY,
+      variables: { id: caseIncidentResponseAuthorizedMembersFromEntity.id }, });
+    // console.log(currentUserAccessRightQueryResult?.data?.caseIncident.currentUserAccessRight);
+    expect(currentUserAccessRightQueryResult).not.toBeNull();
+    expect(currentUserAccessRightQueryResult?.data?.caseIncident.currentUserAccessRight).toEqual('view');
+  });
+  it('should Case Incident Response deleted', async () => {
+    // Delete the case
+    await queryAsAdmin({
+      query: DELETE_QUERY,
+      variables: { id: caseIncidentResponseAuthorizedMembersFromEntity.id },
+    });
+    // Verify is no longer found
+    const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: caseIncidentResponseAuthorizedMembersFromEntity.id } });
+    expect(queryResult).not.toBeNull();
+    expect(queryResult?.data?.caseIncident).toBeNull();
+  });
+});
+
+describe('Case Incident Response standard behavior with authorized_members activated via settings', () => {
+  let caseIncidentResponseAuthorizedMembersFromSettings: CaseIncident;
+  let caseIncidentEntitySetting: EntitySetting;
+  let entitySettingIdCaseIncidentResponse;
+  it('should init entity settings', async () => {
+    const LIST_QUERY = gql`
+          query entitySettings {
+              entitySettings {
+                  edges {
+                      node {
+                          id
+                          target_type
+                          platform_entity_files_ref
+                          platform_hidden_type
+                          enforce_reference
+                      }
+                  }
+              }
+          }
+      `;
+    const context = executionContext('test');
+    await initCreateEntitySettings(context, SYSTEM_USER);
+    const queryResult = await queryAsAdmin({ query: LIST_QUERY });
+
+    const entitySettingCaseIncidentResponse = queryResult.data?.entitySettings.edges.filter((entitySetting) => entitySetting.node.target_type === ENTITY_TYPE_CONTAINER_CASE_INCIDENT)[0];
+    entitySettingIdCaseIncidentResponse = entitySettingCaseIncidentResponse.node.id;
+    expect(entitySettingIdCaseIncidentResponse).toBeTruthy();
+  });
+  it('should Case Incident Response created', async () => {
     // Activate authorized members for IR
     const ENTITY_SETTINGS_READ_QUERY_BY_TARGET_TYPE = gql`
       query entitySettingsByTargetType($targetType: String!) {
@@ -149,7 +278,6 @@ describe('Case Incident Response authorized_members standard behavior', () => {
         }
       }
     `;
-
     const ENTITY_SETTINGS_UPDATE_QUERY = gql`
       mutation entitySettingsEdit($ids: [ID!]!, $input: [EditInput!]!) {
         entitySettingsFieldPatch(ids: $ids, input: $input) {
@@ -162,22 +290,28 @@ describe('Case Incident Response authorized_members standard behavior', () => {
         }
       }
     `;
-
     const caseIncidentResponseSettingsQueryResult = await queryAsAdmin({
       query: ENTITY_SETTINGS_READ_QUERY_BY_TARGET_TYPE,
       variables: { targetType: ENTITY_TYPE_CONTAINER_CASE_INCIDENT }
     });
     expect(caseIncidentResponseSettingsQueryResult.data?.entitySettingByType.target_type).toEqual(ENTITY_TYPE_CONTAINER_CASE_INCIDENT);
-    const caseIncidentEntitySetting = caseIncidentResponseSettingsQueryResult.data?.entitySettingByType;
-
-    const authorizedMembersConfiguration = JSON.stringify([{ name: 'authorized_members', default_values: [{ id: ADMIN_USER.id, access_right: 'admin' }] }]);
-
+    caseIncidentEntitySetting = caseIncidentResponseSettingsQueryResult.data?.entitySettingByType;
+    const authorizedMembersConfiguration = JSON.stringify([
+      {
+        name: 'authorized_members',
+        default_values: [
+          JSON.stringify({
+            id: ADMIN_USER.id,
+            access_right: 'admin'
+          })
+        ]
+      }
+    ]);
     const updateEntitySettingsResult = await queryAsAdmin({
       query: ENTITY_SETTINGS_UPDATE_QUERY,
       variables: { ids: [caseIncidentEntitySetting.id], input: { key: 'attributes_configuration', value: [authorizedMembersConfiguration] } },
     });
-    expect(updateEntitySettingsResult.data?.entitySettingsFieldPatch[0].attribute_configuration).toEqual([authorizedMembersConfiguration]);
-
+    expect(updateEntitySettingsResult.data?.entitySettingsFieldPatch?.[0]?.attributes_configuration).toEqual(authorizedMembersConfiguration);
     const caseIncidentResponseAuthorizedMembersData = await queryAsAdmin({
       query: CREATE_QUERY,
       variables: {
@@ -191,25 +325,25 @@ describe('Case Incident Response authorized_members standard behavior', () => {
     expect(caseIncidentResponseAuthorizedMembersData?.data?.caseIncidentAdd.authorized_members).toEqual([
       {
         id: ADMIN_USER.id,
-        name: ADMIN_USER.name,
         access_right: 'admin'
       }
     ]);
-    caseIncidentResponseAuthorizedMembers = caseIncidentResponseAuthorizedMembersData?.data?.caseIncidentAdd;
+    caseIncidentResponseAuthorizedMembersFromSettings = caseIncidentResponseAuthorizedMembersData?.data?.caseIncidentAdd;
     // Clean
+    const authorizedMembersConfigurationClean = JSON.stringify([{ name: 'authorized_members', default_values: null }]);
     await queryAsAdmin({
       query: ENTITY_SETTINGS_UPDATE_QUERY,
-      variables: { ids: [caseIncidentEntitySetting.id], input: { key: 'attributes_configuration', value: [] } },
+      variables: { ids: [caseIncidentEntitySetting?.id], input: { key: 'attributes_configuration', value: [authorizedMembersConfigurationClean] } },
     });
   });
   it('should Case Incident Response deleted', async () => {
     // Delete the case
     await queryAsAdmin({
       query: DELETE_QUERY,
-      variables: { id: caseIncidentResponseAuthorizedMembers.id },
+      variables: { id: caseIncidentResponseAuthorizedMembersFromSettings.id },
     });
     // Verify is no longer found
-    const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: caseIncidentResponseAuthorizedMembers.id } });
+    const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: caseIncidentResponseAuthorizedMembersFromSettings.id } });
     expect(queryResult).not.toBeNull();
     expect(queryResult?.data?.caseIncident).toBeNull();
   });

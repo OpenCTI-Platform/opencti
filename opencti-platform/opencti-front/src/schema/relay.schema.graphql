@@ -8401,6 +8401,7 @@ type Mutation {
   caseTemplateRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): CaseTemplate
   caseIncidentAdd(input: CaseIncidentAddInput!): CaseIncident
   caseIncidentDelete(id: ID!): ID
+  caseIncidentEditAuthorizedMembers(id: ID!, input: [MemberAccessInput!]): CaseIncident
   caseRfiAdd(input: CaseRfiAddInput!): CaseRfi
   caseRfiDelete(id: ID!): ID
   caseRftAdd(input: CaseRftAddInput!): CaseRft
@@ -9902,6 +9903,7 @@ type CaseIncident implements BasicObject & StixObject & StixCoreObject & StixDom
   severity: String
   priority: String
   authorized_members: [MemberAccess!]
+  currentUserAccessRight: String
 }
 
 enum CaseIncidentsOrdering {

@@ -138,6 +138,7 @@ type CaseIncident implements BasicObject & StixObject & StixCoreObject & StixDom
   severity: String
   priority: String
   authorized_members: [MemberAccess!]
+  currentUserAccessRight: String
 }
 
 # Ordering
@@ -218,4 +219,5 @@ input CaseIncidentAddInput {
 type Mutation {
   caseIncidentAdd(input: CaseIncidentAddInput!): CaseIncident @auth
   caseIncidentDelete(id: ID!): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
+  caseIncidentEditAuthorizedMembers(id: ID!, input:[MemberAccessInput!]): CaseIncident @auth(for: [KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS])
 }
