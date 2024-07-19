@@ -88,7 +88,7 @@ const IntrusionSetComponent = ({
         spacing={3}
         classes={{ container: classes.gridContainer }}
       >
-        <Grid item xs={6} style={{ paddingTop: 10 }}>
+        <Grid item xs={6}>
           <IntrusionSetDetails intrusionSet={intrusionSetData} />
         </Grid>
         <Grid item xs={6}>

@@ -94,7 +94,7 @@ const ReportComponent: FunctionComponent<ReportComponentProps> = ({
       spacing={3}
       style={{ marginBottom: 20 }}
     >
-      <Grid item xs={6} style={{ paddingTop: 10 }}>
+      <Grid item xs={6}>
         <ReportDetails report={report} />
       </Grid>
       <Grid item xs={6}>

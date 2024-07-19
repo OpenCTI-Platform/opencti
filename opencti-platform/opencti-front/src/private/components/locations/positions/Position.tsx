@@ -49,7 +49,7 @@ const PositionComponent: FunctionComponent<PositionComponentProps> = ({
         spacing={3}
         classes={{ container: classes.gridContainer }}
       >
-        <Grid item xs={4} style={{ paddingTop: 10 }}>
+        <Grid item xs={4}>
           {queryRef && (
             <React.Suspense
               fallback={<Loader variant={LoaderVariant.inElement} />}
@@ -58,7 +58,7 @@ const PositionComponent: FunctionComponent<PositionComponentProps> = ({
             </React.Suspense>
           )}
         </Grid>
-        <Grid item xs={4} style={{ paddingTop: 10 }}>
+        <Grid item xs={4}>
           <LocationMiniMap
             center={
               position.latitude && position.longitude

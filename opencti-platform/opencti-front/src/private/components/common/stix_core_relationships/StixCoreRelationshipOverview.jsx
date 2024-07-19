@@ -240,7 +240,7 @@ class StixCoreRelationshipContainer extends Component {
           spacing={3}
           classes={{ container: classes.gridContainer }}
         >
-          <Grid item xs={6} style={{ paddingTop: 10 }}>
+          <Grid item xs={6}>
             <Typography variant="h4" gutterBottom={true}>
               {t('Relationship')}
             </Typography>
@@ -422,7 +422,7 @@ class StixCoreRelationshipContainer extends Component {
               </div>
             </Paper>
           </Grid>
-          <Grid item xs={6} style={{ paddingTop: 10 }}>
+          <Grid item xs={6}>
             <Typography variant="h4" gutterBottom={true}>
               {t('Details')}
             </Typography>

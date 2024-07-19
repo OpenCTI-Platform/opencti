@@ -137,7 +137,7 @@ const DecayRuleComponent = ({ queryRef }: DecayRuleComponentProps) => {
         spacing={3}
         classes={{ container: classes.gridContainer }}
       >
-        <Grid item xs={6} style={{ paddingTop: 10 }}>
+        <Grid item xs={6}>
           <Box sx={{ display: 'flex', height: '100%', flexDirection: 'column' }}>
             <Typography variant="h4" gutterBottom={true}>
               {t_i18n('Configuration')}
@@ -193,7 +193,7 @@ const DecayRuleComponent = ({ queryRef }: DecayRuleComponentProps) => {
             </Paper>
           </Box>
         </Grid>
-        <Grid item xs={6} style={{ paddingTop: 10 }}>
+        <Grid item xs={6}>
           <Typography variant="h4" gutterBottom={true}>
             {t_i18n('Impact')}
           </Typography>

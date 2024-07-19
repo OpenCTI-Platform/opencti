@@ -49,8 +49,8 @@ class ThreatActorGroupDetailsComponent extends Component {
       (n) => n?.node?.metaData?.inCarousel,
     ).length > 0;
     return (
-      <div style={{ height: '100%' }}>
-        <Typography variant="h4" gutterBottom={true}>
+      <>
+        <Typography variant="h4">
           {t('Details')}
         </Typography>
         <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
@@ -247,7 +247,7 @@ class ThreatActorGroupDetailsComponent extends Component {
             </Grid>
           </Grid>
         </Paper>
-      </div>
+      </>
     );
   }
 }

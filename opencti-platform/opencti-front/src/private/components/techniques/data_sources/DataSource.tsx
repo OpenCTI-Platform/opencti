@@ -85,7 +85,7 @@ const DataSourceComponent = ({ data }: { data: DataSource_dataSource$key }) => {
         spacing={3}
         classes={{ container: classes.gridContainer }}
       >
-        <Grid item xs={6} style={{ paddingTop: 10 }}>
+        <Grid item xs={6}>
           <DataSourceDetailsComponent dataSource={dataSource} />
         </Grid>
         <Grid item xs={6}>

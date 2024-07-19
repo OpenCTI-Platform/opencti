@@ -87,7 +87,7 @@ const CaseIncidentComponent: FunctionComponent<CaseIncidentProps> = ({ data, ena
         spacing={3}
         classes={{ container: classes.gridContainer }}
       >
-        <Grid item xs={6} style={{ paddingTop: 10 }}>
+        <Grid item xs={6}>
           <CaseIncidentDetails caseIncidentData={caseIncidentData} />
         </Grid>
         <Grid item xs={6}>

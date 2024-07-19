@@ -63,7 +63,7 @@ const UserAnalytics: FunctionComponent<UserAnalyticsProps> = ({ data }) => {
         spacing={3}
         classes={{ container: classes.gridContainer }}
       >
-        <Grid item xs={6} style={{ paddingTop: 10 }}>
+        <Grid item xs={6}>
           <AuditsMultiVerticalBars
             height={300}
             parameters={{
@@ -90,7 +90,7 @@ const UserAnalytics: FunctionComponent<UserAnalyticsProps> = ({ data }) => {
             ]}
           />
         </Grid>
-        <Grid item xs={6} style={{ paddingTop: 10 }}>
+        <Grid item xs={6}>
           <AuditsMultiLineChart
             height={300}
             parameters={{

@@ -84,17 +84,10 @@ const NoteComponent: FunctionComponent<NoteComponentProps> = ({
         marginTop: 25,
       }}
     >
-      <Grid
-        item
-        xs={6}
-        style={{ paddingTop: 10 }}
-      >
+      <Grid item xs={6}>
         <NoteDetails note={note} />
       </Grid>
-      <Grid
-        item
-        xs={6}
-      >
+      <Grid item xs={6}>
         <StixDomainObjectOverview stixDomainObject={note} />
       </Grid>
     </Grid>

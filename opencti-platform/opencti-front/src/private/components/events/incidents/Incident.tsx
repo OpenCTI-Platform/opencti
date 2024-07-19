@@ -100,7 +100,7 @@ const Incident = ({
         spacing={3}
         classes={{ container: classes.gridContainer }}
       >
-        <Grid item xs={6} style={{ paddingTop: 10 }}>
+        <Grid item xs={6}>
           <IncidentDetails incidentData={incident} />
         </Grid>
         <Grid item xs={6}>
