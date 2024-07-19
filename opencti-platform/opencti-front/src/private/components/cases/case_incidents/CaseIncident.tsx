@@ -42,7 +42,7 @@ const useStyles = makeStyles(() => ({
 }));
 
 interface CaseIncidentProps {
-  data: CaseUtils_case$key;
+  data: CaseUtils_case$key; // TODO why data type is not the same as the one given by the parent component???=> caseData
   enableReferences: boolean;
 }
 
@@ -53,6 +53,8 @@ const CaseIncidentComponent: FunctionComponent<CaseIncidentProps> = ({ data, ena
   const caseIncidentData = useFragment(caseFragment, data);
   const { isFeatureEnable } = useHelper();
   const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
+  const canManage = data.currentUserAccessRight === 'admin';
+  const canEdit = canManage || data.currentUserAccessRight === 'edit';
 
   const LOCAL_STORAGE_KEY_CASE_TASKS = `cases-${caseIncidentData.id}-caseTask`;
 
@@ -197,7 +199,7 @@ const CaseIncidentComponent: FunctionComponent<CaseIncidentProps> = ({ data, ena
         </Grid>
       </Grid>
       {!isFABReplaced && (
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+        <Security needs={[KNOWLEDGE_KNUPDATE]} hasAccess={canEdit}>
           <CaseIncidentEdition caseId={caseIncidentData.id} />
         </Security>
       )}

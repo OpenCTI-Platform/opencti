@@ -52,6 +52,18 @@ const caseIncidentQuery = graphql`
       id
       standard_id
       entity_type
+      currentUserAccessRight
+      authorized_members {
+        id
+        name
+        entity_type
+        access_right
+      }
+      creators {
+        id
+        name
+        entity_type
+      }
       name
       ...CaseUtils_case
       ...IncidentKnowledge_case
@@ -69,6 +81,23 @@ const caseIncidentQuery = graphql`
     }
     connectorsForImport {
       ...StixCoreObjectFilesAndHistory_connectorsImport
+    }
+  }
+`;
+
+// Mutation to edit authorized members of a feedback
+const caseIncidentAuthorizedMembersMutation = graphql`
+  mutation RootCaseIncidentAuthorizedMembersMutation(
+    $id: ID!
+    $input: [MemberAccessInput!]
+  ) {
+    caseIncidentEditAuthorizedMembers(id: $id, input: $input) {
+      authorized_members {
+        id
+        name
+        entity_type
+        access_right
+      }
     }
   }
 `;
@@ -95,6 +124,8 @@ const RootCaseIncidentComponent = ({ queryRef, caseId }) => {
   } = usePreloadedQuery<RootIncidentCaseQuery>(caseIncidentQuery, queryRef);
   const isOverview = location.pathname === `/dashboard/cases/incidents/${caseData?.id}`;
   const paddingRight = getPaddingRight(location.pathname, caseData?.id, '/dashboard/cases/incidents', false);
+  const canManage = caseData?.currentUserAccessRight === 'admin';
+
   return (
     <>
       {caseData ? (
@@ -113,7 +144,10 @@ const RootCaseIncidentComponent = ({ queryRef, caseId }) => {
             </Security>}
             enableQuickSubscription={true}
             enableAskAi={true}
+            disableSharing={true}
             redirectToContent={true}
+            enableManageAuthorizedMembers={canManage}
+            authorizedMembersMutation={caseIncidentAuthorizedMembersMutation}
           />
           <Box
             sx={{

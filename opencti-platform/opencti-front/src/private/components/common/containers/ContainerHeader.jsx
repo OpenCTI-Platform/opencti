@@ -463,6 +463,7 @@ const ContainerHeader = (props) => {
     enableAskAi,
     redirectToContent,
   } = props;
+  // TODO Container is missing Creators wich is supposed to be given by the parent component
   const classes = useStyles();
   const { t_i18n, fd } = useFormatter();
   const userIsKnowledgeEditor = useGranted([KNOWLEDGE_KNUPDATE]);
