@@ -15,7 +15,8 @@ steps:
       - ls -lart
       - cd "$DRONE_WORKSPACE/client-python"
       - echo "[INFO] using client-python on branch $(git branch --show-current)"
-      - pip install -e .[dev,doc]
+      - # pip install -e .[dev,doc]
+      - pip3 install --upgrade --force .
 
   - name: api-tests
     image: nikolaik/python-nodejs:python3.11-nodejs20-alpine
@@ -45,8 +46,8 @@ steps:
       - apk add build-base git libffi-dev cargo
       - pip3 install --upgrade setuptools
       - cd "$DRONE_WORKSPACE/client-python"
-      - echo "[INFO] using client-python on branch $(git branch --show-current)"
-      - pip install -e .[dev,doc]
+      - # echo "[INFO] using client-python on branch $(git branch --show-current)"
+      - # pip install -e .[dev,doc]
       - cd "$DRONE_WORKSPACE/opencti-platform/opencti-graphql"
       - yarn install
       - yarn build
