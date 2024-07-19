@@ -137,20 +137,20 @@ const DecayRuleComponent = ({ queryRef }: DecayRuleComponentProps) => {
         spacing={3}
         classes={{ container: classes.gridContainer }}
       >
-        <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
+        <Grid item xs={6} style={{ paddingTop: 10 }}>
           <Box sx={{ display: 'flex', height: '100%', flexDirection: 'column' }}>
             <Typography variant="h4" gutterBottom={true}>
               {t_i18n('Configuration')}
             </Typography>
             <Paper classes={{ root: classes.paperFlex }} variant="outlined">
               <Grid container={true} spacing={3}>
-                <Grid item={true} xs={12}>
+                <Grid item xs={12}>
                   <Typography variant="h3" gutterBottom={true}>
                     {t_i18n('Description')}
                   </Typography>
                   <ExpandableMarkdown source={decayRule.description} limit={300} />
                 </Grid>
-                <Grid item={true} xs={12}>
+                <Grid item xs={12}>
                   <Typography variant="h3" gutterBottom={true}>
                     <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
                       <span>{t_i18n('Indicator observable types')}</span>
@@ -163,19 +163,19 @@ const DecayRuleComponent = ({ queryRef }: DecayRuleComponentProps) => {
                     <span>{decayRule.decay_observable_types?.join(', ')}</span>
                   </FieldOrEmpty>
                 </Grid>
-                <Grid item={true} xs={12}>
+                <Grid item xs={12}>
                   <Typography variant="h3" gutterBottom={true}>
                     {t_i18n('Lifetime (in days)')}
                   </Typography>
                   {decayRule.decay_lifetime}
                 </Grid>
-                <Grid item={true} xs={12}>
+                <Grid item xs={12}>
                   <Typography variant="h3" gutterBottom={true}>
                     {t_i18n('Decay factor')}
                   </Typography>
                   {decayRule.decay_pound}
                 </Grid>
-                <Grid item={true} xs={12}>
+                <Grid item xs={12}>
                   <Typography variant="h3" gutterBottom={true}>
                     {t_i18n('Reaction points')}
                   </Typography>
@@ -183,7 +183,7 @@ const DecayRuleComponent = ({ queryRef }: DecayRuleComponentProps) => {
                     <span>{decayRule.decay_points?.join(', ')}</span>
                   </FieldOrEmpty>
                 </Grid>
-                <Grid item={true} xs={12}>
+                <Grid item xs={12}>
                   <Typography variant="h3" gutterBottom={true}>
                     {t_i18n('Revoke score')}
                   </Typography>
@@ -193,7 +193,7 @@ const DecayRuleComponent = ({ queryRef }: DecayRuleComponentProps) => {
             </Paper>
           </Box>
         </Grid>
-        <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
+        <Grid item xs={6} style={{ paddingTop: 10 }}>
           <Typography variant="h4" gutterBottom={true}>
             {t_i18n('Impact')}
           </Typography>

@@ -46,23 +46,23 @@ const OpinionComponent = ({ opinion, enableReferences }) => {
         spacing={3}
         classes={{ container: classes.gridContainer }}
       >
-        <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
+        <Grid item xs={6} style={{ paddingTop: 10 }}>
           <OpinionDetails opinion={opinion} />
         </Grid>
-        <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
+        <Grid item xs={6}>
           <StixDomainObjectOverview stixDomainObject={opinion} />
         </Grid>
-        <Grid item={true} xs={12} style={{ marginTop: 30 }}>
+        <Grid item xs={12}>
           <ContainerStixObjectsOrStixRelationships
             container={opinion}
             isSupportParticipation={true}
             enableReferences={enableReferences}
           />
         </Grid>
-        <Grid item={true} xs={6} style={{ marginTop: 30 }}>
+        <Grid item xs={6}>
           <StixCoreObjectExternalReferences stixCoreObjectId={opinion.id} />
         </Grid>
-        <Grid item={true} xs={6} style={{ marginTop: 30 }}>
+        <Grid item xs={6}>
           <StixCoreObjectLatestHistory
             stixCoreObjectId={opinion.id}
             isSupportParticipation={true}

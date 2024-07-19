@@ -43,8 +43,6 @@ const useStyles = makeStyles(() => ({
     marginTop: '-13px',
   },
   paper: {
-    height: '100%',
-    minHeight: '100%',
     margin: '10px 0 0 0',
     padding: '15px',
     borderRadius: 4,
@@ -108,13 +106,13 @@ const Role = ({
         spacing={3}
         classes={{ container: classes.gridContainer }}
       >
-        <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
+        <Grid item xs={6} style={{ paddingTop: 10 }}>
           <Typography variant="h4" gutterBottom={true}>
             {t_i18n('Basic information')}
           </Typography>
           <Paper classes={{ root: classes.paper }} variant="outlined">
             <Grid container={true} spacing={3}>
-              <Grid item={true} xs={12}>
+              <Grid item xs={12}>
                 <Typography variant="h3" gutterBottom={true}>
                   {t_i18n('Description')}
                 </Typography>
@@ -123,7 +121,7 @@ const Role = ({
                   limit={400}
                 />
               </Grid>
-              <Grid item={true} xs={12}>
+              <Grid item xs={12}>
                 <Typography variant="h3" gutterBottom={true}>
                   {t_i18n('Groups using this role')}
                 </Typography>
@@ -148,13 +146,13 @@ const Role = ({
             </Grid>
           </Paper>
         </Grid>
-        <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
+        <Grid item xs={6} style={{ paddingTop: 10 }}>
           <Typography variant="h4" gutterBottom={true}>
             {t_i18n('Capabilities')}
           </Typography>
           <Paper classes={{ root: classes.paper }} variant="outlined">
             <Grid container={true} spacing={3}>
-              <Grid item={true} xs={12} style={{ paddingTop: 10 }}>
+              <Grid item xs={12} style={{ paddingTop: 10 }}>
                 {queryRef && (
                   <React.Suspense>
                     <CapabilitiesList queryRef={queryRef} role={role} />

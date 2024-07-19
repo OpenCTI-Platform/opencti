@@ -21,8 +21,6 @@ import ColumnsLinesTitles from '../../../../components/ColumnsLinesTitles';
 // Do not use it for new code.
 const useStyles = makeStyles<Theme>(() => ({
   paper: {
-    height: '100%',
-    minHeight: '100%',
     margin: 0,
     padding: '15px',
     borderRadius: 4,

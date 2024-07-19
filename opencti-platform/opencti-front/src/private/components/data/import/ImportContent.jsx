@@ -57,8 +57,6 @@ const styles = (theme) => ({
     marginBottom: 20,
   },
   paper: {
-    height: '100%',
-    minHeight: '100%',
     padding: '10px 15px 10px 15px',
     borderRadius: 4,
     marginTop: 2,
@@ -340,7 +338,7 @@ class ImportContentComponent extends Component {
           classes={{ container: classes.gridContainer }}
           style={{ marginTop: 0 }}
         >
-          <Grid item={true} xs={8} style={{ paddingTop: 0 }}>
+          <Grid item xs={8} style={{ paddingTop: 0 }}>
             <div style={{ height: '100%' }} className="break">
               <Typography
                 variant="h4"
@@ -392,7 +390,7 @@ class ImportContentComponent extends Component {
               </Paper>
             </div>
           </Grid>
-          <Grid item={true} xs={4} style={{ paddingTop: 0 }}>
+          <Grid item xs={4} style={{ paddingTop: 0 }}>
             <Typography variant="h4" gutterBottom={true}>
               {t('Enabled import connectors')}
             </Typography>
@@ -459,7 +457,7 @@ class ImportContentComponent extends Component {
               )}
             </Paper>
           </Grid>
-          <Grid item={true} xs={12} style={{ marginTop: 40 }}>
+          <Grid item xs={12} style={{ marginTop: 40 }}>
             <div style={{ height: '100%' }} className="break">
               <Typography
                 variant="h4"

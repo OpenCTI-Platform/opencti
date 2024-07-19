@@ -30,27 +30,27 @@ class ChannelComponent extends Component {
           spacing={3}
           classes={{ container: classes.gridContainer }}
         >
-          <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
+          <Grid item xs={6} style={{ paddingTop: 10 }}>
             <ChannelDetails channel={channel} />
           </Grid>
-          <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
+          <Grid item xs={6}>
             <StixDomainObjectOverview stixDomainObject={channel} />
           </Grid>
-          <Grid item={true} xs={6} style={{ marginTop: 30 }}>
+          <Grid item xs={6}>
             <SimpleStixObjectOrStixRelationshipStixCoreRelationships
               stixObjectOrStixRelationshipId={channel.id}
               stixObjectOrStixRelationshipLink={`/dashboard/arsenal/channels/${channel.id}/knowledge`}
             />
           </Grid>
-          <Grid item={true} xs={6} style={{ marginTop: 30 }}>
+          <Grid item xs={6}>
             <StixCoreObjectOrStixRelationshipLastContainers
               stixCoreObjectOrStixRelationshipId={channel.id}
             />
           </Grid>
-          <Grid item={true} xs={6} style={{ marginTop: 30 }}>
+          <Grid item xs={6}>
             <StixCoreObjectExternalReferences stixCoreObjectId={channel.id} />
           </Grid>
-          <Grid item={true} xs={6} style={{ marginTop: 30 }}>
+          <Grid item xs={6}>
             <StixCoreObjectLatestHistory stixCoreObjectId={channel.id} />
           </Grid>
         </Grid>

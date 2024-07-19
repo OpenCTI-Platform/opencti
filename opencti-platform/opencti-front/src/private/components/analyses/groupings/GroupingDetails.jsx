@@ -23,8 +23,6 @@ import { emptyFilterGroup } from '../../../../utils/filters/filtersUtils';
 
 const styles = (theme) => ({
   paper: {
-    height: '100%',
-    minHeight: '100%',
     margin: '10px 0 0 0',
     padding: '15px',
     borderRadius: 4,
@@ -144,9 +142,9 @@ const GroupingDetailsComponent = (props) => {
       <Typography variant="h4" gutterBottom={true}>
         {t('Entity details')}
       </Typography>
-      <Paper classes={{ root: classes.paper }} variant="outlined">
+      <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
         <Grid container={true} spacing={3} style={{ marginBottom: 20 }}>
-          <Grid item={true} xs={6} ref={ref}>
+          <Grid item xs={6} ref={ref}>
             <Typography variant="h3" gutterBottom={true}>
               {t('Description')}
             </Typography>
@@ -160,7 +158,7 @@ const GroupingDetailsComponent = (props) => {
             </Typography>
             <Chip classes={{ root: classes.chip }} label={grouping.context} />
           </Grid>
-          <Grid item={true} xs={6} style={{ minHeight: 200, maxHeight: height }}>
+          <Grid item xs={6} style={{ minHeight: 200, maxHeight: height }}>
             <StixRelationshipsHorizontalBars
               isWidget={false}
               fromId={grouping.id}

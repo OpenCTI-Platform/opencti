@@ -134,7 +134,7 @@ class StixCoreObjectStixCoreRelationshipsCloud extends Component {
                     return (
                       <Grid
                         key={line.label}
-                        item={true}
+                        item
                         xs={4}
                         style={{ padding: 0 }}
                       >

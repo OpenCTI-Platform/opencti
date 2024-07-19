@@ -109,8 +109,6 @@ const styles = (theme) => ({
     color: theme.palette.text.primary,
   },
   paper: {
-    height: '100%',
-    minHeight: '100%',
     margin: '10px 0 0 0',
     padding: '15px',
     borderRadius: 4,
@@ -242,7 +240,7 @@ class StixCoreRelationshipContainer extends Component {
           spacing={3}
           classes={{ container: classes.gridContainer }}
         >
-          <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
+          <Grid item xs={6} style={{ paddingTop: 10 }}>
             <Typography variant="h4" gutterBottom={true}>
               {t('Relationship')}
             </Typography>
@@ -370,7 +368,7 @@ class StixCoreRelationshipContainer extends Component {
               <Divider style={{ marginTop: 30 }} />
               <div style={{ padding: 15 }}>
                 <Grid container={true} spacing={3}>
-                  <Grid item={true} xs={6}>
+                  <Grid item xs={6}>
                     <Typography variant="h3" gutterBottom={true}>
                       {t('Marking')}
                     </Typography>
@@ -392,7 +390,7 @@ class StixCoreRelationshipContainer extends Component {
                     </Typography>
                     {nsdt(stixCoreRelationship.stop_time)}
                   </Grid>
-                  <Grid item={true} xs={6}>
+                  <Grid item xs={6}>
                     <StixCoreRelationshipSharing
                       elementId={stixCoreRelationship.id}
                     />
@@ -424,13 +422,13 @@ class StixCoreRelationshipContainer extends Component {
               </div>
             </Paper>
           </Grid>
-          <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
+          <Grid item xs={6} style={{ paddingTop: 10 }}>
             <Typography variant="h4" gutterBottom={true}>
               {t('Details')}
             </Typography>
             <Paper classes={{ root: classes.paper }} variant="outlined">
               <Grid container={true} spacing={3}>
-                <Grid item={true} xs={6}>
+                <Grid item xs={6}>
                   <Typography variant="h3" gutterBottom={true}>
                     {t('Confidence level')}
                   </Typography>
@@ -473,7 +471,7 @@ class StixCoreRelationshipContainer extends Component {
                   </Typography>
                   {nsdt(stixCoreRelationship.updated_at)}
                 </Grid>
-                <Grid item={true} xs={6}>
+                <Grid item xs={6}>
                   <Typography variant="h3" gutterBottom={true}>
                     {t('Processing status')}
                   </Typography>
@@ -549,24 +547,24 @@ class StixCoreRelationshipContainer extends Component {
                 spacing={3}
                 classes={{ container: classes.gridContainer }}
               >
-                <Grid item={true} xs={6}>
+                <Grid item xs={6}>
                   <StixCoreRelationshipStixCoreRelationships
                     entityId={stixCoreRelationship.id}
                   />
                 </Grid>
-                <Grid item={true} xs={6}>
+                <Grid item xs={6}>
                   <StixCoreObjectOrStixRelationshipLastContainers
                     stixCoreObjectOrStixRelationshipId={stixCoreRelationship.id}
                   />
                 </Grid>
               </Grid>
               <Grid container={true} spacing={3} style={{ marginTop: 25 }}>
-                <Grid item={true} xs={6}>
+                <Grid item xs={6}>
                   <StixCoreRelationshipExternalReferences
                     stixCoreRelationshipId={stixCoreRelationship.id}
                   />
                 </Grid>
-                <Grid item={true} xs={6}>
+                <Grid item xs={6}>
                   <StixCoreRelationshipLatestHistory
                     stixCoreRelationshipId={stixCoreRelationship.id}
                   />

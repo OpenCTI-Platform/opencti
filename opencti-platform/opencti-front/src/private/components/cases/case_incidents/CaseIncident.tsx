@@ -34,8 +34,6 @@ const useStyles = makeStyles(() => ({
     marginBottom: 20,
   },
   paper: {
-    height: '100%',
-    minHeight: '100%',
     margin: '10px 0 0 0',
     padding: 0,
     borderRadius: 4,
@@ -89,17 +87,17 @@ const CaseIncidentComponent: FunctionComponent<CaseIncidentProps> = ({ data, ena
         spacing={3}
         classes={{ container: classes.gridContainer }}
       >
-        <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
+        <Grid item xs={6} style={{ paddingTop: 10 }}>
           <CaseIncidentDetails caseIncidentData={caseIncidentData} />
         </Grid>
-        <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
+        <Grid item xs={6}>
           <StixDomainObjectOverview
             stixDomainObject={caseIncidentData}
             displayAssignees
             displayParticipants
           />
         </Grid>
-        <Grid item={true} xs={6} style={{ marginTop: 30 }} ref={ref}>
+        <Grid item xs={6} ref={ref}>
           {queryRef && (
             <React.Suspense
               fallback={
@@ -144,7 +142,7 @@ const CaseIncidentComponent: FunctionComponent<CaseIncidentProps> = ({ data, ena
             </React.Suspense>
           )}
         </Grid>
-        <Grid item={true} xs={6} style={{ marginTop: 30 }}>
+        <Grid item xs={6}>
           <ContainerStixObjectsOrStixRelationships
             isSupportParticipation={false}
             container={caseIncidentData}
@@ -153,7 +151,7 @@ const CaseIncidentComponent: FunctionComponent<CaseIncidentProps> = ({ data, ena
             enableReferences={enableReferences}
           />
         </Grid>
-        <Grid item={true} xs={6} style={{ marginTop: 30 }}>
+        <Grid item xs={6}>
           <ContainerStixObjectsOrStixRelationships
             isSupportParticipation={false}
             container={caseIncidentData}
@@ -162,7 +160,7 @@ const CaseIncidentComponent: FunctionComponent<CaseIncidentProps> = ({ data, ena
             enableReferences={enableReferences}
           />
         </Grid>
-        <Grid item={true} xs={6} style={{ marginTop: 30 }}>
+        <Grid item xs={6}>
           <ContainerStixObjectsOrStixRelationships
             isSupportParticipation={false}
             container={caseIncidentData}
@@ -180,19 +178,21 @@ const CaseIncidentComponent: FunctionComponent<CaseIncidentProps> = ({ data, ena
             enableReferences={enableReferences}
           />
         </Grid>
-        <Grid item={true} xs={6} style={{ marginTop: 30 }}>
+        <Grid item xs={6}>
           <StixCoreObjectExternalReferences
             stixCoreObjectId={caseIncidentData.id}
           />
         </Grid>
-        <Grid item={true} xs={6} style={{ marginTop: 30 }}>
+        <Grid item xs={6}>
           <StixCoreObjectLatestHistory stixCoreObjectId={caseIncidentData.id} />
         </Grid>
+        <Grid item xs={12}>
+          <StixCoreObjectOrStixCoreRelationshipNotes
+            stixCoreObjectOrStixCoreRelationshipId={caseIncidentData.id}
+            defaultMarkings={caseIncidentData.objectMarking ?? []}
+          />
+        </Grid>
       </Grid>
-      <StixCoreObjectOrStixCoreRelationshipNotes
-        stixCoreObjectOrStixCoreRelationshipId={caseIncidentData.id}
-        defaultMarkings={caseIncidentData.objectMarking ?? []}
-      />
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
         <CaseIncidentEdition caseId={caseIncidentData.id} />
       </Security>

@@ -15,8 +15,6 @@ import useUserMetric from '../../../../utils/hooks/useUserMetric';
 // Do not use it for new code.
 const useStyles = makeStyles(() => ({
   paper: {
-    height: '100%',
-    minHeight: '100%',
     margin: '10px 0 0 0',
     padding: '15px',
     borderRadius: 4,
@@ -82,7 +80,7 @@ const InfoTooltip = ({ text }: { text: string }) => (
 );
 
 const DetailGrid = ({ title, tooltip, children, extra }: DetailValue) => (
-  <Grid item={true} xs={3} mt={-1}>
+  <Grid item xs={3} mt={-1}>
     <Box display="flex" alignItems="center">
       <Typography variant="h3" m={0}>
         {title}
@@ -104,11 +102,11 @@ const ThreatActorIndividualBiographicsComponent = ({
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   return (
-    <div style={{ height: '100%' }}>
+    <>
       <Typography variant="h4" gutterBottom={true}>
         {t_i18n('Biographic Information')}
       </Typography>
-      <Paper classes={{ root: classes.paper }} variant="outlined">
+      <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
         <Grid container={true} spacing={3}>
           <DetailGrid
             title={t_i18n('Eye Color')}
@@ -177,7 +175,7 @@ const ThreatActorIndividualBiographicsComponent = ({
           </DetailGrid>
         </Grid>
       </Paper>
-    </div>
+    </>
   );
 };
 

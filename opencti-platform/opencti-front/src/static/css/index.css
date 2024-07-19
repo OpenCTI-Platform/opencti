@@ -136,3 +136,7 @@ input[type="file"] {
 .marker-blue, .flexible-marker-blue {
   background-color: rgb(15, 188, 255) !important;
 }
+
+.paper-for-grid {
+  height: calc(100% - 25px); /* H4 size + 10 margin in MOST case, should be override sometimes */
+}

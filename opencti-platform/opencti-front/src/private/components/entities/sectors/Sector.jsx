@@ -30,29 +30,29 @@ class SectorComponent extends Component {
           spacing={3}
           classes={{ container: classes.gridContainer }}
         >
-          <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
+          <Grid item xs={6} style={{ paddingTop: 10 }}>
             <SectorDetails sector={sector} />
           </Grid>
-          <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
+          <Grid item xs={6}>
             <StixDomainObjectOverview
               stixDomainObject={sector}
             />
           </Grid>
-          <Grid item={true} xs={6} style={{ marginTop: 30 }}>
+          <Grid item xs={6}>
             <SimpleStixObjectOrStixRelationshipStixCoreRelationships
               stixObjectOrStixRelationshipId={sector.id}
               stixObjectOrStixRelationshipLink={`/dashboard/entities/sectors/${sector.id}/knowledge`}
             />
           </Grid>
-          <Grid item={true} xs={6} style={{ marginTop: 30 }}>
+          <Grid item xs={6}>
             <StixCoreObjectOrStixRelationshipLastContainers
               stixCoreObjectOrStixRelationshipId={sector.id}
             />
           </Grid>
-          <Grid item={true} xs={6} style={{ marginTop: 30 }}>
+          <Grid item xs={6}>
             <StixCoreObjectExternalReferences stixCoreObjectId={sector.id} />
           </Grid>
-          <Grid item={true} xs={6} style={{ marginTop: 30 }}>
+          <Grid item xs={6}>
             <StixCoreObjectLatestHistory stixCoreObjectId={sector.id} />
           </Grid>
         </Grid>

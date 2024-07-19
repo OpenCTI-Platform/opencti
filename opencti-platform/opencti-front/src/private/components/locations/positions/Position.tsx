@@ -49,7 +49,7 @@ const PositionComponent: FunctionComponent<PositionComponentProps> = ({
         spacing={3}
         classes={{ container: classes.gridContainer }}
       >
-        <Grid item={true} xs={4} style={{ paddingTop: 10 }}>
+        <Grid item xs={4} style={{ paddingTop: 10 }}>
           {queryRef && (
             <React.Suspense
               fallback={<Loader variant={LoaderVariant.inElement} />}
@@ -58,7 +58,7 @@ const PositionComponent: FunctionComponent<PositionComponentProps> = ({
             </React.Suspense>
           )}
         </Grid>
-        <Grid item={true} xs={4} style={{ paddingTop: 10 }}>
+        <Grid item xs={4} style={{ paddingTop: 10 }}>
           <LocationMiniMap
             center={
               position.latitude && position.longitude
@@ -69,26 +69,26 @@ const PositionComponent: FunctionComponent<PositionComponentProps> = ({
             zoom={8}
           />
         </Grid>
-        <Grid item={true} xs={4} style={{ paddingTop: 10 }}>
+        <Grid item xs={4}>
           <StixDomainObjectOverview
             stixDomainObject={position}
           />
         </Grid>
-        <Grid item={true} xs={6} style={{ marginTop: 30 }}>
+        <Grid item xs={6}>
           <SimpleStixObjectOrStixRelationshipStixCoreRelationships
             stixObjectOrStixRelationshipId={position.id}
             stixObjectOrStixRelationshipLink={`/dashboard/locations/positions/${position.id}/knowledge`}
           />
         </Grid>
-        <Grid item={true} xs={6} style={{ marginTop: 30 }}>
+        <Grid item xs={6}>
           <StixCoreObjectOrStixRelationshipLastContainers
             stixCoreObjectOrStixRelationshipId={position.id}
           />
         </Grid>
-        <Grid item={true} xs={6} style={{ marginTop: 30 }}>
+        <Grid item xs={6}>
           <StixCoreObjectExternalReferences stixCoreObjectId={position.id} />
         </Grid>
-        <Grid item={true} xs={6} style={{ marginTop: 30 }}>
+        <Grid item xs={6}>
           <StixCoreObjectLatestHistory stixCoreObjectId={position.id} />
         </Grid>
       </Grid>

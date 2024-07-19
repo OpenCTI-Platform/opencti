@@ -10,8 +10,6 @@ import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 
 const styles = () => ({
   paper: {
-    height: '100%',
-    minHeight: '100%',
     margin: '10px 0 0 0',
     padding: '15px',
     borderRadius: 4,
@@ -26,7 +24,7 @@ class OpinionDetailsComponent extends Component {
         <Typography variant="h4" gutterBottom={true}>
           {t('Entity details')}
         </Typography>
-        <Paper classes={{ root: classes.paper }} variant="outlined">
+        <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
           <Typography variant="h3" gutterBottom={true}>
             {t('Opinion')}
           </Typography>

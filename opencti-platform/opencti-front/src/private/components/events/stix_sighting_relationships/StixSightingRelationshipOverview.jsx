@@ -103,8 +103,6 @@ const styles = (theme) => ({
     color: theme.palette.text.primary,
   },
   paper: {
-    height: '100%',
-    minHeight: '100%',
     margin: '10px 0 0 0',
     padding: '15px',
     borderRadius: 4,
@@ -243,7 +241,7 @@ class StixSightingRelationshipContainer extends Component {
           spacing={3}
           classes={{ container: classes.gridContainer }}
         >
-          <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
+          <Grid item xs={6} style={{ paddingTop: 10 }}>
             <Typography variant="h4" gutterBottom={true}>
               {t('Relationship')}
             </Typography>
@@ -371,7 +369,7 @@ class StixSightingRelationshipContainer extends Component {
               <Divider style={{ marginTop: 30 }} />
               <div style={{ padding: 15 }}>
                 <Grid container={true} spacing={3}>
-                  <Grid item={true} xs={6}>
+                  <Grid item xs={6}>
                     <Typography variant="h3" gutterBottom={true}>
                       {t('Marking')}
                     </Typography>
@@ -397,7 +395,7 @@ class StixSightingRelationshipContainer extends Component {
                     </Typography>
                     {nsdt(stixSightingRelationship.last_seen)}
                   </Grid>
-                  <Grid item={true} xs={6}>
+                  <Grid item xs={6}>
                     <div>
                       <StixSightingRelationshipSharing
                         elementId={stixSightingRelationship.id}
@@ -456,13 +454,13 @@ class StixSightingRelationshipContainer extends Component {
               </div>
             </Paper>
           </Grid>
-          <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
+          <Grid item xs={6} style={{ paddingTop: 10 }}>
             <Typography variant="h4" gutterBottom={true}>
               {t('Details')}
             </Typography>
             <Paper classes={{ root: classes.paper }} variant="outlined">
               <Grid container={true} spacing={3}>
-                <Grid item={true} xs={6}>
+                <Grid item xs={6}>
                   <Typography variant="h3" gutterBottom={true}>
                     {t('Confidence level')}
                   </Typography>
@@ -505,7 +503,7 @@ class StixSightingRelationshipContainer extends Component {
                   </Typography>
                   {nsdt(stixSightingRelationship.updated_at)}
                 </Grid>
-                <Grid item={true} xs={6}>
+                <Grid item xs={6}>
                   <Typography variant="h3" gutterBottom={true}>
                     {t('Processing status')}
                   </Typography>
@@ -561,7 +559,7 @@ class StixSightingRelationshipContainer extends Component {
           ) : (
             <div style={{ margin: '50px 0 0 0' }}>
               <Grid container={true} spacing={3}>
-                <Grid item={true} xs={12}>
+                <Grid item xs={12}>
                   <StixCoreObjectOrStixRelationshipLastContainers
                     stixCoreObjectOrStixRelationshipId={
                       stixSightingRelationship.id
@@ -570,12 +568,12 @@ class StixSightingRelationshipContainer extends Component {
                 </Grid>
               </Grid>
               <Grid container={true} spacing={3} style={{ marginTop: 25 }}>
-                <Grid item={true} xs={6}>
+                <Grid item xs={6}>
                   <StixSightingRelationshipExternalReferences
                     stixSightingRelationshipId={stixSightingRelationship.id}
                   />
                 </Grid>
-                <Grid item={true} xs={6}>
+                <Grid item xs={6}>
                   <StixSightingRelationshipLatestHistory
                     stixSightingRelationshipId={stixSightingRelationship.id}
                   />

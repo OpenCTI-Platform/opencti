@@ -38,8 +38,6 @@ const useStyles = makeStyles(() => ({
     margin: '0 0 60px 0',
   },
   paper: {
-    height: '100%',
-    minHeight: '100%',
     margin: '10px 0 0 0',
     padding: 20,
     borderRadius: 4,
@@ -299,7 +297,7 @@ const Settings = () => {
               <>
                 <Breadcrumbs variant="object" elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Parameters'), current: true }]} />
                 <Grid container={true} spacing={3}>
-                  <Grid item={true} xs={6}>
+                  <Grid item xs={6}>
                     <Typography variant="h4" gutterBottom={true}>
                       {t_i18n('Configuration')}
                     </Typography>
@@ -416,7 +414,7 @@ const Settings = () => {
                       </Formik>
                     </Paper>
                   </Grid>
-                  <Grid item={true} xs={6}>
+                  <Grid item xs={6}>
                     <Typography variant="h4" gutterBottom={true} stye={{ float: 'left' }}>
                       {t_i18n('OpenCTI platform')}
                     </Typography>
@@ -549,10 +547,10 @@ const Settings = () => {
                       </Formik>
                     </Paper>
                   </Grid>
-                  <Grid item={true} xs={8} style={{ marginTop: 30 }}>
+                  <Grid item xs={8}>
                     <SettingsMessages settings={settings} />
                   </Grid>
-                  <Grid item={true} xs={4} style={{ marginTop: 30 }}>
+                  <Grid item xs={4}>
                     <SettingsAnalytics
                       settings={settings}
                       handleChangeFocus={handleChangeFocus}
@@ -560,7 +558,7 @@ const Settings = () => {
                       isEnterpriseEdition={isEnterpriseEdition}
                     />
                   </Grid>
-                  <Grid item={true} xs={4} style={{ marginTop: 30 }}>
+                  <Grid item xs={4}>
                     <Typography variant="h4" gutterBottom={true}>
                       {t_i18n('Dark theme')}
                     </Typography>
@@ -766,7 +764,7 @@ const Settings = () => {
                       </Formik>
                     </Paper>
                   </Grid>
-                  <Grid item={true} xs={4} style={{ marginTop: 30 }}>
+                  <Grid item xs={4}>
                     <Typography variant="h4" gutterBottom={true}>
                       {t_i18n('Light theme')}
                     </Typography>
@@ -972,7 +970,7 @@ const Settings = () => {
                       </Formik>
                     </Paper>
                   </Grid>
-                  <Grid item={true} xs={4} style={{ marginTop: 30 }}>
+                  <Grid item xs={4}>
                     <Typography variant="h4" gutterBottom={true}>
                       {t_i18n('Tools')}
                     </Typography>

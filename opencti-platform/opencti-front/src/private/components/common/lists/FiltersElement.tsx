@@ -90,7 +90,7 @@ const FiltersElement: FunctionComponent<FiltersElementProps> = ({
     <>
       <Grid container={true} spacing={2}>
         {variant === FiltersVariant.dialog && (
-          <Grid item={true} xs={12}>
+          <Grid item xs={12}>
             <TextField
               label={t_i18n('Global keyword')}
               variant="outlined"
@@ -109,7 +109,7 @@ const FiltersElement: FunctionComponent<FiltersElementProps> = ({
             return (
               <Grid
                 key={`${filterKey}_${index}`}
-                item={true}
+                item
                 xs={6}
               >
                 <FilterDate
@@ -122,7 +122,7 @@ const FiltersElement: FunctionComponent<FiltersElementProps> = ({
               </Grid>);
           }
           return (
-            <Grid key={filterKey} item={true} xs={6}>
+            <Grid key={filterKey} item xs={6}>
               <FilterAutocomplete
                 filterKey={filterKey}
                 searchContext={searchContext}

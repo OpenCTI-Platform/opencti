@@ -90,6 +90,7 @@ const ThemeDark = (
       fontFamily: '"Geoligica", sans-serif',
     },
     h4: {
+      height: 15,
       margin: '0 0 10px 0',
       padding: 0,
       textTransform: 'uppercase',

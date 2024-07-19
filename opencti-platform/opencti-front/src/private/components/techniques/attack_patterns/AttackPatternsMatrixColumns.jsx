@@ -487,7 +487,7 @@ class AttackPatternsMatrixColumnsComponent extends Component {
                 anchorEl={this.state.anchorEl}
                 open={Boolean(this.state.anchorEl)}
                 onClose={this.handleClose.bind(this)}
-                disableAutoFocusItem={true}
+                disableAutoFocusitem
               >
                 <MenuItem
                   component={Link}

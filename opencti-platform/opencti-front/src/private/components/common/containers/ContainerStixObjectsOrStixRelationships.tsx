@@ -19,8 +19,6 @@ import { ContainerStixObjectOrStixRelationshipLineDummy } from './ContainerStixO
 // Do not use it for new code.
 const useStyles = makeStyles(() => ({
   paper: {
-    height: '100%',
-    minHeight: '100%',
     margin: '-5px 0 0 0',
     padding: 0,
     borderRadius: 4,
@@ -151,7 +149,7 @@ ContainerStixObjectsOrStixRelationshipsComponentProps
       )}
       <div className="clearfix" />
       {variant !== 'noPaper' ? (
-        <Paper classes={{ root: classes.paper }} variant="outlined">
+        <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
           {renderContent()}
         </Paper>
       ) : (

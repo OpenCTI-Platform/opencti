@@ -43,7 +43,7 @@ class StixCoreObjectHistory extends Component {
         classes={{ container: classes.gridContainer }}
       >
         <Grid
-          item={true}
+          item
           xs={withoutRelations ? 12 : 6}
           style={{ paddingTop: 0 }}
         >
@@ -96,7 +96,7 @@ class StixCoreObjectHistory extends Component {
           />
         </Grid>
         {!withoutRelations && (
-          <Grid item={true} xs={6} style={{ paddingTop: 0 }}>
+          <Grid item xs={6} style={{ paddingTop: 0 }}>
             <Typography
               variant="h4"
               gutterBottom={true}

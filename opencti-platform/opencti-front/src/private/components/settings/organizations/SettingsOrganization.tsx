@@ -41,8 +41,6 @@ const useStyles = makeStyles({
     marginBottom: 20,
   },
   paper: {
-    height: '100%',
-    minHeight: '100%',
     margin: '10px 0 0 0',
     padding: '15px',
     borderRadius: 4,
@@ -162,22 +160,22 @@ const SettingsOrganization = ({
         spacing={3}
         classes={{ container: classes.gridContainer }}
       >
-        <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
+        <Grid item xs={6} style={{ paddingTop: 10 }}>
           <SettingsOrganizationDetails settingsOrganization={organization} />
         </Grid>
-        <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
+        <Grid item xs={6} style={{ paddingTop: 10 }}>
           <div style={{ height: '100%' }}>
             <Typography variant="h4" gutterBottom={true}>
               {t_i18n('More information')}
             </Typography>
             <Paper classes={{ root: classes.paper }} variant="outlined">
               <Grid container={true} spacing={3}>
-                <Grid item={true} xs={12}>
+                <Grid item xs={12}>
                   <SettingsOrganizationHiddenTypesChipList
                     organizationData={organization}
                   />
                 </Grid>
-                <Grid item={true} xs={6}>
+                <Grid item xs={6}>
                   <Typography variant="h3" gutterBottom={true}>
                     {t_i18n('Parent organizations')}
                   </Typography>
@@ -203,7 +201,7 @@ const SettingsOrganization = ({
                     </List>
                   </FieldOrEmpty>
                 </Grid>
-                <Grid item={true} xs={6}>
+                <Grid item xs={6}>
                   <Typography variant="h3" gutterBottom={true}>
                     {t_i18n('Child organizations')}
                   </Typography>
@@ -227,7 +225,7 @@ const SettingsOrganization = ({
                     </List>
                   </FieldOrEmpty>
                 </Grid>
-                <Grid item={true} xs={6}>
+                <Grid item xs={6}>
                   <Typography variant="h3" gutterBottom={true}>
                     {t_i18n('Default dashboard')}
                   </Typography>
@@ -264,7 +262,7 @@ const SettingsOrganization = ({
                     </List>
                   </FieldOrEmpty>
                 </Grid>
-                <Grid item={true} xs={6}>
+                <Grid item xs={6}>
                   <Typography variant="h3" gutterBottom={true}>
                     {t_i18n('Grantable groups by organization administrators')}
                   </Typography>
@@ -333,7 +331,7 @@ const SettingsOrganization = ({
             <SettingsOrganizationUsers organization={organization} />
           </>
         ) : (
-          <Grid item={true} xs={12} style={{ marginTop: 30 }}>
+          <Grid item xs={12}>
             <EnterpriseEdition
               feature={t_i18n('Organization sharing')}
             />

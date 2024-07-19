@@ -19,8 +19,6 @@ import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 
 const styles = () => ({
   paper: {
-    height: '100%',
-    minHeight: '100%',
     margin: '10px 0 0 0',
     padding: '15px',
     borderRadius: 4,
@@ -42,9 +40,9 @@ class CourseOfActionDetailsComponent extends Component {
         <Typography variant="h4" gutterBottom={true}>
           {t('Details')}
         </Typography>
-        <Paper classes={{ root: classes.paper }} variant="outlined">
+        <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
           <Grid container={true} spacing={3}>
-            <Grid item={true} xs={6}>
+            <Grid item xs={6}>
               <Typography variant="h3" gutterBottom={true}>
                 {t('Description')}
               </Typography>
@@ -72,7 +70,7 @@ class CourseOfActionDetailsComponent extends Component {
                 </List>
               </FieldOrEmpty>
             </Grid>
-            <Grid item={true} xs={6}>
+            <Grid item xs={6}>
               <Typography variant="h3" gutterBottom={true}>
                 {t('External ID')}
               </Typography>

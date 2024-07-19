@@ -40,8 +40,6 @@ const useStyles = makeStyles(() => ({
     padding: '0 200px 50px 0',
   },
   paper: {
-    height: '100%',
-    minHeight: '100%',
     margin: '10px 0 0 0',
     padding: 20,
     borderRadius: 4,
@@ -169,7 +167,7 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
       <AccessesMenu />
       <Breadcrumbs variant="list" elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Security') }, { label: t_i18n('Policies'), current: true }]} />
       <Grid container={true} spacing={3}>
-        <Grid item={true} xs={12}>
+        <Grid item xs={12}>
           <Formik
             onSubmit={() => {}}
             initialValues={initialValues}
@@ -179,7 +177,7 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
             {() => (
               <Form>
                 <Grid container={true} spacing={3}>
-                  <Grid item={true} xs={6}>
+                  <Grid item xs={6}>
                     <Typography variant="h4" gutterBottom={true}>
                       {t_i18n('Platform main organization')} <EEChip />
                     </Typography>
@@ -205,7 +203,7 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                       </EETooltip>
                     </Paper>
                   </Grid>
-                  <Grid item={true} xs={6}>
+                  <Grid item xs={6}>
                     <Typography variant="h4" gutterBottom={true}>
                       {t_i18n('Authentication strategies')}
                     </Typography>
@@ -242,7 +240,7 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                       />
                     </Paper>
                   </Grid>
-                  <Grid item={true} xs={6} style={{ marginTop: 30 }}>
+                  <Grid item xs={6}>
                     <Typography variant="h4" gutterBottom={true}>
                       {t_i18n('Local password policies')}
                     </Typography>
@@ -367,7 +365,7 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                       />
                     </Paper>
                   </Grid>
-                  <Grid item={true} xs={6} style={{ marginTop: 30 }}>
+                  <Grid item xs={6}>
                     <Typography variant="h4" gutterBottom={true}>
                       {t_i18n('Login messages')}
                     </Typography>
@@ -403,7 +401,7 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                       />
                     </Paper>
                   </Grid>
-                  <Grid item={true} xs={6} style={{ marginTop: 30 }}>
+                  <Grid item xs={6}>
                     <Typography variant="h4" gutterBottom={true}>
                       {t_i18n('Platform Banner Configuration')}
                     </Typography>

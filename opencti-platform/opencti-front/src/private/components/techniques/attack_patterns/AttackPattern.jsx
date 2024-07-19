@@ -33,31 +33,31 @@ class AttackPatternComponent extends Component {
           spacing={3}
           classes={{ container: classes.gridContainer }}
         >
-          <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
+          <Grid item xs={6} style={{ paddingTop: 10 }}>
             <AttackPatternDetails attackPattern={attackPattern} />
           </Grid>
-          <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
+          <Grid item xs={6}>
             <StixDomainObjectOverview
               stixDomainObject={attackPattern}
             />
           </Grid>
-          <Grid item={true} xs={6} style={{ marginTop: 30 }}>
+          <Grid item xs={6}>
             <SimpleStixObjectOrStixRelationshipStixCoreRelationships
               stixObjectOrStixRelationshipId={attackPattern.id}
               stixObjectOrStixRelationshipLink={`/dashboard/techniques/attack_patterns/${attackPattern.id}/knowledge`}
             />
           </Grid>
-          <Grid item={true} xs={6} style={{ marginTop: 30 }}>
+          <Grid item xs={6}>
             <StixCoreObjectOrStixRelationshipLastContainers
               stixCoreObjectOrStixRelationshipId={attackPattern.id}
             />
           </Grid>
-          <Grid item={true} xs={6} style={{ marginTop: 30 }}>
+          <Grid item xs={6}>
             <StixCoreObjectExternalReferences
               stixCoreObjectId={attackPattern.id}
             />
           </Grid>
-          <Grid item={true} xs={6} style={{ marginTop: 30 }}>
+          <Grid item xs={6}>
             <StixCoreObjectLatestHistory stixCoreObjectId={attackPattern.id} />
           </Grid>
         </Grid>

@@ -21,8 +21,6 @@ import { DataColumns } from '../../../../components/list_lines';
 // Do not use it for new code.
 const useStyles = makeStyles<Theme>(() => ({
   paper: {
-    height: '100%',
-    minHeight: '100%',
     margin: '28px 0 0 0',
     padding: '15px',
     borderRadius: 4,
@@ -98,7 +96,7 @@ MembersListContainerProps
   };
 
   return (
-    <Grid item={true} xs={12} style={{ marginTop: 40 }}>
+    <Grid item xs={12} style={{ marginTop: 40 }}>
       <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
         {t_i18n('Users')}
       </Typography>

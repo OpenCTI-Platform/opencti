@@ -60,18 +60,18 @@ ExternalReferenceComponentProps
         spacing={3}
         classes={{ container: classes.gridContainer }}
       >
-        <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
+        <Grid item xs={6} style={{ paddingTop: 10 }}>
           <ExternalReferenceOverview externalReference={externalReference} />
         </Grid>
-        <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
+        <Grid item xs={6} style={{ paddingTop: 10 }}>
           <ExternalReferenceDetails externalReference={externalReference} />
         </Grid>
-        <Grid item={true} xs={6} style={{ marginTop: 30 }}>
+        <Grid item xs={6}>
           <ExternalReferenceStixCoreObjects
             externalReference={externalReference}
           />
         </Grid>
-        <Grid item={true} xs={6} style={{ marginTop: 30 }}>
+        <Grid item xs={6}>
           <ExternalReferenceFileImportViewer
             externalReference={externalReference}
             connectorsImport={connectorsImport}

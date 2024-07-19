@@ -21,8 +21,6 @@ import ItemEntityType from '../../../../components/ItemEntityType';
 
 const styles = (theme) => ({
   paper: {
-    height: '100%',
-    minHeight: '100%',
     margin: '10px 0 0 0',
     padding: 0,
     borderRadius: 4,
@@ -329,13 +327,13 @@ class StixCoreObjectOrStixRelationshipLastContainers extends Component {
       filterGroups: [],
     };
     return (
-      <div style={{ height: '100%' }}>
+      <>
         <Typography variant="h4" gutterBottom={true}>
           {authorId
             ? t('Latest containers authored by this entity')
             : t('Latest containers about the object')}
         </Typography>
-        <Paper classes={{ root: classes.paper }} variant="outlined">
+        <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
           <QueryRenderer
             query={stixCoreObjectOrStixRelationshipLastContainersQuery}
             variables={{
@@ -479,7 +477,7 @@ class StixCoreObjectOrStixRelationshipLastContainers extends Component {
             }}
           />
         </Paper>
-      </div>
+      </>
     );
   }
 }

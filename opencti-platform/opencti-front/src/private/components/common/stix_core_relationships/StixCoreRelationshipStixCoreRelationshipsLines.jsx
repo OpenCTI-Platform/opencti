@@ -24,8 +24,6 @@ import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 
 const styles = (theme) => ({
   paper: {
-    height: '100%',
-    minHeight: '100%',
     margin: '-5px 0 0 0',
     padding: '10px 0 10px 0',
     borderRadius: 4,

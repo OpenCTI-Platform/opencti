@@ -94,27 +94,29 @@ const ReportComponent: FunctionComponent<ReportComponentProps> = ({
       spacing={3}
       style={{ marginBottom: 20 }}
     >
-      <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
+      <Grid item xs={6} style={{ paddingTop: 10 }}>
         <ReportDetails report={report} />
       </Grid>
-      <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
+      <Grid item xs={6}>
         <StixDomainObjectOverview
           stixDomainObject={report}
           displayAssignees
           displayParticipants
         />
       </Grid>
-      <Grid item={true} xs={6} style={{ marginTop: 30 }}>
+      <Grid item xs={6}>
         <StixCoreObjectExternalReferences stixCoreObjectId={report.id} />
       </Grid>
-      <Grid item={true} xs={6} style={{ marginTop: 30 }}>
+      <Grid item xs={6}>
         <StixCoreObjectLatestHistory stixCoreObjectId={report.id} />
       </Grid>
+      <Grid item xs={12}>
+        <StixCoreObjectOrStixCoreRelationshipNotes
+          stixCoreObjectOrStixCoreRelationshipId={report.id}
+          defaultMarkings={report.objectMarking ?? []}
+        />
+      </Grid>
     </Grid>
-    <StixCoreObjectOrStixCoreRelationshipNotes
-      stixCoreObjectOrStixCoreRelationshipId={report.id}
-      defaultMarkings={report.objectMarking ?? []}
-    />
     {!isFABReplaced && (
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
         <ReportEdition reportId={report.id} />

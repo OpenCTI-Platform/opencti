@@ -14,8 +14,6 @@ import { SettingsOrganization_organization$data } from './__generated__/Settings
 // Do not use it for new code.
 const useStyles = makeStyles<Theme>((theme) => ({
   paper: {
-    height: '100%',
-    minHeight: '100%',
     margin: '10px 0 0 0',
     padding: '15px',
     borderRadius: 4,
@@ -47,9 +45,9 @@ SettingsOrganizationDetailsProps
       <Typography variant="h4" gutterBottom={true}>
         {t_i18n('Basic information')}
       </Typography>
-      <Paper classes={{ root: classes.paper }} variant="outlined">
+      <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
         <Grid container={true} spacing={3}>
-          <Grid item={true} xs={12}>
+          <Grid item xs={12}>
             <Typography variant="h3" gutterBottom={true}>
               {t_i18n('Organization type')}
             </Typography>

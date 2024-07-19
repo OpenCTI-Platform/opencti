@@ -50,8 +50,6 @@ const useStyles = makeStyles((theme) => ({
     marginTop: '-13px',
   },
   paper: {
-    height: '100%',
-    minHeight: '100%',
     margin: '10px 0 0 0',
     padding: '15px',
     borderRadius: 4,
@@ -300,13 +298,13 @@ const ConnectorComponent = ({ connector, relay }) => {
         spacing={3}
         classes={{ container: classes.gridContainer }}
       >
-        <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
+        <Grid item xs={6} style={{ paddingTop: 10 }}>
           <Typography variant="h4" gutterBottom={true}>
             {t_i18n('Basic information')}
           </Typography>
           <Paper classes={{ root: classes.paper }} variant="outlined">
             <Grid container={true} spacing={3}>
-              <Grid item={true} xs={6}>
+              <Grid item xs={6}>
                 <Typography variant="h3" gutterBottom={true}>
                   {t_i18n('Type')}
                 </Typography>
@@ -318,13 +316,13 @@ const ConnectorComponent = ({ connector, relay }) => {
                   {connector.connector_type}
                 </Button>
               </Grid>
-              <Grid item={true} xs={6}>
+              <Grid item xs={6}>
                 <Typography variant="h3" gutterBottom={true}>
                   {t_i18n('Last update')}
                 </Typography>
                 {nsdt(connector.updated_at)}
               </Grid>
-              <Grid item={true} xs={6}>
+              <Grid item xs={6}>
                 <Typography variant="h3" gutterBottom={true}>
                   {t_i18n('Only contextual')}
                 </Typography>
@@ -333,7 +331,7 @@ const ConnectorComponent = ({ connector, relay }) => {
                   label={connectorOnlyContextualStatus.label}
                 />
               </Grid>
-              <Grid item={true} xs={6}>
+              <Grid item xs={6}>
                 <Typography variant="h3" gutterBottom={true}>
                   {t_i18n('Automatic trigger')}
                 </Typography>
@@ -342,7 +340,7 @@ const ConnectorComponent = ({ connector, relay }) => {
                   label={connectorTriggerStatus.label}
                 />
               </Grid>
-              <Grid item={true} xs={connectorFiltersEnabled ? 6 : 12}>
+              <Grid item xs={connectorFiltersEnabled ? 6 : 12}>
                 <Typography variant="h3" gutterBottom={true}>
                   {t_i18n('Scope')}
                 </Typography>
@@ -355,7 +353,7 @@ const ConnectorComponent = ({ connector, relay }) => {
                 ))}
               </Grid>
               {connectorFiltersEnabled && (
-                <Grid item={true} xs={6}>
+                <Grid item xs={6}>
                   <Typography variant="h3" gutterBottom={true}>
                     <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
                       <span>{t_i18n('Trigger filters')}</span>
@@ -387,13 +385,13 @@ const ConnectorComponent = ({ connector, relay }) => {
             </Grid>
           </Paper>
         </Grid>
-        <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
+        <Grid item xs={6} style={{ paddingTop: 10 }}>
           <Typography variant="h4" gutterBottom={true}>
             {t_i18n('Details')}
           </Typography>
           <Paper classes={{ root: classes.paper }} variant="outlined">
             <Grid container={true} spacing={3}>
-              <Grid item={true} xs={12}>
+              <Grid item xs={12}>
                 <Typography variant="h3" gutterBottom={true}>
                   {t_i18n('State')}
                 </Typography>
@@ -406,13 +404,13 @@ const ConnectorComponent = ({ connector, relay }) => {
                   </pre>
                 </Tooltip>
               </Grid>
-              <Grid item={true} xs={6}>
+              <Grid item xs={6}>
                 <Typography variant="h3" gutterBottom={true}>
                   {t_i18n('Listen queue')}
                 </Typography>
                 <pre>{connector.config.listen}</pre>
               </Grid>
-              <Grid item={true} xs={6}>
+              <Grid item xs={6}>
                 <Typography variant="h3" gutterBottom={true}>
                   {t_i18n('Push queue')}
                 </Typography>

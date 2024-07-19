@@ -30,29 +30,29 @@ class ObservedDataComponent extends Component {
           spacing={3}
           classes={{ container: classes.gridContainer }}
         >
-          <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
+          <Grid item xs={6} style={{ paddingTop: 10 }}>
             <ObservedDataDetails observedData={observedData} />
           </Grid>
-          <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
+          <Grid item xs={6}>
             <StixDomainObjectOverview stixDomainObject={observedData} />
           </Grid>
-          <Grid item={true} xs={6} style={{ marginTop: 30 }}>
+          <Grid item xs={6}>
             <SimpleStixObjectOrStixRelationshipStixCoreRelationships
               stixObjectOrStixRelationshipId={observedData.id}
               stixObjectOrStixRelationshipLink={`/dashboard/events/observed_data/${observedData.id}/knowledge`}
             />
           </Grid>
-          <Grid item={true} xs={6} style={{ marginTop: 30 }}>
+          <Grid item xs={6}>
             <StixCoreObjectOrStixRelationshipLastContainers
               stixCoreObjectOrStixRelationshipId={observedData.id}
             />
           </Grid>
-          <Grid item={true} xs={6} style={{ marginTop: 30 }}>
+          <Grid item xs={6}>
             <StixCoreObjectExternalReferences
               stixCoreObjectId={observedData.id}
             />
           </Grid>
-          <Grid item={true} xs={6} style={{ marginTop: 30 }}>
+          <Grid item xs={6}>
             <StixCoreObjectLatestHistory stixCoreObjectId={observedData.id} />
           </Grid>
         </Grid>

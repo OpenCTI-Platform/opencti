@@ -58,8 +58,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
     overflow: 'hidden',
   },
   paper: {
-    height: '100%',
-    minHeight: '100%',
     margin: '10px 0 0 0',
     padding: '15px',
     borderRadius: 4,
@@ -197,7 +195,7 @@ FileIndexingMonitoringComponentProps
   return (
     <>
       <Grid container={true} spacing={3}>
-        <Grid item={true} xs={6}>
+        <Grid item xs={6}>
           <Paper
             variant="outlined"
             classes={{ root: classes.metric }}
@@ -244,7 +242,7 @@ FileIndexingMonitoringComponentProps
             </div>
           </Paper>
         </Grid>
-        <Grid item={true} xs={3}>
+        <Grid item xs={3}>
           <Paper variant="outlined" classes={{ root: classes.metric }}>
             <div className={classes.icon}>
               <FolderOutlined color="primary" sx={{ fontSize: 40 }} />
@@ -255,7 +253,7 @@ FileIndexingMonitoringComponentProps
             </div>
           </Paper>
         </Grid>
-        <Grid item={true} xs={3}>
+        <Grid item xs={3}>
           <Paper variant="outlined" classes={{ root: classes.metric }}>
             <div className={classes.icon}>
               <StorageOutlined color="primary" sx={{ fontSize: 40 }} />
@@ -266,13 +264,13 @@ FileIndexingMonitoringComponentProps
             </div>
           </Paper>
         </Grid>
-        <Grid item={true} xs={4}>
+        <Grid item xs={4}>
           <Typography variant="h4" gutterBottom={true}>
             {t_i18n('Control')}
           </Typography>
           <Paper classes={{ root: classes.paper }} variant="outlined">
             <Grid container={true} spacing={3}>
-              <Grid item={true} xs={6}>
+              <Grid item xs={6}>
                 <Typography variant="h3" gutterBottom={true}>
                   {t_i18n('Engine')}
                 </Typography>
@@ -298,7 +296,7 @@ FileIndexingMonitoringComponentProps
                   </Button>
                 )}
               </Grid>
-              <Grid item={true} xs={6}>
+              <Grid item xs={6}>
                 <Typography variant="h3" gutterBottom={true}>
                   {t_i18n('Indexing')}
                 </Typography>
@@ -313,13 +311,13 @@ FileIndexingMonitoringComponentProps
                   {t_i18n('Reset')}
                 </Button>
               </Grid>
-              <Grid item={true} xs={6}>
+              <Grid item xs={6}>
                 <Typography variant="h3" gutterBottom={true}>
                   {t_i18n('Indexing manager start')}
                 </Typography>
                 {fldt(managerConfiguration?.last_run_start_date)}
               </Grid>
-              <Grid item={true} xs={6}>
+              <Grid item xs={6}>
                 <Typography variant="h3" gutterBottom={true}>
                   {t_i18n('Last indexation')}
                 </Typography>
@@ -328,13 +326,13 @@ FileIndexingMonitoringComponentProps
             </Grid>
           </Paper>
         </Grid>
-        <Grid item={true} xs={4}>
+        <Grid item xs={4}>
           <Typography variant="h4" gutterBottom={true}>
             {t_i18n('Information')}
           </Typography>
           <Paper classes={{ root: classes.paper }} variant="outlined">
             <Grid container={true} spacing={3}>
-              <Grid item={true} xs={6}>
+              <Grid item xs={6}>
                 <Typography variant="h3" gutterBottom={true}>
                   {t_i18n('Total files in S3')}
                 </Typography>
@@ -342,7 +340,7 @@ FileIndexingMonitoringComponentProps
                   {n(totalFiles)}
                 </span>
               </Grid>
-              <Grid item={true} xs={6}>
+              <Grid item xs={6}>
                 <Typography variant="h3" gutterBottom={true}>
                   {t_i18n('Files volumes in S3')}
                 </Typography>
@@ -350,7 +348,7 @@ FileIndexingMonitoringComponentProps
                   {b(dataToIndex)}
                 </span>
               </Grid>
-              <Grid item={true} xs={12}>
+              <Grid item xs={12}>
                 <Typography variant="h3" gutterBottom={true}>
                   {t_i18n('S3 volume by file type')}
                 </Typography>
@@ -405,7 +403,7 @@ FileIndexingMonitoringComponentProps
             </Grid>
           </Paper>
         </Grid>
-        <Grid item={true} xs={4}>
+        <Grid item xs={4}>
           <FileIndexingConfiguration
             managerConfiguration={managerConfiguration}
           />

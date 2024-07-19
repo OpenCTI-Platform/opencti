@@ -59,7 +59,7 @@ class StixDomainObjectVictimology extends Component {
       <>
         <Grid container={true} spacing={3} style={{ marginTop: 15 }}>
           <Grid
-            item={true}
+            item
             xs={6}
             style={{ height: 300, minHeight: 300, paddingTop: 0 }}
           >
@@ -73,7 +73,7 @@ class StixDomainObjectVictimology extends Component {
             />
           </Grid>
           <Grid
-            item={true}
+            item
             xs={6}
             style={{ height: 300, minHeight: 300, paddingTop: 0 }}
           >
@@ -87,7 +87,7 @@ class StixDomainObjectVictimology extends Component {
             />
           </Grid>
           <Grid
-            item={true}
+            item
             xs={6}
             style={{
               marginTop: 60,
@@ -106,7 +106,7 @@ class StixDomainObjectVictimology extends Component {
             />
           </Grid>
           <Grid
-            item={true}
+            item
             xs={6}
             style={{
               marginTop: 60,

@@ -18,8 +18,6 @@ import TextField from '../../../../components/TextField';
 // Do not use it for new code.
 const useStyles = makeStyles(() => ({
   paper: {
-    height: '100%',
-    minHeight: '100%',
     margin: '5px 0 0 0',
     padding: 20,
     borderRadius: 4,

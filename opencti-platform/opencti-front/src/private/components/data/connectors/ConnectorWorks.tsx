@@ -36,8 +36,6 @@ const interval$ = interval(FIVE_SECONDS);
 // Do not use it for new code.
 const useStyles = makeStyles(() => ({
   paper: {
-    height: '100%',
-    minHeight: '100%',
     margin: '10px 0 20px 0',
     padding: '15px',
     borderRadius: 4,
@@ -142,9 +140,9 @@ const ConnectorWorksComponent: FunctionComponent<ConnectorWorksComponentProps> =
             variant="outlined"
           >
             <Grid container={true} spacing={3}>
-              <Grid item={true} xs={7}>
+              <Grid item xs={7}>
                 <Grid container={true} spacing={1}>
-                  <Grid item={true} xs={8}>
+                  <Grid item xs={8}>
                     <Typography variant="h3" gutterBottom={true}>
                       {t_i18n('Name')}
                     </Typography>
@@ -154,13 +152,13 @@ const ConnectorWorksComponent: FunctionComponent<ConnectorWorksComponentProps> =
                       </Typography>
                     </Tooltip>
                   </Grid>
-                  <Grid item={true} xs={4}>
+                  <Grid item xs={4}>
                     <Typography variant="h3" gutterBottom={true}>
                       {t_i18n('Status')}
                     </Typography>
                     <TaskStatus status={work.status} label={t_i18n(work.status)} />
                   </Grid>
-                  <Grid item={true} xs={8}>
+                  <Grid item xs={8}>
                     <Typography
                       variant="h3"
                       gutterBottom={true}
@@ -170,7 +168,7 @@ const ConnectorWorksComponent: FunctionComponent<ConnectorWorksComponentProps> =
                     </Typography>
                     {nsdt(work.received_time)}
                   </Grid>
-                  <Grid item={true} xs={4}>
+                  <Grid item xs={4}>
                     <Typography
                       variant="h3"
                       gutterBottom={true}
@@ -182,9 +180,9 @@ const ConnectorWorksComponent: FunctionComponent<ConnectorWorksComponentProps> =
                   </Grid>
                 </Grid>
               </Grid>
-              <Grid item={true} xs={4}>
+              <Grid item xs={4}>
                 <Grid container={true} spacing={3}>
-                  <Grid item={true} xs={6}>
+                  <Grid item xs={6}>
                     <Typography variant="h3" gutterBottom={true}>
                       {t_i18n('Operations completed')}
                     </Typography>
@@ -194,7 +192,7 @@ const ConnectorWorksComponent: FunctionComponent<ConnectorWorksComponentProps> =
                         : tracking?.import_processed_number ?? '-'}
                     </span>
                   </Grid>
-                  <Grid item={true} xs={6}>
+                  <Grid item xs={6}>
                     <Typography variant="h3" gutterBottom={true}>
                       {t_i18n('Total number of operations')}
                     </Typography>
@@ -202,7 +200,7 @@ const ConnectorWorksComponent: FunctionComponent<ConnectorWorksComponentProps> =
                       {tracking?.import_expected_number ?? '-'}
                     </span>
                   </Grid>
-                  <Grid item={true} xs={11}>
+                  <Grid item xs={11}>
                     <Typography variant="h3" gutterBottom={true}>
                       {t_i18n('Progress')}
                     </Typography>

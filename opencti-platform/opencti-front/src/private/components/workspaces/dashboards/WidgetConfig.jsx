@@ -596,7 +596,7 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
         style={{ marginTop: 20, marginBottom: 20 }}
       >
         {visualizationTypes.map((visualizationType) => (
-          <Grid key={visualizationType.key} item={true} xs={4}>
+          <Grid key={visualizationType.key} item xs={4}>
             <Card variant="outlined" className={classes.card3}>
               <CardActionArea
                 onClick={() => handleSelectType(visualizationType.key)}
@@ -638,7 +638,7 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
         style={{ marginTop: 20, marginBottom: 20 }}
       >
         {getCurrentIsEntities() && (
-        <Grid item={true} xs={xs}>
+        <Grid item xs={xs}>
           <Card variant="outlined" className={classes.card}>
             <CardActionArea
               onClick={() => handleSelectPerspective('entities')}
@@ -664,7 +664,7 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
         </Grid>
         )}
         {getCurrentIsRelationships() && (
-        <Grid item={true} xs={xs}>
+        <Grid item xs={xs}>
           <Card variant="outlined" className={classes.card}>
             <CardActionArea
               onClick={() => handleSelectPerspective('relationships')}
@@ -692,7 +692,7 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
         </Grid>
         )}
         {getCurrentIsAudits() && (
-        <Grid item={true} xs={xs}>
+        <Grid item xs={xs}>
           <Card variant="outlined" className={classes.card}>
             <CardActionArea
               onClick={() => handleSelectPerspective('audits')}

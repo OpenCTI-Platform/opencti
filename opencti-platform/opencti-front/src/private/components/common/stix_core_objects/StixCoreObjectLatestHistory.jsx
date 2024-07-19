@@ -16,7 +16,6 @@ import inject18n from '../../../../components/i18n';
 
 const styles = () => ({
   paperHistory: {
-    height: '100%',
     margin: '10px 0 0 0',
     padding: 0,
     borderRadius: 4,
@@ -27,8 +26,8 @@ class StixCoreObjectLatestHistory extends Component {
   render() {
     const { t, stixCoreObjectId, classes } = this.props;
     return (
-      <div style={{ height: '100%' }} className="break">
-        <Typography variant="h4" gutterBottom={true}>
+      <>
+        <Typography variant="h4">
           {t('Most recent history')}
         </Typography>
         <QueryRenderer
@@ -63,6 +62,7 @@ class StixCoreObjectLatestHistory extends Component {
               <Paper
                 classes={{ root: classes.paperHistory }}
                 variant="outlined"
+                className={'paper-for-grid'}
               >
                 <List>
                   {Array.from(Array(5), (e, i) => (
@@ -101,7 +101,7 @@ class StixCoreObjectLatestHistory extends Component {
             );
           }}
         />
-      </div>
+      </>
     );
   }
 }

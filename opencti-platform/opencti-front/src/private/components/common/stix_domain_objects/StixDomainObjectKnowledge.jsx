@@ -50,8 +50,6 @@ const styles = (theme) => ({
     right: 20,
   },
   paper: {
-    height: '100%',
-    minHeight: '100%',
     margin: '10px 0 70px 0',
     padding: '15px 15px 15px 15px',
     borderRadius: 4,
@@ -99,7 +97,7 @@ class StixDomainObjectKnowledge extends Component {
     return (
       <>
         <Grid container={true} spacing={3}>
-          <Grid item={true} xs={4} style={{ paddingTop: 10 }}>
+          <Grid item xs={4} style={{ paddingTop: 10 }}>
             <Card
               variant="outlined"
               classes={{ root: classes.card }}
@@ -140,7 +138,7 @@ class StixDomainObjectKnowledge extends Component {
               />
             </Card>
           </Grid>
-          <Grid item={true} xs={4} style={{ paddingTop: 10 }}>
+          <Grid item xs={4} style={{ paddingTop: 10 }}>
             <Card
               variant="outlined"
               classes={{ root: classes.card }}
@@ -184,7 +182,7 @@ class StixDomainObjectKnowledge extends Component {
               />
             </Card>
           </Grid>
-          <Grid item={true} xs={4} style={{ paddingTop: 10 }}>
+          <Grid item xs={4} style={{ paddingTop: 10 }}>
             <Card
               variant="outlined"
               classes={{ root: classes.card }}
@@ -231,7 +229,7 @@ class StixDomainObjectKnowledge extends Component {
           title={t('Distribution of reports')}
         />
         <Grid container={true} spacing={3} style={{ marginBottom: 20 }}>
-          <Grid item={true} xs={6} style={{ height: 350 }}>
+          <Grid item xs={6} style={{ height: 350 }}>
             <EntityStixCoreRelationshipsHorizontalBars
               toId={stixDomainObjectId}
               fromTypes={[
@@ -245,7 +243,7 @@ class StixDomainObjectKnowledge extends Component {
               field="internal_id"
             />
           </Grid>
-          <Grid item={true} xs={6} style={{ height: 350 }}>
+          <Grid item xs={6} style={{ height: 350 }}>
             <EntityStixSightingRelationshipsDonut
               entityId={stixDomainObjectId}
               title={t('Sightings distribution')}

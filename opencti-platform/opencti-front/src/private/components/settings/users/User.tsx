@@ -64,8 +64,6 @@ const useStyles = makeStyles(() => ({
     marginBottom: 50,
   },
   paper: {
-    height: '100%',
-    minHeight: '100%',
     margin: '10px 0 0 0',
     padding: '15px',
     borderRadius: 4,
@@ -317,13 +315,13 @@ const User: FunctionComponent<UserProps> = ({ data }) => {
         spacing={3}
         classes={{ container: classes.gridContainer }}
       >
-        <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
+        <Grid item xs={6} style={{ paddingTop: 10 }}>
           <Typography variant="h4" gutterBottom={true}>
             {t_i18n('Basic information')}
           </Typography>
           <Paper classes={{ root: classes.paper }} variant="outlined">
             <Grid container={true} spacing={3}>
-              <Grid item={true} xs={8}>
+              <Grid item xs={8}>
                 <Typography
                   variant="h3"
                   gutterBottom={true}
@@ -333,7 +331,7 @@ const User: FunctionComponent<UserProps> = ({ data }) => {
                 </Typography>
                 <pre style={{ margin: 0 }}>{user.user_email}</pre>
               </Grid>
-              <Grid item={true} xs={4}>
+              <Grid item xs={4}>
                 <Typography
                   variant="h3"
                   gutterBottom={true}
@@ -357,25 +355,25 @@ const User: FunctionComponent<UserProps> = ({ data }) => {
                   {user.otp_activated ? t_i18n('Enabled') : t_i18n('Disabled')}
                 </pre>
               </Grid>
-              <Grid item={true} xs={12}>
+              <Grid item xs={12}>
                 <Typography variant="h3" gutterBottom={true}>
                   {t_i18n('Token')}
                 </Typography>
                 <pre style={{ margin: 0 }}>{user.api_token}</pre>
               </Grid>
-              <Grid item={true} xs={6}>
+              <Grid item xs={6}>
                 <Typography variant="h3" gutterBottom={true}>
                   {t_i18n('Firstname')}
                 </Typography>
                 {user.firstname || '-'}
               </Grid>
-              <Grid item={true} xs={6}>
+              <Grid item xs={6}>
                 <Typography variant="h3" gutterBottom={true}>
                   {t_i18n('Lastname')}
                 </Typography>
                 {user.lastname || '-'}
               </Grid>
-              <Grid item={true} xs={6}>
+              <Grid item xs={6}>
                 <Typography variant="h3" gutterBottom={true}>
                   {t_i18n('Account status')}
                 </Typography>
@@ -385,7 +383,7 @@ const User: FunctionComponent<UserProps> = ({ data }) => {
                   variant="outlined"
                 />
               </Grid>
-              <Grid item={true} xs={6}>
+              <Grid item xs={6}>
                 <Typography variant="h3" gutterBottom={true}>
                   {t_i18n('Account expiration date')}
                 </Typography>
@@ -394,13 +392,13 @@ const User: FunctionComponent<UserProps> = ({ data }) => {
             </Grid>
           </Paper>
         </Grid>
-        <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
+        <Grid item xs={6} style={{ paddingTop: 10 }}>
           <Typography variant="h4" gutterBottom={true}>
             {t_i18n('Permissions')}
           </Typography>
           <Paper classes={{ root: classes.paper }} variant="outlined">
             <Grid container={true} spacing={3}>
-              <Grid item={true} xs={6}>
+              <Grid item xs={6}>
                 <Typography variant="h3" gutterBottom={true}>
                   {t_i18n('Roles')}
                 </Typography>
@@ -431,7 +429,7 @@ const User: FunctionComponent<UserProps> = ({ data }) => {
                   </List>
                 </FieldOrEmpty>
               </Grid>
-              <Grid item={true} xs={6}>
+              <Grid item xs={6}>
                 <Typography variant="h3" gutterBottom={true}>
                   {t_i18n('Groups')}
                 </Typography>
@@ -466,7 +464,7 @@ const User: FunctionComponent<UserProps> = ({ data }) => {
                   </List>
                 </FieldOrEmpty>
               </Grid>
-              <Grid item={true} xs={6}>
+              <Grid item xs={6}>
                 <Typography variant="h3" gutterBottom={true}>
                   {t_i18n('Organizations')}
                 </Typography>
@@ -503,7 +501,7 @@ const User: FunctionComponent<UserProps> = ({ data }) => {
                   </List>
                 </FieldOrEmpty>
               </Grid>
-              <Grid item={true} xs={6}>
+              <Grid item xs={6}>
                 <Typography
                   variant="h3"
                   gutterBottom={true}
@@ -565,12 +563,12 @@ const User: FunctionComponent<UserProps> = ({ data }) => {
                   </List>
                 </FieldOrEmpty>
               </Grid>
-              <Grid item={true} xs={6}>
+              <Grid item xs={6}>
                 <HiddenTypesChipList
                   hiddenTypes={user.default_hidden_types ?? []}
                 />
               </Grid>
-              <Grid item={true} xs={6}>
+              <Grid item xs={6}>
                 <Typography
                   variant="h3"
                   gutterBottom={true}
@@ -585,7 +583,7 @@ const User: FunctionComponent<UserProps> = ({ data }) => {
           </Paper>
         </Grid>
         <Triggers recipientId={user.id} filterKey="authorized_members.id" />
-        <Grid item={true} xs={6} style={{ marginTop: 35 }}>
+        <Grid item xs={6} style={{ marginTop: 35 }}>
           <Typography variant="h4" gutterBottom={true}>
             {t_i18n('Operations')}
           </Typography>
@@ -665,7 +663,7 @@ const User: FunctionComponent<UserProps> = ({ data }) => {
             )}
           </Paper>
         </Grid>
-        <Grid item={true} xs={6} style={{ marginTop: 35 }}>
+        <Grid item xs={6} style={{ marginTop: 35 }}>
           {isGrantedToAudit ? (
             <UserHistory userId={user.id} />
           ) : (

@@ -1879,7 +1879,7 @@ class DataTableToolBar extends Component {
                           <CancelOutlined fontSize="small" />
                         </IconButton>
                         <Grid container={true} spacing={3}>
-                          <Grid item={true} xs={3}>
+                          <Grid item xs={3}>
                             <FormControl className={classes.formControl}>
                               <InputLabel>{t('Action type')}</InputLabel>
                               <Select
@@ -1899,13 +1899,13 @@ class DataTableToolBar extends Component {
                               </Select>
                             </FormControl>
                           </Grid>
-                          <Grid item={true} xs={3}>
+                          <Grid item xs={3}>
                             <FormControl className={classes.formControl}>
                               <InputLabel>{t('Field')}</InputLabel>
                               {this.renderFieldOptions(i, typesHaveScore)}
                             </FormControl>
                           </Grid>
-                          <Grid item={true} xs={6}>
+                          <Grid item xs={6}>
                             {this.renderValuesOptions(i)}
                           </Grid>
                         </Grid>

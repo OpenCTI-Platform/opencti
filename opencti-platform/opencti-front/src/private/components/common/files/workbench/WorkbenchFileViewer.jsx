@@ -19,8 +19,6 @@ const interval$ = interval(TEN_SECONDS);
 
 const styles = () => ({
   paper: {
-    height: '100%',
-    minHeight: '100%',
     padding: '10px 15px 10px 15px',
     marginTop: -2,
     borderRadius: 4,
@@ -57,7 +55,7 @@ const WorkbenchFileViewerBase = ({
   };
 
   return (
-    <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
+    <Grid item xs={6} style={{ paddingTop: 10 }}>
       <div style={{ height: '100%' }}>
         <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
           {t('Analyst workbenches')}

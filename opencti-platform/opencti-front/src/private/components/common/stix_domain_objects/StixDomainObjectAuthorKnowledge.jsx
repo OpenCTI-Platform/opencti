@@ -120,7 +120,7 @@ class StixDomainObjectAuthorKnowledge extends Component {
     return (
       <div>
         <Grid container={true} spacing={3}>
-          <Grid item={true} xs={4}>
+          <Grid item xs={4}>
             <Card
               variant="outlined"
               classes={{ root: classes.card }}
@@ -161,7 +161,7 @@ class StixDomainObjectAuthorKnowledge extends Component {
               />
             </Card>
           </Grid>
-          <Grid item={true} xs={4}>
+          <Grid item xs={4}>
             <Card
               variant="outlined"
               classes={{ root: classes.card }}
@@ -205,7 +205,7 @@ class StixDomainObjectAuthorKnowledge extends Component {
               />
             </Card>
           </Grid>
-          <Grid item={true} xs={4}>
+          <Grid item xs={4}>
             <Card
               variant="outlined"
               classes={{ root: classes.card }}
@@ -247,7 +247,7 @@ class StixDomainObjectAuthorKnowledge extends Component {
           </Grid>
         </Grid>
         <Grid container={true} spacing={3} style={{ marginBottom: 20 }}>
-          <Grid item={true} xs={12}>
+          <Grid item xs={12}>
             <Typography variant="h4" gutterBottom={true}>
               {t('Created entities')}
             </Typography>

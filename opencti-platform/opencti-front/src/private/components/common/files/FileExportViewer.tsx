@@ -20,8 +20,6 @@ const interval$ = interval(FIVE_SECONDS);
 // Do not use it for new code.
 const useStyles = makeStyles(() => ({
   paper: {
-    height: '100%',
-    minHeight: '100%',
     padding: '10px 15px 10px 15px',
     borderRadius: 4,
     marginTop: 2,
@@ -52,7 +50,7 @@ FileExportViewerComponentProps
   }, []);
 
   return (
-    <Grid item={true} xs={6} style={{ marginTop: 40 }}>
+    <Grid item xs={6} style={{ marginTop: 40 }}>
       <div style={{ height: '100%' }} className="break">
         <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
           {t_i18n('Exported files')}

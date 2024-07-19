@@ -292,7 +292,13 @@ const ProfileOverviewComponent = (props) => {
           <OtpComponent closeFunction={() => setDisplay2FA(false)} />
         </DialogContent>
       </Dialog>
-      <Paper classes={{ root: classes.paper }} variant="outlined">
+      <Paper
+        classes={{ root: classes.paper }}
+        variant="outlined"
+        sx={{
+          height: 'unset',
+        }}
+      >
         <Typography variant="h1" gutterBottom={true}>
           {t('Profile')} {external && `(${t('external')})`}
         </Typography>

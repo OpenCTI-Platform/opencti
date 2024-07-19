@@ -18,8 +18,6 @@ import { UserLineDummy } from './UserLine';
 // Do not use it for new code.
 const useStyles = makeStyles<Theme>(() => ({
   paper: {
-    height: '100%',
-    minHeight: '100%',
     margin: '10px 0 0 0',
     padding: '15px',
     borderRadius: 4,
@@ -105,7 +103,7 @@ const GroupUsers: FunctionComponent<GroupUsersProps> = ({ groupId }) => {
     },
   };
   return (
-    <Grid item={true} xs={12} style={{ marginTop: 37 }}>
+    <Grid item xs={12} style={{ marginTop: 37 }}>
       <Typography
         variant="h4"
         gutterBottom={true}

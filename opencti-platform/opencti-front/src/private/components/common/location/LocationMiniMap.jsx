@@ -18,8 +18,6 @@ import MarkerLight from '../../../../static/images/leaflet/marker_light.png';
 
 const styles = () => ({
   paper: {
-    height: '100%',
-    minHeight: '100%',
     margin: '10px 0 0 0',
     padding: 0,
     borderRadius: 8,

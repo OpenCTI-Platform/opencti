@@ -51,6 +51,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
     borderRight: 0,
     borderTop: 0,
     color: theme.palette.text?.primary,
+    height: 96,
   },
   logoContainer: {
     margin: '2px 0 0 10px',
@@ -310,7 +311,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
               <Box sx={{ width: '300px', padding: '15px', textAlign: 'center' }}>
                 <div className={classes.subtitle}>{t_i18n('Filigran eXtended Threat Management')}</div>
                 <Grid container={true} spacing={3}>
-                  <Grid item={true} xs={6}>
+                  <Grid item xs={6}>
                     <Tooltip title={t_i18n('Current platform')}>
                       <a className={classes.xtmItemCurrent}>
                         <Badge variant="dot" color="success">
@@ -320,7 +321,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
                       </a>
                     </Tooltip>
                   </Grid>
-                  <Grid item={true} xs={6}>
+                  <Grid item xs={6}>
                     <Tooltip title={isNotEmptyField(openBASUrl) ? t_i18n('Platform connected') : t_i18n('Get OpenBAS now')}>
                       <a className={classes.xtmItem} href={isNotEmptyField(openBASUrl) ? openBASUrl : 'https://filigran.io'} target="_blank" rel="noreferrer" onClick={handleCloseXtm}>
                         <Badge variant="dot" color={isNotEmptyField(openBASUrl) ? 'success' : 'warning'}>
@@ -330,7 +331,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
                       </a>
                     </Tooltip>
                   </Grid>
-                  <Grid item={true} xs={6}>
+                  <Grid item xs={6}>
                     <Tooltip title={t_i18n('Platform under construction, subscribe to update!')}>
                       <a className={classes.xtmItem} href="https://filigran.io" target="_blank" rel="noreferrer" onClick={handleCloseXtm}>
                         <Badge variant="dot" color="info">
@@ -340,7 +341,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
                       </a>
                     </Tooltip>
                   </Grid>
-                  <Grid item={true} xs={6}>
+                  <Grid item xs={6}>
                     <Tooltip title={t_i18n('Platform under construction, subscribe to update!')}>
                       <a className={classes.xtmItem} href="https://filigran.io" target="_blank" rel="noreferrer" onClick={handleCloseXtm}>
                         <Badge variant="dot" color="info">
@@ -373,6 +374,13 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
               anchorEl={menuOpen.anchorEl}
               open={menuOpen.open}
               onClose={handleCloseMenu}
+              slotProps={{
+                paper: {
+                  sx: {
+                    height: 'unset',
+                  },
+                },
+              }}
             >
               <MenuItem
                 component={Link}

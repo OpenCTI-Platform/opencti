@@ -22,8 +22,6 @@ const useStyles = makeStyles(() => ({
     padding: '0 200px 50px 0',
   },
   paper: {
-    height: '100%',
-    minHeight: '100%',
     margin: '10px 0 0 0',
     padding: '15px',
     borderRadius: 4,

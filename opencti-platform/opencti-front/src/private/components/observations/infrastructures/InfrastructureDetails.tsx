@@ -17,8 +17,6 @@ import { InfrastructureDetails_infrastructure$data, InfrastructureDetails_infras
 // Do not use it for new code.
 const useStyles = makeStyles<Theme>((theme) => ({
   paper: {
-    height: '100%',
-    minHeight: '100%',
     margin: '10px 0 0 0',
     padding: '15px',
     borderRadius: 4,
@@ -99,9 +97,9 @@ const InfrastructureDetails: FunctionComponent<InfrastructureDetailsProps> = ({
       <Typography variant="h4" gutterBottom={true}>
         {t_i18n('Details')}
       </Typography>
-      <Paper classes={{ root: classes.paper }} variant="outlined">
+      <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
         <Grid container={true} spacing={3}>
-          <Grid item={true} xs={6}>
+          <Grid item xs={6}>
             <Typography variant="h3" gutterBottom={true}>
               {t_i18n('Infrastructure types')}
             </Typography>
@@ -120,25 +118,25 @@ const InfrastructureDetails: FunctionComponent<InfrastructureDetailsProps> = ({
                 '-'
               )}
           </Grid>
-          <Grid item={true} xs={6}>
+          <Grid item xs={6}>
             <Typography variant="h3" gutterBottom={true}>
               {t_i18n('Description')}
             </Typography>
             <ExpandableMarkdown source={data.description} limit={400} />
           </Grid>
-          <Grid item={true} xs={6}>
+          <Grid item xs={6}>
             <Typography variant="h3" gutterBottom={true}>
               {t_i18n('First seen')}
             </Typography>
             {data.first_seen ? fldt(data.first_seen) : '-'}
           </Grid>
-          <Grid item={true} xs={6}>
+          <Grid item xs={6}>
             <Typography variant="h3" gutterBottom={true}>
               {t_i18n('Last seen')}
             </Typography>
             {data.last_seen ? fldt(data.last_seen) : '-'}
           </Grid>
-          <Grid item={true} xs={6}>
+          <Grid item xs={6}>
             <StixCoreObjectKillChainPhasesView killChainPhases={killChainPhases}/>
           </Grid>
         </Grid>

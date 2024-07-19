@@ -128,7 +128,7 @@ const DecayDialogContent : FunctionComponent<DecayDialogContentProps> = ({ indic
         spacing={3}
         style={{ borderColor: 'white', borderWidth: 1 }}
       >
-        <Grid item={true} xs={7}>
+        <Grid item xs={7}>
           <DecayChart
             currentScore={indicator.x_opencti_score || 0}
             revokeScore={indicator.decay_applied_rule?.decay_revoke_score || 0}
@@ -137,7 +137,7 @@ const DecayDialogContent : FunctionComponent<DecayDialogContentProps> = ({ indic
             decayLiveScore={indicator.decayLiveDetails?.live_score}
           />
         </Grid>
-        <Grid item={true} xs={5}>
+        <Grid item xs={5}>
           <TableContainer component={Paper}>
             <Table sx={{ maxHeight: 440 }} size="small" aria-label="lifecycle history">
               <TableHead>
