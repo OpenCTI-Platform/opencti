@@ -5,8 +5,7 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import { KeyboardArrowRightOutlined } from '@mui/icons-material';
 import List from '@mui/material/List';
-import { makeStyles } from '@mui/styles';
-import { Theme } from '@mui/material/styles/createTheme';
+import { useTheme } from '@mui/material/styles';
 import Skeleton from '@mui/material/Skeleton';
 import { ListItemButton } from '@mui/material';
 import { SubNarrativeNode } from '@components/techniques/narratives/NarrativesWithSubnarrativesLines';
@@ -16,39 +15,6 @@ import ItemIcon from '../../../../components/ItemIcon';
 import { emptyFilled } from '../../../../utils/String';
 import { narrativeLineFragment } from './NarrativeLine';
 
-const useStyles = makeStyles<Theme>((theme) => ({
-  item: {},
-  itemNested: {
-    paddingLeft: theme.spacing(4),
-  },
-  itemIcon: {
-    color: theme.palette.primary.main,
-  },
-  name: {
-    width: '30%',
-    height: 20,
-    lineHeight: '20px',
-    float: 'left',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-  description: {
-    height: 20,
-    fontSize: 13,
-    float: 'left',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    paddingRight: 10,
-    color: theme.palette.text.primary,
-  },
-  goIcon: {
-    position: 'absolute',
-    right: -10,
-  },
-}));
-
 interface NarrativeWithSubnarrativeLineProps {
   isSubNarrative?: boolean;
   subNarratives?: SubNarrativeNode[];
@@ -56,7 +22,7 @@ interface NarrativeWithSubnarrativeLineProps {
 }
 
 const NarrativeWithSubnarrativeLine: FunctionComponent<NarrativeWithSubnarrativeLineProps> = ({ node, isSubNarrative }) => {
-  const classes = useStyles();
+  const theme = useTheme();
 
   let data: SubNarrativeNode | NarrativeLine_node$data = node as SubNarrativeNode;
   if (!isSubNarrative) {
@@ -68,12 +34,14 @@ const NarrativeWithSubnarrativeLine: FunctionComponent<NarrativeWithSubnarrative
   return (
     <div>
       <ListItemButton
-        classes={{ root: isSubNarrative ? classes.itemNested : classes.item }}
+        style={{
+          paddingLeft: isSubNarrative ? theme.spacing(4) : undefined,
+        }}
         divider
         component={Link}
         to={`/dashboard/techniques/narratives/${data.id}`}
       >
-        <ListItemIcon classes={{ root: classes.itemIcon }}>
+        <ListItemIcon style={{ color: theme.palette.primary.main }}>
           <ItemIcon
             type="Narrative"
             size={isSubNarrative ? 'small' : 'medium'}
@@ -82,34 +50,57 @@ const NarrativeWithSubnarrativeLine: FunctionComponent<NarrativeWithSubnarrative
         <ListItemText
           primary={
             <>
-              <div className={classes.name}>{data.name}</div>
-              <div className={classes.description}>
+              <div
+                style={{
+                  width: '30%',
+                  height: 20,
+                  lineHeight: '20px',
+                  float: 'left',
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                }}
+              >
+                {data.name}
+              </div>
+              <div
+                style={{
+                  height: 20,
+                  fontSize: 13,
+                  float: 'left',
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  paddingRight: 10,
+                  color: theme.palette.text.primary,
+                }}
+              >
                 {emptyFilled(data.description)}
               </div>
             </>
               }
         />
-        <ListItemIcon classes={{ root: classes.goIcon }}>
+        <ListItemIcon style={{ position: 'absolute', right: -10 }}>
           <KeyboardArrowRightOutlined />
         </ListItemIcon>
       </ListItemButton>
       {subNarratives && subNarratives.length > 0 && (
-      <List style={{ marginTop: 0, padding: 0 }}>
-        {subNarratives.map((subNarrative) => (
-          <NarrativeWithSubnarrativeLine key={subNarrative.id} node={subNarrative} isSubNarrative={true} />
-        ))}
-      </List>
+        <List style={{ marginTop: 0, padding: 0 }}>
+          {subNarratives.map((subNarrative) => (
+            <NarrativeWithSubnarrativeLine key={subNarrative.id} node={subNarrative} isSubNarrative={true} />
+          ))}
+        </List>
       )}
     </div>
   );
 };
 
 export const NarrativeWithSubnarrativeLineDummy: FunctionComponent = () => {
-  const classes = useStyles();
+  const theme = useTheme();
 
   return (
-    <ListItem classes={{ root: classes.item }} divider>
-      <ListItemIcon classes={{ root: classes.itemIcon }}>
+    <ListItem divider>
+      <ListItemIcon style={{ color: theme.palette.primary.main }}>
         <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText
@@ -117,7 +108,7 @@ export const NarrativeWithSubnarrativeLineDummy: FunctionComponent = () => {
           <Skeleton animation="wave" variant="rectangular" width="90%" height={20} />
         }
       />
-      <ListItemIcon classes={{ root: classes.goIcon }}>
+      <ListItemIcon style={{ position: 'absolute', right: -10 }}>
         <KeyboardArrowRightOutlined color="disabled" />
       </ListItemIcon>
     </ListItem>

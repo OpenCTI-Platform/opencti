@@ -1,6 +1,5 @@
 import React, { FunctionComponent } from 'react';
 import { PreloadedQuery } from 'react-relay';
-import makeStyles from '@mui/styles/makeStyles';
 import List from '@mui/material/List';
 import { NarrativesLines_data$key } from '@components/techniques/narratives/__generated__/NarrativesLines_data.graphql';
 import * as R from 'ramda';
@@ -8,12 +7,6 @@ import { NarrativesLinesPaginationQuery } from './__generated__/NarrativesLinesP
 import { narrativesLinesFragment, narrativesLinesQuery } from './NarrativesLines';
 import NarrativeWithSubnarrativeLine, { NarrativeWithSubnarrativeLineDummy } from './NarrativeWithSubnarrativeLine';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
-
-const useStyles = makeStyles(() => ({
-  root: {
-    marginTop: 30,
-  },
-}));
 
 export interface SubNarrativeNode {
   description: string | null | undefined;
@@ -37,7 +30,6 @@ interface NarrativesWithSubnarrativesLinesProps {
 const NarrativesWithSubnarrativesLines: FunctionComponent<NarrativesWithSubnarrativesLinesProps> = ({
   queryRef,
 }) => {
-  const classes = useStyles();
   const { data } = usePreloadedPaginationFragment<
   NarrativesLinesPaginationQuery,
   NarrativesLines_data$key
@@ -63,7 +55,7 @@ const NarrativesWithSubnarrativesLines: FunctionComponent<NarrativesWithSubnarra
     <List
       component="nav"
       aria-labelledby="nested-list-subheader"
-      className={classes.root}
+      style={{ marginTop: 30 }}
     >
       {data
         ? ([...narratives, ...parentOnlyNarratives] as unknown as SubNarrativeNode[]).map((narrative) => {

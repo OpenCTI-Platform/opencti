@@ -1,6 +1,5 @@
 import React, { FunctionComponent } from 'react';
 import ToolBar from '@components/data/ToolBar';
-import makeStyles from '@mui/styles/makeStyles';
 import { NarrativeWithSubnarrativeLineDummy } from '@components/techniques/narratives/NarrativeWithSubnarrativeLine';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import { NarrativeLine_node$data } from './narratives/__generated__/NarrativeLine_node.graphql';
@@ -25,21 +24,8 @@ import ViewSwitchingButtons from '../../../components/ViewSwitchingButtons';
 
 const LOCAL_STORAGE_KEY = 'narratives';
 
-const useStyles = makeStyles(() => ({
-  parameters: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginTop: -10,
-  },
-  views: {
-    marginRight: 35,
-  },
-}));
-
 const Narratives: FunctionComponent = () => {
   const { t_i18n } = useFormatter();
-  const classes = useStyles();
   const { isFeatureEnable } = useHelper();
   const FAB_REPLACED = isFeatureEnable('FAB_REPLACEMENT');
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<NarrativesLinesPaginationQuery$variables>(
@@ -89,13 +75,23 @@ const Narratives: FunctionComponent = () => {
   const renderSubEntityLines = () => {
     return (
       <>
-        <div className={classes.parameters}>
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginTop: -10,
+        }}
+        >
           <SearchInput
             variant="small"
             onSubmit={helpers.handleSearch}
             keyword={searchTerm}
           />
-          <div className={classes.views} style={{ marginTop: -5 }}>
+          <div style={{
+            marginTop: -5,
+            marginRight: 35,
+          }}
+          >
             <ToggleButtonGroup
               size="small"
               color="secondary"
