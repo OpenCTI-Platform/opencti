@@ -88,9 +88,6 @@ interface NarrativeAddInput {
 
 interface NarrativeFormProps {
   updater?: (store: RecordSourceSelectorProxy, key: string) => void;
-  paginationOptions?: NarrativesLinesPaginationQuery$variables;
-  display?: boolean;
-  contextual?: boolean;
   onReset?: () => void;
   inputValue?: string;
   onCompleted?: () => void;
@@ -311,7 +308,14 @@ export const NarrativeCreationForm: FunctionComponent<NarrativeFormProps> = ({
   );
 };
 
-const NarrativeCreation: FunctionComponent<NarrativeFormProps> = ({
+interface NarrativeCreationProps {
+  paginationOptions?: NarrativesLinesPaginationQuery$variables;
+  display?: boolean;
+  contextual?: boolean;
+  inputValue?: string;
+}
+
+const NarrativeCreation: FunctionComponent<NarrativeCreationProps> = ({
   paginationOptions,
   contextual,
   inputValue,
