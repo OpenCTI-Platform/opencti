@@ -1,25 +1,23 @@
-import { IconButton, IconButtonProps, Tooltip } from '@mui/material';
-import { FormatSize } from '@mui/icons-material';
+import { Button, ButtonProps } from '@mui/material';
 import React from 'react';
 import { useFormatter } from '../../i18n';
 
 interface BulkTextModalButtonProps {
-  onClick: IconButtonProps['onClick']
+  onClick: ButtonProps['onClick']
 }
 
 const BulkTextModalButton = ({ onClick }: BulkTextModalButtonProps) => {
   const { t_i18n } = useFormatter();
 
   return (
-    <Tooltip title={t_i18n('Create multiple entities')}>
-      <IconButton
-        color="primary"
-        onClick={onClick}
-        sx={{ marginLeft: 1 }}
-      >
-        <FormatSize />
-      </IconButton>
-    </Tooltip>
+    <Button
+      color="primary"
+      variant="contained"
+      onClick={onClick}
+      sx={{ marginLeft: 'auto', marginRight: 2 }}
+    >
+      {t_i18n('Create multiple entities')}
+    </Button>
   );
 };
 
