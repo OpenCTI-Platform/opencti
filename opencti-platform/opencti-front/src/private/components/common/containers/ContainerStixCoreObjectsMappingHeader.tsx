@@ -11,7 +11,7 @@ import Switch from '@mui/material/Switch';
 import Box from '@mui/material/Box';
 import Tooltip from '@mui/material/Tooltip';
 import { InformationOutline } from 'mdi-material-ui';
-import { CheckCircleOutlined, LayersClearOutlined } from '@mui/icons-material';
+import { CheckCircleOutlined } from '@mui/icons-material';
 import { ContainerStixCoreObjectsSuggestedMappingQuery$data } from '@components/common/containers/__generated__/ContainerStixCoreObjectsSuggestedMappingQuery.graphql';
 import Transition from '../../../../components/Transition';
 import { useFormatter } from '../../../../components/i18n';
@@ -140,14 +140,14 @@ const ContainerStixCoreObjectsMappingHeader: FunctionComponent<ContainerStixCore
             <InformationOutline fontSize="small" color="primary" />
           </Tooltip>
           )}
-          <Tooltip title={t_i18n('Suggest new mapping')}>
+          <Tooltip title={t_i18n('Ask new mapping')}>
             <Button
               variant="contained"
               size="small"
               onClick={handleAskNewSuggestion}
               disabled={!hasConnectorsAvailable || askingSuggestion}
             >
-              {t_i18n('Suggest new mapping')}
+              {t_i18n('Ask new mapping')}
             </Button>
           </Tooltip>
           {!inSuggestedMode && (
@@ -155,7 +155,6 @@ const ContainerStixCoreObjectsMappingHeader: FunctionComponent<ContainerStixCore
             <Button
               variant="contained"
               onClick={() => setOpenClearMapping(true)}
-              startIcon={<LayersClearOutlined />}
               size="small"
             >
               {t_i18n('Clear mappings')}
