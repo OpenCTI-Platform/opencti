@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import gql from 'graphql-tag';
 import { ADMIN_USER, getUserIdByEmail, queryAsAdmin, USER_EDITOR } from '../../utils/testQuery';
-import type { CaseIncident, EntitySetting, EntitySettingConnection } from '../../../src/generated/graphql';
+import type { CaseIncident, EntitySetting, EntitySettingEdge } from '../../../src/generated/graphql';
 import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../../../src/modules/case/case-incident/case-incident-types';
 import { queryAsUserWithSuccess } from '../../utils/testQueryHelper';
 import { executionContext, SYSTEM_USER } from '../../../src/utils/access';
@@ -261,7 +261,8 @@ describe('Case Incident Response standard behavior with authorized_members activ
     await initCreateEntitySettings(context, SYSTEM_USER);
     const queryResult = await queryAsAdmin({ query: LIST_QUERY });
 
-    const entitySettingCaseIncidentResponse = queryResult.data?.entitySettings.edges.filter((entitySetting) => entitySetting.node.target_type === ENTITY_TYPE_CONTAINER_CASE_INCIDENT)[0];
+    const entitySettingCaseIncidentResponse = queryResult.data?.entitySettings.edges
+      .filter((entitySetting: EntitySettingEdge) => entitySetting.node.target_type === ENTITY_TYPE_CONTAINER_CASE_INCIDENT)[0];
     entitySettingIdCaseIncidentResponse = entitySettingCaseIncidentResponse.node.id;
     expect(entitySettingIdCaseIncidentResponse).toBeTruthy();
   });
