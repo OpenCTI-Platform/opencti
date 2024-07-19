@@ -21,7 +21,7 @@ import type { EditInput, RegisterConnectorInput, SynchronizerAddInput, Synchroni
 import { BUS_TOPICS } from '../config/conf';
 import { deleteWorkForConnector } from './work';
 import { testSync as testSyncUtils } from './connector-utils';
-import {findById} from "./user";
+import { findById } from './user';
 
 // region connectors
 export const connectorForWork = async (context: AuthContext, user: AuthUser, id: string) => {

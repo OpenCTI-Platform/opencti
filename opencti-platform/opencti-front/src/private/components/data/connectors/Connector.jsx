@@ -271,7 +271,9 @@ const ConnectorComponent = ({ connector, relay }) => {
     return new Date(lastRun * 1000);
   };
 
-  const isBuffering = connector.connector_info?.queue_messages_size > connector.connector_info?.queue_threshold;
+  const isBuffering = () => {
+    return connector.connector_info?.queue_messages_size > connector.connector_info?.queue_threshold;
+  };
 
   return (
     <>
@@ -643,9 +645,9 @@ const ConnectorComponent = ({ connector, relay }) => {
                 <Typography variant="h3" gutterBottom={true} >
                   {t_i18n('Server capacity')}
                 </Typography>
-                {connector.connector_info && isBuffering ? (
+                {connector.connector_info ? (
                   <FieldOrEmpty source={connector.connector_info?.queue_messages_size}>
-                    <span style={isBuffering ? { color: theme.palette.warning.main } : {}}>{connector.connector_info?.queue_messages_size.toFixed(2)}</span>
+                    <span style={isBuffering() ? { color: theme.palette.warning.main } : {}}>{connector.connector_info?.queue_messages_size.toFixed(2)}</span>
                     <span> / {connector.connector_info?.queue_threshold} Mo</span>
                   </FieldOrEmpty>
                 ) : (

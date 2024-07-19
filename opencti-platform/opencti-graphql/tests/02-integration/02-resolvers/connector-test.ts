@@ -226,6 +226,7 @@ describe('Connector resolver standard behaviour', () => {
           connector_info {
             buffering
             next_run_datetime
+            last_run_datetime
             queue_messages_size
             run_and_terminate
             queue_threshold
@@ -234,14 +235,16 @@ describe('Connector resolver standard behaviour', () => {
       }
     `;
 
-    const datetimeTest = new Date();
+    const datetimeNextRun = new Date();
+    const datetimeLastRun = new Date(datetimeNextRun.getTime() - 5 * 60 * 1000);
 
     const connectorInfo: ConnectorInfo = {
       buffering: true,
       queue_messages_size: 20.50,
       queue_threshold: 490.2,
       run_and_terminate: true,
-      next_run_datetime: datetimeTest,
+      next_run_datetime: datetimeNextRun,
+      last_run_datetime: datetimeLastRun,
     };
 
     const state = '{"last_run": 1718010586.1741812}';
@@ -253,7 +256,8 @@ describe('Connector resolver standard behaviour', () => {
     expect(queryResult.data.pingConnector.connector_info.buffering).toBeTruthy();
     expect(queryResult.data.pingConnector.connector_info.queue_messages_size).toBe(20.50);
     expect(queryResult.data.pingConnector.connector_info.queue_threshold).toBe(490.2);
-    expect(queryResult.data.pingConnector.connector_info.next_run_datetime).toBe(datetimeTest.toISOString());
+    expect(queryResult.data.pingConnector.connector_info.next_run_datetime).toBe(datetimeNextRun.toISOString());
+    expect(queryResult.data.pingConnector.connector_info.last_run_datetime).toBe(datetimeLastRun.toISOString());
   });
 });
 
