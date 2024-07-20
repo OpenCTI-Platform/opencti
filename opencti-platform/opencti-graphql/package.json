@@ -145,7 +145,6 @@
     "python-shell": "5.0.0",
     "ramda": "0.30.1",
     "rate-limiter-flexible": "4.0.1",
-    "redlock": "5.0.0-beta.2",
     "sanitize-filename": "1.6.3",
     "semver": "7.6.3",
     "set-interval-async": "3.0.3",
