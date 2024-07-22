@@ -27,7 +27,7 @@ import {
 import { ForbiddenAccess, FunctionalError, UnsupportedError } from '../../config/errors';
 import { getUserAccessRight, MEMBER_ACCESS_RIGHT_ADMIN, SYSTEM_USER } from '../../utils/access';
 import { publishUserAction } from '../../listener/UserActionListener';
-import { initializeAuthorizedMembers } from '../workspace/workspace-domain';
+import { findAll as findAllWorkspaces, initializeAuthorizedMembers } from '../workspace/workspace-domain';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
 import { getEntitiesMapFromCache } from '../../database/cache';
 import type { BasicStoreRelation, NumberResult, StoreMarkingDefinition, StoreRelationConnection } from '../../types/store';
@@ -46,6 +46,7 @@ import { daysAgo } from '../../utils/format';
 import { isStixCoreObject } from '../../schema/stixCoreObject';
 import { ES_MAX_CONCURRENCY } from '../../database/engine';
 import { findById as findMarkingDefinitionById } from '../../domain/markingDefinition';
+import { addFilter } from '../../utils/filtering/filtering-utils';
 
 export const findById = (
   context: AuthContext,
@@ -60,16 +61,30 @@ export const findById = (
   );
 };
 
-export const findAll = (
+export const findAll = async (
   context: AuthContext,
   user: AuthUser,
   args: QueryPublicDashboardsArgs,
 ) => {
+  const dashboards = await findAllWorkspaces(
+    context,
+    user,
+    {
+      filters: {
+        mode: FilterMode.And,
+        filters: [{ key: ['type'], values: ['dashboard'] }],
+        filterGroups: []
+      }
+    }
+  );
+
+  const dashboardIds = dashboards.edges.map((n) => (n.node.id));
+  const filters = addFilter(args.filters ?? undefined, 'dashboard_id', dashboardIds);
   return listEntitiesPaginated<BasicStoreEntityPublicDashboard>(
     context,
     user,
     [ENTITY_TYPE_PUBLIC_DASHBOARD],
-    args,
+    { ...args, filters },
   );
 };
 
