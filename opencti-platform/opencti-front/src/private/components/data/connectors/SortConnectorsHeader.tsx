@@ -13,7 +13,7 @@ const sortHeaderStyle: Record<string, CSSProperties> = {
   },
   name: {
     float: 'left',
-    width: '35%',
+    width: '25%',
     fontSize: 12,
     fontWeight: '700',
   },
@@ -37,6 +37,7 @@ const sortHeaderStyle: Record<string, CSSProperties> = {
   },
   updated_at: {
     float: 'left',
+    width: '15%',
     fontSize: 12,
     fontWeight: '700',
   },

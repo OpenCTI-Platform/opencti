@@ -9,7 +9,7 @@ import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import { graphql, PreloadedQuery, useQueryLoader } from 'react-relay';
-import { ExtensionOutlined, DeleteOutlined, PlaylistRemoveOutlined } from '@mui/icons-material';
+import { DeleteOutlined, ExtensionOutlined, PlaylistRemoveOutlined } from '@mui/icons-material';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
@@ -65,7 +65,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
 const inlineStyles: Record<string, CSSProperties> = {
   name: {
     float: 'left',
-    width: '35%',
+    width: '25%',
     height: 20,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
@@ -90,6 +90,7 @@ const inlineStyles: Record<string, CSSProperties> = {
   messages: {
     float: 'left',
     width: '10%',
+    paddingLeft: 5,
     height: 20,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
@@ -97,6 +98,8 @@ const inlineStyles: Record<string, CSSProperties> = {
   },
   updated_at: {
     float: 'left',
+    width: '15%',
+    paddingLeft: 5,
     height: 20,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
@@ -318,7 +321,7 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
             <ListItem
               classes={{ root: classes.itemHead }}
               divider={false}
-              style={{ paddingTop: 0 }}
+              style={{ paddingTop: 0, paddingRight: 10 }}
             >
               <ListItemIcon>
                 <span
