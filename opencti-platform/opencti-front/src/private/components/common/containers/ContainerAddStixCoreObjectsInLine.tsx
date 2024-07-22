@@ -16,18 +16,20 @@ import { ContainerStixDomainObjectsLinesQuery$variables } from './__generated__/
 import { ContainerStixCyberObservablesLinesQuery$variables } from './__generated__/ContainerStixCyberObservablesLinesQuery.graphql';
 import StixCyberObservableCreation from '../../observations/stix_cyber_observables/StixCyberObservableCreation';
 
-const ControlledDial = ({ onOpen }: { onOpen: () => void }) => {
-  const { t_i18n } = useFormatter();
+interface ControlledDialProps {
+  onOpen: () => void
+  title: string
+}
+
+const ControlledDial = ({ onOpen, title }: ControlledDialProps) => {
   return (
     <Button
       variant="contained"
-      style={{
-        marginLeft: '3px',
-      }}
-      aria-label={t_i18n('Add')}
+      style={{ marginLeft: '3px' }}
+      aria-label={title}
       onClick={() => onOpen()}
     >
-      {t_i18n('Add Entity')}
+      {title}
     </Button>
   );
 };
@@ -87,6 +89,7 @@ ContainerAddStixCoreObjectsInLineProps
   enableReferences = false,
   knowledgeGraph = false,
 }) => {
+  const { t_i18n } = useFormatter();
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
@@ -169,7 +172,6 @@ ContainerAddStixCoreObjectsInLineProps
   );
 
   const Header = () => {
-    const { t_i18n } = useFormatter();
     const [openCreateEntity, setOpenCreateEntity] = useState<boolean>(false);
     const [openCreateObservable, setOpenCreateObservable] = useState<boolean>(false);
     return (<>
@@ -182,24 +184,34 @@ ContainerAddStixCoreObjectsInLineProps
           alignItems: 'center',
         }}
       >
-        <Typography variant='subtitle2'>{t_i18n('Add entities')}</Typography>
+        <Typography variant='subtitle2'>
+          {showSDOCreation ? t_i18n('Add entities') : t_i18n('Add observables')}
+        </Typography>
         <div style={{ marginRight: '10px' }}>
-          {showSDOCreation && <Button
-            style={{ fontSize: 'small' }}
-            variant='contained'
-            disableElevation
-            size='small'
-            aria-label={t_i18n('Create an entity')}
-            onClick={() => setOpenCreateEntity(true)}
-                              >{t_i18n('Create an entity')}</Button>}
-          {showSCOCreation && <Button
-            style={{ fontSize: 'small', marginLeft: '3px' }}
-            variant='contained'
-            disableElevation
-            size='small'
-            aria-label={t_i18n('Create an observable')}
-            onClick={() => setOpenCreateObservable(true)}
-                              >{t_i18n('Create an observable')}</Button>}
+          {showSDOCreation && (
+            <Button
+              style={{ fontSize: 'small' }}
+              variant='contained'
+              disableElevation
+              size='small'
+              aria-label={t_i18n('Create an entity')}
+              onClick={() => setOpenCreateEntity(true)}
+            >
+              {t_i18n('Create an entity')}
+            </Button>
+          )}
+          {showSCOCreation && (
+            <Button
+              style={{ fontSize: 'small', marginLeft: '3px' }}
+              variant='contained'
+              disableElevation
+              size='small'
+              aria-label={t_i18n('Create an observable')}
+              onClick={() => setOpenCreateObservable(true)}
+            >
+              {t_i18n('Create an observable')}
+            </Button>
+          )}
         </div>
       </div>
       <StixDomainObjectCreation
@@ -230,10 +242,14 @@ ContainerAddStixCoreObjectsInLineProps
     </>);
   };
 
+  const Dial = showSDOCreation
+    ? ({ onOpen }: { onOpen: () => void }) => <ControlledDial title={t_i18n('Add entity')} onOpen={onOpen} />
+    : ({ onOpen }: { onOpen: () => void }) => <ControlledDial title={t_i18n('Add observable')} onOpen={onOpen} />;
+
   return (
     <Drawer
       title={''} // Defined in custom header prop
-      controlledDial={knowledgeGraph ? GraphControlledDial : ControlledDial}
+      controlledDial={knowledgeGraph ? GraphControlledDial : Dial}
       header={<Header />}
     >
       <ListLines
