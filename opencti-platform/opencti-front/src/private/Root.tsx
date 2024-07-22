@@ -309,7 +309,7 @@ const RootComponent: FunctionComponent<RootComponentProps> = ({ queryRef }) => {
   const overviewLayoutCustomizationEntries = entitySettingsData
     ?.map(({ target_type, overviewLayoutCustomization }) => ({ key: target_type, values: overviewLayoutCustomization }))
     .filter((entry) => !!entry.values)
-    .map(({ key: entityTypeKey, values: widgetsValues }) => [entityTypeKey, new Map(widgetsValues?.map(({ key, values }) => [key, values]))]);
+    .map(({ key: entityTypeKey, values: widgetsValues }) => [entityTypeKey, new Map(widgetsValues?.map(({ key, width }) => [key, width]))]);
   const overviewLayoutCustomization = overviewLayoutCustomizationEntries ? new Map(overviewLayoutCustomizationEntries.map(([key, values]) => [key, values])) : new Map();
   return (
     <UserContext.Provider

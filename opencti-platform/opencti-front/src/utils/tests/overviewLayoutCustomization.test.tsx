@@ -52,11 +52,11 @@ describe('overviewLayoutCustomization', () => {
     );
   });
 
-  it('should provide order and width for every widget', () => {
+  it('should provide width for every widget', () => {
     const threatActorIndividualOverviewLayoutCustomization = result.current?.overviewLayoutCustomization?.get(threatActorIndividualEntityType);
     expect(
       Array.from(threatActorIndividualOverviewLayoutCustomization?.values() ?? [])
-        .every(({ order, width }) => !!order && !!width),
+        .every((width) => !!width),
     ).toEqual(
       true,
     );

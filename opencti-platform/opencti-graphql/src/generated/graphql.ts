@@ -16751,11 +16751,6 @@ export type OtpElement = {
 export type OverviewLayoutCustomization = {
   __typename?: 'OverviewLayoutCustomization';
   key: Scalars['String']['output'];
-  values: OverviewLayoutCustomizationParameter;
-};
-
-export type OverviewLayoutCustomizationParameter = {
-  __typename?: 'OverviewLayoutCustomizationParameter';
   width: Scalars['Int']['output'];
 };
 
@@ -29261,7 +29256,6 @@ export type ResolversTypes = ResolversObject<{
   OrganizationsOrdering: OrganizationsOrdering;
   OtpElement: ResolverTypeWrapper<OtpElement>;
   OverviewLayoutCustomization: ResolverTypeWrapper<OverviewLayoutCustomization>;
-  OverviewLayoutCustomizationParameter: ResolverTypeWrapper<OverviewLayoutCustomizationParameter>;
   OverviewMetrics: ResolverTypeWrapper<OverviewMetrics>;
   PackageStatus: PackageStatus;
   PageInfo: ResolverTypeWrapper<PageInfo>;
@@ -30009,7 +30003,6 @@ export type ResolversParentTypes = ResolversObject<{
   OrganizationOrIndividual: ResolversUnionTypes<ResolversParentTypes>['OrganizationOrIndividual'];
   OtpElement: OtpElement;
   OverviewLayoutCustomization: OverviewLayoutCustomization;
-  OverviewLayoutCustomizationParameter: OverviewLayoutCustomizationParameter;
   OverviewMetrics: OverviewMetrics;
   PageInfo: PageInfo;
   Participant: Participant;
@@ -35518,11 +35511,6 @@ export type OtpElementResolvers<ContextType = any, ParentType extends ResolversP
 
 export type OverviewLayoutCustomizationResolvers<ContextType = any, ParentType extends ResolversParentTypes['OverviewLayoutCustomization'] = ResolversParentTypes['OverviewLayoutCustomization']> = ResolversObject<{
   key?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  values?: Resolver<ResolversTypes['OverviewLayoutCustomizationParameter'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-}>;
-
-export type OverviewLayoutCustomizationParameterResolvers<ContextType = any, ParentType extends ResolversParentTypes['OverviewLayoutCustomizationParameter'] = ResolversParentTypes['OverviewLayoutCustomizationParameter']> = ResolversObject<{
   width?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
@@ -39341,7 +39329,6 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   OrganizationOrIndividual?: OrganizationOrIndividualResolvers<ContextType>;
   OtpElement?: OtpElementResolvers<ContextType>;
   OverviewLayoutCustomization?: OverviewLayoutCustomizationResolvers<ContextType>;
-  OverviewLayoutCustomizationParameter?: OverviewLayoutCustomizationParameterResolvers<ContextType>;
   OverviewMetrics?: OverviewMetricsResolvers<ContextType>;
   PageInfo?: PageInfoResolvers<ContextType>;
   Participant?: ParticipantResolvers<ContextType>;

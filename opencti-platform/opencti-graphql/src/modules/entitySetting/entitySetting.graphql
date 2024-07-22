@@ -27,13 +27,9 @@ type DefaultValueAttribute {
   defaultValues: [DefaultValue!]!
 }
 
-type OverviewLayoutCustomizationParameter {
-  width: Int!
-}
-
 type OverviewLayoutCustomization {
   key: String!
-  values: OverviewLayoutCustomizationParameter!
+  width: Int!
 }
 
 type EntitySetting implements InternalObject & BasicObject {
