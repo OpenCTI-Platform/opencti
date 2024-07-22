@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { graphql, useRefetchableFragment } from 'react-relay';
 import Loader from 'src/components/Loader';
 import { List, ListItemButton, ListItemIcon, ListItemText, useTheme } from '@mui/material';
@@ -58,9 +58,10 @@ export const addPersonasThreatActorIndividualLinesQuery = graphql`
   query AddPersonasThreatActorIndividualLinesQuery(
     $search: String
     $count: Int!
+    $cursor: ID
   ) {
     ...AddPersonasThreatActorIndividualLines_data
-      @arguments(search: $search, count: $count)
+      @arguments(search: $search, count: $count, cursor: $cursor)
   }
 `;
 
@@ -69,13 +70,15 @@ const AddPersonasThreatActorIndividualLinesFragment = graphql`
   @refetchable(queryName: "AddPersonasThreatActorIndividualLinesRefetchQuery")
   @argumentDefinitions(
     search: { type: "String" }
-    count: { type: "Int", defaultValue: 25 }
+    count: { type: "Int", defaultValue: 25 },
+    cursor: { type: "ID" }
   ) {
     stixCyberObservables(
       search: $search,
       first: $count,
+      after: $cursor,
       types: ["Persona"],
-    ) {
+    ) @connection(key: "Pagination_stixCyberObservables") {
       edges {
         node {
           id
@@ -126,10 +129,14 @@ const AddPersonasThreatActorIndividualLines = ({
   threatActorIndividual: ThreatActorIndividualDetails_ThreatActorIndividual$data,
   fragmentKey: AddPersonasThreatActorIndividualLines_data$key,
 }) => {
-  const [data] = useRefetchableFragment(
+  const [data, refetch] = useRefetchableFragment(
     AddPersonasThreatActorIndividualLinesFragment,
     fragmentKey,
   );
+
+  useEffect(() => {
+    refetch({});
+  }, [data]);
 
   const [commitRelationAdd] = useApiMutation(scoRelationshipAdd);
   const [commitRelationDelete] = useApiMutation(scoRelationshipDelete);
@@ -194,7 +201,7 @@ const AddPersonasThreatActorIndividualLines = ({
               <AddPersonasThreatActorIndividualLine
                 key={node.node.id}
                 id={node.node.id}
-                name={node.node.persona_name ? node.node.persona_name : ''}
+                name={node.node.persona_name ?? ''}
                 currentTargets={currentTargets}
                 handleClick={() => handleToggle(node.node.id)}
               />

@@ -245,6 +245,7 @@ const StixCyberObservableCreation = ({
   inputValue,
   paginationKey,
   paginationOptions,
+  controlledDialStyles,
   defaultCreatedBy = null,
   defaultMarkingDefinitions = null,
 }) => {
@@ -848,9 +849,10 @@ const StixCyberObservableCreation = ({
       <>
         {isFABReplaced
           ? <CreateEntityControlledDial
-              entityType='Observable'
+              entityType={type ?? 'Observable'}
               onOpen={handleOpen}
               onClose={() => {}}
+              style={controlledDialStyles}
             />
           : <Fab
               onClick={handleOpen}

@@ -8,6 +8,7 @@ import { useFormatter } from 'src/components/i18n';
 import AddPersonasThreatActorIndividualLines, { addPersonasThreatActorIndividualLinesQuery } from './AddPersonasThreatActorIndividualLines';
 import { AddPersonasThreatActorIndividualLinesQuery } from './__generated__/AddPersonasThreatActorIndividualLinesQuery.graphql';
 import { ThreatActorIndividualDetails_ThreatActorIndividual$data } from './__generated__/ThreatActorIndividualDetails_ThreatActorIndividual.graphql';
+import StixCyberObservableCreation from '../../observations/stix_cyber_observables/StixCyberObservableCreation';
 
 const AddPersonaThreatActorIndividual = ({
   threatActorIndividual,
@@ -59,11 +60,31 @@ const AddPersonaThreatActorIndividual = ({
           style={{
             marginLeft: 'auto',
             marginRight: '20px',
+            display: 'flex',
+            flexWrap: 'wrap',
+            justifyContent: 'flex-end',
+            alignItems: 'flex-end',
           }}
         >
           <SearchInput
             variant='inDrawer'
             onSubmit={handleSearch}
+          />
+          <div style={{ height: 5 }} />
+          <StixCyberObservableCreation
+            contextual={false}
+            type="Persona"
+            open={undefined}
+            handleClose={undefined}
+            display={undefined}
+            speeddial={undefined}
+            inputValue={search}
+            paginationOptions={{ search, types: ['Persona'] }}
+            paginationKey="Pagination_stixCyberObservables"
+            controlledDialStyles={{
+              marginLeft: '10px',
+              marginTop: '5px',
+            }}
           />
         </div>
       }
