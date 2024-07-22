@@ -5,9 +5,6 @@ name: opencti-tests
 steps:
   - name: dependencies-checkout
     image: nikolaik/python-nodejs:python3.11-nodejs20-alpine
-    volumes:
-    - name: cache-python-all-steps
-      path: /usr/local/lib/python3.11
     environment:
       GITHUB_TOKEN:
           from_secret: github_token
@@ -18,16 +15,12 @@ steps:
       - ls -lart
       - cd "$DRONE_WORKSPACE/client-python"
       - echo "[INFO] using client-python on branch $(git branch --show-current)"
-      - pip install -e .[dev,doc]
-      - pip3 show pycti
 
   - name: api-tests
     image: nikolaik/python-nodejs:python3.11-nodejs20-alpine
     volumes:
     - name: cache-node-backend
       path: /drone/src/opencti-platform/opencti-graphql/node_modules
-    - name: cache-python-all-steps
-      path: /usr/local/lib/python3.11
     environment:
       APP__BASE_URL: http://api-tests:4010/
       APP__ADMIN__PASSWORD: admin
@@ -50,7 +43,8 @@ steps:
     commands:
       - apk add build-base git libffi-dev cargo
       - pip3 install --upgrade setuptools
-      - pip3 show pycti
+      - cd "$DRONE_WORKSPACE/client-python"
+      - pip install -e .[dev,doc]
       - cd "$DRONE_WORKSPACE/opencti-platform/opencti-graphql"
       - yarn install
       - yarn build
@@ -182,8 +176,6 @@ services:
     volumes:
     - name: cache-node-raw-start-backend
       path: /tmp/raw-start-platform/opencti-graphql/node_modules
-    - name: cache-python-all-steps
-      path: /usr/local/lib/python3.11
     environment:
       APP__PORT: 4100
       APP__ADMIN__PASSWORD: admin
@@ -204,6 +196,8 @@ services:
       - ls -lart
       - cp -a opencti-platform/* /tmp/raw-start-platform/
       - apk add build-base git libffi-dev cargo
+      - cd "$DRONE_WORKSPACE/client-python"
+      - pip install -e .[dev,doc]
       - cd /tmp/raw-start-platform/opencti-graphql
       - yarn install
       - yarn install:python
@@ -213,8 +207,6 @@ services:
     volumes:
     - name: cache-node-live-start-backend
       path: /tmp/live-start-platform/opencti-graphql/node_modules
-    - name: cache-python-all-steps
-      path: /usr/local/lib/python3.11
     environment:
       APP__PORT: 4200
       APP__ADMIN__PASSWORD: admin
@@ -234,6 +226,8 @@ services:
       - sleep 10
       - cp -a opencti-platform/* /tmp/live-start-platform/
       - apk add build-base git libffi-dev cargo
+      - cd "$DRONE_WORKSPACE/client-python"
+      - pip install -e .[dev,doc]
       - cd /tmp/live-start-platform/opencti-graphql
       - yarn install
       - yarn install:python
@@ -243,8 +237,6 @@ services:
     volumes:
     - name: cache-node-direct-start-backend
       path: //tmp/direct-start-platform/opencti-graphql/node_modules
-    - name: cache-python-all-steps
-      path: /usr/local/lib/python3.11
     environment:
       APP__PORT: 4300
       APP__ADMIN__PASSWORD: admin
@@ -264,6 +256,8 @@ services:
       - sleep 10
       - cp -a opencti-platform/* /tmp/direct-start-platform/
       - apk add build-base git libffi-dev cargo
+      - cd "$DRONE_WORKSPACE/client-python"
+      - pip install -e .[dev,doc]
       - cd /tmp/direct-start-platform/opencti-graphql
       - yarn install
       - yarn install:python
@@ -273,8 +267,6 @@ services:
     volumes:
     - name: cache-node-direct-start-backend
       path: /tmp/direct-start-platform/node_modules
-    - name: cache-python-all-steps
-      path: /usr/local/lib/python3.11
     environment:
       OPENCTI_URL: http://opencti-direct-start:4300
       OPENCTI_TOKEN: bfa014e0-e02e-4aa6-a42b-603b19dcf159
@@ -283,6 +275,8 @@ services:
       - sleep 10
       - cp -a opencti-worker /tmp/direct-start-worker
       - apk add build-base git libffi-dev cargo
+      - cd "$DRONE_WORKSPACE/client-python"
+      - pip install -e .[dev,doc]
       - while ! nc -z opencti-direct-start 4300 ; do sleep 1 ; done
       - cd /tmp/direct-start-worker
       - pip3 install -r src/requirements.txt
@@ -292,8 +286,6 @@ services:
     volumes:
     - name: cache-node-restore-start-backend
       path: /tmp/restore-start-platform/node_modules
-    - name: cache-python-all-steps
-      path: /usr/local/lib/python3.11
     environment:
       APP__PORT: 4400
       APP__ADMIN__PASSWORD: admin
@@ -313,6 +305,8 @@ services:
       - sleep 10
       - cp -a opencti-platform/* /tmp/restore-start-platform/
       - apk add build-base git libffi-dev cargo
+      - cd "$DRONE_WORKSPACE/client-python"
+      - pip install -e .[dev,doc]
       - cd /tmp/restore-start-platform/opencti-graphql
       - yarn install
       - yarn install:python
@@ -322,8 +316,6 @@ services:
     volumes:
     - name: cache-node-e2e-start-backend
       path: /tmp/e2e-start-platform/node_modules
-    - name: cache-python-all-steps
-      path: /usr/local/lib/python3.11
     environment:
       APP__PORT: 4500
       APP__DISABLED_DEV_FEATURES: '["4352_BULK_RELATIONS"]'
@@ -344,6 +336,8 @@ services:
     commands:
       - cp -a opencti-platform/* /tmp/e2e-start-platform/
       - apk add build-base git libffi-dev cargo
+      - cd "$DRONE_WORKSPACE/client-python"
+      - pip install -e .[dev,doc]
       - cd /tmp/e2e-start-platform/opencti-graphql
       - yarn install
       - yarn install:python
@@ -377,5 +371,3 @@ volumes:
   - name: cache-node-frontend-e2e
     host:
       path: /tmp/cache-node-frontend-e2e
-  - name: cache-python-all-steps
-    temp: {}
