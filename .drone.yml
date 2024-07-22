@@ -5,9 +5,6 @@ name: opencti-tests
 steps:
   - name: dependencies-checkout
     image: nikolaik/python-nodejs:python3.11-nodejs20-alpine
-    volumes:
-    - name: cache-python-for-all
-      path: /usr/lib/python3.11
     environment:
       GITHUB_TOKEN:
           from_secret: github_token
@@ -25,8 +22,6 @@ steps:
     volumes:
     - name: cache-node-backend
       path: /drone/src/opencti-platform/opencti-graphql/node_modules
-    - name: cache-python-for-all
-      path: /usr/lib/python3.11
     environment:
       APP__BASE_URL: http://api-tests:4010/
       APP__ADMIN__PASSWORD: admin
@@ -76,8 +71,6 @@ steps:
     volumes:
     - name: cache-node-frontend
       path: /drone/src/opencti-platform/opencti-front/node_modules
-    - name: cache-python-frontend
-      path: /usr/lib/python3.11
     commands:
       - apk add git tini gcc g++ make musl-dev cargo python3 python3-dev postfix postfix-pcre
       - npm install -g node-gyp
@@ -185,8 +178,6 @@ services:
     volumes:
     - name: cache-node-raw-start-backend
       path: /tmp/raw-start-platform/opencti-graphql/node_modules
-    - name: cache-python-for-all
-      path: /usr/lib/python3.11
     environment:
       APP__PORT: 4100
       APP__ADMIN__PASSWORD: admin
@@ -216,8 +207,6 @@ services:
     volumes:
     - name: cache-node-live-start-backend
       path: /tmp/live-start-platform/opencti-graphql/node_modules
-    - name: cache-python-for-all
-      path: /usr/lib/python3.11
     environment:
       APP__PORT: 4200
       APP__ADMIN__PASSWORD: admin
@@ -246,8 +235,6 @@ services:
     volumes:
     - name: cache-node-direct-start-backend
       path: //tmp/direct-start-platform/opencti-graphql/node_modules
-    - name: cache-python-for-all
-      path: /usr/lib/python3.11
     environment:
       APP__PORT: 4300
       APP__ADMIN__PASSWORD: admin
@@ -274,8 +261,8 @@ services:
   - name: opencti-direct-worker
     image: nikolaik/python-nodejs:python3.11-nodejs20-alpine
     volumes:
-    - name: cache-python-for-all
-      path: /usr/lib/python3.11
+    - name: cache-node-direct-start-backend
+      path: /tmp/direct-start-platform/node_modules
     environment:
       OPENCTI_URL: http://opencti-direct-start:4300
       OPENCTI_TOKEN: bfa014e0-e02e-4aa6-a42b-603b19dcf159
@@ -293,8 +280,6 @@ services:
     volumes:
     - name: cache-node-restore-start-backend
       path: /tmp/restore-start-platform/node_modules
-    - name: cache-python-for-all
-      path: /usr/lib/python3.11
     environment:
       APP__PORT: 4400
       APP__ADMIN__PASSWORD: admin
@@ -323,8 +308,6 @@ services:
     volumes:
     - name: cache-node-e2e-start-backend
       path: /tmp/e2e-start-platform/node_modules
-    - name: cache-python-for-all
-      path: /usr/lib/python3.11
     environment:
       APP__PORT: 4500
       APP__DISABLED_DEV_FEATURES: '["4352_BULK_RELATIONS"]'
@@ -378,30 +361,3 @@ volumes:
   - name: cache-node-frontend-e2e
     host:
       path: /tmp/cache-node-frontend-e2e
-  - name: cache-python-for-all
-    host:
-      path: /usr/lib/python3.11
-  - name: cache-python-backend
-    host:
-      path: /tmp/cache-python-backend
-  - name: cache-python-frontend
-    host:
-      path: /tmp/cache-python-frontend
-  - name: cache-python-frontend-e2e
-    host:
-      path: /tmp/cache-python-frontend-e2e
-  - name: cache-python-raw-start-backend
-    host:
-      path: /tmp/cache-python-raw-start-backend
-  - name: cache-python-live-start-backend
-    host:
-      path: /tmp/cache-python-live-start-backend
-  - name: cache-python-direct-start-backend
-    host:
-      path: /tmp/cache-python-direct-start-backend
-  - name: cache-python-restore-start-backend
-    host:
-      path: /tmp/cache-python-restore-start-backend
-  - name: cache-python-e2e-start-backend
-    host:
-      path: /tmp/cache-python-e2e-start-backend
