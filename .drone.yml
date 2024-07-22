@@ -5,6 +5,9 @@ name: opencti-tests
 steps:
   - name: dependencies-checkout
     image: nikolaik/python-nodejs:python3.11-nodejs20-alpine
+    volumes:
+    - name: cache-python-all-steps
+      path: /usr/local/lib/python3.11
     environment:
       GITHUB_TOKEN:
           from_secret: github_token
@@ -15,15 +18,16 @@ steps:
       - ls -lart
       - cd "$DRONE_WORKSPACE/client-python"
       - echo "[INFO] using client-python on branch $(git branch --show-current)"
-      - pip3 install --upgrade --force .
+      - pip install -e .[dev,doc]
+      - pip3 show pycti
 
   - name: api-tests
     image: nikolaik/python-nodejs:python3.11-nodejs20-alpine
     volumes:
     - name: cache-node-backend
       path: /drone/src/opencti-platform/opencti-graphql/node_modules
-    - name: cache-python-backend
-      path: /usr/lib/python3.11
+    - name: cache-python-all-steps
+      path: /usr/local/lib/python3.11
     environment:
       APP__BASE_URL: http://api-tests:4010/
       APP__ADMIN__PASSWORD: admin
@@ -46,14 +50,12 @@ steps:
     commands:
       - apk add build-base git libffi-dev cargo
       - pip3 install --upgrade setuptools
-      - echo "DRONE_WORKSPACE=$DRONE_WORKSPACE"
-      - echo "DRONE_WORKSPACE=${DRONE_WORKSPACE}"
+      - pip3 show pycti
       - cd "$DRONE_WORKSPACE/opencti-platform/opencti-graphql"
       - yarn install
       - yarn build
       - yarn check-ts
       - yarn lint
-      - cd "$DRONE_WORKSPACE/opencti-platform/opencti-graphql"
       - NODE_OPTIONS=--max_old_space_size=8192 yarn test
     depends_on:
       - dependencies-checkout
@@ -73,8 +75,6 @@ steps:
     volumes:
     - name: cache-node-frontend
       path: /drone/src/opencti-platform/opencti-front/node_modules
-    - name: cache-python-frontend
-      path: /usr/lib/python3.11
     commands:
       - apk add git tini gcc g++ make musl-dev cargo python3 python3-dev postfix postfix-pcre
       - npm install -g node-gyp
@@ -182,13 +182,13 @@ services:
     volumes:
     - name: cache-node-raw-start-backend
       path: /tmp/raw-start-platform/opencti-graphql/node_modules
-    - name: cache-python-raw-start-backend
-      path: /usr/lib/python3.11
+    - name: cache-python-all-steps
+      path: /usr/local/lib/python3.11
     environment:
       APP__PORT: 4100
       APP__ADMIN__PASSWORD: admin
       APP__ADMIN__TOKEN: bfa014e0-e02e-4aa6-a42b-603b19dcf159
-      APP_APP_LOG_EXTENDED_ERROR_MESSAGE: true
+      APP__APP_LOG__EXTENDED_ERROR_MESSAGE: true
       REDIS__HOSTNAME: redis
       REDIS__NAMESPACE: raw-start
       ELASTICSEARCH__URL: http://elastic:9200
@@ -213,13 +213,13 @@ services:
     volumes:
     - name: cache-node-live-start-backend
       path: /tmp/live-start-platform/opencti-graphql/node_modules
-    - name: cache-python-live-start-backend
-      path: /usr/lib/python3.11
+    - name: cache-python-all-steps
+      path: /usr/local/lib/python3.11
     environment:
       APP__PORT: 4200
       APP__ADMIN__PASSWORD: admin
       APP__ADMIN__TOKEN: bfa014e0-e02e-4aa6-a42b-603b19dcf159
-      APP_APP_LOG_EXTENDED_ERROR_MESSAGE: true
+      APP__APP_LOG__EXTENDED_ERROR_MESSAGE: true
       REDIS__HOSTNAME: redis
       REDIS__NAMESPACE: live-start
       ELASTICSEARCH__URL: http://elastic:9200
@@ -243,13 +243,13 @@ services:
     volumes:
     - name: cache-node-direct-start-backend
       path: //tmp/direct-start-platform/opencti-graphql/node_modules
-    - name: cache-python-direct-start-backend
-      path: /usr/lib/python3.11
+    - name: cache-python-all-steps
+      path: /usr/local/lib/python3.11
     environment:
       APP__PORT: 4300
       APP__ADMIN__PASSWORD: admin
       APP__ADMIN__TOKEN: bfa014e0-e02e-4aa6-a42b-603b19dcf159
-      APP_APP_LOG_EXTENDED_ERROR_MESSAGE: true
+      APP__APP_LOG__EXTENDED_ERROR_MESSAGE: true
       REDIS__HOSTNAME: redis
       REDIS__NAMESPACE: direct-start
       ELASTICSEARCH__URL: http://elastic:9200
@@ -271,8 +271,10 @@ services:
   - name: opencti-direct-worker
     image: nikolaik/python-nodejs:python3.11-nodejs20-alpine
     volumes:
-    - name: cache-python-worker
-      path: /usr/lib/python3.11
+    - name: cache-node-direct-start-backend
+      path: /tmp/direct-start-platform/node_modules
+    - name: cache-python-all-steps
+      path: /usr/local/lib/python3.11
     environment:
       OPENCTI_URL: http://opencti-direct-start:4300
       OPENCTI_TOKEN: bfa014e0-e02e-4aa6-a42b-603b19dcf159
@@ -290,13 +292,13 @@ services:
     volumes:
     - name: cache-node-restore-start-backend
       path: /tmp/restore-start-platform/node_modules
-    - name: cache-python-restore-start-backend
-      path: /usr/lib/python3.11
+    - name: cache-python-all-steps
+      path: /usr/local/lib/python3.11
     environment:
       APP__PORT: 4400
       APP__ADMIN__PASSWORD: admin
       APP__ADMIN__TOKEN: bfa014e0-e02e-4aa6-a42b-603b19dcf159
-      APP_APP_LOG_EXTENDED_ERROR_MESSAGE: true
+      APP__APP_LOG__EXTENDED_ERROR_MESSAGE: true
       REDIS__HOSTNAME: redis
       REDIS__NAMESPACE: restore-start
       ELASTICSEARCH__URL: http://elastic:9200
@@ -320,14 +322,14 @@ services:
     volumes:
     - name: cache-node-e2e-start-backend
       path: /tmp/e2e-start-platform/node_modules
-    - name: cache-python-e2e-start-backend
-      path: /usr/lib/python3.11
+    - name: cache-python-all-steps
+      path: /usr/local/lib/python3.11
     environment:
       APP__PORT: 4500
       APP__DISABLED_DEV_FEATURES: '["4352_BULK_RELATIONS"]'
       APP__ADMIN__PASSWORD: admin
       APP__ADMIN__TOKEN: bfa014e0-e02e-4aa6-a42b-603b19dcf159
-      APP_APP_LOG_EXTENDED_ERROR_MESSAGE: true
+      APP__APP_LOG__EXTENDED_ERROR_MESSAGE: true
       REDIS__HOSTNAME: redis
       REDIS__NAMESPACE: e2e-start
       ELASTICSEARCH__URL: http://elastic:9200
@@ -375,30 +377,5 @@ volumes:
   - name: cache-node-frontend-e2e
     host:
       path: /tmp/cache-node-frontend-e2e
-  - name: cache-python-worker
-    host:
-      path: /tmp/cache-python-worker      
-  - name: cache-python-backend
-    host:
-      path: /tmp/cache-python-backend
-  - name: cache-python-frontend
-    host:
-      path: /tmp/cache-python-frontend
-  - name: cache-python-frontend-e2e
-    host:
-      path: /tmp/cache-python-frontend-e2e
-  - name: cache-python-raw-start-backend
-    host:
-      path: /tmp/cache-python-raw-start-backend
-  - name: cache-python-live-start-backend
-    host:
-      path: /tmp/cache-python-live-start-backend
-  - name: cache-python-direct-start-backend
-    host:
-      path: /tmp/cache-python-direct-start-backend
-  - name: cache-python-restore-start-backend
-    host:
-      path: /tmp/cache-python-restore-start-backend
-  - name: cache-python-e2e-start-backend
-    host:
-      path: /tmp/cache-python-e2e-start-backend
+  - name: cache-python-all-steps
+    temp: {}
