@@ -175,7 +175,7 @@ describe('Case Incident Response standard behavior with authorized_members activ
     await queryAsAdmin({
       query: EDIT_AUTHORIZED_MEMBERS_QUERY,
       variables: {
-        id: caseIncidentResponseAuthorizedMembersFromEntity.id,
+        id: caseIncidentResponseAuthorizedMembersFromEntity?.id,
         input: [
           {
             id: ADMIN_USER.id,
@@ -263,7 +263,7 @@ describe('Case Incident Response standard behavior with authorized_members activ
 
     const entitySettingCaseIncidentResponse = queryResult.data?.entitySettings.edges
       .filter((entitySetting: EntitySettingEdge) => entitySetting.node.target_type === ENTITY_TYPE_CONTAINER_CASE_INCIDENT)[0];
-    entitySettingIdCaseIncidentResponse = entitySettingCaseIncidentResponse.node.id;
+    entitySettingIdCaseIncidentResponse = entitySettingCaseIncidentResponse?.node.id;
     expect(entitySettingIdCaseIncidentResponse).toBeTruthy();
   });
   it('should Case Incident Response created', async () => {
@@ -310,7 +310,7 @@ describe('Case Incident Response standard behavior with authorized_members activ
     ]);
     const updateEntitySettingsResult = await queryAsAdmin({
       query: ENTITY_SETTINGS_UPDATE_QUERY,
-      variables: { ids: [caseIncidentEntitySetting.id], input: { key: 'attributes_configuration', value: [authorizedMembersConfiguration] } },
+      variables: { ids: [caseIncidentEntitySetting?.id], input: { key: 'attributes_configuration', value: [authorizedMembersConfiguration] } },
     });
     expect(updateEntitySettingsResult.data?.entitySettingsFieldPatch?.[0]?.attributes_configuration).toEqual(authorizedMembersConfiguration);
     const caseIncidentResponseAuthorizedMembersData = await queryAsAdmin({
