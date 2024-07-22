@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import gql from 'graphql-tag';
 import { ADMIN_USER, getUserIdByEmail, queryAsAdmin, USER_EDITOR } from '../../utils/testQuery';
-import type { CaseIncident, EntitySetting, EntitySettingEdge } from '../../../src/generated/graphql';
+import type { CaseIncident, EntitySettingEdge } from '../../../src/generated/graphql';
 import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../../../src/modules/case/case-incident/case-incident-types';
 import { queryAsUserWithSuccess } from '../../utils/testQueryHelper';
 import { executionContext, SYSTEM_USER } from '../../../src/utils/access';
@@ -160,7 +160,7 @@ describe('Case Incident Response standard behavior with authorized_members activ
       query: CREATE_QUERY,
       variables: {
         input: {
-          name: 'Case Incident Response With Authorized Members'
+          name: 'Case Incident Response With Authorized Members from entity'
         }
       }
     });
@@ -239,8 +239,7 @@ describe('Case Incident Response standard behavior with authorized_members activ
 
 describe('Case Incident Response standard behavior with authorized_members activated via settings', () => {
   let caseIncidentResponseAuthorizedMembersFromSettings: CaseIncident;
-  let caseIncidentEntitySetting: EntitySetting;
-  let entitySettingIdCaseIncidentResponse;
+  let entitySettingIdCaseIncidentResponse: string;
   it('should init entity settings', async () => {
     const LIST_QUERY = gql`
           query entitySettings {
@@ -268,17 +267,6 @@ describe('Case Incident Response standard behavior with authorized_members activ
   });
   it('should Case Incident Response created', async () => {
     // Activate authorized members for IR
-    const ENTITY_SETTINGS_READ_QUERY_BY_TARGET_TYPE = gql`
-      query entitySettingsByTargetType($targetType: String!) {
-        entitySettingByType(targetType: $targetType) {
-          id
-          target_type
-          platform_entity_files_ref
-          platform_hidden_type
-          enforce_reference
-        }
-      }
-    `;
     const ENTITY_SETTINGS_UPDATE_QUERY = gql`
       mutation entitySettingsEdit($ids: [ID!]!, $input: [EditInput!]!) {
         entitySettingsFieldPatch(ids: $ids, input: $input) {
@@ -291,12 +279,6 @@ describe('Case Incident Response standard behavior with authorized_members activ
         }
       }
     `;
-    const caseIncidentResponseSettingsQueryResult = await queryAsAdmin({
-      query: ENTITY_SETTINGS_READ_QUERY_BY_TARGET_TYPE,
-      variables: { targetType: ENTITY_TYPE_CONTAINER_CASE_INCIDENT }
-    });
-    expect(caseIncidentResponseSettingsQueryResult.data?.entitySettingByType.target_type).toEqual(ENTITY_TYPE_CONTAINER_CASE_INCIDENT);
-    caseIncidentEntitySetting = caseIncidentResponseSettingsQueryResult.data?.entitySettingByType;
     const authorizedMembersConfiguration = JSON.stringify([
       {
         name: 'authorized_members',
@@ -310,14 +292,14 @@ describe('Case Incident Response standard behavior with authorized_members activ
     ]);
     const updateEntitySettingsResult = await queryAsAdmin({
       query: ENTITY_SETTINGS_UPDATE_QUERY,
-      variables: { ids: [caseIncidentEntitySetting?.id], input: { key: 'attributes_configuration', value: [authorizedMembersConfiguration] } },
+      variables: { ids: [entitySettingIdCaseIncidentResponse], input: { key: 'attributes_configuration', value: [authorizedMembersConfiguration] } },
     });
     expect(updateEntitySettingsResult.data?.entitySettingsFieldPatch?.[0]?.attributes_configuration).toEqual(authorizedMembersConfiguration);
     const caseIncidentResponseAuthorizedMembersData = await queryAsAdmin({
       query: CREATE_QUERY,
       variables: {
         input: {
-          name: 'Case Incident Response With Authorized Members'
+          name: 'Case Incident Response With Authorized Members via settings'
         }
       }
     });
@@ -334,7 +316,7 @@ describe('Case Incident Response standard behavior with authorized_members activ
     const authorizedMembersConfigurationClean = JSON.stringify([{ name: 'authorized_members', default_values: null }]);
     await queryAsAdmin({
       query: ENTITY_SETTINGS_UPDATE_QUERY,
-      variables: { ids: [caseIncidentEntitySetting?.id], input: { key: 'attributes_configuration', value: [authorizedMembersConfigurationClean] } },
+      variables: { ids: [entitySettingIdCaseIncidentResponse], input: { key: 'attributes_configuration', value: [authorizedMembersConfigurationClean] } },
     });
   });
   it('should Case Incident Response deleted', async () => {
