@@ -2494,7 +2494,7 @@ class DataTableToolBar extends Component {
                       });
                     }}
                   >
-                    {t('Share')}
+                    {t('Unshare')}
                   </Button>
                 </DialogActions>
               </Dialog>
