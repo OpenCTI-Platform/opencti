@@ -15,14 +15,15 @@ steps:
       - ls -lart
       - cd "$DRONE_WORKSPACE/client-python"
       - echo "[INFO] using client-python on branch $(git branch --show-current)"
-      - # pip install -e .[dev,doc]
-      - pip3 install --upgrade --force .
+      - pip install -e .[dev,doc]
 
   - name: api-tests
     image: nikolaik/python-nodejs:python3.11-nodejs20-alpine
     volumes:
     - name: cache-node-backend
       path: /drone/src/opencti-platform/opencti-graphql/node_modules
+    - name: cache-python-backend
+      path: /usr/lib/python3.11
     environment:
       APP__BASE_URL: http://api-tests:4010/
       APP__ADMIN__PASSWORD: admin
