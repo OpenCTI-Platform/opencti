@@ -5,7 +5,7 @@ name: opencti-tests
 steps:
   - name: dependencies-checkout
     image: nikolaik/python-nodejs:python3.11-nodejs20-alpine
-  volumes:
+    volumes:
     - name: cache-python-for-all
       path: /usr/lib/python3.11
     environment:
