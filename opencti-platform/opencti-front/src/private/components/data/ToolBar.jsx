@@ -68,6 +68,7 @@ class ToolBar extends Component {
       noWarning,
       noMarking,
       handleCopy,
+      search,
     } = this.props;
     const { navOpen } = this.state;
     const isOpen = numberOfSelectedElements > 0;
@@ -100,6 +101,7 @@ class ToolBar extends Component {
             }}
           >
             <DataTableToolBar
+              search={search}
               numberOfSelectedElements={numberOfSelectedElements}
               handleClearSelectedElements={handleClearSelectedElements}
               selectedElements={selectedElements}
