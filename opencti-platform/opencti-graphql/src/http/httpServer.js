@@ -23,21 +23,29 @@ const CA_CERTS = conf.get('app:https_cert:ca');
 const rejectUnauthorized = booleanConf('app:https_cert:reject_unauthorized', true);
 
 const createHttpServer = async () => {
+  logApp.info('[INIT] Configuring HTTP/HTTPS server');
   const app = express();
   app.use(applicationSession.session);
   app.use(passport.initialize({}));
   const { schema, apolloServer } = createApolloServer();
   let httpServer;
   if (CERT_KEY_PATH && CERT_KEY_CERT) {
-    const key = loadCert(CERT_KEY_PATH);
-    const cert = loadCert(CERT_KEY_CERT);
-    const ca = CA_CERTS.map((path) => loadCert(path));
-    const requestCert = isStrategyActivated(STRATEGY_CERT);
-    const passphrase = conf.get('app:https_cert:passphrase');
-    const options = { key, cert, passphrase, requestCert, rejectUnauthorized, ca };
-    httpServer = https.createServer(options, app);
+    try {
+      logApp.info('[INIT] Configuring SSL for HTTPS server.');
+      const key = loadCert(CERT_KEY_PATH);
+      const cert = loadCert(CERT_KEY_CERT);
+      const ca = CA_CERTS.map((path) => loadCert(path));
+      const requestCert = isStrategyActivated(STRATEGY_CERT);
+      const passphrase = conf.get('app:https_cert:passphrase');
+      const options = { key, cert, passphrase, requestCert, rejectUnauthorized, ca };
+      httpServer = https.createServer(options, app);
+      logApp.info('[INIT] HTTPS server initialization done.');
+    } catch (e) {
+      logApp.error('[INIT] HTTPS server cannot start, please verify app.https_cert and other configurations', e);
+    }
   } else {
     httpServer = http.createServer(app);
+    logApp.info('[INIT] HTTP server initialization done.');
   }
   httpServer.setTimeout(REQ_TIMEOUT || MIN_20);
   // subscriptionServer
