@@ -1,5 +1,5 @@
 import type { AuthContext, AuthUser } from '../../../types/user';
-import { createEntity, patchAttribute } from '../../../database/middleware';
+import { createEntity } from '../../../database/middleware';
 import type { EntityOptions } from '../../../database/middleware-loader';
 import { internalLoadById, listEntitiesPaginated, storeLoadById } from '../../../database/middleware-loader';
 import { BUS_TOPICS } from '../../../config/conf';
@@ -15,9 +15,7 @@ import type { FeedbackAddInput, MemberAccessInput } from '../../../generated/gra
 import { isStixId } from '../../../schema/schemaUtils';
 import { RELATION_OBJECT } from '../../../schema/stixRefRelationship';
 import { FilterMode } from '../../../generated/graphql';
-import { isValidMemberAccessRight } from '../../../utils/access';
-import { containsValidAdmin } from '../../../utils/authorizedMembers';
-import { FunctionalError } from '../../../config/errors';
+import { editAuthorizedMembers } from '../../../utils/authorizedMembers';
 
 export const findById: DomainFindById<BasicStoreEntityFeedback> = (context: AuthContext, user: AuthUser, caseId: string) => {
   return storeLoadById(context, user, caseId, ENTITY_TYPE_CONTAINER_FEEDBACK);
@@ -63,27 +61,13 @@ export const feedbackEditAuthorizedMembers = async (
   entityId: string,
   input: MemberAccessInput[] | undefined | null
 ) => {
-  let authorized_members: { id: string, access_right: string }[] | null = null;
-
-  if (input) {
-    // validate input (validate access right) and remove duplicates
-    const filteredInput = input.filter((value, index, array) => {
-      return isValidMemberAccessRight(value.access_right) && array.findIndex((e) => e.id === value.id) === index;
-    });
-
-    const hasValidAdmin = await containsValidAdmin(
-      context,
-      filteredInput,
-      ['KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS']
-    );
-    if (!hasValidAdmin) {
-      throw FunctionalError('It should have at least one valid member with admin access');
-    }
-
-    authorized_members = filteredInput.map(({ id, access_right }) => ({ id, access_right }));
-  }
-
-  const patch = { authorized_members };
-  const { element } = await patchAttribute(context, user, entityId, ENTITY_TYPE_CONTAINER_FEEDBACK, patch);
-  return notify(BUS_TOPICS[ABSTRACT_STIX_CORE_OBJECT].EDIT_TOPIC, element, user);
+  const args = {
+    entityId,
+    input,
+    requiredCapabilities: ['KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS'],
+    entityType: ENTITY_TYPE_CONTAINER_FEEDBACK,
+    busTopicKey: ABSTRACT_STIX_CORE_OBJECT,
+  };
+  // @ts-expect-error TODO improve busTopicKey types to avoid this
+  return editAuthorizedMembers(context, user, args);
 };

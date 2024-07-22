@@ -1,5 +1,5 @@
 import type { AuthContext, AuthUser } from '../../../types/user';
-import { createEntity, patchAttribute } from '../../../database/middleware';
+import { createEntity } from '../../../database/middleware';
 import type { EntityOptions } from '../../../database/middleware-loader';
 import { internalLoadById, listEntitiesPaginated, storeLoadById } from '../../../database/middleware-loader';
 import { BUS_TOPICS } from '../../../config/conf';
@@ -16,9 +16,7 @@ import type { CaseIncidentAddInput, MemberAccessInput } from '../../../generated
 import { isStixId } from '../../../schema/schemaUtils';
 import { RELATION_OBJECT } from '../../../schema/stixRefRelationship';
 import { FilterMode } from '../../../generated/graphql';
-import { isValidMemberAccessRight } from '../../../utils/access';
-import { containsValidAdmin } from '../../../utils/authorizedMembers';
-import { FunctionalError } from '../../../config/errors';
+import { editAuthorizedMembers } from '../../../utils/authorizedMembers';
 
 export const findById: DomainFindById<BasicStoreEntityCaseIncident> = (context: AuthContext, user: AuthUser, caseIncidentId: string) => {
   return storeLoadById(context, user, caseIncidentId, ENTITY_TYPE_CONTAINER_CASE_INCIDENT);
@@ -67,39 +65,15 @@ export const caseIncidentEditAuthorizedMembers = async (
   context: AuthContext,
   user: AuthUser,
   entityId: string,
-  input: MemberAccessInput[] | undefined | null
+  input: MemberAccessInput[] | undefined | null,
 ) => {
-  let authorized_members: { id: string, access_right: string }[] | null = null;
-
-  if (input) {
-    // validate input (validate access right) and remove duplicates
-    const filteredInput = input.filter((value, index, array) => {
-      return isValidMemberAccessRight(value.access_right) && array.findIndex((e) => e.id === value.id) === index;
-    });
-
-    const hasValidAdmin = await containsValidAdmin(
-      context,
-      filteredInput,
-      ['KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS']
-    );
-    if (!hasValidAdmin) {
-      throw FunctionalError('It should have at least one valid member with admin access');
-    }
-
-    authorized_members = filteredInput.map(({ id, access_right }) => ({ id, access_right }));
-  }
-
-  const patch = { authorized_members };
-  const { element } = await patchAttribute(context, user, entityId, ENTITY_TYPE_CONTAINER_CASE_INCIDENT, patch);
-  return notify(BUS_TOPICS[ABSTRACT_STIX_CORE_OBJECT].EDIT_TOPIC, element, user);
+  const args = {
+    entityId,
+    input,
+    requiredCapabilities: ['KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS'],
+    entityType: ENTITY_TYPE_CONTAINER_CASE_INCIDENT,
+    busTopicKey: ABSTRACT_STIX_CORE_OBJECT,
+  };
+  // @ts-expect-error TODO improve busTopicKey types to avoid this
+  return editAuthorizedMembers(context, user, args);
 };
-
-/* export const caseIncidentEditAuthorizedMembers = async (
-  context: AuthContext,
-  user: AuthUser,
-  entityId: string,
-  input: MemberAccessInput[] | undefined | null
-) => {
-  const requiredCapabilities = ['KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS'];
-  return editAuthorizedMembers(context, user, entityId, input, requiredCapabilities, ENTITY_TYPE_CONTAINER_CASE_INCIDENT);
-}; */

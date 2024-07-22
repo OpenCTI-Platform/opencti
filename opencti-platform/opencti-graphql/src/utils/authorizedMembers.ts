@@ -86,14 +86,18 @@ export const containsValidAdmin = async (
   return authorizedUsers.length > 0;
 };
 
-/* export const editAuthorizedMembers = async (
+export const editAuthorizedMembers = async (
   context: AuthContext,
   user: AuthUser,
-  entityId: string,
-  input: MemberAccessInput[] | undefined | null,
-  requiredCapabilities: string[],
-  entityType: string,
+  args: {
+    entityId: string,
+    input: MemberAccessInput[] | undefined | null,
+    requiredCapabilities: string[],
+    entityType: string,
+    busTopicKey: keyof typeof BUS_TOPICS, // TODO improve busTopicKey types
+  },
 ) => {
+  const { entityId, input, requiredCapabilities, entityType, busTopicKey } = args;
   let authorized_members: { id: string, access_right: string }[] | null = null;
 
   if (input) {
@@ -116,6 +120,5 @@ export const containsValidAdmin = async (
 
   const patch = { authorized_members };
   const { element } = await patchAttribute(context, user, entityId, entityType, patch);
-  // TODO FIX type error
-  return notify(BUS_TOPICS[entityType].EDIT_TOPIC, element, user);
-}; */
+  return notify(BUS_TOPICS[busTopicKey].EDIT_TOPIC, element, user);
+};
