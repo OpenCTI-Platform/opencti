@@ -5,6 +5,9 @@ name: opencti-tests
 steps:
   - name: dependencies-checkout
     image: nikolaik/python-nodejs:python3.11-nodejs20-alpine
+    volumes:
+    - name: cache-python-all-steps
+      path: /usr/lib/python3.11
     environment:
       GITHUB_TOKEN:
           from_secret: github_token
@@ -15,7 +18,8 @@ steps:
       - ls -lart
       - cd "$DRONE_WORKSPACE/client-python"
       - echo "[INFO] using client-python on branch $(git branch --show-current)"
-      - pip install -e .[dev,doc]
+      - # pip install -e .[dev,doc]
+      - pip3 install --upgrade --force .
       - pip show pycti
 
   - name: api-tests
@@ -23,6 +27,8 @@ steps:
     volumes:
     - name: cache-node-backend
       path: /drone/src/opencti-platform/opencti-graphql/node_modules
+    - name: cache-python-all-steps
+      path: /usr/lib/python3.11
     environment:
       APP__BASE_URL: http://api-tests:4010/
       APP__ADMIN__PASSWORD: admin
@@ -181,6 +187,8 @@ services:
     volumes:
     - name: cache-node-raw-start-backend
       path: /tmp/raw-start-platform/opencti-graphql/node_modules
+    - name: cache-python-all-steps
+      path: /usr/lib/python3.11
     environment:
       APP__PORT: 4100
       APP__ADMIN__PASSWORD: admin
@@ -210,6 +218,8 @@ services:
     volumes:
     - name: cache-node-live-start-backend
       path: /tmp/live-start-platform/opencti-graphql/node_modules
+    - name: cache-python-all-steps
+      path: /usr/lib/python3.11
     environment:
       APP__PORT: 4200
       APP__ADMIN__PASSWORD: admin
@@ -238,6 +248,8 @@ services:
     volumes:
     - name: cache-node-direct-start-backend
       path: //tmp/direct-start-platform/opencti-graphql/node_modules
+    - name: cache-python-all-steps
+      path: /usr/lib/python3.11
     environment:
       APP__PORT: 4300
       APP__ADMIN__PASSWORD: admin
@@ -266,6 +278,8 @@ services:
     volumes:
     - name: cache-node-direct-start-backend
       path: /tmp/direct-start-platform/node_modules
+    - name: cache-python-all-steps
+      path: /usr/lib/python3.11
     environment:
       OPENCTI_URL: http://opencti-direct-start:4300
       OPENCTI_TOKEN: bfa014e0-e02e-4aa6-a42b-603b19dcf159
@@ -283,6 +297,8 @@ services:
     volumes:
     - name: cache-node-restore-start-backend
       path: /tmp/restore-start-platform/node_modules
+    - name: cache-python-all-steps
+      path: /usr/lib/python3.11
     environment:
       APP__PORT: 4400
       APP__ADMIN__PASSWORD: admin
@@ -311,6 +327,8 @@ services:
     volumes:
     - name: cache-node-e2e-start-backend
       path: /tmp/e2e-start-platform/node_modules
+    - name: cache-python-all-steps
+      path: /usr/lib/python3.11
     environment:
       APP__PORT: 4500
       APP__DISABLED_DEV_FEATURES: '["4352_BULK_RELATIONS"]'
@@ -364,3 +382,5 @@ volumes:
   - name: cache-node-frontend-e2e
     host:
       path: /tmp/cache-node-frontend-e2e
+  - name: cache-python-all-steps
+      temp: {}
