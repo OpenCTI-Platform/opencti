@@ -113,6 +113,7 @@ const EntityStixSightingRelationships: FunctionComponent<EntityStixSightingRelat
     orderAsc,
     openExports,
     filters,
+    searchTerm,
     numberOfElements,
   } = viewStorage;
 
@@ -195,6 +196,7 @@ const EntityStixSightingRelationships: FunctionComponent<EntityStixSightingRelat
           handleSwitchLocalMode={helpers.handleSwitchLocalMode}
           handleToggleExports={disableExport ? null : helpers.handleToggleExports}
           filters={filters}
+          keyword={searchTerm}
           availableFilterKeys={[
             'toTypes',
             'objectLabel',
