@@ -107,7 +107,7 @@ export const CampaignCreationForm: FunctionComponent<CampaignFormProps> = ({
     bulkCount,
     bulkCurrentCount,
     BulkResult,
-  } = useBulkCommit<CampaignCreationMutation$variables['input'], CampaignCreationMutation>({
+  } = useBulkCommit<CampaignCreationMutation>({
     commit,
     relayUpdater: (store) => {
       if (updater) {
@@ -127,19 +127,21 @@ export const CampaignCreationForm: FunctionComponent<CampaignFormProps> = ({
     { setSubmitting, setErrors, resetForm },
   ) => {
     const allNames = splitMultilines(values.name);
-    const inputs: CampaignCreationMutation$variables['input'][] = allNames.map((name) => ({
-      name,
-      description: values.description,
-      confidence: parseInt(String(values.confidence), 10),
-      createdBy: values.createdBy?.value,
-      objectMarking: values.objectMarking.map((v) => v.value),
-      objectLabel: values.objectLabel.map((v) => v.value),
-      externalReferences: values.externalReferences.map(({ value }) => value),
-      file: values.file,
+    const variables: CampaignCreationMutation$variables[] = allNames.map((name) => ({
+      input: {
+        name,
+        description: values.description,
+        confidence: parseInt(String(values.confidence), 10),
+        createdBy: values.createdBy?.value,
+        objectMarking: values.objectMarking.map((v) => v.value),
+        objectLabel: values.objectLabel.map((v) => v.value),
+        externalReferences: values.externalReferences.map(({ value }) => value),
+        file: values.file,
+      },
     }));
 
     bulkCommit({
-      inputs,
+      variables,
       onStepError: (error) => {
         handleErrorInForm(error, setErrors);
       },
@@ -197,7 +199,7 @@ export const CampaignCreationForm: FunctionComponent<CampaignFormProps> = ({
                   onCompleted?.();
                 }}
               >
-                <BulkResult inputToString={(input) => input.name} />
+                <BulkResult variablesToString={(v) => v.input.name} />
               </ProgressBar>
             </>
           )}

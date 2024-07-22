@@ -112,7 +112,7 @@ export const OrganizationCreationForm: FunctionComponent<OrganizationFormProps> 
     bulkCount,
     bulkCurrentCount,
     BulkResult,
-  } = useBulkCommit<OrganizationCreationMutation$variables['input'], OrganizationCreationMutation>({
+  } = useBulkCommit<OrganizationCreationMutation>({
     commit,
     relayUpdater: (store) => {
       if (updater) {
@@ -133,21 +133,23 @@ export const OrganizationCreationForm: FunctionComponent<OrganizationFormProps> 
     resetForm,
   }) => {
     const allNames = splitMultilines(values.name);
-    const inputs: OrganizationCreationMutation$variables['input'][] = allNames.map((name) => ({
-      name,
-      description: values.description,
-      x_opencti_reliability: values.x_opencti_reliability,
-      x_opencti_organization_type: values.x_opencti_organization_type,
-      createdBy: values.createdBy?.value,
-      confidence: parseInt(String(values.confidence), 10),
-      objectMarking: values.objectMarking.map((v) => v.value),
-      objectLabel: values.objectLabel.map((v) => v.value),
-      externalReferences: values.externalReferences.map(({ value }) => value),
-      file: values.file,
+    const variables: OrganizationCreationMutation$variables[] = allNames.map((name) => ({
+      input: {
+        name,
+        description: values.description,
+        x_opencti_reliability: values.x_opencti_reliability,
+        x_opencti_organization_type: values.x_opencti_organization_type,
+        createdBy: values.createdBy?.value,
+        confidence: parseInt(String(values.confidence), 10),
+        objectMarking: values.objectMarking.map((v) => v.value),
+        objectLabel: values.objectLabel.map((v) => v.value),
+        externalReferences: values.externalReferences.map(({ value }) => value),
+        file: values.file,
+      },
     }));
 
     bulkCommit({
-      inputs,
+      variables,
       onStepError: (error) => {
         handleErrorInForm(error, setErrors);
       },
@@ -216,7 +218,7 @@ export const OrganizationCreationForm: FunctionComponent<OrganizationFormProps> 
                 onCompleted?.();
               }}
             >
-              <BulkResult inputToString={(input) => input.name} />
+              <BulkResult variablesToString={(v) => v.input.name} />
             </ProgressBar>
           </>
         )}

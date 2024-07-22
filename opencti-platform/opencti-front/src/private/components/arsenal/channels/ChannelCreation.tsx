@@ -110,7 +110,7 @@ export const ChannelCreationForm: FunctionComponent<ChannelFormProps> = ({
     bulkCount,
     bulkCurrentCount,
     BulkResult,
-  } = useBulkCommit<ChannelCreationMutation$variables['input'], ChannelCreationMutation>({
+  } = useBulkCommit<ChannelCreationMutation>({
     commit,
     relayUpdater: (store) => {
       if (updater) {
@@ -130,20 +130,22 @@ export const ChannelCreationForm: FunctionComponent<ChannelFormProps> = ({
     { setSubmitting, setErrors, resetForm },
   ) => {
     const allNames = splitMultilines(values.name);
-    const inputs: ChannelCreationMutation$variables['input'][] = allNames.map((name) => ({
-      name,
-      description: values.description,
-      channel_types: values.channel_types,
-      confidence: parseInt(String(values.confidence), 10),
-      createdBy: values.createdBy?.value,
-      objectMarking: values.objectMarking.map((v) => v.value),
-      objectLabel: values.objectLabel.map((v) => v.value),
-      externalReferences: values.externalReferences.map(({ value }) => value),
-      file: values.file,
+    const variables: ChannelCreationMutation$variables[] = allNames.map((name) => ({
+      input: {
+        name,
+        description: values.description,
+        channel_types: values.channel_types,
+        confidence: parseInt(String(values.confidence), 10),
+        createdBy: values.createdBy?.value,
+        objectMarking: values.objectMarking.map((v) => v.value),
+        objectLabel: values.objectLabel.map((v) => v.value),
+        externalReferences: values.externalReferences.map(({ value }) => value),
+        file: values.file,
+      },
     }));
 
     bulkCommit({
-      inputs,
+      variables,
       onStepError: (error) => {
         handleErrorInForm(error, setErrors);
         setSubmitting(false);
@@ -203,7 +205,7 @@ export const ChannelCreationForm: FunctionComponent<ChannelFormProps> = ({
                   onCompleted?.();
                 }}
               >
-                <BulkResult inputToString={(input) => input.name} />
+                <BulkResult variablesToString={(v) => v.input.name} />
               </ProgressBar>
             </>
           )}

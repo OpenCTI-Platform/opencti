@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { MutationParameters, SelectorStoreUpdater } from 'relay-runtime';
-import { UseMutationConfig } from 'react-relay';
+import { UseMutationConfig, VariablesOf } from 'react-relay';
 import { Alert, Typography, List, ListItem, Tooltip } from '@mui/material';
 import { useFormatter } from '../../components/i18n';
 
@@ -9,18 +9,18 @@ interface UseBulkCommitArgs<M extends MutationParameters> {
   relayUpdater?: SelectorStoreUpdater<M['response']>
 }
 
-interface UseBulkCommit_commits<I> {
-  inputs: I[]
+interface UseBulkCommit_commits<M extends MutationParameters> {
+  variables: VariablesOf<M>[]
   onStepError?: (err: Error) => void
   onStepCompleted?: () => void
   onCompleted?: (total: number) => void
 }
 
-interface BulkResultProps<I> {
-  inputToString: (input: I) => string
+interface BulkResultProps<M extends MutationParameters> {
+  variablesToString: (variables: VariablesOf<M>) => string
 }
 
-function useBulkCommit<I, M extends MutationParameters>({
+function useBulkCommit<M extends MutationParameters>({
   commit,
   relayUpdater,
 }: UseBulkCommitArgs<M>) {
@@ -28,9 +28,9 @@ function useBulkCommit<I, M extends MutationParameters>({
 
   const [count, setCount] = useState(0);
   const [currentCount, setCurrentCount] = useState(0);
-  const [inError, setInError] = useState<[I, Error][]>([]);
+  const [inError, setInError] = useState<[VariablesOf<M>, Error][]>([]);
 
-  const onBulkCompleted = useRef<UseBulkCommit_commits<I>['onCompleted']>();
+  const onBulkCompleted = useRef<UseBulkCommit_commits<M>['onCompleted']>();
 
   useEffect(() => {
     if (currentCount === count && count !== 0) {
@@ -39,23 +39,23 @@ function useBulkCommit<I, M extends MutationParameters>({
   }, [count, currentCount, setCurrentCount, setCount]);
 
   const bulkCommit = ({
-    inputs,
+    variables,
     onStepCompleted,
     onStepError,
     onCompleted,
-  }: UseBulkCommit_commits<I>) => {
+  }: UseBulkCommit_commits<M>) => {
     onBulkCompleted.current = onCompleted;
-    setCount(inputs.length);
+    setCount(variables.length);
     setCurrentCount(0);
     setInError([]);
 
-    inputs.forEach((input) => {
+    variables.forEach((variable) => {
       commit({
-        variables: { input },
+        variables: variable,
         updater: relayUpdater,
         onError: (error) => {
           setCurrentCount((c) => c + 1);
-          setInError((err) => [...err, [input, error]]);
+          setInError((err) => [...err, [variable, error]]);
           onStepError?.(error);
         },
         onCompleted: () => {
@@ -66,7 +66,7 @@ function useBulkCommit<I, M extends MutationParameters>({
     });
   };
 
-  const BulkResult = ({ inputToString }: BulkResultProps<I>) => (
+  const BulkResult = ({ variablesToString }: BulkResultProps<M>) => (
     <>
       {currentCount === count && (
         <Alert variant="outlined" sx={{ marginTop: 2 }}>
@@ -90,10 +90,10 @@ function useBulkCommit<I, M extends MutationParameters>({
             {inError.length} {t_i18n('entities not created')}
           </Typography>
           <List dense>
-            {inError.map(([input, error], index) => (
+            {inError.map(([variables, error], index) => (
               <Tooltip key={index} title={error.message}>
                 <ListItem divider>
-                  {inputToString(input)}
+                  {variablesToString(variables)}
                 </ListItem>
               </Tooltip>
             ))}

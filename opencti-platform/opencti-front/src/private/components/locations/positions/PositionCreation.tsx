@@ -119,7 +119,7 @@ export const PositionCreationForm: FunctionComponent<PositionFormProps> = ({
     bulkCount,
     bulkCurrentCount,
     BulkResult,
-  } = useBulkCommit<PositionCreationMutation$variables['input'], PositionCreationMutation>({
+  } = useBulkCommit<PositionCreationMutation>({
     commit,
     relayUpdater: (store) => {
       if (updater) {
@@ -139,23 +139,25 @@ export const PositionCreationForm: FunctionComponent<PositionFormProps> = ({
     { setSubmitting, setErrors, resetForm },
   ) => {
     const allNames = splitMultilines(values.name);
-    const inputs: PositionCreationMutation$variables['input'][] = allNames.map((name) => ({
-      name,
-      description: values.description,
-      confidence: parseInt(String(values.confidence), 10),
-      latitude: parseFloat(values.latitude),
-      longitude: parseFloat(values.longitude),
-      street_address: values.street_address,
-      postal_code: values.postal_code,
-      createdBy: values.createdBy?.value,
-      objectMarking: values.objectMarking.map((v) => v.value),
-      objectLabel: values.objectLabel.map((v) => v.value),
-      externalReferences: values.externalReferences.map(({ value }) => value),
-      file: values.file,
+    const variables: PositionCreationMutation$variables[] = allNames.map((name) => ({
+      input: {
+        name,
+        description: values.description,
+        confidence: parseInt(String(values.confidence), 10),
+        latitude: parseFloat(values.latitude),
+        longitude: parseFloat(values.longitude),
+        street_address: values.street_address,
+        postal_code: values.postal_code,
+        createdBy: values.createdBy?.value,
+        objectMarking: values.objectMarking.map((v) => v.value),
+        objectLabel: values.objectLabel.map((v) => v.value),
+        externalReferences: values.externalReferences.map(({ value }) => value),
+        file: values.file,
+      },
     }));
 
     bulkCommit({
-      inputs,
+      variables,
       onStepError: (error) => {
         handleErrorInForm(error, setErrors);
       },
@@ -217,7 +219,7 @@ export const PositionCreationForm: FunctionComponent<PositionFormProps> = ({
                   onCompleted?.();
                 }}
               >
-                <BulkResult inputToString={(input) => input.name} />
+                <BulkResult variablesToString={(v) => v.input.name} />
               </ProgressBar>
             </>
           )}

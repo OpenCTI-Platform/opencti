@@ -107,7 +107,7 @@ IntrusionSetFormProps
     bulkCount,
     bulkCurrentCount,
     BulkResult,
-  } = useBulkCommit<IntrusionSetCreationMutation$variables['input'], IntrusionSetCreationMutation>({
+  } = useBulkCommit<IntrusionSetCreationMutation>({
     commit,
     relayUpdater: (store) => {
       if (updater) {
@@ -127,19 +127,21 @@ IntrusionSetFormProps
     { setSubmitting, setErrors, resetForm },
   ) => {
     const allNames = splitMultilines(values.name);
-    const inputs: IntrusionSetCreationMutation$variables['input'][] = allNames.map((name) => ({
-      name,
-      description: values.description,
-      confidence: parseInt(String(values.confidence), 10),
-      createdBy: values.createdBy?.value,
-      objectMarking: values.objectMarking.map((v) => v.value),
-      objectLabel: values.objectLabel.map((v) => v.value),
-      externalReferences: values.externalReferences.map(({ value }) => value),
-      file: values.file,
+    const variables: IntrusionSetCreationMutation$variables[] = allNames.map((name) => ({
+      input: {
+        name,
+        description: values.description,
+        confidence: parseInt(String(values.confidence), 10),
+        createdBy: values.createdBy?.value,
+        objectMarking: values.objectMarking.map((v) => v.value),
+        objectLabel: values.objectLabel.map((v) => v.value),
+        externalReferences: values.externalReferences.map(({ value }) => value),
+        file: values.file,
+      },
     }));
 
     bulkCommit({
-      inputs,
+      variables,
       onStepError: (error) => {
         handleErrorInForm(error, setErrors);
       },
@@ -197,7 +199,7 @@ IntrusionSetFormProps
                   onCompleted?.();
                 }}
               >
-                <BulkResult inputToString={(input) => input.name} />
+                <BulkResult variablesToString={(v) => v.input.name} />
               </ProgressBar>
             </>
           )}

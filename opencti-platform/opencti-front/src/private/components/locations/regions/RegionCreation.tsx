@@ -103,7 +103,7 @@ export const RegionCreationForm: FunctionComponent<RegionFormProps> = ({
     bulkCount,
     bulkCurrentCount,
     BulkResult,
-  } = useBulkCommit<RegionCreationMutation$variables['input'], RegionCreationMutation>({
+  } = useBulkCommit<RegionCreationMutation>({
     commit,
     relayUpdater: (store) => {
       if (updater) {
@@ -123,19 +123,21 @@ export const RegionCreationForm: FunctionComponent<RegionFormProps> = ({
     { setSubmitting, resetForm, setErrors },
   ) => {
     const allNames = splitMultilines(values.name);
-    const inputs: RegionCreationMutation$variables['input'][] = allNames.map((name) => ({
-      name,
-      description: values.description,
-      confidence: parseInt(String(values.confidence), 10),
-      objectMarking: values.objectMarking.map(({ value }) => value),
-      objectLabel: values.objectLabel.map(({ value }) => value),
-      externalReferences: values.externalReferences.map(({ value }) => value),
-      createdBy: values.createdBy?.value,
-      file: values.file,
+    const variables: RegionCreationMutation$variables[] = allNames.map((name) => ({
+      input: {
+        name,
+        description: values.description,
+        confidence: parseInt(String(values.confidence), 10),
+        objectMarking: values.objectMarking.map(({ value }) => value),
+        objectLabel: values.objectLabel.map(({ value }) => value),
+        externalReferences: values.externalReferences.map(({ value }) => value),
+        createdBy: values.createdBy?.value,
+        file: values.file,
+      },
     }));
 
     bulkCommit({
-      inputs,
+      variables,
       onStepError: (error) => {
         handleErrorInForm(error, setErrors);
       },
@@ -193,7 +195,7 @@ export const RegionCreationForm: FunctionComponent<RegionFormProps> = ({
                   onCompleted?.();
                 }}
               >
-                <BulkResult inputToString={(input) => input.name} />
+                <BulkResult variablesToString={(v) => v.input.name} />
               </ProgressBar>
             </>
           )}

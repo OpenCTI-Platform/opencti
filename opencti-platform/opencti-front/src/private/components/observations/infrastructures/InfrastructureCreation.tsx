@@ -125,7 +125,7 @@ export const InfrastructureCreationForm: FunctionComponent<InfrastructureFormPro
     bulkCount,
     bulkCurrentCount,
     BulkResult,
-  } = useBulkCommit<InfrastructureCreationMutation$variables['input'], InfrastructureCreationMutation>({
+  } = useBulkCommit<InfrastructureCreationMutation>({
     commit,
     relayUpdater: (store) => {
       if (updater) {
@@ -146,23 +146,25 @@ export const InfrastructureCreationForm: FunctionComponent<InfrastructureFormPro
     resetForm,
   }) => {
     const allNames = splitMultilines(values.name);
-    const inputs: InfrastructureCreationMutation$variables['input'][] = allNames.map((name) => ({
-      name,
-      description: values.description,
-      infrastructure_types: values.infrastructure_types,
-      confidence: parseInt(String(values.confidence), 10),
-      first_seen: values.first_seen ? parse(values.first_seen).format() : null,
-      last_seen: values.first_seen ? parse(values.last_seen).format() : null,
-      killChainPhases: (values.killChainPhases ?? []).map(({ value }) => value),
-      createdBy: values.createdBy?.value,
-      objectMarking: values.objectMarking.map((v) => v.value),
-      objectLabel: values.objectLabel.map((v) => v.value),
-      externalReferences: values.externalReferences.map(({ value }) => value),
-      file: values.file,
+    const variables: InfrastructureCreationMutation$variables[] = allNames.map((name) => ({
+      input: {
+        name,
+        description: values.description,
+        infrastructure_types: values.infrastructure_types,
+        confidence: parseInt(String(values.confidence), 10),
+        first_seen: values.first_seen ? parse(values.first_seen).format() : null,
+        last_seen: values.first_seen ? parse(values.last_seen).format() : null,
+        killChainPhases: (values.killChainPhases ?? []).map(({ value }) => value),
+        createdBy: values.createdBy?.value,
+        objectMarking: values.objectMarking.map((v) => v.value),
+        objectLabel: values.objectLabel.map((v) => v.value),
+        externalReferences: values.externalReferences.map(({ value }) => value),
+        file: values.file,
+      },
     }));
 
     bulkCommit({
-      inputs,
+      variables,
       onStepError: (error) => {
         handleErrorInForm(error, setErrors);
       },
@@ -227,7 +229,7 @@ export const InfrastructureCreationForm: FunctionComponent<InfrastructureFormPro
                   onCompleted?.();
                 }}
               >
-                <BulkResult inputToString={(input) => input.name} />
+                <BulkResult variablesToString={(v) => v.input.name} />
               </ProgressBar>
             </>
           )}

@@ -116,7 +116,7 @@ export const AdministrativeAreaCreationForm: FunctionComponent<AdministrativeAre
     bulkCount,
     bulkCurrentCount,
     BulkResult,
-  } = useBulkCommit<AdministrativeAreaCreationMutation$variables['input'], AdministrativeAreaCreationMutation>({
+  } = useBulkCommit<AdministrativeAreaCreationMutation>({
     commit,
     relayUpdater: (store) => {
       if (updater) {
@@ -136,21 +136,23 @@ export const AdministrativeAreaCreationForm: FunctionComponent<AdministrativeAre
     { setSubmitting, resetForm, setErrors },
   ) => {
     const allNames = splitMultilines(values.name);
-    const inputs: AdministrativeAreaCreationMutation$variables['input'][] = allNames.map((name) => ({
-      name,
-      latitude: parseFloat(values.latitude),
-      longitude: parseFloat(values.longitude),
-      description: values.description,
-      confidence: parseInt(String(values.confidence), 10),
-      objectMarking: values.objectMarking.map(({ value }) => value),
-      objectLabel: values.objectLabel.map(({ value }) => value),
-      externalReferences: values.externalReferences.map(({ value }) => value),
-      createdBy: values.createdBy?.value,
-      file: values.file,
+    const variables: AdministrativeAreaCreationMutation$variables[] = allNames.map((name) => ({
+      input: {
+        name,
+        latitude: parseFloat(values.latitude),
+        longitude: parseFloat(values.longitude),
+        description: values.description,
+        confidence: parseInt(String(values.confidence), 10),
+        objectMarking: values.objectMarking.map(({ value }) => value),
+        objectLabel: values.objectLabel.map(({ value }) => value),
+        externalReferences: values.externalReferences.map(({ value }) => value),
+        createdBy: values.createdBy?.value,
+        file: values.file,
+      },
     }));
 
     bulkCommit({
-      inputs,
+      variables,
       onStepError: (error) => {
         handleErrorInForm(error, setErrors);
       },
@@ -213,7 +215,7 @@ export const AdministrativeAreaCreationForm: FunctionComponent<AdministrativeAre
                   onCompleted?.();
                 }}
               >
-                <BulkResult inputToString={(input) => input.name} />
+                <BulkResult variablesToString={(v) => v.input.name} />
               </ProgressBar>
             </>
           )}

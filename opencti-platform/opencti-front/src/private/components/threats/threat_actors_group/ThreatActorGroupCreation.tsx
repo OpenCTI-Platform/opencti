@@ -110,7 +110,7 @@ ThreatActorGroupFormProps
     bulkCount,
     bulkCurrentCount,
     BulkResult,
-  } = useBulkCommit<ThreatActorGroupCreationMutation$variables['input'], ThreatActorGroupCreationMutation>({
+  } = useBulkCommit<ThreatActorGroupCreationMutation>({
     commit,
     relayUpdater: (store) => {
       if (updater) {
@@ -130,20 +130,22 @@ ThreatActorGroupFormProps
     { setSubmitting, setErrors, resetForm },
   ) => {
     const allNames = splitMultilines(values.name);
-    const inputs: ThreatActorGroupCreationMutation$variables['input'][] = allNames.map((name) => ({
-      name,
-      description: values.description,
-      threat_actor_types: values.threat_actor_types,
-      confidence: parseInt(String(values.confidence), 10),
-      createdBy: values.createdBy?.value,
-      objectMarking: values.objectMarking.map((v) => v.value),
-      objectLabel: values.objectLabel.map((v) => v.value),
-      externalReferences: values.externalReferences.map(({ value }) => value),
-      file: values.file,
+    const variables: ThreatActorGroupCreationMutation$variables[] = allNames.map((name) => ({
+      input: {
+        name,
+        description: values.description,
+        threat_actor_types: values.threat_actor_types,
+        confidence: parseInt(String(values.confidence), 10),
+        createdBy: values.createdBy?.value,
+        objectMarking: values.objectMarking.map((v) => v.value),
+        objectLabel: values.objectLabel.map((v) => v.value),
+        externalReferences: values.externalReferences.map(({ value }) => value),
+        file: values.file,
+      },
     }));
 
     bulkCommit({
-      inputs,
+      variables,
       onStepError: (error) => {
         handleErrorInForm(error, setErrors);
       },
@@ -202,7 +204,7 @@ ThreatActorGroupFormProps
                   onCompleted?.();
                 }}
               >
-                <BulkResult inputToString={(input) => input.name} />
+                <BulkResult variablesToString={(v) => v.input.name} />
               </ProgressBar>
             </>
           )}

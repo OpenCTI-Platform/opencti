@@ -212,7 +212,7 @@ ThreatActorIndividualFormProps
     bulkCount,
     bulkCurrentCount,
     BulkResult,
-  } = useBulkCommit<ThreatActorIndividualCreationMutation$variables['input'], ThreatActorIndividualCreationMutation>({
+  } = useBulkCommit<ThreatActorIndividualCreationMutation>({
     commit,
     relayUpdater: (store) => {
       if (updater) {
@@ -232,45 +232,47 @@ ThreatActorIndividualFormProps
     { setSubmitting, setErrors, resetForm },
   ) => {
     const allNames = splitMultilines(values.name);
-    const inputs: ThreatActorIndividualCreationMutation$variables['input'][] = allNames.map((name) => ({
-      name,
-      description: values?.description,
-      threat_actor_types: values?.threat_actor_types,
-      confidence: parseInt(String(values?.confidence), 10),
-      createdBy: values?.createdBy?.value,
-      objectMarking: values?.objectMarking.map((v) => v.value),
-      objectLabel: values?.objectLabel.map((v) => v.value),
-      externalReferences: values?.externalReferences.map(({ value }) => value),
-      file: values?.file,
-      first_seen: values?.first_seen,
-      last_seen: values?.last_seen,
-      secondary_motivations: (values?.secondary_motivations ?? []).map(
-        (v) => v.value,
-      ),
-      personal_motivations: (values?.personal_motivations ?? []).map(
-        (v) => v.value,
-      ),
-      primary_motivation: values?.primary_motivation?.value,
-      roles: (values?.roles ?? []).map(
-        (v) => v.value,
-      ),
-      sophistication: values?.sophistication?.value,
-      resource_level: values?.resource_level?.value,
-      goals: values?.goals?.split('\n') ?? null,
-      bornIn: values?.bornIn?.value,
-      ethnicity: values?.ethnicity?.value,
-      date_of_birth: values?.date_of_birth,
-      gender: values?.gender,
-      marital_status: values?.marital_status,
-      job_title: values?.job_title,
-      eye_color: values?.eye_color,
-      hair_color: values?.hair_color,
-      height: heightsConverterSave(values?.height ?? []),
-      weight: weightsConverterSave(values?.weight ?? []),
+    const variables: ThreatActorIndividualCreationMutation$variables[] = allNames.map((name) => ({
+      input: {
+        name,
+        description: values?.description,
+        threat_actor_types: values?.threat_actor_types,
+        confidence: parseInt(String(values?.confidence), 10),
+        createdBy: values?.createdBy?.value,
+        objectMarking: values?.objectMarking.map((v) => v.value),
+        objectLabel: values?.objectLabel.map((v) => v.value),
+        externalReferences: values?.externalReferences.map(({ value }) => value),
+        file: values?.file,
+        first_seen: values?.first_seen,
+        last_seen: values?.last_seen,
+        secondary_motivations: (values?.secondary_motivations ?? []).map(
+          (v) => v.value,
+        ),
+        personal_motivations: (values?.personal_motivations ?? []).map(
+          (v) => v.value,
+        ),
+        primary_motivation: values?.primary_motivation?.value,
+        roles: (values?.roles ?? []).map(
+          (v) => v.value,
+        ),
+        sophistication: values?.sophistication?.value,
+        resource_level: values?.resource_level?.value,
+        goals: values?.goals?.split('\n') ?? null,
+        bornIn: values?.bornIn?.value,
+        ethnicity: values?.ethnicity?.value,
+        date_of_birth: values?.date_of_birth,
+        gender: values?.gender,
+        marital_status: values?.marital_status,
+        job_title: values?.job_title,
+        eye_color: values?.eye_color,
+        hair_color: values?.hair_color,
+        height: heightsConverterSave(values?.height ?? []),
+        weight: weightsConverterSave(values?.weight ?? []),
+      },
     }));
 
     bulkCommit({
-      inputs,
+      variables,
       onStepError: (error) => {
         handleErrorInForm(error, setErrors);
       },
@@ -377,7 +379,7 @@ ThreatActorIndividualFormProps
                         onCompleted?.();
                       }}
                     >
-                      <BulkResult inputToString={(input) => input.name} />
+                      <BulkResult variablesToString={(v) => v.input.name} />
                     </ProgressBar>
                   </>
                 )}

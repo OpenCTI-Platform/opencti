@@ -117,7 +117,7 @@ export const EventCreationForm: FunctionComponent<EventFormProps> = ({
     bulkCount,
     bulkCurrentCount,
     BulkResult,
-  } = useBulkCommit<EventCreationMutation$variables['input'], EventCreationMutation>({
+  } = useBulkCommit<EventCreationMutation>({
     commit,
     relayUpdater: (store) => {
       if (updater) {
@@ -137,22 +137,24 @@ export const EventCreationForm: FunctionComponent<EventFormProps> = ({
     { setSubmitting, setErrors, resetForm },
   ) => {
     const allNames = splitMultilines(values.name);
-    const inputs: EventCreationMutation$variables['input'][] = allNames.map((name) => ({
-      name,
-      description: values.description,
-      event_types: values.event_types,
-      confidence: parseInt(String(values.confidence), 10),
-      start_time: values.start_time ? parse(values.start_time).format() : null,
-      stop_time: values.stop_time ? parse(values.stop_time).format() : null,
-      createdBy: values.createdBy?.value,
-      objectMarking: values.objectMarking.map((v) => v.value),
-      objectLabel: values.objectLabel.map((v) => v.value),
-      externalReferences: values.externalReferences.map(({ value }) => value),
-      file: values.file,
+    const variables: EventCreationMutation$variables[] = allNames.map((name) => ({
+      input: {
+        name,
+        description: values.description,
+        event_types: values.event_types,
+        confidence: parseInt(String(values.confidence), 10),
+        start_time: values.start_time ? parse(values.start_time).format() : null,
+        stop_time: values.stop_time ? parse(values.stop_time).format() : null,
+        createdBy: values.createdBy?.value,
+        objectMarking: values.objectMarking.map((v) => v.value),
+        objectLabel: values.objectLabel.map((v) => v.value),
+        externalReferences: values.externalReferences.map(({ value }) => value),
+        file: values.file,
+      },
     }));
 
     bulkCommit({
-      inputs,
+      variables,
       onStepError: (error) => {
         handleErrorInForm(error, setErrors);
       },
@@ -213,7 +215,7 @@ export const EventCreationForm: FunctionComponent<EventFormProps> = ({
                   onCompleted?.();
                 }}
               >
-                <BulkResult inputToString={(input) => input.name} />
+                <BulkResult variablesToString={(v) => v.input.name} />
               </ProgressBar>
             </>
           )}

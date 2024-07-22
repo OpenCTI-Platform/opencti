@@ -115,7 +115,7 @@ export const DataComponentCreationForm: FunctionComponent<DataComponentFormProps
     bulkCount,
     bulkCurrentCount,
     BulkResult,
-  } = useBulkCommit<DataComponentCreationMutation$variables['input'], DataComponentCreationMutation>({
+  } = useBulkCommit<DataComponentCreationMutation>({
     commit,
     relayUpdater: (store) => {
       if (updater) {
@@ -139,19 +139,21 @@ export const DataComponentCreationForm: FunctionComponent<DataComponentFormProps
     }: FormikHelpers<DataComponentAddInput>,
   ) => {
     const allNames = splitMultilines(values.name);
-    const inputs: DataComponentCreationMutation$variables['input'][] = allNames.map((name) => ({
-      name,
-      description: values.description,
-      createdBy: values.createdBy?.value,
-      objectMarking: values.objectMarking.map((v) => v.value),
-      objectLabel: values.objectLabel.map((v) => v.value),
-      externalReferences: values.externalReferences.map((v) => v.value),
-      confidence: parseInt(String(values.confidence), 10),
-      file: values.file,
+    const variables: DataComponentCreationMutation$variables[] = allNames.map((name) => ({
+      input: {
+        name,
+        description: values.description,
+        createdBy: values.createdBy?.value,
+        objectMarking: values.objectMarking.map((v) => v.value),
+        objectLabel: values.objectLabel.map((v) => v.value),
+        externalReferences: values.externalReferences.map((v) => v.value),
+        confidence: parseInt(String(values.confidence), 10),
+        file: values.file,
+      },
     }));
 
     bulkCommit({
-      inputs,
+      variables,
       onStepError: (error) => {
         handleErrorInForm(error, setErrors);
       },
@@ -219,7 +221,7 @@ export const DataComponentCreationForm: FunctionComponent<DataComponentFormProps
                   onCompleted?.();
                 }}
               >
-                <BulkResult inputToString={(input) => input.name} />
+                <BulkResult variablesToString={(v) => v.input.name} />
               </ProgressBar>
             </>
           )}

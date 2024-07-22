@@ -110,7 +110,7 @@ export const SystemCreationForm: FunctionComponent<SystemFormProps> = ({
     bulkCount,
     bulkCurrentCount,
     BulkResult,
-  } = useBulkCommit<SystemCreationMutation$variables['input'], SystemCreationMutation>({
+  } = useBulkCommit<SystemCreationMutation>({
     commit,
     relayUpdater: (store) => {
       if (updater) {
@@ -134,20 +134,22 @@ export const SystemCreationForm: FunctionComponent<SystemFormProps> = ({
     },
   ) => {
     const allNames = splitMultilines(values.name);
-    const inputs: SystemCreationMutation$variables['input'][] = allNames.map((name) => ({
-      name,
-      description: values.description,
-      x_opencti_reliability: values.x_opencti_reliability,
-      createdBy: values.createdBy?.value,
-      confidence: parseInt(String(values.confidence), 10),
-      objectMarking: values.objectMarking.map((v) => v.value),
-      objectLabel: values.objectLabel.map((v) => v.value),
-      externalReferences: values.externalReferences.map(({ value }) => value),
-      file: values.file,
+    const variables: SystemCreationMutation$variables[] = allNames.map((name) => ({
+      input: {
+        name,
+        description: values.description,
+        x_opencti_reliability: values.x_opencti_reliability,
+        createdBy: values.createdBy?.value,
+        confidence: parseInt(String(values.confidence), 10),
+        objectMarking: values.objectMarking.map((v) => v.value),
+        objectLabel: values.objectLabel.map((v) => v.value),
+        externalReferences: values.externalReferences.map(({ value }) => value),
+        file: values.file,
+      },
     }));
 
     bulkCommit({
-      inputs,
+      variables,
       onStepError: (error) => {
         handleErrorInForm(error, setErrors);
       },
@@ -216,7 +218,7 @@ export const SystemCreationForm: FunctionComponent<SystemFormProps> = ({
                   onCompleted?.();
                 }}
               >
-                <BulkResult inputToString={(input) => input.name} />
+                <BulkResult variablesToString={(v) => v.input.name} />
               </ProgressBar>
             </>
           )}

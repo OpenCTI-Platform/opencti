@@ -109,7 +109,7 @@ export const ToolCreationForm: FunctionComponent<ToolFormProps> = ({
     bulkCount,
     bulkCurrentCount,
     BulkResult,
-  } = useBulkCommit<ToolCreationMutation$variables['input'], ToolCreationMutation>({
+  } = useBulkCommit<ToolCreationMutation>({
     commit,
     relayUpdater: (store) => {
       if (updater) {
@@ -129,21 +129,23 @@ export const ToolCreationForm: FunctionComponent<ToolFormProps> = ({
     { setSubmitting, setErrors, resetForm },
   ) => {
     const allNames = splitMultilines(values.name);
-    const inputs: ToolCreationMutation$variables['input'][] = allNames.map((name) => ({
-      name,
-      description: values.description,
-      createdBy: values.createdBy?.value,
-      objectMarking: values.objectMarking.map((v) => v.value),
-      killChainPhases: (values.killChainPhases ?? []).map(({ value }) => value),
-      objectLabel: values.objectLabel.map((v) => v.value),
-      tool_types: values.tool_types,
-      confidence: parseInt(String(values.confidence), 10),
-      externalReferences: values.externalReferences.map(({ value }) => value),
-      file: values.file,
+    const variables: ToolCreationMutation$variables[] = allNames.map((name) => ({
+      input: {
+        name,
+        description: values.description,
+        createdBy: values.createdBy?.value,
+        objectMarking: values.objectMarking.map((v) => v.value),
+        killChainPhases: (values.killChainPhases ?? []).map(({ value }) => value),
+        objectLabel: values.objectLabel.map((v) => v.value),
+        tool_types: values.tool_types,
+        confidence: parseInt(String(values.confidence), 10),
+        externalReferences: values.externalReferences.map(({ value }) => value),
+        file: values.file,
+      },
     }));
 
     bulkCommit({
-      inputs,
+      variables,
       onStepError: (error) => {
         handleErrorInForm(error, setErrors);
       },
@@ -206,7 +208,7 @@ export const ToolCreationForm: FunctionComponent<ToolFormProps> = ({
                   onCompleted?.();
                 }}
               >
-                <BulkResult inputToString={(input) => input.name} />
+                <BulkResult variablesToString={(v) => v.input.name} />
               </ProgressBar>
             </>
           )}
