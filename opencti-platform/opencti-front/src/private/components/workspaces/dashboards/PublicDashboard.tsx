@@ -121,7 +121,7 @@ const PublicDashboardComponent = () => {
     },
     allowed_markings: {
       flexSize: 10,
-      label: 'Maximum marking shared',
+      label: 'Markings shared',
     },
     enabled: {
       flexSize: 10,

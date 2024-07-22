@@ -200,7 +200,7 @@ export const authorizedMembers: AttributeDefinition = {
   upsert: false,
   isFilterable: false,
   mappings: [
-    id,
+    id, // { ...id, isFilterable: true, label: 'Authorized members' },
     { name: 'name', label: 'Name', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: false },
     { name: 'entity_type', label: 'Entity type', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: false },
     { name: 'access_right', label: 'Access right', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: false },
