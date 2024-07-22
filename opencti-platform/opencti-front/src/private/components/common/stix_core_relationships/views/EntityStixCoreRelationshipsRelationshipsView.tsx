@@ -260,6 +260,7 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
         variant="medium"
         type={'stix-core-relationship'}
       />
+
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
         <StixCoreRelationshipCreationFromEntity
           entityId={entityId}

@@ -13,7 +13,6 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import Slide from '@mui/material/Slide';
 import { MoreVertOutlined } from '@mui/icons-material';
-import { ConnectionHandler } from 'relay-runtime';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import StixCoreRelationshipEdition from './StixCoreRelationshipEdition';

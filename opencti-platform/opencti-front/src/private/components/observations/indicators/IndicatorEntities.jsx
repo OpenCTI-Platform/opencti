@@ -104,6 +104,7 @@ const IndicatorEntities = ({ indicatorId, relationshipType, defaultStartTime, de
         paginationOptions={paginationOptions}
         entityTypes={['stix-core-relationship']}
       >
+
         <QueryRenderer
           query={indicatorEntitiesLinesQuery}
           variables={{ count: 25, ...paginationOptions }}
