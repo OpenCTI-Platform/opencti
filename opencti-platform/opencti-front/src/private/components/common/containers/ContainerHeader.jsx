@@ -463,7 +463,6 @@ const ContainerHeader = (props) => {
     enableAskAi,
     redirectToContent,
   } = props;
-  console.log('container', container);
   const classes = useStyles();
   const { t_i18n, fd } = useFormatter();
   const userIsKnowledgeEditor = useGranted([KNOWLEDGE_KNUPDATE]);
@@ -1087,6 +1086,11 @@ export default createFragmentContainer(ContainerHeader, {
       standard_id
       confidence
       created
+      creators {
+        id
+        name
+        entity_type
+      }
       ... on Report {
         name
       }
