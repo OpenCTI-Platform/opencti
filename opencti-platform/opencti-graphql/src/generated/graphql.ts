@@ -1781,6 +1781,7 @@ export type CapabilityEdge = {
 };
 
 export type Case = {
+  authorized_members?: Maybe<Array<MemberAccess>>;
   avatar?: Maybe<OpenCtiFile>;
   cases?: Maybe<CaseConnection>;
   confidence?: Maybe<Scalars['Int']['output']>;
@@ -1793,6 +1794,7 @@ export type Case = {
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
+  currentUserAccessRight?: Maybe<Scalars['String']['output']>;
   description?: Maybe<Scalars['String']['output']>;
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String']['output'];
@@ -2283,6 +2285,7 @@ export enum CaseIncidentsOrdering {
 
 export type CaseRfi = BasicObject & Case & Container & StixCoreObject & StixDomainObject & StixObject & {
   __typename?: 'CaseRfi';
+  authorized_members?: Maybe<Array<MemberAccess>>;
   avatar?: Maybe<OpenCtiFile>;
   cases?: Maybe<CaseConnection>;
   confidence?: Maybe<Scalars['Int']['output']>;
@@ -2295,6 +2298,7 @@ export type CaseRfi = BasicObject & Case & Container & StixCoreObject & StixDoma
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
+  currentUserAccessRight?: Maybe<Scalars['String']['output']>;
   description?: Maybe<Scalars['String']['output']>;
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String']['output'];
@@ -2557,6 +2561,7 @@ export enum CaseRfisOrdering {
 
 export type CaseRft = BasicObject & Case & Container & StixCoreObject & StixDomainObject & StixObject & {
   __typename?: 'CaseRft';
+  authorized_members?: Maybe<Array<MemberAccess>>;
   avatar?: Maybe<OpenCtiFile>;
   cases?: Maybe<CaseConnection>;
   confidence?: Maybe<Scalars['Int']['output']>;
@@ -2569,6 +2574,7 @@ export type CaseRft = BasicObject & Case & Container & StixCoreObject & StixDoma
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
+  currentUserAccessRight?: Maybe<Scalars['String']['output']>;
   description?: Maybe<Scalars['String']['output']>;
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String']['output'];
@@ -30937,6 +30943,7 @@ export type CapabilityEdgeResolvers<ContextType = any, ParentType extends Resolv
 
 export type CaseResolvers<ContextType = any, ParentType extends ResolversParentTypes['Case'] = ResolversParentTypes['Case']> = ResolversObject<{
   __resolveType: TypeResolveFn<'CaseIncident' | 'CaseRfi' | 'CaseRft' | 'Feedback', ParentType, ContextType>;
+  authorized_members?: Resolver<Maybe<Array<ResolversTypes['MemberAccess']>>, ParentType, ContextType>;
   avatar?: Resolver<Maybe<ResolversTypes['OpenCtiFile']>, ParentType, ContextType>;
   cases?: Resolver<Maybe<ResolversTypes['CaseConnection']>, ParentType, ContextType, Partial<CaseCasesArgs>>;
   confidence?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
@@ -30949,6 +30956,7 @@ export type CaseResolvers<ContextType = any, ParentType extends ResolversParentT
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
+  currentUserAccessRight?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -31082,6 +31090,7 @@ export type CaseIncidentEdgeResolvers<ContextType = any, ParentType extends Reso
 }>;
 
 export type CaseRfiResolvers<ContextType = any, ParentType extends ResolversParentTypes['CaseRfi'] = ResolversParentTypes['CaseRfi']> = ResolversObject<{
+  authorized_members?: Resolver<Maybe<Array<ResolversTypes['MemberAccess']>>, ParentType, ContextType>;
   avatar?: Resolver<Maybe<ResolversTypes['OpenCtiFile']>, ParentType, ContextType>;
   cases?: Resolver<Maybe<ResolversTypes['CaseConnection']>, ParentType, ContextType, Partial<CaseRfiCasesArgs>>;
   confidence?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
@@ -31094,6 +31103,7 @@ export type CaseRfiResolvers<ContextType = any, ParentType extends ResolversPare
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
+  currentUserAccessRight?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -31155,6 +31165,7 @@ export type CaseRfiEdgeResolvers<ContextType = any, ParentType extends Resolvers
 }>;
 
 export type CaseRftResolvers<ContextType = any, ParentType extends ResolversParentTypes['CaseRft'] = ResolversParentTypes['CaseRft']> = ResolversObject<{
+  authorized_members?: Resolver<Maybe<Array<ResolversTypes['MemberAccess']>>, ParentType, ContextType>;
   avatar?: Resolver<Maybe<ResolversTypes['OpenCtiFile']>, ParentType, ContextType>;
   cases?: Resolver<Maybe<ResolversTypes['CaseConnection']>, ParentType, ContextType, Partial<CaseRftCasesArgs>>;
   confidence?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
@@ -31167,6 +31178,7 @@ export type CaseRftResolvers<ContextType = any, ParentType extends ResolversPare
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
+  currentUserAccessRight?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;

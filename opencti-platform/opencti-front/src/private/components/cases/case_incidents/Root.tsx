@@ -125,7 +125,7 @@ const RootCaseIncidentComponent = ({ queryRef, caseId }) => {
   const isOverview = location.pathname === `/dashboard/cases/incidents/${caseData?.id}`;
   const paddingRight = getPaddingRight(location.pathname, caseData?.id, '/dashboard/cases/incidents', false);
   const canManage = caseData?.currentUserAccessRight === 'admin';
-
+  console.log('caseData', caseData);
   return (
     <>
       {caseData ? (

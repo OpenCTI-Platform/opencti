@@ -5,6 +5,7 @@ import { useFragment } from 'react-relay';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
 import useHelper from 'src/utils/hooks/useHelper';
+import { CaseUtils_case$key } from '@components/cases/__generated__/CaseUtils_case.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import { convertMarkings } from '../../../../utils/edition';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
@@ -16,7 +17,6 @@ import ContainerStixObjectsOrStixRelationships from '../../common/containers/Con
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
 import { CaseTasksLinesQuery, CaseTasksLinesQuery$variables } from '../tasks/__generated__/CaseTasksLinesQuery.graphql';
-import { CaseUtils_case$key } from '../__generated__/CaseUtils_case.graphql';
 import CaseTasksLines, { caseTasksLinesQuery } from '../tasks/CaseTasksLines';
 import { caseFragment } from '../CaseUtils';
 import CaseIncidentDetails from './CaseIncidentDetails';
@@ -42,7 +42,7 @@ const useStyles = makeStyles(() => ({
 }));
 
 interface CaseIncidentProps {
-  data: CaseUtils_case$key; // TODO why data type is not the same as the one given by the parent component???=> caseData
+  data: CaseUtils_case$key;
   enableReferences: boolean;
 }
 
@@ -53,8 +53,8 @@ const CaseIncidentComponent: FunctionComponent<CaseIncidentProps> = ({ data, ena
   const caseIncidentData = useFragment(caseFragment, data);
   const { isFeatureEnable } = useHelper();
   const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
-  const canManage = data.currentUserAccessRight === 'admin';
-  const canEdit = canManage || data.currentUserAccessRight === 'edit';
+  const canManage = caseIncidentData.currentUserAccessRight === 'admin';
+  const canEdit = canManage || caseIncidentData.currentUserAccessRight === 'edit';
 
   const LOCAL_STORAGE_KEY_CASE_TASKS = `cases-${caseIncidentData.id}-caseTask`;
 

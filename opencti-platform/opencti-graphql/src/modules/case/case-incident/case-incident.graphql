@@ -132,13 +132,13 @@ type CaseIncident implements BasicObject & StixObject & StixCoreObject & StixDom
   content: String
   content_mapping: String
   tasks: TaskConnection!
+  authorized_members: [MemberAccess!]
+  currentUserAccessRight: String
   # Incident Response
   rating: Int
   response_types: [String!]
   severity: String
   priority: String
-  authorized_members: [MemberAccess!]
-  currentUserAccessRight: String
 }
 
 # Ordering
