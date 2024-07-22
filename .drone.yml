@@ -19,7 +19,6 @@ steps:
       - cd "$DRONE_WORKSPACE/client-python"
       - echo "[INFO] using client-python on branch $(git branch --show-current)"
       - pip install -e .[dev,doc]
-      - # pip3 install --upgrade --force .
       - pip3 show pycti
 
   - name: api-tests
@@ -51,11 +50,7 @@ steps:
     commands:
       - apk add build-base git libffi-dev cargo
       - pip3 install --upgrade setuptools
-      - cd "$DRONE_WORKSPACE/client-python"
-      - pip show pycti
-      - echo "[INFO] using client-python on branch $(git branch --show-current)"
-      - pip install -e .[dev,doc]
-      - pip show pycti
+      - pip3 show pycti
       - cd "$DRONE_WORKSPACE/opencti-platform/opencti-graphql"
       - yarn install
       - yarn build
@@ -193,7 +188,7 @@ services:
       APP__PORT: 4100
       APP__ADMIN__PASSWORD: admin
       APP__ADMIN__TOKEN: bfa014e0-e02e-4aa6-a42b-603b19dcf159
-      APP_APP_LOG_EXTENDED_ERROR_MESSAGE: true
+      APP__APP_LOG__EXTENDED_ERROR_MESSAGE: true
       REDIS__HOSTNAME: redis
       REDIS__NAMESPACE: raw-start
       ELASTICSEARCH__URL: http://elastic:9200
@@ -224,7 +219,7 @@ services:
       APP__PORT: 4200
       APP__ADMIN__PASSWORD: admin
       APP__ADMIN__TOKEN: bfa014e0-e02e-4aa6-a42b-603b19dcf159
-      APP_APP_LOG_EXTENDED_ERROR_MESSAGE: true
+      APP__APP_LOG__EXTENDED_ERROR_MESSAGE: true
       REDIS__HOSTNAME: redis
       REDIS__NAMESPACE: live-start
       ELASTICSEARCH__URL: http://elastic:9200
@@ -254,7 +249,7 @@ services:
       APP__PORT: 4300
       APP__ADMIN__PASSWORD: admin
       APP__ADMIN__TOKEN: bfa014e0-e02e-4aa6-a42b-603b19dcf159
-      APP_APP_LOG_EXTENDED_ERROR_MESSAGE: true
+      APP__APP_LOG__EXTENDED_ERROR_MESSAGE: true
       REDIS__HOSTNAME: redis
       REDIS__NAMESPACE: direct-start
       ELASTICSEARCH__URL: http://elastic:9200
@@ -303,7 +298,7 @@ services:
       APP__PORT: 4400
       APP__ADMIN__PASSWORD: admin
       APP__ADMIN__TOKEN: bfa014e0-e02e-4aa6-a42b-603b19dcf159
-      APP_APP_LOG_EXTENDED_ERROR_MESSAGE: true
+      APP__APP_LOG__EXTENDED_ERROR_MESSAGE: true
       REDIS__HOSTNAME: redis
       REDIS__NAMESPACE: restore-start
       ELASTICSEARCH__URL: http://elastic:9200
@@ -334,7 +329,7 @@ services:
       APP__DISABLED_DEV_FEATURES: '["4352_BULK_RELATIONS"]'
       APP__ADMIN__PASSWORD: admin
       APP__ADMIN__TOKEN: bfa014e0-e02e-4aa6-a42b-603b19dcf159
-      APP_APP_LOG_EXTENDED_ERROR_MESSAGE: true
+      APP__APP_LOG__EXTENDED_ERROR_MESSAGE: true
       REDIS__HOSTNAME: redis
       REDIS__NAMESPACE: e2e-start
       ELASTICSEARCH__URL: http://elastic:9200
