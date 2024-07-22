@@ -41,8 +41,6 @@ const interval$ = interval(TEN_SECONDS);
 // Do not use it for new code.
 const useStyles = makeStyles(() => ({
   paper: {
-    height: '100%',
-    minHeight: '100%',
     marginTop: -7,
     padding: '10px 15px 10px 15px',
     borderRadius: 4,

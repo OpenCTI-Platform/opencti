@@ -33,16 +33,16 @@ class OrganizationComponent extends Component {
           spacing={3}
           classes={{ container: classes.gridContainer }}
         >
-          <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
+          <Grid item xs={6}>
             <OrganizationDetails organization={organization} />
           </Grid>
-          <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
+          <Grid item xs={6}>
             <StixDomainObjectOverview
               stixDomainObject={organization}
             />
           </Grid>
           {viewAs === 'knowledge' && (
-            <Grid item={true} xs={6} style={{ marginTop: 30 }}>
+            <Grid item xs={6}>
               <SimpleStixObjectOrStixRelationshipStixCoreRelationships
                 stixObjectOrStixRelationshipId={organization.id}
                 stixObjectOrStixRelationshipLink={`/dashboard/entities/organizations/${organization.id}/knowledge`}
@@ -50,20 +50,19 @@ class OrganizationComponent extends Component {
             </Grid>
           )}
           <Grid
-            item={true}
+            item
             xs={viewAs === 'knowledge' ? 6 : 12}
-            style={{ marginTop: 30 }}
           >
             <StixCoreObjectOrStixRelationshipLastContainers
               {...lastReportsProps}
             />
           </Grid>
-          <Grid item={true} xs={6} style={{ marginTop: 30 }}>
+          <Grid item xs={6}>
             <StixCoreObjectExternalReferences
               stixCoreObjectId={organization.id}
             />
           </Grid>
-          <Grid item={true} xs={6} style={{ marginTop: 30 }}>
+          <Grid item xs={6}>
             <StixCoreObjectLatestHistory stixCoreObjectId={organization.id} />
           </Grid>
         </Grid>

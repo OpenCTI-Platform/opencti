@@ -59,8 +59,6 @@ const useStyles = makeStyles<Theme>(() => ({
     padding: '0 200px 50px 0',
   },
   paper: {
-    height: '100%',
-    minHeight: '100%',
     margin: '10px 0 0 0',
     padding: 20,
     borderRadius: 4,
@@ -136,7 +134,7 @@ ConfigurationComponentProps
         <ActivityMenu />
         <Breadcrumbs variant="object" elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Activity') }, { label: t_i18n('Configuration'), current: true }]} />
         <Grid container={true} spacing={3}>
-          <Grid item={true} xs={12}>
+          <Grid item xs={12}>
             <Typography variant="h4" gutterBottom={true}>
               {t_i18n('Extended activity logging')}
             </Typography>
@@ -164,7 +162,7 @@ ConfigurationComponentProps
                         <Grid container={true} spacing={0}>
                           <Grid
                             key="users"
-                            item={true}
+                            item
                             xs={4}
                             style={{ padding: 4 }}
                           >
@@ -177,7 +175,7 @@ ConfigurationComponentProps
                           </Grid>
                           <Grid
                             key="groups"
-                            item={true}
+                            item
                             xs={4}
                             style={{ padding: 4 }}
                           >
@@ -190,7 +188,7 @@ ConfigurationComponentProps
                           </Grid>
                           <Grid
                             key="organizations"
-                            item={true}
+                            item
                             xs={4}
                             style={{ padding: 4 }}
                           >

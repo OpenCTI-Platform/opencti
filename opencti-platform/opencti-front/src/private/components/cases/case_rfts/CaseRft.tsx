@@ -34,8 +34,6 @@ const useStyles = makeStyles(() => ({
     marginBottom: 20,
   },
   paper: {
-    height: '100%',
-    minHeight: '100%',
     margin: '10px 0 0 0',
     padding: 0,
     borderRadius: 4,
@@ -87,17 +85,17 @@ const CaseRftComponent: FunctionComponent<CaseRftProps> = ({ data, enableReferen
         spacing={3}
         classes={{ container: classes.gridContainer }}
       >
-        <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
+        <Grid item xs={6}>
           <CaseRftDetails caseRftData={caseRftData} />
         </Grid>
-        <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
+        <Grid item xs={6}>
           <StixDomainObjectOverview
             stixDomainObject={caseRftData}
             displayAssignees
             displayParticipants
           />
         </Grid>
-        <Grid item={true} xs={6} style={{ marginTop: 30 }} ref={ref}>
+        <Grid item xs={6} ref={ref}>
           {queryRef && (
             <React.Suspense
               fallback={
@@ -143,7 +141,7 @@ const CaseRftComponent: FunctionComponent<CaseRftProps> = ({ data, enableReferen
             </React.Suspense>
           )}
         </Grid>
-        <Grid item={true} xs={6} style={{ marginTop: 30 }}>
+        <Grid item xs={6}>
           <ContainerStixObjectsOrStixRelationships
             isSupportParticipation={false}
             container={caseRftData}
@@ -152,7 +150,7 @@ const CaseRftComponent: FunctionComponent<CaseRftProps> = ({ data, enableReferen
             enableReferences={enableReferences}
           />
         </Grid>
-        <Grid item={true} xs={6} style={{ marginTop: 30 }}>
+        <Grid item xs={6}>
           <ContainerStixObjectsOrStixRelationships
             isSupportParticipation={false}
             container={caseRftData}
@@ -161,24 +159,26 @@ const CaseRftComponent: FunctionComponent<CaseRftProps> = ({ data, enableReferen
             enableReferences={enableReferences}
           />
         </Grid>
-        <Grid item={true} xs={6} style={{ marginTop: 30 }}>
+        <Grid item xs={6}>
           <ContainerStixObjectsOrStixRelationships
             isSupportParticipation={false}
             container={caseRftData}
             enableReferences={enableReferences}
           />
         </Grid>
-        <Grid item={true} xs={6} style={{ marginTop: 30 }}>
+        <Grid item xs={6}>
           <StixCoreObjectExternalReferences stixCoreObjectId={caseRftData.id} />
         </Grid>
-        <Grid item={true} xs={6} style={{ marginTop: 30 }}>
+        <Grid item xs={6}>
           <StixCoreObjectLatestHistory stixCoreObjectId={caseRftData.id} />
         </Grid>
+        <Grid item xs={12}>
+          <StixCoreObjectOrStixCoreRelationshipNotes
+            stixCoreObjectOrStixCoreRelationshipId={caseRftData.id}
+            defaultMarkings={caseRftData.objectMarking ?? []}
+          />
+        </Grid>
       </Grid>
-      <StixCoreObjectOrStixCoreRelationshipNotes
-        stixCoreObjectOrStixCoreRelationshipId={caseRftData.id}
-        defaultMarkings={caseRftData.objectMarking ?? []}
-      />
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
         <CaseRftEdition caseId={caseRftData.id} />
       </Security>

@@ -24,6 +24,7 @@ import {
 const useStyles = makeStyles(() => ({
   gridContainer: {
     marginBottom: 20,
+    display: 'inline-flex',
   },
 }));
 
@@ -132,7 +133,7 @@ const hasDemographicsOrBiographics = (
     return true;
   }
   for (const { node } of threatActorIndividual?.stixCoreRelationships?.edges
-    ?? []) {
+  ?? []) {
     const { relationship_type } = node ?? {};
     switch (relationship_type) {
       case 'resides-in':
@@ -158,58 +159,61 @@ const ThreatActorIndividualComponent = ({
   return (
     <>
       <Grid
-        container={true}
-        spacing={3}
+        container
+        columnSpacing={2}
+        rowSpacing={3}
         classes={{ container: classes.gridContainer }}
       >
-        <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
+        <Grid item xs={6}>
           <ThreatActorIndividualDetails
             threatActorIndividualData={threatActorIndividual}
           />
         </Grid>
-        <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
+        <Grid item xs={6}>
           <StixDomainObjectOverview stixDomainObject={threatActorIndividual} />
         </Grid>
         {hasDemographicsOrBiographics(threatActorIndividual) && (
           <>
-            <Grid item={true} xs={6} style={{ marginTop: 30 }}>
+            <Grid item xs={6}>
               <ThreatActorIndividualDemographics
                 threatActorIndividual={threatActorIndividual}
               />
             </Grid>
-            <Grid item={true} xs={6} style={{ marginTop: 30 }}>
+            <Grid item xs={6}>
               <ThreatActorIndividualBiographics
                 threatActorIndividual={threatActorIndividual}
               />
             </Grid>
           </>
         )}
-        <Grid item={true} xs={6} style={{ marginTop: 30 }}>
+        <Grid item xs={6}>
           <SimpleStixObjectOrStixRelationshipStixCoreRelationships
             stixObjectOrStixRelationshipId={threatActorIndividual.id}
             stixObjectOrStixRelationshipLink={`/dashboard/threats/threat_actors_individual/${threatActorIndividual.id}/knowledge`}
           />
         </Grid>
-        <Grid item={true} xs={6} style={{ marginTop: 30 }}>
+        <Grid item xs={6}>
           <StixCoreObjectOrStixRelationshipLastContainers
             stixCoreObjectOrStixRelationshipId={threatActorIndividual.id}
           />
         </Grid>
-        <Grid item={true} xs={6} style={{ marginTop: 30 }}>
+        <Grid item xs={6}>
           <StixCoreObjectExternalReferences
             stixCoreObjectId={threatActorIndividual.id}
           />
         </Grid>
-        <Grid item={true} xs={6} style={{ marginTop: 30 }}>
+        <Grid item xs={6}>
           <StixCoreObjectLatestHistory
             stixCoreObjectId={threatActorIndividual.id}
           />
         </Grid>
+        <Grid item xs={12}>
+          <StixCoreObjectOrStixCoreRelationshipNotes
+            stixCoreObjectOrStixCoreRelationshipId={threatActorIndividual.id}
+            defaultMarkings={threatActorIndividual.objectMarking ?? []}
+          />
+        </Grid>
       </Grid>
-      <StixCoreObjectOrStixCoreRelationshipNotes
-        stixCoreObjectOrStixCoreRelationshipId={threatActorIndividual.id}
-        defaultMarkings={threatActorIndividual.objectMarking ?? []}
-      />
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
         <ThreatActorIndividualEdition
           threatActorIndividualId={threatActorIndividual.id}

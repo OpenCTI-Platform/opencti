@@ -275,7 +275,7 @@ StixDomainObjectThreatKnowledgeProps
   return (
     <>
       <Grid container={true} spacing={3}>
-        <Grid item={true} xs={4} style={{ paddingTop: 10 }}>
+        <Grid item xs={4}>
           <Card
             variant="outlined"
             classes={{ root: classes.card }}
@@ -318,7 +318,7 @@ StixDomainObjectThreatKnowledgeProps
             />
           </Card>
         </Grid>
-        <Grid item={true} xs={4} style={{ paddingTop: 10 }}>
+        <Grid item xs={4}>
           <Card
             variant="outlined"
             classes={{ root: classes.card }}
@@ -377,7 +377,7 @@ StixDomainObjectThreatKnowledgeProps
             />
           </Card>
         </Grid>
-        <Grid item={true} xs={4} style={{ paddingTop: 10 }}>
+        <Grid item xs={4}>
           <Card
             variant="outlined"
             classes={{ root: classes.card }}

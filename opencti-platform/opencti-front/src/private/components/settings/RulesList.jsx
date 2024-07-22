@@ -306,9 +306,9 @@ const RulesListComponent = ({ relay, data, keyword }) => {
   return (
     <>
       <Grid container={true} spacing={3}>
-        <Grid item={true} xs={6}>
+        <Grid item xs={6}>
           <Grid container={true} spacing={3}>
-            <Grid item={true} xs={6}>
+            <Grid item xs={6}>
               <Card
                 classes={{ root: classes.card }}
                 variant="outlined"
@@ -328,7 +328,7 @@ const RulesListComponent = ({ relay, data, keyword }) => {
                 </CardContent>
               </Card>
             </Grid>
-            <Grid item={true} xs={6}>
+            <Grid item xs={6}>
               <Card
                 classes={{ root: classes.card }}
                 variant="outlined"
@@ -348,7 +348,7 @@ const RulesListComponent = ({ relay, data, keyword }) => {
                 </CardContent>
               </Card>
             </Grid>
-            <Grid item={true} xs={6}>
+            <Grid item xs={6}>
               <Card
                 classes={{ root: classes.card }}
                 variant="outlined"
@@ -369,7 +369,7 @@ const RulesListComponent = ({ relay, data, keyword }) => {
                 </CardContent>
               </Card>
             </Grid>
-            <Grid item={true} xs={6}>
+            <Grid item xs={6}>
               <Card
                 classes={{ root: classes.card }}
                 variant="outlined"
@@ -396,7 +396,7 @@ const RulesListComponent = ({ relay, data, keyword }) => {
             </Grid>
           </Grid>
         </Grid>
-        <Grid item={true} xs={6}>
+        <Grid item xs={6}>
           <Paper
             variant="outlined"
             classes={{ root: classes.paper }}
@@ -454,7 +454,7 @@ const RulesListComponent = ({ relay, data, keyword }) => {
                   spacing={3}
                   style={{ marginBottom: 50 }}
                 >
-                  <Grid item={true} xs={3}>
+                  <Grid item xs={3}>
                     <Typography variant="h4" gutterBottom={true}>
                       {t_i18n(rule.name)}
                     </Typography>
@@ -464,13 +464,13 @@ const RulesListComponent = ({ relay, data, keyword }) => {
                       style={{ padding: 15, minWidth: 280 }}
                     >
                       <Grid container={true} spacing={3}>
-                        <Grid item={true} xs={6}>
+                        <Grid item xs={6}>
                           <Typography variant="h3">
                             {t_i18n('Description')}
                           </Typography>
                           {t_i18n(rule.description)}
                         </Grid>
-                        <Grid item={true} xs={6}>
+                        <Grid item xs={6}>
                           <Typography variant="h3" gutterBottom={true}>
                             {t_i18n('Status')}
                           </Typography>
@@ -495,7 +495,7 @@ const RulesListComponent = ({ relay, data, keyword }) => {
                             />
                           </FormGroup>
                         </Grid>
-                        <Grid item={true} xs={12}>
+                        <Grid item xs={12}>
                           {isEngineEnabled && task && (
                             <div
                               style={{
@@ -540,7 +540,7 @@ const RulesListComponent = ({ relay, data, keyword }) => {
                       </Grid>
                     </Paper>
                   </Grid>
-                  <Grid item={true} xs={9}>
+                  <Grid item xs={9}>
                     <Paper
                       variant="outlined"
                       classes={{ root: classes.paper }}

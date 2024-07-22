@@ -17,8 +17,6 @@ const interval$ = interval(FIVE_SECONDS);
 // Do not use it for new code.
 const useStyles = makeStyles<Theme>((theme) => ({
   paper: {
-    height: '100%',
-    minHeight: '100%',
     marginTop: theme.spacing(1.5),
     padding: '10px 20px 10px 20px',
     borderRadius: 4,
@@ -109,6 +107,7 @@ const UserHistoryLines: FunctionComponent<UserHistoryLinesProps> = ({
       classes={{ root: classes.paper }}
       variant="outlined"
       style={{ marginTop: 0 }}
+      className={'paper-for-grid'}
     >
       {audits.length > 0 ? (
         audits.map((auditEdge) => {

@@ -84,18 +84,10 @@ const NoteComponent: FunctionComponent<NoteComponentProps> = ({
         marginTop: 25,
       }}
     >
-      <Grid
-        item={true}
-        xs={6}
-        style={{ paddingTop: 10 }}
-      >
+      <Grid item xs={6}>
         <NoteDetails note={note} />
       </Grid>
-      <Grid
-        item={true}
-        xs={6}
-        style={{ paddingTop: 10 }}
-      >
+      <Grid item xs={6}>
         <StixDomainObjectOverview stixDomainObject={note} />
       </Grid>
     </Grid>
@@ -107,7 +99,7 @@ const NoteComponent: FunctionComponent<NoteComponentProps> = ({
         marginBottom: 20,
       }}
     >
-      <Grid item={true} xs={12}>
+      <Grid item xs={12}>
         <ContainerStixObjectsOrStixRelationships
           isSupportParticipation={true}
           container={note}
@@ -123,10 +115,10 @@ const NoteComponent: FunctionComponent<NoteComponentProps> = ({
         marginBottom: 20,
       }}
     >
-      <Grid item={true} xs={6}>
+      <Grid item xs={6}>
         <StixCoreObjectExternalReferences stixCoreObjectId={note.id} />
       </Grid>
-      <Grid item={true} xs={6}>
+      <Grid item xs={6}>
         <StixCoreObjectLatestHistory stixCoreObjectId={note.id} />
       </Grid>
     </Grid>

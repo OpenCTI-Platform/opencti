@@ -33,8 +33,6 @@ import useApiMutation from '../../../../utils/hooks/useApiMutation';
 // Do not use it for new code.
 const useStyles = makeStyles<Theme>((theme) => ({
   paper: {
-    height: '100%',
-    minHeight: '100%',
     margin: '-5px 0 0 0',
     padding: 0,
     borderRadius: 4,

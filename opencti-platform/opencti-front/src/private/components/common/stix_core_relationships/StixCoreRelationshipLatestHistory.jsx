@@ -9,7 +9,7 @@ class StixCoreRelationshipLatestHistory extends Component {
   render() {
     const { t, stixCoreRelationshipId } = this.props;
     return (
-      <div style={{ height: '100%' }} className="break">
+      <div className="break">
         <Typography variant="h4" gutterBottom={true}>
           {t('Most recent history')}
         </Typography>

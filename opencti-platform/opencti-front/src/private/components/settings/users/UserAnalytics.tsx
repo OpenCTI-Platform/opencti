@@ -59,11 +59,12 @@ const UserAnalytics: FunctionComponent<UserAnalyticsProps> = ({ data }) => {
   return (
     <>
       <Grid
-        container={true}
-        spacing={3}
+        container
+        rowSpacing={5}
+        columnSpacing={2}
         classes={{ container: classes.gridContainer }}
       >
-        <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
+        <Grid item xs={6}>
           <AuditsMultiVerticalBars
             height={300}
             parameters={{
@@ -90,7 +91,7 @@ const UserAnalytics: FunctionComponent<UserAnalyticsProps> = ({ data }) => {
             ]}
           />
         </Grid>
-        <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
+        <Grid item xs={6}>
           <AuditsMultiLineChart
             height={300}
             parameters={{
@@ -154,7 +155,7 @@ const UserAnalytics: FunctionComponent<UserAnalyticsProps> = ({ data }) => {
             ]}
           />
         </Grid>
-        <Grid item={true} xs={4} style={{ marginTop: 30 }}>
+        <Grid item xs={4}>
           <AuditsHorizontalBars
             height={350}
             parameters={{
@@ -179,7 +180,7 @@ const UserAnalytics: FunctionComponent<UserAnalyticsProps> = ({ data }) => {
             ]}
           />
         </Grid>
-        <Grid item={true} xs={4} style={{ marginTop: 30 }}>
+        <Grid item xs={4}>
           <AuditsDonut
             height={350}
             parameters={{
@@ -208,7 +209,7 @@ const UserAnalytics: FunctionComponent<UserAnalyticsProps> = ({ data }) => {
             ]}
           />
         </Grid>
-        <Grid item={true} xs={4} style={{ marginTop: 30 }}>
+        <Grid item xs={4}>
           <AuditsRadar
             height={350}
             parameters={{
@@ -238,7 +239,7 @@ const UserAnalytics: FunctionComponent<UserAnalyticsProps> = ({ data }) => {
             ]}
           />
         </Grid>
-        <Grid item={true} xs={8} style={{ marginTop: 30 }}>
+        <Grid item xs={8}>
           <AuditsList
             height={350}
             parameters={{
@@ -265,7 +266,7 @@ const UserAnalytics: FunctionComponent<UserAnalyticsProps> = ({ data }) => {
             ]}
           />
         </Grid>
-        <Grid item={true} xs={4} style={{ marginTop: 30 }}>
+        <Grid item xs={4}>
           <AuditsHorizontalBars
             height={350}
             parameters={{

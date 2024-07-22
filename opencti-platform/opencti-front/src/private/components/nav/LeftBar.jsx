@@ -406,6 +406,7 @@ const LeftBar = () => {
             onMouseEnter: () => handleSelectedMenuOpen(menu),
             onMouseLeave: handleSelectedMenuClose,
             sx: {
+              height: 'unset',
               pointerEvents: 'auto',
             },
           },

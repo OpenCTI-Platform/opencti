@@ -109,15 +109,11 @@ const styles = (theme) => ({
     color: theme.palette.text.primary,
   },
   paper: {
-    height: '100%',
-    minHeight: '100%',
     margin: '10px 0 0 0',
     padding: '15px',
     borderRadius: 4,
   },
   paperWithoutPadding: {
-    height: '100%',
-    minHeight: '100%',
     margin: '10px 0 0 0',
     padding: 0,
     borderRadius: 4,
@@ -242,7 +238,7 @@ class StixCoreRelationshipContainer extends Component {
           spacing={3}
           classes={{ container: classes.gridContainer }}
         >
-          <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
+          <Grid item xs={6}>
             <Typography variant="h4" gutterBottom={true}>
               {t('Relationship')}
             </Typography>
@@ -250,6 +246,7 @@ class StixCoreRelationshipContainer extends Component {
               classes={{ root: classes.paperWithoutPadding }}
               variant="outlined"
               style={{ position: 'relative' }}
+              className={'paper-for-grid'}
             >
               <Link to={!fromRestricted ? `${linkFrom}/${from.id}` : '#'}>
                 <div
@@ -370,11 +367,11 @@ class StixCoreRelationshipContainer extends Component {
               <Divider style={{ marginTop: 30 }} />
               <div style={{ padding: 15 }}>
                 <Grid container={true} spacing={3}>
-                  <Grid item={true} xs={6}>
+                  <Grid item xs={6}>
                     <Typography variant="h3" gutterBottom={true}>
                       {t('Marking')}
                     </Typography>
-                    <ItemMarkings markingDefinitions={stixCoreRelationship.objectMarking ?? []}/>
+                    <ItemMarkings markingDefinitions={stixCoreRelationship.objectMarking ?? []} />
                     <Typography
                       variant="h3"
                       gutterBottom={true}
@@ -392,7 +389,7 @@ class StixCoreRelationshipContainer extends Component {
                     </Typography>
                     {nsdt(stixCoreRelationship.stop_time)}
                   </Grid>
-                  <Grid item={true} xs={6}>
+                  <Grid item xs={6}>
                     <StixCoreRelationshipSharing
                       elementId={stixCoreRelationship.id}
                     />
@@ -424,13 +421,13 @@ class StixCoreRelationshipContainer extends Component {
               </div>
             </Paper>
           </Grid>
-          <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
+          <Grid item xs={6}>
             <Typography variant="h4" gutterBottom={true}>
               {t('Details')}
             </Typography>
-            <Paper classes={{ root: classes.paper }} variant="outlined">
+            <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
               <Grid container={true} spacing={3}>
-                <Grid item={true} xs={6}>
+                <Grid item xs={6}>
                   <Typography variant="h3" gutterBottom={true}>
                     {t('Confidence level')}
                   </Typography>
@@ -473,7 +470,7 @@ class StixCoreRelationshipContainer extends Component {
                   </Typography>
                   {nsdt(stixCoreRelationship.updated_at)}
                 </Grid>
-                <Grid item={true} xs={6}>
+                <Grid item xs={6}>
                   <Typography variant="h3" gutterBottom={true}>
                     {t('Processing status')}
                   </Typography>
@@ -508,9 +505,40 @@ class StixCoreRelationshipContainer extends Component {
               </Grid>
             </Paper>
           </Grid>
+          {stixCoreRelationship.x_opencti_inferences == null && (
+            <>
+              <Grid item xs={6}>
+                <StixCoreRelationshipStixCoreRelationships
+                  entityId={stixCoreRelationship.id}
+                />
+              </Grid>
+              <Grid item xs={6}>
+                <StixCoreObjectOrStixRelationshipLastContainers
+                  stixCoreObjectOrStixRelationshipId={stixCoreRelationship.id}
+                />
+              </Grid>
+              <Grid item xs={6}>
+                <StixCoreRelationshipExternalReferences
+                  stixCoreRelationshipId={stixCoreRelationship.id}
+                />
+              </Grid>
+              <Grid item xs={6}>
+                <StixCoreRelationshipLatestHistory
+                  stixCoreRelationshipId={stixCoreRelationship.id}
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <StixCoreObjectOrStixCoreRelationshipNotes
+                  stixCoreObjectOrStixCoreRelationshipId={stixCoreRelationship.id}
+                  isRelationship={true}
+                  defaultMarkings={stixCoreRelationship.objectMarking ?? []}
+                />
+              </Grid>
+            </>
+          )}
         </Grid>
         <div>
-          {stixCoreRelationship.x_opencti_inferences !== null ? (
+          {stixCoreRelationship.x_opencti_inferences !== null && (
             <div style={{ margin: '50px 0 0 0' }}>
               <Typography variant="h4" gutterBottom={true}>
                 {t('Inference explanation')} (
@@ -541,43 +569,6 @@ class StixCoreRelationshipContainer extends Component {
                   )}
                 </Button>
               )}
-            </div>
-          ) : (
-            <div style={{ margin: '50px 0 0 0' }}>
-              <Grid
-                container={true}
-                spacing={3}
-                classes={{ container: classes.gridContainer }}
-              >
-                <Grid item={true} xs={6}>
-                  <StixCoreRelationshipStixCoreRelationships
-                    entityId={stixCoreRelationship.id}
-                  />
-                </Grid>
-                <Grid item={true} xs={6}>
-                  <StixCoreObjectOrStixRelationshipLastContainers
-                    stixCoreObjectOrStixRelationshipId={stixCoreRelationship.id}
-                  />
-                </Grid>
-              </Grid>
-              <Grid container={true} spacing={3} style={{ marginTop: 25 }}>
-                <Grid item={true} xs={6}>
-                  <StixCoreRelationshipExternalReferences
-                    stixCoreRelationshipId={stixCoreRelationship.id}
-                  />
-                </Grid>
-                <Grid item={true} xs={6}>
-                  <StixCoreRelationshipLatestHistory
-                    stixCoreRelationshipId={stixCoreRelationship.id}
-                  />
-                </Grid>
-              </Grid>
-              <StixCoreObjectOrStixCoreRelationshipNotes
-                marginTop={55}
-                stixCoreObjectOrStixCoreRelationshipId={stixCoreRelationship.id}
-                isRelationship={true}
-                defaultMarkings={stixCoreRelationship.objectMarking ?? []}
-              />
             </div>
           )}
         </div>

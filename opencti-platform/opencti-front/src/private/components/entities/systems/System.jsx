@@ -36,16 +36,16 @@ class SystemComponent extends Component {
           spacing={3}
           classes={{ container: classes.gridContainer }}
         >
-          <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
+          <Grid item xs={6}>
             <SystemDetails system={system} />
           </Grid>
-          <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
+          <Grid item xs={6}>
             <StixDomainObjectOverview
               stixDomainObject={system}
             />
           </Grid>
           {viewAs === 'knowledge' && (
-            <Grid item={true} xs={6} style={{ marginTop: 30 }}>
+            <Grid item xs={6}>
               <SimpleStixObjectOrStixRelationshipStixCoreRelationships
                 stixObjectOrStixRelationshipId={system.id}
                 stixObjectOrStixRelationshipLink={`/dashboard/entities/systems/${system.id}/knowledge`}
@@ -53,18 +53,17 @@ class SystemComponent extends Component {
             </Grid>
           )}
           <Grid
-            item={true}
+            item
             xs={viewAs === 'knowledge' ? 6 : 12}
-            style={{ marginTop: 30 }}
           >
             <StixCoreObjectOrStixRelationshipLastContainers
               {...lastReportsProps}
             />
           </Grid>
-          <Grid item={true} xs={6} style={{ marginTop: 30 }}>
+          <Grid item xs={6}>
             <StixCoreObjectExternalReferences stixCoreObjectId={system.id} />
           </Grid>
-          <Grid item={true} xs={6} style={{ marginTop: 30 }}>
+          <Grid item xs={6}>
             <StixCoreObjectLatestHistory stixCoreObjectId={system.id} />
           </Grid>
         </Grid>

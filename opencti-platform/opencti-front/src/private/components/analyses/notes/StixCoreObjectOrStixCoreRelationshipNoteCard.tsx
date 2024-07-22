@@ -218,7 +218,7 @@ StixCoreObjectOrStixCoreRelationshipNoteCardComponentProps
       />
       <CardContent>
         <Grid container={true} spacing={3}>
-          <Grid item={true} xs={9}>
+          <Grid item xs={9}>
             <Typography variant="h3" gutterBottom={true}>
               {t_i18n('Abstract')}
             </Typography>
@@ -239,14 +239,14 @@ StixCoreObjectOrStixCoreRelationshipNoteCardComponentProps
               <MarkdownDisplay content={note.content} remarkGfmPlugin={true} />
             )}
           </Grid>
-          <Grid item={true} xs={3}>
+          <Grid item xs={3}>
             <StixCoreObjectLabelsView
               labels={note.objectLabel}
               id={note.id}
               entity_type={note.entity_type}
             />
             <Grid container={true} spacing={3}>
-              <Grid item={true} xs={6}>
+              <Grid item xs={6}>
                 <Typography
                   variant="h3"
                   gutterBottom={true}
@@ -259,7 +259,7 @@ StixCoreObjectOrStixCoreRelationshipNoteCardComponentProps
                   entityType={note.entity_type}
                 />
               </Grid>
-              <Grid item={true} xs={6}>
+              <Grid item xs={6}>
                 <Typography
                   variant="h3"
                   gutterBottom={true}

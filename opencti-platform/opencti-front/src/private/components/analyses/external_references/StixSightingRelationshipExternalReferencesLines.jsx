@@ -41,8 +41,6 @@ const interval$ = interval(FIVE_SECONDS);
 
 const styles = (theme) => ({
   paper: {
-    height: '100%',
-    minHeight: '100%',
     margin: '-4px 0 0 0',
     padding: 0,
     borderRadius: 4,
@@ -192,7 +190,7 @@ class StixSightingRelationshipExternalReferencesLinesContainer extends Component
           />
         </Security>
         <div className="clearfix" />
-        <Paper classes={{ root: classes.paper }} variant="outlined">
+        <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
           {externalReferencesEdges.length > 0 ? (
             <List style={{ marginBottom: 0 }}>
               {R.take(expanded ? 200 : 7, externalReferencesEdges).map(

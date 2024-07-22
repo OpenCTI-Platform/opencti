@@ -54,8 +54,6 @@ import { resolveHasUserChoiceParsedCsvMapper } from '../../../../utils/csvMapper
 // Do not use it for new code.
 const useStyles = makeStyles<Theme>((theme) => ({
   paper: {
-    height: '100%',
-    minHeight: '100%',
     margin: '-4px 0 0 0',
     padding: 0,
     borderRadius: 4,
@@ -266,7 +264,7 @@ StixCoreObjectExternalReferencesLinesContainerProps
         />
       </Security>
       <div className="clearfix" />
-      <Paper classes={{ root: classes.paper }} variant="outlined">
+      <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
         {(
           externalReferencesEdges ? externalReferencesEdges.length > 0 : false
         ) ? (

@@ -9,8 +9,6 @@ import ItemOpenVocab from '../../../../components/ItemOpenVocab';
 // Do not use it for new code.
 const useStyles = makeStyles(() => ({
   paper: {
-    height: '100%',
-    minHeight: '100%',
     margin: '10px 0 0 0',
     padding: '15px',
     borderRadius: 4,
@@ -61,13 +59,13 @@ const ThreatActorIndividualDemographics = ({
     }
   }
   return (
-    <div style={{ height: '100%' }}>
+    <>
       <Typography variant="h4" gutterBottom={true}>
         {t_i18n('Demographic Information')}
       </Typography>
-      <Paper classes={{ root: classes.paper }} variant="outlined">
+      <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
         <Grid container={true} spacing={3}>
-          <Grid item={true} xs={4}>
+          <Grid item xs={4}>
             <Typography variant="h3" gutterBottom={true}>
               {t_i18n('Country of Residence')}
             </Typography>
@@ -85,7 +83,7 @@ const ThreatActorIndividualDemographics = ({
                 : '-'}
             </div>
           </Grid>
-          <Grid item={true} xs={4}>
+          <Grid item xs={4}>
             <Typography variant="h3" gutterBottom={true}>
               {t_i18n('Citizenship')}
             </Typography>
@@ -103,7 +101,7 @@ const ThreatActorIndividualDemographics = ({
                 : '-'}
             </div>
           </Grid>
-          <Grid item={true} xs={4}>
+          <Grid item xs={4}>
             <Typography variant="h3" gutterBottom={true}>
               {t_i18n('Place of Birth')}
             </Typography>
@@ -111,7 +109,7 @@ const ThreatActorIndividualDemographics = ({
               {t_i18n(countryRelationship.place_of_birth ?? '-')}
             </div>
           </Grid>
-          <Grid item={true} xs={4}>
+          <Grid item xs={4}>
             <Typography variant="h3" gutterBottom={true}>
               {t_i18n('Date of Birth')}
             </Typography>
@@ -121,7 +119,7 @@ const ThreatActorIndividualDemographics = ({
                 : '-'}
             </div>
           </Grid>
-          <Grid item={true} xs={4}>
+          <Grid item xs={4}>
             <Typography variant="h3" gutterBottom={true}>
               {t_i18n('Nationality')}
             </Typography>
@@ -140,13 +138,13 @@ const ThreatActorIndividualDemographics = ({
                 : '-'}
             </div>
           </Grid>
-          <Grid item={true} xs={4}>
+          <Grid item xs={4}>
             <Typography variant="h3" gutterBottom={true}>
               {t_i18n('Ethnicity')}
             </Typography>
             <div id="ethnicity">{t_i18n(countryRelationship.ethnicity ?? '-')}</div>
           </Grid>
-          <Grid item={true} xs={4}>
+          <Grid item xs={4}>
             <Typography variant="h3" gutterBottom={true}>
               {t_i18n('Gender')}
             </Typography>
@@ -156,7 +154,7 @@ const ThreatActorIndividualDemographics = ({
               small
             />
           </Grid>
-          <Grid item={true} xs={4}>
+          <Grid item xs={4}>
             <Typography variant="h3" gutterBottom={true}>
               {t_i18n('Marital Status')}
             </Typography>
@@ -166,7 +164,7 @@ const ThreatActorIndividualDemographics = ({
               small
             />
           </Grid>
-          <Grid item={true} xs={4}>
+          <Grid item xs={4}>
             <Typography variant="h3" gutterBottom={true}>
               {t_i18n('Job Title')}
             </Typography>
@@ -174,7 +172,7 @@ const ThreatActorIndividualDemographics = ({
           </Grid>
         </Grid>
       </Paper>
-    </div>
+    </>
   );
 };
 

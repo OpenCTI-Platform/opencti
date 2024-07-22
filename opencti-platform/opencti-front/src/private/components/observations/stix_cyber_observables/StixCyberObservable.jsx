@@ -30,42 +30,44 @@ class StixCyberObservableComponent extends Component {
           spacing={3}
           classes={{ container: classes.gridContainer }}
         >
-          <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
+          <Grid item xs={6}>
             <StixCyberObservableDetails
               stixCyberObservable={stixCyberObservable}
             />
           </Grid>
-          <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
+          <Grid item xs={6}>
             <StixCyberObservableOverview
               stixCyberObservable={stixCyberObservable}
             />
           </Grid>
-          <Grid item={true} xs={6} style={{ marginTop: 30 }}>
+          <Grid item xs={6}>
             <SimpleStixObjectOrStixRelationshipStixCoreRelationships
               stixObjectOrStixRelationshipId={stixCyberObservable.id}
               stixObjectOrStixRelationshipLink={`/dashboard/observations/observables/${stixCyberObservable.id}/knowledge`}
             />
           </Grid>
-          <Grid item={true} xs={6} style={{ marginTop: 30 }}>
+          <Grid item xs={6}>
             <StixCoreObjectOrStixRelationshipLastContainers
               stixCoreObjectOrStixRelationshipId={stixCyberObservable.id}
             />
           </Grid>
-          <Grid item={true} xs={6} style={{ marginTop: 30 }}>
+          <Grid item xs={6}>
             <StixCoreObjectExternalReferences
               stixCoreObjectId={stixCyberObservable.id}
             />
           </Grid>
-          <Grid item={true} xs={6} style={{ marginTop: 30 }}>
+          <Grid item xs={6}>
             <StixCoreObjectLatestHistory
               stixCoreObjectId={stixCyberObservable.id}
             />
           </Grid>
+          <Grid item xs={12}>
+            <StixCoreObjectOrStixCoreRelationshipNotes
+              stixCoreObjectOrStixCoreRelationshipId={stixCyberObservable.id}
+              defaultMarkings={stixCyberObservable.objectMarking ?? []}
+            />
+          </Grid>
         </Grid>
-        <StixCoreObjectOrStixCoreRelationshipNotes
-          stixCoreObjectOrStixCoreRelationshipId={stixCyberObservable.id}
-          defaultMarkings={stixCyberObservable.objectMarking ?? []}
-        />
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <StixCyberObservableEdition
             stixCyberObservableId={stixCyberObservable.id}

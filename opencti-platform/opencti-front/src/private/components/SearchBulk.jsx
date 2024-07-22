@@ -485,7 +485,7 @@ const SearchBulk = () => {
           spacing={3}
           classes={{ container: classes.gridContainer }}
         >
-          <Grid item={true} xs={2} style={{ marginTop: -20 }}>
+          <Grid item xs={2} style={{ marginTop: -20 }}>
             <TextField
               onChange={handleChangeTextField}
               value={textFieldValue}
@@ -496,7 +496,7 @@ const SearchBulk = () => {
               variant="outlined"
             />
           </Grid>
-          <Grid item={true} xs={10} style={{ marginTop: -20 }}>
+          <Grid item xs={10} style={{ marginTop: -20 }}>
             <Box style={{ width: '100%', marginTop: 2 }}>
               <LinearProgress
                 variant={loading ? 'indeterminate' : 'determinate'}

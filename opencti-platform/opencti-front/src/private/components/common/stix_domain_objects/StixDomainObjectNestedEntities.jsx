@@ -14,8 +14,6 @@ import StixDomainObjectNestedEntitiesLines, { stixDomainObjectNestedEntitiesLine
 
 const styles = (theme) => ({
   paper: {
-    height: '100%',
-    minHeight: '100%',
     margin: 0,
     padding: 15,
     borderRadius: 4,

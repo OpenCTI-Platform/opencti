@@ -21,8 +21,6 @@ import ThreatActorGroupLocation from './ThreatActorGroupLocation';
 
 const styles = (theme) => ({
   paper: {
-    height: '100%',
-    minHeight: '100%',
     margin: '10px 0 0 0',
     padding: '15px',
     borderRadius: 4,
@@ -51,20 +49,20 @@ class ThreatActorGroupDetailsComponent extends Component {
       (n) => n?.node?.metaData?.inCarousel,
     ).length > 0;
     return (
-      <div style={{ height: '100%' }}>
-        <Typography variant="h4" gutterBottom={true}>
+      <>
+        <Typography variant="h4">
           {t('Details')}
         </Typography>
-        <Paper classes={{ root: classes.paper }} variant="outlined">
+        <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
           <Grid container={true} spacing={3}>
-            <Grid item={true} xs={hasImages ? 7 : 6}>
+            <Grid item xs={hasImages ? 7 : 6}>
               <Grid container={true} spacing={3}>
                 {hasImages && (
-                  <Grid item={true} xs={4}>
+                  <Grid item xs={4}>
                     <ImageCarousel data={threatActorGroup} />
                   </Grid>
                 )}
-                <Grid item={true} xs={hasImages ? 8 : 12}>
+                <Grid item xs={hasImages ? 8 : 12}>
                   <Typography variant="h3" gutterBottom={true}>
                     {t('Threat actor types')}
                   </Typography>
@@ -94,7 +92,7 @@ class ThreatActorGroupDetailsComponent extends Component {
                 </Grid>
               </Grid>
             </Grid>
-            <Grid item={true} xs={hasImages ? 5 : 6}>
+            <Grid item xs={hasImages ? 5 : 6}>
               <ThreatActorGroupLocation threatActorGroup={threatActorGroup} />
               <Typography
                 variant="h3"
@@ -115,7 +113,7 @@ class ThreatActorGroupDetailsComponent extends Component {
             </Grid>
           </Grid>
           <Grid container={true} spacing={3}>
-            <Grid item={true} xs={4}>
+            <Grid item xs={4}>
               <Typography
                 variant="h3"
                 gutterBottom={true}
@@ -128,7 +126,7 @@ class ThreatActorGroupDetailsComponent extends Component {
                 value={threatActorGroup.sophistication}
               />
             </Grid>
-            <Grid item={true} xs={4}>
+            <Grid item xs={4}>
               <Typography
                 variant="h3"
                 gutterBottom={true}
@@ -141,7 +139,7 @@ class ThreatActorGroupDetailsComponent extends Component {
                 value={threatActorGroup.resource_level}
               />
             </Grid>
-            <Grid item={true} xs={4}>
+            <Grid item xs={4}>
               <Typography
                 variant="h3"
                 gutterBottom={true}
@@ -154,7 +152,7 @@ class ThreatActorGroupDetailsComponent extends Component {
                 value={threatActorGroup.primary_motivation}
               />
             </Grid>
-            <Grid item={true} xs={4}>
+            <Grid item xs={4}>
               <Typography
                 variant="h3"
                 gutterBottom={true}
@@ -184,7 +182,7 @@ class ThreatActorGroupDetailsComponent extends Component {
                 )}
               </FieldOrEmpty>
             </Grid>
-            <Grid item={true} xs={4}>
+            <Grid item xs={4}>
               <Typography
                 variant="h3"
                 gutterBottom={true}
@@ -211,7 +209,7 @@ class ThreatActorGroupDetailsComponent extends Component {
                 )}
               </FieldOrEmpty>
             </Grid>
-            <Grid item={true} xs={4}>
+            <Grid item xs={4}>
               <Typography
                 variant="h3"
                 gutterBottom={true}
@@ -249,7 +247,7 @@ class ThreatActorGroupDetailsComponent extends Component {
             </Grid>
           </Grid>
         </Paper>
-      </div>
+      </>
     );
   }
 }

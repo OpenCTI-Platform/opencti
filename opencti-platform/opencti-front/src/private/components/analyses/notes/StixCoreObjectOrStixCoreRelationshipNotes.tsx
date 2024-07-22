@@ -19,9 +19,7 @@ interface StixCoreObjectOrStixCoreRelationshipNotesProps {
   }[]
 }
 
-const StixCoreObjectOrStixCoreRelationshipNotes: FunctionComponent<
-StixCoreObjectOrStixCoreRelationshipNotesProps
-> = ({
+const StixCoreObjectOrStixCoreRelationshipNotes: FunctionComponent<StixCoreObjectOrStixCoreRelationshipNotesProps> = ({
   stixCoreObjectOrStixCoreRelationshipId,
   marginTop,
   isRelationship,
@@ -64,7 +62,7 @@ StixCoreObjectOrStixCoreRelationshipNotesProps
       {queryRef && (
         <React.Suspense
           fallback={
-            <div style={{ height: '100%', marginTop: marginTop || 55 }}>
+            <div style={{ height: '100%', marginTop }}>
               <Typography
                 variant="h4"
                 gutterBottom={true}
@@ -73,7 +71,7 @@ StixCoreObjectOrStixCoreRelationshipNotesProps
                 {title}
               </Typography>
             </div>
-                    }
+          }
         >
           <StixCoreObjectOrStixCoreRelationshipNotesCards
             id={stixCoreObjectOrStixCoreRelationshipId}

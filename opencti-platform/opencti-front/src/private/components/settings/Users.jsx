@@ -111,7 +111,7 @@ const Users = () => {
       {isSetAccess || isEnterpriseEdition ? (
         renderLines()
       ) : (
-        <Grid item={true} xs={12}>
+        <Grid item xs={12}>
           <EnterpriseEdition
             feature="Organization sharing"
           />

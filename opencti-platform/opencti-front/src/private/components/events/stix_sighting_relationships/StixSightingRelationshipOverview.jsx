@@ -103,15 +103,11 @@ const styles = (theme) => ({
     color: theme.palette.text.primary,
   },
   paper: {
-    height: '100%',
-    minHeight: '100%',
     margin: '10px 0 0 0',
     padding: '15px',
     borderRadius: 4,
   },
   paperWithoutPadding: {
-    height: '100%',
-    minHeight: '100%',
     margin: '10px 0 0 0',
     padding: 0,
     borderRadius: 4,
@@ -243,7 +239,7 @@ class StixSightingRelationshipContainer extends Component {
           spacing={3}
           classes={{ container: classes.gridContainer }}
         >
-          <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
+          <Grid item xs={6}>
             <Typography variant="h4" gutterBottom={true}>
               {t('Relationship')}
             </Typography>
@@ -251,6 +247,7 @@ class StixSightingRelationshipContainer extends Component {
               classes={{ root: classes.paperWithoutPadding }}
               variant="outlined"
               style={{ position: 'relative' }}
+              className={'paper-for-grid'}
             >
               <Link to={!fromRestricted ? `${linkFrom}/${from.id}` : '#'}>
                 <div
@@ -294,10 +291,10 @@ class StixSightingRelationshipContainer extends Component {
                       {!fromRestricted
                         ? truncate(
                           from.name
-                              || from.observable_value
-                              || from.attribute_abstract
-                              || from.content
-                              || t(`relationship_${from.entity_type}`),
+                          || from.observable_value
+                          || from.attribute_abstract
+                          || from.content
+                          || t(`relationship_${from.entity_type}`),
                           50,
                         )
                         : t('Restricted')}
@@ -357,10 +354,10 @@ class StixSightingRelationshipContainer extends Component {
                       {!toRestricted
                         ? truncate(
                           to.name
-                              || to.observable_value
-                              || to.attribute_abstract
-                              || to.content
-                              || t(`relationship_${to.entity_type}`),
+                          || to.observable_value
+                          || to.attribute_abstract
+                          || to.content
+                          || t(`relationship_${to.entity_type}`),
                           50,
                         )
                         : t('Restricted')}
@@ -371,7 +368,7 @@ class StixSightingRelationshipContainer extends Component {
               <Divider style={{ marginTop: 30 }} />
               <div style={{ padding: 15 }}>
                 <Grid container={true} spacing={3}>
-                  <Grid item={true} xs={6}>
+                  <Grid item xs={6}>
                     <Typography variant="h3" gutterBottom={true}>
                       {t('Marking')}
                     </Typography>
@@ -397,7 +394,7 @@ class StixSightingRelationshipContainer extends Component {
                     </Typography>
                     {nsdt(stixSightingRelationship.last_seen)}
                   </Grid>
-                  <Grid item={true} xs={6}>
+                  <Grid item xs={6}>
                     <div>
                       <StixSightingRelationshipSharing
                         elementId={stixSightingRelationship.id}
@@ -456,13 +453,13 @@ class StixSightingRelationshipContainer extends Component {
               </div>
             </Paper>
           </Grid>
-          <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
+          <Grid item xs={6}>
             <Typography variant="h4" gutterBottom={true}>
               {t('Details')}
             </Typography>
-            <Paper classes={{ root: classes.paper }} variant="outlined">
+            <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
               <Grid container={true} spacing={3}>
-                <Grid item={true} xs={6}>
+                <Grid item xs={6}>
                   <Typography variant="h3" gutterBottom={true}>
                     {t('Confidence level')}
                   </Typography>
@@ -505,7 +502,7 @@ class StixSightingRelationshipContainer extends Component {
                   </Typography>
                   {nsdt(stixSightingRelationship.updated_at)}
                 </Grid>
-                <Grid item={true} xs={6}>
+                <Grid item xs={6}>
                   <Typography variant="h3" gutterBottom={true}>
                     {t('Processing status')}
                   </Typography>
@@ -540,10 +537,8 @@ class StixSightingRelationshipContainer extends Component {
               </Grid>
             </Paper>
           </Grid>
-        </Grid>
-        <div>
           {stixSightingRelationship.x_opencti_inferences !== null ? (
-            <div style={{ marginTop: 40 }}>
+            <Grid item xs={12}>
               <Typography variant="h4" gutterBottom={true}>
                 {t('Inference explanation')}
               </Typography>
@@ -557,41 +552,38 @@ class StixSightingRelationshipContainer extends Component {
                   />
                 ),
               )}
-            </div>
+            </Grid>
           ) : (
-            <div style={{ margin: '50px 0 0 0' }}>
-              <Grid container={true} spacing={3}>
-                <Grid item={true} xs={12}>
-                  <StixCoreObjectOrStixRelationshipLastContainers
-                    stixCoreObjectOrStixRelationshipId={
-                      stixSightingRelationship.id
-                    }
-                  />
-                </Grid>
+            <>
+              <Grid item xs={12}>
+                <StixCoreObjectOrStixRelationshipLastContainers
+                  stixCoreObjectOrStixRelationshipId={
+                    stixSightingRelationship.id
+                  }
+                />
               </Grid>
-              <Grid container={true} spacing={3} style={{ marginTop: 25 }}>
-                <Grid item={true} xs={6}>
-                  <StixSightingRelationshipExternalReferences
-                    stixSightingRelationshipId={stixSightingRelationship.id}
-                  />
-                </Grid>
-                <Grid item={true} xs={6}>
-                  <StixSightingRelationshipLatestHistory
-                    stixSightingRelationshipId={stixSightingRelationship.id}
-                  />
-                </Grid>
+              <Grid item xs={6}>
+                <StixSightingRelationshipExternalReferences
+                  stixSightingRelationshipId={stixSightingRelationship.id}
+                />
               </Grid>
-              <StixCoreObjectOrStixCoreRelationshipNotes
-                marginTop={55}
-                stixCoreObjectOrStixCoreRelationshipId={
-                  stixSightingRelationship.id
-                }
-                isRelationship={true}
-                defaultMarkings={stixSightingRelationship.objectMarking ?? []}
-              />
-            </div>
+              <Grid item xs={6}>
+                <StixSightingRelationshipLatestHistory
+                  stixSightingRelationshipId={stixSightingRelationship.id}
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <StixCoreObjectOrStixCoreRelationshipNotes
+                  stixCoreObjectOrStixCoreRelationshipId={
+                    stixSightingRelationship.id
+                  }
+                  isRelationship={true}
+                  defaultMarkings={stixSightingRelationship.objectMarking ?? []}
+                />
+              </Grid>
+            </>
           )}
-        </div>
+        </Grid>
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <Fab
             onClick={this.handleOpenEdition.bind(this)}
@@ -761,7 +753,7 @@ const StixSightingRelationshipOverview = createFragmentContainer(
                           entity_type
                         }
                       }
-                                            objectMarking {
+                      objectMarking {
                         id
                         definition_type
                         definition
@@ -1847,7 +1839,7 @@ const StixSightingRelationshipOverview = createFragmentContainer(
                                   entity_type
                                 }
                               }
-                                                            objectMarking {
+                              objectMarking {
                                 id
                                 definition_type
                                 definition
@@ -2316,7 +2308,7 @@ const StixSightingRelationshipOverview = createFragmentContainer(
                                   entity_type
                                 }
                               }
-                                                            objectMarking {
+                              objectMarking {
                                 id
                                 definition_type
                                 definition
@@ -2545,7 +2537,7 @@ const StixSightingRelationshipOverview = createFragmentContainer(
                                   entity_type
                                 }
                               }
-                                                            objectMarking {
+                              objectMarking {
                                 id
                                 definition_type
                                 definition

@@ -16,8 +16,6 @@ import StixSightingRelationshipExternalReferencesLines, { stixSightingRelationsh
 
 const styles = (theme) => ({
   paper: {
-    height: '100%',
-    minHeight: '100%',
     margin: '-4px 0 0 0',
     padding: 0,
     borderRadius: 4,
@@ -64,7 +62,7 @@ class StixSightingRelationshipExternalReferences extends Component {
                 {t('External references')}
               </Typography>
               <div className="clearfix" />
-              <Paper classes={{ root: classes.paper }} variant="outlined">
+              <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
                 <List>
                   {Array.from(Array(5), (e, i) => (
                     <ListItem

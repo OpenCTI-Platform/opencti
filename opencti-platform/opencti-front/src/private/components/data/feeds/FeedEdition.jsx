@@ -472,7 +472,7 @@ const FeedEditionContainer = (props) => {
                               <CancelOutlined fontSize="small" />
                             </IconButton>
                             <Grid container={true} spacing={3}>
-                              <Grid item={true} xs="auto">
+                              <Grid item xs="auto">
                                 <MuiTextField
                                   variant="standard"
                                   name="attribute"
@@ -486,7 +486,7 @@ const FeedEditionContainer = (props) => {
                               {selectedTypes.map((selectedType) => (
                                 <Grid
                                   key={selectedType}
-                                  item={true}
+                                  item
                                   xs="auto"
                                 >
                                   <FormControl

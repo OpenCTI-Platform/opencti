@@ -40,8 +40,6 @@ import Transition from '../../../../components/Transition';
 
 const styles = (theme) => ({
   paper: {
-    height: '100%',
-    minHeight: '100%',
     margin: '10px 0 0 0',
     padding: '15px',
     borderRadius: 4,
@@ -121,13 +119,13 @@ class StixDomainObjectOverview extends Component {
       ? stixDomainObject.createdBy?.x_opencti_reliability
       : stixDomainObject.x_opencti_reliability;
     return (
-      <div style={{ height: '100%' }} className="break">
-        <Typography variant="h4" gutterBottom={true}>
+      <>
+        <Typography variant="h4">
           {t('Basic information')}
         </Typography>
-        <Paper classes={{ root: classes.paper }} variant="outlined">
+        <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
           <Grid container={true} spacing={3}>
-            <Grid item={true} xs={6}>
+            <Grid item xs={6}>
               {stixDomainObject.objectMarking && (
                 <>
                   <Typography variant="h3" gutterBottom={true}>
@@ -161,7 +159,7 @@ class StixDomainObjectOverview extends Component {
               {(displayConfidence || displayReliability) && (
                 <Grid container={true} columnSpacing={1}>
                   {displayReliability && (
-                    <Grid item={true} xs={6}>
+                    <Grid item xs={6}>
                       <Typography
                         variant="h3"
                         gutterBottom={true}
@@ -183,7 +181,7 @@ class StixDomainObjectOverview extends Component {
                     </Grid>
                   )}
                   {displayConfidence && (
-                    <Grid item={true} xs={6}>
+                    <Grid item xs={6}>
                       <Typography
                         variant="h3"
                         gutterBottom={true}
@@ -217,7 +215,7 @@ class StixDomainObjectOverview extends Component {
               </Typography>
               {fldt(stixDomainObject.modified)}
             </Grid>
-            <Grid item={true} xs={6}>
+            <Grid item xs={6}>
               {withPattern && (
                 <>
                   <Typography variant="h3" gutterBottom={true}>
@@ -376,7 +374,7 @@ class StixDomainObjectOverview extends Component {
             </Button>
           </DialogActions>
         </Dialog>
-      </div>
+      </>
     );
   }
 }

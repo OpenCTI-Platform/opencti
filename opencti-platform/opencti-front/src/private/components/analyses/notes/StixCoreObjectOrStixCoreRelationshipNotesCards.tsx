@@ -240,7 +240,7 @@ StixCoreObjectOrStixCoreRelationshipNotesCardsProps
     });
   };
   return (
-    <div style={{ marginTop: marginTop || 55 }}>
+    <div style={{ marginTop }}>
       <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
         {title}
       </Typography>
@@ -283,7 +283,7 @@ StixCoreObjectOrStixCoreRelationshipNotesCardsProps
         })}
       <Security needs={[KNOWLEDGE_KNPARTICIPATE]}>
         <Accordion
-          style={{ margin: `${notes.length > 0 ? '30' : '0'}px 0 80px 0` }}
+          style={{ margin: `${notes.length > 0 ? '30' : '0'}px 0 0px 0` }}
           expanded={open}
           variant="outlined"
         >

@@ -35,12 +35,7 @@ const styles = () => ({
   gridContainer: {
     marginBottom: 20,
   },
-  historyContainer: {
-    marginTop: 80,
-  },
   paper: {
-    height: '100%',
-    minHeight: '100%',
     margin: '10px 0 0 0',
     padding: '15px',
     borderRadius: 4,
@@ -240,7 +235,7 @@ const StixCoreObjectFilesAndHistory = ({
   };
 
   const invalidCsvMapper = selectedConnector?.name === 'ImportCsv'
-      && selectedConnector?.configurations?.length === 0;
+    && selectedConnector?.configurations?.length === 0;
   const [hasUserChoiceCsvMapper, setHasUserChoiceCsvMapper] = useState(false);
   const onCsvMapperSelection = (option) => {
     const parsedOption = typeof option === 'string' ? JSON.parse(option) : option;
@@ -278,13 +273,13 @@ const StixCoreObjectFilesAndHistory = ({
           connectors={importConnsPerFormat}
           handleOpenImport={handleOpenImport}
         />
+        <Grid item xs={12} style={{ marginTop: 24 }}>
+          <StixCoreObjectHistory
+            stixCoreObjectId={id}
+            withoutRelations={withoutRelations}
+          />
+        </Grid>
       </Grid>
-      <div className={classes.historyContainer}>
-        <StixCoreObjectHistory
-          stixCoreObjectId={id}
-          withoutRelations={withoutRelations}
-        />
-      </div>
       <Formik
         enableReinitialize={true}
         initialValues={{ connector_id: '', configuration: '', objectMarking: [] }}
@@ -350,8 +345,8 @@ const StixCoreObjectFilesAndHistory = ({
                         </MenuItem>
                       );
                     })}
-                  </Field> : <ManageImportConnectorMessage name={selectedConnector?.name }/>
-                  }
+                  </Field> : <ManageImportConnectorMessage name={selectedConnector?.name} />
+                }
                 {selectedConnector?.name === 'ImportCsv'
                   && hasUserChoiceCsvMapper
                   && (
@@ -514,9 +509,9 @@ const StixCoreObjectFilesAndHistoryFragment = createFragmentContainer(
         connector_scope
         updated_at
         configurations {
-            id
-            name
-            configuration
+          id
+          name
+          configuration
         }
       }
     `,

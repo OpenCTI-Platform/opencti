@@ -96,13 +96,13 @@ class WorkersStatusComponent extends Component {
             spacing={3}
             style={{ paddingBottom: 0, height: '100%' }}
           >
-            <Grid item={true} xs={2} style={{ height: '25%' }}>
+            <Grid item xs={2} style={{ height: '25%' }}>
               <div className={classes.metric}>
                 <div className={classes.number}>{n(consumers)}</div>
                 <div className={classes.title}>{t('Connected workers')}</div>
               </div>
             </Grid>
-            <Grid item={true} xs={2} style={{ height: '25%' }}>
+            <Grid item xs={2} style={{ height: '25%' }}>
               <div className={classes.metric}>
                 <div className={classes.number}>
                   {n(pathOr(0, ['queue_totals', 'messages'], overview))}
@@ -110,7 +110,7 @@ class WorkersStatusComponent extends Component {
                 <div className={classes.title}>{t('Queued bundles')}</div>
               </div>
             </Grid>
-            <Grid item={true} xs={2} style={{ height: '25%' }}>
+            <Grid item xs={2} style={{ height: '25%' }}>
               <div className={classes.metric}>
                 <div className={classes.number}>
                   {n(
@@ -125,19 +125,19 @@ class WorkersStatusComponent extends Component {
                 <div className={classes.title}>{t('Bundles processed')}</div>
               </div>
             </Grid>
-            <Grid item={true} xs={2} style={{ height: '25%' }}>
+            <Grid item xs={2} style={{ height: '25%' }}>
               <div className={classes.metric}>
                 <div className={classes.number}>{n(readOperations)}/s</div>
                 <div className={classes.title}>{t('Read operations')}</div>
               </div>
             </Grid>
-            <Grid item={true} xs={2} style={{ height: '25%' }}>
+            <Grid item xs={2} style={{ height: '25%' }}>
               <div className={classes.metric}>
                 <div className={classes.number}>{n(writeOperations)}/s</div>
                 <div className={classes.title}>{t('Write operations')}</div>
               </div>
             </Grid>
-            <Grid item={true} xs={2} style={{ height: '25%' }}>
+            <Grid item xs={2} style={{ height: '25%' }}>
               <div className={classes.metric}>
                 <div className={classes.number}>{n(docs.count)}</div>
                 <div className={classes.title}>

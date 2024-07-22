@@ -36,7 +36,7 @@ const WidgetBookmarks = ({ bookmarks }: WidgetBookmarksProps) => {
           const bookmark = bookmarkEdge.node;
           const link = resolveLink(bookmark.entity_type);
           return (
-            <Grid item={true} xs={4} key={bookmark.id}>
+            <Grid item xs={4} key={bookmark.id}>
               <Card
                 variant="outlined"
                 style={{

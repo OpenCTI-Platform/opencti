@@ -154,7 +154,7 @@ const RootThreatActorIndividualComponent = ({
               enableQuickSubscription={true}
             />
             <Box
-              sx={{ borderBottom: 1, borderColor: 'divider', marginBottom: 4 }}
+              sx={{ borderBottom: 1, borderColor: 'divider', marginBottom: 2 }}
             >
               <Tabs
                 value={getCurrentTab(location.pathname, threatActorIndividual.id, '/dashboard/threats/threat_actors_individual')}

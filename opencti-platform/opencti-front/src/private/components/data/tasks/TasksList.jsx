@@ -36,8 +36,6 @@ import { convertFiltersFromOldFormat } from '../../../../utils/filters/filtersFr
 // Do not use it for new code.
 const useStyles = makeStyles((theme) => ({
   paper: {
-    height: '100%',
-    minHeight: '100%',
     margin: '10px 0 0 0',
     padding: '15px',
     borderRadius: 4,
@@ -232,9 +230,9 @@ const TasksList = ({ data }) => {
             style={{ marginBottom: 20 }}
           >
             <Grid container={true} spacing={3}>
-              <Grid item={true} xs={5}>
+              <Grid item xs={5}>
                 <Grid container={true} spacing={1}>
-                  <Grid item={true} xs={12}>
+                  <Grid item xs={12}>
                     <Typography variant="h3" gutterBottom={true}>
                       {t_i18n('Targeted entities')} ({n(task.task_expected_number)}
                       )
@@ -282,7 +280,7 @@ const TasksList = ({ data }) => {
                     />
                     )}
                   </Grid>
-                  <Grid item={true} xs={12}>
+                  <Grid item xs={12}>
                     <Typography variant="h3" gutterBottom={true}>
                       {t_i18n('Actions')}
                     </Typography>
@@ -331,9 +329,9 @@ const TasksList = ({ data }) => {
                   </Grid>
                 </Grid>
               </Grid>
-              <Grid item={true} xs={7}>
+              <Grid item xs={7}>
                 <Grid container={true} spacing={3}>
-                  <Grid item={true} xs={2}>
+                  <Grid item xs={2}>
                     <Typography variant="h3" gutterBottom={true}>
                       {t_i18n('Initiator')}
                     </Typography>
@@ -341,13 +339,13 @@ const TasksList = ({ data }) => {
                       {truncate(task.initiator?.name, 15)}
                     </Tooltip>
                   </Grid>
-                  <Grid item={true} xs={2}>
+                  <Grid item xs={2}>
                     <Typography variant="h3" gutterBottom={true}>
                       {t_i18n('Task start time')}
                     </Typography>
                     {nsdt(task.created_at)}
                   </Grid>
-                  <Grid item={true} xs={2}>
+                  <Grid item xs={2}>
                     <Typography variant="h3" gutterBottom={true}>
                       {task.completed
                         ? t_i18n('Task end time')
@@ -356,20 +354,20 @@ const TasksList = ({ data }) => {
                     {nsdt(task.last_execution_date)}
                   </Grid>
                   {(task.scope ?? task.type)
-                      && <Grid item={true} xs={2}>
+                      && <Grid item xs={2}>
                         <Typography variant="h3" gutterBottom={true}>
                           {t_i18n('Scope')}
                         </Typography>
                         <TaskScope scope={task.scope ?? task.type} label={t_i18n(task.scope ?? task.type)} />
                       </Grid>
                     }
-                  <Grid item={true} xs={2}>
+                  <Grid item xs={2}>
                     <Typography variant="h3" gutterBottom={true}>
                       {t_i18n('Status')}
                     </Typography>
                     <TaskStatus status={status} label={t_i18n(status)} />
                   </Grid>
-                  <Grid item={true} xs={10}>
+                  <Grid item xs={10}>
                     <Typography variant="h3" gutterBottom={true}>
                       {t_i18n('Progress')}
                     </Typography>
