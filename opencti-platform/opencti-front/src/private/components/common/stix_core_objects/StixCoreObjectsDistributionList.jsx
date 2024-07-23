@@ -44,6 +44,149 @@ const stixCoreObjectsDistributionListDistributionQuery = graphql`
       label
       value
       entity {
+        ... on StixDomainObject {
+          created
+          modified
+        }
+        ... on AttackPattern {
+          name
+          description
+        }
+        ... on Campaign {
+          name
+          description
+        }
+        ... on Note {
+          attribute_abstract
+        }
+        ... on ObservedData {
+          name
+          first_observed
+          last_observed
+        }
+        ... on Opinion {
+          opinion
+        }
+        ... on Report {
+          name
+          description
+          published
+        }
+        ... on Grouping {
+          name
+          description
+        }
+        ... on CourseOfAction {
+          name
+          description
+        }
+        ... on Individual {
+          name
+          description
+        }
+        ... on Organization {
+          name
+          description
+        }
+        ... on Sector {
+          name
+          description
+        }
+        ... on System {
+          name
+          description
+        }
+        ... on Indicator {
+          name
+          description
+        }
+        ... on Infrastructure {
+          name
+          description
+        }
+        ... on IntrusionSet {
+          name
+          description
+        }
+        ... on Position {
+          name
+          description
+        }
+        ... on City {
+          name
+          description
+        }
+        ... on AdministrativeArea {
+          name
+          description
+        }
+        ... on Country {
+          name
+          description
+        }
+        ... on Region {
+          name
+          description
+        }
+        ... on Malware {
+          name
+          description
+        }
+        ... on MalwareAnalysis {
+          result_name
+        }
+        ... on ThreatActor {
+          name
+          description
+        }
+        ... on Tool {
+          name
+          description
+        }
+        ... on Vulnerability {
+          name
+          description
+        }
+        ... on Incident {
+          name
+          description
+        }
+        ... on Event {
+          name
+          description
+        }
+        ... on Channel {
+          name
+          description
+        }
+        ... on Narrative {
+          name
+          description
+        }
+        ... on Language {
+          name
+        }
+        ... on DataComponent {
+          name
+        }
+        ... on DataSource {
+          name
+        }
+        ... on Case {
+          name
+        }
+        ... on Task {
+          name
+          description
+        }
+        ... on StixCyberObservable {
+          observable_value
+        }
+        ... on Identity {
+          id
+          name
+          entity_type
+        }
         ... on BasicObject {
           id
           entity_type
