@@ -3,7 +3,6 @@ import { RootPrivateQuery$data } from '../../private/__generated__/RootPrivateQu
 import { ModuleHelper } from '../platformModulesHelper';
 import { RootSettings$data } from '../../private/__generated__/RootSettings.graphql';
 import { RootMe_data$data } from '../../private/__generated__/RootMe_data.graphql';
-import type { OverviewLayoutCustomization } from '../overviewLayoutCustomization';
 
 export interface BannerSettings {
   bannerLevel?: string | null;
@@ -33,6 +32,9 @@ export type SchemaType = {
   schemaRelationsRefTypesMapping: Map<string, readonly { readonly name: string, readonly toTypes: readonly string[] }[]>
   filterKeysSchema: Map<string, Map<string, FilterDefinition>>
 };
+
+type OverviewLayoutCustomizationSettingsConfigurationWidgets = Map<string, number>;
+type OverviewLayoutCustomization = Map<string, OverviewLayoutCustomizationSettingsConfigurationWidgets>;
 
 export interface UserContextType {
   me: RootMe_data$data | undefined;
