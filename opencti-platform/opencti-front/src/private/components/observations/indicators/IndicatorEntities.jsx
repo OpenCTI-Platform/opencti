@@ -31,6 +31,7 @@ const IndicatorEntities = ({ indicatorId, relationshipType, defaultStartTime, de
     sortBy,
     orderAsc,
     filters,
+    searchTerm,
   } = viewStorage;
   const paginationOptions = {
     ...rawPaginationOptions,
@@ -101,6 +102,7 @@ const IndicatorEntities = ({ indicatorId, relationshipType, defaultStartTime, de
         secondaryAction={true}
         noBottomPadding={true}
         filters={filters}
+        keyword={searchTerm}
         paginationOptions={paginationOptions}
         entityTypes={['stix-core-relationship']}
       >
