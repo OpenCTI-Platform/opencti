@@ -29,7 +29,6 @@ const stixCoreObjectsTimelineQuery = graphql`
           id
           entity_type
           created_at
-          created_at
           ... on StixDomainObject {
             created
             modified
@@ -211,7 +210,6 @@ const stixCoreObjectsTimelineQuery = graphql`
 `;
 
 const StixCoreObjectsTimeline = ({
-  title,
   variant,
   height,
   startDate,
@@ -265,7 +263,7 @@ const StixCoreObjectsTimeline = ({
   return (
     <WidgetContainer
       height={height}
-      title={parameters.title ?? title ?? t_i18n('Entities list')}
+      title={parameters.title ?? t_i18n('Entities list')}
       variant={variant}
     >
       {renderContent()}
