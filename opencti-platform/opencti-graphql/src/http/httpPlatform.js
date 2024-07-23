@@ -169,7 +169,7 @@ const createApp = async (app) => {
 
   app.use((req, res, next) => {
     const urlString = req.url;
-    if (urlString && (urlString.startsWith(`${basePath}/public`) || urlString.startsWith(`${basePath}/static`) || urlString.startsWith(`${basePath}/graphql`))) {
+    if (urlString && (urlString.startsWith(`${basePath}/public`) || urlString.startsWith(`${basePath}/static`))) {
       securityPublic(req, res, next);
     } else {
       securityMiddleware(req, res, next);
