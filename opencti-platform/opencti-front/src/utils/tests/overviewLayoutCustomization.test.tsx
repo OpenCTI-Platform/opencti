@@ -7,15 +7,16 @@ import { createMockUserContext, ProvidersWrapper, ProvidersWrapperProps } from '
 describe('overviewLayoutCustomization', () => {
   const threatActorIndividualEntityType = 'Threat-Actor-Individual';
   const overviewLayoutCustomization = new Map();
-  const threatActorIndividualConfiguration = new Map();
-  threatActorIndividualConfiguration.set('details', { order: 1, width: 6 });
-  threatActorIndividualConfiguration.set('basicInformation', { order: 2, width: 6 });
-  threatActorIndividualConfiguration.set('demographics-biographics', { order: 3, width: 6 });
-  threatActorIndividualConfiguration.set('latestCreatedRelationships', { order: 5, width: 6 });
-  threatActorIndividualConfiguration.set('latestContainers', { order: 6, width: 6 });
-  threatActorIndividualConfiguration.set('externalReferences', { order: 7, width: 6 });
-  threatActorIndividualConfiguration.set('mostRecentHistory', { order: 8, width: 6 });
-  threatActorIndividualConfiguration.set('notes', { order: 9, width: 12 });
+  const threatActorIndividualConfiguration = new Map([
+    ['details', 6],
+    ['basicInformation', 6],
+    ['demographics-biographics', 6],
+    ['latestCreatedRelationships', 6],
+    ['latestContainers', 6],
+    ['externalReferences', 6],
+    ['mostRecentHistory', 6],
+    ['notes', 12],
+  ]);
   overviewLayoutCustomization.set(
     'Threat-Actor-Individual',
     threatActorIndividualConfiguration,
