@@ -240,6 +240,18 @@ describe('Case Incident Response standard behavior with authorized_members activ
 describe('Case Incident Response standard behavior with authorized_members activated via settings', () => {
   let caseIncidentResponseAuthorizedMembersFromSettings: CaseIncident;
   let entitySettingIdCaseIncidentResponse: string;
+  const ENTITY_SETTINGS_UPDATE_QUERY = gql`
+    mutation entitySettingsEdit($ids: [ID!]!, $input: [EditInput!]!) {
+      entitySettingsFieldPatch(ids: $ids, input: $input) {
+        id
+        target_type
+        platform_entity_files_ref
+        platform_hidden_type
+        enforce_reference
+        attributes_configuration
+      }
+    }
+  `;
   it('should init entity settings', async () => {
     const LIST_QUERY = gql`
           query entitySettings {
@@ -267,18 +279,6 @@ describe('Case Incident Response standard behavior with authorized_members activ
   });
   it('should Case Incident Response created', async () => {
     // Activate authorized members for IR
-    const ENTITY_SETTINGS_UPDATE_QUERY = gql`
-      mutation entitySettingsEdit($ids: [ID!]!, $input: [EditInput!]!) {
-        entitySettingsFieldPatch(ids: $ids, input: $input) {
-          id
-          target_type
-          platform_entity_files_ref
-          platform_hidden_type
-          enforce_reference
-          attributes_configuration
-        }
-      }
-    `;
     const authorizedMembersConfiguration = JSON.stringify([
       {
         name: 'authorized_members',
@@ -312,12 +312,6 @@ describe('Case Incident Response standard behavior with authorized_members activ
       }
     ]);
     caseIncidentResponseAuthorizedMembersFromSettings = caseIncidentResponseAuthorizedMembersData?.data?.caseIncidentAdd;
-    // Clean
-    const authorizedMembersConfigurationClean = JSON.stringify([{ name: 'authorized_members', default_values: null }]);
-    await queryAsAdmin({
-      query: ENTITY_SETTINGS_UPDATE_QUERY,
-      variables: { ids: [entitySettingIdCaseIncidentResponse], input: { key: 'attributes_configuration', value: [authorizedMembersConfigurationClean] } },
-    });
   });
   it('should Case Incident Response deleted', async () => {
     // Delete the case
@@ -329,5 +323,14 @@ describe('Case Incident Response standard behavior with authorized_members activ
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: caseIncidentResponseAuthorizedMembersFromSettings.id } });
     expect(queryResult).not.toBeNull();
     expect(queryResult?.data?.caseIncident).toBeNull();
+  });
+  it('should clean Case Incident Response entitySetting', async () => {
+    // Clean
+    const cleanAuthorizedMembersConfiguration = JSON.stringify([{ name: 'authorized_members', default_values: null }]);
+    const cleanEntitySettingsResult = await queryAsAdmin({
+      query: ENTITY_SETTINGS_UPDATE_QUERY,
+      variables: { ids: [entitySettingIdCaseIncidentResponse], input: { key: 'attributes_configuration', value: [cleanAuthorizedMembersConfiguration] } },
+    });
+    expect(cleanEntitySettingsResult.data?.entitySettingsFieldPatch?.[0]?.attributes_configuration).toEqual(cleanAuthorizedMembersConfiguration);
   });
 });
