@@ -122,6 +122,14 @@ export const truncate = (str, limit = DEFAULT_TRUNCATE_LIMIT, withPoints = true)
   return `${trimmedStr.substr(0, Math.min(trimmedStr.length, trimmedStr.lastIndexOf(' ')))}...`;
 };
 
+const formatSoftware = (stixCyberObservable) => {
+  const value = stixCyberObservable.name || stixCyberObservable.cpe || stixCyberObservable.swid || 'Unknown';
+  if (value !== 'Unknown' && !!stixCyberObservable.version) {
+    return `${value} (${stixCyberObservable.version})`;
+  }
+  return value;
+};
+
 // TODO for now this list is duplicated in Front, think about updating it aswell
 export const observableValue = (stixCyberObservable) => {
   switch (stixCyberObservable.entity_type) {
@@ -144,7 +152,7 @@ export const observableValue = (stixCyberObservable) => {
     case ENTITY_PROCESS:
       return stixCyberObservable.pid || stixCyberObservable.command_line || 'Unknown';
     case ENTITY_SOFTWARE:
-      return stixCyberObservable.name || stixCyberObservable.cpe || stixCyberObservable.swid || 'Unknown';
+      return formatSoftware(stixCyberObservable);
     case ENTITY_USER_ACCOUNT:
       return stixCyberObservable.account_login || stixCyberObservable.user_id || 'Unknown';
     case ENTITY_BANK_ACCOUNT:
