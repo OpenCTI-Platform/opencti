@@ -167,6 +167,10 @@ const UserEditionGroups = createFragmentContainer(UserEditionGroupsComponent, {
           }
         }
       }
+      roles {
+        id
+        name
+      }
       groups(orderBy: $groupsOrderBy, orderMode: $groupsOrderMode) {
         edges {
           node {
