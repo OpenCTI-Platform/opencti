@@ -3011,7 +3011,8 @@ const WorkbenchFileContentComponent = ({
     const resolvedStixDomainObjects = stixDomainObjects.map((n) => ({
       ...n,
       ttype: t_i18n(`entity_${convertFromStixType(n.type)}`),
-      default_value: getMainRepresentative(n, null),
+      default_value: n.name || n.value || getMainRepresentative(n, null),
+      // use getMain Representative for default_value when possible to filter by representative.main (to check if the entity is in the platform)
       markings: resolveMarkings(stixDomainObjects, n.object_marking_refs),
     }));
     const sort = R.sortWith(
@@ -3159,6 +3160,7 @@ const WorkbenchFileContentComponent = ({
                                   {
                                     key: [
                                       'name',
+                                      'value',
                                       'aliases',
                                       'x_opencti_aliases',
                                       'x_mitre_id',
