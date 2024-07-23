@@ -104,7 +104,7 @@
     "graphql-constraint-directive": "5.4.3",
     "graphql-import": "1.0.2",
     "graphql-no-alias": "3.0.3",
-    "graphql-redis-subscriptions": "2.6.0",
+    "graphql-redis-subscriptions": "2.6.1",
     "graphql-relay": "0.10.0",
     "graphql-scalars": "1.23.0",
     "graphql-subscriptions": "2.0.0",
