@@ -92,6 +92,9 @@ export const defaultKey = (n: any) => {
 // equivalent to querying representative.main
 export const getMainRepresentative = (n: any, fallback = 'Unknown') => {
   if (!n) return '';
+  if (n.name === 'Unknown') {
+    return 'Unknown';
+  }
   if (typeof n.definition === 'object') {
     return defaultValueMarking(n);
   }
