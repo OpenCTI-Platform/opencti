@@ -20,7 +20,13 @@ const inlinedStyle = {
     margin: '0 10px',
   },
 };
-const BulkRelationDialogContainer = ({ stixDomainObjectId, stixDomainObjectName, stixDomainObjectType, selectedEntities, defaultRelationshipType }: BulkRelationDialogContainerProps) => {
+const BulkRelationDialogContainer = ({
+  stixDomainObjectId,
+  stixDomainObjectName,
+  stixDomainObjectType,
+  selectedEntities,
+  defaultRelationshipType,
+}: BulkRelationDialogContainerProps) => {
   const { isFeatureEnable } = useHelper();
   const { t_i18n } = useFormatter();
 
