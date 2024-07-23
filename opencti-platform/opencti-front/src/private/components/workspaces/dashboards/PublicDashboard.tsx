@@ -6,7 +6,7 @@ import { graphql } from 'react-relay';
 import { PublicDashboardsListQuery, PublicDashboardsListQuery$variables } from '@components/workspaces/dashboards/__generated__/PublicDashboardsListQuery.graphql';
 import { PublicDashboardsFragment$data } from '@components/workspaces/dashboards/__generated__/PublicDashboardsFragment.graphql';
 import { useFormatter } from '../../../../components/i18n';
-import { emptyFilterGroup } from '../../../../utils/filters/filtersUtils';
+import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../../utils/filters/filtersUtils';
 import DataTable from '../../../../components/dataGrid/DataTable';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
@@ -21,6 +21,8 @@ const publicDashboardFragment = graphql`
     user_id
     created_at
     updated_at
+    parent_types
+    dashboard_id
     private_manifest
     allowed_markings {
       id
@@ -83,7 +85,7 @@ const publicDashboardsListQuery = graphql`
     )
   }
 `;
-const LOCAL_STORAGE_KEY = 'publicDashboards';
+const LOCAL_STORAGE_KEY = 'PublicDashboard';
 
 const PublicDashboardComponent = () => {
   const { t_i18n } = useFormatter();
@@ -94,22 +96,23 @@ const PublicDashboardComponent = () => {
     openExports: false,
     filters: emptyFilterGroup,
   };
-  const { paginationOptions } = usePaginationLocalStorage<PublicDashboardsListQuery$variables>(
+  const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<PublicDashboardsListQuery$variables>(
     LOCAL_STORAGE_KEY,
     initialValues,
   );
-
-  // const contextFilters = useBuildEntityTypeBasedFilterContext('publicDashboards', viewStorage.filters);
+  const contextFilters = useBuildEntityTypeBasedFilterContext('PublicDashboard', viewStorage.filters);
   const queryPaginationOptions = {
     ...paginationOptions,
-  };
+    filters: contextFilters,
+  } as unknown as PublicDashboardsListQuery$variables;
+
   const queryRef = useQueryLoading<PublicDashboardsListQuery>(
     publicDashboardsListQuery,
     queryPaginationOptions,
   );
   // const { isFeatureEnable } = useHelper();
   // const dataTableEnabled = isFeatureEnable('DATA_TABLES');
-
+  console.log('dataColumns');
   const dataColumns = {
     name: {
       flexSize: 15,
@@ -121,14 +124,18 @@ const PublicDashboardComponent = () => {
     },
     allowed_markings: {
       flexSize: 10,
-      label: 'Markings shared',
+      label: 'Max markings shared',
     },
     enabled: {
       flexSize: 10,
       label: 'Link enabled',
     },
+    shared: {
+      flexSize: 10,
+      label: 'Shared by',
+    },
   };
-
+  console.log('DATA');
   return (
     <>
       <Breadcrumbs variant="list" elements={[{ label: t_i18n('Dashboards') }, { label: t_i18n('Public Dashboards'), current: true }]}/>
@@ -138,12 +145,15 @@ const PublicDashboardComponent = () => {
           resolvePath={(data: PublicDashboardsFragment$data) => data.publicDashboards?.edges?.map((n) => n?.node)}
           storageKey={LOCAL_STORAGE_KEY}
           initialValues={initialValues}
+          toolbarFilters={contextFilters}
           preloadedPaginationProps={{
             linesQuery: publicDashboardsListQuery,
             linesFragment: publicDashboardsFragment,
             queryRef,
+            setNumberOfElements: helpers.handleSetNumberOfElements,
           }}
           lineFragment={publicDashboardFragment}
+          exportContext={{ entity_type: 'PublicDashboard' }}
           additionalHeaderButtons={[
             <ToggleButton key="cards" value="lines" aria-label="lines">
               <Tooltip title={t_i18n('Lines view')}>
