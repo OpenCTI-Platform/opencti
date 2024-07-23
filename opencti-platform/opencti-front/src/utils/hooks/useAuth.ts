@@ -60,7 +60,7 @@ const useAuth = () => {
     me,
     settings,
     bannerSettings,
-    entitySettings, // setting avec overview layout de chaque entité
+    entitySettings,
     platformModuleHelpers,
     schema,
     overviewLayoutCustomization,
