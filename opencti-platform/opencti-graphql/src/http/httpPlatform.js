@@ -125,13 +125,57 @@ const createApp = async (app) => {
       },
     },
   });
+
+  const securityPublic = helmet({
+    expectCt: { enforce: true, maxAge: 30 },
+    referrerPolicy: { policy: 'unsafe-url' },
+    crossOriginEmbedderPolicy: false,
+    crossOriginOpenerPolicy: false,
+    crossOriginResourcePolicy: false,
+    contentSecurityPolicy: {
+      useDefaults: false,
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc,
+        styleSrc: [
+          "'self'",
+          "'unsafe-inline'",
+          'http://cdn.jsdelivr.net/npm/@apollographql/',
+          'https://fonts.googleapis.com/',
+        ],
+        scriptSrcAttr: [
+          "'self'",
+          "'unsafe-inline'",
+          'http://cdn.jsdelivr.net/npm/@apollographql/',
+          'https://fonts.googleapis.com/',
+        ],
+        fontSrc: ["'self'", 'data:', 'https://fonts.gstatic.com/'],
+        imgSrc: ["'self'", 'data:', 'https://*', 'http://*'],
+        manifestSrc: ["'self'", 'data:', 'https://*', 'http://*'],
+        connectSrc: ["'self'", 'wss://*', 'ws://*', 'data:', 'http://*', 'https://*'],
+        objectSrc: ["'self'", 'data:', 'http://*', 'https://*'],
+        frameSrc: ["'self'", 'data:', 'http://*', 'https://*'],
+      },
+    },
+    xFrameOptions: false,
+  });
+
   // Init the http server
   app.set('trust proxy', ['loopback', 'linklocal', 'uniquelocal']);
   app.use(limiter);
   if (DEV_MODE) {
     app.set('json spaces', 2);
   }
-  app.use(securityMiddleware);
+
+  app.use((req, res, next) => {
+    const urlString = req.url;
+    if (urlString && (urlString.startsWith(`${basePath}/public`) || urlString.startsWith(`${basePath}/static`) || urlString.startsWith(`${basePath}/graphql`))) {
+      securityPublic(req, res, next);
+    } else {
+      securityMiddleware(req, res, next);
+    }
+  });
+
   app.use(compression({}));
 
   if (ENABLED_UI) {
