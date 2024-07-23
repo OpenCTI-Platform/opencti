@@ -312,6 +312,13 @@ describe('Case Incident Response standard behavior with authorized_members activ
       }
     ]);
     caseIncidentResponseAuthorizedMembersFromSettings = caseIncidentResponseAuthorizedMembersData?.data?.caseIncidentAdd;
+    // Clean
+    const cleanAuthorizedMembersConfiguration = JSON.stringify([{ name: 'authorized_members', default_values: null }]);
+    const cleanEntitySettingsResult = await queryAsAdmin({
+      query: ENTITY_SETTINGS_UPDATE_QUERY,
+      variables: { ids: [entitySettingIdCaseIncidentResponse], input: { key: 'attributes_configuration', value: [cleanAuthorizedMembersConfiguration] } },
+    });
+    expect(cleanEntitySettingsResult.data?.entitySettingsFieldPatch?.[0]?.attributes_configuration).toEqual(cleanAuthorizedMembersConfiguration);
   });
   it('should Case Incident Response deleted', async () => {
     // Delete the case
@@ -323,14 +330,5 @@ describe('Case Incident Response standard behavior with authorized_members activ
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: caseIncidentResponseAuthorizedMembersFromSettings.id } });
     expect(queryResult).not.toBeNull();
     expect(queryResult?.data?.caseIncident).toBeNull();
-  });
-  it('should clean Case Incident Response entitySetting', async () => {
-    // Clean
-    const cleanAuthorizedMembersConfiguration = JSON.stringify([{ name: 'authorized_members', default_values: null }]);
-    const cleanEntitySettingsResult = await queryAsAdmin({
-      query: ENTITY_SETTINGS_UPDATE_QUERY,
-      variables: { ids: [entitySettingIdCaseIncidentResponse], input: { key: 'attributes_configuration', value: [cleanAuthorizedMembersConfiguration] } },
-    });
-    expect(cleanEntitySettingsResult.data?.entitySettingsFieldPatch?.[0]?.attributes_configuration).toEqual(cleanAuthorizedMembersConfiguration);
   });
 });
