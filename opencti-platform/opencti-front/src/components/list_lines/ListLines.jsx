@@ -8,7 +8,7 @@ import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
-import { ArrowDropDown, ArrowDropUp, FileDownloadOutlined, LibraryBooksOutlined, SettingsOutlined, ViewListOutlined, ViewModuleOutlined } from '@mui/icons-material';
+import { ArrowDropDown, ArrowDropUp, FileDownloadOutlined, LibraryBooksOutlined, SettingsOutlined, ViewModuleOutlined } from '@mui/icons-material';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import Checkbox from '@mui/material/Checkbox';
@@ -24,6 +24,8 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import Box from '@mui/material/Box';
+import { ListViewIcon, SublistViewIcon } from 'filigran-icon';
+import FiligranIcon from '../../private/components/common/FiligranIcon';
 import { ErrorBoundary } from '../../private/components/Error';
 import { UserContext } from '../../utils/hooks/useAuth';
 import Filters from '../../private/components/common/lists/Filters';
@@ -190,6 +192,7 @@ class ListLines extends Component {
       searchVariant,
       message,
       enableGraph,
+      enableSubEntityLines,
       availableEntityTypes,
       availableRelationshipTypes,
       availableRelationFilterTypes,
@@ -226,6 +229,7 @@ class ListLines extends Component {
                 : classes.parameters
             }
           >
+
             {typeof handleSearch === 'function' && (
               <SearchInput
                 variant={searchVariant || 'small'}
@@ -233,6 +237,7 @@ class ListLines extends Component {
                 keyword={keyword}
               />
             )}
+
             {extraFields}
             {availableFilterKeys && availableFilterKeys.length > 0 && (
               <Filters
@@ -250,7 +255,9 @@ class ListLines extends Component {
               />
             )}
             <div className={classes.filler} />
+
             <div className={classes.views}>
+
               {numberOfElements && (
                 <div
                   style={
@@ -323,18 +330,11 @@ class ListLines extends Component {
                   )}
                   {typeof handleChangeView === 'function'
                     && !enableEntitiesView && (
-                      <ToggleButton value="lines" aria-label="lines">
-                        <Tooltip title={t('Lines view')}>
-                          <ViewListOutlined
-                            fontSize="small"
-                            color={
-                              currentView === 'lines' || !currentView
-                                ? 'secondary'
-                                : 'primary'
-                            }
-                          />
-                        </Tooltip>
-                      </ToggleButton>
+                      <Tooltip title={t('Lines view')}>
+                        <ToggleButton value="lines" aria-label="lines">
+                          <FiligranIcon icon={ListViewIcon} color='secondary' size='small'/>
+                        </ToggleButton>
+                      </Tooltip>
                   )}
                   {typeof handleChangeView === 'function' && enableGraph && (
                     <ToggleButton value="graph" aria-label="graph">
@@ -367,6 +367,13 @@ class ListLines extends Component {
                           />
                         </Tooltip>
                       </ToggleButton>
+                  )}
+                  {typeof handleChangeView === 'function' && enableSubEntityLines && (
+                    <Tooltip title={t('Sub entity lines view')}>
+                      <ToggleButton value="subEntityLines" aria-label="subEntityLines">
+                        <FiligranIcon icon={SublistViewIcon} color='primary' size='small'/>
+                      </ToggleButton>
+                    </Tooltip>
                   )}
                   {handleSwitchRedirectionMode && (
                     <ToggleButton
@@ -694,6 +701,7 @@ ListLines.propTypes = {
   availableRelationFilterTypes: PropTypes.object,
   enableNestedView: PropTypes.bool,
   enableEntitiesView: PropTypes.bool,
+  enableSubEntityLines: PropTypes.bool,
   enableContextualView: PropTypes.bool,
   currentView: PropTypes.string,
   handleSwitchRedirectionMode: PropTypes.func,

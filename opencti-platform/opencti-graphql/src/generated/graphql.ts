@@ -15184,7 +15184,7 @@ export type NarrativeAddInput = {
 
 export type NarrativeConnection = {
   __typename?: 'NarrativeConnection';
-  edges?: Maybe<Array<Maybe<NarrativeEdge>>>;
+  edges: Array<NarrativeEdge>;
   pageInfo: PageInfo;
 };
 
@@ -29190,7 +29190,7 @@ export type ResolversTypes = ResolversObject<{
   MutexAddInput: MutexAddInput;
   Narrative: ResolverTypeWrapper<BasicStoreEntityNarrative>;
   NarrativeAddInput: NarrativeAddInput;
-  NarrativeConnection: ResolverTypeWrapper<Omit<NarrativeConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['NarrativeEdge']>>> }>;
+  NarrativeConnection: ResolverTypeWrapper<Omit<NarrativeConnection, 'edges'> & { edges: Array<ResolversTypes['NarrativeEdge']> }>;
   NarrativeEdge: ResolverTypeWrapper<Omit<NarrativeEdge, 'node'> & { node: ResolversTypes['Narrative'] }>;
   NarrativesOrdering: NarrativesOrdering;
   NetworkTraffic: ResolverTypeWrapper<Omit<NetworkTraffic, 'cases' | 'containers' | 'createdBy' | 'groupings' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, containers?: Maybe<ResolversTypes['ContainerConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<Array<ResolversTypes['Organization']>>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']> }>;
@@ -29945,7 +29945,7 @@ export type ResolversParentTypes = ResolversObject<{
   MutexAddInput: MutexAddInput;
   Narrative: BasicStoreEntityNarrative;
   NarrativeAddInput: NarrativeAddInput;
-  NarrativeConnection: Omit<NarrativeConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['NarrativeEdge']>>> };
+  NarrativeConnection: Omit<NarrativeConnection, 'edges'> & { edges: Array<ResolversParentTypes['NarrativeEdge']> };
   NarrativeEdge: Omit<NarrativeEdge, 'node'> & { node: ResolversParentTypes['Narrative'] };
   NetworkTraffic: Omit<NetworkTraffic, 'cases' | 'containers' | 'createdBy' | 'groupings' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, containers?: Maybe<ResolversParentTypes['ContainerConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<Array<ResolversParentTypes['Organization']>>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']> };
   NetworkTrafficAddInput: NetworkTrafficAddInput;
@@ -34991,7 +34991,7 @@ export type NarrativeResolvers<ContextType = any, ParentType extends ResolversPa
 }>;
 
 export type NarrativeConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['NarrativeConnection'] = ResolversParentTypes['NarrativeConnection']> = ResolversObject<{
-  edges?: Resolver<Maybe<Array<Maybe<ResolversTypes['NarrativeEdge']>>>, ParentType, ContextType>;
+  edges?: Resolver<Array<ResolversTypes['NarrativeEdge']>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;

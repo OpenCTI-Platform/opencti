@@ -131,7 +131,7 @@ enum NarrativesOrdering {
 # Relay connections
 type NarrativeConnection {
     pageInfo: PageInfo!
-    edges: [NarrativeEdge]
+    edges: [NarrativeEdge!]!
 }
 type NarrativeEdge {
     cursor: String!
