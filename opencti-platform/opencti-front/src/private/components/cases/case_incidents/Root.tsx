@@ -85,7 +85,7 @@ const caseIncidentQuery = graphql`
   }
 `;
 
-// Mutation to edit authorized members of a feedback
+// Mutation to edit authorized members of a Case Incident
 const caseIncidentAuthorizedMembersMutation = graphql`
   mutation RootCaseIncidentAuthorizedMembersMutation(
     $id: ID!

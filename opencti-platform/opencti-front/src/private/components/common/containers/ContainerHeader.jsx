@@ -1108,6 +1108,12 @@ export default createFragmentContainer(ContainerHeader, {
       }
       ... on CaseIncident {
         name
+        authorized_members {
+          id
+          name
+          entity_type
+          access_right
+        }
       }
       ... on CaseRfi {
         name
