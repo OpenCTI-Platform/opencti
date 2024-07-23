@@ -135,7 +135,7 @@ export const stixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery = g
   }
 `;
 
-export const stixCoreRelationshipCreationFromEntityStixCoreObjectsLinesFragment= graphql`
+export const stixCoreRelationshipCreationFromEntityStixCoreObjectsLinesFragment = graphql`
   fragment StixCoreRelationshipCreationFromEntityStixCoreObjectsLines_data on Query
   @argumentDefinitions(
     types: { type: "[String]" }
