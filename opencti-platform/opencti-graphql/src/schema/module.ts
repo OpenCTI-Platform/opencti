@@ -26,6 +26,8 @@ import { registerModelIdentifier } from './identifier';
 import type { StixObject } from '../types/stix-common';
 import { schemaTypesDefinition } from './schema-types';
 import { ENTITY_TYPE_CONTAINER_CASE } from '../modules/case/case-types';
+import { registerEntityOverviewLayoutCustomization } from './overviewLayoutCustomization-register';
+import type { OverviewLayoutCustomization } from '../generated/graphql';
 
 export interface ModuleDefinition<T extends StoreEntity, Z extends StixObject> {
   type: {
@@ -44,6 +46,7 @@ export interface ModuleDefinition<T extends StoreEntity, Z extends StixObject> {
   };
   representative: RepresentativeFn<Z>
   converter: ConvertFn<T, Z>
+  overviewLayoutCustomization?: Array<OverviewLayoutCustomization>
   attributes: Array<AttributeDefinition>
   relations: Array<{
     name: string;
@@ -147,4 +150,9 @@ export const registerDefinition = <T extends StoreEntity, Z extends StixObject>(
   definition.relationsRefs?.forEach((source) => {
     schemaTypesDefinition.add(ABSTRACT_STIX_REF_RELATIONSHIP, source.databaseName);
   });
+
+  // Register overviewLayoutCustomization
+  if (definition.overviewLayoutCustomization) {
+    registerEntityOverviewLayoutCustomization(definition.type.name, definition.overviewLayoutCustomization);
+  }
 };

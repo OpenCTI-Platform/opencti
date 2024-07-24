@@ -82,6 +82,17 @@ const THREAT_ACTOR_INDIVIDUAL_DEFINITION: ModuleDefinition<StoreEntityThreatActo
       },
     },
   },
+  overviewLayoutCustomization: [
+    { key: 'details', width: 6 },
+    { key: 'basicInformation', width: 6 },
+    { key: 'demographics', width: 6 },
+    { key: 'biographics', width: 6 },
+    { key: 'latestCreatedRelationships', width: 6 },
+    { key: 'latestContainers', width: 6 },
+    { key: 'externalReferences', width: 6 },
+    { key: 'mostRecentHistory', width: 6 },
+    { key: 'notes', width: 12 },
+  ],
   attributes: [
     { name: 'name', label: 'Name', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true, isFilterable: true },
     { name: 'description', label: 'Description', type: 'string', format: 'text', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true, isFilterable: true },

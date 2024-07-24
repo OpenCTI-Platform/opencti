@@ -38,6 +38,10 @@ export const entitySettingFragment = graphql`
         name
       }
     }
+    overviewLayoutCustomization {
+        key
+        width
+    }
   }
 `;
 

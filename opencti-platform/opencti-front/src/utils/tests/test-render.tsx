@@ -16,7 +16,23 @@ interface CreateUserContextOptions {
   entitySettings?: unknown,
   platformModuleHelpers?: unknown,
   schema?: unknown,
+  overviewLayoutCustomization?: unknown,
 }
+
+const threatActorIndividualConfiguration = new Map([
+  ['details', 6],
+  ['basicInformation', 6],
+  ['demographics-biographics', 6],
+  ['latestCreatedRelationships', 6],
+  ['latestContainers', 6],
+  ['externalReferences', 6],
+  ['mostRecentHistory', 6],
+  ['notes', 12],
+]);
+const fakeOverviewLayoutCustomization = new Map([
+  ['Threat-Actor-Individual',
+    threatActorIndividualConfiguration],
+]);
 
 /**
  * Create a fake user context to match your needs while testing.
@@ -33,6 +49,7 @@ export const createMockUserContext = (options?: CreateUserContextOptions): UserC
     entitySettings,
     platformModuleHelpers,
     schema,
+    overviewLayoutCustomization,
   } = options ?? {};
 
   return {
@@ -54,6 +71,7 @@ export const createMockUserContext = (options?: CreateUserContextOptions): UserC
     entitySettings: (entitySettings ?? {}) as UserContextType['entitySettings'],
     platformModuleHelpers: (platformModuleHelpers ?? {}) as UserContextType['platformModuleHelpers'],
     schema: (schema ?? {}) as UserContextType['schema'],
+    overviewLayoutCustomization: (overviewLayoutCustomization ?? fakeOverviewLayoutCustomization) as UserContextType['overviewLayoutCustomization'],
   };
 };
 
