@@ -1030,6 +1030,8 @@
   "entity_Windows-Registry-Key": "Windows注册表键",
   "entity_Windows-Registry-Value-Type": "Windows注册表值类型",
   "entity_X509-Certificate": "X509证书",
+  "EPSS Percentile": "EPSS - 百分位数",
+  "EPSS Score": "EPSS - 分数",
   "eql": "Elastic EQL",
   "Equals": "等于",
   "Error": "错误",

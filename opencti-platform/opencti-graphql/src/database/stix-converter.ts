@@ -469,7 +469,9 @@ const convertVulnerabilityToStix = (instance: StoreEntity, type: string): SDO.St
         base_severity: instance.x_opencti_cvss_base_severity,
         confidentiality_impact: instance.x_opencti_cvss_confidentiality_impact,
         integrity_impact: instance.x_opencti_cvss_integrity_impact,
-        cisa_kev: instance.x_opencti_cisa_kev
+        cisa_kev: instance.x_opencti_cisa_kev,
+        epss_score: instance.x_opencti_epss_score,
+        epss_percentile: instance.x_opencti_epss_percentile,
       })
     }
   };

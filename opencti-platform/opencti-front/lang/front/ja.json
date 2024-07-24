@@ -1030,6 +1030,8 @@
   "entity_Windows-Registry-Key": "Windowsレジストリキー",
   "entity_Windows-Registry-Value-Type": "Windowsレジストリ値",
   "entity_X509-Certificate": "X.509証明書",
+  "EPSS Percentile": "EPSS - パーセンタイル",
+  "EPSS Score": "EPSS - スコア",
   "eql": "Elastic EQL",
   "Equals": "等しい",
   "Error": "エラー",
