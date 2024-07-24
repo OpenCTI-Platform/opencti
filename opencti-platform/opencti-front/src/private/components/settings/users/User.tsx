@@ -122,6 +122,8 @@ const UserFragment = graphql`
     groupsOrderMode: { type: "OrderingMode", defaultValue: asc }
     organizationsOrderBy: { type: "OrganizationsOrdering", defaultValue: name }
     organizationsOrderMode: { type: "OrderingMode", defaultValue: asc }
+    rolesOrderBy: { type: "RolesOrdering", defaultValue: name }
+    rolesOrderMode: { type: "OrderingMode", defaultValue: asc }
   ) {
     id
     name
@@ -135,7 +137,7 @@ const UserFragment = graphql`
     language
     api_token
     otp_activated
-    roles {
+    roles(orderBy: $rolesOrderBy, orderMode: $rolesOrderMode) {
       id
       name
       description

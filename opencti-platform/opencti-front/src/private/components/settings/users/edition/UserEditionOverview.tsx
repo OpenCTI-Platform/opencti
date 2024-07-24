@@ -362,6 +362,8 @@ const UserEditionOverview = createFragmentContainer(
         groupsOrderMode: { type: "OrderingMode", defaultValue: asc }
         organizationsOrderBy: { type: "OrganizationsOrdering", defaultValue: name }
         organizationsOrderMode: { type: "OrderingMode", defaultValue: asc }
+        rolesOrderBy: { type: "RolesOrdering", defaultValue: name }
+        rolesOrderMode: { type: "OrderingMode", defaultValue: asc }
       ) {
         id
         name
@@ -378,7 +380,7 @@ const UserEditionOverview = createFragmentContainer(
         otp_qr
         account_status
         account_lock_after_date
-        roles {
+        roles(orderBy: $rolesOrderBy, orderMode: $rolesOrderMode) {
           id
           name
         }
