@@ -83,8 +83,8 @@ export const extractEntityRepresentativeName = (entityData) => {
     mainValue = entityData.description;
   }
   // If no representative value found, return the standard id
-  if (isEmptyField(mainValue) || mainValue === 'Unknown') {
-    return entityData.standard_id;
+  if (isEmptyField(mainValue)) {
+    return 'Unknown';
   }
 
   return String(mainValue);
