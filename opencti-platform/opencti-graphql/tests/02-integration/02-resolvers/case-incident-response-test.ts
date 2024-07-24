@@ -7,7 +7,6 @@ import { queryAsUserWithSuccess } from '../../utils/testQueryHelper';
 import { executionContext, SYSTEM_USER } from '../../../src/utils/access';
 import { initCreateEntitySettings } from '../../../src/modules/entitySetting/entitySetting-domain';
 import { resetCacheForEntity } from '../../../src/database/cache';
-import { ENTITY_TYPE_SETTINGS } from '../../../src/schema/internalObject';
 import { ENTITY_TYPE_ENTITY_SETTING } from '../../../src/modules/entitySetting/entitySetting-types';
 
 const CREATE_QUERY = gql`
