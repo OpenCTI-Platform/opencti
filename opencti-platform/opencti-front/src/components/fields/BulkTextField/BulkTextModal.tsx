@@ -9,11 +9,12 @@ interface BulkTextModalProps {
   onClose: () => void
   onValidate: (value: string) => void
   formValue: string
+  title?: string
 }
 
 const MAX_LINES = 50;
 
-const BulkTextModal = ({ open, onClose, onValidate, formValue }: BulkTextModalProps) => {
+const BulkTextModal = ({ open, onClose, onValidate, formValue, title }: BulkTextModalProps) => {
   const { t_i18n } = useFormatter();
   const [value, setValue] = useState('');
   const nbLines = splitMultilines(value).length;
@@ -33,7 +34,7 @@ const BulkTextModal = ({ open, onClose, onValidate, formValue }: BulkTextModalPr
   };
 
   const labelNbLines = nbLines > 0 ? `(${nbLines})` : '';
-  const label = `${t_i18n('Entities (one per line)')} ${labelNbLines}`;
+  const label = `${t_i18n('Values (one per line)')} ${labelNbLines}`;
 
   return (
     <Dialog
@@ -41,7 +42,7 @@ const BulkTextModal = ({ open, onClose, onValidate, formValue }: BulkTextModalPr
       onClose={onClose}
       fullWidth={true}
     >
-      <DialogTitle>{t_i18n('Create multiple entities')}</DialogTitle>
+      <DialogTitle>{title || t_i18n('Create multiple entities')}</DialogTitle>
       <DialogContent style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
         <Alert severity="info" variant="outlined">
           <Typography>

@@ -14,7 +14,7 @@ const BulkTextModalButton = ({ onClick, title, sx = {} }: BulkTextModalButtonPro
   return (
     <Button
       color="primary"
-      variant="contained"
+      variant="outlined"
       onClick={onClick}
       sx={{ marginLeft: 'auto', marginRight: 2, ...sx }}
     >

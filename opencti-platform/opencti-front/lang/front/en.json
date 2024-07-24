@@ -2949,5 +2949,9 @@
   "Your url contains filters in a deprecated format, parameters stored in the url have been removed.": "Your url contains filters in a deprecated format, parameters stored in the url have been removed.",
   "Zoom": "Zoom",
   "Zoom in": "Zoom in",
-  "Zoom out": "Zoom out"
+  "Zoom out": "Zoom out",
+  "Values (one per line)": "Values (one per line)",
+  "observables created": "observables created",
+  "observables not created": "observables not created",
+  "observables will be created": "observables will be created"
 }

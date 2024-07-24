@@ -8,14 +8,22 @@ import { splitMultilines } from '../../../utils/String';
 // TODO make TextField component as typescript and reuse its props
 interface BulkTextFieldProps extends FieldProps<string> {
   [key: string]: unknown
+  bulkType?: 'entities' | 'observables'
 }
 
-const BulkTextField = (props: BulkTextFieldProps) => {
+const BulkTextField = ({
+  bulkType = 'entities',
+  ...props
+}: BulkTextFieldProps) => {
   const { t_i18n } = useFormatter();
   const { field: { value }, detectDuplicate } = props;
 
   const values = splitMultilines(value);
   const hasMultipleValues = values.length > 1;
+
+  const creationLabel = bulkType === 'entities'
+    ? t_i18n('entities will be created')
+    : t_i18n('observables will be created');
 
   return (
     <>
@@ -30,7 +38,7 @@ const BulkTextField = (props: BulkTextFieldProps) => {
       {hasMultipleValues && (
         <Alert severity="info" sx={{ marginTop: 2 }}>
           <Typography>
-            {values.length} {t_i18n('entities will be created')}
+            {values.length} {creationLabel}
           </Typography>
         </Alert>
       )}
