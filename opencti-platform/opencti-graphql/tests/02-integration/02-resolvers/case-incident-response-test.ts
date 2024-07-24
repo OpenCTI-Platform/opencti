@@ -6,6 +6,9 @@ import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../../../src/modules/case/c
 import { queryAsUserWithSuccess } from '../../utils/testQueryHelper';
 import { executionContext, SYSTEM_USER } from '../../../src/utils/access';
 import { initCreateEntitySettings } from '../../../src/modules/entitySetting/entitySetting-domain';
+import { resetCacheForEntity } from '../../../src/database/cache';
+import { ENTITY_TYPE_SETTINGS } from '../../../src/schema/internalObject';
+import { ENTITY_TYPE_ENTITY_SETTING } from '../../../src/modules/entitySetting/entitySetting-types';
 
 const CREATE_QUERY = gql`
   mutation CaseIncidentAdd($input: CaseIncidentAddInput!) {
@@ -295,6 +298,7 @@ describe('Case Incident Response standard behavior with authorized_members activ
       variables: { ids: [entitySettingIdCaseIncidentResponse], input: { key: 'attributes_configuration', value: [authorizedMembersConfiguration] } },
     });
     expect(updateEntitySettingsResult.data?.entitySettingsFieldPatch?.[0]?.attributes_configuration).toEqual(authorizedMembersConfiguration);
+    resetCacheForEntity(ENTITY_TYPE_ENTITY_SETTING);
     const caseIncidentResponseAuthorizedMembersData = await queryAsAdmin({
       query: CREATE_QUERY,
       variables: {
