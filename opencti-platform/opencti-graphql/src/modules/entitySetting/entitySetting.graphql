@@ -50,7 +50,7 @@ type EntitySetting implements InternalObject & BasicObject {
   availableSettings: [String!]! @auth
   created_at: DateTime! @auth
   updated_at: DateTime! @auth
-  overviewLayoutCustomization: [OverviewLayoutCustomization!] @auth
+  overview_layout_customization: [OverviewLayoutCustomization!] @auth
 }
 
 # Ordering

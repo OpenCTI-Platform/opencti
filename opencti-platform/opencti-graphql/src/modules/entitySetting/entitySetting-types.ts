@@ -1,7 +1,6 @@
 import type { BasicStoreEntity, StoreEntity } from '../../types/store';
 import type { StixObject, StixOpenctiExtensionSDO } from '../../types/stix-common';
 import { STIX_EXT_OCTI } from '../../types/stix-extensions';
-import type { OverviewLayoutCustomization } from '../../generated/graphql';
 
 export const ENTITY_TYPE_ENTITY_SETTING = 'EntitySetting';
 
@@ -37,7 +36,13 @@ export interface BasicStoreEntityEntitySetting extends BasicStoreEntity {
   attributes_configuration?: string;
   workflow_configuration: boolean;
   availableSettings?: string[];
-  overviewLayoutCustomization?: Array<OverviewLayoutCustomization>;
+  overview_layout_customization?: Array<OverviewLayoutCustomization>;
+}
+
+export interface OverviewLayoutCustomization {
+  key: string;
+  order: number;
+  width: number;
 }
 
 export interface StoreEntityEntitySetting extends StoreEntity {
