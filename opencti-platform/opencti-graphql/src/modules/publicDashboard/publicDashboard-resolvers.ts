@@ -18,7 +18,7 @@ import {
   publicStixRelationshipsNumber,
 } from './publicDashboard-domain';
 import { getAuthorizedMembers } from '../../utils/authorizedMembers';
-import { getOwnerId } from '../workspace/workspace-domain';
+import { findById as findWorkspaceById } from '../workspace/workspace-domain';
 import { batchLoader } from '../../database/middleware';
 import { batchCreator } from '../../domain/user';
 
@@ -42,7 +42,8 @@ const publicDashboardResolvers: Resolvers = {
   PublicDashboard: {
     authorized_members: (publicDashboard, _, context) => getAuthorizedMembers(context, context.user, publicDashboard),
     allowed_markings: (publicDashboard, _, context) => getAllowedMarkings(context, context.user, publicDashboard),
-    owner: (publicDashboard, _, context) => creatorLoader.load(getOwnerId(publicDashboard), context, context.user),
+    owner: (publicDashboard, _, context) => creatorLoader.load(publicDashboard.user_id, context, context.user),
+    dashboard: (publicDashboard, _, context) => findWorkspaceById(context, context.user, publicDashboard.dashboard_id)
   },
   Mutation: {
     publicDashboardAdd: (_, { input }, context) => {

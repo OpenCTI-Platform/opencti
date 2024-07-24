@@ -11630,9 +11630,10 @@ type PublicDashboard implements InternalObject & BasicObject {
   standard_id: String!
   parent_types: [String!]!
   name: String!
-    owner: Creator
+  owner: Creator
   description: String
   dashboard_id: String
+  dashboard: Workspace
   user_id: String!
   public_manifest: String
   private_manifest: String
