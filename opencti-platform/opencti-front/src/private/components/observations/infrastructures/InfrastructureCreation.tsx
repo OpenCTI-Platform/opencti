@@ -125,6 +125,7 @@ export const InfrastructureCreationForm: FunctionComponent<InfrastructureFormPro
     bulkCount,
     bulkCurrentCount,
     BulkResult,
+    resetBulk,
   } = useBulkCommit<InfrastructureCreationMutation>({
     commit,
     relayUpdater: (store) => {
@@ -226,6 +227,7 @@ export const InfrastructureCreationForm: FunctionComponent<InfrastructureFormPro
                 onClose={() => {
                   setProgressBarOpen(false);
                   resetForm();
+                  resetBulk();
                   onCompleted?.();
                 }}
               >

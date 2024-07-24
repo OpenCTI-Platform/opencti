@@ -107,6 +107,7 @@ export const CampaignCreationForm: FunctionComponent<CampaignFormProps> = ({
     bulkCount,
     bulkCurrentCount,
     BulkResult,
+    resetBulk,
   } = useBulkCommit<CampaignCreationMutation>({
     commit,
     relayUpdater: (store) => {
@@ -196,6 +197,7 @@ export const CampaignCreationForm: FunctionComponent<CampaignFormProps> = ({
                 onClose={() => {
                   setProgressBarOpen(false);
                   resetForm();
+                  resetBulk();
                   onCompleted?.();
                 }}
               >

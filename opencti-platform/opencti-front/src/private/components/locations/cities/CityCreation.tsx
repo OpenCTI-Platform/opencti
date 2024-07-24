@@ -110,6 +110,7 @@ export const CityCreationForm: FunctionComponent<CityFormProps> = ({
     bulkCount,
     bulkCurrentCount,
     BulkResult,
+    resetBulk,
   } = useBulkCommit<CityCreationMutation>({
     commit,
     relayUpdater: (store) => {
@@ -203,6 +204,7 @@ export const CityCreationForm: FunctionComponent<CityFormProps> = ({
                 onClose={() => {
                   setProgressBarOpen(false);
                   resetForm();
+                  resetBulk();
                   onCompleted?.();
                 }}
               >

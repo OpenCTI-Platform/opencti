@@ -103,6 +103,7 @@ export const RegionCreationForm: FunctionComponent<RegionFormProps> = ({
     bulkCount,
     bulkCurrentCount,
     BulkResult,
+    resetBulk,
   } = useBulkCommit<RegionCreationMutation>({
     commit,
     relayUpdater: (store) => {
@@ -192,6 +193,7 @@ export const RegionCreationForm: FunctionComponent<RegionFormProps> = ({
                 onClose={() => {
                   setProgressBarOpen(false);
                   resetForm();
+                  resetBulk();
                   onCompleted?.();
                 }}
               >

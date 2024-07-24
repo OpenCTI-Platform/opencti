@@ -110,6 +110,7 @@ export const ChannelCreationForm: FunctionComponent<ChannelFormProps> = ({
     bulkCount,
     bulkCurrentCount,
     BulkResult,
+    resetBulk,
   } = useBulkCommit<ChannelCreationMutation>({
     commit,
     relayUpdater: (store) => {
@@ -202,6 +203,7 @@ export const ChannelCreationForm: FunctionComponent<ChannelFormProps> = ({
                 onClose={() => {
                   setProgressBarOpen(false);
                   resetForm();
+                  resetBulk();
                   onCompleted?.();
                 }}
               >

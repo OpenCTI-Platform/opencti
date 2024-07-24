@@ -107,6 +107,7 @@ IntrusionSetFormProps
     bulkCount,
     bulkCurrentCount,
     BulkResult,
+    resetBulk,
   } = useBulkCommit<IntrusionSetCreationMutation>({
     commit,
     relayUpdater: (store) => {
@@ -196,6 +197,7 @@ IntrusionSetFormProps
                 onClose={() => {
                   setProgressBarOpen(false);
                   resetForm();
+                  resetBulk();
                   onCompleted?.();
                 }}
               >

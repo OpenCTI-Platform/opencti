@@ -127,6 +127,7 @@ export const SectorCreationForm: FunctionComponent<SectorFormProps> = ({
     bulkCount,
     bulkCurrentCount,
     BulkResult,
+    resetBulk,
   } = useBulkCommit<SectorCreationMutation>({
     commit,
     relayUpdater: (store) => {
@@ -230,6 +231,7 @@ export const SectorCreationForm: FunctionComponent<SectorFormProps> = ({
                 onClose={() => {
                   setProgressBarOpen(false);
                   resetForm();
+                  resetBulk();
                   onCompleted?.();
                 }}
               >

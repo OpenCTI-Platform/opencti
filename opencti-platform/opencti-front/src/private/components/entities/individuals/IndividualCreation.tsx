@@ -109,6 +109,7 @@ export const IndividualCreationForm: FunctionComponent<IndividualFormProps> = ({
     bulkCount,
     bulkCurrentCount,
     BulkResult,
+    resetBulk,
   } = useBulkCommit<IndividualCreationMutation>({
     commit,
     relayUpdater: (store) => {
@@ -211,6 +212,7 @@ export const IndividualCreationForm: FunctionComponent<IndividualFormProps> = ({
                 onClose={() => {
                   setProgressBarOpen(false);
                   resetForm();
+                  resetBulk();
                   onCompleted?.();
                 }}
               >

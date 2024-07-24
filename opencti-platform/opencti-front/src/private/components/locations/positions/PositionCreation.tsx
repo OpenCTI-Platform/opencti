@@ -119,6 +119,7 @@ export const PositionCreationForm: FunctionComponent<PositionFormProps> = ({
     bulkCount,
     bulkCurrentCount,
     BulkResult,
+    resetBulk,
   } = useBulkCommit<PositionCreationMutation>({
     commit,
     relayUpdater: (store) => {
@@ -216,6 +217,7 @@ export const PositionCreationForm: FunctionComponent<PositionFormProps> = ({
                 onClose={() => {
                   setProgressBarOpen(false);
                   resetForm();
+                  resetBulk();
                   onCompleted?.();
                 }}
               >

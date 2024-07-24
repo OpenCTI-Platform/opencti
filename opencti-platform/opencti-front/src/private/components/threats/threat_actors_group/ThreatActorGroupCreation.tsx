@@ -110,6 +110,7 @@ ThreatActorGroupFormProps
     bulkCount,
     bulkCurrentCount,
     BulkResult,
+    resetBulk,
   } = useBulkCommit<ThreatActorGroupCreationMutation>({
     commit,
     relayUpdater: (store) => {
@@ -201,6 +202,7 @@ ThreatActorGroupFormProps
                 onClose={() => {
                   setProgressBarOpen(false);
                   resetForm();
+                  resetBulk();
                   onCompleted?.();
                 }}
               >

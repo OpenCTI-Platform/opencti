@@ -109,6 +109,7 @@ export const ToolCreationForm: FunctionComponent<ToolFormProps> = ({
     bulkCount,
     bulkCurrentCount,
     BulkResult,
+    resetBulk,
   } = useBulkCommit<ToolCreationMutation>({
     commit,
     relayUpdater: (store) => {
@@ -205,6 +206,7 @@ export const ToolCreationForm: FunctionComponent<ToolFormProps> = ({
                 onClose={() => {
                   setProgressBarOpen(false);
                   resetForm();
+                  resetBulk();
                   onCompleted?.();
                 }}
               >

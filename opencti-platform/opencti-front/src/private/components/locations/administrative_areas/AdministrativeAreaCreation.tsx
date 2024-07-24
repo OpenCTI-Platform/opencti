@@ -116,6 +116,7 @@ export const AdministrativeAreaCreationForm: FunctionComponent<AdministrativeAre
     bulkCount,
     bulkCurrentCount,
     BulkResult,
+    resetBulk,
   } = useBulkCommit<AdministrativeAreaCreationMutation>({
     commit,
     relayUpdater: (store) => {
@@ -212,6 +213,7 @@ export const AdministrativeAreaCreationForm: FunctionComponent<AdministrativeAre
                 onClose={() => {
                   setProgressBarOpen(false);
                   resetForm();
+                  resetBulk();
                   onCompleted?.();
                 }}
               >

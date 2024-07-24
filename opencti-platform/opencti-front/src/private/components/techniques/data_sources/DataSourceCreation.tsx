@@ -122,6 +122,7 @@ export const DataSourceCreationForm: FunctionComponent<DataSourceFormProps> = ({
     bulkCount,
     bulkCurrentCount,
     BulkResult,
+    resetBulk,
   } = useBulkCommit<DataSourceCreationMutation>({
     commit,
     relayUpdater: (store) => {
@@ -215,6 +216,7 @@ export const DataSourceCreationForm: FunctionComponent<DataSourceFormProps> = ({
                 onClose={() => {
                   setProgressBarOpen(false);
                   resetForm();
+                  resetBulk();
                   onCompleted?.();
                 }}
               >

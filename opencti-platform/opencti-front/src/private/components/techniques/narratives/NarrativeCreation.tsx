@@ -133,6 +133,7 @@ export const NarrativeCreationForm: FunctionComponent<NarrativeFormProps> = ({
     bulkCount,
     bulkCurrentCount,
     BulkResult,
+    resetBulk,
   } = useBulkCommit<NarrativeCreationMutation>({
     commit,
     relayUpdater: (store) => {
@@ -225,6 +226,7 @@ export const NarrativeCreationForm: FunctionComponent<NarrativeFormProps> = ({
                 onClose={() => {
                   setProgressBarOpen(false);
                   resetForm();
+                  resetBulk();
                   onCompleted?.();
                 }}
               >

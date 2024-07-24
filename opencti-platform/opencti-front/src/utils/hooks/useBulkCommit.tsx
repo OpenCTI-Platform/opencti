@@ -7,6 +7,7 @@ import { useFormatter } from '../../components/i18n';
 interface UseBulkCommitArgs<M extends MutationParameters> {
   commit: (args: UseMutationConfig<M>) => void
   relayUpdater?: SelectorStoreUpdater<M['response']>
+  type?: 'entities' | 'observables'
 }
 
 interface UseBulkCommit_commits<M extends MutationParameters> {
@@ -23,6 +24,7 @@ interface BulkResultProps<M extends MutationParameters> {
 function useBulkCommit<M extends MutationParameters>({
   commit,
   relayUpdater,
+  type = 'entities',
 }: UseBulkCommitArgs<M>) {
   const { t_i18n } = useFormatter();
 
@@ -31,6 +33,12 @@ function useBulkCommit<M extends MutationParameters>({
   const [inError, setInError] = useState<[VariablesOf<M>, Error][]>([]);
 
   const onBulkCompleted = useRef<UseBulkCommit_commits<M>['onCompleted']>();
+
+  const resetBulk = () => {
+    setCount(0);
+    setCurrentCount(0);
+    setInError([]);
+  };
 
   useEffect(() => {
     if (currentCount === count && count !== 0) {
@@ -66,12 +74,20 @@ function useBulkCommit<M extends MutationParameters>({
     });
   };
 
+  const createdLabel = type === 'entities'
+    ? t_i18n('entities created')
+    : t_i18n('observables created');
+
+  const notCreatedLabel = type === 'entities'
+    ? t_i18n('entities not created')
+    : t_i18n('observables not created');
+
   const BulkResult = ({ variablesToString }: BulkResultProps<M>) => (
     <>
       {currentCount === count && (
         <Alert variant="outlined" sx={{ marginTop: 2 }}>
           <Typography>
-            {currentCount - inError.length} {t_i18n('entities created')}
+            {currentCount - inError.length} {createdLabel}
           </Typography>
         </Alert>
       )}
@@ -87,16 +103,18 @@ function useBulkCommit<M extends MutationParameters>({
           }}
         >
           <Typography>
-            {inError.length} {t_i18n('entities not created')}
+            {inError.length} {notCreatedLabel}
           </Typography>
           <List dense>
-            {inError.map(([variables, error], index) => (
-              <Tooltip key={index} title={error.message}>
-                <ListItem divider>
-                  {variablesToString(variables)}
-                </ListItem>
-              </Tooltip>
-            ))}
+            {inError.map(([variables, error], index) => {
+              return (
+                <Tooltip key={index} title={error.message}>
+                  <ListItem divider>
+                    {variablesToString(variables)}
+                  </ListItem>
+                </Tooltip>
+              );
+            })}
           </List>
         </Alert>
       )}
@@ -108,6 +126,7 @@ function useBulkCommit<M extends MutationParameters>({
     bulkCount: count,
     bulkCurrentCount: currentCount,
     BulkResult,
+    resetBulk,
   };
 }
 

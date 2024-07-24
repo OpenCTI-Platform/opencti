@@ -110,6 +110,7 @@ export const SystemCreationForm: FunctionComponent<SystemFormProps> = ({
     bulkCount,
     bulkCurrentCount,
     BulkResult,
+    resetBulk,
   } = useBulkCommit<SystemCreationMutation>({
     commit,
     relayUpdater: (store) => {
@@ -215,6 +216,7 @@ export const SystemCreationForm: FunctionComponent<SystemFormProps> = ({
                 onClose={() => {
                   setProgressBarOpen(false);
                   resetForm();
+                  resetBulk();
                   onCompleted?.();
                 }}
               >

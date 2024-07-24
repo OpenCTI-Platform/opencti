@@ -112,6 +112,7 @@ export const OrganizationCreationForm: FunctionComponent<OrganizationFormProps> 
     bulkCount,
     bulkCurrentCount,
     BulkResult,
+    resetBulk,
   } = useBulkCommit<OrganizationCreationMutation>({
     commit,
     relayUpdater: (store) => {
@@ -215,6 +216,7 @@ export const OrganizationCreationForm: FunctionComponent<OrganizationFormProps> 
               onClose={() => {
                 setProgressBarOpen(false);
                 resetForm();
+                resetBulk();
                 onCompleted?.();
               }}
             >

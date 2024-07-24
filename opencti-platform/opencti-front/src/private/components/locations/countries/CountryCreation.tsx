@@ -105,6 +105,7 @@ export const CountryCreationForm: FunctionComponent<CountryFormProps> = ({
     bulkCount,
     bulkCurrentCount,
     BulkResult,
+    resetBulk,
   } = useBulkCommit<CountryCreationMutation>({
     commit,
     relayUpdater: (store) => {
@@ -194,6 +195,7 @@ export const CountryCreationForm: FunctionComponent<CountryFormProps> = ({
                 onClose={() => {
                   setProgressBarOpen(false);
                   resetForm();
+                  resetBulk();
                   onCompleted?.();
                 }}
               >

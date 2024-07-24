@@ -117,6 +117,7 @@ export const EventCreationForm: FunctionComponent<EventFormProps> = ({
     bulkCount,
     bulkCurrentCount,
     BulkResult,
+    resetBulk,
   } = useBulkCommit<EventCreationMutation>({
     commit,
     relayUpdater: (store) => {
@@ -212,6 +213,7 @@ export const EventCreationForm: FunctionComponent<EventFormProps> = ({
                 onClose={() => {
                   setProgressBarOpen(false);
                   resetForm();
+                  resetBulk();
                   onCompleted?.();
                 }}
               >
