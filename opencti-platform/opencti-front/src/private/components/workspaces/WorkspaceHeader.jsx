@@ -400,7 +400,7 @@ const WorkspaceHeader = ({
             </div>
           </Security>
         )}
-        <Security needs={[EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE]} hasAccess={userCanManage}>
+        <Security needs={[EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE]} hasAccess={canManage}>
           <div className={classes.manageAccess}>
             <Tooltip title={t_i18n('Manage access restriction')}>
               <ToggleButtonGroup size="small" color="warning" exclusive={true}>
@@ -434,7 +434,7 @@ const WorkspaceHeader = ({
             />
             ),
           )}
-          <Security needs={[EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE]} hasAccess={userCanEdit}>
+          <Security needs={[EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE]} hasAccess={canEdit}>
             {tags.length > 1 ? (
               <IconButton
                 color="primary"
