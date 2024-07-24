@@ -11,8 +11,8 @@ import DataTable from '../../../../components/dataGrid/DataTable';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
-import { DataTableVariant } from '../../../../components/dataGrid/dataTableTypes';
-import ItemStatus from '../../../../components/ItemStatus';
+import ItemBoolean from '../../../../components/ItemBoolean';
+import { DataTableProps } from '../../../../components/dataGrid/dataTableTypes';
 
 const publicDashboardFragment = graphql`
   fragment PublicDashboard on PublicDashboard {
@@ -23,12 +23,9 @@ const publicDashboardFragment = graphql`
     owner {
       name
     }
-    user_id
-    created_at
-    updated_at
-    parent_types
-    dashboard_id
-    private_manifest
+    dashboard {
+      name
+    }
     allowed_markings {
       id
       definition
@@ -38,6 +35,7 @@ const publicDashboardFragment = graphql`
     }
   }
 `;
+
 export const publicDashboardsFragment = graphql`
   fragment PublicDashboardsFragment on Query
   @argumentDefinitions(
@@ -70,6 +68,7 @@ export const publicDashboardsFragment = graphql`
     }
   }
 `;
+
 const publicDashboardsListQuery = graphql`
   query PublicDashboardsListQuery(
     $search: String
@@ -90,6 +89,7 @@ const publicDashboardsListQuery = graphql`
     )
   }
 `;
+
 const LOCAL_STORAGE_KEY = 'PublicDashboard';
 
 const PublicDashboardComponent = () => {
@@ -118,47 +118,45 @@ const PublicDashboardComponent = () => {
   // const { isFeatureEnable } = useHelper();
   // const dataTableEnabled = isFeatureEnable('DATA_TABLES');
 
-  const dataColumns = {
+  const dataColumns: DataTableProps['dataColumns'] = {
     name: {
       id: 'name',
-      flexSize: 15,
-      label: 'Public Dashboard name',
+      flexSize: 25,
+      label: 'Name',
     },
-    // private_manifest: {
-    //   id: 'private manifest',
-    //   flexSize: 10,
-    //   label: 'Original dashboard',
-    //   isSortable: true,
-    //   render: ({ private_manifest }) => (
-    //     <Tooltip title={private_manifest}>{private_manifest}</Tooltip>
-    //   ),
-    // },
+    dashboard: {
+      id: 'dashboard',
+      flexSize: 25,
+      label: 'Custom dashboard',
+      isSortable: true,
+      render: ({ dashboard }) => dashboard.name ?? '-',
+    },
     allowed_markings: {
       id: 'allowed_markings',
-      flexSize: 10,
+      flexSize: 20,
       label: 'Max markings shared',
     },
     enabled: {
       id: 'enabled',
-      flexSize: 10,
-      label: 'Link enabled',
+      flexSize: 15,
+      label: 'Status',
       isSortable: true,
-      render: ({ status, enabled }, { variant }) => (
-        <ItemStatus
-          status={status}
-          variant={variant === DataTableVariant.default ? 'inList' : 'inLine'}
-          disabled={!enabled}
+      render: ({ enabled }) => (
+        <ItemBoolean
+          status={enabled}
+          label={enabled ? t_i18n('Enabled') : t_i18n('Disabled')}
         />
       ),
     },
     owner: {
       id: 'owner',
-      flexSize: 10,
+      flexSize: 15,
       label: 'Shared by',
       isSortable: true,
       render: ({ owner }) => owner?.name ?? '-',
     },
   };
+
   return (
     <>
       <Breadcrumbs variant="list" elements={[{ label: t_i18n('Dashboards') }, { label: t_i18n('Public Dashboards'), current: true }]}/>
