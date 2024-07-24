@@ -48,9 +48,33 @@ const stixCoreObjectsDistributionListDistributionQuery = graphql`
           id
           entity_type
         }
+        ... on BasicRelationship {
+          id
+          entity_type
+        }
         ... on StixObject {
           representative {
             main
+          }
+        }
+        # use colors when available
+        ... on Label {
+          color
+        }
+        ... on MarkingDefinition {
+          x_opencti_color
+        }
+        # objects without representative
+        ... on Creator {
+          name
+        }
+        ... on Group {
+          name
+        }
+        ... on Status {
+          template {
+            name
+            color
           }
         }
       }

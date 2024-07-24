@@ -30,6 +30,7 @@ const stixCoreObjectsTimelineQuery = graphql`
           entity_type
             representative {
               main
+              secondary
             }
         }
       }
