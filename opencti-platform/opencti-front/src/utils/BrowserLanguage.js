@@ -7,6 +7,7 @@ export const LANGUAGES = {
   SPANISH: 'es-es',
   JAPANESE: 'ja-jp',
   CHINESE: 'zh-cn',
+  KOREAN: 'ko-kr',
 };
 
 export const DEFAULT_LANG = LANGUAGES.ENGLISH;

@@ -12,6 +12,7 @@ const timeFormatsMap = {
   'es-es': 'HH:mm',
   'ja-jp': 'hh:mm a',
   'zg-cn': 'hh:mm a',
+  'ko-kr': 'hh:mm a',
 };
 
 const timeFormatsMapWithSeconds = {
@@ -20,6 +21,7 @@ const timeFormatsMapWithSeconds = {
   'es-es': 'HH:mm:ss',
   'ja-jp': 'hh:mm:ss a',
   'zg-cn': 'hh:mm:ss a',
+  'ko-kr': 'hh:mm:ss a',
 };
 
 const TimePickerField = (props) => {
