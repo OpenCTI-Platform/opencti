@@ -19,7 +19,6 @@ interface CreateUserContextOptions {
   overviewLayoutCustomization?: unknown,
 }
 
-const fakeOverviewLayoutCustomization = new Map();
 const threatActorIndividualConfiguration = new Map([
   ['details', 6],
   ['basicInformation', 6],
@@ -30,10 +29,10 @@ const threatActorIndividualConfiguration = new Map([
   ['mostRecentHistory', 6],
   ['notes', 12],
 ]);
-fakeOverviewLayoutCustomization.set(
-  'Threat-Actor-Individual',
-  threatActorIndividualConfiguration,
-);
+const fakeOverviewLayoutCustomization = new Map([
+  ['Threat-Actor-Individual',
+    threatActorIndividualConfiguration],
+]);
 
 /**
  * Create a fake user context to match your needs while testing.

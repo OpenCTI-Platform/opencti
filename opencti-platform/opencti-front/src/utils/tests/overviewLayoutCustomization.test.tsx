@@ -6,21 +6,6 @@ import { createMockUserContext, ProvidersWrapper, ProvidersWrapperProps } from '
 
 describe('overviewLayoutCustomization', () => {
   const threatActorIndividualEntityType = 'Threat-Actor-Individual';
-  const overviewLayoutCustomization = new Map();
-  const threatActorIndividualConfiguration = new Map([
-    ['details', 6],
-    ['basicInformation', 6],
-    ['demographics-biographics', 6],
-    ['latestCreatedRelationships', 6],
-    ['latestContainers', 6],
-    ['externalReferences', 6],
-    ['mostRecentHistory', 6],
-    ['notes', 12],
-  ]);
-  overviewLayoutCustomization.set(
-    'Threat-Actor-Individual',
-    threatActorIndividualConfiguration,
-  );
   const wrapper = ({ children }: ProvidersWrapperProps) => {
     return (
       <ProvidersWrapper
