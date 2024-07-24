@@ -10,6 +10,7 @@
       "DATA_TABLES",
       "4352_BULK_RELATIONS",
       "FILIGRAN_LOADER",
+      "CAPABILITY_BYPASSFIELDS",
       "BULK_ENTITIES"
     ],
     "https_cert": {
