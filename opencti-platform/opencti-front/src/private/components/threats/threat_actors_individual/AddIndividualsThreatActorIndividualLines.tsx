@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { graphql, useRefetchableFragment } from 'react-relay';
 import Loader from 'src/components/Loader';
 import { List, ListItemButton, ListItemIcon, ListItemText, useTheme } from '@mui/material';
@@ -59,9 +59,10 @@ export const addIndividualsThreatActorIndividualLinesQuery = graphql`
   query AddIndividualsThreatActorIndividualLinesQuery(
     $search: String
     $count: Int!
+    $cursor: ID
   ) {
     ...AddIndividualsThreatActorIndividualLines_data
-      @arguments(search: $search, count: $count)
+      @arguments(search: $search, count: $count, cursor: $cursor)
   }
 `;
 
@@ -70,12 +71,14 @@ const AddIndividualsThreatActorIndividualLinesFragment = graphql`
   @refetchable(queryName: "AddIndividualsThreatActorIndividualLinesRefetchQuery")
   @argumentDefinitions(
     search: { type: "String" }
-    count: { type: "Int", defaultValue: 25 }
+    count: { type: "Int", defaultValue: 25 },
+    cursor: { type: "ID" },
   ) {
     individuals (
       search: $search,
       first: $count,
-    ) {
+      after: $cursor,
+    ) @connection(key: "Pagination_individuals") {
       edges {
         node {
           id
@@ -123,12 +126,15 @@ const AddIndividualsThreatActorIndividualLines = ({
   threatActorIndividual: ThreatActorIndividualDetails_ThreatActorIndividual$data,
   fragmentKey: AddIndividualsThreatActorIndividualLines_data$key,
 }) => {
-  const [data] = useRefetchableFragment(
+  const [data, refetch] = useRefetchableFragment(
     AddIndividualsThreatActorIndividualLinesFragment,
     fragmentKey,
   );
   const [commitRelationAdd] = useApiMutation(scoRelationshipAdd);
   const [commitRelationDelete] = useApiMutation(scoRelationshipDelete);
+  useEffect(() => {
+    refetch({});
+  }, [data]);
 
   const initialTargets = (threatActorIndividual
     .stixCoreRelationships?.edges

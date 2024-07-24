@@ -8,6 +8,7 @@ import { useLazyLoadQuery } from 'react-relay';
 import AddIndividualsThreatActorIndividualLines, { addIndividualsThreatActorIndividualLinesQuery } from './AddIndividualsThreatActorIndividualLines';
 import { AddIndividualsThreatActorIndividualLinesQuery } from './__generated__/AddIndividualsThreatActorIndividualLinesQuery.graphql';
 import { ThreatActorIndividualDetails_ThreatActorIndividual$data } from './__generated__/ThreatActorIndividualDetails_ThreatActorIndividual.graphql';
+import IndividualCreation from '../../entities/individuals/IndividualCreation';
 
 const AddIndividualsThreatActorIndividual = ({
   threatActorIndividual,
@@ -58,11 +59,22 @@ const AddIndividualsThreatActorIndividual = ({
           style={{
             marginLeft: 'auto',
             marginRight: '20px',
+            display: 'flex',
+            flexWrap: 'wrap',
+            justifyContent: 'flex-end',
+            alignItems: 'flex-end',
           }}
         >
           <SearchInput
             variant='inDrawer'
             onSubmit={handleSearch}
+          />
+          <div style={{ height: 5 }} />
+          <IndividualCreation
+            paginationOptions={{
+              search,
+              count: 50,
+            }}
           />
         </div>
       }

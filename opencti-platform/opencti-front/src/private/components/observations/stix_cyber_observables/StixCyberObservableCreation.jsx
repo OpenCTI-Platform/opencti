@@ -245,7 +245,7 @@ const StixCyberObservableCreation = ({
   inputValue,
   paginationKey,
   paginationOptions,
-  controlledDialStyles,
+  controlledDialStyles = {},
   defaultCreatedBy = null,
   defaultMarkingDefinitions = null,
 }) => {
