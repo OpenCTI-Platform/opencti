@@ -13,6 +13,7 @@ export interface BasicStoreEntityPublicDashboard extends BasicStoreEntity {
   description: string;
   dashboard_id: string;
   user_id: string;
+  owner: string;
   public_manifest: string;
   private_manifest: string;
   uri_key: string;
@@ -27,6 +28,7 @@ export interface StoreEntityPublicDashboard extends StoreEntity {
   description: string;
   dashboard_id: string;
   user_id: string;
+  owner: string;
   public_manifest: string;
   private_manifest: string;
   uri_key: string;
