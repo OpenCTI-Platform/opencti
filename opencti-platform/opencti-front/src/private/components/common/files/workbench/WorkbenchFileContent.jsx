@@ -263,38 +263,49 @@ const getEntityMainRepresentativeForWorkbenchChecks = (n, fallback = 'Unknown') 
     || n.phase_name
     || n.result_name
     || n.content
+    || n.key
     || (n.hashes
       && (n.hashes.MD5
         || n.hashes['SHA-1']
         || n.hashes['SHA-256']
         || n.hashes['SHA-512']))
-    || getEntityMainRepresentativeForWorkbenchChecks((R.head(n.objects.edges ?? []))?.node)
-  || n.main_entity_name
-  || fallback;
+    || getEntityMainRepresentativeForWorkbenchChecks((R.head(n.objects?.edges ?? []))?.node)
+    || n.main_entity_name
+    || fallback;
   return mainValue;
 };
 
-const defaultValueKeys = [
-  'name',
-  'value',
-  'aliases',
-  'x_opencti_aliases',
-  'x_mitre_id',
-  'pattern',
-  'attribute_abstract',
-  'opinion',
-  'value',
-  'definition',
-  'source_name',
-  'phase_name',
-  'result_name',
-  'content',
-  'hashes.MD5',
-  'hashes.SHA-1',
-  'hashes.SHA-256',
-  'hashes.SHA-512',
-  'main_entity_name',
-];
+const defaultValueKeys = {
+  stixDomainObjects: [
+    'name',
+    'aliases',
+    'x_opencti_aliases',
+    'x_mitre_id',
+    'pattern',
+    'attribute_abstract',
+    'opinion',
+    'value',
+    'definition',
+    'source_name',
+    'phase_name',
+    'result_name',
+    'content',
+    'main_entity_name',
+  ],
+  stixCyberObservables: [
+    'name',
+    'value',
+    'aliases',
+    'x_opencti_aliases',
+    'value',
+    'content',
+    'attribute_key',
+    'hashes.MD5',
+    'hashes.SHA-1',
+    'hashes.SHA-256',
+    'hashes.SHA-512',
+  ],
+};
 
 const WorkbenchFileContentComponent = ({
   connectorsImport,
@@ -3208,7 +3219,7 @@ const WorkbenchFileContentComponent = ({
                                 mode: 'and',
                                 filters: [
                                   {
-                                    key: defaultValueKeys,
+                                    key: defaultValueKeys.stixDomainObjects,
                                     values: [object.default_value],
                                   },
                                 ],
@@ -3300,7 +3311,7 @@ const WorkbenchFileContentComponent = ({
     const resolvedStixCyberObservables = stixCyberObservables.map((n) => ({
       ...n,
       ttype: t_i18n(`entity_${convertFromStixType(n.type)}`),
-      default_value: getMainRepresentative(n, null),
+      default_value: getEntityMainRepresentativeForWorkbenchChecks(n, null),
       markings: resolveMarkings(stixDomainObjects, n.object_marking_refs),
     }));
     const sort = R.sortWith(
@@ -3447,7 +3458,7 @@ const WorkbenchFileContentComponent = ({
                                 mode: 'and',
                                 filters: [
                                   {
-                                    key: defaultValueKeys,
+                                    key: defaultValueKeys.stixCyberObservables,
                                     values: [object.default_value],
                                   },
                                 ],
@@ -3980,7 +3991,7 @@ const WorkbenchFileContentComponent = ({
                                 mode: 'and',
                                 filters: [
                                   {
-                                    key: defaultValueKeys,
+                                    key: defaultValueKeys.stixDomainObjects,
                                     values: [object.default_value],
                                   },
                                   {
