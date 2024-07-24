@@ -354,7 +354,12 @@ const BulkRelationDialog : FunctionComponent<BulkRelationDialogProps> = ({
             <Box sx={{ width: `${toHeaderWidth}px` }}>
               <TextField
                 disabled={isSubmitting}
-                inputProps={{ style: { lineHeight: '30px' } }}
+                inputProps={{ style: { lineHeight: '37px' } }}
+                sx={{
+                  '.MuiInputBase-root': {
+                    paddingTop: '2px',
+                  },
+                }}
                 value={getTextAreaValue()}
                 onChange={handleChangeTextArea}
                 multiline
@@ -363,7 +368,7 @@ const BulkRelationDialog : FunctionComponent<BulkRelationDialogProps> = ({
                 variant="outlined"
               />
             </Box>
-            <Box>
+            <Box style={{ marginTop: '6px' }}>
               {bulkEntityList.map((entity: BulkEntityTypeInfo, index) => {
                 return (
                   <BulkSelectRawLineData
