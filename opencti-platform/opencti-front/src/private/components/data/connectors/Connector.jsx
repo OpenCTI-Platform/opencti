@@ -639,15 +639,23 @@ const ConnectorComponent = ({ connector, relay }) => {
                         {nsdt(connector.connector_info?.last_run_datetime)}
                       </Typography>
                     </>
-                  ) : (
-                    <>
+                  ) : (connector.connector_state && connector.connector_state !== 'null' && checkLastRunExistingInState()
+                    ? (<>
+                      <Typography variant="h3" gutterBottom={true}>
+                        {t_i18n('Last run (from State)')}
+                      </Typography>
+                      <Typography variant="body1" gutterBottom={true}>
+                        {nsdt(getLastRunConverted())}
+                      </Typography>
+                    </>)
+                    : (<>
                       <Typography variant="h3" gutterBottom={true}>
                         {t_i18n('Last run')}
                       </Typography>
                       <Typography variant="body1" gutterBottom={true}>
                         {t_i18n('Not provided')}
                       </Typography>
-                    </>
+                    </>)
                   )
                 )}
               </Grid>
