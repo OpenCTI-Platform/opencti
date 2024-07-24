@@ -545,7 +545,7 @@ const StixCyberObservableCreation = ({
                 initialValues[attribute.value] = inputValue || '';
                 // Dynamically include value field for Singular Observable type Object form validation
                 extraFieldsToValidate = {
-                  [attribute.value]: Yup.string().required(t_i18n('A value is required')),
+                  [attribute.value]: Yup.string().required(t_i18n('This field is required')),
                 };
                 requiredOneOfFields = [
                   [attribute.value],
