@@ -112,7 +112,6 @@ const PublicDashboardComponent = () => {
   );
   // const { isFeatureEnable } = useHelper();
   // const dataTableEnabled = isFeatureEnable('DATA_TABLES');
-  console.log('dataColumns');
   const dataColumns = {
     name: {
       flexSize: 15,
@@ -135,14 +134,15 @@ const PublicDashboardComponent = () => {
       label: 'Shared by',
     },
   };
-  console.log('DATA');
   return (
     <>
       <Breadcrumbs variant="list" elements={[{ label: t_i18n('Dashboards') }, { label: t_i18n('Public Dashboards'), current: true }]}/>
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}
-          resolvePath={(data: PublicDashboardsFragment$data) => data.publicDashboards?.edges?.map((n) => n?.node)}
+          resolvePath={(data: PublicDashboardsFragment$data) => {
+            return data.publicDashboards?.edges?.map((n) => n?.node);
+          }}
           storageKey={LOCAL_STORAGE_KEY}
           initialValues={initialValues}
           toolbarFilters={contextFilters}
