@@ -23,7 +23,7 @@ import type { BasicStoreEntityMalwareAnalysis } from '../modules/malwareAnalysis
 import type { BasicStoreEntityManagerConfiguration } from '../modules/managerConfiguration/managerConfiguration-types';
 import type { BasicStoreEntityNotifier } from '../modules/notifier/notifier-types';
 import type { BasicStoreEntityThreatActorIndividual } from '../modules/threatActorIndividual/threatActorIndividual-types';
-import type { BasicStoreEntityIngestionRss, BasicStoreEntityIngestionTaxii, BasicStoreEntityIngestionCsv } from '../modules/ingestion/ingestion-types';
+import type { BasicStoreEntityIngestionCsv, BasicStoreEntityIngestionRss, BasicStoreEntityIngestionTaxii } from '../modules/ingestion/ingestion-types';
 import type { BasicStoreEntityIndicator } from '../modules/indicator/indicator-types';
 import type { BasicStoreEntityDecayRule } from '../modules/decayRule/decayRule-types';
 import type { BasicStoreEntityOrganization } from '../modules/organization/organization-types';
@@ -32,6 +32,7 @@ import type { BasicStoreEntityPlaybook } from '../modules/playbook/playbook-type
 import type { BasicStoreEntityPublicDashboard } from '../modules/publicDashboard/publicDashboard-types';
 import type { BasicStoreEntityDeleteOperation } from '../modules/deleteOperation/deleteOperation-types';
 import type { BasicStoreEntitySupportPackage } from '../modules/support/support-types';
+
 export type Maybe<T> = T | null | undefined;
 export type InputMaybe<T> = T | null;
 export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
@@ -18414,6 +18415,7 @@ export type PublicDashboard = BasicObject & InternalObject & {
   entity_type: Scalars['String']['output'];
   id: Scalars['ID']['output'];
   name: Scalars['String']['output'];
+    owner?: Maybe<Creator>;
   parent_types: Array<Scalars['String']['output']>;
   private_manifest?: Maybe<Scalars['String']['output']>;
   public_manifest?: Maybe<Scalars['String']['output']>;
@@ -36804,6 +36806,7 @@ export type PublicDashboardResolvers<ContextType = any, ParentType extends Resol
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+    owner?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   private_manifest?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   public_manifest?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;

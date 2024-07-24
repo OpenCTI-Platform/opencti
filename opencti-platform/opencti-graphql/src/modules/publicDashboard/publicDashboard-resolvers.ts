@@ -1,23 +1,28 @@
 import type { Resolvers } from '../../generated/graphql';
 import {
   addPublicDashboard,
-  findById,
   findAll,
+  findById,
+  getAllowedMarkings,
+  getPublicDashboardByUriKey,
+  publicBookmarks,
   publicDashboardDelete,
   publicDashboardEditField,
-  getPublicDashboardByUriKey,
-  getAllowedMarkings,
-  publicStixCoreObjectsNumber,
+  publicStixCoreObjects,
+  publicStixCoreObjectsDistribution,
   publicStixCoreObjectsMultiTimeSeries,
+  publicStixCoreObjectsNumber,
+  publicStixRelationships,
+  publicStixRelationshipsDistribution,
   publicStixRelationshipsMultiTimeSeries,
   publicStixRelationshipsNumber,
-  publicStixCoreObjectsDistribution,
-  publicStixRelationshipsDistribution,
-  publicBookmarks,
-  publicStixCoreObjects,
-  publicStixRelationships,
 } from './publicDashboard-domain';
 import { getAuthorizedMembers } from '../../utils/authorizedMembers';
+import { getOwnerId } from '../workspace/workspace-domain';
+import { batchLoader } from '../../database/middleware';
+import { batchCreator } from '../../domain/user';
+
+const creatorLoader = batchLoader(batchCreator);
 
 const publicDashboardResolvers: Resolvers = {
   Query: {
@@ -37,6 +42,7 @@ const publicDashboardResolvers: Resolvers = {
   PublicDashboard: {
     authorized_members: (publicDashboard, _, context) => getAuthorizedMembers(context, context.user, publicDashboard),
     allowed_markings: (publicDashboard, _, context) => getAllowedMarkings(context, context.user, publicDashboard),
+    owner: (publicDashboard, _, context) => creatorLoader.load(getOwnerId(publicDashboard), context, context.user),
   },
   Mutation: {
     publicDashboardAdd: (_, { input }, context) => {

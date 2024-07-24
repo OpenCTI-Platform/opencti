@@ -11,6 +11,8 @@ import DataTable from '../../../../components/dataGrid/DataTable';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
+import { DataTableVariant } from '../../../../components/dataGrid/dataTableTypes';
+import ItemStatus from '../../../../components/ItemStatus';
 
 const publicDashboardFragment = graphql`
   fragment PublicDashboard on PublicDashboard {
@@ -18,6 +20,9 @@ const publicDashboardFragment = graphql`
     uri_key
     enabled
     name
+    owner {
+      name
+    }
     user_id
     created_at
     updated_at
@@ -112,56 +117,76 @@ const PublicDashboardComponent = () => {
   );
   // const { isFeatureEnable } = useHelper();
   // const dataTableEnabled = isFeatureEnable('DATA_TABLES');
+
   const dataColumns = {
     name: {
+      id: 'name',
       flexSize: 15,
       label: 'Public Dashboard name',
     },
-    private_manifest: {
-      flexSize: 10,
-      label: 'Original dashboard',
-    },
+    // private_manifest: {
+    //   id: 'private manifest',
+    //   flexSize: 10,
+    //   label: 'Original dashboard',
+    //   isSortable: true,
+    //   render: ({ private_manifest }) => (
+    //     <Tooltip title={private_manifest}>{private_manifest}</Tooltip>
+    //   ),
+    // },
     allowed_markings: {
+      id: 'allowed_markings',
       flexSize: 10,
       label: 'Max markings shared',
     },
     enabled: {
+      id: 'enabled',
       flexSize: 10,
       label: 'Link enabled',
+      isSortable: true,
+      render: ({ status, enabled }, { variant }) => (
+        <ItemStatus
+          status={status}
+          variant={variant === DataTableVariant.default ? 'inList' : 'inLine'}
+          disabled={!enabled}
+        />
+      ),
     },
-    shared: {
+    owner: {
+      id: 'owner',
       flexSize: 10,
       label: 'Shared by',
+      isSortable: true,
+      render: ({ owner }) => owner?.name ?? '-',
     },
   };
   return (
     <>
       <Breadcrumbs variant="list" elements={[{ label: t_i18n('Dashboards') }, { label: t_i18n('Public Dashboards'), current: true }]}/>
       {queryRef && (
-        <DataTable
-          dataColumns={dataColumns}
-          resolvePath={(data: PublicDashboardsFragment$data) => {
-            return data.publicDashboards?.edges?.map((n) => n?.node);
-          }}
-          storageKey={LOCAL_STORAGE_KEY}
-          initialValues={initialValues}
-          toolbarFilters={contextFilters}
-          preloadedPaginationProps={{
-            linesQuery: publicDashboardsListQuery,
-            linesFragment: publicDashboardsFragment,
-            queryRef,
-            setNumberOfElements: helpers.handleSetNumberOfElements,
-          }}
-          lineFragment={publicDashboardFragment}
-          exportContext={{ entity_type: 'PublicDashboard' }}
-          additionalHeaderButtons={[
-            <ToggleButton key="cards" value="lines" aria-label="lines">
-              <Tooltip title={t_i18n('Lines view')}>
-                <ViewListOutlined color="primary" fontSize="small"/>
-              </Tooltip>
-            </ToggleButton>,
-          ]}
-        />
+      <DataTable
+        dataColumns={dataColumns}
+        resolvePath={(data: PublicDashboardsFragment$data) => {
+          return data.publicDashboards?.edges?.map((n) => n?.node);
+        }}
+        storageKey={LOCAL_STORAGE_KEY}
+        initialValues={initialValues}
+        toolbarFilters={contextFilters}
+        preloadedPaginationProps={{
+          linesQuery: publicDashboardsListQuery,
+          linesFragment: publicDashboardsFragment,
+          queryRef,
+          setNumberOfElements: helpers.handleSetNumberOfElements,
+        }}
+        lineFragment={publicDashboardFragment}
+        exportContext={{ entity_type: 'PublicDashboard' }}
+        additionalHeaderButtons={[
+          <ToggleButton key="cards" value="lines" aria-label="lines">
+            <Tooltip title={t_i18n('Lines view')}>
+              <ViewListOutlined color="primary" fontSize="small"/>
+            </Tooltip>
+          </ToggleButton>,
+        ]}
+      />
       )}
     </>
   );
