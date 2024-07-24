@@ -45,7 +45,7 @@ const i18n: { messages: Record<PlatformLang, Record<string, string>> } = {
     'zh-cn': { ...messages_zh_back, ...messages_zh_front },
     'en-us': { ...messages_en_back, ...messages_en_front },
     'de-de': { ...messages_de_back, ...messages_de_front },
-    'ko-kr': { ...messages_de_back, ...messages_de_front },
+    'ko-kr': { ...messages_ko_back, ...messages_ko_front },
   },
 };
 
