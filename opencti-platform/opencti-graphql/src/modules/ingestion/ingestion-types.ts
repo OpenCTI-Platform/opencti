@@ -54,6 +54,7 @@ export interface BasicStoreEntityIngestionTaxii extends BasicStoreEntity {
   added_after_start: Date | undefined
   current_state_cursor: string | undefined
   ingestion_running: boolean
+  taxii_more: string,
 }
 
 export interface StoreEntityIngestionTaxii extends StoreEntity {

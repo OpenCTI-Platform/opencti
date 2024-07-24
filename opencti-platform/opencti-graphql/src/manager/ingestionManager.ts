@@ -7,6 +7,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { clearIntervalAsync, setIntervalAsync } from 'set-interval-async/dynamic';
 import type { SetIntervalAsyncTimer } from 'set-interval-async/fixed';
 import type { Moment } from 'moment';
+import type { RawAxiosResponseHeaders } from 'axios';
 import { lockResource } from '../database/redis';
 import conf, { booleanConf, logApp } from '../config/conf';
 import { TYPE_LOCK_ERROR, UnknownError, UnsupportedError } from '../config/errors';
@@ -204,26 +205,26 @@ const rssExecutor = async (context: AuthContext, turndownService: TurndownServic
 // endregion
 
 // region Taxii ingestion
-interface TaxiiResponseData {
-  data: { more: boolean, next: string, objects: object[] },
-  addedLast: string | undefined | null
+export interface TaxiiResponseData {
+  data: { more: boolean | undefined, next: string | undefined, objects: object[] },
+  addedLastHeader: string | undefined | null
 }
 
 const taxiiHttpGet = async (ingestion: BasicStoreEntityIngestionTaxii): Promise<TaxiiResponseData> => {
-  const headers = new OpenCTIHeaders();
-  headers.Accept = 'application/taxii+json;version=2.1';
+  const octiHeaders = new OpenCTIHeaders();
+  octiHeaders.Accept = 'application/taxii+json;version=2.1';
   if (ingestion.authentication_type === IngestionAuthType.Basic) {
     const auth = Buffer.from(ingestion.authentication_value, 'utf-8').toString('base64');
-    headers.Authorization = `Basic ${auth}`;
+    octiHeaders.Authorization = `Basic ${auth}`;
   }
   if (ingestion.authentication_type === IngestionAuthType.Bearer) {
-    headers.Authorization = `Bearer ${ingestion.authentication_value}`;
+    octiHeaders.Authorization = `Bearer ${ingestion.authentication_value}`;
   }
   let certificates;
   if (ingestion.authentication_type === IngestionAuthType.Certificate) {
     certificates = { cert: ingestion.authentication_value.split(':')[0], key: ingestion.authentication_value.split(':')[1], ca: ingestion.authentication_value.split(':')[2] };
   }
-  const httpClientOptions: GetHttpClient = { headers, rejectUnauthorized: false, responseType: 'json', certificates };
+  const httpClientOptions: GetHttpClient = { headers: octiHeaders, rejectUnauthorized: false, responseType: 'json', certificates };
   const httpClient = getHttpClient(httpClientOptions);
   const preparedUri = ingestion.uri.endsWith('/') ? ingestion.uri : `${ingestion.uri}/`;
   const url = `${preparedUri}collections/${ingestion.collection}/objects/`;
@@ -232,29 +233,51 @@ const taxiiHttpGet = async (ingestion: BasicStoreEntityIngestionTaxii): Promise<
   // same original query options.
   // If the more property is set to true and the next property is empty then the client may paginate through the remaining records by using the added_after URL parameter with the
   // date/time value from the X-TAXII-Date-Added-Last header along with the same original query options.
+
   const next = ingestion.current_state_cursor;
-  const params = { next, added_after: ingestion.added_after_start };
-  const { data, headers: resultHeaders } = await httpClient.get(url, { params });
-  return { data, addedLast: resultHeaders['x-taxii-date-added-last'] };
+  const added_after = ingestion.added_after_start;
+  const params = { next, added_after };
+  const { data, headers } = await httpClient.get(url, { params });
+  logApp.info('[OPENCTI-MODULE] Taxii HTTP Get done.', { ingestionId: ingestion.id, moreResponse: data.more, nextResponse: data.next, url, requestParams: params, addedLastHeaderResponse: headers['x-taxii-date-added-last'] });
+  return { data, addedLastHeader: headers['x-taxii-date-added-last'] };
 };
+
 type TaxiiHandlerFn = (context: AuthContext, ingestion: BasicStoreEntityIngestionTaxii) => Promise<void>;
-const taxiiV21DataHandler: TaxiiHandlerFn = async (context: AuthContext, ingestion: BasicStoreEntityIngestionTaxii) => {
-  const { data, addedLast } = await taxiiHttpGet(ingestion);
+
+export const processTaxiiResponse = async (context: AuthContext, ingestion: BasicStoreEntityIngestionTaxii, taxiResponse:TaxiiResponseData) => {
+  const { data, addedLastHeader } = taxiResponse;
+
   if (data.objects && data.objects.length > 0) {
-    logApp.info(`[OPENCTI-MODULE] Taxii ingestion execution for ${data.objects.length} items`);
-    const bundle = { type: 'bundle', id: `bundle--${uuidv4()}`, objects: data.objects };
+    logApp.info(`[OPENCTI-MODULE] Taxii ingestion execution for ${data.objects.length} items, sending stix bundle to workers.`, { ingestionId: ingestion.id });
+    logApp.info('ANGIE - objects:', { objects: taxiResponse.data.objects });
+
+    const bundle = { type: 'bundle', id: `bundle--${uuidv4()}`, objects: taxiResponse.data.objects };
     // Push the bundle to absorption queue
     const stixBundle = JSON.stringify(bundle);
     const content = Buffer.from(stixBundle, 'utf-8').toString('base64');
-    await pushToWorkerForSync({ type: 'bundle', applicant_id: ingestion.user_id ?? OPENCTI_SYSTEM_UUID, content, update: true });
+    await pushToWorkerForSync({
+      type: 'bundle',
+      applicant_id: ingestion.user_id ?? OPENCTI_SYSTEM_UUID,
+      content,
+      update: true
+    });
     // Update the state
     await patchTaxiiIngestion(context, SYSTEM_USER, ingestion.internal_id, {
-      current_state_cursor: data.next ? String(data.next) : undefined,
-      added_after_start: data.next ? ingestion.added_after_start : utcDate(addedLast)
+      current_state_cursor: data.next ? data.next : undefined,
+      taxii_more: data.more ? data.more : undefined,
+      added_after_start: addedLastHeader || undefined,
     });
-  } else if (data.objects === undefined) {
-    const error = UnknownError('Undefined taxii objects', data);
-    logApp.error(error, { name: ingestion.name, context: 'Taxii 2.1 transform' });
+  } else {
+    logApp.info('[OPENCTI-MODULE] Taxii ingestion - taxii server has not sent any object.', { next: data.next, more: data.more, addedLastHeader, ingestionId: ingestion.id, ingestionName: ingestion.name });
+  }
+};
+
+const taxiiV21DataHandler: TaxiiHandlerFn = async (context: AuthContext, ingestion: BasicStoreEntityIngestionTaxii) => {
+  try {
+    const taxiResponse = await taxiiHttpGet(ingestion);
+    await processTaxiiResponse(context, ingestion, taxiResponse);
+  } catch (e) {
+    logApp.error(e, { ingestionId: ingestion.id, ingestionName: ingestion.name });
   }
 };
 const TAXII_HANDLERS: { [k: string]: TaxiiHandlerFn } = {
