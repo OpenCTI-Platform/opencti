@@ -26955,6 +26955,12 @@ export type UserObjectOrganizationArgs = {
   orderMode?: InputMaybe<OrderingMode>;
 };
 
+
+export type UserRolesArgs = {
+  orderBy?: InputMaybe<RolesOrdering>;
+  orderMode?: InputMaybe<OrderingMode>;
+};
+
 export type UserAccount = BasicObject & StixCoreObject & StixCyberObservable & StixObject & {
   __typename?: 'UserAccount';
   account_created?: Maybe<Scalars['DateTime']['output']>;
@@ -38444,7 +38450,7 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
   otp_qr?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   personal_notifiers?: Resolver<Maybe<Array<ResolversTypes['Notifier']>>, ParentType, ContextType>;
-  roles?: Resolver<Array<ResolversTypes['Role']>, ParentType, ContextType>;
+  roles?: Resolver<Array<ResolversTypes['Role']>, ParentType, ContextType, Partial<UserRolesArgs>>;
   sessions?: Resolver<Maybe<Array<Maybe<ResolversTypes['SessionDetail']>>>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   stateless_session?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;

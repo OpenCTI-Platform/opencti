@@ -1425,7 +1425,10 @@ type User implements BasicObject & InternalObject {
   theme: String
   language: String
   external: Boolean
-  roles: [Role!]!
+  roles(
+    orderBy: RolesOrdering
+    orderMode: OrderingMode
+  ): [Role!]!
   capabilities: [Capability]!
   default_hidden_types: [String!]!
   user_confidence_level: ConfidenceLevel
