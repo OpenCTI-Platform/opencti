@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { FunctionComponent, useEffect, useState } from 'react';
 import { graphql, useRefetchableFragment } from 'react-relay';
 import Loader from 'src/components/Loader';
 import { List, ListItemButton, ListItemIcon, ListItemText, useTheme } from '@mui/material';
@@ -7,53 +7,10 @@ import { CheckCircle } from '@mui/icons-material';
 import useApiMutation from 'src/utils/hooks/useApiMutation';
 import { defaultCommitMutation } from 'src/relay/environment';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
-import { filter } from 'ramda';
 import { ThreatActorIndividualDetails_ThreatActorIndividual$data } from './__generated__/ThreatActorIndividualDetails_ThreatActorIndividual.graphql';
 import { AddPersonasThreatActorIndividualLines_data$key } from './__generated__/AddPersonasThreatActorIndividualLines_data.graphql';
+import { scoRelationshipAdd, scoRelationshipDelete } from './ThreatActorIndividualMutations';
 
-const scoRelationshipAdd = graphql`
-  mutation AddPersonasThreatActorIndividualLinesRelationshipAddMutation(
-    $input: StixCoreRelationshipAddInput
-  ) {
-    stixCoreRelationshipAdd(input: $input) {
-      from {
-        ... on ThreatActorIndividual {
-          id
-          stixCoreRelationships {
-            edges {
-              node {
-                id
-                fromId
-                toId
-                entity_type
-                relationship_type
-              }
-            }
-          }
-        }
-      }
-      to {
-        ... on Individual {
-          id
-        }
-      }
-    }
-  }
-`;
-
-const scoRelationshipDelete = graphql`
-  mutation AddPersonasThreatActorIndividualLinesRelationshipDeleteMutation(
-    $fromId: StixRef!
-    $toId: StixRef!
-    $relationship_type: String!
-  ) {
-    stixCoreRelationshipDelete(
-      fromId: $fromId,
-      toId: $toId,
-      relationship_type: $relationship_type
-    )
-  }
-`;
 export const addPersonasThreatActorIndividualLinesQuery = graphql`
   query AddPersonasThreatActorIndividualLinesQuery(
     $search: String
@@ -92,16 +49,20 @@ const AddPersonasThreatActorIndividualLinesFragment = graphql`
   }
 `;
 
-const AddPersonasThreatActorIndividualLine = ({
-  id,
-  name,
-  currentTargets,
-  handleClick,
-}: {
+interface AddPersonasThreatActorIndividualLineProps {
   id: string,
   name: string,
   currentTargets: string[],
   handleClick: () => void,
+}
+
+const AddPersonasThreatActorIndividualLine: FunctionComponent<
+AddPersonasThreatActorIndividualLineProps
+> = ({
+  id,
+  name,
+  currentTargets,
+  handleClick,
 }) => {
   const theme = useTheme();
   return (
@@ -122,12 +83,16 @@ const AddPersonasThreatActorIndividualLine = ({
   );
 };
 
-const AddPersonasThreatActorIndividualLines = ({
-  threatActorIndividual,
-  fragmentKey,
-}: {
+interface AddPersonasThreatActorIndividualLinesProps {
   threatActorIndividual: ThreatActorIndividualDetails_ThreatActorIndividual$data,
   fragmentKey: AddPersonasThreatActorIndividualLines_data$key,
+}
+
+const AddPersonasThreatActorIndividualLines: FunctionComponent<
+AddPersonasThreatActorIndividualLinesProps
+> = ({
+  threatActorIndividual,
+  fragmentKey,
 }) => {
   const [data, refetch] = useRefetchableFragment(
     AddPersonasThreatActorIndividualLinesFragment,
@@ -153,10 +118,7 @@ const AddPersonasThreatActorIndividualLines = ({
     const records = node?.getLinkedRecord(path);
     const edges = records?.getLinkedRecords('edges');
     if (!records || !edges) { return; }
-    const newEdges = filter(
-      (n) => n.getLinkedRecord('node')?.getValue('toId') !== deleteId,
-      edges,
-    );
+    const newEdges = edges.filter((n) => n.getLinkedRecord('node')?.getValue('toId') !== deleteId);
     records.setLinkedRecords(newEdges, 'edges');
   };
 

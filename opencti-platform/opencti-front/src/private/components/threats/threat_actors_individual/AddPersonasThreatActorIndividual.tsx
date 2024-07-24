@@ -1,7 +1,7 @@
 import Drawer from '@components/common/drawer/Drawer';
 import { Add } from '@mui/icons-material';
 import { IconButton } from '@mui/material';
-import React, { useState } from 'react';
+import React, { FunctionComponent, useState } from 'react';
 import { useLazyLoadQuery } from 'react-relay';
 import SearchInput from 'src/components/SearchInput';
 import { useFormatter } from 'src/components/i18n';
@@ -10,10 +10,14 @@ import { AddPersonasThreatActorIndividualLinesQuery } from './__generated__/AddP
 import { ThreatActorIndividualDetails_ThreatActorIndividual$data } from './__generated__/ThreatActorIndividualDetails_ThreatActorIndividual.graphql';
 import StixCyberObservableCreation from '../../observations/stix_cyber_observables/StixCyberObservableCreation';
 
-const AddPersonaThreatActorIndividual = ({
-  threatActorIndividual,
-}: {
+interface AddPersonaThreatActorIndividualProps {
   threatActorIndividual: ThreatActorIndividualDetails_ThreatActorIndividual$data,
+}
+
+const AddPersonaThreatActorIndividual: FunctionComponent<
+AddPersonaThreatActorIndividualProps
+> = ({
+  threatActorIndividual,
 }) => {
   const { t_i18n } = useFormatter();
   const [open, setOpen] = useState<boolean>(false);

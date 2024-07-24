@@ -10580,7 +10580,7 @@ type Persona implements BasicObject & StixObject & StixCoreObject & StixCyberObs
   jobs(first: Int): [Work]
 }
 input PersonaAddInput {
-  persona_name: String!
+  persona_name: String! @constraint(minLength: 2, format: "not-blank")
   persona_type: String!
 }
 ###### RELATIONSHIPS
