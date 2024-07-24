@@ -133,6 +133,59 @@ describe('Retention Manager tests ', () => {
     const deleted = await deleteFile(context, ADMIN_USER, fileId);
     expect(deleted?.id).toEqual(fileId);
   });
+  it('should fetch the correct files to be deleted by a retention rule on workbenches', async () => {
+    const path = 'import/pending';
+    // create a workbench not modified since '2023-01-01T00:00:00.000Z'
+    const fileName1 = 'workbench1';
+    const fileId1 = `${path}/${fileName1}`;
+    const fileToUpload1 = {
+      createReadStream: () => Readable.from('This is a file content.'),
+      filename: fileName1,
+    };
+    await uploadToStorage(context, ADMIN_USER, path, fileToUpload1, {});
+    const lastModified = '2023-01-01T00:00:00.000Z';
+    const updateQuery = {
+      script: {
+        params: { lastModified },
+        source: 'ctx._source.lastModified = params.lastModified;',
+      },
+      query: {
+        bool: {
+          must: [
+            { term: { 'internal_id.keyword': { value: fileId1 } } },
+          ],
+        },
+      },
+    };
+    await elRawUpdateByQuery({
+      index: [READ_INDEX_INTERNAL_OBJECTS],
+      refresh: true,
+      wait_for_completion: true,
+      body: updateQuery
+    }).catch((err: Error) => {
+      throw DatabaseError('Error updating elastic', { cause: err });
+    });
+    const file = await loadFile(context, ADMIN_USER, fileId1);
+    expect(file?.lastModified).toEqual(lastModified);
+    // create a workbench not modified since '2024-01-01T00:00:00.000Z'
+    const fileName2 = 'workbench2';
+    const fileId2 = `${path}/${fileName2}`;
+    const fileToUpload2 = {
+      createReadStream: () => Readable.from('This is a file content.'),
+      filename: fileName2,
+    };
+    await uploadToStorage(context, ADMIN_USER, path, fileToUpload2, {});
+    // retention rule on workbenches not modified since 2023-07-01
+    const before = utcDate('2023-07-01T00:00:00.000Z');
+    const filesToDelete = await elementsToDelete(context, 'workbench', before);
+    expect(filesToDelete.edges.length).toEqual(1); // workbench1 is the only workbench that has not been modified since 'before'
+    expect(filesToDelete.edges[0].node.id).toEqual(fileId1);
+    // delete the created workbenches
+    const deleted1 = await deleteFile(context, ADMIN_USER, fileId1);
+    expect(deleted1?.id).toEqual(fileId1);
+    const deleted2 = await deleteFile(context, ADMIN_USER, fileId2);
+    expect(deleted2?.id).toEqual(fileId2);
+  });
   it('should fetch the correct elements to be deleted by a retention rule on knowledge', async () => {
     const before = utcDate('2024-01-01T00:00:00.000Z');
     const elements = await elementsToDelete(context, 'knowledge', before);
