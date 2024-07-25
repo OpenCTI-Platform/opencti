@@ -10588,6 +10588,7 @@ export enum IntrusionSetsOrdering {
   CreatedAt = 'created_at',
   Modified = 'modified',
   Name = 'name',
+  ObjectMarking = 'objectMarking',
   PrimaryMotivation = 'primary_motivation',
   ResourceLevel = 'resource_level',
   UpdatedAt = 'updated_at',
@@ -26112,8 +26113,10 @@ export enum ThreatActorsIndividualOrdering {
   CreatedAt = 'created_at',
   Modified = 'modified',
   Name = 'name',
+  ObjectMarking = 'objectMarking',
   ResourceLevel = 'resource_level',
   Sophistication = 'sophistication',
+  ThreatActorTypes = 'threat_actor_types',
   UpdatedAt = 'updated_at',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
@@ -26125,6 +26128,7 @@ export enum ThreatActorsOrdering {
   CreatedAt = 'created_at',
   Modified = 'modified',
   Name = 'name',
+  ObjectMarking = 'objectMarking',
   ResourceLevel = 'resource_level',
   Sophistication = 'sophistication',
   ThreatActorTypes = 'threat_actor_types',

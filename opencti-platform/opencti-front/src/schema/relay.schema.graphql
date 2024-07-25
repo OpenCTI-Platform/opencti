@@ -3742,6 +3742,7 @@ enum IntrusionSetsOrdering {
   primary_motivation
   confidence
   _score
+  objectMarking
 }
 
 type IntrusionSetConnection {
@@ -4487,6 +4488,7 @@ enum ThreatActorsOrdering {
   resource_level
   _score
   threat_actor_types
+  objectMarking
 }
 
 type ThreatActorGroupConnection {
@@ -10724,6 +10726,8 @@ enum ThreatActorsIndividualOrdering {
   resource_level
   confidence
   _score
+  objectMarking
+  threat_actor_types
 }
 
 type ThreatActorIndividualConnection {
