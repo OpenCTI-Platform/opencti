@@ -28,6 +28,7 @@ const stixCoreObjectsTimelineQuery = graphql`
         node {
           id
           entity_type
+          created_at
             representative {
               main
               secondary
