@@ -693,16 +693,22 @@ const ConnectorComponent = ({ connector, relay }) => {
                 <Typography variant="h3" gutterBottom={true} >
                   {t_i18n('Server capacity')}
                 </Typography>
-                {connector.connector_info && connector.connector_info.queue_messages_size !== 0 ? (
-                  <FieldOrEmpty source={connector.connector_info?.queue_messages_size}>
-                    <span style={isBuffering() ? { color: theme.palette.warning.main } : {}}>{connector.connector_info?.queue_messages_size.toFixed(2)}</span>
-                    <span> / {connector.connector_info?.queue_threshold} Mo</span>
-                  </FieldOrEmpty>
-                ) : (
-                  <Typography variant="body1" gutterBottom={true}>
-                    {t_i18n('Not provided')}
-                  </Typography>
-                )}
+                { // eslint-disable-next-line no-nested-ternary
+                  connector.connector_info && connector.connector_info.queue_messages_size !== 0 ? (
+                    <FieldOrEmpty source={connector.connector_info?.queue_messages_size}>
+                      <span style={isBuffering() ? { color: theme.palette.warning.main } : {}}>{connector.connector_info?.queue_messages_size.toFixed(2)}</span>
+                      <span> / {connector.connector_info?.queue_threshold} Mo</span>
+                    </FieldOrEmpty>
+                  ) : (
+                    connector.connector_info.queue_messages_size === 0 && connector.connector_info.last_run_datetime
+                      ? (<FieldOrEmpty source={connector.connector_info?.queue_messages_size}>
+                        <span style={isBuffering() ? { color: theme.palette.warning.main } : {}}>{connector.connector_info?.queue_messages_size.toFixed(2)}</span>
+                        <span> / {connector.connector_info?.queue_threshold} Mo</span>
+                      </FieldOrEmpty>)
+                      : (<Typography variant="body1" gutterBottom={true}>
+                        {t_i18n('Not provided')}
+                      </Typography>)
+                  )}
               </Grid>
             </Grid>
           </Paper>
