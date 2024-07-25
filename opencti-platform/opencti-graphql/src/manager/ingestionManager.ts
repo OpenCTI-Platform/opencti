@@ -7,7 +7,6 @@ import { v4 as uuidv4 } from 'uuid';
 import { clearIntervalAsync, setIntervalAsync } from 'set-interval-async/dynamic';
 import type { SetIntervalAsyncTimer } from 'set-interval-async/fixed';
 import type { Moment } from 'moment';
-import type { RawAxiosResponseHeaders } from 'axios';
 import { lockResource } from '../database/redis';
 import conf, { booleanConf, logApp } from '../config/conf';
 import { TYPE_LOCK_ERROR, UnknownError, UnsupportedError } from '../config/errors';
