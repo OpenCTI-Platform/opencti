@@ -31,6 +31,7 @@ import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings
 import useGranted, { KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE, KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 import CaseIncidentEdition from './CaseIncidentEdition';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 const subscription = graphql`
   subscription RootIncidentCaseSubscription($id: ID!) {
@@ -124,7 +125,8 @@ const RootCaseIncidentComponent = ({ queryRef, caseId }) => {
   } = usePreloadedQuery<RootIncidentCaseQuery>(caseIncidentQuery, queryRef);
   const isOverview = location.pathname === `/dashboard/cases/incidents/${caseData?.id}`;
   const paddingRight = getPaddingRight(location.pathname, caseData?.id, '/dashboard/cases/incidents', false);
-  const canManage = caseData?.currentUserAccessRight === 'admin';
+  const { isFeatureEnable } = useHelper();
+  const canManageAuthorizedMembers = caseData?.currentUserAccessRight === 'admin' && isFeatureEnable('CONTAINERS_AUTHORIZED_MEMBERS');
   return (
     <>
       {caseData ? (
@@ -145,7 +147,7 @@ const RootCaseIncidentComponent = ({ queryRef, caseId }) => {
             enableAskAi={true}
             disableSharing={true}
             redirectToContent={true}
-            enableManageAuthorizedMembers={canManage}
+            enableManageAuthorizedMembers={canManageAuthorizedMembers}
             authorizedMembersMutation={caseIncidentAuthorizedMembersMutation}
           />
           <Box
