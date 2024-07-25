@@ -17,6 +17,7 @@ import SelectField from '../../../../components/fields/SelectField';
 import { useFormatter } from '../../../../components/i18n';
 import { AccessRight, ALL_MEMBERS_AUTHORIZED_CONFIG, AuthorizedMemberOption, Creator, CREATOR_AUTHORIZED_CONFIG } from '../../../../utils/authorizedMembers';
 import SwitchField from '../../../../components/fields/SwitchField';
+import useAuth from '../../../../utils/hooks/useAuth';
 
 /**
  * Returns true if the authorized member option is generic.
@@ -40,6 +41,7 @@ interface AuthorizedMembersFieldProps
   owner?: Creator;
   showAllMembersLine?: boolean;
   showCreatorLine?: boolean;
+  showCurrentUserLine?: boolean;
   canDeactivate?: boolean;
 }
 
@@ -50,6 +52,7 @@ interface AuthorizedMembersFieldInternalValue {
   newAccessRight: AccessRight;
   allAccessRight: AccessRight;
   creatorAccessRight: AccessRight;
+  currentUserAccessRight: AccessRight;
 }
 
 // Validation for the internal formik form.
@@ -71,9 +74,11 @@ const AuthorizedMembersField = ({
   owner,
   showAllMembersLine = false,
   showCreatorLine = false,
+  showCurrentUserLine = false,
   canDeactivate = false,
 }: AuthorizedMembersFieldProps) => {
   const { t_i18n } = useFormatter();
+  const { me } = useAuth();
   const { setFieldValue } = form;
   const { name, value } = field;
   // Value in sync with internal Formik field 'applyAccesses'.
@@ -88,6 +93,9 @@ const AuthorizedMembersField = ({
   const accessForCreator = (value ?? []).find(
     (o) => o.value === CREATOR_AUTHORIZED_CONFIG.id,
   );
+  const accessForCurrentUser = (value ?? []).find(
+    (o) => o.value === me.id,
+  );
   const allMembersOption: Option = {
     label: t_i18n(ALL_MEMBERS_AUTHORIZED_CONFIG.labelKey),
     type: ALL_MEMBERS_AUTHORIZED_CONFIG.type,
@@ -97,6 +105,11 @@ const AuthorizedMembersField = ({
     label: t_i18n(CREATOR_AUTHORIZED_CONFIG.labelKey),
     type: CREATOR_AUTHORIZED_CONFIG.type,
     value: CREATOR_AUTHORIZED_CONFIG.id,
+  };
+  const currentUserOption: Option = {
+    label: t_i18n(me.name),
+    type: 'User',
+    value: me.id,
   };
   const accessRights = [
     { label: t_i18n('can view'), value: 'view' },
@@ -150,6 +163,7 @@ const AuthorizedMembersField = ({
           newAccessRight: 'view',
           allAccessRight: 'none',
           creatorAccessRight: 'none',
+          currentUserAccessRight: 'admin',
         },
       });
     } else if (showCreatorLine) {
@@ -169,6 +183,16 @@ const AuthorizedMembersField = ({
           accessRight: 'admin',
         },
       ]);
+    } else if (showCurrentUserLine) {
+      setFieldValue(name, [
+        {
+          label: me.name,
+          type: 'User',
+          value: me.id,
+          accessRight: 'admin',
+        },
+      ]);
+      setField('currentUserAccessRight', 'admin');
     } else {
       setFieldValue(name, []);
     }
@@ -222,6 +246,10 @@ const AuthorizedMembersField = ({
   const changeCreatorAccess = (accessRight: AccessRight) => {
     changeMemberAccess(CREATOR_AUTHORIZED_CONFIG.id, accessRight);
   };
+  // To change the access of the current user.
+  const changeCurrentUserAccess = (accessRight: AccessRight) => {
+    changeMemberAccess(me.id, accessRight);
+  };
   let accessInfoMessage = t_i18n('info_authorizedmembers_workspace');
   if (canDeactivate) {
     accessInfoMessage = applyAccesses
@@ -241,6 +269,7 @@ const AuthorizedMembersField = ({
           newAccessRight: 'view',
           allAccessRight: accessForAllMembers?.accessRight ?? 'none',
           creatorAccessRight: accessForCreator?.accessRight ?? 'none',
+          currentUserAccessRight: accessForCurrentUser?.accessRight ?? 'none',
         }}
         onSubmit={addAuthorizedMembers}
       >
@@ -366,6 +395,15 @@ const AuthorizedMembersField = ({
                       accessRights={accessRights}
                       ownerId={owner?.id}
                       onChange={changeCreatorAccess}
+                    />
+                  )}
+                  {showCurrentUserLine && (
+                    <AuthorizedMembersFieldListItem
+                      authorizedMember={currentUserOption}
+                      name="currentUserAccessRight"
+                      accessRights={accessRights}
+                      ownerId={owner?.id}
+                      onChange={changeCurrentUserAccess}
                     />
                   )}
                 </List>

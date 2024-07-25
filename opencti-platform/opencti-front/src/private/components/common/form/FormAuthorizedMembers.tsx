@@ -10,6 +10,7 @@ import AuthorizedMembersField, { AuthorizedMembersFieldValue } from '@components
 import Transition from '../../../../components/Transition';
 import { useFormatter } from '../../../../components/i18n';
 import { Creator } from '../../../../utils/authorizedMembers';
+import useAuth from '../../../../utils/hooks/useAuth';
 
 export interface FormAuthorizedMembersInputs {
   authorizedMembers: AuthorizedMembersFieldValue;
@@ -36,6 +37,8 @@ const FormAuthorizedMembers = ({
   canDeactivate,
 }: FormAuthorizedMembersProps) => {
   const { t_i18n } = useFormatter();
+  const { me } = useAuth();
+  const showCurrentUserLine = me.id !== owner?.id;
   return (
     <Formik<FormAuthorizedMembersInputs>
       enableReinitialize
@@ -64,7 +67,9 @@ const FormAuthorizedMembers = ({
                 name="authorizedMembers"
                 component={AuthorizedMembersField}
                 owner={owner}
+                currentUser={me}
                 showAllMembersLine
+                showCurrentUserLine={showCurrentUserLine}
                 canDeactivate={canDeactivate}
               />
             </Form>
