@@ -744,14 +744,14 @@ export const removeIdAndIncorrectKeysFromFilterGroupObject = (filters: FilterGro
 };
 
 export const useBuildEntityTypeBasedFilterContext = (entityTypeParam: string | string[], filters: FilterGroup | undefined): FilterGroup => {
-  const entityType = Array.isArray(entityTypeParam) ? entityTypeParam : [entityTypeParam];
-  const userFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, entityType);
+  const entityTypes = Array.isArray(entityTypeParam) ? entityTypeParam : [entityTypeParam];
+  const userFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, entityTypes);
   return {
     mode: 'and',
     filters: [
       {
         key: 'entity_type',
-        values: entityType,
+        values: entityTypes,
         operator: 'eq',
         mode: 'or',
       },
