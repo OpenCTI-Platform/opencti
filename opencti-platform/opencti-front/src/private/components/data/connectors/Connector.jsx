@@ -630,6 +630,7 @@ const ConnectorComponent = ({ connector, relay }) => {
                   )
                 )}
                 {connector.connector_info && (
+                  // eslint-disable-next-line no-nested-ternary
                   connector.connector_info.last_run_datetime ? (
                     <>
                       <Typography variant="h3" gutterBottom={true}>
