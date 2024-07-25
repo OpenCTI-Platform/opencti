@@ -572,8 +572,20 @@ const convertAttackPatternToStix = (instance: StoreEntity, type: string): SDO.St
 const convertReportToStix = (instance: StoreEntity, type: string): SDO.StixReport => {
   assertType(ENTITY_TYPE_CONTAINER_REPORT, type);
   const report = buildStixDomain(instance);
-  return {
+  const completeReport = {
     ...report,
+    created_by_ref: report['created_by_ref'] ?? instance['created-by'],
+    object_marking_refs: report['object_marking_refs'].length ? report['object_marking_refs'] : instance['object-marking'],
+    extensions: {
+      [STIX_EXT_OCTI]: {
+        ...report['extensions'][STIX_EXT_OCTI],
+        assignee_ids_refs: report['extensions'][STIX_EXT_OCTI]['assignee_ids'] ?? instance['object-assignee'],
+        participant_ids_refs: report['extensions'][STIX_EXT_OCTI]['assignee_ids'] ?? instance['object-participant']
+      },
+    }
+  };
+  return {
+    ...completeReport,
     name: instance.name,
     description: instance.description,
     report_types: instance.report_types,
@@ -581,7 +593,7 @@ const convertReportToStix = (instance: StoreEntity, type: string): SDO.StixRepor
     object_refs: convertObjectReferences(instance),
     extensions: {
       [STIX_EXT_OCTI]: cleanObject({
-        ...report.extensions[STIX_EXT_OCTI],
+        ...completeReport.extensions[STIX_EXT_OCTI],
         extension_type: 'property-extension',
         content: instance.content,
         content_mapping: instance.content_mapping,
