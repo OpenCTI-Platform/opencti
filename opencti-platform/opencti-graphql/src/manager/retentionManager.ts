@@ -11,7 +11,7 @@ import { convertFiltersToQueryOptions } from '../utils/filtering/filtering-resol
 import type { ManagerDefinition } from './managerModule';
 import { registerManager } from './managerModule';
 import type { AuthContext } from '../types/user';
-import type { RetentionRule } from '../generated/graphql';
+import type { FileEdge, RetentionRule } from '../generated/graphql';
 import { deleteFile } from '../database/file-storage';
 import { paginatedForPathWithEnrichment } from '../modules/internal/document/document-domain';
 
@@ -58,6 +58,11 @@ export const elementsToDelete = async (context: AuthContext, scope: string, befo
     );
   } else {
     throw Error(`[Retention manager] Scope ${scope} not existing for Retention Rule.`);
+  }
+  if (scope === 'file' || scope === 'knowledge') { // don't delete files with ongoing works or incomplete status
+    const resultEdges = result.edges.filter((e: FileEdge) => e.node.uploadStatus === 'complete'
+      && e.node.works?.every((work) => work?.status === 'complete'));
+    result.edges = resultEdges;
   }
   return result;
 };
