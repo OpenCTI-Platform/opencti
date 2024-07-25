@@ -12,7 +12,8 @@
       "FILIGRAN_LOADER",
       "CAPABILITY_BYPASSFIELDS",
       "BULK_ENTITIES",
-      "CONTAINERS_AUTHORIZED_MEMBERS"
+      "CONTAINERS_AUTHORIZED_MEMBERS",
+      "FILE_RETENTION_RULES"
     ],
     "https_cert": {
       "ca": [],

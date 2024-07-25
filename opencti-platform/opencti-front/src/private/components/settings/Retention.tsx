@@ -13,6 +13,8 @@ import { RETENTION_MANAGER } from '../../../utils/platformModulesHelper';
 import CustomizationMenu from './CustomizationMenu';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
+import useHelper from '../../../utils/hooks/useHelper';
+import { DataColumns } from '../../../components/list_lines';
 
 const LOCAL_STORAGE_KEY = 'retention';
 
@@ -29,6 +31,7 @@ const Retention = () => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const { platformModuleHelpers } = useAuth();
+  const { isFeatureEnable } = useHelper();
   const {
     viewStorage,
     paginationOptions,
@@ -36,7 +39,8 @@ const Retention = () => {
   } = usePaginationLocalStorage<RetentionLinesPaginationQuery$variables>(LOCAL_STORAGE_KEY, {
     searchTerm: '',
   });
-  const dataColumns = {
+  const dataColumns = isFeatureEnable('FILE_RETENTION_RULES')
+  ? {
     name: {
       label: 'Name',
       width: '15%',
@@ -67,7 +71,34 @@ const Retention = () => {
       width: '35%',
       isSortable: false,
     },
-  };
+  }
+  : {
+      name: {
+        label: 'Name',
+        width: '15%',
+        isSortable: false,
+      },
+      retention: {
+        label: 'Max retention',
+        width: '20%',
+        isSortable: false,
+      },
+      last_execution_date: {
+        label: 'Last execution',
+        width: '20%',
+        isSortable: false,
+      },
+      remaining_count: {
+        label: 'Remaining',
+        width: '10%',
+        isSortable: false,
+      },
+      filters: {
+        label: 'Apply on',
+        width: '35%',
+        isSortable: false,
+      },
+    } as DataColumns;
   if (!platformModuleHelpers.isRetentionManagerEnable()) {
     return (
       <div className={classes.container}>

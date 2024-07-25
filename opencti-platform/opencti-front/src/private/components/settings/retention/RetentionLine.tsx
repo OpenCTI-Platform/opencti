@@ -19,6 +19,7 @@ import RetentionPopover from './RetentionPopover';
 import { deserializeFilterGroupForFrontend, isFilterGroupNotEmpty } from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { DataColumns } from '../../../../components/list_lines';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 const Transition = React.forwardRef((props: SlideProps, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -76,6 +77,7 @@ interface RetentionLineProps {
 export const RetentionLine: FunctionComponent<RetentionLineProps> = ({ dataColumns, node, paginationOptions }) => {
   const classes = useStyles();
   const { nsdt, n, t_i18n } = useFormatter();
+  const { isFeatureEnable } = useHelper();
   const data = useFragment(RetentionLineFragment, node);
   const filters = deserializeFilterGroupForFrontend(data.filters);
   let scopeColor = 'warning';
@@ -116,7 +118,7 @@ export const RetentionLine: FunctionComponent<RetentionLineProps> = ({ dataColum
             >
               {n(data.remaining_count)}
             </div>
-            <div
+            {isFeatureEnable('FILE_RETENTION_RULES') && <div
               className={classes.bodyItem}
               style={{ width: dataColumns.scope.width }}
             >
@@ -126,7 +128,7 @@ export const RetentionLine: FunctionComponent<RetentionLineProps> = ({ dataColum
                 label={t_i18n(data.scope.toUpperCase())}
                 variant="outlined"
               />
-            </div>
+            </div>}
             {isFilterGroupNotEmpty(filters) ? (
               <FilterIconButton
                 filters={filters}
@@ -166,6 +168,7 @@ export const RetentionLine: FunctionComponent<RetentionLineProps> = ({ dataColum
 
 export const RetentionLineDummy = ({ dataColumns }: { dataColumns: DataColumns }) => {
   const classes = useStyles();
+  const { isFeatureEnable } = useHelper();
   return (
     <ListItem classes={{ root: classes.item }} divider={true}>
       <ListItemIcon classes={{ root: classes.itemIcon }}>
@@ -224,6 +227,17 @@ export const RetentionLineDummy = ({ dataColumns }: { dataColumns: DataColumns }
                 height="100%"
               />
             </div>
+            {isFeatureEnable('FILE_RETENTION_RULES') && <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.scope.width }}
+            >
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width="70%"
+                height="100%"
+              />
+            </div>}
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.filters.width }}

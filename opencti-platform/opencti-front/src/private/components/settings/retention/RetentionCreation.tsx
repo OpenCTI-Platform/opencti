@@ -25,6 +25,7 @@ import FilterIconButton from '../../../../components/FilterIconButton';
 import { insertNode } from '../../../../utils/store';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
 import AutocompleteField from '../../../../components/AutocompleteField';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   buttons: {
@@ -70,6 +71,7 @@ interface RetentionFormValues {
 const RetentionCreation = ({ paginationOptions }: { paginationOptions: RetentionLinesPaginationQuery$variables }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
+  const { isFeatureEnable } = useHelper();
   const [filters, helpers] = useFiltersState();
   const [verified, setVerified] = useState(false);
   const availableFilterKeys = useAvailableFilterKeysForEntityTypes(['Stix-Core-Object', 'stix-core-relationship']);
@@ -184,7 +186,7 @@ const RetentionCreation = ({ paginationOptions }: { paginationOptions: Retention
                   ),
                 }}
               />
-              <Field
+              {isFeatureEnable('FILE_RETENTION_RULES') && <Field
                 component={AutocompleteField}
                 variant="standard"
                 name="scope"
@@ -204,7 +206,7 @@ const RetentionCreation = ({ paginationOptions }: { paginationOptions: Retention
                 textfieldprops={{
                   label: t_i18n('Scope'),
                 }}
-              />
+              />}
               {formValues.scope?.value === 'file'
                 && <Alert severity="info" style={{ margin: '15px 15px 0 15px' }}>
                   {t_i18n('The retention policy will be applied on global files (i.e. files contained in Data/Import)')}
