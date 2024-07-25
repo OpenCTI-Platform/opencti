@@ -220,7 +220,7 @@ const RootIntrusionSet = ({ intrusionSetId, queryRef }: RootIntrusionSetProps) =
                   <div key={forceUpdate}>
                     <IntrusionSetKnowledge intrusionSet={intrusionSet} />
                   </div>
-              }
+                }
               />
               <Route
                 path="/content/*"
