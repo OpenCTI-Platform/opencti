@@ -29,10 +29,24 @@ const stixCoreObjectsTimelineQuery = graphql`
           id
           entity_type
           created_at
-            representative {
-              main
-              secondary
+          createdBy {
+            ... on Identity {
+              id
+              name
+              entity_type
             }
+          }
+          objectMarking {
+            id
+            definition_type
+            definition
+            x_opencti_order
+            x_opencti_color
+          }
+          representative {
+            main
+            secondary
+          }
         }
       }
     }
