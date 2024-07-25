@@ -701,7 +701,7 @@ const ConnectorComponent = ({ connector, relay }) => {
                     </FieldOrEmpty>
                   ) : (
                     connector.connector_info.queue_messages_size === 0 && connector.connector_info.last_run_datetime
-                      ? (<FieldOrEmpty source={connector.connector_info?.queue_messages_size}>
+                      ? (<FieldOrEmpty source={connector.connector_info.queue_messages_size}>
                         <span style={isBuffering() ? { color: theme.palette.warning.main } : {}}>{connector.connector_info?.queue_messages_size.toFixed(2)}</span>
                         <span> / {connector.connector_info?.queue_threshold} Mo</span>
                       </FieldOrEmpty>)
