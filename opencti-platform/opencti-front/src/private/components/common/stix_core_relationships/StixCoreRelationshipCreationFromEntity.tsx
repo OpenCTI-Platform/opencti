@@ -16,9 +16,6 @@ import { GlobeModel, HexagonOutline } from 'mdi-material-ui';
 import { StixCoreRelationshipCreationFromEntityQuery$data } from '@components/common/stix_core_relationships/__generated__/StixCoreRelationshipCreationFromEntityQuery.graphql';
 import { FormikConfig } from 'formik/dist/types';
 import { Option } from '@components/common/form/ReferenceField';
-import {
-  stixCoreRelationshipCreationFromEntityStixCoreObjectsLineFragment,
-} from '@components/common/stix_core_relationships/StixCoreRelationshipCreationFromEntityStixCoreObjectsLine';
 import { UsePreloadedPaginationFragment } from 'src/utils/hooks/usePreloadedPaginationFragment';
 import { usePaginationLocalStorage } from 'src/utils/hooks/useLocalStorage';
 import BulkRelationDialogContainer from '@components/common/bulk/dialog/BulkRelationDialogContainer';
@@ -38,10 +35,6 @@ import StixCoreRelationshipCreationForm from './StixCoreRelationshipCreationForm
 import { resolveRelationsTypes } from '../../../../utils/Relation';
 import { UserContext } from '../../../../utils/hooks/useAuth';
 import { useBuildEntityTypeBasedFilterContext } from '../../../../utils/filters/filtersUtils';
-import {
-  stixCoreRelationshipCreationFromEntityStixCoreObjectsLinesFragment,
-  stixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery,
-} from './StixCoreRelationshipCreationFromEntityStixCoreObjectsLines';
 import {
   type StixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery as StixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQueryType,
 } from './__generated__/StixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery.graphql';
@@ -96,6 +89,269 @@ const useStyles = makeStyles<Theme>((theme) => ({
     width: '100%',
   },
 }));
+
+export const stixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery = graphql`
+  query StixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery(
+    $types: [String]
+    $search: String
+    $count: Int!
+    $cursor: ID
+    $orderBy: StixCoreObjectsOrdering
+    $orderMode: OrderingMode
+    $filters: FilterGroup
+  ) {
+    ...StixCoreRelationshipCreationFromEntityStixCoreObjectsLines_data
+    @arguments(
+      types: $types
+      search: $search
+      count: $count
+      cursor: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+      filters: $filters
+    )
+  }
+`;
+export const stixCoreRelationshipCreationFromEntityStixCoreObjectsLinesFragment = graphql`
+  fragment StixCoreRelationshipCreationFromEntityStixCoreObjectsLines_data on Query
+  @argumentDefinitions(
+    types: { type: "[String]" }
+    search: { type: "String" }
+    count: { type: "Int", defaultValue: 25 }
+    cursor: { type: "ID" }
+    orderBy: { type: "StixCoreObjectsOrdering", defaultValue: created_at }
+    orderMode: { type: "OrderingMode", defaultValue: asc }
+    filters: { type: "FilterGroup" }
+  ) @refetchable(queryName: "StixCoreRelationshipCreationFromEntityStixCoreObjectsLinesRefetchQuery") {
+    stixCoreObjects(
+      types: $types
+      search: $search
+      first: $count
+      after: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+      filters: $filters
+    ) @connection(key: "Pagination_stixCoreObjects") {
+      edges {
+        node {
+          id
+          standard_id
+          entity_type
+          created_at
+          createdBy {
+            ... on Identity {
+              name
+            }
+          }
+          creators {
+            id
+            name
+          }
+          objectMarking {
+            id
+            definition_type
+            definition
+            x_opencti_order
+            x_opencti_color
+          }
+          ...StixCoreRelationshipCreationFromEntityStixCoreObjectsLine_node
+        }
+      }
+      pageInfo {
+        endCursor
+        hasNextPage
+        globalCount
+      }
+    }
+  }
+`;
+export const stixCoreRelationshipCreationFromEntityStixCoreObjectsLineFragment = graphql`
+  fragment StixCoreRelationshipCreationFromEntityStixCoreObjectsLine_node on StixCoreObject {
+    id
+    standard_id
+    parent_types
+    entity_type
+    created_at
+    ... on AttackPattern {
+      name
+      description
+      aliases
+      x_mitre_id
+    }
+    ... on Campaign {
+      name
+      description
+      aliases
+    }
+    ... on Note {
+      attribute_abstract
+      content
+    }
+    ... on ObservedData {
+      name
+      first_observed
+      last_observed
+    }
+    ... on Opinion {
+      opinion
+      explanation
+    }
+    ... on Report {
+      name
+      description
+    }
+    ... on Grouping {
+      name
+      description
+    }
+    ... on CourseOfAction {
+      name
+      description
+      x_opencti_aliases
+      x_mitre_id
+    }
+    ... on Individual {
+      name
+      description
+      x_opencti_aliases
+    }
+    ... on Organization {
+      name
+      description
+      x_opencti_aliases
+    }
+    ... on Sector {
+      name
+      description
+      x_opencti_aliases
+    }
+    ... on System {
+      name
+      description
+      x_opencti_aliases
+    }
+    ... on Indicator {
+      name
+      description
+    }
+    ... on Infrastructure {
+      name
+      description
+    }
+    ... on IntrusionSet {
+      name
+      aliases
+      description
+    }
+    ... on Position {
+      name
+      description
+      x_opencti_aliases
+    }
+    ... on City {
+      name
+      description
+      x_opencti_aliases
+    }
+    ... on AdministrativeArea {
+      name
+      description
+      x_opencti_aliases
+    }
+    ... on Country {
+      name
+      description
+      x_opencti_aliases
+    }
+    ... on Region {
+      name
+      description
+      x_opencti_aliases
+    }
+    ... on Malware {
+      name
+      aliases
+      description
+    }
+    ... on MalwareAnalysis {
+      result_name
+    }
+    ... on ThreatActor {
+      name
+      aliases
+      description
+    }
+    ... on Tool {
+      name
+      aliases
+      description
+    }
+    ... on Vulnerability {
+      name
+      description
+    }
+    ... on Incident {
+      name
+      aliases
+      description
+    }
+    ... on Event {
+      name
+      description
+      aliases
+    }
+    ... on Channel {
+      name
+      description
+      aliases
+    }
+    ... on Narrative {
+      name
+      description
+      aliases
+    }
+    ... on Language {
+      name
+      aliases
+    }
+    ... on DataComponent {
+      name
+    }
+    ... on DataSource {
+      name
+    }
+    ... on Case {
+      name
+    }
+    ... on StixCyberObservable {
+      observable_value
+    }
+    createdBy {
+      id
+      entity_type
+      ... on Identity {
+        name
+      }
+    }
+    objectMarking {
+      id
+      definition_type
+      definition
+      x_opencti_order
+      x_opencti_color
+    }
+    objectLabel {
+      id
+      value
+      color
+    }
+    creators {
+      id
+      name
+    }
+  }
+
+`;
 
 const stixCoreRelationshipCreationFromEntityQuery = graphql`
   query StixCoreRelationshipCreationFromEntityQuery($id: String!) {
