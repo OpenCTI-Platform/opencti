@@ -7,7 +7,7 @@ import { elementsToDelete } from '../../../src/manager/retentionManager';
 import { allFilesForPaths } from '../../../src/modules/internal/document/document-domain';
 import { uploadToStorage } from '../../../src/database/file-storage-helper';
 import { elRawUpdateByQuery } from '../../../src/database/engine';
-import { READ_INDEX_INTERNAL_OBJECTS } from '../../../src/database/utils';
+import { READ_INDEX_INTERNAL_OBJECTS, READ_INDEX_STIX_DOMAIN_OBJECTS } from '../../../src/database/utils';
 import { DatabaseError } from '../../../src/config/errors';
 import { deleteFile, loadFile } from '../../../src/database/file-storage';
 
@@ -187,8 +187,32 @@ describe('Retention Manager tests ', () => {
     expect(deleted2?.id).toEqual(fileId2);
   });
   it('should fetch the correct elements to be deleted by a retention rule on knowledge', async () => {
+    // change the update_at date of an entity
+    const lastModified = '2023-01-01T00:00:00.000Z';
+    const updateQuery = {
+      script: {
+        params: { lastModified },
+        source: 'ctx._source.lastModified = params.lastModified;',
+      },
+      query: {
+        bool: {
+          must: [
+            { term: { 'standard_id.keyword': { value: 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c' } } },
+          ],
+        },
+      },
+    };
+    await elRawUpdateByQuery({
+      index: [READ_INDEX_STIX_DOMAIN_OBJECTS],
+      refresh: true,
+      wait_for_completion: true,
+      body: updateQuery
+    }).catch((err: Error) => {
+      throw DatabaseError('Error updating elastic', { cause: err });
+    });
+    // check retention rule on knowledge
     const before = utcDate('2024-01-01T00:00:00.000Z');
     const elements = await elementsToDelete(context, 'knowledge', before);
-    expect(elements.pageInfo.globalCount).toEqual(0); // no entity have been modified since before
+    expect(elements.pageInfo.globalCount).toEqual(1); // the malware whose updated_at date have been modified to 'lastModified'
   });
 });
