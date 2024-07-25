@@ -118,17 +118,19 @@ export const RetentionLine: FunctionComponent<RetentionLineProps> = ({ dataColum
             >
               {n(data.remaining_count)}
             </div>
-            {isFeatureEnable('FILE_RETENTION_RULES') && <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.scope.width }}
-            >
-              <Chip
-                color={scopeColor as 'warning' | 'secondary' | 'primary'}
-                classes={{ root: classes.chipInList }}
-                label={t_i18n(data.scope.toUpperCase())}
-                variant="outlined"
-              />
-            </div>}
+            {isFeatureEnable('FILE_RETENTION_RULES')
+              && <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.scope.width }}
+                 >
+                <Chip
+                  color={scopeColor as 'warning' | 'secondary' | 'primary'}
+                  classes={{ root: classes.chipInList }}
+                  label={t_i18n(data.scope.toUpperCase())}
+                  variant="outlined"
+                />
+              </div>
+            }
             {isFilterGroupNotEmpty(filters) ? (
               <FilterIconButton
                 filters={filters}
@@ -139,17 +141,18 @@ export const RetentionLine: FunctionComponent<RetentionLineProps> = ({ dataColum
             ) : (
               <div className={classes.bodyItem} style={{ width: dataColumns.filters.width }}>
                 <span>{appliedOnContent}</span>
-                {data.scope !== 'knowledge' && <Tooltip
-                  title={t_i18n(
-                    'i.e. contained in Data/Import',
-                  )}
-                                               >
-                  <InformationOutline
-                    fontSize="small"
-                    color="primary"
-                    style={{ position: 'absolute', marginLeft: 10 }}
-                  />
-                </Tooltip>
+                {data.scope !== 'knowledge'
+                  && <Tooltip
+                    title={t_i18n(
+                      'i.e. contained in Data/Import',
+                    )}
+                     >
+                    <InformationOutline
+                      fontSize="small"
+                      color="primary"
+                      style={{ position: 'absolute', marginLeft: 10 }}
+                    />
+                  </Tooltip>
                 }
               </div>
             )}
@@ -227,17 +230,19 @@ export const RetentionLineDummy = ({ dataColumns }: { dataColumns: DataColumns }
                 height="100%"
               />
             </div>
-            {isFeatureEnable('FILE_RETENTION_RULES') && <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.scope.width }}
-            >
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width="70%"
-                height="100%"
-              />
-            </div>}
+            {isFeatureEnable('FILE_RETENTION_RULES')
+              && <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.scope.width }}
+                 >
+                <Skeleton
+                  animation="wave"
+                  variant="rectangular"
+                  width="70%"
+                  height="100%"
+                />
+              </div>
+            }
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.filters.width }}

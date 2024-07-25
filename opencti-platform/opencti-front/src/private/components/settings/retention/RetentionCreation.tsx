@@ -186,27 +186,29 @@ const RetentionCreation = ({ paginationOptions }: { paginationOptions: Retention
                   ),
                 }}
               />
-              {isFeatureEnable('FILE_RETENTION_RULES') && <Field
-                component={AutocompleteField}
-                variant="standard"
-                name="scope"
-                style={{ marginTop: 10 }}
-                fullWidth={true}
-                onChange={setFieldValue}
-                options={[
-                  { value: 'knowledge', label: 'Knowledge' },
-                  { value: 'file', label: 'File' },
-                  { value: 'workbench', label: 'Workbench' },
-                ]}
-                renderOption={(prop: Record<string, unknown>, option: Option) => (
-                  <li {...prop}>
-                    <div className={classes.text}>{t_i18n(option.label)}</div>
-                  </li>
-                )}
-                textfieldprops={{
-                  label: t_i18n('Scope'),
-                }}
-              />}
+              {isFeatureEnable('FILE_RETENTION_RULES')
+                && <Field
+                  component={AutocompleteField}
+                  variant="standard"
+                  name="scope"
+                  style={{ marginTop: 10 }}
+                  fullWidth={true}
+                  onChange={setFieldValue}
+                  options={[
+                    { value: 'knowledge', label: 'Knowledge' },
+                    { value: 'file', label: 'File' },
+                    { value: 'workbench', label: 'Workbench' },
+                  ]}
+                  renderOption={(prop: Record<string, unknown>, option: Option) => (
+                    <li {...prop}>
+                      <div className={classes.text}>{t_i18n(option.label)}</div>
+                    </li>
+                  )}
+                  textfieldprops={{
+                    label: t_i18n('Scope'),
+                  }}
+                />
+              }
               {formValues.scope?.value === 'file'
                 && <Alert severity="info" style={{ margin: '15px 15px 0 15px' }}>
                   {t_i18n('The retention policy will be applied on global files (i.e. files contained in Data/Import)')}

@@ -61,7 +61,7 @@ export const elementsToDelete = async (context: AuthContext, scope: string, befo
   }
   if (scope === 'file' || scope === 'knowledge') { // don't delete files with ongoing works or incomplete status
     const resultEdges = result.edges.filter((e: FileEdge) => e.node.uploadStatus === 'complete'
-      && e.node.works?.every((work) => work?.status === 'complete'));
+      && (e.node.works ?? []).every((work) => work?.status === 'complete'));
     result.edges = resultEdges;
   }
   return result;
