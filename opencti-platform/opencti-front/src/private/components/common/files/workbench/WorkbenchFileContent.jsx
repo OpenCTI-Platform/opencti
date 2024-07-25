@@ -837,7 +837,7 @@ const WorkbenchFileContentComponent = ({
     });
   };
 
-  const onSubmitApplyMarking = (values) => {
+  const onSubmitApplyMarking = (values, { resetForm }) => {
     const markingDefinitions = R.pluck('entity', values.objectMarking).map(
       (n) => ({
         ...n,
@@ -900,6 +900,7 @@ const WorkbenchFileContentComponent = ({
     } else if (currentTab === 4) {
       setContainers(finalObjects);
     }
+    resetForm();
   };
 
   const submitDeleteObject = (obj) => {

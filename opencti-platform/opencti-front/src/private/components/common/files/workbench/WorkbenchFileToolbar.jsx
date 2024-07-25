@@ -138,8 +138,8 @@ class WorkbenchFileToolbar extends Component {
     });
   }
 
-  onSubmitApplyMarking(values) {
-    this.props.submitApplyMarking(values);
+  onSubmitApplyMarking(values, { resetForm }) {
+    this.props.submitApplyMarking(values, { resetForm });
     this.handleCloseApplyMarking();
   }
 
