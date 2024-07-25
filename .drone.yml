@@ -15,6 +15,7 @@ steps:
       - ls -lart
       - cd "$DRONE_WORKSPACE/client-python"
       - echo "[INFO] using client-python on branch $(git branch --show-current)"
+      - git log -n 1
 
   - name: api-tests
     image: nikolaik/python-nodejs:python3.11-nodejs20-alpine
@@ -44,6 +45,7 @@ steps:
       - apk add build-base git libffi-dev cargo
       - pip3 install --upgrade setuptools
       - cd "$DRONE_WORKSPACE/client-python"
+      - pip install -r requirements.txt
       - pip install -e .[dev,doc]
       - cd "$DRONE_WORKSPACE/opencti-platform/opencti-graphql"
       - yarn install
@@ -197,6 +199,7 @@ services:
       - cp -a opencti-platform/* /tmp/raw-start-platform/
       - apk add build-base git libffi-dev cargo
       - cd "$DRONE_WORKSPACE/client-python"
+      - pip install -r requirements.txt
       - pip install -e .[dev,doc]
       - cd /tmp/raw-start-platform/opencti-graphql
       - yarn install
@@ -227,6 +230,7 @@ services:
       - cp -a opencti-platform/* /tmp/live-start-platform/
       - apk add build-base git libffi-dev cargo
       - cd "$DRONE_WORKSPACE/client-python"
+      - pip install -r requirements.txt
       - pip install -e .[dev,doc]
       - cd /tmp/live-start-platform/opencti-graphql
       - yarn install
@@ -257,6 +261,7 @@ services:
       - cp -a opencti-platform/* /tmp/direct-start-platform/
       - apk add build-base git libffi-dev cargo
       - cd "$DRONE_WORKSPACE/client-python"
+      - pip install -r requirements.txt
       - pip install -e .[dev,doc]
       - cd /tmp/direct-start-platform/opencti-graphql
       - yarn install
@@ -276,6 +281,7 @@ services:
       - cp -a opencti-worker /tmp/direct-start-worker
       - apk add build-base git libffi-dev cargo
       - cd "$DRONE_WORKSPACE/client-python"
+      - pip install -r requirements.txt
       - pip install -e .[dev,doc]
       - while ! nc -z opencti-direct-start 4300 ; do sleep 1 ; done
       - cd /tmp/direct-start-worker
@@ -306,6 +312,7 @@ services:
       - cp -a opencti-platform/* /tmp/restore-start-platform/
       - apk add build-base git libffi-dev cargo
       - cd "$DRONE_WORKSPACE/client-python"
+      - pip install -r requirements.txt
       - pip install -e .[dev,doc]
       - cd /tmp/restore-start-platform/opencti-graphql
       - yarn install
@@ -337,6 +344,7 @@ services:
       - cp -a opencti-platform/* /tmp/e2e-start-platform/
       - apk add build-base git libffi-dev cargo
       - cd "$DRONE_WORKSPACE/client-python"
+      - pip install -r requirements.txt
       - pip install -e .[dev,doc]
       - cd /tmp/e2e-start-platform/opencti-graphql
       - yarn install
