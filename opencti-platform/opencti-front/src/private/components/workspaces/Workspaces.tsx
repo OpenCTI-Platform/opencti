@@ -109,27 +109,27 @@ const Workspaces: FunctionComponent<WorkspacesProps> = ({
               paginationOptions={workspacePaginationOptions}
               type={type}
             />
-            </Security>}
+          </Security>}
         >
           {queryRef && (
-          <React.Suspense
-            fallback={
-              <>
-                {Array(20)
-                  .fill(0)
-                  .map((_, idx) => (
-                    <WorkspaceLineDummy key={idx} dataColumns={dataColumns}/>
-                  ))}
-              </>
-            }
-          >
-            <WorkspacesLines
-              queryRef={queryRef}
-              paginationOptions={workspacePaginationOptions}
-              dataColumns={dataColumns}
-              setNumberOfElements={storageHelpers.handleSetNumberOfElements}
-            />
-          </React.Suspense>
+            <React.Suspense
+              fallback={
+                <>
+                  {Array(20)
+                    .fill(0)
+                    .map((_, idx) => (
+                      <WorkspaceLineDummy key={idx} dataColumns={dataColumns} />
+                    ))}
+                </>
+              }
+            >
+              <WorkspacesLines
+                queryRef={queryRef}
+                paginationOptions={workspacePaginationOptions}
+                dataColumns={dataColumns}
+                setNumberOfElements={storageHelpers.handleSetNumberOfElements}
+              />
+            </React.Suspense>
           )}
         </ListLines>
       </div>
@@ -140,13 +140,14 @@ const Workspaces: FunctionComponent<WorkspacesProps> = ({
     <>
       <Breadcrumbs variant="list" elements={[{ label: type === 'dashboard' ? t_i18n('Dashboards') : t_i18n('Investigations'), current: true }]} />
       {renderLines()}
-      {!FAB_REPLACED && <Security needs={[EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE]}>
-        <WorkspaceCreation
-          paginationOptions={workspacePaginationOptions}
-          type={type}
-        />
-        </Security>
-      }
+      {!FAB_REPLACED
+        && (<Security needs={[EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE]}>
+          <WorkspaceCreation
+            paginationOptions={workspacePaginationOptions}
+            type={type}
+          />
+          </Security>
+        )}
     </>
   );
 };

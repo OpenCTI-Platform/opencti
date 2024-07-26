@@ -141,7 +141,7 @@ const WorkspaceCreation = ({ paginationOptions, type }) => {
       <Button
         color='primary'
         size='small'
-        variant='contained'
+        variant='outlined'
         disableElevation
         onClick={() => inputRef.current?.click()}
         sx={{ marginLeft: '3px' }}

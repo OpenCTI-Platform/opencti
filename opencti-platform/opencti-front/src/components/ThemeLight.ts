@@ -1,3 +1,4 @@
+import { buttonClasses } from '@mui/material/Button';
 import type { ExtendedThemeOptions } from './Theme';
 import { fileUri } from '../relay/environment';
 import LogoText from '../static/images/logo_text_light.png';
@@ -121,6 +122,15 @@ const ThemeLight = (
       defaultProps: {
         TransitionProps: {
           unmountOnExit: true,
+        },
+      },
+    },
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          [`&.${buttonClasses.outlined}.${buttonClasses.sizeSmall}`]: {
+            padding: '4px 9px',
+          },
         },
       },
     },
