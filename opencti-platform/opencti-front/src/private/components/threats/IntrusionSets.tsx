@@ -94,9 +94,11 @@ const IntrusionSets = () => {
         paginationOptions={queryPaginationOptions}
         numberOfElements={numberOfElements}
         handleChangeView={dataTableEnabled ? helpers.handleChangeView : undefined}
-        createButton={isFABReplaced && <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <IntrusionSetCreation paginationOptions={queryPaginationOptions} />
-        </Security>}
+        createButton={isFABReplaced && (
+          <Security needs={[KNOWLEDGE_KNUPDATE]}>
+            <IntrusionSetCreation paginationOptions={queryPaginationOptions} />
+          </Security>
+        )}
       >
         {queryRef && (
           <React.Suspense
@@ -173,6 +175,11 @@ const IntrusionSets = () => {
                 </Tooltip>
               </ToggleButton>),
             ]}
+            createButton={isFABReplaced && (
+              <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                <IntrusionSetCreation paginationOptions={queryPaginationOptions} />
+              </Security>
+            )}
           />
         )}
       </>
@@ -183,11 +190,11 @@ const IntrusionSets = () => {
     <>
       <Breadcrumbs variant="list" elements={[{ label: t_i18n('Threats') }, { label: t_i18n('Intrusion sets'), current: true }]} />
       {viewStorage.view !== 'lines' || !dataTableEnabled ? renderCards() : renderList()}
-      {!isFABReplaced
-        && <Security needs={[KNOWLEDGE_KNUPDATE]}>
+      {!isFABReplaced && (
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <IntrusionSetCreation paginationOptions={queryPaginationOptions} />
         </Security>
-      }
+      )}
     </>
   );
 };

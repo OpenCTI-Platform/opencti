@@ -22,7 +22,7 @@ const LOCAL_STORAGE_KEY = 'channels';
 const Channels = () => {
   const { t_i18n } = useFormatter();
   const { isFeatureEnable } = useHelper();
-  const FAB_REPLACED = isFeatureEnable('FAB_REPLACEMENT');
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<ChannelsLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY,
     {
@@ -117,9 +117,11 @@ const Channels = () => {
           paginationOptions={queryPaginationOptions}
           numberOfElements={numberOfElements}
           iconExtension={true}
-          createButton={FAB_REPLACED && <Security needs={[KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNPARTICIPATE]}>
-            <ChannelCreation paginationOptions={queryPaginationOptions} />
-            </Security>}
+          createButton={isFABReplaced && (
+            <Security needs={[KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNPARTICIPATE]}>
+              <ChannelCreation paginationOptions={queryPaginationOptions} />
+            </Security>
+          )}
         >
           {queryRef && (
             <React.Suspense
@@ -169,10 +171,10 @@ const Channels = () => {
     <ExportContextProvider>
       <Breadcrumbs variant="list" elements={[{ label: t_i18n('Arsenal') }, { label: t_i18n('Channels'), current: true }]} />
       {renderLines()}
-      {!FAB_REPLACED && (
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
-        <ChannelCreation paginationOptions={queryPaginationOptions} />
-      </Security>
+      {!isFABReplaced && (
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <ChannelCreation paginationOptions={queryPaginationOptions} />
+        </Security>
       )}
     </ExportContextProvider>
   );

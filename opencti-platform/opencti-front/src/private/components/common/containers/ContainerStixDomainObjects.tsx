@@ -67,7 +67,7 @@ const ContainerStixDomainObjects = ({
 }) => {
   const { t_i18n } = useFormatter();
   const { isFeatureEnable } = useHelper();
-  const FABReplaced = isFeatureEnable('FAB_REPLACEMENT');
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
@@ -201,7 +201,7 @@ const ContainerStixDomainObjects = ({
       numberOfElements={numberOfElements}
       paginationOptions={queryPaginationOptions}
       availableEntityTypes={['Stix-Domain-Object']}
-      createButton={FABReplaced && <Security needs={[KNOWLEDGE_KNUPDATE]}>
+      createButton={isFABReplaced && <Security needs={[KNOWLEDGE_KNUPDATE]}>
         <ContainerAddStixCoreObjectsInLine
           containerId={containerData.id}
           targetStixCoreObjectTypes={['Stix-Domain-Object']}

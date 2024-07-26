@@ -22,7 +22,7 @@ const LOCAL_STORAGE_KEY = 'tools';
 const Tools = () => {
   const { t_i18n } = useFormatter();
   const { isFeatureEnable } = useHelper();
-  const FAB_REPLACED = isFeatureEnable('FAB_REPLACEMENT');
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<ToolsLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY,
     {
@@ -111,9 +111,11 @@ const Tools = () => {
           paginationOptions={queryPaginationOptions}
           numberOfElements={numberOfElements}
           iconExtension={true}
-          createButton={FAB_REPLACED && <Security needs={[KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNPARTICIPATE]}>
-            <ToolCreation paginationOptions={queryPaginationOptions} />
-            </Security>}
+          createButton={isFABReplaced && (
+            <Security needs={[KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNPARTICIPATE]}>
+              <ToolCreation paginationOptions={queryPaginationOptions} />
+            </Security>
+          )}
         >
           {queryRef && (
             <React.Suspense
@@ -162,10 +164,10 @@ const Tools = () => {
     <ExportContextProvider>
       <Breadcrumbs variant="list" elements={[{ label: t_i18n('Arsenal') }, { label: t_i18n('Tools'), current: true }]} />
       {renderLines()}
-      {!FAB_REPLACED && (
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
-        <ToolCreation paginationOptions={queryPaginationOptions} />
-      </Security>
+      {!isFABReplaced && (
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <ToolCreation paginationOptions={queryPaginationOptions} />
+        </Security>
       )}
     </ExportContextProvider>
   );

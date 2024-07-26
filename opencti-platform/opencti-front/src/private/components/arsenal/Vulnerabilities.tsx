@@ -27,7 +27,7 @@ const Vulnerabilities = () => {
   } = useAuth();
   const isRuntimeSort = isRuntimeFieldEnable() ?? false;
   const { isFeatureEnable } = useHelper();
-  const FAB_REPLACED = isFeatureEnable('FAB_REPLACEMENT');
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<VulnerabilitiesLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY,
     {
@@ -126,9 +126,11 @@ const Vulnerabilities = () => {
           paginationOptions={queryPaginationOptions}
           numberOfElements={numberOfElements}
           iconExtension={true}
-          createButton={FAB_REPLACED && <Security needs={[KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNPARTICIPATE]}>
-            <VulnerabilityCreation paginationOptions={queryPaginationOptions} />
-            </Security>}
+          createButton={isFABReplaced && (
+            <Security needs={[KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNPARTICIPATE]}>
+              <VulnerabilityCreation paginationOptions={queryPaginationOptions} />
+            </Security>
+          )}
         >
           {queryRef && (
             <React.Suspense
@@ -178,10 +180,10 @@ const Vulnerabilities = () => {
     <ExportContextProvider>
       <Breadcrumbs variant="list" elements={[{ label: t_i18n('Arsenal') }, { label: t_i18n('Vulnerabilities'), current: true }]} />
       {renderLines()}
-      {!FAB_REPLACED && (
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
-        <VulnerabilityCreation paginationOptions={queryPaginationOptions} />
-      </Security>
+      {!isFABReplaced && (
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <VulnerabilityCreation paginationOptions={queryPaginationOptions} />
+        </Security>
       )}
     </ExportContextProvider>
   );
