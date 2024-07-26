@@ -18,6 +18,7 @@ import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySet
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
+import PositionPopover from './PositionPopover';
 
 const positionMutationFieldPatch = graphql`
   mutation PositionEditionOverviewFieldPatchMutation(
@@ -329,6 +330,9 @@ const PositionEditionOverviewComponent = (props) => {
               id={position.id}
             />
           )}
+          <PositionPopover
+            id={position.id}
+          />
         </Form>
       )}
     </Formik>

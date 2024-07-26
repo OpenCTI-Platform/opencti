@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { FunctionComponent } from 'react';
+import EditEntityControlledDial from '../../../../components/EditEntityControlledDial';
 import CityEditionContainer, { cityEditionQuery } from './CityEditionContainer';
 import { cityEditionOverviewFocus } from './CityEditionOverview';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
@@ -7,7 +8,7 @@ import { CityEditionContainerQuery } from './__generated__/CityEditionContainerQ
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import EditEntityControlledDial from '../../../../components/EditEntityControlledDial';
 
-const CityEdition = ({ cityId }: { cityId: string }) => {
+const CityEdition: FunctionComponent<{ cityId: string }> = ({ cityId }) => {
   const [commit] = useApiMutation(cityEditionOverviewFocus);
   const handleClose = () => {
     commit({

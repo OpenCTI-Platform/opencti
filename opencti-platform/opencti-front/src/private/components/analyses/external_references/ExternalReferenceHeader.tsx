@@ -44,11 +44,6 @@ const ExternalReferenceHeaderComponent: FunctionComponent<ExternalReferenceHeade
         >
           {truncate(externalReference.source_name, 80)}
         </Typography>
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <div className={classes.popover}>
-            {React.cloneElement(PopoverComponent, { id: externalReference.id })}
-          </div>
-        </Security>
         <div className="clearfix" />
       </div>
       {EditComponent}

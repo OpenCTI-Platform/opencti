@@ -1,10 +1,10 @@
 import React from 'react';
 import { graphql } from 'react-relay';
+import EditEntityControlledDial from '../../../../components/EditEntityControlledDial';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import GroupingEditionContainer from './GroupingEditionContainer';
 import { groupingEditionOverviewFocus } from './GroupingEditionOverview';
 import Loader from '../../../../components/Loader';
-import EditEntityControlledDial from '../../../../components/EditEntityControlledDial';
 
 export const groupingEditionQuery = graphql`
   query GroupingEditionContainerQuery($id: String!) {
@@ -24,23 +24,22 @@ const GroupingEdition = ({ groupingId }) => {
       },
     });
   };
-  return (
-    <QueryRenderer
-      query={groupingEditionQuery}
-      variables={{ id: groupingId }}
-      render={({ props }) => {
-        if (props) {
-          return (
-            <GroupingEditionContainer
-              grouping={props.grouping}
-              handleClose={handleClose}
-              controlledDial={EditEntityControlledDial}
-            />
-          );
-        }
-        return <Loader variant="inline" />;
-      }}
-    />
+  return (<QueryRenderer
+    query={groupingEditionQuery}
+    variables={{ id: groupingId }}
+    render={({ props }) => {
+      if (props) {
+        return (
+          <GroupingEditionContainer
+            grouping={props.grouping}
+            handleClose={handleClose}
+            controlledDial={EditEntityControlledDial}
+          />
+        );
+      }
+      return <Loader variant="inline" />;
+    }}
+  />
   );
 };
 

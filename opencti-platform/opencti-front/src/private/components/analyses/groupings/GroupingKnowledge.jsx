@@ -11,7 +11,6 @@ import ContainerHeader from '../../common/containers/ContainerHeader';
 import GroupingKnowledgeGraph, { groupingKnowledgeGraphQuery } from './GroupingKnowledgeGraph';
 import GroupingKnowledgeCorrelation, { groupingKnowledgeCorrelationQuery } from './GroupingKnowledgeCorrelation';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
-import GroupingPopover from './GroupingPopover';
 import AttackPatternsMatrix from '../../techniques/attack_patterns/AttackPatternsMatrix';
 import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../../utils/ListParameters';
 import investigationAddFromContainer from '../../../../utils/InvestigationUtils';
@@ -155,7 +154,7 @@ class GroupingKnowledgeComponent extends Component {
         {mode !== 'graph' && (
           <ContainerHeader
             container={grouping}
-            PopoverComponent={<GroupingPopover />}
+            PopoverComponent={null}
             link={`/dashboard/analyses/groupings/${grouping.id}/knowledge`}
             modes={['graph', 'correlation', 'matrix']}
             currentMode={mode}

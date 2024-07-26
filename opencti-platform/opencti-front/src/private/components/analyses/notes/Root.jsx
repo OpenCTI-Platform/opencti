@@ -100,7 +100,7 @@ class RootNote extends Component {
                       placeholder={
                         <ContainerHeader
                           container={note}
-                          PopoverComponent={<NotePopover note={note} />}
+                          PopoverComponent={null}
                           EditComponent={(
                             <CollaborativeSecurity data={note} needs={[KNOWLEDGE_KNUPDATE]}>
                               <NoteEdition noteId={note.id} />
@@ -112,7 +112,7 @@ class RootNote extends Component {
                     >
                       <ContainerHeader
                         container={props.note}
-                        PopoverComponent={<NotePopover note={note} />}
+                        PopoverComponent={null}
                         EditComponent={(
                           <CollaborativeSecurity data={note} needs={[KNOWLEDGE_KNUPDATE]}>
                             <NoteEdition noteId={note.id} />

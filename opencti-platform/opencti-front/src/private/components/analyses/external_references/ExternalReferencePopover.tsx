@@ -1,15 +1,13 @@
 import React, { FunctionComponent, useState } from 'react';
 import { graphql } from 'react-relay';
-import Menu from '@mui/material/Menu';
 import Alert from '@mui/material/Alert';
-import MenuItem from '@mui/material/MenuItem';
 import Button from '@mui/material/Button';
-import IconButton from '@mui/material/IconButton';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
-import { MoreVertOutlined } from '@mui/icons-material';
+import Security from '../../../../utils/Security';
+import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import { useNavigate } from 'react-router-dom';
 import { useFormatter } from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
@@ -43,7 +41,7 @@ interface ExternalReferencePopoverProps {
 }
 
 const ExternalReferencePopover: FunctionComponent<
-ExternalReferencePopoverProps
+  ExternalReferencePopoverProps
 > = ({ id, objectId, handleRemove, isExternalReferenceAttachment }) => {
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
@@ -52,15 +50,8 @@ ExternalReferencePopoverProps
   const [displayDelete, setDisplayDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [commit] = useApiMutation(externalReferencePopoverDeletionMutation);
-  const handleOpen = (event: React.SyntheticEvent) => {
-    setAnchorEl(event.currentTarget);
-  };
   const handleClose = () => {
     setAnchorEl(null);
-  };
-  const handleOpenUpdate = () => {
-    setDisplayEdit(true);
-    handleClose();
   };
   const handleCloseUpdate = () => {
     setDisplayEdit(false);
@@ -101,50 +92,18 @@ ExternalReferencePopoverProps
     });
   };
   return (
-    <>
-      <IconButton
-        onClick={handleOpen}
-        aria-haspopup="true"
-        style={{ marginTop: 3 }}
-        size="large"
-        color="primary"
-      >
-        <MoreVertOutlined />
-      </IconButton>
-      <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
-        <MenuItem onClick={handleOpenUpdate}>{t_i18n('Update')}</MenuItem>
-        {handleRemove && !isExternalReferenceAttachment && (
-          <MenuItem
-            onClick={() => {
-              handleRemove();
-              handleClose();
-            }}
-          >
-            {t_i18n('Remove from this object')}
-          </MenuItem>
-        )}
-        <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
-      </Menu>
-      <QueryRenderer
-        query={externalReferenceEditionQuery}
-        variables={{ id }}
-        render={({
-          props,
-        }: {
-          props: ExternalReferencePopoverEditionQuery$data;
-        }) => {
-          if (props && props.externalReference) {
-            return (
-              <ExternalReferenceEditionContainer
-                externalReference={props.externalReference}
-                handleClose={handleCloseUpdate}
-                open={displayEdit}
-              />
-            );
-          }
-          return <div />;
-        }}
-      />
+    <React.Fragment>
+      <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
+        <Button
+          color="error"
+          variant="contained"
+          onClick={handleOpenDelete}
+          disabled={deleting}
+          sx={{ marginTop: 2 }}
+        >
+          {t_i18n('Delete')}
+        </Button>
+      </Security>
       <Dialog
         PaperProps={{ elevation: 1 }}
         open={displayDelete}
@@ -155,18 +114,38 @@ ExternalReferencePopoverProps
         <DialogContent>
           <DialogContentText>
             {t_i18n('Do you want to delete this external reference?')}
-            {isExternalReferenceAttachment && (
-              <Alert
-                severity="warning"
-                variant="outlined"
-                style={{ position: 'relative', marginTop: 20 }}
-              >
-                {t_i18n(
-                  'This external reference is linked to a file. If you delete it, the file will be deleted as well.',
-                )}
-              </Alert>
-            )}
           </DialogContentText>
+          <QueryRenderer
+            query={externalReferenceEditionQuery}
+            variables={{ id }}
+            render={({
+              props,
+            }: {
+              props: ExternalReferencePopoverEditionQuery$data;
+            }) => {
+              if (props && props.externalReference) {
+                return (
+                  <ExternalReferenceEditionContainer
+                    externalReference={props.externalReference}
+                    handleClose={handleCloseUpdate}
+                    open={displayEdit}
+                  />
+                );
+              }
+              return <div />;
+            }}
+          />
+          {isExternalReferenceAttachment && (
+            <Alert
+              severity="warning"
+              variant="outlined"
+              style={{ position: 'relative', marginTop: 20 }}
+            >
+              {t_i18n(
+                'This external reference is linked to a file. If you delete it, the file will be deleted as well.',
+              )}
+            </Alert>
+          )}
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseDelete} disabled={deleting}>
@@ -177,7 +156,7 @@ ExternalReferencePopoverProps
           </Button>
         </DialogActions>
       </Dialog>
-    </>
+    </React.Fragment>
   );
 };
 

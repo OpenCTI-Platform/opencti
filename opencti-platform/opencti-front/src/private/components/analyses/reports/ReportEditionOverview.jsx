@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
@@ -23,6 +23,7 @@ import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySet
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import ObjectParticipantField from '../../common/form/ObjectParticipantField';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
+import ReportPopoverDeletion from './ReportPopoverDeletion';
 
 export const reportMutationFieldPatch = graphql`
   mutation ReportEditionOverviewFieldPatchMutation(
@@ -87,6 +88,13 @@ const reportMutationRelationDelete = graphql`
 const ReportEditionOverviewComponent = (props) => {
   const { report, enableReferences, context, handleClose } = props;
   const { t_i18n } = useFormatter();
+  const [displayDelete, setDisplayDelete] = useState(false);
+  const handleCloseDelete = () => {
+    setDisplayDelete(false);
+  };
+  const handleOpenDelete = () => {
+    setDisplayDelete(true);
+  };
 
   const basicShape = {
     name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
@@ -341,6 +349,13 @@ const ReportEditionOverviewComponent = (props) => {
               id={report.id}
             />
           )}
+          <ReportPopoverDeletion
+            reportId={report.id}
+            displayDelete={displayDelete}
+            handleClose={handleClose}
+            handleCloseDelete={handleCloseDelete}
+            handleOpenDelete={handleOpenDelete}
+          />
         </Form>
       )}
     </Formik>

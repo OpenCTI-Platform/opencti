@@ -23,6 +23,7 @@ import SliderField from '../../../../components/fields/SliderField';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
+import NotePopover from './NotePopover';
 
 export const noteMutationFieldPatch = graphql`
   mutation NoteEditionOverviewFieldPatchMutation(
@@ -84,7 +85,7 @@ interface NoteEditionOverviewProps {
 }
 
 const NoteEditionOverviewComponent: FunctionComponent<
-NoteEditionOverviewProps
+  NoteEditionOverviewProps
 > = ({ note, context }) => {
   const { t_i18n } = useFormatter();
 
@@ -152,7 +153,7 @@ NoteEditionOverviewProps
       enableReinitialize={true}
       initialValues={initialValues}
       validationSchema={noteValidator}
-      onSubmit={() => {}}
+      onSubmit={() => { }}
     >
       {({ setFieldValue }) => (
         <Form style={{ margin: '20px 0 20px 0' }}>
@@ -167,7 +168,7 @@ NoteEditionOverviewProps
               variant: 'standard',
               fullWidth: true,
               helperText: (
-                <SubscriptionFocus context={context} fieldName="created"/>
+                <SubscriptionFocus context={context} fieldName="created" />
               ),
             }}
           />
@@ -270,6 +271,9 @@ NoteEditionOverviewProps
             }
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
+          />
+         <NotePopover
+            id={note.id}
           />
         </Form>
       )}

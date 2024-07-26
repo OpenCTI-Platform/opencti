@@ -33,8 +33,10 @@ const ReportEditionContainer = (props) => {
   );
 };
 
-const ReportEditionFragment = createFragmentContainer(ReportEditionContainer, {
-  report: graphql`
+const ReportEditionFragment = createFragmentContainer(
+  ReportEditionContainer,
+  {
+    report: graphql`
     fragment ReportEditionContainer_report on Report {
       id
       ...ReportEditionOverview_report
@@ -44,6 +46,7 @@ const ReportEditionFragment = createFragmentContainer(ReportEditionContainer, {
       }
     }
   `,
-});
+  }
+);
 
 export default ReportEditionFragment;

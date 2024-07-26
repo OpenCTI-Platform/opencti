@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { FunctionComponent } from 'react';
+import EditEntityControlledDial from '../../../../components/EditEntityControlledDial';
 import AdministrativeAreaEditionContainer, { administrativeAreaEditionQuery } from './AdministrativeAreaEditionContainer';
 import { administrativeAreaEditionOverviewFocus } from './AdministrativeAreaEditionOverview';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
@@ -7,11 +8,7 @@ import { AdministrativeAreaEditionContainerQuery } from './__generated__/Adminis
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import EditEntityControlledDial from '../../../../components/EditEntityControlledDial';
 
-const AdministrativeAreaEdition = ({
-  administrativeAreaId,
-}: {
-  administrativeAreaId: string;
-}) => {
+const AdministrativeAreaEdition: FunctionComponent<{ administrativeAreaId: string }> = ({ administrativeAreaId }) => {
   const [commit] = useApiMutation(administrativeAreaEditionOverviewFocus);
   const handleClose = () => {
     commit({

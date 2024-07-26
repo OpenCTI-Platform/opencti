@@ -12,6 +12,9 @@ const PositionEditionContainer = (props) => {
   const FABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const { handleClose, position, open, controlledDial } = props;
   const { editContext } = position;
+  if (editContext === null) {
+    return <ErrorNotFound />;
+  }
   return (
     <Drawer
       title={t_i18n('Update a position')}

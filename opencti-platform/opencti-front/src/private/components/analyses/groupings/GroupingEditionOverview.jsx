@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
@@ -19,6 +19,7 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
+import GroupingPopoverDeletion from './GroupingPopoverDeletion';
 
 export const groupingMutationFieldPatch = graphql`
   mutation GroupingEditionOverviewFieldPatchMutation(
@@ -83,6 +84,13 @@ const groupingMutationRelationDelete = graphql`
 const GroupingEditionOverviewComponent = (props) => {
   const { grouping, enableReferences, context, handleClose } = props;
   const { t_i18n } = useFormatter();
+  const [displayDelete, setDisplayDelete] = useState(false);
+  const handleCloseDelete = () => {
+    setDisplayDelete(false);
+  };
+  const handleOpenDelete = () => {
+    setDisplayDelete(true);
+  };
 
   const basicShape = {
     name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
@@ -174,7 +182,6 @@ const GroupingEditionOverviewComponent = (props) => {
       'x_opencti_workflow_id',
     ]),
   )(grouping);
-
   return (
     <Formik
       enableReinitialize={true}
@@ -284,6 +291,13 @@ const GroupingEditionOverviewComponent = (props) => {
                 id={grouping.id}
               />
             )}
+            <GroupingPopoverDeletion
+              groupingId={grouping.id}
+              displayDelete={displayDelete}
+              handleClose={handleClose}
+              handleCloseDelete={handleCloseDelete}
+              handleOpenDelete={handleOpenDelete}
+            />
           </Form>
         </div>
       )}

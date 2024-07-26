@@ -15,7 +15,7 @@ import Security from 'src/utils/Security';
 import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
 import { QueryRenderer } from '../../../../relay/environment';
 import Grouping from './Grouping';
-import GroupingPopover from './GroupingPopover';
+import GroupingPopoverDeletion from './GroupingPopoverDeletion';
 import GroupingKnowledge from './GroupingKnowledge';
 import ContainerHeader from '../../common/containers/ContainerHeader';
 import Loader from '../../../../components/Loader';
@@ -112,7 +112,7 @@ const RootGrouping = () => {
                   />
                   <ContainerHeader
                     container={grouping}
-                    PopoverComponent={<GroupingPopover />}
+                    PopoverComponent={null}
                     EditComponent={(
                       <Security needs={[KNOWLEDGE_KNUPDATE]}>
                         <GroupingEdition groupingId={grouping.id} />
@@ -121,6 +121,7 @@ const RootGrouping = () => {
                     enableQuickSubscription={true}
                     enableQuickExport={true}
                     enableAskAi={true}
+                    overview={isOverview}
                     redirectToContent={true}
                   />
                   <Box

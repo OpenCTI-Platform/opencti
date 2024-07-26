@@ -18,6 +18,8 @@ import RegionPopover from './RegionPopover';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
 import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
 import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
+import Security from 'src/utils/Security';
+import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
 import { RootCountriesSubscription } from '../countries/__generated__/RootCountriesSubscription.graphql';
@@ -76,7 +78,7 @@ const regionQuery = graphql`
 
 const RootRegionComponent = ({ queryRef, regionId }) => {
   const subConfig = useMemo<
-  GraphQLSubscriptionConfig<RootCountriesSubscription>
+    GraphQLSubscriptionConfig<RootCountriesSubscription>
   >(
     () => ({
       subscription,
@@ -141,6 +143,7 @@ const RootRegionComponent = ({ queryRef, regionId }) => {
               )}
               enableQuickSubscription={true}
               isOpenctiAlias={true}
+              redirectToContent={true}
             />
             <Box
               sx={{
@@ -205,7 +208,7 @@ const RootRegionComponent = ({ queryRef, regionId }) => {
                 path="/knowledge"
                 element={
                   <Navigate to={`/dashboard/locations/regions/${regionId}/knowledge/overview`} replace={true} />
-              }
+                }
               />
               <Route
                 path="/knowledge/*"
@@ -217,13 +220,13 @@ const RootRegionComponent = ({ queryRef, regionId }) => {
                   <StixCoreObjectContentRoot
                     stixCoreObject={region}
                   />
-              }
+                }
               />
               <Route
                 path="/analyses"
                 element={
                   <StixCoreObjectOrStixCoreRelationshipContainers stixDomainObjectOrStixCoreRelationship={region} />
-              }
+                }
               />
               <Route
                 path="/sightings"
@@ -234,7 +237,7 @@ const RootRegionComponent = ({ queryRef, regionId }) => {
                     noPadding={true}
                     isTo={true}
                   />
-              }
+                }
               />
               <Route
                 path="/files"
@@ -245,13 +248,13 @@ const RootRegionComponent = ({ queryRef, regionId }) => {
                     connectorsExport={connectorsForExport}
                     entity={region}
                   />
-              }
+                }
               />
               <Route
                 path="/history"
                 element={
                   <StixCoreObjectHistory stixCoreObjectId={regionId} />
-              }
+                }
               />
             </Routes>
           </div>
@@ -263,8 +266,8 @@ const RootRegionComponent = ({ queryRef, regionId }) => {
   );
 };
 
-const RootRegion = () => {
-  const { regionId } = useParams() as { regionId: string };
+const Root = () => {
+  const { regionId } = useParams();
   const queryRef = useQueryLoading<RootRegionQuery>(regionQuery, {
     id: regionId,
   });
@@ -279,4 +282,4 @@ const RootRegion = () => {
   );
 };
 
-export default RootRegion;
+export default Root;

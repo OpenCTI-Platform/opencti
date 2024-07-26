@@ -6,10 +6,11 @@ import {
 } from '@components/locations/administrative_areas/__generated__/AdministrativeAreaEditionOverview_administrativeArea.graphql';
 import AdministrativeAreaEditionOverview from './AdministrativeAreaEditionOverview';
 import { useFormatter } from '../../../../components/i18n';
+import useHelper from 'src/utils/hooks/useHelper';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import { AdministrativeAreaEditionContainerQuery } from './__generated__/AdministrativeAreaEditionContainerQuery.graphql';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
-import useHelper from '../../../../utils/hooks/useHelper';
+import AdministrativeAreaEditionOverview from './AdministrativeAreaEditionOverview';
 
 interface AdministrativeAreaEditionContainerProps {
   queryRef: PreloadedQuery<AdministrativeAreaEditionContainerQuery>
@@ -29,12 +30,8 @@ export const administrativeAreaEditionQuery = graphql`
     }
   }
 `;
-const AdministrativeAreaEditionContainer: FunctionComponent<AdministrativeAreaEditionContainerProps> = ({
-  queryRef,
-  handleClose,
-  open,
-  controlledDial,
-}) => {
+
+const AdministrativeAreaEditionContainer: FunctionComponent<AdministrativeAreaEditionContainerProps> = ({ queryRef, handleClose, open, controlledDial }) => {
   const { t_i18n } = useFormatter();
   const { isFeatureEnable } = useHelper();
   const FABReplaced = isFeatureEnable('FAB_REPLACEMENT');

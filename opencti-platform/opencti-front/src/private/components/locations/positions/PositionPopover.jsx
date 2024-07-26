@@ -1,16 +1,12 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
-import Menu from '@mui/material/Menu';
-import MenuItem from '@mui/material/MenuItem';
 import Button from '@mui/material/Button';
-import ToggleButton from '@mui/material/ToggleButton';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import Slide from '@mui/material/Slide';
-import MoreVert from '@mui/icons-material/MoreVert';
 import { graphql } from 'react-relay';
 import withRouter from '../../../../utils/compat-router/withRouter';
 import inject18n from '../../../../components/i18n';
@@ -88,29 +84,18 @@ class PositionPopover extends Component {
   render() {
     const { t, id } = this.props;
     return (
-      <>
-        <ToggleButton
-          value="popover"
-          size="small"
-
-          onClick={this.handleOpen.bind(this)}
-        >
-          <MoreVert fontSize="small" color="primary" />
-        </ToggleButton>
-        <Menu
-          anchorEl={this.state.anchorEl}
-          open={Boolean(this.state.anchorEl)}
-          onClose={this.handleClose.bind(this)}
-        >
-          <MenuItem onClick={this.handleOpenEdit.bind(this)}>
-            {t('Update')}
-          </MenuItem>
-          <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
-            <MenuItem onClick={this.handleOpenDelete.bind(this)}>
-              {t('Delete')}
-            </MenuItem>
-          </Security>
-        </Menu>
+      <React.Fragment>
+        <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
+          <Button
+            color="error"
+            variant="contained"
+            onClick={this.handleOpenDelete.bind(this)}
+            disabled={this.state.deleting}
+            sx={{ marginTop: 2 }}
+          >
+            {t('Delete')}
+          </Button>
+        </Security>
         <Dialog
           PaperProps={{ elevation: 1 }}
           open={this.state.displayDelete}
@@ -155,7 +140,7 @@ class PositionPopover extends Component {
             return <div />;
           }}
         />
-      </>
+      </React.Fragment>
     );
   }
 }

@@ -185,11 +185,9 @@ const StixDomainObjectHeader = (props) => {
   const {
     stixDomainObject,
     isOpenctiAlias,
-    PopoverComponent,
     EditComponent,
     viewAs,
     onViewAs,
-    disablePopover,
     disableSharing,
     noAliases,
     entityType, // Should migrate all the parent component to call the useIsEnforceReference as the top
@@ -204,7 +202,6 @@ const StixDomainObjectHeader = (props) => {
   const [newAlias, setNewAlias] = useState('');
   const [aliasToDelete, setAliasToDelete] = useState(null);
   const isKnowledgeUpdater = useGranted([KNOWLEDGE_KNUPDATE]);
-  const isKnowledgeEnricher = useGranted([KNOWLEDGE_KNENRICHMENT]);
   let type = 'unsupported';
   const isThreat = ['Threat-Actor-Group', 'Threat-Actor-Individual', 'Intrusion-Set', 'Campaign', 'Incident', 'Malware', 'Tool'].includes(stixDomainObject.entity_type);
   const isVictim = ['Sector', 'Organization', 'System', 'Individual', 'Region', 'Country', 'Administrative-Area', 'City', 'Position'].includes(stixDomainObject.entity_type);
@@ -530,22 +527,6 @@ const StixDomainObjectHeader = (props) => {
               instanceMarkings={stixDomainObject.objectMarking.map(({ id }) => id) ?? []}
               type={type}
             />
-          )}
-          {(isKnowledgeUpdater || isKnowledgeEnricher) && (
-          <div className={classes.popover}>
-            {/* TODO remove this when all components are pure function without compose() */}
-            {!React.isValidElement(PopoverComponent) ? (
-              <PopoverComponent
-                disabled={disablePopover}
-                id={stixDomainObject.id}
-              />
-            ) : (
-              React.cloneElement(PopoverComponent, {
-                id: stixDomainObject.id,
-                disabled: disablePopover,
-              })
-            )}
-          </div>
           )}
           {EditComponent}
         </div>

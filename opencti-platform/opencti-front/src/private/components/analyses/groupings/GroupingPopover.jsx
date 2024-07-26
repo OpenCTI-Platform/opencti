@@ -18,12 +18,6 @@ import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import Transition from '../../../../components/Transition';
 
-const GroupingPopoverDeletionMutation = graphql`
-  mutation GroupingPopoverDeletionMutation($id: ID!) {
-    groupingDelete(id: $id)
-  }
-`;
-
 const GroupingPopover = (props) => {
   const { id } = props;
   const navigate = useNavigate();

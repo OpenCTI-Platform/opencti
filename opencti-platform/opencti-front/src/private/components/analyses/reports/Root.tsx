@@ -16,7 +16,6 @@ import { QueryRenderer } from '../../../../relay/environment';
 import Report from './Report';
 import { RootReportSubscription } from './__generated__/RootReportSubscription.graphql';
 import { RootReportQuery$data } from './__generated__/RootReportQuery.graphql';
-import ReportPopover from './ReportPopover';
 import ReportKnowledge from './ReportKnowledge';
 import ContainerHeader from '../../common/containers/ContainerHeader';
 import Loader from '../../../../components/Loader';
@@ -114,10 +113,8 @@ const RootReport = () => {
                   />
                   <ContainerHeader
                     container={report}
-                    PopoverComponent={
-                      <ReportPopover id={reportId} />
-                    }
-                    EditComponent={isFABReplaced && (
+                    PopoverComponent={null}
+                    EditComponent={(
                       <Security needs={[KNOWLEDGE_KNUPDATE]}>
                         <ReportEdition reportId={report.id} />
                       </Security>

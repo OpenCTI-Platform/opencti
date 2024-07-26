@@ -16,6 +16,8 @@ import FileManager from '../../common/files/FileManager';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
 import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
 import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
+import Security from 'src/utils/Security';
+import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
 import { RootCountriesSubscription } from './__generated__/RootCountriesSubscription.graphql';
@@ -139,6 +141,7 @@ const RootCountryComponent = ({ queryRef, countryId }) => {
               )}
               enableQuickSubscription={true}
               isOpenctiAlias={true}
+              redirectToContent={true}
             />
             <Box
               sx={{

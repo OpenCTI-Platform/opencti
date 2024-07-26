@@ -4,10 +4,10 @@ import Drawer, { DrawerControlledDialType, DrawerVariant } from '@components/com
 import { CityEditionOverview_city$key } from '@components/locations/cities/__generated__/CityEditionOverview_city.graphql';
 import CityEditionOverview from './CityEditionOverview';
 import { useFormatter } from '../../../../components/i18n';
+import useHelper from 'src/utils/hooks/useHelper';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import { CityEditionContainerQuery } from './__generated__/CityEditionContainerQuery.graphql';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
-import useHelper from '../../../../utils/hooks/useHelper';
 
 interface CityEditionContainerProps {
   queryRef: PreloadedQuery<CityEditionContainerQuery>

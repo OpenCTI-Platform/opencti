@@ -1,13 +1,14 @@
-import React from 'react';
-import CountryEditionContainer, { countryEditionQuery } from './CountryEditionContainer';
+import React, { FunctionComponent } from 'react';
+import EditEntityControlledDial from '../../../../components/EditEntityControlledDial';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import { countryEditionOverviewFocus } from './CountryEditionOverview';
 import { CountryEditionContainerQuery } from './__generated__/CountryEditionContainerQuery.graphql';
+import CountryEditionContainer, { countryEditionQuery } from './CountryEditionContainer';
+import { countryEditionOverviewFocus } from './CountryEditionOverview';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import EditEntityControlledDial from '../../../../components/EditEntityControlledDial';
 
-const CountryEdition = ({ countryId }: { countryId: string }) => {
+const CountryEdition: FunctionComponent<{ countryId: string }> = ({ countryId }) => {
   const [commit] = useApiMutation(countryEditionOverviewFocus);
   const handleClose = () => {
     commit({

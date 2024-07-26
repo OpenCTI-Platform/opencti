@@ -40,6 +40,7 @@ interface ReportPopoverDeletionProps {
   displayDelete: boolean;
   handleClose: () => void;
   handleCloseDelete: () => void;
+  handleOpenDelete: () => void;
 }
 
 const ReportPopoverDeletion: FunctionComponent<ReportPopoverDeletionProps> = ({
@@ -47,6 +48,7 @@ const ReportPopoverDeletion: FunctionComponent<ReportPopoverDeletionProps> = ({
   displayDelete,
   handleClose,
   handleCloseDelete,
+  handleOpenDelete,
 }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
@@ -66,63 +68,74 @@ const ReportPopoverDeletion: FunctionComponent<ReportPopoverDeletionProps> = ({
     });
   };
   return (
-    <Dialog
-      open={displayDelete}
-      TransitionComponent={Transition}
-      PaperProps={{ elevation: 1 }}
-      onClose={handleCloseDelete}
-    >
-      <DialogContent>
-        <DialogContentText>
-          {t_i18n('Do you want to delete this report?')}
-        </DialogContentText>
-        <QueryRenderer
-          query={reportPopoverDeletionQuery}
-          variables={{ id: reportId }}
-          render={(result: { props: ReportPopoverDeletionQuery$data }) => {
-            const numberOfDeletions = result.props?.report?.deleteWithElementsCount ?? 0;
-            if (numberOfDeletions === 0) return <div />;
-            return (
-              <Alert
-                severity="warning"
-                variant="outlined"
-                style={{ marginTop: 20 }}
-              >
-                <AlertTitle>{t_i18n('Cascade delete')}</AlertTitle>
-                {t_i18n('In this report, ')}&nbsp;
-                <strong style={{ color: theme.palette.error.main }}>
-                  {numberOfDeletions}
-                </strong>
-                &nbsp;
-                {t_i18n(
-                  'element(s) are not linked to any other reports and will be orphan after the deletion.',
-                )}
-                <FormGroup>
-                  <FormControlLabel
-                    control={
-                      <Checkbox
-                        disableRipple={true}
-                        checked={purgeElements}
-                        onChange={() => setPurgeElements(!purgeElements)}
-                      />
-                    }
-                    label={t_i18n('Also delete these elements')}
-                  />
-                </FormGroup>
-              </Alert>
-            );
-          }}
-        ></QueryRenderer>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={handleCloseDelete} disabled={deleting}>
-          {t_i18n('Cancel')}
-        </Button>
-        <Button color="secondary" onClick={submitDelete} disabled={deleting}>
-          {t_i18n('Delete')}
-        </Button>
-      </DialogActions>
-    </Dialog>
+    <React.Fragment>
+      <Button
+        color="error"
+        variant="contained"
+        onClick={handleOpenDelete}
+        disabled={deleting}
+        sx={{ marginTop: 2 }}
+      >
+        {t_i18n('Delete')}
+      </Button>
+      <Dialog
+        open={displayDelete}
+        TransitionComponent={Transition}
+        PaperProps={{ elevation: 1 }}
+        onClose={handleCloseDelete}
+      >
+        <DialogContent>
+          <DialogContentText>
+            {t_i18n('Do you want to delete this report?')}
+          </DialogContentText>
+          <QueryRenderer
+            query={reportPopoverDeletionQuery}
+            variables={{ id: reportId }}
+            render={(result: { props: ReportPopoverDeletionQuery$data }) => {
+              const numberOfDeletions = result.props?.report?.deleteWithElementsCount ?? 0;
+              if (numberOfDeletions === 0) return <div />;
+              return (
+                <Alert
+                  severity="warning"
+                  variant="outlined"
+                  style={{ marginTop: 20 }}
+                >
+                  <AlertTitle>{t_i18n('Cascade delete')}</AlertTitle>
+                  {t_i18n('In this report, ')}&nbsp;
+                  <strong style={{ color: theme.palette.error.main }}>
+                    {numberOfDeletions}
+                  </strong>
+                  &nbsp;
+                  {t_i18n(
+                    'element(s) are not linked to any other reports and will be orphan after the deletion.',
+                  )}
+                  <FormGroup>
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          disableRipple={true}
+                          checked={purgeElements}
+                          onChange={() => setPurgeElements(!purgeElements)}
+                        />
+                      }
+                      label={t_i18n('Also delete these elements')}
+                    />
+                  </FormGroup>
+                </Alert>
+              );
+            }}>
+          </QueryRenderer>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDelete} disabled={deleting}>
+            {t_i18n('Cancel')}
+          </Button>
+          <Button color="secondary" onClick={submitDelete} disabled={deleting}>
+            {t_i18n('Delete')}
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </React.Fragment>
   );
 };
 

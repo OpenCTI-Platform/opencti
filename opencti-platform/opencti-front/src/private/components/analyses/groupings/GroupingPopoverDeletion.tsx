@@ -1,62 +1,49 @@
-import React, { useState } from 'react';
+import React, { FunctionComponent, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
-import useDeletion from '../../../../utils/hooks/useDeletion';
 import { graphql } from 'react-relay';
-import { useNavigate } from 'react-router-dom';
 import { useFormatter } from '../../../../components/i18n';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
-import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import { CountryEditionContainerQuery } from './__generated__/CountryEditionContainerQuery.graphql';
 import Transition from '../../../../components/Transition';
-import CountryEditionContainer, { countryEditionQuery } from './CountryEditionContainer';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
-const CountryPopoverDeletionMutation = graphql`
-  mutation CountryPopoverDeletionMutation($id: ID!) {
-    countryEdit(id: $id) {
-      delete
-    }
+const groupingPopoverDeletionMutation = graphql`
+  mutation GroupingPopoverDeletionMutation($id: ID!) {
+    groupingDelete(id: $id)
   }
 `;
 
-const CountryPopover = ({ id }: { id: string }) => {
-  const { t_i18n } = useFormatter();
+interface GroupingPopoverDeletionProps {
+  groupingId: string;
+  displayDelete: boolean;
+  handleClose: () => void;
+  handleCloseDelete: () => void;
+  handleOpenDelete: () => void;
+}
+const GroupingPopoverDeletion: FunctionComponent<GroupingPopoverDeletionProps> = ({
+  groupingId,
+  displayDelete,
+  handleClose,
+  handleCloseDelete,
+  handleOpenDelete,
+}) => {
   const navigate = useNavigate();
-  const [anchorEl, setAnchorEl] = useState<Element>();
-  const [displayEdit, setDisplayEdit] = useState<boolean>(false);
-  const [commit] = useApiMutation(CountryPopoverDeletionMutation);
-  const queryRef = useQueryLoading<CountryEditionContainerQuery>(
-    countryEditionQuery,
-    { id },
-  );
-  const handleClose = () => {
-    setAnchorEl(undefined);
-  };
-  const handleCloseEdit = () => {
-    setDisplayEdit(false);
-  };
-  const {
-    deleting,
-    handleOpenDelete,
-    displayDelete,
-    handleCloseDelete,
-    setDeleting,
-  } = useDeletion({ handleClose });
+  const { t_i18n } = useFormatter();
+  const [deleting, setDeleting] = useState(false);
+  const [commitMutation] = useApiMutation(groupingPopoverDeletionMutation);
   const submitDelete = () => {
     setDeleting(true);
-    commit({
-      variables: {
-        id,
-      },
+    commitMutation({
+      variables: { id: groupingId, },
       onCompleted: () => {
         setDeleting(false);
         handleClose();
-        navigate('/dashboard/locations/countries');
+        navigate('/dashboard/analyses/groupings');
       },
     });
   };
@@ -74,15 +61,14 @@ const CountryPopover = ({ id }: { id: string }) => {
         </Button>
       </Security>
       <Dialog
-        PaperProps={{ elevation: 1 }}
         open={displayDelete}
-        keepMounted={true}
+        PaperProps={{ elevation: 1 }}
         TransitionComponent={Transition}
         onClose={handleCloseDelete}
       >
         <DialogContent>
           <DialogContentText>
-            {t_i18n('Do you want to delete this country?')}
+            {t_i18n('Do you want to delete this grouping?')}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
@@ -94,17 +80,8 @@ const CountryPopover = ({ id }: { id: string }) => {
           </Button>
         </DialogActions>
       </Dialog>
-      {queryRef && (
-        <React.Suspense fallback={<div />}>
-          <CountryEditionContainer
-            queryRef={queryRef}
-            handleClose={handleCloseEdit}
-            open={displayEdit}
-          />
-        </React.Suspense>
-      )}
     </React.Fragment>
   );
 };
 
-export default CountryPopover;
+export default GroupingPopoverDeletion;

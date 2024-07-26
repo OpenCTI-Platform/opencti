@@ -1,13 +1,14 @@
-import React from 'react';
-import RegionEditionContainer, { regionEditionQuery } from './RegionEditionContainer';
-import { regionEditionOverviewFocus } from './RegionEditionOverview';
+import React, { FunctionComponent } from 'react';
+import EditEntityControlledDial from '../../../../components/EditEntityControlledDial';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { RegionEditionContainerQuery } from './__generated__/RegionEditionContainerQuery.graphql';
+import RegionEditionContainer, { regionEditionQuery } from './RegionEditionContainer';
+import { regionEditionOverviewFocus } from './RegionEditionOverview';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import EditEntityControlledDial from '../../../../components/EditEntityControlledDial';
 
-const RegionEdition = ({ regionId }: { regionId: string }) => {
+const RegionEdition: FunctionComponent<{ regionId: string }> = ({ regionId }) => {
   const [commit] = useApiMutation(regionEditionOverviewFocus);
   const handleClose = () => {
     commit({

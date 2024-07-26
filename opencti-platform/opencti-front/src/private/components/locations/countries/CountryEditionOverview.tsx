@@ -21,6 +21,7 @@ import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEdito
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { GenericContext } from '../../common/model/GenericContextModel';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
+import CountryPopover from './CountryPopover';
 
 const countryMutationFieldPatch = graphql`
   mutation CountryEditionOverviewFieldPatchMutation(
@@ -133,7 +134,7 @@ interface CountryEditionFormValues {
 }
 
 const CountryEditionOverviewComponent: FunctionComponent<
-CountryEditionOverviewProps
+  CountryEditionOverviewProps
 > = ({ countryRef, context, enableReferences = false, handleClose }) => {
   const { t_i18n } = useFormatter();
   const country = useFragment(countryEditionOverviewFragment, countryRef);
@@ -249,7 +250,7 @@ CountryEditionOverviewProps
             fullWidth={true}
             multiline={true}
             rows="4"
-            style={{ marginTop: 20 }}
+            style={fieldSpacingContainerStyle}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
             helperText={
@@ -264,14 +265,14 @@ CountryEditionOverviewProps
             editContext={context}
             variant="edit"
           />
-          {country?.workflowEnabled && (
+          {country.workflowEnabled && (
             <StatusField
               name="x_opencti_workflow_id"
               type="Country"
               onFocus={editor.changeFocus}
               onChange={handleSubmitField}
               setFieldValue={setFieldValue}
-              style={{ marginTop: 20 }}
+              style={fieldSpacingContainerStyle}
               helpertext={
                 <SubscriptionFocus
                   context={context}
@@ -308,6 +309,9 @@ CountryEditionOverviewProps
               id={country.id}
             />
           )}
+          <CountryPopover
+            id={country.id}
+          />
         </Form>
       )}
     </Formik>

@@ -10,6 +10,7 @@ import { SubscriptionFocus } from '../../../../components/Subscription';
 import TextField from '../../../../components/TextField';
 import { ExternalReferenceEditionOverview_externalReference$data } from './__generated__/ExternalReferenceEditionOverview_externalReference.graphql';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import ExternalReferencePopover from './ExternalReferencePopover';
 
 export const externalReferenceMutationFieldPatch = graphql`
   mutation ExternalReferenceEditionOverviewFieldPatchMutation(
@@ -56,7 +57,7 @@ interface ExternalReferenceEditionOverviewComponentProps {
 }
 
 const ExternalReferenceEditionOverviewComponent: FunctionComponent<
-ExternalReferenceEditionOverviewComponentProps
+  ExternalReferenceEditionOverviewComponentProps
 > = ({ externalReference, context }) => {
   const { t_i18n } = useFormatter();
 
@@ -101,7 +102,7 @@ ExternalReferenceEditionOverviewComponentProps
       enableReinitialize={true}
       initialValues={initialValues}
       validationSchema={externalReferenceValidation(t_i18n)}
-      onSubmit={() => {}}
+      onSubmit={() => { }}
     >
       {() => (
         <div>
@@ -155,6 +156,10 @@ ExternalReferenceEditionOverviewComponentProps
               helperText={
                 <SubscriptionFocus context={context} fieldName="description" />
               }
+            />
+            <ExternalReferencePopover
+              id={externalReference.id}
+              handleRemove={undefined}
             />
           </Form>
         </div>

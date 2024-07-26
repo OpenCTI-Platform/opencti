@@ -18,14 +18,14 @@ import Loader from '../../../../components/Loader';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
 import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
 import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
+import Security from 'src/utils/Security';
+import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
 import inject18n from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 import PositionEdition from './PositionEdition';
-import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 
 const subscription = graphql`
   subscription RootPositionsSubscription($id: ID!) {
@@ -142,13 +142,11 @@ class RootPosition extends Component {
                       <StixDomainObjectHeader
                         entityType="Position"
                         disableSharing={true}
-                        stixDomainObject={props.position}
-                        PopoverComponent={<PositionPopover />}
-                        EditComponent={(
-                          <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                            <PositionEdition positionId={position.id} />
-                          </Security>
-                        )}
+                        stixDomainObject={position}
+                        PopoverComponent={<PositionPopover id={position.id} />}
+                        EditComponent={<Security needs={[KNOWLEDGE_KNUPDATE]}>
+                          <PositionEdition positionId={position.id} />
+                        </Security>}
                         enableQuickSubscription={true}
                         isOpenctiAlias={true}
                       />
@@ -211,19 +209,19 @@ class RootPosition extends Component {
                           path="/"
                           element={
                             <Position position={props.position} />
-                        }
+                          }
                         />
                         <Route
                           path="/knowledge"
                           element={
                             <Navigate to={`/dashboard/locations/positions/${positionId}/knowledge/overview`} replace={true} />
-                        }
+                          }
                         />
                         <Route
                           path="/knowledge/*"
                           element={
                             <PositionKnowledge position={props.position} />
-                        }
+                          }
                         />
                         <Route
                           path="/content/*"
@@ -231,13 +229,13 @@ class RootPosition extends Component {
                             <StixCoreObjectContentRoot
                               stixCoreObject={position}
                             />
-                        }
+                          }
                         />
                         <Route
                           path="/analyses"
                           element={
                             <StixCoreObjectOrStixCoreRelationshipContainers stixDomainObjectOrStixCoreRelationship={props.position} />
-                        }
+                          }
                         />
                         <Route
                           path="/sightings"
@@ -248,7 +246,7 @@ class RootPosition extends Component {
                               noPadding={true}
                               isTo={true}
                             />
-                        }
+                          }
                         />
                         <Route
                           path="/files"
@@ -259,13 +257,13 @@ class RootPosition extends Component {
                               connectorsExport={props.connectorsForExport}
                               entity={props.position}
                             />
-                        }
+                          }
                         />
                         <Route
                           path="/history"
                           element={
                             <StixCoreObjectHistory stixCoreObjectId={positionId} />
-                        }
+                          }
                         />
                       </Routes>
                     </div>
