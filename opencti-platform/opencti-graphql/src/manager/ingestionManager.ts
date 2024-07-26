@@ -252,7 +252,6 @@ export const processTaxiiResponse = async (context: AuthContext, ingestion: Basi
 
   if (data.objects && data.objects.length > 0) {
     logApp.info(`[OPENCTI-MODULE] Taxii ingestion execution for ${data.objects.length} items, sending stix bundle to workers.`, { ingestionId: ingestion.id });
-    logApp.info('ANGIE - objects:', { objects: taxiResponse.data.objects });
 
     const bundle = { type: 'bundle', id: `bundle--${uuidv4()}`, objects: taxiResponse.data.objects };
     // Push the bundle to absorption queue
