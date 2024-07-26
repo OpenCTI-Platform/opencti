@@ -23,6 +23,8 @@ import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import CourseOfActionEdition from './CourseOfActionEdition';
+import CreateRelationshipContextProvider from '../../common/menus/CreateRelationshipContextProvider';
+import CreateRelationshipButtonComponent from '../../common/menus/CreateRelationshipButtonComponent';
 
 const subscription = graphql`
   subscription RootCoursesOfActionSubscription($id: ID!) {
@@ -87,7 +89,7 @@ class RootCourseOfAction extends Component {
     } = this.props;
 
     return (
-      <div>
+      <CreateRelationshipContextProvider>
         <QueryRenderer
           query={courseOfActionQuery}
           variables={{ id: courseOfActionId }}
@@ -113,6 +115,7 @@ class RootCourseOfAction extends Component {
                           <CourseOfActionEdition courseOfActionId={courseOfAction.id} />
                         </Security>
                       )}
+                      RelateComponent={CreateRelationshipButtonComponent}
                       isOpenctiAlias={true}
                     />
                     <Box
@@ -198,7 +201,7 @@ class RootCourseOfAction extends Component {
             return <Loader />;
           }}
         />
-      </div>
+      </CreateRelationshipContextProvider>
     );
   }
 }
