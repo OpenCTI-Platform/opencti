@@ -14,6 +14,7 @@ import {
   authenticateUser,
   batchCreator,
   batchRolesForUsers,
+  batchUserEffectiveConfidenceLevel,
   bookmarks,
   buildCompleteUser,
   deleteBookmark,
@@ -61,6 +62,7 @@ import { executionContext, REDACTED_USER } from '../utils/access';
 import { getNotifiers } from '../modules/notifier/notifier-domain';
 
 const rolesUsersLoader = batchLoader(batchRolesForUsers);
+const usersConfidenceLoader = batchLoader(batchUserEffectiveConfidenceLevel);
 const creatorLoader = batchLoader(batchCreator);
 
 const userResolvers = {
@@ -85,7 +87,7 @@ const userResolvers = {
     objectOrganization: (current, args, context) => userOrganizationsPaginated(context, context.user, current.id, args),
     editContext: (current) => fetchEditContext(current.id),
     sessions: (current) => findUserSessions(current.id),
-    effective_confidence_level: (current, args, context) => getUserEffectiveConfidenceLevel(current, context),
+    effective_confidence_level: (current, args, context) => usersConfidenceLoader.load(current, context, context.user),
     personal_notifiers: (current, _, context) => getNotifiers(context, context.user, current.personal_notifiers),
   },
   Member: {

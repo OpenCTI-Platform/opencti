@@ -1555,21 +1555,37 @@ export const userEditContext = async (context, user, userId, input) => {
 };
 // endregion
 
-export const getUserEffectiveConfidenceLevel = async (user, context) => {
-  // we load the user from cache to have the complete user with groupos
-  const platformUsers = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
-  const cachedUser = platformUsers.get(user.id);
+const buildCompleteUserFromCacheOrDb = async (context, user, userToLoad, cachedUsers) => {
+  const cachedUser = cachedUsers.get(userToLoad.id);
   let completeUser;
   if (cachedUser) {
     // in case we need to resolve user effective confidence level on edit (cache not updated with user edited fields yet)
     // we need groups and capabilities to compute user effective confidence level, which are accurate in cache.
     completeUser = {
-      ...user,
+      ...userToLoad,
       groups: cachedUser.groups,
       capabilities: cachedUser.capabilities,
     };
   } else { // in case we need to resolve user effective confidence level on creation.
-    completeUser = await findById(context, context.user, user.id);
+    completeUser = await findById(context, user, userToLoad.id);
   }
+  return completeUser;
+};
+
+export const batchUserEffectiveConfidenceLevel = async (context, user, batchUsers) => {
+  const platformUsers = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
+  const completeUsers = [];
+  for (let i = 0; i < batchUsers.length; i += 1) {
+    const batchUser = batchUsers[i];
+    const completeUser = await buildCompleteUserFromCacheOrDb(context, user, batchUser, platformUsers);
+    completeUsers.push(completeUser);
+  }
+  return completeUsers.map((u) => computeUserEffectiveConfidenceLevel(u));
+};
+
+export const getUserEffectiveConfidenceLevel = async (user, context) => {
+  // we load the user from cache to have the complete user with groupos
+  const platformUsers = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
+  const completeUser = await buildCompleteUserFromCacheOrDb(context, context.user, user, platformUsers);
   return computeUserEffectiveConfidenceLevel(completeUser);
 };
