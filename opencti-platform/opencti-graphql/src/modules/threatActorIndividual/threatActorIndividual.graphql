@@ -153,6 +153,8 @@ enum ThreatActorsIndividualOrdering {
   resource_level
   confidence
   _score
+  objectMarking
+  threat_actor_types
 }
 type ThreatActorIndividualConnection {
   pageInfo: PageInfo!

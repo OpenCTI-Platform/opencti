@@ -4641,6 +4641,7 @@ enum IntrusionSetsOrdering {
   primary_motivation
   confidence
   _score
+  objectMarking
 }
 type IntrusionSetConnection {
   pageInfo: PageInfo!
@@ -5787,6 +5788,7 @@ enum ThreatActorsOrdering {
   resource_level
   _score
   threat_actor_types
+  objectMarking
 }
 type ThreatActorGroupConnection {
   pageInfo: PageInfo!
