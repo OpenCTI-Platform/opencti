@@ -12,9 +12,9 @@ import { resolveUserByIdFromCache } from '../../domain/user';
 import { parseCsvMapper } from '../../modules/internal/csvMapper/csvMapper-utils';
 import type { ConnectorConfig } from '../connector';
 import { IMPORT_CSV_CONNECTOR } from './importCsv';
-import { internalLoadById } from '../../database/middleware-loader';
 import { DatabaseError, FunctionalError } from '../../config/errors';
 import { uploadToStorage } from '../../database/file-storage-helper';
+import { storeLoadByIdWithRefs } from '../../database/middleware';
 
 const RETRY_CONNECTION_PERIOD = 10000;
 
@@ -43,7 +43,7 @@ const initImportCsvConnector = () => {
     const fileId = messageParsed.event.file_id;
     const applicantUser = await resolveUserByIdFromCache(context, applicantId) as AuthUser;
     const entityId = messageParsed.event.entity_id;
-    const entity = entityId ? await internalLoadById(context, applicantUser, entityId) : undefined;
+    const entity = entityId ? await storeLoadByIdWithRefs(context, applicantUser, entityId) : undefined;
     let parsedConfiguration;
     try {
       parsedConfiguration = JSON.parse(messageParsed.configuration);
