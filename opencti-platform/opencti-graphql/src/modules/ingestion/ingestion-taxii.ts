@@ -50,6 +50,7 @@ const INGESTION_DEFINITION: ModuleDefinition<StoreEntityIngestionTaxii, StixInge
     { name: 'current_state_cursor', label: 'Current state cursor', type: 'string', format: 'short', mandatoryType: 'no', editDefault: true, multiple: false, upsert: true, isFilterable: true },
     { name: 'ingestion_running', label: 'Running', type: 'boolean', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true, isFilterable: true },
     { name: 'taxii_more', label: 'Taxii response more value', type: 'string', format: 'short', mandatoryType: 'no', editDefault: true, multiple: false, upsert: true, isFilterable: true },
+    { name: 'ingestion_last_run', label: 'Last ingestion run', type: 'date', mandatoryType: 'no', editDefault: true, multiple: false, upsert: true, isFilterable: true },
   ],
   relations: [],
   representative: (stix: StixIngestionTaxii) => {

@@ -46,7 +46,7 @@ const IngestionTaxii = () => {
     },
     uri: {
       label: 'URL',
-      width: '30%',
+      width: '25%',
       isSortable: true,
     },
     version: {
@@ -56,12 +56,22 @@ const IngestionTaxii = () => {
     },
     ingestion_running: {
       label: 'Running',
+      width: '10%',
+      isSortable: false,
+    },
+    ingestion_last_run: {
+      label: 'Last run',
       width: '15%',
       isSortable: false,
     },
     added_after_start: {
-      label: 'Current state',
-      width: '15%',
+      label: 'Request next date',
+      width: '10%',
+      isSortable: false,
+    },
+    current_state_cursor: {
+      label: 'Request next state',
+      width: '10%',
       isSortable: false,
     },
   };

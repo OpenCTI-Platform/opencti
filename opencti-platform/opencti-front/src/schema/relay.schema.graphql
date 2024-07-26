@@ -10902,6 +10902,7 @@ type IngestionRss implements InternalObject & BasicObject {
   report_types: [String!]
   current_state_date: DateTime
   ingestion_running: Boolean
+  ingestion_last_run: DateTime
 }
 
 enum IngestionRssOrdering {
@@ -10966,6 +10967,7 @@ type IngestionTaxii implements InternalObject & BasicObject {
   current_state_cursor: String
   added_after_start: DateTime
   ingestion_running: Boolean
+  ingestion_last_run: DateTime
 }
 
 enum IngestionTaxiiOrdering {
@@ -11019,6 +11021,7 @@ type IngestionCsv implements InternalObject & BasicObject {
   current_state_hash: String
   current_state_date: DateTime
   markings: [String!]
+  ingestion_last_run: DateTime
 }
 
 enum IngestionCsvOrdering {

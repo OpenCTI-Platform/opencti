@@ -345,6 +345,7 @@
   "Last deleted count": "Anzahl der zuletzt gelöschten",
   "Last event id": "Letzte Ereignis-ID",
   "Last execution date": "Datum der letzten Ausführung",
+  "Last ingestion run": "Letzter Aufnahmelauf",
   "Last modification date": "Datum der letzten Änderung",
   "Last modification since": "Letzte Änderung seit",
   "Last modifier": "Letzter Modifikator",

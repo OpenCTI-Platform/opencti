@@ -13,7 +13,7 @@ import { TYPE_LOCK_ERROR, UnknownError, UnsupportedError } from '../config/error
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { type GetHttpClient, getHttpClient, OpenCTIHeaders } from '../utils/http-client';
 import { isEmptyField, isNotEmptyField } from '../database/utils';
-import { FROM_START_STR, sanitizeForMomentParsing, utcDate } from '../utils/format';
+import { FROM_START_STR, now, sanitizeForMomentParsing, utcDate } from '../utils/format';
 import { generateStandardId } from '../schema/identifier';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../schema/stixDomainObject';
 import { pushToWorkerForSync } from '../database/rabbitmq';
@@ -178,7 +178,7 @@ const rssDataHandler = async (context: AuthContext, httpRssGet: Getter, turndown
       await pushToWorkerForSync({ type: 'bundle', applicant_id: ingestion.user_id ?? OPENCTI_SYSTEM_UUID, content, update: true });
       // Update the state
       const lastPubDate = R.last(items)?.pubDate;
-      await patchRssIngestion(context, SYSTEM_USER, ingestion.internal_id, { current_state_date: lastPubDate });
+      await patchRssIngestion(context, SYSTEM_USER, ingestion.internal_id, { current_state_date: lastPubDate, ingestion_last_run: now() });
     }
   } catch (e) {
     logApp.error(e, { ingestionId: ingestion.id, ingestionName: ingestion.name, ingestionType: 'RSS' });
@@ -269,8 +269,13 @@ export const processTaxiiResponse = async (context: AuthContext, ingestion: Basi
       current_state_cursor: data.next ? data.next : undefined,
       taxii_more: data.more ? data.more : undefined,
       added_after_start: addedLastHeader || undefined,
+      ingestion_last_run: now()
     });
   } else {
+    // Update the last run
+    await patchTaxiiIngestion(context, SYSTEM_USER, ingestion.internal_id, {
+      ingestion_last_run: now()
+    });
     logApp.info('[OPENCTI-MODULE] Taxii ingestion - taxii server has not sent any object.', { next: data.next, more: data.more, addedLastHeader, ingestionId: ingestion.id, ingestionName: ingestion.name });
   }
 };
@@ -355,7 +360,8 @@ const csvDataHandler = async (context: AuthContext, ingestion: BasicStoreEntityI
     const hashedIncomingData = bcrypt.hashSync(data.toString());
     await patchCsvIngestion(context, SYSTEM_USER, ingestion.internal_id, {
       current_state_hash: hashedIncomingData,
-      added_after_start: utcDate(addedLast)
+      added_after_start: utcDate(addedLast),
+      ingestion_last_run: now()
     });
   } catch (e) {
     logApp.error(e, { ingestionId: ingestion.id, ingestionName: ingestion.name, ingestionType: 'CSV' });

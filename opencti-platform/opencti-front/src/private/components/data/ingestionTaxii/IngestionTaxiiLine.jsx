@@ -16,6 +16,7 @@ import inject18n from '../../../../components/i18n';
 import ItemBoolean from '../../../../components/ItemBoolean';
 import Security from '../../../../utils/Security';
 import { INGESTION_SETINGESTIONS } from '../../../../utils/hooks/useGranted';
+import ItemCopy from '../../../../components/ItemCopy';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -68,7 +69,7 @@ const styles = (theme) => ({
 
 class IngestionTaxiiLineLineComponent extends Component {
   render() {
-    const { classes, node, dataColumns, paginationOptions, t } = this.props;
+    const { classes, node, dataColumns, paginationOptions, t, fldt } = this.props;
     return (
       <ListItem classes={{ root: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIcon }}>
@@ -107,9 +108,21 @@ class IngestionTaxiiLineLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
+                style={{ width: dataColumns.ingestion_last_run.width }}
+              >
+                {fldt(node.ingestion_last_run) || '-'}
+              </div>
+              <div
+                className={classes.bodyItem}
                 style={{ width: dataColumns.added_after_start.width }}
               >
-                <code>{node.added_after_start || node.current_state_cursor}</code>
+                <ItemCopy content={node.added_after_start || '-'} variant="inLine" />
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.current_state_cursor.width }}
+              >
+                <ItemCopy content={node.current_state_cursor || '-'} variant="inLine" />
               </div>
             </div>
           }
@@ -135,6 +148,7 @@ IngestionTaxiiLineLineComponent.propTypes = {
   me: PropTypes.object,
   classes: PropTypes.object,
   fd: PropTypes.func,
+  fldt: PropTypes.func,
 };
 
 const IngestionTaxiiLineFragment = createFragmentContainer(
@@ -149,6 +163,7 @@ const IngestionTaxiiLineFragment = createFragmentContainer(
         ingestion_running
         added_after_start
         current_state_cursor
+        ingestion_last_run
       }
     `,
   },
@@ -221,7 +236,29 @@ class IngestionTaxiiDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
+                style={{ width: dataColumns.ingestion_last_run.width }}
+              >
+                <Skeleton
+                  animation="wave"
+                  variant="rectangular"
+                  width="90%"
+                  height="100%"
+                />
+              </div>
+              <div
+                className={classes.bodyItem}
                 style={{ width: dataColumns.added_after_start.width }}
+              >
+                <Skeleton
+                  animation="wave"
+                  variant="rectangular"
+                  width={100}
+                  height="100%"
+                />
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.current_state_cursor.width }}
               >
                 <Skeleton
                   animation="wave"
