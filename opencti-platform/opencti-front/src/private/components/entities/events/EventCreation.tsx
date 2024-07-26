@@ -1,6 +1,6 @@
 import React, { FunctionComponent, useEffect, useState } from 'react';
 import { Field, Form, Formik } from 'formik';
-import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
+import Drawer, { DrawerControlledDialProps, DrawerVariant } from '@components/common/drawer/Drawer';
 import Button from '@mui/material/Button';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
@@ -27,6 +27,7 @@ import { EventsLinesPaginationQuery$variables } from './__generated__/EventsLine
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import useHelper from '../../../../utils/hooks/useHelper';
 import useBulkCommit from '../../../../utils/hooks/useBulkCommit';
 import { splitMultilines } from '../../../../utils/String';
@@ -106,7 +107,11 @@ export const EventCreationForm: FunctionComponent<EventFormProps> = ({
   };
   const eventValidator = useSchemaCreationValidation(EVENT_TYPE, basicShape);
 
-  const [commit] = useApiMutation<EventCreationMutation>(eventMutation);
+  const [commit] = useApiMutation<EventCreationMutation>(
+    eventMutation,
+    undefined,
+    { successMessage: `${t_i18n('entity_Event')} ${t_i18n('successfully created')}` },
+  );
   const {
     bulkCommit,
     bulkCount,
@@ -332,16 +337,21 @@ const EventCreation = ({
   const { isFeatureEnable } = useHelper();
   const { t_i18n } = useFormatter();
   const [bulkOpen, setBulkOpen] = useState(false);
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_events', paginationOptions, 'eventAdd');
 
+  const CreateEventControlledDial = (props: DrawerControlledDialProps) => (
+    <CreateEntityControlledDial entityType='Event' {...props} />
+  );
   return (
     <Drawer
       title={t_i18n('Create an event')}
-      variant={DrawerVariant.create}
+      variant={isFABReplaced ? undefined : DrawerVariant.create}
       header={isFeatureEnable('BULK_ENTITIES')
         ? <BulkTextModalButton onClick={() => setBulkOpen(true)} />
         : <></>
       }
+      controlledDial={isFABReplaced ? CreateEventControlledDial : undefined}
     >
       {({ onClose }) => (
         <EventCreationForm

@@ -5,7 +5,7 @@ import * as Yup from 'yup';
 import { graphql } from 'react-relay';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { FormikConfig } from 'formik/dist/types';
-import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
+import Drawer, { DrawerControlledDialProps, DrawerVariant } from '@components/common/drawer/Drawer';
 import ConfidenceField from '@components/common/form/ConfidenceField';
 import { useFormatter } from '../../../../components/i18n';
 import { handleErrorInForm } from '../../../../relay/environment';
@@ -25,6 +25,7 @@ import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import useHelper from '../../../../utils/hooks/useHelper';
 import useBulkCommit from '../../../../utils/hooks/useBulkCommit';
 import { splitMultilines } from '../../../../utils/String';
@@ -101,7 +102,11 @@ export const OrganizationCreationForm: FunctionComponent<OrganizationFormProps> 
   };
   const organizationValidator = useSchemaCreationValidation(ORGANIZATION_TYPE, basicShape);
 
-  const [commit] = useApiMutation<OrganizationCreationMutation>(organizationMutation);
+  const [commit] = useApiMutation<OrganizationCreationMutation>(
+    organizationMutation,
+    undefined,
+    { successMessage: `${t_i18n('entity_Organization')} ${t_i18n('successfully created')}` },
+  );
   const {
     bulkCommit,
     bulkCount,
@@ -318,23 +323,28 @@ const OrganizationCreation = ({ paginationOptions }: {
   paginationOptions: OrganizationsLinesPaginationQuery$variables
 }) => {
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
   const [bulkOpen, setBulkOpen] = useState(false);
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const updater = (store: RecordSourceSelectorProxy) => insertNode(
     store,
     'Pagination_organizations',
     paginationOptions,
     'organizationAdd',
   );
+  const CreateOrganizationControlledDial = (props: DrawerControlledDialProps) => (
+    <CreateEntityControlledDial entityType='Organization' {...props} />
+  );
 
   return (
     <Drawer
       title={t_i18n('Create an organization')}
-      variant={DrawerVariant.create}
+      variant={isFABReplaced ? undefined : DrawerVariant.create}
       header={isFeatureEnable('BULK_ENTITIES')
         ? <BulkTextModalButton onClick={() => setBulkOpen(true)} />
         : <></>
       }
+      controlledDial={isFABReplaced ? CreateOrganizationControlledDial : undefined}
     >
       {({ onClose }) => (
         <OrganizationCreationForm
