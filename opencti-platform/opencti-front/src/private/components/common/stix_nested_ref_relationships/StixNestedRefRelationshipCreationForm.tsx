@@ -1,4 +1,4 @@
-import { Button, MenuItem, styled } from '@mui/material';
+import { Button, MenuItem, useTheme } from '@mui/material';
 import { Field, Form, Formik, FormikHelpers } from 'formik';
 import React, { FunctionComponent } from 'react';
 import DateTimePickerField from 'src/components/DateTimePickerField';
@@ -14,116 +14,86 @@ import { getMainRepresentative } from 'src/utils/defaultRepresentatives';
 import { ArrowRightAlt } from '@mui/icons-material';
 import { TargetEntity } from '../stix_core_relationships/StixCoreRelationshipCreationFromEntity';
 
-const StyledContainer = styled('div')({ padding: '10px 20px 20px 20px' });
-const StyledButtons = {
-  Back: styled(Button)({
-    marginTop: 20,
-    textAlign: 'left',
-    float: 'left',
-  }),
-  Button: styled(Button)(({ theme }) => ({
-    marginLeft: theme.spacing(2),
-  })),
-  RightButtons: styled('div')({
-    marginTop: 20,
-    textAlign: 'right',
-    float: 'right',
-  }),
-};
-
-const StyledRelationshipContainer = styled('div')({
-  position: 'relative',
-  height: 100,
-  display: 'flex',
-  alignItems: 'center',
-});
-
 const RelationshipCard = ({ entity, multiple = false }: {
   entity: TargetEntity,
   multiple?: boolean,
 }) => {
   const { t_i18n } = useFormatter();
+  const theme = useTheme();
   const color = itemColor(entity.entity_type);
-  const StyledCard = styled('div')({
-    width: 180,
-    height: 80,
-    borderRadius: 10,
-    border: `2px solid ${color}`,
-    display: 'flex',
-    flexDirection: 'column',
-  });
-  const StyledHeader = styled('div')({
-    padding: '10px 0 10px 0',
-    borderBottom: `1px solid ${color}`,
-    width: '100%',
-    display: 'flex',
-    flexDirection: 'row',
-    alignItems: 'center',
-  });
-  const StyledIcon = styled('div')({
-    fontSize: 8,
-    float: 'left',
-    margin: '0 -25px 0 5px',
-  });
-  const StyledType = styled('div')(({ theme }) => ({
-    width: '100%',
-    textAlign: 'center',
-    color: theme.palette.text.primary,
-    fontSize: 11,
-  }));
-  const StyledContent = styled('div')(({ theme }) => ({
-    width: '100%',
-    height: 40,
-    maxHeight: 40,
-    lineHeight: '30px',
-    color: theme.palette.text.primary,
-    textAlign: 'center',
-  }));
-  const StyledName = styled('span')({
-    display: 'inline-block',
-    lineHeight: 1,
-    fontSize: 12,
-    verticalAlign: 'middle',
-  });
 
   return (
-    <StyledCard>
-      <StyledHeader>
-        <StyledIcon>
+    <div
+      style={{
+        width: 180,
+        height: 80,
+        borderRadius: 10,
+        border: `2px solid ${color}`,
+        display: 'flex',
+        flexDirection: 'column',
+      }}
+    >
+      <div
+        style={{
+          padding: '10px 0 10px 0',
+          borderBottom: `1px solid ${color}`,
+          width: '100%',
+          display: 'flex',
+          flexDirection: 'row',
+          alignItems: 'center',
+        }}
+      >
+        <div
+          style={{
+            fontSize: 8,
+            float: 'left',
+            margin: '0 -25px 0 5px',
+          }}
+        >
           <ItemIcon
             type={entity.entity_type}
             color={color}
             size="small"
           />
-        </StyledIcon>
-        <StyledType>{t_i18n(`entity_${entity.entity_type}`)}</StyledType>
-      </StyledHeader>
-      <StyledContent>
-        <StyledName>{multiple
-          ? <em>{t_i18n('Multiple entities selected')}</em>
-          : truncate(getMainRepresentative(entity), 20)
-        }</StyledName>
-      </StyledContent>
-    </StyledCard>
+        </div>
+        <div
+          style={{
+            width: '100%',
+            textAlign: 'center',
+            color: theme.palette.text.primary,
+            fontSize: 11,
+          }}
+        >
+          {t_i18n(`entity_${entity.entity_type}`)}
+        </div>
+      </div>
+      <div
+        style={{
+          width: '100%',
+          height: 40,
+          maxHeight: 40,
+          lineHeight: '30px',
+          color: theme.palette.text.primary,
+          textAlign: 'center',
+        }}
+      >
+        <span
+          style={{
+            display: 'inline-block',
+            lineHeight: 1,
+            fontSize: 12,
+            verticalAlign: 'middle',
+          }}
+        >
+          {multiple
+            ? <em>{t_i18n('Multiple entities selected')}</em>
+            : truncate(getMainRepresentative(entity), 20)
+          }
+        </span>
+      </div>
+    </div>
   );
 };
-
-const StyledMiddle = styled('div')(({ theme }) => ({
-  margin: '0 auto',
-  width: 200,
-  textAlign: 'center',
-  padding: 0,
-  color: theme.palette.text.primary,
-}));
-
-const StyledArrow = styled(ArrowRightAlt)(({ theme }) => ({
-  paddingTop: 25,
-  margin: '0 auto',
-  width: 200,
-  textAlign: 'center',
-  padding: 0,
-  color: theme.palette.text.primary,
-}));
 
 export interface StixNestedRefRelationshipCreationFormValues {
   from_id: string,
@@ -161,6 +131,7 @@ StixNestedRefRelationshipCreationFormProps
   if (targetEntities.length < 1) handleBack(); // Must have at least one target entity
 
   const { t_i18n } = useFormatter();
+  const theme = useTheme();
   const stixNestedRefRelationshipValidation = () => Yup.object().shape({
     relationship_type: Yup.string().required(t_i18n('This field is required')),
     start_time: Yup.date()
@@ -190,11 +161,36 @@ StixNestedRefRelationshipCreationFormProps
     >
       {({ submitForm, isSubmitting }) => (
         <Form>
-          <StyledContainer>
-            <StyledRelationshipContainer>
+          <div style={{ padding: '10px 20px 20px 20px' }}>
+            <div
+              style={{
+                position: 'relative',
+                height: 100,
+                display: 'flex',
+                alignItems: 'center',
+              }}
+            >
               <RelationshipCard entity={sourceEntity} />
-              <StyledMiddle>
-                <StyledArrow fontSize="large" />
+              <div
+                style={{
+                  margin: '0 auto',
+                  width: 200,
+                  textAlign: 'center',
+                  padding: 0,
+                  color: theme.palette.text.primary,
+                }}
+              >
+                <ArrowRightAlt
+                  fontSize="large"
+                  style={{
+                    paddingTop: 25,
+                    margin: '0 auto',
+                    width: 200,
+                    textAlign: 'center',
+                    padding: 0,
+                    color: theme.palette.text.primary,
+                  }}
+                />
                 <br />
                 {typeof handleReverse === 'function' && (
                   <Button
@@ -206,12 +202,12 @@ StixNestedRefRelationshipCreationFormProps
                     {t_i18n('Reverse')}
                   </Button>
                 )}
-              </StyledMiddle>
+              </div>
               <RelationshipCard
                 entity={targetEntity}
                 multiple={targetEntities.length > 1}
               />
-            </StyledRelationshipContainer>
+            </div>
             <Field
               component={SelectField}
               variant="standard"
@@ -246,30 +242,42 @@ StixNestedRefRelationshipCreationFormProps
                 style: { marginTop: 20 },
               }}
             />
-            <StyledButtons.Back
+            <Button
               variant="contained"
               onClick={handleBack}
               disabled={isSubmitting}
+              style={{
+                marginTop: 20,
+                textAlign: 'left',
+                float: 'left',
+              }}
             >
               {t_i18n('Back')}
-            </StyledButtons.Back>
-            <StyledButtons.RightButtons>
-              <StyledButtons.Button
+            </Button>
+            <div style={{
+              marginTop: 20,
+              textAlign: 'right',
+              float: 'right',
+            }}
+            >
+              <Button
                 variant="outlined"
                 onClick={handleClose}
                 disabled={isSubmitting}
+                style={{ marginLeft: theme.spacing(2) }}
               >
                 {t_i18n('Cancel')}
-              </StyledButtons.Button>
-              <StyledButtons.Button
+              </Button>
+              <Button
                 variant="contained"
                 onClick={submitForm}
                 disabled={isSubmitting}
+                style={{ marginLeft: theme.spacing(2) }}
               >
                 {t_i18n('Create')}
-              </StyledButtons.Button>
-            </StyledButtons.RightButtons>
-          </StyledContainer>
+              </Button>
+            </div>
+          </div>
         </Form>
       )}
     </Formik>

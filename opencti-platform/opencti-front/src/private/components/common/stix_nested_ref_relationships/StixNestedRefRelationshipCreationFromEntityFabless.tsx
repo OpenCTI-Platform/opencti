@@ -10,14 +10,10 @@ import { ConnectionHandler, RecordSourceSelectorProxy, graphql } from 'relay-run
 import { FormikConfig } from 'formik';
 import { formatDate } from 'src/utils/Time';
 import { useLazyLoadQuery } from 'react-relay';
-import { Fab, styled } from '@mui/material';
+import { Fab } from '@mui/material';
 import { TargetEntity } from '../stix_core_relationships/StixCoreRelationshipCreationFromEntity';
 import Drawer from '../drawer/Drawer';
-import {
-  CreateRelationshipControlledDial,
-  Header,
-  renderLoader,
-} from '../stix_core_relationships/StixCoreRelationshipCreationFromControlledDial';
+import { CreateRelationshipControlledDial, Header, renderLoader } from '../stix_core_relationships/StixCoreRelationshipCreationFromControlledDial';
 import { stixNestedRefRelationshipCreationFromEntityMutation, stixNestedRefRelationshipResolveTypes } from './StixNestedRefRelationshipCreationFromEntity';
 import { StixNestedRefRelationshipCreationFromEntityResolveQuery$data } from './__generated__/StixNestedRefRelationshipCreationFromEntityResolveQuery.graphql';
 import { CreateRelationshipContext } from '../menus/CreateRelationshipContextProvider';
@@ -122,11 +118,6 @@ const SelectEntity = ({
       isSortable: false,
     },
   };
-  const NoTargetEntities = styled('div')({
-    width: '100%',
-    display: 'flex',
-    justifyContent: 'center',
-  });
   return (
     <div
       style={{
@@ -163,7 +154,8 @@ const SelectEntity = ({
         ]}
       >
         {stixNestedRefTypes.length > 0
-          ? <QueryRenderer
+          ? (
+            <QueryRenderer
               query={stixNestedRefRelationshipCreationFromEntityLinesQuery}
               variables={{ count: 100, ...searchPaginationOptions }}
               render={({ props }: { props: StixNestedRefRelationshipCreationFromEntityLinesQuery$data }) => {
@@ -186,9 +178,17 @@ const SelectEntity = ({
                 } return (<></>);
               }}
             />
-          : <NoTargetEntities>
-            <em>{t_i18n('No valid target entities')}</em>
-          </NoTargetEntities>
+          ) : (
+            <div
+              style={{
+                width: '100%',
+                display: 'flex',
+                justifyContent: 'center',
+              }}
+            >
+              <em>{t_i18n('No valid target entities')}</em>
+            </div>
+          )
         }
       </ListLines>
       <Fab
