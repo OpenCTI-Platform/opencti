@@ -10,7 +10,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { FormikConfig } from 'formik/dist/types';
-import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
+import Drawer, { DrawerControlledDialProps, DrawerVariant } from '@components/common/drawer/Drawer';
 import ConfidenceField from '@components/common/form/ConfidenceField';
 import { useFormatter } from '../../../../components/i18n';
 import { handleErrorInForm } from '../../../../relay/environment';
@@ -29,6 +29,7 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import useHelper from '../../../../utils/hooks/useHelper';
 import useBulkCommit from '../../../../utils/hooks/useBulkCommit';
 import { splitMultilines } from '../../../../utils/String';
@@ -122,7 +123,11 @@ export const NarrativeCreationForm: FunctionComponent<NarrativeFormProps> = ({
     basicShape,
   );
 
-  const [commit] = useApiMutation<NarrativeCreationMutation>(narrativeMutation);
+  const [commit] = useApiMutation<NarrativeCreationMutation>(
+    narrativeMutation,
+    undefined,
+    { successMessage: `${t_i18n('entity_Narrative')} ${t_i18n('successfully created')}` },
+  );
   const {
     bulkCommit,
     bulkCount,
@@ -327,6 +332,7 @@ const NarrativeCreation: FunctionComponent<NarrativeCreationProps> = ({
   const [bulkOpen, setBulkOpen] = useState(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const updater = (store: RecordSourceSelectorProxy) => insertNode(
     store,
     'Pagination_narratives',
@@ -334,15 +340,23 @@ const NarrativeCreation: FunctionComponent<NarrativeCreationProps> = ({
     'narrativeAdd',
   );
 
+  const CreateNarrativeControlledDial = (props: DrawerControlledDialProps) => (
+    <CreateEntityControlledDial entityType='Narrative' {...props} />
+  );
+  const CreateNarrativeControlledDialContextual = CreateNarrativeControlledDial({
+    onOpen: handleOpen,
+    onClose: () => {},
+  });
   const renderClassic = () => {
     return (
       <Drawer
         title={t_i18n('Create a narrative')}
-        variant={DrawerVariant.create}
+        variant={isFABReplaced ? undefined : DrawerVariant.create}
         header={isFeatureEnable('BULK_ENTITIES')
           ? <BulkTextModalButton onClick={() => setBulkOpen(true)} />
           : <></>
         }
+        controlledDial={isFABReplaced ? CreateNarrativeControlledDial : undefined}
       >
         {({ onClose }) => (
           <NarrativeCreationForm
@@ -361,19 +375,27 @@ const NarrativeCreation: FunctionComponent<NarrativeCreationProps> = ({
   const renderContextual = () => {
     return (
       <div style={{ display: display ? 'block' : 'none' }}>
-        <Fab
-          onClick={handleOpen}
-          color="secondary"
-          aria-label="Add"
-          style={{
-            position: 'fixed',
-            bottom: 30,
-            right: 30,
-            zIndex: 2000,
-          }}
-        >
-          <Add />
-        </Fab>
+        {isFABReplaced
+          ? (
+            <div style={{ marginTop: '5px' }}>
+              {CreateNarrativeControlledDialContextual}
+            </div>
+          ) : (
+            <Fab
+              onClick={handleOpen}
+              color="secondary"
+              aria-label="Add"
+              style={{
+                position: 'fixed',
+                bottom: 30,
+                right: 30,
+                zIndex: 2000,
+              }}
+            >
+              <Add />
+            </Fab>
+          )
+        }
         <Dialog open={open} onClose={handleClose} PaperProps={{ elevation: 1 }}>
           <DialogTitle>
             {t_i18n('Create a narrative')}
