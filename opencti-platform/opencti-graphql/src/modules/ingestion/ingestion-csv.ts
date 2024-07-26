@@ -36,7 +36,6 @@ const INGESTION_CSV_DEFINITION: ModuleDefinition<StoreEntityIngestionCsv, StixIn
     { name: 'markings', label: 'Markings', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: true, upsert: true, isFilterable: false },
     { name: 'authentication_type', label: 'Authentication type', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
     { name: 'authentication_value', label: 'Authentication value', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
-    { name: 'ingestion_last_run', label: 'Last ingestion run', type: 'date', mandatoryType: 'no', editDefault: true, multiple: false, upsert: true, isFilterable: true },
   ],
   relations: [],
   representative: (stix: StixIngestionCsv) => {

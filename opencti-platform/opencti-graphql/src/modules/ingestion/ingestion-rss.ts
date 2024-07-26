@@ -44,7 +44,6 @@ const INGESTION_RSS_DEFINITION: ModuleDefinition<StoreEntityIngestionRss, StixIn
     { name: 'object_marking_refs', label: 'Marking', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: true, upsert: true, isFilterable: false },
     { name: 'current_state_date', label: 'Current state date', type: 'date', mandatoryType: 'no', editDefault: true, multiple: false, upsert: true, isFilterable: true },
     { name: 'ingestion_running', label: 'Ingestion running', type: 'boolean', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true, isFilterable: true },
-    { name: 'ingestion_last_run', label: 'Last ingestion run', type: 'date', mandatoryType: 'no', editDefault: true, multiple: false, upsert: true, isFilterable: true },
   ],
   relations: [],
   representative: (stix: StixIngestionRss) => {

@@ -178,7 +178,7 @@ const rssDataHandler = async (context: AuthContext, httpRssGet: Getter, turndown
       await pushToWorkerForSync({ type: 'bundle', applicant_id: ingestion.user_id ?? OPENCTI_SYSTEM_UUID, content, update: true });
       // Update the state
       const lastPubDate = R.last(items)?.pubDate;
-      await patchRssIngestion(context, SYSTEM_USER, ingestion.internal_id, { current_state_date: lastPubDate, ingestion_last_run: now() });
+      await patchRssIngestion(context, SYSTEM_USER, ingestion.internal_id, { current_state_date: lastPubDate });
     }
   } catch (e) {
     logApp.error(e, { ingestionId: ingestion.id, ingestionName: ingestion.name, ingestionType: 'RSS' });
@@ -361,7 +361,6 @@ const csvDataHandler = async (context: AuthContext, ingestion: BasicStoreEntityI
     await patchCsvIngestion(context, SYSTEM_USER, ingestion.internal_id, {
       current_state_hash: hashedIncomingData,
       added_after_start: utcDate(addedLast),
-      ingestion_last_run: now()
     });
   } catch (e) {
     logApp.error(e, { ingestionId: ingestion.id, ingestionName: ingestion.name, ingestionType: 'CSV' });

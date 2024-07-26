@@ -18,7 +18,6 @@ type IngestionCsv implements InternalObject & BasicObject {
     current_state_hash: String
     current_state_date: DateTime
     markings: [String!]
-    ingestion_last_run: DateTime
 }
 
 enum IngestionCsvOrdering {
