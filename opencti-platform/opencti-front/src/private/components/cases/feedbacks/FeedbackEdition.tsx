@@ -1,4 +1,5 @@
 import React, { FunctionComponent } from 'react';
+import EditEntityControlledDial from '../../../../components/EditEntityControlledDial';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { feedbackEditionOverviewFocus } from './FeedbackEditionOverview';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
@@ -29,6 +30,7 @@ const FeedbackEdition: FunctionComponent<{ feedbackId: string }> = ({ feedbackId
           <FeedbackEditionContainer
             queryRef={queryRef}
             handleClose={handleClose}
+            controlledDial={EditEntityControlledDial}
           />
         </React.Suspense>
       )}
