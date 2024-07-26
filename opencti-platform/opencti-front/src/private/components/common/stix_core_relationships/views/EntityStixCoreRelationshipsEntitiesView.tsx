@@ -166,7 +166,7 @@ EntityStixCoreRelationshipsEntitiesViewProps
       paginationOptions,
     });
   }, []);
-  
+
   return (
     <>
       <ListLines
