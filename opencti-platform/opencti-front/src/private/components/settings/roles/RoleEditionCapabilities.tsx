@@ -107,8 +107,8 @@ const RoleEditionCapabilitiesComponent: FunctionComponent<RoleEditionCapabilitie
       <List dense={true}>
         {capabilities.edges.map((edge) => {
           const capability = edge?.node;
-          if (capability?.name === 'KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS' && !isFeatureEnable('CAPABILITY_BYPASSFIELDS')) return; // TODO : remove the feature flag for 6.3
-          if (capability) {
+          const isCapabilityUnderFeatureFlag = capability?.name === 'KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS' && !isFeatureEnable('CAPABILITY_BYPASSFIELDS'); // TODO : remove the feature flag for 6.3
+          if (capability && !isCapabilityUnderFeatureFlag) {
             const paddingLeft = capability.name.split('_').length * 20 - 20;
             const roleCapability = roleCapabilities.find(
               (r) => r.name === capability.name,
