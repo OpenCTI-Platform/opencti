@@ -34,7 +34,9 @@ enum PublicDashboardsOrdering {
   name
   created_at
   updated_at
-  creator
+  user_id
+  enabled
+  dashboard
   _score
 }
 

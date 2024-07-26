@@ -36,6 +36,7 @@ import { useSearchEntitiesSchemaSCOSearchQuery$data } from './__generated__/useS
 import type { Theme } from '../../components/Theme';
 import useAttributes, { containerTypes } from '../hooks/useAttributes';
 import { contextFilters, entityTypesFilters } from './filtersUtils';
+import { useSearchEntitiesDashboardsQuery$data } from './__generated__/useSearchEntitiesDashboardsQuery.graphql';
 
 const filtersStixCoreObjectsSearchQuery = graphql`
   query useSearchEntitiesStixCoreObjectsSearchQuery(
@@ -224,6 +225,19 @@ const filtersSchemaSCOSearchQuery = graphql`
   }
 `;
 
+const workspacesQuery = graphql`
+  query useSearchEntitiesDashboardsQuery($search: String, $filters: FilterGroup) {
+    workspaces(search: $search, filters: $filters) {
+      edges {
+        node {
+          id
+          name
+        }
+      }
+    }
+  }
+`;
+
 export interface EntityValue {
   label?: string | null;
   value?: string | null;
@@ -236,14 +250,6 @@ interface EntityWithLabelValue {
   label: string;
   value: string;
   type: string;
-}
-
-export interface SearchEntitiesProps {
-  availableEntityTypes?: string[];
-  availableRelationshipTypes?: string[];
-  searchContext: { entityTypes: string[]; elementId?: string[] };
-  searchScope: Record<string, string[]>;
-  setInputValues: (value: { key: string, values: string[], operator?: string }[]) => void;
 }
 
 const useSearchEntities = ({
@@ -960,6 +966,29 @@ const useSearchEntities = ({
                     }))
                     .sort((a, b) => (a.label ?? '').localeCompare(b.label ?? ''));
                   unionSetEntities(filterKey, statusTemplateEntities);
+                });
+            } else if (idEntityTypes.includes('PublicDashboard')) {
+              fetchQuery(workspacesQuery, {
+                first: 500,
+                filters: {
+                  mode: 'and',
+                  filters: [
+                    { key: 'type', values: ['dashboard'] },
+                  ],
+                  filterGroups: [],
+                },
+              })
+                .toPromise()
+                .then((data: unknown) => {
+                  const dashboards = ((data as useSearchEntitiesDashboardsQuery$data)?.workspaces?.edges ?? [])
+                    .filter((n) => !R.isNil(n?.node))
+                    .map((n) => ({
+                      label: n?.node.name,
+                      value: n?.node.id,
+                      type: 'Dashboard',
+                    }))
+                    .sort((a, b) => (a.label ?? '').localeCompare(b.label ?? ''));
+                  unionSetEntities(filterKey, dashboards);
                 });
             }
           }

@@ -22,7 +22,7 @@ export const PUBLIC_DASHBOARD_DEFINITION: ModuleDefinition<StoreEntityPublicDash
     { name: 'name', label: 'Name', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'enabled', label: 'Enabled', type: 'boolean', mandatoryType: 'external', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'description', label: 'Description', type: 'string', format: 'text', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true, update: false },
-    { name: 'dashboard_id', label: 'Dashboard id', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: false, upsert: false, isFilterable: true, update: false },
+    { name: 'dashboard_id', label: 'Dashboard', type: 'string', format: 'id', entityTypes: [ENTITY_TYPE_PUBLIC_DASHBOARD], mandatoryType: 'external', editDefault: false, multiple: false, upsert: false, isFilterable: true, update: false },
     { name: 'public_manifest', label: 'Public manifest', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: false, update: false },
     { name: 'private_manifest', label: 'Public manifest', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: false, update: false },
     { name: 'uri_key', label: 'Uri key', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: false, upsert: false, isFilterable: true },
