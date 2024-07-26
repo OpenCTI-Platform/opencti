@@ -55,6 +55,7 @@ export interface BasicStoreEntityIngestionTaxii extends BasicStoreEntity {
   current_state_cursor: string | undefined
   ingestion_running: boolean
   taxii_more: string,
+  ingestion_last_run: Date | undefined
 }
 
 export interface StoreEntityIngestionTaxii extends StoreEntity {
@@ -62,6 +63,8 @@ export interface StoreEntityIngestionTaxii extends StoreEntity {
   description: string
   uri: string
   ingestion_running: boolean
+  taxii_more: string,
+  ingestion_last_run: Date | undefined
 }
 
 export interface StixIngestionTaxii extends StixObject {
