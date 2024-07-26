@@ -22,6 +22,8 @@ import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 import { RootVulnerabilityQuery } from './__generated__/RootVulnerabilityQuery.graphql';
 import { RootVulnerabilitySubscription } from './__generated__/RootVulnerabilitySubscription.graphql';
+import CreateRelationshipContextProvider from '../../common/menus/CreateRelationshipContextProvider';
+import CreateRelationshipButtonComponent from '../../common/menus/CreateRelationshipButtonComponent';
 
 const subscription = graphql`
   subscription RootVulnerabilitySubscription($id: ID!) {
@@ -92,7 +94,7 @@ const RootVulnerability = ({ queryRef, vulnerabilityId }: RootVulnerabilityProps
   const paddingRight = getPaddingRight(location.pathname, vulnerabilityId, '/dashboard/arsenal/vulnerabilities');
   const link = `/dashboard/arsenal/vulnerabilities/${vulnerabilityId}/knowledge`;
   return (
-    <>
+    <CreateRelationshipContextProvider>
       {vulnerability ? (
         <>
           <Routes>
@@ -131,6 +133,7 @@ const RootVulnerability = ({ queryRef, vulnerabilityId }: RootVulnerabilityProps
               entityType="Vulnerability"
               stixDomainObject={vulnerability}
               PopoverComponent={<VulnerabilityPopover />}
+              RelateComponent={CreateRelationshipButtonComponent}
               enableQuickSubscription={true}
               isOpenctiAlias={true}
             />
@@ -245,7 +248,7 @@ const RootVulnerability = ({ queryRef, vulnerabilityId }: RootVulnerabilityProps
       ) : (
         <ErrorNotFound />
       )}
-    </>
+    </CreateRelationshipContextProvider>
   );
 };
 
