@@ -65,12 +65,12 @@ const IngestionTaxii = () => {
       isSortable: false,
     },
     added_after_start: {
-      label: 'Request next date',
+      label: 'Added after date',
       width: '10%',
       isSortable: false,
     },
     current_state_cursor: {
-      label: 'Request next state',
+      label: 'Next cursor',
       width: '10%',
       isSortable: false,
     },
