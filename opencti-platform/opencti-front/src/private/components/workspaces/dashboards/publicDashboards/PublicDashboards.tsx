@@ -5,18 +5,18 @@ import { ViewListOutlined } from '@mui/icons-material';
 import { graphql } from 'react-relay';
 import { PublicDashboardsListQuery, PublicDashboardsListQuery$variables } from '@components/workspaces/dashboards/__generated__/PublicDashboardsListQuery.graphql';
 import { PublicDashboardsFragment$data } from '@components/workspaces/dashboards/__generated__/PublicDashboardsFragment.graphql';
-import { useFormatter } from '../../../../components/i18n';
-import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../../utils/filters/filtersUtils';
-import DataTable from '../../../../components/dataGrid/DataTable';
-import Breadcrumbs from '../../../../components/Breadcrumbs';
-import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
-import ItemBoolean from '../../../../components/ItemBoolean';
-import { DataTableProps } from '../../../../components/dataGrid/dataTableTypes';
-import { textInTooltip } from '../../../../components/dataGrid/dataTableUtils';
+import { useFormatter } from '../../../../../components/i18n';
+import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../../../utils/filters/filtersUtils';
+import DataTable from '../../../../../components/dataGrid/DataTable';
+import Breadcrumbs from '../../../../../components/Breadcrumbs';
+import useQueryLoading from '../../../../../utils/hooks/useQueryLoading';
+import { usePaginationLocalStorage } from '../../../../../utils/hooks/useLocalStorage';
+import ItemBoolean from '../../../../../components/ItemBoolean';
+import { DataTableProps } from '../../../../../components/dataGrid/dataTableTypes';
+import { textInTooltip } from '../../../../../components/dataGrid/dataTableUtils';
 
 const publicDashboardFragment = graphql`
-  fragment PublicDashboard on PublicDashboard {
+  fragment PublicDashboards_PublicDashboard on PublicDashboard {
     id
     uri_key
     enabled
@@ -58,7 +58,7 @@ export const publicDashboardsFragment = graphql`
     ) @connection(key: "Pagination_publicDashboards") {
       edges {
         node {
-          ...PublicDashboard
+          ...PublicDashboards_PublicDashboard
         }
       }
       pageInfo {
@@ -93,7 +93,7 @@ const publicDashboardsListQuery = graphql`
 
 const LOCAL_STORAGE_KEY = 'PublicDashboard';
 
-const PublicDashboardComponent = () => {
+const PublicDashboards = () => {
   const { t_i18n } = useFormatter();
   const initialValues = {
     searchTerm: '',
@@ -206,4 +206,4 @@ const PublicDashboardComponent = () => {
   );
 };
 
-export default PublicDashboardComponent;
+export default PublicDashboards;
