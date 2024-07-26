@@ -13,6 +13,7 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import ItemBoolean from '../../../../components/ItemBoolean';
 import { DataTableProps } from '../../../../components/dataGrid/dataTableTypes';
+import { textInTooltip } from '../../../../components/dataGrid/dataTableUtils';
 
 const publicDashboardFragment = graphql`
   fragment PublicDashboard on PublicDashboard {
@@ -121,25 +122,32 @@ const PublicDashboardComponent = () => {
   const dataColumns: DataTableProps['dataColumns'] = {
     name: {
       id: 'name',
-      flexSize: 25,
+      flexSize: 18,
       label: 'Name',
+    },
+    uri_key: {
+      id: 'uri_key',
+      flexSize: 18,
+      label: 'URI Key',
+      render: ({ uri_key }, h) => textInTooltip(uri_key, h),
     },
     dashboard: {
       id: 'dashboard',
-      flexSize: 25,
+      flexSize: 18,
       label: 'Custom dashboard',
-      isSortable: true,
-      render: ({ dashboard }) => dashboard.name ?? '-',
+      isSortable: false,
+      render: ({ dashboard }, h) => textInTooltip(dashboard.name, h),
     },
     allowed_markings: {
       id: 'allowed_markings',
-      flexSize: 20,
+      flexSize: 16,
       label: 'Max markings shared',
+      isSortable: false,
     },
     enabled: {
       id: 'enabled',
       flexSize: 15,
-      label: 'Status',
+      label: 'Enabled',
       isSortable: true,
       render: ({ enabled }) => (
         <ItemBoolean
@@ -148,43 +156,51 @@ const PublicDashboardComponent = () => {
         />
       ),
     },
-    owner: {
+    user_id: {
       id: 'owner',
       flexSize: 15,
       label: 'Shared by',
       isSortable: true,
-      render: ({ owner }) => owner?.name ?? '-',
+      render: ({ owner }, h) => textInTooltip(owner.name, h),
     },
   };
 
   return (
     <>
-      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Dashboards') }, { label: t_i18n('Public dashboards'), current: true }]}/>
-      {queryRef && (
-      <DataTable
-        dataColumns={dataColumns}
-        resolvePath={(data: PublicDashboardsFragment$data) => {
-          return data.publicDashboards?.edges?.map((n) => n?.node);
-        }}
-        storageKey={LOCAL_STORAGE_KEY}
-        initialValues={initialValues}
-        toolbarFilters={contextFilters}
-        preloadedPaginationProps={{
-          linesQuery: publicDashboardsListQuery,
-          linesFragment: publicDashboardsFragment,
-          queryRef,
-          setNumberOfElements: helpers.handleSetNumberOfElements,
-        }}
-        lineFragment={publicDashboardFragment}
-        exportContext={{ entity_type: 'PublicDashboard' }}
-        additionalHeaderButtons={[
-          <ToggleButton key="cards" value="lines" aria-label="lines">
-            <Tooltip title={t_i18n('Lines view')}>
-              <ViewListOutlined color="primary" fontSize="small"/>
-            </Tooltip>
-          </ToggleButton>,
+      <Breadcrumbs
+        variant="list"
+        elements={[
+          { label: t_i18n('Dashboards') },
+          { label: t_i18n('Public dashboards'), current: true },
         ]}
       />
+
+      {queryRef && (
+        <DataTable
+          dataColumns={dataColumns}
+          resolvePath={(data: PublicDashboardsFragment$data) => {
+            return data.publicDashboards?.edges?.map((n) => n?.node);
+          }}
+          storageKey={LOCAL_STORAGE_KEY}
+          initialValues={initialValues}
+          toolbarFilters={contextFilters}
+          preloadedPaginationProps={{
+            linesQuery: publicDashboardsListQuery,
+            linesFragment: publicDashboardsFragment,
+            queryRef,
+            setNumberOfElements: helpers.handleSetNumberOfElements,
+          }}
+          lineFragment={publicDashboardFragment}
+          exportContext={{ entity_type: 'PublicDashboard' }}
+          searchContextFinal={{ entityTypes: ['PublicDashboard'] }}
+          additionalHeaderButtons={[
+            <ToggleButton key="cards" value="lines" aria-label="lines">
+              <Tooltip title={t_i18n('Lines view')}>
+                <ViewListOutlined color="primary" fontSize="small"/>
+              </Tooltip>
+            </ToggleButton>,
+          ]}
+        />
       )}
     </>
   );
