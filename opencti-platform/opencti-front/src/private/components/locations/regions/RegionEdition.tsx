@@ -25,7 +25,7 @@ const RegionEdition = ({ regionId }: { regionId: string }) => {
     <>
       {queryRef && (
         <React.Suspense
-          fallback={<Loader variant={LoaderVariant.inElement} />}
+          fallback={<Loader variant={LoaderVariant.inline} />}
         >
           <RegionEditionContainer
             queryRef={queryRef}

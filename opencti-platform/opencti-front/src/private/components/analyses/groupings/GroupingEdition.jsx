@@ -38,7 +38,7 @@ const GroupingEdition = ({ groupingId }) => {
             />
           );
         }
-        return <Loader variant="inElement" />;
+        return <Loader variant="inline" />;
       }}
     />
   );

@@ -29,7 +29,7 @@ const AdministrativeAreaEdition = ({
     <>
       {queryRef && (
         <React.Suspense
-          fallback={<Loader variant={LoaderVariant.inElement} />}
+          fallback={<Loader variant={LoaderVariant.inline} />}
         >
           <AdministrativeAreaEditionContainer
             queryRef={queryRef}

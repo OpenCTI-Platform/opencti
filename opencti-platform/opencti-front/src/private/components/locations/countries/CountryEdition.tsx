@@ -25,7 +25,7 @@ const CountryEdition = ({ countryId }: { countryId: string }) => {
     <>
       {queryRef && (
         <React.Suspense
-          fallback={<Loader variant={LoaderVariant.inElement} />}
+          fallback={<Loader variant={LoaderVariant.inline} />}
         >
           <CountryEditionContainer
             queryRef={queryRef}
