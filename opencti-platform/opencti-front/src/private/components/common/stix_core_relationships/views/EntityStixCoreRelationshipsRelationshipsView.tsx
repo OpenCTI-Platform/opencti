@@ -171,7 +171,7 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
       paginationOptions,
     });
   }, []);
-  
+
   return (
     <>
       <ListLines

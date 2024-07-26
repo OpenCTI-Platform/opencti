@@ -1,17 +1,17 @@
-import React, { FunctionComponent, useContext, useEffect, useState } from "react";
-import { useFormatter } from "../../../../components/i18n";
-import { CreateRelationshipContext } from "../../common/menus/CreateRelationshipContextProvider";
-import useHelper from "../../../../utils/hooks/useHelper";
-import { Add, ArrowDropDown, ArrowDropUp } from "@mui/icons-material";
-import { IconButton, List, ListItem, ListItemIcon, ListItemSecondaryAction, ListItemText, Paper, Typography } from "@mui/material";
-import Security from "../../../../utils/Security";
-import { KNOWLEDGE_KNUPDATE } from "../../../../utils/hooks/useGranted";
-import StixNestedRefRelationshipCreationFromEntity from "../../common/stix_nested_ref_relationships/StixNestedRefRelationshipCreationFromEntity";
-import SearchInput from "../../../../components/SearchInput";
-import { QueryRenderer } from "../../../../relay/environment";
-import StixCyberObservableNestedEntitiesLines, { stixCyberObservableNestedEntitiesLinesQuery } from "./StixCyberObservableNestedEntitiesLines";
-import { StixCyberObservableNestedEntitiesLines_data$data } from "./__generated__/StixCyberObservableNestedEntitiesLines_data.graphql";
-import StixNestedRefRelationshipCreationFromEntityFabless from "../../common/stix_nested_ref_relationships/StixNestedRefRelationshipCreationFromEntityFabless";
+import React, { FunctionComponent, useContext, useEffect, useState } from 'react';
+import { Add, ArrowDropDown, ArrowDropUp } from '@mui/icons-material';
+import { IconButton, List, ListItem, ListItemIcon, ListItemSecondaryAction, ListItemText, Paper, Typography } from '@mui/material';
+import { useFormatter } from '../../../../components/i18n';
+import { CreateRelationshipContext } from '../../common/menus/CreateRelationshipContextProvider';
+import useHelper from '../../../../utils/hooks/useHelper';
+import Security from '../../../../utils/Security';
+import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import StixNestedRefRelationshipCreationFromEntity from '../../common/stix_nested_ref_relationships/StixNestedRefRelationshipCreationFromEntity';
+import SearchInput from '../../../../components/SearchInput';
+import { QueryRenderer } from '../../../../relay/environment';
+import StixCyberObservableNestedEntitiesLines, { stixCyberObservableNestedEntitiesLinesQuery } from './StixCyberObservableNestedEntitiesLines';
+import { StixCyberObservableNestedEntitiesLines_data$data } from './__generated__/StixCyberObservableNestedEntitiesLines_data.graphql';
+import StixNestedRefRelationshipCreationFromEntityFabless from '../../common/stix_nested_ref_relationships/StixNestedRefRelationshipCreationFromEntityFabless';
 
 interface StixCyberObservableNestedEntitiesProps {
   entityId: string,
@@ -20,7 +20,7 @@ interface StixCyberObservableNestedEntitiesProps {
 }
 
 const StixCyberObservableNestedEntities: FunctionComponent<
-  StixCyberObservableNestedEntitiesProps
+StixCyberObservableNestedEntitiesProps
 > = ({
   entityId,
   entityType,
@@ -78,7 +78,7 @@ const StixCyberObservableNestedEntities: FunctionComponent<
         {sortBy === field ? SortComponent : ''}
       </div>
     );
-  }
+  };
 
   const paginationOptions = {
     fromOrToId: entityId,
@@ -113,6 +113,10 @@ const StixCyberObservableNestedEntities: FunctionComponent<
                     aria-label={t_i18n('Label')}
                     onClick={onOpen}
                     size="large"
+                    style={{
+                      float: 'left',
+                      margin: '-15px 0 0 -2px',
+                    }}
                   >
                     <Add fontSize="small" />
                   </IconButton>
