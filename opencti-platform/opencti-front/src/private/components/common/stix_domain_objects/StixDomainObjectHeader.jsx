@@ -251,11 +251,14 @@ const StixDomainObjectHeader = (props) => {
   const classes = useStyles();
   const theme = useTheme();
   const { t_i18n } = useFormatter();
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const {
     stixDomainObject,
     isOpenctiAlias,
     PopoverComponent,
     EditComponent,
+    RelateComponent,
     viewAs,
     onViewAs,
     disablePopover,
@@ -629,6 +632,9 @@ const StixDomainObjectHeader = (props) => {
               </div>
             )}
             {EditComponent}
+            {isFABReplaced && RelateComponent && (
+              <RelateComponent id={stixDomainObject.id} />
+            )}
           </div>
         </div>
       </div>
