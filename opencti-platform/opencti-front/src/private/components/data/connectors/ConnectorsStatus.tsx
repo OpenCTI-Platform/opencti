@@ -73,7 +73,7 @@ const inlineStyles: Record<string, CSSProperties> = {
   },
   connector_type: {
     float: 'left',
-    width: '20%',
+    width: '10%',
     height: 20,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
@@ -81,7 +81,7 @@ const inlineStyles: Record<string, CSSProperties> = {
   },
   auto: {
     float: 'left',
-    width: '20%',
+    width: '15%',
     height: 20,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
@@ -89,16 +89,16 @@ const inlineStyles: Record<string, CSSProperties> = {
   },
   messages: {
     float: 'left',
-    width: '8%',
+    width: '10%',
     paddingLeft: 5,
     height: 20,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
   },
-  connector_status: {
+  active: {
     float: 'left',
-    width: '10.3%',
+    width: '15%',
   },
   updated_at: {
     float: 'left',
@@ -345,19 +345,19 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
                     width: '100%',
                   }}
                   >
-                    <div style={{ flexBasis: '20%' }}>
+                    <div style={{ flexBasis: '25%' }}>
                       <SortConnectorsHeader field="name" label="Name" isSortable orderAsc={orderAsc} sortBy={sortBy} reverseBy={reverseBy} />
                     </div>
-                    <div style={{ flexBasis: '20%' }}>
+                    <div style={{ flexBasis: '10%' }}>
                       <SortConnectorsHeader field="connector_type" label="Type" isSortable orderAsc={orderAsc} sortBy={sortBy} reverseBy={reverseBy} />
                     </div>
-                    <div style={{ flexBasis: '20%' }}>
+                    <div style={{ flexBasis: '15%' }}>
                       <SortConnectorsHeader field="auto" label="Automatic trigger" isSortable orderAsc={orderAsc} sortBy={sortBy} reverseBy={reverseBy} />
                     </div>
                     <div style={{ flexBasis: '10%' }}>
                       <SortConnectorsHeader field="messages" label="Messages" isSortable orderAsc={orderAsc} sortBy={sortBy} reverseBy={reverseBy} />
                     </div>
-                    <div style={{ flexBasis: '10%' }}>
+                    <div style={{ flexBasis: '15%' }}>
                       <SortConnectorsHeader field="active" label="Status" isSortable orderAsc={orderAsc} sortBy={sortBy} reverseBy={reverseBy} />
                     </div>
                     <div style={{ flexBasis: '20%' }}>
@@ -413,7 +413,7 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
                       </div>
                       <div
                         className={classes.bodyItem}
-                        style={inlineStyles.connector_status}
+                        style={inlineStyles.active}
                       >
                         <ItemBoolean
                           status={connector.active}
