@@ -56,7 +56,7 @@ ExternalReferenceEditionProps
             />
           );
         }
-        return <Loader variant={LoaderVariant.inElement} />;
+        return <Loader variant={LoaderVariant.inline} />;
       }}
     />
   );

@@ -52,7 +52,7 @@ const NoteEdition = ({ noteId }: { noteId: string }) => {
             </CollaborativeSecurity>
           );
         }
-        return <Loader variant={LoaderVariant.inElement} />;
+        return <Loader variant={LoaderVariant.inline} />;
       }}
     />
   );

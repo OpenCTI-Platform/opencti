@@ -27,6 +27,9 @@ import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
+import RegionEdition from './RegionEdition';
+import Security from '../../../../utils/Security';
+import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 
 const subscription = graphql`
   subscription RootRegionsSubscription($id: ID!) {
@@ -131,6 +134,11 @@ const RootRegionComponent = ({ queryRef, regionId }) => {
               disableSharing={true}
               stixDomainObject={region}
               PopoverComponent={<RegionPopover id={region.id} />}
+              EditComponent={(
+                <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                  <RegionEdition regionId={region.id} />
+                </Security>
+              )}
               enableQuickSubscription={true}
               isOpenctiAlias={true}
             />
