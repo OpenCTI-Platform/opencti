@@ -43,6 +43,25 @@ export const schemaRefRelationships = async (context, user, id, toType) => {
       return { entity, from, to };
     });
 };
+/**
+ * Given an entity's id, finds other entity types that we can create a nested
+ * ref relationship with.
+ * @param {*} context
+ * @param {*} user
+ * @param {*} id
+ * @returns List of entity types
+ */
+export const entityTypesWithNestedRefRelationships = async (context, user, id) => {
+  return findStixObjectOrStixRelationshipById(context, user, id)
+    .then((entity) => {
+      const supportedTargetTypes = schemaRelationsRefDefinition.getRelationsRef(entity.entity_type)
+        .filter((ref) => !notNestedRefRelation.includes(ref.databaseName))
+        .flatMap((ref) => ref.toTypes)
+        .sort()
+        .filter((value, index, arr) => arr.indexOf(value) === index); // Unique
+      return supportedTargetTypes;
+    });
+};
 export const isDatable = (entityType, relationshipType) => {
   return schemaRelationsRefDefinition.isDatable(entityType, relationshipType);
 };

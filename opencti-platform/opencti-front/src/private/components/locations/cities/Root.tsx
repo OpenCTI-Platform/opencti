@@ -31,6 +31,8 @@ import CityEdition from './CityEdition';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import useHelper from '../../../../utils/hooks/useHelper';
+import CreateRelationshipContextProvider from '../../common/menus/CreateRelationshipContextProvider';
+import CreateRelationshipButtonComponent from '../../common/menus/CreateRelationshipButtonComponent';
 
 const subscription = graphql`
   subscription RootCitiesSubscription($id: ID!) {
@@ -94,7 +96,7 @@ const RootCityComponent = ({ queryRef, cityId }) => {
   const link = `/dashboard/locations/cities/${cityId}/knowledge`;
   const paddingRight = getPaddingRight(location.pathname, city?.id, '/dashboard/locations/cities');
   return (
-    <>
+    <CreateRelationshipContextProvider>
       {city ? (
         <>
           <Routes>
@@ -140,6 +142,7 @@ const RootCityComponent = ({ queryRef, cityId }) => {
                   <CityEdition cityId={city.id} />
                 </Security>
               )}
+              RelateComponent={CreateRelationshipButtonComponent}
               enableQuickSubscription={true}
               isOpenctiAlias={true}
             />
@@ -264,7 +267,7 @@ const RootCityComponent = ({ queryRef, cityId }) => {
       ) : (
         <ErrorNotFound />
       )}
-    </>
+    </CreateRelationshipContextProvider>
   );
 };
 

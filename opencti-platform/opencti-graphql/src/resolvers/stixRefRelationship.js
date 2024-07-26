@@ -1,5 +1,6 @@
 import {
   addStixRefRelationship,
+  entityTypesWithNestedRefRelationships,
   findAll,
   findById,
   findNested,
@@ -29,6 +30,7 @@ const stixRefRelationshipResolvers = {
     stixRefRelationship: (_, { id }, context) => findById(context, context.user, id),
     stixRefRelationships: (_, args, context) => findAll(context, context.user, args),
     stixNestedRefRelationships: (_, args, context) => findNested(context, context.user, args),
+    stixNestedRefRelationshipFromEntityType: (_, { id }, context) => entityTypesWithNestedRefRelationships(context, context.user, id),
     stixSchemaRefRelationships: (_, { id, toType }, context) => schemaRefRelationships(context, context.user, id, toType),
     stixRefRelationshipsDistribution: (_, args, context) => distributionRelations(context, context.user, args),
     stixRefRelationshipsNumber: (_, args, context) => stixRefRelationshipsNumber(context, context.user, args),

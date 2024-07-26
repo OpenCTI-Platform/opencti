@@ -27,6 +27,8 @@ import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import ToolPopover from './ToolPopover';
 import ToolKnowledge from './ToolKnowledge';
+import CreateRelationshipContextProvider from '../../common/menus/CreateRelationshipContextProvider';
+import CreateRelationshipButtonComponent from '../../common/menus/CreateRelationshipButtonComponent';
 
 const subscription = graphql`
   subscription RootToolSubscription($id: ID!) {
@@ -102,7 +104,7 @@ const RootTool = ({ queryRef, toolId }: RootToolProps) => {
   const paddingRight = getPaddingRight(location.pathname, toolId, '/dashboard/arsenal/tools');
   const link = `/dashboard/arsenal/tools/${toolId}/knowledge`;
   return (
-    <>
+    <CreateRelationshipContextProvider>
       {tool ? (
         <>
           <Routes>
@@ -146,6 +148,7 @@ const RootTool = ({ queryRef, toolId }: RootToolProps) => {
                 </Security>
               )}
               enableEnricher={isFABReplaced}
+              RelateComponent={CreateRelationshipButtonComponent}
               enableQuickSubscription={true}
             />
             <Box
@@ -261,7 +264,7 @@ const RootTool = ({ queryRef, toolId }: RootToolProps) => {
       ) : (
         <ErrorNotFound />
       )}
-    </>
+    </CreateRelationshipContextProvider>
   );
 };
 

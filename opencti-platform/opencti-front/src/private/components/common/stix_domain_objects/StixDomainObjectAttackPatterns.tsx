@@ -1,4 +1,4 @@
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useContext, useEffect } from 'react';
 import StixDomainObjectAttackPatternsKillChainContainer from '@components/common/stix_domain_objects/StixDomainObjectAttackPatternsKillChainContainer';
 import {
   StixDomainObjectAttackPatternsKillChainQuery,
@@ -14,6 +14,7 @@ import {
   useRemoveIdAndIncorrectKeysFromFilterGroupObject,
 } from '../../../../utils/filters/filtersUtils';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import { CreateRelationshipContext } from '../menus/CreateRelationshipContextProvider';
 
 interface StixDomainObjectAttackPatternsProps {
   stixDomainObjectId: string,
@@ -29,6 +30,7 @@ const StixDomainObjectAttackPatterns: FunctionComponent<StixDomainObjectAttackPa
   disableExport,
 }) => {
   const LOCAL_STORAGE_KEY = `attack-patterns-${stixDomainObjectId}`;
+  const { setState: setCreateRelationshipContext } = useContext(CreateRelationshipContext);
   const {
     viewStorage,
     helpers,
@@ -67,6 +69,14 @@ const StixDomainObjectAttackPatterns: FunctionComponent<StixDomainObjectAttackPa
     stixDomainObjectAttackPatternsKillChainQuery,
     { first: 500, ...queryPaginationOptions },
   );
+
+  useEffect(() => {
+    setCreateRelationshipContext({
+      stixCoreObjectTypes: ['Attack-Pattern'],
+      paginationOptions: queryPaginationOptions,
+    });
+  }, []);
+
   return (
     <div
       style={{

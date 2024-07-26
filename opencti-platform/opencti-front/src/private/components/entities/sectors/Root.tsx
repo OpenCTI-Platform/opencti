@@ -29,6 +29,8 @@ import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import SectorEdition from './SectorEdition';
 import useHelper from '../../../../utils/hooks/useHelper';
+import CreateRelationshipContextProvider from '../../common/menus/CreateRelationshipContextProvider';
+import CreateRelationshipButtonComponent from '../../common/menus/CreateRelationshipButtonComponent';
 
 const subscription = graphql`
   subscription RootSectorSubscription($id: ID!) {
@@ -103,7 +105,7 @@ const RootSector = ({ sectorId, queryRef }: RootSectorProps) => {
   const paddingRight = getPaddingRight(location.pathname, sectorId, '/dashboard/entities/sectors');
   const link = `/dashboard/entities/sectors/${sectorId}/knowledge`;
   return (
-    <>
+    <CreateRelationshipContextProvider>
       {sector ? (
         <>
           <Routes>
@@ -148,6 +150,7 @@ const RootSector = ({ sectorId, queryRef }: RootSectorProps) => {
                   <SectorEdition sectorId={sector.id} />
                 </Security>
               )}
+              RelateComponent={CreateRelationshipButtonComponent}
             />
             <Box
               sx={{
@@ -295,7 +298,7 @@ const RootSector = ({ sectorId, queryRef }: RootSectorProps) => {
       ) : (
         <ErrorNotFound />
       )}
-    </>
+    </CreateRelationshipContextProvider>
   );
 };
 const Root = () => {

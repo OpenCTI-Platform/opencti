@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent, useContext, useEffect, useState } from 'react';
 import { graphql, PreloadedQuery, useQueryLoader } from 'react-relay';
 import Tooltip from '@mui/material/Tooltip';
 import { FileDownloadOutlined, InvertColorsOffOutlined, ViewColumnOutlined } from '@mui/icons-material';
@@ -40,6 +40,8 @@ import { useFormatter } from '../../../../components/i18n';
 import { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
 import { UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
 import usePreloadedFragment from '../../../../utils/hooks/usePreloadedFragment';
+import useHelper from '../../../../utils/hooks/useHelper';
+import { CreateRelationshipContext } from '../menus/CreateRelationshipContextProvider';
 
 export const stixDomainObjectAttackPatternsKillChainQuery = graphql`
   query StixDomainObjectAttackPatternsKillChainQuery(
@@ -102,6 +104,9 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
   killChainDataQueryRef,
 }) => {
   const { t_i18n } = useFormatter();
+  const { setState: setCreateRelationshipContext } = useContext(CreateRelationshipContext);
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const [currentColorsReversed, setCurrentColorsReversed] = useState(false);
   const [targetEntities, setTargetEntities] = useState<TargetEntity[]>([]);
   const [selectedKillChain, setSelectedKillChain] = useState('mitre-attack');
@@ -112,6 +117,11 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
   const refetch = React.useCallback(() => {
     loadQuery(paginationOptions, { fetchPolicy: 'store-and-network' });
   }, [queryRef]);
+  useEffect(() => {
+    setCreateRelationshipContext({
+      onCreate: refetch,
+    });
+  }, []);
 
   const handleToggleColorsReversed = () => {
     setCurrentColorsReversed(!currentColorsReversed);
@@ -426,19 +436,21 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
             coursesOfAction={true}
           />
         )}
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <StixCoreRelationshipCreationFromEntity
-            entityId={stixDomainObjectId}
-            isRelationReversed={false}
-            paddingRight={220}
-            onCreate={refetch}
-            targetStixDomainObjectTypes={['Attack-Pattern']}
-            paginationOptions={paginationOptions}
-            targetEntities={targetEntities}
-            defaultStartTime={defaultStartTime}
-            defaultStopTime={defaultStopTime}
-          />
-        </Security>
+        {!isFABReplaced && (
+          <Security needs={[KNOWLEDGE_KNUPDATE]}>
+            <StixCoreRelationshipCreationFromEntity
+              entityId={stixDomainObjectId}
+              isRelationReversed={false}
+              paddingRight={220}
+              onCreate={refetch}
+              targetStixDomainObjectTypes={['Attack-Pattern']}
+              paginationOptions={paginationOptions}
+              targetEntities={targetEntities}
+              defaultStartTime={defaultStartTime}
+              defaultStopTime={defaultStopTime}
+            />
+          </Security>
+        )}
         {currentView !== 'matrix-in-line' && <Security needs={[KNOWLEDGE_KNGETEXPORT]}>
           <StixCoreObjectsExports
             open={openExports}

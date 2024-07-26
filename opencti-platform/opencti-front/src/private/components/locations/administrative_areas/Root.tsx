@@ -31,6 +31,8 @@ import AdministrativeAreaEdition from './AdministrativeAreaEdition';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import useHelper from '../../../../utils/hooks/useHelper';
+import CreateRelationshipContextProvider from '../../common/menus/CreateRelationshipContextProvider';
+import CreateRelationshipButtonComponent from '../../common/menus/CreateRelationshipButtonComponent';
 
 const subscription = graphql`
   subscription RootAdministrativeAreasSubscription($id: ID!) {
@@ -96,7 +98,7 @@ const RootAdministrativeAreaComponent = ({ queryRef, administrativeAreaId }) => 
   const link = `/dashboard/locations/administrative_areas/${administrativeAreaId}/knowledge`;
   const paddingRight = getPaddingRight(location.pathname, administrativeArea?.id, '/dashboard/locations/administrative_areas');
   return (
-    <>
+    <CreateRelationshipContextProvider>
       {administrativeArea ? (
         <>
           <Routes>
@@ -146,6 +148,7 @@ const RootAdministrativeAreaComponent = ({ queryRef, administrativeAreaId }) => 
                   />
                 </Security>
               )}
+              RelateComponent={CreateRelationshipButtonComponent}
               enableQuickSubscription={true}
               isOpenctiAlias={true}
             />
@@ -272,7 +275,7 @@ const RootAdministrativeAreaComponent = ({ queryRef, administrativeAreaId }) => 
       ) : (
         <ErrorNotFound />
       )}
-    </>
+    </CreateRelationshipContextProvider>
   );
 };
 
