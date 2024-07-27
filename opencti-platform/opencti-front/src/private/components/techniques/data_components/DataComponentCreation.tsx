@@ -9,7 +9,7 @@ import { FormikConfig, FormikHelpers } from 'formik/dist/types';
 import { Dialog, DialogContent } from '@mui/material';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import DialogTitle from '@mui/material/DialogTitle';
-import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
+import Drawer, { DrawerControlledDialProps, DrawerVariant } from '@components/common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
 import { handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
@@ -28,6 +28,7 @@ import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import { DataComponentCreationMutation, DataComponentCreationMutation$variables } from './__generated__/DataComponentCreationMutation.graphql';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import useHelper from '../../../../utils/hooks/useHelper';
 import useBulkCommit from '../../../../utils/hooks/useBulkCommit';
 import { splitMultilines } from '../../../../utils/String';
@@ -104,7 +105,11 @@ export const DataComponentCreationForm: FunctionComponent<DataComponentFormProps
     basicShape,
   );
 
-  const [commit] = useApiMutation<DataComponentCreationMutation>(dataComponentMutation);
+  const [commit] = useApiMutation<DataComponentCreationMutation>(
+    dataComponentMutation,
+    undefined,
+    { successMessage: `${t_i18n('entity_Data-Component')} ${t_i18n('successfully created')}` },
+  );
   const {
     bulkCommit,
     bulkCount,
@@ -327,7 +332,7 @@ const DataComponentCreation: FunctionComponent<{
   const { isFeatureEnable } = useHelper();
   const { t_i18n } = useFormatter();
   const [bulkOpen, setBulkOpen] = useState(false);
-
+  const isFABReplaced = isFeatureEnable('FAB_REPLACED');
   const [open, setOpen] = useState(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
@@ -337,15 +342,22 @@ const DataComponentCreation: FunctionComponent<{
     paginationOptions,
     'dataComponentAdd',
   );
-
+  const CreateDataComponentControlledDial = (props: DrawerControlledDialProps) => (
+    <CreateEntityControlledDial entityType='Data-Component' {...props} />
+  );
+  const CreateDataComponentControlledDialContextual = CreateDataComponentControlledDial({
+    onOpen: handleOpen,
+    onClose: () => {},
+  });
   const renderClassic = () => (
     <Drawer
       title={t_i18n('Create a data component')}
-      variant={DrawerVariant.create}
+      variant={isFABReplaced ? undefined : DrawerVariant.create}
       header={isFeatureEnable('BULK_ENTITIES')
         ? <BulkTextModalButton onClick={() => setBulkOpen(true)} />
         : <></>
       }
+      controlledDial={isFABReplaced ? CreateDataComponentControlledDial : undefined}
     >
       {({ onClose }) => (
         <DataComponentCreationForm
@@ -359,22 +371,29 @@ const DataComponentCreation: FunctionComponent<{
       )}
     </Drawer>
   );
-
   const renderContextual = () => (
     <div style={{ display: display ? 'block' : 'none' }}>
-      <Fab
-        onClick={handleOpen}
-        color="secondary"
-        aria-label="Add"
-        style={{
-          position: 'fixed',
-          bottom: 30,
-          right: 30,
-          zIndex: 2000,
-        }}
-      >
-        <Add />
-      </Fab>
+      {isFABReplaced
+        ? (
+          <div style={{ marginTop: '5px' }}>
+            {CreateDataComponentControlledDialContextual}
+          </div>
+        ) : (
+          <Fab
+            onClick={handleOpen}
+            color="secondary"
+            aria-label="Add"
+            style={{
+              position: 'fixed',
+              bottom: 30,
+              right: 30,
+              zIndex: 2000,
+            }}
+          >
+            <Add />
+          </Fab>
+        )
+      }
       <Dialog open={open} onClose={handleClose} PaperProps={{ elevation: 1 }}>
         <DialogTitle>
           {t_i18n('Create a data component')}

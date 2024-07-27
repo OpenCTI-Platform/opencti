@@ -5,7 +5,7 @@ import * as Yup from 'yup';
 import { graphql } from 'react-relay';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { FormikConfig } from 'formik/dist/types';
-import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
+import Drawer, { DrawerControlledDialProps, DrawerVariant } from '@components/common/drawer/Drawer';
 import ConfidenceField from '@components/common/form/ConfidenceField';
 import { useFormatter } from '../../../../components/i18n';
 import { handleErrorInForm } from '../../../../relay/environment';
@@ -25,6 +25,7 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import useHelper from '../../../../utils/hooks/useHelper';
 import useBulkCommit from '../../../../utils/hooks/useBulkCommit';
 import { splitMultilines } from '../../../../utils/String';
@@ -98,7 +99,11 @@ export const IndividualCreationForm: FunctionComponent<IndividualFormProps> = ({
   };
   const individualValidator = useSchemaCreationValidation(INDIVIDUAL_TYPE, basicShape);
 
-  const [commit] = useApiMutation<IndividualCreationMutation>(individualMutation);
+  const [commit] = useApiMutation<IndividualCreationMutation>(
+    individualMutation,
+    undefined,
+    { successMessage: `${t_i18n('entity_Individual')} ${t_i18n('successfully created')}` },
+  );
   const {
     bulkCommit,
     bulkCount,
@@ -309,21 +314,26 @@ const IndividualCreation = ({ paginationOptions }: {
   const { isFeatureEnable } = useHelper();
   const { t_i18n } = useFormatter();
   const [bulkOpen, setBulkOpen] = useState(false);
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const updater = (store: RecordSourceSelectorProxy) => insertNode(
     store,
     'Pagination_individuals',
     paginationOptions,
     'individualAdd',
   );
+  const CreateIndividualControlledDial = (props: DrawerControlledDialProps) => (
+    <CreateEntityControlledDial entityType='Individual' {...props} />
+  );
 
   return (
     <Drawer
       title={t_i18n('Create a individual')}
-      variant={DrawerVariant.create}
+      variant={isFABReplaced ? undefined : DrawerVariant.create}
       header={isFeatureEnable('BULK_ENTITIES')
         ? <BulkTextModalButton onClick={() => setBulkOpen(true)} />
         : <></>
       }
+      controlledDial={isFABReplaced ? CreateIndividualControlledDial : undefined}
     >
       {({ onClose }) => (
         <IndividualCreationForm

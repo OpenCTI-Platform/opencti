@@ -11,6 +11,8 @@ import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import StixCoreRelationship from '@components/common/stix_core_relationships/StixCoreRelationship';
 import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
+import Security from 'src/utils/Security';
+import { KNOWLEDGE_KNUPDATE } from 'src/utils/hooks/useGranted';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
@@ -26,6 +28,7 @@ import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 import useGranted, { KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE } from '../../../../utils/hooks/useGranted';
 import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
+import FeedbackEdition from './FeedbackEdition';
 
 const subscription = graphql`
   subscription RootFeedbackSubscription($id: ID!) {
@@ -115,6 +118,7 @@ const RootFeedbackComponent = ({ queryRef, caseId }) => {
   } = usePreloadedQuery<RootFeedbackQuery>(feedbackQuery, queryRef);
   const paddingRight = getPaddingRight(location.pathname, feedbackData?.id, '/dashboard/cases/feedbacks');
   const canManage = feedbackData?.currentUserAccessRight === 'admin';
+  const canEdit = canManage || feedbackData.currentUserAccessRight === 'edit';
   return (
     <>
       {feedbackData ? (
@@ -128,6 +132,9 @@ const RootFeedbackComponent = ({ queryRef, caseId }) => {
           <ContainerHeader
             container={feedbackData}
             PopoverComponent={<FeedbackPopover id={feedbackData.id} />}
+            EditComponent={<Security needs={[KNOWLEDGE_KNUPDATE]} hasAccess={canEdit}>
+              <FeedbackEdition feedbackId={feedbackData.id} />
+            </Security>}
             enableSuggestions={false}
             disableSharing={true}
             enableQuickSubscription

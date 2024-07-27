@@ -5,7 +5,7 @@ import * as Yup from 'yup';
 import { graphql } from 'react-relay';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { FormikConfig } from 'formik/dist/types';
-import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
+import Drawer, { DrawerControlledDialProps, DrawerVariant } from '@components/common/drawer/Drawer';
 import ConfidenceField from '@components/common/form/ConfidenceField';
 import { useFormatter } from '../../../../components/i18n';
 import { handleErrorInForm } from '../../../../relay/environment';
@@ -24,6 +24,7 @@ import { SectorsLinesPaginationQuery$variables } from './__generated__/SectorsLi
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import useHelper from '../../../../utils/hooks/useHelper';
 import useBulkCommit from '../../../../utils/hooks/useBulkCommit';
 import { splitMultilines } from '../../../../utils/String';
@@ -116,7 +117,11 @@ export const SectorCreationForm: FunctionComponent<SectorFormProps> = ({
   };
   const sectorValidator = useSchemaCreationValidation(SECTOR_TYPE, basicShape);
 
-  const [commit] = useApiMutation<SectorCreationMutation>(sectorMutation);
+  const [commit] = useApiMutation<SectorCreationMutation>(
+    sectorMutation,
+    undefined,
+    { successMessage: `${t_i18n('entity_Sector')} ${t_i18n('successfully created')}` },
+  );
   const {
     bulkCommit,
     bulkCount,
@@ -322,16 +327,21 @@ const SectorCreation = ({
   const { isFeatureEnable } = useHelper();
   const { t_i18n } = useFormatter();
   const [bulkOpen, setBulkOpen] = useState(false);
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_sectors', paginationOptions, 'sectorAdd');
 
+  const CreateSectorControlledDial = (props: DrawerControlledDialProps) => (
+    <CreateEntityControlledDial entityType='Sector' {...props} />
+  );
   return (
     <Drawer
       title={t_i18n('Create a sector')}
-      variant={DrawerVariant.create}
+      variant={isFABReplaced ? undefined : DrawerVariant.create}
       header={isFeatureEnable('BULK_ENTITIES')
         ? <BulkTextModalButton onClick={() => setBulkOpen(true)} />
         : <></>
       }
+      controlledDial={isFABReplaced ? CreateSectorControlledDial : undefined}
     >
       {({ onClose }) => (
         <SectorCreationForm

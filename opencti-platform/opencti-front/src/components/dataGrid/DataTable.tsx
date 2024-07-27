@@ -36,9 +36,10 @@ type OCTIDataTableProps = Pick<DataTableProps, 'dataColumns'
   availableRelationFilterTypes?: FilterIconButtonProps['availableRelationFilterTypes']
   availableEntityTypes?: string[]
   availableRelationshipTypes?: string[]
-  searchContextFinal?: { entityTypes: string[]; elementId?: string[] | undefined; } | undefined
+  searchContextFinal?: { entityTypes: string[]; elementId?: string[] }
   exportContext?: { entity_type: string, entity_id?: string }
   additionalHeaderButtons?: ReactNode[]
+  createButton?: ReactNode
   currentView?: string
 };
 

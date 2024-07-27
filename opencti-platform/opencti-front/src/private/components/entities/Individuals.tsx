@@ -1,6 +1,7 @@
 import React from 'react';
 import { IndividualsLinesPaginationQuery, IndividualsLinesPaginationQuery$variables } from '@components/entities/individuals/__generated__/IndividualsLinesPaginationQuery.graphql';
 import { IndividualLineDummy } from '@components/entities/individuals/IndividualLine';
+import useHelper from 'src/utils/hooks/useHelper';
 import ListLines from '../../../components/list_lines/ListLines';
 import IndividualsLines, { individualsLinesQuery } from './individuals/IndividualsLines';
 import IndividualCreation from './individuals/IndividualCreation';
@@ -16,6 +17,8 @@ const LOCAL_STORAGE_KEY = 'individuals';
 
 const Individuals = () => {
   const { t_i18n } = useFormatter();
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<IndividualsLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY,
     {
@@ -80,6 +83,9 @@ const Individuals = () => {
         filters={filters}
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
+        createButton={isFABReplaced && <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <IndividualCreation paginationOptions={paginationOptions} />
+        </Security>}
       >
         {queryRef && (
           <React.Suspense
@@ -113,9 +119,11 @@ const Individuals = () => {
     <>
       <Breadcrumbs variant="list" elements={[{ label: t_i18n('Entities') }, { label: t_i18n('Individuals'), current: true }]} />
       {renderLines()}
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
-        <IndividualCreation paginationOptions={paginationOptions} />
-      </Security>
+      {!isFABReplaced
+        && <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <IndividualCreation paginationOptions={paginationOptions} />
+        </Security>
+      }
     </>
   );
 };

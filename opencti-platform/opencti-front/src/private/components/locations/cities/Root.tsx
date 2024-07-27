@@ -26,6 +26,9 @@ import { useFormatter } from '../../../../components/i18n';
 import CityPopover from './CityPopover';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
+import CityEdition from './CityEdition';
+import Security from '../../../../utils/Security';
+import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 
 const subscription = graphql`
   subscription RootCitiesSubscription($id: ID!) {
@@ -127,6 +130,11 @@ const RootCityComponent = ({ queryRef, cityId }) => {
               disableSharing={true}
               stixDomainObject={city}
               PopoverComponent={<CityPopover id={city.id} />}
+              EditComponent={(
+                <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                  <CityEdition cityId={city.id} />
+                </Security>
+              )}
               enableQuickSubscription={true}
               isOpenctiAlias={true}
             />

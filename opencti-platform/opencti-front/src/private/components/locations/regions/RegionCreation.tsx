@@ -6,7 +6,7 @@ import { graphql } from 'react-relay';
 import { FormikConfig } from 'formik/dist/types';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import CustomFileUploader from '@components/common/files/CustomFileUploader';
-import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
+import Drawer, { DrawerControlledDialProps, DrawerVariant } from '@components/common/drawer/Drawer';
 import ConfidenceField from '@components/common/form/ConfidenceField';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
@@ -23,6 +23,7 @@ import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySe
 import { RegionCreationMutation, RegionCreationMutation$variables } from './__generated__/RegionCreationMutation.graphql';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import useHelper from '../../../../utils/hooks/useHelper';
 import useBulkCommit from '../../../../utils/hooks/useBulkCommit';
 import { splitMultilines } from '../../../../utils/String';
@@ -92,7 +93,11 @@ export const RegionCreationForm: FunctionComponent<RegionFormProps> = ({
   };
   const regionValidator = useSchemaCreationValidation(REGION_TYPE, basicShape);
 
-  const [commit] = useApiMutation<RegionCreationMutation>(regionMutation);
+  const [commit] = useApiMutation<RegionCreationMutation>(
+    regionMutation,
+    undefined,
+    { successMessage: `${t_i18n('entity_Region')} ${t_i18n('successfully created')}` },
+  );
   const {
     bulkCommit,
     bulkCount,
@@ -290,16 +295,21 @@ const RegionCreation = ({
   const { isFeatureEnable } = useHelper();
   const { t_i18n } = useFormatter();
   const [bulkOpen, setBulkOpen] = useState(false);
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_regions', paginationOptions, 'regionAdd');
 
+  const CreateRegionControlledDial = (props: DrawerControlledDialProps) => (
+    <CreateEntityControlledDial entityType='Region' {...props} />
+  );
   return (
     <Drawer
       title={t_i18n('Create a region')}
-      variant={DrawerVariant.create}
+      variant={isFABReplaced ? undefined : DrawerVariant.create}
       header={isFeatureEnable('BULK_ENTITIES')
         ? <BulkTextModalButton onClick={() => setBulkOpen(true)} />
         : <></>
       }
+      controlledDial={isFABReplaced ? CreateRegionControlledDial : undefined}
     >
       {({ onClose }) => (
         <RegionCreationForm

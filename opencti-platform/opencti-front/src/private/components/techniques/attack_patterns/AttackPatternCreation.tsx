@@ -1,4 +1,4 @@
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useState } from 'react';
 import { Field, Form, Formik } from 'formik';
 import Button from '@mui/material/Button';
 import * as Yup from 'yup';
@@ -6,8 +6,11 @@ import { graphql } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { FormikConfig } from 'formik/dist/types';
-import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
+import Drawer, { DrawerControlledDialProps, DrawerVariant } from '@components/common/drawer/Drawer';
 import ConfidenceField from '@components/common/form/ConfidenceField';
+import useHelper from 'src/utils/hooks/useHelper';
+import { Dialog, DialogContent, DialogTitle, Fab } from '@mui/material';
+import { Add } from '@mui/icons-material';
 import { useFormatter } from '../../../../components/i18n';
 import { handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
@@ -27,6 +30,7 @@ import { AttackPatternsLinesPaginationQuery$variables } from './__generated__/At
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -108,6 +112,7 @@ export const AttackPatternCreationForm: FunctionComponent<AttackPatternFormProps
   onCompleted,
   defaultCreatedBy,
   defaultMarkingDefinitions,
+  inputValue,
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
@@ -123,6 +128,8 @@ export const AttackPatternCreationForm: FunctionComponent<AttackPatternFormProps
 
   const [commit] = useApiMutation<AttackPatternCreationMutation>(
     attackPatternMutation,
+    undefined,
+    { successMessage: `${t_i18n('entity_Attack-Pattern')} ${t_i18n('successfully created')}` },
   );
 
   const onSubmit: FormikConfig<AttackPatternAddInput>['onSubmit'] = (
@@ -171,7 +178,7 @@ export const AttackPatternCreationForm: FunctionComponent<AttackPatternFormProps
   const initialValues = useDefaultValues(
     ATTACK_PATTERN_TYPE,
     {
-      name: '',
+      name: inputValue ?? '',
       x_mitre_id: '',
       description: '',
       confidence: undefined,
@@ -273,22 +280,40 @@ export const AttackPatternCreationForm: FunctionComponent<AttackPatternFormProps
 };
 
 const AttackPatternCreation = ({
+  contextual,
+  display,
+  inputValue,
   paginationOptions,
 }: {
+  contextual?: boolean;
+  display?: boolean;
+  inputValue?: string;
   paginationOptions: AttackPatternsLinesPaginationQuery$variables;
 }) => {
   const { t_i18n } = useFormatter();
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
+  const [open, setOpen] = useState<boolean>(false);
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
   const updater = (store: RecordSourceSelectorProxy) => insertNode(
     store,
     'Pagination_attackPatterns',
     paginationOptions,
     'attackPatternAdd',
   );
-
-  return (
+  const CreateAttackPatternControlledDial = (props: DrawerControlledDialProps) => (
+    <CreateEntityControlledDial entityType='Attack-Pattern' {...props} />
+  );
+  const CreateAttackPatternControlledDialContextual = CreateAttackPatternControlledDial({
+    onOpen: handleOpen,
+    onClose: () => {},
+  });
+  const renderClassic = () => (
     <Drawer
       title={t_i18n('Create an attack pattern')}
-      variant={DrawerVariant.create}
+      variant={isFABReplaced ? undefined : DrawerVariant.create}
+      controlledDial={isFABReplaced ? CreateAttackPatternControlledDial : undefined}
     >
       {({ onClose }) => (
         <AttackPatternCreationForm
@@ -299,6 +324,50 @@ const AttackPatternCreation = ({
       )}
     </Drawer>
   );
+
+  const renderContextual = () => (
+    <div style={{
+      display: display ? 'block' : 'none',
+    }}
+    >
+      {isFABReplaced
+        ? (
+          <div style={{ marginTop: '5px' }}>
+            {CreateAttackPatternControlledDialContextual}
+          </div>
+        ) : (
+          <Fab
+            onClick={handleOpen}
+            color="secondary"
+            aria-label="Add"
+            style={{
+              position: 'fixed',
+              bottom: 30,
+              right: 30,
+              zIndex: 2000,
+            }}
+          >
+            <Add />
+          </Fab>
+        )
+      }
+      <Dialog open={open} onClose={handleClose} PaperProps={{ elevation: 1 }}>
+        <DialogTitle>{t_i18n('Create an attack pattern')}</DialogTitle>
+        <DialogContent>
+          <AttackPatternCreationForm
+            inputValue={inputValue}
+            updater={updater}
+            onCompleted={handleClose}
+            onReset={handleClose}
+          />
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+
+  return contextual
+    ? renderContextual()
+    : renderClassic();
 };
 
 export default AttackPatternCreation;

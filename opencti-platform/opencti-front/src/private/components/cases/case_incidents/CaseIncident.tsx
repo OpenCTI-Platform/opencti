@@ -4,6 +4,7 @@ import React, { FunctionComponent, useRef } from 'react';
 import { useFragment } from 'react-relay';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
+import useHelper from 'src/utils/hooks/useHelper';
 import { useFormatter } from '../../../../components/i18n';
 import { convertMarkings } from '../../../../utils/edition';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
@@ -50,6 +51,8 @@ const CaseIncidentComponent: FunctionComponent<CaseIncidentProps> = ({ data, ena
   const { t_i18n } = useFormatter();
   const ref = useRef(null);
   const caseIncidentData = useFragment(caseFragment, data);
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   const LOCAL_STORAGE_KEY_CASE_TASKS = `cases-${caseIncidentData.id}-caseTask`;
 
@@ -193,9 +196,11 @@ const CaseIncidentComponent: FunctionComponent<CaseIncidentProps> = ({ data, ena
           />
         </Grid>
       </Grid>
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
-        <CaseIncidentEdition caseId={caseIncidentData.id} />
-      </Security>
+      {!isFABReplaced && (
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <CaseIncidentEdition caseId={caseIncidentData.id} />
+        </Security>
+      )}
     </>
   );
 };

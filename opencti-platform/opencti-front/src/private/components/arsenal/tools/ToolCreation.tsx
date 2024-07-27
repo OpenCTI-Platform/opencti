@@ -5,7 +5,7 @@ import * as Yup from 'yup';
 import { graphql } from 'react-relay';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { FormikConfig } from 'formik/dist/types';
-import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
+import Drawer, { DrawerControlledDialProps, DrawerVariant } from '@components/common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
 import { handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
@@ -26,6 +26,7 @@ import { ToolCreationMutation, ToolCreationMutation$variables } from './__genera
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import useHelper from '../../../../utils/hooks/useHelper';
 import useBulkCommit from '../../../../utils/hooks/useBulkCommit';
 import { splitMultilines } from '../../../../utils/String';
@@ -98,7 +99,11 @@ export const ToolCreationForm: FunctionComponent<ToolFormProps> = ({
   };
   const toolValidator = useSchemaCreationValidation(TOOL_TYPE, basicShape);
 
-  const [commit] = useApiMutation<ToolCreationMutation>(toolMutation);
+  const [commit] = useApiMutation<ToolCreationMutation>(
+    toolMutation,
+    undefined,
+    { successMessage: `${t_i18n('entity_Tool')} ${t_i18n('successfully created')}` },
+  );
   const {
     bulkCommit,
     bulkCount,
@@ -303,6 +308,10 @@ export const ToolCreationForm: FunctionComponent<ToolFormProps> = ({
   );
 };
 
+const CreateToolControlledDial = (props: DrawerControlledDialProps) => (
+  <CreateEntityControlledDial entityType='Tool' {...props} />
+);
+
 const ToolCreation = ({
   paginationOptions,
 }: {
@@ -311,16 +320,18 @@ const ToolCreation = ({
   const { isFeatureEnable } = useHelper();
   const { t_i18n } = useFormatter();
   const [bulkOpen, setBulkOpen] = useState(false);
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_tools', paginationOptions, 'toolAdd');
 
   return (
     <Drawer
       title={t_i18n('Create a tool')}
-      variant={DrawerVariant.create}
+      variant={isFABReplaced ? undefined : DrawerVariant.create}
       header={isFeatureEnable('BULK_ENTITIES')
         ? <BulkTextModalButton onClick={() => setBulkOpen(true)} />
         : <></>
       }
+      controlledDial={isFABReplaced ? CreateToolControlledDial : undefined}
     >
       {({ onClose }) => (
         <ToolCreationForm

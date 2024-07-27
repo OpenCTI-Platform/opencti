@@ -23,6 +23,9 @@ import EntityStixSightingRelationships from '../../events/stix_sighting_relation
 import inject18n from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
+import PositionEdition from './PositionEdition';
+import Security from '../../../../utils/Security';
+import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 
 const subscription = graphql`
   subscription RootPositionsSubscription($id: ID!) {
@@ -141,6 +144,11 @@ class RootPosition extends Component {
                         disableSharing={true}
                         stixDomainObject={props.position}
                         PopoverComponent={<PositionPopover />}
+                        EditComponent={(
+                          <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                            <PositionEdition positionId={position.id} />
+                          </Security>
+                        )}
                         enableQuickSubscription={true}
                         isOpenctiAlias={true}
                       />

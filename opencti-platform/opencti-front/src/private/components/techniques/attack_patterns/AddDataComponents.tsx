@@ -19,10 +19,6 @@ const useStyles = makeStyles(() => ({
     float: 'left',
     marginTop: -15,
   },
-  search: {
-    marginLeft: 'auto',
-    marginRight: ' 20px',
-  },
 }));
 
 const AddDataComponents: FunctionComponent<{
@@ -62,10 +58,24 @@ const AddDataComponents: FunctionComponent<{
         onClose={handleClose}
         title={t_i18n('Add data components')}
         header={(
-          <div className={classes.search}>
+          <div
+            style={{
+              marginLeft: 'auto',
+              marginRight: '20px',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'flex-end',
+            }}
+          >
             <SearchInput
               variant="inDrawer"
               onSubmit={handleSearch}
+            />
+            <DataComponentCreation
+              contextual={true}
+              display={open}
+              inputValue={search}
+              paginationOptions={paginationOptions}
             />
           </div>
         )}
@@ -81,12 +91,6 @@ const AddDataComponents: FunctionComponent<{
           </React.Suspense>
         )}
       </Drawer>
-      <DataComponentCreation
-        contextual={true}
-        display={open}
-        inputValue={search}
-        paginationOptions={paginationOptions}
-      />
     </>
   );
 };

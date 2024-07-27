@@ -44,6 +44,7 @@ const useStyles = makeStyles(() => ({
 export enum LoaderVariant {
   container = 'container',
   inElement = 'inElement',
+  inline = 'inline',
 }
 
 interface LoaderProps {
@@ -68,6 +69,22 @@ const Loader: FunctionComponent<LoaderProps> = ({
   }
 
   const hasFiligranLoader = loaderEnabled && (isNotEmptyField(settings?.enterprise_edition) || !settings?.platform_whitemark);
+
+  if (variant === 'inline') {
+    return (
+      <div style={{ display: 'inline-flex', width: '4rem', height: 35, alignItems: 'center', justifyContent: 'center' }}>
+        {hasFiligranLoader ? (
+          <FiligranLoader height={24} />
+        ) : (
+          <CircularProgress
+            size={24}
+            thickness={1}
+            className={classes.loaderCircle}
+          />
+        )}
+      </div>
+    );
+  }
 
   return (
     <div

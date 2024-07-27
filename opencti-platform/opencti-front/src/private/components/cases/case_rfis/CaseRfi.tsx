@@ -4,6 +4,7 @@ import React, { FunctionComponent, useRef } from 'react';
 import { useFragment } from 'react-relay';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
+import useHelper from 'src/utils/hooks/useHelper';
 import { convertMarkings } from '../../../../utils/edition';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
@@ -50,6 +51,8 @@ const CaseRfiComponent: FunctionComponent<CaseRfiProps> = ({ data, enableReferen
   const { t_i18n } = useFormatter();
   const ref = useRef(null);
   const caseRfiData = useFragment(caseFragment, data);
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   const LOCAL_STORAGE_KEY = `cases-${caseRfiData.id}-caseTask`;
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<CaseTasksLinesQuery$variables>(
@@ -181,9 +184,11 @@ const CaseRfiComponent: FunctionComponent<CaseRfiProps> = ({ data, enableReferen
           />
         </Grid>
       </Grid>
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
-        <CaseRfiEdition caseId={caseRfiData.id} />
-      </Security>
+      {!isFABReplaced && (
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <CaseRfiEdition caseId={caseRfiData.id} />
+        </Security>
+      )}
     </>
   );
 };

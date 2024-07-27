@@ -16,10 +16,6 @@ const styles = () => ({
     float: 'left',
     marginTop: -15,
   },
-  search: {
-    marginLeft: 'auto',
-    marginRight: ' 20px',
-  },
 });
 
 class AddSubNarrative extends Component {
@@ -61,38 +57,43 @@ class AddSubNarrative extends Component {
           onClose={this.handleClose.bind(this)}
           title={t('Add subnarratives')}
           header={(
-            <div className={classes.search}>
+            <div style={{
+              marginLeft: 'auto',
+              marginRight: '20px',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'flex-end',
+            }}
+            >
               <SearchInput
                 variant="inDrawer"
                 onSubmit={this.handleSearch.bind(this)}
               />
+              <NarrativeCreation
+                display={this.state.open}
+                contextual={true}
+                inputValue={this.state.search}
+                paginationOptions={paginationOptions}
+              />
             </div>
           )}
         >
-          <>
-            <QueryRenderer
-              query={addSubNarrativesLinesQuery}
-              variables={{
-                search: this.state.search,
-                count: 20,
-              }}
-              render={({ props }) => {
-                return (
-                  <AddSubNarrativesLines
-                    narrative={narrative}
-                    narrativeSubNarratives={narrativeSubNarratives}
-                    data={props}
-                  />
-                );
-              }}
-            />
-            <NarrativeCreation
-              display={this.state.open}
-              contextual={true}
-              inputValue={this.state.search}
-              paginationOptions={paginationOptions}
-            />
-          </>
+          <QueryRenderer
+            query={addSubNarrativesLinesQuery}
+            variables={{
+              search: this.state.search,
+              count: 20,
+            }}
+            render={({ props }) => {
+              return (
+                <AddSubNarrativesLines
+                  narrative={narrative}
+                  narrativeSubNarratives={narrativeSubNarratives}
+                  data={props}
+                />
+              );
+            }}
+          />
         </Drawer>
       </div>
     );

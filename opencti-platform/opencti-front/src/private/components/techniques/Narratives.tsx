@@ -27,7 +27,7 @@ const LOCAL_STORAGE_KEY = 'narratives';
 const Narratives: FunctionComponent = () => {
   const { t_i18n } = useFormatter();
   const { isFeatureEnable } = useHelper();
-  const FAB_REPLACED = isFeatureEnable('FAB_REPLACEMENT');
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<NarrativesLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY,
     {
@@ -184,7 +184,7 @@ const Narratives: FunctionComponent = () => {
           paginationOptions={queryPaginationOptions}
           numberOfElements={numberOfElements}
           iconExtension={true}
-          createButton={FAB_REPLACED && <Security needs={[KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNPARTICIPATE]}>
+          createButton={isFABReplaced && <Security needs={[KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNPARTICIPATE]}>
             <NarrativeCreation paginationOptions={queryPaginationOptions} />
           </Security>}
         >
@@ -232,11 +232,11 @@ const Narratives: FunctionComponent = () => {
       <Breadcrumbs variant="list" elements={[{ label: t_i18n('Techniques') }, { label: t_i18n('Narratives'), current: true }]} />
       {view === 'lines' ? renderLines() : ''}
       {view === 'subEntityLines' ? renderSubEntityLines() : ''}
-      {!FAB_REPLACED
-        && <Security needs={[KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNPARTICIPATE]}>
+      {!isFABReplaced && (
+        <Security needs={[KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNPARTICIPATE]}>
           <NarrativeCreation paginationOptions={queryPaginationOptions} />
         </Security>
-      }
+      )}
     </ExportContextProvider>
   );
 };

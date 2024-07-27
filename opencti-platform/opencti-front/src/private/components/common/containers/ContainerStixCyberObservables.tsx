@@ -68,7 +68,7 @@ ContainerStixCyberObservablesComponentProps
 > = ({ container, enableReferences }) => {
   const { t_i18n } = useFormatter();
   const { isFeatureEnable } = useHelper();
-  const FABReplaced = isFeatureEnable('FAB_REPLACEMENT');
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   const LOCAL_STORAGE_KEY = `container-${container.id}-stixCyberObservables`;
   const {
@@ -251,7 +251,7 @@ ContainerStixCyberObservablesComponentProps
               filters={filters}
               paginationOptions={queryPaginationOptions}
               availableEntityTypes={['Stix-Cyber-Observable']}
-              createButton={FABReplaced && <Security needs={[KNOWLEDGE_KNUPDATE]}>
+              createButton={isFABReplaced && <Security needs={[KNOWLEDGE_KNUPDATE]}>
                 <ContainerAddStixCoreObjectsInLine
                   containerId={container.id}
                   targetStixCoreObjectTypes={['Stix-Cyber-Observable']}

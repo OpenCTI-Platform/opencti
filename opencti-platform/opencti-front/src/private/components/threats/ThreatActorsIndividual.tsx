@@ -98,9 +98,11 @@ const ThreatActorsIndividual = () => {
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
         handleChangeView={dataTableEnabled ? helpers.handleChangeView : undefined}
-        createButton={isFABReplaced && <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <ThreatActorIndividualCreation paginationOptions={queryPaginationOptions} />
-        </Security>}
+        createButton={isFABReplaced && (
+          <Security needs={[KNOWLEDGE_KNUPDATE]}>
+            <ThreatActorIndividualCreation paginationOptions={queryPaginationOptions} />
+          </Security>
+        )}
       >
         {queryRef && (
           <React.Suspense
@@ -180,6 +182,11 @@ const ThreatActorsIndividual = () => {
                 </Tooltip>
               </ToggleButton>),
             ]}
+            createButton={isFABReplaced && (
+              <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                <ThreatActorIndividualCreation paginationOptions={queryPaginationOptions} />
+              </Security>
+            )}
           />
         )}
       </>
@@ -190,11 +197,11 @@ const ThreatActorsIndividual = () => {
     <>
       <Breadcrumbs variant="list" elements={[{ label: t_i18n('Threats') }, { label: t_i18n('Threat actors (individual)'), current: true }]} />
       {viewStorage.view !== 'lines' || !dataTableEnabled ? renderCards() : renderList()}
-      {!isFABReplaced
-        && <Security needs={[KNOWLEDGE_KNUPDATE]}>
+      {!isFABReplaced && (
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <ThreatActorIndividualCreation paginationOptions={queryPaginationOptions} />
         </Security>
-      }
+      )}
     </>
   );
 };

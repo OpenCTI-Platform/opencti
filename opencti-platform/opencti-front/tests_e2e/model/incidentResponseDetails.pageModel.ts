@@ -15,7 +15,7 @@ export default class IncidentResponseDetailsPage {
   }
 
   getEditButton() {
-    return this.page.getByLabel('Edit');
+    return this.page.getByLabel('Update', { exact: true });
   }
 
   goToOverviewTab() {

@@ -136,7 +136,7 @@ const ContainerStixDomainObjectsLines: FunctionComponent<ContainerStixDomainObje
   enableReferences,
 }) => {
   const { isFeatureEnable } = useHelper();
-  const FABReplaced = isFeatureEnable('FAB_REPLACEMENT');
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const { data, hasMore, loadMore, isLoadingMore } = usePreloadedPaginationFragment<
   ContainerStixDomainObjectsLinesQuery,
   ContainerStixDomainObjectsLines_container$key
@@ -176,7 +176,7 @@ const ContainerStixDomainObjectsLines: FunctionComponent<ContainerStixDomainObje
         onToggleEntity={onToggleEntity}
         enableReferences={enableReferences}
       />
-      {!FABReplaced && container && (
+      {!isFABReplaced && container && (
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <ContainerAddStixCoreObjects
             containerId={container.id}

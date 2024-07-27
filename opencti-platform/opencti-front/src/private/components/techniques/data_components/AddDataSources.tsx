@@ -19,10 +19,6 @@ const useStyles = makeStyles(() => ({
     float: 'left',
     marginTop: -15,
   },
-  search: {
-    marginLeft: 'auto',
-    marginRight: ' 20px',
-  },
 }));
 
 const AddDataSources: FunctionComponent<{ dataComponentId: string }> = ({
@@ -66,10 +62,23 @@ const AddDataSources: FunctionComponent<{ dataComponentId: string }> = ({
         onClose={handleClose}
         title={t_i18n('Add data sources')}
         header={(
-          <div className={classes.search}>
+          <div style={{
+            marginLeft: 'auto',
+            marginRight: '20px',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'flex-end',
+          }}
+          >
             <SearchInput
               variant="inDrawer"
               onSubmit={handleSearch}
+            />
+            <DataSourceCreation
+              contextual={true}
+              display={open}
+              inputValue={search}
+              paginationOptions={paginationOptions}
             />
           </div>
         )}
@@ -85,12 +94,6 @@ const AddDataSources: FunctionComponent<{ dataComponentId: string }> = ({
           </React.Suspense>
         )}
       </Drawer>
-      <DataSourceCreation
-        contextual={true}
-        display={open}
-        inputValue={search}
-        paginationOptions={paginationOptions}
-      />
     </div>
   );
 };

@@ -5,6 +5,7 @@ import {
 } from '@components/techniques/courses_of_action/__generated__/CoursesOfActionLinesPaginationQuery.graphql';
 import { CourseOfActionLineDummy } from '@components/techniques/courses_of_action/CourseOfActionLine';
 import CourseOfActionCreation from '@components/techniques/courses_of_action/CourseOfActionCreation';
+import useHelper from 'src/utils/hooks/useHelper';
 import ListLines from '../../../components/list_lines/ListLines';
 import CoursesOfActionLines, { coursesOfActionLinesQuery } from './courses_of_action/CoursesOfActionLines';
 import Security from '../../../utils/Security';
@@ -19,6 +20,8 @@ const LOCAL_STORAGE_KEY = 'coursesOfAction';
 
 const CoursesOfAction = () => {
   const { t_i18n } = useFormatter();
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<CoursesOfActionLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY,
     {
@@ -83,6 +86,9 @@ const CoursesOfAction = () => {
         filters={filters}
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
+        createButton={isFABReplaced && <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <CourseOfActionCreation paginationOptions={paginationOptions} />
+        </Security>}
       >
         {queryRef && (
           <React.Suspense
@@ -116,9 +122,11 @@ const CoursesOfAction = () => {
     <>
       <Breadcrumbs variant="list" elements={[{ label: t_i18n('Techniques') }, { label: t_i18n('Courses of action'), current: true }]} />
       {renderLines()}
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
-        <CourseOfActionCreation paginationOptions={paginationOptions} />
-      </Security>
+      {!isFABReplaced && (
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <CourseOfActionCreation paginationOptions={paginationOptions} />
+        </Security>
+      )}
     </>
   );
 };

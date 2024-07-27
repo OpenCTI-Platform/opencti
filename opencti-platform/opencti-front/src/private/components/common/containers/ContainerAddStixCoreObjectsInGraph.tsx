@@ -18,9 +18,9 @@ const ContainerAddStixCoreObjectsInGraph = (
   props: React.ComponentProps<typeof ContainerAddStixCoreObjects>,
 ) => {
   const { isFeatureEnable } = useHelper();
-  const FABReplaced = isFeatureEnable('FAB_REPLACEMENT');
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
-  return FABReplaced
+  return isFABReplaced
     ? <ContainerAddStixCoreObjectsInLine
         {...props}
       />
