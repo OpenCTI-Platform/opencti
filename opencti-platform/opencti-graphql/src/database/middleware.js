@@ -2914,7 +2914,6 @@ const createEntityRaw = async (context, user, rawInput, type, opts = {}) => {
     const [existingByIds, existingByHashed] = await Promise.all([existingByIdsPromise, existingByHashedPromise]);
     existingEntities.push(...R.uniqBy((e) => e.internal_id, [...existingByIds, ...existingByHashed]));
     // If existing entities have been found and type is a STIX Core Object
-    let dataEntity;
     let dataMessage;
     if (existingEntities.length > 0) {
       // We need to filter what we found with the user rights
@@ -2984,40 +2983,41 @@ const createEntityRaw = async (context, user, rawInput, type, opts = {}) => {
         return upsertElement(context, user, target, type, resolvedInput, { ...opts, locks: participantIds });
       }
       if (resolvedInput.stix_id && !existingEntities.map((n) => getInstanceIds(n)).flat().includes(resolvedInput.stix_id)) {
+        // Upsert others
         const target = R.head(filteredEntities);
         const resolvedStixIds = { ...target, x_opencti_stix_ids: [...target.x_opencti_stix_ids, resolvedInput.stix_id] };
         return upsertElement(context, user, target, type, resolvedStixIds, { ...opts, locks: participantIds });
       }
-      // If not we dont know what to do, just throw an exception.
-      throw UnsupportedError('Cant upsert entity. Too many entities resolved', { input, entityIds });
-    } else {
-      // Create the object
-      dataEntity = await buildEntityData(context, user, resolvedInput, type, opts);
-      // If file directly attached
-      if (!isEmptyField(resolvedInput.file)) {
-        const { filename } = await resolvedInput.file;
-        const isAutoExternal = entitySetting?.platform_entity_files_ref;
-        const path = `import/${type}/${dataEntity.element[ID_INTERNAL]}`;
-        const key = `${path}/${filename}`;
-        const meta = isAutoExternal ? { external_reference_id: generateStandardId(ENTITY_TYPE_EXTERNAL_REFERENCE, { url: `/storage/get/${key}` }) } : {};
-        const file_markings = resolvedInput.objectMarking?.map(({ id }) => id);
-        const { upload: file } = await uploadToStorage(context, user, path, input.file, { entity: dataEntity.element, file_markings, meta });
-        dataEntity.element = { ...dataEntity.element, x_opencti_files: [storeFileConverter(user, file)] };
-        // Add external references from files if necessary
-        if (isAutoExternal) {
-          // Create external ref + link to current entity
-          const createExternal = { source_name: file.name, url: `/storage/get/${file.id}`, fileId: file.id };
-          const externalRef = await createEntity(context, user, createExternal, ENTITY_TYPE_EXTERNAL_REFERENCE);
-          const newRefRel = buildInnerRelation(dataEntity.element, externalRef, RELATION_EXTERNAL_REFERENCE);
-          dataEntity.relations.push(...newRefRel);
-        }
-      }
-      if (opts.restore === true) {
-        dataMessage = generateRestoreMessage(dataEntity.element);
-      } else {
-        dataMessage = generateCreateMessage(dataEntity.element);
+      // Return the matching STIX IDs in others
+      return { element: R.head(filteredEntities.filter((n) => getInstanceIds(n).includes(resolvedInput.stix_id))), event: null, isCreation: false };
+    }
+    // Create the object
+    const dataEntity = await buildEntityData(context, user, resolvedInput, type, opts);
+    // If file directly attached
+    if (!isEmptyField(resolvedInput.file)) {
+      const { filename } = await resolvedInput.file;
+      const isAutoExternal = entitySetting?.platform_entity_files_ref;
+      const path = `import/${type}/${dataEntity.element[ID_INTERNAL]}`;
+      const key = `${path}/${filename}`;
+      const meta = isAutoExternal ? { external_reference_id: generateStandardId(ENTITY_TYPE_EXTERNAL_REFERENCE, { url: `/storage/get/${key}` }) } : {};
+      const file_markings = resolvedInput.objectMarking?.map(({ id }) => id);
+      const { upload: file } = await uploadToStorage(context, user, path, input.file, { entity: dataEntity.element, file_markings, meta });
+      dataEntity.element = { ...dataEntity.element, x_opencti_files: [storeFileConverter(user, file)] };
+      // Add external references from files if necessary
+      if (isAutoExternal) {
+        // Create external ref + link to current entity
+        const createExternal = { source_name: file.name, url: `/storage/get/${file.id}`, fileId: file.id };
+        const externalRef = await createEntity(context, user, createExternal, ENTITY_TYPE_EXTERNAL_REFERENCE);
+        const newRefRel = buildInnerRelation(dataEntity.element, externalRef, RELATION_EXTERNAL_REFERENCE);
+        dataEntity.relations.push(...newRefRel);
       }
     }
+    if (opts.restore === true) {
+      dataMessage = generateRestoreMessage(dataEntity.element);
+    } else {
+      dataMessage = generateCreateMessage(dataEntity.element);
+    }
+
     // Index the created element
     lock.signal.throwIfAborted();
     await indexCreatedElement(context, user, dataEntity);
