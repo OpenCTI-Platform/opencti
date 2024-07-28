@@ -837,7 +837,7 @@ const WorkbenchFileContentComponent = ({
     });
   };
 
-  const onSubmitApplyMarking = (values) => {
+  const onSubmitApplyMarking = (values, { resetForm }) => {
     const markingDefinitions = R.pluck('entity', values.objectMarking).map(
       (n) => ({
         ...n,
@@ -866,67 +866,41 @@ const WorkbenchFileContentComponent = ({
     } else {
       objectsToBeProcessed = objects.filter((n) => Object.keys(selectedElements || {}).includes(n.id));
     }
-    let finalStixDomainObjects = stixDomainObjects;
-    let finalStixCyberObservables = stixCyberObservables;
-    let finalStixCoreRelationships = stixCoreRelationships;
-    let finalStixSightings = stixSightings;
-    let finalContainers = containers;
-    if (currentTab === 0) {
-      finalStixDomainObjects = objectsToBeProcessed.map((n) => R.assoc(
-        'object_marking_refs',
-        R.uniq([
-          ...(n.object_marking_refs || []),
-          ...markingDefinitions.map((o) => o.id),
-        ]),
-        n,
-      ));
-    } else if (currentTab === 1) {
-      finalStixCyberObservables = objectsToBeProcessed.map((n) => R.assoc(
-        'object_marking_refs',
-        R.uniq([
-          ...(n.object_marking_refs || []),
-          ...markingDefinitions.map((o) => o.id),
-        ]),
-        n,
-      ));
-    } else if (currentTab === 2) {
-      finalStixCoreRelationships = objectsToBeProcessed.map((n) => R.assoc(
-        'object_marking_refs',
-        R.uniq([
-          ...(n.object_marking_refs || []),
-          ...markingDefinitions.map((o) => o.id),
-        ]),
-        n,
-      ));
-    } else if (currentTab === 3) {
-      finalStixSightings = objectsToBeProcessed.map((n) => R.assoc(
-        'object_marking_refs',
-        R.uniq([
-          ...(n.object_marking_refs || []),
-          ...markingDefinitions.map((o) => o.id),
-        ]),
-        n,
-      ));
-    } else if (currentTab === 4) {
-      finalContainers = objectsToBeProcessed.map((n) => R.assoc(
-        'object_marking_refs',
-        R.uniq([
-          ...(n.object_marking_refs || []),
-          ...markingDefinitions.map((o) => o.id),
-        ]),
-        n,
-      ));
-    }
-    setStixDomainObjects(
-      R.uniqBy(R.prop('id'), [
-        ...finalStixDomainObjects,
-        ...markingDefinitions,
+    const objectsToBeProccessedIds = objectsToBeProcessed.map((n) => n.id);
+    const filteredObjects = objects.filter((n) => !objectsToBeProccessedIds.includes(n.id));
+    const objectsToAdd = objectsToBeProcessed.map((n) => ({
+      ...n,
+      object_marking_refs: R.uniq([
+        ...(n.object_marking_refs || []),
+        ...markingDefinitions.map((o) => o.id),
       ]),
-    );
-    setStixCyberObservables(finalStixCyberObservables);
-    setStixCoreRelationships(finalStixCoreRelationships);
-    setStixSightings(finalStixSightings);
-    setContainers(finalContainers);
+    }));
+    const finalObjects = filteredObjects.concat(objectsToAdd);
+    if (currentTab === 0) {
+      setStixDomainObjects(
+        R.uniqBy(R.prop('id'), [
+          ...finalObjects,
+          ...markingDefinitions,
+        ]),
+      );
+    } else {
+      setStixDomainObjects(
+        R.uniqBy(R.prop('id'), [
+          ...stixDomainObjects,
+          ...markingDefinitions,
+        ]),
+      );
+    }
+    if (currentTab === 1) {
+      setStixCyberObservables(finalObjects);
+    } else if (currentTab === 2) {
+      setStixCoreRelationships(finalObjects);
+    } else if (currentTab === 3) {
+      setStixSightings(finalObjects);
+    } else if (currentTab === 4) {
+      setContainers(finalObjects);
+    }
+    resetForm();
   };
 
   const submitDeleteObject = (obj) => {
