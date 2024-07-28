@@ -10,6 +10,7 @@ import { isEmptyField } from '../database/utils';
 
 const PYTHON_EXECUTOR = nconf.get('app:python_execution') ?? 'native';
 const USE_NATIVE_EXEC = PYTHON_EXECUTOR === 'native';
+const SUPPORTED_CHECKED_PATTERN_TYPES = ['stix', 'yara', 'sigma', 'snort', 'suricata', 'eql'];
 
 // Importing python runtime scripts
 const py = nodecallspython.interpreter;
@@ -145,6 +146,9 @@ export const createStixPattern = async (context, user, observableType, observabl
   return cleanupIndicatorPattern(STIX_PATTERN_TYPE, stixPattern);
 };
 export const checkIndicatorSyntax = async (context, user, patternType, indicatorValue) => {
+  if (!SUPPORTED_CHECKED_PATTERN_TYPES.includes(patternType)) {
+    return true;
+  }
   if (USE_NATIVE_EXEC) {
     return checkNativeIndicatorSyntax(context, user, patternType, indicatorValue);
   }

@@ -115,6 +115,7 @@ interface CyberObjectExtension {
 interface StixCyberObject extends StixObject {
   object_marking_refs: Array<StixId>; // optional
   defanged: boolean; // optional
+  x_opencti_score?: number; // optional
   extensions: {
     [STIX_EXT_OCTI]: StixOpenctiExtension;
     [STIX_EXT_OCTI_SCO]: CyberObjectExtension

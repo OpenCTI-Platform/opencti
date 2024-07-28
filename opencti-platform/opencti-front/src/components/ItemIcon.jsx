@@ -64,6 +64,7 @@ import {
   TaskAlt,
   AutoAwesomeMotion,
   ViewStreamTwoTone,
+  BackupTableOutlined,
 } from '@mui/icons-material';
 import {
   ArchiveOutline,
@@ -436,6 +437,8 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
       return <SourcePull style={style} fontSize={fontSize} role="img" />;
     case 'victimology':
       return <Target style={style} fontSize={fontSize} role="img" />;
+    case 'cron':
+      return <BackupTableOutlined style={style} fontSize={fontSize} role="img" />;
     case 'relationship':
     case 'stix-core-relationship':
     case 'targets':

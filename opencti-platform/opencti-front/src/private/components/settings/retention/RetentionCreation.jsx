@@ -15,7 +15,7 @@ import inject18n from '../../../../components/i18n';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import Filters from '../../common/lists/Filters';
-import { serializeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
+import { serializeFilterGroupForBackend, useAvailableFilterKeysForEntityTypes } from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { insertNode } from '../../../../utils/store';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
@@ -90,7 +90,7 @@ const RetentionCreation = (props) => {
   const [filters, helpers] = useFiltersState();
 
   const [verified, setVerified] = useState(false);
-
+  const availableFilterKeys = useAvailableFilterKeysForEntityTypes(['Stix-Core-Object', 'stix-core-relationship']);
   const onSubmit = (values, { setSubmitting, resetForm }) => {
     const finalValues = R.pipe(
       R.assoc('max_retention', Number(values.max_retention)),
@@ -187,34 +187,9 @@ const RetentionCreation = (props) => {
                   ),
                 }}
               />
-              <Box sx={{ paddingTop: 4,
-                display: 'flex',
-                gap: 1 }}
-              >
+              <Box sx={{ paddingTop: 4, display: 'flex', gap: 1 }}>
                 <Filters
-                  availableFilterKeys={[
-                    'entity_type',
-                    'workflow_id',
-                    'objectAssignee',
-                    'objects',
-                    'objectMarking',
-                    'objectLabel',
-                    'creator_id',
-                    'createdBy',
-                    'priority',
-                    'severity',
-                    'x_opencti_score',
-                    'x_opencti_detection',
-                    'x_opencti_main_observable_type',
-                    'revoked',
-                    'confidence',
-                    'indicator_types',
-                    'pattern_type',
-                    'fromId',
-                    'toId',
-                    'fromTypes',
-                    'toTypes',
-                  ]}
+                  availableFilterKeys={availableFilterKeys}
                   helpers={helpers}
                   searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship'] }}
                 />
@@ -222,6 +197,7 @@ const RetentionCreation = (props) => {
               <FilterIconButton
                 filters={filters}
                 helpers={helpers}
+                styleNumber={2}
                 redirection
                 searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship'] }}
               />

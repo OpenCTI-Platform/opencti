@@ -18,28 +18,35 @@ import { clearIntervalAsync, setIntervalAsync, type SetIntervalAsyncTimer } from
 import type { Operation } from 'fast-json-patch';
 import * as jsonpatch from 'fast-json-patch';
 import moment from 'moment';
+import type { Moment } from 'moment/moment';
 import { createStreamProcessor, lockResource, redisPlaybookUpdate, type StreamProcessor } from '../database/redis';
 import conf, { booleanConf, logApp } from '../config/conf';
 import { TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
-import { executionContext, SYSTEM_USER } from '../utils/access';
+import { executionContext, RETENTION_MANAGER_USER, SYSTEM_USER } from '../utils/access';
 import type { SseEvent, StreamDataEvent } from '../types/event';
 import type { StixBundle } from '../types/stix-common';
 import { utcDate } from '../utils/format';
 import { findById } from '../modules/playbook/playbook-domain';
-import type { StreamConfiguration } from '../modules/playbook/playbook-components';
+import type { CronConfiguration, StreamConfiguration } from '../modules/playbook/playbook-components';
 import { PLAYBOOK_COMPONENTS } from '../modules/playbook/playbook-components';
 import type { BasicStoreEntityPlaybook, ComponentDefinition, PlaybookExecution, PlaybookExecutionStep } from '../modules/playbook/playbook-types';
 import { ENTITY_TYPE_PLAYBOOK } from '../modules/playbook/playbook-types';
-import { isNotEmptyField } from '../database/utils';
+import { isNotEmptyField, READ_STIX_INDICES } from '../database/utils';
 import type { BasicStoreSettings } from '../types/settings';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { MutationPlaybookStepExecutionArgs } from '../generated/graphql';
 import { STIX_SPEC_VERSION } from '../database/stix';
 import { getEntitiesListFromCache } from '../database/cache';
 import { isStixMatchFilterGroup } from '../utils/filtering/filtering-stix/stix-filtering';
+import { convertFiltersToQueryOptions } from '../utils/filtering/filtering-resolution';
+import { elPaginate } from '../database/engine';
+import { stixLoadById } from '../database/middleware';
 
 const PLAYBOOK_LIVE_KEY = conf.get('playbook_manager:lock_key');
+const PLAYBOOK_CRON_KEY = conf.get('playbook_manager:lock_cron_key');
+const PLAYBOOK_CRON_MAX_SIZE = conf.get('playbook_manager:cron_max_size') || 500;
 const STREAM_SCHEDULE_TIME = 10000;
+const CRON_SCHEDULE_TIME = 60000; // 1 minute
 
 // Only way to force the step_literal checking
 // Don't try to understand, just trust
@@ -258,7 +265,7 @@ const playbookStreamHandler = async (streamEvents: Array<SseEvent<StreamDataEven
             const def = JSON.parse(playbook.playbook_definition) as ComponentDefinition;
             // 01. Find the starting point of the playbook
             const instance = def.nodes.find((n) => n.id === playbook.playbook_start);
-            if (instance) {
+            if (instance && instance.component_id === 'PLAYBOOK_INTERNAL_DATA_STREAM') {
               const connector = PLAYBOOK_COMPONENTS[instance.component_id];
               const { update, create, delete: deletion, filters } = (JSON.parse(instance.configuration ?? '{}') as StreamConfiguration);
               const jsonFilters = filters ? JSON.parse(filters) : null;
@@ -291,8 +298,6 @@ const playbookStreamHandler = async (streamEvents: Array<SseEvent<StreamDataEven
                   bundle,
                 });
               }
-            } else {
-              logApp.error('Invalid playbook, entry point needed', { playbook_id: playbook.internal_id });
             }
           }
         }
@@ -306,6 +311,7 @@ const playbookStreamHandler = async (streamEvents: Array<SseEvent<StreamDataEven
 const initPlaybookManager = () => {
   const WAIT_TIME_ACTION = 2000;
   let streamScheduler: SetIntervalAsyncTimer<[]>;
+  let cronScheduler: SetIntervalAsyncTimer<[]>;
   let streamProcessor: StreamProcessor;
   let running = false;
   let shutdown = false;
@@ -339,11 +345,136 @@ const initPlaybookManager = () => {
       if (lock) await lock.unlock();
     }
   };
+  const shouldTriggerNow = (cronConfiguration: CronConfiguration, baseDate: Moment): boolean => {
+    const now = baseDate.clone().startOf('minutes'); // 2022-11-25T19:11:00.000Z
+    const { triggerTime } = cronConfiguration;
+    switch (cronConfiguration.period) {
+      case 'minute': {
+        // Need to check if time is aligned on the perfect hour
+        const nowMinuteAlign = now.clone().startOf('minutes');
+        return now.isSame(nowMinuteAlign);
+      }
+      case 'hour': {
+        // Need to check if time is aligned on the perfect hour
+        const nowHourAlign = now.clone().startOf('hours');
+        return now.isSame(nowHourAlign);
+      }
+      case 'day': {
+        // Need to check if time is aligned on the day hour (like 19:11:00.000Z)
+        const dayTime = `${now.clone().format('HH:mm:ss.SSS')}Z`;
+        return triggerTime === dayTime;
+      }
+      case 'week': {
+        // Need to check if time is aligned on the week hour (like 1-19:11:00.000Z)
+        // 1 being Monday and 7 being Sunday.
+        const weekTime = `${now.clone().isoWeekday()}-${now.clone().format('HH:mm:ss.SSS')}Z`;
+        return triggerTime === weekTime;
+      }
+      case 'month': {
+        // Need to check if time is aligned on the month hour (like 22-19:11:00.000Z)
+        const monthTime = `${now.clone().date()}-${now.clone().format('HH:mm:ss.SSS')}Z`;
+        return triggerTime === monthTime;
+      }
+      default:
+        return false;
+    }
+  };
+  const handlePlaybookCrons = async (context: AuthContext) => {
+    const baseDate = utcDate().startOf('minutes');
+    // Get playbook crons that need to be executed
+    const playbooks = await getEntitiesListFromCache<BasicStoreEntityPlaybook>(context, SYSTEM_USER, ENTITY_TYPE_PLAYBOOK);
+    for (let playbookIndex = 0; playbookIndex < playbooks.length; playbookIndex += 1) {
+      const playbook = playbooks[playbookIndex];
+      // Execute only of definition is available
+      if (playbook.playbook_definition) {
+        // Execute only if event coming from different playbook
+        const def = JSON.parse(playbook.playbook_definition) as ComponentDefinition;
+        // 01. Find the starting point of the playbook
+        const instance = def.nodes.find((n) => n.id === playbook.playbook_start);
+        if (instance && instance.component_id === 'PLAYBOOK_INTERNAL_DATA_CRON') {
+          const connector = PLAYBOOK_COMPONENTS[instance.component_id];
+          const cronConfiguration = (JSON.parse(instance.configuration ?? '{}') as CronConfiguration);
+          if (shouldTriggerNow(cronConfiguration, baseDate) && cronConfiguration.filters) {
+            logApp.info(`[OPENCTI-MODULE] Running playbook ${instance.name} for cron ${cronConfiguration.period} (${cronConfiguration.triggerTime})`);
+            const jsonFilters = JSON.parse(cronConfiguration.filters);
+            let conversionOpts = {};
+            if (cronConfiguration.onlyLast) {
+              const fromDate = baseDate.clone().subtract(1, cronConfiguration.period).toDate();
+              conversionOpts = { ...conversionOpts, after: fromDate };
+            }
+            const queryOptions = await convertFiltersToQueryOptions(jsonFilters, conversionOpts);
+            const opts = { ...queryOptions, first: PLAYBOOK_CRON_MAX_SIZE };
+            const result = await elPaginate(context, RETENTION_MANAGER_USER, READ_STIX_INDICES, opts);
+            const elements = result.edges;
+            logApp.info(`[OPENCTI-MODULE] Running playbook ${instance.name} on ${elements.length} elements`);
+            for (let index = 0; index < elements.length; index += 1) {
+              const { node } = elements[index];
+              const data = await stixLoadById(context, RETENTION_MANAGER_USER, node.internal_id);
+              if (data) {
+                try {
+                  const eventId = `${utcDate().toDate().getTime()}-${index}`;
+                  const nextStep = { component: connector, instance };
+                  const bundle: StixBundle = {
+                    id: uuidv4(),
+                    spec_version: STIX_SPEC_VERSION,
+                    type: 'bundle',
+                    objects: [data]
+                  };
+                  await playbookExecutor({
+                    eventId,
+                    // Basic
+                    executionId: uuidv4(),
+                    playbookId: playbook.id,
+                    dataInstanceId: data.id,
+                    definition: def,
+                    // Steps
+                    previousStep: null,
+                    nextStep,
+                    // Data
+                    previousStepBundle: null,
+                    bundle,
+                  });
+                } catch (e) {
+                  logApp.error(e, { id: node.id, manager: 'PLAYBOOK_MANAGER' });
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  };
+  const PlaybookCronHandler = async () => {
+    const context = executionContext('playbook_manager');
+    let lock;
+    try {
+      // Lock the manager
+      lock = await lockResource([PLAYBOOK_CRON_KEY], { retryCount: 0 });
+      logApp.info('[OPENCTI-MODULE] Running playbook manager (cron)');
+      while (!shutdown) {
+        lock.signal.throwIfAborted();
+        await handlePlaybookCrons(context);
+        await wait(CRON_SCHEDULE_TIME);
+      }
+      logApp.info('[OPENCTI-MODULE] End of playbook manager processing (cron)');
+    } catch (e: any) {
+      if (e.name === TYPE_LOCK_ERROR) {
+        logApp.debug('[OPENCTI-MODULE] Playbook manager (cron) already started by another API');
+      } else {
+        logApp.error(e, { manager: 'PLAYBOOK_MANAGER' });
+      }
+    } finally {
+      if (lock) await lock.unlock();
+    }
+  };
   return {
     start: async () => {
       streamScheduler = setIntervalAsync(async () => {
         await playbookHandler();
       }, STREAM_SCHEDULE_TIME);
+      cronScheduler = setIntervalAsync(async () => {
+        await PlaybookCronHandler();
+      }, CRON_SCHEDULE_TIME);
     },
     status: (settings?: BasicStoreSettings) => {
       return {
@@ -356,6 +487,7 @@ const initPlaybookManager = () => {
       logApp.info('[OPENCTI-MODULE] Stopping playbook manager');
       shutdown = true;
       if (streamScheduler) await clearIntervalAsync(streamScheduler);
+      if (cronScheduler) await clearIntervalAsync(cronScheduler);
       return true;
     },
   };

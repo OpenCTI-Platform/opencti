@@ -25,6 +25,7 @@ export interface BasicStoreEntityPlaybook extends BasicStoreEntity {
   name: string
   description: string
   playbook_start: string
+  playbook_mode: null | 'stream' | 'cron'
   playbook_running: boolean
   playbook_definition: string
 }

@@ -181,7 +181,9 @@
   "playbook_manager": {
     "enabled": true,
     "lock_key": "playbook_manager_lock",
-    "interval": 60000
+    "lock_cron_key": "playbook_cron_manager_lock",
+    "interval": 60000,
+    "cron_max_size": 500
   },
   "indicator_decay_manager": {
     "enabled": true,

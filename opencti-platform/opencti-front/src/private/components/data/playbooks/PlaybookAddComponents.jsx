@@ -25,7 +25,13 @@ import Filters from '../../common/lists/Filters';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import TextField from '../../../../components/TextField';
 import { useFormatter } from '../../../../components/i18n';
-import { deserializeFilterGroupForFrontend, emptyFilterGroup, serializeFilterGroupForBackend, stixFilters } from '../../../../utils/filters/filtersUtils';
+import {
+  deserializeFilterGroupForFrontend,
+  emptyFilterGroup,
+  serializeFilterGroupForBackend,
+  stixFilters,
+  useAvailableFilterKeysForEntityTypes,
+} from '../../../../utils/filters/filtersUtils';
 import ItemIcon from '../../../../components/ItemIcon';
 import { isEmptyField, isNotEmptyField } from '../../../../utils/utils';
 import SwitchField from '../../../../components/fields/SwitchField';
@@ -37,6 +43,10 @@ import AutocompleteField from '../../../../components/AutocompleteField';
 import useAttributes from '../../../../utils/hooks/useAttributes';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
 import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
+import SelectField from '../../../../components/fields/SelectField';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import TimePickerField from '../../../../components/TimePickerField';
+import { parse } from '../../../../utils/Time';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -102,8 +112,8 @@ const PlaybookAddComponentsContent = ({
   const { numberAttributes } = useAttributes();
   const currentConfig = action === 'config' ? selectedNode?.data?.configuration : null;
   const initialFilters = currentConfig?.filters ? deserializeFilterGroupForFrontend(currentConfig?.filters) : emptyFilterGroup;
+  const availableQueryFilterKeys = useAvailableFilterKeysForEntityTypes(['Stix-Core-Object', 'stix-core-relationship']);
   const [filters, helpers] = useFiltersState(initialFilters);
-
   const [actionsInputs, setActionsInputs] = useState(
     currentConfig?.actions ? currentConfig.actions : [],
   );
@@ -333,6 +343,15 @@ const PlaybookAddComponentsContent = ({
       const jsonFilters = serializeFilterGroupForBackend(filters);
       finalConfig = { ...config, filters: jsonFilters };
     }
+    if (configurationSchema?.properties?.triggerTime) {
+      // Important to translate to UTC before formatting
+      let triggerTime = `${parse(values.time).utc().format('HH:mm:00.000')}Z`;
+      if (values.period !== 'minute' && values.period !== 'hour' && values.period !== 'day') {
+        const day = values.day && values.day.length > 0 ? values.day : '1';
+        triggerTime = `${day}-${triggerTime}`;
+      }
+      finalConfig = { ...config, triggerTime };
+    }
     if (configurationSchema?.properties?.actions) {
       finalConfig = { ...config, actions: actionsInputs };
     }
@@ -451,19 +470,91 @@ const PlaybookAddComponentsContent = ({
                         >
                           <Filters
                             helpers={helpers}
-                            availableFilterKeys={stixFilters}
-                            searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship', 'Stix-Filtering'] }}
+                            availableFilterKeys={componentId === 'PLAYBOOK_INTERNAL_DATA_STREAM' ? stixFilters : availableQueryFilterKeys}
+                            searchContext={{ entityTypes: componentId === 'PLAYBOOK_INTERNAL_DATA_STREAM' ? ['Stix-Core-Object', 'stix-core-relationship', 'Stix-Filtering'] : ['Stix-Core-Object', 'stix-core-relationship'] }}
                           />
                         </Box>
                         <div className="clearfix" />
                         <FilterIconButton
                           filters={filters}
                           helpers={helpers}
-                          entityTypes={['Stix-Core-Object', 'stix-core-relationship', 'Stix-Filtering']}
+                          entityTypes={componentId === 'PLAYBOOK_INTERNAL_DATA_STREAM' ? ['Stix-Core-Object', 'stix-core-relationship', 'Stix-Filtering'] : ['Stix-Core-Object', 'stix-core-relationship']}
+                          searchContext={{ entityTypes: componentId === 'PLAYBOOK_INTERNAL_DATA_STREAM' ? ['Stix-Core-Object', 'stix-core-relationship', 'Stix-Filtering'] : ['Stix-Core-Object', 'stix-core-relationship'] }}
                           styleNumber={2}
                           redirection
                         />
                         <div className="clearfix" />
+                      </div>
+                    );
+                  }
+                  if (k === 'period') {
+                    return (
+                      <Field
+                        component={SelectField}
+                        variant="standard"
+                        key={k}
+                        name={k}
+                        label={t_i18n('Period')}
+                        fullWidth={true}
+                        containerstyle={fieldSpacingContainerStyle}
+                      >
+                        <MenuItem value="hour">{t_i18n('hour')}</MenuItem>
+                        <MenuItem value="day">{t_i18n('day')}</MenuItem>
+                        <MenuItem value="week">{t_i18n('week')}</MenuItem>
+                        <MenuItem value="month">{t_i18n('month')}</MenuItem>
+                      </Field>
+                    );
+                  }
+                  if (k === 'triggerTime') {
+                    return (
+                      <div key={k}>
+                        {values.period === 'week' && (
+                          <Field
+                            component={SelectField}
+                            variant="standard"
+                            name="day"
+                            label={t_i18n('Week day')}
+                            fullWidth={true}
+                            containerstyle={fieldSpacingContainerStyle}
+                          >
+                            <MenuItem value="1">{t_i18n('Monday')}</MenuItem>
+                            <MenuItem value="2">{t_i18n('Tuesday')}</MenuItem>
+                            <MenuItem value="3">{t_i18n('Wednesday')}</MenuItem>
+                            <MenuItem value="4">{t_i18n('Thursday')}</MenuItem>
+                            <MenuItem value="5">{t_i18n('Friday')}</MenuItem>
+                            <MenuItem value="6">{t_i18n('Saturday')}</MenuItem>
+                            <MenuItem value="7">{t_i18n('Sunday')}</MenuItem>
+                          </Field>
+                        )}
+                        {values.period === 'month' && (
+                          <Field
+                            component={SelectField}
+                            variant="standard"
+                            name="day"
+                            label={t_i18n('Month day')}
+                            fullWidth={true}
+                            containerstyle={fieldSpacingContainerStyle}
+                          >
+                            {Array.from(Array(31).keys()).map((idx) => (
+                              <MenuItem key={idx} value={(idx + 1).toString()}>
+                                {(idx + 1).toString()}
+                              </MenuItem>
+                            ))}
+                          </Field>
+                        )}
+                        {values.period !== 'minute' && values.period !== 'hour' && (
+                          <Field
+                            component={TimePickerField}
+                            name="time"
+                            withMinutes={true}
+                            textFieldProps={{
+                              label: t_i18n('Time'),
+                              variant: 'standard',
+                              fullWidth: true,
+                              style: { marginTop: 20 },
+                            }}
+                          />
+                        )}
                       </div>
                     );
                   }

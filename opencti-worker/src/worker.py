@@ -89,7 +89,7 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
     opencti_token: str
     log_level: str
     ssl_verify: Union[bool, str] = False
-    json_logging: bool = False
+    json_logging: bool = True
 
     def __post_init__(self) -> None:
         super().__init__()
@@ -339,10 +339,10 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
             "OPENCTI_TOKEN", ["opencti", "token"], config
         )
         self.opencti_ssl_verify = get_config_variable(
-            "OPENCTI_SSL_VERIFY", ["opencti", "ssl_verify"], config, False, False
+            "OPENCTI_SSL_VERIFY", ["opencti", "ssl_verify"], config, default=False
         )
         self.opencti_json_logging = get_config_variable(
-            "OPENCTI_JSON_LOGGING", ["opencti", "json_logging"], config, False, True
+            "OPENCTI_JSON_LOGGING", ["opencti", "json_logging"], config, default=True
         )
         # Load worker config
         self.log_level = get_config_variable(
