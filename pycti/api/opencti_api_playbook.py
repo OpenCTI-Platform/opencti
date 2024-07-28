@@ -6,7 +6,12 @@ class OpenCTIApiPlaybook:
 
     def playbook_step_execution(self, playbook: dict, bundle: str):
         self.api.app_logger.info(
-            "Executing playbook step", {"playbook_id": playbook["playbook_id"]}
+            "Executing playbook step",
+            {
+                "playbook_id": playbook["playbook_id"],
+                "step_id": playbook["step_id"],
+                "data_instance_id": playbook["data_instance_id"],
+            },
         )
         query = """
             mutation PlaybookStepExecution($execution_id: ID!, $event_id: ID!, $execution_start: DateTime!, $data_instance_id: ID!, $playbook_id: ID!, $previous_step_id: ID!, $step_id: ID!, $previous_bundle: String!, $bundle: String!) {
