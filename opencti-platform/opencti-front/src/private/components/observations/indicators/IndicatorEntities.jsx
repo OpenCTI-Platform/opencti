@@ -32,10 +32,11 @@ const IndicatorEntities = ({ indicatorId, relationshipType, defaultStartTime, de
     orderAsc,
     filters,
     searchTerm,
+    numberOfElements,
   } = viewStorage;
   const paginationOptions = {
     ...rawPaginationOptions,
-    fromId: indicatorId,
+    fromOrToId: indicatorId,
     relationship_type: relationshipType || 'stix-core-relationship',
   };
 
@@ -105,8 +106,8 @@ const IndicatorEntities = ({ indicatorId, relationshipType, defaultStartTime, de
         keyword={searchTerm}
         paginationOptions={paginationOptions}
         entityTypes={['stix-core-relationship']}
+        numberOfElements={numberOfElements}
       >
-
         <QueryRenderer
           query={indicatorEntitiesLinesQuery}
           variables={{ count: 25, ...paginationOptions }}
@@ -119,6 +120,7 @@ const IndicatorEntities = ({ indicatorId, relationshipType, defaultStartTime, de
               entityId={indicatorId}
               displayRelation={true}
               entityLink={link}
+              setNumberOfElements={helpers.handleSetNumberOfElements}
             />
           )}
         />

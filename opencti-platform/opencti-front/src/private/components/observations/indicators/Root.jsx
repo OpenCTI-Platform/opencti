@@ -229,7 +229,7 @@ class RootIndicator extends Component {
                           <IndicatorEntities
                             indicatorId={indicatorId}
                           />
-                                )}
+                        )}
                       />
                       <Route
                         path="/knowledge/relations/:relationId"

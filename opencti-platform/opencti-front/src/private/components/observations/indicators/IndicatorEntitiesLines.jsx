@@ -6,6 +6,7 @@ import { graphql, createPaginationContainer } from 'react-relay';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import { IndicatorEntityLine, IndicatorEntityLineDummy } from './IndicatorEntityLine';
 import { TEN_SECONDS } from '../../../../utils/Time';
+import { setNumberOfElements } from '../../../../utils/Number';
 
 const interval$ = interval(TEN_SECONDS);
 
@@ -20,6 +21,15 @@ class IndicatorEntitiesLines extends Component {
 
   componentWillUnmount() {
     this.subscription.unsubscribe();
+  }
+
+  componentDidUpdate(prevProps) {
+    setNumberOfElements(
+      prevProps,
+      this.props,
+      'stixCoreRelationships',
+      this.props.setNumberOfElements.bind(this),
+    );
   }
 
   render() {
@@ -49,10 +59,7 @@ class IndicatorEntitiesLines extends Component {
           this.props.data,
         )}
         LineComponent={
-          <IndicatorEntityLine
-            displayRelation={displayRelation}
-            entityId={entityId}
-          />
+          <IndicatorEntityLine displayRelation={displayRelation} />
         }
         DummyLineComponent={
           <IndicatorEntityLineDummy displayRelation={displayRelation} />
@@ -61,6 +68,7 @@ class IndicatorEntitiesLines extends Component {
         nbOfRowsToLoad={nbOfRowsToLoad}
         paginationOptions={paginationOptions}
         entityLink={entityLink}
+        entityId={entityId}
       />
     );
   }
@@ -81,7 +89,7 @@ IndicatorEntitiesLines.propTypes = {
 
 export const indicatorEntitiesLinesQuery = graphql`
   query IndicatorEntitiesLinesPaginationQuery(
-    $fromId: [String]
+    $fromOrToId: [String]
     $relationship_type: [String]
     $startTimeStart: DateTime
     $startTimeStop: DateTime
@@ -97,7 +105,7 @@ export const indicatorEntitiesLinesQuery = graphql`
   ) {
     ...IndicatorEntitiesLines_data
       @arguments(
-        fromId: $fromId
+        fromOrToId: $fromOrToId
         relationship_type: $relationship_type
         startTimeStart: $startTimeStart
         startTimeStop: $startTimeStop
@@ -120,7 +128,7 @@ export default createPaginationContainer(
     data: graphql`
       fragment IndicatorEntitiesLines_data on Query
       @argumentDefinitions(
-        fromId: { type: "[String]" }
+        fromOrToId: { type: "[String]" }
         relationship_type: { type: "[String]" }
         startTimeStart: { type: "DateTime" }
         startTimeStop: { type: "DateTime" }
@@ -138,7 +146,7 @@ export default createPaginationContainer(
         filters: { type: "FilterGroup" }
       ) {
         stixCoreRelationships(
-          fromId: $fromId
+          fromOrToId: $fromOrToId
           relationship_type: $relationship_type
           startTimeStart: $startTimeStart
           startTimeStop: $startTimeStop
@@ -179,7 +187,7 @@ export default createPaginationContainer(
     },
     getVariables(props, { count, cursor }, fragmentVariables) {
       return {
-        fromId: fragmentVariables.fromId,
+        fromOrToId: fragmentVariables.fromOrToId,
         toTypes: fragmentVariables.toTypes,
         relationship_type: fragmentVariables.relationship_type,
         startTimeStart: fragmentVariables.startTimeStart,
