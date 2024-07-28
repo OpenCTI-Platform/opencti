@@ -347,7 +347,7 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
 
         if type is not None:
             self.opencti.app_logger.info(
-                "Creating Stix-Cyber-Observable with indicator",
+                "Creating Stix-Cyber-Observable",
                 {"type": type, "create_indicator": create_indicator},
             )
             input_variables = {
