@@ -27,5 +27,5 @@ export const addSystem = async (context, user, system) => {
 };
 
 export const belongsToOrganizationsPaginated = async (context, user, stixCoreObjectId, opts) => {
-  return listEntitiesThroughRelationsPaginated(context, user, stixCoreObjectId, RELATION_BELONGS_TO, ENTITY_TYPE_IDENTITY_ORGANIZATION, false, opts);
+  return listEntitiesThroughRelationsPaginated(context, user, stixCoreObjectId, RELATION_BELONGS_TO, ENTITY_TYPE_IDENTITY_ORGANIZATION, false, false, opts);
 };

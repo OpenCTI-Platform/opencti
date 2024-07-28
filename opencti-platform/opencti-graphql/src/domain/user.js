@@ -226,15 +226,15 @@ export const batchCreators = async (context, user, userListIds) => {
 };
 
 export const userOrganizationsPaginated = async (context, user, userId, opts) => {
-  return listEntitiesThroughRelationsPaginated(context, user, userId, RELATION_PARTICIPATE_TO, ENTITY_TYPE_IDENTITY_ORGANIZATION, false, opts);
+  return listEntitiesThroughRelationsPaginated(context, user, userId, RELATION_PARTICIPATE_TO, ENTITY_TYPE_IDENTITY_ORGANIZATION, false, false, opts);
 };
 
 export const userGroupsPaginated = async (context, user, userId, opts) => {
-  return listEntitiesThroughRelationsPaginated(context, user, userId, RELATION_MEMBER_OF, ENTITY_TYPE_GROUP, false, opts);
+  return listEntitiesThroughRelationsPaginated(context, user, userId, RELATION_MEMBER_OF, ENTITY_TYPE_GROUP, false, false, opts);
 };
 
 export const groupRolesPaginated = async (context, user, groupId, opts) => {
-  return listEntitiesThroughRelationsPaginated(context, user, groupId, RELATION_HAS_ROLE, ENTITY_TYPE_ROLE, false, opts);
+  return listEntitiesThroughRelationsPaginated(context, user, groupId, RELATION_HAS_ROLE, ENTITY_TYPE_ROLE, false, false, opts);
 };
 
 export const batchRolesForUsers = async (context, user, userIds, opts = {}) => {

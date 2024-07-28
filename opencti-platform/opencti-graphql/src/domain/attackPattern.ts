@@ -23,11 +23,11 @@ export const addAttackPattern = async (context: AuthContext, user: AuthUser, att
 };
 
 export const parentAttackPatternsPaginated = async (context: AuthContext, user: AuthUser, attackPatternId: string, args: EntityOptions<BasicStoreCommon>) => {
-  return listEntitiesThroughRelationsPaginated(context, user, attackPatternId, RELATION_SUBTECHNIQUE_OF, ENTITY_TYPE_ATTACK_PATTERN, false, args);
+  return listEntitiesThroughRelationsPaginated(context, user, attackPatternId, RELATION_SUBTECHNIQUE_OF, ENTITY_TYPE_ATTACK_PATTERN, false, false, args);
 };
 
 export const childAttackPatternsPaginated = async (context: AuthContext, user: AuthUser, attackPatternId: string, args: EntityOptions<BasicStoreCommon>) => {
-  return listEntitiesThroughRelationsPaginated(context, user, attackPatternId, RELATION_SUBTECHNIQUE_OF, ENTITY_TYPE_ATTACK_PATTERN, true, args);
+  return listEntitiesThroughRelationsPaginated(context, user, attackPatternId, RELATION_SUBTECHNIQUE_OF, ENTITY_TYPE_ATTACK_PATTERN, true, false, args);
 };
 
 export const isSubAttackPattern = async (context: AuthContext, user: AuthUser, attackPatternId: string) => {
@@ -36,9 +36,9 @@ export const isSubAttackPattern = async (context: AuthContext, user: AuthUser, a
 };
 
 export const coursesOfActionPaginated = async (context: AuthContext, user: AuthUser, attackPatternId: string, args: EntityOptions<BasicStoreCommon>) => {
-  return listEntitiesThroughRelationsPaginated(context, user, attackPatternId, RELATION_MITIGATES, ENTITY_TYPE_COURSE_OF_ACTION, true, args);
+  return listEntitiesThroughRelationsPaginated(context, user, attackPatternId, RELATION_MITIGATES, ENTITY_TYPE_COURSE_OF_ACTION, true, false, args);
 };
 
 export const dataComponentsPaginated = async (context: AuthContext, user: AuthUser, attackPatternId: string, args: EntityOptions<BasicStoreCommon>) => {
-  return listEntitiesThroughRelationsPaginated(context, user, attackPatternId, RELATION_DETECTS, ENTITY_TYPE_DATA_COMPONENT, true, args);
+  return listEntitiesThroughRelationsPaginated(context, user, attackPatternId, RELATION_DETECTS, ENTITY_TYPE_DATA_COMPONENT, true, false, args);
 };

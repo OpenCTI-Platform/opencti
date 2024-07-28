@@ -26,7 +26,7 @@ export const addIndividual = async (context, user, individual, opts = {}) => {
 };
 
 export const partOfOrganizationsPaginated = async (context, user, individualId, args) => {
-  return listEntitiesThroughRelationsPaginated(context, user, individualId, RELATION_PART_OF, ENTITY_TYPE_IDENTITY_ORGANIZATION, false, args);
+  return listEntitiesThroughRelationsPaginated(context, user, individualId, RELATION_PART_OF, ENTITY_TYPE_IDENTITY_ORGANIZATION, false, false, args);
 };
 
 export const isUser = async (context, individualContactInformation) => {
