@@ -5,7 +5,7 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFnsV3';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { createFragmentContainer, graphql } from 'react-relay';
 import { Locale } from 'date-fns/locale/types';
-import { enUS, fr, es, ja, zhCN, de } from 'date-fns/locale';
+import { enUS, fr, es, ja, zhCN, de, ko } from 'date-fns/locale';
 import locale, { DEFAULT_LANG } from '../utils/BrowserLanguage';
 import { UserContext } from '../utils/hooks/useAuth';
 import { AppIntlProvider_settings$data } from './__generated__/AppIntlProvider_settings.graphql';
@@ -15,15 +15,17 @@ import messages_ja_front from '../../lang/front/ja.json';
 import messages_zh_front from '../../lang/front/zh.json';
 import messages_en_front from '../../lang/front/en.json';
 import messages_de_front from '../../lang/front/de.json';
+import messages_ko_front from '../../lang/front/ko.json';
 import messages_es_back from '../../lang/back/es.json';
 import messages_fr_back from '../../lang/back/fr.json';
 import messages_ja_back from '../../lang/back/ja.json';
 import messages_zh_back from '../../lang/back/zh.json';
 import messages_en_back from '../../lang/back/en.json';
 import messages_de_back from '../../lang/back/de.json';
+import messages_ko_back from '../../lang/back/ko.json';
 import { useDocumentLangModifier } from '../utils/hooks/useDocumentModifier';
 
-type PlatformLang = 'es-es' | 'fr-fr' | 'ja-jp' | 'zh-cn' | 'en-us' | 'de-de';
+type PlatformLang = 'es-es' | 'fr-fr' | 'ja-jp' | 'zh-cn' | 'en-us' | 'de-de' | 'ko-kr';
 
 const localeMap: Record<PlatformLang, Locale> = {
   'en-us': enUS,
@@ -32,6 +34,7 @@ const localeMap: Record<PlatformLang, Locale> = {
   'ja-jp': ja,
   'zh-cn': zhCN,
   'de-de': de,
+  'ko-kr': ko,
 };
 
 const i18n: { messages: Record<PlatformLang, Record<string, string>> } = {
@@ -42,6 +45,7 @@ const i18n: { messages: Record<PlatformLang, Record<string, string>> } = {
     'zh-cn': { ...messages_zh_back, ...messages_zh_front },
     'en-us': { ...messages_en_back, ...messages_en_front },
     'de-de': { ...messages_de_back, ...messages_de_front },
+    'ko-kr': { ...messages_ko_back, ...messages_ko_front },
   },
 };
 
@@ -52,6 +56,7 @@ export const availableLanguage: { value : PlatformLang, label: string }[] = [
   { value: 'ja-jp', label: '日本語' },
   { value: 'zh-cn', label: '简化字' },
   { value: 'de-de', label: 'Deutsch' },
+  { value: 'ko-kr', label: '한국어' },
 ];
 
 interface AppIntlProviderProps {

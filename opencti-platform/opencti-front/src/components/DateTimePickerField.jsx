@@ -12,6 +12,7 @@ const dateTimeFormatsMap = {
   'es-es': 'dd/MM/yyyy HH:mm',
   'ja-jp': 'yyyy/MM/dd hh:mm a',
   'zg-cn': 'yyyy-MM-dd hh:mm a',
+  'ko-kr': 'yyyy-MM-dd hh:mm a',
 };
 
 const dateTimeFormatsMapWithSeconds = {
@@ -20,6 +21,7 @@ const dateTimeFormatsMapWithSeconds = {
   'es-es': 'dd/MM/yyyy HH:mm:ss',
   'ja-jp': 'yyyy/MM/dd hh:mm:ss a',
   'zg-cn': 'yyyy-MM-dd hh:mm:ss a',
+  'ko-kr': 'yyyy-MM-dd hh:mm:ss a',
 };
 
 const DateTimePickerField = (props) => {
