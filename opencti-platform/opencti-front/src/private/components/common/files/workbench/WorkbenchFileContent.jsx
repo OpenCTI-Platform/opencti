@@ -41,7 +41,7 @@ import SwitchField from '../../../../../components/fields/SwitchField';
 import TextField from '../../../../../components/TextField';
 import { APP_BASE_PATH, commitMutation, handleError, MESSAGING$, QueryRenderer } from '../../../../../relay/environment';
 import { observableValue, resolveIdentityClass, resolveIdentityType, resolveLink, resolveLocationType, resolveThreatActorType } from '../../../../../utils/Entity';
-import { defaultKey, getMainRepresentative } from '../../../../../utils/defaultRepresentatives';
+import { defaultKey, defaultValueMarking, getMainRepresentative } from '../../../../../utils/defaultRepresentatives';
 import useAttributes from '../../../../../utils/hooks/useAttributes';
 import useVocabularyCategory from '../../../../../utils/hooks/useVocabularyCategory';
 import { computeDuplicates, convertFromStixType, convertToStixType, truncate, uniqWithByFields } from '../../../../../utils/String';
@@ -245,6 +245,67 @@ const importValidation = (t) => Yup.object().shape({
 });
 
 const uniqStixDomainObjectsFields = ['name', 'type', 'pattern', 'identity_class', 'x_opencti_location_type'];
+
+// for an entity, get a default value that can be filtered (to check if the entity is in the platform)
+// (simplified version of getMainRepresentative with only the filterable attributes)
+const getEntityMainRepresentativeForWorkbenchChecks = (n, fallback = 'Unknown') => {
+  if (!n) return '';
+  if (typeof n.definition === 'object') {
+    return defaultValueMarking(n);
+  }
+  const mainValue = n.name
+    || n.pattern
+    || n.attribute_abstract
+    || n.opinion
+    || n.value
+    || n.definition
+    || n.source_name
+    || n.phase_name
+    || n.result_name
+    || n.content
+    || n.key
+    || (n.hashes
+      && (n.hashes.MD5
+        || n.hashes['SHA-1']
+        || n.hashes['SHA-256']
+        || n.hashes['SHA-512']))
+    || getEntityMainRepresentativeForWorkbenchChecks((R.head(n.objects?.edges ?? []))?.node)
+    || n.main_entity_name
+    || fallback;
+  return mainValue;
+};
+
+const defaultValueKeys = {
+  stixDomainObjects: [
+    'name',
+    'aliases',
+    'x_opencti_aliases',
+    'x_mitre_id',
+    'pattern',
+    'attribute_abstract',
+    'opinion',
+    'value',
+    'definition',
+    'source_name',
+    'phase_name',
+    'result_name',
+    'content',
+    'main_entity_name',
+  ],
+  stixCyberObservables: [
+    'name',
+    'value',
+    'aliases',
+    'x_opencti_aliases',
+    'value',
+    'content',
+    'attribute_key',
+    'hashes.MD5',
+    'hashes.SHA-1',
+    'hashes.SHA-256',
+    'hashes.SHA-512',
+  ],
+};
 
 const WorkbenchFileContentComponent = ({
   connectorsImport,
@@ -2985,7 +3046,8 @@ const WorkbenchFileContentComponent = ({
     const resolvedStixDomainObjects = stixDomainObjects.map((n) => ({
       ...n,
       ttype: t_i18n(`entity_${convertFromStixType(n.type)}`),
-      default_value: getMainRepresentative(n, null),
+      default_value: getEntityMainRepresentativeForWorkbenchChecks(n, null),
+      // use an adapted version of getMainRepresentative because not possible to filter by representative.main (to check if the entity is in the platform)
       markings: resolveMarkings(stixDomainObjects, n.object_marking_refs),
     }));
     const sort = R.sortWith(
@@ -3131,12 +3193,7 @@ const WorkbenchFileContentComponent = ({
                                 mode: 'and',
                                 filters: [
                                   {
-                                    key: [
-                                      'name',
-                                      'aliases',
-                                      'x_opencti_aliases',
-                                      'x_mitre_id',
-                                    ],
+                                    key: defaultValueKeys.stixDomainObjects,
                                     values: [object.default_value],
                                   },
                                 ],
@@ -3228,7 +3285,7 @@ const WorkbenchFileContentComponent = ({
     const resolvedStixCyberObservables = stixCyberObservables.map((n) => ({
       ...n,
       ttype: t_i18n(`entity_${convertFromStixType(n.type)}`),
-      default_value: getMainRepresentative(n, null),
+      default_value: getEntityMainRepresentativeForWorkbenchChecks(n, null),
       markings: resolveMarkings(stixDomainObjects, n.object_marking_refs),
     }));
     const sort = R.sortWith(
@@ -3375,13 +3432,7 @@ const WorkbenchFileContentComponent = ({
                                 mode: 'and',
                                 filters: [
                                   {
-                                    key: [
-                                      'name',
-                                      'value',
-                                      'hashes.MD5',
-                                      'hashes.SHA-1',
-                                      'hashes.SHA-256',
-                                    ],
+                                    key: defaultValueKeys.stixCyberObservables,
                                     values: [object.default_value],
                                   },
                                 ],
@@ -3914,12 +3965,7 @@ const WorkbenchFileContentComponent = ({
                                 mode: 'and',
                                 filters: [
                                   {
-                                    key: [
-                                      'name',
-                                      'aliases',
-                                      'x_opencti_aliases',
-                                      'x_mitre_id',
-                                    ],
+                                    key: defaultValueKeys.stixDomainObjects,
                                     values: [object.default_value],
                                   },
                                   {

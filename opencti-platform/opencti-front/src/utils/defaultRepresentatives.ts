@@ -123,7 +123,7 @@ export const getMainRepresentative = (n: any, fallback = 'Unknown') => {
         n.target_ref_name,
         20,
       )}`)
-    || getMainRepresentative((R.head(R.pathOr([], ['objects', 'edges'], n)) as any)?.node)
+    || getMainRepresentative((R.head(n.objects?.edges ?? []) as any)?.node)
     || (n.from
       && n.to
       && `${truncate(getMainRepresentative(n.from), 20)} ➡️ ${truncate(
