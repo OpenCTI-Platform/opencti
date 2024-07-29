@@ -17,7 +17,6 @@ const subscription = graphql`
     subscription RootGroupsSubscription($id: ID!) {
         group(id: $id) {
             ...Group_group
-            ...GroupEditionContainer_group
         }
     }
 `;
@@ -32,11 +31,6 @@ const groupQuery = graphql`
       id
       name
       ...Group_group
-      @arguments(
-        rolesOrderBy: $rolesOrderBy
-        rolesOrderMode: $rolesOrderMode
-      )
-      ...GroupEditionContainer_group
       @arguments(
         rolesOrderBy: $rolesOrderBy
         rolesOrderMode: $rolesOrderMode

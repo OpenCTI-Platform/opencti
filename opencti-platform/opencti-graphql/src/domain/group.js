@@ -226,10 +226,10 @@ export const groupEditDefaultMarking = async (context, user, groupId, defaultMar
 
 export const groupCleanContext = async (context, user, groupId) => {
   await delEditContext(user, groupId);
-  return storeLoadById(context, user, groupId, ENTITY_TYPE_GROUP).then((group) => notify(BUS_TOPICS.Group.EDIT_TOPIC, group, user));
+  return storeLoadById(context, user, groupId, ENTITY_TYPE_GROUP); // notify removed for performance issues with users cache
 };
 
 export const groupEditContext = async (context, user, groupId, input) => {
   await setEditContext(user, groupId, input);
-  return storeLoadById(context, user, groupId, ENTITY_TYPE_GROUP).then((group) => notify(BUS_TOPICS.Group.EDIT_TOPIC, group, user));
+  return storeLoadById(context, user, groupId, ENTITY_TYPE_GROUP); // notify removed for performance issues with users cache
 };

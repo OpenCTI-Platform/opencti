@@ -70,22 +70,12 @@ const groupFragment = graphql`
     no_creators
     group_confidence_level {
       max_confidence
-      overrides{
+      overrides {
         max_confidence
         entity_type
       }
     }
     description
-    members {
-      edges {
-        node {
-          ...UserLine_node
-        }
-      }
-    }
-    group_confidence_level {
-      max_confidence
-    }
     default_dashboard {
       id
       name
