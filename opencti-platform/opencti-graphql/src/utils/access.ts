@@ -101,7 +101,7 @@ export const SYSTEM_USER: AuthUser = {
     max_confidence: 100,
     overrides: [],
   },
-  no_creators: true,
+  no_creators: false,
   restrict_delete: false,
 };
 
@@ -135,7 +135,7 @@ export const RETENTION_MANAGER_USER: AuthUser = {
     max_confidence: 100,
     overrides: [],
   },
-  no_creators: true,
+  no_creators: false,
   restrict_delete: false,
 };
 
@@ -169,7 +169,7 @@ export const RULE_MANAGER_USER: AuthUser = {
     max_confidence: 100,
     overrides: [],
   },
-  no_creators: true,
+  no_creators: false,
   restrict_delete: false,
 };
 
@@ -203,7 +203,7 @@ export const AUTOMATION_MANAGER_USER: AuthUser = {
     max_confidence: 100,
     overrides: [],
   },
-  no_creators: true,
+  no_creators: false,
   restrict_delete: false,
 };
 
@@ -237,7 +237,7 @@ export const DECAY_MANAGER_USER: AuthUser = {
     max_confidence: 100,
     overrides: [],
   },
-  no_creators: true,
+  no_creators: false,
   restrict_delete: false,
 };
 
@@ -271,7 +271,7 @@ export const GARBAGE_COLLECTION_MANAGER_USER: AuthUser = {
     max_confidence: 100,
     overrides: [],
   },
-  no_creators: true,
+  no_creators: false,
   restrict_delete: false,
 };
 
@@ -299,7 +299,7 @@ export const REDACTED_USER: AuthUser = {
   account_status: ACCOUNT_STATUS_ACTIVE,
   effective_confidence_level: null,
   user_confidence_level: null,
-  no_creators: true,
+  no_creators: false,
   restrict_delete: false,
 };
 
@@ -333,7 +333,7 @@ export const TELEMETRY_MANAGER_USER: AuthUser = {
     max_confidence: 100,
     overrides: [],
   },
-  no_creators: true,
+  no_creators: false,
   restrict_delete: false,
 };
 export interface AuthorizedMember { id: string, access_right: string }

@@ -315,6 +315,8 @@ export const ADMIN_USER: AuthUser = {
     overrides: [],
   },
   max_shareable_marking: [],
+  restrict_delete: false,
+  no_creators: false,
 };
 export const TESTING_USERS: User[] = [];
 export const USER_PARTICIPATE: User = {
@@ -636,7 +638,9 @@ export const buildStandardUser = (allowedMarkings: markingType[], allMarkings?: 
     user_confidence_level: {
       max_confidence: 100,
       overrides: [],
-    }
+    },
+    restrict_delete: false,
+    no_creators: false,
   };
 };
 
