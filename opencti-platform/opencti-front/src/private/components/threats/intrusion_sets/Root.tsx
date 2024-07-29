@@ -25,6 +25,8 @@ import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 import BulkRelationDialogContainer from '../../common/bulk/dialog/BulkRelationDialogContainer';
 import { RootIntrusionSetQuery } from './__generated__/RootIntrusionSetQuery.graphql';
 import { RootIntrusionSetSubscription } from './__generated__/RootIntrusionSetSubscription.graphql';
+import CreateRelationshipContextProvider from '../../common/menus/CreateRelationshipContextProvider';
+import CreateRelationshipButtonComponent from '../../common/menus/CreateRelationshipButtonComponent';
 
 const subscription = graphql`
   subscription RootIntrusionSetSubscription($id: ID!) {
@@ -104,7 +106,7 @@ const RootIntrusionSet = ({ intrusionSetId, queryRef }: RootIntrusionSetProps) =
   const paddingRight = getPaddingRight(location.pathname, intrusionSetId, '/dashboard/threats/intrusion_sets');
   const link = `/dashboard/threats/intrusion_sets/${intrusionSetId}/knowledge`;
   return (
-    <>
+    <CreateRelationshipContextProvider>
       {intrusionSet ? (
         <>
           <Routes>
@@ -146,6 +148,7 @@ const RootIntrusionSet = ({ intrusionSetId, queryRef }: RootIntrusionSetProps) =
               entityType="Intrusion-Set"
               stixDomainObject={intrusionSet}
               PopoverComponent={<IntrusionSetPopover />}
+              RelateComponent={CreateRelationshipButtonComponent}
               enableQuickSubscription={true}
               enableAskAi={true}
             />
@@ -269,7 +272,7 @@ const RootIntrusionSet = ({ intrusionSetId, queryRef }: RootIntrusionSetProps) =
       ) : (
         <ErrorNotFound />
       )}
-    </>
+    </CreateRelationshipContextProvider>
   );
 };
 

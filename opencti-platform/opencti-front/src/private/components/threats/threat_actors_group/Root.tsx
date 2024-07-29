@@ -23,6 +23,8 @@ import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreO
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
+import CreateRelationshipContextProvider from '../../common/menus/CreateRelationshipContextProvider';
+import CreateRelationshipButtonComponent from '../../common/menus/CreateRelationshipButtonComponent';
 
 const subscription = graphql`
   subscription RootThreatActorsGroupSubscription($id: ID!) {
@@ -96,7 +98,7 @@ const RootThreatActorGroup = ({ queryRef, threatActorGroupId }: RootThreatActorG
   const paddingRight = getPaddingRight(location.pathname, threatActorGroupId, '/dashboard/threats/threat_actors_group');
   const link = `/dashboard/threats/threat_actors_group/${threatActorGroupId}/knowledge`;
   return (
-    <>
+    <CreateRelationshipContextProvider>
       {threatActorGroup ? (
         <>
           <Routes>
@@ -138,6 +140,7 @@ const RootThreatActorGroup = ({ queryRef, threatActorGroupId }: RootThreatActorG
               entityType="Threat-Actor-Group"
               stixDomainObject={threatActorGroup}
               PopoverComponent={<ThreatActorGroupPopover />}
+              RelateComponent={CreateRelationshipButtonComponent}
               enableQuickSubscription={true}
             />
             <Box
@@ -248,7 +251,7 @@ const RootThreatActorGroup = ({ queryRef, threatActorGroupId }: RootThreatActorG
       ) : (
         <ErrorNotFound />
       )}
-    </>
+    </CreateRelationshipContextProvider>
   );
 };
 

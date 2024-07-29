@@ -25,6 +25,8 @@ import EntityStixSightingRelationships from '../../events/stix_sighting_relation
 import inject18n from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
+import CreateRelationshipContextProvider from '../../common/menus/CreateRelationshipContextProvider';
+import CreateRelationshipButtonComponent from '../../common/menus/CreateRelationshipButtonComponent';
 
 const subscription = graphql`
   subscription RootOrganizationSubscription($id: ID!) {
@@ -123,7 +125,7 @@ class RootOrganization extends Component {
     const link = `/dashboard/entities/organizations/${organizationId}/knowledge`;
 
     return (
-      <>
+      <CreateRelationshipContextProvider>
         <QueryRenderer
           query={organizationQuery}
           variables={{ id: organizationId }}
@@ -176,6 +178,7 @@ class RootOrganization extends Component {
                         isOpenctiAlias={true}
                         enableQuickSubscription={true}
                         PopoverComponent={<OrganizationPopover />}
+                        RelateComponent={CreateRelationshipButtonComponent}
                         onViewAs={this.handleChangeViewAs.bind(this)}
                         viewAs={viewAs}
                       />
@@ -319,7 +322,7 @@ class RootOrganization extends Component {
             return <Loader />;
           }}
         />
-      </>
+      </CreateRelationshipContextProvider>
     );
   }
 }

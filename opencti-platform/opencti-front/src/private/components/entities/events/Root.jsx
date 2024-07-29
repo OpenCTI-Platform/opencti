@@ -23,6 +23,8 @@ import EntityStixSightingRelationships from '../../events/stix_sighting_relation
 import inject18n from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
+import CreateRelationshipContextProvider from '../../common/menus/CreateRelationshipContextProvider';
+import CreateRelationshipButtonComponent from '../../common/menus/CreateRelationshipButtonComponent';
 
 const subscription = graphql`
   subscription RootEventsSubscription($id: ID!) {
@@ -92,7 +94,7 @@ class RootEvent extends Component {
     const link = `/dashboard/entities/events/${eventId}/knowledge`;
 
     return (
-      <>
+      <CreateRelationshipContextProvider>
         <QueryRenderer
           query={eventQuery}
           variables={{ id: eventId }}
@@ -138,6 +140,7 @@ class RootEvent extends Component {
                         stixDomainObject={event}
                         enableQuickSubscription={true}
                         PopoverComponent={<EventPopover />}
+                        RelateComponent={CreateRelationshipButtonComponent}
                       />
                       <Box
                         sx={{
@@ -271,7 +274,7 @@ class RootEvent extends Component {
             return <Loader />;
           }}
         />
-      </>
+      </CreateRelationshipContextProvider>
     );
   }
 }
