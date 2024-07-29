@@ -152,6 +152,7 @@
     "enabled": true,
     "lock_key": "connector_manager_lock",
     "works_day_range": 7,
+    "batch_size": 10000,
     "interval": 60000
   },
   "import_csv_built_in_connector": {
