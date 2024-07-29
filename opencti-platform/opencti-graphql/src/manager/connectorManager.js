@@ -12,9 +12,10 @@ import { now, sinceNowInDays } from '../utils/format';
 // In order to change the revoked attribute to true
 // Each API will start is manager.
 // If the lock is free, every API as the right to take it.
-const SCHEDULE_TIME = conf.get('connector_manager:interval');
-const CONNECTOR_MANAGER_KEY = conf.get('connector_manager:lock_key');
-const CONNECTOR_WORK_RANGE = conf.get('connector_manager:works_day_range');
+const SCHEDULE_TIME = conf.get('connector_manager:interval') || 60000;
+const CONNECTOR_MANAGER_KEY = conf.get('connector_manager:lock_key') || 'connector_manager_lock';
+const CONNECTOR_WORK_RANGE = conf.get('connector_manager:works_day_range') || 7;
+const BATCH_SIZE = conf.get('connector_manager:batch_size') || 10000;
 let running = false;
 
 const closeOldWorks = async (context, connector) => {
@@ -59,7 +60,7 @@ const closeOldWorks = async (context, connector) => {
           // Delete redis tracking key
           await redisDeleteWorks(element.internal_id);
         } catch (e) {
-          logApp.info('[OPENCTI-MODULE] Connector manager error processing work closing', { error: e });
+          logApp.error('[OPENCTI-MODULE] Connector manager error processing work closing', { error: e });
         }
       }
     };
@@ -71,7 +72,8 @@ const closeOldWorks = async (context, connector) => {
       connectionFormat: false,
       baseData: true,
       baseFields: ['internal_id', 'timestamp'],
-      callback: queryCallback
+      maxSize: BATCH_SIZE,
+      callback: queryCallback,
     });
   }
 };
@@ -101,7 +103,8 @@ const deleteCompletedWorks = async (context, connector) => {
     connectionFormat: false,
     baseData: true,
     baseFields: ['internal_id'],
-    callback: queryCallback
+    maxSize: BATCH_SIZE,
+    callback: queryCallback,
   });
 };
 
