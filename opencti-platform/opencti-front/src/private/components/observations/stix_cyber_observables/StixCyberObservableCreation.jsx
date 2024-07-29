@@ -877,10 +877,11 @@ const StixCyberObservableCreation = ({
               <Close fontSize="small" color="primary" />
             </IconButton>
             <Typography variant="h6">{t_i18n('Create an observable')}</Typography>
-            {isFeatureEnable('BULK_ENTITIES') && bulkConf
+            {isFeatureEnable('BULK_ENTITIES') && status.type
               ? <BulkTextModalButton
                   onClick={() => setBulkOpen(true)}
                   title={t_i18n('Create multiple observables')}
+                  disabled={!bulkConf}
                 />
               : <></>
             }
@@ -914,11 +915,12 @@ const StixCyberObservableCreation = ({
         >
           <DialogTitle style={{ display: 'flex' }}>
             {t_i18n('Create an observable')}
-            {isFeatureEnable('BULK_ENTITIES') && bulkConf
+            {isFeatureEnable('BULK_ENTITIES') && status.type
               ? <BulkTextModalButton
                   sx={{ marginRight: 0 }}
                   onClick={() => setBulkOpen(true)}
                   title={t_i18n('Create multiple observables')}
+                  disabled={!bulkConf}
                 />
               : <></>
             }

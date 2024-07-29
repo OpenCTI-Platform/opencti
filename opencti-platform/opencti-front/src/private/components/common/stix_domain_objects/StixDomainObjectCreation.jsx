@@ -759,10 +759,11 @@ const StixDomainPanel = ({
     >
       <DialogTitle style={{ display: 'flex' }}>
         {t_i18n('Create an entity')}
-        {isFeatureEnable('BULK_ENTITIES') && BULK_ENTITIES.includes(type) && (
+        {isFeatureEnable('BULK_ENTITIES') && (
           <BulkTextModalButton
             onClick={() => setBulkOpen(true)}
             sx={{ marginRight: 0 }}
+            disabled={!BULK_ENTITIES.includes(type)}
           />
         )}
       </DialogTitle>
