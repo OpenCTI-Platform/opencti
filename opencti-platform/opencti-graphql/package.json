@@ -1,6 +1,6 @@
 {
   "name": "opencti-graphql",
-  "version": "6.2.7",
+  "version": "6.2.8",
   "main": "src/back.js",
   "scripts": {
     "check-ts": "tsc --noEmit",
