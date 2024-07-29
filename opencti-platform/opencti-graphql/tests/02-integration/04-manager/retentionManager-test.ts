@@ -18,6 +18,8 @@ describe('Retention Manager tests ', () => {
   const globalPath = 'import/global';
   const fileName = 'fileToTestRetentionRule';
   const fileId = `${globalPath}/${fileName}`;
+  const progressFileName = 'progressFile';
+  const progressFileId = `${globalPath}/${progressFileName}`;
 
   const pendingPath = 'import/pending';
   const workbench1Name = 'workbench1';
@@ -80,6 +82,33 @@ describe('Retention Manager tests ', () => {
     expect(file?.lastModified).toEqual(lastModified);
     expect(file?.uploadStatus).toEqual('complete');
     expect(file?.id).toEqual(fileId);
+    // create a file not modified since '2023-01-01T00:00:00.000Z' and with uploadStatus = 'pending'
+    const progressFileToUpload = {
+      createReadStream: () => Readable.from('This is a file content.'),
+      filename: progressFileName,
+    };
+    await uploadToStorage(context, ADMIN_USER, globalPath, progressFileToUpload, {});
+    const progressFileUpdateQuery = {
+      script: {
+        params: { lastModified, progress: 'progress' },
+        source: 'ctx._source.lastModified = params.lastModified; ctx._source.uploadStatus = params.progress;',
+      },
+      query: {
+        bool: {
+          must: [
+            { term: { 'internal_id.keyword': { value: progressFileId } } },
+          ],
+        },
+      },
+    };
+    await elRawUpdateByQuery({
+      index: [READ_INDEX_INTERNAL_OBJECTS],
+      refresh: true,
+      wait_for_completion: true,
+      body: progressFileUpdateQuery
+    }).catch((err: Error) => {
+      throw DatabaseError('Error updating elastic', { cause: err });
+    });
     // create a workbench not modified since '2023-01-01T00:00:00.000Z'
     const workbench1ToUpload = {
       createReadStream: () => Readable.from('This is a file content.'),
@@ -120,6 +149,8 @@ describe('Retention Manager tests ', () => {
     // delete the created files
     const deleted = await deleteFile(context, ADMIN_USER, fileId);
     expect(deleted?.id).toEqual(fileId);
+    // const progressDeleted = await deleteFile(context, ADMIN_USER, progressFileId);
+    // expect(progressDeleted?.id).toEqual(progressFileId);
     // delete the created workbenches
     const workbench1Deleted = await deleteFile(context, ADMIN_USER, workbench1Id);
     expect(workbench1Deleted?.id).toEqual(workbench1Id);
@@ -177,7 +208,7 @@ describe('Retention Manager tests ', () => {
   it('should fetch the correct files to be deleted by a retention rule on files', async () => {
     // check the number of files imported in Data/import
     const files = await allFilesForPaths(testContext, ADMIN_USER, [globalPath]);
-    expect(files.length).toEqual(8); // 7 files from index-file-test + the created file
+    expect(files.length).toEqual(9); // 7 files from index-file-test + the 2 created files
     // retention rule on files not modified since 2023-07-01
     const before = utcDate('2023-07-01T00:00:00.000Z');
     const filesToDelete = await elementsToDelete(context, 'file', before);
