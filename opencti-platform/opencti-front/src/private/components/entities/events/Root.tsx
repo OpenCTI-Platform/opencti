@@ -28,6 +28,8 @@ import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import EventEdition from './EventEdition';
 import useHelper from '../../../../utils/hooks/useHelper';
+import CreateRelationshipContextProvider from '../../common/menus/CreateRelationshipContextProvider';
+import CreateRelationshipButtonComponent from '../../common/menus/CreateRelationshipButtonComponent';
 
 const subscription = graphql`
   subscription RootEventsSubscription($id: ID!) {
@@ -100,7 +102,7 @@ const RootEvent = ({ eventId, queryRef }: RootEventProps) => {
   const link = `/dashboard/entities/events/${eventId}/knowledge`;
   const paddingRight = getPaddingRight(location.pathname, eventId, '/dashboard/entities/events');
   return (
-    <>
+    <CreateRelationshipContextProvider>
       {event ? (
         <>
           <Routes>
@@ -143,6 +145,7 @@ const RootEvent = ({ eventId, queryRef }: RootEventProps) => {
                   <EventEdition eventId={event.id} />
                 </Security>
               )}
+              RelateComponent={CreateRelationshipButtonComponent}
             />
             <Box
               sx={{
@@ -284,7 +287,7 @@ const RootEvent = ({ eventId, queryRef }: RootEventProps) => {
       ) : (
         <ErrorNotFound />
       )}
-    </>
+    </CreateRelationshipContextProvider>
   );
 };
 const Root = () => {
