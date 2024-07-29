@@ -8,7 +8,6 @@ import {
   externalReferencesPaginated,
   findAll,
   findById,
-  findFiltersRepresentatives,
   groupingsPaginated,
   notesPaginated,
   observedDataPaginated,
@@ -81,7 +80,6 @@ const stixCoreObjectResolvers = {
       const opts = { first, entity_id: exportContext.entity_id, entity_type: exportContext.entity_type };
       return paginatedForPathWithEnrichment(context, context.user, path, exportContext.entity_id, opts);
     },
-    filtersRepresentatives: (_, { filters }, context) => findFiltersRepresentatives(context, context.user, filters),
     stixCoreObjectAnalysis: (_, { id, contentSource, contentType }, context) => stixCoreAnalysis(context, context.user, id, contentSource, contentType),
   },
   StixCoreObjectsOrdering: stixCoreObjectOptions.StixCoreObjectsOrdering,
