@@ -58,6 +58,11 @@ class Location:
                 x_opencti_order
                 x_opencti_color
             }
+            objectOrganization {
+                id
+                standard_id
+                name
+            }
             objectLabel {
                 id
                 value
@@ -138,6 +143,11 @@ class Location:
                 modified
                 x_opencti_order
                 x_opencti_color
+            }
+            objectOrganization {
+                id
+                standard_id
+                name
             }
             objectLabel {
                 id
