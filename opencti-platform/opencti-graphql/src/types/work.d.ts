@@ -16,7 +16,7 @@ interface Work {
   received_time: string | null
   processed_time: string | null
   completed_time: string | null
-  completed_number: string
+  completed_number: number
   messages: string[]
   errors: string[]
 }

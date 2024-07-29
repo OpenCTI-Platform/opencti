@@ -77,7 +77,7 @@ const closeOldWorks = async (context, connector) => {
   }
 };
 
-const deleteCompletedWorks = async (context, connector) => {
+export const deleteCompletedWorks = async (context, connector) => {
   const filters = {
     mode: 'and',
     filters: [
