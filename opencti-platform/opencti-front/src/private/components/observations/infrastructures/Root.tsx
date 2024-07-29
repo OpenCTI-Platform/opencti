@@ -25,6 +25,8 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { getCurrentTab } from '../../../../utils/utils';
+import CreateRelationshipContextProvider from '../../common/menus/CreateRelationshipContextProvider';
+import CreateRelationshipButtonComponent from '../../common/menus/CreateRelationshipButtonComponent';
 
 const subscription = graphql`
   subscription RootInfrastructureSubscription($id: ID!) {
@@ -86,7 +88,7 @@ const RootInfrastructureComponent = ({ queryRef, infrastructureId }) => {
     return 0;
   };
   return (
-    <>
+    <CreateRelationshipContextProvider>
       {infrastructure ? (
         <div
           style={{ paddingRight: paddingRightValue() }}
@@ -101,6 +103,7 @@ const RootInfrastructureComponent = ({ queryRef, infrastructureId }) => {
             entityType="Infrastructure"
             stixDomainObject={infrastructure}
             PopoverComponent={InfrastructurePopover}
+            RelateComponent={CreateRelationshipButtonComponent}
             enableQuickSubscription={true}
           />
           <Box
@@ -203,7 +206,7 @@ const RootInfrastructureComponent = ({ queryRef, infrastructureId }) => {
       ) : (
         <ErrorNotFound/>
       )}
-    </>
+    </CreateRelationshipContextProvider>
   );
 };
 

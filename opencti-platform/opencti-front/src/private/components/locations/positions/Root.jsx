@@ -26,6 +26,8 @@ import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 import PositionEdition from './PositionEdition';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import CreateRelationshipContextProvider from '../../common/menus/CreateRelationshipContextProvider';
+import CreateRelationshipButtonComponent from '../../common/menus/CreateRelationshipButtonComponent';
 
 const subscription = graphql`
   subscription RootPositionsSubscription($id: ID!) {
@@ -95,7 +97,7 @@ class RootPosition extends Component {
     const link = `/dashboard/locations/positions/${positionId}/knowledge`;
 
     return (
-      <>
+      <CreateRelationshipContextProvider>
         <QueryRenderer
           query={positionQuery}
           variables={{ id: positionId }}
@@ -149,6 +151,7 @@ class RootPosition extends Component {
                             <PositionEdition positionId={position.id} />
                           </Security>
                         )}
+                        RelateComponent={CreateRelationshipButtonComponent}
                         enableQuickSubscription={true}
                         isOpenctiAlias={true}
                       />
@@ -277,7 +280,7 @@ class RootPosition extends Component {
             return <Loader />;
           }}
         />
-      </>
+      </CreateRelationshipContextProvider>
     );
   }
 }
