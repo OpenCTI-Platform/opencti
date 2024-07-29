@@ -60,6 +60,11 @@ class Identity:
                 x_opencti_order
                 x_opencti_color
             }
+            objectOrganization {
+                id
+                standard_id
+                name
+            }
             objectLabel {
                 id
                 value
@@ -147,6 +152,11 @@ class Identity:
                 modified
                 x_opencti_order
                 x_opencti_color
+            }
+            objectOrganization {
+                id
+                standard_id
+                name
             }
             objectLabel {
                 id
@@ -388,6 +398,7 @@ class Identity:
         x_opencti_firstname = kwargs.get("x_opencti_firstname", None)
         x_opencti_lastname = kwargs.get("x_opencti_lastname", None)
         x_opencti_stix_ids = kwargs.get("x_opencti_stix_ids", None)
+        granted_refs = kwargs.get("objectOrganization", None)
         x_opencti_workflow_id = kwargs.get("x_opencti_workflow_id", None)
         update = kwargs.get("update", False)
 
@@ -440,6 +451,7 @@ class Identity:
                         }
                     }
                 """
+                input_variables["objectOrganization"] = granted_refs
                 input_variables["x_opencti_firstname"] = x_opencti_firstname
                 input_variables["x_opencti_lastname"] = x_opencti_lastname
                 input_variables["x_opencti_reliability"] = x_opencti_reliability
@@ -455,6 +467,7 @@ class Identity:
                         }
                     }
                 """
+                input_variables["objectOrganization"] = granted_refs
                 input_variables["x_opencti_firstname"] = x_opencti_firstname
                 input_variables["x_opencti_lastname"] = x_opencti_lastname
                 input_variables["x_opencti_reliability"] = x_opencti_reliability
@@ -470,6 +483,7 @@ class Identity:
                         }
                     }
                 """
+                input_variables["objectOrganization"] = granted_refs
                 input_variables["type"] = type
                 result_data_field = "identityAdd"
             result = self.opencti.query(
@@ -540,6 +554,10 @@ class Identity:
                 stix_object["x_opencti_stix_ids"] = (
                     self.opencti.get_attribute_in_extension("stix_ids", stix_object)
                 )
+            if "x_opencti_granted_refs" not in stix_object:
+                stix_object["x_opencti_granted_refs"] = (
+                    self.opencti.get_attribute_in_extension("granted_refs", stix_object)
+                )
             if "x_opencti_workflow_id" not in stix_object:
                 stix_object["x_opencti_workflow_id"] = (
                     self.opencti.get_attribute_in_extension("workflow_id", stix_object)
@@ -609,6 +627,11 @@ class Identity:
                 x_opencti_stix_ids=(
                     stix_object["x_opencti_stix_ids"]
                     if "x_opencti_stix_ids" in stix_object
+                    else None
+                ),
+                objectOrganization=(
+                    stix_object["x_opencti_granted_refs"]
+                    if "x_opencti_granted_refs" in stix_object
                     else None
                 ),
                 x_opencti_workflow_id=(
