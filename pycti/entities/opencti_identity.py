@@ -483,7 +483,6 @@ class Identity:
                         }
                     }
                 """
-                input_variables["objectOrganization"] = granted_refs
                 input_variables["type"] = type
                 result_data_field = "identityAdd"
             result = self.opencti.query(
