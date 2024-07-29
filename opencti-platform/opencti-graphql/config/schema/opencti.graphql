@@ -3961,7 +3961,6 @@ input IdentityAddInput {
   revoked: Boolean
   lang: String
   createdBy: String
-  objectOrganization: [String]
   objectMarking: [String]
   objectLabel: [String]
   externalReferences: [String]
