@@ -8,10 +8,9 @@ import { executionContext, SYSTEM_USER } from '../utils/access';
 import { INDEX_HISTORY } from '../database/utils';
 import { now, sinceNowInDays } from '../utils/format';
 
-// Expired manager responsible to monitor expired elements
-// In order to change the revoked attribute to true
-// Each API will start is manager.
-// If the lock is free, every API as the right to take it.
+// Manage work created by connectors
+// Update status to complete when needed
+// Cleanup "batch_size" work in Elastic and Redis when complete "after works_day_range" days
 const SCHEDULE_TIME = conf.get('connector_manager:interval') || 60000;
 const CONNECTOR_MANAGER_KEY = conf.get('connector_manager:lock_key') || 'connector_manager_lock';
 const CONNECTOR_WORK_RANGE = conf.get('connector_manager:works_day_range') || 7;
