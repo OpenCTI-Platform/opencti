@@ -90,7 +90,17 @@ import { isBasicObject, isStixCoreObject, isStixObject } from '../schema/stixCor
 import { isBasicRelationship, isStixRelationship } from '../schema/stixRelationship';
 import { isStixCoreRelationship, RELATION_INDICATES, RELATION_PUBLISHES, STIX_CORE_RELATIONSHIPS } from '../schema/stixCoreRelationship';
 import { INTERNAL_FROM_FIELD, INTERNAL_TO_FIELD } from '../schema/identifier';
-import { BYPASS, computeUserMemberAccessIds, executionContext, INTERNAL_USERS, isBypassUser, MEMBER_ACCESS_ALL, SYSTEM_USER, userFilterStoreElements } from '../utils/access';
+import {
+  BYPASS,
+  computeUserMemberAccessIds,
+  controlUserRestrictDeleteAgainstElement,
+  executionContext,
+  INTERNAL_USERS,
+  isBypassUser,
+  MEMBER_ACCESS_ALL,
+  SYSTEM_USER,
+  userFilterStoreElements
+} from '../utils/access';
 import { isSingleRelationsRef, } from '../schema/stixEmbeddedRelationship';
 import { now, runtimeFieldObservableValueScript } from '../utils/format';
 import { ENTITY_TYPE_KILL_CHAIN_PHASE, ENTITY_TYPE_MARKING_DEFINITION, isStixMetaObject } from '../schema/stixMetaObject';
@@ -3296,6 +3306,7 @@ export const elDeleteElements = async (context, user, elements, opts = {}) => {
   const filteredRelations = await userFilterStoreElements(context, user, relations);
   if (relations.length !== filteredRelations.length) throw FunctionalError('Cannot delete element: cannot access all related relations');
   relations.forEach((instance) => controlUserConfidenceAgainstElement(user, instance));
+  relations.forEach((instance) => controlUserRestrictDeleteAgainstElement(user, instance));
   // Compute the id that needs to be removed from rel
   const basicCleanup = elements.filter((f) => isBasicRelationship(f.entity_type));
   // Update all rel connections that will remain

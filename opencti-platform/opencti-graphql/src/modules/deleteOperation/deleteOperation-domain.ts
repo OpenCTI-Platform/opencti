@@ -21,6 +21,7 @@ import { isStixSightingRelationship } from '../../schema/stixSightingRelationshi
 import { lockResource } from '../../database/redis';
 import { RULE_PREFIX } from '../../schema/general';
 import { createRuleContent } from '../../rules/rules-utils';
+import { controlUserRestrictDeleteAgainstElement } from '../../utils/access';
 
 type ConfirmDeleteOptions = {
   isRestoring?: boolean
@@ -238,6 +239,7 @@ export const processDeleteOperation = async (context: AuthContext, user: AuthUse
     throw FunctionalError(`Delete operation ${id} cannot be found`);
   }
   controlUserConfidenceAgainstElement(user, deleteOperation);
+  controlUserRestrictDeleteAgainstElement(user, deleteOperation);
 
   const { main_entity_id, deleted_elements } = deleteOperation;
   // get all deleted elements & main deleted entity (from deleted_objects index)

@@ -1232,6 +1232,8 @@ const buildSessionUser = (origin, impersonate, provider, settings) => {
     })),
     session_version: PLATFORM_VERSION,
     effective_confidence_level: user.effective_confidence_level,
+    no_creators: user.no_creators,
+    restrict_delete: user.restrict_delete,
     personal_notifiers: user.personal_notifiers,
     ...user.provider_metadata
   };
@@ -1281,6 +1283,7 @@ export const buildCompleteUser = async (context, client) => {
   const [individuals, organizations, groups] = await Promise.all([individualsPromise, organizationsPromise, userGroupsPromise]);
   const roles = await getRoles(context, groups);
   const capabilities = await getCapabilities(context, client.id, roles);
+  const isByPass = R.find((s) => s.name === BYPASS, capabilities || []) !== undefined;
   const marking = await getUserAndGlobalMarkings(context, client.id, groups, capabilities);
   const administrated_organizations = organizations.filter((o) => o.authorized_authorities?.includes(client.id));
   if (administrated_organizations.length > 0) {
@@ -1295,6 +1298,10 @@ export const buildCompleteUser = async (context, client) => {
 
   // effective confidence level
   const effective_confidence_level = computeUserEffectiveConfidenceLevel({ ...client, groups, capabilities });
+
+  // Other groups attribute
+  const no_creators = groups.filter((g) => g.no_creators).length === groups.length;
+  const restrict_delete = !isByPass && groups.filter((g) => g.restrict_delete).length === groups.length;
 
   return {
     ...client,
@@ -1312,6 +1319,8 @@ export const buildCompleteUser = async (context, client) => {
     default_marking: marking.default,
     max_shareable_marking: marking.max_shareable,
     effective_confidence_level,
+    no_creators,
+    restrict_delete,
   };
 };
 

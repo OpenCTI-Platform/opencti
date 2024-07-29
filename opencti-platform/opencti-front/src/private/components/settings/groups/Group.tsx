@@ -66,6 +66,8 @@ const groupFragment = graphql`
     name
     default_assignation
     auto_new_marking
+    restrict_delete
+    no_creators
     group_confidence_level {
       max_confidence
       overrides{
@@ -282,6 +284,24 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                 <div className="clearfix"/>
                 <GroupConfidenceLevel
                   confidenceLevel={group.group_confidence_level}
+                />
+              </Grid>
+              <Grid item xs={6}>
+                <Typography variant="h3" gutterBottom={true}>
+                  {t_i18n('No creators accumulation')}
+                </Typography>
+                <ItemBoolean
+                  status={group.no_creators ?? false}
+                  label={group.no_creators ? t_i18n('Yes') : t_i18n('No')}
+                />
+              </Grid>
+              <Grid item xs={6}>
+                <Typography variant="h3" gutterBottom={true}>
+                  {t_i18n('Restrict delete to created entities')}
+                </Typography>
+                <ItemBoolean
+                  status={group.restrict_delete ?? false}
+                  label={group.restrict_delete ? t_i18n('Yes') : t_i18n('No')}
                 />
               </Grid>
             </Grid>

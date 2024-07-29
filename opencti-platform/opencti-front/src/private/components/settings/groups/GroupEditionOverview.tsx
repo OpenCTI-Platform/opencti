@@ -105,6 +105,8 @@ const GroupEditionOverviewComponent: FunctionComponent<GroupEditionOverviewCompo
     description: group.description,
     default_assignation: group.default_assignation,
     auto_new_marking: group.auto_new_marking,
+    no_creators: group.no_creators,
+    restrict_delete: group.restrict_delete,
     default_dashboard: group.default_dashboard ? {
       value: group.default_dashboard.id,
       label: group.default_dashboard.name,
@@ -154,6 +156,7 @@ const GroupEditionOverviewComponent: FunctionComponent<GroupEditionOverviewCompo
               onChange={editor.changeField}
               context={context}
             />
+            <GroupHiddenTypesField groupData={group} />
             <Field
               component={SwitchField}
               type="checkbox"
@@ -185,7 +188,38 @@ const GroupEditionOverviewComponent: FunctionComponent<GroupEditionOverviewCompo
                 fieldName="auto_new_marking"
               />
             </FormHelperText>
-            <GroupHiddenTypesField groupData={group} />
+            <Field
+              component={SwitchField}
+              type="checkbox"
+              name="no_creators"
+              label={t_i18n(
+                'Do not accumulate creators for the users of this group',
+              )}
+              containerstyle={{ marginTop: 20 }}
+              onChange={editor.changeField}
+            />
+            <FormHelperText>
+              <SubscriptionFocus
+                context={context}
+                fieldName="no_creators"
+              />
+            </FormHelperText>
+            <Field
+              component={SwitchField}
+              type="checkbox"
+              name="restrict_delete"
+              label={t_i18n(
+                'Deny users to delete content not created by them',
+              )}
+              containerstyle={{ marginTop: 20 }}
+              onChange={editor.changeField}
+            />
+            <FormHelperText>
+              <SubscriptionFocus
+                context={context}
+                fieldName="restrict_delete"
+              />
+            </FormHelperText>
           </Form>
         )}
       </Formik>
@@ -202,6 +236,8 @@ const GroupEditionOverview = createFragmentContainer(
         name
         description
         default_assignation
+        no_creators
+        restrict_delete
         auto_new_marking
         default_dashboard {
           id

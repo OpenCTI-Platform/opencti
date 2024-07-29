@@ -159,7 +159,8 @@ import {
   RULE_MANAGER_USER,
   SYSTEM_USER,
   userFilterStoreElements,
-  validateUserAccessOperation
+  validateUserAccessOperation,
+  controlUserRestrictDeleteAgainstElement
 } from '../utils/access';
 import { isRuleUser, RULES_ATTRIBUTES_BEHAVIOR } from '../rules/rules-utils';
 import { instanceMetaRefsExtractor, isSingleRelationsRef, } from '../schema/stixEmbeddedRelationship';
@@ -2443,7 +2444,7 @@ const upsertElement = async (context, user, element, type, basePatch, opts = {})
     }
   }
   // Cumulate creator id
-  if (!INTERNAL_USERS[user.id]) {
+  if (!INTERNAL_USERS[user.id] && !user.no_creators) {
     updatePatch.creator_id = [user.id];
   }
   // Upsert observed data count and times extensions
@@ -3078,6 +3079,8 @@ export const internalDeleteElementById = async (context, user, id, opts = {}) =>
   }
   // region confidence control
   controlUserConfidenceAgainstElement(user, element);
+  // region restrict delete control
+  controlUserRestrictDeleteAgainstElement(user, element);
   // when deleting stix ref, we must check confidence on from side (this count has modifying this element itself)
   if (isStixRefRelationship(element.entity_type)) {
     controlUserConfidenceAgainstElement(user, element.from);

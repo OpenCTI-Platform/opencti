@@ -1265,6 +1265,8 @@ type Settings implements InternalObject & BasicObject {
 enum GroupsOrdering {
   name
   default_assignation
+  no_creators
+  restrict_delete
   auto_new_marking
   created_at
   updated_at
@@ -1299,6 +1301,8 @@ type Group implements InternalObject & BasicObject {
   parent_types: [String]!
   name: String!
   default_assignation: Boolean
+  no_creators: Boolean
+  restrict_delete: Boolean
   auto_new_marking: Boolean
   description: String
   default_dashboard: Workspace
@@ -1319,6 +1323,8 @@ input GroupAddInput {
   name: String!
   description: String
   default_assignation: Boolean
+  no_creators: Boolean
+  restrict_delete: Boolean
   auto_new_marking: Boolean
   clientMutationId: String
   group_confidence_level: ConfidenceLevelInput!
@@ -1496,6 +1502,8 @@ type User implements BasicObject & InternalObject {
   default_hidden_types: [String!]!
   user_confidence_level: ConfidenceLevel
   effective_confidence_level: EffectiveConfidenceLevel
+  no_creators: Boolean
+  restrict_delete: Boolean
   groups(orderBy: GroupsOrdering, orderMode: OrderingMode): GroupConnection
   objectOrganization(orderBy: OrganizationsOrdering, orderMode: OrderingMode): OrganizationConnection
   created_at: DateTime!
@@ -1535,6 +1543,8 @@ type MeUser implements BasicObject & InternalObject {
   default_hidden_types: [String]!
   user_confidence_level: ConfidenceLevel
   effective_confidence_level: EffectiveConfidenceLevel
+  no_creators: Boolean
+  restrict_delete: Boolean
   allowed_marking: [MarkingDefinition!]
   default_marking: [DefaultMarking!]
   max_shareable_marking: [MarkingDefinition!]
@@ -3400,6 +3410,7 @@ input IndividualAddInput {
   revoked: Boolean
   lang: String
   createdBy: String
+  objectOrganization: [String]
   objectMarking: [String]
   objectLabel: [String]
   externalReferences: [String]
@@ -3611,6 +3622,7 @@ input SystemAddInput {
   revoked: Boolean
   lang: String
   createdBy: String
+  objectOrganization: [String]
   objectMarking: [String]
   objectLabel: [String]
   externalReferences: [String]
@@ -4143,6 +4155,7 @@ input CityAddInput {
   lang: String
   x_opencti_aliases: [String]
   createdBy: String
+  objectOrganization: [String]
   objectMarking: [String]
   objectLabel: [String]
   externalReferences: [String]

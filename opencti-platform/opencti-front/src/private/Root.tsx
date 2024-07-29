@@ -82,6 +82,8 @@ const meUserFragment = graphql`
     theme
     user_email
     individual_id
+    no_creators
+    restrict_delete
     effective_confidence_level {
       max_confidence
       overrides {

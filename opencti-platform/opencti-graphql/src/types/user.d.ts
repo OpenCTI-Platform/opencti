@@ -45,6 +45,8 @@ interface AuthUser extends BasicStoreIdentifier {
   api_token: string
   account_status: string
   effective_confidence_level: ConfidenceLevel | null
+  restrict_delete: boolean | null
+  no_creators: boolean | null
   user_confidence_level: ConfidenceLevel | null
   personal_notifiers?: Array<string>
 }

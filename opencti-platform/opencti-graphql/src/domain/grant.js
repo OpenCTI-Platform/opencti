@@ -46,6 +46,8 @@ export const addGroup = async (context, user, group) => {
     ...group,
     group_confidence_level,
     default_assignation: group.default_assignation ?? false,
+    no_creators: group.no_creators ?? false,
+    restrict_delete: group.restrict_delete ?? false,
     auto_new_marking: group.auto_new_marking ?? false
   };
   const { element, isCreation } = await createEntity(context, user, groupWithDefaultValues, ENTITY_TYPE_GROUP, { complete: true });

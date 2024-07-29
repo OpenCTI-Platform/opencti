@@ -94,6 +94,16 @@ const GroupLineComponent: React.FC<GroupLineProps> = (props) => {
             </div>
             <div
               className={classes.bodyItem}
+              style={{ width: dataColumns.no_creators.width }}
+            >
+              {node.no_creators ? (
+                <CheckCircleOutlined fontSize="small" color="success"/>
+              ) : (
+                <DoNotDisturbOnOutlined fontSize="small" color="primary"/>
+              )}
+            </div>
+            <div
+              className={classes.bodyItem}
               style={{ width: dataColumns.group_confidence_level.width }}
             >
               {node.group_confidence_level?.max_confidence ?? (
@@ -132,6 +142,7 @@ export const GroupLine = createFragmentContainer(GroupLineComponent, {
       id
       name
       default_assignation
+      no_creators
       auto_new_marking
       group_confidence_level {
         max_confidence

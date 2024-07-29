@@ -1,7 +1,7 @@
 import type { AuthUser } from '../types/user';
 import { cropNumber } from './math';
 import { isEmptyField, isNotEmptyField } from '../database/utils';
-import { FunctionalError, LockTimeoutError } from '../config/errors';
+import { FunctionalError } from '../config/errors';
 import { logApp } from '../config/conf';
 import { schemaAttributesDefinition } from '../schema/schema-attributes';
 import { isBypassUser } from './access';
@@ -100,9 +100,7 @@ export const controlCreateInputWithUserConfidence = <T extends ObjectWithConfide
   const hasMaxConfidence = isNotEmptyField(user.effective_confidence_level?.max_confidence);
   const override = user.effective_confidence_level?.overrides?.find((e) => e.entity_type === type);
   if (!hasMaxConfidence && !override) {
-    // using LockTimeoutError allows us to leverage the worker infinite auto-retry, so that connectors and feeds won't lose messages
-    // this is a configuration error that might appear when upgrading to 6.X, but shall disappear in future when everyone has confidence level set up.
-    throw LockTimeoutError({ user_id: user.id }, 'User has no effective max confidence level and cannot create this element');
+    throw FunctionalError('User has no effective max confidence level and cannot create this element', { user_id: user.id });
   }
   const userMaxConfidence = user.effective_confidence_level?.max_confidence as number;
   const overrideMaxConfidence = override?.max_confidence ?? userMaxConfidence;
@@ -121,7 +119,7 @@ export const controlUpsertInputWithUserConfidence = <T extends ObjectWithConfide
   const hasMaxConfidence = isNotEmptyField(user.effective_confidence_level?.max_confidence);
   const override = user.effective_confidence_level?.overrides?.find((e) => e.entity_type === existingElement.entity_type);
   if (!hasMaxConfidence && !override) {
-    throw LockTimeoutError({ user_id: user.id, element_id: existingElement.id }, 'User has no effective max confidence level and cannot upsert this element');
+    throw FunctionalError('User has no effective max confidence level and cannot upsert this element', { user_id: user.id, element_id: existingElement.id });
   }
   const userMaxConfidence = user.effective_confidence_level?.max_confidence;
   const overrideMaxConfidence = (override?.max_confidence ?? userMaxConfidence) as number; // thanks to our if clause, we know one of them is defined
@@ -153,7 +151,7 @@ export const controlUserConfidenceAgainstElement = <T extends ObjectWithConfiden
     if (noThrow) {
       return false;
     }
-    throw LockTimeoutError({ user_id: user.id, element_id: existingElement.id }, 'User has no effective max confidence level and cannot update this element');
+    throw FunctionalError('User has no effective max confidence level and cannot update this element', { user_id: user.id, element_id: existingElement.id });
   }
 
   const userMaxConfidence = user.effective_confidence_level?.max_confidence as number;
@@ -187,7 +185,7 @@ export const adaptUpdateInputsConfidence = <T extends ObjectWithConfidence>(user
   const hasMaxConfidence = isNotEmptyField(user.effective_confidence_level?.max_confidence);
   const override = user.effective_confidence_level?.overrides?.find((e) => e.entity_type === element.entity_type);
   if (!hasMaxConfidence && !override) {
-    throw LockTimeoutError({ user_id: user.id, element_id: element.id }, 'User has no effective max confidence level and cannot update this element');
+    throw FunctionalError('User has no effective max confidence level and cannot update this element', { user_id: user.id, element_id: element.id });
   }
   const inputsArray = Array.isArray(inputs) ? inputs : [inputs];
   const userMaxConfidenceLevel = user.effective_confidence_level?.max_confidence as number;
