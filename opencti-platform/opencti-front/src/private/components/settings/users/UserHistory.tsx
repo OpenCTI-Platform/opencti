@@ -2,7 +2,7 @@ import { v4 as uuid } from 'uuid';
 import React, { FunctionComponent, useEffect, useState } from 'react';
 import Typography from '@mui/material/Typography';
 import { useQueryLoader } from 'react-relay';
-import { LogsOrdering, OrderingMode, UserHistoryLinesQuery } from '@components/settings/users/__generated__/UserHistoryLinesQuery.graphql';
+import { LogsOrdering, OrderingMode, UserHistoryLinesQuery, UserHistoryLinesQuery$variables } from '@components/settings/users/__generated__/UserHistoryLinesQuery.graphql';
 import Tooltip from '@mui/material/Tooltip';
 import IconButton from '@mui/material/IconButton';
 import { StorageOutlined } from '@mui/icons-material';
@@ -34,7 +34,6 @@ const UserHistory: FunctionComponent<UserHistoryProps> = ({
   const handleSearchEntity = (value: string) => {
     setEntitySearchTerm(value);
   };
-
   const [queryRef, loadQuery] = useQueryLoader<UserHistoryLinesQuery>(userHistoryLinesQuery);
   let historyTypes = ['History'];
   if (isGrantedToAudit && !isGrantedToKnowledge) {
@@ -73,15 +72,12 @@ const UserHistory: FunctionComponent<UserHistoryProps> = ({
       },
     ],
   });
-
   useEffect(() => {
     loadQuery(queryArgs, { fetchPolicy: 'store-and-network' });
   }, [entitySearchTerm]);
-
-  const refetch = React.useCallback(() => {
-    loadQuery(queryArgs, { fetchPolicy: 'store-and-network' });
-  }, [queryRef]);
-
+  const refetch = (args: UserHistoryLinesQuery$variables) => {
+    loadQuery(args, { fetchPolicy: 'store-and-network' });
+  };
   return (
     <>
       <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
@@ -121,6 +117,7 @@ const UserHistory: FunctionComponent<UserHistoryProps> = ({
         <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
           <UserHistoryLines
             queryRef={queryRef}
+            queryArgs={queryArgs}
             isRelationLog={false}
             refetch={refetch}
           />
