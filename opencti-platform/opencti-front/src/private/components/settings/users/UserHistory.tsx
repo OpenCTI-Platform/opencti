@@ -44,10 +44,11 @@ const UserHistory: FunctionComponent<UserHistoryProps> = ({
   const queryArgs = {
     types: historyTypes,
     filters: {
-      mode: 'and',
+      mode: 'or',
       filterGroups: [],
       filters: [
         { key: ['user_id'], values: [userId], operator: 'wildcard', mode: 'or' },
+        { key: ['context_data.id'], values: [userId], operator: 'wildcard', mode: 'or' },
       ],
     } as GqlFilterGroup,
     first: 10,

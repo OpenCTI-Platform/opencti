@@ -428,7 +428,7 @@ export const assignOrganizationToUser = async (context, user, userId, organizati
     event_scope: 'update',
     event_access: 'administration',
     message: `adds ${created.toType} \`${extractEntityRepresentativeName(created.to)}\` to user \`${actionEmail}\``,
-    context_data: { id: organizationId, entity_type: ENTITY_TYPE_USER, input }
+    context_data: { id: userId, entity_type: ENTITY_TYPE_USER, input }
   });
 
   await userSessionRefresh(userId);
