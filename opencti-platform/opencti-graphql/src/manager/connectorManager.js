@@ -27,7 +27,7 @@ const closeOldWorks = async (context, connector) => {
     const filters = {
       mode: 'and',
       filters: [
-        { key: 'event_source_id', values: [connector.internal_id] },
+        { key: 'connector_id', values: [connector.internal_id] },
         { key: 'status', values: ['wait', 'progress'] },
         { key: 'timestamp', values: [timestamp], operator: 'lt' }
       ],
@@ -80,7 +80,7 @@ const deleteCompletedWorks = async (context, connector) => {
   const filters = {
     mode: 'and',
     filters: [
-      { key: 'event_source_id', values: [connector.internal_id] },
+      { key: 'connector_id', values: [connector.internal_id] },
       { key: 'status', values: ['complete'] },
       { key: 'completed_time', values: [`now-${CONNECTOR_WORK_RANGE}d/d`], operator: 'lte' }
     ],
