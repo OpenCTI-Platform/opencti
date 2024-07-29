@@ -1,15 +1,21 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import Skeleton from '@mui/material/Skeleton';
 import Checkbox from '@mui/material/Checkbox';
 import IconButton from '@mui/material/IconButton';
 import { KeyboardArrowRightOutlined } from '@mui/icons-material';
+import MoreVert from '@mui/icons-material/MoreVert';
+
 import makeStyles from '@mui/styles/makeStyles';
 import { createStyles, useTheme } from '@mui/styles';
 import { useNavigate } from 'react-router-dom';
+import { PopoverProps } from '@mui/material/Popover';
+import MenuItem from '@mui/material/MenuItem';
+import Menu from '@mui/material/Menu';
 import { useDataTableContext } from '../dataTableUtils';
 import type { DataTableCellProps, DataTableLineProps } from '../dataTableTypes';
 import { DataTableColumn } from '../dataTableTypes';
 import type { Theme } from '../../Theme';
+import { useFormatter } from '../../i18n';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -102,7 +108,11 @@ const DataTableLine = ({
   index,
   onToggleShiftEntity,
 }: DataTableLineProps) => {
+  const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
+  const [anchorEl, setAnchorEl] = useState<PopoverProps['anchorEl']>(null);
+  const handleOpen = (event: React.MouseEvent) => setAnchorEl(event.currentTarget);
+  const handleClose = () => setAnchorEl(null);
 
   const {
     storageKey,
@@ -132,7 +142,6 @@ const DataTableLine = ({
   }
 
   const startsWithSelect = effectiveColumns.at(0)?.id === 'select';
-
   return (
     <div
       key={row.id}
@@ -191,6 +200,18 @@ const DataTableLine = ({
         }}
       >
         {actions && actions(data)}
+        {data.dashboard && (
+        <>
+          <IconButton onClick={handleOpen} aria-haspopup="true" size="large" color="primary">
+            <MoreVert/>
+          </IconButton>
+          <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
+            <MenuItem>{t_i18n('Go to Original dashboard')}</MenuItem>
+            <MenuItem>{t_i18n('Copy public link')}</MenuItem>
+            <MenuItem>{t_i18n('Disable public link')}</MenuItem>
+          </Menu>
+        </>
+        )}
         {effectiveColumns.at(-1)?.id === 'navigate' && (
           <IconButton onClick={() => navigate(link)}>
             <KeyboardArrowRightOutlined />
