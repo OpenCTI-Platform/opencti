@@ -268,7 +268,7 @@ export const buildRelationData = async (context, user, input, opts = {}) => {
   const relToCreate = [];
   if (isStixRelationshipExceptRef(relationshipType)) {
     // We need to link the data to organization sharing, only for core and sightings.
-    if (isUserHasCapability(user, KNOWLEDGE_ORGANIZATION_RESTRICT)) {
+    if (isUserHasCapability(user, KNOWLEDGE_ORGANIZATION_RESTRICT) && input[INPUT_GRANTED_REFS]) {
       relToCreate.push(...buildInnerRelation(data, input[INPUT_GRANTED_REFS], RELATION_GRANTED_TO));
     } else if (!user.inside_platform_organization) {
       // If user is not part of the platform organization, put its own organizations
