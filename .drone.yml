@@ -81,7 +81,6 @@ steps:
       - yarn lint
       - NODE_OPTIONS=--max_old_space_size=8192 yarn test
 
-
   - name: frontend-e2e-tests
     image: node:20.16.0
     volumes:
@@ -103,20 +102,15 @@ steps:
       - frontend-tests
 
   - name: upload-build-artefact
-    image: node:20.16.0
-    failure: ignore
     when:
       status:
         - failure
         - success
-    environment:
       JFROG_TOKEN:
           from_secret: jfrog_token
       JFROG_BUILD_NAME: opencti-build
       JFROG_REPOSITORY: opencti-drone
       JFROG_URL: https://filigran.jfrog.io/artifactory
-    commands:
-      - apt-get update
       # see https://docs.jfrog-applications.jfrog.io/jfrog-applications/jfrog-cli/cli-for-jfrog-artifactory
       - npm install -g jfrog-cli-v2-jf
       # Collect git info
@@ -128,9 +122,7 @@ steps:
       - jf rt bp $JFROG_BUILD_NAME $DRONE_BUILD_NUMBER --url=$JFROG_URL --access-token=$JFROG_TOKEN --build-url=$DRONE_BUILD_LINK
       # Cleaning up old build in JFrog
       - jf rt bdi $JFROG_BUILD_NAME --max-days=30 --url=$JFROG_URL --access-token=$JFROG_TOKEN
-    depends_on:
       - frontend-e2e-tests
-
   - name: frontend-verify-translation
     image: node:20.16.0
     commands:

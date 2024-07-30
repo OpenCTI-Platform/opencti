@@ -902,6 +902,19 @@
       "x_opencti_id": "057e0f4e-34cf-45c5-bef4-cfc3cf5ae4ec",
       "x_opencti_type": "Incident",
       "type": "incident"
+    },
+    {
+      "id": "grouping--1d2cb936-0259-52f6-ac06-dcb8f5536732",
+      "spec_version": "2.1",
+      "revoked": false,
+      "confidence": 100,
+      "created": "2024-07-30T13:15:37.447Z",
+      "modified": "2024-07-30T13:15:37.447Z",
+      "name": "Navigation test grouping entity",
+      "context": "unspecified",
+      "x_opencti_id": "91bced0e-63dc-4ea6-ab6d-7137706b1d87",
+      "x_opencti_type": "Grouping",
+      "type": "grouping"
     }
   ]
 }

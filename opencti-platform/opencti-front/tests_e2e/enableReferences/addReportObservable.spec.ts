@@ -123,7 +123,7 @@ test('Add and remove observable from Observables tab of a Report as Admin user',
   await reportPage.getCreateReportButton().click();
   await reportPage.getItemFromList('Test add observable e2e').click();
   await expect(reportDetailsPage.getPage()).toBeVisible();
-  await reportDetailsPage.goToObservablesTab();
+  await reportDetailsPage.tabs.goToObservablesTab();
   await expect(containerObservablesPage.getPage()).toBeVisible();
   await containerObservablesPage.getAddObservableListButton().click();
   await containerAddObservablesPage.createNewIPV4Observable('8.8.8.8');
@@ -140,7 +140,7 @@ test('Add and remove observable from Observables tab of a Report as Admin user',
 
   await leftBarPage.clickOnMenu('Analyses', 'Reports');
   await reportPage.getItemFromList('Test add observable e2e').click();
-  await reportDetailsPage.goToObservablesTab();
+  await reportDetailsPage.tabs.goToObservablesTab();
   await expect(containerObservablesPage.getPage()).toBeVisible();
   await containerObservablesPage.getAddObservableListButton().click();
   await expect(containerAddObservablesPage.getObservable('IPv4 address 8.8.8.8')).toBeVisible();
@@ -173,7 +173,7 @@ test.describe('Add and remove observable from Observables tab of a Report as noB
     await reportPage.getCreateReportButton().click();
     await reportPage.getItemFromList('Test add observable e2e 2').click();
     await expect(reportDetailsPage.getPage()).toBeVisible();
-    await reportDetailsPage.goToObservablesTab();
+    await reportDetailsPage.tabs.goToObservablesTab();
     await expect(containerObservablesPage.getPage()).toBeVisible();
     await containerObservablesPage.getAddObservableListButton().click();
     await containerAddObservablesPage.createNewIPV4Observable('9.9.9.9');
@@ -191,7 +191,7 @@ test.describe('Add and remove observable from Observables tab of a Report as noB
 
     await leftBarPage.clickOnMenu('Analyses', 'Reports');
     await reportPage.getItemFromList('Test add observable e2e 2').click();
-    await reportDetailsPage.goToObservablesTab();
+    await reportDetailsPage.tabs.goToObservablesTab();
     await expect(containerObservablesPage.getPage()).toBeVisible();
     await containerObservablesPage.getAddObservableListButton().click();
     await expect(containerAddObservablesPage.getObservable('IPv4 address 9.9.9.9')).toBeVisible();
