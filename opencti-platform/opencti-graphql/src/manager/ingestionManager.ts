@@ -224,11 +224,7 @@ export interface TaxiiResponseData {
 export const prepareTaxiiGetParam = (ingestion: BasicStoreEntityIngestionTaxii) => {
   const next = ingestion.current_state_cursor;
   const added_after = ingestion.added_after_start;
-  const more = ingestion.taxii_more || false;
-  if (more) {
-    return { next, added_after };
-  }
-  return { added_after };
+  return { next, added_after };
 };
 
 const taxiiHttpGet = async (ingestion: BasicStoreEntityIngestionTaxii): Promise<TaxiiResponseData> => {
@@ -274,19 +270,19 @@ export const processTaxiiResponse = async (context: AuthContext, ingestion: Basi
     });
     const more = data.more || false;
     // Update the state
-    if (more) {
+    if (more && data.next) {
       // Do not touch to added_after_start
       await patchTaxiiIngestion(context, SYSTEM_USER, ingestion.internal_id, {
-        current_state_cursor: data.next ? data.next : undefined,
+        current_state_cursor: data.next,
         taxii_more: more,
         last_execution_date: now()
       });
     } else {
-      // Reset the pagination cursor
+      // Reset the pagination cursor, and update date
       await patchTaxiiIngestion(context, SYSTEM_USER, ingestion.internal_id, {
         current_state_cursor: undefined,
         taxii_more: more,
-        added_after_start: addedLastHeader,
+        added_after_start: addedLastHeader ? utcDate(addedLastHeader) : utcDate(),
         last_execution_date: now()
       });
     }

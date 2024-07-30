@@ -45,7 +45,7 @@ describe('Verify taxii ingestion', () => {
     const result = await findTaxiiIngestionById(testContext, ADMIN_USER, ingestionNotPagination.id);
     expect(result.current_state_cursor).toBeUndefined();
     expect(result.taxii_more).toBeFalsy();
-    expect(result.added_after_start).toBeUndefined();
+    expect(result.added_after_start).toBeDefined();
   });
 
   it('should taxii server response with data and next page and start date', async () => {
