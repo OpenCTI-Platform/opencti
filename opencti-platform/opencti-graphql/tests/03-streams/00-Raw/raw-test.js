@@ -61,7 +61,7 @@ describe('Raw streams tests', () => {
       expect(updateEventsByTypes['identity'].length).toBe(12);
       expect(updateEventsByTypes['malware'].length).toBe(16);
       expect(updateEventsByTypes['intrusion-set'].length).toBe(4);
-      expect(updateEventsByTypes['data-component'].length).toBe(2);
+      expect(updateEventsByTypes['data-component'].length).toBe(4);
       expect(updateEventsByTypes['location'].length).toBe(12);
       expect(updateEventsByTypes['attack-pattern'].length).toBe(3);
       expect(updateEventsByTypes['feedback'].length).toBe(1);
@@ -82,7 +82,7 @@ describe('Raw streams tests', () => {
       expect(updateEventsByTypes['threat-actor'].length).toBe(17);
       expect(updateEventsByTypes['vocabulary'].length).toBe(3);
       expect(updateEventsByTypes['vulnerability'].length).toBe(3);
-      expect(updateEvents.length).toBe(144);
+      expect(updateEvents.length).toBe(146);
       for (let updateIndex = 0; updateIndex < updateEvents.length; updateIndex += 1) {
         const event = updateEvents[updateIndex];
         const { data: insideData, origin, type } = event;

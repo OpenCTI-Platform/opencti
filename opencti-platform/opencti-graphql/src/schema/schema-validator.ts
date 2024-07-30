@@ -3,7 +3,7 @@ import Ajv from 'ajv';
 import { SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION } from '@opentelemetry/semantic-conventions';
 import { schemaAttributesDefinition } from './schema-attributes';
 import { UnsupportedError, ValidationError } from '../config/errors';
-import type { BasicStoreEntityEntitySetting } from '../modules/entitySetting/entitySetting-types';
+import type { AttributeConfiguration, BasicStoreEntityEntitySetting } from '../modules/entitySetting/entitySetting-types';
 import { isEmptyField, isNotEmptyField } from '../database/utils';
 import { getEntityValidatorCreation, getEntityValidatorUpdate } from './validator-register';
 import type { AuthContext, AuthUser } from '../types/user';
@@ -16,6 +16,7 @@ import { EditOperation } from '../generated/graphql';
 import { utcDate } from '../utils/format';
 import { schemaRelationsRefDefinition } from './schema-relationsRef';
 import { extendedErrors } from '../config/conf';
+import { isUserHasCapability, KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS } from '../utils/access';
 
 const ajv = new Ajv();
 
@@ -106,6 +107,7 @@ const validateFormatSchemaAttributes = async (context: AuthContext, user: AuthUs
 // -- VALIDATE ATTRIBUTE MANDATORY --
 
 const validateMandatoryAttributes = (
+  user: AuthUser,
   input: Record<string, unknown>,
   entitySetting: BasicStoreEntityEntitySetting,
   isCreation: boolean,
@@ -115,7 +117,10 @@ const validateMandatoryAttributes = (
   if (!attributesConfiguration) {
     return;
   }
-  const mandatoryAttributes = attributesConfiguration.filter((attr) => attr.mandatory);
+  let mandatoryAttributes: AttributeConfiguration[] = [];
+  if (!isUserHasCapability(user, KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS)) {
+    mandatoryAttributes = attributesConfiguration.filter((attr) => attr.mandatory);
+  }
   // In creation if enforce reference is activated, user must provide a least 1 external references
   if (isCreation && entitySetting.enforce_reference) {
     mandatoryAttributes.push({ name: externalReferences.name, mandatory: true });
@@ -139,7 +144,7 @@ const validateMandatoryAttributesOnCreation = async (
     const inputValidValue = (inputKeys: string[], mandatoryKey: string) => (inputKeys.includes(mandatoryKey)
       && (Array.isArray(input[mandatoryKey]) ? (input[mandatoryKey] as []).some((i: string) => isNotEmptyField(i)) : isNotEmptyField(input[mandatoryKey])));
 
-    validateMandatoryAttributes(input, entitySetting, true, inputValidValue);
+    validateMandatoryAttributes(user, input, entitySetting, true, inputValidValue);
   };
   return telemetry(context, user, 'MANDATORY CREATION VALIDATION', {
     [SEMATTRS_DB_NAME]: 'validation',
@@ -157,7 +162,7 @@ const validateMandatoryAttributesOnUpdate = async (
     const inputValidValue = (inputKeys: string[], mandatoryKey: string) => (!inputKeys.includes(mandatoryKey)
       || (Array.isArray(input[mandatoryKey]) ? (input[mandatoryKey] as []).some((i: string) => isNotEmptyField(i)) : isNotEmptyField(input[mandatoryKey])));
 
-    validateMandatoryAttributes(input, entitySetting, false, inputValidValue);
+    validateMandatoryAttributes(user, input, entitySetting, false, inputValidValue);
   };
   return telemetry(context, user, 'MANDATORY UPDATE VALIDATION', {
     [SEMATTRS_DB_NAME]: 'validation',

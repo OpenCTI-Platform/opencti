@@ -41,6 +41,7 @@ const KNOWLEDGE_CAPABILITIES = {
         { name: KNOWLEDGE_DELETE, description: 'Delete knowledge', attribute_order: 300 },
         { name: KNOWLEDGE_MANAGE_AUTH_MEMBERS, description: 'Manage authorized members', attribute_order: 310 },
         { name: 'KNBYPASSREFERENCE', description: 'Bypass enforced reference', attribute_order: 320 },
+        { name: 'KNBYPASSFIELDS', description: 'Bypass mandatory fields', attribute_order: 330 },
       ],
     },
     { name: 'KNUPLOAD', description: 'Upload knowledge files', attribute_order: 400 },
