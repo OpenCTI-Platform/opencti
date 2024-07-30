@@ -1,12 +1,10 @@
 import React, { FunctionComponent, useState } from 'react';
 import { graphql } from 'react-relay';
 import { Autocomplete, TextField } from '@mui/material';
-import { Field } from 'formik';
 import { AssociatedEntityFieldQuery$data } from './__generated__/AssociatedEntityFieldQuery.graphql';
 import ItemIcon from '../../../../components/ItemIcon';
 import { useFormatter } from '../../../../components/i18n';
 import { fetchQuery } from '../../../../relay/environment';
-import AutocompleteField from '../../../../components/AutocompleteField';
 
 interface AssociatedEntityFieldProps {
   name: string;
@@ -50,14 +48,7 @@ export const associatedEntityFieldQuery = graphql`
   }
 `;
 
-// TODO
-// Figure out why query not sorted
-// Incorperate query ref?
-// Controlled vs uncontrolled component?
-
-const AssociatedEntityFieldComponent: FunctionComponent<
-Omit<AssociatedEntityFieldProps, 'type'>
-> = ({
+const AssociatedEntityField: FunctionComponent<AssociatedEntityFieldProps> = ({
   name,
   label,
   onChange,
@@ -137,31 +128,6 @@ Omit<AssociatedEntityFieldProps, 'type'>
         </li>
       )}
     />
-  );
-};
-
-const AssociatedEntityField: FunctionComponent<AssociatedEntityFieldProps> = (
-  props,
-) => {
-  const { name, label } = props;
-  return (
-    <React.Suspense
-      fallback={
-        <Field
-          component={AutocompleteField}
-          name={name}
-          disabled={true}
-          fullWidth={true}
-          options={[]}
-          renderOption={() => null}
-          textfieldprops={{
-            label,
-          }}
-        />
-      }
-    >
-      <AssociatedEntityFieldComponent {...props} />
-    </React.Suspense>
   );
 };
 
