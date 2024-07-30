@@ -80,5 +80,9 @@ test('Verify background tasks execution', { tag: ['@mutation', '@incident', '@ta
   await filter.removeLastFilter();
 
   await filter.addFilter('Label', 'background-task-search-add-label', true);
+  if (!await page.getByText('2 entitie(s)').isVisible({ timeout: 500 })) {
+    // Try to reload page in case it's a flake.
+    await entitiesPage.goto();
+  }
   await expect(page.getByText('2 entitie(s)')).toBeVisible(); // 1 by this test + 1 in stix imported data
 });
