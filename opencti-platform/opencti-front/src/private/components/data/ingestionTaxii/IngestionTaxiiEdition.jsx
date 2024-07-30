@@ -338,6 +338,7 @@ const IngestionTaxiiEditionFragment = createFragmentContainer(
       fragment IngestionTaxiiEdition_ingestionTaxii on IngestionTaxii {
         id
         name
+        description
         uri
         version
         collection

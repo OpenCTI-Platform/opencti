@@ -144,44 +144,40 @@ export const rssDataParser = async (turndownService: TurndownService, data: conv
 };
 
 const rssDataHandler = async (context: AuthContext, httpRssGet: Getter, turndownService: TurndownService, ingestion: BasicStoreEntityIngestionRss) => {
-  try {
-    const data = await httpRssGet(ingestion.uri);
-    const items = await rssDataParser(turndownService, data, ingestion.current_state_date);
-    // Build Stix bundle from items
-    if (items.length > 0) {
-      logApp.info(`[OPENCTI-MODULE] Rss ingestion execution for ${items.length} items`);
-      const reports = items.map((item) => {
-        const report: any = {
-          type: 'report',
-          name: item.title,
-          labels: item.labels,
-          description: item.description,
-          created_by_ref: ingestion.created_by_ref,
-          object_marking_refs: ingestion.object_marking_refs,
-          report_types: ingestion.report_types,
-          published: item.pubDate.toISOString(),
-        };
-        report.id = generateStandardId(ENTITY_TYPE_CONTAINER_REPORT, report);
-        if (item.link) {
-          report.external_references = [{
-            source_name: item.title,
-            description: `${ingestion.name} ${item.title}. Retrieved ${item.pubDate.toISOString()}.`,
-            url: item.link
-          }];
-        }
-        return report;
-      });
-      const bundle = { type: 'bundle', id: `bundle--${uuidv4()}`, objects: reports };
-      // Push the bundle to absorption queue
-      const stixBundle = JSON.stringify(bundle);
-      const content = Buffer.from(stixBundle, 'utf-8').toString('base64');
-      await pushToWorkerForSync({ type: 'bundle', applicant_id: ingestion.user_id ?? OPENCTI_SYSTEM_UUID, content, update: true });
-      // Update the state
-      const lastPubDate = R.last(items)?.pubDate;
-      await patchRssIngestion(context, SYSTEM_USER, ingestion.internal_id, { current_state_date: lastPubDate });
-    }
-  } catch (e) {
-    logApp.error(e, { ingestionId: ingestion.id, ingestionName: ingestion.name, ingestionType: 'RSS' });
+  const data = await httpRssGet(ingestion.uri);
+  const items = await rssDataParser(turndownService, data, ingestion.current_state_date);
+  // Build Stix bundle from items
+  if (items.length > 0) {
+    logApp.info(`[OPENCTI-MODULE] Rss ingestion execution for ${items.length} items`);
+    const reports = items.map((item) => {
+      const report: any = {
+        type: 'report',
+        name: item.title,
+        labels: item.labels,
+        description: item.description,
+        created_by_ref: ingestion.created_by_ref,
+        object_marking_refs: ingestion.object_marking_refs,
+        report_types: ingestion.report_types,
+        published: item.pubDate.toISOString(),
+      };
+      report.id = generateStandardId(ENTITY_TYPE_CONTAINER_REPORT, report);
+      if (item.link) {
+        report.external_references = [{
+          source_name: item.title,
+          description: `${ingestion.name} ${item.title}. Retrieved ${item.pubDate.toISOString()}.`,
+          url: item.link
+        }];
+      }
+      return report;
+    });
+    const bundle = { type: 'bundle', id: `bundle--${uuidv4()}`, objects: reports };
+    // Push the bundle to absorption queue
+    const stixBundle = JSON.stringify(bundle);
+    const content = Buffer.from(stixBundle, 'utf-8').toString('base64');
+    await pushToWorkerForSync({ type: 'bundle', applicant_id: ingestion.user_id ?? OPENCTI_SYSTEM_UUID, content, update: true });
+    // Update the state
+    const lastPubDate = R.last(items)?.pubDate;
+    await patchRssIngestion(context, SYSTEM_USER, ingestion.internal_id, { current_state_date: lastPubDate });
   }
 };
 
@@ -199,7 +195,7 @@ const rssExecutor = async (context: AuthContext, turndownService: TurndownServic
     const ingestion = ingestions[i];
     const ingestionPromise = rssDataHandler(context, httpGet, turndownService, ingestion)
       .catch((e) => {
-        logApp.error(e, { name: ingestion.name, context: 'Rss execution' });
+        logApp.error(e, { name: ingestion.name, context: 'RSS ingestion execution' });
       });
     ingestionPromises.push(ingestionPromise);
   }
@@ -229,7 +225,6 @@ export const prepareTaxiiGetParam = (ingestion: BasicStoreEntityIngestionTaxii) 
   const next = ingestion.current_state_cursor;
   const added_after = ingestion.added_after_start;
   const more = ingestion.taxii_more || false;
-
   if (more) {
     return { next, added_after };
   }
@@ -306,12 +301,8 @@ export const processTaxiiResponse = async (context: AuthContext, ingestion: Basi
 };
 
 const taxiiV21DataHandler: TaxiiHandlerFn = async (context: AuthContext, ingestion: BasicStoreEntityIngestionTaxii) => {
-  // try {
   const taxiResponse = await taxiiHttpGet(ingestion);
   await processTaxiiResponse(context, ingestion, taxiResponse);
-  // } catch (e) {
-  //   logApp.error(e, { ingestionId: ingestion.id, ingestionName: ingestion.name, ingestionType: 'Taxii' });
-  // }
 };
 const TAXII_HANDLERS: { [k: string]: TaxiiHandlerFn } = {
   [TaxiiVersion.V21]: taxiiV21DataHandler
@@ -355,41 +346,37 @@ const csvDataToObjects = async (csvBuffer: Buffer | string, ingestion: BasicStor
 };
 
 const csvDataHandler = async (context: AuthContext, ingestion: BasicStoreEntityIngestionCsv) => {
-  try {
-    const user = context.user ?? SYSTEM_USER;
-    const csvMapper = await findById(context, user, ingestion.csv_mapper_id);
-    const csvMapperParsed = parseCsvMapper(csvMapper);
-    csvMapperParsed.user_chosen_markings = ingestion.markings ?? [];
+  const user = context.user ?? SYSTEM_USER;
+  const csvMapper = await findById(context, user, ingestion.csv_mapper_id);
+  const csvMapperParsed = parseCsvMapper(csvMapper);
+  csvMapperParsed.user_chosen_markings = ingestion.markings ?? [];
 
-    const { data, addedLast } = await fetchCsvFromUrl(csvMapperParsed, ingestion);
-    const isUnchangedData = bcrypt.compareSync(data.toString(), ingestion.current_state_hash ?? '');
-    if (isUnchangedData) {
-      return;
-    }
-
-    const objects = await csvDataToObjects(data, ingestion, csvMapperParsed, context);
-    const bundleSize = 1000;
-    for (let index = 0; index < objects.length; index += bundleSize) {
-    // Filter objects already added to queue
-      const splitBundle = objects.slice(index, index + bundleSize);
-      const bundle = { type: 'bundle', id: `bundle--${uuidv4()}`, objects: splitBundle };
-      const stixBundle = JSON.stringify(bundle);
-      const content = Buffer.from(stixBundle, 'utf-8').toString('base64');
-      const friendlyName = 'CSV feed Ingestion';
-      const work = await createWork(context, user, IMPORT_CSV_CONNECTOR, friendlyName, IMPORT_CSV_CONNECTOR.id) as unknown as Work;
-      await updateExpectationsNumber(context, user, work.id, 1);
-      await pushToWorkerForSync({ type: 'bundle', applicant_id: ingestion.user_id ?? OPENCTI_SYSTEM_UUID, work_id: work.id, content, update: true });
-    }
-
-    // Update the state
-    const hashedIncomingData = bcrypt.hashSync(data.toString());
-    await patchCsvIngestion(context, SYSTEM_USER, ingestion.internal_id, {
-      current_state_hash: hashedIncomingData,
-      added_after_start: utcDate(addedLast),
-    });
-  } catch (e) {
-    logApp.error(e, { ingestionId: ingestion.id, ingestionName: ingestion.name, ingestionType: 'CSV' });
+  const { data, addedLast } = await fetchCsvFromUrl(csvMapperParsed, ingestion);
+  const isUnchangedData = bcrypt.compareSync(data.toString(), ingestion.current_state_hash ?? '');
+  if (isUnchangedData) {
+    return;
   }
+
+  const objects = await csvDataToObjects(data, ingestion, csvMapperParsed, context);
+  const bundleSize = 1000;
+  for (let index = 0; index < objects.length; index += bundleSize) {
+    // Filter objects already added to queue
+    const splitBundle = objects.slice(index, index + bundleSize);
+    const bundle = { type: 'bundle', id: `bundle--${uuidv4()}`, objects: splitBundle };
+    const stixBundle = JSON.stringify(bundle);
+    const content = Buffer.from(stixBundle, 'utf-8').toString('base64');
+    const friendlyName = 'CSV feed Ingestion';
+    const work = await createWork(context, user, IMPORT_CSV_CONNECTOR, friendlyName, IMPORT_CSV_CONNECTOR.id) as unknown as Work;
+    await updateExpectationsNumber(context, user, work.id, 1);
+    await pushToWorkerForSync({ type: 'bundle', applicant_id: ingestion.user_id ?? OPENCTI_SYSTEM_UUID, work_id: work.id, content, update: true });
+  }
+
+  // Update the state
+  const hashedIncomingData = bcrypt.hashSync(data.toString());
+  await patchCsvIngestion(context, SYSTEM_USER, ingestion.internal_id, {
+    current_state_hash: hashedIncomingData,
+    added_after_start: utcDate(addedLast),
+  });
 };
 const csvExecutor = async (context: AuthContext) => {
   const filters = {
@@ -404,7 +391,7 @@ const csvExecutor = async (context: AuthContext) => {
     const ingestion = ingestions[i];
     const ingestionPromise = csvDataHandler(context, ingestion)
       .catch((e) => {
-        logApp.error('[OPENCTI-MODULE] Ingestion manager execution error', { error: e, name: ingestion.name });
+        logApp.error(e, { name: ingestion.name, context: 'CSV ingestion execution' });
       });
     ingestionPromises.push(ingestionPromise);
   }

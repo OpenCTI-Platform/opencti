@@ -158,6 +158,7 @@ const IngestionTaxiiLineFragment = createFragmentContainer(
       fragment IngestionTaxiiLine_node on IngestionTaxii {
         id
         name
+        description
         uri
         version
         ingestion_running

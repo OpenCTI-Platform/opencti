@@ -40,6 +40,7 @@ const ingestionTaxiiEditionQuery = graphql`
     ingestionTaxii(id: $id) {
       id
       name
+      description
       uri
       version
       ingestion_running
