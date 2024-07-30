@@ -3289,7 +3289,7 @@ export const elReindexElements = async (context, user, ids, sourceIndex, destInd
         index: destIndex
       },
       script: { // remove old fields that are not mapped anymore but can be present in DB
-        source: "ctx._source.remove('fromType'); ctx._source.remove('toType'); ctx._source.remove('spec_version'); ctx._source.remove('representative');"
+        source: "ctx._source.remove('fromType'); ctx._source.remove('toType'); ctx._source.remove('spec_version'); ctx._source.remove('representative'); ctx._source.remove('rel_has-reference');"
       },
     }
   };
