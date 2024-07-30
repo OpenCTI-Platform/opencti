@@ -2185,7 +2185,7 @@ enum StixCoreObjectsOrdering {
 
 type StixCoreObjectConnection {
   pageInfo: PageInfo!
-  edges: [StixCoreObjectEdge]
+  edges: [StixCoreObjectEdge!]!
 }
 
 type StixCoreObjectEdge {

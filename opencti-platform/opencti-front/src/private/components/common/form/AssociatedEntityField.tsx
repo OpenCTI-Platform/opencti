@@ -1,14 +1,14 @@
 import React, { FunctionComponent, useState } from 'react';
-import { Field } from 'formik';
 import { graphql } from 'react-relay';
 import { Autocomplete, TextField } from '@mui/material';
-import AutocompleteField from '../../../../components/AutocompleteField';
+import { Field } from 'formik';
 import { AssociatedEntityFieldQuery$data } from './__generated__/AssociatedEntityFieldQuery.graphql';
 import ItemIcon from '../../../../components/ItemIcon';
 import { useFormatter } from '../../../../components/i18n';
 import { fetchQuery } from '../../../../relay/environment';
+import AutocompleteField from '../../../../components/AutocompleteField';
 
-interface AssociatedEntityProps {
+interface AssociatedEntityFieldProps {
   name: string;
   label: string;
   onChange?: (name: string, value: AssociatedEntityOption) => void;
@@ -34,110 +34,8 @@ export const associatedEntityFieldQuery = graphql`
           id
           entity_type
           parent_types
-          ... on Note {
-            attribute_abstract
-          }
-          ... on MalwareAnalysis {
-            result_name
-          }
-          ... on Artifact {
-            observable_value
-          }
-          ... on AttackPattern {
-            name
-          }
-          ... on ObservedData {
-            name
-          }
-          ... on Report {
-            name
-          }
-          ... on Grouping {
-            name
-          }
-          ... on Campaign {
-            name
-          }
-          ... on CourseOfAction {
-            name
-          }
-          ... on Individual {
-            name
-          }
-          ... on Organization {
-            name
-          }
-          ... on Sector {
-            name
-          }
-          ... on System {
-            name
-          }
-          ... on Indicator {
-            name
-          }
-          ... on Infrastructure {
-            name
-          }
-          ... on IntrusionSet {
-            name
-          }
-          ... on Position {
-            name
-          }
-          ... on City {
-            name
-          }
-          ... on AdministrativeArea {
-            name
-          }
-          ... on Country {
-            name
-          }
-          ... on Region {
-            name
-          }
-          ... on Malware {
-            name
-          }
-          ... on MalwareAnalysis {
-            result_name
-          }
-          ... on ThreatActor {
-            name
-          }
-          ... on Tool {
-            name
-          }
-          ... on Vulnerability {
-            name
-          }
-          ... on Incident {
-            name
-          }
-          ... on Event {
-            name
-          }
-          ... on Channel {
-            name
-          }
-          ... on Narrative {
-            name
-          }
-          ... on DataComponent {
-            name
-          }
-          ... on DataSource {
-            name
-          }
-          ... on Case {
-            name
-          }
-          ... on Task {
-            name
-          }
-          ... on StixCyberObservable {
-            observable_value
+          representative {
+              main
           }
           objectMarking {
             id
@@ -158,7 +56,7 @@ export const associatedEntityFieldQuery = graphql`
 // Controlled vs uncontrolled component?
 
 const AssociatedEntityFieldComponent: FunctionComponent<
-Omit<AssociatedEntityProps, 'type'>
+Omit<AssociatedEntityFieldProps, 'type'>
 > = ({
   name,
   label,
@@ -173,18 +71,18 @@ Omit<AssociatedEntityProps, 'type'>
     if (!event) return;
     setInputValue(newValue || '');
     fetchQuery(associatedEntityFieldQuery, {
-      search: newValue && newValue.length > 0 ? newValue : '',
+      search: newValue ?? '',
       types: [],
     })
       .toPromise()
       .then((data) => {
         const { stixCoreObjects } = data as AssociatedEntityFieldQuery$data;
-        const elements = stixCoreObjects?.edges?.map((e) => e?.node);
+        const elements = stixCoreObjects?.edges.map((e) => e.node);
         if (elements) {
-          const newAssociatedEntities = elements?.map((n) => ({
-            label: n?.name || n?.attribute_abstract || n?.result_name || n?.observable_value || n?.id || '',
-            type: n?.entity_type || '',
-            value: n?.id || '',
+          const newAssociatedEntities = elements.map((n) => ({
+            label: n.representative.main,
+            type: n.entity_type,
+            value: n.id,
           }))
             .sort((a, b) => a.label.localeCompare(b.label))
             .sort((a, b) => a.type.localeCompare(b.type));
@@ -210,8 +108,8 @@ Omit<AssociatedEntityProps, 'type'>
       fullWidth={true}
       selectOnFocus={true}
       autoHighlight={true}
-      getOptionLabel={(option) => (option.label ? option.label : '')}
-      value={value || undefined}
+      getOptionLabel={(option) => (option.label ?? '')}
+      value={value ?? undefined}
       multiple={false}
       renderInput={(params) => (
         <TextField
@@ -242,7 +140,7 @@ Omit<AssociatedEntityProps, 'type'>
   );
 };
 
-const AssociatedEntityField: FunctionComponent<AssociatedEntityProps> = (
+const AssociatedEntityField: FunctionComponent<AssociatedEntityFieldProps> = (
   props,
 ) => {
   const { name, label } = props;

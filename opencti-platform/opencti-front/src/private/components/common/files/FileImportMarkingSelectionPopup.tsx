@@ -13,19 +13,19 @@ import { useFormatter } from '../../../../components/i18n';
 
 type FileImportMarkingSelectionPopupProps = {
   closePopup: () => void;
-  handleUpload: (fileMarkings: string[], associatedEntityId: string | undefined) => void;
+  handleUpload: (fileMarkings: string[], associatedEntityId?: string) => void;
   isOpen: boolean
   entityId: string
 };
 
-export type SubmittedFormValuesType = {
+export type SubmittedFormValues = {
   fileMarkings: Option[];
   associatedEntity: AssociatedEntityOption;
 };
 
 const FileImportMarkingSelectionPopup = ({ closePopup, handleUpload, isOpen, entityId }: FileImportMarkingSelectionPopupProps) => {
   const { t_i18n } = useFormatter();
-  const handleSubmit = (values: SubmittedFormValuesType) => {
+  const handleSubmit = (values: SubmittedFormValues) => {
     const fileMarkings = values.fileMarkings.map(({ value }) => value);
     const associatedEntity = (entityId || values.associatedEntity?.value) || undefined; // Double check this logic
     closePopup();

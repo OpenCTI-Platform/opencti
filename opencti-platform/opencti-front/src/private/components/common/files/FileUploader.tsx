@@ -95,7 +95,7 @@ const FileUploader: FunctionComponent<FileUploaderProps> = ({
         } else {
           onUploadSuccess();
         }
-        if ((entityId === undefined) && (associatedEntityId !== undefined)) { // if adding upload context, redirect to that entity
+        if (!entityId && associatedEntityId) { // if global import with entity upload context: redirect to that entity
           const entityType = fileId?.split('/')[1];
           if (entityType) {
             navigate(`${resolveLink(entityType)}/${associatedEntityId}/files`);
