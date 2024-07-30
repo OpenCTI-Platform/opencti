@@ -174,7 +174,8 @@ const PublicDashboards = () => {
     );
   };
   const redirectToDashboard = (id: string) => {
-    window.location.href = `${window.location.origin}/dashboard/workspaces/dashboards/${id}`;
+    const dashboardUrl = `/dashboard/workspaces/dashboards/${id}`;
+    window.location.assign(dashboardUrl);
   };
   const dataColumns: DataTableProps['dataColumns'] = {
     name: {
