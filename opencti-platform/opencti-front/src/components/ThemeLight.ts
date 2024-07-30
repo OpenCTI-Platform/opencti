@@ -29,7 +29,7 @@ const ThemeLight = (
   borderRadius: 4,
   palette: {
     mode: 'light',
-    common: { white: '#ffffff' },
+    common: { white: '#ffffff', grey: '#494A50' },
     error: {
       main: '#f44336',
       dark: '#c62828',

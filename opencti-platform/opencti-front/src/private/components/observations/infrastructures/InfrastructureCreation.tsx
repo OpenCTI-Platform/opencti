@@ -24,9 +24,9 @@ import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySe
 import { insertNode } from '../../../../utils/store';
 import { Option } from '../../common/form/ReferenceField';
 import { InfrastructureCreationMutation, InfrastructureCreationMutation$variables } from './__generated__/InfrastructureCreationMutation.graphql';
-import { InfrastructuresLinesPaginationQuery$variables } from './__generated__/InfrastructuresLinesPaginationQuery.graphql';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
+import { InfrastructuresLinesPaginationQuery$variables } from '../__generated__/InfrastructuresLinesPaginationQuery.graphql';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useHelper from '../../../../utils/hooks/useHelper';
 import useBulkCommit from '../../../../utils/hooks/useBulkCommit';
@@ -46,7 +46,7 @@ const infrastructureMutation = graphql`
       description
       entity_type
       parent_types
-      ...InfrastructureLine_node
+      ...InfrastructuresLine_node
     }
   }
 `;

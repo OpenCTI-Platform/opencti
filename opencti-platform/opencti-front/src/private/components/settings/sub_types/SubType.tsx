@@ -5,6 +5,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import { graphql, useFragment, useSubscription } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import EntitySettingCustomOverview from '@components/settings/sub_types/entity_setting/EntitySettingCustomOverview';
+import { RootSubTypeQuery$variables } from '@components/settings/sub_types/__generated__/RootSubTypeQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import ItemStatusTemplate from '../../../../components/ItemStatusTemplate';
 import SubTypeStatusPopover from './SubTypeWorkflowPopover';
@@ -14,7 +15,6 @@ import EntitySettingAttributes from './entity_setting/EntitySettingAttributes';
 import CustomizationMenu from '../CustomizationMenu';
 import SearchInput from '../../../../components/SearchInput';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
-import { DataSourcesLinesPaginationQuery$variables } from '../../techniques/data_sources/__generated__/DataSourcesLinesPaginationQuery.graphql';
 import useHelper from '../../../../utils/hooks/useHelper';
 
 // Deprecated - https://mui.com/system/styles/basics/
@@ -90,7 +90,7 @@ const SubType: React.FC<SubTypeProps> = ({ data }) => {
   useSubscription(config);
 
   const LOCAL_STORAGE_KEY = `${subType.id}-attributes`;
-  const { viewStorage, helpers } = usePaginationLocalStorage<DataSourcesLinesPaginationQuery$variables>(
+  const { viewStorage, helpers } = usePaginationLocalStorage<RootSubTypeQuery$variables>(
     LOCAL_STORAGE_KEY,
     { searchTerm: '' },
   );

@@ -33,9 +33,7 @@ const stixCoreObjectOpinionsOpenVocabQuery = graphql`
   }
 `;
 
-const StixCoreObjectOpinionsComponent: FunctionComponent<
-StixCoreObjectOpinionsProps
-> = ({
+const StixCoreObjectOpinionsComponent: FunctionComponent<StixCoreObjectOpinionsProps> = ({
   stixCoreObjectId,
   queryVocabulariesRef,
 }) => {
@@ -85,13 +83,15 @@ StixCoreObjectOpinionsProps
         gutterBottom={true}
         style={{ float: 'left' }}
       >
-        {t_i18n('Distribution of opinions')}
+        <div style={{ display: 'flex' }}>
+          {t_i18n('Distribution of opinions')}
+          <StixCoreObjectOpinionsDialog
+            stixCoreObjectId={stixCoreObjectId}
+            opinionOptions={opinionOptions}
+            fetchDistributionQuery={fetchDistributionQuery}
+          />
+        </div>
       </Typography>
-      <StixCoreObjectOpinionsDialog
-        stixCoreObjectId={stixCoreObjectId}
-        opinionOptions={opinionOptions}
-        fetchDistributionQuery={fetchDistributionQuery}
-      />
       <div className="clearfix" />
       {queryRef && (
         <React.Suspense

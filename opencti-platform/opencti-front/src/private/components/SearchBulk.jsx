@@ -18,8 +18,8 @@ import ToggleButton from '@mui/material/ToggleButton';
 import Tooltip from '@mui/material/Tooltip';
 import { ToggleButtonGroup } from '@mui/material';
 import { allEntitiesKeyList } from './common/bulk/utils/querySearchEntityByText';
+import { searchStixCoreObjectsLinesSearchQuery } from './Search';
 import ItemIcon from '../../components/ItemIcon';
-import { searchStixCoreObjectsLinesSearchQuery } from './search/SearchStixCoreObjectsLines';
 import { fetchQuery } from '../../relay/environment';
 import { useFormatter } from '../../components/i18n';
 import { getMainRepresentative } from '../../utils/defaultRepresentatives';
@@ -309,25 +309,7 @@ const SearchBulk = () => {
                   );
                   return values.map((value) => {
                     const resolvedStixCoreObjects = stixCoreObjects.filter(
-                      (o) => o.name?.toLowerCase() === value.toLowerCase()
-                        || o.aliases
-                          ?.map((p) => p.toLowerCase())
-                          .includes(value.toLowerCase())
-                        || o.x_opencti_aliases
-                          ?.map((p) => p.toLowerCase())
-                          .includes(value.toLowerCase())
-                        || o.x_opencti_additional_names
-                          ?.map((p) => p.toLowerCase())
-                          .includes(value.toLowerCase())
-                        || o.x_mitre_id?.toLowerCase() === value.toLowerCase()
-                        || o.value?.toLowerCase() === value.toLowerCase()
-                        || o.observable_value?.toLowerCase()
-                          === value.toLowerCase()
-                        || o.subject?.toLowerCase() === value.toLowerCase()
-                        || o.abstract?.toLowerCase() === value.toLowerCase()
-                        || o.hashes
-                          ?.map((h) => h.hash.toLowerCase())
-                          .includes(value.toLowerCase()),
+                      (o) => values.includes(getMainRepresentative(o).toLowerCase()),
                     );
                     if (resolvedStixCoreObjects.length > 0) {
                       return resolvedStixCoreObjects.map(

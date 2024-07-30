@@ -99,7 +99,7 @@ const GroupEditionUsers: FunctionComponent<GroupEditionUsersProps> = ({ group, q
   return (
     <DataTableWithoutFragment
       dataColumns={{
-        name: { flexSize: 50, isSortable: false },
+        name: { percentWidth: 50, isSortable: false },
         user_email: {},
       }}
       storageKey={`group-${group.id}-users`}
@@ -107,6 +107,7 @@ const GroupEditionUsers: FunctionComponent<GroupEditionUsersProps> = ({ group, q
       globalCount={users.length}
       filtersComponent={children}
       variant={DataTableVariant.inline}
+      disableNavigation
       actions={(user) => {
         const groupUser = groupUsers.find((g) => g.id === user.id);
         return (

@@ -1,22 +1,119 @@
-import React, { FunctionComponent, Suspense } from 'react';
-import ListLines from '../../../components/list_lines/ListLines';
+import React, { FunctionComponent } from 'react';
+import { graphql } from 'react-relay';
+import { FeedbacksLinesPaginationQuery, FeedbacksLinesPaginationQuery$variables } from '@components/cases/__generated__/FeedbacksLinesPaginationQuery.graphql';
+import { FeedbacksLines_data$data } from '@components/cases/__generated__/FeedbacksLines_data.graphql';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import FeedbacksLines, { feedbacksLinesQuery } from './feedbacks/FeedbacksLines';
-import { FeedbackLineDummy } from './feedbacks/FeedbackLine';
 import useAuth from '../../../utils/hooks/useAuth';
-import useEntityToggle from '../../../utils/hooks/useEntityToggle';
-import ToolBar from '../data/ToolBar';
-import ExportContextProvider from '../../../utils/ExportContextProvider';
-import { FeedbacksLinesPaginationQuery, FeedbacksLinesPaginationQuery$variables } from './feedbacks/__generated__/FeedbacksLinesPaginationQuery.graphql';
-import { FeedbackLine_node$data } from './feedbacks/__generated__/FeedbackLine_node.graphql';
 import { useBuildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
+import DataTable from '../../../components/dataGrid/DataTable';
+import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
+import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
 
 interface FeedbacksProps {
   inputValue?: string;
 }
+
+const feedbackFragment = graphql`
+  fragment FeedbacksLine_node on Feedback {
+    id
+    standard_id
+    name
+    description
+    rating
+    entity_type
+    created
+    createdBy {
+      ... on Identity {
+        id
+        name
+        entity_type
+      }
+    }
+    objectMarking {
+      id
+      definition_type
+      definition
+      x_opencti_order
+      x_opencti_color
+    }
+    objectLabel {
+      id
+      value
+      color
+    }
+    creators {
+      id
+      name
+    }
+    status {
+      id
+      order
+      template {
+        name
+        color
+      }
+    }
+    workflowEnabled
+  }
+`;
+
+const feedbacksLinesQuery = graphql`
+  query FeedbacksLinesPaginationQuery(
+    $search: String
+    $count: Int
+    $cursor: ID
+    $orderBy: FeedbacksOrdering
+    $orderMode: OrderingMode
+    $filters: FilterGroup
+  ) {
+    ...FeedbacksLines_data
+    @arguments(
+      search: $search
+      count: $count
+      cursor: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+      filters: $filters
+    )
+  }
+`;
+
+const feedbacksLinesFragment = graphql`
+  fragment FeedbacksLines_data on Query
+  @argumentDefinitions(
+    search: { type: "String" }
+    count: { type: "Int" }
+    cursor: { type: "ID" }
+    orderBy: { type: "FeedbacksOrdering" }
+    orderMode: { type: "OrderingMode", defaultValue: desc }
+    filters: { type: "FilterGroup" }
+  )
+  @refetchable(queryName: "FeedbackLinesRefetchQuery") {
+    feedbacks(
+      search: $search
+      first: $count
+      after: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+      filters: $filters
+    ) @connection(key: "Pagination_feedbacks") {
+      edges {
+        node {
+          id
+          ...FeedbacksLine_node
+        }
+      }
+      pageInfo {
+        endCursor
+        hasNextPage
+        globalCount
+      }
+    }
+  }
+`;
 
 export const LOCAL_STORAGE_KEY_FEEDBACK = 'feedbacks';
 
@@ -25,156 +122,76 @@ const Feedbacks: FunctionComponent<FeedbacksProps> = () => {
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
-  const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<FeedbacksLinesPaginationQuery$variables>(
-    LOCAL_STORAGE_KEY_FEEDBACK,
-    {
-      numberOfElements: {
-        number: 0,
-        symbol: '',
-      },
-      searchTerm: '',
-      sortBy: 'name',
-      orderAsc: true,
-      openExports: false,
-      filters: emptyFilterGroup,
-    },
-  );
-  const {
-    onToggleEntity,
-    numberOfSelectedElements,
-    handleClearSelectedElements,
-    selectedElements,
-    deSelectedElements,
-    handleToggleSelectAll,
-    selectAll,
-  } = useEntityToggle<FeedbackLine_node$data>(LOCAL_STORAGE_KEY_FEEDBACK);
-  const renderLines = () => {
-    const {
-      sortBy,
-      orderAsc,
-      searchTerm,
-      filters,
-      openExports,
-      numberOfElements,
-    } = viewStorage;
-    const isRuntimeSort = isRuntimeFieldEnable() ?? false;
-    const dataColumns = {
-      name: {
-        label: 'Name',
-        width: '25%',
-        isSortable: true,
-      },
-      rating: {
-        label: 'Rating',
-        width: '8%',
-        isSortable: true,
-      },
-      createdBy: {
-        label: 'Author',
-        width: '12%',
-        isSortable: isRuntimeSort,
-      },
-      creator: {
-        label: 'Creators',
-        width: '12%',
-        isSortable: isRuntimeSort,
-      },
-      objectLabel: {
-        label: 'Labels',
-        width: '15%',
-        isSortable: false,
-      },
-      created: {
-        label: 'Original creation date',
-        width: '10%',
-        isSortable: true,
-      },
-      x_opencti_workflow_id: {
-        label: 'Status',
-        width: '8%',
-        isSortable: true,
-      },
-      objectMarking: {
-        label: 'Marking',
-        width: '8%',
-        isSortable: isRuntimeSort,
-      },
-    };
 
-    const contextFilters = useBuildEntityTypeBasedFilterContext('Feedback', filters);
-    const queryPaginationOptions = {
-      ...paginationOptions,
-      filters: contextFilters,
-    } as unknown as FeedbacksLinesPaginationQuery$variables;
-    const queryRef = useQueryLoading<FeedbacksLinesPaginationQuery>(
-      feedbacksLinesQuery,
-      queryPaginationOptions,
-    );
-
-    return (
-      <ListLines
-        helpers={helpers}
-        sortBy={sortBy}
-        orderAsc={orderAsc}
-        dataColumns={dataColumns}
-        handleSort={helpers.handleSort}
-        handleSearch={helpers.handleSearch}
-        handleAddFilter={helpers.handleAddFilter}
-        handleRemoveFilter={helpers.handleRemoveFilter}
-        handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
-        handleSwitchLocalMode={helpers.handleSwitchLocalMode}
-        handleToggleExports={helpers.handleToggleExports}
-        handleToggleSelectAll={handleToggleSelectAll}
-        selectAll={selectAll}
-        openExports={openExports}
-        exportContext={{ entity_type: 'Feedback' }}
-        keyword={searchTerm}
-        filters={filters}
-        paginationOptions={queryPaginationOptions}
-        numberOfElements={numberOfElements}
-        iconExtension={true}
-      >
-        {queryRef && (
-          <Suspense
-            fallback={
-              <>
-                {Array(20)
-                  .fill(0)
-                  .map((_, idx) => (
-                    <FeedbackLineDummy key={idx} dataColumns={dataColumns} />
-                  ))}
-              </>
-            }
-          >
-            <FeedbacksLines
-              queryRef={queryRef}
-              paginationOptions={queryPaginationOptions}
-              dataColumns={dataColumns}
-              setNumberOfElements={helpers.handleSetNumberOfElements}
-              selectedElements={selectedElements}
-              deSelectedElements={deSelectedElements}
-              onToggleEntity={onToggleEntity}
-              selectAll={selectAll}
-            />
-            <ToolBar
-              selectedElements={selectedElements}
-              deSelectedElements={deSelectedElements}
-              numberOfSelectedElements={numberOfSelectedElements}
-              handleClearSelectedElements={handleClearSelectedElements}
-              selectAll={selectAll}
-              type="Feedback"
-              filters={contextFilters}
-            />
-          </Suspense>
-        )}
-      </ListLines>
-    );
+  const initialValues = {
+    searchTerm: '',
+    sortBy: 'name',
+    orderAsc: true,
+    openExports: false,
+    filters: emptyFilterGroup,
   };
+  const { viewStorage, helpers: storageHelpers, paginationOptions } = usePaginationLocalStorage<FeedbacksLinesPaginationQuery$variables>(
+    LOCAL_STORAGE_KEY_FEEDBACK,
+    initialValues,
+  );
+
+  const {
+    filters,
+  } = viewStorage;
+  const isRuntimeSort = isRuntimeFieldEnable() ?? false;
+  const dataColumns: DataTableProps['dataColumns'] = {
+    name: {},
+    rating: {},
+    createdBy: {
+      isSortable: isRuntimeSort,
+    },
+    creator: {
+      isSortable: isRuntimeSort,
+    },
+    objectLabel: {},
+    created: {
+      percentWidth: 10,
+    },
+    x_opencti_workflow_id: {},
+    objectMarking: {
+      isSortable: isRuntimeSort,
+    },
+  };
+
+  const contextFilters = useBuildEntityTypeBasedFilterContext('Feedback', filters);
+  const queryPaginationOptions = {
+    ...paginationOptions,
+    filters: contextFilters,
+  } as unknown as FeedbacksLinesPaginationQuery$variables;
+  const queryRef = useQueryLoading<FeedbacksLinesPaginationQuery>(
+    feedbacksLinesQuery,
+    queryPaginationOptions,
+  );
+
+  const preloadedPaginationProps = {
+    linesQuery: feedbacksLinesQuery,
+    linesFragment: feedbacksLinesFragment,
+    queryRef,
+    nodePath: ['feedbacks', 'pageInfo', 'globalCount'],
+    setNumberOfElements: storageHelpers.handleSetNumberOfElements,
+  } as UsePreloadedPaginationFragment<FeedbacksLinesPaginationQuery>;
+
   return (
-    <ExportContextProvider>
+    <>
       <Breadcrumbs variant="list" elements={[{ label: t_i18n('Cases') }, { label: t_i18n('Feedbacks'), current: true }]}/>
-      {renderLines()}
-    </ExportContextProvider>
+      {queryRef && (
+        <DataTable
+          dataColumns={dataColumns}
+          resolvePath={(data: FeedbacksLines_data$data) => data.feedbacks?.edges?.map((n) => n?.node)}
+          storageKey={LOCAL_STORAGE_KEY_FEEDBACK}
+          initialValues={initialValues}
+          toolbarFilters={contextFilters}
+          preloadedPaginationProps={preloadedPaginationProps}
+          lineFragment={feedbackFragment}
+          exportContext={{ entity_type: 'Feedback' }}
+        />
+      )}
+    </>
   );
 };
 

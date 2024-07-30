@@ -9,6 +9,7 @@ import * as Yup from 'yup';
 import { useNavigate } from 'react-router-dom';
 import Drawer, { DrawerControlledDialProps, DrawerVariant } from '@components/common/drawer/Drawer';
 import { handleErrorInForm } from 'src/relay/environment';
+import { CaseRfisLinesCasesPaginationQuery$variables } from '@components/cases/__generated__/CaseRfisLinesCasesPaginationQuery.graphql';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { useFormatter } from '../../../../components/i18n';
 import MarkdownField from '../../../../components/fields/MarkdownField';
@@ -27,7 +28,6 @@ import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { Option } from '../../common/form/ReferenceField';
 import { CaseRfiAddInput, CaseRfiCreationCaseMutation } from './__generated__/CaseRfiCreationCaseMutation.graphql';
-import { CaseRfiLinesCasesPaginationQuery$variables } from './__generated__/CaseRfiLinesCasesPaginationQuery.graphql';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import RichTextField from '../../../../components/fields/RichTextField';
 import ObjectParticipantField from '../../common/form/ObjectParticipantField';
@@ -57,7 +57,7 @@ const caseRfiMutation = graphql`
       parent_types
       name
       description
-      ...CaseRfiLineCase_node
+      ...CaseRfisLineCase_node
     }
   }
 `;
@@ -341,7 +341,7 @@ export const CaseRfiCreationForm: FunctionComponent<CaseRfiFormProps> = ({
 const CaseRfiCreation = ({
   paginationOptions,
 }: {
-  paginationOptions: CaseRfiLinesCasesPaginationQuery$variables;
+  paginationOptions: CaseRfisLinesCasesPaginationQuery$variables;
 }) => {
   const { t_i18n } = useFormatter();
   const { isFeatureEnable } = useHelper();

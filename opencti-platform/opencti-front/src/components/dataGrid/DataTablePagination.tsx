@@ -1,12 +1,13 @@
 import Typography from '@mui/material/Typography';
-import React, { type Dispatch, type SetStateAction, useCallback, useState } from 'react';
-import { ArrowLeft, ArrowRight, TuneOutlined } from '@mui/icons-material';
+import React, { type Dispatch, type SetStateAction, useCallback, useEffect, useState } from 'react';
+import { ArrowLeft, ArrowRight } from '@mui/icons-material';
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import { ButtonGroup } from '@mui/material';
 import Button from '@mui/material/Button';
 import { PopoverProps } from '@mui/material/Popover/Popover';
 import Menu from '@mui/material/Menu';
+import { TableTuneIcon } from 'filigran-icon';
 import { useFormatter } from '../i18n';
 import { DataTableVariant, LocalStorageColumns } from './dataTableTypes';
 import { NumberOfElements, usePaginationLocalStorage } from '../../utils/hooks/useLocalStorage';
@@ -15,11 +16,11 @@ import { useDataTableContext } from './dataTableUtils';
 const DataTablePagination = ({
   page,
   setPage,
-  numberOfElements,
+  numberOfElements: unstoreNOE,
 }: {
   page: number,
   setPage: Dispatch<SetStateAction<number>>,
-  numberOfElements: NumberOfElements,
+  numberOfElements?: NumberOfElements,
 }) => {
   const { t_i18n } = useFormatter();
 
@@ -31,7 +32,17 @@ const DataTablePagination = ({
     useDataTableLocalStorage,
   } = useDataTableContext();
 
-  const { viewStorage: { pageSize }, helpers } = usePaginationLocalStorage(storageKey, initialValues, variant !== DataTableVariant.default);
+  const {
+    viewStorage: { pageSize, numberOfElements: storedNOE = { original: 0, number: 0, symbol: '' } },
+    helpers,
+  } = usePaginationLocalStorage(storageKey, initialValues, variant !== DataTableVariant.default);
+  const numberOfElements = unstoreNOE ?? storedNOE;
+
+  // if the number of elements object changes, it means we have changed the filter or search
+  // we reset to page 1 (we might be out-of-bound in this new context)
+  useEffect(() => {
+    setPage(1);
+  }, [numberOfElements]);
 
   const items = pageSize ? Number.parseInt(pageSize, 10) : 25;
   const firstItem = items * ((page ?? 1) - 1) + 1;
@@ -49,7 +60,7 @@ const DataTablePagination = ({
   }, [page, pageSize]);
 
   const [anchorEl, setAnchorEl] = useState<PopoverProps['anchorEl']>(null);
-  const [_, setLocalStorageColumns] = useDataTableLocalStorage<LocalStorageColumns>(`${storageKey}_columns`, {}, true);
+  const [_, setLocalStorageColumns] = useDataTableLocalStorage<LocalStorageColumns>(`${storageKey}_columns`, {}, true, true);
 
   return (
     <div
@@ -69,7 +80,7 @@ const DataTablePagination = ({
         <Select
           value={pageSize ?? '25'}
           size="small"
-          variant="outlined"
+          variant="standard"
           sx={{ fontSize: 'small', marginRight: 1 }}
           onChange={(event) => helpers.handleAddProperty('pageSize', event.target.value)}
         >
@@ -87,18 +98,18 @@ const DataTablePagination = ({
       >
         <ButtonGroup
           size="small"
-          variant="outlined"
+          variant="text"
           color="pagination"
         >
           <Button
             onClick={() => fetchMore('previous')}
             size="small"
             disabled={firstItem === 1}
-            style={{ paddingLeft: 0, paddingRight: 0 }}
-            sx={{
-              ':disabled': {
-                borderColor: 'border.pagination',
-              },
+            style={{
+              paddingLeft: 0,
+              paddingRight: 0,
+              borderRight: 'none',
+              minWidth: 24,
             }}
           >
             <ArrowLeft />
@@ -107,7 +118,7 @@ const DataTablePagination = ({
             disabled
             sx={{
               ':disabled': {
-                borderColor: 'border.pagination',
+                borderRight: '0 !important',
                 color: 'pagination.main',
               },
             }}
@@ -123,12 +134,7 @@ const DataTablePagination = ({
             onClick={() => fetchMore('forward')}
             size="small"
             disabled={lastItem === numberOfElements.original}
-            style={{ paddingLeft: 0, paddingRight: 0 }}
-            sx={{
-              ':disabled': {
-                borderColor: 'border.pagination',
-              },
-            }}
+            style={{ paddingLeft: 0, paddingRight: 0, minWidth: 24 }}
           >
             <ArrowRight />
           </Button>
@@ -137,10 +143,15 @@ const DataTablePagination = ({
           variant="outlined"
           size="small"
           color="pagination"
-          sx={{ marginLeft: 1 }}
+          style={{
+            marginLeft: 15,
+            padding: 4,
+            minWidth: 32,
+            height: 32,
+          }}
           onClick={(e) => setAnchorEl(e.currentTarget)}
         >
-          <TuneOutlined />
+          <TableTuneIcon />
         </Button>
       </div>
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={() => setAnchorEl(null)}>
@@ -151,7 +162,7 @@ const DataTablePagination = ({
             setAnchorEl(null);
           }}
         >
-          {t_i18n('Reset view')}
+          {t_i18n('Reset table')}
         </MenuItem>
       </Menu>
     </div>

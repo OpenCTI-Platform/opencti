@@ -48,9 +48,10 @@ const DataTableHeaders: FunctionComponent<DataTableHeadersProps> = ({
     selectAll,
     numberOfSelectedElements,
     handleToggleSelectAll,
+    selectedElements,
   } = useDataTableToggle(storageKey);
 
-  const [_, setLocalStorageColumns] = useDataTableLocalStorage<LocalStorageColumns>(`${storageKey}_columns`, {}, true);
+  const [_, setLocalStorageColumns] = useDataTableLocalStorage<LocalStorageColumns>(`${storageKey}_columns`, {}, true, true);
 
   const [activeColumn, setActiveColumn] = useState<DataTableColumn | undefined>();
   const [anchorEl, setAnchorEl] = useState<PopoverProps['anchorEl']>(null);
@@ -77,10 +78,12 @@ const DataTableHeaders: FunctionComponent<DataTableHeadersProps> = ({
     >
       {effectiveColumns.some(({ id }) => id === 'select') && (
         <div
-          style={{ width: 'calc(var(--header-select-size) * 1px)' }}
+          style={{
+            width: 'calc(var(--header-select-size) * 1px)',
+            background: (Object.keys(selectedElements).length > 0 || selectAll) ? theme.palette.background.accent : 'unset',
+          }}
         >
           <Checkbox
-            sx={{ color: theme.palette.primary.main }}
             checked={selectAll}
             onChange={handleToggleSelectAll}
             disabled={!handleToggleSelectAll}

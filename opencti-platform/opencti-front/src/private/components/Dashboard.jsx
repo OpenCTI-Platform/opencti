@@ -28,14 +28,16 @@ import StixRelationshipsHorizontalBars from './common/stix_relationships/StixRel
 import DashboardView from './workspaces/dashboards/Dashboard';
 import useQueryLoading from '../../utils/hooks/useQueryLoading';
 import useConnectedDocumentModifier from '../../utils/hooks/useConnectedDocumentModifier';
+import WidgetLoader from '../../components/dashboard/WidgetLoader';
 
 // region styles
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
 const useStyles = makeStyles((theme) => ({
   root: {
-    flexGrow: 1,
-    marginBottom: 50,
+    marginRight: -20,
+    paddingRight: 20,
+    paddingBottom: 30,
   },
   card: {
     width: '100%',
@@ -161,7 +163,7 @@ const TargetedCountries = ({ timeField }) => {
   return (
     <>
       {queryRef && (
-        <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+        <React.Suspense fallback={<WidgetLoader />}>
           <TargetedCountriesComponent queryRef={queryRef} />
         </React.Suspense>
       )}

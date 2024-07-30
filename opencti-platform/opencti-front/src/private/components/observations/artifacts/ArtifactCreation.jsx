@@ -82,7 +82,7 @@ const artifactMutation = graphql`
       objectMarking: $objectMarking
       objectLabel: $objectLabel
     ) {
-      ...ArtifactLine_node
+      ...ArtifactsLine_node
     }
   }
 `;

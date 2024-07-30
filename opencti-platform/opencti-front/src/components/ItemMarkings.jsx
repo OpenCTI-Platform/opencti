@@ -98,7 +98,7 @@ const StyledBadge = styled(Badge)(() => ({
   },
 }));
 
-const ItemMarkings = ({ variant, markingDefinitions, limit }) => {
+const ItemMarkings = ({ variant, markingDefinitions, limit, onClick }) => {
   const markings = markingDefinitions ?? [];
   const classes = useStyles();
   const theme = useTheme();
@@ -140,6 +140,11 @@ const ItemMarkings = ({ variant, markingDefinitions, limit }) => {
               border,
             }}
             label={markingDefinition.definition}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onClick?.('objectMarking', markingDefinition.id ?? null, 'eq');
+            }}
           />
         </Tooltip>
       );
@@ -162,6 +167,11 @@ const ItemMarkings = ({ variant, markingDefinitions, limit }) => {
             className={className}
             style={monochromeStyle(inlineStyles.red.backgroundColor)}
             label={markingDefinition.definition}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onClick?.('objectMarking', markingDefinition.id ?? null, 'eq');
+            }}
           />
         );
         break;
@@ -172,6 +182,11 @@ const ItemMarkings = ({ variant, markingDefinitions, limit }) => {
             className={className}
             style={monochromeStyle(inlineStyles.orange.backgroundColor)}
             label={markingDefinition.definition}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onClick?.('objectMarking', markingDefinition.id ?? null, 'eq');
+            }}
           />
         );
         break;
@@ -183,6 +198,11 @@ const ItemMarkings = ({ variant, markingDefinitions, limit }) => {
             className={className}
             style={monochromeStyle(inlineStyles.green.backgroundColor)}
             label={markingDefinition.definition}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onClick?.('objectMarking', markingDefinition.id ?? null, 'eq');
+            }}
           />
         );
         break;
@@ -193,6 +213,11 @@ const ItemMarkings = ({ variant, markingDefinitions, limit }) => {
             className={className}
             style={monochromeStyle(inlineStyles.blue.backgroundColor)}
             label={markingDefinition.definition}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onClick?.('objectMarking', markingDefinition.id ?? null, 'eq');
+            }}
           />
         );
         break;
@@ -204,6 +229,11 @@ const ItemMarkings = ({ variant, markingDefinitions, limit }) => {
             style={inlineStyles.transparent}
             label={t_i18n(markingDefinition.definition)}
             variant="outlined"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onClick?.('objectMarking', markingDefinition.id ?? null, 'eq');
+            }}
           />
         );
         break;
@@ -214,11 +244,16 @@ const ItemMarkings = ({ variant, markingDefinitions, limit }) => {
             className={className}
             style={inlineStyles.white}
             label={markingDefinition.definition}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onClick?.('objectMarking', markingDefinition.id ?? null, 'eq');
+            }}
           />
         );
     }
     return (
-      <Tooltip title={withTooltip ? markingDefinition.definition : undefined}>
+      <Tooltip title={withTooltip ? markingDefinition.definition : undefined} key={markingDefinition.definition}>
         {chip}
       </Tooltip>
     );
@@ -257,6 +292,7 @@ const ItemMarkings = ({ variant, markingDefinitions, limit }) => {
 ItemMarkings.propTypes = {
   variant: PropTypes.string,
   limit: PropTypes.number,
+  onClick: PropTypes.func,
 };
 
 export default ItemMarkings;

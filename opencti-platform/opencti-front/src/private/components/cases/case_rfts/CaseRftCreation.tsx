@@ -9,6 +9,7 @@ import { RecordSourceSelectorProxy } from 'relay-runtime';
 import * as Yup from 'yup';
 import { useNavigate } from 'react-router-dom';
 import { handleErrorInForm } from 'src/relay/environment';
+import { CaseRftsLinesCasesPaginationQuery$variables } from '@components/cases/__generated__/CaseRftsLinesCasesPaginationQuery.graphql';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { useFormatter } from '../../../../components/i18n';
 import MarkdownField from '../../../../components/fields/MarkdownField';
@@ -27,7 +28,6 @@ import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { Option } from '../../common/form/ReferenceField';
 import { CaseRftAddInput, CaseRftCreationCaseMutation } from './__generated__/CaseRftCreationCaseMutation.graphql';
-import { CaseRftLinesCasesPaginationQuery$variables } from './__generated__/CaseRftLinesCasesPaginationQuery.graphql';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import RichTextField from '../../../../components/fields/RichTextField';
 import ObjectParticipantField from '../../common/form/ObjectParticipantField';
@@ -57,7 +57,7 @@ const caseRftMutation = graphql`
       parent_types
       name
       description
-      ...CaseRftLineCase_node
+      ...CaseRftsLineCases_data
     }
   }
 `;
@@ -340,7 +340,7 @@ export const CaseRftCreationForm: FunctionComponent<CaseRftFormProps> = ({
 const CaseRftCreation = ({
   paginationOptions,
 }: {
-  paginationOptions: CaseRftLinesCasesPaginationQuery$variables;
+  paginationOptions: CaseRftsLinesCasesPaginationQuery$variables;
 }) => {
   const { t_i18n } = useFormatter();
   const { isFeatureEnable } = useHelper();

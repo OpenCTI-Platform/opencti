@@ -56,7 +56,6 @@ const ThreatActorsIndividual = () => {
   );
 
   const { isFeatureEnable } = useHelper();
-  const dataTableEnabled = isFeatureEnable('DATA_TABLES');
   const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const renderCards = () => {
     const {
@@ -97,7 +96,7 @@ const ThreatActorsIndividual = () => {
         filters={filters}
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
-        handleChangeView={dataTableEnabled ? helpers.handleChangeView : undefined}
+        handleChangeView={helpers.handleChangeView}
         createButton={isFABReplaced && (
           <Security needs={[KNOWLEDGE_KNUPDATE]}>
             <ThreatActorIndividualCreation paginationOptions={queryPaginationOptions} />
@@ -136,17 +135,17 @@ const ThreatActorsIndividual = () => {
   const renderList = () => {
     const dataColumns = {
       name: {
-        flexSize: 15,
+        percentWidth: 15,
       },
       threat_actor_types: {
         label: 'Type',
-        flexSize: 13,
+        percentWidth: 13,
       },
       sophistication: {},
       resource_level: {},
       creator: {},
       modified: {},
-      objectMarking: { flexSize: 10 },
+      objectMarking: { percentWidth: 10 },
       objectLabel: {},
     };
 
@@ -196,7 +195,7 @@ const ThreatActorsIndividual = () => {
   return (
     <>
       <Breadcrumbs variant="list" elements={[{ label: t_i18n('Threats') }, { label: t_i18n('Threat actors (individual)'), current: true }]} />
-      {viewStorage.view !== 'lines' || !dataTableEnabled ? renderCards() : renderList()}
+      {viewStorage.view !== 'lines' ? renderCards() : renderList()}
       {!isFABReplaced && (
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <ThreatActorIndividualCreation paginationOptions={queryPaginationOptions} />

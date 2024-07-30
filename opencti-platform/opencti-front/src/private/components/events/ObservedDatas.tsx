@@ -1,185 +1,205 @@
 import React, { FunctionComponent } from 'react';
 import useHelper from 'src/utils/hooks/useHelper';
-import { QueryRenderer } from '../../../relay/environment';
-import ListLines from '../../../components/list_lines/ListLines';
-import ObservedDatasLines, { observedDatasLinesQuery } from './observed_data/ObservedDatasLines';
+import { graphql } from 'react-relay';
+import { ObservedDatasLinesPaginationQuery, ObservedDatasLinesPaginationQuery$variables } from '@components/events/__generated__/ObservedDatasLinesPaginationQuery.graphql';
+import { ObservedDatasLines_data$data } from '@components/events/__generated__/ObservedDatasLines_data.graphql';
 import ObservedDataCreation from './observed_data/ObservedDataCreation';
 import Security from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
-import { UserContext } from '../../../utils/hooks/useAuth';
-import ToolBar from '../data/ToolBar';
-import ExportContextProvider from '../../../utils/ExportContextProvider';
+import useAuth from '../../../utils/hooks/useAuth';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
-import useEntityToggle from '../../../utils/hooks/useEntityToggle';
-import { ObservedDataLine_node$data } from './observed_data/__generated__/ObservedDataLine_node.graphql';
-import { ObservedDatasLinesPaginationQuery$data, ObservedDatasLinesPaginationQuery$variables } from './observed_data/__generated__/ObservedDatasLinesPaginationQuery.graphql';
-import { ModuleHelper } from '../../../utils/platformModulesHelper';
 import { useBuildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
+import DataTable from '../../../components/dataGrid/DataTable';
+import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
+import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 
 const LOCAL_STORAGE_KEY = 'observedDatas';
+
+const observedDataFragment = graphql`
+  fragment ObservedDatasLine_node on ObservedData {
+    id
+    created
+    name
+    entity_type
+    first_observed
+    last_observed
+    number_observed
+    confidence
+    createdBy {
+      ... on Identity {
+        id
+        name
+        entity_type
+      }
+    }
+    objectMarking {
+      id
+      definition_type
+      definition
+      x_opencti_order
+      x_opencti_color
+    }
+    objectLabel {
+      id
+      value
+      color
+    }
+  }
+`;
+
+const observedDatasLinesQuery = graphql`
+  query ObservedDatasLinesPaginationQuery(
+    $search: String
+    $count: Int!
+    $cursor: ID
+    $orderBy: ObservedDatasOrdering
+    $orderMode: OrderingMode
+    $filters: FilterGroup
+  ) {
+    ...ObservedDatasLines_data
+    @arguments(
+      search: $search
+      count: $count
+      cursor: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+      filters: $filters
+    )
+  }
+`;
+
+const observedDatasLinesFragment = graphql`
+  fragment ObservedDatasLines_data on Query
+  @argumentDefinitions(
+    search: { type: "String" }
+    count: { type: "Int", defaultValue: 25 }
+    cursor: { type: "ID" }
+    orderBy: { type: "ObservedDatasOrdering", defaultValue: created }
+    orderMode: { type: "OrderingMode", defaultValue: desc }
+    filters: { type: "FilterGroup" }
+  ) @refetchable(queryName: "ObservedDatasLinesRefetchQuery") {
+    observedDatas(
+      search: $search
+      first: $count
+      after: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+      filters: $filters
+    ) @connection(key: "Pagination_observedDatas") {
+      edges {
+        node {
+          id
+          created
+          createdBy {
+            ... on Identity {
+              id
+              name
+              entity_type
+            }
+          }
+          objectMarking {
+            id
+            definition_type
+            definition
+            x_opencti_order
+            x_opencti_color
+          }
+          ...ObservedDatasLine_node
+        }
+      }
+      pageInfo {
+        endCursor
+        hasNextPage
+        globalCount
+      }
+    }
+  }
+`;
 
 const ObservedDatas: FunctionComponent = () => {
   const { t_i18n } = useFormatter();
   const { isFeatureEnable } = useHelper();
+  const {
+    platformModuleHelpers: { isRuntimeFieldEnable },
+  } = useAuth();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
+
+  const initialValues = {
+    searchTerm: '',
+    sortBy: 'last_observed',
+    orderAsc: false,
+    openExports: false,
+    filters: emptyFilterGroup,
+  };
   const {
     viewStorage,
     helpers: storageHelpers,
     paginationOptions,
   } = usePaginationLocalStorage<ObservedDatasLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY,
-    {
-      searchTerm: '',
-      sortBy: 'last_observed',
-      orderAsc: false,
-      openExports: false,
-      filters: emptyFilterGroup,
-    },
+    initialValues,
   );
   const {
-    numberOfElements,
     filters,
-    searchTerm,
-    sortBy,
-    orderAsc,
-    openExports,
   } = viewStorage;
-  const {
-    onToggleEntity,
-    numberOfSelectedElements,
-    handleClearSelectedElements,
-    selectedElements,
-    deSelectedElements,
-    handleToggleSelectAll,
-    selectAll,
-  } = useEntityToggle<ObservedDataLine_node$data>(LOCAL_STORAGE_KEY);
 
   const contextFilters = useBuildEntityTypeBasedFilterContext('Observed-Data', filters);
   const queryPaginationOptions = {
     ...paginationOptions, filters: contextFilters,
   } as unknown as ObservedDatasLinesPaginationQuery$variables;
 
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
+  const queryRef = useQueryLoading<ObservedDatasLinesPaginationQuery>(
+    observedDatasLinesQuery,
+    queryPaginationOptions,
+  );
 
-  const renderLines = (helper: ModuleHelper | undefined) => {
-    const isRuntimeSort = helper?.isRuntimeFieldEnable();
-    const dataColumns = {
-      name: {
-        label: 'Name',
-        width: '25%',
-        isSortable: false,
-      },
-      number_observed: {
-        label: 'Nb.',
-        width: 80,
-        isSortable: true,
-      },
-      first_observed: {
-        label: 'First obs.',
-        width: '12%',
-        isSortable: true,
-      },
-      last_observed: {
-        label: 'Last obs.',
-        width: '12%',
-        isSortable: true,
-      },
-      createdBy: {
-        label: 'Author',
-        width: '15%',
-        isSortable: isRuntimeSort,
-      },
-      objectLabel: {
-        label: 'Labels',
-        width: '15%',
-        isSortable: false,
-      },
-      objectMarking: {
-        label: 'Marking',
-        isSortable: isRuntimeSort,
-      },
-    };
-    return (
-      <>
-        <ListLines
-          helpers={storageHelpers}
-          sortBy={sortBy}
-          orderAsc={orderAsc}
+  const isRuntimeSort = isRuntimeFieldEnable();
+  const dataColumns = {
+    name: { percentWidth: 29 },
+    number_observed: {},
+    first_observed: {},
+    last_observed: {},
+    createdBy: { isSortable: isRuntimeSort },
+    objectLabel: {},
+    objectMarking: { isSortable: isRuntimeSort },
+  };
+
+  const preloadedPaginationProps = {
+    linesQuery: observedDatasLinesQuery,
+    linesFragment: observedDatasLinesFragment,
+    queryRef,
+    nodePath: ['observedDatas', 'pageInfo', 'globalCount'],
+    setNumberOfElements: storageHelpers.handleSetNumberOfElements,
+  } as UsePreloadedPaginationFragment<ObservedDatasLinesPaginationQuery>;
+
+  return (
+    <>
+      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Events') }, { label: t_i18n('Observed datas'), current: true }]} />
+      {queryRef && (
+        <DataTable
           dataColumns={dataColumns}
-          handleSort={storageHelpers.handleSort}
-          handleSearch={storageHelpers.handleSearch}
-          handleAddFilter={storageHelpers.handleAddFilter}
-          handleRemoveFilter={storageHelpers.handleRemoveFilter}
-          handleSwitchGlobalMode={storageHelpers.handleSwitchGlobalMode}
-          handleSwitchLocalMode={storageHelpers.handleSwitchLocalMode}
-          handleToggleExports={storageHelpers.handleToggleExports}
-          openExports={openExports}
-          handleToggleSelectAll={handleToggleSelectAll}
-          selectAll={selectAll}
+          resolvePath={(data: ObservedDatasLines_data$data) => data.observedDatas?.edges?.map((n) => n?.node)}
+          storageKey={LOCAL_STORAGE_KEY}
+          initialValues={initialValues}
+          toolbarFilters={contextFilters}
+          preloadedPaginationProps={preloadedPaginationProps}
+          lineFragment={observedDataFragment}
           exportContext={{ entity_type: 'Observed-Data' }}
-          keyword={searchTerm}
-          filters={filters}
-          paginationOptions={queryPaginationOptions}
-          numberOfElements={numberOfElements}
-          iconExtension={true}
           createButton={isFABReplaced && (
             <Security needs={[KNOWLEDGE_KNUPDATE]}>
               <ObservedDataCreation paginationOptions={queryPaginationOptions}/>
             </Security>
           )}
-        >
-          <QueryRenderer
-            query={observedDatasLinesQuery}
-            variables={queryPaginationOptions}
-            render={({
-              props,
-            }: {
-              props: ObservedDatasLinesPaginationQuery$data;
-            }) => (
-              <ObservedDatasLines
-                data={props}
-                paginationOptions={queryPaginationOptions}
-                dataColumns={dataColumns}
-                initialLoading={props === null}
-                onLabelClick={storageHelpers.handleAddFilter}
-                selectedElements={selectedElements}
-                deSelectedElements={deSelectedElements}
-                onToggleEntity={onToggleEntity}
-                selectAll={selectAll}
-                setNumberOfElements={storageHelpers.handleSetNumberOfElements}
-              />
-            )}
-          />
-        </ListLines>
-        <ToolBar
-          selectedElements={selectedElements}
-          deSelectedElements={deSelectedElements}
-          numberOfSelectedElements={numberOfSelectedElements}
-          selectAll={selectAll}
-          search={searchTerm}
-          filters={contextFilters}
-          handleClearSelectedElements={handleClearSelectedElements}
-          type="Observed-Data"
         />
-      </>
-    );
-  };
-
-  return (
-    <UserContext.Consumer>
-      {({ platformModuleHelpers }) => (
-        <ExportContextProvider>
-          <Breadcrumbs variant="list" elements={[{ label: t_i18n('Events') }, { label: t_i18n('Observed datas'), current: true }]} />
-          {renderLines(platformModuleHelpers)}
-          {!isFABReplaced && (
-            <Security needs={[KNOWLEDGE_KNUPDATE]}>
-              <ObservedDataCreation paginationOptions={queryPaginationOptions}/>
-            </Security>
-          )}
-        </ExportContextProvider>
       )}
-    </UserContext.Consumer>
+      {!isFABReplaced && (
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <ObservedDataCreation paginationOptions={queryPaginationOptions} />
+        </Security>
+      )}
+    </>
   );
 };
 

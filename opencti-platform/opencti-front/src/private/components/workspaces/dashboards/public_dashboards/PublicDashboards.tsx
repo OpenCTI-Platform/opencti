@@ -136,18 +136,18 @@ const PublicDashboards = () => {
   const dataColumns: DataTableProps['dataColumns'] = {
     name: {
       id: 'name',
-      flexSize: 18,
+      percentWidth: 18,
     },
     uri_key: {
       id: 'uri_key',
-      flexSize: 18,
+      percentWidth: 18,
       label: 'URI key',
       isSortable: true,
       render: ({ uri_key }, h) => textInTooltip(uri_key, h),
     },
     dashboard: {
       id: 'dashboard',
-      flexSize: 18,
+      percentWidth: 18,
       label: 'Dashboard',
       isSortable: false,
       render: ({ dashboard }, h) => textInTooltip(dashboard.name, h),
@@ -157,7 +157,7 @@ const PublicDashboards = () => {
     },
     enabled: {
       id: 'enabled',
-      flexSize: 15,
+      percentWidth: 15,
       label: 'Enabled',
       isSortable: true,
       render: ({ enabled }) => (
@@ -169,7 +169,7 @@ const PublicDashboards = () => {
     },
     user_id: {
       id: 'owner',
-      flexSize: 15,
+      percentWidth: 15,
       label: 'Shared by',
       isSortable: true,
       render: ({ owner }, h) => textInTooltip(owner.name, h),

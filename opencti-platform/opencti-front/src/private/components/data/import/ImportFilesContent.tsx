@@ -71,7 +71,7 @@ const importWorkbenchLinesFragment = graphql`
     count: { type: "Int", defaultValue: 500 }
     cursor: { type: "ID" }
     orderBy: { type: "FileOrdering" }
-    orderMode: { type: "OrderingMode", defaultValue: desc }
+    orderMode: { type: "OrderingMode" }
     search: { type: "String" }
     filters: { type: "FilterGroup" }
   )
@@ -143,6 +143,7 @@ const ImportFilesContent = () => {
   };
   const initialValues = {
     filters: initialFilters,
+    orderAsc: false,
   };
   const { helpers, paginationOptions } = usePaginationLocalStorage<ImportFilesContentQuery$variables>(LOCAL_STORAGE_KEY, initialValues);
   const queryPaginationOptions = {
@@ -210,19 +211,19 @@ const ImportFilesContent = () => {
       {queryRef && (
         <DataTable
           dataColumns={{
-            value: { flexSize: 50 },
+            value: { percentWidth: 50 },
             createdBy: {
-              flexSize: 15,
+              percentWidth: 15,
               render: (({ metaData: { creator } }) => creator?.name ?? '-'),
             },
             objectMarking: {
-              flexSize: 15,
+              percentWidth: 15,
             },
             lastModified: {
               id: 'lastModified',
               label: 'Modification date',
               isSortable: true,
-              flexSize: 19,
+              percentWidth: 19,
               render: ({ lastModified }, { fd }) => fd(lastModified),
             },
           }}

@@ -66,7 +66,7 @@ const styles = (theme) => ({
 const labelMutation = graphql`
   mutation LabelCreationMutation($input: LabelAddInput!) {
     labelAdd(input: $input) {
-      ...LabelLine_node
+      ...LabelsLine_node
     }
   }
 `;

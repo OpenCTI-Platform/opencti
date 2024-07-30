@@ -12,6 +12,7 @@ import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import Drawer, { DrawerControlledDialProps, DrawerVariant } from '@components/common/drawer/Drawer';
+import { IndicatorsLinesPaginationQuery$variables } from '@components/observations/__generated__/IndicatorsLinesPaginationQuery.graphql';
 import useHelper from 'src/utils/hooks/useHelper';
 import { useFormatter } from '../../../../components/i18n';
 import { handleErrorInForm } from '../../../../relay/environment';
@@ -33,7 +34,6 @@ import type { Theme } from '../../../../components/Theme';
 import { Option } from '../../common/form/ReferenceField';
 import { IndicatorCreationMutation, IndicatorCreationMutation$variables } from './__generated__/IndicatorCreationMutation.graphql';
 import { parse } from '../../../../utils/Time';
-import { IndicatorsLinesPaginationQuery$variables } from './__generated__/IndicatorsLinesPaginationQuery.graphql';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
@@ -46,7 +46,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
   createButtonContextual: {
     position: 'fixed',
     bottom: 30,
-    right: 30,
+    right: 100,
     transition: theme.transitions.create('right', {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,
@@ -70,7 +70,7 @@ const indicatorMutation = graphql`
       description
       entity_type
       parent_types
-      ...IndicatorLine_node
+      ...IndicatorsLine_node
     }
   }
 `;

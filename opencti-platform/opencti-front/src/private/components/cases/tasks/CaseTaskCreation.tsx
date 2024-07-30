@@ -38,7 +38,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
 const caseTaskAddMutation = graphql`
   mutation CaseTaskCreationMutation($input: TaskAddInput!) {
     taskAdd(input: $input) {
-      ...CaseTasksLine_data
+      ...CaseUtilsTasksLine_data
     }
   }
 `;

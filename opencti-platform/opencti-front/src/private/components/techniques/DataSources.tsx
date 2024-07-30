@@ -1,124 +1,166 @@
 import React, { FunctionComponent } from 'react';
+import { graphql } from 'react-relay';
+import { DataSourcesLines_data$data } from '@components/techniques/__generated__/DataSourcesLines_data.graphql';
+import { DataSourcesLinesPaginationQuery, DataSourcesLinesPaginationQuery$variables } from '@components/techniques/__generated__/DataSourcesLinesPaginationQuery.graphql';
 import useHelper from 'src/utils/hooks/useHelper';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
-import ListLines from '../../../components/list_lines/ListLines';
 import Security from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import DataSourceCreation from './data_sources/DataSourceCreation';
-import DataSourcesLines, { dataSourcesLinesQuery } from './data_sources/DataSourcesLines';
-import { DataSourcesLinesPaginationQuery, DataSourcesLinesPaginationQuery$variables } from './data_sources/__generated__/DataSourcesLinesPaginationQuery.graphql';
-import { DataSourceLineDummy } from './data_sources/DataSourceLine';
-import { emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
+import DataTable from '../../../components/dataGrid/DataTable';
+import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 
 export const LOCAL_STORAGE_KEY_DATA_SOURCES = 'dataSources';
+
+const dataSourceLineFragment = graphql`
+  fragment DataSourcesLine_node on DataSource {
+    id
+    name
+    entity_type
+    description
+    created
+    modified
+    x_mitre_platforms
+    collection_layers
+    confidence
+    objectMarking {
+      id
+      definition_type
+      definition
+      x_opencti_order
+      x_opencti_color
+    }
+    objectLabel {
+      id
+      value
+      color
+    }
+  }
+`;
+
+const dataSourcesLinesQuery = graphql`
+  query DataSourcesLinesPaginationQuery(
+    $search: String
+    $count: Int!
+    $cursor: ID
+    $orderBy: DataSourcesOrdering
+    $orderMode: OrderingMode
+    $filters: FilterGroup
+  ) {
+    ...DataSourcesLines_data
+    @arguments(
+      search: $search
+      count: $count
+      cursor: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+      filters: $filters
+    )
+  }
+`;
+
+const dataSourcesLinesFragment = graphql`
+  fragment DataSourcesLines_data on Query
+  @argumentDefinitions(
+    search: { type: "String" }
+    count: { type: "Int", defaultValue: 25 }
+    cursor: { type: "ID" }
+    orderBy: { type: "DataSourcesOrdering", defaultValue: name }
+    orderMode: { type: "OrderingMode", defaultValue: asc }
+    filters: { type: "FilterGroup" }
+  )
+  @refetchable(queryName: "DataSourcesLinesRefetchQuery") {
+    dataSources(
+      search: $search
+      first: $count
+      after: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+      filters: $filters
+    ) @connection(key: "Pagination_dataSources") {
+      edges {
+        node {
+          id
+          name
+          description
+          ...DataSourcesLine_node
+        }
+      }
+      pageInfo {
+        endCursor
+        hasNextPage
+        globalCount
+      }
+    }
+  }
+`;
 
 const DataSources: FunctionComponent = () => {
   const { t_i18n } = useFormatter();
   const { isFeatureEnable } = useHelper();
   const isFABReplaced = isFeatureEnable('FAB_REPLACED');
-  const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<DataSourcesLinesPaginationQuery$variables>(
-    LOCAL_STORAGE_KEY_DATA_SOURCES,
-    {
-      searchTerm: '',
-      sortBy: 'name',
-      orderAsc: true,
-      openExports: false,
-      filters: emptyFilterGroup,
-      numberOfElements: {
-        number: 0,
-        symbol: '',
-      },
-    },
-  );
-  const renderLines = () => {
-    const {
-      searchTerm,
-      sortBy,
-      orderAsc,
-      filters,
-      openExports,
-      numberOfElements,
-    } = viewStorage;
-    const dataColumns = {
-      name: {
-        label: 'Name',
-        width: '35%',
-        isSortable: true,
-      },
-      objectLabel: {
-        label: 'Labels',
-        width: '25%',
-        isSortable: false,
-      },
-      created: {
-        label: 'Original creation date',
-        width: '15%',
-        isSortable: true,
-      },
-      modified: {
-        label: 'Modification date',
-        width: '15%',
-        isSortable: true,
-      },
-    };
-    const queryRef = useQueryLoading<DataSourcesLinesPaginationQuery>(
-      dataSourcesLinesQuery,
-      paginationOptions,
-    );
-    return (
-      <ListLines
-        helpers={helpers}
-        sortBy={sortBy}
-        orderAsc={orderAsc}
-        dataColumns={dataColumns}
-        handleSort={helpers.handleSort}
-        handleSearch={helpers.handleSearch}
-        handleAddFilter={helpers.handleAddFilter}
-        handleRemoveFilter={helpers.handleRemoveFilter}
-        handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
-        handleSwitchLocalMode={helpers.handleSwitchLocalMode}
-        handleToggleExports={helpers.handleToggleExports}
-        openExports={openExports}
-        exportContext={{ entity_type: 'Data-Source' }}
-        keyword={searchTerm}
-        filters={filters}
-        paginationOptions={paginationOptions}
-        numberOfElements={numberOfElements}
-        createButton={isFABReplaced && <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <DataSourceCreation paginationOptions={paginationOptions} />
-        </Security>}
-      >
-        {queryRef && (
-          <React.Suspense
-            fallback={
-              <>
-                {Array(20)
-                  .fill(0)
-                  .map((_, idx) => (
-                    <DataSourceLineDummy key={idx} dataColumns={dataColumns} />
-                  ))}
-              </>
-            }
-          >
-            <DataSourcesLines
-              queryRef={queryRef}
-              paginationOptions={paginationOptions}
-              dataColumns={dataColumns}
-              onLabelClick={helpers.handleAddFilter}
-              setNumberOfElements={helpers.handleSetNumberOfElements}
-            />
-          </React.Suspense>
-        )}
-      </ListLines>
-    );
+
+  const initialValues = {
+    searchTerm: '',
+    sortBy: 'name',
+    orderAsc: true,
+    openExports: false,
+    filters: emptyFilterGroup,
   };
+  const { viewStorage: { filters }, helpers: storageHelpers, paginationOptions } = usePaginationLocalStorage<DataSourcesLinesPaginationQuery$variables>(
+    LOCAL_STORAGE_KEY_DATA_SOURCES,
+    initialValues,
+  );
+
+  const contextFilters = useBuildEntityTypeBasedFilterContext('Data-Source', filters);
+  const queryPaginationOptions = {
+    ...paginationOptions,
+    filters: contextFilters,
+  } as unknown as DataSourcesLinesPaginationQuery$variables;
+
+  const dataColumns = {
+    name: { percentWidth: 45 },
+    objectLabel: { percentWidth: 25 },
+    created: {},
+    modified: {},
+  };
+  const queryRef = useQueryLoading<DataSourcesLinesPaginationQuery>(
+    dataSourcesLinesQuery,
+    queryPaginationOptions,
+  );
+
+  const preloadedPaginationOptions = {
+    linesQuery: dataSourcesLinesQuery,
+    linesFragment: dataSourcesLinesFragment,
+    queryRef,
+    nodePath: ['dataSources', 'pageInfo', 'globalCount'],
+    setNumberOfElements: storageHelpers.handleSetNumberOfElements,
+  } as UsePreloadedPaginationFragment<DataSourcesLinesPaginationQuery>;
+
   return (
     <>
       <Breadcrumbs variant="list" elements={[{ label: t_i18n('Techniques') }, { label: t_i18n('Data sources'), current: true }]} />
-      {renderLines()}
+      {queryRef && (
+        <DataTable
+          dataColumns={dataColumns}
+          resolvePath={(data: DataSourcesLines_data$data) => data.dataSources?.edges?.map((n) => n?.node)}
+          storageKey={LOCAL_STORAGE_KEY_DATA_SOURCES}
+          initialValues={initialValues}
+          toolbarFilters={contextFilters}
+          preloadedPaginationProps={preloadedPaginationOptions}
+          lineFragment={dataSourceLineFragment}
+          exportContext={{ entity_type: 'Data-Source' }}
+          createButton={isFABReplaced && (
+            <Security needs={[KNOWLEDGE_KNUPDATE]}>
+              <DataSourceCreation paginationOptions={paginationOptions} />
+            </Security>
+          )}
+        />
+      )}
       {!isFABReplaced && (
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <DataSourceCreation paginationOptions={paginationOptions} />

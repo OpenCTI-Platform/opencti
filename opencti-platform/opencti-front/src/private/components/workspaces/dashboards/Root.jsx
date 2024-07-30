@@ -45,7 +45,16 @@ const RootDashboard = () => {
   }, [workspaceId]);
 
   return (
-    <div data-testid="dashboard-details-page">
+    <div
+      data-testid="dashboard-details-page"
+      style={{
+        height: 'calc( 100vh - 50px )',
+        overflow: 'auto',
+        marginRight: -20,
+        paddingRight: 20,
+        paddingTop: 5,
+      }}
+    >
       <QueryRenderer
         query={dashboardQuery}
         variables={{ id: workspaceId }}

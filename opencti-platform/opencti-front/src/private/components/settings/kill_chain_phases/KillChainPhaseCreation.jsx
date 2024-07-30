@@ -58,7 +58,7 @@ const styles = (theme) => ({
 const killChainPhaseMutation = graphql`
   mutation KillChainPhaseCreationMutation($input: KillChainPhaseAddInput!) {
     killChainPhaseAdd(input: $input) {
-      ...KillChainPhaseLine_node
+      ...KillChainPhasesLine_node
     }
   }
 `;

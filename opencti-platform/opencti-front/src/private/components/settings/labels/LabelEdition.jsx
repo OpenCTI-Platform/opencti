@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { createFragmentContainer, graphql } from 'react-relay';
+import { graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import { compose, pick } from 'ramda';
 import * as Yup from 'yup';
@@ -14,7 +14,7 @@ import Drawer from '../../common/drawer/Drawer';
 const subscription = graphql`
   subscription LabelEditionSubscription($id: ID!) {
     label(id: $id) {
-      ...LabelEdition_label
+      ...LabelsLine_node
     }
   }
 `;
@@ -23,7 +23,7 @@ const labelMutationFieldPatch = graphql`
   mutation LabelEditionFieldPatchMutation($id: ID!, $input: [EditInput]!) {
     labelEdit(id: $id) {
       fieldPatch(input: $input) {
-        ...LabelEdition_label
+        ...LabelsLine_node
       }
     }
   }
@@ -146,18 +146,4 @@ LabelEditionContainer.propTypes = {
   t: PropTypes.func,
 };
 
-const LabelEditionFragment = createFragmentContainer(LabelEditionContainer, {
-  label: graphql`
-    fragment LabelEdition_label on Label {
-      id
-      value
-      color
-      editContext {
-        name
-        focusOn
-      }
-    }
-  `,
-});
-
-export default compose(inject18n)(LabelEditionFragment);
+export default compose(inject18n)(LabelEditionContainer);

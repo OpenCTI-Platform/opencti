@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { graphql } from 'react-relay';
 import { useFormatter } from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
@@ -212,14 +212,22 @@ const StixCoreObjectsList = ({
   parameters = {},
 }) => {
   const { t_i18n } = useFormatter();
-  const renderContent = () => {
-    const selection = dataSelection[0];
-    const dataSelectionTypes = ['Stix-Core-Object'];
-    const dateAttribute = selection.date_attribute && selection.date_attribute.length > 0
-      ? selection.date_attribute
-      : 'created_at';
-    const { filters } = buildFiltersAndOptionsForWidgets(selection.filters, { startDate, endDate, dateAttribute });
-    return (
+  const selection = dataSelection[0];
+  const dataSelectionTypes = ['Stix-Core-Object'];
+  const dateAttribute = selection.date_attribute && selection.date_attribute.length > 0
+    ? selection.date_attribute
+    : 'created_at';
+  const { filters } = buildFiltersAndOptionsForWidgets(selection.filters, { startDate, endDate, dateAttribute });
+
+  const rootRef = useRef();
+
+  return (
+    <WidgetContainer
+      height={height}
+      title={parameters.title ?? title ?? t_i18n('Entities list')}
+      variant={variant}
+      ref={rootRef}
+    >
       <QueryRenderer
         query={stixCoreObjectsListQuery}
         variables={{
@@ -236,7 +244,7 @@ const StixCoreObjectsList = ({
             && props.stixCoreObjects.edges.length > 0
           ) {
             const data = props.stixCoreObjects.edges;
-            return <WidgetListCoreObjects data={data} dateAttribute={dateAttribute} />;
+            return <WidgetListCoreObjects data={data} dateAttribute={dateAttribute} ref={rootRef} />;
           }
           if (props) {
             return <WidgetNoData />;
@@ -244,15 +252,6 @@ const StixCoreObjectsList = ({
           return <WidgetLoader />;
         }}
       />
-    );
-  };
-  return (
-    <WidgetContainer
-      height={height}
-      title={parameters.title ?? title ?? t_i18n('Entities list')}
-      variant={variant}
-    >
-      {renderContent()}
     </WidgetContainer>
   );
 };

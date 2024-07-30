@@ -197,7 +197,7 @@ test('Dashboard CRUD', async ({ page }) => {
   await widgetsPage.getDeleteButton().click();
 
   await widgetsPage.createTimelineOfMalwaresWidget();
-  await widgetsPage.getItemFromWidgetList(malwareName).click();
+  await widgetsPage.getItemFromWidgetTimeline(malwareName).click();
   await expect(malwareDetailsPage.getTitle(malwareName)).toBeVisible();
 
   await widgetsPage.getIconFromWidgetTimeline().click();

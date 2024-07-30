@@ -29,7 +29,7 @@ const ThemeDark = (
   borderRadius: 4,
   palette: {
     mode: 'dark',
-    common: { white: '#ffffff' },
+    common: { white: '#ffffff', grey: '#7A7C85' },
     error: {
       main: '#f44336',
       dark: '#c62828',

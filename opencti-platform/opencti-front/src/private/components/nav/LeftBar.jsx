@@ -117,13 +117,11 @@ const useStyles = makeStyles((theme) => createStyles({
   drawerPaper: {
     width: SMALL_BAR_WIDTH,
     minHeight: '100vh',
-    background: 'none',
     overflowX: 'hidden',
   },
   drawerPaperOpen: {
     width: OPEN_BAR_WIDTH,
     minHeight: '100vh',
-    background: 'none',
     overflowX: 'hidden',
   },
   menuItemIcon: {

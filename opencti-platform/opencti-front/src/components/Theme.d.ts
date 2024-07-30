@@ -44,7 +44,7 @@ interface ExtendedBackground extends TypeBackground {
 }
 
 interface ExtendedPaletteOptions extends PaletteOptions {
-  common: Partial<CommonColors>
+  common: Partial<CommonColors & { grey: string }>
   background: Partial<ExtendedBackground>
   border: {
     primary: string

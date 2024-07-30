@@ -12,6 +12,7 @@ import { FormikConfig, FormikHelpers } from 'formik/dist/types';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import CustomFileUploader from '@components/common/files/CustomFileUploader';
 import Drawer, { DrawerControlledDialProps, DrawerVariant } from '@components/common/drawer/Drawer';
+import { DataSourcesLinesPaginationQuery$variables } from '@components/techniques/__generated__/DataSourcesLinesPaginationQuery.graphql';
 import TextField from '../../../../components/TextField';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
@@ -22,7 +23,6 @@ import { ExternalReferencesField } from '../../common/form/ExternalReferencesFie
 import { handleErrorInForm } from '../../../../relay/environment';
 import { insertNode } from '../../../../utils/store';
 import { Option } from '../../common/form/ReferenceField';
-import { DataSourcesLinesPaginationQuery$variables } from './__generated__/DataSourcesLinesPaginationQuery.graphql';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import OpenVocabField from '../../common/form/OpenVocabField';
@@ -48,7 +48,7 @@ const dataSourceMutation = graphql`
       description
       entity_type
       parent_types
-      ...DataSourceLine_node
+      ...DataSourcesLine_node
     }
   }
 `;

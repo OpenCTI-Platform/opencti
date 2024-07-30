@@ -1,65 +1,247 @@
 import React from 'react';
+import { graphql } from 'react-relay';
 import {
   RelationshipsStixCoreRelationshipsLinesPaginationQuery,
   RelationshipsStixCoreRelationshipsLinesPaginationQuery$variables,
-} from '@components/data/relationships/__generated__/RelationshipsStixCoreRelationshipsLinesPaginationQuery.graphql';
-import { RelationshipsStixCoreRelationshipLine_node$data } from '@components/data/relationships/__generated__/RelationshipsStixCoreRelationshipLine_node.graphql';
-import { RelationshipsStixCoreRelationshipLineDummy } from '@components/data/relationships/RelationshipsStixCoreRelationshipLine';
-import ListLines from '../../../components/list_lines/ListLines';
-import RelationshipsStixCoreRelationshipsLines, { relationshipsStixCoreRelationshipsLinesQuery } from './relationships/RelationshipsStixCoreRelationshipsLines';
+} from '@components/data/__generated__/RelationshipsStixCoreRelationshipsLinesPaginationQuery.graphql';
+import { RelationshipsStixCoreRelationshipsLines_data$data } from '@components/data/__generated__/RelationshipsStixCoreRelationshipsLines_data.graphql';
+import { AutoFix } from 'mdi-material-ui';
 import useAuth from '../../../utils/hooks/useAuth';
-import ToolBar from './ToolBar';
-import ExportContextProvider from '../../../utils/ExportContextProvider';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
-import useEntityToggle from '../../../utils/hooks/useEntityToggle';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import { useBuildEntityTypeBasedFilterContext, emptyFilterGroup, useGetDefaultFilterObject } from '../../../utils/filters/filtersUtils';
+import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext, useGetDefaultFilterObject } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
+import DataTable from '../../../components/dataGrid/DataTable';
+import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
+import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
+import ItemIcon from '../../../components/ItemIcon';
+import { itemColor } from '../../../utils/Colors';
+import ItemEntityType from '../../../components/ItemEntityType';
 
 const LOCAL_STORAGE_KEY = 'relationships';
+
+const relationshipsStixCoreRelationshipsLineFragment = graphql`
+  fragment RelationshipsStixCoreRelationshipLine_node on StixCoreRelationship {
+    id
+    entity_type
+    parent_types
+    relationship_type
+    confidence
+    start_time
+    stop_time
+    description
+    fromRole
+    toRole
+    created_at
+    updated_at
+    is_inferred
+    createdBy {
+      ... on Identity {
+        name
+      }
+    }
+    objectMarking {
+      id
+      definition
+      x_opencti_order
+      x_opencti_color
+    }
+    objectLabel {
+      id
+      value
+      color
+    }
+    createdBy {
+      ... on Identity {
+        id
+        name
+        entity_type
+      }
+    }
+    creators {
+      id
+      name
+    }
+    objectMarking {
+      id
+      definition
+      x_opencti_order
+      x_opencti_color
+    }
+    from {
+      ... on BasicObject {
+        id
+        entity_type
+        parent_types
+      }
+      ... on BasicRelationship {
+        id
+        entity_type
+        parent_types
+      }
+      ... on StixCoreObject {
+        created_at
+        representative {
+          main
+        }
+      }
+      ... on StixCoreRelationship {
+        created_at
+        start_time
+        stop_time
+        created
+        representative {
+          main
+        }
+      }
+    }
+    to {
+      ... on BasicObject {
+        id
+        entity_type
+        parent_types
+      }
+      ... on BasicRelationship {
+        id
+        entity_type
+        parent_types
+      }
+      ... on StixCoreObject {
+        created_at
+        representative {
+          main
+        }
+      }
+      ... on StixCoreRelationship {
+        created_at
+        start_time
+        stop_time
+        created
+        representative {
+          main
+        }
+      }
+    }
+  }
+`;
+
+const relationshipsStixCoreRelationshipsLinesQuery = graphql`
+  query RelationshipsStixCoreRelationshipsLinesPaginationQuery(
+    $search: String
+    $fromId: [String]
+    $toId: [String]
+    $fromTypes: [String]
+    $toTypes: [String]
+    $count: Int!
+    $cursor: ID
+    $orderBy: StixCoreRelationshipsOrdering
+    $orderMode: OrderingMode
+    $filters: FilterGroup
+  ) {
+    ...RelationshipsStixCoreRelationshipsLines_data
+    @arguments(
+      search: $search
+      fromId: $fromId
+      toId: $toId
+      fromTypes: $fromTypes
+      toTypes: $toTypes
+      count: $count
+      cursor: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+      filters: $filters
+    )
+  }
+`;
+
+export const relationshipsStixCoreRelationshipsLinesFragment = graphql`
+  fragment RelationshipsStixCoreRelationshipsLines_data on Query
+  @argumentDefinitions(
+    search: { type: "String" }
+    fromId: { type: "[String]" }
+    toId: { type: "[String]" }
+    fromTypes: { type: "[String]" }
+    toTypes: { type: "[String]" }
+    count: { type: "Int", defaultValue: 25 }
+    cursor: { type: "ID" }
+    orderBy: {
+      type: "StixCoreRelationshipsOrdering"
+      defaultValue: created
+    }
+    orderMode: { type: "OrderingMode", defaultValue: desc }
+    filters: { type: "FilterGroup" }
+  )
+  @refetchable(queryName: "RelationshipsStixCoreRelationshipsLinesRefetchQuery") {
+    stixCoreRelationships(
+      search: $search
+      fromId: $fromId
+      toId: $toId
+      fromTypes: $fromTypes
+      toTypes: $toTypes
+      first: $count
+      after: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+      filters: $filters
+    ) @connection(key: "Pagination_stixCoreRelationships") {
+      edges {
+        node {
+          id
+          entity_type
+          created_at
+          createdBy {
+            ... on Identity {
+              name
+            }
+          }
+          objectMarking {
+            id
+            definition_type
+            definition
+            x_opencti_order
+            x_opencti_color
+          }
+          ...RelationshipsStixCoreRelationshipLine_node
+        }
+      }
+      pageInfo {
+        endCursor
+        hasNextPage
+        globalCount
+      }
+    }
+  }
+`;
 
 const Relationships = () => {
   const { t_i18n } = useFormatter();
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
+
+  const initialValues = {
+    filters: {
+      ...emptyFilterGroup,
+      filters: useGetDefaultFilterObject(['fromId', 'toId'], ['stix-core-relationship']),
+    },
+    searchTerm: '',
+    sortBy: 'created_at',
+    orderAsc: false,
+    openExports: false,
+  };
+
   const {
     viewStorage,
     paginationOptions,
     helpers: storageHelpers,
   } = usePaginationLocalStorage<RelationshipsStixCoreRelationshipsLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY,
-    {
-      filters: {
-        ...emptyFilterGroup,
-        filters: useGetDefaultFilterObject(['fromId', 'toId'], ['stix-core-relationship']),
-      },
-      searchTerm: '',
-      sortBy: 'created_at',
-      orderAsc: false,
-      openExports: false,
-    },
+    initialValues,
   );
   const {
-    numberOfElements,
     filters,
-    searchTerm,
-    sortBy,
-    orderAsc,
-    openExports,
   } = viewStorage;
-  const {
-    selectedElements,
-    deSelectedElements,
-    selectAll,
-    handleClearSelectedElements,
-    handleToggleSelectAll,
-    onToggleEntity,
-    numberOfSelectedElements,
-  } = useEntityToggle<RelationshipsStixCoreRelationshipLine_node$data>(
-    LOCAL_STORAGE_KEY,
-  );
 
   const contextFilters = useBuildEntityTypeBasedFilterContext('stix-core-relationship', filters);
   const queryPaginationOptions = {
@@ -70,128 +252,67 @@ const Relationships = () => {
     relationshipsStixCoreRelationshipsLinesQuery,
     queryPaginationOptions,
   );
-  const renderLines = () => {
-    const isRuntimeSort = isRuntimeFieldEnable() ?? false;
-    const dataColumns = {
-      fromType: {
-        label: 'From type',
-        width: '10%',
-        isSortable: false,
-      },
-      fromName: {
-        label: 'From name',
-        width: '18%',
-        isSortable: false,
-      },
-      relationship_type: {
-        label: 'Type',
-        width: '10%',
-        isSortable: true,
-      },
-      toType: {
-        label: 'To type',
-        width: '10%',
-        isSortable: false,
-      },
-      toName: {
-        label: 'To name',
-        width: '18%',
-        isSortable: false,
-      },
-      createdBy: {
-        label: 'Author',
-        width: '7%',
-        isSortable: isRuntimeSort,
-      },
-      creator: {
-        label: 'Creators',
-        width: '7%',
-        isSortable: isRuntimeSort,
-      },
-      created_at: {
-        label: 'Platform creation date',
-        width: '10%',
-        isSortable: true,
-      },
-      objectMarking: {
-        label: 'Marking',
-        isSortable: isRuntimeSort,
-        width: '8%',
-      },
-    };
-    return (
-      <>
-        <ListLines
-          helpers={storageHelpers}
-          sortBy={sortBy}
-          orderAsc={orderAsc}
-          dataColumns={dataColumns}
-          handleSort={storageHelpers.handleSort}
-          handleSearch={storageHelpers.handleSearch}
-          handleAddFilter={storageHelpers.handleAddFilter}
-          handleRemoveFilter={storageHelpers.handleRemoveFilter}
-          handleSwitchGlobalMode={storageHelpers.handleSwitchGlobalMode}
-          handleSwitchLocalMode={storageHelpers.handleSwitchLocalMode}
-          handleToggleExports={storageHelpers.handleToggleExports}
-          openExports={openExports}
-          handleToggleSelectAll={handleToggleSelectAll}
-          selectAll={selectAll}
-          exportContext={{ entity_type: 'stix-core-relationship' }}
-          disableCards={true}
-          iconExtension={true}
-          noPadding={true}
-          keyword={searchTerm}
-          filters={filters}
-          paginationOptions={queryPaginationOptions}
-          numberOfElements={numberOfElements}
-        >
-          {queryRef && (
-            <React.Suspense
-              fallback={
-                <>
-                  {Array(20)
-                    .fill(0)
-                    .map((_, idx) => (
-                      <RelationshipsStixCoreRelationshipLineDummy
-                        key={idx}
-                        dataColumns={dataColumns}
-                      />
-                    ))}
-                </>
-              }
-            >
-              <RelationshipsStixCoreRelationshipsLines
-                queryRef={queryRef}
-                paginationOptions={queryPaginationOptions}
-                dataColumns={dataColumns}
-                onLabelClick={storageHelpers.handleAddFilter}
-                selectedElements={selectedElements}
-                deSelectedElements={deSelectedElements}
-                onToggleEntity={onToggleEntity}
-                selectAll={selectAll}
-                setNumberOfElements={storageHelpers.handleSetNumberOfElements}
-              />
-              <ToolBar
-                selectedElements={selectedElements}
-                deSelectedElements={deSelectedElements}
-                numberOfSelectedElements={numberOfSelectedElements}
-                selectAll={selectAll}
-                filters={contextFilters}
-                search={searchTerm}
-                handleClearSelectedElements={handleClearSelectedElements}
-                type={'stix-core-relationship'}
-              />
-            </React.Suspense>
-          )}
-        </ListLines>
-      </>
-    );
+
+  const isRuntimeSort = isRuntimeFieldEnable() ?? false;
+  const dataColumns: DataTableProps['dataColumns'] = {
+    is_inferred: {
+      id: 'is_inferred',
+      label: ' ',
+      isSortable: false,
+      percentWidth: 3,
+      render: ({ is_inferred, entity_type }) => (is_inferred ? <AutoFix style={{ color: itemColor(entity_type) }} /> : <ItemIcon type={entity_type} />),
+    },
+    fromType: {
+      id: 'fromType',
+      label: 'From type',
+      percentWidth: 10,
+      isSortable: false,
+      render: (node) => (
+        <ItemEntityType inList showIcon entityType={node.from?.entity_type} isRestricted={!node.from} />
+      ),
+    },
+    fromName: {},
+    relationship_type: {},
+    toType: {
+      id: 'toType',
+      label: 'To type',
+      percentWidth: 10,
+      isSortable: false,
+      render: (node) => (
+        <ItemEntityType inList showIcon entityType={node.to?.entity_type} isRestricted={!node.to} />
+      ),
+    },
+    toName: {},
+    createdBy: { percentWidth: 7, isSortable: isRuntimeSort },
+    creator: { percentWidth: 7, isSortable: isRuntimeSort },
+    created_at: { percentWidth: 12 },
+    objectMarking: { isSortable: isRuntimeSort },
   };
+
+  const preloadedPaginationProps = {
+    linesQuery: relationshipsStixCoreRelationshipsLinesQuery,
+    linesFragment: relationshipsStixCoreRelationshipsLinesFragment,
+    queryRef,
+    nodePath: ['stixCoreRelationships', 'pageInfo', 'globalCount'],
+    setNumberOfElements: storageHelpers.handleSetNumberOfElements,
+  } as UsePreloadedPaginationFragment<RelationshipsStixCoreRelationshipsLinesPaginationQuery>;
+
   return (
-    <ExportContextProvider>
+    <>
       <Breadcrumbs variant="list" elements={[{ label: t_i18n('Data') }, { label: t_i18n('Relationships'), current: true }]} />
-      {renderLines()}
-    </ExportContextProvider>
+      {queryRef && (
+        <DataTable
+          dataColumns={dataColumns}
+          resolvePath={(data: RelationshipsStixCoreRelationshipsLines_data$data) => data.stixCoreRelationships?.edges?.map((n) => n.node)}
+          storageKey={LOCAL_STORAGE_KEY}
+          initialValues={initialValues}
+          toolbarFilters={contextFilters}
+          lineFragment={relationshipsStixCoreRelationshipsLineFragment}
+          preloadedPaginationProps={preloadedPaginationProps}
+          exportContext={{ entity_type: 'stix-core-relationship' }}
+        />
+      )}
+    </>
   );
 };
 

@@ -6,7 +6,6 @@ import { DataTableContext, defaultColumnsMap } from '../dataTableUtils';
 import { DataTableColumn, DataTableColumns, DataTableContextProps, DataTableProps, DataTableVariant, LocalStorageColumns } from '../dataTableTypes';
 import DataTableHeaders from './DataTableHeaders';
 import { SELECT_COLUMN_SIZE } from './DataTableHeader';
-import { isNotEmptyField } from '../../../utils/utils';
 import DataTablePagination from '../DataTablePagination';
 
 const DataTableComponent = ({
@@ -40,6 +39,8 @@ const DataTableComponent = ({
   actions,
   createButton,
   pageSize,
+  disableNavigation,
+  onLineClick,
   isNavigable = false,
 }: DataTableProps) => {
   const localStorageColumns = useDataTableLocalStorage<LocalStorageColumns>(`${storageKey}_columns`, {}, true)[0];
@@ -47,11 +48,10 @@ const DataTableComponent = ({
 
   const columnsInitialState = [
     ...(toggleHelper.onToggleEntity ? [{ id: 'select', visible: true } as DataTableColumn] : []),
-    ...Object.entries(dataColumns).map(([id, column], index) => {
-      const currentColumn = localStorageColumns?.[id];
-      return R.mergeDeepRight(defaultColumnsMap.get(id) as DataTableColumn, {
+    ...Object.entries(dataColumns).map(([key, column], index) => {
+      const currentColumn = localStorageColumns?.[key];
+      return R.mergeDeepRight(defaultColumnsMap.get(key) as DataTableColumn, {
         ...column,
-        id,
         order: currentColumn?.index ?? index,
         visible: currentColumn?.visible ?? true,
         ...(currentColumn?.size ? { size: currentColumn?.size } : {}),
@@ -73,8 +73,8 @@ const DataTableComponent = ({
     '--col-table-size': clientWidth,
   };
   columns.forEach((col) => {
-    if (col.visible && col.flexSize) {
-      const size = col.flexSize * (clientWidth / 100);
+    if (col.visible && col.percentWidth) {
+      const size = col.percentWidth * (clientWidth / 100);
       temporaryColumnsSize[`--header-${col.id}-size`] = size;
       temporaryColumnsSize[`--col-${col.id}-size`] = size;
     }
@@ -113,6 +113,8 @@ const DataTableComponent = ({
         rootRef,
         actions,
         createButton,
+        disableNavigation,
+        onLineClick,
       } as DataTableContextProps}
     >
       {filtersComponent ?? (variant === DataTableVariant.inline && (
@@ -133,7 +135,7 @@ const DataTableComponent = ({
           flexDirection: 'column',
         }}
       >
-        {(variant !== DataTableVariant.inline && isNotEmptyField(numberOfElements)) && (
+        {(variant === DataTableVariant.default) && (
           <DataTablePagination
             page={page}
             setPage={setPage}

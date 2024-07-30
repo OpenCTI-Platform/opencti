@@ -1,6 +1,6 @@
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
-import React, { CSSProperties, ReactNode } from 'react';
+import React, { CSSProperties, forwardRef, ReactNode } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 
 // Deprecated - https://mui.com/system/styles/basics/
@@ -23,17 +23,17 @@ interface WidgetContainerProps {
   withoutTitle?: boolean
 }
 
-const WidgetContainer = ({
+const WidgetContainer = forwardRef<HTMLDivElement, WidgetContainerProps>(({
   children,
   height,
   title,
   variant,
   withoutTitle = false,
-}: WidgetContainerProps) => {
+}, ref) => {
   const classes = useStyles();
 
   return (
-    <div style={{ height: height || '100%' }}>
+    <div ref={ref} style={{ height: height || '100%' }}>
       {!withoutTitle && (
         <Typography
           variant={variant === 'inEntity' ? 'h3' : 'h4'}
@@ -57,6 +57,8 @@ const WidgetContainer = ({
       )}
     </div>
   );
-};
+});
+
+WidgetContainer.displayName = 'WidgetContainer';
 
 export default WidgetContainer;

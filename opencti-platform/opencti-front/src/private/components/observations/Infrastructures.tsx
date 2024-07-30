@@ -1,24 +1,115 @@
 import React from 'react';
+import { graphql } from 'react-relay';
+import { InfrastructuresLines_data$data } from '@components/observations/__generated__/InfrastructuresLines_data.graphql';
+import {
+  InfrastructuresLinesPaginationQuery,
+  InfrastructuresLinesPaginationQuery$variables,
+} from '@components/observations/__generated__/InfrastructuresLinesPaginationQuery.graphql';
 import useHelper from 'src/utils/hooks/useHelper';
 import useAuth from '../../../utils/hooks/useAuth';
-import ListLines from '../../../components/list_lines/ListLines';
-import InfrastructuresLines, { infrastructuresLinesQuery } from './infrastructures/InfrastructuresLines';
 import InfrastructureCreation from './infrastructures/InfrastructureCreation';
 import Security from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
-import { InfrastructuresLinesPaginationQuery, InfrastructuresLinesPaginationQuery$variables } from './infrastructures/__generated__/InfrastructuresLinesPaginationQuery.graphql';
-import useEntityToggle from '../../../utils/hooks/useEntityToggle';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import ExportContextProvider from '../../../utils/ExportContextProvider';
-import { InfrastructureLineDummy } from './infrastructures/InfrastructureLine';
-import ToolBar from '../data/ToolBar';
-import { InfrastructureLine_node$data } from './infrastructures/__generated__/InfrastructureLine_node.graphql';
-import { useBuildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
+import DataTable from '../../../components/dataGrid/DataTable';
+import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 
 export const LOCAL_STORAGE_KEY_INFRASTRUCTURES = 'infrastructures';
+
+const infrastructureFragment = graphql`
+  fragment InfrastructuresLine_node on Infrastructure {
+    id
+    name
+    entity_type
+    created
+    modified
+    confidence
+    infrastructure_types
+    createdBy {
+      ... on Identity {
+        id
+        name
+        entity_type
+      }
+    }
+    objectMarking {
+      id
+      definition_type
+      definition
+      x_opencti_order
+      x_opencti_color
+    }
+    objectLabel {
+      id
+      value
+      color
+    }
+    creators {
+      id
+      name
+    }
+  }
+`;
+
+const infrastructuresLinesQuery = graphql`
+  query InfrastructuresLinesPaginationQuery(
+    $search: String
+    $count: Int!
+    $cursor: ID
+    $orderBy: InfrastructuresOrdering
+    $orderMode: OrderingMode
+    $filters: FilterGroup
+  ) {
+    ...InfrastructuresLines_data
+    @arguments(
+      search: $search
+      count: $count
+      cursor: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+      filters: $filters
+    )
+  }
+`;
+
+const infrastructuresLinesFragment = graphql`
+  fragment InfrastructuresLines_data on Query
+  @argumentDefinitions(
+    search: { type: "String" }
+    count: { type: "Int" }
+    cursor: { type: "ID" }
+    orderBy: { type: "InfrastructuresOrdering" }
+    orderMode: { type: "OrderingMode", defaultValue: desc }
+    filters: { type: "FilterGroup" }
+  )
+  @refetchable(queryName: "InfrastructuresLinesRefetchQuery") {
+    infrastructures(
+      search: $search
+      first: $count
+      after: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+      filters: $filters
+    ) @connection(key: "Pagination_infrastructures") {
+      edges {
+        node {
+          id
+          ...InfrastructuresLine_node
+        }
+      }
+      pageInfo {
+        endCursor
+        hasNextPage
+        globalCount
+      }
+    }
+  }
+`;
 
 const Infrastructures = () => {
   const { t_i18n } = useFormatter();
@@ -26,28 +117,20 @@ const Infrastructures = () => {
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
-  const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<InfrastructuresLinesPaginationQuery$variables>(
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
+
+  const initialValues = {
+    searchTerm: '',
+    sortBy: 'created',
+    orderAsc: false,
+    openExports: false,
+    filters: emptyFilterGroup,
+  };
+  const { viewStorage: { filters }, helpers: storageHelpers, paginationOptions } = usePaginationLocalStorage<InfrastructuresLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY_INFRASTRUCTURES,
-    {
-      numberOfElements: {
-        number: 0,
-        symbol: '',
-      },
-      searchTerm: '',
-      sortBy: 'created',
-      orderAsc: false,
-      openExports: false,
-      filters: emptyFilterGroup,
-    },
+    initialValues,
   );
-  const {
-    sortBy,
-    orderAsc,
-    searchTerm,
-    filters,
-    openExports,
-    numberOfElements,
-  } = viewStorage;
+
   const contextFilters = useBuildEntityTypeBasedFilterContext('Infrastructure', filters);
   const queryPaginationOptions = {
     ...paginationOptions,
@@ -57,132 +140,51 @@ const Infrastructures = () => {
     infrastructuresLinesQuery,
     queryPaginationOptions,
   );
-  const {
-    onToggleEntity,
-    numberOfSelectedElements,
-    handleClearSelectedElements,
-    selectedElements,
-    deSelectedElements,
-    handleToggleSelectAll,
-    selectAll,
-  } = useEntityToggle<InfrastructureLine_node$data>(
-    LOCAL_STORAGE_KEY_INFRASTRUCTURES,
-  );
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
-  const renderLines = () => {
-    const isRuntimeSort = isRuntimeFieldEnable() ?? false;
-    const dataColumns = {
-      name: {
-        label: 'Name',
-        width: '25%',
-        isSortable: true,
-      },
-      infrastructure_types: {
-        label: 'Type',
-        width: '8%',
-        isSortable: true,
-      },
-      createdBy: {
-        label: 'Author',
-        width: '12%',
-        isSortable: isRuntimeSort,
-      },
-      creator: {
-        label: 'Creators',
-        width: '12%',
-        isSortable: isRuntimeSort,
-      },
-      objectLabel: {
-        label: 'Labels',
-        width: '15%',
-        isSortable: false,
-      },
-      created: {
-        label: 'Original creation date',
-        width: '10%',
-        isSortable: true,
-      },
-      objectMarking: {
-        label: 'Marking',
-        isSortable: isRuntimeSort,
-        width: '8%',
-      },
-    };
 
-    return (
-      <ListLines
-        helpers={helpers}
-        sortBy={sortBy}
-        orderAsc={orderAsc}
-        dataColumns={dataColumns}
-        handleSort={helpers.handleSort}
-        handleSearch={helpers.handleSearch}
-        handleAddFilter={helpers.handleAddFilter}
-        handleRemoveFilter={helpers.handleRemoveFilter}
-        handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
-        handleSwitchLocalMode={helpers.handleSwitchLocalMode}
-        handleToggleExports={helpers.handleToggleExports}
-        handleToggleSelectAll={handleToggleSelectAll}
-        selectAll={selectAll}
-        openExports={openExports}
-        exportContext={{ entity_type: 'Infrastructure' }}
-        keyword={searchTerm}
-        filters={filters}
-        paginationOptions={queryPaginationOptions}
-        numberOfElements={numberOfElements}
-        iconExtension={true}
-        createButton={isFABReplaced && <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <InfrastructureCreation paginationOptions={queryPaginationOptions} />
-        </Security>}
-      >
-        {queryRef && (
-          <React.Suspense
-            fallback={
-              <>
-                {Array(20)
-                  .fill(0)
-                  .map((_, idx) => (
-                    <InfrastructureLineDummy
-                      key={idx}
-                      dataColumns={dataColumns}
-                    />
-                  ))}
-              </>
-            }
-          >
-            <InfrastructuresLines
-              queryRef={queryRef}
-              paginationOptions={queryPaginationOptions}
-              dataColumns={dataColumns}
-              onLabelClick={helpers.handleAddFilter}
-              setNumberOfElements={helpers.handleSetNumberOfElements}
-              selectedElements={selectedElements}
-              deSelectedElements={deSelectedElements}
-              onToggleEntity={onToggleEntity}
-              selectAll={selectAll}
-            />
-            <ToolBar
-              selectedElements={selectedElements}
-              deSelectedElements={deSelectedElements}
-              numberOfSelectedElements={numberOfSelectedElements}
-              handleClearSelectedElements={handleClearSelectedElements}
-              selectAll={selectAll}
-              search={searchTerm}
-              filters={contextFilters}
-              type="Infrastructure"
-            />
-          </React.Suspense>
-        )}
-      </ListLines>
-    );
+  const isRuntimeSort = isRuntimeFieldEnable() ?? false;
+  const dataColumns = {
+    name: { percentWidth: 35 },
+    infrastructure_types: {},
+    createdBy: { isSortable: isRuntimeSort },
+    creator: { isSortable: isRuntimeSort },
+    objectLabel: {},
+    created: { percentWidth: 10 },
+    objectMarking: { isSortable: isRuntimeSort },
   };
+
+  const preloadedPaginationOptions = {
+    linesQuery: infrastructuresLinesQuery,
+    linesFragment: infrastructuresLinesFragment,
+    queryRef,
+    nodePath: ['infrastructures', 'pageInfo', 'globalCount'],
+    setNumberOfElements: storageHelpers.handleSetNumberOfElements,
+  } as UsePreloadedPaginationFragment<InfrastructuresLinesPaginationQuery>;
+
   return (
     <ExportContextProvider>
       <Breadcrumbs variant="list" elements={[{ label: t_i18n('Observations') }, { label: t_i18n('Infrastructures'), current: true }]} />
-      {renderLines()}
-      {!isFABReplaced && <Security needs={[KNOWLEDGE_KNUPDATE]}>
-        <InfrastructureCreation paginationOptions={queryPaginationOptions} />
-      </Security>}
+      {queryRef && (
+        <DataTable
+          dataColumns={dataColumns}
+          resolvePath={(data: InfrastructuresLines_data$data) => data.infrastructures?.edges?.map((n) => n?.node)}
+          storageKey={LOCAL_STORAGE_KEY_INFRASTRUCTURES}
+          initialValues={initialValues}
+          toolbarFilters={contextFilters}
+          lineFragment={infrastructureFragment}
+          preloadedPaginationProps={preloadedPaginationOptions}
+          exportContext={{ entity_type: 'Infrastructure' }}
+          createButton={isFABReplaced && (
+            <Security needs={[KNOWLEDGE_KNUPDATE]}>
+              <InfrastructureCreation paginationOptions={queryPaginationOptions} />
+            </Security>
+          )}
+        />
+      )}
+      {!isFABReplaced && (
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <InfrastructureCreation paginationOptions={queryPaginationOptions} />
+        </Security>
+      )}
     </ExportContextProvider>
   );
 };

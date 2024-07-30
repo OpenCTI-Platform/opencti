@@ -1,127 +1,163 @@
 import React from 'react';
+import CourseOfActionCreation from '@components/techniques/courses_of_action/CourseOfActionCreation';
+import { graphql } from 'react-relay';
+import { CoursesOfActionLines_data$data } from '@components/techniques/__generated__/CoursesOfActionLines_data.graphql';
 import {
   CoursesOfActionLinesPaginationQuery,
   CoursesOfActionLinesPaginationQuery$variables,
-} from '@components/techniques/courses_of_action/__generated__/CoursesOfActionLinesPaginationQuery.graphql';
-import { CourseOfActionLineDummy } from '@components/techniques/courses_of_action/CourseOfActionLine';
-import CourseOfActionCreation from '@components/techniques/courses_of_action/CourseOfActionCreation';
-import useHelper from 'src/utils/hooks/useHelper';
-import ListLines from '../../../components/list_lines/ListLines';
-import CoursesOfActionLines, { coursesOfActionLinesQuery } from './courses_of_action/CoursesOfActionLines';
+} from '@components/techniques/__generated__/CoursesOfActionLinesPaginationQuery.graphql';
 import Security from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import { emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import { useBuildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
+import DataTable from '../../../components/dataGrid/DataTable';
+import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
+import useHelper from '../../../utils/hooks/useHelper';
 
 const LOCAL_STORAGE_KEY = 'coursesOfAction';
+
+const CourseOfActionLineFragment = graphql`
+  fragment CoursesOfActionLine_node on CourseOfAction {
+    id
+    entity_type
+    name
+    created
+    modified
+    objectMarking {
+      id
+      definition_type
+      definition
+      x_opencti_order
+      x_opencti_color
+    }
+    objectLabel {
+      id
+      value
+      color
+    }
+  }
+`;
+
+const coursesOfActionLinesQuery = graphql`
+  query CoursesOfActionLinesPaginationQuery(
+    $search: String
+    $count: Int!
+    $cursor: ID
+    $orderBy: CoursesOfActionOrdering
+    $orderMode: OrderingMode
+    $filters: FilterGroup
+  ) {
+    ...CoursesOfActionLines_data
+    @arguments(
+      search: $search
+      count: $count
+      cursor: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+      filters: $filters
+    )
+  }
+`;
+
+export const coursesOfActionLinesFragment = graphql`
+  fragment CoursesOfActionLines_data on Query
+  @argumentDefinitions(
+    search: { type: "String" }
+    count: { type: "Int", defaultValue: 25 }
+    cursor: { type: "ID" }
+    orderBy: { type: "CoursesOfActionOrdering", defaultValue: name }
+    orderMode: { type: "OrderingMode", defaultValue: asc }
+    filters: { type: "FilterGroup" }
+  )
+  @refetchable(queryName: "CoursesOfActionLinesRefetchQuery") {
+    coursesOfAction(
+      search: $search
+      first: $count
+      after: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+      filters: $filters
+    ) @connection(key: "Pagination_coursesOfAction") {
+      edges {
+        node {
+          name
+          ...CoursesOfActionLine_node
+        }
+      }
+      pageInfo {
+        endCursor
+        hasNextPage
+        globalCount
+      }
+    }
+  }
+`;
 
 const CoursesOfAction = () => {
   const { t_i18n } = useFormatter();
   const { isFeatureEnable } = useHelper();
   const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
-  const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<CoursesOfActionLinesPaginationQuery$variables>(
-    LOCAL_STORAGE_KEY,
-    {
-      searchTerm: '',
-      sortBy: 'name',
-      orderAsc: true,
-      openExports: false,
-      filters: emptyFilterGroup,
-    },
-  );
-  const renderLines = () => {
-    const {
-      sortBy,
-      orderAsc,
-      searchTerm,
-      filters,
-      openExports,
-      numberOfElements,
-    } = viewStorage;
-    const dataColumns = {
-      name: {
-        label: 'Name',
-        width: '35%',
-        isSortable: true,
-      },
-      objectLabel: {
-        label: 'Labels',
-        width: '25%',
-        isSortable: false,
-      },
-      created: {
-        label: 'Original creation date',
-        width: '15%',
-        isSortable: true,
-      },
-      modified: {
-        label: 'Modification date',
-        width: '15%',
-        isSortable: true,
-      },
-    };
-    const queryRef = useQueryLoading<CoursesOfActionLinesPaginationQuery>(
-      coursesOfActionLinesQuery,
-      paginationOptions,
-    );
-    return (
-      <ListLines
-        helpers={helpers}
-        sortBy={sortBy}
-        orderAsc={orderAsc}
-        dataColumns={dataColumns}
-        handleSort={helpers.handleSort}
-        handleSearch={helpers.handleSearch}
-        handleAddFilter={helpers.handleAddFilter}
-        handleRemoveFilter={helpers.handleRemoveFilter}
-        handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
-        handleSwitchLocalMode={helpers.handleSwitchLocalMode}
-        handleToggleExports={helpers.handleToggleExports}
-        openExports={openExports}
-        exportContext={{ entity_type: 'Course-Of-Action' }}
-        keyword={searchTerm}
-        filters={filters}
-        paginationOptions={paginationOptions}
-        numberOfElements={numberOfElements}
-        createButton={isFABReplaced && <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <CourseOfActionCreation paginationOptions={paginationOptions} />
-        </Security>}
-      >
-        {queryRef && (
-          <React.Suspense
-            fallback={
-              <>
-                {Array(20)
-                  .fill(0)
-                  .map((_, idx) => (
-                    <CourseOfActionLineDummy
-                      key={idx}
-                      dataColumns={dataColumns}
-                    />
-                  ))}
-              </>
-            }
-          >
-            <CoursesOfActionLines
-              queryRef={queryRef}
-              paginationOptions={paginationOptions}
-              dataColumns={dataColumns}
-              onLabelClick={helpers.handleAddFilter}
-              setNumberOfElements={helpers.handleSetNumberOfElements}
-            />
-          </React.Suspense>
-        )}
-      </ListLines>
-    );
+  const initialValues = {
+    searchTerm: '',
+    sortBy: 'name',
+    orderAsc: true,
+    openExports: false,
+    filters: emptyFilterGroup,
   };
+  const { viewStorage: { filters }, helpers: storageHelpers, paginationOptions } = usePaginationLocalStorage<CoursesOfActionLinesPaginationQuery$variables>(
+    LOCAL_STORAGE_KEY,
+    initialValues,
+  );
+
+  const contextFilters = useBuildEntityTypeBasedFilterContext('Course-Of-Action', filters);
+
+  const queryPaginationOptions = {
+    ...paginationOptions,
+    filters: contextFilters,
+  } as unknown as CoursesOfActionLinesPaginationQuery$variables;
+
+  const dataColumns = {
+    name: { percentWidth: 45 },
+    objectLabel: { percentWidth: 25 },
+    created: {},
+    modified: {},
+  };
+  const queryRef = useQueryLoading<CoursesOfActionLinesPaginationQuery>(
+    coursesOfActionLinesQuery,
+    queryPaginationOptions,
+  );
+
+  const preloadedPaginationOptions = {
+    linesQuery: coursesOfActionLinesQuery,
+    linesFragment: coursesOfActionLinesFragment,
+    queryRef,
+    nodePath: ['coursesOfAction', 'pageInfo', 'globalCount'],
+    setNumberOfElements: storageHelpers.handleSetNumberOfElements,
+  } as UsePreloadedPaginationFragment<CoursesOfActionLinesPaginationQuery>;
 
   return (
     <>
       <Breadcrumbs variant="list" elements={[{ label: t_i18n('Techniques') }, { label: t_i18n('Courses of action'), current: true }]} />
-      {renderLines()}
+      {queryRef && (
+        <DataTable
+          dataColumns={dataColumns}
+          preloadedPaginationProps={preloadedPaginationOptions}
+          initialValues={initialValues}
+          toolbarFilters={contextFilters}
+          exportContext={{ entity_type: 'Course-Of-Action' }}
+          lineFragment={CourseOfActionLineFragment}
+          resolvePath={(data: CoursesOfActionLines_data$data) => data.coursesOfAction?.edges?.map((n) => n?.node)}
+          storageKey={LOCAL_STORAGE_KEY}
+          createButton={isFABReplaced && (
+            <Security needs={[KNOWLEDGE_KNUPDATE]}>
+              <CourseOfActionCreation paginationOptions={paginationOptions} />
+            </Security>
+          )}
+        />
+      )}
       {!isFABReplaced && (
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <CourseOfActionCreation paginationOptions={paginationOptions} />

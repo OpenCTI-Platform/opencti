@@ -1,24 +1,79 @@
-import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
-import { compose, propOr } from 'ramda';
+import React from 'react';
 import { graphql } from 'react-relay';
-import withStyles from '@mui/styles/withStyles';
-import { QueryRenderer } from '../../../relay/environment';
-import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../utils/ListParameters';
-import inject18n from '../../../components/i18n';
-import ListLines from '../../../components/list_lines/ListLines';
-import KillChainPhasesLines, { killChainPhasesLinesQuery } from './kill_chain_phases/KillChainPhasesLines';
+import { useFormatter } from '../../../components/i18n';
 import KillChainPhaseCreation from './kill_chain_phases/KillChainPhaseCreation';
 import LabelsVocabulariesMenu from './LabelsVocabulariesMenu';
-import withRouter from '../../../utils/compat_router/withRouter';
 import Breadcrumbs from '../../../components/Breadcrumbs';
+import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
+import DataTable from '../../../components/dataGrid/DataTable';
+import { useBuildEntityTypeBasedFilterContext } from '../../../utils/filters/filtersUtils';
+import useQueryLoading from '../../../utils/hooks/useQueryLoading';
+import KillChainPhasePopover from './kill_chain_phases/KillChainPhasePopover';
 
-const styles = () => ({
-  container: {
-    margin: 0,
-    padding: '0 200px 50px 0',
-  },
-});
+const killChainPhasesLinesQuery = graphql`
+  query KillChainPhasesLinesPaginationQuery(
+    $search: String
+    $count: Int!
+    $cursor: ID
+    $orderBy: KillChainPhasesOrdering
+    $orderMode: OrderingMode
+  ) {
+    ...KillChainPhasesLines_data
+    @arguments(
+      search: $search
+      count: $count
+      cursor: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+    )
+  }
+`;
+
+const linesFragment = graphql`
+  fragment KillChainPhasesLines_data on Query
+  @argumentDefinitions(
+    search: { type: "String" }
+    count: { type: "Int", defaultValue: 25 }
+    cursor: { type: "ID" }
+    orderBy: { type: "KillChainPhasesOrdering", defaultValue: phase_name }
+    orderMode: { type: "OrderingMode", defaultValue: asc }
+  )
+  @refetchable(queryName: "KillChainPhasesRefetchPaginationQuery"){
+    killChainPhases(
+      search: $search
+      first: $count
+      after: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+    ) @connection(key: "Pagination_killChainPhases") {
+      edges {
+        node {
+          ...KillChainPhasesLine_node
+        }
+      }
+      pageInfo {
+        endCursor
+        hasNextPage
+        globalCount
+      }
+    }
+  }
+`;
+
+const lineFragment = graphql`
+  fragment KillChainPhasesLine_node on KillChainPhase {
+    id
+    kill_chain_name
+    phase_name
+    x_opencti_order
+    created
+    modified
+    editContext {
+      focusOn
+      name
+    }
+  }
+`;
 
 export const killChainPhasesSearchQuery = graphql`
   query KillChainPhasesSearchQuery($search: String) {
@@ -37,118 +92,63 @@ export const killChainPhasesSearchQuery = graphql`
 
 const LOCAL_STORAGE_KEY = 'killChainPhases';
 
-class KillChainPhases extends Component {
-  constructor(props) {
-    super(props);
-    const params = buildViewParamsFromUrlAndStorage(
-      props.navigate,
-      props.location,
-      LOCAL_STORAGE_KEY,
-    );
-    this.state = {
-      sortBy: propOr('x_opencti_order', 'sortBy', params),
-      orderAsc: propOr(true, 'orderAsc', params),
-      searchTerm: propOr('', 'searchTerm', params),
-      view: propOr('lines', 'view', params),
-    };
-  }
+const KillChainPhases = () => {
+  const { t_i18n } = useFormatter();
 
-  saveView() {
-    saveViewParameters(
-      this.props.navigate,
-      this.props.location,
-      LOCAL_STORAGE_KEY,
-      this.state,
-    );
-  }
+  const initialValues = {
+    sortBy: 'x_opencti_order',
+    orderAsc: true,
+    searchTerm: '',
+  };
+  const { viewStorage: { filters }, paginationOptions, helpers } = usePaginationLocalStorage(LOCAL_STORAGE_KEY, initialValues);
 
-  handleSearch(value) {
-    this.setState({ searchTerm: value }, () => this.saveView());
-  }
+  const contextFilters = useBuildEntityTypeBasedFilterContext('Kill-Chain-Phase', filters);
+  const queryPaginationOptions = {
+    ...paginationOptions,
+    filters: contextFilters,
+  };
 
-  handleSort(field, orderAsc) {
-    this.setState({ sortBy: field, orderAsc }, () => this.saveView());
-  }
+  const queryRef = useQueryLoading(
+    killChainPhasesLinesQuery,
+    queryPaginationOptions,
+  );
 
-  renderLines(paginationOptions) {
-    const { sortBy, orderAsc, searchTerm } = this.state;
-    const dataColumns = {
-      kill_chain_name: {
-        label: 'Kill chain name',
-        width: '30%',
-        isSortable: true,
-      },
-      phase_name: {
-        label: 'Phase name',
-        width: '35%',
-        isSortable: true,
-      },
-      x_opencti_order: {
-        label: 'Order',
-        width: '10%',
-        isSortable: true,
-      },
-      created: {
-        label: 'Original creation date',
-        width: '15%',
-        isSortable: true,
-      },
-    };
-    return (
-      <ListLines
-        sortBy={sortBy}
-        orderAsc={orderAsc}
-        dataColumns={dataColumns}
-        handleSort={this.handleSort.bind(this)}
-        handleSearch={this.handleSearch.bind(this)}
-        displayImport={false}
-        secondaryAction={true}
-        keyword={searchTerm}
-      >
-        <QueryRenderer
-          query={killChainPhasesLinesQuery}
-          variables={{ count: 25, ...paginationOptions }}
-          render={({ props }) => (
-            <KillChainPhasesLines
-              data={props}
-              paginationOptions={paginationOptions}
-              dataColumns={dataColumns}
-              initialLoading={props === null}
-            />
-          )}
+  const dataColumns = {
+    kill_chain_name: {},
+    phase_name: {},
+    x_opencti_order: {},
+    created: { percentWidth: 15 },
+  };
+
+  const preloadedPaginationProps = {
+    linesQuery: killChainPhasesLinesQuery,
+    linesFragment,
+    queryRef,
+    nodePath: ['killChainPhases', 'pageInfo', 'globalCount'],
+    setNumberOfElements: helpers.handleSetNumberOfElements,
+  };
+
+  return (
+    <div style={{ marginRight: 200 }}>
+      <LabelsVocabulariesMenu />
+      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Taxonomies') }, { label: t_i18n('Kill chain phases'), current: true }]} />
+      {queryRef && (
+        <DataTable
+          dataColumns={dataColumns}
+          resolvePath={(data) => data.killChainPhases.edges.map(({ node }) => node)}
+          storageKey={LOCAL_STORAGE_KEY}
+          initialValues={initialValues}
+          toolbarFilters={contextFilters}
+          lineFragment={lineFragment}
+          preloadedPaginationProps={preloadedPaginationProps}
+          actions={(killChainPhase) => <KillChainPhasePopover killChainPhase={killChainPhase} paginationOptions={queryPaginationOptions} />}
+          searchContextFinal={{ entityTypes: ['Kill-Chain-Phases'] }}
+          disableNavigation
         />
-      </ListLines>
-    );
-  }
-
-  render() {
-    const { t, classes } = this.props;
-    const { view, sortBy, orderAsc, searchTerm } = this.state;
-    const paginationOptions = {
-      search: searchTerm,
-      orderBy: sortBy,
-      orderMode: orderAsc ? 'asc' : 'desc',
-    };
-    return (
-      <div className={classes.container}>
-        <LabelsVocabulariesMenu />
-        <Breadcrumbs variant="list" elements={[{ label: t('Settings') }, { label: t('Taxonomies') }, { label: t('Kill chain phases'), current: true }]} />
-        {view === 'lines' ? this.renderLines(paginationOptions) : ''}
-        <KillChainPhaseCreation paginationOptions={paginationOptions} />
-      </div>
-    );
-  }
-}
-
-KillChainPhases.propTypes = {
-  classes: PropTypes.object,
-  t: PropTypes.func,
-  navigate: PropTypes.func,
-  location: PropTypes.object,
+      )}
+      <KillChainPhaseCreation paginationOptions={queryPaginationOptions} />
+    </div>
+  );
 };
 
-export default compose(
-  inject18n,
-  withRouter,
-  withStyles(styles),
-)(KillChainPhases);
+export default KillChainPhases;

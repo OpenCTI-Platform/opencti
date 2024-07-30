@@ -2,9 +2,10 @@ import React, { FunctionComponent, useContext } from 'react';
 import CircularProgress from '@mui/material/CircularProgress';
 import makeStyles from '@mui/styles/makeStyles';
 import { FiligranLoader } from 'filigran-icon';
+import { useTheme } from '@mui/styles';
 import { isNotEmptyField } from '../utils/utils';
 import { UserContext } from '../utils/hooks/useAuth';
-import platformModuleHelper from '../utils/platformModulesHelper';
+import type { Theme } from './Theme';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -59,22 +60,17 @@ const Loader: FunctionComponent<LoaderProps> = ({
   withTopMargin = false,
 }) => {
   const classes = useStyles();
+  const theme = useTheme<Theme>();
 
   const { settings } = useContext(UserContext);
 
-  let loaderEnabled = false;
-  if (settings) {
-    const { isFeatureEnable } = platformModuleHelper(settings);
-    loaderEnabled = isFeatureEnable('FILIGRAN_LOADER');
-  }
-
-  const hasFiligranLoader = loaderEnabled && (isNotEmptyField(settings?.enterprise_edition) || !settings?.platform_whitemark);
+  const hasFiligranLoader = theme && (isNotEmptyField(settings?.enterprise_edition) || !settings?.platform_whitemark);
 
   if (variant === 'inline') {
     return (
       <div style={{ display: 'inline-flex', width: '4rem', height: 35, alignItems: 'center', justifyContent: 'center' }}>
         {hasFiligranLoader ? (
-          <FiligranLoader height={24} />
+          <FiligranLoader height={24} color={theme?.palette?.common?.grey} />
         ) : (
           <CircularProgress
             size={24}
@@ -109,7 +105,7 @@ const Loader: FunctionComponent<LoaderProps> = ({
         }
       >
         {hasFiligranLoader ? (
-          <FiligranLoader height={variant === 'inElement' ? 40 : 80} />
+          <FiligranLoader height={variant === 'inElement' ? 40 : 80} color={theme?.palette?.common?.grey} />
         ) : (
           <CircularProgress
             size={variant === 'inElement' ? 40 : 80}

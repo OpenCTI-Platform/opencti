@@ -5,7 +5,6 @@ import { SelectChangeEvent } from '@mui/material/Select';
 import { markingDefinitionsLinesSearchQuery } from '@components/settings/marking_definitions/MarkingDefinitionsLines';
 import { identitySearchCreatorsSearchQuery, identitySearchIdentitiesSearchQuery } from '@components/common/identities/IdentitySearch';
 import { stixDomainObjectsLinesSearchQuery } from '@components/common/stix_domain_objects/StixDomainObjectsLines';
-import { killChainPhasesLinesSearchQuery } from '@components/settings/kill_chain_phases/KillChainPhasesLines';
 import { labelsSearchQuery } from '@components/settings/LabelsQuery';
 import { vocabularySearchQuery } from '@components/settings/VocabularyQuery';
 import { objectAssigneeFieldAssigneesSearchQuery, objectAssigneeFieldMembersSearchQuery } from '@components/common/form/ObjectAssigneeField';
@@ -14,7 +13,6 @@ import { IdentitySearchCreatorsSearchQuery$data } from '@components/common/ident
 import { ObjectAssigneeFieldAssigneesSearchQuery$data } from '@components/common/form/__generated__/ObjectAssigneeFieldAssigneesSearchQuery.graphql';
 import { StixDomainObjectsLinesSearchQuery$data } from '@components/common/stix_domain_objects/__generated__/StixDomainObjectsLinesSearchQuery.graphql';
 import { MarkingDefinitionsLinesSearchQuery$data } from '@components/settings/marking_definitions/__generated__/MarkingDefinitionsLinesSearchQuery.graphql';
-import { KillChainPhasesLinesSearchQuery$data } from '@components/settings/kill_chain_phases/__generated__/KillChainPhasesLinesSearchQuery.graphql';
 import { LabelsQuerySearchQuery$data } from '@components/settings/__generated__/LabelsQuerySearchQuery.graphql';
 import { VocabularyQuery$data } from '@components/settings/__generated__/VocabularyQuery.graphql';
 import { ObjectAssigneeFieldMembersSearchQuery$data } from '@components/common/form/__generated__/ObjectAssigneeFieldMembersSearchQuery.graphql';
@@ -27,6 +25,8 @@ import { externalReferencesQueriesSearchQuery } from '@components/analyses/exter
 import { ExternalReferencesQueriesSearchQuery$data } from '@components/analyses/external_references/__generated__/ExternalReferencesQueriesSearchQuery.graphql';
 import { NotifierFieldQuery } from '@components/common/form/NotifierField';
 import { NotifierFieldSearchQuery$data } from '@components/common/form/__generated__/NotifierFieldSearchQuery.graphql';
+import { killChainPhasesSearchQuery } from '@components/settings/KillChainPhases';
+import { KillChainPhasesSearchQuery$data } from '@components/settings/__generated__/KillChainPhasesSearchQuery.graphql';
 import useAuth, { FilterDefinition } from '../hooks/useAuth';
 import { useSearchEntitiesStixCoreObjectsSearchQuery$data } from './__generated__/useSearchEntitiesStixCoreObjectsSearchQuery.graphql';
 import { useFormatter } from '../../components/i18n';
@@ -378,14 +378,14 @@ const useSearchEntities = ({
 
     // fetches kill chain phases and add them to the set
     const buildOptionsFromKillChainPhasesSearchQuery = (key: string) => {
-      fetchQuery(killChainPhasesLinesSearchQuery, {
+      fetchQuery(killChainPhasesSearchQuery, {
         search: event.target.value !== 0 ? event.target.value : '',
         first: 10,
       })
         .toPromise()
         .then((data) => {
           const killChainPhaseEntities = (
-            (data as KillChainPhasesLinesSearchQuery$data)?.killChainPhases?.edges ?? []
+            (data as KillChainPhasesSearchQuery$data)?.killChainPhases?.edges ?? []
           ).map((n) => ({
             label: n
               ? `[${n.node.kill_chain_name}] ${n.node.phase_name}`

@@ -1,10 +1,12 @@
 import React, { FunctionComponent } from 'react';
-import { ArrowDropDown, ArrowDropUp, MoreVert } from '@mui/icons-material';
+import { ArrowDropDown, ArrowDropUp } from '@mui/icons-material';
 import IconButton from '@mui/material/IconButton';
 import SimpleDraggrable from 'react-draggable';
 import makeStyles from '@mui/styles/makeStyles';
 import { createStyles } from '@mui/styles';
 import { Theme as MuiTheme } from '@mui/material/styles/createTheme';
+import { UnfoldMoreIcon } from 'filigran-icon';
+import Tooltip from '@mui/material/Tooltip';
 import { useDataTableContext } from '../dataTableUtils';
 import { DataTableColumn, DataTableHeaderProps, DataTableVariant, LocalStorageColumns } from '../dataTableTypes';
 
@@ -92,7 +94,7 @@ const DataTableHeader: FunctionComponent<DataTableHeaderProps> = ({
           }
         }}
       >
-        {t_i18n(column.label)}
+        <Tooltip title={t_i18n(column.label)}>{t_i18n(column.label)}</Tooltip>
         {sortBy && (orderAsc ? <ArrowDropUp /> : <ArrowDropDown />)}
       </div>
       <>
@@ -107,13 +109,13 @@ const DataTableHeader: FunctionComponent<DataTableHeaderProps> = ({
               sx={{
                 marginRight: 1,
                 opacity: 0.5,
-                width: 8,
+                width: 24,
                 '&:hover': {
                   background: 'transparent',
                 },
               }}
             >
-              <MoreVert />
+              <UnfoldMoreIcon />
             </IconButton>
           </>
         )}
@@ -152,13 +154,13 @@ const DataTableHeader: FunctionComponent<DataTableHeaderProps> = ({
               const clientDiff = clientWidth - effectiveColumns.reduce((acc, col) => acc + (col.size ?? 0), 0);
 
               if (clientDiff > 0) {
-                const flexSize = (100 * currentCol.size) / currentSize;
+                const percentWidth = (100 * currentCol.size) / currentSize;
                 if (otherColumn) {
                   const otherColumnNewSize = (otherColumn.size ?? 0) - lastX - currentSize + clientWidth;
                   otherColumn.size = otherColumnNewSize;
-                  otherColumn.flexSize = (otherColumnNewSize * 100) / clientWidth;
+                  otherColumn.percentWidth = (otherColumnNewSize * 100) / clientWidth;
                 }
-                currentCol.flexSize = flexSize;
+                currentCol.percentWidth = percentWidth;
               }
 
               setLocalStorageColumns((curr: LocalStorageColumns) => ({

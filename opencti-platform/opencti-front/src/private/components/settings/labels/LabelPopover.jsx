@@ -13,7 +13,7 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import MoreVert from '@mui/icons-material/MoreVert';
 import inject18n from '../../../../components/i18n';
-import { commitMutation, QueryRenderer } from '../../../../relay/environment';
+import { commitMutation } from '../../../../relay/environment';
 import LabelEdition from './LabelEdition';
 import Transition from '../../../../components/Transition';
 import { deleteNode } from '../../../../utils/store';
@@ -28,14 +28,6 @@ const labelPopoverDeletionMutation = graphql`
   mutation LabelPopoverDeletionMutation($id: ID!) {
     labelEdit(id: $id) {
       delete
-    }
-  }
-`;
-
-const labelEditionQuery = graphql`
-  query LabelPopoverEditionQuery($id: String!) {
-    label(id: $id) {
-      ...LabelEdition_label
     }
   }
 `;
@@ -98,7 +90,7 @@ class LabelPopover extends Component {
   }
 
   render() {
-    const { classes, t, labelId } = this.props;
+    const { classes, t } = this.props;
     return (
       <div className={classes.container}>
         <IconButton
@@ -121,21 +113,10 @@ class LabelPopover extends Component {
             {t('Delete')}
           </MenuItem>
         </Menu>
-        <QueryRenderer
-          query={labelEditionQuery}
-          variables={{ id: labelId }}
-          render={({ props }) => {
-            if (props) {
-              return (
-                <LabelEdition
-                  label={props.label}
-                  handleClose={this.handleCloseUpdate.bind(this)}
-                  open={this.state.displayUpdate}
-                />
-              );
-            }
-            return <div />;
-          }}
+        <LabelEdition
+          label={this.props.label}
+          handleClose={this.handleCloseUpdate.bind(this)}
+          open={this.state.displayUpdate}
         />
         <Dialog
           open={this.state.displayDelete}
@@ -171,7 +152,7 @@ class LabelPopover extends Component {
 }
 
 LabelPopover.propTypes = {
-  labelId: PropTypes.string,
+  label: PropTypes.object,
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,

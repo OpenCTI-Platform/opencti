@@ -14,7 +14,7 @@ import DialogContentText from '@mui/material/DialogContentText';
 import MoreVert from '@mui/icons-material/MoreVert';
 import { ConnectionHandler } from 'relay-runtime';
 import inject18n from '../../../../components/i18n';
-import { commitMutation, QueryRenderer } from '../../../../relay/environment';
+import { commitMutation } from '../../../../relay/environment';
 import KillChainPhaseEdition from './KillChainPhaseEdition';
 import Transition from '../../../../components/Transition';
 
@@ -28,14 +28,6 @@ const killChainPhasePopoverDeletionMutation = graphql`
   mutation KillChainPhasePopoverDeletionMutation($id: ID!) {
     killChainPhaseEdit(id: $id) {
       delete
-    }
-  }
-`;
-
-const killChainPhaseEditionQuery = graphql`
-  query KillChainPhasePopoverEditionQuery($id: String!) {
-    killChainPhase(id: $id) {
-      ...KillChainPhaseEdition_killChainPhase
     }
   }
 `;
@@ -103,7 +95,7 @@ class KillChainPhasePopover extends Component {
   }
 
   render() {
-    const { classes, t, killChainPhaseId } = this.props;
+    const { classes, t } = this.props;
     return (
       <div className={classes.container}>
         <IconButton
@@ -126,22 +118,10 @@ class KillChainPhasePopover extends Component {
             {t('Delete')}
           </MenuItem>
         </Menu>
-        <QueryRenderer
-          query={killChainPhaseEditionQuery}
-          variables={{ id: killChainPhaseId }}
-          render={({ props }) => {
-            if (props) {
-              // Done
-              return (
-                <KillChainPhaseEdition
-                  killChainPhase={props.killChainPhase}
-                  handleClose={this.handleCloseUpdate.bind(this)}
-                  open={this.state.displayUpdate}
-                />
-              );
-            }
-            return <div />;
-          }}
+        <KillChainPhaseEdition
+          killChainPhase={this.props.killChainPhase}
+          handleClose={this.handleCloseUpdate.bind(this)}
+          open={this.state.displayUpdate}
         />
         <Dialog
           open={this.state.displayDelete}
@@ -177,7 +157,7 @@ class KillChainPhasePopover extends Component {
 }
 
 KillChainPhasePopover.propTypes = {
-  killChainPhaseId: PropTypes.string,
+  killChainPhase: PropTypes.object,
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,

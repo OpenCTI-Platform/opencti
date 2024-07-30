@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { createFragmentContainer, graphql } from 'react-relay';
+import { graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import { compose, defaultTo, lensProp, over, pickAll } from 'ramda';
 import * as Yup from 'yup';
@@ -13,7 +13,7 @@ import Drawer from '../../common/drawer/Drawer';
 const subscription = graphql`
   subscription KillChainPhaseEditionSubscription($id: ID!) {
     killChainPhase(id: $id) {
-      ...KillChainPhaseEdition_killChainPhase
+      ...KillChainPhasesLine_node
     }
   }
 `;
@@ -25,7 +25,7 @@ const killChainPhaseMutationFieldPatch = graphql`
   ) {
     killChainPhaseEdit(id: $id) {
       fieldPatch(input: $input) {
-        ...KillChainPhaseEdition_killChainPhase
+        ...KillChainPhasesLine_node
       }
     }
   }
@@ -178,24 +178,4 @@ KillChainPhaseEditionContainer.propTypes = {
   t: PropTypes.func,
 };
 
-const KillChainPhaseEditionFragment = createFragmentContainer(
-  KillChainPhaseEditionContainer,
-  {
-    killChainPhase: graphql`
-      fragment KillChainPhaseEdition_killChainPhase on KillChainPhase {
-        id
-        kill_chain_name
-        phase_name
-        x_opencti_order
-        editContext {
-          name
-          focusOn
-        }
-      }
-    `,
-  },
-);
-
-export default compose(
-  inject18n,
-)(KillChainPhaseEditionFragment);
+export default compose(inject18n)(KillChainPhaseEditionContainer);

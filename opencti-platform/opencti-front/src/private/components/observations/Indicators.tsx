@@ -1,64 +1,144 @@
 import React from 'react';
 import useHelper from 'src/utils/hooks/useHelper';
-import ListLines from '../../../components/list_lines/ListLines';
-import IndicatorsLines, { indicatorsLinesQuery } from './indicators/IndicatorsLines';
+import { graphql } from 'react-relay';
+import { IndicatorsLinesPaginationQuery, IndicatorsLinesPaginationQuery$variables } from '@components/observations/__generated__/IndicatorsLinesPaginationQuery.graphql';
+import { IndicatorsLines_data$data } from '@components/observations/__generated__/IndicatorsLines_data.graphql';
 import IndicatorCreation from './indicators/IndicatorCreation';
 import Security from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import useAuth from '../../../utils/hooks/useAuth';
-import ToolBar from '../data/ToolBar';
-import ExportContextProvider from '../../../utils/ExportContextProvider';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
-import useEntityToggle from '../../../utils/hooks/useEntityToggle';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import { IndicatorLine_node$data } from './indicators/__generated__/IndicatorLine_node.graphql';
-import { IndicatorsLinesPaginationQuery, IndicatorsLinesPaginationQuery$variables } from './indicators/__generated__/IndicatorsLinesPaginationQuery.graphql';
-import { IndicatorLineDummyComponent } from './indicators/IndicatorLine';
 import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext, useGetDefaultFilterObject } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
+import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
+import DataTable from '../../../components/dataGrid/DataTable';
 
 const LOCAL_STORAGE_KEY = 'indicators-list';
+
+const indicatorLineFragment = graphql`
+  fragment IndicatorsLine_node on Indicator {
+    id
+    entity_type
+    name
+    pattern_type
+    valid_from
+    valid_until
+    x_opencti_score
+    x_opencti_main_observable_type
+    created
+    confidence
+    createdBy {
+      ... on Identity {
+        id
+        name
+        entity_type
+      }
+    }
+    objectMarking {
+      id
+      definition_type
+      definition
+      x_opencti_order
+      x_opencti_color
+    }
+    objectLabel {
+      id
+      value
+      color
+    }
+    creators {
+      id
+      name
+    }
+  }
+`;
+
+const indicatorsLinesQuery = graphql`
+  query IndicatorsLinesPaginationQuery(
+    $search: String
+    $count: Int!
+    $cursor: ID
+    $filters: FilterGroup
+    $orderBy: IndicatorsOrdering
+    $orderMode: OrderingMode
+  ) {
+    ...IndicatorsLines_data
+    @arguments(
+      search: $search
+      count: $count
+      cursor: $cursor
+      filters: $filters
+      orderBy: $orderBy
+      orderMode: $orderMode
+    )
+  }
+`;
+
+const indicatorsLinesFragment = graphql`
+  fragment IndicatorsLines_data on Query
+  @argumentDefinitions(
+    search: { type: "String" }
+    count: { type: "Int", defaultValue: 25 }
+    cursor: { type: "ID" }
+    filters: { type: "FilterGroup" }
+    orderBy: { type: "IndicatorsOrdering", defaultValue: valid_from }
+    orderMode: { type: "OrderingMode", defaultValue: desc }
+  )
+  @refetchable(queryName: "IndicatorsLinesRefetchQuery") {
+    indicators(
+      search: $search
+      first: $count
+      after: $cursor
+      filters: $filters
+      orderBy: $orderBy
+      orderMode: $orderMode
+    ) @connection(key: "Pagination_indicators") {
+      edges {
+        node {
+          id
+          ...IndicatorsLine_node
+        }
+      }
+      pageInfo {
+        endCursor
+        hasNextPage
+        globalCount
+      }
+    }
+  }
+`;
 
 const Indicators = () => {
   const { t_i18n } = useFormatter();
   const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
+
   const {
-    viewStorage,
+    platformModuleHelpers: { isRuntimeFieldEnable },
+  } = useAuth();
+  const isRuntimeSort = isRuntimeFieldEnable();
+
+  const initialValues = {
+    filters: {
+      ...emptyFilterGroup,
+      filters: useGetDefaultFilterObject(['pattern_type', 'x_opencti_main_observable_type'], ['Indicator']),
+    },
+    searchTerm: '',
+    sortBy: 'created',
+    orderAsc: false,
+    openExports: false,
+    count: 25,
+  };
+  const {
+    viewStorage: { filters },
     paginationOptions,
     helpers: storageHelpers,
   } = usePaginationLocalStorage<IndicatorsLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY,
-    {
-      numberOfElements: { number: 0, symbol: '', original: 0 },
-      filters: {
-        ...emptyFilterGroup,
-        filters: useGetDefaultFilterObject(['pattern_type', 'x_opencti_main_observable_type'], ['Indicator']),
-      },
-      searchTerm: '',
-      sortBy: 'created',
-      orderAsc: false,
-      openExports: false,
-      count: 25,
-    },
+    initialValues,
   );
-  const {
-    numberOfElements,
-    filters,
-    searchTerm,
-    sortBy,
-    orderAsc,
-    openExports,
-  } = viewStorage;
-
-  const {
-    selectedElements,
-    deSelectedElements,
-    selectAll,
-    handleClearSelectedElements,
-    handleToggleSelectAll,
-    onToggleEntity,
-  } = useEntityToggle<IndicatorLine_node$data>(LOCAL_STORAGE_KEY);
 
   const contextFilters = useBuildEntityTypeBasedFilterContext('Indicator', filters);
   const queryPaginationOptions = {
@@ -70,139 +150,62 @@ const Indicators = () => {
     queryPaginationOptions,
   );
 
-  const {
-    platformModuleHelpers: { isRuntimeFieldEnable },
-  } = useAuth();
-  const isRuntimeSort = isRuntimeFieldEnable() ?? false;
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
-
-  const renderLines = () => {
-    let numberOfSelectedElements = Object.keys(selectedElements || {}).length;
-    if (selectAll) {
-      numberOfSelectedElements = (numberOfElements?.original ?? 0)
-                - Object.keys(deSelectedElements || {}).length;
-    }
-    const dataColumns = {
-      pattern_type: {
-        label: 'Pattern type',
-        width: '8%',
-        isSortable: true,
-      },
-      name: {
-        label: 'Name',
-        width: '22%',
-        isSortable: true,
-      },
-      createdBy: {
-        label: 'Author',
-        width: '12%',
-        isSortable: isRuntimeSort,
-      },
-      creator: {
-        label: 'Creators',
-        width: '12%',
-        isSortable: isRuntimeSort,
-      },
-      objectLabel: {
-        label: 'Labels',
-        width: '15%',
-        isSortable: false,
-      },
-      created: {
-        label: 'Original creation date',
-        width: '10%',
-        isSortable: true,
-      },
-      valid_until: {
-        label: 'Valid until',
-        width: '10%',
-        isSortable: true,
-      },
-      objectMarking: {
-        label: 'Marking',
-        width: '10%',
-        isSortable: isRuntimeSort,
-      },
-    };
-    return (
-      <>
-        <ListLines
-          helpers={storageHelpers}
-          sortBy={sortBy}
-          orderAsc={orderAsc}
-          dataColumns={dataColumns}
-          handleSort={storageHelpers.handleSort}
-          handleSearch={storageHelpers.handleSearch}
-          handleAddFilter={storageHelpers.handleAddFilter}
-          handleRemoveFilter={storageHelpers.handleRemoveFilter}
-          handleSwitchGlobalMode={storageHelpers.handleSwitchGlobalMode}
-          handleSwitchLocalMode={storageHelpers.handleSwitchLocalMode}
-          handleToggleExports={storageHelpers.handleToggleExports}
-          openExports={openExports}
-          handleToggleSelectAll={handleToggleSelectAll}
-          selectAll={selectAll}
-          exportContext={{ entity_type: 'Indicator' }}
-          iconExtension={true}
-          keyword={searchTerm}
-          filters={filters}
-          paginationOptions={queryPaginationOptions}
-          numberOfElements={numberOfElements}
-          createButton={isFABReplaced && <Security needs={[KNOWLEDGE_KNUPDATE]}>
-            <IndicatorCreation paginationOptions={queryPaginationOptions}/>
-          </Security>}
-        >
-          {queryRef && (
-          <React.Suspense
-            fallback={
-              <>
-                {Array(20)
-                  .fill(0)
-                  .map((_, idx) => (
-                    <IndicatorLineDummyComponent
-                      key={idx}
-                      dataColumns={dataColumns}
-                    />
-                  ))}
-              </>
-            }
-          >
-            <IndicatorsLines
-              queryRef={queryRef}
-              paginationOptions={queryPaginationOptions}
-              dataColumns={dataColumns}
-              onLabelClick={storageHelpers.handleAddFilter}
-              selectedElements={selectedElements}
-              deSelectedElements={deSelectedElements}
-              onToggleEntity={onToggleEntity}
-              selectAll={selectAll}
-              setNumberOfElements={storageHelpers.handleSetNumberOfElements}
-            />
-          </React.Suspense>
-          )}
-        </ListLines>
-        <ToolBar
-          selectedElements={selectedElements}
-          deSelectedElements={deSelectedElements}
-          numberOfSelectedElements={numberOfSelectedElements}
-          selectAll={selectAll}
-          filters={contextFilters}
-          search={searchTerm}
-          handleClearSelectedElements={handleClearSelectedElements}
-          type="Indicator"
-        />
-      </>
-    );
+  const dataColumns = {
+    pattern_type: {},
+    name: { percentWidth: 21 },
+    createdBy: {
+      isSortable: isRuntimeSort ?? false,
+    },
+    creator: {
+      isSortable: isRuntimeSort ?? false,
+    },
+    objectLabel: {},
+    created: { percentWidth: 10 },
+    valid_until: {
+      label: 'Valid until',
+      percentWidth: 10,
+      isSortable: true,
+    },
+    objectMarking: {
+      percentWidth: 10,
+      isSortable: isRuntimeSort ?? false,
+    },
   };
+
+  const preloadedPaginationOptions = {
+    linesQuery: indicatorsLinesQuery,
+    linesFragment: indicatorsLinesFragment,
+    queryRef,
+    nodePath: ['indicators', 'pageInfo', 'globalCount'],
+    setNumberOfElements: storageHelpers.handleSetNumberOfElements,
+  } as UsePreloadedPaginationFragment<IndicatorsLinesPaginationQuery>;
+
   return (
-    <ExportContextProvider>
-      <div>
-        <Breadcrumbs variant="list" elements={[{ label: t_i18n('Observations') }, { label: t_i18n('Indicators'), current: true }]} />
-        {renderLines()}
-        {!isFABReplaced && <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <IndicatorCreation paginationOptions={queryPaginationOptions}/>
-        </Security>}
-      </div>
-    </ExportContextProvider>
+    <>
+      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Observations') }, { label: t_i18n('Indicators'), current: true }]} />
+      {queryRef && (
+        <DataTable
+          dataColumns={dataColumns}
+          resolvePath={(data: IndicatorsLines_data$data) => data.indicators?.edges?.map((n) => n?.node)}
+          storageKey={LOCAL_STORAGE_KEY}
+          initialValues={initialValues}
+          toolbarFilters={contextFilters}
+          lineFragment={indicatorLineFragment}
+          preloadedPaginationProps={preloadedPaginationOptions}
+          exportContext={{ entity_type: 'Indicator' }}
+          createButton={isFABReplaced && (
+            <Security needs={[KNOWLEDGE_KNUPDATE]}>
+              <IndicatorCreation paginationOptions={queryPaginationOptions} />
+            </Security>
+          )}
+        />
+      )}
+      {!isFABReplaced && (
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <IndicatorCreation paginationOptions={queryPaginationOptions} />
+        </Security>
+      )}
+    </>
   );
 };
 
