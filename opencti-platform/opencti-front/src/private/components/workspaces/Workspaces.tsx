@@ -1,4 +1,5 @@
 import React, { FunctionComponent } from 'react';
+import useHelper from 'src/utils/hooks/useHelper';
 import { WorkspacesLinesPaginationQuery, WorkspacesLinesPaginationQuery$variables } from '@components/workspaces/__generated__/WorkspacesLinesPaginationQuery.graphql';
 import { WorkspaceLineDummy } from '@components/workspaces/WorkspaceLine';
 import ListLines from '../../../components/list_lines/ListLines';
@@ -20,6 +21,8 @@ const Workspaces: FunctionComponent<WorkspacesProps> = ({
   type,
 }) => {
   const { t_i18n } = useFormatter();
+  const { isFeatureEnable } = useHelper();
+  const FAB_REPLACED = isFeatureEnable('FAB_REPLACEMENT');
   const {
     viewStorage,
     paginationOptions,
@@ -101,26 +104,32 @@ const Workspaces: FunctionComponent<WorkspacesProps> = ({
           secondaryAction={true}
           paginationOptions={workspacePaginationOptions}
           numberOfElements={numberOfElements}
+          createButton={FAB_REPLACED && <Security needs={[EXPLORE_EXUPDATE]}>
+            <WorkspaceCreation
+              paginationOptions={workspacePaginationOptions}
+              type={type}
+            />
+          </Security>}
         >
           {queryRef && (
-          <React.Suspense
-            fallback={
-              <>
-                {Array(20)
-                  .fill(0)
-                  .map((_, idx) => (
-                    <WorkspaceLineDummy key={idx} dataColumns={dataColumns}/>
-                  ))}
-              </>
-            }
-          >
-            <WorkspacesLines
-              queryRef={queryRef}
-              paginationOptions={workspacePaginationOptions}
-              dataColumns={dataColumns}
-              setNumberOfElements={storageHelpers.handleSetNumberOfElements}
-            />
-          </React.Suspense>
+            <React.Suspense
+              fallback={
+                <>
+                  {Array(20)
+                    .fill(0)
+                    .map((_, idx) => (
+                      <WorkspaceLineDummy key={idx} dataColumns={dataColumns} />
+                    ))}
+                </>
+              }
+            >
+              <WorkspacesLines
+                queryRef={queryRef}
+                paginationOptions={workspacePaginationOptions}
+                dataColumns={dataColumns}
+                setNumberOfElements={storageHelpers.handleSetNumberOfElements}
+              />
+            </React.Suspense>
           )}
         </ListLines>
       </div>
@@ -131,12 +140,14 @@ const Workspaces: FunctionComponent<WorkspacesProps> = ({
     <>
       <Breadcrumbs variant="list" elements={[{ label: type === 'dashboard' ? t_i18n('Dashboards') : t_i18n('Investigations'), current: true }]} />
       {renderLines()}
-      <Security needs={[EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE]}>
-        <WorkspaceCreation
-          paginationOptions={workspacePaginationOptions}
-          type={type}
-        />
-      </Security>
+      {!FAB_REPLACED
+        && (<Security needs={[EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE]}>
+          <WorkspaceCreation
+            paginationOptions={workspacePaginationOptions}
+            type={type}
+          />
+          </Security>
+        )}
     </>
   );
 };

@@ -45,15 +45,17 @@ test('Dashboard CRUD', async ({ page }) => {
   // region Check open/close form.
   // -----------------------------
 
-  await dashboardPage.getCreateMenuButton().hover();
-  await expect(dashboardPage.getAddNewButton()).toBeVisible();
-  await expect(dashboardPage.getImportButton()).toBeVisible();
-  await dashboardPage.getAddNewButton().click();
+  // await dashboardPage.getCreateMenuButton().hover();
+  // await expect(dashboardPage.getAddNewButton()).toBeVisible();
+  // await expect(dashboardPage.getImportButton()).toBeVisible();
+  // await dashboardPage.getAddNewButton().click();
+  await dashboardPage.getAddNewDashboardButton().click();
   await expect(dashboardForm.getCreateTitle()).toBeVisible();
   await dashboardForm.getCancelButton().click();
   await expect(dashboardForm.getCreateTitle()).toBeHidden();
-  await dashboardPage.getCreateMenuButton().hover();
-  await dashboardPage.getAddNewButton().click();
+  // await dashboardPage.getCreateMenuButton().hover();
+  // await dashboardPage.getAddNewButton().click();
+  await dashboardPage.getAddNewDashboardButton().click();
   await expect(dashboardForm.getCreateTitle()).toBeVisible();
 
   // ---------
@@ -172,9 +174,9 @@ test('Dashboard CRUD', async ({ page }) => {
 
   // From list page - import
   await leftBarPage.clickOnMenu(dashboardsMenu);
-  await dashboardPage.getCreateMenuButton().hover();
+  // await dashboardPage.getCreateMenuButton().hover();
   const fileChooserPromise = page.waitForEvent('filechooser');
-  await dashboardPage.getImportButton().click();
+  await dashboardPage.getImportDashboardButton().click();
   const fileChooser = await fileChooserPromise;
   await fileChooser.setFiles(`./test-results/e2e-files/${download.suggestedFilename()}`);
   await expect(dashboardDetailsPage.getDashboardDetailsPage()).toBeVisible();
@@ -307,8 +309,8 @@ test('Dashboard restriction access', async ({ page }) => {
   await leftBar.open();
 
   const dashboardName = 'Dashboard - restriction';
-  await dashboardPage.getCreateMenuButton().hover();
-  await dashboardPage.getAddNewButton().click();
+  // await dashboardPage.getCreateMenuButton().hover();
+  await dashboardPage.getAddNewDashboardButton().click();
   await dashboardForm.nameField.fill(dashboardName);
   await dashboardForm.getCreateButton().click();
 
