@@ -20,6 +20,7 @@ import ItemBoolean from '../../../../../components/ItemBoolean';
 import { DataTableProps } from '../../../../../components/dataGrid/dataTableTypes';
 import { textInTooltip } from '../../../../../components/dataGrid/dataTableUtils';
 import { copyToClipboard } from '../../../../../utils/utils';
+import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 
 const publicDashboardFragment = graphql`
   fragment PublicDashboards_PublicDashboard on PublicDashboard {
@@ -32,6 +33,7 @@ const publicDashboardFragment = graphql`
     }
     dashboard {
       name
+      id
     }
     allowed_markings {
       id
@@ -96,11 +98,31 @@ const publicDashboardsListQuery = graphql`
     )
   }
 `;
+const publicDashboardsEditMutation = graphql`
+  mutation PublicDashboardsEditMutation($id: ID!, $input: [EditInput!]!) {
+    publicDashboardFieldPatch(id: $id, input: $input) {
+      id
+      uri_key
+      enabled
+    }
+  }
+`;
 
 const LOCAL_STORAGE_KEY = 'PublicDashboard';
 
 const PublicDashboards = () => {
   const { t_i18n } = useFormatter();
+  const [commitEditMutation] = useApiMutation(publicDashboardsEditMutation);
+
+  const onToggleEnabled = (id: string, enabled: boolean) => {
+    commitEditMutation({
+      variables: {
+        id,
+        input: [{ key: 'enabled', value: [enabled] }],
+      },
+    });
+  };
+
   const initialValues = {
     searchTerm: '',
     sortBy: 'name',
@@ -108,11 +130,17 @@ const PublicDashboards = () => {
     openExports: false,
     filters: emptyFilterGroup,
   };
+
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<PublicDashboardsListQuery$variables>(
     LOCAL_STORAGE_KEY,
     initialValues,
   );
-  const contextFilters = useBuildEntityTypeBasedFilterContext('PublicDashboard', viewStorage.filters);
+
+  const contextFilters = useBuildEntityTypeBasedFilterContext(
+    'PublicDashboard',
+    viewStorage.filters,
+  );
+
   const queryPaginationOptions = {
     ...paginationOptions,
     filters: contextFilters,
@@ -122,15 +150,21 @@ const PublicDashboards = () => {
     publicDashboardsListQuery,
     queryPaginationOptions,
   );
-  const [selectedUriKey, setSelectedUriKey] = useState('');
-  const [anchorEl, setAnchorEl] = useState<PopoverProps['anchorEl']>(null);
-  const handleOpen = (event: React.MouseEvent, uri_key: string) => {
-    setAnchorEl(event.currentTarget);
-    setSelectedUriKey(uri_key);
+
+  const [menuState, setMenuState] = useState<{
+    anchorEl: PopoverProps['anchorEl'];
+    selectedUriKey: string;
+  }>({ anchorEl: null, selectedUriKey: '' });
+
+  const handleOpen = (
+    event: React.MouseEvent,
+    uri_key: string,
+  ) => {
+    setMenuState({ anchorEl: event.currentTarget, selectedUriKey: uri_key });
   };
+
   const handleClose = () => {
-    setAnchorEl(null);
-    setSelectedUriKey('');
+    setMenuState({ anchorEl: null, selectedUriKey: '' });
   };
 
   const copyLinkUrl = (uriKey: string) => {
@@ -139,7 +173,9 @@ const PublicDashboards = () => {
       `${window.location.origin}/public/dashboard/${uriKey.toLowerCase()}`,
     );
   };
-
+  const redirectToDashboard = (id: string) => {
+    window.location.href = `${window.location.origin}/dashboard/workspaces/dashboards/${id}`;
+  };
   const dataColumns: DataTableProps['dataColumns'] = {
     name: {
       id: 'name',
@@ -222,21 +258,46 @@ const PublicDashboards = () => {
             </ToggleButton>,
           ]}
           actions={(row) => {
-            console.log('row', row);
+            console.log('ROW', row);
             return (
               <>
-                <IconButton onClick={(event) => handleOpen(event, row.uri_key)} aria-haspopup="true" size="large" color="primary">
+                <IconButton
+                  onClick={(event) => handleOpen(event, row.uri_key)}
+                  aria-haspopup="true"
+                  size="large"
+                  color="primary"
+                >
                   <MoreVert/>
                 </IconButton>
-                <Menu key={row.uri_key} anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
-                  <MenuItem aria-label="Go to dashboard">{t_i18n('Go to Original dashboard')}</MenuItem>
-                  <MenuItem onClick={() => copyLinkUrl(selectedUriKey)} aria-label="Copy link">{t_i18n('Copy public link')}</MenuItem>
-                  <MenuItem aria-label="Disable link">{t_i18n('Disable public link')}</MenuItem>
+                <Menu
+                  key={row.uri_key}
+                  anchorEl={menuState.anchorEl}
+                  open={menuState.selectedUriKey === row.uri_key}
+                  onClose={handleClose}
+                >
+                  <MenuItem onClick={() => (redirectToDashboard(row.dashboard.id))}
+                    aria-label="Go to dashboard"
+                  >
+                    {t_i18n('Go to Original dashboard')}
+                  </MenuItem>
+                  <MenuItem
+                    onClick={() => copyLinkUrl(row.uri_key)}
+                    aria-label="Copy link"
+                  >
+                    {t_i18n('Copy public link')}
+                  </MenuItem>
+                  <MenuItem
+                    onClick={() => onToggleEnabled(row.id, !row.enabled)}
+                    aria-label="Disable link"
+                  >
+                    {row.enabled
+                      ? t_i18n('Disable public link')
+                      : t_i18n('Enable public dashboard')}
+                  </MenuItem>
                 </Menu>
               </>
             );
-          }
-          }
+          }}
         />
       )}
     </>
