@@ -149,7 +149,7 @@ const ReportDetailsComponent = (props) => {
   ];
 
   return (
-    <div style={{ height: '100%' }}>
+    <div style={{ height: '100%' }} data-testid='report-overview'>
       <Typography variant="h4" gutterBottom={true}>
         {t('Entity details')}
       </Typography>

@@ -1,9 +1,74 @@
+import { Page } from '@playwright/test';
 import { expect, test } from '../fixtures/baseFixtures';
 import LeftBarPage from '../model/menu/leftBar.pageModel';
+import ReportPage from '../model/report.pageModel';
+import ReportDetailsPage from '../model/reportDetails.pageModel';
+import StixDomainObjectContentTabPage from '../model/StixDomainObjectContentTab.pageModel';
+import ContainerObservablesPage from '../model/containerObservables.pageModel';
+import StixCoreObjectDataTab from '../model/StixCoreObjectDataTab.pageModel';
 
-test('Check navigation on all pages', async ({ page }) => {
+/**
+ * Goal: validate that everything is opening wihtout errors
+ * Content of the test
+ * -------------------
+ * Go on report
+ * view list of report
+ * open one report in overview
+ * navigate to knowledge
+ * navigate to content
+ * navigate to entities
+ * navigate to observables
+ * navigate to data
+ * @param page
+ */
+const navigateReports = async (page: Page) => {
+  const reportNameFromInitData = 'E2E dashboard - Report - now';
+
+  const reportPage = new ReportPage(page);
+  await reportPage.goto();
+  await expect(reportPage.getPage()).toBeVisible();
+  await expect(page.getByText(reportNameFromInitData)).toBeVisible();
+  await reportPage.getItemFromList(reportNameFromInitData).click();
+
+  const reportDetailsPage = new ReportDetailsPage(page);
+  await expect(reportDetailsPage.getPage()).toBeVisible();
+
+  // -- Knowledge
+  await reportDetailsPage.goToKnowledgeTab();
+  await expect(page.getByTestId('report-knowledge')).toBeVisible();
+  await page.getByLabel('TimeLine view').click();
+  await page.getByLabel('Correlation view').click();
+  await page.getByLabel('Tactics matrix view').click();
+  await page.getByLabel('Graph view').click();
+
+  // -- Content
+  await reportDetailsPage.goToContentTab();
+  const contentTab = new StixDomainObjectContentTabPage(page);
+  await expect(contentTab.getPage()).toBeVisible();
+  await contentTab.getContentMappingViewButton().click();
+  await expect(page.getByRole('button', { name: 'Clear mappings' })).toBeVisible();
+  await contentTab.getContentViewButton().click();
+  await expect(page.getByText('Description', { exact: true })).toBeVisible();
+  await expect(page.getByText('Mappable content')).toBeVisible();
+
+  // -- Entities
+  await reportDetailsPage.goToEntitiesTab();
+  await expect(page.getByText('Entity types')).toBeVisible();
+  await expect(page.getByText('Add entity')).toBeVisible();
+
+  // -- Artifact / Observables
+  await reportDetailsPage.goToObservablesTab();
+  const observablesTab = new ContainerObservablesPage(page);
+  await expect(observablesTab.getPage()).toBeVisible();
+
+  // -- Data
+  await reportDetailsPage.goToDataTab();
+  const dataTab = new StixCoreObjectDataTab(page);
+  await expect(dataTab.getPage()).toBeVisible();
+};
+
+const navigateAllMenu = async (page: Page) => {
   await page.goto('/');
-
   const leftBarPage = new LeftBarPage(page);
   await leftBarPage.open();
 
@@ -91,4 +156,9 @@ test('Check navigation on all pages', async ({ page }) => {
   await expect(page.getByRole('paragraph')).toHaveText('Investigations');
   await leftBarPage.clickOnMenu('Dashboards');
   await expect(page.getByRole('paragraph')).toHaveText('Dashboards');
+};
+
+test('Check navigation on all pages', { tag: ['@navigation'] }, async ({ page }) => {
+  await navigateAllMenu(page);
+  await navigateReports(page);
 });

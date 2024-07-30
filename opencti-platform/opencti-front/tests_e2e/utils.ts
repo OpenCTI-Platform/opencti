@@ -21,4 +21,10 @@ const fakeDate = async (page: Page, dateString: string) => {
   }`);
 };
 
+export const sleep = (ms: number) => {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+};
+
 export default fakeDate;

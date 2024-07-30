@@ -27,14 +27,14 @@ import EntitiesTabPageModel from '../model/EntitiesTab.pageModel';
  * Delete report.
  * Check deletion.
  */
-test('Report CRUD', async ({ page }) => {
+test('Report CRUD', { tag: ['@report', '@knowledge', '@mutation'] }, async ({ page }) => {
   await fakeDate(page, 'April 1 2024 12:00:00');
   const leftNavigation = new LeftBarPage(page);
   const reportPage = new ReportPage(page);
   const reportDetailsPage = new ReportDetailsPage(page);
   const reportForm = new ReportFormPage(page);
 
-  await page.goto('/dashboard/analyses/reports');
+  await reportPage.goto();
   // open nav bar once and for all
   await leftNavigation.open();
 
@@ -120,7 +120,7 @@ test('Report CRUD', async ({ page }) => {
 
   await reportForm.getCreateButton().click();
   await reportPage.getItemFromList(reportName).click();
-  await expect(reportDetailsPage.getReportDetailsPage()).toBeVisible();
+  await expect(reportDetailsPage.getPage()).toBeVisible();
 
   // ---------
   // endregion
@@ -198,6 +198,7 @@ test('Report CRUD', async ({ page }) => {
   // ------------------------
 
   await reportDetailsPage.goToOverviewTab();
+  await expect(page.getByTestId('report-overview')).toBeVisible();
 
   const reportNameUpdate = `Report updated - ${uuid()}`;
   await reportDetailsPage.getEditButton().click();
@@ -307,7 +308,7 @@ test('Report CRUD', async ({ page }) => {
  * Delete report by background task.
  * Check deletion.
  */
-test('Report live entities creation and relationships', async ({ page }) => {
+test('Report live entities creation and relationships', { tag: ['@report', '@knowledge', '@mutation'] }, async ({ page }) => {
   const leftNavigation = new LeftBarPage(page);
   const toolbar = new ToolbarPageModel(page);
   const reportPage = new ReportPage(page);
@@ -318,7 +319,7 @@ test('Report live entities creation and relationships', async ({ page }) => {
   const externalReferenceForm = new ExternalReferenceFormPageModel(page);
   const entitiesTab = new EntitiesTabPageModel(page);
 
-  await page.goto('/dashboard/analyses/reports');
+  await reportPage.goto();
   // open nav bar once and for all
   await leftNavigation.open();
 
@@ -372,7 +373,7 @@ test('Report live entities creation and relationships', async ({ page }) => {
   // Create report
   await reportForm.getCreateButton().click();
   await reportPage.getItemFromList(reportName).click();
-  await expect(reportDetailsPage.getReportDetailsPage()).toBeVisible();
+  await expect(reportDetailsPage.getPage()).toBeVisible();
 
   // ---------
   // endregion

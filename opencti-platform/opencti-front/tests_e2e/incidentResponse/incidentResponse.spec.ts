@@ -1,6 +1,9 @@
 import * as path from 'path';
 import { format } from 'date-fns';
 import { v4 as uuid } from 'uuid';
+import IncidentResponsePage from 'tests_e2e/model/incidentResponse.pageModel';
+import IncidentResponseFormPage from 'tests_e2e/model/form/incidentResponseForm.pageModel';
+import IncidentResponseDetailsPage from 'tests_e2e/model/incidentResponseDetails.pageModel';
 import { expect, test } from '../fixtures/baseFixtures';
 import fakeDate from '../utils';
 import AuthorFormPageModel from '../model/form/authorForm.pageModel';
@@ -9,9 +12,6 @@ import ExternalReferenceFormPageModel from '../model/form/externalReferenceForm.
 import LeftBarPage from '../model/menu/leftBar.pageModel';
 import ToolbarPageModel from '../model/toolbar.pageModel';
 import EntitiesTabPageModel from '../model/EntitiesTab.pageModel';
-import IncidentResponsePage from 'tests_e2e/model/incidentResponse.pageModel';
-import IncidentResponseFormPage from 'tests_e2e/model/form/incidentResponseForm.pageModel';
-import IncidentResponseDetailsPage from 'tests_e2e/model/incidentResponseDetails.pageModel';
 
 /**
  * Content of the test
@@ -22,7 +22,7 @@ import IncidentResponseDetailsPage from 'tests_e2e/model/incidentResponseDetails
  * Check fields validation in the form.
  * View incident response details after creation.
  * Check data of the created incident response.
- * Update a incident response.
+ * Update an incident response.
  * Check updated incident response.
  * Delete incident response.
  * Check deletion.
@@ -148,7 +148,7 @@ test('Incident Response Creation', async ({ page }) => {
   let originalCreationDate = incidentResponseDetailsPage.getTextForHeading('Original creation date', 'April 1, 2024');
   await expect(originalCreationDate).toBeVisible();
 
-  let processingStatus = incidentResponseDetailsPage.getTextForHeading('Processing status', 'DISABLED');
+  const processingStatus = incidentResponseDetailsPage.getTextForHeading('Processing status', 'DISABLED');
   await expect(processingStatus).toBeVisible();
 
   const assignees = incidentResponseDetailsPage.getTextForHeading('Assignees', 'ADMIN');

@@ -17,6 +17,7 @@ import UserPage from '../model/user.pageModel';
 import UserFormPage from '../model/form/userForm.pageModel';
 import LeftBarPage from '../model/menu/leftBar.pageModel';
 import LoginFormPageModel from '../model/form/loginForm.pageModel';
+import SearchPageModel from '../model/search.pageModel';
 
 const noBypassUserAuthFile = 'tests_e2e/.setup/.auth/no-bypass-ref-user.json';
 const noBypassUserLogin = 'noBypassReferences@user.test';
@@ -111,6 +112,7 @@ test('Add and remove observable from Observables tab of a Report as Admin user',
   const containerObservablesPage = new ContainerObservablesPage(page);
   const containerAddObservablesPage = new ContainerAddObservablesPage(page);
   const leftBarPage = new LeftBarPage(page);
+  const search = new SearchPageModel(page);
 
   // Create a report and check that adding an observable is possible
   await page.goto('/dashboard/analyses/reports');
@@ -119,9 +121,9 @@ test('Add and remove observable from Observables tab of a Report as Admin user',
   await reportForm.nameField.fill('Test add observable e2e');
   await reportPage.getCreateReportButton().click();
   await reportPage.getItemFromList('Test add observable e2e').click();
-  await expect(reportDetailsPage.getReportDetailsPage()).toBeVisible();
+  await expect(reportDetailsPage.getPage()).toBeVisible();
   await reportDetailsPage.goToObservablesTab();
-  await expect(containerObservablesPage.getContainerObservablesPage()).toBeVisible();
+  await expect(containerObservablesPage.getPage()).toBeVisible();
   await containerObservablesPage.getAddObservableListButton().click();
   await containerAddObservablesPage.createNewIPV4Observable('8.8.8.8');
   await expect(containerAddObservablesPage.getObservable('IPv4 address 8.8.8.8')).toBeVisible();
@@ -131,16 +133,14 @@ test('Add and remove observable from Observables tab of a Report as Admin user',
 
   // Enable report references and check that removing observable is still possible as admin user
   await leftBarPage.clickOnMenu('Settings', 'Customization');
-  await page.getByPlaceholder('Search these results...').click();
-  await page.getByPlaceholder('Search these results...').fill('report');
-  await page.getByPlaceholder('Search these results...').press('Enter');
+  await search.addSearch('report');
   await page.getByRole('link', { name: 'Report' }).click();
   await page.locator('span').filter({ hasText: 'Enforce references' }).click();
 
   await leftBarPage.clickOnMenu('Analyses', 'Reports');
   await reportPage.getItemFromList('Test add observable e2e').click();
   await reportDetailsPage.goToObservablesTab();
-  await expect(containerObservablesPage.getContainerObservablesPage()).toBeVisible();
+  await expect(containerObservablesPage.getPage()).toBeVisible();
   await containerObservablesPage.getAddObservableListButton().click();
   await expect(containerAddObservablesPage.getObservable('IPv4 address 8.8.8.8')).toBeVisible();
   await containerAddObservablesPage.getObservable('IPv4 address 8.8.8.8').click();
@@ -165,15 +165,15 @@ test.describe('Add and remove observable from Observables tab of a Report as noB
     const leftBarPage = new LeftBarPage(page);
 
     // Create a report and check that adding an observable is possible
-    await page.goto('/dashboard/analyses/reports');
+    await reportPage.goto();
     await page.getByTestId('ChevronRightIcon').click();
     await reportPage.openNewReportForm();
     await reportForm.nameField.fill('Test add observable e2e 2');
     await reportPage.getCreateReportButton().click();
     await reportPage.getItemFromList('Test add observable e2e 2').click();
-    await expect(reportDetailsPage.getReportDetailsPage()).toBeVisible();
+    await expect(reportDetailsPage.getPage()).toBeVisible();
     await reportDetailsPage.goToObservablesTab();
-    await expect(containerObservablesPage.getContainerObservablesPage()).toBeVisible();
+    await expect(containerObservablesPage.getPage()).toBeVisible();
     await containerObservablesPage.getAddObservableListButton().click();
     await containerAddObservablesPage.createNewIPV4Observable('9.9.9.9');
     await expect(containerAddObservablesPage.getObservable('IPv4 address 9.9.9.9')).toBeVisible();
@@ -183,16 +183,15 @@ test.describe('Add and remove observable from Observables tab of a Report as noB
 
     // Enable report references and check that removing observable asks for an external reference
     await leftBarPage.clickOnMenu('Settings', 'Customization');
-    await page.getByPlaceholder('Search these results...').click();
-    await page.getByPlaceholder('Search these results...').fill('report');
-    await page.getByPlaceholder('Search these results...').press('Enter');
+    const search = new SearchPageModel(page);
+    await search.addSearch('report');
     await page.getByRole('link', { name: 'Report' }).click();
     await page.locator('span').filter({ hasText: 'Enforce references' }).click();
 
     await leftBarPage.clickOnMenu('Analyses', 'Reports');
     await reportPage.getItemFromList('Test add observable e2e 2').click();
     await reportDetailsPage.goToObservablesTab();
-    await expect(containerObservablesPage.getContainerObservablesPage()).toBeVisible();
+    await expect(containerObservablesPage.getPage()).toBeVisible();
     await containerObservablesPage.getAddObservableListButton().click();
     await expect(containerAddObservablesPage.getObservable('IPv4 address 9.9.9.9')).toBeVisible();
     await containerAddObservablesPage.getObservable('IPv4 address 9.9.9.9').click();

@@ -4,7 +4,7 @@ export default class StixDomainObjectContentTabPage {
   constructor(private page: Page) {}
 
   getPage() {
-    return this.page.getByTestId('sdo-content-page');
+    return this.page.getByTestId('sco-content-page');
   }
 
   async selectMainContent() {
@@ -47,5 +47,12 @@ export default class StixDomainObjectContentTabPage {
   async editFile(name: string, input: string) {
     await this.page.getByText(name).click();
     return this.editTextArea(input);
+  }
+
+  getContentMappingViewButton() {
+    return this.page.getByLabel('Content mapping view');
+  }
+  getContentViewButton() {
+    return this.page.getByLabel('Content view');
   }
 }

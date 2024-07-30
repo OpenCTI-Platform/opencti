@@ -255,6 +255,7 @@ class ReportKnowledgeComponent extends Component {
       <div
         className={classes.container}
         id={location.pathname.includes('matrix') ? 'parent' : 'container'}
+        data-testid='report-knowledge'
       >
         {mode !== 'graph' && (
         <ContainerHeader

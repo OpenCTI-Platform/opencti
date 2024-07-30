@@ -1,7 +1,12 @@
 import { Page } from '@playwright/test';
 
 export default class ReportPage {
+  pageUrl = '/dashboard/analyses/reports';
   constructor(private page: Page) {}
+
+  async goto() {
+    await this.page.goto(this.pageUrl);
+  }
 
   getPage() {
     return this.page.getByTestId('report-page');

@@ -6,7 +6,7 @@ export default class ReportDetailsPage {
 
   constructor(private page: Page) {}
 
-  getReportDetailsPage() {
+  getPage() {
     return this.page.getByTestId('report-details-page');
   }
 
@@ -18,8 +18,12 @@ export default class ReportDetailsPage {
     return this.page.getByLabel('Update', { exact: true });
   }
 
-  goToOverviewTab() {
-    return this.page.getByRole('tab', { name: 'Overview' }).click();
+  async goToOverviewTab() {
+    await this.page.getByRole('tab', { name: 'Overview' }).click();
+  }
+
+  goToKnowledgeTab() {
+    return this.page.getByRole('tab', { name: 'Knowledge' }).click();
   }
 
   goToEntitiesTab() {

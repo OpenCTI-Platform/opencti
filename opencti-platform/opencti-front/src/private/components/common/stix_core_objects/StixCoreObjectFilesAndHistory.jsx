@@ -248,7 +248,7 @@ const StixCoreObjectFilesAndHistory = ({
     setHasUserChoiceCsvMapper(hasUserChoiceCsvMapperRepresentations);
   };
   return (
-    <div className={classes.container} data-testid="StixCoreObjectFilesAndHistory">
+    <div className={classes.container} data-testid="sco-data-file-and-history">
       <Grid
         container={true}
         spacing={3}
