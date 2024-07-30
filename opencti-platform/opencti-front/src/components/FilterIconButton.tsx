@@ -26,7 +26,6 @@ export interface FilterIconButtonProps {
   searchContext?: FilterSearchContext;
   availableEntityTypes?: string[];
   availableRelationshipTypes?: string[];
-  noMultiSelect?: boolean;
 }
 
 interface FilterIconButtonIfFiltersProps extends FilterIconButtonProps {
@@ -52,7 +51,6 @@ const FilterIconButtonWithRepresentativesQuery: FunctionComponent<FilterIconButt
   searchContext,
   availableEntityTypes,
   availableRelationshipTypes,
-  noMultiSelect,
 }) => {
   const filtersRepresentativesQueryRef = useQueryLoading<FilterValuesContentQuery>(
     filterValuesContentQuery,
@@ -83,7 +81,6 @@ const FilterIconButtonWithRepresentativesQuery: FunctionComponent<FilterIconButt
             searchContext={searchContext}
             availableEntityTypes={availableEntityTypes}
             availableRelationshipTypes={availableRelationshipTypes}
-            noMultiSelect={noMultiSelect}
           />
         </React.Suspense>
       )}
@@ -118,7 +115,6 @@ const FilterIconButton: FunctionComponent<FilterIconButtonProps> = ({
   searchContext,
   availableEntityTypes,
   availableRelationshipTypes,
-  noMultiSelect,
 }) => {
   const hasRenderedRef = useRef(false);
   const setHasRenderedRef = () => {
@@ -148,7 +144,6 @@ const FilterIconButton: FunctionComponent<FilterIconButtonProps> = ({
         searchContext={searchContext}
         availableEntityTypes={availableEntityTypes}
         availableRelationshipTypes={availableRelationshipTypes}
-        noMultiSelect={noMultiSelect}
       />
     );
   }
