@@ -10254,8 +10254,8 @@ export type IngestionTaxii = BasicObject & InternalObject & {
   description?: Maybe<Scalars['String']['output']>;
   entity_type: Scalars['String']['output'];
   id: Scalars['ID']['output'];
-  ingestion_last_run?: Maybe<Scalars['DateTime']['output']>;
   ingestion_running?: Maybe<Scalars['Boolean']['output']>;
+  last_execution_date?: Maybe<Scalars['DateTime']['output']>;
   name: Scalars['String']['output'];
   parent_types: Array<Scalars['String']['output']>;
   standard_id: Scalars['String']['output'];
@@ -33707,8 +33707,8 @@ export type IngestionTaxiiResolvers<ContextType = any, ParentType extends Resolv
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  ingestion_last_run?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   ingestion_running?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  last_execution_date?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;

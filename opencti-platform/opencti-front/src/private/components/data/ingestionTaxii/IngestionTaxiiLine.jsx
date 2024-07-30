@@ -108,9 +108,9 @@ class IngestionTaxiiLineLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.ingestion_last_run.width }}
+                style={{ width: dataColumns.last_execution_date.width }}
               >
-                {fldt(node.ingestion_last_run) || '-'}
+                {fldt(node.last_execution_date) || '-'}
               </div>
               <div
                 className={classes.bodyItem}
@@ -163,7 +163,7 @@ const IngestionTaxiiLineFragment = createFragmentContainer(
         ingestion_running
         added_after_start
         current_state_cursor
-        ingestion_last_run
+        last_execution_date
       }
     `,
   },
@@ -236,7 +236,7 @@ class IngestionTaxiiDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.ingestion_last_run.width }}
+                style={{ width: dataColumns.last_execution_date.width }}
               >
                 <Skeleton
                   animation="wave"

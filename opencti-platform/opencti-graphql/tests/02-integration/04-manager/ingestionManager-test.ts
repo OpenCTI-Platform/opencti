@@ -1,26 +1,30 @@
 import { describe, expect, it } from 'vitest';
-import { processTaxiiResponse, type TaxiiResponseData } from '../../../src/manager/ingestionManager';
+import { prepareTaxiiGetParam, processTaxiiResponse, type TaxiiResponseData } from '../../../src/manager/ingestionManager';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import { addIngestion as addTaxiiIngestion, findById as findTaxiiIngestionById } from '../../../src/modules/ingestion/ingestion-taxii-domain';
 import { IngestionAuthType, type IngestionTaxiiAddInput, TaxiiVersion } from '../../../src/generated/graphql';
-import type { BasicStoreEntityIngestionTaxii } from '../../../src/modules/ingestion/ingestion-types';
 
 describe('Verify taxii ingestion', () => {
-  let ingestion: BasicStoreEntityIngestionTaxii;
-
-  it('should create a new ingestion', async () => {
+  it('should Taxii server response with no pagination (no next, no more, no x-taxii-date-added-last)', async () => {
+    // 1. Create ingestion in opencti
     const input : IngestionTaxiiAddInput = {
       authentication_type: IngestionAuthType.None,
       collection: 'testcollection',
       ingestion_running: true,
-      name: 'taxii ingestion to test manager',
+      name: 'taxii ingestion with no pagination',
       uri: 'http://test.invalid',
       version: TaxiiVersion.V21,
     };
-    ingestion = await addTaxiiIngestion(testContext, ADMIN_USER, input);
-  });
+    const ingestionNotPagination = await addTaxiiIngestion(testContext, ADMIN_USER, input);
+    expect(ingestionNotPagination.id).toBeDefined();
+    expect(ingestionNotPagination.internal_id).toBeDefined();
 
-  it('should Taxii server response with no pagination (no next, no more, no x-taxii-date-added-last)', async () => {
+    // 2. Check parameter send to taxii server
+    const expectedParams = prepareTaxiiGetParam(ingestionNotPagination);
+    expect(expectedParams.next).toBeUndefined();
+    expect(expectedParams.added_after).toBeUndefined();
+
+    // 3. Simulate a taxii server response and check opencti behavior.
     const taxiResponse: TaxiiResponseData = {
       data: {
         next: undefined,
@@ -37,15 +41,35 @@ describe('Verify taxii ingestion', () => {
       addedLastHeader: undefined
     };
 
-    await processTaxiiResponse(testContext, ingestion, taxiResponse);
-    const result = await findTaxiiIngestionById(testContext, ADMIN_USER, ingestion.id);
+    await processTaxiiResponse(testContext, ingestionNotPagination, taxiResponse);
+    const result = await findTaxiiIngestionById(testContext, ADMIN_USER, ingestionNotPagination.id);
     expect(result.current_state_cursor).toBeUndefined();
-    expect(result.taxii_more).toBeUndefined();
+    expect(result.taxii_more).toBeFalsy();
     expect(result.added_after_start).toBeUndefined();
   });
 
-  it('should taxii server response with data and only next', async () => {
-    const taxiResponse: TaxiiResponseData = {
+  it('should taxii server response with data and next page and start date', async () => {
+    // 1. Create ingestion in opencti
+    const input2 : IngestionTaxiiAddInput = {
+      authentication_type: IngestionAuthType.None,
+      collection: 'testcollection',
+      ingestion_running: true,
+      name: 'taxii ingestion with pagination and start date',
+      uri: 'http://test.invalid',
+      version: TaxiiVersion.V21,
+      added_after_start: '2024-01-01T20:35:44.000Z'
+    };
+    const ingestionPaginatedWithStartDate = await addTaxiiIngestion(testContext, ADMIN_USER, input2);
+    expect(ingestionPaginatedWithStartDate.id).toBeDefined();
+    expect(ingestionPaginatedWithStartDate.internal_id).toBeDefined();
+
+    // 2. Check parameter send to taxii server for the first call
+    const expectedParams1 = prepareTaxiiGetParam(ingestionPaginatedWithStartDate);
+    expect(expectedParams1.next).toBeUndefined();
+    expect(expectedParams1.added_after).toBe('2024-01-01T20:35:44.000Z');
+
+    // 3. Simulate a taxii server response with pagination (more = true) and check opencti behavior.
+    const taxiResponse1: TaxiiResponseData = {
       data: {
         next: '1234',
         objects: [
@@ -56,96 +80,145 @@ describe('Verify taxii ingestion', () => {
             revoked: false,
             spec_version: '2.1',
             type: 'report' }],
-        more: undefined
-      },
-      addedLastHeader: undefined
-    };
-
-    await processTaxiiResponse(testContext, ingestion, taxiResponse);
-    const result = await findTaxiiIngestionById(testContext, ADMIN_USER, ingestion.id);
-    expect(result.current_state_cursor).toBe('1234');
-    expect(result.taxii_more).toBeUndefined();
-    expect(result.added_after_start).toBeUndefined();
-  });
-
-  it('should taxii server response with data and only added_last', async () => {
-    const taxiResponse: TaxiiResponseData = {
-      data: {
-        next: undefined,
-        objects: [
-          { confidence: 100,
-            created: '2024-06-03T20:35:44.000Z',
-            description: 'The best description of the world',
-            published: '2024-06-03T20:35:44.000Z',
-            revoked: false,
-            spec_version: '2.1',
-            type: 'report' }],
-        more: undefined
-      },
-      addedLastHeader: '2021-11-11T11:11:11.111Z'
-    };
-
-    await processTaxiiResponse(testContext, ingestion, taxiResponse);
-    const result = await findTaxiiIngestionById(testContext, ADMIN_USER, ingestion.id);
-    expect(result.current_state_cursor).toBeUndefined();
-    expect(result.taxii_more).toBeUndefined();
-    expect(result.added_after_start).toBe('2021-11-11T11:11:11.111Z');
-  });
-
-  it('should taxii server response without data ignore next and added_last', async () => {
-    // First put values
-    const taxiResponseWithData: TaxiiResponseData = {
-      data: {
-        next: '444444',
-        objects: [
-          { confidence: 100,
-            created: '2024-06-03T20:35:44.000Z',
-            description: 'The best description of the world',
-            published: '2024-06-03T20:35:44.000Z',
-            revoked: false,
-            spec_version: '2.1',
-            type: 'report' }],
-        more: false
-      },
-      addedLastHeader: '2022-12-22T22:22:22.222Z'
-    };
-
-    await processTaxiiResponse(testContext, ingestion, taxiResponseWithData);
-    const resultWithData = await findTaxiiIngestionById(testContext, ADMIN_USER, ingestion.id);
-    expect(resultWithData.current_state_cursor).toBe('444444');
-    expect(resultWithData.taxii_more).toBeFalsy();
-    expect(resultWithData.added_after_start).toBe('2022-12-22T22:22:22.222Z');
-
-    const taxiResponse: TaxiiResponseData = {
-      data: {
-        next: '55555',
-        objects: [],
-        more: false
-      },
-      addedLastHeader: '2021-11-11T11:11:11.111Z'
-    };
-
-    await processTaxiiResponse(testContext, ingestion, taxiResponse);
-    const result = await findTaxiiIngestionById(testContext, ADMIN_USER, ingestion.id);
-    expect(result.current_state_cursor).toBe('444444'); // should not be updated when no data
-    expect(result.taxii_more).toBeFalsy();
-    expect(result.added_after_start).toBe('2022-12-22T22:22:22.222Z');
-  });
-
-  it('should do nothing when no data but more is true', async () => {
-    const taxiResponse: TaxiiResponseData = {
-      data: {
-        next: undefined,
-        objects: [],
         more: true
       },
+      addedLastHeader: '2024-02-01T20:35:44.000Z'
+    };
+
+    await processTaxiiResponse(testContext, ingestionPaginatedWithStartDate, taxiResponse1);
+    const taxiiEntityAfterfirstRequest = await findTaxiiIngestionById(testContext, ADMIN_USER, ingestionPaginatedWithStartDate.id);
+    expect(taxiiEntityAfterfirstRequest.current_state_cursor).toBe('1234');
+    expect(taxiiEntityAfterfirstRequest.taxii_more).toBeTruthy();
+    expect(taxiiEntityAfterfirstRequest.added_after_start, 'should keep the start date set at ingestion creation').toBe('2024-01-01T20:35:44.000Z');
+
+    // 4. Check parameter send to taxii server for the next call
+    const expectedParams2 = prepareTaxiiGetParam(taxiiEntityAfterfirstRequest);
+    expect(expectedParams2.next).toBe('1234');
+    expect(expectedParams2.added_after).toBe('2024-01-01T20:35:44.000Z');
+
+    // 5. Simulate a taxii server response with last data (more = false)
+    const taxiResponse: TaxiiResponseData = {
+      data: {
+        next: '1334',
+        objects: [
+          { confidence: 100,
+            created: '2024-06-03T20:35:44.000Z',
+            description: 'The best description of the world',
+            published: '2024-06-03T20:35:44.000Z',
+            revoked: false,
+            spec_version: '2.1',
+            type: 'report' }],
+        more: false
+      },
+      addedLastHeader: '2024-03-01T20:35:44.000Z'
+    };
+
+    await processTaxiiResponse(testContext, taxiiEntityAfterfirstRequest, taxiResponse);
+    const result = await findTaxiiIngestionById(testContext, ADMIN_USER, taxiiEntityAfterfirstRequest.id);
+    expect(result.current_state_cursor, 'Since more is false, next value should be reset').toBeUndefined();
+    expect(result.taxii_more).toBeFalsy();
+    expect(result.added_after_start).toBe('2024-03-01T20:35:44.000Z');
+  });
+
+  it('should taxii server response with no start date, and next page', async () => {
+    // 1. Create ingestion in opencti
+    const input3 : IngestionTaxiiAddInput = {
+      authentication_type: IngestionAuthType.None,
+      collection: 'testcollection',
+      ingestion_running: true,
+      name: 'taxii ingestion with pagination no start date',
+      uri: 'http://test.invalid',
+      version: TaxiiVersion.V21,
+    };
+    const ingestionPaginatedWithNoStartDate = await addTaxiiIngestion(testContext, ADMIN_USER, input3);
+    expect(ingestionPaginatedWithNoStartDate.id).toBeDefined();
+    expect(ingestionPaginatedWithNoStartDate.internal_id).toBeDefined();
+
+    // 2. Check parameter send to taxii server for the first call
+    const expectedParams1 = prepareTaxiiGetParam(ingestionPaginatedWithNoStartDate);
+    expect(expectedParams1.next).toBeUndefined();
+    expect(expectedParams1.added_after).toBeUndefined();
+
+    // 3. Simulate a taxii server response with pagination (more = true) and check opencti behavior.
+    const taxiResponse: TaxiiResponseData = {
+      data: {
+        next: '4321',
+        objects: [
+          { confidence: 100,
+            created: '2024-06-03T20:35:44.000Z',
+            description: 'The best description of the world',
+            published: '2024-06-03T20:35:44.000Z',
+            revoked: false,
+            spec_version: '2.1',
+            type: 'report' }],
+        more: true
+      },
+      addedLastHeader: '2024-02-01T20:35:44.000Z'
+    };
+
+    await processTaxiiResponse(testContext, ingestionPaginatedWithNoStartDate, taxiResponse);
+    const taxiiEntityAfterFirstCall = await findTaxiiIngestionById(testContext, ADMIN_USER, ingestionPaginatedWithNoStartDate.id);
+    expect(taxiiEntityAfterFirstCall.current_state_cursor).toBe('4321');
+    expect(taxiiEntityAfterFirstCall.taxii_more).toBeTruthy();
+    expect(taxiiEntityAfterFirstCall.added_after_start).toBeUndefined();
+
+    // 4. Check parameter send to taxii server for the next call
+    const expectedParams2 = prepareTaxiiGetParam(taxiiEntityAfterFirstCall);
+    expect(expectedParams2.next).toBe('4321');
+    expect(expectedParams2.added_after).toBeUndefined();
+
+    // 5. Simulate a taxii server response with last data (more = false)
+    const taxiResponse2: TaxiiResponseData = {
+      data: {
+        next: '4444',
+        objects: [
+          { confidence: 100,
+            created: '2024-06-03T20:35:44.000Z',
+            description: 'The best description of the world',
+            published: '2024-06-03T20:35:44.000Z',
+            revoked: false,
+            spec_version: '2.1',
+            type: 'report' }],
+        more: false
+      },
+      addedLastHeader: '2024-03-01T20:44:44.000Z'
+    };
+
+    await processTaxiiResponse(testContext, taxiiEntityAfterFirstCall, taxiResponse2);
+    const result = await findTaxiiIngestionById(testContext, ADMIN_USER, taxiiEntityAfterFirstCall.id);
+    expect(result.current_state_cursor, 'Since more is false, next value should be reset').toBeUndefined();
+    expect(result.taxii_more).toBeFalsy();
+    expect(result.added_after_start).toBe('2024-03-01T20:44:44.000Z');
+  });
+
+  it('should store nothing when no data', async () => {
+    // 1. Create ingestion in opencti
+    const input2 : IngestionTaxiiAddInput = {
+      authentication_type: IngestionAuthType.None,
+      collection: 'testcollection',
+      ingestion_running: true,
+      name: 'taxii ingestion with pagination and start date',
+      uri: 'http://test.invalid',
+      version: TaxiiVersion.V21,
+      added_after_start: '2023-01-01T20:35:44.000Z'
+    };
+    const ingestionPaginatedWithStartDate = await addTaxiiIngestion(testContext, ADMIN_USER, input2);
+    expect(ingestionPaginatedWithStartDate.id).toBeDefined();
+    expect(ingestionPaginatedWithStartDate.internal_id).toBeDefined();
+
+    const taxiResponse: TaxiiResponseData = {
+      data: {
+        next: undefined,
+        objects: [],
+        more: false
+      },
       addedLastHeader: '2021-11-11T11:11:11.111Z'
     };
 
-    await processTaxiiResponse(testContext, ingestion, taxiResponse);
-    const result = await findTaxiiIngestionById(testContext, ADMIN_USER, ingestion.id);
-    expect(result.current_state_cursor).toBe('444444'); // previous values
+    await processTaxiiResponse(testContext, ingestionPaginatedWithStartDate, taxiResponse);
+    const result = await findTaxiiIngestionById(testContext, ADMIN_USER, ingestionPaginatedWithStartDate.id);
+    expect(result.current_state_cursor).toBeUndefined(); // previous value
     expect(result.taxii_more).toBeFalsy();
-    expect(result.added_after_start).toBe('2022-12-22T22:22:22.222Z');
+    expect(result.added_after_start).toBe('2023-01-01T20:35:44.000Z'); // previous value
   });
 });

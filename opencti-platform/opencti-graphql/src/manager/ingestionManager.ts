@@ -213,6 +213,29 @@ export interface TaxiiResponseData {
   addedLastHeader: string | undefined | null
 }
 
+/**
+ *  Compute HTTP GET parameters to send to taxii server.
+ *
+ *  @see https://docs.oasis-open.org/cti/taxii/v2.1/os/taxii-v2.1-os.html#_Toc31107519
+ *   // If the more property is set to true and the next property is populated
+ *   // then the client can paginate through the remaining records
+ *   // using the next URL parameter along with the same original query options.
+ *   // If the more property is set to true and the next property is empty
+ *   // then the client may paginate through the remaining records by using the added_after URL parameter with the
+ *   // date/time value from the X-TAXII-Date-Added-Last header along with the same original query options.
+ * @param ingestion
+ */
+export const prepareTaxiiGetParam = (ingestion: BasicStoreEntityIngestionTaxii) => {
+  const next = ingestion.current_state_cursor;
+  const added_after = ingestion.added_after_start;
+  const more = ingestion.taxii_more || false;
+
+  if (more) {
+    return { next, added_after };
+  }
+  return { added_after };
+};
+
 const taxiiHttpGet = async (ingestion: BasicStoreEntityIngestionTaxii): Promise<TaxiiResponseData> => {
   const octiHeaders = new OpenCTIHeaders();
   octiHeaders.Accept = 'application/taxii+json;version=2.1';
@@ -231,15 +254,7 @@ const taxiiHttpGet = async (ingestion: BasicStoreEntityIngestionTaxii): Promise<
   const httpClient = getHttpClient(httpClientOptions);
   const preparedUri = ingestion.uri.endsWith('/') ? ingestion.uri : `${ingestion.uri}/`;
   const url = `${preparedUri}collections/${ingestion.collection}/objects/`;
-  // https://docs.oasis-open.org/cti/taxii/v2.1/os/taxii-v2.1-os.html#_Toc31107519
-  // If the more property is set to true and the next property is populated then the client can paginate through the remaining records using the next URL parameter along with the
-  // same original query options.
-  // If the more property is set to true and the next property is empty then the client may paginate through the remaining records by using the added_after URL parameter with the
-  // date/time value from the X-TAXII-Date-Added-Last header along with the same original query options.
-
-  const next = ingestion.current_state_cursor;
-  const added_after = ingestion.added_after_start;
-  const params = { next, added_after };
+  const params = prepareTaxiiGetParam(ingestion);
   const { data, headers } = await httpClient.get(url, { params });
   logApp.info('[OPENCTI-MODULE] Taxii HTTP Get done.', { ingestionId: ingestion.id, moreResponse: data.more, nextResponse: data.next, url, requestParams: params, addedLastHeaderResponse: headers['x-taxii-date-added-last'] });
   return { data, addedLastHeader: headers['x-taxii-date-added-last'] };
@@ -249,7 +264,6 @@ type TaxiiHandlerFn = (context: AuthContext, ingestion: BasicStoreEntityIngestio
 
 export const processTaxiiResponse = async (context: AuthContext, ingestion: BasicStoreEntityIngestionTaxii, taxiResponse:TaxiiResponseData) => {
   const { data, addedLastHeader } = taxiResponse;
-
   if (data.objects && data.objects.length > 0) {
     logApp.info(`[OPENCTI-MODULE] Taxii ingestion execution for ${data.objects.length} items, sending stix bundle to workers.`, { ingestionId: ingestion.id });
 
@@ -263,29 +277,41 @@ export const processTaxiiResponse = async (context: AuthContext, ingestion: Basi
       content,
       update: true
     });
+    const more = data.more || false;
     // Update the state
-    await patchTaxiiIngestion(context, SYSTEM_USER, ingestion.internal_id, {
-      current_state_cursor: data.next ? data.next : undefined,
-      taxii_more: data.more ? data.more : undefined,
-      added_after_start: addedLastHeader || undefined,
-      ingestion_last_run: now()
-    });
+    if (more) {
+      // Do not touch to added_after_start
+      await patchTaxiiIngestion(context, SYSTEM_USER, ingestion.internal_id, {
+        current_state_cursor: data.next ? data.next : undefined,
+        taxii_more: more,
+        last_execution_date: now()
+      });
+    } else {
+      // Reset the pagination cursor
+      await patchTaxiiIngestion(context, SYSTEM_USER, ingestion.internal_id, {
+        current_state_cursor: undefined,
+        taxii_more: more,
+        added_after_start: addedLastHeader,
+        last_execution_date: now()
+      });
+    }
   } else {
     // Update the last run
     await patchTaxiiIngestion(context, SYSTEM_USER, ingestion.internal_id, {
-      ingestion_last_run: now()
+      last_execution_date: now(),
+      current_state_cursor: undefined, // no data = pagination is ended, reset the cursor.
     });
     logApp.info('[OPENCTI-MODULE] Taxii ingestion - taxii server has not sent any object.', { next: data.next, more: data.more, addedLastHeader, ingestionId: ingestion.id, ingestionName: ingestion.name });
   }
 };
 
 const taxiiV21DataHandler: TaxiiHandlerFn = async (context: AuthContext, ingestion: BasicStoreEntityIngestionTaxii) => {
-  try {
-    const taxiResponse = await taxiiHttpGet(ingestion);
-    await processTaxiiResponse(context, ingestion, taxiResponse);
-  } catch (e) {
-    logApp.error(e, { ingestionId: ingestion.id, ingestionName: ingestion.name, ingestionType: 'Taxii' });
-  }
+  // try {
+  const taxiResponse = await taxiiHttpGet(ingestion);
+  await processTaxiiResponse(context, ingestion, taxiResponse);
+  // } catch (e) {
+  //   logApp.error(e, { ingestionId: ingestion.id, ingestionName: ingestion.name, ingestionType: 'Taxii' });
+  // }
 };
 const TAXII_HANDLERS: { [k: string]: TaxiiHandlerFn } = {
   [TaxiiVersion.V21]: taxiiV21DataHandler

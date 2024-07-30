@@ -59,7 +59,7 @@ const IngestionTaxii = () => {
       width: '10%',
       isSortable: false,
     },
-    ingestion_last_run: {
+    last_execution_date: {
       label: 'Last run',
       width: '15%',
       isSortable: false,
