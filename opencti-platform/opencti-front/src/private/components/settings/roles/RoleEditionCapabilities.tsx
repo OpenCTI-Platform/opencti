@@ -15,6 +15,7 @@ import { RoleEditionCapabilitiesLinesSearchQuery } from './__generated__/RoleEdi
 import { RoleEditionCapabilities_role$data } from './__generated__/RoleEditionCapabilities_role.graphql';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useHelper from '../../../../utils/hooks/useHelper';
+import { SETTINGS } from '../../../../utils/hooks/useGranted';
 
 const roleEditionAddCapability = graphql`
   mutation RoleEditionCapabilitiesAddCapabilityMutation(
@@ -132,7 +133,7 @@ const RoleEditionCapabilitiesComponent: FunctionComponent<RoleEditionCapabilitie
                 </ListItemIcon>
                 <ListItemText primary={t_i18n(capability.description)} />
                 <ListItemSecondaryAction>
-                  {capability.name !== 'SETTINGS' && (
+                  {capability.name !== SETTINGS && (
                     <Checkbox
                       onChange={(event) => handleToggle(capability.id, event)}
                       checked={isChecked}
