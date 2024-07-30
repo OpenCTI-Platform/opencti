@@ -1,10 +1,15 @@
-import React from 'react';
+import React, { useState } from 'react';
 import ToggleButton from '@mui/material/ToggleButton';
 import Tooltip from '@mui/material/Tooltip';
 import { ViewListOutlined } from '@mui/icons-material';
 import { graphql } from 'react-relay';
 import { PublicDashboardsListQuery, PublicDashboardsListQuery$variables } from '@components/workspaces/dashboards/__generated__/PublicDashboardsListQuery.graphql';
 import { PublicDashboardsFragment$data } from '@components/workspaces/dashboards/__generated__/PublicDashboardsFragment.graphql';
+import IconButton from '@mui/material/IconButton';
+import MoreVert from '@mui/icons-material/MoreVert';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+import { PopoverProps } from '@mui/material/Popover';
 import { useFormatter } from '../../../../../components/i18n';
 import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../../../utils/filters/filtersUtils';
 import DataTable from '../../../../../components/dataGrid/DataTable';
@@ -14,6 +19,7 @@ import { usePaginationLocalStorage } from '../../../../../utils/hooks/useLocalSt
 import ItemBoolean from '../../../../../components/ItemBoolean';
 import { DataTableProps } from '../../../../../components/dataGrid/dataTableTypes';
 import { textInTooltip } from '../../../../../components/dataGrid/dataTableUtils';
+import { copyToClipboard } from '../../../../../utils/utils';
 
 const publicDashboardFragment = graphql`
   fragment PublicDashboards_PublicDashboard on PublicDashboard {
@@ -116,8 +122,23 @@ const PublicDashboards = () => {
     publicDashboardsListQuery,
     queryPaginationOptions,
   );
-  // const { isFeatureEnable } = useHelper();
-  // const dataTableEnabled = isFeatureEnable('DATA_TABLES');
+  const [selectedUriKey, setSelectedUriKey] = useState('');
+  const [anchorEl, setAnchorEl] = useState<PopoverProps['anchorEl']>(null);
+  const handleOpen = (event: React.MouseEvent, uri_key: string) => {
+    setAnchorEl(event.currentTarget);
+    setSelectedUriKey(uri_key);
+  };
+  const handleClose = () => {
+    setAnchorEl(null);
+    setSelectedUriKey('');
+  };
+
+  const copyLinkUrl = (uriKey: string) => {
+    copyToClipboard(
+      t_i18n,
+      `${window.location.origin}/public/dashboard/${uriKey.toLowerCase()}`,
+    );
+  };
 
   const dataColumns: DataTableProps['dataColumns'] = {
     name: {
@@ -134,7 +155,7 @@ const PublicDashboards = () => {
     dashboard: {
       id: 'dashboard',
       flexSize: 18,
-      label: 'Custom dashboard',
+      label: 'Dashboard',
       isSortable: false,
       render: ({ dashboard }, h) => textInTooltip(dashboard.name, h),
     },
@@ -200,6 +221,22 @@ const PublicDashboards = () => {
               </Tooltip>
             </ToggleButton>,
           ]}
+          actions={(row) => {
+            console.log('row', row);
+            return (
+              <>
+                <IconButton onClick={(event) => handleOpen(event, row.uri_key)} aria-haspopup="true" size="large" color="primary">
+                  <MoreVert/>
+                </IconButton>
+                <Menu key={row.uri_key} anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
+                  <MenuItem aria-label="Go to dashboard">{t_i18n('Go to Original dashboard')}</MenuItem>
+                  <MenuItem onClick={() => copyLinkUrl(selectedUriKey)} aria-label="Copy link">{t_i18n('Copy public link')}</MenuItem>
+                  <MenuItem aria-label="Disable link">{t_i18n('Disable public link')}</MenuItem>
+                </Menu>
+              </>
+            );
+          }
+          }
         />
       )}
     </>
