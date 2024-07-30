@@ -341,7 +341,7 @@ const PlaybookAddComponentsContent = ({
     let finalConfig = config;
     if (configurationSchema?.properties?.filters) {
       const jsonFilters = serializeFilterGroupForBackend(filters);
-      finalConfig = { ...config, filters: jsonFilters };
+      finalConfig = { ...finalConfig, filters: jsonFilters };
     }
     if (configurationSchema?.properties?.triggerTime) {
       // Important to translate to UTC before formatting
@@ -350,10 +350,10 @@ const PlaybookAddComponentsContent = ({
         const day = values.day && values.day.length > 0 ? values.day : '1';
         triggerTime = `${day}-${triggerTime}`;
       }
-      finalConfig = { ...config, triggerTime };
+      finalConfig = { ...finalConfig, triggerTime };
     }
     if (configurationSchema?.properties?.actions) {
-      finalConfig = { ...config, actions: actionsInputs };
+      finalConfig = { ...finalConfig, actions: actionsInputs };
     }
     resetForm();
     if (
