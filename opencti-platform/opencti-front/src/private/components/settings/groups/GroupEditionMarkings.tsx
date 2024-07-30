@@ -331,7 +331,7 @@ const GroupEditionMarkingsComponent = ({
                         onChange={(name: string, values: Option[]) => handleToggleDefaultValues(values)
                         }
                       />
-                      <Typography variant="h2">
+                      <Typography variant="h2" style={{ marginTop: 10 }}>
                         {t_i18n('Maximum shareable marking definitions')}
                       </Typography>
                       <Alert
