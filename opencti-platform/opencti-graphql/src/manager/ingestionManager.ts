@@ -241,13 +241,27 @@ const taxiiHttpGet = async (ingestion: BasicStoreEntityIngestionTaxii): Promise<
   if (ingestion.authentication_type === IngestionAuthType.Certificate) {
     certificates = { cert: ingestion.authentication_value.split(':')[0], key: ingestion.authentication_value.split(':')[1], ca: ingestion.authentication_value.split(':')[2] };
   }
+
   const httpClientOptions: GetHttpClient = { headers: octiHeaders, rejectUnauthorized: false, responseType: 'json', certificates };
   const httpClient = getHttpClient(httpClientOptions);
   const preparedUri = ingestion.uri.endsWith('/') ? ingestion.uri : `${ingestion.uri}/`;
   const url = `${preparedUri}collections/${ingestion.collection}/objects/`;
   const params = prepareTaxiiGetParam(ingestion);
   const { data, headers } = await httpClient.get(url, { params });
-  logApp.info('[OPENCTI-MODULE] Taxii HTTP Get done.', { ingestionId: ingestion.id, moreResponse: data.more, nextResponse: data.next, url, requestParams: params, addedLastHeaderResponse: headers['x-taxii-date-added-last'] });
+
+  logApp.info('[OPENCTI-MODULE] Taxii HTTP Get done.', {
+    ingestion: ingestion.name,
+    request: {
+      params,
+      url,
+    },
+    response: {
+      addedLastHeader: headers['x-taxii-date-added-last'],
+      addedFirstHeader: headers['x-taxii-date-added-first'],
+      more: data.more,
+      next: data.next,
+    }
+  });
   return { data, addedLastHeader: headers['x-taxii-date-added-last'] };
 };
 
