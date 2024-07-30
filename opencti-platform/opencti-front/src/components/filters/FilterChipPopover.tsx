@@ -4,7 +4,7 @@ import TextField from '@mui/material/TextField';
 import Checkbox from '@mui/material/Checkbox';
 import Tooltip from '@mui/material/Tooltip';
 import FilterDate from '@components/common/lists/FilterDate';
-import { Autocomplete, MenuItem, Radio, Select } from '@mui/material';
+import { Autocomplete, MenuItem, Select } from '@mui/material';
 import { SelectChangeEvent } from '@mui/material/Select';
 import SearchScopeElement from '@components/common/lists/SearchScopeElement';
 import Chip from '@mui/material/Chip';
