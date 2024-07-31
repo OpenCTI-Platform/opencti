@@ -105,6 +105,7 @@ const createHttpServer = async () => {
   });
   await apolloServer.start();
   const requestSizeLimit = nconf.get('app:max_payload_body_size') || '50mb';
+  app.use(express.json({ limit: requestSizeLimit }));
   app.use(graphqlUploadExpress());
   app.use(
     '/graphql',
@@ -112,7 +113,6 @@ const createHttpServer = async () => {
     json(),
     expressMiddleware(apolloServer, {
       app,
-      bodyParserConfig: { limit: requestSizeLimit },
       path: `${basePath}/graphql`,
       context: async ({ req, res }) => {
         const executeContext = executionContext('api');

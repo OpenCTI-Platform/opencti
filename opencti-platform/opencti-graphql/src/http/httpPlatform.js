@@ -176,7 +176,7 @@ const createApp = async (app) => {
   }
 
   const requestSizeLimit = nconf.get('app:max_payload_body_size') || '15mb';
-  app.use(bodyParser.json({ limit: requestSizeLimit }));
+  app.use(express.json({ limit: requestSizeLimit }));
 
   const sseMiddleware = createSseMiddleware();
   sseMiddleware.applyMiddleware({ app });
