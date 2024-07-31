@@ -5,7 +5,7 @@ import { TYPE_LOCK_ERROR } from '../config/errors';
 import { connectors } from '../database/repository';
 import { elDeleteInstances, elList, elUpdate } from '../database/engine';
 import { executionContext, SYSTEM_USER } from '../utils/access';
-import { INDEX_HISTORY, READ_INDEX_HISTORY } from '../database/utils';
+import { READ_INDEX_HISTORY } from '../database/utils';
 import { now, sinceNowInDays } from '../utils/format';
 
 // Manage work created by connectors
