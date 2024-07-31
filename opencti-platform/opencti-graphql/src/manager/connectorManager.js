@@ -71,7 +71,7 @@ const closeOldWorks = async (context, connector) => {
       connectionFormat: false,
       baseData: true,
       baseFields: ['internal_id', 'timestamp'],
-      first: BATCH_SIZE,
+      maxSize: BATCH_SIZE,
       callback: queryCallback,
     });
   }
@@ -102,7 +102,7 @@ export const deleteCompletedWorks = async (context, connector) => {
     connectionFormat: false,
     baseData: true,
     baseFields: ['internal_id'],
-    first: BATCH_SIZE,
+    maxSize: BATCH_SIZE,
     callback: queryCallback,
   });
 };
