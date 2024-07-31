@@ -84,8 +84,9 @@ const useStyles = makeStyles<Theme>((theme) => ({
     zIndex: 1001,
   },
   container: {
-    padding: '15px 0 0 15px',
-    height: '100%',
+    padding: '15px',
+    paddingBottom: 0,
+    flex: 1,
     width: '100%',
   },
 }));
@@ -780,9 +781,18 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
     setNumberOfElements: helpers.handleSetNumberOfElements,
   } as UsePreloadedPaginationFragment<StixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQueryType>;
 
+  // const tableRootRef = useRef<HTMLDivElement | null>(null);
+  const [tableRootRef, setTableRootRef] = useState<HTMLDivElement | null>(null);
+
   const renderSelectEntity = (entity_type: string, name = '') => {
     return (
-      <div data-testid="stixCoreRelationshipCreationFromEntity-component">
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          height: '100%',
+        }}
+      >
         <div className={classes.header}>
           <IconButton
             aria-label="Close"
@@ -797,32 +807,35 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
           </Typography>
           <div className="clearfix" />
         </div>
-        <div className={classes.container}>
+        <div data-testid="stixCoreRelationshipCreationFromEntity-component" className={classes.container}>
           <UserContext.Consumer>
             {({ platformModuleHelpers }) => (
               <>
                 {queryRef && (
-                  <DataTable
-                    variant={DataTableVariant.inline}
-                    dataColumns={buildColumns(platformModuleHelpers)}
-                    resolvePath={(data: StixCoreRelationshipCreationFromEntityStixCoreObjectsLines_data$data) => data.stixCoreObjects?.edges?.map((n) => n?.node)}
-                    storageKey={getLocalStorageKey(entityId)}
-                    lineFragment={stixCoreRelationshipCreationFromEntityStixCoreObjectsLineFragment}
-                    initialValues={{}}
-                    toolbarFilters={contextFilters}
-                    preloadedPaginationProps={preloadedPaginationProps}
-                    entityTypes={virtualEntityTypes}
-                    additionalHeaderButtons={[(
-                      <BulkRelationDialogContainer
-                        key="BulkRelationDialogContainer"
-                        stixDomainObjectId={entityId}
-                        stixDomainObjectName={name}
-                        stixDomainObjectType={entity_type}
-                        defaultRelationshipType={allowedRelationshipTypes?.[0]}
-                        selectedEntities={targetEntities.map((item) => item.name ?? '')}
-                      />
-                    )]}
-                  />
+                  <div style={{ height: '100%' }} ref={setTableRootRef}>
+                    <DataTable
+                      rootRef={tableRootRef ?? undefined}
+                      variant={DataTableVariant.inline}
+                      dataColumns={buildColumns(platformModuleHelpers)}
+                      resolvePath={(data: StixCoreRelationshipCreationFromEntityStixCoreObjectsLines_data$data) => data.stixCoreObjects?.edges?.map((n) => n?.node)}
+                      storageKey={getLocalStorageKey(entityId)}
+                      lineFragment={stixCoreRelationshipCreationFromEntityStixCoreObjectsLineFragment}
+                      initialValues={{}}
+                      toolbarFilters={contextFilters}
+                      preloadedPaginationProps={preloadedPaginationProps}
+                      entityTypes={virtualEntityTypes}
+                      additionalHeaderButtons={[(
+                        <BulkRelationDialogContainer
+                          key="BulkRelationDialogContainer"
+                          stixDomainObjectId={entityId}
+                          stixDomainObjectName={name}
+                          stixDomainObjectType={entity_type}
+                          defaultRelationshipType={allowedRelationshipTypes?.[0]}
+                          selectedEntities={targetEntities.map((item) => item.name ?? '')}
+                        />
+                      )]}
+                    />
+                  </div>
                 )}
               </>
             )}
@@ -1052,10 +1065,10 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
             if (renderProps && renderProps.stixCoreObject) {
               const { name, entity_type } = renderProps.stixCoreObject;
               return (
-                <div style={{ minHeight: '100%' }}>
+                <>
                   {step === 0 ? renderSelectEntity(entity_type, name) : null}
                   {step === 1 ? renderForm(renderProps.stixCoreObject) : null}
-                </div>
+                </>
               );
             }
             return renderLoader();
