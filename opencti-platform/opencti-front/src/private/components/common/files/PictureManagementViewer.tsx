@@ -72,7 +72,7 @@ PictureManagementViewerProps
     ?.filter((edge) => edge?.node)
     .map((edge) => edge?.node) ?? [];
   return (
-    <Grid item xs={6} style={{ marginTop: 40 }}>
+    <Grid item xs={6}>
       <div style={{ height: '100%' }} className="break">
         <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
           {t_i18n('Pictures Management')}

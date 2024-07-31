@@ -55,7 +55,7 @@ const WorkbenchFileViewerBase = ({
   };
 
   return (
-    <Grid item xs={6} style={{ paddingTop: 10 }}>
+    <Grid item xs={6}>
       <div style={{ height: '100%' }}>
         <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
           {t('Analyst workbenches')}
@@ -76,7 +76,7 @@ const WorkbenchFileViewerBase = ({
           entity={entity}
         />
         <div className="clearfix" />
-        <Paper classes={{ root: classes.paper }} variant="outlined">
+        <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
           {edges.length ? (
             <List>
               {edges.map((file) => (
