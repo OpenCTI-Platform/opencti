@@ -40,10 +40,10 @@
     "node": ">= 17.*"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "3.583.0",
-    "@aws-sdk/client-sts": "3.583.0",
-    "@aws-sdk/credential-provider-node": "3.583.0",
-    "@aws-sdk/lib-storage": "3.583.0",
+    "@aws-sdk/client-s3": "3.621.0",
+    "@aws-sdk/client-sts": "3.621.0",
+    "@aws-sdk/credential-provider-node": "3.621.0",
+    "@aws-sdk/lib-storage": "3.621.0",
     "@aws-sdk/property-provider": "3.374.0",
     "@elastic/elasticsearch": "8.14.0",
     "@escape.tech/graphql-armor": "2.4.0",
