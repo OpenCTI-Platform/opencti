@@ -106,8 +106,8 @@ describe('Create and Update Validation', () => {
     const dataComponent = { name: 'entity name', stix_id: dataComponentStixId }; // Missed description
     const queryResult = await queryAsUser(USER_EDITOR.client, { query: CREATE_DATA_COMPONENT_QUERY, variables: { input: dataComponent } });
     expect(queryResult.errors.length).toBe(1);
-    expect(queryResult.errors[0].data.message).toEqual('This attribute is mandatory');
-    expect(queryResult.errors[0].data.attribute).toEqual('description');
+    expect(queryResult.errors[0].message).toEqual('This attribute is mandatory');
+    expect(queryResult.errors[0].extensions.data.attribute).toEqual('description');
   });
 
   it('should not verify mandatory attributes at creation for bypass users', async () => {
