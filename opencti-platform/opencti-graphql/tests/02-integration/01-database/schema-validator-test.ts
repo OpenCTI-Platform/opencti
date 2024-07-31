@@ -8,6 +8,7 @@ import { validateInputCreation, validateInputUpdate } from '../../../src/schema/
 import { resetCacheForEntity } from '../../../src/database/cache';
 import { queryAsAdminWithSuccess, queryAsUser, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
 import { type EditInput, EditOperation } from '../../../src/generated/graphql';
+import { VALIDATION_ERROR } from '../../../src/config/errors';
 
 const CREATE_DATA_COMPONENT_QUERY = gql`
   mutation DataComponentAdd($input: DataComponentAddInput!) {
@@ -106,7 +107,8 @@ describe('Create and Update Validation', () => {
     const dataComponent = { name: 'entity name', stix_id: dataComponentStixId }; // Missed description
     const queryResult = await queryAsUser(USER_EDITOR.client, { query: CREATE_DATA_COMPONENT_QUERY, variables: { input: dataComponent } });
     expect(queryResult.errors.length).toBe(1);
-    expect(queryResult.errors[0].message).toEqual('This attribute is mandatory');
+    expect(queryResult.errors[0].extensions.name).toEqual(VALIDATION_ERROR);
+    expect(queryResult.errors[0].extensions.data.message).toEqual('This attribute is mandatory');
     expect(queryResult.errors[0].extensions.data.attribute).toEqual('description');
   });
 
