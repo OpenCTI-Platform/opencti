@@ -2505,7 +2505,16 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
         finalFilters.push({ key: 'connections', nested, mode: filter.mode });
       }
       if (filterKey === ALIAS_FILTER) {
-        finalFilters.push({ ...filter, key: [ATTRIBUTE_ALIASES, ATTRIBUTE_ALIASES_OPENCTI] });
+        finalFilterGroups.push({
+          mode: filter.operator === 'nil' || (filter.operator.startsWith('not_') && filter.operator !== 'not_nil')
+            ? 'and'
+            : 'or',
+          filters: [
+            { ...filter, key: [ATTRIBUTE_ALIASES] },
+            { ...filter, key: [ATTRIBUTE_ALIASES_OPENCTI] },
+          ],
+          filterGroups: [],
+        });
       }
     } else if (arrayKeys.some((filterKey) => isObjectAttribute(filterKey)) && !arrayKeys.some((filterKey) => filterKey === 'connections')) {
       if (arrayKeys.length > 1) {
