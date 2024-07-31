@@ -29234,6 +29234,7 @@ export type Workspace = BasicObject & InternalObject & {
   graph_data?: Maybe<Scalars['String']['output']>;
   id: Scalars['ID']['output'];
   investigated_entities_ids?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+  isShared?: Maybe<Scalars['Boolean']['output']>;
   manifest?: Maybe<Scalars['String']['output']>;
   name: Scalars['String']['output'];
   objects?: Maybe<StixObjectOrStixRelationshipRefConnection>;
@@ -39839,6 +39840,7 @@ export type WorkspaceResolvers<ContextType = any, ParentType extends ResolversPa
   graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   investigated_entities_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  isShared?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   manifest?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   objects?: Resolver<Maybe<ResolversTypes['StixObjectOrStixRelationshipRefConnection']>, ParentType, ContextType, Partial<WorkspaceObjectsArgs>>;

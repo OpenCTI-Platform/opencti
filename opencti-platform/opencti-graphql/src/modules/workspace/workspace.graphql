@@ -30,6 +30,7 @@ type Workspace implements InternalObject & BasicObject {
     toStixReportBundle: String
     toConfigurationExport: String!
     toWidgetExport(widgetId: ID!): String!
+    isShared: Boolean
 }
 
 # Ordering
