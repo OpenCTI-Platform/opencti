@@ -1,8 +1,18 @@
 import Typography from '@mui/material/Typography';
 import React, { useMemo } from 'react';
 import Paper from '@mui/material/Paper';
+import Box from '@mui/material/Box';
 import makeStyles from '@mui/styles/makeStyles';
 import { graphql, useFragment, useSubscription } from 'react-relay';
+import EntitySettingsOverviewLayoutCustomization, {
+  entitySettingsOverviewLayoutCustomizationEdit,
+  entitySettingsOverviewLayoutCustomizationFragment,
+} from '@components/settings/sub_types/entity_setting/EntitySettingsOverviewLayoutCustomization';
+import {
+  EntitySettingsOverviewLayoutCustomization_entitySetting$key,
+} from '@components/settings/sub_types/entity_setting/__generated__/EntitySettingsOverviewLayoutCustomization_entitySetting.graphql';
+import { RestartAlt } from '@mui/icons-material';
+import Button from '@mui/material/Button';
 import { useFormatter } from '../../../../components/i18n';
 import ItemStatusTemplate from '../../../../components/ItemStatusTemplate';
 import SubTypeStatusPopover from './SubTypeWorkflowPopover';
@@ -13,6 +23,8 @@ import CustomizationMenu from '../CustomizationMenu';
 import SearchInput from '../../../../components/SearchInput';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import { DataSourcesLinesPaginationQuery$variables } from '../../techniques/data_sources/__generated__/DataSourcesLinesPaginationQuery.graphql';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -47,6 +59,7 @@ const subTypeFragment = graphql`
     settings {
       id
       availableSettings
+      ...EntitySettingsOverviewLayoutCustomization_entitySetting
       ...EntitySettingSettings_entitySetting
       ...EntitySettingAttributes_entitySetting
     }
@@ -63,6 +76,8 @@ const subTypeFragment = graphql`
 
 const SubType = ({ data }: { data: SubType_subType$key }) => {
   const { t_i18n } = useFormatter();
+  const { isFeatureEnable } = useHelper();
+  const isOverviewLayoutCustomizationEnabled = isFeatureEnable('OVERVIEW_LAYOUT_CUSTOMIZATION');
   const classes = useStyles();
   const subType = useFragment(subTypeFragment, data);
   const subTypeSettingsId = subType.settings?.id;
@@ -82,6 +97,22 @@ const SubType = ({ data }: { data: SubType_subType$key }) => {
     { searchTerm: '' },
   );
   const { searchTerm } = viewStorage;
+  const entitySetting = useFragment<EntitySettingsOverviewLayoutCustomization_entitySetting$key>(
+    entitySettingsOverviewLayoutCustomizationFragment,
+    subType.settings,
+  );
+  const [commitReset] = useApiMutation((entitySettingsOverviewLayoutCustomizationEdit));
+  const resetLayout = () => {
+    commitReset({
+      variables: {
+        ids: [entitySetting?.id],
+        input: {
+          key: 'overview_layout_customization',
+          value: [undefined],
+        },
+      },
+    });
+  };
   return (
     <div className={classes.container}>
       <CustomizationMenu />
@@ -127,13 +158,38 @@ const SubType = ({ data }: { data: SubType_subType$key }) => {
             />
           </div>
           <div className="clearfix" />
-          <Paper classes={{ root: classes.paper }} variant="outlined" style={{ paddingTop: 5 }}>
+          <Paper classes={{ root: classes.paper }} variant="outlined" style={{ paddingTop: 5, marginBottom: 30 }}>
             <EntitySettingAttributes
               entitySettingsData={subType.settings}
               searchTerm={searchTerm}
             ></EntitySettingAttributes>
           </Paper>
         </>
+      }
+      {
+        isOverviewLayoutCustomizationEnabled
+        && entitySetting?.overview_layout_customization
+          && <>
+            <Typography variant="h4" gutterBottom={true} sx={{ marginBottom: 3 }} >
+              <Box sx={{ display: 'inline-flex', alignItems: 'center' }}>
+                <span>{t_i18n('Overview layout customization')}</span>
+                <Button
+                  onClick={() => resetLayout()}
+                >
+                  <RestartAlt fontSize={'small'} color={'primary'} />
+                </Button>
+              </Box>
+            </Typography>
+            <Paper
+              classes={{ root: classes.paper }}
+              variant="outlined"
+              style={{ marginBottom: 30 }}
+            >
+              <EntitySettingsOverviewLayoutCustomization
+                entitySettingsData={subType.settings}
+              />
+            </Paper>
+          </>
       }
     </div>
   );
