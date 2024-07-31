@@ -39,7 +39,8 @@ import {
   MEMBER_ACCESS_RIGHT_VIEW,
   VIRTUAL_ORGANIZATION_ADMIN,
   SETTINGS_SET_ACCESSES,
-  SYSTEM_USER, SETTINGS_SECURITYACTIVITY,
+  SYSTEM_USER,
+  SETTINGS_SECURITYACTIVITY,
 } from '../../utils/access';
 import { ForbiddenAccess, UnsupportedError } from '../../config/errors';
 import { ENTITY_TYPE_GROUP, ENTITY_TYPE_USER } from '../../schema/internalObject';
