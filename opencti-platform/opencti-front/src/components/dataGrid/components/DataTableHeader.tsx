@@ -71,6 +71,7 @@ const DataTableHeader: FunctionComponent<DataTableHeaderProps> = ({
     availableFilterKeys,
     onSort,
     variant,
+    formatter: { t_i18n },
   } = useDataTableContext();
 
   return (
@@ -91,7 +92,7 @@ const DataTableHeader: FunctionComponent<DataTableHeaderProps> = ({
           }
         }}
       >
-        {column.label}
+        {t_i18n(column.label)}
         {sortBy && (orderAsc ? <ArrowDropUp /> : <ArrowDropDown />)}
       </div>
       <>

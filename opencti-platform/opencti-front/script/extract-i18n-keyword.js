@@ -11,6 +11,8 @@ const srcDirectory = 'src';
 const englishTranslationFiles = 'lang/front/en.json';
 const jsxTsxFileExtensions = ['.jsx', '.tsx'];
 const searchPattern = /t_i18n\('[^']+'\)/g;
+const labelSearchPattern = /label:\s'(\w+)',/g;
+const labelExecPattern = /label:\s'(\w+)',/;
 const extractedValues = {};
 
 // extract all translation in the t_i18n() formatter from frontend
@@ -27,13 +29,22 @@ async function extractI18nValues(directory) {
     for (const file of files) {
       const filePath = path.join(directory, file);
       const stats = await stat(filePath);
-      
+
       if (stats.isDirectory()) {
         await extractI18nValues(filePath); // Recursively call the function for directories
       } else if (stats.isFile() && jsxTsxFileExtensions.includes(path.extname(filePath))) {
         const data = await readFile(filePath, 'utf8');
+        if (filePath === 'src\\components\\dataGrid\\dataTableUtils.tsx') {
+          const labelMatches = data.match(labelSearchPattern);
+          if (labelMatches) {
+            labelMatches.forEach((m) => {
+              const value = labelExecPattern.exec(m)[1];
+              extractedValues[value] = value;
+            })
+          }
+        }
         const matches = data.match(searchPattern);
-        
+
         if (matches) {
           matches.forEach(match => {
             const value = extractValueFromPattern(match);
@@ -53,9 +64,9 @@ async function mergeWithExistingData() {
   try {
     const existingData = await readFile(englishTranslationFiles, 'utf8');
     const existingValues = JSON.parse(existingData);
-    
+
     const updatedValues = { ...existingValues };
-    
+
     // Append only the new values that do not already exist in the file
     console.log('--- Add Frontend new key ---');
     for (const key in extractedValues) {
