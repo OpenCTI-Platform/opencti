@@ -3524,6 +3524,7 @@ input SectorAddInput {
   revoked: Boolean
   lang: String
   createdBy: String
+  objectOrganization: [String]
   objectMarking: [String]
   objectLabel: [String]
   externalReferences: [String]
@@ -3954,6 +3955,7 @@ input LocationAddInput {
   revoked: Boolean
   lang: String
   createdBy: String
+  objectOrganization: [String]
   objectMarking: [String]
   objectLabel: [String]
   externalReferences: [String]
@@ -4264,6 +4266,7 @@ input CountryAddInput {
   lang: String
   x_opencti_aliases: [String]
   createdBy: String
+  objectOrganization: [String]
   objectMarking: [String]
   objectLabel: [String]
   externalReferences: [String]

@@ -8902,6 +8902,7 @@ export type IdentityAddInput = {
   name: Scalars['String']['input'];
   objectLabel?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   objectMarking?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  objectOrganization?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   revoked?: InputMaybe<Scalars['Boolean']['input']>;
   roles?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   stix_id?: InputMaybe<Scalars['StixId']['input']>;

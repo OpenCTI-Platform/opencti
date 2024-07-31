@@ -186,8 +186,8 @@ const RetentionCreation = ({ paginationOptions }: { paginationOptions: Retention
                   ),
                 }}
               />
-              {isFeatureEnable('FILE_RETENTION_RULES')
-                && <Field
+              {isFeatureEnable('FILE_RETENTION_RULES') &&
+                <Field
                   component={AutocompleteField}
                   variant="standard"
                   name="scope"
