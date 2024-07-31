@@ -41,22 +41,21 @@ export const checkActionValidity = async (context, user, input, scope, taskType)
     : [];
   const typeFilters = filters.filter((f) => f.key.includes('entity_type'));
   const typeFiltersValues = typeFilters.map((f) => f.values).flat();
-  const userCapabilities = R.flatten(user.capabilities.map((c) => c.name.split('_')));
   if (scope === BackgroundTaskScope.Settings) { // 01. Background task of scope Settings
-    const isAuthorized = userCapabilities.includes(BYPASS) || userCapabilities.includes('SETTINGS');
+    const isAuthorized = isUserHasCapability(user, SETTINGS_SETLABELS);
     if (!isAuthorized) {
       throw ForbiddenAccess();
     }
   } else if (scope === BackgroundTaskScope.Knowledge) { // 02. Background task of scope Knowledge
     // 2.1. The user should have the capability KNOWLEDGE_UPDATE
-    const isAuthorized = userCapabilities.includes(BYPASS) || userCapabilities.includes(KNOWLEDGE_UPDATE);
+    const isAuthorized = isUserHasCapability(user, KNOWLEDGE_UPDATE);
     if (!isAuthorized) {
       throw ForbiddenAccess();
     }
     const askForDeletionRelatedAction = actions.filter((a) => isDeleteRestrictedAction(a)).length > 0;
     if (askForDeletionRelatedAction) {
       // 2.2. If deletion related action available, the user should have the capability KNOWLEDGE_DELETE
-      const isDeletionRelatedActionAuthorized = userCapabilities.includes(BYPASS) || userCapabilities.includes(KNOWLEDGE_DELETE);
+      const isDeletionRelatedActionAuthorized = isUserHasCapability(user, KNOWLEDGE_DELETE);
       if (!isDeletionRelatedActionAuthorized) {
         throw ForbiddenAccess();
       }
