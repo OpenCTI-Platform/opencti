@@ -1283,7 +1283,7 @@ export const buildCompleteUser = async (context, client) => {
   const [individuals, organizations, groups] = await Promise.all([individualsPromise, organizationsPromise, userGroupsPromise]);
   const roles = await getRoles(context, groups);
   const capabilities = await getCapabilities(context, client.id, roles);
-  const isByPass = R.find((s) => s.name === BYPASS, capabilities || []) !== undefined;
+  const isByPass = R.find((s) => s.name === BYPASS, capabilities) !== undefined;
   const marking = await getUserAndGlobalMarkings(context, client.id, groups, capabilities);
   const administrated_organizations = organizations.filter((o) => o.authorized_authorities?.includes(client.id));
   if (administrated_organizations.length > 0) {

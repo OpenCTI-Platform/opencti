@@ -87,7 +87,7 @@ const RootCityComponent = ({ queryRef, cityId }) => {
   const data = usePreloadedQuery(cityQuery, queryRef);
   const { city, connectorsForImport, connectorsForExport } = data;
   const link = `/dashboard/locations/cities/${cityId}/knowledge`;
-  const paddingRight = getPaddingRight(location.pathname, city.id, '/dashboard/locations/cities');
+  const paddingRight = getPaddingRight(location.pathname, city?.id, '/dashboard/locations/cities');
   return (
     <>
       {city ? (
