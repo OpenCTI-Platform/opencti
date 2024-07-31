@@ -69,7 +69,6 @@ class ToolBar extends Component {
       noMarking,
       handleCopy,
       search,
-      trash,
     } = this.props;
     const { navOpen } = this.state;
     const isOpen = numberOfSelectedElements > 0;
@@ -121,7 +120,6 @@ class ToolBar extends Component {
               mergeDisable={mergeDisable}
               deleteOperationEnabled={deleteOperationEnabled}
               handleCopy={handleCopy}
-              trash={trash}
             />
           </Drawer>
         )}

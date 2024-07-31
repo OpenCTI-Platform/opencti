@@ -1295,7 +1295,6 @@ class DataTableToolBar extends Component {
       deleteOperationEnabled,
       warning,
       warningMessage,
-      trash,
     } = this.props;
     const { actions, keptEntityId, mergingElement, actionsInputs, promoteToContainer } = this.state;
     const selectedElementsList = Object.values(selectedElements || {});
@@ -1582,7 +1581,7 @@ class DataTableToolBar extends Component {
                       </Tooltip>
                     </Security>
                   )}
-                  {!trash && isShareableType && (
+                  {!deleteOperationEnabled && isShareableType && (
                     <>
                       <Security needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}>
                         <EETooltip title={t('Share with organizations')}>
