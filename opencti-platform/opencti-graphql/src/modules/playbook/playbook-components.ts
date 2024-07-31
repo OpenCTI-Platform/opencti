@@ -437,8 +437,13 @@ const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT: PlaybookComponent<ContainerWrapperCo
       const containerData: Record<string, unknown> = {
         name: extractStixRepresentative(baseData) ?? `Generated container wrapper from playbook at ${created}`,
         created,
-        published: created,
       };
+      if (container_type === ENTITY_TYPE_CONTAINER_REPORT) {
+        containerData.published = created;
+      }
+      if (container_type === ENTITY_TYPE_CONTAINER_GROUPING) {
+        containerData.context = 'playbook';
+      }
       const standardId = generateStandardId(container_type, containerData);
       const storeContainer = {
         internal_id: uuidv4(),
