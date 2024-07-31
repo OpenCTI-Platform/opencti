@@ -113,7 +113,12 @@ const WorkspacePopover = ({ workspace, paginationOptions }) => {
     const filter = {
       mode: 'and',
       filterGroups: [],
-      filters: [{ key: 'dashboard_id', values: [workspace.id] }],
+      filters: [{
+        key: 'dashboard_id',
+        values: [workspace.id],
+        mode: 'or',
+        operator: 'eq',
+      }],
     };
     navigate(`/dashboard/workspaces/public_dashboards?filters=${JSON.stringify(filter)}`);
   };
