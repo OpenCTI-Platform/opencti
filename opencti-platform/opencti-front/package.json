@@ -27,7 +27,7 @@
     "axios": "1.7.2",
     "ckeditor5-custom-build": "0.0.1",
     "classnames": "2.5.1",
-    "convert": "5.2.0",
+    "convert": "5.3.0",
     "d3-hierarchy": "3.1.2",
     "d3-timer": "3.0.1",
     "dagre": "0.8.5",
