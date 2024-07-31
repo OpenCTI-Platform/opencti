@@ -15,6 +15,7 @@ import WorkspacePopover from './WorkspacePopover';
 import ItemIcon from '../../../components/ItemIcon';
 import Security from '../../../utils/Security';
 import { EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE } from '../../../utils/hooks/useGranted';
+import ItemBoolean from '../../../components/ItemBoolean';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -51,7 +52,8 @@ const useStyles = makeStyles((theme) => ({
 
 const WorkspaceLineComponent = ({ dataColumns, node, paginationOptions }) => {
   const classes = useStyles();
-  const { fd } = useFormatter();
+  const { fd, t_i18n } = useFormatter();
+
   return (
     <ListItem
       classes={{ root: classes.item }}
@@ -103,6 +105,18 @@ const WorkspaceLineComponent = ({ dataColumns, node, paginationOptions }) => {
             >
               {fd(node.updated_at)}
             </div>
+            {node.type === 'dashboard' && (
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.isShared.width }}
+              >
+                <ItemBoolean
+                  status={node.isShared}
+                  label={node.isShared ? t_i18n('Yes') : t_i18n('No')}
+                  variant="inList"
+                />
+              </div>
+            )}
           </div>
         }
       />
@@ -128,6 +142,7 @@ export const WorkspaceLine = createFragmentContainer(WorkspaceLineComponent, {
       updated_at
       type
       manifest
+      isShared
       owner {
         id
         name

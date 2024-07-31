@@ -67,12 +67,12 @@ const Workspaces: FunctionComponent<WorkspacesProps> = ({
     const dataColumns = {
       name: {
         label: 'Name',
-        width: '35%',
+        width: '30%',
         isSortable: true,
       },
       tags: {
         label: 'Tags',
-        width: '25%',
+        width: '20%',
         isSortable: false,
       },
       creator: {
@@ -90,7 +90,16 @@ const Workspaces: FunctionComponent<WorkspacesProps> = ({
         width: '15%',
         isSortable: true,
       },
+      ...(type === 'dashboard' ? {
+        isShared: {
+          id: 'isShared',
+          label: 'Shared',
+          width: '10%',
+          isSortable: false,
+        },
+      } : {}),
     };
+
     return (
       <div data-testid="dashboard-page">
         <ListLines
