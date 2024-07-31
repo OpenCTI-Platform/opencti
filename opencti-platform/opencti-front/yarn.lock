@@ -6857,12 +6857,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:20.12.12":
-  version: 20.12.12
-  resolution: "@types/node@npm:20.12.12"
+"@types/node@npm:20.14.13":
+  version: 20.14.13
+  resolution: "@types/node@npm:20.14.13"
   dependencies:
     undici-types: "npm:~5.26.4"
-  checksum: 10/e3945da0a3017bdc1f88f15bdfb823f526b2a717bd58d4640082d6eb0bd2794b5c99bfb914b9e9324ec116dce36066990353ed1c777e8a7b0641f772575793c4
+  checksum: 10/749160b6bd9866e6169cb1a222e75aaf81da3868af1fda1e1e66d33c7e182be381f98a42b7d231fddf470f6389f2052ee842e776b3fdc677df798b933617866d
   languageName: node
   linkType: hard
 
@@ -16999,7 +16999,7 @@ __metadata:
     "@testing-library/jest-dom": "npm:6.4.2"
     "@testing-library/react": "npm:14.2.2"
     "@testing-library/user-event": "npm:14.5.2"
-    "@types/node": "npm:20.12.12"
+    "@types/node": "npm:20.14.13"
     "@types/qrcode": "npm:1.5.5"
     "@types/ramda": "npm:0.29.11"
     "@types/react": "npm:18.3.2"
