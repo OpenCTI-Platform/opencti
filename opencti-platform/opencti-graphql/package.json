@@ -205,7 +205,7 @@
   "resolutions": {
     "json5": "2.2.3",
     "cross-fetch": "4.0.0",
-    "jose": "5.2.3",
+    "jose": "5.6.3",
     "lodash": "4.17.21",
     "@xmldom/xmldom": "0.8.10",
     "eventsource": "patch:eventsource@2.0.2#./patch/eventsource-2.0.2.patch",
