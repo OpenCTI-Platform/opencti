@@ -342,13 +342,11 @@ const ConnectorComponent = ({ connector, relay }) => {
                 <Typography variant="h3" gutterBottom={true}>
                   {t_i18n('Type')}
                 </Typography>
-                <Button
-                  style={{ cursor: 'default' }}
-                  variant="outlined"
-                  color="primary"
-                >
-                  {connector.connector_type}
-                </Button>
+                <Chip
+                  key={connector.connector_type}
+                  classes={{ root: classes.chip }}
+                  label={connector.connector_type}
+                />
               </Grid>
               <Grid item xs={6}>
                 <Typography variant="h3" gutterBottom={true}>
