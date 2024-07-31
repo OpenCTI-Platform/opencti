@@ -162,9 +162,9 @@ export const createDefaultTask = (user, input, taskType, taskExpectedNumber, sco
 const authorizedAuthoritiesForTask = (scope) => {
   switch (scope) {
     case 'SETTINGS':
-      return ['SETTINGS'];
+      return [SETTINGS_SETLABELS];
     case 'KNOWLEDGE':
-      return ['KNOWLEDGE_KNUPDATE'];
+      return [KNOWLEDGE_KNUPDATE];
     case 'USER':
       return [SETTINGS_SET_ACCESSES];
     case 'IMPORT':
