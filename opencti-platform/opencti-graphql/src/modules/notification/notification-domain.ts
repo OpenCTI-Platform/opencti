@@ -39,7 +39,7 @@ import {
   MEMBER_ACCESS_RIGHT_VIEW,
   VIRTUAL_ORGANIZATION_ADMIN,
   SETTINGS_SET_ACCESSES,
-  SYSTEM_USER,
+  SYSTEM_USER, SETTINGS_SECURITYACTIVITY,
 } from '../../utils/access';
 import { ForbiddenAccess, UnsupportedError } from '../../config/errors';
 import { ENTITY_TYPE_GROUP, ENTITY_TYPE_USER } from '../../schema/internalObject';
@@ -146,7 +146,7 @@ export const addTriggerActivity = async (
     trigger_scope: 'activity',
     trigger_type: type,
     authorized_members: [...(triggerInput.recipients ?? []).map((r) => ({ id: r, access_right: MEMBER_ACCESS_RIGHT_VIEW }))],
-    authorized_authorities: ['SETTINGS'] // Add extra capabilities
+    authorized_authorities: [SETTINGS_SECURITYACTIVITY] // Add extra capabilities
   };
   const trigger = { ...triggerInput, ...defaultOpts };
   const created = await createEntity(context, user, trigger, ENTITY_TYPE_TRIGGER);
