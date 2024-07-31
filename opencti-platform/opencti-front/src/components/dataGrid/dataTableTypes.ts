@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import type { Dispatch, MutableRefObject, ReactNode, SetStateAction } from 'react';
+import type { Dispatch, MutableRefObject, ReactNode, RefObject, SetStateAction } from 'react';
 import React from 'react';
 import { GraphQLTaggedNode } from 'react-relay';
 import { PopoverProps } from '@mui/material/Popover/Popover';
@@ -126,6 +126,7 @@ export interface DataTableBodyProps {
   dataQueryArgs: DataTableProps['dataQueryArgs']
   pageSize: number
   pageStart: number
+  dataTableHeaderRef: RefObject<HTMLDivElement>
 }
 
 export interface DataTableDisplayFiltersProps {
