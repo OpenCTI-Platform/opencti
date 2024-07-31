@@ -87,6 +87,7 @@ import { ENTITY_TYPE_CONTAINER_TASK } from '../task/task-types';
 import { EditOperation } from '../../generated/graphql';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
 import { schemaTypesDefinition } from '../../schema/schema-types';
+import { ENTITY_TYPE_CONTAINER_GROUPING } from '../grouping/grouping-types';
 
 const extractBundleBaseElement = (instanceId: string, bundle: StixBundle): StixObject => {
   const baseData = bundle.objects.find((o) => o.id === instanceId);
@@ -403,6 +404,7 @@ const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT_SCHEMA: JSONSchemaType<ContainerWrapp
 // these are the containers that can be created with a name and no specific mandatory fields
 const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT_AVAILABLE_CONTAINERS = [
   ENTITY_TYPE_CONTAINER_REPORT,
+  ENTITY_TYPE_CONTAINER_GROUPING,
   ENTITY_TYPE_CONTAINER_CASE_INCIDENT,
   ENTITY_TYPE_CONTAINER_CASE_RFI,
   ENTITY_TYPE_CONTAINER_CASE_RFT,
