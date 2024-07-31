@@ -215,5 +215,5 @@
     "graphql": "patch:graphql@16.8.2#./patch/graphql-16.8.1.patch",
     "openid-client": "patch:openid-client@5.6.5#./patch/openid-client-5.6.5.patch"
   },
-  "packageManager": "yarn@4.2.2"
+  "packageManager": "yarn@4.3.1"
 }

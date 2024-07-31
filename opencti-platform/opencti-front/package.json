@@ -196,5 +196,5 @@
   "workspaces": [
     "packages/*"
   ],
-  "packageManager": "yarn@4.2.2"
+  "packageManager": "yarn@4.3.1"
 }
