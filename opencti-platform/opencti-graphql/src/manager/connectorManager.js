@@ -5,7 +5,7 @@ import { TYPE_LOCK_ERROR } from '../config/errors';
 import { connectors } from '../database/repository';
 import { elDeleteInstances, elList, elUpdate } from '../database/engine';
 import { executionContext, SYSTEM_USER } from '../utils/access';
-import { INDEX_HISTORY } from '../database/utils';
+import { READ_INDEX_HISTORY } from '../database/utils';
 import { now, sinceNowInDays } from '../utils/format';
 
 // Manage work created by connectors
@@ -63,7 +63,7 @@ const closeOldWorks = async (context, connector) => {
         }
       }
     };
-    await elList(context, SYSTEM_USER, [INDEX_HISTORY], {
+    await elList(context, SYSTEM_USER, [READ_INDEX_HISTORY], {
       filters,
       noFiltersChecking: true,
       types: ['Work'],
@@ -77,7 +77,7 @@ const closeOldWorks = async (context, connector) => {
   }
 };
 
-const deleteCompletedWorks = async (context, connector) => {
+export const deleteCompletedWorks = async (context, connector) => {
   const filters = {
     mode: 'and',
     filters: [
@@ -94,7 +94,7 @@ const deleteCompletedWorks = async (context, connector) => {
     await redisDeleteWorks(ids);
     await elDeleteInstances(elements);
   };
-  await elList(context, SYSTEM_USER, [INDEX_HISTORY], {
+  await elList(context, SYSTEM_USER, [READ_INDEX_HISTORY], {
     filters,
     types: ['Work'],
     orderBy: 'timestamp',
