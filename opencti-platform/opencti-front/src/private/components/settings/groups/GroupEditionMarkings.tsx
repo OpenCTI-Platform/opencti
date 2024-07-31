@@ -283,7 +283,7 @@ const GroupEditionMarkingsComponent = ({
                 >
                   {() => (
                     <Form>
-                      <Typography variant="h2">
+                      <Typography variant="h2" style={{ marginTop: 20 }}>
                         {t_i18n('Default marking definitions')}
                       </Typography>
                       <Alert
@@ -331,7 +331,7 @@ const GroupEditionMarkingsComponent = ({
                         onChange={(name: string, values: Option[]) => handleToggleDefaultValues(values)
                         }
                       />
-                      <Typography variant="h2" style={{ marginTop: 10 }}>
+                      <Typography variant="h2" style={{ marginTop: 30 }}>
                         {t_i18n('Maximum shareable marking definitions')}
                       </Typography>
                       <Alert
