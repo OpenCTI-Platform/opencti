@@ -781,7 +781,6 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
     setNumberOfElements: helpers.handleSetNumberOfElements,
   } as UsePreloadedPaginationFragment<StixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQueryType>;
 
-  // const tableRootRef = useRef<HTMLDivElement | null>(null);
   const [tableRootRef, setTableRootRef] = useState<HTMLDivElement | null>(null);
 
   const renderSelectEntity = (entity_type: string, name = '') => {
