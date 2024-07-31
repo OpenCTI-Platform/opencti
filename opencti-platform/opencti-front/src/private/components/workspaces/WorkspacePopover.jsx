@@ -108,6 +108,16 @@ const WorkspacePopover = ({ workspace, paginationOptions }) => {
   if (!canEdit) {
     return <></>;
   }
+
+  const goToPublicDashboards = () => {
+    const filter = {
+      mode: 'and',
+      filterGroups: [],
+      filters: [{ key: 'dashboard_id', values: [workspace.id] }],
+    };
+    navigate(`/dashboard/workspaces/public_dashboards?filters=${JSON.stringify(filter)}`);
+  };
+
   return (
     <div className={classes.container}>
       <IconButton
@@ -128,6 +138,9 @@ const WorkspacePopover = ({ workspace, paginationOptions }) => {
           <Security key="security_delete" needs={[EXPLORE_EXUPDATE_EXDELETE]} hasAccess={canManage}>
             <MenuItem key="menu_delete" onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
           </Security>,
+          <MenuItem key="menu_public_dashboards" onClick={() => goToPublicDashboards(workspace)}>
+            {t_i18n('View associated public dashboards')}
+          </MenuItem>,
         ]}
         {workspace.type === 'investigation' && [
           <Security key="security_delete" needs={[INVESTIGATION_INUPDATE_INDELETE]} hasAccess={canManage}>
