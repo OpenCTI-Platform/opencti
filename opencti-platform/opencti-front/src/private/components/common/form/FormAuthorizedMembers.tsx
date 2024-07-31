@@ -36,6 +36,7 @@ const FormAuthorizedMembers = ({
   canDeactivate,
 }: FormAuthorizedMembersProps) => {
   const { t_i18n } = useFormatter();
+
   return (
     <Formik<FormAuthorizedMembersInputs>
       enableReinitialize
@@ -60,13 +61,15 @@ const FormAuthorizedMembers = ({
           <DialogTitle>{t_i18n('Manage access restriction')}</DialogTitle>
           <DialogContent>
             <Form>
-              <Field
-                name="authorizedMembers"
-                component={AuthorizedMembersField}
-                owner={owner}
-                showAllMembersLine
-                canDeactivate={canDeactivate}
-              />
+              {open && ( // To trigger form initialization correctly (because removed from DOM)
+                <Field
+                  name="authorizedMembers"
+                  component={AuthorizedMembersField}
+                  owner={owner}
+                  showAllMembersLine
+                  canDeactivate={canDeactivate}
+                />
+              )}
             </Form>
           </DialogContent>
           <DialogActions>

@@ -1,7 +1,6 @@
 import {
   addWorkspace,
   duplicateWorkspace,
-  editAuthorizedMembers,
   findAll,
   findById,
   generateWidgetExportConfiguration,
@@ -11,6 +10,7 @@ import {
   objects,
   workspaceCleanContext,
   workspaceDelete,
+  workspaceEditAuthorizedMembers,
   workspaceEditContext,
   workspaceEditField,
   workspaceImportConfiguration,
@@ -57,7 +57,7 @@ const workspaceResolvers: Resolvers = {
       return workspaceEditField(context, context.user, id, input);
     },
     workspaceEditAuthorizedMembers: (_, { id, input }, context) => {
-      return editAuthorizedMembers(context, context.user, id, input);
+      return workspaceEditAuthorizedMembers(context, context.user, id, input);
     },
     workspaceContextPatch: (_, { id, input }, context) => {
       return workspaceEditContext(context, context.user, id, input);

@@ -12,6 +12,7 @@ import FeedbackEdition from './FeedbackEdition';
 import StixCoreObjectExternalReferences from '../../analyses/external_references/StixCoreObjectExternalReferences';
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
 import { Feedback_case$key } from './__generated__/Feedback_case.graphql';
+import { getCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -92,8 +93,7 @@ const FeedbackComponent: FunctionComponent<FeedbackProps> = ({ data, enableRefer
   const { isFeatureEnable } = useHelper();
   const FABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
-  const canManage = feedbackData.currentUserAccessRight === 'admin';
-  const canEdit = canManage || feedbackData.currentUserAccessRight === 'edit';
+  const { canEdit } = getCurrentUserAccessRight(feedbackData);
 
   return (
     <>

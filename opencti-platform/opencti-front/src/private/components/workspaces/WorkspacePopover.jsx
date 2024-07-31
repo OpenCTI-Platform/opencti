@@ -22,6 +22,7 @@ import { deleteNode, insertNode } from '../../../utils/store';
 import handleExportJson from './workspaceExportHandler';
 import WorkspaceDuplicationDialog from './WorkspaceDuplicationDialog';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
+import { getCurrentUserAccessRight } from '../../../utils/authorizedMembers';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -103,9 +104,8 @@ const WorkspacePopover = ({ workspace, paginationOptions }) => {
   };
 
   const handleCloseEdit = () => setDisplayEdit(false);
-  const userCanManage = workspace.currentUserAccessRight === 'admin';
-  const userCanEdit = userCanManage || workspace.currentUserAccessRight === 'edit';
-  if (!userCanEdit) {
+  const { canManage, canEdit } = getCurrentUserAccessRight(workspace);
+  if (!canEdit) {
     return <></>;
   }
   return (
@@ -125,12 +125,12 @@ const WorkspacePopover = ({ workspace, paginationOptions }) => {
         {workspace.type === 'dashboard' && [
           <MenuItem key="menu_duplicate" onClick={handleDashboardDuplication}>{t_i18n('Duplicate')}</MenuItem>,
           <MenuItem key="menu_export" onClick={() => handleExportJson(workspace)}>{t_i18n('Export')}</MenuItem>,
-          <Security key="security_delete" needs={[EXPLORE_EXUPDATE_EXDELETE]} hasAccess={userCanManage}>
+          <Security key="security_delete" needs={[EXPLORE_EXUPDATE_EXDELETE]} hasAccess={canManage}>
             <MenuItem key="menu_delete" onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
           </Security>,
         ]}
         {workspace.type === 'investigation' && [
-          <Security key="security_delete" needs={[INVESTIGATION_INUPDATE_INDELETE]} hasAccess={userCanManage}>
+          <Security key="security_delete" needs={[INVESTIGATION_INUPDATE_INDELETE]} hasAccess={canManage}>
             <MenuItem key="menu_delete" onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
           </Security>,
         ]}

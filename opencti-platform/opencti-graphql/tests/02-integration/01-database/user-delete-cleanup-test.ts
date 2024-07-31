@@ -6,7 +6,7 @@ import type { AuthContext, AuthUser } from '../../../src/types/user';
 import { addNotification, addTrigger, myNotificationsFind, triggerGet } from '../../../src/modules/notification/notification-domain';
 import type { MemberAccessInput, TriggerLiveAddInput, WorkspaceAddInput } from '../../../src/generated/graphql';
 import { addUser, assignGroupToUser, findById as findUserById, isUserTheLastAdmin, userDelete } from '../../../src/domain/user';
-import { addWorkspace, editAuthorizedMembers, findById as findWorkspaceById } from '../../../src/modules/workspace/workspace-domain';
+import { addWorkspace, workspaceEditAuthorizedMembers, findById as findWorkspaceById } from '../../../src/modules/workspace/workspace-domain';
 import type { NotificationAddInput } from '../../../src/modules/notification/notification-types';
 import { TriggerEventType, TriggerType } from '../../../src/generated/graphql';
 
@@ -86,7 +86,7 @@ describe('Testing user delete on cascade [issue/3720]', () => {
       const sharedIAuthMembers: MemberAccessInput[] = sharedWithAdminRightsInvestigationData.authorized_members;
       sharedIAuthMembers.push({ id: 'ALL', access_right: 'admin' });
 
-      await editAuthorizedMembers(userToDeleteContext, userToDeletedAuth, sharedWithAdminRightsInvestigationData.id, sharedIAuthMembers);
+      await workspaceEditAuthorizedMembers(userToDeleteContext, userToDeletedAuth, sharedWithAdminRightsInvestigationData.id, sharedIAuthMembers);
       sharedWithAdminRightsInvestigationData = await findWorkspaceById(userToDeleteContext, userToDeletedAuth, sharedWithAdminRightsInvestigationData.id);
       expect(sharedWithAdminRightsInvestigationData.authorized_members.length).toBe(2);
 
@@ -100,7 +100,7 @@ describe('Testing user delete on cascade [issue/3720]', () => {
       const sharedInvestigationAuthMembers: MemberAccessInput[] = sharedInvestigationData.authorized_members;
       sharedInvestigationAuthMembers.push({ id: 'ALL', access_right: 'view' });
 
-      await editAuthorizedMembers(adminContext, ADMIN_USER, sharedInvestigationData.id, sharedInvestigationAuthMembers);
+      await workspaceEditAuthorizedMembers(adminContext, ADMIN_USER, sharedInvestigationData.id, sharedInvestigationAuthMembers);
       sharedInvestigationData = await findWorkspaceById(userToDeleteContext, userToDeletedAuth, sharedInvestigationData.id);
       expect(sharedInvestigationData.authorized_members.length).toBe(2);
 
@@ -114,7 +114,7 @@ describe('Testing user delete on cascade [issue/3720]', () => {
       const adminInvestigationData = await addWorkspace(adminContext, ADMIN_USER, adminInvestigationInput);
       const adminInvestigationAuthMembers: MemberAccessInput[] = adminInvestigationData.authorized_members;
       adminInvestigationAuthMembers.push({ id: userToDeletedAuth.id, access_right: 'view' });
-      await editAuthorizedMembers(adminContext, ADMIN_USER, adminInvestigationData.id, adminInvestigationAuthMembers);
+      await workspaceEditAuthorizedMembers(adminContext, ADMIN_USER, adminInvestigationData.id, adminInvestigationAuthMembers);
       expect(adminInvestigationData.authorized_members.length).toBe(2);
 
       // ******************************************

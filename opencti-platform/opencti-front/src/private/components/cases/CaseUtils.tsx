@@ -93,6 +93,7 @@ export const caseFragment = graphql`
     revoked
     description
     confidence
+    currentUserAccessRight
     creators {
       id
       name

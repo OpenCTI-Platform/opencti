@@ -31,6 +31,7 @@ import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings
 import useGranted, { KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE, KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 import CaseIncidentEdition from './CaseIncidentEdition';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 const subscription = graphql`
   subscription RootIncidentCaseSubscription($id: ID!) {
@@ -52,6 +53,18 @@ const caseIncidentQuery = graphql`
       id
       standard_id
       entity_type
+      currentUserAccessRight
+      authorized_members {
+        id
+        name
+        entity_type
+        access_right
+      }
+      creators {
+        id
+        name
+        entity_type
+      }
       name
       ...CaseUtils_case
       ...IncidentKnowledge_case
@@ -69,6 +82,23 @@ const caseIncidentQuery = graphql`
     }
     connectorsForImport {
       ...StixCoreObjectFilesAndHistory_connectorsImport
+    }
+  }
+`;
+
+// Mutation to edit authorized members of a Case Incident
+const caseIncidentAuthorizedMembersMutation = graphql`
+  mutation RootCaseIncidentAuthorizedMembersMutation(
+    $id: ID!
+    $input: [MemberAccessInput!]
+  ) {
+    caseIncidentEditAuthorizedMembers(id: $id, input: $input) {
+      authorized_members {
+        id
+        name
+        entity_type
+        access_right
+      }
     }
   }
 `;
@@ -95,6 +125,8 @@ const RootCaseIncidentComponent = ({ queryRef, caseId }) => {
   } = usePreloadedQuery<RootIncidentCaseQuery>(caseIncidentQuery, queryRef);
   const isOverview = location.pathname === `/dashboard/cases/incidents/${caseData?.id}`;
   const paddingRight = getPaddingRight(location.pathname, caseData?.id, '/dashboard/cases/incidents', false);
+  const { isFeatureEnable } = useHelper();
+  const canManageAuthorizedMembers = caseData?.currentUserAccessRight === 'admin' && isFeatureEnable('CONTAINERS_AUTHORIZED_MEMBERS');
   return (
     <>
       {caseData ? (
@@ -113,7 +145,10 @@ const RootCaseIncidentComponent = ({ queryRef, caseId }) => {
             </Security>}
             enableQuickSubscription={true}
             enableAskAi={true}
+            disableSharing={true}
             redirectToContent={true}
+            enableManageAuthorizedMembers={canManageAuthorizedMembers}
+            authorizedMembersMutation={caseIncidentAuthorizedMembersMutation}
           />
           <Box
             sx={{

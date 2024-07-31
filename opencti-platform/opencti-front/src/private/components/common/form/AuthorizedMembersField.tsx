@@ -17,6 +17,7 @@ import SelectField from '../../../../components/fields/SelectField';
 import { useFormatter } from '../../../../components/i18n';
 import { AccessRight, ALL_MEMBERS_AUTHORIZED_CONFIG, AuthorizedMemberOption, Creator, CREATOR_AUTHORIZED_CONFIG } from '../../../../utils/authorizedMembers';
 import SwitchField from '../../../../components/fields/SwitchField';
+import useAuth from '../../../../utils/hooks/useAuth';
 
 /**
  * Returns true if the authorized member option is generic.
@@ -74,20 +75,24 @@ const AuthorizedMembersField = ({
   canDeactivate = false,
 }: AuthorizedMembersFieldProps) => {
   const { t_i18n } = useFormatter();
+  const { me } = useAuth();
   const { setFieldValue } = form;
   const { name, value } = field;
+
   // Value in sync with internal Formik field 'applyAccesses'.
   // Require to use a state in addition to the Formik field because
   // we use the value outside the scope of the internal Formik form.
   const [applyAccesses, setApplyAccesses] = useState(
     value !== null && value.length > 0,
   );
+
   const accessForAllMembers = (value ?? []).find(
     (o) => o.value === ALL_MEMBERS_AUTHORIZED_CONFIG.id,
   );
   const accessForCreator = (value ?? []).find(
     (o) => o.value === CREATOR_AUTHORIZED_CONFIG.id,
   );
+
   const allMembersOption: Option = {
     label: t_i18n(ALL_MEMBERS_AUTHORIZED_CONFIG.labelKey),
     type: ALL_MEMBERS_AUTHORIZED_CONFIG.type,
@@ -98,11 +103,13 @@ const AuthorizedMembersField = ({
     type: CREATOR_AUTHORIZED_CONFIG.type,
     value: CREATOR_AUTHORIZED_CONFIG.id,
   };
+
   const accessRights = [
     { label: t_i18n('can view'), value: 'view' },
     { label: t_i18n('can edit'), value: 'edit' },
     { label: t_i18n('can manage'), value: 'admin' },
   ];
+
   /**
    * Add a new authorized member in the value of the field,
    * called when submitting internal Formik form.
@@ -126,6 +133,7 @@ const AuthorizedMembersField = ({
       helpers.setFieldValue('newAccessRight', 'view');
     }
   };
+
   /**
    * Keep the state applyAccesses in sync with the field of internal
    * Formik form and reset field values. Called when changing the
@@ -152,27 +160,35 @@ const AuthorizedMembersField = ({
           creatorAccessRight: 'none',
         },
       });
-    } else if (showCreatorLine) {
-      setFieldValue(name, [
-        {
+    } else {
+      const values: AuthorizedMemberOption[] = [];
+      if (showCreatorLine) {
+        values.push({
           ...creatorOption,
           accessRight: 'admin',
-        },
-      ]);
-      setField('creatorAccessRight', 'admin');
-    } else if (owner) {
-      setFieldValue(name, [
-        {
+        });
+        setField('creatorAccessRight', 'admin');
+      }
+      if (owner) {
+        values.push({
           label: owner.name,
           type: owner.entity_type,
           value: owner.id,
           accessRight: 'admin',
-        },
-      ]);
-    } else {
-      setFieldValue(name, []);
+        });
+      }
+      if (me.id !== owner?.id) {
+        values.push({
+          label: me.name,
+          type: 'User',
+          value: me.id,
+          accessRight: 'admin',
+        });
+      }
+      setFieldValue(name, values);
     }
   };
+
   /**
    * Change the access level of a member in the field value.
    * If the member does not already exist in the field, then add it.
@@ -214,20 +230,24 @@ const AuthorizedMembersField = ({
       ]);
     }
   };
+
   // To change the access of all members in the platform.
   const changeAllMembersAccess = (accessRight: AccessRight) => {
     changeMemberAccess(ALL_MEMBERS_AUTHORIZED_CONFIG.id, accessRight);
   };
+
   // To change the access of the creator of the entity.
   const changeCreatorAccess = (accessRight: AccessRight) => {
     changeMemberAccess(CREATOR_AUTHORIZED_CONFIG.id, accessRight);
   };
+
   let accessInfoMessage = t_i18n('info_authorizedmembers_workspace');
   if (canDeactivate) {
     accessInfoMessage = applyAccesses
       ? t_i18n('info_authorizedmembers_knowledge_off')
       : t_i18n('info_authorizedmembers_knowledge_on');
   }
+
   return (
     <>
       {/* Internal Formik component to be able to use our custom field components */}

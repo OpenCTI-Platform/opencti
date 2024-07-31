@@ -5,6 +5,7 @@ import { useFragment } from 'react-relay';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
 import useHelper from 'src/utils/hooks/useHelper';
+import { CaseUtils_case$key } from '@components/cases/__generated__/CaseUtils_case.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import { convertMarkings } from '../../../../utils/edition';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
@@ -16,7 +17,6 @@ import ContainerStixObjectsOrStixRelationships from '../../common/containers/Con
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
 import { CaseTasksLinesQuery, CaseTasksLinesQuery$variables } from '../tasks/__generated__/CaseTasksLinesQuery.graphql';
-import { CaseUtils_case$key } from '../__generated__/CaseUtils_case.graphql';
 import CaseTasksLines, { caseTasksLinesQuery } from '../tasks/CaseTasksLines';
 import { caseFragment } from '../CaseUtils';
 import CaseIncidentDetails from './CaseIncidentDetails';
@@ -27,6 +27,7 @@ import ListLines from '../../../../components/list_lines/ListLines';
 import { CaseTasksLineDummy } from '../tasks/CaseTasksLine';
 import { isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
 import { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
+import { getCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -53,6 +54,7 @@ const CaseIncidentComponent: FunctionComponent<CaseIncidentProps> = ({ data, ena
   const caseIncidentData = useFragment(caseFragment, data);
   const { isFeatureEnable } = useHelper();
   const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
+  const { canEdit } = getCurrentUserAccessRight(caseIncidentData);
 
   const LOCAL_STORAGE_KEY_CASE_TASKS = `cases-${caseIncidentData.id}-caseTask`;
 
@@ -197,7 +199,7 @@ const CaseIncidentComponent: FunctionComponent<CaseIncidentProps> = ({ data, ena
         </Grid>
       </Grid>
       {!isFABReplaced && (
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+        <Security needs={[KNOWLEDGE_KNUPDATE]} hasAccess={canEdit}>
           <CaseIncidentEdition caseId={caseIncidentData.id} />
         </Security>
       )}

@@ -2,10 +2,11 @@ import { uniq } from 'ramda';
 import { isEmptyField } from '../database/utils';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { BasicGroupEntity, BasicStoreEntity } from '../types/store';
-import type { MemberAccess } from '../generated/graphql';
+import type { MemberAccess, MemberAccessInput } from '../generated/graphql';
 import {
   type AuthorizedMember,
   isUserHasCapabilities,
+  isValidMemberAccessRight,
   MEMBER_ACCESS_ALL,
   MEMBER_ACCESS_CREATOR,
   MEMBER_ACCESS_RIGHT_ADMIN,
@@ -16,6 +17,10 @@ import { findAllMembers, findById as findUser } from '../domain/user';
 import { findById as findGroup } from '../domain/group';
 import { findById as findOrganization } from '../modules/organization/organization-domain';
 import { RELATION_MEMBER_OF, RELATION_PARTICIPATE_TO } from '../schema/internalRelationship';
+import { FunctionalError } from '../config/errors';
+import { patchAttribute } from '../database/middleware';
+import { notify } from '../database/redis';
+import { BUS_TOPICS } from '../config/conf';
 
 export const getAuthorizedMembers = async (
   context: AuthContext,
@@ -79,4 +84,41 @@ export const containsValidAdmin = async (
 
   // at least 1 user with admin access and admin exploration capability
   return authorizedUsers.length > 0;
+};
+
+export const editAuthorizedMembers = async (
+  context: AuthContext,
+  user: AuthUser,
+  args: {
+    entityId: string,
+    input: MemberAccessInput[] | undefined | null,
+    requiredCapabilities: string[],
+    entityType: string,
+    busTopicKey: keyof typeof BUS_TOPICS, // TODO improve busTopicKey types
+  },
+) => {
+  const { entityId, input, requiredCapabilities, entityType, busTopicKey } = args;
+  let authorized_members: { id: string, access_right: string }[] | null = null;
+
+  if (input) {
+    // validate input (validate access right) and remove duplicates
+    const filteredInput = input.filter((value, index, array) => {
+      return isValidMemberAccessRight(value.access_right) && array.findIndex((e) => e.id === value.id) === index;
+    });
+
+    const hasValidAdmin = await containsValidAdmin(
+      context,
+      filteredInput,
+      requiredCapabilities,
+    );
+    if (!hasValidAdmin) {
+      throw FunctionalError('It should have at least one valid member with admin access');
+    }
+
+    authorized_members = filteredInput.map(({ id, access_right }) => ({ id, access_right }));
+  }
+
+  const patch = { authorized_members };
+  const { element } = await patchAttribute(context, user, entityId, entityType, patch);
+  return notify(BUS_TOPICS[busTopicKey].EDIT_TOPIC, element, user);
 };

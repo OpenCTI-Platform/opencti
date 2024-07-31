@@ -1086,6 +1086,11 @@ export default createFragmentContainer(ContainerHeader, {
       standard_id
       confidence
       created
+      creators {
+        id
+        name
+        entity_type
+      }
       ... on Report {
         name
       }
@@ -1103,6 +1108,12 @@ export default createFragmentContainer(ContainerHeader, {
       }
       ... on CaseIncident {
         name
+        authorized_members {
+          id
+          name
+          entity_type
+          access_right
+        }
       }
       ... on CaseRfi {
         name

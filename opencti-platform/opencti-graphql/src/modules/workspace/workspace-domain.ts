@@ -2,7 +2,7 @@ import * as R from 'ramda';
 import type { FileHandle } from 'fs/promises';
 import { v4 as uuidv4 } from 'uuid';
 import pjson from '../../../package.json';
-import { createEntity, deleteElementById, listThings, paginateAllThings, patchAttribute, updateAttribute } from '../../database/middleware';
+import { createEntity, deleteElementById, listThings, paginateAllThings, updateAttribute } from '../../database/middleware';
 import { internalFindByIds, listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
 import { BUS_TOPICS } from '../../config/conf';
 import { delEditContext, notify, setEditContext } from '../../database/redis';
@@ -22,9 +22,9 @@ import type {
   WorkspaceDuplicateInput,
   WorkspaceObjectsArgs
 } from '../../generated/graphql';
-import { getUserAccessRight, isValidMemberAccessRight, MEMBER_ACCESS_RIGHT_ADMIN, SYSTEM_USER } from '../../utils/access';
+import { getUserAccessRight, MEMBER_ACCESS_RIGHT_ADMIN, SYSTEM_USER } from '../../utils/access';
 import { publishUserAction } from '../../listener/UserActionListener';
-import { containsValidAdmin } from '../../utils/authorizedMembers';
+import { editAuthorizedMembers } from '../../utils/authorizedMembers';
 import { elFindByIds, elRawDeleteByQuery } from '../../database/engine';
 import type { BasicStoreEntity, BasicStoreObject } from '../../types/store';
 import { buildPagination, fromBase64, isEmptyField, isNotEmptyField, READ_DATA_INDICES_WITHOUT_INTERNAL, READ_INDEX_INTERNAL_OBJECTS, toBase64 } from '../../database/utils';
@@ -69,35 +69,21 @@ export const findAll = (
   );
 };
 
-export const editAuthorizedMembers = async (
+export const workspaceEditAuthorizedMembers = async (
   context: AuthContext,
   user: AuthUser,
   workspaceId: string,
   input: MemberAccessInput[],
 ) => {
-  // validate input (validate access right) and remove duplicates
-  const filteredInput = input.filter((value, index, array) => {
-    return (
-      isValidMemberAccessRight(value.access_right)
-      && array.findIndex((e) => e.id === value.id) === index
-    );
-  });
-  const hasValidAdmin = await containsValidAdmin(context, filteredInput, ['EXPLORE_EXUPDATE_EXDELETE']);
-  if (!hasValidAdmin) {
-    throw FunctionalError('Workspace should have at least one admin');
-  }
-  const authorizedMembersInput = filteredInput.map((e) => {
-    return { id: e.id, access_right: e.access_right };
-  });
-  const patch = { authorized_members: authorizedMembersInput };
-  const { element } = await patchAttribute(
-    context,
-    user,
-    workspaceId,
-    ENTITY_TYPE_WORKSPACE,
-    patch,
-  );
-  return notify(BUS_TOPICS[ENTITY_TYPE_WORKSPACE].EDIT_TOPIC, element, user);
+  const args = {
+    entityId: workspaceId,
+    input,
+    requiredCapabilities: ['EXPLORE_EXUPDATE_EXDELETE'],
+    entityType: ENTITY_TYPE_WORKSPACE,
+    busTopicKey: ENTITY_TYPE_WORKSPACE,
+  };
+  // @ts-expect-error TODO improve busTopicKey types to avoid this
+  return editAuthorizedMembers(context, user, args);
 };
 
 export const getCurrentUserAccessRight = async (
