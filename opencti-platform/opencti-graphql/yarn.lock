@@ -8403,14 +8403,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"file-type@npm:19.0.0":
-  version: 19.0.0
-  resolution: "file-type@npm:19.0.0"
+"file-type@npm:19.3.0":
+  version: 19.3.0
+  resolution: "file-type@npm:19.3.0"
   dependencies:
-    readable-web-to-node-stream: "npm:^3.0.2"
-    strtok3: "npm:^7.0.0"
-    token-types: "npm:^5.0.1"
-  checksum: 10/8befa58f769b19d4a72c214694906b83b584310575300e63c08c48f9f2cfa6cb57fb4e1d08325961938d9dde3ecc4f5737b1604ddedfd759f5a1e65e5b0ca577
+    strtok3: "npm:^8.0.0"
+    token-types: "npm:^6.0.0"
+    uint8array-extras: "npm:^1.3.0"
+  checksum: 10/4b3a4ca36eef2620d33add81f7f6737eda00da4319ecfd984055a62c42e8effce77113fd3e1b712adf0313e392b145f529bb719b708379d2d33fe9b7a44601d3
   languageName: node
   linkType: hard
 
@@ -11361,7 +11361,7 @@ __metadata:
     express-session: "npm:1.18.0"
     fast-glob: "npm:3.3.2"
     fast-json-patch: "npm:3.1.1"
-    file-type: "npm:19.0.0"
+    file-type: "npm:19.3.0"
     github-api: "npm:3.4.0"
     graphql: "npm:16.8.2"
     graphql-constraint-directive: "npm:5.4.3"
@@ -11873,10 +11873,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"peek-readable@npm:^5.0.0":
-  version: 5.0.0
-  resolution: "peek-readable@npm:5.0.0"
-  checksum: 10/d342f02dd0c8a6b4bd0e7519a93d545b2b19375200e79a7431f0f1ec3f91e22b2217fa3a15cde95f6ab388ce6fce8aae75794d84b9b39c5836eb7c5f55e7ee9e
+"peek-readable@npm:^5.1.3":
+  version: 5.1.3
+  resolution: "peek-readable@npm:5.1.3"
+  checksum: 10/dc19d8941b0785b417a19743b219232a4a1a7b40014cc8139ff959cd0de4a0c668f7be13ee6f818fcf525ddefc20768fc1a53c6862f5e8d7103b5356c5770621
   languageName: node
   linkType: hard
 
@@ -12235,15 +12235,6 @@ __metadata:
     process: "npm:^0.11.10"
     string_decoder: "npm:^1.3.0"
   checksum: 10/01b128a559c5fd76a898495f858cf0a8839f135e6a69e3409f986e88460134791657eb46a2ff16826f331682a3c4d0c5a75cef5e52ef259711021ba52b1c2e82
-  languageName: node
-  linkType: hard
-
-"readable-web-to-node-stream@npm:^3.0.2":
-  version: 3.0.2
-  resolution: "readable-web-to-node-stream@npm:3.0.2"
-  dependencies:
-    readable-stream: "npm:^3.6.0"
-  checksum: 10/d3a5bf9d707c01183d546a64864aa63df4d9cb835dfd2bf89ac8305e17389feef2170c4c14415a10d38f9b9bfddf829a57aaef7c53c8b40f11d499844bf8f1a4
   languageName: node
   linkType: hard
 
@@ -13278,13 +13269,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"strtok3@npm:^7.0.0":
-  version: 7.0.0
-  resolution: "strtok3@npm:7.0.0"
+"strtok3@npm:^8.0.0":
+  version: 8.0.1
+  resolution: "strtok3@npm:8.0.1"
   dependencies:
     "@tokenizer/token": "npm:^0.3.0"
-    peek-readable: "npm:^5.0.0"
-  checksum: 10/4f2269679fcfce1e9fe0600eff361ea4c687ae0a0e8d9dab6703811071cd92545cbcb32d4ace3d3aa591f777cec1a3e8aeecd5efd71ae216fd2962a7a238b4ab
+    peek-readable: "npm:^5.1.3"
+  checksum: 10/859bee1f7813843a313038bad2b4dc1492a979a106226c19221ad8cd8af9e036a96415025ea9f5122b9c719e7a1fcebd25c5d4171e4e767ab976e00982bbaa70
   languageName: node
   linkType: hard
 
@@ -13486,13 +13477,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"token-types@npm:^5.0.1":
-  version: 5.0.1
-  resolution: "token-types@npm:5.0.1"
+"token-types@npm:^6.0.0":
+  version: 6.0.0
+  resolution: "token-types@npm:6.0.0"
   dependencies:
     "@tokenizer/token": "npm:^0.3.0"
     ieee754: "npm:^1.2.1"
-  checksum: 10/0985369bbea9f53a5ccd79bb9899717b41401a813deb2c7fb1add5d0baf2f702aaf6da78f6e0ccf346d5a9f7acaa7cb5efed7d092d89d8c1e6962959e9509bc0
+  checksum: 10/b541b605d602e8e6495745badb35f90ee8f997e43dc29bc51aee7e9a0bc3c6bc7372a305bd45f3e80d75223c2b6a5c7e65cb5159d8c4e49fa25cdbaae531fad4
   languageName: node
   linkType: hard
 
@@ -13783,6 +13774,13 @@ __metadata:
   version: 0.0.4
   resolution: "uid2@npm:0.0.4"
   checksum: 10/e92325ce2e3b7be504b19e835dbb5a8b0495031f364b08ca46745468ed0ae0f202a4fdaf99a1a2715844156efc3ab410456ae24a0f7c0ae4b0a2e9f2784edfd9
+  languageName: node
+  linkType: hard
+
+"uint8array-extras@npm:^1.3.0":
+  version: 1.4.0
+  resolution: "uint8array-extras@npm:1.4.0"
+  checksum: 10/4d2955d67c112e5ebaa4901272a75fc9ad14902c40f05a178b01e32387aa2702b6840472d931a1ca16e068ac59013c7d9ee2b4b2f141c4e73ba4bc7456490599
   languageName: node
   linkType: hard
 
