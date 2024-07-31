@@ -41,7 +41,7 @@ import SwitchField from '../../../../../components/fields/SwitchField';
 import TextField from '../../../../../components/TextField';
 import { APP_BASE_PATH, commitMutation, handleError, MESSAGING$, QueryRenderer } from '../../../../../relay/environment';
 import { observableValue, resolveIdentityClass, resolveIdentityType, resolveLink, resolveLocationType, resolveThreatActorType } from '../../../../../utils/Entity';
-import { defaultKey, defaultValueMarking, getMainRepresentative } from '../../../../../utils/defaultRepresentatives';
+import { defaultKey, getMainRepresentative } from '../../../../../utils/defaultRepresentatives';
 import useAttributes from '../../../../../utils/hooks/useAttributes';
 import useVocabularyCategory from '../../../../../utils/hooks/useVocabularyCategory';
 import { computeDuplicates, convertFromStixType, convertToStixType, truncate, uniqWithByFields } from '../../../../../utils/String';
@@ -62,6 +62,7 @@ import { fieldSpacingContainerStyle } from '../../../../../utils/field';
 import RichTextField from '../../../../../components/fields/RichTextField';
 import Drawer from '../../drawer/Drawer';
 import Transition from '../../../../../components/Transition';
+import { markingDefinitionsLinesSearchQuery } from '../../../settings/marking_definitions/MarkingDefinitionsLines';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -250,15 +251,11 @@ const uniqStixDomainObjectsFields = ['name', 'type', 'pattern', 'identity_class'
 // (simplified version of getMainRepresentative with only the filterable attributes)
 const getEntityMainRepresentativeForWorkbenchChecks = (n, fallback = 'Unknown') => {
   if (!n) return '';
-  if (typeof n.definition === 'object') {
-    return defaultValueMarking(n);
-  }
   const mainValue = n.name
     || n.pattern
     || n.attribute_abstract
     || n.opinion
     || n.value
-    || n.definition
     || n.source_name
     || n.phase_name
     || n.result_name
@@ -285,7 +282,6 @@ const defaultValueKeys = {
     'attribute_abstract',
     'opinion',
     'value',
-    'definition',
     'source_name',
     'phase_name',
     'result_name',
@@ -3054,6 +3050,94 @@ const WorkbenchFileContentComponent = ({
       orderAsc ? [R.ascend(R.prop(sortBy))] : [R.descend(R.prop(sortBy))],
     );
     const sortedStixDomainObjects = sort(resolvedStixDomainObjects);
+
+    const objectExistenceItem = (object, type) => {
+      if (type === 'Marking-Definition') {
+        return (
+          <QueryRenderer
+            query={markingDefinitionsLinesSearchQuery}
+            variables={{
+              filters: {
+                mode: 'and',
+                filters: [{ key: 'definition', values: [object.name] }],
+                filterGroups: [],
+              },
+              count: 1,
+            }}
+            render={({ props }) => {
+              if (props && props.markingDefinitions) {
+                return props.markingDefinitions.edges.length > 0
+                  ? (
+                    <ItemBoolean
+                      variant="inList"
+                      status={true}
+                      label={t_i18n('Yes')}
+                    />
+                  ) : (
+                    <ItemBoolean
+                      variant="inList"
+                      status={false}
+                      label={t_i18n('No')}
+                    />
+                  );
+              }
+              return (
+                <ItemBoolean
+                  variant="inList"
+                  status={undefined}
+                  label={t_i18n('Pending')}
+                />
+              );
+            }}
+          />
+        );
+      }
+      return (
+        <QueryRenderer
+          query={stixDomainObjectsLinesSearchQuery}
+          variables={{
+            types: [type],
+            filters: {
+              mode: 'and',
+              filters: [
+                {
+                  key: defaultValueKeys.stixDomainObjects,
+                  values: [object.default_value],
+                },
+              ],
+              filterGroups: [],
+            },
+            count: 1,
+          }}
+          render={({ props }) => {
+            if (props && props.stixDomainObjects) {
+              return props.stixDomainObjects.edges.length > 0
+                ? (
+                  <ItemBoolean
+                    variant="inList"
+                    status={true}
+                    label={t_i18n('Yes')}
+                  />
+                ) : (
+                  <ItemBoolean
+                    variant="inList"
+                    status={false}
+                    label={t_i18n('No')}
+                  />
+                );
+            }
+            return (
+              <ItemBoolean
+                variant="inList"
+                status={undefined}
+                label={t_i18n('Pending')}
+              />
+            );
+          }}
+        />
+      );
+    };
+
     return (
       <div>
         <List classes={{ root: classes.linesContainer }}>
@@ -3185,48 +3269,7 @@ const WorkbenchFileContentComponent = ({
                         style={inlineStyles.in_platform}
                       >
                         {object.default_value ? (
-                          <QueryRenderer
-                            query={stixDomainObjectsLinesSearchQuery}
-                            variables={{
-                              types: [type],
-                              filters: {
-                                mode: 'and',
-                                filters: [
-                                  {
-                                    key: defaultValueKeys.stixDomainObjects,
-                                    values: [object.default_value],
-                                  },
-                                ],
-                                filterGroups: [],
-                              },
-                              count: 1,
-                            }}
-                            render={({ props }) => {
-                              if (props && props.stixDomainObjects) {
-                                return props.stixDomainObjects.edges.length
-                                  > 0 ? (
-                                    <ItemBoolean
-                                      variant="inList"
-                                      status={true}
-                                      label={t_i18n('Yes')}
-                                    />
-                                  ) : (
-                                    <ItemBoolean
-                                      variant="inList"
-                                      status={false}
-                                      label={t_i18n('No')}
-                                    />
-                                  );
-                              }
-                              return (
-                                <ItemBoolean
-                                  variant="inList"
-                                  status={undefined}
-                                  label={t_i18n('Pending')}
-                                />
-                              );
-                            }}
-                          />
+                          objectExistenceItem(object, type)
                         ) : (
                           <ItemBoolean
                             variant="inList"
