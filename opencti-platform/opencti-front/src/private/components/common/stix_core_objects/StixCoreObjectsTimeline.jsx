@@ -43,22 +43,9 @@ const stixCoreObjectsTimelineQuery = graphql`
             x_opencti_order
             x_opencti_color
           }
-          ... on BasicObject {
-            id
-            entity_type
-          }
-          ... on StixObject {
-            representative {
-              main
-              secondary
-            }
-          }
-          ... on StixDomainObject {
-            created
-            modified
-          }
-          ... on StixCyberObservable {
-            observable_value
+          representative {
+            main
+            secondary
           }
         }
       }
