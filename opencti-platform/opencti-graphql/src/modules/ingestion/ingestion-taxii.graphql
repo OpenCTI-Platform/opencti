@@ -30,6 +30,7 @@ type IngestionTaxii implements InternalObject & BasicObject {
     current_state_cursor: String
     added_after_start: DateTime
     ingestion_running: Boolean
+    last_execution_date: DateTime
 }
 enum IngestionTaxiiOrdering {
     name
