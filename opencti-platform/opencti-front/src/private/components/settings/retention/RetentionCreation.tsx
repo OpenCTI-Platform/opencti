@@ -186,8 +186,8 @@ const RetentionCreation = ({ paginationOptions }: { paginationOptions: Retention
                   ),
                 }}
               />
-              {isFeatureEnable('FILE_RETENTION_RULES') &&
-                <Field
+              {isFeatureEnable('FILE_RETENTION_RULES')
+                && <Field
                   component={AutocompleteField}
                   variant="standard"
                   name="scope"
@@ -207,7 +207,7 @@ const RetentionCreation = ({ paginationOptions }: { paginationOptions: Retention
                   textfieldprops={{
                     label: t_i18n('Scope'),
                   }}
-                />
+                   />
               }
               {formValues.scope?.value === 'file'
                 && <Alert severity="info" style={{ margin: '15px 15px 0 15px' }}>
