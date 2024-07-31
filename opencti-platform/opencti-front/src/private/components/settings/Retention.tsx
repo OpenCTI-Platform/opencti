@@ -40,39 +40,39 @@ const Retention = () => {
     searchTerm: '',
   });
   const dataColumns = isFeatureEnable('FILE_RETENTION_RULES')
-  ? {
-    name: {
-      label: 'Name',
-      width: '15%',
-      isSortable: false,
-    },
-    retention: {
-      label: 'Max retention',
-      width: '15%',
-      isSortable: false,
-    },
-    last_execution_date: {
-      label: 'Last execution',
-      width: '15%',
-      isSortable: false,
-    },
-    remaining_count: {
-      label: 'Remaining',
-      width: '10%',
-      isSortable: false,
-    },
-    scope: {
-      label: 'Scope',
-      width: '10%',
-      isSortable: false,
-    },
-    filters: {
-      label: 'Apply on',
-      width: '35%',
-      isSortable: false,
-    },
-  }
-  : {
+    ? {
+      name: {
+        label: 'Name',
+        width: '15%',
+        isSortable: false,
+      },
+      retention: {
+        label: 'Max retention',
+        width: '15%',
+        isSortable: false,
+      },
+      last_execution_date: {
+        label: 'Last execution',
+        width: '15%',
+        isSortable: false,
+      },
+      remaining_count: {
+        label: 'Remaining',
+        width: '10%',
+        isSortable: false,
+      },
+      scope: {
+        label: 'Scope',
+        width: '10%',
+        isSortable: false,
+      },
+      filters: {
+        label: 'Apply on',
+        width: '35%',
+        isSortable: false,
+      },
+    }
+    : {
       name: {
         label: 'Name',
         width: '15%',
