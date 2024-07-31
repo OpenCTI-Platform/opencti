@@ -30,6 +30,7 @@ import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings
 import useGranted, { KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE, KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 import ReportEdition from './ReportEdition';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 const subscription = graphql`
   subscription RootReportSubscription($id: ID!) {
@@ -86,6 +87,8 @@ const RootReport = () => {
     [reportId],
   );
   const location = useLocation();
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const enableReferences = useIsEnforceReference('Report') && !useGranted([KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE]);
   const { t_i18n } = useFormatter();
   useSubscription(subConfig);
@@ -114,7 +117,7 @@ const RootReport = () => {
                     PopoverComponent={
                       <ReportPopover id={reportId} />
                     }
-                    EditComponent={(
+                    EditComponent={isFABReplaced && (
                       <Security needs={[KNOWLEDGE_KNUPDATE]}>
                         <ReportEdition reportId={report.id} />
                       </Security>
