@@ -41,7 +41,6 @@ export interface BasicStoreEntityEntitySetting extends BasicStoreEntity {
 
 export interface OverviewLayoutCustomization {
   key: string;
-  order: number;
   width: number;
 }
 

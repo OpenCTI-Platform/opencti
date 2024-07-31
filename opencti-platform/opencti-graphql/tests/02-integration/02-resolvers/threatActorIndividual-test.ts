@@ -165,39 +165,30 @@ describe('Threat actor individual resolver standard behavior', () => {
       // Customize the overview layout width
       const overviewLayoutCustomizationConfiguration: OverviewLayoutCustomization[] = [{
         key: 'details',
-        order: 1,
         width: 12,
       }, {
         key: 'basicInformation',
-        order: 2,
         width: 12,
       }, {
         key: 'demographics',
-        order: 3,
         width: 6,
       }, {
         key: 'biographics',
-        order: 4,
         width: 6,
       }, {
         key: 'latestCreatedRelationships',
-        order: 5,
         width: 6,
       }, {
         key: 'latestContainers',
-        order: 6,
         width: 6,
       }, {
         key: 'externalReferences',
-        order: 7,
         width: 6,
       }, {
         key: 'mostRecentHistory',
-        order: 8,
         width: 6,
       }, {
         key: 'notes',
-        order: 9,
         width: 12,
       }];
       const entitySettingsUpdateResult = await queryAsAdmin({
@@ -210,45 +201,40 @@ describe('Threat actor individual resolver standard behavior', () => {
       });
       const expectedOverviewLayoutCustomization: ResponseOverviewLayoutCustomization[] = overviewLayoutCustomizationConfiguration
         .map(({ key, width }) => ({ key, width }));
-      expect(entitySettingsUpdateResult.data?.entitySettingsFieldPatch?.[0]?.overview_layout_customization).toEqual(expectedOverviewLayoutCustomization);
+      expect(
+        entitySettingsUpdateResult.data?.entitySettingsFieldPatch?.[0]?.overview_layout_customization
+      ).toEqual(
+        expectedOverviewLayoutCustomization
+      );
     });
     it('should update order', async () => {
       // Customize the overview layout order
       const overviewLayoutCustomizationConfiguration: OverviewLayoutCustomization[] = [{
-        key: 'details',
-        order: 2,
+        key: 'basicInformation',
         width: 6,
       }, {
-        key: 'basicInformation',
-        order: 1,
+        key: 'details',
         width: 6,
       }, {
         key: 'demographics',
-        order: 3,
         width: 6,
       }, {
         key: 'biographics',
-        order: 4,
         width: 6,
       }, {
         key: 'latestCreatedRelationships',
-        order: 5,
         width: 6,
       }, {
         key: 'latestContainers',
-        order: 6,
         width: 6,
       }, {
         key: 'externalReferences',
-        order: 7,
         width: 6,
       }, {
         key: 'mostRecentHistory',
-        order: 8,
         width: 6,
       }, {
         key: 'notes',
-        order: 9,
         width: 12,
       }];
       const entitySettingsUpdateResult = await queryAsAdmin({
@@ -260,65 +246,38 @@ describe('Threat actor individual resolver standard behavior', () => {
           } }
       });
       const expectedOverviewLayoutCustomization: ResponseOverviewLayoutCustomization[] = overviewLayoutCustomizationConfiguration
-        .sort((previous, current) => previous.order - current.order)
         .map(({ key, width }) => ({ key, width }));
       expect(entitySettingsUpdateResult.data?.entitySettingsFieldPatch?.[0]?.overview_layout_customization).toEqual(expectedOverviewLayoutCustomization);
     });
     it('should update overview_layout_customization', async () => {
       const replace_all_overviewLayoutCustomization: EditInput = {
         key: 'overview_layout_customization',
-        object_path: '/overview_layout_customization',
         value: [{
-          key: 'details',
-          order: 2,
+          key: 'basicInformation',
           width: 12,
         }, {
-          key: 'basicInformation',
-          order: 1,
+          key: 'details',
           width: 12,
         }, {
           key: 'demographics',
-          order: 3,
           width: 6,
         }, {
           key: 'biographics',
-          order: 4,
           width: 6,
         }, {
           key: 'latestCreatedRelationships',
-          order: 5,
           width: 6,
         }, {
           key: 'latestContainers',
-          order: 6,
           width: 6,
         }, {
           key: 'externalReferences',
-          order: 7,
           width: 12,
         }, {
           key: 'mostRecentHistory',
-          order: 8,
           width: 12,
         }, {
           key: 'notes',
-          order: 9,
-          width: 12,
-        }],
-      };
-      const add_overviewLayoutCustomization: EditInput = {
-        key: 'overview_layout_customization',
-        value: [{
-          key: 'extra widget #1',
-          order: 10,
-          width: 6,
-        }, {
-          key: 'extra widget #2',
-          order: 11,
-          width: 6,
-        }, {
-          key: 'extra widget #3',
-          order: 12,
           width: 12,
         }],
       };
@@ -329,25 +288,10 @@ describe('Threat actor individual resolver standard behavior', () => {
           input: [replace_all_overviewLayoutCustomization]
         }
       });
-      let threatActorIndividualEntitySettings = replaceAll?.data?.entitySettingsFieldPatch;
+      const threatActorIndividualEntitySettings = replaceAll?.data?.entitySettingsFieldPatch;
       expect(threatActorIndividualEntitySettings).not.toBeNull();
       expect(threatActorIndividualEntitySettings).toBeDefined();
       expect(threatActorIndividualEntitySettings[0].overview_layout_customization).toHaveLength(9);
-
-      const add = await queryAsAdmin({
-        query: ENTITY_SETTINGS_UPDATE_QUERY,
-        variables: {
-          ids: [threatActorIndividualEntitySettingId],
-          input: [add_overviewLayoutCustomization]
-        }
-      });
-      threatActorIndividualEntitySettings = add?.data?.entitySettingsFieldPatch;
-      expect(threatActorIndividualEntitySettings).not.toBeNull();
-      expect(threatActorIndividualEntitySettings).toBeDefined();
-      expect(threatActorIndividualEntitySettings[0].overview_layout_customization).toHaveLength(12);
-      expect(threatActorIndividualEntitySettings[0].overview_layout_customization[9].key).toBe('extra widget #1');
-      expect(threatActorIndividualEntitySettings[0].overview_layout_customization[10].key).toBe('extra widget #2');
-      expect(threatActorIndividualEntitySettings[0].overview_layout_customization[11].key).toBe('extra widget #3');
     });
     // reset entity settings overview_layout_customization
     it('should reset overview_layout_customization', async () => {

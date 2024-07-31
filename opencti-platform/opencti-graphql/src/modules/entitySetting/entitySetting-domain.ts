@@ -63,19 +63,6 @@ export const findAll = (context: AuthContext, user: AuthUser, opts: QueryEntityS
   return listEntitiesPaginated<BasicStoreEntityEntitySetting>(context, user, [ENTITY_TYPE_ENTITY_SETTING], opts);
 };
 
-const entitySettingOverviewLayoutCustomizationEditField = (input: EditInput[]) => {
-  return input
-    .map((editInput) => {
-      return editInput.key === 'overview_layout_customization'
-        ? ({
-          key: editInput.key,
-          value: editInput.value
-            .sort((previous, current) => previous.order - current.order),
-          operation: editInput.operation
-        })
-        : (editInput);
-    });
-};
 export const entitySettingEditField = async (context: AuthContext, user: AuthUser, entitySettingId: string, input: EditInput[]) => {
   const authorizedMembersEdit = input
     .filter(({ key, value }) => key === 'attributes_configuration' && value.length > 0)
@@ -93,7 +80,7 @@ export const entitySettingEditField = async (context: AuthContext, user: AuthUse
     }
   }
 
-  const { element } = await updateAttribute(context, user, entitySettingId, ENTITY_TYPE_ENTITY_SETTING, entitySettingOverviewLayoutCustomizationEditField(input));
+  const { element } = await updateAttribute(context, user, entitySettingId, ENTITY_TYPE_ENTITY_SETTING, input);
   await publishUserAction({
     user,
     event_type: 'mutation',
