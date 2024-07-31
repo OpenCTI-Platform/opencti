@@ -206,7 +206,6 @@ describe('Threat actor individual resolver standard behavior', () => {
           input: {
             key: 'overview_layout_customization',
             value: overviewLayoutCustomizationConfiguration,
-            operation: EditOperation.Replace,
           } }
       });
       const expectedOverviewLayoutCustomization: ResponseOverviewLayoutCustomization[] = overviewLayoutCustomizationConfiguration
@@ -258,7 +257,6 @@ describe('Threat actor individual resolver standard behavior', () => {
           input: {
             key: 'overview_layout_customization',
             value: overviewLayoutCustomizationConfiguration,
-            operation: EditOperation.Replace,
           } }
       });
       const expectedOverviewLayoutCustomization: ResponseOverviewLayoutCustomization[] = overviewLayoutCustomizationConfiguration
@@ -307,7 +305,6 @@ describe('Threat actor individual resolver standard behavior', () => {
           order: 9,
           width: 12,
         }],
-        operation: EditOperation.Replace,
       };
       const add_overviewLayoutCustomization: EditInput = {
         key: 'overview_layout_customization',
@@ -324,7 +321,6 @@ describe('Threat actor individual resolver standard behavior', () => {
           order: 12,
           width: 12,
         }],
-        operation: EditOperation.Add,
       };
       const replaceAll = await queryAsAdmin({
         query: ENTITY_SETTINGS_UPDATE_QUERY,
@@ -362,7 +358,6 @@ describe('Threat actor individual resolver standard behavior', () => {
           input: {
             key: 'overview_layout_customization',
             value: undefined,
-            operation: EditOperation.Replace,
           } }
       });
       expect(entitySettingsUpdateResult.data?.entitySettingsFieldPatch?.[0]?.overview_layout_customization).toBeUndefined();

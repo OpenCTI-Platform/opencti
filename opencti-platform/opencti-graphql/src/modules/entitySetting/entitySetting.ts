@@ -104,7 +104,6 @@ export const ENTITY_SETTING_DEFINITION: ModuleDefinition<StoreEntityEntitySettin
       isFilterable: false,
       mappings: [
         { name: 'key', label: 'Key', type: 'string', format: 'short', mandatoryType: 'internal', upsert: true, editDefault: false, multiple: false, isFilterable: false },
-        { name: 'order', label: 'Order', type: 'numeric', precision: 'integer', mandatoryType: 'internal', upsert: true, editDefault: false, multiple: false, isFilterable: false },
         { name: 'width', label: 'Width', type: 'numeric', precision: 'integer', mandatoryType: 'internal', upsert: true, editDefault: false, multiple: false, isFilterable: false },
       ] },
     { name: 'availableSettings', label: 'Available settings', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: false },
