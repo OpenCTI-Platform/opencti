@@ -571,5 +571,7 @@ export const isDashboardShared = async (context: AuthContext, workspace: BasicSt
     SYSTEM_USER,
     ENTITY_TYPE_PUBLIC_DASHBOARD
   );
-  return publicDashboards.some((publicDashboard) => publicDashboard.dashboard_id === workspace.id);
+  return publicDashboards.some((publicDashboard) => (
+    publicDashboard.dashboard_id === workspace.id && publicDashboard.enabled
+  ));
 };
