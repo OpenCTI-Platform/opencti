@@ -22,6 +22,10 @@ const infrastructureKnowledgeFragment = graphql`
     aliases
     first_seen
     last_seen
+    stixCoreObjectsDistribution(field: "entity_type", operation: count) {
+      label
+      value
+    }
   }
 `;
 
@@ -35,6 +39,7 @@ const InfrastructureKnowledge = ({ infrastructure }: { infrastructure: Infrastru
     <>
       <StixCoreObjectKnowledgeBar
         stixCoreObjectLink={link}
+        stixCoreObjectsDistribution={infrastructureData.stixCoreObjectsDistribution}
         availableSections={[
           'threats',
           'threat_actors',
@@ -231,10 +236,11 @@ const InfrastructureKnowledge = ({ infrastructure }: { infrastructure: Infrastru
             <EntityStixCoreRelationships
               entityId={infrastructureData.id}
               stixCoreObjectTypes={['Malware']}
-              relationshipTypes={['controls', 'delivers', 'hosts']}
+              relationshipTypes={['controls', 'delivers', 'hosts', 'uses']}
               entityLink={link}
               defaultStartTime={infrastructureData.first_seen}
               defaultStopTime={infrastructureData.last_seen}
+              allDirections={true}
             />
         }
         />
@@ -244,10 +250,11 @@ const InfrastructureKnowledge = ({ infrastructure }: { infrastructure: Infrastru
             <EntityStixCoreRelationships
               entityId={infrastructureData.id}
               stixCoreObjectTypes={['Tool']}
-              relationshipTypes={['hosts']}
+              relationshipTypes={['hosts', 'uses']}
               entityLink={link}
               defaultStartTime={infrastructureData.first_seen}
               defaultStopTime={infrastructureData.last_seen}
+              allDirections={true}
             />
         }
         />

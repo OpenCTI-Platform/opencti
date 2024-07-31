@@ -131,10 +131,10 @@ class ToolKnowledgeComponent extends Component {
             element={
               <EntityStixCoreRelationships
                 entityId={tool.id}
-                relationshipTypes={['delivers', 'drops']}
+                relationshipTypes={['delivers', 'drops', 'uses']}
                 stixCoreObjectTypes={['Malware']}
                 entityLink={link}
-                isRelationReversed={false}
+                allDirections={true}
               />
             }
           />
