@@ -17,7 +17,7 @@ const interval$ = interval(TEN_SECONDS);
 const styles = () => ({
   paper: {
     padding: '10px 15px 10px 15px',
-    marginTop: 8,
+    marginTop: 7,
     borderRadius: 4,
   },
 });
