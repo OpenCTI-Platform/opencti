@@ -302,6 +302,7 @@ class DataTableToolBar extends Component {
       organizationInput: '',
       shareOrganizations: [],
       navOpen: localStorage.getItem('navOpen') === 'true',
+      trash: false,
     };
   }
 
@@ -1580,7 +1581,7 @@ class DataTableToolBar extends Component {
                       </Tooltip>
                     </Security>
                   )}
-                  {isShareableType && (
+                  {!deleteOperationEnabled && isShareableType && (
                     <>
                       <Security needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}>
                         <EETooltip title={t('Share with organizations')}>
