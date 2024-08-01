@@ -8,8 +8,8 @@ import { MarkingDefinitionLine, MarkingDefinitionLineDummy } from './MarkingDefi
 const nbOfRowsToLoad = 50;
 
 export const markingDefinitionsLinesSearchQuery = graphql`
-  query MarkingDefinitionsLinesSearchQuery($search: String, $filters: FilterGroup, $count: Int) {
-    markingDefinitions(search: $search, filters: $filters, first: $count) {
+  query MarkingDefinitionsLinesSearchQuery($search: String, $filters: FilterGroup, $first: Int) {
+    markingDefinitions(search: $search, filters: $filters, first: $first) {
       edges {
         node {
           id

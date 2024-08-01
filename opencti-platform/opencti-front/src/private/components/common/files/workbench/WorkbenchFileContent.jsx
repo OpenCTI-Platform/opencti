@@ -3062,7 +3062,7 @@ const WorkbenchFileContentComponent = ({
                 filters: [{ key: 'definition', values: [object.name] }],
                 filterGroups: [],
               },
-              count: 1,
+              first: 1,
             }}
             render={({ props }) => {
               if (props && props.markingDefinitions) {
