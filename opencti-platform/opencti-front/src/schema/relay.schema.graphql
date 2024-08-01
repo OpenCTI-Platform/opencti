@@ -2483,9 +2483,9 @@ type AttackPattern implements BasicObject & StixObject & StixCoreObject & StixDo
   x_mitre_detection: String
   x_mitre_id: String
   killChainPhases: [KillChainPhase!]
-  coursesOfAction: CourseOfActionConnection
-  parentAttackPatterns: AttackPatternConnection
-  subAttackPatterns: AttackPatternConnection
+  coursesOfAction(first: Int, after: ID, orderBy: CoursesOfActionOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): CourseOfActionConnection
+  parentAttackPatterns(first: Int, after: ID, orderBy: AttackPatternsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): AttackPatternConnection
+  subAttackPatterns(first: Int, after: ID, orderBy: AttackPatternsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): AttackPatternConnection
   isSubAttackPattern: Boolean
   dataComponents: DataComponentConnection
   creators: [Creator!]

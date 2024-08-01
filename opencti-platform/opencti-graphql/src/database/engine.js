@@ -2990,6 +2990,48 @@ export const elAggregationRelationsCount = async (context, user, indexName, opti
     });
 };
 
+export const elAggregationNestedTerms = async (context, user, indexName, aggregation, opts = {}) => {
+  const { types = [], size = 500 } = opts;
+  const { path, field } = aggregation;
+  const body = await elQueryBodyBuilder(context, user, { ...opts, noSize: true, noSort: true });
+  body.size = 0;
+  body.aggs = {
+    nestedAgg: {
+      nested: {
+        path
+      },
+      aggs: {
+        termsAgg: {
+          terms: {
+            field,
+            size,
+          }
+        }
+      }
+    }
+  };
+  const query = {
+    index: indexName,
+    body,
+  };
+  logApp.info('[SEARCH] elAggregationNestedTerms', { query });
+  return elRawSearch(context, user, types, query)
+    .then((data) => {
+      const aggBucketsResult = data.aggregations?.nestedAgg?.termsAgg?.buckets ?? [];
+      logApp.info('===== DEBUG ===== elAggregationNestedTerms result', { data, aggBucketsResult });
+      return aggBucketsResult.map((b) => {
+        let label = b.key;
+        if (typeof label === 'number') {
+          label = String(b.key);
+        }
+        return { label, key: b.key, value: b.doc_count };
+      });
+    })
+    .catch((err) => {
+      throw DatabaseError('Aggregation computation count fail', { cause: err, query });
+    });
+};
+
 export const elAggregationsList = async (context, user, indexName, aggregations, opts = {}) => {
   const { types = [], resolveToRepresentative = true } = opts;
   const queryAggs = {};
