@@ -2,6 +2,7 @@
 import { clearIntervalAsync, setIntervalAsync } from 'set-interval-async/dynamic';
 import * as R from 'ramda';
 import { Promise as BluePromise } from 'bluebird';
+import { ENTITY_TYPE_PUBLIC_DASHBOARD } from '../modules/publicDashboard/publicDashboard-types';
 import { buildCreateEvent, lockResource } from '../database/redis';
 import {
   ACTION_TYPE_ADD,
@@ -34,7 +35,7 @@ import {
 import { now } from '../utils/format';
 import { EVENT_TYPE_CREATE, READ_DATA_INDICES, READ_DATA_INDICES_WITHOUT_INFERRED, UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE } from '../database/utils';
 import { elPaginate, elUpdate, ES_MAX_CONCURRENCY } from '../database/engine';
-import { FunctionalError, TYPE_LOCK_ERROR, UnsupportedError, ValidationError } from '../config/errors';
+import { ForbiddenAccess, FunctionalError, TYPE_LOCK_ERROR, UnsupportedError, ValidationError } from '../config/errors';
 import {
   ABSTRACT_BASIC_RELATIONSHIP,
   ABSTRACT_STIX_CORE_RELATIONSHIP,
@@ -44,7 +45,7 @@ import {
   INPUT_OBJECTS,
   RULE_PREFIX
 } from '../schema/general';
-import { executionContext, RULE_MANAGER_USER, SYSTEM_USER } from '../utils/access';
+import { executionContext, getUserAccessRight, MEMBER_ACCESS_RIGHT_ADMIN, RULE_MANAGER_USER, SYSTEM_USER } from '../utils/access';
 import { buildInternalEvent, rulesApplyHandler, rulesCleanHandler } from './ruleManager';
 import { buildEntityFilters, internalFindByIds, listAllRelations } from '../database/middleware-loader';
 import { getActivatedRules, getRule } from '../domain/rules';
@@ -76,6 +77,7 @@ import { stixDomainObjectAddRelation } from '../domain/stixDomainObject';
 import { BackgroundTaskScope } from '../generated/graphql';
 import { ENTITY_TYPE_INTERNAL_FILE } from '../schema/internalObject';
 import { deleteFile } from '../database/file-storage';
+import { checkUserAccessRights } from '../modules/publicDashboard/publicDashboard-utils';
 
 // Task manager responsible to execute long manual tasks
 // Each API will start is task manager.
@@ -178,8 +180,14 @@ const computeListTaskElements = async (context, user, task) => {
   const ids = R.take(MAX_TASK_ELEMENTS, task_ids.slice(startIndex));
 
   // processing elements in descending order makes possible restoring from trash elements with dependencies
+  let type = DEFAULT_ALLOWED_TASK_ENTITY_TYPES;
+  if (scope === BackgroundTaskScope.Import) {
+    type = [ENTITY_TYPE_INTERNAL_FILE];
+  } else if (scope === BackgroundTaskScope.PublicDashboard) {
+    type = [ENTITY_TYPE_PUBLIC_DASHBOARD];
+  }
   const options = {
-    type: scope === BackgroundTaskScope.Import ? [ENTITY_TYPE_INTERNAL_FILE] : DEFAULT_ALLOWED_TASK_ENTITY_TYPES,
+    type,
     orderMode: 'desc',
     orderBy: scope === BackgroundTaskScope.Import ? 'lastModified' : 'created_at',
   };
@@ -213,12 +221,24 @@ const generatePatch = (field, values, type) => {
 };
 
 const executeDelete = async (context, user, element, scope) => {
+  // Check the user has sufficient level of access to delete the element.
+  const userAccess = getUserAccessRight(user, element);
+  if (userAccess !== MEMBER_ACCESS_RIGHT_ADMIN) {
+    throw ForbiddenAccess();
+  }
+  // Specific case for public dashboards because need to check authorized
+  // members of the associated custom dashboard instead.
+  if (scope === BackgroundTaskScope.PublicDashboard) {
+    await checkUserAccessRights(context, user, element.id);
+  }
+
   if (scope === BackgroundTaskScope.Import) {
     await deleteFile(context, user, element.id);
   } else {
     await deleteElementById(context, user, element.internal_id, element.entity_type);
   }
 };
+
 const executeCompleteDelete = async (context, user, element) => {
   await processDeleteOperation(context, user, element.internal_id, { isRestoring: false });
 };

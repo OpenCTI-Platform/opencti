@@ -1,20 +1,21 @@
 import * as R from 'ramda';
 import { uniq } from 'ramda';
+import { ENTITY_TYPE_PUBLIC_DASHBOARD } from '../modules/publicDashboard/publicDashboard-types';
 import { generateInternalId, generateStandardId } from '../schema/identifier';
 import { ENTITY_TYPE_BACKGROUND_TASK } from '../schema/internalObject';
 import { now } from '../utils/format';
-import { BYPASS, isUserHasCapability, MEMBER_ACCESS_RIGHT_ADMIN, SETTINGS_SET_ACCESSES, KNOWLEDGE_KNASKIMPORT } from '../utils/access';
+import { BYPASS, isUserHasCapability, KNOWLEDGE_KNASKIMPORT, MEMBER_ACCESS_RIGHT_ADMIN, SETTINGS_SET_ACCESSES } from '../utils/access';
 import { isKnowledge, KNOWLEDGE_DELETE, KNOWLEDGE_UPDATE } from '../schema/general';
 import { ForbiddenAccess, UnsupportedError } from '../config/errors';
 import { elIndex } from '../database/engine';
 import { INDEX_INTERNAL_OBJECTS } from '../database/utils';
 import { ENTITY_TYPE_NOTIFICATION } from '../modules/notification/notification-types';
 import { publishUserAction } from '../listener/UserActionListener';
-import { internalLoadById, storeLoadById } from '../database/middleware-loader';
+import { internalFindByIds, internalLoadById, storeLoadById } from '../database/middleware-loader';
 import { getParentTypes } from '../schema/schemaUtils';
 import { ENTITY_TYPE_VOCABULARY } from '../modules/vocabulary/vocabulary-types';
 import { ENTITY_TYPE_DELETE_OPERATION } from '../modules/deleteOperation/deleteOperation-types';
-import { BackgroundTaskScope } from '../generated/graphql';
+import { BackgroundTaskScope, Capabilities } from '../generated/graphql';
 import { isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
 
 export const TASK_TYPE_QUERY = 'QUERY';
@@ -125,8 +126,29 @@ export const checkActionValidity = async (context, user, input, scope, taskType)
       throw UnsupportedError('Background tasks of scope Import can only be deletions.');
     }
     // Check the targeted entities are files: not needed because the method used only target files
+  } else if (scope === BackgroundTaskScope.PublicDashboard) {
+    const isAuthorized = isUserHasCapability(user, Capabilities.ExploreExupdatePublish);
+    if (!isAuthorized) {
+      throw ForbiddenAccess();
+    }
+    if (!actions.every((a) => a.type === ACTION_TYPE_DELETE)) {
+      throw UnsupportedError('Background tasks of scope Public dashboard can only be deletions.');
+    }
+    if (taskType === TASK_TYPE_QUERY) {
+      const isPublicDashboards = typeFilters.length === 1
+          && typeFilters[0].values.length === 1
+          && typeFilters[0].values[0] === ENTITY_TYPE_PUBLIC_DASHBOARD;
+      if (!isPublicDashboards) {
+        throw ForbiddenAccess('The targeted ids are not public dashboards.');
+      }
+    } else if (taskType === TASK_TYPE_LIST) {
+      const objects = await internalFindByIds(context, user, ids);
+      if (objects.some((o) => o.entity_type !== ENTITY_TYPE_PUBLIC_DASHBOARD)) {
+        throw ForbiddenAccess('The targeted ids are not public dashboards.');
+      }
+    }
   } else { // Background task with an invalid scope
-    throw UnsupportedError('A background task should be of scope: SETTINGS, KNOWLEDGE, USER, IMPORT.');
+    throw UnsupportedError('A background task should be of scope: SETTINGS, KNOWLEDGE, USER, IMPORT, DASHBOARD, PUBLIC_DASHBOARD.');
   }
 };
 

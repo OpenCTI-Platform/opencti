@@ -948,6 +948,8 @@ enum BackgroundTaskScope {
   USER
   SETTINGS
   IMPORT
+  DASHBOARD
+  PUBLIC_DASHBOARD
 }
 
 enum BackgroundTaskActionType {

@@ -88,6 +88,22 @@ const TaskScope: FunctionComponent<TaskScopeProps> = ({ label, scope }) => {
           label={label}
         />
       );
+    case 'PUBLIC_DASHBOARD':
+      return (
+        <Chip
+          classes={{ root: style }}
+          style={inlineStyles.orange}
+          label={label}
+        />
+      );
+    case 'DASHBOARD':
+      return (
+        <Chip
+          classes={{ root: style }}
+          style={inlineStyles.orange}
+          label={label}
+        />
+      );
     default:
       return (
         <Chip

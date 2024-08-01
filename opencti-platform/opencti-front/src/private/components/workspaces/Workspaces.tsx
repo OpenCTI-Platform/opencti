@@ -147,10 +147,12 @@ const Workspaces: FunctionComponent<WorkspacesProps> = ({
 
   return (
     <>
-      <Breadcrumbs variant="list" elements={type === 'dashboard'
-        ? [{ label: t_i18n('Dashboards') }, { label: t_i18n('Custom dashboards'), current: true }]
-        : [{ label: t_i18n('Investigations'), current: true }]}
-      />
+      {type === 'dashboard' && (
+      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Dashboards') }, { label: t_i18n('Custom dashboards'), current: true }]}/>
+      )}
+      {type === 'investigation' && (
+      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Investigations'), current: true }]}/>
+      )}
       {renderLines()}
       {!FAB_REPLACED
         && (<Security needs={[EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE]}>
