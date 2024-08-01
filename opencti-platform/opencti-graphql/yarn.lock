@@ -11718,7 +11718,7 @@ __metadata:
     showdown: "npm:2.1.0"
     source-map-support: "npm:0.5.21"
     subscriptions-transport-ws: "npm:0.11.0"
-    tough-cookie: "npm:4.1.3"
+    tough-cookie: "npm:4.1.4"
     ts-loader: "npm:9.5.1"
     turndown: "npm:7.1.3"
     typescript: "npm:5.4.4"
@@ -13821,15 +13821,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tough-cookie@npm:4.1.3":
-  version: 4.1.3
-  resolution: "tough-cookie@npm:4.1.3"
+"tough-cookie@npm:4.1.4":
+  version: 4.1.4
+  resolution: "tough-cookie@npm:4.1.4"
   dependencies:
     psl: "npm:^1.1.33"
     punycode: "npm:^2.1.1"
     universalify: "npm:^0.2.0"
     url-parse: "npm:^1.5.3"
-  checksum: 10/cf148c359b638a7069fc3ba9a5257bdc9616a6948a98736b92c3570b3f8401cf9237a42bf716878b656f372a1fb65b74dd13a46ccff8eceba14ffd053d33f72a
+  checksum: 10/75663f4e2cd085f16af0b217e4218772adf0617fb3227171102618a54ce0187a164e505d61f773ed7d65988f8ff8a8f935d381f87da981752c1171b076b4afac
   languageName: node
   linkType: hard
 
