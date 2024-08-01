@@ -43,17 +43,19 @@ const useStyles = makeStyles((theme) => ({
     alignItems: 'center',
   },
   charts: {
-    display: 'flex',
+    display: 'grid',
+    gridAutoFlow: 'column',
+    gridAutoColumns: '40px 40px 40px',
   },
   chartContainer: {
-    width: 40,
+    marginLeft: -27,
     position: 'relative',
   },
   iconOverlay: {
-    position: 'absolute',
-    top: 10,
-    left: 10,
     fontSize: 18,
+    position: 'absolute',
+    top: 17,
+    left: 39,
   },
   buttons: {
     marginTop: 20,
@@ -65,43 +67,43 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const stixCoreObjectSimulationResultObasStixCoreObjectSimulationsResultQuery = graphql`
-    query StixCoreObjectSimulationResultObasStixCoreObjectSimulationsResultQuery($id: ID!) {
-        obasStixCoreObjectSimulationsResult(id: $id) {
-            prevention {
-                unknown
-                success
-                failure
-            }
-            detection {
-                unknown
-                success
-                failure
-            }
-            human {
-                unknown
-                success
-                failure
-            }
-        }
+  query StixCoreObjectSimulationResultObasStixCoreObjectSimulationsResultQuery($id: ID!) {
+    obasStixCoreObjectSimulationsResult(id: $id) {
+      prevention {
+        unknown
+        success
+        failure
+      }
+      detection {
+        unknown
+        success
+        failure
+      }
+      human {
+        unknown
+        success
+        failure
+      }
     }
+  }
 `;
 
 const stixCoreObjectSimulationResultObasContainerGenerateScenarioMutation = graphql`
-    mutation StixCoreObjectSimulationResultObasContainerGenerateScenarioMutation($id: ID!, $interval: Int, $selection: Selection, $simulationType: SimulationType, $useAI: Boolean, $filters: FilterGroup) {
-        obasContainerGenerateScenario(id: $id, interval: $interval, selection: $selection, simulationType: $simulationType, useAI: $useAI, filters: $filters)
-    }
+  mutation StixCoreObjectSimulationResultObasContainerGenerateScenarioMutation($id: ID!, $interval: Int, $selection: Selection, $simulationType: SimulationType, $useAI: Boolean, $filters: FilterGroup) {
+    obasContainerGenerateScenario(id: $id, interval: $interval, selection: $selection, simulationType: $simulationType, useAI: $useAI, filters: $filters)
+  }
 `;
 
 const stixCoreObjectSimulationResultObasThreatGenerateScenarioMutation = graphql`
-    mutation StixCoreObjectSimulationResultObasThreatGenerateScenarioMutation($id: ID!, $interval: Int, $selection: Selection, $simulationType: SimulationType, $useAI: Boolean, $filters: FilterGroup) {
-        obasThreatGenerateScenario(id: $id, interval: $interval, selection: $selection, simulationType: $simulationType, useAI: $useAI, filters: $filters)
-    }
+  mutation StixCoreObjectSimulationResultObasThreatGenerateScenarioMutation($id: ID!, $interval: Int, $selection: Selection, $simulationType: SimulationType, $useAI: Boolean, $filters: FilterGroup) {
+    obasThreatGenerateScenario(id: $id, interval: $interval, selection: $selection, simulationType: $simulationType, useAI: $useAI, filters: $filters)
+  }
 `;
 
 const stixCoreObjectSimulationResultObasVictimGenerateScenarioMutation = graphql`
-    mutation StixCoreObjectSimulationResultObasVictimGenerateScenarioMutation($id: ID!, $interval: Int, $selection: Selection, $simulationType: SimulationType, $useAI: Boolean, $filters: FilterGroup) {
-        obasVictimGenerateScenario(id: $id, interval: $interval, selection: $selection, simulationType: $simulationType, useAI: $useAI, filters: $filters)
-    }
+  mutation StixCoreObjectSimulationResultObasVictimGenerateScenarioMutation($id: ID!, $interval: Int, $selection: Selection, $simulationType: SimulationType, $useAI: Boolean, $filters: FilterGroup) {
+    obasVictimGenerateScenario(id: $id, interval: $interval, selection: $selection, simulationType: $simulationType, useAI: $useAI, filters: $filters)
+  }
 `;
 
 const StixCoreObjectSimulationResult = ({ id, type }) => {
@@ -212,7 +214,7 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
         });
         break;
       default:
-            // do nothing
+      // do nothing
     }
   };
   const renderCharts = () => {
@@ -223,77 +225,56 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
         render={({ props }) => {
           const labels = [t_i18n('Unknown'), t_i18n('Success'), t_i18n('Failure')];
           const chartColors = [theme.palette.action.disabled, theme.palette.success.main, theme.palette.error.main];
+          const options = donutChartOptions(
+            theme,
+            labels,
+            'bottom',
+            false,
+            chartColors,
+            false,
+            false,
+            true,
+            false,
+            65,
+          );
           if (props && props.obasStixCoreObjectSimulationsResult) {
             const { prevention, detection, human } = props.obasStixCoreObjectSimulationsResult;
             return (
               <div className={classes.charts}>
                 <div className={classes.chartContainer}>
                   <Chart
-                    options={donutChartOptions(
-                      theme,
-                      labels,
-                      'bottom',
-                      false,
-                      chartColors,
-                      false,
-                      false,
-                      true,
-                      false,
-                      60,
-                    )}
+                    options={options}
                     series={[prevention.unknown, prevention.success, prevention.failure]}
                     type="donut"
-                    width={40}
-                    height={40}
+                    width={95}
+                    height={95}
                   />
                   <Tooltip title={`${t_i18n('Prevention')}`} placement="bottom">
-                    <ShieldOutlined className={classes.iconOverlay}/>
+                    <ShieldOutlined className={classes.iconOverlay} />
                   </Tooltip>
                 </div>
                 <div className={classes.chartContainer}>
                   <Chart
-                    options={donutChartOptions(
-                      theme,
-                      labels,
-                      'bottom',
-                      false,
-                      chartColors,
-                      false,
-                      false,
-                      true,
-                      false,
-                      60,
-                    )}
+                    options={options}
                     series={[detection.unknown, detection.success, detection.failure]}
                     type="donut"
-                    width={40}
-                    height={40}
+                    width={95}
+                    height={95}
                   />
                   <Tooltip title={`${t_i18n('Detection')}`} placement="bottom">
-                    <TrackChangesOutlined className={classes.iconOverlay}/>
+                    <TrackChangesOutlined className={classes.iconOverlay} />
                   </Tooltip>
                 </div>
                 <div className={classes.chartContainer}>
                   <Chart
-                    options={donutChartOptions(
-                      theme,
-                      labels,
-                      'bottom',
-                      false,
-                      chartColors,
-                      false,
-                      false,
-                      true,
-                      false,
-                      60,
-                    )}
+                    options={options}
                     series={[human.unknown, human.success, human.failure]}
                     type="donut"
-                    width={40}
-                    height={40}
+                    width={95}
+                    height={95}
                   />
                   <Tooltip title={`${t_i18n('Human response')}`} placement="bottom">
-                    <SensorOccupiedOutlined className={classes.iconOverlay}/>
+                    <SensorOccupiedOutlined className={classes.iconOverlay} />
                   </Tooltip>
                 </div>
               </div>
@@ -304,71 +285,38 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
             <div className={classes.charts}>
               <div className={classes.chartContainer}>
                 <Chart
-                  options={donutChartOptions(
-                    theme,
-                    labels,
-                    'bottom',
-                    false,
-                    chartColors,
-                    false,
-                    false,
-                    true,
-                    false,
-                    60,
-                  )}
+                  options={options}
                   series={chartData}
                   type="donut"
-                  width={40}
-                  height={40}
+                  width={95}
+                  height={95}
                 />
                 <Tooltip title={`${t_i18n('Prevention')}`} placement="bottom">
-                  <ShieldOutlined className={classes.iconOverlay}/>
+                  <ShieldOutlined className={classes.iconOverlay} />
                 </Tooltip>
               </div>
               <div className={classes.chartContainer}>
                 <Chart
-                  options={donutChartOptions(
-                    theme,
-                    labels,
-                    'bottom',
-                    false,
-                    chartColors,
-                    false,
-                    false,
-                    true,
-                    false,
-                    60,
-                  )}
+                  options={options}
                   series={chartData}
                   type="donut"
-                  width={40}
-                  height={40}
+                  width={95}
+                  height={95}
                 />
                 <Tooltip title={`${t_i18n('Detection')}`} placement="bottom">
-                  <TrackChangesOutlined className={classes.iconOverlay}/>
+                  <TrackChangesOutlined className={classes.iconOverlay} />
                 </Tooltip>
               </div>
               <div className={classes.chartContainer}>
                 <Chart
-                  options={donutChartOptions(
-                    theme,
-                    labels,
-                    'bottom',
-                    false,
-                    chartColors,
-                    false,
-                    false,
-                    true,
-                    false,
-                    60,
-                  )}
+                  options={options}
                   series={chartData}
                   type="donut"
-                  width={40}
-                  height={40}
+                  width={95}
+                  height={95}
                 />
                 <Tooltip title={`${t_i18n('Human response')}`} placement="bottom">
-                  <SensorOccupiedOutlined className={classes.iconOverlay}/>
+                  <SensorOccupiedOutlined className={classes.iconOverlay} />
                 </Tooltip>
               </div>
             </div>
@@ -405,7 +353,7 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
           label={t_i18n('Use AI')}
           control={
             <Switch disabled={!enabled || !configured || !isEnterpriseEdition} value={useGenAI} onChange={(event) => setUseGenAI(event.target.checked)} />
-                  }
+          }
         />
         <FormControl style={fieldSpacingContainerStyle}>
           <InputLabel id="simulationType">{t_i18n('Simulation type')}</InputLabel>
@@ -498,24 +446,24 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
   return (
     <>
       {!oBasDisableDisplay && (
-      <div className={classes.simulationResults}>
-        <Tooltip title={`${t_i18n('Check the posture in OpenBAS')}`}>
-          <Button
-            variant="outlined"
-            size="small"
-            style={{
-              fontSize: 12,
-              color: (!isGrantedToUpdate && oBasConfigured) ? theme.palette.text.disabled : theme.palette.text.primary,
-            }}
-            disabled={!isGrantedToUpdate && oBasConfigured}
-            onClick={() => (oBasConfigured ? setOpen(true) : setOpenCallToAction(true))}
-          >
-            <img style={{ width: 20, height: 20, marginRight: 5, display: 'block' }} src={fileUri(theme.palette.mode === 'dark' ? obasDark : obasLight)} alt="OBAS" />
-            {t_i18n('Simulate')}
-          </Button>
-        </Tooltip>
-        {renderCharts()}
-      </div>
+        <div className={classes.simulationResults}>
+          <Tooltip title={`${t_i18n('Check the posture in OpenBAS')}`}>
+            <Button
+              variant="outlined"
+              size="small"
+              style={{
+                fontSize: 12,
+                color: (!isGrantedToUpdate && oBasConfigured) ? theme.palette.text.disabled : theme.palette.text.primary,
+              }}
+              disabled={!isGrantedToUpdate && oBasConfigured}
+              onClick={() => (oBasConfigured ? setOpen(true) : setOpenCallToAction(true))}
+            >
+              <img style={{ width: 20, height: 20, marginRight: 5, display: 'block' }} src={fileUri(theme.palette.mode === 'dark' ? obasDark : obasLight)} alt="OBAS" />
+              {t_i18n('Simulate')}
+            </Button>
+          </Tooltip>
+          {renderCharts()}
+        </div>
       )}
       <Drawer
         title={t_i18n('Generate a simulation scenario')}
