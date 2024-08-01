@@ -67,13 +67,13 @@ const RELATIONSHIP_QUERY = gql`
     query stixCoreRelationships(
         $filters: FilterGroup
     ) {
-        stixCoreRelationships(
-            filters: $filters
-        ) {
+        stixCoreRelationships(filters: $filters) {
             edges {
                 node {
                     id
                     relationship_type
+                    start_time
+                    stop_time
                 }
             }
         }
@@ -749,6 +749,50 @@ describe('Complex filters combinations for elastic queries', () => {
     expect(queryResult.data.reports.edges.length).toEqual(3); // 'Report1', 'Report2', 'A demo for testing purpose'
     expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('Report1')).toBeTruthy();
     expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('Report2')).toBeTruthy();
+  });
+  it('should list entities according to filters: \'nil\' / \'not_nil\' operators on dates', async () => {
+    // start_time is empty
+    let queryResult = await queryAsAdmin({
+      query: RELATIONSHIP_QUERY,
+      variables: {
+        first: 10,
+        filters: {
+          mode: 'and',
+          filters: [
+            {
+              key: 'start_time',
+              operator: 'nil',
+              values: [],
+              mode: 'or',
+            }
+          ],
+          filterGroups: [],
+        },
+      }
+    });
+    // 4 relationships with no start_time + 4 relationships with start_time <= '1970-01-01T01:00:00.000Z'
+    expect(queryResult.data.stixCoreRelationships.edges.length).toEqual(8);
+    // stop_time is empty
+    queryResult = await queryAsAdmin({
+      query: RELATIONSHIP_QUERY,
+      variables: {
+        first: 10,
+        filters: {
+          mode: 'and',
+          filters: [
+            {
+              key: 'stop_time',
+              operator: 'nil',
+              values: [],
+              mode: 'or',
+            }
+          ],
+          filterGroups: [],
+        },
+      }
+    });
+    // 4 relationships with no stop_time + 3 with stop_time <= '1970-01-01T01:00:00.000Z' + 1 with stop_time = '5138-11-16T09:46:40.000Z'
+    expect(queryResult.data.stixCoreRelationships.edges.length).toEqual(8);
   });
   it('should list entities according to filters: aggregation with filters', async () => {
     // count the number of entities with each marking
