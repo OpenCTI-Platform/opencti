@@ -12,7 +12,7 @@ import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import IconButton from '@mui/material/IconButton';
 import { LinkOff } from '@mui/icons-material';
 import { ProgressWrench } from 'mdi-material-ui';
-import { graphql, createFragmentContainer } from 'react-relay';
+import { createFragmentContainer, graphql } from 'react-relay';
 import AddCoursesOfAction from './AddCoursesOfAction';
 import { addCoursesOfActionMutationRelationDelete } from './AddCoursesOfActionLines';
 import { commitMutation } from '../../../../relay/environment';
@@ -70,40 +70,43 @@ class AttackPatternCoursesOfActionComponent extends Component {
           attackPatternCoursesOfAction={attackPattern.coursesOfAction.edges}
         />
         <div className="clearfix" />
-        <List style={{ marginTop: -10 }}>
-          {attackPattern.coursesOfAction.edges.map((courseOfActionEdge) => {
-            const courseOfAction = courseOfActionEdge.node;
-            return (
-              <ListItem
-                key={courseOfAction.id}
-                dense={true}
-                divider={true}
-                button={true}
-                component={Link}
-                to={`/dashboard/techniques/courses_of_action/${courseOfAction.id}`}
-              >
-                <ListItemIcon>
+        {attackPattern.length > 0
+          ? <List style={{ marginTop: -10 }}>
+            {attackPattern.coursesOfAction.edges.map((courseOfActionEdge) => {
+              const courseOfAction = courseOfActionEdge.node;
+              return (
+                <ListItem
+                  key={courseOfAction.id}
+                  dense={true}
+                  divider={true}
+                  button={true}
+                  component={Link}
+                  to={`/dashboard/techniques/courses_of_action/${courseOfAction.id}`}
+                >
                   <ListItemIcon>
-                    <ProgressWrench color="primary" />
+                    <ListItemIcon>
+                      <ProgressWrench color="primary"/>
+                    </ListItemIcon>
                   </ListItemIcon>
-                </ListItemIcon>
-                <ListItemText primary={courseOfAction.name} />
-                <ListItemSecondaryAction>
-                  <IconButton
-                    aria-label="Remove"
-                    onClick={this.removeCourseOfAction.bind(
-                      this,
-                      courseOfActionEdge,
-                    )}
-                    size="large"
-                  >
-                    <LinkOff />
-                  </IconButton>
-                </ListItemSecondaryAction>
-              </ListItem>
-            );
-          })}
-        </List>
+                  <ListItemText primary={courseOfAction.name}/>
+                  <ListItemSecondaryAction>
+                    <IconButton
+                      aria-label="Remove"
+                      onClick={this.removeCourseOfAction.bind(
+                        this,
+                        courseOfActionEdge,
+                      )}
+                      size="large"
+                    >
+                      <LinkOff/>
+                    </IconButton>
+                  </ListItemSecondaryAction>
+                </ListItem>
+              );
+            })}
+          </List>
+          : ('-')
+        }
       </div>
     );
   }

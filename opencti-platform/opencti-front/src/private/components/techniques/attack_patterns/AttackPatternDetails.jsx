@@ -76,18 +76,21 @@ class AttackPatternDetailsComponent extends Component {
                 >
                   {t('Platforms')}
                 </Typography>
-                <List>
-                  {propOr([], 'x_mitre_platforms', attackPattern).map(
-                    (platform) => (
-                      <ListItem key={platform} dense={true} divider={true}>
-                        <ListItemIcon>
-                          <SettingsApplications />
-                        </ListItemIcon>
-                        <ListItemText primary={platform} />
-                      </ListItem>
-                    ),
-                  )}
-                </List>
+                {attackPattern.length > 0
+                  ? <List>
+                    {propOr([], 'x_mitre_platforms', attackPattern).map(
+                      (platform) => (
+                        <ListItem key={platform} dense={true} divider={true}>
+                          <ListItemIcon>
+                            <SettingsApplications/>
+                          </ListItemIcon>
+                          <ListItemText primary={platform}/>
+                        </ListItem>
+                      ),
+                    )}
+                  </List>
+                  : ('-')
+                }
               </div>
               <AttackPatternSubAttackPatterns attackPattern={attackPattern} />
             </Grid>
@@ -114,18 +117,21 @@ class AttackPatternDetailsComponent extends Component {
               >
                 {t('Required permissions')}
               </Typography>
-              <List>
-                {propOr([], 'x_mitre_permissions_required', attackPattern).map(
-                  (permission) => (
-                    <ListItem key={permission} dense={true} divider={true}>
-                      <ListItemIcon>
-                        <PermIdentity />
-                      </ListItemIcon>
-                      <ListItemText primary={permission} />
-                    </ListItem>
-                  ),
-                )}
-              </List>
+              {attackPattern.length > 0
+                ? <List>
+                  {propOr([], 'x_mitre_permissions_required', attackPattern).map(
+                    (permission) => (
+                      <ListItem key={permission} dense={true} divider={true}>
+                        <ListItemIcon>
+                          <PermIdentity/>
+                        </ListItemIcon>
+                        <ListItemText primary={permission}/>
+                      </ListItem>
+                    ),
+                  )}
+                </List>
+                : ('-')
+              }
               <AttackPatternCoursesOfAction attackPattern={attackPattern} />
               <AttackPatternDataComponents attackPattern={attackPattern} />
             </Grid>

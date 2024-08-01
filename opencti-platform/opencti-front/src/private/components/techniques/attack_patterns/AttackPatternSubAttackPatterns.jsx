@@ -11,7 +11,7 @@ import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import IconButton from '@mui/material/IconButton';
 import { LockPattern } from 'mdi-material-ui';
 import { LinkOff } from '@mui/icons-material';
-import { graphql, createFragmentContainer } from 'react-relay';
+import { createFragmentContainer, graphql } from 'react-relay';
 import AddSubAttackPattern from './AddSubAttackPattern';
 import { addSubAttackPatternsMutationRelationDelete } from './AddSubAttackPatternsLines';
 import { commitMutation } from '../../../../relay/environment';
@@ -64,37 +64,40 @@ class AttackPatternSubAttackPatternsComponent extends Component {
           />
         </Security>
         <div className="clearfix" />
-        <List style={{ marginTop: -10 }}>
-          {subAttackPatterns.map((subAttackPattern) => (
-            <ListItem
-              key={subAttackPattern.id}
-              dense={true}
-              divider={true}
-              button={true}
-              component={Link}
-              to={`/dashboard/techniques/attack_patterns/${subAttackPattern.id}`}
-            >
-              <ListItemIcon>
-                <LockPattern color="primary" />
-              </ListItemIcon>
-              <ListItemText
-                primary={`[${subAttackPattern.x_mitre_id}] ${subAttackPattern.name}`}
-              />
-              <ListItemSecondaryAction>
-                <IconButton
-                  aria-label="Remove"
-                  onClick={this.removeSubAttackPattern.bind(
-                    this,
-                    subAttackPattern,
-                  )}
-                  size="large"
-                >
-                  <LinkOff />
-                </IconButton>
-              </ListItemSecondaryAction>
-            </ListItem>
-          ))}
-        </List>
+        {subAttackPatterns.length > 0
+          ? <List style={{ marginTop: -10 }}>
+            {subAttackPatterns.map((subAttackPattern) => (
+              <ListItem
+                key={subAttackPattern.id}
+                dense={true}
+                divider={true}
+                button={true}
+                component={Link}
+                to={`/dashboard/techniques/attack_patterns/${subAttackPattern.id}`}
+              >
+                <ListItemIcon>
+                  <LockPattern color="primary"/>
+                </ListItemIcon>
+                <ListItemText
+                  primary={`[${subAttackPattern.x_mitre_id}] ${subAttackPattern.name}`}
+                />
+                <ListItemSecondaryAction>
+                  <IconButton
+                    aria-label="Remove"
+                    onClick={this.removeSubAttackPattern.bind(
+                      this,
+                      subAttackPattern,
+                    )}
+                    size="large"
+                  >
+                    <LinkOff/>
+                  </IconButton>
+                </ListItemSecondaryAction>
+              </ListItem>
+            ))}
+          </List>
+          : ('-')
+        }
       </div>
     );
   }

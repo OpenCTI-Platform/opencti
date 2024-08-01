@@ -51,9 +51,9 @@ const AttackPatternDataComponentsComponent: FunctionComponent<{
       </Typography>
       <AddDataComponents attackPattern={attackPattern} />
       <div className="clearfix" />
-      {attackPattern.dataComponents && (
-        <List style={{ marginTop: -10 }}>
-          {attackPattern.dataComponents.edges
+      {attackPattern.dataComponents?.edges && attackPattern.dataComponents.edges.length > 0
+        ? <List style={{ marginTop: -10 }}>
+          {attackPattern.dataComponents?.edges
             ?.map((dataComponentEdge) => dataComponentEdge?.node)
             .map((dataComponent, idx) => {
               if (!dataComponent) {
@@ -99,7 +99,8 @@ const AttackPatternDataComponentsComponent: FunctionComponent<{
               );
             })}
         </List>
-      )}
+        : ('-')
+      }
     </div>
   );
 };
