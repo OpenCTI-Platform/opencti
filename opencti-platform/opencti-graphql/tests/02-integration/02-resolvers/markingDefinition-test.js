@@ -91,7 +91,7 @@ describe('MarkingDefinition resolver standard behavior', () => {
   });
   it('should list markingDefinitions without option "first"', async () => {
     // https://github.com/OpenCTI-Platform/opencti/issues/7905
-    const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: {} });
+    const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: null } });
     expect(queryResult.data.markingDefinitions.edges.length).toEqual(12);
   });
   it('should update markingDefinition', async () => {
