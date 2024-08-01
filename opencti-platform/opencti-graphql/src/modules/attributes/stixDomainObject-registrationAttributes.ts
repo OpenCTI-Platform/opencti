@@ -39,6 +39,8 @@ import {
   ENTITY_TYPE_TOOL,
   ENTITY_TYPE_VULNERABILITY
 } from '../../schema/stixDomainObject';
+import { registerEntityOverviewLayoutCustomization } from '../../schema/overviewLayoutCustomization-register';
+import reportOverviewLayoutCustomization from '../overview-layout-customization/report';
 
 const stixDomainObjectAttributes: Array<AttributeDefinition> = [
   created,
@@ -258,3 +260,9 @@ const stixDomainObjectsAttributes: { [k: string]: Array<AttributeDefinition> } =
   ],
 };
 R.forEachObjIndexed((value, key) => schemaAttributesDefinition.registerAttributes(key as string, value), stixDomainObjectsAttributes);
+
+// Register overviewLayoutCustomization
+registerEntityOverviewLayoutCustomization(
+  ENTITY_TYPE_CONTAINER_REPORT,
+  reportOverviewLayoutCustomization,
+);

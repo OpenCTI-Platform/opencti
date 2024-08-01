@@ -28,6 +28,7 @@ import { CaseTasksLineDummy } from '../tasks/CaseTasksLine';
 import { isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
 import { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
 import { getCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
+import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -85,6 +86,8 @@ const CaseIncidentComponent: FunctionComponent<CaseIncidentProps> = ({ data, ena
     queryTaskPaginationOptions,
   );
 
+  const caseIncidentResponseOverviewLayoutCustomization = useOverviewLayoutCustomization(caseIncidentData.entity_type);
+
   return (
     <>
       <Grid
@@ -92,111 +95,148 @@ const CaseIncidentComponent: FunctionComponent<CaseIncidentProps> = ({ data, ena
         spacing={3}
         classes={{ container: classes.gridContainer }}
       >
-        <Grid item xs={6}>
-          <CaseIncidentDetails caseIncidentData={caseIncidentData} />
-        </Grid>
-        <Grid item xs={6}>
-          <StixDomainObjectOverview
-            stixDomainObject={caseIncidentData}
-            displayAssignees
-            displayParticipants
-          />
-        </Grid>
-        <Grid item xs={6} ref={ref}>
-          {queryRef && (
-            <React.Suspense
-              fallback={
-                <div style={{ height: '100%' }}>
-                  <Typography
-                    variant="h4"
-                    gutterBottom={true}
-                    style={{ marginBottom: 10 }}
-                  >
-                    {t_i18n('Tasks')}
-                  </Typography>
-                  <Paper classes={{ root: classes.paper }} variant="outlined">
-                    <ListLines
-                      sortBy={sortBy}
-                      orderAsc={orderAsc}
-                      handleSort={helpers.handleSort}
-                      dataColumns={tasksDataColumns}
-                      inline={true}
-                      secondaryAction={true}
+        {
+          caseIncidentResponseOverviewLayoutCustomization.map(({ key, width }) => {
+            switch (key) {
+              case 'details':
+                return (
+                  <Grid key={key} item xs={width}>
+                    <CaseIncidentDetails caseIncidentData={caseIncidentData} />
+                  </Grid>
+                );
+              case 'basicInformation':
+                return (
+                  <Grid key={key} item xs={width}>
+                    <StixDomainObjectOverview
+                      stixDomainObject={caseIncidentData}
+                      displayAssignees
+                      displayParticipants
+                    />
+                  </Grid>
+                );
+              case 'task':
+                return (
+                  <Grid key={key} item xs={width} ref={ref}>
+                    {queryRef && (
+                    <React.Suspense
+                      fallback={
+                        <div style={{ height: '100%' }}>
+                          <Typography
+                            variant="h4"
+                            gutterBottom={true}
+                            style={{ marginBottom: 10 }}
+                          >
+                            {t_i18n('Tasks')}
+                          </Typography>
+                          <Paper classes={{ root: classes.paper }} variant="outlined">
+                            <ListLines
+                              sortBy={sortBy}
+                              orderAsc={orderAsc}
+                              handleSort={helpers.handleSort}
+                              dataColumns={tasksDataColumns}
+                              inline={true}
+                              secondaryAction={true}
+                            >
+                              {Array(20)
+                                .fill(0)
+                                .map((_, idx) => (
+                                  <CaseTasksLineDummy key={idx} />
+                                ))}
+                            </ListLines>
+                          </Paper>
+                        </div>
+                          }
                     >
-                      {Array(20)
-                        .fill(0)
-                        .map((_, idx) => (
-                          <CaseTasksLineDummy key={idx} />
-                        ))}
-                    </ListLines>
-                  </Paper>
-                </div>
-              }
-            >
-              <CaseTasksLines
-                queryRef={queryRef}
-                paginationOptions={queryTaskPaginationOptions}
-                caseId={caseIncidentData.id}
-                sortBy={sortBy}
-                orderAsc={orderAsc}
-                handleSort={helpers.handleSort}
-                defaultMarkings={convertMarkings(caseIncidentData)}
-                containerRef={ref}
-                enableReferences={enableReferences}
-              />
-            </React.Suspense>
-          )}
-        </Grid>
-        <Grid item xs={6}>
-          <ContainerStixObjectsOrStixRelationships
-            isSupportParticipation={false}
-            container={caseIncidentData}
-            types={['Incident', 'stix-sighting-relationship', 'Report']}
-            title={t_i18n('Origin of the case')}
-            enableReferences={enableReferences}
-          />
-        </Grid>
-        <Grid item xs={6}>
-          <ContainerStixObjectsOrStixRelationships
-            isSupportParticipation={false}
-            container={caseIncidentData}
-            types={['Stix-Cyber-Observable']}
-            title={t_i18n('Observables')}
-            enableReferences={enableReferences}
-          />
-        </Grid>
-        <Grid item xs={6}>
-          <ContainerStixObjectsOrStixRelationships
-            isSupportParticipation={false}
-            container={caseIncidentData}
-            types={[
-              'Threat-Actor',
-              'Intrusion-Set',
-              'Campaign',
-              'Malware',
-              'Tool',
-              'Attack-Pattern',
-              'Identity',
-              'Location',
-            ]}
-            title={t_i18n('Other entities')}
-            enableReferences={enableReferences}
-          />
-        </Grid>
-        <Grid item xs={6}>
-          <StixCoreObjectExternalReferences
-            stixCoreObjectId={caseIncidentData.id}
-          />
-        </Grid>
-        <Grid item xs={6}>
-          <StixCoreObjectLatestHistory stixCoreObjectId={caseIncidentData.id} />
-        </Grid>
-        <Grid item xs={12}>
-          <StixCoreObjectOrStixCoreRelationshipNotes
-            stixCoreObjectOrStixCoreRelationshipId={caseIncidentData.id}
-            defaultMarkings={caseIncidentData.objectMarking ?? []}
-          />
-        </Grid>
+                      <CaseTasksLines
+                        queryRef={queryRef}
+                        paginationOptions={queryTaskPaginationOptions}
+                        caseId={caseIncidentData.id}
+                        sortBy={sortBy}
+                        orderAsc={orderAsc}
+                        handleSort={helpers.handleSort}
+                        defaultMarkings={convertMarkings(caseIncidentData)}
+                        containerRef={ref}
+                        enableReferences={enableReferences}
+                      />
+                    </React.Suspense>
+                    )}
+                  </Grid>
+                );
+              case 'originOfTheCase':
+                return (
+                  <Grid key={key} item xs={width}>
+                    <ContainerStixObjectsOrStixRelationships
+                      isSupportParticipation={false}
+                      container={caseIncidentData}
+                      types={['Incident', 'stix-sighting-relationship', 'Report']}
+                      title={t_i18n('Origin of the case')}
+                      enableReferences={enableReferences}
+                    />
+                  </Grid>
+                );
+              case 'observables':
+                return (
+                  <Grid key={key} item xs={width}>
+                    <ContainerStixObjectsOrStixRelationships
+                      isSupportParticipation={false}
+                      container={caseIncidentData}
+                      types={['Stix-Cyber-Observable']}
+                      title={t_i18n('Observables')}
+                      enableReferences={enableReferences}
+                    />
+                  </Grid>
+                );
+              case 'otherEntities':
+                return (
+                  <Grid key={key} item xs={width}>
+                    <ContainerStixObjectsOrStixRelationships
+                      isSupportParticipation={false}
+                      container={caseIncidentData}
+                      types={[
+                        'Threat-Actor',
+                        'Intrusion-Set',
+                        'Campaign',
+                        'Malware',
+                        'Tool',
+                        'Attack-Pattern',
+                        'Identity',
+                        'Location',
+                      ]}
+                      title={t_i18n('Other entities')}
+                      enableReferences={enableReferences}
+                    />
+                  </Grid>
+                );
+              case 'externalReferences':
+                return (
+                  <Grid key={key} item xs={width}>
+                    <StixCoreObjectExternalReferences
+                      stixCoreObjectId={caseIncidentData.id}
+                    />
+                  </Grid>
+                );
+              case 'mostRecentHistory':
+                return (
+                  <Grid key={key} item xs={width}>
+                    <StixCoreObjectLatestHistory
+                      stixCoreObjectId={caseIncidentData.id}
+                    />
+                  </Grid>
+                );
+              case 'notes':
+                return (
+                  <Grid key={key} item xs={width}>
+                    <StixCoreObjectOrStixCoreRelationshipNotes
+                      stixCoreObjectOrStixCoreRelationshipId={caseIncidentData.id}
+                      defaultMarkings={caseIncidentData.objectMarking ?? []}
+                    />
+                  </Grid>
+                );
+              default:
+                return null;
+            }
+          })
+        }
       </Grid>
       {!isFABReplaced && (
         <Security needs={[KNOWLEDGE_KNUPDATE]} hasAccess={canEdit}>
