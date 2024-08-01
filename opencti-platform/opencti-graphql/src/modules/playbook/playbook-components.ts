@@ -40,6 +40,7 @@ import {
   ENTITY_TYPE_ATTACK_PATTERN,
   ENTITY_TYPE_CAMPAIGN,
   ENTITY_TYPE_CONTAINER_REPORT,
+  ENTITY_TYPE_INCIDENT,
   ENTITY_TYPE_INTRUSION_SET,
   ENTITY_TYPE_MALWARE,
   ENTITY_TYPE_TOOL,
@@ -1066,7 +1067,15 @@ const PLAYBOOK_CREATE_INDICATOR_COMPONENT: PlaybookComponent<CreateIndicatorConf
             ABSTRACT_STIX_CORE_RELATIONSHIP,
             {
               fromId: id,
-              toTypes: [ENTITY_TYPE_THREAT_ACTOR, ENTITY_TYPE_INTRUSION_SET, ENTITY_TYPE_CAMPAIGN, ENTITY_TYPE_MALWARE, ENTITY_TYPE_TOOL, ENTITY_TYPE_ATTACK_PATTERN],
+              toTypes: [
+                ENTITY_TYPE_THREAT_ACTOR,
+                ENTITY_TYPE_INTRUSION_SET,
+                ENTITY_TYPE_CAMPAIGN,
+                ENTITY_TYPE_MALWARE,
+                ENTITY_TYPE_INCIDENT,
+                ENTITY_TYPE_TOOL,
+                ENTITY_TYPE_ATTACK_PATTERN
+              ],
               baseData: true,
               indices: READ_RELATIONSHIPS_INDICES
             }
