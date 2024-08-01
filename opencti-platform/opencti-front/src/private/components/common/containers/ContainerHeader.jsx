@@ -43,7 +43,6 @@ import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 import StixCoreObjectFileExport from '../stix_core_objects/StixCoreObjectFileExport';
 import Transition from '../../../../components/Transition';
 import { authorizedMembersToOptions } from '../../../../utils/authorizedMembers';
-import Loader, { LoaderVariant } from '../../../../components/Loader';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -757,7 +756,7 @@ const ContainerHeader = (props) => {
   const triggerData = useLazyLoadQuery(stixCoreObjectQuickSubscriptionContentQuery, { first: 20, ...triggersPaginationOptions });
   return (
     <Box sx={containerStyle}>
-      <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+      <React.Suspense fallback={<span />}>
         {!knowledge && (
           <Tooltip
             title={
