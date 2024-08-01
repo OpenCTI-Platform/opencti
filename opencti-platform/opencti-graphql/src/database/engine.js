@@ -2550,7 +2550,8 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
 
 const elQueryBodyBuilder = async (context, user, options) => {
   // eslint-disable-next-line no-use-before-define
-  const { ids = [], first = ES_DEFAULT_PAGINATION, after, orderBy = null, orderMode = 'asc', noSize = false, noSort = false, intervalInclude = false } = options;
+  const { ids = [], after, orderBy = null, orderMode = 'asc', noSize = false, noSort = false, intervalInclude = false } = options;
+  const first = options.first ?? ES_DEFAULT_PAGINATION;
   const { types = null, search = null } = options;
   const filters = checkAndConvertFilters(options.filters, { noFiltersChecking: options.noFiltersChecking });
   const { startDate = null, endDate = null, dateAttribute = null } = options;
@@ -2947,7 +2948,8 @@ export const elAggregationsList = async (context, user, indexName, aggregations,
 
 export const elPaginate = async (context, user, indexName, options = {}) => {
   // eslint-disable-next-line no-use-before-define
-  const { baseData = false, baseFields = BASE_FIELDS, bypassSizeLimit = false, first = ES_DEFAULT_PAGINATION } = options;
+  const { baseData = false, baseFields = BASE_FIELDS, bypassSizeLimit = false } = options;
+  const first = options.first ?? ES_DEFAULT_PAGINATION;
   const { types = null, connectionFormat = true } = options;
   const body = await elQueryBodyBuilder(context, user, options);
   if (body.size > ES_MAX_PAGINATION && !bypassSizeLimit) {
@@ -2974,7 +2976,8 @@ export const elPaginate = async (context, user, indexName, options = {}) => {
     );
 };
 export const elList = async (context, user, indexName, opts = {}) => {
-  const { first = ES_DEFAULT_PAGINATION, maxSize = undefined } = opts;
+  const { maxSize = undefined } = opts;
+  const first = opts.first ?? ES_DEFAULT_PAGINATION;
   let emitSize = 0;
   let hasNextPage = true;
   let continueProcess = true;
@@ -2994,7 +2997,7 @@ export const elList = async (context, user, indexName, opts = {}) => {
     const paginateOpts = { ...opts, first, after: searchAfter, connectionFormat: false };
     const elements = await elPaginate(context, user, indexName, paginateOpts);
     emitSize += elements.length;
-    const noMoreElements = elements.length === 0 || elements.length < (first ?? ES_DEFAULT_PAGINATION);
+    const noMoreElements = elements.length === 0 || elements.length < first;
     const moreThanMax = maxSize ? emitSize >= maxSize : false;
     if (noMoreElements || moreThanMax) {
       if (elements.length > 0) {
@@ -3023,7 +3026,8 @@ export const elLoadBy = async (context, user, field, value, type = null, indices
   return R.head(hits);
 };
 export const elAttributeValues = async (context, user, field, opts = {}) => {
-  const { first, orderMode = 'asc', search } = opts;
+  const { orderMode = 'asc', search } = opts;
+  const first = opts.first ?? ES_DEFAULT_PAGINATION;
   const markingRestrictions = await buildDataRestrictions(context, user);
   const must = [];
   if (isNotEmptyField(search) && search.length > 0) {
@@ -3048,7 +3052,7 @@ export const elAttributeValues = async (context, user, field, opts = {}) => {
       values: {
         terms: {
           field: buildFieldForQuery(field),
-          size: first ?? ES_DEFAULT_PAGINATION,
+          size: first,
           order: { _key: orderMode },
         },
       },
