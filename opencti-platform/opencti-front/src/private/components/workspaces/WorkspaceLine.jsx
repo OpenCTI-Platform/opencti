@@ -14,7 +14,7 @@ import { useFormatter } from '../../../components/i18n';
 import WorkspacePopover from './WorkspacePopover';
 import ItemIcon from '../../../components/ItemIcon';
 import Security from '../../../utils/Security';
-import { EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE } from '../../../utils/hooks/useGranted';
+import { EXPLORE, INVESTIGATION_INUPDATE } from '../../../utils/hooks/useGranted';
 import ItemBoolean from '../../../components/ItemBoolean';
 
 // Deprecated - https://mui.com/system/styles/basics/
@@ -121,7 +121,7 @@ const WorkspaceLineComponent = ({ dataColumns, node, paginationOptions }) => {
         }
       />
       <ListItemSecondaryAction>
-        <Security needs={[EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE]}>
+        <Security needs={node.type === 'dashboard' ? [EXPLORE] : [INVESTIGATION_INUPDATE]}>
           <WorkspacePopover
             workspace={node}
             paginationOptions={paginationOptions}

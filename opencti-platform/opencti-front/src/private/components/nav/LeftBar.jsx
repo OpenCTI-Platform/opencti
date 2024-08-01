@@ -233,6 +233,7 @@ const LeftBar = () => {
   const isGrantedToCustomization = useGranted([SETTINGS_SETCUSTOMIZATION]);
   const isGrantedToSecurity = useGranted([SETTINGS_SETMARKINGS, SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN]);
   const isGrantedToAudit = useGranted([SETTINGS_SECURITYACTIVITY]);
+  const isGrantedToExplore = useGranted([EXPLORE]);
   const anchors = {
     analyses: useRef(null),
     cases: useRef(null),
@@ -817,8 +818,8 @@ const LeftBar = () => {
             {generateSubMenu(
               'dashboards',
               [
-                { type: 'Dashboard', link: '/dashboard/workspaces/dashboards', label: 'Dashboards' },
-                { type: 'Dashboard', link: '/dashboard/workspaces/public_dashboards', label: 'Public dashboards' },
+                { granted: isGrantedToExplore, type: 'Dashboard', link: '/dashboard/workspaces/dashboards', label: 'Dashboards' },
+                { granted: isGrantedToExplore, type: 'Dashboard', link: '/dashboard/workspaces/public_dashboards', label: 'Public dashboards' },
               ],
             )}
             <Security needs={[INVESTIGATION]}>
