@@ -249,7 +249,7 @@ export const publicDashboardEditField = async (
     event_type: 'mutation',
     event_scope: 'update',
     event_access: 'administration',
-    message: 'Uupdate public dashbaord',
+    message: 'Update public dashboard',
     context_data: { id: element.id, entity_type: ENTITY_TYPE_PUBLIC_DASHBOARD, input },
   });
 
