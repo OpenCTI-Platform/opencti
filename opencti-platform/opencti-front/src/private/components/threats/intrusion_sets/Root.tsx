@@ -154,6 +154,9 @@ const RootIntrusionSet = ({ intrusionSetId, queryRef }: RootIntrusionSetProps) =
                 borderBottom: 1,
                 borderColor: 'divider',
                 marginBottom: 4,
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItem: 'center',
               }}
             >
               <Tabs
