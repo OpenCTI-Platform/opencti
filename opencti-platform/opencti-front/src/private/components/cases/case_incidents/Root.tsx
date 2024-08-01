@@ -155,6 +155,9 @@ const RootCaseIncidentComponent = ({ queryRef, caseId }) => {
               borderBottom: 1,
               borderColor: 'divider',
               marginBottom: 4,
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItem: 'center',
             }}
           >
             <Tabs

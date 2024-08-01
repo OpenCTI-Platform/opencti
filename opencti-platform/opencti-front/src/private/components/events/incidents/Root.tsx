@@ -136,7 +136,14 @@ const RootIncidentComponent = ({ queryRef }) => {
               enableQuickSubscription={true}
             />
             <Box
-              sx={{ borderBottom: 1, borderColor: 'divider', marginBottom: 4 }}
+              sx={{
+                borderBottom: 1,
+                borderColor: 'divider',
+                marginBottom: 4,
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItem: 'center',
+              }}
             >
               <Tabs
                 value={getCurrentTab(location.pathname, incident.id, '/dashboard/events/incidents')}
@@ -194,7 +201,7 @@ const RootIncidentComponent = ({ queryRef }) => {
                     replace={true}
                     to={`/dashboard/events/incidents/${incidentId}/knowledge/overview`}
                   />
-              )}
+                )}
               />
               <Route
                 path="/knowledge/*"
@@ -206,7 +213,7 @@ const RootIncidentComponent = ({ queryRef }) => {
                   <StixCoreObjectContentRoot
                     stixCoreObject={incident}
                   />
-              }
+                }
               />
               <Route
                 path="/analyses"
@@ -214,7 +221,7 @@ const RootIncidentComponent = ({ queryRef }) => {
                   <StixCoreObjectOrStixCoreRelationshipContainers
                     stixDomainObjectOrStixCoreRelationship={incident}
                   />
-              )}
+                )}
               />
               <Route
                 path="/files"
@@ -225,7 +232,7 @@ const RootIncidentComponent = ({ queryRef }) => {
                     connectorsExport={connectorsForExport}
                     entity={incident}
                   />
-              )}
+                )}
               />
               <Route
                 path="/history"
@@ -233,7 +240,7 @@ const RootIncidentComponent = ({ queryRef }) => {
                   <StixCoreObjectHistory
                     stixCoreObjectId={incidentId}
                   />
-              )}
+                )}
               />
             </Routes>
           </div>

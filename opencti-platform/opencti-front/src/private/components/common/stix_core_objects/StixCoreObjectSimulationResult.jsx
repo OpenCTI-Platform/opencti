@@ -40,8 +40,6 @@ import useXTM from '../../../../utils/hooks/useXTM';
 const useStyles = makeStyles((theme) => ({
   simulationResults: {
     display: 'flex',
-    margin: '-45px 20px 0 0',
-    float: 'right',
     alignItems: 'center',
   },
   charts: {
@@ -53,8 +51,8 @@ const useStyles = makeStyles((theme) => ({
   },
   iconOverlay: {
     position: 'absolute',
-    top: 17,
-    left: 30,
+    top: 10,
+    left: 10,
     fontSize: 18,
   },
   buttons: {
@@ -245,8 +243,8 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
                     )}
                     series={[prevention.unknown, prevention.success, prevention.failure]}
                     type="donut"
-                    width={75}
-                    height={75}
+                    width={40}
+                    height={40}
                   />
                   <Tooltip title={`${t_i18n('Prevention')}`} placement="bottom">
                     <ShieldOutlined className={classes.iconOverlay}/>
@@ -268,8 +266,8 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
                     )}
                     series={[detection.unknown, detection.success, detection.failure]}
                     type="donut"
-                    width={75}
-                    height={75}
+                    width={40}
+                    height={40}
                   />
                   <Tooltip title={`${t_i18n('Detection')}`} placement="bottom">
                     <TrackChangesOutlined className={classes.iconOverlay}/>
@@ -291,8 +289,8 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
                     )}
                     series={[human.unknown, human.success, human.failure]}
                     type="donut"
-                    width={75}
-                    height={75}
+                    width={40}
+                    height={40}
                   />
                   <Tooltip title={`${t_i18n('Human response')}`} placement="bottom">
                     <SensorOccupiedOutlined className={classes.iconOverlay}/>
@@ -320,8 +318,8 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
                   )}
                   series={chartData}
                   type="donut"
-                  width={75}
-                  height={75}
+                  width={40}
+                  height={40}
                 />
                 <Tooltip title={`${t_i18n('Prevention')}`} placement="bottom">
                   <ShieldOutlined className={classes.iconOverlay}/>
@@ -343,8 +341,8 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
                   )}
                   series={chartData}
                   type="donut"
-                  width={75}
-                  height={75}
+                  width={40}
+                  height={40}
                 />
                 <Tooltip title={`${t_i18n('Detection')}`} placement="bottom">
                   <TrackChangesOutlined className={classes.iconOverlay}/>
@@ -366,8 +364,8 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
                   )}
                   series={chartData}
                   type="donut"
-                  width={75}
-                  height={75}
+                  width={40}
+                  height={40}
                 />
                 <Tooltip title={`${t_i18n('Human response')}`} placement="bottom">
                   <SensorOccupiedOutlined className={classes.iconOverlay}/>
