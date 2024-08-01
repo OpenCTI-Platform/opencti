@@ -122,9 +122,9 @@ interface FilterIconButtonContainerProps {
   availableRelationFilterTypes?: Record<string, string[]>;
   entityTypes?: string[];
   filtersRestrictions?: FiltersRestrictions;
-  searchContext?: FilterSearchContext
-  availableEntityTypes?: string[]
-  availableRelationshipTypes?: string[]
+  searchContext?: FilterSearchContext;
+  availableEntityTypes?: string[];
+  availableRelationshipTypes?: string[];
 }
 
 const FilterIconButtonContainer: FunctionComponent<

@@ -35,7 +35,7 @@ interface FilterChipMenuProps {
   availableRelationFilterTypes?: Record<string, string[]>;
   filtersRepresentativesMap: Map<string, FilterRepresentative>;
   entityTypes?: string[];
-  searchContext?: FilterSearchContext
+  searchContext?: FilterSearchContext;
   availableEntityTypes?: string[];
   availableRelationshipTypes?: string[];
 }
@@ -198,7 +198,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
   ) => Record<string, OptionValue[]>,
   ];
   const handleChange = (checked: boolean, value: string, childKey?: string) => {
-    if (childKey) { // case 'regardingOf' filter
+    if (childKey) {
       const childFilters = filter?.values.filter((val) => val.key === childKey) as Filter[];
       const childFilter = childFilters && childFilters.length > 0 ? childFilters[0] : undefined;
       const alreadySelectedValues = childFilter?.values ?? [];

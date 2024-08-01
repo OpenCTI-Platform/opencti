@@ -23,9 +23,9 @@ export interface FilterIconButtonProps {
   availableRelationFilterTypes?: Record<string, string[]>;
   entityTypes?: string[];
   filtersRestrictions?: FiltersRestrictions;
-  searchContext?: FilterSearchContext
-  availableEntityTypes?: string[]
-  availableRelationshipTypes?: string[]
+  searchContext?: FilterSearchContext;
+  availableEntityTypes?: string[];
+  availableRelationshipTypes?: string[];
 }
 
 interface FilterIconButtonIfFiltersProps extends FilterIconButtonProps {
