@@ -1689,7 +1689,7 @@ const buildLocalMustFilter = async (validFilter) => {
   const headKey = R.head(arrayKeys);
   const dontHandleMultipleKeys = nested || operator === 'nil' || operator === 'not_nil';
   if (dontHandleMultipleKeys && arrayKeys.length > 1) {
-    throw UnsupportedError('Filter must have only one field', { keys: arrayKeys });
+    throw UnsupportedError('Filter must have only one field', { keys: arrayKeys, operator });
   }
   // 01. Handle nested filters
   // TODO IF KEY is PART OF Rule we need to add extra fields search
