@@ -18407,8 +18407,8 @@ export type PublicDashboard = BasicObject & InternalObject & {
   allowed_markings_ids?: Maybe<Array<Scalars['String']['output']>>;
   authorized_members?: Maybe<Array<MemberAccess>>;
   created_at?: Maybe<Scalars['DateTime']['output']>;
-  dashboard?: Maybe<Workspace>;
-  dashboard_id?: Maybe<Scalars['String']['output']>;
+  dashboard: Workspace;
+  dashboard_id: Scalars['String']['output'];
   description?: Maybe<Scalars['String']['output']>;
   editContext?: Maybe<Array<EditUserContext>>;
   enabled: Scalars['Boolean']['output'];
@@ -36811,8 +36811,8 @@ export type PublicDashboardResolvers<ContextType = any, ParentType extends Resol
   allowed_markings_ids?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   authorized_members?: Resolver<Maybe<Array<ResolversTypes['MemberAccess']>>, ParentType, ContextType>;
   created_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
-  dashboard?: Resolver<Maybe<ResolversTypes['Workspace']>, ParentType, ContextType>;
-  dashboard_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  dashboard?: Resolver<ResolversTypes['Workspace'], ParentType, ContextType>;
+  dashboard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   enabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;

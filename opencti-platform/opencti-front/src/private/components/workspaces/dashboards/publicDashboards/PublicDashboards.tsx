@@ -28,6 +28,7 @@ const publicDashboardFragment = graphql`
     dashboard {
       name
       id
+      currentUserAccessRight
     }
     allowed_markings {
       id
@@ -207,7 +208,12 @@ const PublicDashboards = () => {
               </Tooltip>
             </ToggleButton>,
           ]}
-          actions={(row) => <PublicDashboardLineActions publicDashboard={row} />}
+          actions={(row) => (
+            <PublicDashboardLineActions
+              publicDashboard={row}
+              paginationOptions={queryPaginationOptions}
+            />
+          )}
         />
       )}
     </>

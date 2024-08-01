@@ -104,7 +104,7 @@ const WorkspacePopover = ({ workspace, paginationOptions }) => {
   };
 
   const handleCloseEdit = () => setDisplayEdit(false);
-  const { canManage, canEdit } = getCurrentUserAccessRight(workspace);
+  const { canManage, canEdit } = getCurrentUserAccessRight(workspace.currentUserAccessRight);
   if (!canEdit && workspace.type !== 'dashboard') {
     return <></>;
   }
