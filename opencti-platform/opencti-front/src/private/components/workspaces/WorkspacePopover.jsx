@@ -150,7 +150,7 @@ const WorkspacePopover = ({ workspace, paginationOptions }) => {
             <Security needs={[EXPLORE_EXUPDATE_EXDELETE]} hasAccess={canManage}>
               <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
             </Security>
-            <MenuItem onClick={() => goToPublicDashboards(workspace)}>
+            <MenuItem onClick={() => goToPublicDashboards()}>
               {t_i18n('View associated public dashboards')}
             </MenuItem>
           </>
