@@ -7,8 +7,8 @@ type PublicDashboard implements InternalObject & BasicObject {
   name: String!
   owner: Creator @auth(for: [KNOWLEDGE, EXPLORE])
   description: String
-  dashboard_id: String  @auth(for: [KNOWLEDGE, EXPLORE])
-  dashboard: Workspace @auth(for: [KNOWLEDGE, EXPLORE])
+  dashboard_id: String!  @auth(for: [KNOWLEDGE, EXPLORE])
+  dashboard: Workspace! @auth(for: [KNOWLEDGE, EXPLORE])
   user_id: String!  @auth(for: [KNOWLEDGE, EXPLORE])
   public_manifest: String
   private_manifest: String @auth(for: [KNOWLEDGE, EXPLORE])

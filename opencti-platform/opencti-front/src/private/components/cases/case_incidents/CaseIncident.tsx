@@ -54,7 +54,7 @@ const CaseIncidentComponent: FunctionComponent<CaseIncidentProps> = ({ data, ena
   const caseIncidentData = useFragment(caseFragment, data);
   const { isFeatureEnable } = useHelper();
   const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
-  const { canEdit } = getCurrentUserAccessRight(caseIncidentData);
+  const { canEdit } = getCurrentUserAccessRight(caseIncidentData.currentUserAccessRight);
 
   const LOCAL_STORAGE_KEY_CASE_TASKS = `cases-${caseIncidentData.id}-caseTask`;
 
