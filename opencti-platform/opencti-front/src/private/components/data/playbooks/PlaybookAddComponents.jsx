@@ -470,16 +470,16 @@ const PlaybookAddComponentsContent = ({
                         >
                           <Filters
                             helpers={helpers}
-                            availableFilterKeys={componentId === 'PLAYBOOK_INTERNAL_DATA_STREAM' ? stixFilters : availableQueryFilterKeys}
-                            searchContext={{ entityTypes: componentId === 'PLAYBOOK_INTERNAL_DATA_STREAM' ? ['Stix-Core-Object', 'stix-core-relationship', 'Stix-Filtering'] : ['Stix-Core-Object', 'stix-core-relationship'] }}
+                            availableFilterKeys={componentId === 'PLAYBOOK_INTERNAL_DATA_CRON' ? availableQueryFilterKeys : stixFilters}
+                            searchContext={{ entityTypes: componentId === 'PLAYBOOK_INTERNAL_DATA_CRON' ? ['Stix-Core-Object', 'stix-core-relationship'] : ['Stix-Core-Object', 'stix-core-relationship', 'Stix-Filtering'] }}
                           />
                         </Box>
                         <div className="clearfix" />
                         <FilterIconButton
                           filters={filters}
                           helpers={helpers}
-                          entityTypes={componentId === 'PLAYBOOK_INTERNAL_DATA_STREAM' ? ['Stix-Core-Object', 'stix-core-relationship', 'Stix-Filtering'] : ['Stix-Core-Object', 'stix-core-relationship']}
-                          searchContext={{ entityTypes: componentId === 'PLAYBOOK_INTERNAL_DATA_STREAM' ? ['Stix-Core-Object', 'stix-core-relationship', 'Stix-Filtering'] : ['Stix-Core-Object', 'stix-core-relationship'] }}
+                          entityTypes={componentId === 'PLAYBOOK_INTERNAL_DATA_CRON' ? ['Stix-Core-Object', 'stix-core-relationship'] : ['Stix-Core-Object', 'stix-core-relationship', 'Stix-Filtering']}
+                          searchContext={{ entityTypes: componentId === 'PLAYBOOK_INTERNAL_DATA_CRON' ? ['Stix-Core-Object', 'stix-core-relationship'] : ['Stix-Core-Object', 'stix-core-relationship', 'Stix-Filtering'] }}
                           styleNumber={2}
                           redirection
                         />
