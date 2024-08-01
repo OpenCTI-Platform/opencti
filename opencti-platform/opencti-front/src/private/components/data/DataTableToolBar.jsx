@@ -302,7 +302,6 @@ class DataTableToolBar extends Component {
       organizationInput: '',
       shareOrganizations: [],
       navOpen: localStorage.getItem('navOpen') === 'true',
-      trash: false,
     };
   }
 

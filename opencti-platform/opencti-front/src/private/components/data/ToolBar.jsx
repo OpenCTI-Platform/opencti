@@ -149,7 +149,6 @@ ToolBar.propTypes = {
   noWarning: PropTypes.bool,
   mergeDisable: PropTypes.bool,
   deleteOperationEnabled: PropTypes.bool,
-  trash: PropTypes.bool,
 };
 
 export default R.compose(withStyles(styles))(ToolBar);
