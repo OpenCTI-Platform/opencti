@@ -31,7 +31,7 @@ export const workspacesLinesQuery = graphql`
   }
 `;
 
-const workspacesLineFragment = graphql`
+export const workspacesLineFragment = graphql`
   fragment WorkspacesLines_data on Query
   @argumentDefinitions(
     search: { type: "String" }

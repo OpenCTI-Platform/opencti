@@ -22,6 +22,14 @@ import ItemBoolean from '../ItemBoolean';
 
 const MAGICAL_SIZE = 0.113;
 
+const chipStyle = {
+  fontSize: '12px',
+  lineHeight: '12px',
+  height: '20px',
+  marginRight: '7px',
+  borderRadius: '10px',
+};
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
 type TextInTooltip = (val?: string, helpers?: any) => ReactNode;
 export const textInTooltip: TextInTooltip = (val, helpers) => {
@@ -337,6 +345,18 @@ const defaultColumns: DataTableProps['dataColumns'] = {
       />
     ),
   },
+  isShared: {
+    id: 'isShared',
+    label: 'Shared',
+    flexSize: 8,
+    isSortable: false,
+    render: ({ isShared }, { t_i18n }) => (
+      <ItemBoolean
+        status={isShared}
+        label={isShared ? t_i18n('Yes') : t_i18n('No')}
+      />
+    ),
+  },
   killChainPhase: {
     id: 'killChainPhase',
     label: 'Kill chain phase',
@@ -465,6 +485,13 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     flexSize: 15,
     isSortable: false,
     render: ({ operatingSystem }) => (<Tooltip title={operatingSystem?.name}><>{operatingSystem?.name ?? '-'}</></Tooltip>),
+  },
+  owner: {
+    id: 'owner',
+    label: 'Owner',
+    flexSize: 12,
+    isSortable: true,
+    render: ({ owner }, h) => textInTooltip(owner.name, h),
   },
   pattern_type: {
     id: 'pattern_type',
@@ -648,6 +675,31 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     isSortable: true,
     render: ({ submitted }, { fd }) => fd(submitted),
   },
+  tags: {
+    id: 'tags',
+    label: 'Tags',
+    flexSize: 15,
+    isSortable: false,
+    render: ({ tags }) => {
+      if (!tags || tags.length === 0) return '-';
+      return (
+        <Tooltip
+          title={(
+            <div style={{ display: 'flex', flexWrap: 'wrap', rowGap: '4px' }}>
+              {tags.map((tag: string) => (
+                <Chip key={tag} label={tag} style={chipStyle} />
+              ))}
+            </div>
+          )}
+        >
+          <div>
+            <Chip label={tags[0]} style={chipStyle} />
+            <Chip label='...' style={chipStyle} />
+          </div>
+        </Tooltip>
+      );
+    },
+  },
   threat_actor_types: {
     id: 'threat_actor_types',
     label: 'Types',
@@ -667,6 +719,13 @@ const defaultColumns: DataTableProps['dataColumns'] = {
       const value = to ? getMainRepresentative(to) : t_i18n('Restricted');
       return (<Tooltip title={value}><div>{truncate(value, size * MAGICAL_SIZE)}</div></Tooltip>);
     },
+  },
+  updated_at: {
+    id: 'updated_at',
+    label: 'Modification date',
+    flexSize: 15,
+    isSortable: true,
+    render: ({ updated_at }, { fd }) => fd(updated_at),
   },
   url: {
     id: 'url',

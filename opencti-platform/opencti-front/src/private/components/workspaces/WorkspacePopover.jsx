@@ -128,6 +128,10 @@ const WorkspacePopover = ({ workspace, paginationOptions }) => {
     navigate(`/dashboard/workspaces/dashboards_public?filters=${JSON.stringify(filter)}`);
   };
 
+  const goToWorkspace = () => {
+    navigate(`/dashboard/workspaces/${workspace.type}s/${workspace.id}`);
+  };
+
   // -- Creation public dashboard --
   const [displayCreate, setDisplayCreate] = useState(false);
 
@@ -151,6 +155,9 @@ const WorkspacePopover = ({ workspace, paginationOptions }) => {
       </IconButton>
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose} aria-label="Workspace menu">
         <Security needs={[EXPLORE_EXUPDATE]} hasAccess={canEdit}>
+          <MenuItem onClick={goToWorkspace}>
+            {workspace.type === 'dashboard' ? t_i18n('Go to dashboard') : t_i18n('Go to investigation')}
+          </MenuItem>
           <MenuItem onClick={handleOpenEdit}>{t_i18n('Update')}</MenuItem>
         </Security>
         {workspace.type === 'dashboard' && (

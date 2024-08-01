@@ -137,6 +137,7 @@ export const computeLink = (node: {
   entity_type: string;
   relationship_type?: string;
   from?: { entity_type: string; id: string };
+  type?: string;
 }): string => {
   let redirectLink;
   if (node.relationship_type === 'stix-sighting-relationship' && node.from) {
@@ -147,6 +148,8 @@ export const computeLink = (node: {
     redirectLink = `${resolveLink(node.from.entity_type)}/${
       node.from.id
     }/knowledge/relations/${node.id}`;
+  } else if (node.entity_type === 'Workspace') {
+    redirectLink = `${resolveLink(node.type)}/${node.id}`;
   } else {
     redirectLink = `${resolveLink(node.entity_type)}/${node.id}`;
   }

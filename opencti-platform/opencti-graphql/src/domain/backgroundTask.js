@@ -1,3 +1,5 @@
+import { ENTITY_TYPE_WORKSPACE } from '../modules/workspace/workspace-types';
+import { ENTITY_TYPE_PUBLIC_DASHBOARD } from '../modules/publicDashboard/publicDashboard-types';
 import { elIndex, elPaginate } from '../database/engine';
 import { INDEX_INTERNAL_OBJECTS, READ_DATA_INDICES } from '../database/utils';
 import { ENTITY_TYPE_BACKGROUND_TASK, ENTITY_TYPE_INTERNAL_FILE } from '../schema/internalObject';
@@ -14,7 +16,9 @@ import { ENTITY_TYPE_NOTIFICATION } from '../modules/notification/notification-t
 import { ENTITY_TYPE_CASE_TEMPLATE } from '../modules/case/case-template/case-template-types';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_LABEL } from '../schema/stixMetaObject';
 import { ENTITY_TYPE_DELETE_OPERATION } from '../modules/deleteOperation/deleteOperation-types';
-import { BackgroundTaskScope } from '../generated/graphql';
+import { BackgroundTaskScope, FilterMode } from '../generated/graphql';
+import { findAll as findAllWorkspaces } from '../modules/workspace/workspace-domain';
+import { addFilter } from '../utils/filtering/filtering-utils';
 
 export const DEFAULT_ALLOWED_TASK_ENTITY_TYPES = [
   ABSTRACT_STIX_CORE_OBJECT,
@@ -49,8 +53,8 @@ export const findAll = (context, user, args) => {
   return listEntities(context, user, [ENTITY_TYPE_BACKGROUND_TASK], args);
 };
 
-const buildQueryFilters = async (filters, search, taskPosition, scope) => {
-  const inputFilters = filters ? JSON.parse(filters) : undefined;
+const buildQueryFilters = async (context, user, filters, search, taskPosition, scope) => {
+  let inputFilters = filters ? JSON.parse(filters) : undefined;
   if (scope === BackgroundTaskScope.Import) {
     const entityIdFilters = inputFilters.filters.findIndex(({ key }) => key.includes('entity_id'));
     const fileIdFilters = inputFilters.filters.findIndex(({ key }) => key.includes('file_id'));
@@ -67,9 +71,28 @@ const buildQueryFilters = async (filters, search, taskPosition, scope) => {
       };
     }
   }
+  let types = DEFAULT_ALLOWED_TASK_ENTITY_TYPES;
+  if (scope === BackgroundTaskScope.PublicDashboard) {
+    const dashboards = await findAllWorkspaces(
+      context,
+      user,
+      {
+        filters: {
+          mode: FilterMode.And,
+          filters: [{ key: ['type'], values: ['dashboard'] }],
+          filterGroups: []
+        }
+      }
+    );
+    const dashboardIds = dashboards.edges.map((n) => (n.node.id));
+    inputFilters = addFilter(inputFilters, 'dashboard_id', dashboardIds);
+    types = [ENTITY_TYPE_PUBLIC_DASHBOARD];
+  } else if (scope === BackgroundTaskScope.Dashboard || scope === BackgroundTaskScope.Investigation) {
+    types = [ENTITY_TYPE_WORKSPACE];
+  }
   // Construct filters
   return {
-    types: DEFAULT_ALLOWED_TASK_ENTITY_TYPES,
+    types,
     first: MAX_TASK_ELEMENTS,
     orderMode: 'desc',
     orderBy: 'created_at',
@@ -79,7 +102,7 @@ const buildQueryFilters = async (filters, search, taskPosition, scope) => {
   };
 };
 export const executeTaskQuery = async (context, user, filters, search, scope, start = null) => {
-  const options = await buildQueryFilters(filters, search, start, scope);
+  const options = await buildQueryFilters(context, user, filters, search, start, scope);
   return elPaginate(context, user, READ_DATA_INDICES, options);
 };
 

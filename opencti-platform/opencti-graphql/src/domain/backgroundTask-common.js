@@ -1,4 +1,6 @@
 import { uniq } from 'ramda';
+import { ENTITY_TYPE_WORKSPACE } from '../modules/workspace/workspace-types';
+import { ENTITY_TYPE_PUBLIC_DASHBOARD } from '../modules/publicDashboard/publicDashboard-types';
 import { generateInternalId, generateStandardId } from '../schema/identifier';
 import { ENTITY_TYPE_BACKGROUND_TASK } from '../schema/internalObject';
 import { now } from '../utils/format';
@@ -9,12 +11,12 @@ import { elIndex } from '../database/engine';
 import { INDEX_INTERNAL_OBJECTS } from '../database/utils';
 import { ENTITY_TYPE_NOTIFICATION } from '../modules/notification/notification-types';
 import { publishUserAction } from '../listener/UserActionListener';
-import { internalLoadById, storeLoadById } from '../database/middleware-loader';
+import { internalFindByIds, internalLoadById, listEntitiesPaginated, storeLoadById } from '../database/middleware-loader';
 import { getParentTypes } from '../schema/schemaUtils';
 import { ENTITY_TYPE_VOCABULARY } from '../modules/vocabulary/vocabulary-types';
 import { ENTITY_TYPE_DELETE_OPERATION } from '../modules/deleteOperation/deleteOperation-types';
-import { BackgroundTaskScope } from '../generated/graphql';
-import { isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
+import { BackgroundTaskScope, Capabilities, FilterMode } from '../generated/graphql';
+import { extractFilterGroupValues, isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
 
 export const TASK_TYPE_QUERY = 'QUERY';
 export const TASK_TYPE_RULE = 'RULE';
@@ -40,8 +42,8 @@ export const checkActionValidity = async (context, user, input, scope, taskType)
   const filters = isFilterGroupNotEmpty(baseFilterObject)
     ? (baseFilterObject?.filters ?? [])
     : [];
-  const typeFilters = filters.filter((f) => f.key.includes('entity_type'));
-  const typeFiltersValues = typeFilters.map((f) => f.values).flat();
+  const entityTypeFilters = filters.filter((f) => f.key.includes('entity_type'));
+  const entityTypeFiltersValues = entityTypeFilters.map((f) => f.values).flat();
   if (scope === BackgroundTaskScope.Settings) { // 01. Background task of scope Settings
     const isAuthorized = isUserHasCapability(user, SETTINGS_SETLABELS);
     if (!isAuthorized) {
@@ -63,9 +65,9 @@ export const checkActionValidity = async (context, user, input, scope, taskType)
     }
     // 2.3. Check the targeted entities are of type Knowledge
     if (taskType === TASK_TYPE_QUERY) {
-      const deleteOperationTypes = typeFiltersValues.every((type) => type === ENTITY_TYPE_DELETE_OPERATION);
-      const parentTypes = typeFiltersValues.map((n) => getParentTypes(n));
-      const isNotKnowledge = (!deleteOperationTypes && !areParentTypesKnowledge(parentTypes)) || typeFiltersValues.some((type) => type === ENTITY_TYPE_VOCABULARY);
+      const deleteOperationTypes = entityTypeFiltersValues.every((type) => type === ENTITY_TYPE_DELETE_OPERATION);
+      const parentTypes = entityTypeFiltersValues.map((n) => getParentTypes(n));
+      const isNotKnowledge = (!deleteOperationTypes && !areParentTypesKnowledge(parentTypes)) || entityTypeFiltersValues.some((type) => type === ENTITY_TYPE_VOCABULARY);
       if (isNotKnowledge) {
         throw ForbiddenAccess('The targeted ids are not knowledge.');
       }
@@ -85,9 +87,9 @@ export const checkActionValidity = async (context, user, input, scope, taskType)
     // Check the targeted entities are Notifications
     // and the user has the right to modify them (= notifications are the ones of the user OR the user has SET_ACCESS capability)
     if (taskType === TASK_TYPE_QUERY) {
-      const isNotifications = typeFilters.length === 1
-        && typeFilters[0].values.length === 1
-        && typeFilters[0].values[0] === 'Notification';
+      const isNotifications = entityTypeFilters.length === 1
+          && entityTypeFilters[0].values.length === 1
+          && entityTypeFilters[0].values[0] === 'Notification';
       if (!isNotifications) {
         throw ForbiddenAccess('The targeted ids are not notifications.');
       }
@@ -125,8 +127,90 @@ export const checkActionValidity = async (context, user, input, scope, taskType)
       throw UnsupportedError('Background tasks of scope Import can only be deletions.');
     }
     // Check the targeted entities are files: not needed because the method used only target files
+  } else if (scope === BackgroundTaskScope.Dashboard) {
+    const isAuthorized = isUserHasCapability(user, Capabilities.ExploreExupdateExdelete);
+    if (!isAuthorized) {
+      throw ForbiddenAccess();
+    }
+    if (!actions.every((a) => a.type === ACTION_TYPE_DELETE)) {
+      throw UnsupportedError('Background tasks of scope dashboard can only be deletions.');
+    }
+    if (taskType === TASK_TYPE_QUERY) {
+      const isWorkspaces = entityTypeFilters.length === 1
+          && entityTypeFilters[0].values.length === 1
+          && entityTypeFilters[0].values[0] === ENTITY_TYPE_WORKSPACE;
+      const typeValues = extractFilterGroupValues(baseFilterObject, 'type');
+      const isDashboards = typeValues.length === 1 && typeValues[0] === 'dashboard';
+      if (!isWorkspaces || !isDashboards) {
+        throw ForbiddenAccess('The targeted ids are not dashboard.');
+      }
+    } else if (taskType === TASK_TYPE_LIST) {
+      const objects = await internalFindByIds(context, user, ids);
+      if (objects.some((o) => o.entity_type !== ENTITY_TYPE_WORKSPACE || o.type !== 'dashboard')) {
+        throw ForbiddenAccess('The targeted ids are not dashboards.');
+      }
+    }
+  } else if (scope === BackgroundTaskScope.Investigation) {
+    const isAuthorized = isUserHasCapability(user, Capabilities.InvestigationInupdateIndelete);
+    if (!isAuthorized) {
+      throw ForbiddenAccess();
+    }
+    if (!actions.every((a) => a.type === ACTION_TYPE_DELETE)) {
+      throw UnsupportedError('Background tasks of scope investigation can only be deletions.');
+    }
+    if (taskType === TASK_TYPE_QUERY) {
+      const isWorkspaces = entityTypeFilters.length === 1
+          && entityTypeFilters[0].values.length === 1
+          && entityTypeFilters[0].values[0] === ENTITY_TYPE_WORKSPACE;
+      const typeValues = extractFilterGroupValues(baseFilterObject, 'type');
+      const isInvestigations = typeValues.length === 1 && typeValues[0] === 'investigation';
+      if (!isWorkspaces || !isInvestigations) {
+        throw ForbiddenAccess('The targeted ids are not investigation.');
+      }
+    } else if (taskType === TASK_TYPE_LIST) {
+      const objects = await internalFindByIds(context, user, ids);
+      if (objects.some((o) => o.entity_type !== ENTITY_TYPE_WORKSPACE || o.type !== 'investigation')) {
+        throw ForbiddenAccess('The targeted ids are not investigations.');
+      }
+    }
+  } else if (scope === BackgroundTaskScope.PublicDashboard) {
+    const isAuthorized = isUserHasCapability(user, Capabilities.ExploreExupdatePublish);
+    if (!isAuthorized) {
+      throw ForbiddenAccess();
+    }
+    if (!actions.every((a) => a.type === ACTION_TYPE_DELETE)) {
+      throw UnsupportedError('Background tasks of scope Public dashboard can only be deletions.');
+    }
+    if (taskType === TASK_TYPE_QUERY) {
+      const isPublicDashboards = entityTypeFilters.length === 1
+          && entityTypeFilters[0].values.length === 1
+          && entityTypeFilters[0].values[0] === ENTITY_TYPE_PUBLIC_DASHBOARD;
+      if (!isPublicDashboards) {
+        throw ForbiddenAccess('The targeted ids are not public dashboards.');
+      }
+      const dashboards = listEntitiesPaginated(
+        context,
+        user,
+        [ENTITY_TYPE_WORKSPACE],
+        {
+          filters: {
+            mode: FilterMode.And,
+            filters: [{ key: ['type'], values: ['dashboard'] }],
+            filterGroups: []
+          }
+        }
+      );
+      if (dashboards.edges.length === 0) {
+        throw ForbiddenAccess('No public dashboards to delete.');
+      }
+    } else if (taskType === TASK_TYPE_LIST) {
+      const objects = await internalFindByIds(context, user, ids);
+      if (objects.some((o) => o.entity_type !== ENTITY_TYPE_PUBLIC_DASHBOARD)) {
+        throw ForbiddenAccess('The targeted ids are not public dashboards.');
+      }
+    }
   } else { // Background task with an invalid scope
-    throw UnsupportedError('A background task should be of scope: SETTINGS, KNOWLEDGE, USER, IMPORT.');
+    throw UnsupportedError('A background task should be of scope: SETTINGS, KNOWLEDGE, USER, IMPORT, DASHBOARD, PUBLIC_DASHBOARD.');
   }
 };
 
