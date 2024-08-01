@@ -89,6 +89,11 @@ describe('MarkingDefinition resolver standard behavior', () => {
     const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 20 } });
     expect(queryResult.data.markingDefinitions.edges.length).toEqual(12);
   });
+  it('should list markingDefinitions without option "first"', async () => {
+    // https://github.com/OpenCTI-Platform/opencti/issues/7905
+    const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: {} });
+    expect(queryResult.data.markingDefinitions.edges.length).toEqual(12);
+  });
   it('should update markingDefinition', async () => {
     const UPDATE_QUERY = gql`
       mutation MarkingDefinitionEdit($id: ID!, $input: [EditInput]!) {
