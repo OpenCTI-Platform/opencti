@@ -121,7 +121,7 @@ class AttackPatternDetailsComponent extends Component {
               </Typography>
               <List style={{ paddingTop: 0 }}>
                 <FieldOrEmpty source={attackPattern.x_mitre_permissions_required}>
-                  {attackPattern.x_mitre_permissions_required.map(
+                  {attackPattern.x_mitre_permissions_required?.map(
                     (permission) => (
                       <ListItem key={permission} dense={true} divider={true}>
                         <ListItemIcon>
