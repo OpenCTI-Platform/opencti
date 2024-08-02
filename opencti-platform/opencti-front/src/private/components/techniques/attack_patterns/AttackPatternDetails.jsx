@@ -52,7 +52,7 @@ class AttackPatternDetailsComponent extends Component {
               >
                 {t('External ID')}
               </Typography>
-              <FieldOrEmpty source={attackPattern.attackPattern}>
+              <FieldOrEmpty source={attackPattern.x_mitre_id}>
                 <Chip
                   size="small"
                   label={attackPattern.x_mitre_id}
@@ -81,7 +81,7 @@ class AttackPatternDetailsComponent extends Component {
                 </Typography>
                 <List style={{ paddingTop: 0 }}>
                   <FieldOrEmpty source={attackPattern.x_mitre_platforms}>
-                    {(attackPattern.x_mitre_platforms).map(
+                    {attackPattern.x_mitre_platforms?.map(
                       (platform) => (
                         <ListItem key={platform} dense={true} divider={true}>
                           <ListItemIcon>
