@@ -13,7 +13,6 @@ import { stixLoadByIds } from '../database/middleware';
 import { type EntityOptions, listAllEntities, listAllRelations } from '../database/middleware-loader';
 import { pubSubSubscription } from '../database/redis';
 import { connectors as findConnectors } from '../database/repository';
-import type { BasicStoreEntityConnector } from '../connector/connector';
 import { resolveUserById } from '../domain/user';
 import { STATIC_NOTIFIERS } from '../modules/notifier/notifier-statics';
 import type { BasicStoreEntityNotifier } from '../modules/notifier/notifier-types';
@@ -43,6 +42,7 @@ import { fromBase64, isNotEmptyField } from '../database/utils';
 import { findAllPlaybooks } from '../modules/playbook/playbook-domain';
 import { type BasicStoreEntityPublicDashboard, ENTITY_TYPE_PUBLIC_DASHBOARD, type PublicDashboardCached } from '../modules/publicDashboard/publicDashboard-types';
 import { getAllowedMarkings } from '../modules/publicDashboard/publicDashboard-domain';
+import type { BasicStoreEntityConnector } from '../types/connector';
 
 const workflowStatuses = (context: AuthContext) => {
   const reloadStatuses = async () => {
