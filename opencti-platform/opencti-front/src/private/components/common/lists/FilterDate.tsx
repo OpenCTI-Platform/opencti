@@ -47,7 +47,6 @@ const FilterDate: FunctionComponent<FilterDateProps> = ({
 
   const handleAcceptDate = (date: Date | null) => {
     if (date && date.toISOString()) {
-      console.log('input date', date);
       // set new input values
       const newInputValue = { key: filterKey, values: [date.toString()], operator };
       const newInputValues = inputValues.filter((f) => f.key !== filterKey || (operator && f.operator !== operator));

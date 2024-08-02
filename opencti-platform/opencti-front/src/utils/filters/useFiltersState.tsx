@@ -55,7 +55,6 @@ const useFiltersState = (initFilters: FilterGroup = emptyFilterGroup, defaultCle
       }
     },
     handleAddSingleValueFilter: (id: string, valueId?: string) => {
-      console.log('valueId', valueId);
       setFiltersState((prevState) => ({
         ...prevState,
         filters: handleAddSingleValueFilterUtil({ filters: prevState.filters, id, valueId }),
@@ -63,7 +62,6 @@ const useFiltersState = (initFilters: FilterGroup = emptyFilterGroup, defaultCle
       }));
     },
     handleChangeOperatorFilters: (id: string, operator: string) => {
-      console.log('change operator');
       setFiltersState((prevState) => ({
         ...prevState,
         filters: handleChangeOperatorFiltersUtil({ filters: prevState.filters, id, operator }),

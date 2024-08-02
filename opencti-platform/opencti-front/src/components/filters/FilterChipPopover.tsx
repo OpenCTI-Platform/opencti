@@ -9,7 +9,7 @@ import { SelectChangeEvent } from '@mui/material/Select';
 import SearchScopeElement from '@components/common/lists/SearchScopeElement';
 import Chip from '@mui/material/Chip';
 import { OptionValue } from '@components/common/lists/FilterAutocomplete';
-import { addDays } from 'date-fns';
+import { addDays, subDays } from 'date-fns';
 import {
   FilterSearchContext,
   getAvailableOperatorForFilter,
@@ -198,7 +198,6 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
     isSubKey?: boolean,
   ) => Record<string, OptionValue[]>,
   ];
-  console.log('inputValues', inputValues);
   const handleChange = (checked: boolean, value: string, childKey?: string) => {
     if (childKey) {
       const childFilters = filter?.values.filter((val) => val.key === childKey) as Filter[];
@@ -222,8 +221,6 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
   };
 
   const handleChangeOperator = (event: SelectChangeEvent, fDef?: FilterDefinition) => {
-    console.log('event.target.value', event.target.value);
-    console.log('filter', filter);
     const filterType = fDef?.type;
     const newOperator = event.target.value;
     // for date check (date in days, operator) correspond to (timestamp in seconds, operator)
@@ -231,14 +228,12 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
       const formerOperator = filter?.operator;
       const formerDate = filter.values[0]; // dates filters have a single value
       if (formerOperator && ['lte', 'gt'].includes(formerOperator) && ['lt', 'gte'].includes(newOperator)) {
-        const newDate = addDays(new Date(formerDate), -1).toISOString();
-        console.log('newDateAfterRemove', newDate);
+        const newDate = subDays(new Date(formerDate), -1).toISOString();
         const newInputValue = { key: filterKey, values: [newDate], newOperator };
         setInputValues([newInputValue]);
         helpers?.handleAddSingleValueFilter(filter?.id ?? '', newDate);
       } else if (formerOperator && ['lt', 'gte'].includes(formerOperator) && ['lte', 'gt'].includes(newOperator)) {
         const newDate = addDays(new Date(formerDate), 1).toISOString();
-        console.log('newDate', newDate);
         const newInputValue = { key: filterKey, values: [newDate], newOperator };
         setInputValues([newInputValue]);
         helpers?.handleAddSingleValueFilter(filter?.id ?? '', newDate);
@@ -246,7 +241,6 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
     }
     // modify the operator
     helpers?.handleChangeOperatorFilters(filter?.id ?? '', newOperator);
-    console.log('filter after change', filter);
   };
   const handleDateChange = (_: string, value: string) => {
     // convert the date to handle comparison with a timestamp
@@ -255,9 +249,6 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
     if (filter?.operator === 'lte' || filter?.operator === 'gt') { // lte date <=> lte (date+1 0:0:0)  /// gt date <=> gt (date+1 0:0:0)
       filterDate = addDays(date, 1);
     }
-    console.log('date change value', value);
-    console.log('op in date change', filter?.operator);
-    console.log('filterDate', filterDate.toISOString());
     helpers?.handleAddSingleValueFilter(filter?.id ?? '', filterDate.toISOString());
   };
 
