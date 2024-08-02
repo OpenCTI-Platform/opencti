@@ -18,7 +18,6 @@ type PublicDashboard implements InternalObject & BasicObject {
   created_at: DateTime @auth(for: [KNOWLEDGE, EXPLORE])
   updated_at: DateTime @auth(for: [KNOWLEDGE, EXPLORE])
   editContext: [EditUserContext!]  @auth(for: [KNOWLEDGE, EXPLORE])
-  authorized_members: [MemberAccess!]  @auth(for: [KNOWLEDGE, EXPLORE])
   enabled: Boolean!
 }
 

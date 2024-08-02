@@ -23,7 +23,7 @@ import type { BasicStoreEntityMalwareAnalysis } from '../modules/malwareAnalysis
 import type { BasicStoreEntityManagerConfiguration } from '../modules/managerConfiguration/managerConfiguration-types';
 import type { BasicStoreEntityNotifier } from '../modules/notifier/notifier-types';
 import type { BasicStoreEntityThreatActorIndividual } from '../modules/threatActorIndividual/threatActorIndividual-types';
-import type { BasicStoreEntityIngestionRss, BasicStoreEntityIngestionTaxii, BasicStoreEntityIngestionCsv } from '../modules/ingestion/ingestion-types';
+import type { BasicStoreEntityIngestionCsv, BasicStoreEntityIngestionRss, BasicStoreEntityIngestionTaxii } from '../modules/ingestion/ingestion-types';
 import type { BasicStoreEntityIndicator } from '../modules/indicator/indicator-types';
 import type { BasicStoreEntityDecayRule } from '../modules/decayRule/decayRule-types';
 import type { BasicStoreEntityOrganization } from '../modules/organization/organization-types';
@@ -32,6 +32,7 @@ import type { BasicStoreEntityPlaybook } from '../modules/playbook/playbook-type
 import type { BasicStoreEntityPublicDashboard } from '../modules/publicDashboard/publicDashboard-types';
 import type { BasicStoreEntityDeleteOperation } from '../modules/deleteOperation/deleteOperation-types';
 import type { BasicStoreEntitySupportPackage } from '../modules/support/support-types';
+
 export type Maybe<T> = T | null | undefined;
 export type InputMaybe<T> = T | null;
 export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
@@ -18405,7 +18406,6 @@ export type PublicDashboard = BasicObject & InternalObject & {
   __typename?: 'PublicDashboard';
   allowed_markings?: Maybe<Array<MarkingDefinitionShort>>;
   allowed_markings_ids?: Maybe<Array<Scalars['String']['output']>>;
-  authorized_members?: Maybe<Array<MemberAccess>>;
   created_at?: Maybe<Scalars['DateTime']['output']>;
   dashboard: Workspace;
   dashboard_id: Scalars['String']['output'];
@@ -36809,7 +36809,6 @@ export type ProviderResolvers<ContextType = any, ParentType extends ResolversPar
 export type PublicDashboardResolvers<ContextType = any, ParentType extends ResolversParentTypes['PublicDashboard'] = ResolversParentTypes['PublicDashboard']> = ResolversObject<{
   allowed_markings?: Resolver<Maybe<Array<ResolversTypes['MarkingDefinitionShort']>>, ParentType, ContextType>;
   allowed_markings_ids?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
-  authorized_members?: Resolver<Maybe<Array<ResolversTypes['MemberAccess']>>, ParentType, ContextType>;
   created_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   dashboard?: Resolver<ResolversTypes['Workspace'], ParentType, ContextType>;
   dashboard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
