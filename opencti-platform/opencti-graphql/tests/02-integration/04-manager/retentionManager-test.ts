@@ -3,7 +3,7 @@ import gql from 'graphql-tag';
 import { Readable } from 'stream';
 import { ADMIN_USER, queryAsAdmin, testContext } from '../../utils/testQuery';
 import { utcDate } from '../../../src/utils/format';
-import { elementsToDelete } from '../../../src/manager/retentionManager';
+import { getElementsToDelete } from '../../../src/manager/retentionManager';
 import { allFilesForPaths } from '../../../src/modules/internal/document/document-domain';
 import { uploadToStorage } from '../../../src/database/file-storage-helper';
 import { elRawUpdateByQuery } from '../../../src/database/engine';
@@ -149,8 +149,8 @@ describe('Retention Manager tests ', () => {
     // delete the created files
     const deleted = await deleteFile(context, ADMIN_USER, fileId);
     expect(deleted?.id).toEqual(fileId);
-    // const progressDeleted = await deleteFile(context, ADMIN_USER, progressFileId);
-    // expect(progressDeleted?.id).toEqual(progressFileId);
+    const progressDeleted = await deleteFile(context, ADMIN_USER, progressFileId);
+    expect(progressDeleted?.id).toEqual(progressFileId);
     // delete the created workbenches
     const workbench1Deleted = await deleteFile(context, ADMIN_USER, workbench1Id);
     expect(workbench1Deleted?.id).toEqual(workbench1Id);
@@ -211,17 +211,17 @@ describe('Retention Manager tests ', () => {
     expect(files.length).toEqual(9); // 7 files from index-file-test + the 2 created files
     // retention rule on files not modified since 2023-07-01
     const before = utcDate('2023-07-01T00:00:00.000Z');
-    const filesToDelete = await elementsToDelete(context, 'file', before);
+    const filesToDelete = await getElementsToDelete(context, 'file', before);
     expect(filesToDelete.edges.length).toEqual(1); // fileToTestRetentionRule is the only file that has not been modified since 'before' and with uploadStatus = complete
     expect(filesToDelete.edges[0].node.id).toEqual(fileId);
     // retention rule on all the files
-    const filesToDelete2 = await elementsToDelete(context, 'file', utcDate());
+    const filesToDelete2 = await getElementsToDelete(context, 'file', utcDate());
     expect(filesToDelete2.edges.length).toEqual(8); // all the files that has not been modified since now and with uploadStatus = complete
   });
   it('should fetch the correct files to be deleted by a retention rule on workbenches', async () => {
     // retention rule on workbenches not modified since 2023-07-01
     const before = utcDate('2023-07-01T00:00:00.000Z');
-    const filesToDelete = await elementsToDelete(context, 'workbench', before);
+    const filesToDelete = await getElementsToDelete(context, 'workbench', before);
     expect(filesToDelete.edges.length).toEqual(1); // workbench1 is the only workbench that has not been modified since 'before'
     expect(filesToDelete.edges[0].node.id).toEqual(workbench1Id);
   });

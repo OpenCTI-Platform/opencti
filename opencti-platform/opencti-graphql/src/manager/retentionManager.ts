@@ -24,7 +24,7 @@ const SCHEDULE_TIME = conf.get('retention_manager:interval') || 60000;
 const RETENTION_MANAGER_KEY = conf.get('retention_manager:lock_key') || 'retention_manager_lock';
 const RETENTION_BATCH_SIZE = conf.get('retention_manager:batch_size') || 100;
 
-const deleteElements = async (context: AuthContext, scope: string, nodeId: string, nodeEntityType?: string) => {
+const deleteElement = async (context: AuthContext, scope: string, nodeId: string, nodeEntityType?: string) => {
   if (scope === 'knowledge') {
     await deleteElementById(context, RETENTION_MANAGER_USER, nodeId, nodeEntityType, { forceDelete: true });
   } else if (scope === 'file' || scope === 'workbench') {
@@ -34,7 +34,7 @@ const deleteElements = async (context: AuthContext, scope: string, nodeId: strin
   }
 };
 
-export const elementsToDelete = async (context: AuthContext, scope: string, before: Moment, filters?: string) => {
+export const getElementsToDelete = async (context: AuthContext, scope: string, before: Moment, filters?: string) => {
   let result;
   if (scope === 'knowledge') {
     const jsonFilters = filters ? JSON.parse(filters) : null;
@@ -71,7 +71,7 @@ const executeProcessing = async (context: AuthContext, retentionRule: RetentionR
   const { id, name, max_retention: maxDays, filters, scope } = retentionRule;
   logApp.debug(`[OPENCTI] Executing retention manager rule ${name}`);
   const before = utcDate().subtract(maxDays, 'days');
-  const result = await elementsToDelete(context, scope, before, filters);
+  const result = await getElementsToDelete(context, scope, before, filters);
   const remainingDeletions = result.pageInfo.globalCount;
   const elements = result.edges;
   logApp.debug(`[OPENCTI] Retention manager clearing ${elements.length} elements`);
@@ -80,7 +80,7 @@ const executeProcessing = async (context: AuthContext, retentionRule: RetentionR
     const { updated_at: up } = node;
     const humanDuration = moment.duration(utcDate(up).diff(utcDate())).humanize();
     try {
-      await deleteElements(context, scope, scope === 'knowledge' ? node.internal_id : node.id, node.entity_type);
+      await deleteElement(context, scope, scope === 'knowledge' ? node.internal_id : node.id, node.entity_type);
       logApp.debug(`[OPENCTI] Retention manager deleting ${node.id} after ${humanDuration}`);
     } catch (e) {
       logApp.error(e, { id: node.id, manager: 'RETENTION_MANAGER' });
