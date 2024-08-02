@@ -6,17 +6,6 @@ const message = '[MIGRATION] Remove authorized members in Public dashboards';
 
 export const up = async (next) => {
   logApp.info(`${message} > started`);
-  // const publicDashboards = await listAllEntities(
-  //   context,
-  //   context.user,
-  //   [ENTITY_TYPE_PUBLIC_DASHBOARD],
-  // );
-  //
-  // for (let index = 0; index < publicDashboards.length; index += 1) {
-  //   const publicDashboard = publicDashboards[index];
-  //   const patch = { authorized_members: undefined };
-  //   await patchAttribute(context, SYSTEM_USER, publicDashboard.id, ENTITY_TYPE_PUBLIC_DASHBOARD, patch);
-  // }
 
   const updateQuery = {
     script: {
