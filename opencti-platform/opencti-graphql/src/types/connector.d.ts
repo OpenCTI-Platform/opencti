@@ -1,4 +1,4 @@
-import { BasicStoreEntity } from './store';
+import type { StoreEntity } from './store';
 
 export interface ConnectorInfo {
   run_and_terminate: boolean,
@@ -9,7 +9,7 @@ export interface ConnectorInfo {
   last_run_datetime: DateTime,
 }
 
-export interface BasicStoreEntityConnector extends BasicStoreEntity {
+export interface BasicStoreEntityConnector extends StoreEntity {
   active: boolean,
   auto: boolean,
   only_contextual: boolean,
