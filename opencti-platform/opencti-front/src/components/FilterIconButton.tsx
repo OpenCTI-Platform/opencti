@@ -10,7 +10,7 @@ import { Filter, FilterGroup, handleFilterHelpers } from '../utils/filters/filte
 
 export interface FilterIconButtonProps {
   availableFilterKeys?: string[];
-  filters?: FilterGroup;
+  filters?: FilterGroup | null;
   handleRemoveFilter?: (key: string, op?: string) => void;
   handleSwitchGlobalMode?: () => void;
   handleSwitchLocalMode?: (filter: Filter) => void;

@@ -5,7 +5,6 @@ import ruleEngine from './ruleManager';
 import taskManager from './taskManager';
 import expiredManager from './expiredManager';
 import syncManager from './syncManager';
-import retentionManager from './retentionManager';
 import publisherManager from './publisherManager';
 import notificationManager from './notificationManager';
 import ingestionManager from './ingestionManager';
@@ -42,7 +41,6 @@ const initClusterManager = () => {
       taskManager.status(),
       expiredManager.status(),
       syncManager.status(),
-      retentionManager.status(),
       publisherManager.status(),
       notificationManager.status(),
       ingestionManager.status(),

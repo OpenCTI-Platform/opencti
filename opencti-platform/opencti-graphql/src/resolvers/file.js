@@ -15,7 +15,7 @@ const fileResolvers = {
     importFiles: (_, { first }, context) => {
       return paginatedForPathWithEnrichment(context, context.user, 'import/global', undefined, { first });
     },
-    pendingFiles: (_, { first }, context) => {
+    pendingFiles: (_, { first }, context) => { // correspond to global workbenches (i.e. worbenches in Data > Import)
       return paginatedForPathWithEnrichment(context, context.user, 'import/pending', undefined, { first });
     },
     filesMetrics: (_, args, context) => filesMetrics(context, context.user),

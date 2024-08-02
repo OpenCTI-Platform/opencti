@@ -1092,6 +1092,13 @@ input RetentionRuleAddInput {
   name: String!
   filters: String!
   max_retention: Int!
+  scope: RetentionRuleScope!
+}
+
+enum RetentionRuleScope {
+  knowledge
+  file
+  workbench
 }
 
 type RetentionRule {
@@ -1103,6 +1110,7 @@ type RetentionRule {
   last_execution_date: DateTime
   last_deleted_count: Int
   remaining_count: Int
+  scope: RetentionRuleScope!
 }
 
 type RetentionRuleConnection {

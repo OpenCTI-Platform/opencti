@@ -67,6 +67,7 @@ interface FilesOptions<T extends BasicStoreCommon> extends EntityOptions<T> {
   entity_id?: string
   entity_type?: string
   modifiedSince?: string | null
+  notModifiedSince?: string | null
   prefixMimeTypes?: string[]
   maxFileSize?: number
   isPending?: boolean
@@ -91,6 +92,9 @@ const buildFileFilters = (paths: string[], opts?: FilesOptions<BasicStoreEntityD
   }
   if (opts?.modifiedSince) {
     filters.filters.push({ key: ['lastModified'], values: [opts.modifiedSince], operator: FilterOperator.Gt });
+  }
+  if (opts?.notModifiedSince) {
+    filters.filters.push({ key: ['lastModified'], values: [opts.notModifiedSince], operator: FilterOperator.Lt });
   }
   if (opts?.entity_id) {
     filters.filters.push({ key: ['metaData.entity_id'], values: [opts.entity_id] });
@@ -177,7 +181,7 @@ export const checkFileAccess = async (context: AuthContext, user: AuthUser, scop
 // Get Files paginated with auto enrichment
 // Images metadata for users
 // In progress virtual files from export
-export const paginatedForPathWithEnrichment = async (context: AuthContext, user: AuthUser, path: string, entity_id: string, opts?: FilesOptions<BasicStoreEntityDocument>) => {
+export const paginatedForPathWithEnrichment = async (context: AuthContext, user: AuthUser, path: string, entity_id?: string, opts?: FilesOptions<BasicStoreEntityDocument>) => {
   const filterOpts = { ...opts, exact_path: isEmptyField(entity_id) };
   const findOpts: EntityOptions<BasicStoreEntityDocument> = {
     filters: buildFileFilters([path], filterOpts),

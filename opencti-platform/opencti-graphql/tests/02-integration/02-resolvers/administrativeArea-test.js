@@ -247,7 +247,6 @@ describe('AdministrativeArea resolver standard behavior', () => {
         relationship_type: 'object-marking',
       },
     });
-    console.log(JSON.stringify(queryResult));
     expect(queryResult.data.administrativeAreaRelationDelete.objectMarking.length).toEqual(0);
   });
   it('should administrativeArea deleted', async () => {

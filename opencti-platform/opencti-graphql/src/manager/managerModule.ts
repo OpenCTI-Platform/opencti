@@ -18,6 +18,7 @@ export interface ManagerCronScheduler {
   lockKey: string
   infiniteInterval?: number
   handlerInitializer?: () => Promise<HandlerInput>
+  lockInHandlerParams?: boolean
 }
 
 export interface ManagerStreamScheduler {
@@ -66,6 +67,8 @@ const initManager = (manager: ManagerDefinition) => {
             await manager.cronSchedulerHandler.handler(cronInput);
             await wait(manager.cronSchedulerHandler.infiniteInterval);
           }
+        } else if (manager.cronSchedulerHandler.lockInHandlerParams) {
+          await manager.cronSchedulerHandler.handler(lock);
         } else {
           await manager.cronSchedulerHandler.handler(cronInput);
         }

@@ -1046,6 +1046,12 @@ input RetentionRuleAddInput {
   name: String! @constraint(minLength:2, format: "not-blank")
   filters: String!
   max_retention: Int! @constraint(min: 1)
+  scope: RetentionRuleScope!
+}
+enum RetentionRuleScope {
+  knowledge
+  file
+  workbench
 }
 type RetentionRule {
   id: ID!
@@ -1056,6 +1062,7 @@ type RetentionRule {
   last_execution_date: DateTime
   last_deleted_count: Int
   remaining_count: Int
+  scope: RetentionRuleScope!
 }
 type RetentionRuleConnection {
   pageInfo: PageInfo!
