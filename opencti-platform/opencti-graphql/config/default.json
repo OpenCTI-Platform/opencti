@@ -13,7 +13,8 @@
       "CAPABILITY_BYPASSFIELDS",
       "BULK_ENTITIES",
       "CONTAINERS_AUTHORIZED_MEMBERS",
-      "FILE_RETENTION_RULES"
+      "FILE_RETENTION_RULES",
+      "SKIP_TELEMETRY_ACTIVE_USERS"
     ],
     "https_cert": {
       "ca": [],
