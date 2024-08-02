@@ -113,6 +113,7 @@ export const getMainRepresentative = (n: any, fallback = 'Unknown') => {
     || n.result_name
     || n.country
     || n.key
+    || n.path
     || (n.template && n.template.name)
     || (n.content && truncate(n.content, 30))
     || (n.hashes

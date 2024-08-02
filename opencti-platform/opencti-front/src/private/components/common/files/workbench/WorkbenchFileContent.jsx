@@ -261,6 +261,7 @@ const getEntityMainRepresentativeForWorkbenchChecks = (n, fallback = 'Unknown') 
     || n.result_name
     || n.content
     || n.key
+    || n.path
     || (n.hashes
       && (n.hashes.MD5
         || n.hashes['SHA-1']
@@ -296,6 +297,7 @@ const defaultValueKeys = {
     'value',
     'content',
     'attribute_key',
+    'path',
     'hashes.MD5',
     'hashes.SHA-1',
     'hashes.SHA-256',
