@@ -33,7 +33,7 @@ import { deserializeFilterGroupForFrontend, isFilterGroupNotEmpty, serializeFilt
 import useFiltersState from '../../../../utils/filters/useFiltersState';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 import Security from '../../../../utils/Security';
-import { BYPASS, MODULES_MODMANAGE, SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
+import useGranted, { MODULES_MODMANAGE, SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
 import { commitMutation, MESSAGING$, QueryRenderer } from '../../../../relay/environment';
 import ConnectorWorks, { connectorWorksQuery } from './ConnectorWorks';
 import FilterIconButton from '../../../../components/FilterIconButton';
@@ -42,7 +42,6 @@ import ItemCopy from '../../../../components/ItemCopy';
 import Transition from '../../../../components/Transition';
 import ItemIcon from '../../../../components/ItemIcon';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
-import useAuth from '../../../../utils/hooks/useAuth';
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -251,25 +250,13 @@ const ConnectorComponent = ({ connector, relay }) => {
       filterGroups: [],
     },
   };
-  const { me } = useAuth();
-  const theme = useTheme();
-  const userCapabilities = (me.capabilities ?? []).map((c) => c.name);
-  const userHasSettingsCapability = userCapabilities.includes(SETTINGS_SETACCESSES) || userCapabilities.includes(BYPASS);
 
-  const checkLastRunExistingInState = () => {
-    let lastRun = false;
-    const connectorStateConverted = JSON.parse(connector.connector_state);
-    if (Object.hasOwn(connectorStateConverted, 'last_run')) {
-      lastRun = true;
-      return lastRun;
-    }
-    return lastRun;
-  };
-  const getLastRunConverted = () => {
-    const connectorStateConverted = JSON.parse(connector.connector_state);
-    const lastRun = connectorStateConverted.last_run;
-    return new Date(lastRun * 1000);
-  };
+  const theme = useTheme();
+  const userHasSettingsCapability = useGranted([SETTINGS_SETACCESSES]);
+  const connectorStateConverted = connector.connector_state ? JSON.parse(connector.connector_state) : null;
+  const checkLastRunExistingInState = connectorStateConverted && Object.hasOwn(connectorStateConverted, 'last_run');
+  const checkLastRunIsNumber = checkLastRunExistingInState && Number.isFinite(connectorStateConverted.last_run);
+  const lastRunConverted = checkLastRunIsNumber && new Date(connectorStateConverted.last_run * 1000);
 
   const isBuffering = () => {
     return connector.connector_info?.queue_messages_size > connector.connector_info?.queue_threshold;
@@ -420,35 +407,18 @@ const ConnectorComponent = ({ connector, relay }) => {
                     {t_i18n('Associated user')}
                   </Typography>
                   {connector.connector_user ? (
-                    <FieldOrEmpty source={connector.connector_user}>
-                      <List>
-                        {[connector.connector_user].map((user) => (userHasSettingsCapability ? (
-                          <ListItemButton
-                            key={user.id}
-                            dense={true}
-                            divider={true}
-                            component={Link}
-                            to={`/dashboard/settings/accesses/users/${user.id}`}
-                          >
-                            <ListItemIcon>
-                              <ItemIcon type="user" color={theme.palette.primary.main} />
-                            </ListItemIcon>
-                            <ListItemText primary={user.name}/>
-                          </ListItemButton>
-                        ) : (
-                          <ListItem
-                            key={user.id}
-                            dense={true}
-                            divider={true}
-                          >
-                            <ListItemIcon>
-                              <ItemIcon type="user" color={theme.palette.primary.main} />
-                            </ListItemIcon>
-                            <ListItemText primary={user.name}/>
-                          </ListItem>
-                        )))}
-                      </List>
-                    </FieldOrEmpty>
+                    <ListItemButton
+                      key={connector.connector_user.id}
+                      dense={true}
+                      divider={true}
+                      component={Link}
+                      to={`/dashboard/settings/accesses/users/${connector.connector_user.id}`}
+                    >
+                      <ListItemIcon>
+                        <ItemIcon type="user" color={theme.palette.primary.main} />
+                      </ListItemIcon>
+                      <ListItemText primary={connector.connector_user.name}/>
+                    </ListItemButton>
                   ) : (
                     <FieldOrEmpty source={connector.connector_user}></FieldOrEmpty>
                   )}
@@ -461,7 +431,6 @@ const ConnectorComponent = ({ connector, relay }) => {
                     <FieldOrEmpty source={connector.connector_user?.effective_confidence_level.max_confidence}>
                       {connector.connector_user.effective_confidence_level.max_confidence}
                     </FieldOrEmpty>
-
                   ) : (
                     <FieldOrEmpty source={connector.connector_user}></FieldOrEmpty>
                   )}
@@ -607,25 +576,27 @@ const ConnectorComponent = ({ connector, relay }) => {
 
               <Grid item xs={6}>
                 {!connector.connector_info && (
-                  connector.connector_state && connector.connector_state !== 'null' && checkLastRunExistingInState() ? (
+                  connector.connector_state
+                  && connectorStateConverted !== null
+                  && checkLastRunExistingInState && checkLastRunIsNumber ? (
                     <>
                       <Typography variant="h3" gutterBottom={true}>
                         {t_i18n('Last run (from State)')}
                       </Typography>
                       <Typography variant="body1" gutterBottom={true}>
-                        {nsdt(getLastRunConverted())}
+                        {nsdt(lastRunConverted)}
                       </Typography>
                     </>
-                  ) : (
-                    <>
-                      <Typography variant="h3" gutterBottom={true}>
-                        {t_i18n('Last run')}
-                      </Typography>
-                      <Typography variant="body1" gutterBottom={true}>
-                        {t_i18n('Not provided')}
-                      </Typography>
-                    </>
-                  )
+                    ) : (
+                      <>
+                        <Typography variant="h3" gutterBottom={true}>
+                          {t_i18n('Last run')}
+                        </Typography>
+                        <Typography variant="body1" gutterBottom={true}>
+                          {t_i18n('Not provided')}
+                        </Typography>
+                      </>
+                    )
                 )}
                 {connector.connector_info && (
                   // eslint-disable-next-line no-nested-ternary
@@ -638,13 +609,15 @@ const ConnectorComponent = ({ connector, relay }) => {
                         {nsdt(connector.connector_info?.last_run_datetime)}
                       </Typography>
                     </>
-                  ) : (connector.connector_state && connector.connector_state !== 'null' && checkLastRunExistingInState()
+                  ) : (connector.connector_state
+                      && connectorStateConverted !== null
+                      && checkLastRunExistingInState && checkLastRunIsNumber
                     ? (<>
                       <Typography variant="h3" gutterBottom={true}>
                         {t_i18n('Last run (from State)')}
                       </Typography>
                       <Typography variant="body1" gutterBottom={true}>
-                        {nsdt(getLastRunConverted())}
+                        {nsdt(lastRunConverted)}
                       </Typography>
                     </>)
                     : (<>
@@ -691,22 +664,18 @@ const ConnectorComponent = ({ connector, relay }) => {
                 <Typography variant="h3" gutterBottom={true} >
                   {t_i18n('Server capacity')}
                 </Typography>
-                { // eslint-disable-next-line no-nested-ternary
-                  connector.connector_info && connector.connector_info.queue_messages_size !== 0 ? (
-                    <FieldOrEmpty source={connector.connector_info?.queue_messages_size}>
-                      <span style={isBuffering() ? { color: theme.palette.warning.main } : {}}>{connector.connector_info?.queue_messages_size.toFixed(2)}</span>
-                      <span> / {connector.connector_info?.queue_threshold} Mo</span>
-                    </FieldOrEmpty>
-                  ) : (
-                    connector.connector_info && connector.connector_info.queue_messages_size === 0 && connector.connector_info.last_run_datetime
-                      ? (<FieldOrEmpty source={connector.connector_info?.queue_messages_size}>
+                {connector.connector_info && (connector.connector_info.queue_messages_size !== 0
+                    || connector.connector_info.last_run_datetime) ? (
+                      <FieldOrEmpty source={connector.connector_info?.queue_messages_size}>
                         <span style={isBuffering() ? { color: theme.palette.warning.main } : {}}>{connector.connector_info?.queue_messages_size.toFixed(2)}</span>
                         <span> / {connector.connector_info?.queue_threshold} Mo</span>
-                      </FieldOrEmpty>)
-                      : (<Typography variant="body1" gutterBottom={true}>
-                        {t_i18n('Not provided')}
-                      </Typography>)
-                  )}
+                      </FieldOrEmpty>
+                  ) : (
+                    <Typography variant="body1" gutterBottom={true}>
+                      {t_i18n('Not provided')}
+                    </Typography>
+                  )
+                }
               </Grid>
             </Grid>
           </Paper>
