@@ -63,16 +63,18 @@ class AttackPatternCoursesOfActionComponent extends Component {
     const { t, attackPattern } = this.props;
     return (
       <div style={{ marginTop: 20 }}>
-        <Typography variant="h3" gutterBottom={true} style={{ float: 'left' }}>
-          {t('Courses of action')}
-        </Typography>
-        <AddCoursesOfAction
-          attackPattern={attackPattern}
-          attackPatternCoursesOfAction={attackPattern.coursesOfAction.edges}
-        />
+        <div style={{ display: 'flex', flexDirection: 'row' }}>
+          <Typography variant="h3" gutterBottom={true}>
+            {t('Courses of action')}
+          </Typography>
+          <AddCoursesOfAction
+            attackPattern={attackPattern}
+            attackPatternCoursesOfAction={attackPattern.coursesOfAction.edges}
+          />
+        </div>
         <div className="clearfix" />
-        <FieldOrEmpty source={attackPattern.coursesOfAction.edges}>
-          <List style={{ marginTop: -10 }}>
+        <List style={{ marginTop: -10, paddingTop: 0 }}>
+          <FieldOrEmpty source={attackPattern.coursesOfAction.edges}>
             {attackPattern.coursesOfAction.edges.map((courseOfActionEdge) => {
               const courseOfAction = courseOfActionEdge.node;
               return (
@@ -105,8 +107,8 @@ class AttackPatternCoursesOfActionComponent extends Component {
                 </ListItem>
               );
             })}
-          </List>
-        </FieldOrEmpty>
+          </FieldOrEmpty>
+        </List>
       </div>
     );
   }

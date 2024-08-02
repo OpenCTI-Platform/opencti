@@ -53,20 +53,22 @@ class AttackPatternSubAttackPatternsComponent extends Component {
     )(attackPattern.subAttackPatterns.edges);
     return (
       <div style={{ height: '100%', marginTop: 20 }}>
-        <Typography variant="h3" gutterBottom={true} style={{ float: 'left' }}>
-          {t('Sub attack patterns')}
-        </Typography>
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <AddSubAttackPattern
-            attackPattern={attackPattern}
-            attackPatternSubAttackPatterns={
+        <div style={{ display: 'flex', flexDirection: 'row' }}>
+          <Typography variant="h3" gutterBottom={true}>
+            {t('Sub attack patterns')}
+          </Typography>
+          <Security needs={[KNOWLEDGE_KNUPDATE]}>
+            <AddSubAttackPattern
+              attackPattern={attackPattern}
+              attackPatternSubAttackPatterns={
               attackPattern.subAttackPatterns.edges
             }
-          />
-        </Security>
-        <div className="clearfix"/>
-        <FieldOrEmpty source={subAttackPatterns}>
-          <List style={{ marginTop: -10 }}>
+            />
+          </Security>
+          <div className="clearfix"/>
+        </div>
+        <List style={{ marginTop: -10, paddingTop: 0 }}>
+          <FieldOrEmpty source={subAttackPatterns}>
             {subAttackPatterns.map((subAttackPattern) => (
               <ListItem
                 key={subAttackPattern.id}
@@ -96,8 +98,8 @@ class AttackPatternSubAttackPatternsComponent extends Component {
                 </ListItemSecondaryAction>
               </ListItem>
             ))}
-          </List>
-        </FieldOrEmpty>
+          </FieldOrEmpty>
+        </List>
       </div>
     );
   }

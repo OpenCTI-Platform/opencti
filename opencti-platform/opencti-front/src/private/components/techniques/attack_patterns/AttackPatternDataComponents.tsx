@@ -47,13 +47,15 @@ const AttackPatternDataComponentsComponent: FunctionComponent<{
         marginTop: 20,
       }}
     >
-      <Typography variant="h3" gutterBottom={true} style={{ float: 'left' }}>
-        {t_i18n('Data components')}
-      </Typography>
-      <AddDataComponents attackPattern={attackPattern} />
-      <div className="clearfix" />
-      <FieldOrEmpty source={attackPattern.dataComponents?.edges}>
-        <List style={{ marginTop: -10 }}>
+      <div style={{ display: 'flex', flexDirection: 'row' }}>
+        <Typography variant="h3" gutterBottom={true}>
+          {t_i18n('Data components')}
+        </Typography>
+        <AddDataComponents attackPattern={attackPattern}/>
+        <div className="clearfix"/>
+      </div>
+      <List style={{ marginTop: -10, paddingTop: 0 }}>
+        <FieldOrEmpty source={attackPattern.dataComponents?.edges}>
           {attackPattern.dataComponents?.edges
             ?.map((dataComponentEdge) => dataComponentEdge?.node)
             .map((dataComponent, idx) => {
@@ -99,8 +101,8 @@ const AttackPatternDataComponentsComponent: FunctionComponent<{
                 </ListItem>
               );
             })}
-        </List>
-      </FieldOrEmpty>
+        </FieldOrEmpty>
+      </List>
     </div>
   );
 };
