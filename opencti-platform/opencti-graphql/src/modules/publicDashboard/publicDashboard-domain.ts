@@ -27,7 +27,7 @@ import {
 import { ForbiddenAccess, FunctionalError, UnsupportedError } from '../../config/errors';
 import { getUserAccessRight, MEMBER_ACCESS_RIGHT_ADMIN, SYSTEM_USER } from '../../utils/access';
 import { publishUserAction } from '../../listener/UserActionListener';
-import { findAll as findAllWorkspaces, initializeAuthorizedMembers } from '../workspace/workspace-domain';
+import { findAll as findAllWorkspaces } from '../workspace/workspace-domain';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
 import { getEntitiesMapFromCache } from '../../database/cache';
 import type { BasicStoreRelation, NumberResult, StoreMarkingDefinition, StoreRelationConnection } from '../../types/store';
@@ -188,11 +188,6 @@ export const addPublicDashboard = async (
   // Create public manifest
   const publicManifest = toBase64(JSON.stringify(parsedManifest) ?? '{}');
 
-  const authorizedMembers = initializeAuthorizedMembers(
-    [{ id: user.id, access_right: 'admin' }, { id: 'ALL', access_right: 'view' }],
-    user,
-  );
-
   // Create publicDashboard
   const publicDashboardToCreate = {
     name: input.name,
@@ -203,7 +198,6 @@ export const addPublicDashboard = async (
     dashboard_id: input.dashboard_id,
     user_id: user.id,
     uri_key: uriKey,
-    authorized_members: authorizedMembers,
     allowed_markings_ids: input.allowed_markings_ids,
   };
 

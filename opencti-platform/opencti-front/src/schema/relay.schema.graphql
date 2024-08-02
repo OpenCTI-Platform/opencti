@@ -11636,7 +11636,6 @@ type PublicDashboard implements InternalObject & BasicObject {
   created_at: DateTime
   updated_at: DateTime
   editContext: [EditUserContext!]
-  authorized_members: [MemberAccess!]
   enabled: Boolean!
 }
 

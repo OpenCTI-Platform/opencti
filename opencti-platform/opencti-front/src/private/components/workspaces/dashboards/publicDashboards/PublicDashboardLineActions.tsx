@@ -4,6 +4,7 @@ import { IconButton, Menu, MenuItem, MenuProps } from '@mui/material';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { graphql } from 'react-relay';
+import { PublicDashboardsListQuery$variables } from '@components/workspaces/dashboards/__generated__/PublicDashboardsListQuery.graphql';
 import { useFormatter } from '../../../../../components/i18n';
 import { copyToClipboard } from '../../../../../utils/utils';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
@@ -13,7 +14,6 @@ import { EXPLORE_EXUPDATE_PUBLISH } from '../../../../../utils/hooks/useGranted'
 import Security from '../../../../../utils/Security';
 import { getCurrentUserAccessRight } from '../../../../../utils/authorizedMembers';
 import { deleteNode } from '../../../../../utils/store';
-import { PublicDashboardsListQuery$variables } from '@components/workspaces/dashboards/__generated__/PublicDashboardsListQuery.graphql';
 
 interface PublicDashboardLineActionsProps {
   publicDashboard: PublicDashboards_PublicDashboard$data
@@ -51,7 +51,7 @@ const PublicDashboardLineActions = ({ publicDashboard, paginationOptions }: Publ
       t_i18n,
       `${window.location.origin}/public/dashboard/${publicDashboard.uri_key.toLowerCase()}`,
     );
-    setAnchor(undefined)
+    setAnchor(undefined);
   };
 
   const goToDashboard = () => {
@@ -85,7 +85,7 @@ const PublicDashboardLineActions = ({ publicDashboard, paginationOptions }: Publ
         input: [{ key: 'enabled', value: [!publicDashboard.enabled] }],
       },
     });
-    setAnchor(undefined)
+    setAnchor(undefined);
   };
 
   return (
