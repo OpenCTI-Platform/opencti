@@ -1,6 +1,10 @@
 import type { AuthContext, AuthUser } from '../types/user';
-import type { BasicStoreEntity } from '../types/store';
 import { BasicStoreEntityCsvMapper } from '../modules/internal/csvMapper/csvMapper-types';
+
+/**
+ * This is the type for internal connector like import CSV.
+ * It's NOT the type for connector entity.
+ */
 
 export interface ConnectorConfig {
   id: string;
@@ -21,9 +25,4 @@ export interface Connector {
   name: string;
   built_in: boolean;
   connector_schema_runtime_fn: <T extends BasicStoreEntityCsvMapper> (context: AuthContext, user: AuthUser) => Promise<T[]>;
-  connector_state_reset: boolean;
-}
-
-export interface BasicStoreEntityConnector extends Connector, BasicStoreEntity {
-  connector_trigger_filters: string;
 }

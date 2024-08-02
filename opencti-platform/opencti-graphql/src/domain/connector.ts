@@ -15,8 +15,7 @@ import { delEditContext, notify, redisGetWork, setEditContext } from '../databas
 import { listEntities, storeLoadById } from '../database/middleware-loader';
 import { publishUserAction } from '../listener/UserActionListener';
 import type { AuthContext, AuthUser } from '../types/user';
-import type { ConnectorInfo } from '../types/connector';
-import type { BasicStoreEntityConnector } from '../connector/connector';
+import type { BasicStoreEntityConnector, ConnectorInfo } from '../types/connector';
 import type { EditInput, RegisterConnectorInput, SynchronizerAddInput, SynchronizerFetchInput, EditContext, MutationSynchronizerTestArgs } from '../generated/graphql';
 import { BUS_TOPICS } from '../config/conf';
 import { deleteWorkForConnector } from './work';
