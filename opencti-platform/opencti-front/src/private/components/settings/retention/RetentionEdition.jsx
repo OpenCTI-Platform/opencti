@@ -172,12 +172,14 @@ const RetentionEditionContainer = (props) => {
                 ),
               }}
             />
-            {retentionRule.scope === 'knowledge' && <>
-              <Box sx={{
-                paddingTop: 4,
-                display: 'flex',
-                gap: 1,
-              }}
+            {retentionRule.scope === 'knowledge' &&
+              <>
+              <Box
+                sx={{
+                  paddingTop: 4,
+                  display: 'flex',
+                  gap: 1,
+                }}
               >
                 <Filters
                   availableFilterKeys={[
@@ -213,7 +215,8 @@ const RetentionEditionContainer = (props) => {
                 redirection
                 searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship'] }}
               />
-            </>}
+              </>
+            }
             <div className={classes.buttons}>
               <Button
                 variant="contained"
