@@ -80,8 +80,8 @@ class AttackPatternDetailsComponent extends Component {
                   {t('Platforms')}
                 </Typography>
                 <List style={{ paddingTop: 0 }}>
-                  <FieldOrEmpty source={attackPattern.attackPattern}>
-                    {(attackPattern.x_mitre_platforms ?? []).map(
+                  <FieldOrEmpty source={attackPattern.x_mitre_platforms}>
+                    {(attackPattern.x_mitre_platforms).map(
                       (platform) => (
                         <ListItem key={platform} dense={true} divider={true}>
                           <ListItemIcon>
