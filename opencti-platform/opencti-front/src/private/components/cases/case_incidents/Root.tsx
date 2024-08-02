@@ -140,12 +140,13 @@ const RootCaseIncidentComponent = ({ queryRef, caseId }) => {
           <ContainerHeader
             container={caseData}
             PopoverComponent={<CaseIncidentPopover id={caseData.id} />}
-            EditComponent={<Security needs={[KNOWLEDGE_KNUPDATE]}>
-              <CaseIncidentEdition caseId={caseData.id} />
-            </Security>}
+            EditComponent={
+              <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                <CaseIncidentEdition caseId={caseData.id} />
+              </Security>
+            }
             enableQuickSubscription={true}
             enableAskAi={true}
-            disableSharing={true}
             redirectToContent={true}
             enableManageAuthorizedMembers={canManageAuthorizedMembers}
             authorizedMembersMutation={caseIncidentAuthorizedMembersMutation}
