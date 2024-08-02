@@ -11,7 +11,8 @@ import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import IconButton from '@mui/material/IconButton';
 import { LockPattern } from 'mdi-material-ui';
 import { LinkOff } from '@mui/icons-material';
-import { graphql, createFragmentContainer } from 'react-relay';
+import { createFragmentContainer, graphql } from 'react-relay';
+import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import AddSubAttackPattern from './AddSubAttackPattern';
 import { addSubAttackPatternsMutationRelationDelete } from './AddSubAttackPatternsLines';
 import { commitMutation } from '../../../../relay/environment';
@@ -52,48 +53,52 @@ class AttackPatternSubAttackPatternsComponent extends Component {
     )(attackPattern.subAttackPatterns.edges);
     return (
       <div style={{ height: '100%', marginTop: 20 }}>
-        <Typography variant="h3" gutterBottom={true} style={{ float: 'left' }}>
-          {t('Sub attack patterns')}
-        </Typography>
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <AddSubAttackPattern
-            attackPattern={attackPattern}
-            attackPatternSubAttackPatterns={
+        <div style={{ display: 'flex', flexDirection: 'row' }}>
+          <Typography variant="h3" gutterBottom={true}>
+            {t('Sub attack patterns')}
+          </Typography>
+          <Security needs={[KNOWLEDGE_KNUPDATE]}>
+            <AddSubAttackPattern
+              attackPattern={attackPattern}
+              attackPatternSubAttackPatterns={
               attackPattern.subAttackPatterns.edges
             }
-          />
-        </Security>
-        <div className="clearfix" />
-        <List style={{ marginTop: -10 }}>
-          {subAttackPatterns.map((subAttackPattern) => (
-            <ListItem
-              key={subAttackPattern.id}
-              dense={true}
-              divider={true}
-              button={true}
-              component={Link}
-              to={`/dashboard/techniques/attack_patterns/${subAttackPattern.id}`}
-            >
-              <ListItemIcon>
-                <LockPattern color="primary" />
-              </ListItemIcon>
-              <ListItemText
-                primary={`[${subAttackPattern.x_mitre_id}] ${subAttackPattern.name}`}
-              />
-              <ListItemSecondaryAction>
-                <IconButton
-                  aria-label="Remove"
-                  onClick={this.removeSubAttackPattern.bind(
-                    this,
-                    subAttackPattern,
-                  )}
-                  size="large"
-                >
-                  <LinkOff />
-                </IconButton>
-              </ListItemSecondaryAction>
-            </ListItem>
-          ))}
+            />
+          </Security>
+          <div className="clearfix"/>
+        </div>
+        <List style={{ marginTop: -10, paddingTop: 0 }}>
+          <FieldOrEmpty source={subAttackPatterns}>
+            {subAttackPatterns.map((subAttackPattern) => (
+              <ListItem
+                key={subAttackPattern.id}
+                dense={true}
+                divider={true}
+                button={true}
+                component={Link}
+                to={`/dashboard/techniques/attack_patterns/${subAttackPattern.id}`}
+              >
+                <ListItemIcon>
+                  <LockPattern color="primary"/>
+                </ListItemIcon>
+                <ListItemText
+                  primary={`[${subAttackPattern.x_mitre_id}] ${subAttackPattern.name}`}
+                />
+                <ListItemSecondaryAction>
+                  <IconButton
+                    aria-label="Remove"
+                    onClick={this.removeSubAttackPattern.bind(
+                      this,
+                      subAttackPattern,
+                    )}
+                    size="large"
+                  >
+                    <LinkOff/>
+                  </IconButton>
+                </ListItemSecondaryAction>
+              </ListItem>
+            ))}
+          </FieldOrEmpty>
         </List>
       </div>
     );

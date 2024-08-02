@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, propOr } from 'ramda';
+import { compose } from 'ramda';
 import { createFragmentContainer, graphql } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import Paper from '@mui/material/Paper';
@@ -12,6 +12,7 @@ import ListItemText from '@mui/material/ListItemText';
 import Typography from '@mui/material/Typography';
 import { PermIdentity, SettingsApplications } from '@mui/icons-material';
 import Grid from '@mui/material/Grid';
+import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import inject18n from '../../../../components/i18n';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import AttackPatternParentAttackPatterns from './AttackPatternParentAttackPatterns';
@@ -51,12 +52,14 @@ class AttackPatternDetailsComponent extends Component {
               >
                 {t('External ID')}
               </Typography>
-              <Chip
-                size="small"
-                label={attackPattern.x_mitre_id}
-                color="primary"
-                style={{ borderRadius: 4 }}
-              />
+              <FieldOrEmpty source={attackPattern.x_mitre_id}>
+                <Chip
+                  size="small"
+                  label={attackPattern.x_mitre_id}
+                  color="primary"
+                  style={{ borderRadius: 4 }}
+                />
+              </FieldOrEmpty>
               <Typography
                 variant="h3"
                 gutterBottom={true}
@@ -76,17 +79,19 @@ class AttackPatternDetailsComponent extends Component {
                 >
                   {t('Platforms')}
                 </Typography>
-                <List>
-                  {propOr([], 'x_mitre_platforms', attackPattern).map(
-                    (platform) => (
-                      <ListItem key={platform} dense={true} divider={true}>
-                        <ListItemIcon>
-                          <SettingsApplications />
-                        </ListItemIcon>
-                        <ListItemText primary={platform} />
-                      </ListItem>
-                    ),
-                  )}
+                <List style={{ paddingTop: 0 }}>
+                  <FieldOrEmpty source={attackPattern.x_mitre_platforms}>
+                    {attackPattern.x_mitre_platforms?.map(
+                      (platform) => (
+                        <ListItem key={platform} dense={true} divider={true}>
+                          <ListItemIcon>
+                            <SettingsApplications/>
+                          </ListItemIcon>
+                          <ListItemText primary={platform}/>
+                        </ListItem>
+                      ),
+                    )}
+                  </FieldOrEmpty>
                 </List>
               </div>
               <AttackPatternSubAttackPatterns attackPattern={attackPattern} />
@@ -114,17 +119,19 @@ class AttackPatternDetailsComponent extends Component {
               >
                 {t('Required permissions')}
               </Typography>
-              <List>
-                {propOr([], 'x_mitre_permissions_required', attackPattern).map(
-                  (permission) => (
-                    <ListItem key={permission} dense={true} divider={true}>
-                      <ListItemIcon>
-                        <PermIdentity />
-                      </ListItemIcon>
-                      <ListItemText primary={permission} />
-                    </ListItem>
-                  ),
-                )}
+              <List style={{ paddingTop: 0 }}>
+                <FieldOrEmpty source={attackPattern.x_mitre_permissions_required}>
+                  {attackPattern.x_mitre_permissions_required?.map(
+                    (permission) => (
+                      <ListItem key={permission} dense={true} divider={true}>
+                        <ListItemIcon>
+                          <PermIdentity/>
+                        </ListItemIcon>
+                        <ListItemText primary={permission}/>
+                      </ListItem>
+                    ),
+                  )}
+                </FieldOrEmpty>
               </List>
               <AttackPatternCoursesOfAction attackPattern={attackPattern} />
               <AttackPatternDataComponents attackPattern={attackPattern} />
