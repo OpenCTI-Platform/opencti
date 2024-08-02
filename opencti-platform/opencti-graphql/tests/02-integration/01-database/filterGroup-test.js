@@ -793,6 +793,27 @@ describe('Complex filters combinations for elastic queries', () => {
     });
     // 4 relationships with no stop_time + 3 with stop_time <= '1970-01-01T01:00:00.000Z' + 1 with stop_time = '5138-11-16T09:46:40.000Z'
     expect(queryResult.data.stixCoreRelationships.edges.length).toEqual(8);
+    // stop_time is not empty
+    queryResult = await queryAsAdmin({
+      query: RELATIONSHIP_QUERY,
+      variables: {
+        first: 10,
+        filters: {
+          mode: 'and',
+          filters: [
+            {
+              key: 'stop_time',
+              operator: 'not_nil',
+              values: [],
+              mode: 'or',
+            },
+          ],
+          filterGroups: [],
+        },
+      }
+    });
+    // 24 relationships - 8 with empty stop_time
+    expect(queryResult.data.stixCoreRelationships.edges.length).toEqual(16);
   });
   it('should list entities according to filters: aggregation with filters', async () => {
     // count the number of entities with each marking
