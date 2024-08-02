@@ -611,7 +611,7 @@ export const getAvailableOperatorForFilterKey = (
   }
   const { type: filterType } = filterDefinition;
   if (filterType === 'date') {
-    return ['gt', 'gte', 'lt', 'lte'];
+    return ['gt', 'gte', 'lt', 'lte', 'nil', 'not_nil'];
   }
   if (isNumericFilter(filterType)) {
     return ['gt', 'gte', 'lt', 'lte'];
