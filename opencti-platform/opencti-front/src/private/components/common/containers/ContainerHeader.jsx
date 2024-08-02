@@ -866,6 +866,9 @@ const ContainerHeader = (props) => {
             {enableQuickSubscription && (
               <StixCoreObjectSubscribers triggerData={triggerData} />
             )}
+            {!knowledge && disableSharing !== true && (
+              <StixCoreObjectSharing elementId={container.id} variant="header" />
+            )}
             <Security
               needs={[KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]}
               hasAccess={!!enableManageAuthorizedMembers}
@@ -879,9 +882,6 @@ const ContainerHeader = (props) => {
                 mutation={authorizedMembersMutation}
               />
             </Security>
-            {!knowledge && disableSharing !== true && (
-              <StixCoreObjectSharing elementId={container.id} variant="header" />
-            )}
             {!knowledge && (
               <StixCoreObjectFileExport
                 id={container.id}
