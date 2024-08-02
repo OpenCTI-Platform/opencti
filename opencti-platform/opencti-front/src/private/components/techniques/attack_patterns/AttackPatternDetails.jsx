@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, propOr } from 'ramda';
+import { compose } from 'ramda';
 import { createFragmentContainer, graphql } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import Paper from '@mui/material/Paper';
@@ -120,8 +120,8 @@ class AttackPatternDetailsComponent extends Component {
                 {t('Required permissions')}
               </Typography>
               <List style={{ paddingTop: 0 }}>
-                <FieldOrEmpty source={attackPattern.attackPattern}>
-                  {propOr([], 'x_mitre_permissions_required', attackPattern).map(
+                <FieldOrEmpty source={attackPattern.x_mitre_permissions_required}>
+                  {attackPattern.x_mitre_permissions_required.map(
                     (permission) => (
                       <ListItem key={permission} dense={true} divider={true}>
                         <ListItemIcon>
