@@ -16,6 +16,7 @@ import AddDataComponents from './AddDataComponents';
 import { addDataComponentsMutationRelationDelete } from './AddDataComponentsLines';
 import { deleteNodeFromEdge } from '../../../../utils/store';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 
 const AttackPatternDataComponentsComponent: FunctionComponent<{
   attackPattern: AttackPatternDataComponents_attackPattern$data;
@@ -51,8 +52,8 @@ const AttackPatternDataComponentsComponent: FunctionComponent<{
       </Typography>
       <AddDataComponents attackPattern={attackPattern} />
       <div className="clearfix" />
-      {attackPattern.dataComponents?.edges && attackPattern.dataComponents.edges.length > 0
-        ? <List style={{ marginTop: -10 }}>
+      <FieldOrEmpty source={attackPattern.dataComponents?.edges}>
+        <List style={{ marginTop: -10 }}>
           {attackPattern.dataComponents?.edges
             ?.map((dataComponentEdge) => dataComponentEdge?.node)
             .map((dataComponent, idx) => {
@@ -99,8 +100,7 @@ const AttackPatternDataComponentsComponent: FunctionComponent<{
               );
             })}
         </List>
-        : ('-')
-      }
+      </FieldOrEmpty>
     </div>
   );
 };

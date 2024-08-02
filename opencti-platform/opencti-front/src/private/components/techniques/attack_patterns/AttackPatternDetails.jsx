@@ -12,6 +12,7 @@ import ListItemText from '@mui/material/ListItemText';
 import Typography from '@mui/material/Typography';
 import { PermIdentity, SettingsApplications } from '@mui/icons-material';
 import Grid from '@mui/material/Grid';
+import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import inject18n from '../../../../components/i18n';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import AttackPatternParentAttackPatterns from './AttackPatternParentAttackPatterns';
@@ -51,12 +52,14 @@ class AttackPatternDetailsComponent extends Component {
               >
                 {t('External ID')}
               </Typography>
-              <Chip
-                size="small"
-                label={attackPattern.x_mitre_id}
-                color="primary"
-                style={{ borderRadius: 4 }}
-              />
+              <FieldOrEmpty source={attackPattern.attackPattern}>
+                <Chip
+                  size="small"
+                  label={attackPattern.x_mitre_id}
+                  color="primary"
+                  style={{ borderRadius: 4 }}
+                />
+              </FieldOrEmpty>
               <Typography
                 variant="h3"
                 gutterBottom={true}
@@ -76,8 +79,8 @@ class AttackPatternDetailsComponent extends Component {
                 >
                   {t('Platforms')}
                 </Typography>
-                {attackPattern.length > 0
-                  ? <List>
+                <List style={{ paddingTop: 0 }}>
+                  <FieldOrEmpty source={attackPattern.attackPattern}>
                     {propOr([], 'x_mitre_platforms', attackPattern).map(
                       (platform) => (
                         <ListItem key={platform} dense={true} divider={true}>
@@ -88,9 +91,8 @@ class AttackPatternDetailsComponent extends Component {
                         </ListItem>
                       ),
                     )}
-                  </List>
-                  : ('-')
-                }
+                  </FieldOrEmpty>
+                </List>
               </div>
               <AttackPatternSubAttackPatterns attackPattern={attackPattern} />
             </Grid>
@@ -117,8 +119,8 @@ class AttackPatternDetailsComponent extends Component {
               >
                 {t('Required permissions')}
               </Typography>
-              {attackPattern.length > 0
-                ? <List>
+              <List style={{ paddingTop: 0 }}>
+                <FieldOrEmpty source={attackPattern.attackPattern}>
                   {propOr([], 'x_mitre_permissions_required', attackPattern).map(
                     (permission) => (
                       <ListItem key={permission} dense={true} divider={true}>
@@ -129,9 +131,8 @@ class AttackPatternDetailsComponent extends Component {
                       </ListItem>
                     ),
                   )}
-                </List>
-                : ('-')
-              }
+                </FieldOrEmpty>
+              </List>
               <AttackPatternCoursesOfAction attackPattern={attackPattern} />
               <AttackPatternDataComponents attackPattern={attackPattern} />
             </Grid>

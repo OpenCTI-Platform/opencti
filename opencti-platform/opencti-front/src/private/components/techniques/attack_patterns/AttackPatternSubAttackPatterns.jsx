@@ -12,6 +12,7 @@ import IconButton from '@mui/material/IconButton';
 import { LockPattern } from 'mdi-material-ui';
 import { LinkOff } from '@mui/icons-material';
 import { createFragmentContainer, graphql } from 'react-relay';
+import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import AddSubAttackPattern from './AddSubAttackPattern';
 import { addSubAttackPatternsMutationRelationDelete } from './AddSubAttackPatternsLines';
 import { commitMutation } from '../../../../relay/environment';
@@ -63,9 +64,9 @@ class AttackPatternSubAttackPatternsComponent extends Component {
             }
           />
         </Security>
-        <div className="clearfix" />
-        {subAttackPatterns.length > 0
-          ? <List style={{ marginTop: -10 }}>
+        <div className="clearfix"/>
+        <FieldOrEmpty source={subAttackPatterns}>
+          <List style={{ marginTop: -10 }}>
             {subAttackPatterns.map((subAttackPattern) => (
               <ListItem
                 key={subAttackPattern.id}
@@ -96,8 +97,7 @@ class AttackPatternSubAttackPatternsComponent extends Component {
               </ListItem>
             ))}
           </List>
-          : ('-')
-        }
+        </FieldOrEmpty>
       </div>
     );
   }

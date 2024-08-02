@@ -17,6 +17,7 @@ import AddCoursesOfAction from './AddCoursesOfAction';
 import { addCoursesOfActionMutationRelationDelete } from './AddCoursesOfActionLines';
 import { commitMutation } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
+import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 
 const styles = (theme) => ({
   avatar: {
@@ -70,8 +71,8 @@ class AttackPatternCoursesOfActionComponent extends Component {
           attackPatternCoursesOfAction={attackPattern.coursesOfAction.edges}
         />
         <div className="clearfix" />
-        {attackPattern.length > 0
-          ? <List style={{ marginTop: -10 }}>
+        <FieldOrEmpty source={attackPattern.coursesOfAction.edges}>
+          <List style={{ marginTop: -10 }}>
             {attackPattern.coursesOfAction.edges.map((courseOfActionEdge) => {
               const courseOfAction = courseOfActionEdge.node;
               return (
@@ -105,8 +106,7 @@ class AttackPatternCoursesOfActionComponent extends Component {
               );
             })}
           </List>
-          : ('-')
-        }
+        </FieldOrEmpty>
       </div>
     );
   }
