@@ -24,7 +24,7 @@ const SCHEDULE_TIME = conf.get('retention_manager:interval') || 60000;
 const RETENTION_MANAGER_KEY = conf.get('retention_manager:lock_key') || 'retention_manager_lock';
 const RETENTION_BATCH_SIZE = conf.get('retention_manager:batch_size') || 100;
 
-const deleteElement = async (context: AuthContext, scope: string, nodeId: string, nodeEntityType?: string) => {
+export const deleteElement = async (context: AuthContext, scope: string, nodeId: string, nodeEntityType?: string) => {
   if (scope === 'knowledge') {
     await deleteElementById(context, RETENTION_MANAGER_USER, nodeId, nodeEntityType, { forceDelete: true });
   } else if (scope === 'file' || scope === 'workbench') {

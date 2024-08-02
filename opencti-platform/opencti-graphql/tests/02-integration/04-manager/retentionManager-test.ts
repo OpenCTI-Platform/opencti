@@ -3,7 +3,7 @@ import gql from 'graphql-tag';
 import { Readable } from 'stream';
 import { ADMIN_USER, queryAsAdmin, testContext } from '../../utils/testQuery';
 import { utcDate } from '../../../src/utils/format';
-import { getElementsToDelete } from '../../../src/manager/retentionManager';
+import { deleteElement, getElementsToDelete } from '../../../src/manager/retentionManager';
 import { allFilesForPaths } from '../../../src/modules/internal/document/document-domain';
 import { uploadToStorage } from '../../../src/database/file-storage-helper';
 import { elRawUpdateByQuery } from '../../../src/database/engine';
@@ -26,6 +26,9 @@ describe('Retention Manager tests ', () => {
   const workbench1Id = `${pendingPath}/${workbench1Name}`;
   const workbench2Name = 'workbench2';
   const workbench2Id = `${pendingPath}/${workbench2Name}`;
+
+  let filesToDelete;
+  let workbenchesToDelete;
 
   const CREATE_RETENTION_QUERY = gql`
       mutation RetentionRuleAdd($input: RetentionRuleAddInput!) {
@@ -146,14 +149,10 @@ describe('Retention Manager tests ', () => {
     await uploadToStorage(context, ADMIN_USER, pendingPath, workbench2ToUpload, {});
   });
   afterAll(async () => {
-    // delete the created files
-    const deleted = await deleteFile(context, ADMIN_USER, fileId);
-    expect(deleted?.id).toEqual(fileId);
+    // delete the remaining file
     const progressDeleted = await deleteFile(context, ADMIN_USER, progressFileId);
     expect(progressDeleted?.id).toEqual(progressFileId);
-    // delete the created workbenches
-    const workbench1Deleted = await deleteFile(context, ADMIN_USER, workbench1Id);
-    expect(workbench1Deleted?.id).toEqual(workbench1Id);
+    // delete the remaining workbench
     const workbench2Deleted = await deleteFile(context, ADMIN_USER, workbench2Id);
     expect(workbench2Deleted?.id).toEqual(workbench2Id);
   });
@@ -211,7 +210,7 @@ describe('Retention Manager tests ', () => {
     expect(files.length).toEqual(9); // 7 files from index-file-test + the 2 created files
     // retention rule on files not modified since 2023-07-01
     const before = utcDate('2023-07-01T00:00:00.000Z');
-    const filesToDelete = await getElementsToDelete(context, 'file', before);
+    filesToDelete = await getElementsToDelete(context, 'file', before);
     expect(filesToDelete.edges.length).toEqual(1); // fileToTestRetentionRule is the only file that has not been modified since 'before' and with uploadStatus = complete
     expect(filesToDelete.edges[0].node.id).toEqual(fileId);
     // retention rule on all the files
@@ -221,8 +220,18 @@ describe('Retention Manager tests ', () => {
   it('should fetch the correct files to be deleted by a retention rule on workbenches', async () => {
     // retention rule on workbenches not modified since 2023-07-01
     const before = utcDate('2023-07-01T00:00:00.000Z');
-    const filesToDelete = await getElementsToDelete(context, 'workbench', before);
-    expect(filesToDelete.edges.length).toEqual(1); // workbench1 is the only workbench that has not been modified since 'before'
-    expect(filesToDelete.edges[0].node.id).toEqual(workbench1Id);
+    workbenchesToDelete = await getElementsToDelete(context, 'workbench', before);
+    expect(workbenchesToDelete.edges.length).toEqual(1); // workbench1 is the only workbench that has not been modified since 'before'
+    expect(workbenchesToDelete.edges[0].node.id).toEqual(workbench1Id);
+  });
+  it('should delete the fetched files and workbenches', async () => {
+    // delete file
+    await deleteElement(context, 'file', fileId); // should delete fileToTestRetentionRule
+    const files = await allFilesForPaths(testContext, ADMIN_USER, [globalPath]);
+    expect(files.length).toEqual(8); // 7 files from index-file-test + the 2 created files - fileToTestRetentionRule that should have been deleted
+    // delete workbench
+    await deleteElement(context, 'workbench', workbench1Id); // should delete workbench1
+    const workbenches = await allFilesForPaths(testContext, ADMIN_USER, [pendingPath]);
+    expect(workbenches.length).toEqual(1); // the 2 created workbenches - workbench1 that should have been deleted
   });
 });
