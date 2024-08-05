@@ -29,7 +29,8 @@ const BulkTextModal = ({ open, onClose, onValidate, formValue, title }: BulkText
   };
 
   const validate = () => {
-    onValidate(value);
+    const noDuplicateNoEmpty = Array.from(new Set(splitMultilines(value)));
+    onValidate(noDuplicateNoEmpty.join('\n'));
     close();
   };
 
