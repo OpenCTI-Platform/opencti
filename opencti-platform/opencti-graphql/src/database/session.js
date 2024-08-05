@@ -102,7 +102,10 @@ export const killUserSessions = async (userId) => {
   const sessionsIds = sessions.map((s) => s.id);
   const killedSessions = [];
   for (let index = 0; index < sessionsIds.length; index += 1) {
-    const sessionId = sessionsIds[index];
+    let sessionId = sessionsIds[index];
+    if (sessionId.startsWith('sess:')) {
+      sessionId = sessionId.substring(5);
+    }
     const killedSession = await killSession(sessionId);
     killedSessions.push(killedSession);
   }
