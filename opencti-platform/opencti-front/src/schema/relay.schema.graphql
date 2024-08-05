@@ -8373,6 +8373,7 @@ type Mutation {
   groupingContextClean(id: ID!): Grouping
   groupingRelationAdd(id: ID!, input: StixRefRelationshipAddInput): StixRefRelationship
   groupingRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): Grouping
+  groupingEditAuthorizedMembers(id: ID!, input: [MemberAccessInput!]): CaseIncident
   narrativeAdd(input: NarrativeAddInput!): Narrative
   narrativeDelete(id: ID!): ID
   narrativeFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): Narrative
@@ -8881,6 +8882,8 @@ type Grouping implements BasicObject & StixObject & StixCoreObject & StixDomainO
   content_mapping: String
   context: String!
   x_opencti_aliases: [String]
+  authorized_members: [MemberAccess!]
+  currentUserAccessRight: String
   creators: [Creator!]
   toStix: String
   importFiles(first: Int, prefixMimeType: String): FileConnection

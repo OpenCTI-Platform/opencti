@@ -121,6 +121,8 @@ type Grouping implements BasicObject & StixObject & StixCoreObject & StixDomainO
     content_mapping: String
     context: String!
     x_opencti_aliases: [String]
+    authorized_members: [MemberAccess!]
+    currentUserAccessRight: String
     # Technical
     creators: [Creator!]
     toStix: String
@@ -242,4 +244,5 @@ type Mutation {
     groupingContextClean(id: ID!): Grouping @auth(for: [KNOWLEDGE_KNUPDATE])
     groupingRelationAdd(id: ID!, input: StixRefRelationshipAddInput): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
     groupingRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): Grouping @auth(for: [KNOWLEDGE_KNUPDATE])
+    groupingEditAuthorizedMembers(id: ID!, input:[MemberAccessInput!]): CaseIncident @auth(for: [KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS])
 }

@@ -29,6 +29,7 @@ import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings
 import useGranted, { KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE, KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 import GroupingEdition from './GroupingEdition';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 const subscription = graphql`
   subscription RootGroupingSubscription($id: ID!) {
@@ -54,6 +55,18 @@ const groupingQuery = graphql`
       standard_id
       entity_type
       name
+      currentUserAccessRight
+      authorized_members {
+        id
+        name
+        entity_type
+        access_right
+      }
+      creators {
+        id
+        name
+        entity_type
+      }
       ...Grouping_grouping
       ...GroupingDetails_grouping
       ...GroupingKnowledge_grouping
@@ -75,6 +88,22 @@ const groupingQuery = graphql`
   }
 `;
 
+const groupingAuthorizedMembersMutation = graphql`
+  mutation RootGroupingAuthorizedMembersMutation(
+    $id: ID!
+    $input: [MemberAccessInput!]
+  ) {
+    groupingEditAuthorizedMembers(id: $id, input: $input) {
+      authorized_members {
+        id
+        name
+        entity_type
+        access_right
+      }
+    }
+  }
+`;
+
 const RootGrouping = () => {
   const { groupingId } = useParams() as { groupingId: string };
   const subConfig = useMemo<
@@ -90,6 +119,7 @@ const RootGrouping = () => {
   const enableReferences = useIsEnforceReference('Grouping') && !useGranted([KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE]);
   const { t_i18n } = useFormatter();
   useSubscription(subConfig);
+  const { isFeatureEnable } = useHelper();
 
   return (
     <>
@@ -102,6 +132,7 @@ const RootGrouping = () => {
               const { grouping } = props;
               const isOverview = location.pathname === `/dashboard/analyses/groupings/${grouping.id}`;
               const paddingRight = getPaddingRight(location.pathname, grouping.id, '/dashboard/analyses/groupings', false);
+              const canManageAuthorizedMembers = grouping?.currentUserAccessRight === 'admin' && isFeatureEnable('CONTAINERS_AUTHORIZED_MEMBERS');
               return (
                 <div style={{ paddingRight }}>
                   <Breadcrumbs variant="object" elements={[
@@ -122,6 +153,8 @@ const RootGrouping = () => {
                     enableQuickExport={true}
                     enableAskAi={true}
                     redirectToContent={true}
+                    enableManageAuthorizedMembers={canManageAuthorizedMembers}
+                    authorizedMembersMutation={groupingAuthorizedMembersMutation}
                   />
                   <Box
                     sx={{

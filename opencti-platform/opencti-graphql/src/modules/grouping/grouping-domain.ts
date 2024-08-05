@@ -2,9 +2,9 @@ import * as R from 'ramda';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { createEntity, distributionEntities, timeSeriesEntities } from '../../database/middleware';
 import { notify } from '../../database/redis';
-import { BUS_TOPICS } from '../../config/conf';
-import { ABSTRACT_STIX_DOMAIN_OBJECT, buildRefRelationKey } from '../../schema/general';
-import type { GroupingAddInput, QueryGroupingsDistributionArgs, QueryGroupingsNumberArgs, QueryGroupingsTimeSeriesArgs } from '../../generated/graphql';
+import { BUS_TOPICS, isFeatureEnabled } from '../../config/conf';
+import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_DOMAIN_OBJECT, buildRefRelationKey } from '../../schema/general';
+import type { GroupingAddInput, MemberAccessInput, QueryGroupingsDistributionArgs, QueryGroupingsNumberArgs, QueryGroupingsTimeSeriesArgs } from '../../generated/graphql';
 import { FilterMode } from '../../generated/graphql';
 import { type EntityOptions, internalLoadById, listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
 import { type BasicStoreEntityGrouping, ENTITY_TYPE_CONTAINER_GROUPING, type GroupingNumberResult } from './grouping-types';
@@ -14,6 +14,8 @@ import { elCount } from '../../database/engine';
 import { READ_INDEX_STIX_DOMAIN_OBJECTS } from '../../database/utils';
 import type { DomainFindById } from '../../domain/domainTypes';
 import { addFilter } from '../../utils/filtering/filtering-utils';
+import { UnsupportedError } from '../../config/errors';
+import { editAuthorizedMembers } from '../../utils/authorizedMembers';
 
 export const findById: DomainFindById<BasicStoreEntityGrouping> = (context: AuthContext, user: AuthUser, groupingId: string) => {
   return storeLoadById<BasicStoreEntityGrouping>(context, user, groupingId, ENTITY_TYPE_CONTAINER_GROUPING);
@@ -93,3 +95,23 @@ export const groupingsDistributionByEntity = async (context: AuthContext, user: 
   return distributionEntities(context, user, [ENTITY_TYPE_CONTAINER_GROUPING], { ...args, filters });
 };
 // endregion
+
+export const groupingEditAuthorizedMembers = async (
+  context: AuthContext,
+  user: AuthUser,
+  entityId: string,
+  input: MemberAccessInput[] | undefined | null,
+) => {
+  if (!isFeatureEnabled('CONTAINERS_AUTHORIZED_MEMBERS')) {
+    throw UnsupportedError('This feature is disabled');
+  }
+  const args = {
+    entityId,
+    input,
+    requiredCapabilities: ['KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS'],
+    entityType: ENTITY_TYPE_CONTAINER_GROUPING,
+    busTopicKey: ABSTRACT_STIX_CORE_OBJECT,
+  };
+  // @ts-expect-error TODO improve busTopicKey types to avoid this
+  return editAuthorizedMembers(context, user, args);
+};

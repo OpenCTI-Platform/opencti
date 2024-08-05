@@ -7693,6 +7693,7 @@ export type GroupEditMutationsRelationDeleteArgs = {
 
 export type Grouping = BasicObject & Container & StixCoreObject & StixDomainObject & StixObject & {
   __typename?: 'Grouping';
+  authorized_members?: Maybe<Array<MemberAccess>>;
   avatar?: Maybe<OpenCtiFile>;
   cases?: Maybe<CaseConnection>;
   confidence?: Maybe<Scalars['Int']['output']>;
@@ -7706,6 +7707,7 @@ export type Grouping = BasicObject & Container & StixCoreObject & StixDomainObje
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
+  currentUserAccessRight?: Maybe<Scalars['String']['output']>;
   description?: Maybe<Scalars['String']['output']>;
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String']['output'];
@@ -12666,6 +12668,7 @@ export type Mutation = {
   groupingContextClean?: Maybe<Grouping>;
   groupingContextPatch?: Maybe<Grouping>;
   groupingDelete?: Maybe<Scalars['ID']['output']>;
+  groupingEditAuthorizedMembers?: Maybe<CaseIncident>;
   groupingFieldPatch?: Maybe<Grouping>;
   groupingRelationAdd?: Maybe<StixRefRelationship>;
   groupingRelationDelete?: Maybe<Grouping>;
@@ -13522,6 +13525,12 @@ export type MutationGroupingContextPatchArgs = {
 
 export type MutationGroupingDeleteArgs = {
   id: Scalars['ID']['input'];
+};
+
+
+export type MutationGroupingEditAuthorizedMembersArgs = {
+  id: Scalars['ID']['input'];
+  input?: InputMaybe<Array<MemberAccessInput>>;
 };
 
 
@@ -32996,6 +33005,7 @@ export type GroupEditMutationsResolvers<ContextType = any, ParentType extends Re
 }>;
 
 export type GroupingResolvers<ContextType = any, ParentType extends ResolversParentTypes['Grouping'] = ResolversParentTypes['Grouping']> = ResolversObject<{
+  authorized_members?: Resolver<Maybe<Array<ResolversTypes['MemberAccess']>>, ParentType, ContextType>;
   avatar?: Resolver<Maybe<ResolversTypes['OpenCtiFile']>, ParentType, ContextType>;
   cases?: Resolver<Maybe<ResolversTypes['CaseConnection']>, ParentType, ContextType, Partial<GroupingCasesArgs>>;
   confidence?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
@@ -33009,6 +33019,7 @@ export type GroupingResolvers<ContextType = any, ParentType extends ResolversPar
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
+  currentUserAccessRight?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -34773,6 +34784,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   groupingContextClean?: Resolver<Maybe<ResolversTypes['Grouping']>, ParentType, ContextType, RequireFields<MutationGroupingContextCleanArgs, 'id'>>;
   groupingContextPatch?: Resolver<Maybe<ResolversTypes['Grouping']>, ParentType, ContextType, RequireFields<MutationGroupingContextPatchArgs, 'id'>>;
   groupingDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationGroupingDeleteArgs, 'id'>>;
+  groupingEditAuthorizedMembers?: Resolver<Maybe<ResolversTypes['CaseIncident']>, ParentType, ContextType, RequireFields<MutationGroupingEditAuthorizedMembersArgs, 'id'>>;
   groupingFieldPatch?: Resolver<Maybe<ResolversTypes['Grouping']>, ParentType, ContextType, RequireFields<MutationGroupingFieldPatchArgs, 'id' | 'input'>>;
   groupingRelationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<MutationGroupingRelationAddArgs, 'id'>>;
   groupingRelationDelete?: Resolver<Maybe<ResolversTypes['Grouping']>, ParentType, ContextType, RequireFields<MutationGroupingRelationDeleteArgs, 'id' | 'relationship_type' | 'toId'>>;

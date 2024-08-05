@@ -3,7 +3,7 @@ import {
   addGrouping,
   findAll,
   findById,
-  groupingContainsStixObjectOrStixRelationship,
+  groupingContainsStixObjectOrStixRelationship, groupingEditAuthorizedMembers,
   groupingsDistributionByEntity,
   groupingsNumber,
   groupingsNumberByAuthor,
@@ -22,6 +22,8 @@ import {
 } from '../../domain/stixDomainObject';
 import { distributionEntities } from '../../database/middleware';
 import { ENTITY_TYPE_CONTAINER_GROUPING } from './grouping-types';
+import { getUserAccessRight } from '../../utils/access';
+import { getAuthorizedMembers } from '../../utils/authorizedMembers';
 
 const groupingResolvers: Resolvers = {
   Query: {
@@ -55,6 +57,10 @@ const groupingResolvers: Resolvers = {
       return groupingContainsStixObjectOrStixRelationship(context, context.user, args.id, args.stixObjectOrStixRelationshipId);
     },
   },
+  Grouping: {
+    authorized_members: (grouping, _, context) => getAuthorizedMembers(context, context.user, grouping),
+    currentUserAccessRight: (grouping, _, context) => getUserAccessRight(context.user, grouping),
+  },
   Mutation: {
     groupingAdd: (_, { input }, context) => {
       return addGrouping(context, context.user, input);
@@ -76,6 +82,9 @@ const groupingResolvers: Resolvers = {
     },
     groupingRelationDelete: (_, { id, toId, relationship_type: relationshipType }, context) => {
       return stixDomainObjectDeleteRelation(context, context.user, id, toId, relationshipType);
+    },
+    groupingEditAuthorizedMembers: (_, { id, input }, context) => {
+      return groupingEditAuthorizedMembers(context, context.user, id, input);
     },
   }
 };

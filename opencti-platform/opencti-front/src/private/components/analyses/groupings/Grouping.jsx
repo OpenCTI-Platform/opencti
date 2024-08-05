@@ -11,6 +11,7 @@ import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../notes/StixCoreObjectOrStixCoreRelationshipNotes';
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
+import { getCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -24,6 +25,7 @@ const GroupingComponent = ({ grouping }) => {
   const classes = useStyles();
   const { isFeatureEnable } = useHelper();
   const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
+  const { canEdit } = getCurrentUserAccessRight(grouping);
   return (
     <div data-testid="grouping-details-page">
       <Grid
@@ -51,7 +53,7 @@ const GroupingComponent = ({ grouping }) => {
         </Grid>
       </Grid>
       {!isFABReplaced && (
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+        <Security needs={[KNOWLEDGE_KNUPDATE]} hasAccess={canEdit}>
           <GroupingEdition groupingId={grouping.id} />
         </Security>
       )}
@@ -73,6 +75,7 @@ export default createFragmentContainer(GroupingComponent, {
       modified
       created_at
       updated_at
+      currentUserAccessRight
       createdBy {
         ... on Identity {
           id
