@@ -6696,7 +6696,7 @@ export type EntitySetting = BasicObject & InternalObject & {
   entity_type: Scalars['String']['output'];
   id: Scalars['ID']['output'];
   mandatoryAttributes: Array<Scalars['String']['output']>;
-  overviewLayoutCustomization?: Maybe<Array<OverviewLayoutCustomization>>;
+  overview_layout_customization?: Maybe<Array<OverviewLayoutCustomization>>;
   parent_types: Array<Scalars['String']['output']>;
   platform_entity_files_ref?: Maybe<Scalars['Boolean']['output']>;
   platform_hidden_type?: Maybe<Scalars['Boolean']['output']>;
@@ -32599,7 +32599,7 @@ export type EntitySettingResolvers<ContextType = any, ParentType extends Resolve
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   mandatoryAttributes?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
-  overviewLayoutCustomization?: Resolver<Maybe<Array<ResolversTypes['OverviewLayoutCustomization']>>, ParentType, ContextType>;
+  overview_layout_customization?: Resolver<Maybe<Array<ResolversTypes['OverviewLayoutCustomization']>>, ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   platform_entity_files_ref?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   platform_hidden_type?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;

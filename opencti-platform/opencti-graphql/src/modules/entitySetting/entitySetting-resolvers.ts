@@ -27,7 +27,7 @@ const entitySettingResolvers: Resolvers = {
     scaleAttributes: (entitySetting, _, context) => queryScaleAttributesForSetting(context, context.user, entitySetting),
     defaultValuesAttributes: (entitySetting, _, context) => queryDefaultValuesAttributesForSetting(context, context.user, entitySetting),
     availableSettings: (entitySetting, _, __) => getAvailableSettings(entitySetting.target_type),
-    overviewLayoutCustomization: (entitySetting, _, __) => getOverviewLayoutCustomization(entitySetting)
+    overview_layout_customization: (entitySetting, _, __) => getOverviewLayoutCustomization(entitySetting)
   },
   Mutation: {
     entitySettingsFieldPatch: (_, { ids, input }, context) => {

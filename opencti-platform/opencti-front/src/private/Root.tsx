@@ -309,7 +309,7 @@ const RootComponent: FunctionComponent<RootComponentProps> = ({ queryRef }) => {
   const platformModuleHelpers = platformModuleHelper(settings);
   const platformAnalyticsConfiguration = generateAnalyticsConfig(settings);
   const overviewLayoutCustomizationEntries = entitySettingsData
-    ?.map(({ target_type, overviewLayoutCustomization }) => ({ key: target_type, values: overviewLayoutCustomization }))
+    ?.map(({ target_type, overview_layout_customization }) => ({ key: target_type, values: overview_layout_customization }))
     .filter((entry) => !!entry.values)
     .map(({ key: entityTypeKey, values: widgetsValues }) => [entityTypeKey, new Map(widgetsValues?.map(({ key, width }) => [key, width]))]);
   const overviewLayoutCustomization = overviewLayoutCustomizationEntries ? new Map(overviewLayoutCustomizationEntries.map(([key, values]) => [key, values])) : new Map();

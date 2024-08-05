@@ -151,7 +151,7 @@ export const registerDefinition = <T extends StoreEntity, Z extends StixObject>(
     schemaTypesDefinition.add(ABSTRACT_STIX_REF_RELATIONSHIP, source.databaseName);
   });
 
-  // Register overviewLayoutCustomization
+  // Register overview_layout_customization
   if (definition.overviewLayoutCustomization) {
     registerEntityOverviewLayoutCustomization(definition.type.name, definition.overviewLayoutCustomization);
   }
