@@ -102,7 +102,7 @@ const dataSourcesLinesFragment = graphql`
 const DataSources: FunctionComponent = () => {
   const { t_i18n } = useFormatter();
   const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACED');
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   const initialValues = {
     searchTerm: '',
