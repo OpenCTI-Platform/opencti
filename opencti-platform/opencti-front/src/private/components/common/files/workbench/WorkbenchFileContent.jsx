@@ -150,6 +150,7 @@ const inlineStylesHeaders = {
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     paddingRight: 10,
+    cursor: 'default',
   },
   markings: {
     float: 'left',
@@ -3172,7 +3173,7 @@ const WorkbenchFileContentComponent = ({
                 <div>
                   {sortHeader('ttype', 'Type', true)}
                   {sortHeader('default_value', 'Default value', true)}
-                  {sortHeader('labels', 'Labels', true)}
+                  {sortHeader('labels', 'Labels', false)}
                   {sortHeader('markings', 'Marking definitions', true)}
                   {sortHeader('in_platform', 'Already in plat.', true)}
                 </div>
@@ -3369,7 +3370,7 @@ const WorkbenchFileContentComponent = ({
                 <div>
                   {sortHeader('ttype', 'Type', true)}
                   {sortHeader('default_value', 'Default value', true)}
-                  {sortHeader('labels', 'Labels', true)}
+                  {sortHeader('labels', 'Labels', false)}
                   {sortHeader('markings', 'Marking definitions', true)}
                   {sortHeader('in_platform', 'Already in plat.', true)}
                 </div>
@@ -3609,7 +3610,7 @@ const WorkbenchFileContentComponent = ({
                 <div>
                   {sortHeader('ttype', 'Type', true)}
                   {sortHeader('default_value', 'Default value', true)}
-                  {sortHeader('labels', 'Labels', true)}
+                  {sortHeader('labels', 'Labels', false)}
                   {sortHeader('markings', 'Marking definitions', true)}
                 </div>
               }
@@ -3761,7 +3762,7 @@ const WorkbenchFileContentComponent = ({
                 <div>
                   {sortHeader('ttype', 'Type', true)}
                   {sortHeader('default_value', 'Default value', true)}
-                  {sortHeader('labels', 'Labels', true)}
+                  {sortHeader('labels', 'Labels', false)}
                   {sortHeader('markings', 'Marking definitions', true)}
                 </div>
               }
@@ -3927,7 +3928,7 @@ const WorkbenchFileContentComponent = ({
                 <div>
                   {sortHeader('ttype', 'Type', true)}
                   {sortHeader('default_value', 'Default value', true)}
-                  {sortHeader('labels', 'Labels', true)}
+                  {sortHeader('labels', 'Labels', false)}
                   {sortHeader('markings', 'Marking definitions', true)}
                   {sortHeader('in_platform', 'Already in plat.', true)}
                 </div>
