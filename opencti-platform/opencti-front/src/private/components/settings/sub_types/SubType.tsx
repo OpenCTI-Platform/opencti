@@ -195,7 +195,7 @@ const SubType = ({ data }: { data: SubType_subType$key }) => {
               <Paper
                 classes={{ root: classes.paper }}
                 variant="outlined"
-                style={{ marginBottom: 30 }}
+                className={'paper-for-grid'}
               >
                 <EntitySettingsOverviewLayoutCustomization
                   entitySettingsData={entitySetting as {
@@ -216,6 +216,7 @@ const SubType = ({ data }: { data: SubType_subType$key }) => {
               <Paper
                 classes={{ root: classes.paper }}
                 variant="outlined"
+                className={'paper-for-grid'}
               >
                 <Grid container>
                   {layout.map(({ key, width, label }) => (
@@ -223,7 +224,7 @@ const SubType = ({ data }: { data: SubType_subType$key }) => {
                       <Paper
                         classes={{ root: classes.paper }}
                         className={'paper-for-grid'}
-                        style={{ height: 50, padding: 0, margin: 3, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                        style={{ height: 70, padding: 0, margin: 3, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                       >
                         {t_i18n(label)}
                       </Paper>
