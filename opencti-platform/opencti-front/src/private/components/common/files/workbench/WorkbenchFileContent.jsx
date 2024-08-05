@@ -171,6 +171,7 @@ const inlineStylesHeaders = {
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     paddingRight: 10,
+    cursor: 'default',
   },
 };
 
@@ -3175,7 +3176,7 @@ const WorkbenchFileContentComponent = ({
                   {sortHeader('default_value', 'Default value', true)}
                   {sortHeader('labels', 'Labels', false)}
                   {sortHeader('markings', 'Marking definitions', true)}
-                  {sortHeader('in_platform', 'Already in plat.', true)}
+                  {sortHeader('in_platform', 'Already in plat.', false)}
                 </div>
               }
             />
@@ -3372,7 +3373,7 @@ const WorkbenchFileContentComponent = ({
                   {sortHeader('default_value', 'Default value', true)}
                   {sortHeader('labels', 'Labels', false)}
                   {sortHeader('markings', 'Marking definitions', true)}
-                  {sortHeader('in_platform', 'Already in plat.', true)}
+                  {sortHeader('in_platform', 'Already in plat.', false)}
                 </div>
               }
             />
@@ -3930,7 +3931,7 @@ const WorkbenchFileContentComponent = ({
                   {sortHeader('default_value', 'Default value', true)}
                   {sortHeader('labels', 'Labels', false)}
                   {sortHeader('markings', 'Marking definitions', true)}
-                  {sortHeader('in_platform', 'Already in plat.', true)}
+                  {sortHeader('in_platform', 'Already in plat.', false)}
                 </div>
               }
             />
