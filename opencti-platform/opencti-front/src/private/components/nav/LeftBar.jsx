@@ -107,6 +107,7 @@ import logoFiligranTextDark from '../../../static/images/logo_filigran_text_dark
 import logoFiligranTextLight from '../../../static/images/logo_filigran_text_light.png';
 import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
 import useDimensions from '../../../utils/hooks/useDimensions';
+import useHelper from '../../../utils/hooks/useHelper';
 
 const SMALL_BAR_WIDTH = 55;
 const OPEN_BAR_WIDTH = 180;
@@ -202,6 +203,7 @@ const StyledTooltip = styled(({ className, ...props }) => (
 const LeftBar = () => {
   const theme = useTheme();
   const location = useLocation();
+  const { isFeatureEnable } = useHelper();
   const ref = useRef();
   const { t_i18n } = useFormatter();
   const {
@@ -817,9 +819,11 @@ const LeftBar = () => {
             </Security>
             {generateSubMenu(
               'dashboards',
-              [
+              isFeatureEnable('PUBLIC_DASHBOARD_LIST') ? [
                 { granted: isGrantedToExplore, type: 'Dashboard', link: '/dashboard/workspaces/dashboards', label: 'Dashboards' },
                 { granted: isGrantedToExplore, type: 'Dashboard', link: '/dashboard/workspaces/public_dashboards', label: 'Public dashboards' },
+              ] : [
+                { granted: isGrantedToExplore, type: 'Dashboard', link: '/dashboard/workspaces/dashboards', label: 'Dashboards' },
               ],
             )}
             <Security needs={[INVESTIGATION]}>
