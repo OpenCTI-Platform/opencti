@@ -31,7 +31,7 @@ const Root = () => (
         <Security needs={[EXPLORE]} placeholder={<Navigate to="/dashboard"/>}>
           <PublicDashboard/>
         </Security>
-          }
+      }
     />
     <Route
       path="/investigations/*"
