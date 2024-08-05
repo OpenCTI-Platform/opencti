@@ -22,6 +22,12 @@ import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationshi
 import { STIX_CORE_RELATIONSHIPS } from '../../schema/stixCoreRelationship';
 import { UnsupportedError } from '../../config/errors';
 
+export const emptyFilterGroup = {
+  mode: 'and',
+  filters: [],
+  filterGroups: [],
+};
+
 //----------------------------------------------------------------------------------------------------------------------
 // Basic utility functions
 
