@@ -18,6 +18,11 @@ type ConfidenceSource = {
   object: Group | AuthUser | null
 };
 
+type ConfidenceOverride = {
+  entity_type: string;
+  max_confidence: number;
+};
+
 export const computeUserEffectiveConfidenceLevel = (user: AuthUser) => {
   // if a user has BYPASS capability, we consider a level 100
   if (isBypassUser(user)) {
@@ -65,7 +70,7 @@ export const computeUserEffectiveConfidenceLevel = (user: AuthUser) => {
 
   if (isNotEmptyField(user.user_confidence_level?.overrides)) {
     // for each user override, overridesMap.set
-    user.user_confidence_level?.overrides.forEach(({ entity_type, max_confidence }) => {
+    (user.user_confidence_level?.overrides as ConfidenceOverride[]).forEach(({ entity_type, max_confidence }) => {
       // user's overrides overwrite any override set at the groups level
       overridesMap.set(entity_type, { max_confidence, source: { object: user, type: 'User' } });
     });

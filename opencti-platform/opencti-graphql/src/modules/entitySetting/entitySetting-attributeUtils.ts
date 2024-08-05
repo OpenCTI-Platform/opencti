@@ -84,7 +84,7 @@ export const getEntitySettingSchemaAttributes = async (
             schemaAttribute.mandatory = userDefinedAttr.mandatory;
           }
           if (isNotEmptyField(userDefinedAttr.default_values)) {
-            schemaAttribute.defaultValues = userDefinedAttr.default_values?.map((v) => ({ id: v, name: v }));
+            schemaAttribute.defaultValues = (userDefinedAttr.default_values as string[])?.map((v) => ({ id: v, name: v }));
             // If the default value is a ref with an id, save it to resolve it below.
             if (schemaAttribute.name !== 'objectMarking' && refsNames.includes(schemaAttribute.name)) {
               attributesDefaultValuesToResolve[schemaIndex] = userDefinedAttr.default_values ?? [];

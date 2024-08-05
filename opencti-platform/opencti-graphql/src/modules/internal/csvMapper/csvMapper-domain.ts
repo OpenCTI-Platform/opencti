@@ -185,7 +185,7 @@ export const csvMapperSchemaAttributes = async (context: AuthContext, user: Auth
             attribute.mandatory = userDefinedAttr.mandatory;
           }
           if (isNotEmptyField(userDefinedAttr.default_values)) {
-            attribute.defaultValues = userDefinedAttr.default_values?.map((v) => ({ id: v, name: v }));
+            attribute.defaultValues = (userDefinedAttr.default_values as string[])?.map((v) => ({ id: v, name: v }));
             // If the default value is a ref with an id, save it to resolve it below.
             if (attribute.name !== 'objectMarking' && refsNames.includes(attribute.name)) {
               attributesDefaultValuesToResolve[`${schemaIndex}-${attributeIndex}`] = userDefinedAttr.default_values ?? [];

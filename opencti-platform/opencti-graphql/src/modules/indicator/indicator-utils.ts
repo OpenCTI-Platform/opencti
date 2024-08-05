@@ -88,8 +88,9 @@ const computeValidUntil = (indicator: IndicatorAddInput, validFrom: Moment, life
     // because according to STIX 2.1 specification the valid_until must be greater than the valid_from.
     validUntil = validFrom.clone().add(1, 'seconds');
   } else if (isNotEmptyField(indicator.valid_until)) {
+    const validUntilDate = utcDate(indicator.valid_until as string);
     // Ensure valid_until is strictly greater than valid_from
-    if (indicator.valid_until <= validFrom) {
+    if (validUntilDate <= validFrom) {
       throw ValidationError('valid_until', { message: 'The valid until date must be greater than the valid from date' });
     } else {
       validUntil = utcDate(indicator.valid_until);

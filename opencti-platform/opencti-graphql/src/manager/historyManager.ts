@@ -64,7 +64,7 @@ const eventsApplyHandler = async (context: AuthContext, events: Array<SseEvent<S
     const stix = event.data.data;
     const eventMarkingRefs = (stix.object_marking_refs ?? [])
       .map((stixId) => markingsById.get(stixId)?.internal_id)
-      .filter((o) => isNotEmptyField(o));
+      .filter((o) => isNotEmptyField(o)) as string[];
     const eventGrantedRefs = (stix.extensions[STIX_EXT_OCTI].granted_refs ?? [])
       .map((stixId) => organizationsById.get(stixId)?.internal_id)
       .filter((o) => isNotEmptyField(o));
@@ -85,7 +85,7 @@ const eventsApplyHandler = async (context: AuthContext, events: Array<SseEvent<S
       const { newDocument: previous } = jsonpatch.applyPatch(structuredClone(stix), updateEvent.context.reverse_patch);
       const previousMarkingRefs = (previous.object_marking_refs ?? [])
         .map((stixId) => markingsById.get(stixId)?.internal_id)
-        .filter((o) => isNotEmptyField(o));
+        .filter((o) => isNotEmptyField(o)) as string[];
       eventMarkingRefs.push(...previousMarkingRefs);
     }
     if (stix.type === STIX_TYPE_RELATION) {

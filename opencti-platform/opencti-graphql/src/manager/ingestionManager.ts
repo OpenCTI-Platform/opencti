@@ -88,7 +88,7 @@ const rssItemV1Convert = (turndownService: TurndownService, feed: RssElement, en
   return {
     title: turndownService.turndown(entry.title._),
     description: turndownService.turndown(entry.summary?._ ?? ''),
-    link: isNotEmptyField(entry.link) ? entry.link.href?.trim() : '',
+    link: isNotEmptyField(entry.link) ? (entry.link as { href: string }).href?.trim() : '',
     content: turndownService.turndown(entry.content?._ ?? ''),
     labels: [], // No label in rss v1
     pubDate: utcDate(sanitizeForMomentParsing(entry.updated?._ ?? updated?._ ?? FROM_START_STR)),
@@ -100,9 +100,9 @@ const rssItemV2Convert = (turndownService: TurndownService, channel: RssElement,
   return {
     title: turndownService.turndown(item.title._ ?? ''),
     description: turndownService.turndown(item.description?._ ?? ''),
-    link: isNotEmptyField(item.link) ? (item.link._ ?? '').trim() : '',
+    link: isNotEmptyField(item.link) ? ((item.link as { _: string })._ ?? '').trim() : '',
     content: turndownService.turndown(item['content:encoded']?._ ?? item.content?._ ?? ''),
-    labels: R.uniq(asArray(item.category).filter((c) => isNotEmptyField(c)).map((c) => c._.trim())),
+    labels: R.uniq(asArray(item.category).filter((c) => isNotEmptyField(c)).map((c) => (c as { _: string })._.trim())),
     pubDate: utcDate(sanitizeForMomentParsing(item.pubDate?._ ?? pubDate?._ ?? FROM_START_STR)),
   };
 };
