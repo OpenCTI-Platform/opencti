@@ -9,11 +9,12 @@ interface BulkTextModalProps {
   onClose: () => void
   onValidate: (value: string) => void
   formValue: string
+  title?: string
 }
 
 const MAX_LINES = 50;
 
-const BulkTextModal = ({ open, onClose, onValidate, formValue }: BulkTextModalProps) => {
+const BulkTextModal = ({ open, onClose, onValidate, formValue, title }: BulkTextModalProps) => {
   const { t_i18n } = useFormatter();
   const [value, setValue] = useState('');
   const nbLines = splitMultilines(value).length;
@@ -28,12 +29,13 @@ const BulkTextModal = ({ open, onClose, onValidate, formValue }: BulkTextModalPr
   };
 
   const validate = () => {
-    onValidate(value);
+    const noDuplicateNoEmpty = Array.from(new Set(splitMultilines(value)));
+    onValidate(noDuplicateNoEmpty.join('\n'));
     close();
   };
 
   const labelNbLines = nbLines > 0 ? `(${nbLines})` : '';
-  const label = `${t_i18n('Entities (one per line)')} ${labelNbLines}`;
+  const label = `${t_i18n('Values (one per line)')} ${labelNbLines}`;
 
   return (
     <Dialog
@@ -41,11 +43,11 @@ const BulkTextModal = ({ open, onClose, onValidate, formValue }: BulkTextModalPr
       onClose={onClose}
       fullWidth={true}
     >
-      <DialogTitle>{t_i18n('Create multiple entities')}</DialogTitle>
+      <DialogTitle>{title || t_i18n('Create multiple entities')}</DialogTitle>
       <DialogContent style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
         <Alert severity="info" variant="outlined">
           <Typography>
-            {t_i18n('If you are adding more than 50 entities, please upload them through')} <a href='/dashboard/data/import'>{t_i18n('Imports')}</a>
+            {t_i18n('If you are adding more than 50 values, please upload them through')} <a href='/dashboard/data/import'>{t_i18n('Imports')}</a>
           </Typography>
         </Alert>
 
@@ -61,7 +63,7 @@ const BulkTextModal = ({ open, onClose, onValidate, formValue }: BulkTextModalPr
 
         {nbLines > MAX_LINES && (
           <Alert severity="error">
-            {t_i18n('You have more than 50 entities')}
+            {t_i18n('You have more than 50 values')}
           </Alert>
         )}
       </DialogContent>

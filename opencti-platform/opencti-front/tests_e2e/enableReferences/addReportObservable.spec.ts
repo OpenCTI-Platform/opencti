@@ -116,6 +116,7 @@ test('Add and remove observable from Observables tab of a Report as Admin user',
 
   // Create a report and check that adding an observable is possible
   await page.goto('/dashboard/analyses/reports');
+  await leftBarPage.open();
 
   await reportPage.openNewReportForm();
   await reportForm.nameField.fill('Test add observable e2e');

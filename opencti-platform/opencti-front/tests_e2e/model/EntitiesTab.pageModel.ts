@@ -8,7 +8,7 @@ export default class EntitiesTabPageModel {
   constructor(private page: Page) {}
 
   clickAddEntities() {
-    return this.page.getByLabel('Add', { exact: true }).click();
+    return this.page.getByLabel('Add entity', { exact: true }).click();
   }
 
   addEntity(name: string) {

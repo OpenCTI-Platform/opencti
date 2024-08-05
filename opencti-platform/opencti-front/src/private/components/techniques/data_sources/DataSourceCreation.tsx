@@ -122,7 +122,8 @@ export const DataSourceCreationForm: FunctionComponent<DataSourceFormProps> = ({
     bulkCount,
     bulkCurrentCount,
     BulkResult,
-  } = useBulkCommit<DataSourceCreationMutation$variables['input'], DataSourceCreationMutation>({
+    resetBulk,
+  } = useBulkCommit<DataSourceCreationMutation>({
     commit,
     relayUpdater: (store) => {
       if (updater) {
@@ -142,21 +143,23 @@ export const DataSourceCreationForm: FunctionComponent<DataSourceFormProps> = ({
     { setSubmitting, setErrors, resetForm }: FormikHelpers<DataSourceAddInput>,
   ) => {
     const allNames = splitMultilines(values.name);
-    const inputs: DataSourceCreationMutation$variables['input'][] = allNames.map((name) => ({
-      name,
-      description: values.description,
-      createdBy: values.createdBy?.value,
-      objectMarking: values.objectMarking.map((v) => v.value),
-      objectLabel: values.objectLabel.map((v) => v.value),
-      externalReferences: values.externalReferences.map((v) => v.value),
-      confidence: parseInt(String(values.confidence), 10),
-      x_mitre_platforms: values.x_mitre_platforms,
-      collection_layers: values.collection_layers,
-      file: values.file,
+    const variables: DataSourceCreationMutation$variables[] = allNames.map((name) => ({
+      input: {
+        name,
+        description: values.description,
+        createdBy: values.createdBy?.value,
+        objectMarking: values.objectMarking.map((v) => v.value),
+        objectLabel: values.objectLabel.map((v) => v.value),
+        externalReferences: values.externalReferences.map((v) => v.value),
+        confidence: parseInt(String(values.confidence), 10),
+        x_mitre_platforms: values.x_mitre_platforms,
+        collection_layers: values.collection_layers,
+        file: values.file,
+      },
     }));
 
     bulkCommit({
-      inputs,
+      variables,
       onStepError: (error) => {
         handleErrorInForm(error, setErrors);
       },
@@ -213,10 +216,11 @@ export const DataSourceCreationForm: FunctionComponent<DataSourceFormProps> = ({
                 onClose={() => {
                   setProgressBarOpen(false);
                   resetForm();
+                  resetBulk();
                   onCompleted?.();
                 }}
               >
-                <BulkResult inputToString={(input) => input.name} />
+                <BulkResult variablesToString={(v) => v.input.name} />
               </ProgressBar>
             </>
           )}
