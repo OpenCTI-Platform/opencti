@@ -14,9 +14,17 @@ export const RetentionLinesQuery = graphql`
         $search: String
         $count: Int!
         $cursor: ID
+        $orderBy: RetentionRuleOrdering
+        $orderMode: OrderingMode
     ) {
         ...RetentionLines_data
-        @arguments(search: $search, count: $count, cursor: $cursor)
+        @arguments(
+            search: $search
+            count: $count
+            cursor: $cursor
+            orderBy: $orderBy
+            orderMode: $orderMode
+        )
     }
 `;
 
@@ -26,9 +34,17 @@ const retentionLinesFragment = graphql`
         search: { type: "String" }
         count: { type: "Int", defaultValue: 25 }
         cursor: { type: "ID" }
+        orderBy: { type: "RetentionRuleOrdering", defaultValue: name }
+        orderMode: { type: "OrderingMode", defaultValue: asc }
     )
     @refetchable(queryName: "RetentionLinesQueryRefetchQuery") {
-        retentionRules(search: $search, first: $count, after: $cursor)
+        retentionRules(
+            search: $search
+            first: $count
+            after: $cursor
+            orderBy: $orderBy
+            orderMode: $orderMode
+        )
         @connection(key: "Pagination_retentionRules") {
             edges {
                 node {

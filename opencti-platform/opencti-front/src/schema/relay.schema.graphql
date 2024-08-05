@@ -1095,6 +1095,14 @@ input RetentionRuleAddInput {
   scope: RetentionRuleScope!
 }
 
+enum RetentionRuleOrdering {
+  name
+  scope
+  remaining_count
+  last_execution_date
+  max_retention
+}
+
 enum RetentionRuleScope {
   knowledge
   file
@@ -7457,7 +7465,7 @@ type Query {
   runtimeAttributes(first: Int, search: String, orderMode: OrderingMode, attributeName: String!): AttributeConnection
   schemaAttributeNames(elementType: [String]!): AttributeConnection
   retentionRule(id: String!): RetentionRule
-  retentionRules(first: Int, after: ID, search: String): RetentionRuleConnection
+  retentionRules(first: Int, after: ID, search: String, orderBy: RetentionRuleOrdering, orderMode: OrderingMode): RetentionRuleConnection
   taxiiCollection(id: String!): TaxiiCollection
   taxiiCollections(first: Int, after: ID, orderBy: TaxiiCollectionOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): TaxiiCollectionConnection
   streamCollection(id: String!): StreamCollection
