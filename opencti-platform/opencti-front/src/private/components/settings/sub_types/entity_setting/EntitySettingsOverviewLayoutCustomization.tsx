@@ -10,6 +10,7 @@ import TableBody from '@mui/material/TableBody';
 import Switch from '@mui/material/Switch';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
+import { EntitySettingSettings_entitySetting$data } from '@components/settings/sub_types/entity_setting/__generated__/EntitySettingSettings_entitySetting.graphql';
 import { useFormatter } from '../../../../../components/i18n';
 import TextField from '../../../../../components/TextField';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
@@ -42,17 +43,15 @@ export const entitySettingsOverviewLayoutCustomizationEdit = graphql`
   }
 `;
 
+type NonNullableFields<T> = {
+  [P in keyof T]: NonNullable<T[P]>;
+};
+export type EntitySettingsOverviewLayoutCustomizationData = NonNullableFields<Pick<EntitySettingSettings_entitySetting$data, 'id' | 'overview_layout_customization'>>;
+
 const EntitySettingsOverviewLayoutCustomization = ({
   entitySettingsData: { id, overview_layout_customization },
 }: {
-  entitySettingsData: {
-    readonly id: string;
-    readonly overview_layout_customization: ReadonlyArray<{
-      readonly key: string;
-      readonly label: string;
-      readonly width: number;
-    }>
-  },
+  entitySettingsData: EntitySettingsOverviewLayoutCustomizationData,
 }) => {
   const { t_i18n } = useFormatter();
 

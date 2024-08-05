@@ -5,6 +5,7 @@ import Box from '@mui/material/Box';
 import makeStyles from '@mui/styles/makeStyles';
 import { graphql, useFragment, useSubscription } from 'react-relay';
 import EntitySettingsOverviewLayoutCustomization, {
+  EntitySettingsOverviewLayoutCustomizationData,
   entitySettingsOverviewLayoutCustomizationEdit,
   entitySettingsOverviewLayoutCustomizationFragment,
 } from '@components/settings/sub_types/entity_setting/EntitySettingsOverviewLayoutCustomization';
@@ -83,17 +84,20 @@ const SubType = ({ data }: { data: SubType_subType$key }) => {
   const isOverviewLayoutCustomizationEnabled = isFeatureEnable('OVERVIEW_LAYOUT_CUSTOMIZATION');
   const classes = useStyles();
   const subType = useFragment(subTypeFragment, data);
+
   const subTypeSettingsId = subType.settings?.id;
-  if (subTypeSettingsId) {
-    const config = useMemo(
-      () => ({
-        subscription: entitySettingSubscription,
-        variables: { id: subTypeSettingsId },
-      }),
-      [subType.settings],
-    );
-    useSubscription(config);
+  if (!subTypeSettingsId) {
+    return null;
   }
+  const config = useMemo(
+    () => ({
+      subscription: entitySettingSubscription,
+      variables: { id: subTypeSettingsId },
+    }),
+    [subType.settings],
+  );
+  useSubscription(config);
+
   const LOCAL_STORAGE_KEY = `${subType.id}-attributes`;
   const { viewStorage, helpers } = usePaginationLocalStorage<DataSourcesLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY,
@@ -205,14 +209,7 @@ const SubType = ({ data }: { data: SubType_subType$key }) => {
                 className={'paper-for-grid'}
               >
                 <EntitySettingsOverviewLayoutCustomization
-                  entitySettingsData={entitySetting as {
-                    readonly id: string;
-                    readonly overview_layout_customization: ReadonlyArray<{
-                      readonly key: string;
-                      readonly label: string;
-                      readonly width: number;
-                    }>
-                  }}
+                  entitySettingsData={entitySetting as EntitySettingsOverviewLayoutCustomizationData}
                 />
               </Paper>
             </Grid>
