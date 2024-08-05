@@ -10388,6 +10388,7 @@ type DefaultValueAttribute {
 type OverviewLayoutCustomization {
   key: String!
   width: Int!
+  label: String!
 }
 
 type EntitySetting implements InternalObject & BasicObject {

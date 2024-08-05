@@ -33,8 +33,7 @@ export type SchemaType = {
   filterKeysSchema: Map<string, Map<string, FilterDefinition>>
 };
 
-type OverviewLayoutCustomizationSettingsConfigurationWidgets = Map<string, number>;
-type OverviewLayoutCustomization = Map<string, OverviewLayoutCustomizationSettingsConfigurationWidgets>;
+type OverviewLayoutCustomization = Map<string, { key: string, width: number, label: string }[]>;
 
 export interface UserContextType {
   me: RootMe_data$data | undefined;
@@ -67,7 +66,7 @@ const useAuth = () => {
     schema,
     overviewLayoutCustomization,
   } = useContext(UserContext);
-  if (!me || !settings || !bannerSettings || !entitySettings || !platformModuleHelpers || !schema) {
+  if (!me || !settings || !bannerSettings || !entitySettings || !platformModuleHelpers || !schema || !overviewLayoutCustomization) {
     throw new Error('Invalid user context !');
   }
   return { me, settings, bannerSettings, entitySettings, platformModuleHelpers, schema, overviewLayoutCustomization };

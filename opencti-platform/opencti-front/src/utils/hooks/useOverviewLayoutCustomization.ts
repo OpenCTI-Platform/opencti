@@ -1,9 +1,8 @@
 import useAuth from './useAuth';
 
-const useOverviewLayoutCustomization: (entityType: string) => Array<{ key: string, width: number }> = (entityType) => {
+const useOverviewLayoutCustomization: (entityType: string) => { key: string, width: number, label: string }[] = (entityType) => {
   const { overviewLayoutCustomization } = useAuth();
-  return Array.from(overviewLayoutCustomization?.get(entityType)?.entries() ?? [])
-    .flatMap(([key, width]) => ({ key, width }));
+  return overviewLayoutCustomization.get(entityType) ?? [];
 };
 
 export default useOverviewLayoutCustomization;

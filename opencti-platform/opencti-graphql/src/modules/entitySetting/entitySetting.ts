@@ -103,8 +103,9 @@ export const ENTITY_SETTING_DEFINITION: ModuleDefinition<StoreEntityEntitySettin
       upsert: true,
       isFilterable: false,
       mappings: [
-        { name: 'key', label: 'Key', type: 'string', format: 'short', mandatoryType: 'internal', upsert: true, editDefault: false, multiple: false, isFilterable: false },
+        { name: 'key', label: 'Key', type: 'string', format: 'short', mandatoryType: 'internal', upsert: false, editDefault: false, multiple: false, isFilterable: false },
         { name: 'width', label: 'Width', type: 'numeric', precision: 'integer', mandatoryType: 'internal', upsert: true, editDefault: false, multiple: false, isFilterable: false },
+        { name: 'label', label: 'Label', type: 'string', format: 'short', mandatoryType: 'external', upsert: false, editDefault: false, multiple: false, isFilterable: false },
       ] },
     { name: 'availableSettings', label: 'Available settings', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: false },
     { name: 'workflow_configuration', label: 'Workflow activated', type: 'boolean', mandatoryType: 'external', editDefault: false, multiple: false, upsert: false, isFilterable: false },

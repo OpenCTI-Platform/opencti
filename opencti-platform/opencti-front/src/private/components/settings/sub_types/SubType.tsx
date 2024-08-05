@@ -13,6 +13,7 @@ import {
 } from '@components/settings/sub_types/entity_setting/__generated__/EntitySettingsOverviewLayoutCustomization_entitySetting.graphql';
 import { RestartAlt } from '@mui/icons-material';
 import Button from '@mui/material/Button';
+import Grid from '@mui/material/Grid';
 import { useFormatter } from '../../../../components/i18n';
 import ItemStatusTemplate from '../../../../components/ItemStatusTemplate';
 import SubTypeStatusPopover from './SubTypeWorkflowPopover';
@@ -25,6 +26,7 @@ import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStora
 import { DataSourcesLinesPaginationQuery$variables } from '../../techniques/data_sources/__generated__/DataSourcesLinesPaginationQuery.graphql';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useHelper from '../../../../utils/hooks/useHelper';
+import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -113,6 +115,11 @@ const SubType = ({ data }: { data: SubType_subType$key }) => {
       },
     });
   };
+
+  const hasOverview = isOverviewLayoutCustomizationEnabled && entitySetting?.overview_layout_customization;
+
+  const layout = useOverviewLayoutCustomization(subType.id);
+
   return (
     <div className={classes.container}>
       <CustomizationMenu />
@@ -121,76 +128,113 @@ const SubType = ({ data }: { data: SubType_subType$key }) => {
           {t_i18n(`entity_${subType.label}`)}
         </Typography>
       </div>
-      <Typography variant="h4" gutterBottom={true}>
-        {t_i18n('Configuration')}
-      </Typography>
-      <Paper
-        classes={{ root: classes.paper }}
-        variant="outlined"
-        style={{ marginBottom: 30 }}
+      <Grid
+        container
+        spacing={3}
       >
-        <EntitySettingSettings entitySettingsData={subType.settings} />
-        {subType.settings?.availableSettings.includes('workflow_configuration')
-          && <>
-            <div style={{ marginTop: 10 }}>
-              <Typography variant="h3" gutterBottom={true}>
-                {t_i18n('Workflow')}
-                <SubTypeStatusPopover subTypeId={subType.id} />
-              </Typography>
-            </div>
-            <ItemStatusTemplate
-              statuses={subType.statuses}
-              disabled={!subType.workflowEnabled}
-            />
-          </>
-        }
-      </Paper>
-      {subType.settings?.availableSettings.includes('attributes_configuration')
-        && <>
-          <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
-            {t_i18n('Attributes')}
+        <Grid item xs={12}>
+          <Typography variant="h4" gutterBottom={true}>
+            {t_i18n('Configuration')}
           </Typography>
-          <div style={{ float: 'right', marginTop: -12 }}>
-            <SearchInput
-              variant="thin"
-              onSubmit={helpers.handleSearch}
-              keyword={searchTerm}
-            />
-          </div>
-          <div className="clearfix" />
-          <Paper classes={{ root: classes.paper }} variant="outlined" style={{ paddingTop: 5, marginBottom: 30 }}>
-            <EntitySettingAttributes
-              entitySettingsData={subType.settings}
-              searchTerm={searchTerm}
-            ></EntitySettingAttributes>
+          <Paper
+            classes={{ root: classes.paper }}
+            variant="outlined"
+            className={'paper-for-grid'}
+          >
+            <EntitySettingSettings entitySettingsData={subType.settings} />
+            {subType.settings?.availableSettings.includes('workflow_configuration')
+              && <>
+                <div style={{ marginTop: 10 }}>
+                  <Typography variant="h3" gutterBottom={true}>
+                    {t_i18n('Workflow')}
+                    <SubTypeStatusPopover subTypeId={subType.id} />
+                  </Typography>
+                </div>
+                <ItemStatusTemplate
+                  statuses={subType.statuses}
+                  disabled={!subType.workflowEnabled}
+                />
+              </>
+            }
           </Paper>
-        </>
-      }
-      {
-        isOverviewLayoutCustomizationEnabled
-        && entitySetting?.overview_layout_customization
-          && <>
-            <Typography variant="h4" gutterBottom={true} sx={{ marginBottom: 3 }} >
-              <Box sx={{ display: 'inline-flex', alignItems: 'center' }}>
-                <span>{t_i18n('Overview layout customization')}</span>
-                <Button
-                  onClick={() => resetLayout()}
-                >
-                  <RestartAlt fontSize={'small'} color={'primary'} />
-                </Button>
-              </Box>
+        </Grid>
+        {subType.settings?.availableSettings.includes('attributes_configuration') && (
+          <Grid item xs={12}>
+            <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
+              {t_i18n('Attributes')}
             </Typography>
-            <Paper
-              classes={{ root: classes.paper }}
-              variant="outlined"
-              style={{ marginBottom: 30 }}
-            >
-              <EntitySettingsOverviewLayoutCustomization
-                entitySettingsData={subType.settings}
+            <div style={{ float: 'right', marginTop: -12 }}>
+              <SearchInput
+                variant="thin"
+                onSubmit={helpers.handleSearch}
+                keyword={searchTerm}
               />
+            </div>
+            <div className="clearfix" />
+            <Paper classes={{ root: classes.paper }} variant="outlined" className={'paper-for-grid'}>
+              <EntitySettingAttributes
+                entitySettingsData={subType.settings}
+                searchTerm={searchTerm}
+              ></EntitySettingAttributes>
             </Paper>
+          </Grid>
+        )}
+        {hasOverview && (
+          <>
+            <Grid item xs={6}>
+              <Typography variant="h4" gutterBottom={true} sx={{ marginBottom: 3 }}>
+                <Box sx={{ display: 'inline-flex', alignItems: 'center' }}>
+                  <span>{t_i18n('Overview layout customization')}</span>
+                  <Button
+                    onClick={() => resetLayout()}
+                  >
+                    <RestartAlt fontSize={'small'} color={'primary'} />
+                  </Button>
+                </Box>
+              </Typography>
+              <Paper
+                classes={{ root: classes.paper }}
+                variant="outlined"
+                style={{ marginBottom: 30 }}
+              >
+                <EntitySettingsOverviewLayoutCustomization
+                  entitySettingsData={entitySetting as {
+                    readonly id: string;
+                    readonly overview_layout_customization: ReadonlyArray<{
+                      readonly key: string;
+                      readonly label: string;
+                      readonly width: number;
+                    }>
+                  }}
+                />
+              </Paper>
+            </Grid>
+            <Grid item xs={6}>
+              <Typography variant="h4" gutterBottom={true} sx={{ marginTop: 1, marginBottom: 2 }}>
+                {t_i18n('Preview')}
+              </Typography>
+              <Paper
+                classes={{ root: classes.paper }}
+                variant="outlined"
+              >
+                <Grid container>
+                  {layout.map(({ key, width, label }) => (
+                    <Grid item xs={width} key={key}>
+                      <Paper
+                        classes={{ root: classes.paper }}
+                        className={'paper-for-grid'}
+                        style={{ height: 50, padding: 0, margin: 3, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                      >
+                        {t_i18n(label)}
+                      </Paper>
+                    </Grid>
+                  ))}
+                </Grid>
+              </Paper>
+            </Grid>
           </>
-      }
+        )}
+      </Grid>
     </div>
   );
 };
