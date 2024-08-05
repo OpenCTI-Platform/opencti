@@ -35,7 +35,7 @@ import Transition from '../../../../components/Transition';
 import { User_user$key } from './__generated__/User_user.graphql';
 import Chart from '../../common/charts/Chart';
 import { UserSessionKillMutation } from './__generated__/UserSessionKillMutation.graphql';
-import { UserSessionsKillMutation } from './__generated__/UserUserSessionsKillMutation.graphql';
+import { UserUserSessionsKillMutation } from './__generated__/UserUserSessionsKillMutation.graphql';
 import Triggers from '../common/Triggers';
 import { UserAuditsTimeSeriesQuery$data } from './__generated__/UserAuditsTimeSeriesQuery.graphql';
 import { UserPopoverEditionQuery$data } from './__generated__/UserPopoverEditionQuery.graphql';
@@ -76,8 +76,8 @@ export const userSessionKillMutation = graphql`
   }
 `;
 
-export const userSessionsKillMutation = graphql`
-  mutation UserSessionsKillMutation($id: ID!) {
+export const userUserSessionsKillMutation = graphql`
+  mutation UserUserSessionsKillMutation($id: ID!) {
     userSessionsKill(id: $id)
   }
 `;
@@ -230,7 +230,7 @@ const User: FunctionComponent<UserProps> = ({ data }) => {
   const [commitUserSessionKill] = useApiMutation<UserSessionKillMutation>(
     userSessionKillMutation,
   );
-  const [commitUserUserSessionsKill] = useApiMutation<UserSessionsKillMutation>(userSessionsKillMutation);
+  const [commitUserUserSessionsKill] = useApiMutation<UserUserSessionsKillMutation>(userUserSessionsKillMutation);
   const [commitUserOtpDeactivation] = useApiMutation<UserOtpDeactivationMutation>(
     userOtpDeactivationMutation,
   );
