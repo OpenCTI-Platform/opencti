@@ -3,7 +3,6 @@
     "port": 4000,
     "base_path": "",
     "base_url": "http://localhost:4000/",
-    "public_dashboard_authorized_domains": "",
     "enabled": true,
     "enabled_ui": true,
     "disabled_dev_features": [
@@ -16,7 +15,7 @@
       "CONTAINERS_AUTHORIZED_MEMBERS",
       "FILE_RETENTION_RULES",
       "TELEMETRY_COUNT_ACTIVE_USERS",
-      "OVERVIEW_LAYOUT_CUSTOMIZATION"
+      "PUBLIC_DASHBOARD_LIST"
     ],
     "https_cert": {
       "ca": [],

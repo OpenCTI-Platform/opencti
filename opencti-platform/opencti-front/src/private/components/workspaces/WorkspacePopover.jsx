@@ -23,6 +23,7 @@ import handleExportJson from './workspaceExportHandler';
 import WorkspaceDuplicationDialog from './WorkspaceDuplicationDialog';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
 import { getCurrentUserAccessRight } from '../../../utils/authorizedMembers';
+import useHelper from '../../../utils/hooks/useHelper';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -51,6 +52,8 @@ const WorkspacePopover = ({ workspace, paginationOptions }) => {
   const navigate = useNavigate();
   const classes = useStyles();
   const { t_i18n } = useFormatter();
+  const { isFeatureEnable } = useHelper();
+
   const [anchorEl, setAnchorEl] = useState(null);
   const [displayDelete, setDisplayDelete] = useState(false);
   const [displayEdit, setDisplayEdit] = useState(false);
@@ -150,9 +153,11 @@ const WorkspacePopover = ({ workspace, paginationOptions }) => {
             <Security needs={[EXPLORE_EXUPDATE_EXDELETE]} hasAccess={canManage}>
               <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
             </Security>
-            <MenuItem onClick={() => goToPublicDashboards()}>
-              {t_i18n('View associated public dashboards')}
-            </MenuItem>
+            {isFeatureEnable('PUBLIC_DASHBOARD_LIST') && (
+              <MenuItem onClick={() => goToPublicDashboards()}>
+                {t_i18n('View associated public dashboards')}
+              </MenuItem>
+            )}
           </>
         )}
         {workspace.type === 'investigation' && (

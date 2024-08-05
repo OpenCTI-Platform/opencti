@@ -6,6 +6,7 @@ import { graphql } from 'react-relay';
 import { PublicDashboardsListQuery, PublicDashboardsListQuery$variables } from '@components/workspaces/dashboards/__generated__/PublicDashboardsListQuery.graphql';
 import { PublicDashboardsFragment$data } from '@components/workspaces/dashboards/__generated__/PublicDashboardsFragment.graphql';
 import PublicDashboardLineActions from '@components/workspaces/dashboards/publicDashboards/PublicDashboardLineActions';
+import { useNavigate } from 'react-router-dom';
 import { useFormatter } from '../../../../../components/i18n';
 import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../../../utils/filters/filtersUtils';
 import DataTable from '../../../../../components/dataGrid/DataTable';
@@ -15,6 +16,7 @@ import { usePaginationLocalStorage } from '../../../../../utils/hooks/useLocalSt
 import ItemBoolean from '../../../../../components/ItemBoolean';
 import { DataTableProps } from '../../../../../components/dataGrid/dataTableTypes';
 import { textInTooltip } from '../../../../../components/dataGrid/dataTableUtils';
+import useHelper from '../../../../../utils/hooks/useHelper';
 
 const publicDashboardFragment = graphql`
   fragment PublicDashboards_PublicDashboard on PublicDashboard {
@@ -98,6 +100,12 @@ const LOCAL_STORAGE_KEY = 'PublicDashboard';
 
 const PublicDashboards = () => {
   const { t_i18n } = useFormatter();
+  const { isFeatureEnable } = useHelper();
+  const navigate = useNavigate();
+
+  if (!isFeatureEnable('PUBLIC_DASHBOARD_LIST')) {
+    navigate('/dashboard');
+  }
 
   const initialValues = {
     searchTerm: '',
@@ -173,7 +181,7 @@ const PublicDashboards = () => {
     },
   };
 
-  return (
+  return !isFeatureEnable('PUBLIC_DASHBOARD_LIST') ? null : (
     <>
       <Breadcrumbs
         variant="list"
