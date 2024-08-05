@@ -784,6 +784,7 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
   const [tableRootRef, setTableRootRef] = useState<HTMLDivElement | null>(null);
 
   const renderSelectEntity = (entity_type: string, name = '') => {
+    console.log('name : ', name);
     return (
       <div
         style={{
@@ -1062,10 +1063,10 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
           variables={{ id: entityId }}
           render={({ props: renderProps }: ({ props: StixCoreRelationshipCreationFromEntityQuery$data })) => {
             if (renderProps && renderProps.stixCoreObject) {
-              const { name, entity_type } = renderProps.stixCoreObject;
+              const { name, entity_type, observable_value } = renderProps.stixCoreObject;
               return (
                 <>
-                  {step === 0 ? renderSelectEntity(entity_type, name) : null}
+                  {step === 0 ? renderSelectEntity(entity_type, name || observable_value) : null}
                   {step === 1 ? renderForm(renderProps.stixCoreObject) : null}
                 </>
               );
