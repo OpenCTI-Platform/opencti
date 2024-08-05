@@ -4,6 +4,7 @@ import {
   connectorForWork,
   connectorsForExport,
   connectorTriggerUpdate,
+  connectorUser,
   fetchRemoteStreams,
   findAllSync,
   findSyncById,
@@ -57,6 +58,7 @@ const connectorResolvers = {
   Connector: {
     works: (cn, args, context) => worksForConnector(context, context.user, cn.id, args),
     connector_queue_details: (cn) => queueDetails(cn.id),
+    connector_user: (cn, _, context) => connectorUser(context, context.user, cn.connector_user_id),
   },
   Work: {
     connector: (work, _, context) => connectorForWork(context, context.user, work.id),
@@ -70,7 +72,7 @@ const connectorResolvers = {
     deleteConnector: (_, { id }, context) => connectorDelete(context, context.user, id),
     registerConnector: (_, { input }, context) => registerConnector(context, context.user, input),
     resetStateConnector: (_, { id }, context) => resetStateConnector(context, context.user, id),
-    pingConnector: (_, { id, state }, context) => pingConnector(context, context.user, id, state),
+    pingConnector: (_, { id, state, connectorInfo }, context) => pingConnector(context, context.user, id, state, connectorInfo),
     updateConnectorTrigger: (_, { id, input }, context) => connectorTriggerUpdate(context, context.user, id, input),
     // Work part
     workAdd: async (_, { connectorId, friendlyName }, context) => {

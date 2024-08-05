@@ -1768,6 +1768,24 @@ type RabbitMQConnection {
   pass: String!
 }
 
+input ConnectorInfoInput {
+  run_and_terminate: Boolean!
+  buffering: Boolean!
+  queue_threshold: Float!
+  queue_messages_size: Float!
+  next_run_datetime: DateTime
+  last_run_datetime: DateTime
+}
+
+type ConnectorInfo {
+  run_and_terminate: Boolean!
+  buffering: Boolean!
+  queue_threshold: Float!
+  queue_messages_size: Float!
+  next_run_datetime: DateTime
+  last_run_datetime: DateTime
+}
+
 type ConnectorConfig {
   connection: RabbitMQConnection!
   listen: String!
@@ -1811,7 +1829,9 @@ type Connector implements BasicObject & InternalObject {
   connector_schema_ui: String
   connector_state_reset: Boolean
   connector_user_id: ID
+  connector_user: User
   connector_queue_details: ConnectorQueueDetails!
+  connector_info: ConnectorInfo
   updated_at: DateTime
   created_at: DateTime
   config: ConnectorConfig
@@ -8227,7 +8247,7 @@ type Mutation {
   sessionKill(id: ID!): ID
   userSessionsKill(id: ID!): [ID]
   roleEdit(id: ID!): RoleEditMutations
-  pingConnector(id: ID!, state: String): Connector
+  pingConnector(id: ID!, state: String, connectorInfo: ConnectorInfoInput): Connector
   registerConnector(input: RegisterConnectorInput): Connector
   resetStateConnector(id: ID!): Connector
   deleteConnector(id: ID!): ID!

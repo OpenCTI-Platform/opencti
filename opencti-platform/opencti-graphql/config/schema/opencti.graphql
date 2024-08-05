@@ -1709,6 +1709,25 @@ type RabbitMQConnection {
   user: String!
   pass: String!
 }
+
+input ConnectorInfoInput {
+  run_and_terminate: Boolean!
+  buffering: Boolean!
+  queue_threshold: Float!
+  queue_messages_size: Float!
+  next_run_datetime: DateTime
+  last_run_datetime: DateTime
+}
+
+type ConnectorInfo {
+  run_and_terminate: Boolean!
+  buffering: Boolean!
+  queue_threshold: Float!
+  queue_messages_size: Float!
+  next_run_datetime: DateTime
+  last_run_datetime: DateTime
+}
+
 type ConnectorConfig {
   connection: RabbitMQConnection! @auth(for: [CONNECTORAPI])
   listen: String!
@@ -1752,7 +1771,9 @@ type Connector implements BasicObject & InternalObject {
   connector_schema_ui: String
   connector_state_reset: Boolean
   connector_user_id: ID
+  connector_user: User
   connector_queue_details: ConnectorQueueDetails!
+  connector_info: ConnectorInfo
   updated_at: DateTime
   created_at: DateTime
   config: ConnectorConfig
@@ -12873,7 +12894,7 @@ type Mutation {
   sessionKill(id: ID!): ID @auth(for: [SETTINGS_SETACCESSES])
   userSessionsKill(id: ID!): [ID] @auth(for: [SETTINGS_SETACCESSES])
   roleEdit(id: ID!): RoleEditMutations @auth(for: [SETTINGS_SETACCESSES])
-  pingConnector(id: ID!, state: String): Connector @auth(for: [CONNECTORAPI])
+  pingConnector(id: ID!, state: String, connectorInfo: ConnectorInfoInput): Connector @auth(for: [CONNECTORAPI])
   registerConnector(input: RegisterConnectorInput): Connector @auth(for: [CONNECTORAPI])
   resetStateConnector(id: ID!): Connector @auth(for: [MODULES_MODMANAGE])
   deleteConnector(id: ID!): ID! @auth(for: [MODULES_MODMANAGE])

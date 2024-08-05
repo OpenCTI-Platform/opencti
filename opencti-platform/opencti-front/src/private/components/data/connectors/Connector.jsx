@@ -16,8 +16,15 @@ import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
-import { makeStyles } from '@mui/styles';
-import { useNavigate } from 'react-router-dom';
+import { makeStyles, useTheme } from '@mui/styles';
+import { Link, useNavigate } from 'react-router-dom';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import { ListItemButton } from '@mui/material';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import Alert from '@mui/material/Alert';
+import UpdateIcon from '@mui/icons-material/Update';
 import Filters from '../../common/lists/Filters';
 import ItemBoolean from '../../../../components/ItemBoolean';
 import { useFormatter } from '../../../../components/i18n';
@@ -26,13 +33,15 @@ import { deserializeFilterGroupForFrontend, isFilterGroupNotEmpty, serializeFilt
 import useFiltersState from '../../../../utils/filters/useFiltersState';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 import Security from '../../../../utils/Security';
-import { MODULES_MODMANAGE } from '../../../../utils/hooks/useGranted';
+import useGranted, { MODULES_MODMANAGE, SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
 import { commitMutation, MESSAGING$, QueryRenderer } from '../../../../relay/environment';
 import ConnectorWorks, { connectorWorksQuery } from './ConnectorWorks';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import Loader from '../../../../components/Loader';
 import ItemCopy from '../../../../components/ItemCopy';
 import Transition from '../../../../components/Transition';
+import ItemIcon from '../../../../components/ItemIcon';
+import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -241,6 +250,18 @@ const ConnectorComponent = ({ connector, relay }) => {
       filterGroups: [],
     },
   };
+
+  const theme = useTheme();
+  const userHasSettingsCapability = useGranted([SETTINGS_SETACCESSES]);
+  const connectorStateConverted = connector.connector_state ? JSON.parse(connector.connector_state) : null;
+  const checkLastRunExistingInState = connectorStateConverted && Object.hasOwn(connectorStateConverted, 'last_run');
+  const checkLastRunIsNumber = checkLastRunExistingInState && Number.isFinite(connectorStateConverted.last_run);
+  const lastRunConverted = checkLastRunIsNumber && new Date(connectorStateConverted.last_run * 1000);
+
+  const isBuffering = () => {
+    return connector.connector_info?.queue_messages_size > connector.connector_info?.queue_threshold;
+  };
+
   return (
     <>
       <>
@@ -308,13 +329,11 @@ const ConnectorComponent = ({ connector, relay }) => {
                 <Typography variant="h3" gutterBottom={true}>
                   {t_i18n('Type')}
                 </Typography>
-                <Button
-                  style={{ cursor: 'default' }}
-                  variant="outlined"
-                  color="primary"
-                >
-                  {connector.connector_type}
-                </Button>
+                <Chip
+                  key={connector.connector_type}
+                  classes={{ root: classes.chip }}
+                  label={connector.connector_type}
+                />
               </Grid>
               <Grid item xs={6}>
                 <Typography variant="h3" gutterBottom={true}>
@@ -382,7 +401,149 @@ const ConnectorComponent = ({ connector, relay }) => {
                   )}
                 </Grid>
               )}
+              <Security needs={[SETTINGS_SETACCESSES]}>
+                <Grid item xs={6}>
+                  <Typography variant="h3" gutterBottom={true}>
+                    {t_i18n('Associated user')}
+                  </Typography>
+                  {connector.connector_user ? (
+                    <ListItemButton
+                      key={connector.connector_user.id}
+                      dense={true}
+                      divider={true}
+                      component={Link}
+                      to={`/dashboard/settings/accesses/users/${connector.connector_user.id}`}
+                    >
+                      <ListItemIcon>
+                        <ItemIcon type="user" color={theme.palette.primary.main} />
+                      </ListItemIcon>
+                      <ListItemText primary={connector.connector_user.name}/>
+                    </ListItemButton>
+                  ) : (
+                    <FieldOrEmpty source={connector.connector_user}></FieldOrEmpty>
+                  )}
+                </Grid>
+                <Grid item xs={6}>
+                  <Typography variant="h3" gutterBottom={true}>
+                    {t_i18n('Max confidence level')}
+                  </Typography>
+                  {connector.connector_user ? (
+                    <FieldOrEmpty source={connector.connector_user?.effective_confidence_level.max_confidence}>
+                      {connector.connector_user.effective_confidence_level.max_confidence}
+                    </FieldOrEmpty>
+                  ) : (
+                    <FieldOrEmpty source={connector.connector_user}></FieldOrEmpty>
+                  )}
+                </Grid>
+                <Grid item xs={6}>
+                  <Typography variant="h3" gutterBottom={true}>
+                    {t_i18n("User's roles")}
+                  </Typography>
+                  {connector.connector_user ? (
+                    <FieldOrEmpty source={connector.connector_user.roles ?? []}>
+                      <List>
+                        {(connector.connector_user.roles ?? []).map((role) => (userHasSettingsCapability ? (
+                          <ListItemButton
+                            key={role?.id}
+                            dense={true}
+                            divider={true}
+                            component={Link}
+                            to={`/dashboard/settings/accesses/roles/${role?.id}`}
+                          >
+                            <ListItemIcon>
+                              <ItemIcon type="Role" />
+                            </ListItemIcon>
+                            <ListItemText primary={role?.name} />
+                          </ListItemButton>
+                        ) : (
+                          <ListItem key={role?.id} dense={true} divider={true}>
+                            <ListItemIcon>
+                              <ItemIcon type="Role" />
+                            </ListItemIcon>
+                            <ListItemText primary={role?.name} />
+                          </ListItem>
+                        )))}
+                      </List>
+                    </FieldOrEmpty>
+                  ) : (
+                    <FieldOrEmpty source={connector.connector_user}></FieldOrEmpty>
+                  )}
+                </Grid>
+                <Grid item xs={6}>
+                  <Typography variant="h3" gutterBottom={true}>
+                    {t_i18n("User's groups")}
+                  </Typography>
+                  {connector.connector_user ? (
+                    <FieldOrEmpty source={connector.connector_user.groups?.edges}>
+                      <List>
+                        {(connector.connector_user.groups?.edges ?? []).map((groupEdge) => (userHasSettingsCapability ? (
+                          <ListItemButton
+                            key={groupEdge?.node.id}
+                            dense={true}
+                            divider={true}
+                            component={Link}
+                            to={`/dashboard/settings/accesses/groups/${groupEdge?.node.id}`}
+                          >
+                            <ListItemIcon>
+                              <ItemIcon type="Group" />
+                            </ListItemIcon>
+                            <ListItemText primary={groupEdge?.node.name} />
+                          </ListItemButton>
+                        ) : (
+                          <ListItem
+                            key={groupEdge?.node.id}
+                            dense={true}
+                            divider={true}
+                          >
+                            <ListItemIcon>
+                              <ItemIcon type="Group" />
+                            </ListItemIcon>
+                            <ListItemText primary={groupEdge?.node.name} />
+                          </ListItem>
+                        )))}
+                      </List>
+                    </FieldOrEmpty>
+                  ) : (
+                    <FieldOrEmpty source={connector.connector_user}></FieldOrEmpty>
+                  )}
+                </Grid>
+                <Grid item xs={6}>
+                  <Typography variant="h3" gutterBottom={true}>
+                    {t_i18n("User's organizations")}
+                  </Typography>
+                  {connector.connector_user ? (
+                    <FieldOrEmpty source={connector.connector_user.objectOrganization?.edges}>
+                      <List>
+                        {connector.connector_user.objectOrganization?.edges.map((organizationEdge) => (
+                          <ListItemButton
+                            key={organizationEdge.node.id}
+                            dense={true}
+                            divider={true}
+                            component={Link}
+                            to={`/dashboard/settings/accesses/organizations/${organizationEdge.node.id}`}
+                          >
+                            <ListItemIcon>
+                              <ItemIcon
+                                type="Organization"
+                                color={
+                                        (organizationEdge.node.authorized_authorities ?? []).includes(connector.connector_user.id)
+                                          ? theme.palette.warning.main
+                                          : theme.palette.primary.main
+                                      }
+                              />
+                            </ListItemIcon>
+                            <ListItemText primary={organizationEdge.node.name} />
+                          </ListItemButton>
+                        ))}
+                      </List>
+                    </FieldOrEmpty>
+                  ) : (
+                    <FieldOrEmpty source={connector.connector_user}></FieldOrEmpty>
+                  )}
+                </Grid>
+              </Security>
             </Grid>
+
           </Paper>
         </Grid>
         <Grid item xs={6}>
@@ -391,7 +552,15 @@ const ConnectorComponent = ({ connector, relay }) => {
           </Typography>
           <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
             <Grid container={true} spacing={3}>
-              <Grid item xs={12}>
+              {connector.connector_info?.buffering && (
+                <Grid item xs={12}>
+                  <Alert severity="warning" icon={<UpdateIcon color={theme.palette.warning.main} />} style={{ alignItems: 'center' }}>
+                    <strong>{t_i18n('Buffering: ')}</strong>
+                    {t_i18n('Server ingestion is paused until the size of messages is reduced under max capacity')}
+                  </Alert>
+                </Grid>
+              )}
+              <Grid item={true} xs={12}>
                 <Typography variant="h3" gutterBottom={true}>
                   {t_i18n('State')}
                 </Typography>
@@ -404,17 +573,109 @@ const ConnectorComponent = ({ connector, relay }) => {
                   </pre>
                 </Tooltip>
               </Grid>
+
+              <Grid item xs={6}>
+                {!connector.connector_info && (
+                  connector.connector_state
+                  && connectorStateConverted !== null
+                  && checkLastRunExistingInState && checkLastRunIsNumber ? (
+                    <>
+                      <Typography variant="h3" gutterBottom={true}>
+                        {t_i18n('Last run (from State)')}
+                      </Typography>
+                      <Typography variant="body1" gutterBottom={true}>
+                        {nsdt(lastRunConverted)}
+                      </Typography>
+                    </>
+                    ) : (
+                      <>
+                        <Typography variant="h3" gutterBottom={true}>
+                          {t_i18n('Last run')}
+                        </Typography>
+                        <Typography variant="body1" gutterBottom={true}>
+                          {t_i18n('Not provided')}
+                        </Typography>
+                      </>
+                    )
+                )}
+                {connector.connector_info && (
+                  // eslint-disable-next-line no-nested-ternary
+                  connector.connector_info.last_run_datetime ? (
+                    <>
+                      <Typography variant="h3" gutterBottom={true}>
+                        {t_i18n('Last run')}
+                      </Typography>
+                      <Typography variant="body1" gutterBottom={true}>
+                        {nsdt(connector.connector_info?.last_run_datetime)}
+                      </Typography>
+                    </>
+                  ) : (connector.connector_state
+                      && connectorStateConverted !== null
+                      && checkLastRunExistingInState && checkLastRunIsNumber
+                    ? (<>
+                      <Typography variant="h3" gutterBottom={true}>
+                        {t_i18n('Last run (from State)')}
+                      </Typography>
+                      <Typography variant="body1" gutterBottom={true}>
+                        {nsdt(lastRunConverted)}
+                      </Typography>
+                    </>)
+                    : (<>
+                      <Typography variant="h3" gutterBottom={true}>
+                        {t_i18n('Last run')}
+                      </Typography>
+                      <Typography variant="body1" gutterBottom={true}>
+                        {t_i18n('Not provided')}
+                      </Typography>
+                    </>)
+                  )
+                )}
+              </Grid>
+
               <Grid item xs={6}>
                 <Typography variant="h3" gutterBottom={true}>
-                  {t_i18n('Listen queue')}
+                  {t_i18n('Next run')}
                 </Typography>
-                <pre>{connector.config.listen}</pre>
+                {connector.connector_info && (
+                  // eslint-disable-next-line no-nested-ternary
+                  connector.connector_info.run_and_terminate ? (
+                    <Typography variant="body1" gutterBottom={true}>
+                      {t_i18n('External schedule')}
+                    </Typography>
+                  ) : (
+                    connector.connector_info.next_run_datetime !== null ? (
+                      <Typography variant="body1" gutterBottom={true}>
+                        {nsdt(connector.connector_info?.next_run_datetime)}
+                      </Typography>
+                    ) : (
+                      <Typography variant="body1" gutterBottom={true}>
+                        {t_i18n('Not provided')}
+                      </Typography>
+                    )
+                  )
+                )}
+                {!connector.connector_info && (
+                  <Typography variant="body1" gutterBottom={true}>
+                    {t_i18n('Not provided')}
+                  </Typography>
+                )}
               </Grid>
               <Grid item xs={6}>
-                <Typography variant="h3" gutterBottom={true}>
-                  {t_i18n('Push queue')}
+                <Typography variant="h3" gutterBottom={true} >
+                  {t_i18n('Server capacity')}
                 </Typography>
-                <pre>{connector.config.push}</pre>
+                {connector.connector_info && (connector.connector_info.queue_messages_size !== 0
+                    || connector.connector_info.last_run_datetime) ? (
+                      <FieldOrEmpty source={connector.connector_info?.queue_messages_size}>
+                        <span style={isBuffering() ? { color: theme.palette.warning.main } : {}}>{connector.connector_info?.queue_messages_size.toFixed(2)}</span>
+                        <span> / {connector.connector_info?.queue_threshold} Mo</span>
+                      </FieldOrEmpty>
+                  ) : (
+                    <Typography variant="body1" gutterBottom={true}>
+                      {t_i18n('Not provided')}
+                    </Typography>
+                  )
+                }
               </Grid>
             </Grid>
           </Paper>
@@ -567,6 +828,42 @@ const Connector = createRefetchContainer(
         connector_type
         connector_scope
         connector_state
+        connector_user_id
+        connector_user {
+          id
+          name
+          roles {
+            id
+            name
+          }
+          groups {
+            edges {
+              node {
+                id
+                name
+              }
+            }
+          }
+          effective_confidence_level {
+            max_confidence
+          }
+          objectOrganization {
+            edges {
+              node {
+                id
+                name
+              }
+            }
+          }
+        }
+        connector_info {
+          run_and_terminate
+          buffering
+          queue_threshold
+          queue_messages_size
+          next_run_datetime
+          last_run_datetime
+        }
         connector_queue_details {
           messages_number
           messages_size

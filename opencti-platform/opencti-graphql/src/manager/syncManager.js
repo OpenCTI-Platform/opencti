@@ -5,7 +5,7 @@ import { executionContext, SYSTEM_USER } from '../utils/access';
 import { TYPE_LOCK_ERROR } from '../config/errors';
 import Queue from '../utils/queue';
 import { ENTITY_TYPE_SYNC } from '../schema/internalObject';
-import { createSyncHttpUri, httpBase, patchSync } from '../domain/connector';
+import { patchSync } from '../domain/connector';
 import { EVENT_CURRENT_VERSION, lockResource } from '../database/redis';
 import { STIX_EXT_OCTI } from '../types/stix-extensions';
 import { utcDate } from '../utils/format';
@@ -14,6 +14,7 @@ import { isEmptyField, wait } from '../database/utils';
 import { pushToWorkerForSync } from '../database/rabbitmq';
 import { OPENCTI_SYSTEM_UUID } from '../schema/general';
 import { getHttpClient } from '../utils/http-client';
+import { createSyncHttpUri, httpBase } from '../domain/connector-utils';
 
 const SYNC_MANAGER_KEY = conf.get('sync_manager:lock_key') || 'sync_manager_lock';
 const SCHEDULE_TIME = 10000;

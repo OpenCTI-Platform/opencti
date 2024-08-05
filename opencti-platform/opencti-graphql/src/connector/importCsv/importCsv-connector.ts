@@ -10,11 +10,11 @@ import { bundleProcess } from '../../parser/csv-bundler';
 import { OPENCTI_SYSTEM_UUID } from '../../schema/general';
 import { resolveUserByIdFromCache } from '../../domain/user';
 import { parseCsvMapper } from '../../modules/internal/csvMapper/csvMapper-utils';
-import type { ConnectorConfig } from '../connector';
 import { IMPORT_CSV_CONNECTOR } from './importCsv';
 import { DatabaseError, FunctionalError } from '../../config/errors';
 import { uploadToStorage } from '../../database/file-storage-helper';
 import { storeLoadByIdWithRefs } from '../../database/middleware';
+import type { ConnectorConfig } from '../internalConnector';
 
 const RETRY_CONNECTION_PERIOD = 10000;
 

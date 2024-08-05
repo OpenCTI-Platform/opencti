@@ -2,6 +2,7 @@ import { expect, it, describe, afterAll, beforeAll } from 'vitest';
 import gql from 'graphql-tag';
 import { queryAsAdmin, USER_CONNECTOR, USER_EDITOR } from '../../utils/testQuery';
 import { queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
+import type { ConnectorInfo } from '../../../src/generated/graphql';
 
 const CREATE_WORK_QUERY = gql`
   mutation workAdd($connectorId: String!, $friendlyName: String) {
@@ -133,7 +134,7 @@ beforeAll(async () => {
 });
 
 describe('Connector resolver standard behaviour', () => {
-  let workId;
+  let workId: string;
   it('should create work', async () => {
     const WORK_TO_CREATE = {
       connectorId: TEST_CN_ID,
@@ -203,6 +204,61 @@ describe('Connector resolver standard behaviour', () => {
     expect(queryResult.data.connector.connector_queue_details.messages_number).toBe(0);
     expect(queryResult.data.connector.connector_queue_details.messages_size).toBe(0);
   });
+
+  it('should legacy ping still works (without connector_info)', async () => {
+    const PING_CONNECTOR_LEGACY_QUERY = gql`
+      mutation PingConnector($id: ID!, $state: String) {
+        pingConnector(id: $id, state: $state) {
+          id
+        }
+      }
+    `;
+    const state = '{"last_run": 1718010586.1741812}';
+    const queryResult = await queryAsUserWithSuccess(USER_CONNECTOR.client, { query: PING_CONNECTOR_LEGACY_QUERY, variables: { id: TEST_CN_ID, state } });
+    expect(queryResult.data.pingConnector.id).toBeDefined();
+  });
+
+  it('should store buffering data and run and terminate info from ping', async () => {
+    const PING_CONNECTOR_QUERY = gql`
+      mutation PingConnector($id: ID!, $state: String, $connectorInfo: ConnectorInfoInput) {
+        pingConnector(id: $id, state: $state, connectorInfo:$connectorInfo) {
+          id
+          connector_info {
+            buffering
+            next_run_datetime
+            last_run_datetime
+            queue_messages_size
+            run_and_terminate
+            queue_threshold
+          }
+        }
+      }
+    `;
+
+    const datetimeNextRun = new Date();
+    const datetimeLastRun = new Date(datetimeNextRun.getTime() - 5 * 60 * 1000);
+
+    const connectorInfo: ConnectorInfo = {
+      buffering: true,
+      queue_messages_size: 20.50,
+      queue_threshold: 490.2,
+      run_and_terminate: true,
+      next_run_datetime: datetimeNextRun,
+      last_run_datetime: datetimeLastRun,
+    };
+
+    const state = '{"last_run": 1718010586.1741812}';
+
+    const queryResult = await queryAsUserWithSuccess(USER_CONNECTOR.client, { query: PING_CONNECTOR_QUERY, variables: { id: TEST_CN_ID, state, connectorInfo } });
+
+    expect(queryResult.data.pingConnector).toBeDefined();
+    expect(queryResult.data.pingConnector.connector_info.run_and_terminate).toBeTruthy();
+    expect(queryResult.data.pingConnector.connector_info.buffering).toBeTruthy();
+    expect(queryResult.data.pingConnector.connector_info.queue_messages_size).toBe(20.50);
+    expect(queryResult.data.pingConnector.connector_info.queue_threshold).toBe(490.2);
+    expect(queryResult.data.pingConnector.connector_info.next_run_datetime).toBe(datetimeNextRun.toISOString());
+    expect(queryResult.data.pingConnector.connector_info.last_run_datetime).toBe(datetimeLastRun.toISOString());
+  });
 });
 
 describe('Capability checks', () => {
@@ -221,5 +277,5 @@ afterAll(async () => {
   // Verify is no longer found
   const queryResult = await queryAsAdmin({ query: READ_CONNECTOR_QUERY, variables: { id: TEST_CN_ID } });
   expect(queryResult).not.toBeNull();
-  expect(queryResult.data.connector).toBeNull();
+  expect(queryResult.data?.connector).toBeNull();
 });

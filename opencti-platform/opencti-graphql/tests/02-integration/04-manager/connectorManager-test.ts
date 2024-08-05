@@ -6,11 +6,11 @@ import { registerConnector } from '../../../src/domain/connector';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import type { RegisterConnectorInput } from '../../../src/generated/graphql';
 import { ConnectorType } from '../../../src/generated/graphql';
-import type { BasicStoreEntityConnector } from '../../../src/connector/connector';
 import { elIndex } from '../../../src/database/engine';
 import { ENTITY_TYPE_WORK } from '../../../src/schema/internalObject';
 import { INDEX_HISTORY } from '../../../src/database/utils';
 import { deleteCompletedWorks } from '../../../src/manager/connectorManager';
+import type { BasicStoreEntityConnector } from '../../../src/types/connector';
 
 describe('Old work of connector cleanup test', () => {
   let testConnector: BasicStoreEntityConnector;

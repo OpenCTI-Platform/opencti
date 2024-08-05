@@ -82,15 +82,23 @@ export const purgeConnectorQueues = async (connector) => {
 };
 
 export const getConnectorQueueDetails = async (connectorId) => {
-  const httpClient = await amqpHttpClient();
-  const pathRabbit = `/api/queues${isEmptyField(VHOST_PATH) ? '/%2F' : VHOST_PATH}/${RABBITMQ_PUSH_QUEUE_PREFIX}${connectorId}`;
+  try {
+    const httpClient = await amqpHttpClient();
+    const pathRabbit = `/api/queues${isEmptyField(VHOST_PATH) ? '/%2F' : VHOST_PATH}/${RABBITMQ_PUSH_QUEUE_PREFIX}${connectorId}`;
 
-  const queueDetailResponse = await httpClient.get(pathRabbit).then((response) => response.data);
-  logApp.debug('Rabbit HTTP API response', { queueDetailResponse });
-  return {
-    messages_number: queueDetailResponse.messages || 0,
-    messages_size: queueDetailResponse.message_bytes || 0
-  };
+    const queueDetailResponse = await httpClient.get(pathRabbit).then((response) => response.data);
+    logApp.debug('Rabbit HTTP API response', { queueDetailResponse });
+    return {
+      messages_number: queueDetailResponse.messages || 0,
+      messages_size: queueDetailResponse.message_bytes || 0
+    };
+  } catch (e) {
+    logApp.error(e, { connectorId });
+    return {
+      messages_number: 0,
+      messages_size: 0
+    };
+  }
 };
 
 const amqpExecute = async (execute) => {
