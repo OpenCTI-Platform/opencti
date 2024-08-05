@@ -38,7 +38,7 @@ const TELEMETRY_EXPORT_INTERVAL = DEV_MODE ? TWO_MINUTE : SIX_HOUR;
 // Manager schedule, data point generation
 const COMPUTE_SCHEDULE_TIME = DEV_MODE ? ONE_MINUTE / 2 : ONE_HOUR / 2;
 
-const SKIP_TELEMETRY_ACTIVE_USERS = isFeatureEnabled('SKIP_TELEMETRY_ACTIVE_USERS');
+const TELEMETRY_COUNT_ACTIVE_USERS = isFeatureEnabled('TELEMETRY_COUNT_ACTIVE_USERS');
 
 const telemetryInitializer = async (): Promise<HandlerInput> => {
   const context = executionContext('telemetry_manager');
@@ -118,7 +118,7 @@ const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     manager.setInstancesCount(clusterInfo.info.instances_number);
     // endregion
     // region Users information
-    if (!SKIP_TELEMETRY_ACTIVE_USERS) {
+    if (TELEMETRY_COUNT_ACTIVE_USERS) {
       const activUsers = await usersWithActiveSession(TELEMETRY_COLLECT_INTERVAL / 1000 / 60);
       manager.setActiveUsersCount(activUsers.length);
     }
