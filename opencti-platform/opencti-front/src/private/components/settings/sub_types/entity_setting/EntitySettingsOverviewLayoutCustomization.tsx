@@ -9,6 +9,7 @@ import TableRow from '@mui/material/TableRow';
 import TableBody from '@mui/material/TableBody';
 import Switch from '@mui/material/Switch';
 import { Field, Form, Formik } from 'formik';
+import * as Yup from 'yup';
 import { useFormatter } from '../../../../../components/i18n';
 import TextField from '../../../../../components/TextField';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
@@ -62,6 +63,15 @@ const EntitySettingsOverviewLayoutCustomization = ({
       [`${widgetConfiguration.key}_order`]: currentIndex + 1,
     }), {}),
   };
+  const formValidationSchema = Yup.object().shape({
+    ...overview_layout_customization.reduce((accumulator, widgetConfiguration, currentIndex, array) => ({
+      ...accumulator,
+      [`${widgetConfiguration.key}_isFullWidth`]: Yup.boolean(),
+      [`${widgetConfiguration.key}_order`]: Yup.number()
+        .min(1, t_i18n('This field must be >= 1'))
+        .max(array.length, t_i18n('', { id: 'This field must be <= value', values: { value: array.length } })),
+    }), {}),
+  });
 
   const [commitUpdate] = useApiMutation((entitySettingsOverviewLayoutCustomizationEdit));
   const editInputsKeys = overview_layout_customization.map(({ key }) => key);
@@ -98,8 +108,8 @@ const EntitySettingsOverviewLayoutCustomization = ({
     <Formik<typeof initialValues>
       enableReinitialize={true}
       initialValues={initialValues}
-      onSubmit={() => {
-      }}
+      onSubmit={() => {}}
+      validationSchema={formValidationSchema}
     >
       {({
         values,
@@ -139,6 +149,7 @@ const EntitySettingsOverviewLayoutCustomization = ({
                           <Field
                             sx={{ border: 0 }}
                             component={TextField}
+                            type="number"
                             name={`${key}_order`}
                             onSubmit={
                               async (field: string, value: number) => {

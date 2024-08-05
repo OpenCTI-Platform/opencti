@@ -8,12 +8,13 @@ import EntitySettingsOverviewLayoutCustomization, {
   entitySettingsOverviewLayoutCustomizationEdit,
   entitySettingsOverviewLayoutCustomizationFragment,
 } from '@components/settings/sub_types/entity_setting/EntitySettingsOverviewLayoutCustomization';
+import { RestartAlt } from '@mui/icons-material';
+import Grid from '@mui/material/Grid';
+import IconButton from '@mui/material/IconButton';
+import Tooltip from '@mui/material/Tooltip';
 import {
   EntitySettingsOverviewLayoutCustomization_entitySetting$key,
 } from '@components/settings/sub_types/entity_setting/__generated__/EntitySettingsOverviewLayoutCustomization_entitySetting.graphql';
-import { RestartAlt } from '@mui/icons-material';
-import Button from '@mui/material/Button';
-import Grid from '@mui/material/Grid';
 import { useFormatter } from '../../../../components/i18n';
 import ItemStatusTemplate from '../../../../components/ItemStatusTemplate';
 import SubTypeStatusPopover from './SubTypeWorkflowPopover';
@@ -185,11 +186,17 @@ const SubType = ({ data }: { data: SubType_subType$key }) => {
               <Typography variant="h4" gutterBottom={true} sx={{ marginBottom: 3 }}>
                 <Box sx={{ display: 'inline-flex', alignItems: 'center' }}>
                   <span>{t_i18n('Overview layout customization')}</span>
-                  <Button
+                  <IconButton
                     onClick={() => resetLayout()}
+                    aria-haspopup="true"
+                    sx={{ marginLeft: 1 }}
+                    size="small"
+                    color="primary"
                   >
-                    <RestartAlt fontSize={'small'} color={'primary'} />
-                  </Button>
+                    <Tooltip title={t_i18n('Reset to default layout')} >
+                      <RestartAlt fontSize={'small'} color={'primary'} />
+                    </Tooltip>
+                  </IconButton>
                 </Box>
               </Typography>
               <Paper

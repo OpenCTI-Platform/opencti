@@ -1,5 +1,6 @@
 import { schemaOverviewLayoutCustomization } from './schema-overviewLayoutCustomization';
+import type { OverviewLayoutCustomization } from '../modules/entitySetting/entitySetting-types';
 
-export const registerEntityOverviewLayoutCustomization = (type: string, overviewLayoutCustomization: Array<{ key: string, width: number }>) => {
+export const registerEntityOverviewLayoutCustomization = (type: string, overviewLayoutCustomization: Array<OverviewLayoutCustomization>) => {
   schemaOverviewLayoutCustomization.set(type, (overviewLayoutCustomization ?? []));
 };
