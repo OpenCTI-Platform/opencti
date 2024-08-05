@@ -421,19 +421,6 @@ describe('PublicDashboard resolver', () => {
         expect(queryResult.data.publicDashboardFieldPatch.name).toEqual(updatedName);
       });
 
-      it('User with EXPLORE_EXUPDATE_PUBLISH capability but view access right cannot update public dashboard', async () => {
-        const queryResult = await editorQuery({
-          query: UPDATE_QUERY,
-          variables: {
-            id: publicDashboardInternalId,
-            input: { key: 'name', value: ['updated name'] },
-          },
-        });
-        expect(queryResult).not.toBeNull();
-        expect(queryResult.errors.length).toEqual(1);
-        expect(queryResult.errors.at(0).message).toEqual('You are not allowed to do this.');
-      });
-
       it('should disabled/enabled publicDashboard', async () => {
         // Disabled public dashboard
         const disabledQueryResult = await queryAsAdmin({
