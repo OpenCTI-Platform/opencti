@@ -6419,6 +6419,8 @@ type Vulnerability implements BasicObject & StixObject & StixCoreObject & StixDo
   x_opencti_cvss_availability_impact: String
   x_opencti_cvss_confidentiality_impact: String
   x_opencti_cisa_kev: Boolean
+  x_opencti_epss_score: Float
+  x_opencti_epss_percentile: Float
   softwares(first: Int, after: ID, orderBy: StixCyberObservablesOrdering, orderMode: OrderingMode): StixCyberObservableConnection
   # Technical
   creators: [Creator!]
@@ -6445,6 +6447,8 @@ input VulnerabilityAddInput {
   x_opencti_cvss_availability_impact: String
   x_opencti_cvss_confidentiality_impact: String
   x_opencti_cisa_kev: Boolean
+  x_opencti_epss_score: Float
+  x_opencti_epss_percentile: Float
   confidence: Int
   revoked: Boolean
   lang: String

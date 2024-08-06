@@ -1030,6 +1030,8 @@
   "entity_Windows-Registry-Key": "Clé de reg. Windows",
   "entity_Windows-Registry-Value-Type": "Clé de reg. Windows - Valeur",
   "entity_X509-Certificate": "Certificat X509",
+  "EPSS Percentile": "EPSS - Percentile",
+  "EPSS Score": "EPSS - Score",
   "eql": "Elastic EQL",
   "Equals": "Égal",
   "Error": "Erreur",

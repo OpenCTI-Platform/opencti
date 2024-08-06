@@ -27733,6 +27733,8 @@ export type Vulnerability = BasicObject & StixCoreObject & StixDomainObject & St
   x_opencti_cvss_base_severity?: Maybe<Scalars['String']['output']>;
   x_opencti_cvss_confidentiality_impact?: Maybe<Scalars['String']['output']>;
   x_opencti_cvss_integrity_impact?: Maybe<Scalars['String']['output']>;
+  x_opencti_epss_percentile?: Maybe<Scalars['Float']['output']>;
+  x_opencti_epss_score?: Maybe<Scalars['Float']['output']>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']['output']>>>;
@@ -27901,6 +27903,8 @@ export type VulnerabilityAddInput = {
   x_opencti_cvss_base_severity?: InputMaybe<Scalars['String']['input']>;
   x_opencti_cvss_confidentiality_impact?: InputMaybe<Scalars['String']['input']>;
   x_opencti_cvss_integrity_impact?: InputMaybe<Scalars['String']['input']>;
+  x_opencti_epss_percentile?: InputMaybe<Scalars['Float']['input']>;
+  x_opencti_epss_score?: InputMaybe<Scalars['Float']['input']>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
   x_opencti_workflow_id?: InputMaybe<Scalars['String']['input']>;
 };
@@ -38825,6 +38829,8 @@ export type VulnerabilityResolvers<ContextType = any, ParentType extends Resolve
   x_opencti_cvss_base_severity?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_cvss_confidentiality_impact?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_cvss_integrity_impact?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  x_opencti_epss_percentile?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
+  x_opencti_epss_score?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
