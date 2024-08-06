@@ -2,7 +2,7 @@ import type { AuthContext, AuthUser } from '../../../types/user';
 import { createEntity } from '../../../database/middleware';
 import type { EntityOptions } from '../../../database/middleware-loader';
 import { internalLoadById, listEntitiesPaginated, storeLoadById } from '../../../database/middleware-loader';
-import { BUS_TOPICS } from '../../../config/conf';
+import { BUS_TOPICS, isFeatureEnabled } from '../../../config/conf';
 import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_DOMAIN_OBJECT, buildRefRelationKey } from '../../../schema/general';
 import { notify } from '../../../database/redis';
 import { now } from '../../../utils/format';
@@ -16,6 +16,7 @@ import { isStixId } from '../../../schema/schemaUtils';
 import { RELATION_OBJECT } from '../../../schema/stixRefRelationship';
 import { FilterMode } from '../../../generated/graphql';
 import { editAuthorizedMembers } from '../../../utils/authorizedMembers';
+import { UnsupportedError } from '../../../config/errors';
 
 export const findById: DomainFindById<BasicStoreEntityFeedback> = (context: AuthContext, user: AuthUser, caseId: string) => {
   return storeLoadById(context, user, caseId, ENTITY_TYPE_CONTAINER_FEEDBACK);

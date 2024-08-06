@@ -29,6 +29,7 @@ import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings
 import useGranted, { KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE } from '../../../../utils/hooks/useGranted';
 import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 import FeedbackEdition from './FeedbackEdition';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 const subscription = graphql`
   subscription RootFeedbackSubscription($id: ID!) {
@@ -110,6 +111,7 @@ const RootFeedbackComponent = ({ queryRef, caseId }) => {
   const enableReferences = useIsEnforceReference('Feedback') && !useGranted([KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE]);
   const { t_i18n } = useFormatter();
   useSubscription(subConfig);
+  const { isFeatureEnable } = useHelper();
 
   const {
     feedback: feedbackData,
@@ -117,8 +119,7 @@ const RootFeedbackComponent = ({ queryRef, caseId }) => {
     connectorsForImport,
   } = usePreloadedQuery<RootFeedbackQuery>(feedbackQuery, queryRef);
   const paddingRight = getPaddingRight(location.pathname, feedbackData?.id, '/dashboard/cases/feedbacks');
-  const canManage = feedbackData?.currentUserAccessRight === 'admin';
-  const canEdit = canManage || feedbackData.currentUserAccessRight === 'edit';
+  const canManageAuthorizedMembers = feedbackData?.currentUserAccessRight === 'admin' && isFeatureEnable('CONTAINERS_AUTHORIZED_MEMBERS');
   return (
     <>
       {feedbackData ? (
@@ -132,13 +133,13 @@ const RootFeedbackComponent = ({ queryRef, caseId }) => {
           <ContainerHeader
             container={feedbackData}
             PopoverComponent={<FeedbackPopover id={feedbackData.id} />}
-            EditComponent={<Security needs={[KNOWLEDGE_KNUPDATE]} hasAccess={canEdit}>
+            EditComponent={<Security needs={[KNOWLEDGE_KNUPDATE]}>
               <FeedbackEdition feedbackId={feedbackData.id} />
             </Security>}
             enableSuggestions={false}
             disableSharing={true}
             enableQuickSubscription
-            enableManageAuthorizedMembers={canManage}
+            enableManageAuthorizedMembers={canManageAuthorizedMembers}
             authorizedMembersMutation={feedbackAuthorizedMembersMutation}
             redirectToContent={true}
           />
