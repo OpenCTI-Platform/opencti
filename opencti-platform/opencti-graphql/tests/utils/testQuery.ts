@@ -96,7 +96,7 @@ const ROLE_PARTICIPATE: Role = {
   id: generateStandardId(ENTITY_TYPE_ROLE, { name: 'Access knowledge and participate' }),
   name: 'Access knowledge and participate',
   description: 'Only participate',
-  capabilities: ['KNOWLEDGE_KNPARTICIPATE']
+  capabilities: ['KNOWLEDGE_KNPARTICIPATE', 'EXPLORE_EXUPDATE_EXDELETE']
 };
 TESTING_ROLES.push(ROLE_PARTICIPATE);
 export const ROLE_EDITOR: Role = {
