@@ -33,7 +33,7 @@ import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import { useFormatter } from '../../../../components/i18n';
 import Security from '../../../../utils/Security';
-import useGranted, { KNOWLEDGE_KNENRICHMENT, KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import useGranted, { KNOWLEDGE_KNENRICHMENT, KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS } from '../../../../utils/hooks/useGranted';
 import CommitMessage from '../form/CommitMessage';
 import StixCoreObjectSharing from '../stix_core_objects/StixCoreObjectSharing';
 import { truncate } from '../../../../utils/String';
@@ -41,6 +41,8 @@ import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings
 import StixCoreObjectQuickSubscription from '../stix_core_objects/StixCoreObjectQuickSubscription';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import Transition from '../../../../components/Transition';
+import FormAuthorizedMembersDialog from '@components/common/form/FormAuthorizedMembersDialog';
+import { authorizedMembersToOptions } from '../../../../utils/authorizedMembers';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -193,6 +195,8 @@ const StixDomainObjectHeader = (props) => {
     disableSharing,
     noAliases,
     entityType, // Should migrate all the parent component to call the useIsEnforceReference as the top
+    enableManageAuthorizedMembers,
+    authorizedMembersMutation,
     enableQuickSubscription,
     enableAskAi,
   } = props;
@@ -507,6 +511,19 @@ const StixDomainObjectHeader = (props) => {
               variant="header"
             />
           )}
+          <Security
+            needs={[KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]}
+            hasAccess={!!enableManageAuthorizedMembers}
+          >
+            <FormAuthorizedMembersDialog
+              id={stixDomainObject.id}
+              owner={stixDomainObject.creators?.[0]}
+              authorizedMembers={authorizedMembersToOptions(
+                stixDomainObject.authorized_members,
+              )}
+              mutation={authorizedMembersMutation}
+            />
+          </Security>
           <StixCoreObjectFileExport
             id={stixDomainObject.id}
             type={entityType}

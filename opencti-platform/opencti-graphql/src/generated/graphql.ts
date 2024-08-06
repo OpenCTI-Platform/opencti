@@ -11789,6 +11789,7 @@ export type MalwareAnalysis = BasicObject & StixCoreObject & StixDomainObject & 
   analysis_ended?: Maybe<Scalars['DateTime']['output']>;
   analysis_engine_version?: Maybe<Scalars['String']['output']>;
   analysis_started?: Maybe<Scalars['DateTime']['output']>;
+  authorized_members?: Maybe<Array<MemberAccess>>;
   avatar?: Maybe<OpenCtiFile>;
   cases?: Maybe<CaseConnection>;
   confidence?: Maybe<Scalars['Int']['output']>;
@@ -11800,6 +11801,7 @@ export type MalwareAnalysis = BasicObject & StixCoreObject & StixDomainObject & 
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
+  currentUserAccessRight?: Maybe<Scalars['String']['output']>;
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String']['output'];
   exportFiles?: Maybe<FileConnection>;
@@ -12719,6 +12721,7 @@ export type Mutation = {
   malwareAnalysisContextClean?: Maybe<MalwareAnalysis>;
   malwareAnalysisContextPatch?: Maybe<MalwareAnalysis>;
   malwareAnalysisDelete?: Maybe<Scalars['ID']['output']>;
+  malwareAnalysisEditAuthorizedMembers?: Maybe<MalwareAnalysis>;
   malwareAnalysisFieldPatch?: Maybe<MalwareAnalysis>;
   malwareAnalysisRelationAdd?: Maybe<StixRefRelationship>;
   malwareAnalysisRelationDelete?: Maybe<MalwareAnalysis>;
@@ -13800,6 +13803,12 @@ export type MutationMalwareAnalysisContextPatchArgs = {
 
 export type MutationMalwareAnalysisDeleteArgs = {
   id: Scalars['ID']['input'];
+};
+
+
+export type MutationMalwareAnalysisEditAuthorizedMembersArgs = {
+  id: Scalars['ID']['input'];
+  input?: InputMaybe<Array<MemberAccessInput>>;
 };
 
 
@@ -34321,6 +34330,7 @@ export type MalwareAnalysisResolvers<ContextType = any, ParentType extends Resol
   analysis_ended?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   analysis_engine_version?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   analysis_started?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  authorized_members?: Resolver<Maybe<Array<ResolversTypes['MemberAccess']>>, ParentType, ContextType>;
   avatar?: Resolver<Maybe<ResolversTypes['OpenCtiFile']>, ParentType, ContextType>;
   cases?: Resolver<Maybe<ResolversTypes['CaseConnection']>, ParentType, ContextType, Partial<MalwareAnalysisCasesArgs>>;
   confidence?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
@@ -34332,6 +34342,7 @@ export type MalwareAnalysisResolvers<ContextType = any, ParentType extends Resol
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
+  currentUserAccessRight?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   exportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<MalwareAnalysisExportFilesArgs>>;
@@ -34835,6 +34846,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   malwareAnalysisContextClean?: Resolver<Maybe<ResolversTypes['MalwareAnalysis']>, ParentType, ContextType, RequireFields<MutationMalwareAnalysisContextCleanArgs, 'id'>>;
   malwareAnalysisContextPatch?: Resolver<Maybe<ResolversTypes['MalwareAnalysis']>, ParentType, ContextType, RequireFields<MutationMalwareAnalysisContextPatchArgs, 'id' | 'input'>>;
   malwareAnalysisDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationMalwareAnalysisDeleteArgs, 'id'>>;
+  malwareAnalysisEditAuthorizedMembers?: Resolver<Maybe<ResolversTypes['MalwareAnalysis']>, ParentType, ContextType, RequireFields<MutationMalwareAnalysisEditAuthorizedMembersArgs, 'id'>>;
   malwareAnalysisFieldPatch?: Resolver<Maybe<ResolversTypes['MalwareAnalysis']>, ParentType, ContextType, RequireFields<MutationMalwareAnalysisFieldPatchArgs, 'id' | 'input'>>;
   malwareAnalysisRelationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<MutationMalwareAnalysisRelationAddArgs, 'id' | 'input'>>;
   malwareAnalysisRelationDelete?: Resolver<Maybe<ResolversTypes['MalwareAnalysis']>, ParentType, ContextType, RequireFields<MutationMalwareAnalysisRelationDeleteArgs, 'id' | 'relationship_type' | 'toId'>>;

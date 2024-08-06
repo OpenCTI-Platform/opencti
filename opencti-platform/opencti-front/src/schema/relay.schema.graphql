@@ -8459,6 +8459,7 @@ type Mutation {
   malwareAnalysisContextClean(id: ID!): MalwareAnalysis
   malwareAnalysisRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship
   malwareAnalysisRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): MalwareAnalysis
+  malwareAnalysisEditAuthorizedMembers(id: ID!, input: [MemberAccessInput!]): MalwareAnalysis
   managerConfigurationFieldPatch(id: ID!, input: [EditInput!]!, commitMessage: String, references: [String]): ManagerConfiguration
   notifierDelete(id: ID!): ID
   notifierFieldPatch(id: ID!, input: [EditInput!]!): Notifier
@@ -10553,6 +10554,8 @@ type MalwareAnalysis implements BasicObject & StixCoreObject & StixDomainObject 
   result: String
   analysisSco: StixCyberObservableConnection
   sample: StixCyberObservable
+  authorized_members: [MemberAccess!]
+  currentUserAccessRight: String
 }
 
 enum MalwareAnalysesOrdering {
