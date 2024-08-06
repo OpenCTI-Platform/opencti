@@ -8,7 +8,7 @@ import ContainerObservablesPage from '../model/containerObservables.pageModel';
 import StixCoreObjectDataTab from '../model/StixCoreObjectDataTab.pageModel';
 
 /**
- * Goal: validate that everything is opening wihtout errors
+ * Goal: validate that everything is opening without errors
  * Content of the test
  * -------------------
  * Go on report
