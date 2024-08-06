@@ -45,10 +45,11 @@ const useStyles = makeStyles((theme) => ({
   charts: {
     display: 'grid',
     gridAutoFlow: 'column',
-    gridAutoColumns: '40px 40px 40px',
+    gridAutoColumns: 40,
+    marginLeft: 10,
   },
   chartContainer: {
-    marginLeft: -27,
+    marginLeft: -31,
     position: 'relative',
   },
   iconOverlay: {
