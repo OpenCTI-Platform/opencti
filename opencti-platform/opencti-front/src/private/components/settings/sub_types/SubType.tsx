@@ -1,21 +1,10 @@
 import Typography from '@mui/material/Typography';
 import React, { useMemo } from 'react';
 import Paper from '@mui/material/Paper';
-import Box from '@mui/material/Box';
 import makeStyles from '@mui/styles/makeStyles';
 import { graphql, useFragment, useSubscription } from 'react-relay';
-import EntitySettingsOverviewLayoutCustomization, {
-  EntitySettingsOverviewLayoutCustomizationData,
-  entitySettingsOverviewLayoutCustomizationEdit,
-  entitySettingsOverviewLayoutCustomizationFragment,
-} from '@components/settings/sub_types/entity_setting/EntitySettingsOverviewLayoutCustomization';
-import { RestartAlt } from '@mui/icons-material';
 import Grid from '@mui/material/Grid';
-import IconButton from '@mui/material/IconButton';
-import Tooltip from '@mui/material/Tooltip';
-import {
-  EntitySettingsOverviewLayoutCustomization_entitySetting$key,
-} from '@components/settings/sub_types/entity_setting/__generated__/EntitySettingsOverviewLayoutCustomization_entitySetting.graphql';
+import EntitySettingCustomOverview from '@components/settings/sub_types/entity_setting/EntitySettingCustomOverview';
 import { useFormatter } from '../../../../components/i18n';
 import ItemStatusTemplate from '../../../../components/ItemStatusTemplate';
 import SubTypeStatusPopover from './SubTypeWorkflowPopover';
@@ -26,9 +15,7 @@ import CustomizationMenu from '../CustomizationMenu';
 import SearchInput from '../../../../components/SearchInput';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import { DataSourcesLinesPaginationQuery$variables } from '../../techniques/data_sources/__generated__/DataSourcesLinesPaginationQuery.graphql';
-import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useHelper from '../../../../utils/hooks/useHelper';
-import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -78,12 +65,16 @@ const subTypeFragment = graphql`
   }
 `;
 
-const SubType = ({ data }: { data: SubType_subType$key }) => {
+interface SubTypeProps {
+  data: SubType_subType$key;
+}
+
+const SubType: React.FC<SubTypeProps> = ({ data }) => {
   const { t_i18n } = useFormatter();
   const { isFeatureEnable } = useHelper();
   const isOverviewLayoutCustomizationEnabled = isFeatureEnable('OVERVIEW_LAYOUT_CUSTOMIZATION');
   const classes = useStyles();
-  const subType = useFragment(subTypeFragment, data);
+  const subType = useFragment<SubType_subType$key>(subTypeFragment, data);
 
   const subTypeSettingsId = subType.settings?.id;
   if (!subTypeSettingsId) {
@@ -104,26 +95,6 @@ const SubType = ({ data }: { data: SubType_subType$key }) => {
     { searchTerm: '' },
   );
   const { searchTerm } = viewStorage;
-  const entitySetting = useFragment<EntitySettingsOverviewLayoutCustomization_entitySetting$key>(
-    entitySettingsOverviewLayoutCustomizationFragment,
-    subType.settings,
-  );
-  const [commitReset] = useApiMutation((entitySettingsOverviewLayoutCustomizationEdit));
-  const resetLayout = () => {
-    commitReset({
-      variables: {
-        ids: [entitySetting?.id],
-        input: {
-          key: 'overview_layout_customization',
-          value: [undefined],
-        },
-      },
-    });
-  };
-
-  const hasOverview = isOverviewLayoutCustomizationEnabled && entitySetting?.overview_layout_customization;
-
-  const layout = useOverviewLayoutCustomization(subType.id);
 
   return (
     <div className={classes.container}>
@@ -184,60 +155,10 @@ const SubType = ({ data }: { data: SubType_subType$key }) => {
             </Paper>
           </Grid>
         )}
-        {hasOverview && (
-          <>
-            <Grid item xs={6}>
-              <Typography variant="h4" gutterBottom={true} sx={{ marginBottom: 3 }}>
-                <Box sx={{ display: 'inline-flex', alignItems: 'center' }}>
-                  <span>{t_i18n('Overview layout customization')}</span>
-                  <IconButton
-                    onClick={() => resetLayout()}
-                    aria-haspopup="true"
-                    sx={{ marginLeft: 1 }}
-                    size="small"
-                    color="primary"
-                  >
-                    <Tooltip title={t_i18n('Reset to default layout')} >
-                      <RestartAlt fontSize={'small'} color={'primary'} />
-                    </Tooltip>
-                  </IconButton>
-                </Box>
-              </Typography>
-              <Paper
-                classes={{ root: classes.paper }}
-                variant="outlined"
-                className={'paper-for-grid'}
-              >
-                <EntitySettingsOverviewLayoutCustomization
-                  entitySettingsData={entitySetting as EntitySettingsOverviewLayoutCustomizationData}
-                />
-              </Paper>
-            </Grid>
-            <Grid item xs={6}>
-              <Typography variant="h4" gutterBottom={true} sx={{ marginTop: 1, marginBottom: 2 }}>
-                {t_i18n('Preview')}
-              </Typography>
-              <Paper
-                classes={{ root: classes.paper }}
-                variant="outlined"
-                className={'paper-for-grid'}
-              >
-                <Grid container>
-                  {layout.map(({ key, width, label }) => (
-                    <Grid item xs={width} key={key}>
-                      <Paper
-                        classes={{ root: classes.paper }}
-                        className={'paper-for-grid'}
-                        style={{ height: 70, padding: 0, margin: 3, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                      >
-                        {t_i18n(label)}
-                      </Paper>
-                    </Grid>
-                  ))}
-                </Grid>
-              </Paper>
-            </Grid>
-          </>
+        { isOverviewLayoutCustomizationEnabled && (
+          <EntitySettingCustomOverview
+            entitySettingsData={subType.settings}
+          />
         )}
       </Grid>
     </div>
