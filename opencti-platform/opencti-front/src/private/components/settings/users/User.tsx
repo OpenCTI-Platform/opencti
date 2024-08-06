@@ -261,10 +261,6 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
           handleCloseKillSession();
           refetch(
             { id: user.id },
-            null,
-            () => {
-            },
-            { force: true },
           );
         },
       });
@@ -291,10 +287,6 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
         handleCloseKillSessions();
         refetch(
           { id: user.id },
-          null,
-          () => {
-          },
-          { force: true },
         );
       },
     });
