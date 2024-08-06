@@ -83,7 +83,6 @@ import useGranted, {
   KNOWLEDGE_KNUPDATE,
   KNOWLEDGE_KNUPDATE_KNDELETE,
   MODULES,
-  SETTINGS,
   SETTINGS_SETPARAMETERS,
   SETTINGS_SECURITYACTIVITY,
   SETTINGS_SETACCESSES,
@@ -92,7 +91,6 @@ import useGranted, {
   SETTINGS_SETMARKINGS,
   SETTINGS_FILEINDEXING,
   SETTINGS_SUPPORT,
-  TAXIIAPI_SETCOLLECTIONS,
   CSVMAPPERS,
   VIRTUAL_ORGANIZATION_ADMIN,
   INGESTION,
@@ -110,21 +108,22 @@ import logoFiligranTextLight from '../../../static/images/logo_filigran_text_lig
 import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
 import useDimensions from '../../../utils/hooks/useDimensions';
 
+const SMALL_BAR_WIDTH = 55;
+const OPEN_BAR_WIDTH = 180;
+
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
 const useStyles = makeStyles((theme) => createStyles({
   drawerPaper: {
-    width: 55,
+    width: SMALL_BAR_WIDTH,
     minHeight: '100vh',
-    background: 0,
-    backgroundColor: theme.palette.background.nav,
+    background: 'none',
     overflowX: 'hidden',
   },
   drawerPaperOpen: {
-    width: 180,
+    width: OPEN_BAR_WIDTH,
     minHeight: '100vh',
-    background: 0,
-    backgroundColor: theme.palette.background.nav,
+    background: 'none',
     overflowX: 'hidden',
   },
   menuItemIcon: {
@@ -161,25 +160,25 @@ const useStyles = makeStyles((theme) => createStyles({
     fontSize: 12,
   },
   menuCollapseOpen: {
-    width: 180,
+    width: OPEN_BAR_WIDTH,
     height: 35,
     fontWeight: 500,
     fontSize: 14,
   },
   menuCollapse: {
-    width: 55,
+    width: SMALL_BAR_WIDTH,
     height: 35,
     fontWeight: 500,
     fontSize: 14,
   },
   menuLogoOpen: {
-    width: 180,
+    width: OPEN_BAR_WIDTH,
     height: 35,
     fontWeight: 500,
     fontSize: 14,
   },
   menuLogo: {
-    width: 55,
+    width: SMALL_BAR_WIDTH,
     height: 35,
     fontWeight: 500,
     fontSize: 14,
@@ -215,7 +214,16 @@ const LeftBar = () => {
   const isGrantedToImport = useGranted([KNOWLEDGE_KNASKIMPORT]);
   const isGrantedToProcessing = useGranted([KNOWLEDGE_KNUPDATE, SETTINGS_SETACCESSES, CSVMAPPERS]);
   const isGrantedToSharing = useGranted([TAXIIAPI]);
-  const isGrantedToSettings = useGranted([SETTINGS]);
+  const isGrantedToSettings = useGranted([
+    SETTINGS_SETPARAMETERS,
+    SETTINGS_SETACCESSES,
+    SETTINGS_SETMARKINGS,
+    SETTINGS_SETCUSTOMIZATION,
+    SETTINGS_SETLABELS,
+    SETTINGS_SECURITYACTIVITY,
+    SETTINGS_FILEINDEXING,
+    SETTINGS_SUPPORT,
+  ]);
   const isGrantedToParameters = useGranted([SETTINGS_SETPARAMETERS]);
   const isGrantedToTaxonomies = useGranted([SETTINGS_SETLABELS]);
   const isGrantedToFileIndexing = useGranted([SETTINGS_FILEINDEXING]);
@@ -257,6 +265,7 @@ const LeftBar = () => {
   const handleToggle = () => {
     setSelectedMenu([]);
     localStorage.setItem('navOpen', String(!navOpen));
+    window.dispatchEvent(new StorageEvent('storage', { key: 'navOpen' }));
     localStorage.setItem('selectedMenu', JSON.stringify([]));
     setNavOpen(!navOpen);
     MESSAGING$.toggleNav.next('toggle');
@@ -284,8 +293,9 @@ const LeftBar = () => {
   const handleGoToPage = (link) => {
     navigate(link);
   };
+
   const handleExpandIcon = (entity_type) => {
-    if (!navOpen) return;
+    if (!navOpen) return null;
     if (selectedMenu.includes(entity_type) && location.pathname.includes(`dashboard/${entity_type}`)) {
       return <ExpandLessOutlined color="primary" />;
     } if (selectedMenu.includes(entity_type) && !location.pathname.includes(`dashboard/${entity_type}`)) {
@@ -296,7 +306,6 @@ const LeftBar = () => {
     }
     return <ExpandMoreOutlined />;
   };
-
   const hiddenEntities = useHiddenEntities();
   const hideAnalyses = useIsHiddenEntities(
     'Report',
@@ -359,6 +368,7 @@ const LeftBar = () => {
   } = useAuth();
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
   const { dimension } = useDimensions();
+
   const isMobile = dimension.width < 768;
   const generateSubMenu = (menu, entries) => {
     return navOpen ? (
@@ -1158,75 +1168,84 @@ const LeftBar = () => {
             </Security>
           </MenuList>
         </Security>
-        <Security needs={[SETTINGS, MODULES, KNOWLEDGE, TAXIIAPI_SETCOLLECTIONS]}>
+        <Security needs={[
+          VIRTUAL_ORGANIZATION_ADMIN,
+          SETTINGS_SETPARAMETERS,
+          SETTINGS_SETACCESSES,
+          SETTINGS_SETMARKINGS,
+          SETTINGS_SETCUSTOMIZATION,
+          SETTINGS_SETLABELS,
+          SETTINGS_SECURITYACTIVITY,
+          SETTINGS_FILEINDEXING,
+          SETTINGS_SUPPORT,
+        ]}
+        >
           <Divider />
           <MenuList component="nav">
-            <Security needs={[SETTINGS, VIRTUAL_ORGANIZATION_ADMIN]}>
-              {isOrganizationAdmin && !isGrantedToSettings ? (
-                <StyledTooltip
-                  title={!navOpen && t_i18n('Settings')}
-                  placement="right"
-                >
-                  <MenuItem
-                    component={Link}
-                    to="/dashboard/settings/accesses/organizations"
-                    selected={!navOpen && location.pathname.includes('/dashboard/settings')}
-                    dense={true}
-                    classes={{ root: classes.menuItem }}
-                  >
-                    <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
-                      {location.pathname.includes('/dashboard/settings') ? <CogOutline color="primary"/> : <CogOutline /> }
-                    </ListItemIcon>
-                    {navOpen && (
-                      <ListItemText
-                        classes={{ primary: classes.menuItemText }}
-                        primary={t_i18n('Settings')}
-                      />
-                    )}
-                  </MenuItem>
-                </StyledTooltip>
-              ) : (
+            {isOrganizationAdmin && !isGrantedToSettings ? (
+              <StyledTooltip
+                title={!navOpen && t_i18n('Settings')}
+                placement="right"
+              >
                 <MenuItem
-                  ref={anchors.settings}
+                  component={Link}
+                  to="/dashboard/settings/accesses/organizations"
                   selected={!navOpen && location.pathname.includes('/dashboard/settings')}
                   dense={true}
                   classes={{ root: classes.menuItem }}
-                  onClick={() => (isMobile || navOpen ? handleSelectedMenuToggle('settings') : handleGoToPage('/dashboard/settings'))}
-                  onMouseEnter={() => !navOpen && handleSelectedMenuOpen('settings')}
-                  onMouseLeave={() => !navOpen && handleSelectedMenuClose()}
                 >
                   <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
-                    {location.pathname.includes('settings') ? <CogOutline color="primary"/> : <CogOutline /> }
+                    {location.pathname.includes('/dashboard/settings') ? <CogOutline color="primary"/> : <CogOutline /> }
                   </ListItemIcon>
                   {navOpen && (
-                    <ListItemText
-                      classes={{ primary: classes.menuItemText }}
-                      primary={t_i18n('Settings')}
-                      sx={[
-                        {
-                          color: location.pathname.includes('/dashboard/settings') && selectedMenu.includes('settings')
-                            ? theme.palette.primary.main
-                            : theme.palette.common.white,
-                        },
-                      ]}
-                    />
+                  <ListItemText
+                    classes={{ primary: classes.menuItemText }}
+                    primary={t_i18n('Settings')}
+                  />
                   )}
-                  {handleExpandIcon('settings')}
                 </MenuItem>
-              )}
-              {isGrantedToSettings && generateSubMenu(
-                'settings',
-                [
-                  { granted: isGrantedToParameters, link: '/dashboard/settings/', label: 'Parameters', exact: true },
-                  { granted: isGrantedToSecurity, link: '/dashboard/settings/accesses', label: 'Security' },
-                  { granted: isGrantedToCustomization, link: '/dashboard/settings/customization', label: 'Customization' },
-                  { granted: isGrantedToTaxonomies, link: '/dashboard/settings/vocabularies', label: 'Taxonomies' },
-                  { granted: isGrantedToAudit, link: '/dashboard/settings/activity', label: 'Activity' },
-                  { granted: isGrantedToFileIndexing, link: '/dashboard/settings/file_indexing', label: 'File indexing' },
-                  { granted: isGrantedToSupport, link: '/dashboard/settings/support', label: 'Support' },
-                ],
-              )}
-            </Security>
+              </StyledTooltip>
+            ) : (
+              <MenuItem
+                ref={anchors.settings}
+                selected={!navOpen && location.pathname.includes('/dashboard/settings')}
+                dense={true}
+                classes={{ root: classes.menuItem }}
+                onClick={() => (isMobile || navOpen ? handleSelectedMenuToggle('settings') : handleGoToPage('/dashboard/settings'))}
+                onMouseEnter={() => !navOpen && handleSelectedMenuOpen('settings')}
+                onMouseLeave={() => !navOpen && handleSelectedMenuClose()}
+              >
+                <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
+                  {location.pathname.includes('settings') ? <CogOutline color="primary"/> : <CogOutline /> }
+                </ListItemIcon>
+                {navOpen && (
+                  <ListItemText
+                    classes={{ primary: classes.menuItemText }}
+                    primary={t_i18n('Settings')}
+                    sx={[
+                      {
+                        color: location.pathname.includes('/dashboard/settings') && selectedMenu.includes('settings')
+                          ? theme.palette.primary.main
+                          : theme.palette.common.white,
+                      },
+                    ]}
+                  />
+                )}
+                {handleExpandIcon('settings')}
+              </MenuItem>
+            )}
+            {isGrantedToSettings && generateSubMenu(
+              'settings',
+              [
+                { granted: isGrantedToParameters, link: '/dashboard/settings/', label: 'Parameters', exact: true },
+                { granted: isGrantedToSecurity, link: '/dashboard/settings/accesses', label: 'Security' },
+                { granted: isGrantedToCustomization, link: '/dashboard/settings/customization', label: 'Customization' },
+                { granted: isGrantedToTaxonomies, link: '/dashboard/settings/vocabularies', label: 'Taxonomies' },
+                { granted: isGrantedToAudit, link: '/dashboard/settings/activity', label: 'Activity' },
+                { granted: isGrantedToFileIndexing, link: '/dashboard/settings/file_indexing', label: 'File indexing' },
+                { granted: isGrantedToSupport, link: '/dashboard/settings/support', label: 'Support' },
+              ],
+            )}
           </MenuList>
         </Security>
       </div>
