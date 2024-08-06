@@ -117,8 +117,7 @@ const EntitySettingsOverviewLayoutCustomization: React.FC<EntitySettingsOverview
     <Formik<typeof initialValues>
       enableReinitialize={true}
       initialValues={initialValues}
-      onSubmit={() => {
-      }}
+      onSubmit={() => {}}
     >
       {({ values }) => (
         <Form>
@@ -150,7 +149,6 @@ const EntitySettingsOverviewLayoutCustomization: React.FC<EntitySettingsOverview
                               key={key}
                               ref={providedDrag.innerRef}
                               sx={{
-                                '&:last-child td, &:last-child th': { border: 0 },
                                 '& td, & th': { borderColor: 'border.lightBackground' },
                                 background: snapshotDrag.isDragging ? theme.palette.background.accent : theme.palette.background.paper,
                               }}
