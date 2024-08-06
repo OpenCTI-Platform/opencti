@@ -9,11 +9,10 @@ import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import Paper from '@mui/material/Paper';
 import React from 'react';
 import makeStyles from '@mui/styles/makeStyles';
-import { graphql, useFragment } from 'react-relay';
 import ImportMenu from '@components/data/ImportMenu';
 import { truncate } from '../../../../utils/String';
 import { useFormatter } from '../../../../components/i18n';
-import { ImportContent_connectorsImport$key } from './__generated__/ImportContent_connectorsImport.graphql';
+import { ImportContent_connectorsImport$data } from './__generated__/ImportContent_connectorsImport.graphql';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -30,28 +29,9 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-const importConnectorsFragment = graphql`
-    fragment ImportContent_connectorsImport on Connector
-    @relay(plural: true) {
-        id
-        name
-        active
-        only_contextual
-        connector_scope
-        updated_at
-        configurations {
-            id
-            name,
-            configuration
-        }
-    }
-`;
-
-const ImportConnectors = ({ connectorsImport }: { connectorsImport: ImportContent_connectorsImport$key }) => {
-  const data = useFragment<ImportContent_connectorsImport$key>(importConnectorsFragment, connectorsImport);
+const ImportConnectors = ({ connectors }: { connectors: ImportContent_connectorsImport$data }) => {
   const classes = useStyles();
   const { nsdt, t_i18n } = useFormatter();
-  const connectors = data.filter((n) => !n.only_contextual); // Can be null but not empty
   return (
     <div className={classes.container}>
       <ImportMenu />
