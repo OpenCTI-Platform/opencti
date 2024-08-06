@@ -16,7 +16,7 @@ import { EditOperation } from '../generated/graphql';
 import { utcDate } from '../utils/format';
 import { schemaRelationsRefDefinition } from './schema-relationsRef';
 import { extendedErrors } from '../config/conf';
-import { isUserHasCapability, KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS } from '../utils/access';
+import { isUserHasCapability, KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS, KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE } from '../utils/access';
 
 const ajv = new Ajv();
 
@@ -122,7 +122,7 @@ const validateMandatoryAttributes = (
     mandatoryAttributes = attributesConfiguration.filter((attr) => attr.mandatory);
   }
   // In creation if enforce reference is activated, user must provide a least 1 external references
-  if (isCreation && entitySetting.enforce_reference) {
+  if (!isUserHasCapability(user, KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE) && isCreation && entitySetting.enforce_reference) {
     mandatoryAttributes.push({ name: externalReferences.name, mandatory: true });
   }
   const inputKeys = Object.keys(input);
