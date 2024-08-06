@@ -14,7 +14,7 @@
       "BULK_ENTITIES",
       "CONTAINERS_AUTHORIZED_MEMBERS",
       "FILE_RETENTION_RULES",
-      "SKIP_TELEMETRY_ACTIVE_USERS"
+      "TELEMETRY_COUNT_ACTIVE_USERS"
     ],
     "https_cert": {
       "ca": [],
