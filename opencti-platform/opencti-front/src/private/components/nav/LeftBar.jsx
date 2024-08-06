@@ -469,10 +469,10 @@ const LeftBar = () => {
         }),
       }}
     >
-      <div ref={ref}>
+      <div ref={ref} aria-label="Main navigation">
         <MenuList
           component="nav"
-          style={{ marginTop: bannerHeightNumber + settingsMessagesBannerHeight }}
+          style={{ marginTop: `calc( ${bannerHeightNumber}px + ${settingsMessagesBannerHeight}px + 58px )` }}
         >
           <StyledTooltip title={!navOpen && t_i18n('Home')} placement="right">
             <MenuItem
