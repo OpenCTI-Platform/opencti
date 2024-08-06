@@ -1,6 +1,6 @@
 import React from 'react';
 import { graphql } from 'react-relay';
-import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
+import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 import Table from '@mui/material/Table';
 import TableHead from '@mui/material/TableHead';
 import TableCell from '@mui/material/TableCell';
