@@ -1,5 +1,5 @@
 import React, { FunctionComponent, useState } from 'react';
-import { graphql, useFragment } from 'react-relay';
+import { createRefetchContainer, graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
@@ -212,9 +212,10 @@ type Session = {
 
 interface UserProps {
   data: User_user$key;
+  refetch: (variables: any, renderVariables?: any, observerOrCallback?: any, options?: any) => void;
 }
 
-const User: FunctionComponent<UserProps> = ({ data }) => {
+const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
   const classes = useStyles();
   const { t_i18n, nsdt, fsd, fldt } = useFormatter();
   const { me } = useAuth();
@@ -258,6 +259,13 @@ const User: FunctionComponent<UserProps> = ({ data }) => {
         onCompleted: () => {
           setKilling(false);
           handleCloseKillSession();
+          refetch(
+            { id: user.id },
+            null,
+            () => {
+            },
+            { force: true },
+          );
         },
       });
     }
@@ -281,6 +289,13 @@ const User: FunctionComponent<UserProps> = ({ data }) => {
       onCompleted: () => {
         setKilling(false);
         handleCloseKillSessions();
+        refetch(
+          { id: user.id },
+          null,
+          () => {
+          },
+          { force: true },
+        );
       },
     });
   };
@@ -759,5 +774,35 @@ const User: FunctionComponent<UserProps> = ({ data }) => {
     </>
   );
 };
+
+createRefetchContainer(
+  User,
+  {
+    user: graphql`
+        fragment UserRefetchContainer_user on User {
+          id
+          user_email
+          otp_activated
+          api_token
+          firstname
+          lastname
+          account_status
+          account_lock_after_date
+          sessions {
+            id
+            created
+            ttl
+          }
+        }
+      `,
+  },
+  graphql`
+      query UserRefetchContainerQuery($id: String!) {
+        user(id: $id) {
+          ...UserRefetchContainer_user
+        }
+      }
+    `,
+);
 
 export default User;
