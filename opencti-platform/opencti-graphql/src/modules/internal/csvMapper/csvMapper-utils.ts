@@ -169,7 +169,7 @@ export const validateCsvMapper = async (context: AuthContext, user: AuthUser, ma
     // Validate representation attribute configuration
     representation.attributes.forEach((attribute) => {
       // Validate based on configuration
-      if (isNotEmptyField(attribute.based_on?.representations)) {
+      if (isNotEmptyField(attribute.based_on?.representations as string[] | undefined)) {
         const schemaAttribute = [...attributesDefs, ...refsDefs].find((attr) => attr.name === attribute.key);
         // Multiple
         if (!schemaAttribute?.multiple && (attribute.based_on?.representations?.length ?? 0) > 1) {
@@ -183,7 +183,7 @@ export const validateCsvMapper = async (context: AuthContext, user: AuthUser, ma
         const representationRefs = mapper.representations.filter((r) => attribute.based_on?.representations?.includes(r.id));
         const attributeRepresentationRefs = representationRefs.map((rr) => rr.attributes
           .filter((rra) => isNotEmptyField(rra.based_on?.representations))
-          .map((rra) => rra.based_on?.representations ?? [])
+          .map((rra) => rra.based_on?.representations as string[] ?? [])
           .flat())
           .flat();
         if (attributeRepresentationRefs.includes(representation.id)) {

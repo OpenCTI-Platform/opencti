@@ -87,7 +87,8 @@ const initHttpRollingFeeds = (app: Express.Application) => {
             const data = element[baseKey];
             if (isNotEmptyField(data)) {
               if (isMultipleAttribute(element.entity_type, baseKey)) {
-                dataElements.push(dataFormat(feed.separator, data.join(',')));
+                const dataArray = data as string[];
+                dataElements.push(dataFormat(feed.separator, dataArray.join(',')));
               } else if (isObjectAttribute(baseKey)) {
                 if (isComplexKey) {
                   const [, innerKey] = mapping.attribute.split('.');

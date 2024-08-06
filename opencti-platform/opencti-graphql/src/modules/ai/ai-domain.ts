@@ -208,7 +208,7 @@ export const generateContainerReport = async (context: AuthContext, user: AuthUs
       const stopTime = n.stop_time === UNTIL_END_STR ? 'unknown date' : n.stop_time;
       return `
         -------------------
-        - The ${from.entity_type} ${extractEntityRepresentativeName(from)} ${n.relationship_type} the ${to.entity_type} ${extractEntityRepresentativeName(to)} from ${startTime} to ${stopTime} (${n.description}).
+      - The ${(from as { entity_type: string }).entity_type} ${extractEntityRepresentativeName(from)} ${n.relationship_type} the ${(to as { entity_type: string }).entity_type} ${extractEntityRepresentativeName(to)} from ${startTime} to ${stopTime} (${n.description}).
         -------------------
       `;
     }

@@ -564,7 +564,7 @@ export const controlUserRestrictDeleteAgainstElement = <T extends ObjectWithCrea
   if (!hasCreatorIdAttribute) {
     return true; // no creator to check, it's ok
   }
-  if (user.restrict_delete && isNotEmptyField(existingElement.creator_id) && existingElement.creator_id !== user.id && !existingElement.creator_id?.includes(user.id)) {
+  if (user.restrict_delete && isNotEmptyField(existingElement.creator_id as string[]) && existingElement.creator_id !== user.id && !existingElement.creator_id?.includes(user.id)) {
     if (noThrow) {
       return false;
     }
