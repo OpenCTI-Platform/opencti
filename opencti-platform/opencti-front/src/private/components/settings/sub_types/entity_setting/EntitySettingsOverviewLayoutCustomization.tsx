@@ -14,6 +14,8 @@ import { Form, Formik } from 'formik';
 import { EntitySettingSettings_entitySetting$data } from '@components/settings/sub_types/entity_setting/__generated__/EntitySettingSettings_entitySetting.graphql';
 import { useFormatter } from '../../../../../components/i18n';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
+import { Theme } from '../../../../../components/Theme';
+import { useTheme } from '@mui/styles';
 
 export const entitySettingsOverviewLayoutCustomizationFragment = graphql`
   fragment EntitySettingsOverviewLayoutCustomization_entitySetting on EntitySetting {
@@ -33,12 +35,7 @@ export const entitySettingsOverviewLayoutCustomizationEdit = graphql`
     $input: [EditInput!]!
   ) {
     entitySettingsFieldPatch(ids: $ids, input: $input) {
-      id
-      target_type
-      overview_layout_customization {
-        key
-        width
-      }
+      ...EntitySettingsOverviewLayoutCustomization_entitySetting
     }
   }
 `;
@@ -57,12 +54,13 @@ const EntitySettingsOverviewLayoutCustomization: React.FC<EntitySettingsOverview
   entitySettingsData: { id, overview_layout_customization },
 }) => {
   const { t_i18n } = useFormatter();
+  const theme = useTheme<Theme>();
 
   const initialValues = {
     ...overview_layout_customization.reduce((accumulator, widgetConfiguration, currentIndex) => ({
       ...accumulator,
       [`${widgetConfiguration.key}_isFullWidth`]: widgetConfiguration.width === 12,
-      [`${widgetConfiguration.key}_order`]: currentIndex + 1,
+      [`${widgetConfiguration.key}_order`]: currentIndex,
     }), {}),
   };
 
@@ -89,25 +87,25 @@ const EntitySettingsOverviewLayoutCustomization: React.FC<EntitySettingsOverview
   const handleSubmitIsFullWidthField = (values: typeof initialValues) => {
     updateLayout(values);
   };
-  // const handleSubmitOrderField = (values: typeof initialValues) => {
-  //   updateLayout(values);
-  // };
-  const onDragEndHandler = (result) => {
+
+  const onDragEndHandler = (values, { draggableId, source, destination }) => {
     // dropped outside the list
-    if (!result.destination) {
+    if (!destination) {
       return;
     }
-    console.log({ result });
-
-    // const items = reorder(
-    //   this.state.items,
-    //   result.source.index,
-    //   result.destination.index
-    // );
-    //
-    // this.setState({
-    //   items
-    // });
+    const inOrderValues = {};
+    if (destination.index > source.index) {
+      for (let i = source.index + 1; i <= destination.index; i += 1) {
+        inOrderValues[`${overview_layout_customization?.[i]?.key}_order`] = i - 1;
+      }
+    } else {
+      for (let i = destination.index; i <= source.index; i += 1) {
+        inOrderValues[`${overview_layout_customization?.[i]?.key}_order`] = i + 1;
+      }
+    }
+    inOrderValues[draggableId] = destination.index;
+    console.log("Here ?", { ...values, ...inOrderValues });
+    updateLayout({ ...values, ...inOrderValues });
   };
 
   if (!overview_layout_customization) {
@@ -122,7 +120,6 @@ const EntitySettingsOverviewLayoutCustomization: React.FC<EntitySettingsOverview
     >
       {({
         values,
-        setFieldValue,
       }) => (
         <Form>
           {/* WARN: adding a TableContainer will cause issues with drag and drop lib */}
@@ -138,21 +135,24 @@ const EntitySettingsOverviewLayoutCustomization: React.FC<EntitySettingsOverview
                 <TableCell align={'left'}>{t_i18n('Full width')}</TableCell>
               </TableRow>
             </TableHead>
-            <DragDropContext onDragEnd={onDragEndHandler}>
+            <DragDropContext onDragEnd={(props) => onDragEndHandler(values, props)}>
               <Droppable droppableId="custom_overview_droppable">
-                {(providedDrop, snapshotDrop) => (
+                {(providedDrop) => (
                   <TableBody
                     ref={providedDrop.innerRef}
                     {...providedDrop.droppableProps}
                   >
                     {
                         overview_layout_customization.map(({ key, label }, index) => (
-                          <Draggable key={key} draggableId={key} index={index}>
+                          <Draggable key={key} draggableId={`${key}_order`} index={index}>
                             {(providedDrag, snapshotDrag) => (
                               <TableRow
                                 key={key}
                                 ref={providedDrag.innerRef}
-                                sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                                sx={{
+                                  '&:last-child td, &:last-child th': { border: 0 },
+                                  background: snapshotDrag.isDragging ? theme.palette.background.accent : theme.palette.background.paper,
+                                }}
                                 {...providedDrag.draggableProps}
                               >
                                 <TableCell
