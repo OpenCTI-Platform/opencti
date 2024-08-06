@@ -1,6 +1,6 @@
 import React from 'react';
 import { graphql } from 'react-relay';
-import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
+import { DragDropContext, Draggable, Droppable, DropResult } from '@hello-pangea/dnd';
 import Table from '@mui/material/Table';
 import TableHead from '@mui/material/TableHead';
 import TableCell from '@mui/material/TableCell';
@@ -117,7 +117,8 @@ const EntitySettingsOverviewLayoutCustomization: React.FC<EntitySettingsOverview
     <Formik<typeof initialValues>
       enableReinitialize={true}
       initialValues={initialValues}
-      onSubmit={() => {}}
+      onSubmit={() => {
+      }}
     >
       {({ values }) => (
         <Form>
@@ -142,44 +143,48 @@ const EntitySettingsOverviewLayoutCustomization: React.FC<EntitySettingsOverview
                     {...providedDrop.droppableProps}
                   >
                     {
-                        overview_layout_customization.map(({ key, label }, index) => (
-                          <Draggable key={key} draggableId={`${key}_order`} index={index}>
-                            {(providedDrag, snapshotDrag) => (
-                              <TableRow
-                                key={key}
-                                ref={providedDrag.innerRef}
-                                sx={{
-                                  '&:last-child td, &:last-child th': { border: 0 },
-                                  background: snapshotDrag.isDragging ? theme.palette.background.accent : theme.palette.background.paper,
+                      overview_layout_customization.map(({ key, label }, index) => (
+                        <Draggable key={key} draggableId={`${key}_order`} index={index}>
+                          {(providedDrag, snapshotDrag) => (
+                            <TableRow
+                              key={key}
+                              ref={providedDrag.innerRef}
+                              sx={{
+                                '&:last-child td, &:last-child th': { border: 0 },
+                                '& td, & th': { borderColor: 'border.lightBackground' },
+                                background: snapshotDrag.isDragging ? theme.palette.background.accent : theme.palette.background.paper,
+                              }}
+                              {...providedDrag.draggableProps}
+                            >
+                              <TableCell
+                                component={'th'}
+                                scope={'row'}
+                                style={{
+                                  verticalAlign: 'bottom',
                                 }}
-                                {...providedDrag.draggableProps}
+                                {...providedDrag.dragHandleProps}
                               >
-                                <TableCell
-                                  component={'th'}
-                                  scope={'row'}
-                                  {...providedDrag.dragHandleProps}
-                                >
-                                  <DragIndicatorOutlinedIcon />
-                                </TableCell>
-                                <TableCell>
-                                  {t_i18n(label)}
-                                </TableCell>
-                                <TableCell>
-                                  <Switch
-                                    name={`${key}_isFullWidth`}
-                                    checked={((values as Record<string, boolean>)[`${key}_isFullWidth`])}
-                                    onChange={
-                                      async (_: unknown, value) => {
-                                        handleSubmitIsFullWidthField({ ...values, [`${key}_isFullWidth`]: value });
-                                      }
+                                <DragIndicatorOutlinedIcon />
+                              </TableCell>
+                              <TableCell>
+                                {t_i18n(label)}
+                              </TableCell>
+                              <TableCell>
+                                <Switch
+                                  name={`${key}_isFullWidth`}
+                                  checked={((values as Record<string, boolean>)[`${key}_isFullWidth`])}
+                                  onChange={
+                                    async (_: unknown, value) => {
+                                      handleSubmitIsFullWidthField({ ...values, [`${key}_isFullWidth`]: value });
                                     }
-                                  />
-                                </TableCell>
-                              </TableRow>
-                            )}
-                          </Draggable>
-                        ))
-                      }
+                                  }
+                                />
+                              </TableCell>
+                            </TableRow>
+                          )}
+                        </Draggable>
+                      ))
+                    }
                     {providedDrop.placeholder}
                   </TableBody>
                 )}

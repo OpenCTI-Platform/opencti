@@ -37,9 +37,13 @@ const ThemeDark = (
     success: { main: '#03a847' },
     primary: { main: primary || THEME_DARK_DEFAULT_PRIMARY },
     secondary: { main: secondary || THEME_DARK_DEFAULT_SECONDARY },
+    border: {
+      primary: hexToRGB((primary || THEME_DARK_DEFAULT_PRIMARY), 0.3),
+      secondary: hexToRGB((secondary || THEME_DARK_DEFAULT_SECONDARY), 0.3),
+      pagination: hexToRGB('#ffffff', 0.5),
+    },
     pagination: {
       main: '#ffffff',
-      border: hexToRGB('#ffffff', 0.5),
     },
     chip: { main: '#ffffff' },
     ee: {

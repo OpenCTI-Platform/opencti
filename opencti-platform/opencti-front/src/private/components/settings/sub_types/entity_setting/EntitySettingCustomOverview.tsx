@@ -2,33 +2,19 @@ import Typography from '@mui/material/Typography';
 import React from 'react';
 import Paper from '@mui/material/Paper';
 import Box from '@mui/material/Box';
-import makeStyles from '@mui/styles/makeStyles';
 import { RestartAlt } from '@mui/icons-material';
 import Grid from '@mui/material/Grid';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import { useFragment } from 'react-relay';
 import { SubType_subType$data } from '@components/settings/sub_types/__generated__/SubType_subType.graphql';
-import EntitySettingsOverviewLayoutCustomization, {
-  EntitySettingsOverviewLayoutCustomizationData,
-  entitySettingsOverviewLayoutCustomizationEdit,
-  entitySettingsOverviewLayoutCustomizationFragment,
-} from './EntitySettingsOverviewLayoutCustomization';
+import { useTheme } from '@mui/styles';
+import EntitySettingsOverviewLayoutCustomization, { EntitySettingsOverviewLayoutCustomizationData, entitySettingsOverviewLayoutCustomizationEdit, entitySettingsOverviewLayoutCustomizationFragment, } from './EntitySettingsOverviewLayoutCustomization';
 import { useFormatter } from '../../../../../components/i18n';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 import { EntitySettingsOverviewLayoutCustomization_entitySetting$key } from './__generated__/EntitySettingsOverviewLayoutCustomization_entitySetting.graphql';
 import ErrorNotFound from '../../../../../components/ErrorNotFound';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  paper: {
-    margin: '10px 0 0 0',
-    padding: '15px',
-    borderRadius: 4,
-    position: 'relative',
-  },
-}));
+import type { Theme } from '../../../../../components/Theme';
 
 interface EntitySettingCustomOverviewProps {
   entitySettingsData: SubType_subType$data['settings'];
@@ -36,7 +22,7 @@ interface EntitySettingCustomOverviewProps {
 
 const EntitySettingCustomOverview: React.FC<EntitySettingCustomOverviewProps> = ({ entitySettingsData }) => {
   const { t_i18n } = useFormatter();
-  const classes = useStyles();
+  const theme = useTheme<Theme>();
 
   const entitySetting = useFragment<EntitySettingsOverviewLayoutCustomization_entitySetting$key>(
     entitySettingsOverviewLayoutCustomizationFragment,
@@ -75,16 +61,21 @@ const EntitySettingCustomOverview: React.FC<EntitySettingCustomOverviewProps> = 
               size="small"
               color="primary"
             >
-              <Tooltip title={t_i18n('Reset to default layout')} >
+              <Tooltip title={t_i18n('Reset to default layout')}>
                 <RestartAlt fontSize={'small'} color={'primary'} />
               </Tooltip>
             </IconButton>
           </Box>
         </Typography>
         <Paper
-          classes={{ root: classes.paper }}
           variant="outlined"
           className={'paper-for-grid'}
+          style={{
+            margin: '10px 0 0 0',
+            padding: '15px',
+            borderRadius: 4,
+            position: 'relative',
+          }}
         >
           <EntitySettingsOverviewLayoutCustomization
             entitySettingsData={entitySetting as EntitySettingsOverviewLayoutCustomizationData}
@@ -96,17 +87,32 @@ const EntitySettingCustomOverview: React.FC<EntitySettingCustomOverviewProps> = 
           {t_i18n('Preview')}
         </Typography>
         <Paper
-          classes={{ root: classes.paper }}
           variant="outlined"
           className={'paper-for-grid'}
+          style={{
+            margin: '10px 0 0 0',
+            padding: '15px',
+            borderRadius: 4,
+            position: 'relative',
+          }}
         >
           <Grid container>
             {layout.map(({ key, width, label }) => (
               <Grid item xs={width} key={key}>
                 <Paper
-                  classes={{ root: classes.paper }}
                   className={'paper-for-grid'}
-                  style={{ height: 70, padding: 0, margin: 3, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                  style={{
+                    borderRadius: 4,
+                    position: 'relative',
+                    height: 70,
+                    padding: 0,
+                    margin: 3,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    boxShadow: 'none',
+                    border: `0.5px solid ${theme.palette.border.primary}`,
+                  }}
                 >
                   {t_i18n(label)}
                 </Paper>

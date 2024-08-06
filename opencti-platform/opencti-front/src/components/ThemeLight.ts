@@ -37,9 +37,14 @@ const ThemeLight = (
     success: { main: '#03a847' },
     primary: { main: primary || THEME_LIGHT_DEFAULT_PRIMARY },
     secondary: { main: secondary || THEME_LIGHT_DEFAULT_SECONDARY },
+    border: {
+      lightBackground: hexToRGB('#000000', 0.15),
+      primary: hexToRGB((primary || THEME_LIGHT_DEFAULT_PRIMARY), 0.3),
+      secondary: hexToRGB((secondary || THEME_LIGHT_DEFAULT_SECONDARY), 0.3),
+      pagination: hexToRGB('#000000', 0.5),
+    },
     pagination: {
       main: '#000000',
-      border: hexToRGB('#000000', 0.5),
     },
     chip: { main: '#000000' },
     ee: {

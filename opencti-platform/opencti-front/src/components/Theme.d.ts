@@ -46,11 +46,17 @@ interface ExtendedBackground extends TypeBackground {
 interface ExtendedPaletteOptions extends PaletteOptions {
   common: Partial<CommonColors>
   background: Partial<ExtendedBackground>
+  border: {
+    primary: string
+    secondary: string
+    pagination: string
+    lightBackground?: string
+  }
   primary: Partial<ExtendedColor>
   error: Partial<ExtendedColor>
   success: Partial<ExtendedColor>
   chip: Partial<ExtendedColor>
-  pagination: Partial<ExtendedColor> & { border: string }
+  pagination: Partial<ExtendedColor>
   ee: Partial<ExtendedColor>
   secondary: Partial<ExtendedColor>
   mode: PaletteMode

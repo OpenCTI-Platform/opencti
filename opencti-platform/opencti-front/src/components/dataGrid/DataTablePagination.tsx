@@ -97,7 +97,7 @@ const DataTablePagination = ({
             style={{ paddingLeft: 0, paddingRight: 0 }}
             sx={{
               ':disabled': {
-                borderColor: 'pagination.border',
+                borderColor: 'border.pagination',
               },
             }}
           >
@@ -107,7 +107,7 @@ const DataTablePagination = ({
             disabled
             sx={{
               ':disabled': {
-                borderColor: 'pagination.border',
+                borderColor: 'border.pagination',
                 color: 'pagination.main',
               },
             }}
@@ -126,7 +126,7 @@ const DataTablePagination = ({
             style={{ paddingLeft: 0, paddingRight: 0 }}
             sx={{
               ':disabled': {
-                borderColor: 'pagination.border',
+                borderColor: 'border.pagination',
               },
             }}
           >
