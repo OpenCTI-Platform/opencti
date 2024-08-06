@@ -1,9 +1,7 @@
 import React from 'react';
 import { graphql } from 'react-relay';
-import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
-import TableContainer from '@mui/material/TableContainer';
+import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
 import Table from '@mui/material/Table';
-import Paper from '@mui/material/Paper';
 import TableHead from '@mui/material/TableHead';
 import TableCell from '@mui/material/TableCell';
 import TableRow from '@mui/material/TableRow';
@@ -12,10 +10,10 @@ import Switch from '@mui/material/Switch';
 import DragIndicatorOutlinedIcon from '@mui/icons-material/DragIndicatorOutlined';
 import { Form, Formik } from 'formik';
 import { EntitySettingSettings_entitySetting$data } from '@components/settings/sub_types/entity_setting/__generated__/EntitySettingSettings_entitySetting.graphql';
+import { useTheme } from '@mui/styles';
 import { useFormatter } from '../../../../../components/i18n';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
-import { Theme } from '../../../../../components/Theme';
-import { useTheme } from '@mui/styles';
+import type { Theme } from '../../../../../components/Theme';
 
 export const entitySettingsOverviewLayoutCustomizationFragment = graphql`
   fragment EntitySettingsOverviewLayoutCustomization_entitySetting on EntitySetting {
@@ -56,13 +54,21 @@ const EntitySettingsOverviewLayoutCustomization: React.FC<EntitySettingsOverview
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
 
-  const initialValues = {
-    ...overview_layout_customization.reduce((accumulator, widgetConfiguration, currentIndex) => ({
-      ...accumulator,
-      [`${widgetConfiguration.key}_isFullWidth`]: widgetConfiguration.width === 12,
-      [`${widgetConfiguration.key}_order`]: currentIndex,
-    }), {}),
+  if (!overview_layout_customization) {
+    return null;
+  }
+
+  const getFormValuesFromData = (data: typeof overview_layout_customization) => {
+    return {
+      ...data.reduce((accumulator, widgetConfiguration, currentIndex) => ({
+        ...accumulator,
+        [`${widgetConfiguration.key}_isFullWidth`]: widgetConfiguration.width === 12,
+        [`${widgetConfiguration.key}_order`]: currentIndex,
+      }), {}),
+    };
   };
+
+  const initialValues = getFormValuesFromData(overview_layout_customization);
 
   const [commitUpdate] = useApiMutation((entitySettingsOverviewLayoutCustomizationEdit));
   const editInputsKeys = overview_layout_customization.map(({ key }) => key);
@@ -88,12 +94,12 @@ const EntitySettingsOverviewLayoutCustomization: React.FC<EntitySettingsOverview
     updateLayout(values);
   };
 
-  const onDragEndHandler = (values, { draggableId, source, destination }) => {
+  const onDragEndHandler = (values: typeof initialValues, { draggableId, source, destination }: DropResult) => {
     // dropped outside the list
     if (!destination) {
       return;
     }
-    const inOrderValues = {};
+    const inOrderValues: Record<string, number> = {};
     if (destination.index > source.index) {
       for (let i = source.index + 1; i <= destination.index; i += 1) {
         inOrderValues[`${overview_layout_customization?.[i]?.key}_order`] = i - 1;
@@ -104,13 +110,8 @@ const EntitySettingsOverviewLayoutCustomization: React.FC<EntitySettingsOverview
       }
     }
     inOrderValues[draggableId] = destination.index;
-    console.log("Here ?", { ...values, ...inOrderValues });
     updateLayout({ ...values, ...inOrderValues });
   };
-
-  if (!overview_layout_customization) {
-    return null;
-  }
 
   return (
     <Formik<typeof initialValues>
@@ -118,9 +119,7 @@ const EntitySettingsOverviewLayoutCustomization: React.FC<EntitySettingsOverview
       initialValues={initialValues}
       onSubmit={() => {}}
     >
-      {({
-        values,
-      }) => (
+      {({ values }) => (
         <Form>
           {/* WARN: adding a TableContainer will cause issues with drag and drop lib */}
           {/* <TableContainer component={Paper} sx={{ background: 'none' }}> */}
