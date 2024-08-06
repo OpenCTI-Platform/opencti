@@ -9,7 +9,11 @@ import Tooltip from '@mui/material/Tooltip';
 import { useFragment } from 'react-relay';
 import { SubType_subType$data } from '@components/settings/sub_types/__generated__/SubType_subType.graphql';
 import { useTheme } from '@mui/styles';
-import EntitySettingsOverviewLayoutCustomization, { EntitySettingsOverviewLayoutCustomizationData, entitySettingsOverviewLayoutCustomizationEdit, entitySettingsOverviewLayoutCustomizationFragment, } from './EntitySettingsOverviewLayoutCustomization';
+import EntitySettingsOverviewLayoutCustomization, {
+  EntitySettingsOverviewLayoutCustomizationData,
+  entitySettingsOverviewLayoutCustomizationEdit,
+  entitySettingsOverviewLayoutCustomizationFragment,
+} from './EntitySettingsOverviewLayoutCustomization';
 import { useFormatter } from '../../../../../components/i18n';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 import { EntitySettingsOverviewLayoutCustomization_entitySetting$key } from './__generated__/EntitySettingsOverviewLayoutCustomization_entitySetting.graphql';
