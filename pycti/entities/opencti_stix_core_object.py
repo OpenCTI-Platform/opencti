@@ -359,6 +359,9 @@ class StixCoreObject:
                 x_opencti_cvss_attack_vector
                 x_opencti_cvss_integrity_impact
                 x_opencti_cvss_availability_impact
+                x_opencti_cisa_kev
+                x_opencti_epss_score
+                x_opencti_epss_percentile
             }
             ... on Incident {
                 name
@@ -1023,6 +1026,9 @@ class StixCoreObject:
                 x_opencti_cvss_attack_vector
                 x_opencti_cvss_integrity_impact
                 x_opencti_cvss_availability_impact
+                x_opencti_cisa_kev
+                x_opencti_epss_score
+                x_opencti_epss_percentile
             }
             ... on Incident {
                 name
