@@ -13,7 +13,6 @@ import { graphql, useFragment } from 'react-relay';
 import ImportMenu from '@components/data/ImportMenu';
 import { truncate } from '../../../../utils/String';
 import { useFormatter } from '../../../../components/i18n';
-import { ImportContentQuery$data } from './__generated__/ImportContentQuery.graphql';
 import { ImportContent_connectorsImport$key } from './__generated__/ImportContent_connectorsImport.graphql';
 
 const useStyles = makeStyles(() => ({
@@ -48,7 +47,7 @@ const importConnectorsFragment = graphql`
     }
 `;
 
-const ImportConnectors = ({ connectorsImport }: { connectorsImport: ImportContentQuery$data['connectorsForImport'] }) => {
+const ImportConnectors = ({ connectorsImport }: { connectorsImport: ImportContent_connectorsImport$key }) => {
   const data = useFragment<ImportContent_connectorsImport$key>(importConnectorsFragment, connectorsImport);
   const classes = useStyles();
   const { nsdt, t_i18n } = useFormatter();
@@ -65,7 +64,7 @@ const ImportConnectors = ({ connectorsImport }: { connectorsImport: ImportConten
         {connectors.length ? (
           <List>
             {connectors.map((connector) => {
-              const connectorScope = connector.connector_scope.join(',');
+              const connectorScope = connector.connector_scope?.join(',');
               return (
                 <ListItemButton
                   component={Link}
