@@ -42,12 +42,13 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import withRouter from '../../../../utils/compat-router/withRouter';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { resolveHasUserChoiceParsedCsvMapper } from '../../../../utils/csvMapperUtils';
+import ImportMenu from '../ImportMenu';
 
 const interval$ = interval(FIVE_SECONDS);
 
 const styles = (theme) => ({
   container: {
-    margin: 0,
+    padding: '0 200px 50px 0',
   },
   title: {
     float: 'left',
@@ -330,8 +331,9 @@ class ImportContentComponent extends Component {
     const invalidCsvMapper = this.state.selectedConnector?.name === 'ImportCsv'
         && this.state.selectedConnector?.configurations?.length === 0;
     return (
-      <>
+      <div className={classes.container}>
         <Breadcrumbs variant="list" elements={[{ label: t('Data') }, { label: t('Import'), current: true }]} />
+        <ImportMenu />
         <Grid
           container={true}
           spacing={3}
@@ -689,7 +691,7 @@ class ImportContentComponent extends Component {
         >
           <Add />
         </Fab>
-      </>
+      </div>
     );
   }
 }
