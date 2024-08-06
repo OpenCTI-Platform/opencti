@@ -22,6 +22,7 @@ import ItemBoolean from '../ItemBoolean';
 
 const MAGICAL_SIZE = 0.113;
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
 type TextInTooltip = (val?: string, helpers?: any) => ReactNode;
 export const textInTooltip: TextInTooltip = (val, helpers) => {
   const value = val ?? '-';
