@@ -106,8 +106,8 @@ steps:
     image: node:20.16.0
     failure: ignore
     volumes:
-      - name: cache-node-frontend-e2e-deflake
-        path: /drone/src/opencti-platform/opencti-front/node_modules
+      - name: cache-node-frontend-e2e-sandbox
+        path: /drone/src/e2e-front-sandbox/node_modules
     environment:
       BACK_END_URL: http://opencti-e2e-start:4500
       E2E_TEST: true
@@ -115,9 +115,10 @@ steps:
     commands:
       - apt-get update
       - apt-get -y install netcat-traditional
+      - mkdir e2e-front-sandbox
       - cp -R opencti-platform/opencti-front/* e2e-front-sandbox
-      - ls -lart
       - cd e2e-front-sandbox
+      - ls -lart
       - yarn install
       - npx playwright install --with-deps chromium
       - yarn build
@@ -183,6 +184,7 @@ steps:
     image: plugins/s3
     failure: ignore
     settings:
+      endpoint: https://s3.testing.octi.staging.filigran.io/
       bucket: octi-drone-artefact
       access_key:
         from_secret: octi-s3-access-key
