@@ -820,10 +820,10 @@ const LeftBar = () => {
             {generateSubMenu(
               'dashboards',
               isFeatureEnable('PUBLIC_DASHBOARD_LIST') ? [
-                { granted: isGrantedToExplore, type: 'Dashboard', link: '/dashboard/workspaces/dashboards', label: 'Dashboards' },
+                { granted: isGrantedToExplore, type: 'Dashboard', link: '/dashboard/workspaces/dashboards', label: 'Custom dashboards' },
                 { granted: isGrantedToExplore, type: 'Dashboard', link: '/dashboard/workspaces/public_dashboards', label: 'Public dashboards' },
               ] : [
-                { granted: isGrantedToExplore, type: 'Dashboard', link: '/dashboard/workspaces/dashboards', label: 'Dashboards' },
+                { granted: isGrantedToExplore, type: 'Dashboard', link: '/dashboard/workspaces/dashboards', label: 'Custom dashboards' },
               ],
             )}
             <Security needs={[INVESTIGATION]}>
