@@ -327,7 +327,7 @@ export const validateDataBeforeIndexing = (element: any) => {
   try {
     schemaAttributesDefinition.getAttributes(element.entity_type);
   } catch (e: any) {
-    if (e.name === 'DATABASE_ERROR') {
+    if (e.extensions.name === 'DATABASE_ERROR') {
       throw FunctionalError('Validation against schema failed: this entity_type is not supported', { type: element.entity_type });
     }
     throw e;

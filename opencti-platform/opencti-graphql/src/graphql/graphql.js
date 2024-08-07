@@ -1,8 +1,10 @@
-import { ApolloServer, UserInputError } from 'apollo-server-express';
-import { ApolloServerPluginLandingPageDisabled, ApolloServerPluginLandingPageGraphQLPlayground } from 'apollo-server-core';
+import { ApolloServer } from '@apollo/server';
 import { formatError as apolloFormatError } from 'apollo-errors';
 import { ApolloArmor } from '@escape.tech/graphql-armor';
 import { dissocPath } from 'ramda';
+import { ApolloServerPluginLandingPageDisabled } from '@apollo/server/plugin/disabled';
+import { ApolloServerPluginLandingPageGraphQLPlayground } from '@apollo/server-plugin-landing-page-graphql-playground';
+import { ApolloServerErrorCode } from '@apollo/server/errors';
 import { createValidation as createAliasBatch } from 'graphql-no-alias';
 import ConstraintDirectiveError from 'graphql-constraint-directive/lib/error';
 import { constraintDirectiveDocumentation, createApolloQueryValidationPlugin } from 'graphql-constraint-directive';
@@ -100,6 +102,7 @@ const createApolloServer = () => {
     introspection: true, // Will be disabled by plugin if needed
     persistedQueries: false,
     validationRules: apolloValidationRules,
+    csrfPrevention: false, // CSRF is handled by helmet
     async context({ req, res }) {
       const executeContext = executionContext('api');
       executeContext.req = req;
@@ -121,11 +124,12 @@ const createApolloServer = () => {
     },
     tracing: DEV_MODE,
     plugins: apolloPlugins,
-    formatError: (error) => {
-      let e = apolloFormatError(error);
-      if (e instanceof UserInputError) {
-        if (e.originalError instanceof ConstraintDirectiveError) {
-          const { originalError } = e.originalError;
+    formatError: (error, initialError) => {
+      let e = error;
+      const formattedError = apolloFormatError(initialError);
+      if (error.extensions?.code === ApolloServerErrorCode.BAD_USER_INPUT) {
+        if (formattedError.originalError instanceof ConstraintDirectiveError) {
+          const { originalError } = formattedError.originalError;
           const { fieldName } = originalError;
           const ConstraintError = ValidationError(fieldName, originalError);
           e = apolloFormatError(ConstraintError);

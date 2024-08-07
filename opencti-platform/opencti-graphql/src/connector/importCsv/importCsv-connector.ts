@@ -109,7 +109,8 @@ const initImportCsvConnector = () => {
           logApp.error(DatabaseError('Closing RabbitMQ connection failed', { cause: e }));
         }
       }
-      setTimeout(handleCsvImport, RETRY_CONNECTION_PERIOD);
+      // TODO REMOVE TYPING, don't know why it's not working
+      setTimeout(handleCsvImport as unknown as (args: void) => void, RETRY_CONNECTION_PERIOD);
     });
   };
 

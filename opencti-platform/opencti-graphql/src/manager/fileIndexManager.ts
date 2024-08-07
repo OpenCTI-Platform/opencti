@@ -161,7 +161,7 @@ const initFileIndexManager = () => {
           logApp.debug('[OPENCTI-MODULE] End of file index manager processing');
         }
       } catch (e: any) {
-        if (e.name === TYPE_LOCK_ERROR) {
+        if (e.extensions.name === TYPE_LOCK_ERROR) {
           logApp.debug('[OPENCTI-MODULE] File index manager handler already started by another API');
         } else {
           logApp.error(e, { manager: 'FILE_INDEX_MANAGER' });
@@ -191,7 +191,7 @@ const initFileIndexManager = () => {
         }
         logApp.info('[OPENCTI-MODULE] End of file index manager stream handler');
       } catch (e: any) {
-        if (e.name === TYPE_LOCK_ERROR) {
+        if (e.extensions.name === TYPE_LOCK_ERROR) {
           logApp.debug('[OPENCTI-MODULE] File index manager stream handler already started by another API');
         } else {
           logApp.error(e, { manager: 'FILE_INDEX_MANAGER' });
