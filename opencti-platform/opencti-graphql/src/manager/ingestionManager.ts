@@ -373,10 +373,7 @@ const csvDataHandler = async (context: AuthContext, ingestion: BasicStoreEntityI
   } catch (e: any) {
     logApp.error(`[OPENCTI-MODULE] INGESTION - Error trying to fetch csv feed for: ${ingestion.name}`);
     logApp.error(e, { ingestion });
-  }
-  if (data === undefined) {
-    // If we got fetch error above.
-    return;
+    throw e;
   }
 
   const isUnchangedData = bcrypt.compareSync(data.toString(), ingestion.current_state_hash ?? '');

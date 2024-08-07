@@ -110,25 +110,32 @@ const amqpExecute = async (execute) => {
           reject(err);
         } else { // Connection success
           conn.on('error', (onConnectError) => {
+            logApp.error('Rabbit Error trying to connect', { onConnectError });
             reject(onConnectError);
           });
           conn.createConfirmChannel((channelError, channel) => {
             if (channelError) {
+              logApp.error('Rabbit Error on channel', { channelError });
               reject(channelError);
             } else {
               channel.on('error', (onChannelError) => {
+                logApp.error('Rabbit Error on channel', { onChannelError });
                 reject(onChannelError);
               });
               execute(channel).then((data) => {
                 channel.close();
                 conn.close();
                 resolve(data);
-              }).catch((executeError) => reject(executeError));
+              }).catch((executeError) => {
+                logApp.error('Rabbit Error on execute', { executeError });
+                reject(executeError);
+              });
             }
           });
         }
       });
     } catch (globalError) {
+      logApp.error('Rabbit Error', { globalError });
       reject(globalError);
     }
   });
