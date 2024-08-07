@@ -124,7 +124,7 @@ const UserFragment = graphql`
     organizationsOrderMode: { type: "OrderingMode", defaultValue: asc }
     rolesOrderBy: { type: "RolesOrdering", defaultValue: name }
     rolesOrderMode: { type: "OrderingMode", defaultValue: asc }
-  ){
+  ) {
     id
     name
     description
@@ -225,7 +225,6 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
   const [killing, setKilling] = useState<boolean>(false);
   const [sessionToKill, setSessionToKill] = useState<string | null>(null);
   const user = useFragment(UserFragment, data);
-
   const isEnterpriseEdition = useEnterpriseEdition();
   const isGrantedToAudit = useGranted([SETTINGS_SECURITYACTIVITY]);
   const isGrantedToKnowledge = useGranted([KNOWLEDGE]);
