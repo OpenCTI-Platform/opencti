@@ -11,7 +11,7 @@ import FeedbackEdition from './FeedbackEdition';
 import StixCoreObjectExternalReferences from '../../analyses/external_references/StixCoreObjectExternalReferences';
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
 import { Feedback_case$key } from './__generated__/Feedback_case.graphql';
-import { getCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
+import { useGetCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
 import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
 
 const feedbackFragment = graphql`
@@ -84,7 +84,7 @@ const Feedback: React.FC<FeedbackProps> = ({ feedbackData, enableReferences }) =
   const { isFeatureEnable } = useHelper();
   const FABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const overviewLayoutCustomization = useOverviewLayoutCustomization('Feedback');
-  const { canEdit } = getCurrentUserAccessRight(feedback.currentUserAccessRight);
+  const { canEdit } = useGetCurrentUserAccessRight(feedback.currentUserAccessRight);
 
   return (
     <>

@@ -403,7 +403,7 @@ export const buildDataRestrictions = async (context, user, opts = {}) => {
     return { must, must_not };
   }
   // check user access
-  must.push(...buildUserMemberAccessFilter(user, opts?.includeAuthorities));
+  must.push(...buildUserMemberAccessFilter(user, { includeAuthorities: opts?.includeAuthorities }));
   // If user have bypass, no need to check restrictions
   if (!isBypassUser(user)) {
     // region Handle marking restrictions
@@ -499,6 +499,8 @@ export const buildDataRestrictions = async (context, user, opts = {}) => {
         }
         // For tasks
         should.push({ match: { 'initiator_id.keyword': user.internal_id } });
+        // Access to authorized members
+        should.push(...buildUserMemberAccessFilter(user, { includeAuthorities: opts?.includeAuthorities, excludeEmptyAuthorizedMembers: true }));
         // Finally build the bool should search
         must.push({ bool: { should, minimum_should_match: 1 } });
       }
@@ -519,6 +521,8 @@ export const buildDataRestrictions = async (context, user, opts = {}) => {
       }
       // For tasks
       should.push({ match: { 'initiator_id.keyword': user.internal_id } });
+      // Access to authorized members
+      should.push(...buildUserMemberAccessFilter(user, { includeAuthorities: opts?.includeAuthorities, excludeEmptyAuthorizedMembers: true }));
       // Finally build the bool should search
       must.push({ bool: { should, minimum_should_match: 1 } });
     }
@@ -527,17 +531,21 @@ export const buildDataRestrictions = async (context, user, opts = {}) => {
   return { must, must_not };
 };
 
-export const buildUserMemberAccessFilter = (user, includeAuthorities = false) => {
+const buildUserMemberAccessFilter = (user, opts) => {
+  const { includeAuthorities = false, excludeEmptyAuthorizedMembers = false } = opts;
   const capabilities = user.capabilities.map((c) => c.name);
   if (includeAuthorities && capabilities.includes(BYPASS)) {
     return [];
   }
   const userAccessIds = computeUserMemberAccessIds(user);
   // if access_users exists, it should have the user access ids
+  const emptyAuthorizedMembers = { bool: { must_not: { exists: { field: 'authorized_members' } } } };
   const authorizedFilters = [
-    { bool: { must_not: { exists: { field: 'authorized_members' } } } },
     { terms: { 'authorized_members.id.keyword': [MEMBER_ACCESS_ALL, ...userAccessIds] } },
   ];
+  if (!excludeEmptyAuthorizedMembers) {
+    authorizedFilters.push(emptyAuthorizedMembers);
+  }
   if (includeAuthorities) {
     const roleIds = user.roles.map((r) => r.id);
     const owners = [...userAccessIds, ...capabilities, ...roleIds];
@@ -619,7 +627,8 @@ const elCreateLifecyclePolicy = async () => {
             priority: 100
           }
         }
-      } }).catch((e) => {
+      }
+    }).catch((e) => {
       throw DatabaseError('Creating lifecycle policy fail', { cause: e });
     });
   }
@@ -2869,7 +2878,10 @@ const extractNestedQueriesFromBool = (boolQueryArray) => {
       const queryElement = shouldArray[j];
       if (queryElement.nested) nestedQueries.push(queryElement.nested.query);
       if (queryElement.bool?.should) { // case nested is in an imbricated filterGroup (not possible for the moment)
-        nestedQueries.push(extractNestedQueriesFromBool([queryElement]));
+        const nestedBoolResult = extractNestedQueriesFromBool([queryElement]);
+        if (nestedBoolResult.length > 0) {
+          nestedQueries.push(nestedBoolResult);
+        }
       }
     }
     if (nestedQueries.length > 0) result = result.concat(nestedQueries);

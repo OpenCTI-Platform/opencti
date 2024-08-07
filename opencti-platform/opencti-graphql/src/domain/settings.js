@@ -15,6 +15,7 @@ import { getEntityFromCache } from '../database/cache';
 import { now } from '../utils/format';
 import { generateInternalId } from '../schema/identifier';
 import { UnsupportedError } from '../config/errors';
+import { markAllSessionsForRefresh } from '../database/session';
 import { isEmptyField, isNotEmptyField } from '../database/utils';
 
 export const getMemoryStatistics = () => {
@@ -120,6 +121,10 @@ export const settingsEditField = async (context, user, settingsId, input) => {
   const hasSetAccessCapability = isUserHasCapability(user, SETTINGS_SET_ACCESSES);
   const data = hasSetAccessCapability ? input : input.filter((i) => !ACCESS_SETTINGS_RESTRICTED_KEYS.includes(i.key));
   await updateAttribute(context, user, settingsId, ENTITY_TYPE_SETTINGS, data);
+  if (input.some((i) => i.key === 'platform_organization')) {
+    // if we change platform_organization, we need to refresh all sessions
+    await markAllSessionsForRefresh();
+  }
   await publishUserAction({
     user,
     event_type: 'mutation',

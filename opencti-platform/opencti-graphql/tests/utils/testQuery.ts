@@ -22,8 +22,8 @@ export const SYNC_LIVE_START_REMOTE_URI = conf.get('app:sync_live_start_remote_u
 export const SYNC_DIRECT_START_REMOTE_URI = conf.get('app:sync_direct_start_remote_uri');
 export const SYNC_RESTORE_START_REMOTE_URI = conf.get('app:sync_restore_start_remote_uri');
 export const SYNC_TEST_REMOTE_URI = `http://api-tests:${PORT}`;
-export const RAW_EVENTS_SIZE = 1075;
-export const SYNC_LIVE_EVENTS_SIZE = 607;
+export const RAW_EVENTS_SIZE = 1086;
+export const SYNC_LIVE_EVENTS_SIZE = 608;
 
 export const PYTHON_PATH = './src/python/testing';
 export const API_URI = `http://localhost:${conf.get('app:port')}`;
@@ -274,6 +274,11 @@ export const TEST_ORGANIZATION: Organization = {
   id: generateStandardId(ENTITY_TYPE_IDENTITY_ORGANIZATION, { name: 'TestOrganization', identity_class: 'organization' }),
 };
 
+export const PLATFORM_ORGANIZATION: Organization = {
+  name: 'PlatformOrganization',
+  id: generateStandardId(ENTITY_TYPE_IDENTITY_ORGANIZATION, { name: 'PlatformOrganization', identity_class: 'organization' }),
+};
+
 // Users
 interface User {
   id: string,
@@ -341,6 +346,7 @@ export const USER_SECURITY: User = {
   id: generateStandardId(ENTITY_TYPE_USER, { user_email: 'security@opencti.io' }),
   email: 'security@opencti.io',
   password: 'security',
+  organizations: [PLATFORM_ORGANIZATION],
   groups: [AMBER_STRICT_GROUP],
   client: createHttpClient('security@opencti.io', 'security')
 };

@@ -43,7 +43,7 @@ import { useFormatter } from '../../../components/i18n';
 import WorkspaceManageAccessDialog from './WorkspaceManageAccessDialog';
 import Transition from '../../../components/Transition';
 import useHelper from '../../../utils/hooks/useHelper';
-import { getCurrentUserAccessRight } from '../../../utils/authorizedMembers';
+import { useGetCurrentUserAccessRight } from '../../../utils/authorizedMembers';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -117,7 +117,7 @@ const WorkspaceHeader = ({
   const [openTag, setOpenTag] = useState(false);
   const [newTag, setNewTag] = useState('');
   const [openTags, setOpenTags] = useState(false);
-  const { canManage, canEdit } = getCurrentUserAccessRight(workspace.currentUserAccessRight);
+  const { canManage, canEdit } = useGetCurrentUserAccessRight(workspace.currentUserAccessRight);
   const [displayDuplicate, setDisplayDuplicate] = useState(false);
   const handleCloseDuplicate = () => setDisplayDuplicate(false);
   const [duplicating, setDuplicating] = useState(false);

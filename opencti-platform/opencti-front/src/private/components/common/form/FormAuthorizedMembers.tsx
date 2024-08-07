@@ -25,6 +25,7 @@ interface FormAuthorizedMembersProps {
   ) => void;
   owner?: Creator;
   canDeactivate?: boolean;
+  showAllMembersLine?: boolean;
 }
 
 const FormAuthorizedMembers = ({
@@ -34,6 +35,7 @@ const FormAuthorizedMembers = ({
   onSubmit,
   owner,
   canDeactivate,
+  showAllMembersLine,
 }: FormAuthorizedMembersProps) => {
   const { t_i18n } = useFormatter();
 
@@ -66,7 +68,7 @@ const FormAuthorizedMembers = ({
                   name="authorizedMembers"
                   component={AuthorizedMembersField}
                   owner={owner}
-                  showAllMembersLine
+                  showAllMembersLine={showAllMembersLine}
                   canDeactivate={canDeactivate}
                 />
               )}

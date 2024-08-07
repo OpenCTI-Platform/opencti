@@ -109,6 +109,7 @@ WorkspaceManageAccessDialogProps
       handleClose={handleClose}
       onSubmit={onSubmitForm}
       owner={owner ?? undefined}
+      showAllMembersLine={true}
     />
   );
 };
