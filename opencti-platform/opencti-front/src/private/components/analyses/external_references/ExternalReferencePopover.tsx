@@ -6,9 +6,9 @@ import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
+import { useNavigate } from 'react-router-dom';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
-import { useNavigate } from 'react-router-dom';
 import { useFormatter } from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
 import ExternalReferenceEditionContainer from './ExternalReferenceEditionContainer';
@@ -41,24 +41,19 @@ interface ExternalReferencePopoverProps {
 }
 
 const ExternalReferencePopover: FunctionComponent<
-  ExternalReferencePopoverProps
+ExternalReferencePopoverProps
 > = ({ id, objectId, handleRemove, isExternalReferenceAttachment }) => {
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
-  const [anchorEl, setAnchorEl] = useState<Element | null>(null);
   const [displayEdit, setDisplayEdit] = useState(false);
   const [displayDelete, setDisplayDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [commit] = useApiMutation(externalReferencePopoverDeletionMutation);
-  const handleClose = () => {
-    setAnchorEl(null);
-  };
   const handleCloseUpdate = () => {
     setDisplayEdit(false);
   };
   const handleOpenDelete = () => {
     setDisplayDelete(true);
-    handleClose();
   };
   const handleCloseDelete = () => {
     setDisplayDelete(false);
@@ -82,7 +77,6 @@ const ExternalReferencePopover: FunctionComponent<
       },
       onCompleted: () => {
         setDeleting(false);
-        handleClose();
         if (handleRemove) {
           handleCloseDelete();
         } else {

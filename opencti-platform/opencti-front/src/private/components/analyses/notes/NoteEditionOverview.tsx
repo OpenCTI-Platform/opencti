@@ -85,7 +85,7 @@ interface NoteEditionOverviewProps {
 }
 
 const NoteEditionOverviewComponent: FunctionComponent<
-  NoteEditionOverviewProps
+NoteEditionOverviewProps
 > = ({ note, context }) => {
   const { t_i18n } = useFormatter();
 
@@ -272,7 +272,7 @@ const NoteEditionOverviewComponent: FunctionComponent<
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
           />
-         <NotePopover
+          <NotePopover
             id={note.id}
           />
         </Form>

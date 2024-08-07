@@ -46,7 +46,7 @@ const ReportEditionFragment = createFragmentContainer(
       }
     }
   `,
-  }
+  },
 );
 
 export default ReportEditionFragment;

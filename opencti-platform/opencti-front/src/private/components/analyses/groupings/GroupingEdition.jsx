@@ -39,7 +39,7 @@ const GroupingEdition = ({ groupingId }) => {
       }
       return <Loader variant="inline" />;
     }}
-  />
+          />
   );
 };
 

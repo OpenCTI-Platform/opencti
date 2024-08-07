@@ -25,7 +25,7 @@ import { makeStyles } from '@mui/styles';
 import Box from '@mui/material/Box';
 import { stixCoreObjectQuickSubscriptionContentQuery } from '../stix_core_objects/stixCoreObjectTriggersUtils';
 import StixCoreObjectAskAI from '../stix_core_objects/StixCoreObjectAskAI';
-import StixCoreObjectEnrichment from '../../common/stix_core_objects/StixCoreObjectEnrichment';
+import StixCoreObjectEnrichment from '../stix_core_objects/StixCoreObjectEnrichment';
 import { useSettingsMessagesBannerHeight } from '../../settings/settings_messages/SettingsMessagesBanner';
 import StixCoreObjectSubscribers from '../stix_core_objects/StixCoreObjectSubscribers';
 import FormAuthorizedMembersDialog from '../form/FormAuthorizedMembersDialog';

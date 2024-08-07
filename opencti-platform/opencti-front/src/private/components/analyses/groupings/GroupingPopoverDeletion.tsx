@@ -39,7 +39,7 @@ const GroupingPopoverDeletion: FunctionComponent<GroupingPopoverDeletionProps> =
   const submitDelete = () => {
     setDeleting(true);
     commitMutation({
-      variables: { id: groupingId, },
+      variables: { id: groupingId },
       onCompleted: () => {
         setDeleting(false);
         handleClose();

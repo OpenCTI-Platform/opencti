@@ -134,7 +134,7 @@ interface CountryEditionFormValues {
 }
 
 const CountryEditionOverviewComponent: FunctionComponent<
-  CountryEditionOverviewProps
+CountryEditionOverviewProps
 > = ({ countryRef, context, enableReferences = false, handleClose }) => {
   const { t_i18n } = useFormatter();
   const country = useFragment(countryEditionOverviewFragment, countryRef);

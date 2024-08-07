@@ -4,9 +4,9 @@ import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
-import useDeletion from '../../../../utils/hooks/useDeletion';
 import { graphql } from 'react-relay';
 import { useNavigate } from 'react-router-dom';
+import useDeletion from '../../../../utils/hooks/useDeletion';
 import { useFormatter } from '../../../../components/i18n';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
@@ -27,16 +27,13 @@ const RegionPopoverDeletionMutation = graphql`
 const RegionPopover = ({ id }: { id: string }) => {
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
-  const [anchorEl, setAnchorEl] = useState<Element>();
   const [displayEdit, setDisplayEdit] = useState<boolean>(false);
   const [commit] = useApiMutation(RegionPopoverDeletionMutation);
   const queryRef = useQueryLoading<RegionEditionContainerQuery>(
     regionEditionQuery,
     { id },
   );
-  const handleClose = () => {
-    setAnchorEl(undefined);
-  };
+  const handleClose = () => {};
   const handleCloseEdit = () => {
     setDisplayEdit(false);
   };

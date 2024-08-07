@@ -4,10 +4,9 @@ import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
-import useDeletion from '../../../../utils/hooks/useDeletion';
 import { graphql } from 'react-relay';
 import { useNavigate } from 'react-router-dom';
-import { PopoverProps } from '@mui/material/Popover';
+import useDeletion from '../../../../utils/hooks/useDeletion';
 import { useFormatter } from '../../../../components/i18n';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
@@ -28,27 +27,24 @@ const CityPopoverDeletionMutation = graphql`
 const CityPopover = ({ id }: { id: string }) => {
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
-  const [anchorEl, setAnchorEl] = useState<PopoverProps['anchorEl']>();
   const [displayEdit, setDisplayEdit] = useState<boolean>(false);
   const [commit] = useApiMutation(CityPopoverDeletionMutation);
   const queryRef = useQueryLoading<CityEditionContainerQuery>(
     cityEditionQuery,
     { id },
-    );
-    const handleClose = () => {
-      setAnchorEl(undefined);
-    };
-    const handleCloseEdit = () => {
-      setDisplayEdit(false);
-    };
-    const {
-      deleting,
-      handleOpenDelete,
-      displayDelete,
-      handleCloseDelete,
-      setDeleting,
-    } = useDeletion({ handleClose });
-    const submitDelete = () => {
+  );
+  const handleClose = () => {};
+  const handleCloseEdit = () => {
+    setDisplayEdit(false);
+  };
+  const {
+    deleting,
+    handleOpenDelete,
+    displayDelete,
+    handleCloseDelete,
+    setDeleting,
+  } = useDeletion({ handleClose });
+  const submitDelete = () => {
     setDeleting(true);
     commit({
       variables: {

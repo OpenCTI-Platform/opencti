@@ -6,7 +6,6 @@ import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { CityEditionContainerQuery } from './__generated__/CityEditionContainerQuery.graphql';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import EditEntityControlledDial from '../../../../components/EditEntityControlledDial';
 
 const CityEdition: FunctionComponent<{ cityId: string }> = ({ cityId }) => {
   const [commit] = useApiMutation(cityEditionOverviewFocus);

@@ -6,7 +6,6 @@ import { CountryEditionContainerQuery } from './__generated__/CountryEditionCont
 import CountryEditionContainer, { countryEditionQuery } from './CountryEditionContainer';
 import { countryEditionOverviewFocus } from './CountryEditionOverview';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import EditEntityControlledDial from '../../../../components/EditEntityControlledDial';
 
 const CountryEdition: FunctionComponent<{ countryId: string }> = ({ countryId }) => {
   const [commit] = useApiMutation(countryEditionOverviewFocus);

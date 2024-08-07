@@ -137,7 +137,7 @@ const RegionEditionOverviewComponent: FunctionComponent<RegionEdititionOverviewP
   regionRef,
   context,
   enableReferences = false,
-  handleClose
+  handleClose,
 }) => {
   const { t_i18n } = useFormatter();
   const region = useFragment(regionEditionOverviewFragment, regionRef);

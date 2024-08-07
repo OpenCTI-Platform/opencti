@@ -6,7 +6,6 @@ import { RegionEditionContainerQuery } from './__generated__/RegionEditionContai
 import RegionEditionContainer, { regionEditionQuery } from './RegionEditionContainer';
 import { regionEditionOverviewFocus } from './RegionEditionOverview';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import EditEntityControlledDial from '../../../../components/EditEntityControlledDial';
 
 const RegionEdition: FunctionComponent<{ regionId: string }> = ({ regionId }) => {
   const [commit] = useApiMutation(regionEditionOverviewFocus);

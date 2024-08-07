@@ -28,30 +28,23 @@ const NotePopoverDeletionMutation = graphql`
 interface NotePopoverProps {
   id?: string;
   handleOpenRemoveExternal?: () => void;
-  size?: 'medium' | 'large' | 'small' | undefined;
   note?: StixCoreObjectOrStixCoreRelationshipNoteCard_node$data;
   paginationOptions?: StixCoreObjectOrStixCoreRelationshipNotesCardsQuery$variables;
-  variant?: string;
 }
 
 const NotePopover: FunctionComponent<NotePopoverProps> = ({
   id,
   handleOpenRemoveExternal,
-  size,
   note,
   paginationOptions,
-  variant,
 }) => {
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
-  const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const [displayDelete, setDisplayDelete] = useState<boolean>(false);
   const [displayEdit, setDisplayEdit] = useState<boolean>(false);
   const [deleting, setDeleting] = useState<boolean>(false);
-  const handleClose = () => setAnchorEl(null);
   const handleOpenDelete = () => {
     setDisplayDelete(true);
-    handleClose();
   };
   const handleCloseDelete = () => setDisplayDelete(false);
   const [commit] = useApiMutation(NotePopoverDeletionMutation);
@@ -63,12 +56,11 @@ const NotePopover: FunctionComponent<NotePopoverProps> = ({
       },
       updater: (store) => {
         if (paginationOptions) {
-          deleteNode(store, 'Pagination_notes', paginationOptions, note.id);
+          deleteNode(store, 'Pagination_notes', paginationOptions, id);
         }
       },
       onCompleted: () => {
         setDeleting(false);
-        handleClose();
         if (handleOpenRemoveExternal) {
           handleCloseDelete();
         } else {

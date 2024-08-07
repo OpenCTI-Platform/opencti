@@ -46,9 +46,6 @@ ExternalReferenceComponentProps
     <div className={classes.container}>
       <ExternalReferenceHeader
         externalReference={externalReference}
-        PopoverComponent={
-          <ExternalReferencePopover id={''} handleRemove={undefined} />
-        }
         EditComponent={(
           <Security needs={[KNOWLEDGE_KNUPDATE]}>
             <ExternalReferenceEdition externalReferenceId={externalReference.id} />

@@ -29,7 +29,7 @@ export const caseIncidentEditionQuery = graphql`
 `;
 
 const CaseIncidentEditionContainer: FunctionComponent<
-  CaseIncidentEditionContainerProps
+CaseIncidentEditionContainerProps
 > = ({ queryRef, handleClose, open, controlledDial }) => {
   const { t_i18n } = useFormatter();
   const { isFeatureEnable } = useHelper();

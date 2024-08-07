@@ -6,7 +6,6 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import { graphql } from 'react-relay';
 import { useNavigate } from 'react-router-dom';
-import { PopoverProps } from '@mui/material/Popover';
 import { useFormatter } from '../../../../components/i18n';
 import Security from '../../../../utils/Security';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
@@ -26,16 +25,13 @@ const caseIncidentPopoverDeletionMutation = graphql`
 const CaseIncidentPopover = ({ id }: { id: string }) => {
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
-  const [anchorEl, setAnchorEl] = useState<PopoverProps['anchorEl']>();
   const [displayEdit, setDisplayEdit] = useState<boolean>(false);
   const [commit] = useApiMutation(caseIncidentPopoverDeletionMutation);
   const queryRef = useQueryLoading<CaseIncidentEditionContainerCaseQuery>(
     caseIncidentEditionQuery,
     { id },
   );
-  const handleClose = () => {
-    setAnchorEl(undefined);
-  };
+  const handleClose = () => {};
   const handleCloseEdit = () => {
     setDisplayEdit(false);
   };

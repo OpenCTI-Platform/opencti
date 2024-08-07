@@ -29,7 +29,7 @@ export const regionEditionQuery = graphql`
 `;
 
 const RegionEditionContainer: FunctionComponent<
-  RegionEditionContainerProps
+RegionEditionContainerProps
 > = ({ handleClose, queryRef, open, controlledDial }) => {
   const { t_i18n } = useFormatter();
   const { isFeatureEnable } = useHelper();
