@@ -25,14 +25,9 @@ export default class DashboardWidgetsPageModel {
   getCreateWidgetButton() {
     return this.page.getByRole('button', {name: "Create a Widget"});
   }
-
-  // getCreateWidgetButton() {
-  //   return this.page.getByLabel('Create', { exact: true });
-  // }
-
+  
   async openWidgetModal() {
-    await this.page.getByLabel('Create', { exact: true }).hover();
-    return this.page.getByLabel('Create a widget', { exact: true }).click();
+    return this.page.getByRole('button', {name: "Create a Widget"}).click();
   }
 
   selectWidget(widgetName: string) {
