@@ -3,7 +3,6 @@ import { Navigate, Route, Routes } from 'react-router-dom';
 import useGranted, {
   isOnlyOrganizationAdmin,
   VIRTUAL_ORGANIZATION_ADMIN,
-  SETTINGS,
   SETTINGS_SETACCESSES,
   SETTINGS_SETCUSTOMIZATION,
   SETTINGS_SETLABELS,
