@@ -115,7 +115,9 @@ steps:
     commands:
       - apt-get update
       - apt-get -y install netcat-traditional
-      - cd opencti-platform/opencti-front
+      - cp -a opencti-platform/opencti-front/* e2e-front-sandbox
+      - ls -lart
+      - cd e2e-front-sandbox
       - yarn install
       - npx playwright install --with-deps chromium
       - yarn build
