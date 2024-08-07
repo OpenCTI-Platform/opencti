@@ -8440,6 +8440,7 @@ type Mutation {
   caseRfiEditAuthorizedMembers(id: ID!, input: [MemberAccessInput!]): CaseRfi
   caseRftAdd(input: CaseRftAddInput!): CaseRft
   caseRftDelete(id: ID!): ID
+  caseRftEditAuthorizedMembers(id: ID!, input: [MemberAccessInput!]): CaseRft
   feedbackAdd(input: FeedbackAddInput!): Feedback
   feedbackDelete(id: ID!): ID
   feedbackEditAuthorizedMembers(id: ID!, input: [MemberAccessInput!]): Feedback

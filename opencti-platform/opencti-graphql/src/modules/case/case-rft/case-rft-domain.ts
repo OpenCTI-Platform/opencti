@@ -2,8 +2,8 @@ import type { AuthContext, AuthUser } from '../../../types/user';
 import { createEntity } from '../../../database/middleware';
 import type { EntityOptions } from '../../../database/middleware-loader';
 import { internalLoadById, listEntitiesPaginated, storeLoadById } from '../../../database/middleware-loader';
-import { BUS_TOPICS } from '../../../config/conf';
-import { ABSTRACT_STIX_DOMAIN_OBJECT, buildRefRelationKey } from '../../../schema/general';
+import { BUS_TOPICS, isFeatureEnabled } from '../../../config/conf';
+import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_DOMAIN_OBJECT, buildRefRelationKey } from '../../../schema/general';
 import { notify } from '../../../database/redis';
 import { now } from '../../../utils/format';
 import { userAddIndividual } from '../../../domain/user';
@@ -14,8 +14,10 @@ import { RELATION_OBJECT } from '../../../schema/stixRefRelationship';
 import { upsertTemplateForCase } from '../case-domain';
 import type { BasicStoreEntityCaseRft } from './case-rft-types';
 import { ENTITY_TYPE_CONTAINER_CASE_RFT } from './case-rft-types';
-import type { CaseRftAddInput } from '../../../generated/graphql';
+import type { CaseRftAddInput, MemberAccessInput } from '../../../generated/graphql';
 import { FilterMode } from '../../../generated/graphql';
+import { UnsupportedError } from '../../../config/errors';
+import { editAuthorizedMembers } from '../../../utils/authorizedMembers';
 
 export const findById: DomainFindById<BasicStoreEntityCaseRft> = (context: AuthContext, user: AuthUser, caseId: string) => {
   return storeLoadById(context, user, caseId, ENTITY_TYPE_CONTAINER_CASE_RFT);
@@ -58,4 +60,24 @@ export const caseRftContainsStixObjectOrStixRelationship = async (context: AuthC
   };
   const caseRftFound = await findAll(context, user, args);
   return caseRftFound.edges.length > 0;
+};
+
+export const caseRftEditAuthorizedMembers = async (
+  context: AuthContext,
+  user: AuthUser,
+  entityId: string,
+  input: MemberAccessInput[] | undefined | null,
+) => {
+  if (!isFeatureEnabled('CONTAINERS_AUTHORIZED_MEMBERS')) {
+    throw UnsupportedError('This feature is disabled');
+  }
+  const args = {
+    entityId,
+    input,
+    requiredCapabilities: ['KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS'],
+    entityType: ENTITY_TYPE_CONTAINER_CASE_RFT,
+    busTopicKey: ABSTRACT_STIX_CORE_OBJECT,
+  };
+  // @ts-expect-error TODO improve busTopicKey types to avoid this
+  return editAuthorizedMembers(context, user, args);
 };

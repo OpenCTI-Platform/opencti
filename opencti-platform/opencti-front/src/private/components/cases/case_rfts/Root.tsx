@@ -29,6 +29,7 @@ import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings
 import useGranted, { KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE, KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 import CaseRftEdition from './CaseRftEdition';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 const subscription = graphql`
   subscription RootCaseRftCaseSubscription($id: ID!) {
@@ -52,6 +53,18 @@ const caseRftQuery = graphql`
       entity_type
       name
       x_opencti_graph_data
+      currentUserAccessRight
+      authorized_members {
+        id
+        name
+        entity_type
+        access_right
+      }
+      creators {
+        id
+        name
+        entity_type
+      }
       ...CaseUtils_case
       ...CaseRftKnowledge_case
       ...FileImportViewer_entity
@@ -72,6 +85,22 @@ const caseRftQuery = graphql`
   }
 `;
 
+const caseRftAuthorizedMembersMutation = graphql`
+  mutation RootCaseRftAuthorizedMembersMutation(
+    $id: ID!
+    $input: [MemberAccessInput!]
+  ) {
+    caseRftEditAuthorizedMembers(id: $id, input: $input) {
+      authorized_members {
+        id
+        name
+        entity_type
+        access_right
+      }
+    }
+  }
+`;
+
 const RootCaseRftComponent = ({ queryRef, caseId }) => {
   const subConfig = useMemo<
   GraphQLSubscriptionConfig<RootCaseRftCaseSubscription>
@@ -86,6 +115,7 @@ const RootCaseRftComponent = ({ queryRef, caseId }) => {
   const enableReferences = useIsEnforceReference('Case-Rft') && !useGranted([KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE]);
   const { t_i18n } = useFormatter();
   useSubscription(subConfig);
+  const { isFeatureEnable } = useHelper();
 
   const {
     caseRft: caseData,
@@ -93,6 +123,7 @@ const RootCaseRftComponent = ({ queryRef, caseId }) => {
     connectorsForImport,
   } = usePreloadedQuery<RootCaseRftCaseQuery>(caseRftQuery, queryRef);
   const paddingRight = getPaddingRight(location.pathname, caseData?.id, '/dashboard/cases/rfts', false);
+  const canManageAuthorizedMembers = caseData?.currentUserAccessRight === 'admin' && isFeatureEnable('CONTAINERS_AUTHORIZED_MEMBERS');
   return (
     <>
       {caseData ? (
@@ -112,6 +143,8 @@ const RootCaseRftComponent = ({ queryRef, caseId }) => {
             enableQuickSubscription={true}
             enableAskAi={true}
             redirectToContent={true}
+            enableManageAuthorizedMembers={canManageAuthorizedMembers}
+            authorizedMembersMutation={caseRftAuthorizedMembersMutation}
           />
           <Box
             sx={{

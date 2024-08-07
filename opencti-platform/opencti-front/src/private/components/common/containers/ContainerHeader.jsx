@@ -1125,6 +1125,12 @@ export default createFragmentContainer(ContainerHeader, {
       }
       ... on CaseRft {
         name
+        authorized_members {
+          id
+          name
+          entity_type
+          access_right
+        }
       }
       ... on Note {
         attribute_abstract

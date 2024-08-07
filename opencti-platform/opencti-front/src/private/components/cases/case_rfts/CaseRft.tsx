@@ -27,6 +27,7 @@ import { tasksDataColumns } from '../tasks/TasksLine';
 import { CaseTasksLineDummy } from '../tasks/CaseTasksLine';
 import { isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
 import { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
+import { getCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -53,6 +54,7 @@ const CaseRftComponent: FunctionComponent<CaseRftProps> = ({ data, enableReferen
   const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const ref = useRef(null);
   const caseRftData = useFragment(caseFragment, data);
+  const { canEdit } = getCurrentUserAccessRight(caseRftData);
   const LOCAL_STORAGE_KEY_CASE_TASKS = `cases-${caseRftData.id}-caseTask`;
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<CaseTasksLinesQuery$variables>(
     LOCAL_STORAGE_KEY_CASE_TASKS,
@@ -183,7 +185,7 @@ const CaseRftComponent: FunctionComponent<CaseRftProps> = ({ data, enableReferen
         </Grid>
       </Grid>
       {!isFABReplaced && (
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+        <Security needs={[KNOWLEDGE_KNUPDATE]} hasAccess={canEdit}>
           <CaseRftEdition caseId={caseRftData.id} />
         </Security>
       )}
