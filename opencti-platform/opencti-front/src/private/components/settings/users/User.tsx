@@ -231,14 +231,15 @@ const User: FunctionComponent<UserProps> = ({ data }) => {
   const [killing, setKilling] = useState<boolean>(false);
   const [sessionToKill, setSessionToKill] = useState<string | null>(null);
   const [queryRef, loadQuery] = useQueryLoader(UserQuery);
+  const user = useFragment(UserFragment, data);
+
   useEffect(() => {
-    loadQuery({}, { fetchPolicy: 'store-and-network' });
+    loadQuery(user, { fetchPolicy: 'store-and-network' });
   }, []);
 
   const refetch = React.useCallback(() => {
-    loadQuery({}, { fetchPolicy: 'store-and-network' });
+    loadQuery(user, { fetchPolicy: 'store-and-network' });
   }, [queryRef]);
-  const user = useFragment(UserFragment, data);
   const isEnterpriseEdition = useEnterpriseEdition();
   const isGrantedToAudit = useGranted([SETTINGS_SECURITYACTIVITY]);
   const isGrantedToKnowledge = useGranted([KNOWLEDGE]);
