@@ -278,7 +278,7 @@ const AppBasePath = BasePathConfig.endsWith('/') ? BasePathConfig.slice(0, -1) :
 export const basePath = isEmpty(AppBasePath) || AppBasePath.startsWith('/') ? AppBasePath : `/${AppBasePath}`;
 
 const BasePathUrl = nconf.get('app:base_url')?.trim() ?? '';
-const baseUrl = BasePathUrl.endsWith('/') ? BasePathUrl.slice(0, -1) : BasePathUrl;
+export const baseUrl = BasePathUrl.endsWith('/') ? BasePathUrl.slice(0, -1) : BasePathUrl;
 
 export const getBaseUrl = (req) => {
   // If base url is defined, take it in priority

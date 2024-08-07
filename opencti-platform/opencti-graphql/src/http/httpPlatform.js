@@ -13,7 +13,7 @@ import validator from 'validator';
 import archiverZipEncrypted from 'archiver-zip-encrypted';
 import rateLimit from 'express-rate-limit';
 import contentDisposition from 'content-disposition';
-import { basePath, booleanConf, DEV_MODE, ENABLED_UI, logApp, OPENCTI_SESSION } from '../config/conf';
+import { basePath, baseUrl, booleanConf, DEV_MODE, ENABLED_UI, logApp, OPENCTI_SESSION } from '../config/conf';
 import passport, { isStrategyActivated, STRATEGY_CERT } from '../config/providers';
 import { authenticateUser, authenticateUserFromRequest, HEADERS_AUTHENTICATORS, loginFromProvider, userWithOrigin } from '../domain/user';
 import { downloadFile, getFileContent, loadFile, isStorageAlive } from '../database/file-storage';
@@ -93,40 +93,8 @@ const createApp = async (app) => {
   if (DEV_MODE) {
     scriptSrc.push("'unsafe-eval'");
   }
-  const securityMiddleware = helmet({
-    expectCt: { enforce: true, maxAge: 30 },
-    referrerPolicy: { policy: 'unsafe-url' },
-    crossOriginEmbedderPolicy: false,
-    crossOriginOpenerPolicy: false,
-    crossOriginResourcePolicy: false,
-    contentSecurityPolicy: {
-      useDefaults: false,
-      directives: {
-        defaultSrc: ["'self'"],
-        scriptSrc,
-        styleSrc: [
-          "'self'",
-          "'unsafe-inline'",
-          'http://cdn.jsdelivr.net/npm/@apollographql/',
-          'https://fonts.googleapis.com/',
-        ],
-        scriptSrcAttr: [
-          "'self'",
-          "'unsafe-inline'",
-          'http://cdn.jsdelivr.net/npm/@apollographql/',
-          'https://fonts.googleapis.com/',
-        ],
-        fontSrc: ["'self'", 'data:', 'https://fonts.gstatic.com/'],
-        imgSrc: ["'self'", 'data:', 'https://*', 'http://*'],
-        manifestSrc: ["'self'", 'data:', 'https://*', 'http://*'],
-        connectSrc: ["'self'", 'wss://*', 'ws://*', 'data:', 'http://*', 'https://*'],
-        objectSrc: ["'self'", 'data:', 'http://*', 'https://*'],
-        frameSrc: ["'self'", 'data:', 'http://*', 'https://*'],
-      },
-    },
-  });
 
-  const securityPublic = helmet({
+  const buildSecurity = (opts) => helmet({
     expectCt: { enforce: true, maxAge: 30 },
     referrerPolicy: { policy: 'unsafe-url' },
     crossOriginEmbedderPolicy: false,
@@ -136,7 +104,7 @@ const createApp = async (app) => {
       useDefaults: false,
       directives: {
         defaultSrc: ["'self'"],
-        scriptSrc,
+        scriptSrc: securityOpts.scriptSrc,
         styleSrc: [
           "'self'",
           "'unsafe-inline'",
@@ -154,10 +122,11 @@ const createApp = async (app) => {
         manifestSrc: ["'self'", 'data:', 'https://*', 'http://*'],
         connectSrc: ["'self'", 'wss://*', 'ws://*', 'data:', 'http://*', 'https://*'],
         objectSrc: ["'self'", 'data:', 'http://*', 'https://*'],
-        frameSrc: ["'self'", 'data:', 'http://*', 'https://*'],
+        frameSrc: opts.allowedFrameSrc,
+        frameAncestors: opts.frameAncestorDomains,
       },
     },
-    xFrameOptions: false,
+    xFrameOptions: !opts.iframeAllowed,
   });
 
   // Init the http server
@@ -167,14 +136,18 @@ const createApp = async (app) => {
     app.set('json spaces', 2);
   }
 
-  app.use((req, res, next) => {
-    const urlString = req.url;
-    if (urlString && (urlString.startsWith(`${basePath}/public`) || urlString.startsWith(`${basePath}/static`))) {
-      securityPublic(req, res, next);
-    } else {
-      securityMiddleware(req, res, next);
-    }
-  });
+  const ancestorsFromConfig = nconf.get('app:public_dashboard_authorized_domains')?.trim() ?? '';
+  const frameAncestorDomains = ancestorsFromConfig === '' ? "'none'" : ancestorsFromConfig;
+  const allowedFrameSrc = [`${baseUrl}/${basePath}/public/*`];
+  const securityOpts = {
+    frameAncestorDomains,
+    allowedFrameSrc,
+    scriptSrc,
+    iframeAllowed: frameAncestorDomains !== "'none'",
+  };
+  const securityMiddleware = buildSecurity(securityOpts);
+  logApp.info('[INIT] starting app with iframe configuration', { securityOpts });
+  app.use(securityMiddleware);
 
   app.use(compression({}));
 
