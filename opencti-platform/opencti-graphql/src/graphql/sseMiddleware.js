@@ -318,7 +318,6 @@ const createSseMiddleware = () => {
       if (!isUserHasCapability(sessionUser, BYPASS)) {
         res.statusMessage = 'Consume generic stream is only authorized for bypass user';
         sendErrorStatusAndKillSession(req, res, 401);
-        logApp.info('[ANGIE] genericStreamHandler 401 - Error, we need to kill session');
         return;
       }
       const { client } = createSseChannel(req, res, startStreamId);
