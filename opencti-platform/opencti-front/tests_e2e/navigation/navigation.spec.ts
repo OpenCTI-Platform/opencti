@@ -160,5 +160,8 @@ const navigateAllMenu = async (page: Page) => {
 
 test('Check navigation on all pages', { tag: ['@navigation'] }, async ({ page }) => {
   await navigateAllMenu(page);
+});
+
+test('Check navigation on all pages - wip part', { tag: ['@sandbox'] }, async ({ page }) => {
   await navigateReports(page);
 });
