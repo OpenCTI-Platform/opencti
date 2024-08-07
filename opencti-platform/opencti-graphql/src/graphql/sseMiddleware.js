@@ -538,8 +538,9 @@ const createSseMiddleware = () => {
       const noDelete = (req.query['listen-delete'] || req.headers['listen-delete']) === 'false';
       const publishDeletion = noDelete === false;
       const withInferences = (req.query['with-inferences'] || req.headers['with-inferences']) === 'true';
+      const streamQueryIndices = [...queryIndices];
       if (withInferences) {
-        queryIndices.push(READ_INDEX_INFERRED_ENTITIES, READ_INDEX_INFERRED_RELATIONSHIPS);
+        streamQueryIndices.push(READ_INDEX_INFERRED_ENTITIES, READ_INDEX_INFERRED_RELATIONSHIPS);
       }
 
       let { streamFilters, collection } = req;
@@ -603,7 +604,7 @@ const createSseMiddleware = () => {
                       defaultTypes: [ENTITY_TYPE_CONTAINER], // Looking only for containers
                       extraFilters: [{ key: [buildRefRelationKey(RELATION_OBJECT)], values: [elementInternalId] }] // Connected rel
                     });
-                    const countRelatedContainers = await elCount(context, user, queryIndices, queryOptions);
+                    const countRelatedContainers = await elCount(context, user, streamQueryIndices, queryOptions);
                     // At least one container is matching the filter, so publishing the event
                     if (countRelatedContainers > 0) {
                       await resolveAndPublishMissingRefs(context, cache, channel, req, eventId, stix);
@@ -681,7 +682,7 @@ const createSseMiddleware = () => {
           before: recoverIsoDate
         });
         queryOptions.callback = queryCallback;
-        await elList(context, user, queryIndices, queryOptions);
+        await elList(context, user, streamQueryIndices, queryOptions);
       }
       // noinspection ES6MissingAwait
       processor.start(isRecoveryMode ? recoverStreamId : startStreamId);
