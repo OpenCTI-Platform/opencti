@@ -115,7 +115,7 @@ steps:
     commands:
       - apt-get update
       - apt-get -y install netcat-traditional
-      - cp -a opencti-platform/opencti-front/* e2e-front-sandbox
+      - cp -R opencti-platform/opencti-front/* e2e-front-sandbox
       - ls -lart
       - cd e2e-front-sandbox
       - yarn install
@@ -179,8 +179,9 @@ steps:
       - frontend-tests
       - frontend-e2e-tests
 
-  - name: upload-tests-artefacts
+  - name: upload-frontend-artefacts
     image: plugins/s3
+    failure: ignore
     settings:
       bucket: octi-drone-artefact
       access_key:
@@ -188,10 +189,10 @@ steps:
       secret_key:
         from_secret: octi-s3-secret-key
       source: opencti-platform/opencti-front/test-results/**/*
-      target: /octi/$DRONE_BUILD_NUMBER/front
+      target: /octi/$DRONE_BUILD_NUMBER/opencti-front
     depends_on:
+      - frontend-tests
       - frontend-e2e-tests
-      - frontend-e2e-tests-sandbox
 
 services:
   - name: redis
