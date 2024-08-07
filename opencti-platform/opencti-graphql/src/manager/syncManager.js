@@ -17,7 +17,7 @@ import { getHttpClient } from '../utils/http-client';
 import { createSyncHttpUri, httpBase } from '../domain/connector-utils';
 
 const SYNC_MANAGER_KEY = conf.get('sync_manager:lock_key') || 'sync_manager_lock';
-const SCHEDULE_TIME = 10000;
+const SCHEDULE_TIME = conf.get('sync_manager:interval') || 10000;
 const WAIT_TIME_ACTION = 2000;
 
 const syncManagerInstance = (syncId) => {
