@@ -1,5 +1,5 @@
-import React, { FunctionComponent, useState } from 'react';
-import { createRefetchContainer, graphql, useFragment } from 'react-relay';
+import React, { FunctionComponent, useEffect, useState } from 'react';
+import { graphql, useFragment, useQueryLoader } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
@@ -124,7 +124,7 @@ const UserFragment = graphql`
     organizationsOrderMode: { type: "OrderingMode", defaultValue: asc }
     rolesOrderBy: { type: "RolesOrdering", defaultValue: name }
     rolesOrderMode: { type: "OrderingMode", defaultValue: asc }
-  ) {
+  ){
     id
     name
     description
@@ -203,6 +203,13 @@ const UserFragment = graphql`
     }
   }
 `;
+const UserQuery = graphql`
+  query UserQuery($id: String!) {
+    user(id: $id) {
+      ...User_user
+    }
+  }
+`;
 
 type Session = {
   id: string;
@@ -212,10 +219,9 @@ type Session = {
 
 interface UserProps {
   data: User_user$key;
-  refetch: (variables: any, renderVariables?: any, observerOrCallback?: any, options?: any) => void;
 }
 
-const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
+const User: FunctionComponent<UserProps> = ({ data }) => {
   const classes = useStyles();
   const { t_i18n, nsdt, fsd, fldt } = useFormatter();
   const { me } = useAuth();
@@ -224,6 +230,14 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
   const [displayKillSessions, setDisplayKillSessions] = useState<boolean>(false);
   const [killing, setKilling] = useState<boolean>(false);
   const [sessionToKill, setSessionToKill] = useState<string | null>(null);
+  const [queryRef, loadQuery] = useQueryLoader(UserQuery);
+  useEffect(() => {
+    loadQuery({}, { fetchPolicy: 'store-and-network' });
+  }, []);
+
+  const refetch = React.useCallback(() => {
+    loadQuery({}, { fetchPolicy: 'store-and-network' });
+  }, [queryRef]);
   const user = useFragment(UserFragment, data);
   const isEnterpriseEdition = useEnterpriseEdition();
   const isGrantedToAudit = useGranted([SETTINGS_SECURITYACTIVITY]);
@@ -259,9 +273,7 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
         onCompleted: () => {
           setKilling(false);
           handleCloseKillSession();
-          refetch(
-            { id: user.id },
-          );
+          refetch();
         },
       });
     }
@@ -285,9 +297,7 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
       onCompleted: () => {
         setKilling(false);
         handleCloseKillSessions();
-        refetch(
-          { id: user.id },
-        );
+        refetch();
       },
     });
   };
@@ -766,35 +776,5 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
     </>
   );
 };
-
-createRefetchContainer(
-  User,
-  {
-    user: graphql`
-        fragment UserRefetchContainer_user on User {
-          id
-          user_email
-          otp_activated
-          api_token
-          firstname
-          lastname
-          account_status
-          account_lock_after_date
-          sessions {
-            id
-            created
-            ttl
-          }
-        }
-      `,
-  },
-  graphql`
-      query UserRefetchContainerQuery($id: String!) {
-        user(id: $id) {
-          ...UserRefetchContainer_user
-        }
-      }
-    `,
-);
 
 export default User;
