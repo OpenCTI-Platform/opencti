@@ -212,9 +212,10 @@ type Session = {
 
 interface UserProps {
   data: User_user$key;
+  refetch: () => void;
 }
 
-const User: FunctionComponent<UserProps> = ({ data }) => {
+const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
   const classes = useStyles();
   const { t_i18n, nsdt, fsd, fldt } = useFormatter();
   const { me } = useAuth();
@@ -258,6 +259,7 @@ const User: FunctionComponent<UserProps> = ({ data }) => {
         onCompleted: () => {
           setKilling(false);
           handleCloseKillSession();
+          refetch();
         },
       });
     }
@@ -281,6 +283,7 @@ const User: FunctionComponent<UserProps> = ({ data }) => {
       onCompleted: () => {
         setKilling(false);
         handleCloseKillSessions();
+        refetch();
       },
     });
   };

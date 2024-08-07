@@ -98,12 +98,14 @@ export const killSession = async (id) => {
 };
 
 export const killUserSessions = async (userId) => {
+  const { store } = applicationSession;
   const sessions = await findUserSessions(userId);
   const sessionsIds = sessions.map((s) => s.id);
   const killedSessions = [];
   for (let index = 0; index < sessionsIds.length; index += 1) {
     const sessionId = sessionsIds[index];
-    const killedSession = await killSession(sessionId);
+    const sessId = sessionId.split(store.prefix)[1];
+    const killedSession = await killSession(sessId);
     killedSessions.push(killedSession);
   }
   return killedSessions;
