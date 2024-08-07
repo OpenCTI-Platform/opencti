@@ -11,6 +11,7 @@ import ReportDetails from './ReportDetails';
 import StixCoreObjectExternalReferences from '../external_references/StixCoreObjectExternalReferences';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../notes/StixCoreObjectOrStixCoreRelationshipNotes';
 import { Report_report$key } from './__generated__/Report_report.graphql';
+import { getCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
 
 const ReportComponentFragment = graphql`
   fragment Report_report on Report {
@@ -26,6 +27,7 @@ const ReportComponentFragment = graphql`
     modified
     created_at
     updated_at
+    currentUserAccessRight
     createdBy {
       ... on Identity {
         id
@@ -87,6 +89,7 @@ const ReportComponent: FunctionComponent<ReportComponentProps> = ({
   );
   const { isFeatureEnable } = useHelper();
   const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
+  const { canEdit } = getCurrentUserAccessRight(report);
 
   return (<>
     <Grid
@@ -118,7 +121,7 @@ const ReportComponent: FunctionComponent<ReportComponentProps> = ({
       </Grid>
     </Grid>
     {!isFABReplaced && (
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
+      <Security needs={[KNOWLEDGE_KNUPDATE]} hasAccess={canEdit}>
         <ReportEdition reportId={report.id} />
       </Security>
     )}

@@ -5,6 +5,7 @@ import {
   reportContainsStixObjectOrStixRelationship,
   reportDeleteElementsCount,
   reportDeleteWithElements,
+  reportEditAuthorizedMembers,
   reportsDistributionByEntity,
   reportsNumber,
   reportsNumberByAuthor,
@@ -25,6 +26,8 @@ import { distributionEntities } from '../database/middleware';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../schema/stixDomainObject';
 import { loadThroughDenormalized } from './stix';
 import { INPUT_PARTICIPANT } from '../schema/general';
+import { getAuthorizedMembers } from '../utils/authorizedMembers';
+import { getUserAccessRight } from '../utils/access';
 
 const reportResolvers = {
   Query: {
@@ -61,6 +64,8 @@ const reportResolvers = {
   Report: {
     deleteWithElementsCount: (report, _, context) => reportDeleteElementsCount(context, context.user, report.id),
     objectParticipant: (container, _, context) => loadThroughDenormalized(context, context.user, container, INPUT_PARTICIPANT, { sortBy: 'user_email' }),
+    authorized_members: (report, _, context) => getAuthorizedMembers(context, context.user, report),
+    currentUserAccessRight: (report, _, context) => getUserAccessRight(context.user, report),
   },
   Mutation: {
     reportEdit: (_, { id }, context) => ({
@@ -71,7 +76,7 @@ const reportResolvers = {
       relationAdd: ({ input, commitMessage, references }) => stixDomainObjectAddRelation(context, context.user, id, input, { commitMessage, references }),
       // eslint-disable-next-line max-len
       relationDelete: ({ toId, relationship_type: relationshipType, commitMessage, references }) => stixDomainObjectDeleteRelation(context, context.user, id, toId, relationshipType, { commitMessage, references }),
-
+      authorizedMembers: ({ input }) => reportEditAuthorizedMembers(context, context.user, id, input),
     }),
     reportAdd: (_, { input }, context) => addReport(context, context.user, input),
   },

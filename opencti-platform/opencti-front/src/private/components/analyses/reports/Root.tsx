@@ -55,6 +55,18 @@ const reportQuery = graphql`
       id
       standard_id
       entity_type
+      currentUserAccessRight
+      authorized_members {
+        id
+        name
+        entity_type
+        access_right
+      }
+      creators {
+        id
+        name
+        entity_type
+      }
       name
       ...Report_report
       ...ReportDetails_report
@@ -73,6 +85,25 @@ const reportQuery = graphql`
     }
     connectorsForImport {
       ...StixCoreObjectFilesAndHistory_connectorsImport
+    }
+  }
+`;
+
+// Mutation to edit authorized members
+const reportAuthorizedMembersMutation = graphql`
+  mutation RootReportAuthorizedMembersMutation(
+    $id: ID!
+    $input: [MemberAccessInput!]
+  ) {
+    reportEdit(id: $id) {
+      authorizedMembers(input: $input) {
+        authorized_members {
+          id
+          name
+          entity_type
+          access_right
+        }
+      }
     }
   }
 `;
@@ -104,6 +135,7 @@ const RootReport = () => {
               const { report } = props;
               const isOverview = location.pathname === `/dashboard/analyses/reports/${report.id}`;
               const paddingRight = getPaddingRight(location.pathname, reportId, '/dashboard/analyses/reports', false);
+              const canManageAuthorizedMembers = report?.currentUserAccessRight === 'admin' && isFeatureEnable('CONTAINERS_AUTHORIZED_MEMBERS');
               return (
                 <div style={{ paddingRight }} data-testid="report-details-page">
                   <Breadcrumbs variant="object" elements={[
@@ -127,6 +159,8 @@ const RootReport = () => {
                     enableAskAi={true}
                     overview={isOverview}
                     redirectToContent={true}
+                    enableManageAuthorizedMembers={canManageAuthorizedMembers}
+                    authorizedMembersMutation={reportAuthorizedMembersMutation}
                   />
                   <Box
                     sx={{

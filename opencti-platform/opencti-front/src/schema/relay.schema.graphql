@@ -3094,6 +3094,8 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   x_opencti_reliability: String
   published: DateTime
   objectParticipant: [Participant!]
+  authorized_members: [MemberAccess!]
+  currentUserAccessRight: String
   creators: [Creator!]
   toStix: String
   importFiles(first: Int, prefixMimeType: String): FileConnection
@@ -7999,6 +8001,7 @@ type ReportEditMutations {
   contextClean: Report
   relationAdd(input: StixRefRelationshipAddInput!, commitMessage: String, references: [String]): StixRefRelationship
   relationDelete(toId: StixRef!, relationship_type: String!, commitMessage: String, references: [String]): Report
+  authorizedMembers(input: [MemberAccessInput!]): Report
 }
 
 type CourseOfActionEditMutations {

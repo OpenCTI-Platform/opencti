@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 import { createEntity, distributionEntities, internalDeleteElementById, listAllThings, timeSeriesEntities } from '../database/middleware';
 import { countAllThings, internalLoadById, listEntities, storeLoadById } from '../database/middleware-loader';
-import { BUS_TOPICS } from '../config/conf';
+import { BUS_TOPICS, isFeatureEnabled } from '../config/conf';
 import { notify } from '../database/redis';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../schema/stixDomainObject';
 import { RELATION_CREATED_BY, RELATION_OBJECT } from '../schema/stixRefRelationship';
@@ -11,6 +11,8 @@ import { READ_DATA_INDICES_WITHOUT_INFERRED, READ_INDEX_STIX_DOMAIN_OBJECTS } fr
 import { isStixId } from '../schema/schemaUtils';
 import { stixDomainObjectDelete } from './stixDomainObject';
 import { addFilter } from '../utils/filtering/filtering-utils';
+import { UnsupportedError } from '../config/errors';
+import { editAuthorizedMembers } from '../utils/authorizedMembers';
 
 export const findById = (context, user, reportId) => {
   return storeLoadById(context, user, reportId, ENTITY_TYPE_CONTAINER_REPORT);
@@ -153,3 +155,23 @@ export const reportDeleteElementsCount = async (context, user, reportId) => {
   return countAllThings(context, user, { indices: READ_DATA_INDICES_WITHOUT_INFERRED, filters });
 };
 // endregion
+
+export const reportEditAuthorizedMembers = async (
+  context,
+  user,
+  entityId,
+  input,
+) => {
+  if (!isFeatureEnabled('CONTAINERS_AUTHORIZED_MEMBERS')) {
+    throw UnsupportedError('This feature is disabled');
+  }
+  const args = {
+    entityId,
+    input,
+    requiredCapabilities: ['KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS'],
+    entityType: ENTITY_TYPE_CONTAINER_REPORT,
+    busTopicKey: ABSTRACT_STIX_CORE_OBJECT,
+  };
+  // @ts-expect-error TODO improve busTopicKey types to avoid this
+  return editAuthorizedMembers(context, user, args);
+};

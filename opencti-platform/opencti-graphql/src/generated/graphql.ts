@@ -21078,6 +21078,7 @@ export type RemoteStreamCollection = {
 
 export type Report = BasicObject & Container & StixCoreObject & StixDomainObject & StixObject & {
   __typename?: 'Report';
+  authorized_members?: Maybe<Array<MemberAccess>>;
   avatar?: Maybe<OpenCtiFile>;
   cases?: Maybe<CaseConnection>;
   confidence?: Maybe<Scalars['Int']['output']>;
@@ -21090,6 +21091,7 @@ export type Report = BasicObject & Container & StixCoreObject & StixDomainObject
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
+  currentUserAccessRight?: Maybe<Scalars['String']['output']>;
   deleteWithElementsCount?: Maybe<Scalars['Int']['output']>;
   description?: Maybe<Scalars['String']['output']>;
   editContext?: Maybe<Array<EditUserContext>>;
@@ -21334,12 +21336,18 @@ export type ReportEdge = {
 
 export type ReportEditMutations = {
   __typename?: 'ReportEditMutations';
+  authorizedMembers?: Maybe<Report>;
   contextClean?: Maybe<Report>;
   contextPatch?: Maybe<Report>;
   delete?: Maybe<Scalars['ID']['output']>;
   fieldPatch?: Maybe<Report>;
   relationAdd?: Maybe<StixRefRelationship>;
   relationDelete?: Maybe<Report>;
+};
+
+
+export type ReportEditMutationsAuthorizedMembersArgs = {
+  input?: InputMaybe<Array<MemberAccessInput>>;
 };
 
 
@@ -29418,7 +29426,7 @@ export type ResolversTypes = ResolversObject<{
   ReportAddInput: ReportAddInput;
   ReportConnection: ResolverTypeWrapper<Omit<ReportConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['ReportEdge']>>> }>;
   ReportEdge: ResolverTypeWrapper<Omit<ReportEdge, 'node'> & { node: ResolversTypes['Report'] }>;
-  ReportEditMutations: ResolverTypeWrapper<Omit<ReportEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['Report']>, contextPatch?: Maybe<ResolversTypes['Report']>, fieldPatch?: Maybe<ResolversTypes['Report']>, relationAdd?: Maybe<ResolversTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversTypes['Report']> }>;
+  ReportEditMutations: ResolverTypeWrapper<Omit<ReportEditMutations, 'authorizedMembers' | 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { authorizedMembers?: Maybe<ResolversTypes['Report']>, contextClean?: Maybe<ResolversTypes['Report']>, contextPatch?: Maybe<ResolversTypes['Report']>, fieldPatch?: Maybe<ResolversTypes['Report']>, relationAdd?: Maybe<ResolversTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversTypes['Report']> }>;
   ReportsOrdering: ReportsOrdering;
   Representative: ResolverTypeWrapper<Representative>;
   RepresentativeWithId: ResolverTypeWrapper<RepresentativeWithId>;
@@ -30162,7 +30170,7 @@ export type ResolversParentTypes = ResolversObject<{
   ReportAddInput: ReportAddInput;
   ReportConnection: Omit<ReportConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['ReportEdge']>>> };
   ReportEdge: Omit<ReportEdge, 'node'> & { node: ResolversParentTypes['Report'] };
-  ReportEditMutations: Omit<ReportEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['Report']>, contextPatch?: Maybe<ResolversParentTypes['Report']>, fieldPatch?: Maybe<ResolversParentTypes['Report']>, relationAdd?: Maybe<ResolversParentTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversParentTypes['Report']> };
+  ReportEditMutations: Omit<ReportEditMutations, 'authorizedMembers' | 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { authorizedMembers?: Maybe<ResolversParentTypes['Report']>, contextClean?: Maybe<ResolversParentTypes['Report']>, contextPatch?: Maybe<ResolversParentTypes['Report']>, fieldPatch?: Maybe<ResolversParentTypes['Report']>, relationAdd?: Maybe<ResolversParentTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversParentTypes['Report']> };
   Representative: Representative;
   RepresentativeWithId: RepresentativeWithId;
   ResolvedInstanceFilter: ResolvedInstanceFilter;
@@ -36525,6 +36533,7 @@ export type RemoteStreamCollectionResolvers<ContextType = any, ParentType extend
 }>;
 
 export type ReportResolvers<ContextType = any, ParentType extends ResolversParentTypes['Report'] = ResolversParentTypes['Report']> = ResolversObject<{
+  authorized_members?: Resolver<Maybe<Array<ResolversTypes['MemberAccess']>>, ParentType, ContextType>;
   avatar?: Resolver<Maybe<ResolversTypes['OpenCtiFile']>, ParentType, ContextType>;
   cases?: Resolver<Maybe<ResolversTypes['CaseConnection']>, ParentType, ContextType, Partial<ReportCasesArgs>>;
   confidence?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
@@ -36537,6 +36546,7 @@ export type ReportResolvers<ContextType = any, ParentType extends ResolversParen
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
+  currentUserAccessRight?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   deleteWithElementsCount?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
@@ -36598,6 +36608,7 @@ export type ReportEdgeResolvers<ContextType = any, ParentType extends ResolversP
 }>;
 
 export type ReportEditMutationsResolvers<ContextType = any, ParentType extends ResolversParentTypes['ReportEditMutations'] = ResolversParentTypes['ReportEditMutations']> = ResolversObject<{
+  authorizedMembers?: Resolver<Maybe<ResolversTypes['Report']>, ParentType, ContextType, Partial<ReportEditMutationsAuthorizedMembersArgs>>;
   contextClean?: Resolver<Maybe<ResolversTypes['Report']>, ParentType, ContextType>;
   contextPatch?: Resolver<Maybe<ResolversTypes['Report']>, ParentType, ContextType, Partial<ReportEditMutationsContextPatchArgs>>;
   delete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, Partial<ReportEditMutationsDeleteArgs>>;
