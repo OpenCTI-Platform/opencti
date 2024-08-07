@@ -147,7 +147,7 @@ const Workspaces: FunctionComponent<WorkspacesProps> = ({
 
   return (
     <>
-      <Breadcrumbs variant="list" elements={[{ label: type === 'dashboard' ? t_i18n('Dashboards') : t_i18n('Investigations'), current: true }]} />
+      <Breadcrumbs variant="list" elements={[{ label: type === 'dashboard' ? t_i18n('Custom dashboards') : t_i18n('Investigations'), current: true }]} />
       {renderLines()}
       {!FAB_REPLACED
         && (<Security needs={[EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE]}>

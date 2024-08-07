@@ -154,8 +154,8 @@ const navigateAllMenu = async (page: Page) => {
   // Other
   await leftBarPage.clickOnMenu('Investigations');
   await expect(page.getByRole('paragraph')).toHaveText('Investigations');
-  await leftBarPage.clickOnMenu('Dashboards');
-  await expect(page.getByRole('paragraph')).toHaveText('Dashboards');
+  await leftBarPage.clickOnMenu('Dashboards', 'Custom dashboards');
+  await expect(page.getByRole('paragraph')).toHaveText('Custom dashboards');
 };
 
 test('Check navigation on all pages', { tag: ['@navigation'] }, async ({ page }) => {

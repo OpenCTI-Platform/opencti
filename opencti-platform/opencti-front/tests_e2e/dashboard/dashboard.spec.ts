@@ -38,7 +38,6 @@ test('Dashboard CRUD', async ({ page }) => {
   await page.goto('/dashboard/workspaces/dashboards');
   await leftBarPage.open();
 
-  const dashboardsMenu = 'Dashboards';
   const dashboardName = `Dashboard - ${uuid()}`;
   const updateDashboardName = `UpdateDashboard - ${uuid()}`;
 
@@ -118,7 +117,7 @@ test('Dashboard CRUD', async ({ page }) => {
   // region Check that dashboard have correct data
   // ---------------------------------------------
 
-  await leftBarPage.clickOnMenu(dashboardsMenu);
+  await leftBarPage.clickOnMenu('Dashboards', 'Custom dashboards');
   await dashboardPage.getItemFromList(updateDashboardName).click();
   await expect(dashboardDetailsPage.getDashboardDetailsPage()).toBeVisible();
 
@@ -137,7 +136,7 @@ test('Dashboard CRUD', async ({ page }) => {
   await dashboardDetailsPage.getActionButton('Duplicate').click();
   await dashboardDetailsPage.getDuplicateButton().click();
 
-  await leftBarPage.clickOnMenu(dashboardsMenu);
+  await leftBarPage.clickOnMenu('Dashboards', 'Custom dashboards');
   await expect(dashboardPage.getItemFromList(duplicateDashboardName)).toBeVisible();
   await dashboardPage.getItemFromList(duplicateDashboardName).click();
   await expect(dashboardDetailsPage.getTitle(duplicateDashboardName)).toBeVisible();
@@ -162,7 +161,7 @@ test('Dashboard CRUD', async ({ page }) => {
   // ------------------------------
 
   // From dashboard overview - export
-  await leftBarPage.clickOnMenu(dashboardsMenu);
+  await leftBarPage.clickOnMenu('Dashboards', 'Custom dashboards');
   await dashboardPage.getItemFromList(updateDashboardName).click();
   await dashboardDetailsPage.getActionsPopover().click();
   const downloadPromise = page.waitForEvent('download');
@@ -173,7 +172,7 @@ test('Dashboard CRUD', async ({ page }) => {
   await download.saveAs(`./test-results/e2e-files/${download.suggestedFilename()}`);
 
   // From list page - import
-  await leftBarPage.clickOnMenu(dashboardsMenu);
+  await leftBarPage.clickOnMenu('Dashboards', 'Custom dashboards');
   // await dashboardPage.getCreateMenuButton().hover();
   const fileChooserPromise = page.waitForEvent('filechooser');
   await dashboardPage.getImportDashboardButton().click();
@@ -197,7 +196,7 @@ test('Dashboard CRUD', async ({ page }) => {
   await widgetsPage.getItemFromWidgetList(malwareName).click();
   await expect(malwareDetailsPage.getTitle(malwareName)).toBeVisible();
 
-  await leftBarPage.clickOnMenu(dashboardsMenu);
+  await leftBarPage.clickOnMenu('Dashboards', 'Custom dashboards');
   await dashboardPage.getItemFromList(updateDashboardName).click();
   await widgetsPage.getActionsWidgetsPopover().click();
   await widgetsPage.getActionButton('Delete').click();
@@ -216,7 +215,7 @@ test('Dashboard CRUD', async ({ page }) => {
   // region Interact with start and end date CTA - change value in widgets
   // -------------------------
 
-  await leftBarPage.clickOnMenu(dashboardsMenu);
+  await leftBarPage.clickOnMenu('Dashboards', 'Custom dashboards');
   await dashboardPage.getItemFromList(updateDashboardName).click();
   await dashboardDetailsPage.accessSelect.selectOption('None');
 
@@ -260,7 +259,7 @@ test('Dashboard CRUD', async ({ page }) => {
   // ---------
   // endregion
 
-  await leftBarPage.clickOnMenu(dashboardsMenu);
+  await leftBarPage.clickOnMenu('Dashboards', 'Custom dashboards');
   await dashboardPage.getItemFromList(updateDashboardName).click();
   await dashboardDetailsPage.getActionsPopover().click();
   await dashboardDetailsPage.getActionButton('Delete').click();
