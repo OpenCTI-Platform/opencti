@@ -50,6 +50,7 @@ import './managerConfiguration/managerConfiguration';
 import './notifier/notifier';
 import './threatActorIndividual/threatActorIndividual';
 import './playbook/playbook';
+import './report/report'; // not a complete module
 import './ingestion/ingestion-rss';
 import './ingestion/ingestion-taxii';
 import './ingestion/ingestion-csv';

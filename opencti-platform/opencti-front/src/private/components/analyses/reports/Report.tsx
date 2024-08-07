@@ -89,7 +89,7 @@ const ReportComponent: FunctionComponent<ReportComponentProps> = ({
   const { isFeatureEnable } = useHelper();
   const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
-  const reportIndividualOverviewLayoutCustomization = useOverviewLayoutCustomization(report.entity_type);
+  const reportOverviewLayoutCustomization = useOverviewLayoutCustomization(report.entity_type);
 
   return (<>
     <Grid
@@ -98,7 +98,7 @@ const ReportComponent: FunctionComponent<ReportComponentProps> = ({
       style={{ marginBottom: 20 }}
     >
       {
-        reportIndividualOverviewLayoutCustomization.map(({ key, width }) => {
+        reportOverviewLayoutCustomization.map(({ key, width }) => {
           switch (key) {
             case 'details':
               return (
