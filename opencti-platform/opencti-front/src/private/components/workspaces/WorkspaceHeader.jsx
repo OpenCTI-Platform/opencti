@@ -360,7 +360,7 @@ const WorkspaceHeader = ({
         {variant === 'dashboard' && isFeatureEnable('FAB_REPLACEMENT') && (
           <Security
             needs={[EXPLORE_EXUPDATE]}
-            hasAccess={userCanEdit}
+            hasAccess={canEdit}
           >
             <div style={{ marginTop: '-8px', float: 'right' }}>
               <WidgetConfig onComplete={handleAddWidget} workspace={workspace}></WidgetConfig>
