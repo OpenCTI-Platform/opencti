@@ -339,7 +339,6 @@ const createSseMiddleware = () => {
     } catch (err) {
       res.statusMessage = `Error in stream: ${err.message}`;
       sendErrorStatusAndKillSession(req, res, 500);
-      logApp.info('[ANGIE] genericStreamHandler 500 - Error, we need to kill session');
     }
   };
   const manageStreamConnectionHandler = async (req, res) => {
