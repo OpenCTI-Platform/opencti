@@ -126,7 +126,7 @@ const createApp = async (app) => {
         frameAncestors: opts.frameAncestorDomains,
       },
     },
-    xFrameOptions: !opts.iframeAllowed,
+    xFrameOptions: !opts.isIframeAllowed,
   });
 
   // Init the http server
@@ -143,7 +143,7 @@ const createApp = async (app) => {
     frameAncestorDomains,
     allowedFrameSrc,
     scriptSrc,
-    iframeAllowed: frameAncestorDomains !== "'none'",
+    isIframeAllowed: frameAncestorDomains !== "'none'",
   };
   const securityMiddleware = buildSecurity(securityOpts);
   logApp.info('[INIT] starting app with iframe configuration', { securityOpts });
