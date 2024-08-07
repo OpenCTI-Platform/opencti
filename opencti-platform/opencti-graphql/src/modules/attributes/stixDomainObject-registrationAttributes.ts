@@ -1,7 +1,8 @@
 import * as R from 'ramda';
 import {
   aliases,
-  type AttributeDefinition, authorizedMembers,
+  type AttributeDefinition,
+  authorizedMembers,
   confidence,
   created,
   entityLocationType,

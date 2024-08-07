@@ -41,7 +41,7 @@ import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings
 import StixCoreObjectQuickSubscription from '../stix_core_objects/StixCoreObjectQuickSubscription';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import Transition from '../../../../components/Transition';
-import FormAuthorizedMembersDialog from '@components/common/form/FormAuthorizedMembersDialog';
+import FormAuthorizedMembersDialog from '../form/FormAuthorizedMembersDialog';
 import { authorizedMembersToOptions } from '../../../../utils/authorizedMembers';
 
 // Deprecated - https://mui.com/system/styles/basics/

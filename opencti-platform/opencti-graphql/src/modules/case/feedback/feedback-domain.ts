@@ -62,6 +62,9 @@ export const feedbackEditAuthorizedMembers = async (
   entityId: string,
   input: MemberAccessInput[] | undefined | null
 ) => {
+  if (!isFeatureEnabled('CONTAINERS_AUTHORIZED_MEMBERS')) {
+    throw UnsupportedError('This feature is disabled');
+  }
   const args = {
     entityId,
     input,
