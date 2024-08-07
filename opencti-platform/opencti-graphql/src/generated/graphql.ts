@@ -12598,6 +12598,7 @@ export type Mutation = {
   caseIncidentEditAuthorizedMembers?: Maybe<CaseIncident>;
   caseRfiAdd?: Maybe<CaseRfi>;
   caseRfiDelete?: Maybe<Scalars['ID']['output']>;
+  caseRfiEditAuthorizedMembers?: Maybe<CaseRfi>;
   caseRftAdd?: Maybe<CaseRft>;
   caseRftDelete?: Maybe<Scalars['ID']['output']>;
   caseSetTemplate?: Maybe<Case>;
@@ -13121,6 +13122,12 @@ export type MutationCaseRfiAddArgs = {
 
 export type MutationCaseRfiDeleteArgs = {
   id: Scalars['ID']['input'];
+};
+
+
+export type MutationCaseRfiEditAuthorizedMembersArgs = {
+  id: Scalars['ID']['input'];
+  input?: InputMaybe<Array<MemberAccessInput>>;
 };
 
 
@@ -34723,6 +34730,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   caseIncidentEditAuthorizedMembers?: Resolver<Maybe<ResolversTypes['CaseIncident']>, ParentType, ContextType, RequireFields<MutationCaseIncidentEditAuthorizedMembersArgs, 'id'>>;
   caseRfiAdd?: Resolver<Maybe<ResolversTypes['CaseRfi']>, ParentType, ContextType, RequireFields<MutationCaseRfiAddArgs, 'input'>>;
   caseRfiDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationCaseRfiDeleteArgs, 'id'>>;
+  caseRfiEditAuthorizedMembers?: Resolver<Maybe<ResolversTypes['CaseRfi']>, ParentType, ContextType, RequireFields<MutationCaseRfiEditAuthorizedMembersArgs, 'id'>>;
   caseRftAdd?: Resolver<Maybe<ResolversTypes['CaseRft']>, ParentType, ContextType, RequireFields<MutationCaseRftAddArgs, 'input'>>;
   caseRftDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationCaseRftDeleteArgs, 'id'>>;
   caseSetTemplate?: Resolver<Maybe<ResolversTypes['Case']>, ParentType, ContextType, RequireFields<MutationCaseSetTemplateArgs, 'caseTemplatesId' | 'id'>>;

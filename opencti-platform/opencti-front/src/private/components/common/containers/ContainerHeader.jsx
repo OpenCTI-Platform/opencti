@@ -1116,6 +1116,12 @@ export default createFragmentContainer(ContainerHeader, {
       }
       ... on CaseRfi {
         name
+        authorized_members {
+          id
+          name
+          entity_type
+          access_right
+        }
       }
       ... on CaseRft {
         name

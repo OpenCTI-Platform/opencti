@@ -30,6 +30,7 @@ import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings
 import useGranted, { KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE, KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 import CaseRfiEdition from './CaseRfiEdition';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 const subscription = graphql`
   subscription RootCaseRfiCaseSubscription($id: ID!) {
@@ -53,6 +54,18 @@ const caseRfiQuery = graphql`
       entity_type
       name
       x_opencti_graph_data
+      currentUserAccessRight
+      authorized_members {
+        id
+        name
+        entity_type
+        access_right
+      }
+      creators {
+        id
+        name
+        entity_type
+      }
       ...CaseUtils_case
       ...CaseRfiKnowledge_case
       ...FileImportViewer_entity
@@ -73,6 +86,22 @@ const caseRfiQuery = graphql`
   }
 `;
 
+const caseRfiAuthorizedMembersMutation = graphql`
+  mutation RootCaseRfiAuthorizedMembersMutation(
+    $id: ID!
+    $input: [MemberAccessInput!]
+  ) {
+    caseRfiEditAuthorizedMembers(id: $id, input: $input) {
+      authorized_members {
+        id
+        name
+        entity_type
+        access_right
+      }
+    }
+  }
+`;
+
 const RootCaseRfiComponent = ({ queryRef, caseId }) => {
   const subConfig = useMemo<
   GraphQLSubscriptionConfig<RootCaseRfiCaseSubscription>
@@ -87,6 +116,7 @@ const RootCaseRfiComponent = ({ queryRef, caseId }) => {
   const enableReferences = useIsEnforceReference('Case-Rfi') && !useGranted([KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE]);
   const { t_i18n } = useFormatter();
   useSubscription(subConfig);
+  const { isFeatureEnable } = useHelper();
 
   const {
     caseRfi: caseData,
@@ -95,6 +125,7 @@ const RootCaseRfiComponent = ({ queryRef, caseId }) => {
   } = usePreloadedQuery<RootCaseRfiCaseQuery>(caseRfiQuery, queryRef);
 
   const paddingRight = getPaddingRight(location.pathname, caseData?.id, '/dashboard/cases/rfis', false);
+  const canManageAuthorizedMembers = caseData?.currentUserAccessRight === 'admin' && isFeatureEnable('CONTAINERS_AUTHORIZED_MEMBERS');
 
   return (
     <>
@@ -115,6 +146,8 @@ const RootCaseRfiComponent = ({ queryRef, caseId }) => {
             enableQuickSubscription={true}
             enableAskAi={true}
             redirectToContent={true}
+            enableManageAuthorizedMembers={canManageAuthorizedMembers}
+            authorizedMembersMutation={caseRfiAuthorizedMembersMutation}
           />
           <Box
             sx={{

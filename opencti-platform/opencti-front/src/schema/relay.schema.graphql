@@ -8437,6 +8437,7 @@ type Mutation {
   caseIncidentEditAuthorizedMembers(id: ID!, input: [MemberAccessInput!]): CaseIncident
   caseRfiAdd(input: CaseRfiAddInput!): CaseRfi
   caseRfiDelete(id: ID!): ID
+  caseRfiEditAuthorizedMembers(id: ID!, input: [MemberAccessInput!]): CaseRfi
   caseRftAdd(input: CaseRftAddInput!): CaseRft
   caseRftDelete(id: ID!): ID
   feedbackAdd(input: FeedbackAddInput!): Feedback

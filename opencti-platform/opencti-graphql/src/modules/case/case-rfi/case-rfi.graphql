@@ -218,4 +218,5 @@ input CaseRfiAddInput {
 type Mutation {
   caseRfiAdd(input: CaseRfiAddInput!): CaseRfi @auth
   caseRfiDelete(id: ID!): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
+  caseRfiEditAuthorizedMembers(id: ID!, input:[MemberAccessInput!]): CaseRfi @auth(for: [KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS])
 }

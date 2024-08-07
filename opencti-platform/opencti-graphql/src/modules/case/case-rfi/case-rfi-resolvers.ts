@@ -2,7 +2,9 @@ import type { Resolvers } from '../../../generated/graphql';
 import { buildRefRelationKey } from '../../../schema/general';
 import { RELATION_OBJECT_ASSIGNEE } from '../../../schema/stixRefRelationship';
 import { stixDomainObjectDelete } from '../../../domain/stixDomainObject';
-import { addCaseRfi, caseRfiContainsStixObjectOrStixRelationship, findAll, findById } from './case-rfi-domain';
+import { addCaseRfi, caseRfiContainsStixObjectOrStixRelationship, caseRfiEditAuthorizedMembers, findAll, findById } from './case-rfi-domain';
+import { getAuthorizedMembers } from '../../../utils/authorizedMembers';
+import { getUserAccessRight } from '../../../utils/access';
 
 const caseRfiResolvers: Resolvers = {
   Query: {
@@ -11,6 +13,10 @@ const caseRfiResolvers: Resolvers = {
     caseRfiContainsStixObjectOrStixRelationship: (_, args, context) => {
       return caseRfiContainsStixObjectOrStixRelationship(context, context.user, args.id, args.stixObjectOrStixRelationshipId);
     },
+  },
+  CaseRfi: {
+    authorized_members: (caseRfi, _, context) => getAuthorizedMembers(context, context.user, caseRfi),
+    currentUserAccessRight: (caseRfi, _, context) => getUserAccessRight(context.user, caseRfi),
   },
   CaseRfisOrdering: {
     creator: 'creator_id',
@@ -22,6 +28,9 @@ const caseRfiResolvers: Resolvers = {
     },
     caseRfiDelete: (_, { id }, context) => {
       return stixDomainObjectDelete(context, context.user, id);
+    },
+    caseRfiEditAuthorizedMembers: (_, { id, input }, context) => {
+      return caseRfiEditAuthorizedMembers(context, context.user, id, input);
     },
   }
 };
