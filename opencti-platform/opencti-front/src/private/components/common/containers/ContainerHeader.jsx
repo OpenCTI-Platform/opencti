@@ -1101,6 +1101,12 @@ export default createFragmentContainer(ContainerHeader, {
       }
       ... on Grouping {
         name
+        authorized_members {
+          id
+          name
+          entity_type
+          access_right
+        }
       }
       ... on Case {
         name
