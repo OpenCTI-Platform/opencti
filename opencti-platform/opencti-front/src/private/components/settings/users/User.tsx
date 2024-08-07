@@ -1,5 +1,5 @@
-import React, { FunctionComponent, useEffect, useState } from 'react';
-import { graphql, useFragment, useQueryLoader } from 'react-relay';
+import React, { FunctionComponent, useState } from 'react';
+import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
@@ -203,13 +203,6 @@ const UserFragment = graphql`
     }
   }
 `;
-const UserQuery = graphql`
-  query UserQuery($id: String!) {
-    user(id: $id) {
-      ...User_user
-    }
-  }
-`;
 
 type Session = {
   id: string;
@@ -219,9 +212,10 @@ type Session = {
 
 interface UserProps {
   data: User_user$key;
+  refetch: () => void;
 }
 
-const User: FunctionComponent<UserProps> = ({ data }) => {
+const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
   const classes = useStyles();
   const { t_i18n, nsdt, fsd, fldt } = useFormatter();
   const { me } = useAuth();
@@ -230,16 +224,8 @@ const User: FunctionComponent<UserProps> = ({ data }) => {
   const [displayKillSessions, setDisplayKillSessions] = useState<boolean>(false);
   const [killing, setKilling] = useState<boolean>(false);
   const [sessionToKill, setSessionToKill] = useState<string | null>(null);
-  const [queryRef, loadQuery] = useQueryLoader(UserQuery);
   const user = useFragment(UserFragment, data);
 
-  useEffect(() => {
-    loadQuery(user, { fetchPolicy: 'store-and-network' });
-  }, []);
-
-  const refetch = React.useCallback(() => {
-    loadQuery(user, { fetchPolicy: 'store-and-network' });
-  }, [queryRef]);
   const isEnterpriseEdition = useEnterpriseEdition();
   const isGrantedToAudit = useGranted([SETTINGS_SECURITYACTIVITY]);
   const isGrantedToKnowledge = useGranted([KNOWLEDGE]);
