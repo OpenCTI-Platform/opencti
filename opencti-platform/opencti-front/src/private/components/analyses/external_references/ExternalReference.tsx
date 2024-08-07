@@ -7,7 +7,6 @@ import ExternalReferenceOverview from './ExternalReferenceOverview';
 import ExternalReferenceDetails from './ExternalReferenceDetails';
 import ExternalReferenceEdition from './ExternalReferenceEdition';
 import Security from '../../../../utils/Security';
-import ExternalReferencePopover from './ExternalReferencePopover';
 import ExternalReferenceHeader from './ExternalReferenceHeader';
 import ExternalReferenceFileImportViewer from './ExternalReferenceFileImportViewer';
 import ExternalReferenceStixCoreObjects from './ExternalReferenceStixCoreObjects';
