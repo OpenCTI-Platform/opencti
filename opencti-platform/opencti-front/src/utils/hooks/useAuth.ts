@@ -33,8 +33,6 @@ export type SchemaType = {
   filterKeysSchema: Map<string, Map<string, FilterDefinition>>
 };
 
-type OverviewLayoutCustomization = Map<string, { key: string, width: number, label: string }[]>;
-
 export interface UserContextType {
   me: RootMe_data$data | undefined;
   settings: RootSettings$data | undefined;
@@ -42,7 +40,6 @@ export interface UserContextType {
   entitySettings: RootPrivateQuery$data['entitySettings'] | undefined;
   platformModuleHelpers: ModuleHelper | undefined;
   schema: SchemaType | undefined;
-  overviewLayoutCustomization: OverviewLayoutCustomization | undefined;
 }
 
 const defaultContext = {
@@ -52,7 +49,6 @@ const defaultContext = {
   entitySettings: undefined,
   platformModuleHelpers: undefined,
   schema: undefined,
-  overviewLayoutCustomization: undefined,
 };
 export const UserContext = React.createContext<UserContextType>(defaultContext);
 
@@ -64,12 +60,11 @@ const useAuth = () => {
     entitySettings,
     platformModuleHelpers,
     schema,
-    overviewLayoutCustomization,
   } = useContext(UserContext);
-  if (!me || !settings || !bannerSettings || !entitySettings || !platformModuleHelpers || !schema || !overviewLayoutCustomization) {
+  if (!me || !settings || !bannerSettings || !entitySettings || !platformModuleHelpers || !schema) {
     throw new Error('Invalid user context !');
   }
-  return { me, settings, bannerSettings, entitySettings, platformModuleHelpers, schema, overviewLayoutCustomization };
+  return { me, settings, bannerSettings, entitySettings, platformModuleHelpers, schema };
 };
 
 export default useAuth;
