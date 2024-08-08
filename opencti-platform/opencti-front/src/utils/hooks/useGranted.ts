@@ -47,6 +47,11 @@ export const isOnlyOrganizationAdmin = () => {
 };
 
 const useGranted = (capabilities: string[], matchAll = false): boolean => {
+  // Prevent use of the old SETTINGS capability for future uses
+  if (capabilities.includes(SETTINGS)) {
+    throw new Error('The SETTINGS capability should not be used');
+  }
+
   const { me } = useAuth();
 
   const userCapabilities = (me.capabilities ?? []).map((c) => c.name);

@@ -24394,6 +24394,7 @@ export type Subscription = {
   entitySetting?: Maybe<EntitySetting>;
   externalReference?: Maybe<ExternalReference>;
   group?: Maybe<Group>;
+  /** @deprecated [>=6.3 & <6.3]. Not used in the platform. */
   internalObject?: Maybe<InternalObject>;
   killChainPhase?: Maybe<KillChainPhase>;
   label?: Maybe<Label>;
