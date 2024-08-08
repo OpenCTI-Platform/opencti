@@ -27,7 +27,7 @@ const useStyles = makeStyles((theme) => ({
   searchRootInDrawer: {
     borderRadius: 4,
     padding: '0 10px 0 10px',
-    height: 30,
+    height: '100%',
   },
   searchRootThin: {
     borderRadius: 4,
