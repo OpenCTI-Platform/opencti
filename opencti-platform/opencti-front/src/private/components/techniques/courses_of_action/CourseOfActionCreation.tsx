@@ -315,7 +315,7 @@ const CourseOfActionCreation: FunctionComponent<CourseOfActionFormProps> = ({
       <div style={{ display: display ? 'block' : 'none' }}>
         {isFABReplaced
           ? (
-            <div style={{ marginTop: '5px' }}>
+            <div>
               {CreateCourseOfActionControlledDialContextual}
             </div>
           ) : (

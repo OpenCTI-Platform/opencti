@@ -101,8 +101,7 @@ class AddSubAttackPattern extends Component {
                 marginLeft: 'auto',
                 marginRight: '20px',
                 display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'flex-end',
+                alignItems: 'center',
               }}
             >
               <SearchInput

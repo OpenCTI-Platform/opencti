@@ -332,7 +332,7 @@ const AttackPatternCreation = ({
     >
       {isFABReplaced
         ? (
-          <div style={{ marginTop: '5px' }}>
+          <div>
             {CreateAttackPatternControlledDialContextual}
           </div>
         ) : (

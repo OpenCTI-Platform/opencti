@@ -389,7 +389,7 @@ const DataSourceCreation: FunctionComponent<DataSourceCreationProps> = ({
     <div style={{ display: display ? 'block' : 'none' }}>
       {isFABReplaced
         ? (
-          <div style={{ marginTop: '5px' }}>
+          <div>
             {CreateNarrativeControlledDialContextual}
           </div>
         ) : (
