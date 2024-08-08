@@ -23,6 +23,8 @@ import EntityStixSightingRelationships from '../../events/stix_sighting_relation
 import inject18n from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
+import CreateRelationshipContextProvider from '../../common/menus/CreateRelationshipContextProvider';
+import CreateRelationshipButtonComponent from '../../common/menus/CreateRelationshipButtonComponent';
 
 const subscription = graphql`
   subscription RootSectorSubscription($id: ID!) {
@@ -94,7 +96,7 @@ class RootSector extends Component {
     const link = `/dashboard/entities/sectors/${sectorId}/knowledge`;
 
     return (
-      <>
+      <CreateRelationshipContextProvider>
         <QueryRenderer
           query={sectorQuery}
           variables={{ id: sectorId }}
@@ -142,6 +144,7 @@ class RootSector extends Component {
                         isOpenctiAlias={true}
                         enableQuickSubscription={true}
                         PopoverComponent={<SectorPopover />}
+                        RelateComponent={CreateRelationshipButtonComponent}
                       />
                       <Box
                         sx={{
@@ -275,7 +278,7 @@ class RootSector extends Component {
             return <Loader />;
           }}
         />
-      </>
+      </CreateRelationshipContextProvider>
     );
   }
 }

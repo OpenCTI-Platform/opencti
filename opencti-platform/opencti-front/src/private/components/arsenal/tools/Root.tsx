@@ -22,6 +22,8 @@ import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 import { RootToolQuery } from './__generated__/RootToolQuery.graphql';
 import { RootToolSubscription } from './__generated__/RootToolSubscription.graphql';
+import CreateRelationshipContextProvider from '../../common/menus/CreateRelationshipContextProvider';
+import CreateRelationshipButtonComponent from '../../common/menus/CreateRelationshipButtonComponent';
 
 const subscription = graphql`
   subscription RootToolSubscription($id: ID!) {
@@ -94,7 +96,7 @@ const RootTool = ({ queryRef, toolId }: RootToolProps) => {
   const paddingRight = getPaddingRight(location.pathname, toolId, '/dashboard/arsenal/tools');
   const link = `/dashboard/arsenal/tools/${toolId}/knowledge`;
   return (
-    <>
+    <CreateRelationshipContextProvider>
       {tool ? (
         <>
           <Routes>
@@ -132,6 +134,7 @@ const RootTool = ({ queryRef, toolId }: RootToolProps) => {
               entityType="Tool"
               stixDomainObject={tool}
               PopoverComponent={<ToolPopover />}
+              RelateComponent={CreateRelationshipButtonComponent}
               enableQuickSubscription={true}
             />
             <Box
@@ -243,7 +246,7 @@ const RootTool = ({ queryRef, toolId }: RootToolProps) => {
       ) : (
         <ErrorNotFound />
       )}
-    </>
+    </CreateRelationshipContextProvider>
   );
 };
 

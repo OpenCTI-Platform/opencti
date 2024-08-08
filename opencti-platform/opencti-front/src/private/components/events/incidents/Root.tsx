@@ -26,6 +26,8 @@ import { RootIncidentSubscription } from './__generated__/RootIncidentSubscripti
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { getCurrentTab } from '../../../../utils/utils';
+import CreateRelationshipContextProvider from '../../common/menus/CreateRelationshipContextProvider';
+import CreateRelationshipButtonComponent from '../../common/menus/CreateRelationshipButtonComponent';
 
 const subscription = graphql`
   subscription RootIncidentSubscription($id: ID!) {
@@ -95,7 +97,7 @@ const RootIncidentComponent = ({ queryRef }) => {
     return 0;
   };
   return (
-    <>
+    <CreateRelationshipContextProvider>
       {incident ? (
         <>
           <Routes>
@@ -133,6 +135,7 @@ const RootIncidentComponent = ({ queryRef }) => {
               entityType="Incident"
               stixDomainObject={incident}
               PopoverComponent={IncidentPopover}
+              RelateComponent={CreateRelationshipButtonComponent}
               enableQuickSubscription={true}
             />
             <Box
@@ -248,7 +251,7 @@ const RootIncidentComponent = ({ queryRef }) => {
       ) : (
         <ErrorNotFound />
       )}
-    </>
+    </CreateRelationshipContextProvider>
   );
 };
 

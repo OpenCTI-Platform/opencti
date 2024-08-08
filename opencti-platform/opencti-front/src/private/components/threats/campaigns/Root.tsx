@@ -23,6 +23,8 @@ import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 import { RootCampaignQuery } from './__generated__/RootCampaignQuery.graphql';
+import CreateRelationshipContextProvider from '../../common/menus/CreateRelationshipContextProvider';
+import CreateRelationshipButtonComponent from '../../common/menus/CreateRelationshipButtonComponent';
 
 const subscription = graphql`
   subscription RootCampaignSubscription($id: ID!) {
@@ -95,7 +97,7 @@ const RootCampaign = ({ campaignId, queryRef }: RootCampaignProps) => {
   const isOverview = location.pathname === `/dashboard/threats/campaigns/${campaignId}`;
   const paddingRight = getPaddingRight(location.pathname, campaignId, '/dashboard/threats/campaigns');
   return (
-    <>
+    <CreateRelationshipContextProvider>
       {campaign ? (
         <>
           <Routes>
@@ -136,6 +138,7 @@ const RootCampaign = ({ campaignId, queryRef }: RootCampaignProps) => {
               entityType="Campaign"
               stixDomainObject={campaign}
               PopoverComponent={<CampaignPopover />}
+              RelateComponent={CreateRelationshipButtonComponent}
               enableQuickSubscription={true}
             />
             <Box
@@ -246,7 +249,7 @@ const RootCampaign = ({ campaignId, queryRef }: RootCampaignProps) => {
       ) : (
         <ErrorNotFound />
       )}
-    </>
+    </CreateRelationshipContextProvider>
   );
 };
 

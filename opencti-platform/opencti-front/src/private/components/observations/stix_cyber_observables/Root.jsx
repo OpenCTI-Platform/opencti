@@ -23,6 +23,7 @@ import FileManager from '../../common/files/FileManager';
 import inject18n from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
+import CreateRelationshipContextProvider from '../../common/menus/CreateRelationshipContextProvider';
 
 const subscription = graphql`
   subscription RootStixCyberObservableSubscription($id: ID!) {
@@ -90,7 +91,7 @@ class RootStixCyberObservable extends Component {
 
     const link = `/dashboard/observations/observables/${observableId}/knowledge`;
     return (
-      <>
+      <CreateRelationshipContextProvider>
         <QueryRenderer
           query={stixCyberObservableQuery}
           variables={{ id: observableId, relationship_type: 'indicates' }}
@@ -264,7 +265,7 @@ class RootStixCyberObservable extends Component {
             return <Loader />;
           }}
         />
-      </>
+      </CreateRelationshipContextProvider>
     );
   }
 }

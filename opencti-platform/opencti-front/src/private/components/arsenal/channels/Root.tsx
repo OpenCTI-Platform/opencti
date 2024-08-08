@@ -22,6 +22,8 @@ import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 import { RootChannelSubscription } from './__generated__/RootChannelSubscription.graphql';
 import { RootChannelQuery } from './__generated__/RootChannelQuery.graphql';
+import CreateRelationshipContextProvider from '../../common/menus/CreateRelationshipContextProvider';
+import CreateRelationshipButtonComponent from '../../common/menus/CreateRelationshipButtonComponent';
 
 const subscription = graphql`
   subscription RootChannelSubscription($id: ID!) {
@@ -92,7 +94,7 @@ const RootChannel = ({ queryRef, channelId }: RootChannelProps) => {
   const paddingRight = getPaddingRight(location.pathname, channelId, '/dashboard/arsenal/channels');
   const link = `/dashboard/arsenal/channels/${channelId}/knowledge`;
   return (
-    <>
+    <CreateRelationshipContextProvider>
       {channel ? (
         <>
           <Routes>
@@ -131,6 +133,7 @@ const RootChannel = ({ queryRef, channelId }: RootChannelProps) => {
               entityType="Channel"
               stixDomainObject={channel}
               PopoverComponent={<ChannelPopover />}
+              RelateComponent={CreateRelationshipButtonComponent}
               enableQuickSubscription={true}
             />
             <Box
@@ -242,7 +245,7 @@ const RootChannel = ({ queryRef, channelId }: RootChannelProps) => {
       ) : (
         <ErrorNotFound />
       )}
-    </>
+    </CreateRelationshipContextProvider>
   );
 };
 
