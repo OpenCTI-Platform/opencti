@@ -30,6 +30,7 @@ type OCTIDataTableProps = Pick<DataTableProps, 'dataColumns'
 | 'redirectionModeEnabled'
 | 'additionalFilterKeys'
 | 'variant'
+| 'rootRef'
 | 'entityTypes'> & {
   lineFragment: GraphQLTaggedNode
   preloadedPaginationProps: UsePreloadedPaginationFragment<OperationType>,
@@ -130,7 +131,7 @@ const DataTable = (props: OCTIDataTableProps) => {
           <div
             style={{
               display: 'flex',
-              ...(variant === DataTableVariant.default ? { marginTop: -10 } : { marginTop: 10, marginLeft: 10 }),
+              ...(variant === DataTableVariant.default ? { paddingTop: -10 } : { paddingTop: 10, paddingLeft: 10, paddingRight: 10 }),
             }}
           >
             <SearchInput

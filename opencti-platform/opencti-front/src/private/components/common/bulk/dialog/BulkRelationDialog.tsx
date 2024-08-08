@@ -20,6 +20,7 @@ import { StixCoreRelationshipAddInput } from '@components/common/stix_core_relat
 import { RelayError } from 'src/relay/relayTypes';
 import Loader from 'src/components/Loader';
 import { graphql } from 'react-relay';
+import { ForceUpdateEvent } from '@components/common/bulk/useForceUpdate';
 import { allEntitiesKeyList, type StixCoreResultsType } from '../utils/querySearchEntityByText';
 import { getRelationsFromOneEntityToAny, RelationsDataFromEntity, RelationsToEntity } from '../../../../../utils/Relation';
 
@@ -68,7 +69,8 @@ interface BulkRelationDialogProps {
   stixDomainObjectType: string;
   isOpen: boolean;
   onClose: () => void;
-  handleRefetch: () => void;
+  selectedEntities: string[];
+  defaultRelationshipType?: string;
 }
 
 export interface BulkEntityTypeInfo {
@@ -85,6 +87,7 @@ export interface BulkEntityTypeInfo {
 
 type entityTypeListType = {
   entity_type: string;
+  representative: string;
   id: string;
 };
 
@@ -133,9 +136,17 @@ export const entityTypeHeaderWidth = 180;
 export const entityNameHeaderWidth = 180;
 export const matchHeaderWidth = 180;
 
-const BulkRelationDialog : FunctionComponent<BulkRelationDialogProps> = ({ stixDomainObjectId, stixDomainObjectType, stixDomainObjectName, isOpen, onClose, handleRefetch }) => {
+const BulkRelationDialog : FunctionComponent<BulkRelationDialogProps> = ({
+  stixDomainObjectId,
+  stixDomainObjectType,
+  stixDomainObjectName,
+  isOpen,
+  onClose,
+  selectedEntities,
+  defaultRelationshipType,
+}) => {
   const { t_i18n } = useFormatter();
-  const [textAreaValue, setTextAreaValue] = useState<string[]>([]);
+  const [textAreaValue, setTextAreaValue] = useState<string[]>([...selectedEntities]);
   const [entityToSearch, setEntityToSearch] = useState<string[]>([]);
   const [bulkEntityList, setBulkEntityList] = useState<BulkEntityTypeInfo[]>([]);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
@@ -154,7 +165,14 @@ const BulkRelationDialog : FunctionComponent<BulkRelationDialogProps> = ({ stixD
   const entityList = resolvedRelations.allRelationsToEntity;
   const relationListArray = resolvedRelations.allPossibleRelations;
 
-  const [selectedRelationType, setSelectedRelationType] = useState<string>(relationListArray[0]);
+  const getDefaultSelectedRelationshipType = () => {
+    if (defaultRelationshipType && relationListArray.includes(defaultRelationshipType.toLowerCase())) {
+      return defaultRelationshipType.toLowerCase();
+    }
+    return relationListArray[0];
+  };
+
+  const [selectedRelationType, setSelectedRelationType] = useState<string>(getDefaultSelectedRelationshipType());
 
   const getRelationMatchStatus = (selectedEntityType: RelationsToEntity, entityTypeList: entityTypeListType[]): boolean => {
     const matchingEntity = entityTypeList?.find((foundEntity) => foundEntity.entity_type === selectedEntityType?.toEntitytype);
@@ -172,6 +190,7 @@ const BulkRelationDialog : FunctionComponent<BulkRelationDialogProps> = ({ stixD
           const stixObject = edges[0].node;
           const entityTypeList = edges.map(({ node }) => ({
             entity_type: node.entity_type,
+            representative: node.representative.main,
             id: node.id,
           }));
           const foundEntityType = entityList.filter((entityType) => entityType.toEntitytype === entityTypeList[0].entity_type);
@@ -234,6 +253,8 @@ const BulkRelationDialog : FunctionComponent<BulkRelationDialogProps> = ({ stixD
   const onChangeEntityType = (value: RelationsToEntity, entityIndex: number) => {
     const bulkEntityListToEdit = bulkEntityList;
     const { entityTypeList } = bulkEntityListToEdit[entityIndex];
+    const foundEntityType = (entityTypeList ?? []).find((item) => item.entity_type === value.toEntitytype);
+    if (foundEntityType) bulkEntityListToEdit[entityIndex].representative = foundEntityType.representative;
     bulkEntityListToEdit[entityIndex].selectedEntityType = value;
     bulkEntityListToEdit[entityIndex].isMatchingEntity = getRelationMatchStatus(value, entityTypeList ?? []);
     setBulkEntityList([...bulkEntityListToEdit]);
@@ -278,8 +299,8 @@ const BulkRelationDialog : FunctionComponent<BulkRelationDialogProps> = ({ stixD
       }
     }
     setIsSubmitting(false);
-    handleRefetch();
     onClose();
+    dispatchEvent(new CustomEvent(ForceUpdateEvent));
   };
   const getTextAreaValue = () => textAreaValue.join('\n');
 
@@ -333,7 +354,12 @@ const BulkRelationDialog : FunctionComponent<BulkRelationDialogProps> = ({ stixD
             <Box sx={{ width: `${toHeaderWidth}px` }}>
               <TextField
                 disabled={isSubmitting}
-                inputProps={{ style: { lineHeight: '30px' } }}
+                inputProps={{ style: { lineHeight: '37px' } }}
+                sx={{
+                  '.MuiInputBase-root': {
+                    paddingTop: '2px',
+                  },
+                }}
                 value={getTextAreaValue()}
                 onChange={handleChangeTextArea}
                 multiline
@@ -342,7 +368,7 @@ const BulkRelationDialog : FunctionComponent<BulkRelationDialogProps> = ({ stixD
                 variant="outlined"
               />
             </Box>
-            <Box>
+            <Box style={{ marginTop: '6px' }}>
               {bulkEntityList.map((entity: BulkEntityTypeInfo, index) => {
                 return (
                   <BulkSelectRawLineData

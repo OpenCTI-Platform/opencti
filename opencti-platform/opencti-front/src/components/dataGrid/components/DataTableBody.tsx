@@ -38,6 +38,7 @@ const DataTableBody = ({
   dataQueryArgs,
   pageStart,
   pageSize,
+  dataTableHeaderRef,
 }: DataTableBodyProps) => {
   const {
     rootRef,
@@ -134,7 +135,8 @@ const DataTableBody = ({
     colSizes['--header-table-size'] = tableSize; // 50 is almost the scrollbar size
     colSizes['--col-table-size'] = tableSize;
     if (rootRef) {
-      colSizes['--table-height'] = rootRef.offsetHeight - 42; // SIZE OF CONTAINER - Nb Elements - Line Size
+      const heightHeader = dataTableHeaderRef.current?.offsetHeight ?? 0;
+      colSizes['--table-height'] = rootRef.offsetHeight - (heightHeader + 42); // SIZE OF CONTAINER - Nb Elements - Line Size
     } else {
       const rootSize = (document.getElementById('root')?.offsetHeight ?? 0) - settingsMessagesBannerHeight;
       colSizes['--table-height'] = rootSize - (hasFilterComponent && (document.getElementById('filter-container')?.children.length) ? 260 : 220);
