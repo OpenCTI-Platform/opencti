@@ -134,7 +134,7 @@ const WorkbenchFileViewer = createRefetchContainer(
           edges {
             node {
               id
-              ...WorkbenchFileLine_file
+              ...ImportWorkbenchesContentFileLine_file
               metaData {
                 mimetype
               }

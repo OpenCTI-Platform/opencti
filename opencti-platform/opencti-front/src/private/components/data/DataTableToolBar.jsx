@@ -188,13 +188,14 @@ const notMergableTypes = [
   'Case-Template',
   'Task',
   'DeleteOperation',
+  'InternalFile',
 ];
-const notAddableTypes = ['Label', 'Vocabulary', 'Case-Template', 'DeleteOperation'];
-const notUpdatableTypes = ['Label', 'Vocabulary', 'Case-Template', 'Task', 'DeleteOperation'];
-const notScannableTypes = ['Label', 'Vocabulary', 'Case-Template', 'Task', 'DeleteOperation'];
-const notEnrichableTypes = ['Label', 'Vocabulary', 'Case-Template', 'Task', 'DeleteOperation'];
+const notAddableTypes = ['Label', 'Vocabulary', 'Case-Template', 'DeleteOperation', 'InternalFile'];
+const notUpdatableTypes = ['Label', 'Vocabulary', 'Case-Template', 'Task', 'DeleteOperation', 'InternalFile'];
+const notScannableTypes = ['Label', 'Vocabulary', 'Case-Template', 'Task', 'DeleteOperation', 'InternalFile'];
+const notEnrichableTypes = ['Label', 'Vocabulary', 'Case-Template', 'Task', 'DeleteOperation', 'InternalFile'];
 const typesWithScore = ['Stix-Cyber-Observable', 'Indicator'];
-const notShareableTypes = ['Label', 'Vocabulary', 'Case-Template', 'DeleteOperation'];
+const notShareableTypes = ['Label', 'Vocabulary', 'Case-Template', 'DeleteOperation', 'InternalFile'];
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -597,21 +598,13 @@ class DataTableToolBar extends Component {
     const filteredStixDomainObjects = keptEntityId
       ? R.filter((n) => n.id !== keptEntityId, selectedElementsList)
       : R.tail(selectedElementsList);
-    let scope = 'KNOWLEDGE';
-    if (
-      selectedElementsList.some(
-        ({ entity_type }) => entity_type === 'Vocabulary',
-      )
-    ) {
-      scope = 'SETTINGS';
-    }
     const actions = [
       {
         type: 'MERGE',
         context: { values: filteredStixDomainObjects },
       },
     ];
-    this.setState({ scope, actions, mergingElement: keptElement }, () => {
+    this.setState({ actions, mergingElement: keptElement }, () => {
       this.handleCloseMerge();
       this.handleOpenTask();
     });
@@ -631,7 +624,7 @@ class DataTableToolBar extends Component {
 
   submitTask(availableFilterKeys) {
     this.setState({ processing: true });
-    const { actions, mergingElement, scope, promoteToContainer } = this.state;
+    const { actions, mergingElement, scope: stateScope, promoteToContainer } = this.state;
     const {
       filters,
       search,
@@ -648,6 +641,11 @@ class DataTableToolBar extends Component {
       removeIdAndIncorrectKeysFromFilterGroupObject(filters, availableFilterKeys),
     );
 
+    const selectedElementsList = R.values(selectedElements);
+    let scope = stateScope ?? 'KNOWLEDGE';
+    if (!stateScope && selectedElementsList.some(({ entity_type }) => entity_type === 'Vocabulary')) {
+      scope = 'SETTINGS';
+    }
     const finalActions = R.map(
       (n) => ({
         type: n.type,
@@ -671,7 +669,7 @@ class DataTableToolBar extends Component {
             search,
             actions: finalActions,
             excluded_ids: Object.keys(deSelectedElements || {}),
-            scope: scope ?? 'KNOWLEDGE',
+            scope,
           },
         },
         onCompleted: () => {
@@ -700,7 +698,7 @@ class DataTableToolBar extends Component {
               ? [mergingElement.id]
               : Object.keys(selectedElements),
             actions: finalActions,
-            scope: scope ?? 'KNOWLEDGE',
+            scope,
           },
         },
         onCompleted: () => {
@@ -1296,15 +1294,21 @@ class DataTableToolBar extends Component {
       warningMessage,
     } = this.props;
     const { actions, keptEntityId, mergingElement, actionsInputs, promoteToContainer } = this.state;
+
+    const entityTypeFilterValues = findFilterFromKey(filters?.filters ?? [], 'entity_type', 'eq')?.values ?? [];
     const selectedElementsList = Object.values(selectedElements || {});
-    const selectedTypes = R.uniq(selectedElementsList
-      .map((o) => o.entity_type)
+
+    const selectedTypes = R.uniq([...selectedElementsList.map((o) => o.entity_type), ...entityTypeFilterValues]
       .filter((entity_type) => entity_type !== undefined));
+
+    if (selectedTypes.at(0) === 'InternalFile' && !this.state.scope) {
+      this.setState({ scope: 'IMPORT' });
+    }
+
     const typesAreDifferent = selectedTypes.length > 1;
     const preventMerge = selectedTypes.at(0) === 'Vocabulary'
       && Object.values(selectedElements).some(({ builtIn }) => Boolean(builtIn));
     // region update
-    const entityTypeFilterValues = findFilterFromKey(filters?.filters ?? [], 'entity_type', 'eq')?.values ?? [];
     const typesAreNotUpdatable = notUpdatableTypes.includes(selectedTypes[0])
       || (entityTypeFilterValues.length === 1
         && notUpdatableTypes.includes(entityTypeFilterValues[0]));
@@ -1358,7 +1362,7 @@ class DataTableToolBar extends Component {
       }
     }
     const typesHaveScore = selectedTypes.every((selectedType) => typesWithScore.includes(selectedType))
-        && entityTypeFilterValues.every((filterType) => typesWithScore.includes(filterType));
+      && entityTypeFilterValues.every((filterType) => typesWithScore.includes(filterType));
     return (
       <UserContext.Consumer>
         {({ schema, settings }) => {
@@ -1449,9 +1453,9 @@ class DataTableToolBar extends Component {
                           ? 'Rule rescan'
                           : 'Rule rescan (engine is disabled)';
                         const buttonDisable = typesAreNotScannable
-                        || !platformModuleHelpers.isRuleEngineEnable()
-                        || numberOfSelectedElements === 0
-                        || this.state.processing;
+                          || !platformModuleHelpers.isRuleEngineEnable()
+                          || numberOfSelectedElements === 0
+                          || this.state.processing;
                         return typesAreNotScannable ? undefined : (
                           <Tooltip title={t(label)}>
                             <span>

@@ -1,16 +1,18 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
-import { graphql } from 'react-relay';
+import { createRefetchContainer, graphql } from 'react-relay';
+import { interval } from 'rxjs';
 import withStyles from '@mui/styles/withStyles';
 import Typography from '@mui/material/Typography';
 import List from '@mui/material/List';
 import Paper from '@mui/material/Paper';
 import Grid from '@mui/material/Grid';
 import { Link } from 'react-router-dom';
-import { Extension } from '@mui/icons-material';
+import { Add, ArrowDropDown, ArrowDropUp, Extension } from '@mui/icons-material';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
+import ListItem from '@mui/material/ListItem';
 import Tooltip from '@mui/material/Tooltip';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import { Field, Form, Formik } from 'formik';
@@ -22,25 +24,31 @@ import DialogActions from '@mui/material/DialogActions';
 import { ListItemButton } from '@mui/material';
 import Button from '@mui/material/Button';
 import * as Yup from 'yup';
+import Fab from '@mui/material/Fab';
+import ImportMenu from '../ImportMenu';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import SelectField from '../../../../components/fields/SelectField';
+import { FIVE_SECONDS } from '../../../../utils/Time';
 import { fileManagerAskJobImportMutation, scopesConn } from '../../common/files/FileManager';
 import FileLine from '../../common/files/FileLine';
 import inject18n from '../../../../components/i18n';
 import FileUploader from '../../common/files/FileUploader';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
+import WorkbenchFileLine from '../../common/files/workbench/WorkbenchFileLine';
 import FreeTextUploader from '../../common/files/FreeTextUploader';
+import WorkbenchFileCreator from '../../common/files/workbench/WorkbenchFileCreator';
 import ManageImportConnectorMessage from './ManageImportConnectorMessage';
 import { truncate } from '../../../../utils/String';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import withRouter from '../../../../utils/compat-router/withRouter';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { resolveHasUserChoiceParsedCsvMapper } from '../../../../utils/csvMapperUtils';
-import ImportMenu from '../ImportMenu';
+
+const interval$ = interval(FIVE_SECONDS);
 
 const styles = (theme) => ({
   container: {
-    padding: '0 200px 50px 0',
+    margin: 0,
   },
   title: {
     float: 'left',
@@ -79,18 +87,69 @@ const styles = (theme) => ({
   itemIcon: {
     color: theme.palette.primary.main,
   },
+  createButton: {
+    position: 'fixed',
+    bottom: 30,
+    right: 30,
+  },
 });
+
+const inlineStylesHeaders = {
+  iconSort: {
+    position: 'absolute',
+    margin: '0 0 0 5px',
+    padding: 0,
+    top: '0px',
+  },
+  name: {
+    float: 'left',
+    width: '35%',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  creator_name: {
+    float: 'left',
+    width: '20%',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  labels: {
+    float: 'left',
+    width: '20%',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  lastModified: {
+    float: 'left',
+    width: '20%',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+};
 
 export const importContentQuery = graphql`
   query ImportContentQuery {
     connectorsForImport {
       ...ImportContentContainer_connectorsImport
+      ...ImportContent_connectorsImport
     }
     importFiles(first: 500) @connection(key: "Pagination_global_importFiles") {
       edges {
         node {
           id
           ...FileLine_file
+          metaData {
+            mimetype
+          }
+        }
+      }
+    }
+    pendingFiles(first: 500)
+    @connection(key: "Pagination_global_pendingFiles") {
+      edges {
+        node {
+          id
+          ...ImportWorkbenchesContentFileLine_file
           metaData {
             mimetype
           }
@@ -113,15 +172,28 @@ const importValidation = (t, configurations) => {
   return Yup.object().shape(shape);
 };
 
-class ImportContent extends Component {
+class ImportContentComponent extends Component {
   constructor(props) {
     super(props);
     this.state = {
       fileToImport: null,
       fileToValidate: null,
+      displayCreate: false,
+      sortBy: 'name',
+      orderAsc: true,
       selectedConnector: null,
       hasUserChoiceCsvMapper: false,
     };
+  }
+
+  componentDidMount() {
+    this.subscription = interval$.subscribe(() => {
+      this.props.relay.refetch();
+    });
+  }
+
+  componentWillUnmount() {
+    this.subscription.unsubscribe();
   }
 
   handleSetCsvMapper(_, csvMapper) {
@@ -144,8 +216,20 @@ class ImportContent extends Component {
     });
   }
 
+  handleOpenValidate(file) {
+    this.setState({ fileToValidate: file });
+  }
+
   handleCloseValidate() {
     this.setState({ fileToValidate: null });
+  }
+
+  handleOpenCreate() {
+    this.setState({ displayCreate: true });
+  }
+
+  handleCloseCreate() {
+    this.setState({ displayCreate: false });
   }
 
   onSubmitImport(values, { setSubmitting, resetForm }) {
@@ -193,26 +277,62 @@ class ImportContent extends Component {
     });
   }
 
+  onCreateWorkbenchCompleted() {
+    this.props.relay.refetch();
+  }
+
+  reverseBy(field) {
+    this.setState({ sortBy: field, orderAsc: !this.state.orderAsc });
+  }
+
+  SortHeader(field, label, isSortable) {
+    const { t } = this.props;
+    const sortComponent = this.state.orderAsc ? (
+      <ArrowDropDown style={inlineStylesHeaders.iconSort} />
+    ) : (
+      <ArrowDropUp style={inlineStylesHeaders.iconSort} />
+    );
+    if (isSortable) {
+      return (
+        <div
+          style={inlineStylesHeaders[field]}
+          onClick={this.reverseBy.bind(this, field)}
+        >
+          <span>{t(label)}</span>
+          {this.state.sortBy === field ? sortComponent : ''}
+        </div>
+      );
+    }
+    return (
+      <div style={inlineStylesHeaders[field]}>
+        <span>{t(label)}</span>
+      </div>
+    );
+  }
+
   render() {
     const {
       classes,
       t,
       importFiles,
+      pendingFiles,
       nsdt,
-      connectors,
+      connectorsImport,
       relay,
     } = this.props;
     const { edges: importFilesEdges } = importFiles;
-    const { fileToImport, fileToValidate } = this.state;
+    const { edges: pendingFilesEdges } = pendingFiles;
+    const { fileToImport, fileToValidate, displayCreate } = this.state;
+    const connectors = connectorsImport.filter((n) => !n.only_contextual); // Can be null but not empty
     const importConnsPerFormat = scopesConn(connectors);
     const handleSelectConnector = (_, value) => {
       const selectedConnector = connectors.find((c) => c.id === value);
       this.setState({ selectedConnector });
     };
     const invalidCsvMapper = this.state.selectedConnector?.name === 'ImportCsv'
-        && this.state.selectedConnector?.configurations?.length === 0;
+      && this.state.selectedConnector?.configurations?.length === 0;
     return (
-      <div className={classes.container}>
+      <div style={{ paddingRight: 200 }}>
         <Breadcrumbs variant="list" elements={[{ label: t('Data') }, { label: t('Import'), current: true }]} />
         <ImportMenu />
         <Grid
@@ -340,6 +460,63 @@ class ImportContent extends Component {
                 </div>
               )}
             </Paper>
+          </Grid>
+          <Grid item xs={12}>
+            <div style={{ height: '100%' }} className="break">
+              <Typography
+                variant="h4"
+                gutterBottom={true}
+                style={{ marginBottom: 15 }}
+              >
+                {t('Analyst workbenches')}
+              </Typography>
+              <Paper classes={{ root: classes.paper }} variant="outlined">
+                <List>
+                  <ListItem
+                    classes={{ root: classes.itemHead }}
+                    divider={false}
+                    style={{ paddingTop: 0 }}
+                  >
+                    <ListItemIcon>
+                      <span
+                        style={{
+                          padding: '0 8px 0 8px',
+                          fontWeight: 700,
+                          fontSize: 12,
+                        }}
+                      >
+                        &nbsp;
+                      </span>
+                    </ListItemIcon>
+                    <ListItemText
+                      primary={
+                        <div>
+                          {this.SortHeader('name', 'Name', false)}
+                          {this.SortHeader('creator_name', 'Creator', false)}
+                          {this.SortHeader('labels', 'Labels', false)}
+                          {this.SortHeader(
+                            'lastModified',
+                            'Modification date',
+                            false,
+                          )}
+                        </div>
+                      }
+                    />
+                    <ListItemSecondaryAction style={{ width: 96 }}> &nbsp; </ListItemSecondaryAction>
+                  </ListItem>
+                  {pendingFilesEdges.map((file) => (
+                    <WorkbenchFileLine
+                      key={file.node.id}
+                      file={file.node}
+                      connectors={
+                        importConnsPerFormat[file.node.metaData.mimetype]
+                      }
+                      handleOpenImport={this.handleOpenValidate.bind(this)}
+                    />
+                  ))}
+                </List>
+              </Paper>
+            </div>
           </Grid>
         </Grid>
         <div>
@@ -501,18 +678,55 @@ class ImportContent extends Component {
               </Form>
             )}
           </Formik>
+          <WorkbenchFileCreator
+            handleCloseCreate={this.handleCloseCreate.bind(this)}
+            openCreate={displayCreate}
+            onCompleted={this.onCreateWorkbenchCompleted.bind(this)}
+          />
         </div>
+        <Fab
+          onClick={this.handleOpenCreate.bind(this)}
+          color="primary"
+          aria-label="Add"
+          className={classes.createButton}
+        >
+          <Add />
+        </Fab>
       </div>
     );
   }
 }
 
-ImportContent.propTypes = {
-  connectors: PropTypes.array,
+ImportContentComponent.propTypes = {
+  connectorsImport: PropTypes.array,
   importFiles: PropTypes.object,
+  pendingFiles: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
   nsdt: PropTypes.func,
 };
+
+const ImportContent = createRefetchContainer(
+  ImportContentComponent,
+  {
+    connectorsImport: graphql`
+      fragment ImportContent_connectorsImport on Connector
+      @relay(plural: true) {
+        id
+        name
+        active
+        only_contextual
+        connector_scope
+        updated_at
+        configurations {
+          id
+          name,
+          configuration
+        }
+      }
+    `,
+  },
+  importContentQuery,
+);
 
 export default R.compose(inject18n, withStyles(styles), withRouter)(ImportContent);

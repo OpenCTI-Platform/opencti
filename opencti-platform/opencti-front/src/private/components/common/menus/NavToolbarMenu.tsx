@@ -49,7 +49,7 @@ const NavToolbarMenu: FunctionComponent<{ entries: MenuEntry[] }> = ({ entries }
               key={idx}
               component={Link}
               to={entry.path}
-              selected={location.pathname.includes(entry.path)}
+              selected={location.pathname.endsWith(entry.path)}
               dense={false}
             >
               {entry.icon && (
