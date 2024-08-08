@@ -63,7 +63,9 @@ const HEARTBEAT_PERIOD = conf.get('app:live_stream:heartbeat_period') ?? 5000;
 const sendErrorStatusAndKillSession = (req, res, httpStatus) => {
   try {
     res.status(httpStatus).end();
-    req.session.destroy();
+    if (req.session) {
+      req.session.destroy();
+    }
   } catch (error) {
     // We don't care but can be interesting for debug.
     logApp.info('Error when trying to kill a session', { error });
