@@ -60,6 +60,18 @@ const MAX_CACHE_TIME = (conf.get('app:live_stream:cache_max_time') ?? 1) * ONE_H
 const MAX_CACHE_SIZE = conf.get('app:live_stream:cache_max_size') ?? 5000;
 const HEARTBEAT_PERIOD = conf.get('app:live_stream:heartbeat_period') ?? 5000;
 
+const sendErrorStatusAndKillSession = (req, res, httpStatus) => {
+  try {
+    res.status(httpStatus).end();
+    if (req.session) {
+      req.session.destroy();
+    }
+  } catch (error) {
+    // We don't care but can be interesting for debug.
+    logApp.info('Error when trying to kill a session', { error });
+  }
+};
+
 const createBroadcastClient = (channel) => {
   return {
     id: channel.id,
@@ -90,20 +102,20 @@ const authenticate = async (req, res, next) => {
       next();
     } else {
       res.statusMessage = 'You are not authenticated, please check your credentials';
-      res.status(401).end();
+      sendErrorStatusAndKillSession(req, res, 401);
     }
   } catch (err) {
     res.statusMessage = `Error in stream: ${err.message}`;
-    res.status(500).end();
+    sendErrorStatusAndKillSession(req, res, 500);
   }
 };
 
-const computeUserAndCollection = async (res, { context, user, id }) => {
+const computeUserAndCollection = async (req, res, { context, user, id }) => {
   // Global live stream only available for bypass
   if (id === DEFAULT_LIVE_STREAM) {
     if (!isUserHasCapability(user, BYPASS)) {
       res.statusMessage = 'You are not authorized, please check your credentials';
-      res.status(401).end();
+      sendErrorStatusAndKillSession(req, res, 401);
       return { error: res.statusMessage };
     }
     return { streamFilters: null, collection: null };
@@ -113,14 +125,14 @@ const computeUserAndCollection = async (res, { context, user, id }) => {
   // If collection not found
   if (!collection) {
     res.statusMessage = 'You are not authorized, please check your credentials';
-    res.status(401).end();
+    sendErrorStatusAndKillSession(req, res, 401);
     return { error: res.statusMessage };
   }
   // Check if collection exist and started
   if (!collection.stream_live) {
     res.statusMessage = 'This live stream is stopped';
-    res.status(410).end();
-    logApp.warn('This live stream is stopped', { streamCollectionId: id });
+    sendErrorStatusAndKillSession(req, res, 410);
+    logApp.warn('This live stream is stopped but still requested', { streamCollectionId: id });
     return { error: 'This live stream is stopped' };
   }
   const streamFilters = JSON.parse(collection.filters);
@@ -131,7 +143,7 @@ const computeUserAndCollection = async (res, { context, user, id }) => {
   // Access is restricted, user must be authenticated
   if (!user || !isUserHasCapability(user, TAXIIAPI)) {
     res.statusMessage = 'You are not authorized, please check your credentials';
-    res.status(401).end();
+    sendErrorStatusAndKillSession(req, res, 401);
     return { error: res.statusMessage };
   }
   // Access is restricted, check the current user
@@ -140,7 +152,7 @@ const computeUserAndCollection = async (res, { context, user, id }) => {
   if (collectionAccessIds.length > 0) { // If restrictions have been setup
     if (!isUserHasCapability(user, BYPASS) && !collectionAccessIds.some((accessId) => userAccessIds.includes(accessId))) {
       res.statusMessage = 'You are not authorized, please check your credentials';
-      res.status(401).end();
+      sendErrorStatusAndKillSession(req, res, 401);
       return { error: res.statusMessage };
     }
   }
@@ -154,7 +166,7 @@ const computeUserAndCollection = async (res, { context, user, id }) => {
     const isUserHaveAccess = filterMarkings.some((m) => userMarkings.includes(m));
     if (!isUserHaveAccess) {
       res.statusMessage = 'You need to have access to specific markings for this live stream';
-      res.status(401).end();
+      sendErrorStatusAndKillSession(req, res, 401);
       return { error: res.statusMessage };
     }
   }
@@ -170,14 +182,14 @@ const authenticateForPublic = async (req, res, next) => {
   req.capabilities = user.capabilities;
   req.allowed_marking = user.allowed_marking;
   req.expirationTime = utcDate().add(1, 'days').toDate();
-  const { error, collection, streamFilters } = await computeUserAndCollection(res, {
+  const { error, collection, streamFilters } = await computeUserAndCollection(req, res, {
     context,
     user: req.user,
     id: req.params.id
   });
   if (error || (!collection?.stream_public && !auth)) {
     res.statusMessage = 'You are not authenticated, please check your credentials';
-    res.status(401).end();
+    sendErrorStatusAndKillSession(req, res, 401);
   } else {
     req.collection = collection;
     req.streamFilters = streamFilters;
@@ -281,6 +293,7 @@ const createSseMiddleware = () => {
         if (!req.finished) {
           try {
             res.end();
+            req.session.destroy();
           } catch (e) {
             logApp.error(e, { action: 'close', clientId: channel.userId });
           }
@@ -306,7 +319,7 @@ const createSseMiddleware = () => {
       // Generic stream only available for bypass users
       if (!isUserHasCapability(sessionUser, BYPASS)) {
         res.statusMessage = 'Consume generic stream is only authorized for bypass user';
-        res.status(401).end();
+        sendErrorStatusAndKillSession(req, res, 401);
         return;
       }
       const { client } = createSseChannel(req, res, startStreamId);
@@ -326,7 +339,7 @@ const createSseMiddleware = () => {
       await processor.start(startStreamId);
     } catch (err) {
       res.statusMessage = `Error in stream: ${err.message}`;
-      res.status(500).end();
+      sendErrorStatusAndKillSession(req, res, 500);
     }
   };
   const manageStreamConnectionHandler = async (req, res) => {
@@ -336,7 +349,7 @@ const createSseMiddleware = () => {
       if (client) {
         if (client.userId !== req.userId) {
           res.statusMessage = 'You cant access this resource';
-          res.status(401).end();
+          sendErrorStatusAndKillSession(req, res, 401);
         } else {
           const { delay = 0 } = req.body;
           client.setChannelDelay(delay);
@@ -344,11 +357,11 @@ const createSseMiddleware = () => {
         }
       } else {
         res.statusMessage = 'This is not your connection';
-        res.status(401).end();
+        sendErrorStatusAndKillSession(req, res, 401);
       }
     } catch (err) {
       res.statusMessage = `Error in connection management: ${err.message}`;
-      res.status(500).end();
+      sendErrorStatusAndKillSession(req, res, 500);
     }
   };
   const resolveAndPublishMissingRefs = async (context, cache, channel, req, eventId, stixData) => {
@@ -637,7 +650,7 @@ const createSseMiddleware = () => {
         // Wait to prevent flooding
         channel.setLastEventId(lastEventId);
         await wait(channel.delay);
-        const newComputed = await computeUserAndCollection(res, { id, user, context });
+        const newComputed = await computeUserAndCollection(req, res, { id, user, context });
         streamFilters = newComputed.streamFilters;
         collection = newComputed.collection;
         error = newComputed.error;
@@ -689,7 +702,7 @@ const createSseMiddleware = () => {
     } catch (e) {
       logApp.error(e, { id, type: 'live' });
       res.statusMessage = `Error in stream ${id}: ${e.message}`;
-      res.status(500).end();
+      sendErrorStatusAndKillSession(req, res, 500);
     }
   };
   return {
