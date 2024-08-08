@@ -16,10 +16,9 @@ import { adaptFieldValue } from '../../../../utils/String';
 import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import { useDynamicSchemaEditionValidation, useDynamicMandatorySchemaAttributes } from '../../../../utils/hooks/useSchemaAttributes';
+import { useDynamicSchemaEditionValidation, getMandatoryTypes, yupShapeConditionalRequired } from '../../../../utils/hooks/useSchemaAttributes';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
-// import { useIsMandatoryAttribute } from '../../../../utils/hooks/useEntitySettings';
 
 export const groupingMutationFieldPatch = graphql`
   mutation GroupingEditionOverviewFieldPatchMutation(
@@ -84,23 +83,22 @@ const groupingMutationRelationDelete = graphql`
 const GROUPING_TYPE = 'Grouping';
 
 const GroupingEditionOverviewComponent = (props) => {
-  const { grouping, enableReferences, context, handleClose } = props;
+  const { grouping, queryReference, enableReferences, context, handleClose } = props;
   const { t_i18n } = useFormatter();
 
-  const mandatoryAttributes = useDynamicMandatorySchemaAttributes(
-    GROUPING_TYPE,
-  );
+  const mandatoryAttributes = queryReference != null
+    ? getMandatoryTypes(queryReference)
+    : [];
 
-  // const { mandatoryAttributes } = useIsMandatoryAttribute(GROUPING_TYPE);
-
-  const basicShape = {
+  const basicShape = yupShapeConditionalRequired({
     name: Yup.string().trim().min(2),
     confidence: Yup.number().nullable(),
     context: Yup.string(),
     description: Yup.string().nullable(),
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
-  };
+  }, mandatoryAttributes);
+
   const groupingValidator = useDynamicSchemaEditionValidation(GROUPING_TYPE, basicShape);
 
   const queries = {

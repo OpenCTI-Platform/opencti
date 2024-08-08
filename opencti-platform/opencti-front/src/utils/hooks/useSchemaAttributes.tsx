@@ -1,4 +1,4 @@
-import { graphql, useLazyLoadQuery, useFragment } from 'react-relay';
+import { graphql, useLazyLoadQuery, useFragment, usePreloadedQuery, PreloadedQuery } from 'react-relay';
 import * as Yup from 'yup';
 import { ObjectSchema, ObjectShape, Schema } from 'yup';
 import {
@@ -35,6 +35,44 @@ export const useDynamicIsEnforceReference = (id: string): boolean => {
   return useEntitySettings(id).some(
     (node) => node.enforce_reference !== null && node.enforce_reference,
   );
+};
+
+type QueryReferenceType = PreloadedQuery<useSchemaAttributesQuery, Record<string | number | symbol, unknown>>;
+
+/**
+ * Given a preloaded query reference, fetches schema attributes and filters down
+ * to only the mandatory attributes.
+ *
+ * @param queryReference Preloaded query reference
+ * @returns String list of mandatory attributes
+ */
+export const getMandatoryTypes = (queryReference: QueryReferenceType) => {
+  const data = usePreloadedQuery<useSchemaAttributesQuery>(
+    SchemaAttributesQuery,
+    queryReference,
+  );
+  if (data) {
+    const mandatoryAttributes = data.schemaAttributes.filter((item) => item.mandatory).map((ele) => ele.name);
+    return mandatoryAttributes;
+  }
+  return [];
+};
+
+/**
+ * Builds a Yup Schema where each key is conditionally required. If a key is in
+ * the provided mandatoryTypes, it is required in the resulting schema.
+ *
+ * @param shape Original Yup Schema
+ * @param mandatoryTypes List of keys that are required in the final schema
+ * @returns Final Yup Schema with required fields
+ */
+export const yupShapeConditionalRequired = (shape: Record<string, Yup.Schema>, mandatoryTypes: string[]) => {
+  const { t_i18n } = useFormatter();
+  return Object.entries(shape).reduce((result, [key, value]) => {
+    return mandatoryTypes.includes(key)
+      ? { ...result, [key]: value.required(t_i18n('This field is required')) }
+      : { ...result, [key]: value };
+  }, {});
 };
 
 export const useDynamicMandatorySchemaAttributes = (
