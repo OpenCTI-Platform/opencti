@@ -129,12 +129,14 @@ const stixCyberObservableMutation = graphql`
     $CryptocurrencyWallet: CryptocurrencyWalletAddInput
     $Text: TextAddInput
     $UserAgent: UserAgentAddInput
-    $BankAccount: BankAccountAddInput
     $PhoneNumber: PhoneNumberAddInput
     $PaymentCard: PaymentCardAddInput
     $MediaContent: MediaContentAddInput
     $TrackingNumber: TrackingNumberAddInput
     $Credential: CredentialAddInput
+    $FinancialAccount: FinancialAccountAddInput
+    $FinancialAsset: FinancialAssetAddInput
+    $FinancialTransaction: FinancialTransactionAddInput
   ) {
     stixCyberObservableAdd(
       type: $type
@@ -170,12 +172,14 @@ const stixCyberObservableMutation = graphql`
       CryptocurrencyWallet: $CryptocurrencyWallet
       Text: $Text
       UserAgent: $UserAgent
-      BankAccount: $BankAccount
       PhoneNumber: $PhoneNumber
       PaymentCard: $PaymentCard
       MediaContent: $MediaContent
       TrackingNumber: $TrackingNumber
       Credential: $Credential
+      FinancialAccount: $FinancialAccount
+      FinancialAsset: $FinancialAsset
+      FinancialTransaction: $FinancialTransaction
     ) {
       id
       standard_id

@@ -27,11 +27,13 @@ export const ENTITY_HOSTNAME = 'Hostname'; // Custom
 export const ENTITY_TEXT = 'Text'; // Custom
 export const ENTITY_CREDENTIAL = 'Credential'; // Custom
 export const ENTITY_USER_AGENT = 'User-Agent'; // Custom
-export const ENTITY_BANK_ACCOUNT = 'Bank-Account'; // Custom
 export const ENTITY_TRACKING_NUMBER = 'Tracking-Number'; // Custom
 export const ENTITY_PHONE_NUMBER = 'Phone-Number'; // Custom
 export const ENTITY_PAYMENT_CARD = 'Payment-Card'; // Custom
 export const ENTITY_MEDIA_CONTENT = 'Media-Content'; // Custom
+export const ENTITY_FINANCIAL_ACCOUNT = 'Financial-Account'; // Custom
+export const ENTITY_FINANCIAL_ASSET = 'Financial-Asset'; // Custom
+export const ENTITY_FINANCIAL_TRANSACTION = 'Financial-Transaction'; // Custom
 
 const STIX_CYBER_OBSERVABLES_HASHED_OBSERVABLES = [
   ENTITY_HASHED_OBSERVABLE_ARTIFACT,
@@ -65,12 +67,14 @@ export const STIX_CYBER_OBSERVABLES = [
   ENTITY_HOSTNAME,
   ENTITY_USER_AGENT,
   ENTITY_TEXT,
-  ENTITY_BANK_ACCOUNT,
   ENTITY_CREDENTIAL,
   ENTITY_PHONE_NUMBER,
   ENTITY_TRACKING_NUMBER,
   ENTITY_PAYMENT_CARD,
   ENTITY_MEDIA_CONTENT,
+  ENTITY_FINANCIAL_ACCOUNT,
+  ENTITY_FINANCIAL_ASSET,
+  ENTITY_FINANCIAL_TRANSACTION,
 ];
 schemaTypesDefinition.register(ABSTRACT_STIX_CYBER_OBSERVABLE, STIX_CYBER_OBSERVABLES);
 

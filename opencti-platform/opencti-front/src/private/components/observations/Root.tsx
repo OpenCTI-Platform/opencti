@@ -16,6 +16,8 @@ const Indicators = lazy(() => import('./Indicators'));
 const RootIndicator = lazy(() => import('./indicators/Root'));
 const Infrastructures = lazy(() => import('./Infrastructures'));
 const RootInfrastructure = lazy(() => import('./infrastructures/Root'));
+const FinancialData = lazy(() => import('./FinancialData'));
+const RootFinancialData = lazy(() => import('./financial_data/Root'));
 
 const Root = () => {
   let redirect: string | null = null;
@@ -27,6 +29,8 @@ const Root = () => {
     redirect = 'indicators';
   } else if (!useIsHiddenEntity('Infrastructure')) {
     redirect = 'infrastructures';
+  } else if (!useIsHiddenEntity('Financial-Data')) {
+    redirect = 'financial-data';
   }
 
   return (
@@ -67,6 +71,14 @@ const Root = () => {
         <Route
           path="/infrastructures/:infrastructureId/*"
           Component={boundaryWrapper(RootInfrastructure)}
+        />
+        <Route
+          path="/financial-data"
+          Component={boundaryWrapper(FinancialData)}
+        />
+        <Route
+          path="/financial-data/:financialDataId/*"
+          Component={boundaryWrapper(RootFinancialData)}
         />
       </Routes>
     </Suspense>

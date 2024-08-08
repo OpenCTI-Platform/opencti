@@ -121,7 +121,6 @@ export const resolveLink = (type = 'unknown'): string | null => {
     case 'Credential':
     case 'Tracking-Number':
     case 'User-Agent':
-    case 'Bank-Account':
     case 'Phone-Number':
     case 'Payment-Card':
     case 'Media-Content':
@@ -263,10 +262,6 @@ export const observableValue = (stixCyberObservable: Record<string, never>) => {
         || stixCyberObservable.user_id
         || 'Unknown'
       );
-    case 'Bank-Account'.toLowerCase():
-      return (
-        stixCyberObservable.iban || stixCyberObservable.number || 'Unknown'
-      );
     case 'Payment-Card'.toLowerCase():
       return (
         stixCyberObservable.card_number
@@ -282,6 +277,23 @@ export const observableValue = (stixCyberObservable: Record<string, never>) => {
         stixCyberObservable.content
         || stixCyberObservable.title
         || stixCyberObservable.url
+        || 'Unknown'
+      );
+    case 'Financial-Account'.toLowerCase():
+      return (
+        stixCyberObservable.iban
+        || stixCyberObservable.account_number
+        || 'Unknown'
+      );
+    case 'Financial-Asset'.toLowerCase():
+      return (
+        stixCyberObservable.asset_name
+        || stixCyberObservable.asset_type
+        || 'Unknown'
+      );
+    case 'Financial-Transaction'.toLowerCase():
+      return (
+        stixCyberObservable.transaction_date
         || 'Unknown'
       );
     default:

@@ -267,7 +267,6 @@ export const itemColor = (type, dark = false, reversed = false) => {
     case 'Cryptocurrency-Wallet':
     case 'Text':
     case 'User-Agent':
-    case 'Bank-Account':
     case 'Credential':
     case 'Tracking-Number':
     case 'Phone-Number':

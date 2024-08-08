@@ -250,6 +250,25 @@ const StixCyberObservableDetails = createFragmentContainer(
           received_lines
           body
         }
+        ... on FinancialAccount {
+          account_number
+          bic
+          iban
+          account_type
+          account_status
+          currency_code
+        }
+        ... on FinancialAsset {
+          asset_name
+          asset_type
+          asset_value
+          currency_code
+        }
+        ... on FinancialTransaction {
+          transaction_date
+          transaction_value
+          currency_code
+        }
         ... on Artifact {
           x_opencti_additional_names
           mime_type
@@ -431,11 +450,6 @@ const StixCyberObservableDetails = createFragmentContainer(
         }
         ... on UserAgent {
           value
-        }
-        ... on BankAccount {
-          iban
-          bic
-          account_number
         }
         ... on Credential {
           value

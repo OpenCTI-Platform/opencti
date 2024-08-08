@@ -27,6 +27,8 @@ import {
   INPUT_SERVICE_DLL,
   INPUT_SRC,
   INPUT_SRC_PAYLOAD,
+  INPUT_TRANSACTION_FROM,
+  INPUT_TRANSACTION_TO,
   INPUT_VALUES,
   RELATION_CREATED_BY,
   RELATION_EXTERNAL_REFERENCE,
@@ -457,6 +459,7 @@ interface BasicStoreCyberObservable extends BasicStoreCommon {
   credential: string;
   account_login: string;
   account_type: string;
+  account_status: string;
   serial_number: string;
   signature_algorithm: string;
   issuer: string;
@@ -491,6 +494,9 @@ interface BasicStoreCyberObservable extends BasicStoreCommon {
   priority: string;
   owner_sid: string;
   window_title: string;
+  asset_name: string;
+  asset_type: string;
+  currency_code: string;
   // date
   attribute_date: Date;
   ctime: Date;
@@ -510,7 +516,8 @@ interface BasicStoreCyberObservable extends BasicStoreCommon {
   private_key_usage_period_not_before: Date;
   private_key_usage_period_not_after: Date;
   expiration_date: Date;
-  publication_date: Date,
+  publication_date: Date;
+  transaction_date: Date;
   // boolean
   defanged: boolean;
   is_multipart: boolean;
@@ -543,6 +550,8 @@ interface BasicStoreCyberObservable extends BasicStoreCommon {
   number_of_subkeys: number;
   subject_public_key_exponent: number;
   cvv: number;
+  asset_value: number;
+  transaction_value: number;
   // object
   ipfix: object;
   environment_variables: object;
@@ -584,6 +593,8 @@ interface StoreCyberObservable extends BasicStoreCyberObservable, StoreCommon {
   [INPUT_VALUES]: Array<StoreWindowsRegistryValueType>;
   [INPUT_LABELS]: Array<StoreLabel>;
   [INPUT_EXTERNAL_REFS]: Array<StoreExternalReferences>;
+  [INPUT_TRANSACTION_FROM]: BasicStoreObject;
+  [INPUT_TRANSACTION_TO]: Array<BasicStoreObject>;
 }
 
 interface BasicRuleEntity extends BasicStoreEntity {
