@@ -195,6 +195,7 @@ const rssExecutor = async (context: AuthContext, turndownService: TurndownServic
     const ingestion = ingestions[i];
     const ingestionPromise = rssDataHandler(context, httpGet, turndownService, ingestion)
       .catch((e) => {
+        logApp.error(`[OPENCTI-MODULE] INGESTION - Error with rss handler ${ingestion.name}`);
         logApp.error(e, { name: ingestion.name, context: 'RSS ingestion execution' });
       });
     ingestionPromises.push(ingestionPromise);
@@ -334,6 +335,7 @@ const taxiiExecutor = async (context: AuthContext) => {
     }
     const ingestionPromise = taxiiHandler(context, ingestion)
       .catch((e) => {
+        logApp.error(`[OPENCTI-MODULE] INGESTION - Error with taxii handler ${ingestion.name}`);
         logApp.error(e, { name: ingestion.name, context: 'Taxii ingestion execution' });
       });
     ingestionPromises.push(ingestionPromise);
@@ -347,10 +349,11 @@ const csvDataToObjects = async (csvBuffer: Buffer | string, ingestion: BasicStor
   const ingestionUser = await findUserById(context, context.user ?? SYSTEM_USER, ingestion.user_id) ?? SYSTEM_USER;
   const { objects } = await bundleProcess(context, ingestionUser, csvBuffer, csvMapper);
   if (objects === undefined) {
+    logApp.error(`[OPENCTI-MODULE] INGESTION - Undefined bundle objects for csv ingest: ${ingestion.name}`);
     const error = UnknownError('Undefined CSV objects', { data: csvBuffer.toString() });
     logApp.error(error, { name: ingestion.name, context: 'CSV transform' });
   } else {
-    logApp.info(`[OPENCTI-MODULE] CSV ingestion execution for ${objects.length} items`);
+    logApp.info(`[OPENCTI-MODULE] INGESTION - CSV ingestion execution for: ${ingestion.name} with: ${objects.length} items`);
   }
   return objects;
 };
@@ -361,9 +364,21 @@ const csvDataHandler = async (context: AuthContext, ingestion: BasicStoreEntityI
   const csvMapperParsed = parseCsvMapper(csvMapper);
   csvMapperParsed.user_chosen_markings = ingestion.markings ?? [];
 
-  const { data, addedLast } = await fetchCsvFromUrl(csvMapperParsed, ingestion);
+  let data: Buffer | undefined;
+  let addedLast: string | null | undefined;
+  try {
+    const csvResponse = await fetchCsvFromUrl(csvMapperParsed, ingestion);
+    data = csvResponse.data;
+    addedLast = csvResponse.addedLast;
+  } catch (e: any) {
+    logApp.error(`[OPENCTI-MODULE] INGESTION - Error trying to fetch csv feed for: ${ingestion.name}`);
+    logApp.error(e, { ingestion });
+    throw e;
+  }
+
   const isUnchangedData = bcrypt.compareSync(data.toString(), ingestion.current_state_hash ?? '');
   if (isUnchangedData) {
+    logApp.info(`[OPENCTI-MODULE] INGESTION - Unchanged data for csv ingest: ${ingestion.name}`);
     return;
   }
 
@@ -378,6 +393,7 @@ const csvDataHandler = async (context: AuthContext, ingestion: BasicStoreEntityI
     const friendlyName = 'CSV feed Ingestion';
     const work = await createWork(context, user, IMPORT_CSV_CONNECTOR, friendlyName, IMPORT_CSV_CONNECTOR.id) as unknown as Work;
     await updateExpectationsNumber(context, user, work.id, 1);
+    logApp.info(`[OPENCTI-MODULE] INGESTION - New work pushed for csv ingest: ${ingestion.name}`);
     await pushToWorkerForSync({ type: 'bundle', applicant_id: ingestion.user_id ?? OPENCTI_SYSTEM_UUID, work_id: work.id, content, update: true });
   }
 
@@ -388,6 +404,7 @@ const csvDataHandler = async (context: AuthContext, ingestion: BasicStoreEntityI
     added_after_start: utcDate(addedLast),
   });
 };
+
 const csvExecutor = async (context: AuthContext) => {
   const filters = {
     mode: 'and',
@@ -401,6 +418,7 @@ const csvExecutor = async (context: AuthContext) => {
     const ingestion = ingestions[i];
     const ingestionPromise = csvDataHandler(context, ingestion)
       .catch((e) => {
+        logApp.error(`[OPENCTI-MODULE] INGESTION - Error with csv handler ${ingestion.name}`);
         logApp.error(e, { name: ingestion.name, context: 'CSV ingestion execution' });
       });
     ingestionPromises.push(ingestionPromise);
@@ -410,7 +428,7 @@ const csvExecutor = async (context: AuthContext) => {
 // endregion
 
 const ingestionHandler = async () => {
-  logApp.debug('[OPENCTI-MODULE] Running ingestion manager');
+  logApp.info('[OPENCTI-MODULE] INGESTION - Running ingestion handlers');
   let lock;
   try {
     // Lock the manager
@@ -427,8 +445,9 @@ const ingestionHandler = async () => {
   } catch (e: any) {
     // We dont care about failing to get the lock.
     if (e.name === TYPE_LOCK_ERROR) {
-      logApp.debug('[OPENCTI-MODULE] Ingestion manager already in progress by another API');
+      logApp.info('[OPENCTI-MODULE] INGESTION - Ingestion manager already in progress by another API');
     } else {
+      logApp.error('[OPENCTI-MODULE] INGESTION - Ingestion handlers cannot be started');
       logApp.error(e, { manager: 'INGESTION_MANAGER' });
     }
   } finally {
@@ -436,11 +455,12 @@ const ingestionHandler = async () => {
     if (lock) await lock.unlock();
   }
 };
+
 const initIngestionManager = () => {
   let scheduler: SetIntervalAsyncTimer<[]>;
   return {
     start: async () => {
-      logApp.info('[OPENCTI-MODULE] Running ingestion manager');
+      logApp.info('[OPENCTI-MODULE] INGESTION - Starting ingestion manager');
       scheduler = setIntervalAsync(async () => {
         await ingestionHandler();
       }, SCHEDULE_TIME);
@@ -453,7 +473,7 @@ const initIngestionManager = () => {
       };
     },
     shutdown: async () => {
-      logApp.info('[OPENCTI-MODULE] Stopping ingestion manager');
+      logApp.info('[OPENCTI-MODULE] INGESTION - Stopping ingestion manager');
       if (scheduler) {
         return clearIntervalAsync(scheduler);
       }
