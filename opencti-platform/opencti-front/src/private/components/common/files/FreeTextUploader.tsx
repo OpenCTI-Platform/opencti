@@ -158,6 +158,8 @@ const FreeTextUploader = ({ color, entityId, onUploadSuccess, size }: FreeTextUp
                 onChange={() => {
                 }}
                 setFieldValue={setFieldValue}
+                required={false}
+                // TODO: Required Fields - make dynamic
               />
             </DialogContent>
             <DialogActions>

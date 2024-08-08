@@ -33,6 +33,7 @@ interface NotifierFieldProps {
   style?: { marginTop: number };
   helpertext?: string;
   onChange: (name: string, value: Option[]) => void;
+  required?: boolean
 }
 
 export const NotifierFieldQuery = graphql`
@@ -54,6 +55,7 @@ const NotifierField: FunctionComponent<NotifierFieldProps> = ({
   style,
   helpertext,
   onChange,
+  required = false,
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
@@ -90,6 +92,7 @@ const NotifierField: FunctionComponent<NotifierFieldProps> = ({
           helperText: helpertext,
           onFocus: searchNotifiers,
         }}
+        required={required}
         noOptionsText={t_i18n('No available options')}
         options={notifiersTemplates}
         onInputChange={searchNotifiers}

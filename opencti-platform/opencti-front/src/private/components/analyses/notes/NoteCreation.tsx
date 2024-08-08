@@ -30,7 +30,7 @@ import { Option } from '../../common/form/ReferenceField';
 import { NotesLinesPaginationQuery$variables } from './__generated__/NotesLinesPaginationQuery.graphql';
 import SliderField from '../../../../components/fields/SliderField';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
-import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
+import { useDynamicSchemaCreationValidation, useDynamicMandatorySchemaAttributes } from '../../../../utils/hooks/useSchemaAttributes';
 import { NoteCreationMutation$variables } from './__generated__/NoteCreationMutation.graphql';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
@@ -126,18 +126,20 @@ export const NoteCreationForm: FunctionComponent<NoteFormProps> = ({
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const userIsKnowledgeEditor = useGranted([KNOWLEDGE_KNUPDATE]);
+  const mandatoryAttributes = useDynamicMandatorySchemaAttributes(
+    NOTE_TYPE,
+  );
   const basicShape = {
     created: Yup.date()
-      .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
-      .required(t_i18n('This field is required')),
+      .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
     attribute_abstract: Yup.string().nullable(),
-    content: Yup.string().trim().min(2).required(t_i18n('This field is required')),
+    content: Yup.string().trim().min(2),
     confidence: Yup.number().nullable(),
     note_types: Yup.array().nullable(),
     likelihood: Yup.number().min(0).max(100),
   };
   // createdBy must be excluded from the validation if user is not an editor, it will be handled directly by the backend
-  const noteValidator = useSchemaCreationValidation(
+  const noteValidator = useDynamicSchemaCreationValidation(
     NOTE_TYPE,
     basicShape,
     userIsKnowledgeEditor ? [] : ['createdBy'],
@@ -207,6 +209,8 @@ export const NoteCreationForm: FunctionComponent<NoteFormProps> = ({
     <Formik<NoteAddInput>
       initialValues={initialValues}
       validationSchema={noteValidator}
+      validateOnChange={false} // Validation will occur on submission, required fields all have *'s
+      validateOnBlur={false} // Validation will occur on submission, required fields all have *'s
       onSubmit={onSubmit}
       onReset={onClose}
     >
@@ -225,6 +229,7 @@ export const NoteCreationForm: FunctionComponent<NoteFormProps> = ({
             component={TextField}
             name="attribute_abstract"
             label={t_i18n('Abstract')}
+            required={(mandatoryAttributes.includes('attribute_abstract'))}
             fullWidth={true}
             style={{ marginTop: 20 }}
             askAi={true}
@@ -233,6 +238,7 @@ export const NoteCreationForm: FunctionComponent<NoteFormProps> = ({
             component={MarkdownField}
             name="content"
             label={t_i18n('Content')}
+            required={(mandatoryAttributes.includes('content'))}
             fullWidth={true}
             multiline={true}
             rows="4"
@@ -243,6 +249,7 @@ export const NoteCreationForm: FunctionComponent<NoteFormProps> = ({
             label={t_i18n('Note types')}
             type="note_types_ov"
             name="note_types"
+            required={(mandatoryAttributes.includes('note_types'))}
             onChange={(name, value) => setFieldValue(name, value)}
             containerStyle={fieldSpacingContainerStyle}
             multiple={true}
@@ -254,6 +261,7 @@ export const NoteCreationForm: FunctionComponent<NoteFormProps> = ({
           <Field
             component={SliderField}
             name="likelihood"
+            required={(mandatoryAttributes.includes('likelihood'))}
             label={t_i18n('Likelihood')}
             fullWidth={true}
             style={{ marginTop: 20 }}
@@ -261,23 +269,27 @@ export const NoteCreationForm: FunctionComponent<NoteFormProps> = ({
           {userIsKnowledgeEditor && (
             <CreatedByField
               name="createdBy"
+              required={(mandatoryAttributes.includes('createdBy'))}
               style={{ marginTop: 10 }}
               setFieldValue={setFieldValue}
             />
           )}
           <ObjectLabelField
             name="objectLabel"
+            required={(mandatoryAttributes.includes('objectLabel'))}
             style={{ marginTop: userIsKnowledgeEditor ? 20 : 10 }}
             setFieldValue={setFieldValue}
             values={values.objectLabel}
           />
           <ObjectMarkingField
             name="objectMarking"
+            required={(mandatoryAttributes.includes('objectMarking'))}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
           />
           <ExternalReferencesField
             name="externalReferences"
+            required={(mandatoryAttributes.includes('externalReferences'))}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
             values={values.externalReferences}

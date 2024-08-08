@@ -5,6 +5,8 @@ import { useFormatter } from '../../../../components/i18n';
 import GroupingEditionOverview from './GroupingEditionOverview';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 import useHelper from '../../../../utils/hooks/useHelper';
+import { SchemaAttributesQuery } from '../../../../utils/hooks/useSchemaAttributes';
+import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 
 const GroupingEditionContainer = (props) => {
   const { t_i18n } = useFormatter();
@@ -13,6 +15,10 @@ const GroupingEditionContainer = (props) => {
 
   const { handleClose, grouping, open, controlledDial } = props;
   const { editContext } = grouping;
+
+  const queryRef = useQueryLoading(SchemaAttributesQuery, {
+    entityType: 'Grouping',
+  });
 
   return (
     <Drawer
@@ -25,6 +31,7 @@ const GroupingEditionContainer = (props) => {
     >
       <GroupingEditionOverview
         grouping={grouping}
+        queryReference={queryRef}
         enableReferences={useIsEnforceReference('Grouping')}
         context={editContext}
         handleClose={handleClose}
