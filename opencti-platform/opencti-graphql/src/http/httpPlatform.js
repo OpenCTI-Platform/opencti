@@ -89,11 +89,16 @@ const createApp = async (app) => {
       res.status(429).send({ message: 'Too many requests, please try again later.' });
     },
   });
-  const scriptSrc = ["'self'", "'unsafe-inline'", 'http://cdn.jsdelivr.net/npm/@apollographql/', 'https://www.googletagmanager.com/'];
+
+  // Init the http server
+  app.set('trust proxy', ['loopback', 'linklocal', 'uniquelocal']);
+  app.use(limiter);
   if (DEV_MODE) {
-    scriptSrc.push("'unsafe-eval'");
+    app.set('json spaces', 2);
   }
-  const securityMiddleware = helmet({
+
+  // Configure server security
+  const buildSecurity = (opts) => helmet({
     expectCt: { enforce: true, maxAge: 30 },
     referrerPolicy: { policy: 'unsafe-url' },
     crossOriginEmbedderPolicy: false,
@@ -103,7 +108,7 @@ const createApp = async (app) => {
       useDefaults: false,
       directives: {
         defaultSrc: ["'self'"],
-        scriptSrc,
+        scriptSrc: opts.scriptSrc,
         styleSrc: [
           "'self'",
           "'unsafe-inline'",
@@ -121,17 +126,42 @@ const createApp = async (app) => {
         manifestSrc: ["'self'", 'data:', 'https://*', 'http://*'],
         connectSrc: ["'self'", 'wss://*', 'ws://*', 'data:', 'http://*', 'https://*'],
         objectSrc: ["'self'", 'data:', 'http://*', 'https://*'],
-        frameSrc: ["'self'", 'data:', 'http://*', 'https://*'],
+        frameSrc: opts.allowedFrameSrc,
+        frameAncestors: opts.frameAncestorDomains,
       },
     },
+    xFrameOptions: !opts.isIframeAllowed,
   });
-  // Init the http server
-  app.set('trust proxy', ['loopback', 'linklocal', 'uniquelocal']);
-  app.use(limiter);
+
+  const ancestorsFromConfig = nconf.get('app:public_dashboard_authorized_domains')?.trim() ?? '';
+  const frameAncestorDomains = ancestorsFromConfig === '' ? "'none'" : ancestorsFromConfig;
+  const allowedFrameSrc = ["'self'"];
+  const scriptSrc = ["'self'", "'unsafe-inline'", 'http://cdn.jsdelivr.net/npm/@apollographql/', 'https://www.googletagmanager.com/'];
   if (DEV_MODE) {
-    app.set('json spaces', 2);
+    scriptSrc.push("'unsafe-eval'");
   }
-  app.use(securityMiddleware);
+  const securityOpts = {
+    frameAncestorDomains: "'none'",
+    allowedFrameSrc,
+    scriptSrc,
+    isIframeAllowed: false,
+  };
+
+  app.use((req, res, next) => {
+    const urlString = req.url;
+    if (urlString && (urlString.startsWith(`${basePath}/public`))) {
+      const securityMiddleware = buildSecurity({
+        ...securityOpts,
+        frameAncestorDomains,
+        isIframeAllowed: frameAncestorDomains !== "'none'",
+      });
+      securityMiddleware(req, res, next);
+    } else {
+      const securityMiddleware = buildSecurity(securityOpts);
+      securityMiddleware(req, res, next);
+    }
+  });
+
   app.use(compression({}));
 
   if (ENABLED_UI) {
