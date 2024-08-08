@@ -3,7 +3,7 @@ import React, { FunctionComponent, useState } from 'react';
 import ImportContent, { importContentQuery } from '@components/data/import/ImportContent';
 import { ImportContentQuery } from '@components/import/__generated__/ImportContentQuery.graphql';
 import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
-import { ImportContent_connectorsImport$key } from './__generated__/ImportContent_connectorsImport.graphql';
+import { ImportContentContainer_connectorsImport$key } from './__generated__/ImportContentContainer_connectorsImport.graphql';
 import ImportWorkbenches from './ImportWorkbenches';
 
 interface ImportContentContainerProps {
@@ -12,7 +12,7 @@ interface ImportContentContainerProps {
 }
 
 const importConnectorsFragment = graphql`
-    fragment ImportContent_connectorsImport on Connector
+    fragment ImportContentContainer_connectorsImport on Connector
     @relay(plural: true) {
         id
         name
@@ -30,9 +30,9 @@ const importConnectorsFragment = graphql`
 
 const ImportContentContainer: FunctionComponent<ImportContentContainerProps> = ({ tab, queryRef }) => {
   const data = usePreloadedQuery(importContentQuery, queryRef);
-  const connectorsData = useFragment<ImportContent_connectorsImport$key>(
+  const connectorsData = useFragment<ImportContentContainer_connectorsImport$key>(
     importConnectorsFragment,
-    data.connectorsForImport as ImportContent_connectorsImport$key,
+    data.connectorsForImport as ImportContentContainer_connectorsImport$key,
   );
   const connectors = connectorsData.filter((n) => !n.only_contextual); // Can be null but not empty
 

@@ -95,7 +95,7 @@ const styles = (theme) => ({
 export const importContentQuery = graphql`
   query ImportContentQuery {
     connectorsForImport {
-      ...ImportContent_connectorsImport
+      ...ImportContentContainer_connectorsImport
     }
     importFiles(first: 500) @connection(key: "Pagination_global_importFiles") {
       edges {

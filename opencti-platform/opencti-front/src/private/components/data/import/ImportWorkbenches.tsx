@@ -1,4 +1,3 @@
-import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
@@ -6,20 +5,17 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import WorkbenchFileLine from '@components/common/files/workbench/WorkbenchFileLine';
-import React, { FunctionComponent, useState } from 'react';
-import {
-  ImportContent_connectorsImport$data
-} from '@components/data/import/__generated__/ImportContent_connectorsImport.graphql';
+import React, { FunctionComponent } from 'react';
+import { ImportContentContainer_connectorsImport$data } from '@components/data/import/__generated__/ImportContentContainer_connectorsImport.graphql';
 import { ImportContentQuery$data } from '@components/import/__generated__/ImportContentQuery.graphql';
 import makeStyles from '@mui/styles/makeStyles';
 import { scopesConn } from '@components/common/files/FileManager';
-import { ArrowDropDown, ArrowDropUp } from '@mui/icons-material';
-import { useFormatter } from '../../../../components/i18n';
 import ImportMenu from '@components/data/ImportMenu';
+import { useFormatter } from '../../../../components/i18n';
 
 interface ImportWorkbenchesProps {
   pendingFiles: ImportContentQuery$data['pendingFiles'],
-  connectors: ImportContent_connectorsImport$data,
+  connectors: ImportContentContainer_connectorsImport$data,
   handleOpenValidate: (file) => void,
 }
 
@@ -79,31 +75,7 @@ const ImportWorkbenches: FunctionComponent<ImportWorkbenchesProps> = ({
   const { t_i18n } = useFormatter();
   const classes = useStyles();
 
-  const [sortBy, setSortBy] = useState('name');
-  const [orderAsc, setOrderAsc] = useState(true);
-
-  const reverseBy = (field: string) => {
-    setSortBy(field);
-    setOrderAsc(!orderAsc);
-  };
-
-  const sortHeader = (field: string, label: string, isSortable: boolean) => {
-    const sortComponent = orderAsc ? (
-      <ArrowDropDown style={inlineStylesHeaders.iconSort} />
-    ) : (
-      <ArrowDropUp style={inlineStylesHeaders.iconSort} />
-    );
-    if (isSortable) {
-      return (
-        <div
-          style={inlineStylesHeaders[field]}
-          onClick={() => reverseBy(field)}
-        >
-          <span>{t_i18n(label)}</span>
-          {sortBy === field ? sortComponent : ''}
-        </div>
-      );
-    }
+  const header = (field: string, label: string) => {
     return (
       <div style={inlineStylesHeaders[field]}>
         <span>{t_i18n(label)}</span>
@@ -136,14 +108,10 @@ const ImportWorkbenches: FunctionComponent<ImportWorkbenchesProps> = ({
               <ListItemText
                 primary={
                   <div>
-                    {sortHeader('name', 'Name', false)}
-                    {sortHeader('creator_name', 'Creator', false)}
-                    {sortHeader('labels', 'Labels', false)}
-                    {sortHeader(
-                      'lastModified',
-                      'Modification date',
-                      false,
-                    )}
+                    {header('name', 'Name')}
+                    {header('creator_name', 'Creator')}
+                    {header('labels', 'Labels')}
+                    {header('lastModified', 'Modification date')}
                   </div>
                 }
               />
@@ -153,9 +121,7 @@ const ImportWorkbenches: FunctionComponent<ImportWorkbenchesProps> = ({
               <WorkbenchFileLine
                 key={file.node.id}
                 file={file.node}
-                connectors={
-                  importConnsPerFormat[file.node.metaData.mimetype]
-                }
+                connectors={importConnsPerFormat[file.node.metaData.mimetype]}
                 handleOpenImport={handleOpenValidate}
               />
             ))}

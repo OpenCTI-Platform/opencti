@@ -12,7 +12,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import ImportMenu from '@components/data/ImportMenu';
 import { truncate } from '../../../../utils/String';
 import { useFormatter } from '../../../../components/i18n';
-import { ImportContent_connectorsImport$data } from './__generated__/ImportContent_connectorsImport.graphql';
+import { ImportContentContainer_connectorsImport$data } from './__generated__/ImportContentContainer_connectorsImport.graphql';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -29,7 +29,7 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-const ImportConnectors = ({ connectors }: { connectors: ImportContent_connectorsImport$data }) => {
+const ImportConnectors = ({ connectors }: { connectors: ImportContentContainer_connectorsImport$data }) => {
   const classes = useStyles();
   const { nsdt, t_i18n } = useFormatter();
   return (
