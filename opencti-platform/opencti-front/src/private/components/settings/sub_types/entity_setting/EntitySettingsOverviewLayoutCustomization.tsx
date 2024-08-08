@@ -76,11 +76,13 @@ const EntitySettingsOverviewLayoutCustomization: React.FC<EntitySettingsOverview
   const updateLayout = (values: Record<string, boolean | number>) => {
     const input = {
       key: 'overview_layout_customization',
-      value: editInputsKeys.map((inputKey) => ({
-        key: inputKey,
-        width: (values[`${inputKey}_isFullWidth`] as boolean) ? 12 : 6,
-        label: editLabels[inputKey],
-      })),
+      value: editInputsKeys
+        .sort((keyA, keyB) => (values[`${keyA}_order`] as number) - (values[`${keyB}_order`] as number))
+        .map((inputKey) => ({
+          key: inputKey,
+          width: (values[`${inputKey}_isFullWidth`] as boolean) ? 12 : 6,
+          label: editLabels[inputKey],
+        })),
     };
     commitUpdate({
       variables: {
