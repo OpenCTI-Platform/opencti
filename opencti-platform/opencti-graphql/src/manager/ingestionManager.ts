@@ -1,7 +1,6 @@
 import type { convertableToString } from 'xml2js';
 import { parseStringPromise as xmlParse } from 'xml2js';
 import TurndownService from 'turndown';
-import bcrypt from 'bcryptjs';
 import * as R from 'ramda';
 import { v4 as uuidv4 } from 'uuid';
 import { clearIntervalAsync, setIntervalAsync } from 'set-interval-async/dynamic';
@@ -31,6 +30,7 @@ import { createWork, updateExpectationsNumber } from '../domain/work';
 import { IMPORT_CSV_CONNECTOR } from '../connector/importCsv/importCsv';
 import { parseCsvMapper } from '../modules/internal/csvMapper/csvMapper-utils';
 import { findById as findUserById } from '../domain/user';
+import { compareHashSHA256, hashSHA256 } from '../utils/hash';
 
 // Ingestion manager responsible to cleanup old data
 // Each API will start is ingestion manager.
@@ -376,7 +376,7 @@ const csvDataHandler = async (context: AuthContext, ingestion: BasicStoreEntityI
     throw e;
   }
 
-  const isUnchangedData = bcrypt.compareSync(data.toString(), ingestion.current_state_hash ?? '');
+  const isUnchangedData = compareHashSHA256(data.toString(), ingestion.current_state_hash ?? '');
   if (isUnchangedData) {
     logApp.info(`[OPENCTI-MODULE] INGESTION - Unchanged data for csv ingest: ${ingestion.name}`);
     return;
@@ -398,7 +398,7 @@ const csvDataHandler = async (context: AuthContext, ingestion: BasicStoreEntityI
   }
 
   // Update the state
-  const hashedIncomingData = bcrypt.hashSync(data.toString());
+  const hashedIncomingData = hashSHA256(data.toString());
   await patchCsvIngestion(context, SYSTEM_USER, ingestion.internal_id, {
     current_state_hash: hashedIncomingData,
     added_after_start: utcDate(addedLast),
