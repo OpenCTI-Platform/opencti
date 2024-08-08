@@ -1,4 +1,4 @@
-import { logApp } from '../config/conf';
+import { isFeatureEnabled, logApp } from '../config/conf';
 import { addSettings } from '../domain/settings';
 import { BYPASS, ROLE_ADMINISTRATOR, ROLE_DEFAULT, SYSTEM_USER } from '../utils/access';
 import { initCreateEntitySettings } from '../modules/entitySetting/entitySetting-domain';
@@ -6,7 +6,7 @@ import { initDecayRules } from '../modules/decayRule/decayRule-domain';
 import { initManagerConfigurations } from '../modules/managerConfiguration/managerConfiguration-domain';
 import { createStatus, createStatusTemplate } from '../domain/status';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../schema/stixDomainObject';
-import { VocabularyCategory } from '../generated/graphql';
+import { RetentionRuleScope, VocabularyCategory } from '../generated/graphql';
 import { builtInOv, openVocabularies } from '../modules/vocabulary/vocabulary-utils';
 import { addVocabulary } from '../modules/vocabulary/vocabulary-domain';
 import { addAllowedMarkingDefinition } from '../domain/markingDefinition';
@@ -14,6 +14,8 @@ import { addCapability, addGroup, addRole } from '../domain/grant';
 import { GROUP_DEFAULT, groupAddRelation } from '../domain/group';
 import { TAXIIAPI } from '../domain/user';
 import { KNOWLEDGE_COLLABORATION, KNOWLEDGE_DELETE, KNOWLEDGE_MANAGE_AUTH_MEMBERS, KNOWLEDGE_UPDATE } from '../schema/general';
+import { createRetentionRule } from '../domain/retentionRule';
+import { emptyFilterGroup } from '../utils/filtering/filtering-utils';
 
 // region Platform capabilities definition
 const KNOWLEDGE_CAPABILITY = 'KNOWLEDGE';
@@ -213,6 +215,25 @@ const createVocabularies = async (context) => {
   }
 };
 
+const createBuiltInRetentionRules = async (context, user) => {
+  // built-in retention rules for files
+  const fileInput = {
+    name: 'Default retention rule on files',
+    scope: RetentionRuleScope.File,
+    max_retention: 133,
+    filters: JSON.stringify(emptyFilterGroup),
+  };
+  await createRetentionRule(context, user, fileInput);
+  // built-in retention rules for workbenches
+  const workbenchInput = {
+    name: 'Default retention rule on workbenches',
+    scope: RetentionRuleScope.Workbench,
+    max_retention: 60,
+    filters: JSON.stringify(emptyFilterGroup),
+  };
+  await createRetentionRule(context, user, workbenchInput);
+};
+
 const createDefaultStatusTemplates = async (context) => {
   const statusNew = await createStatusTemplate(context, SYSTEM_USER, { name: 'NEW', color: '#ff9800' });
   const statusProgress = await createStatusTemplate(context, SYSTEM_USER, { name: 'IN_PROGRESS', color: '#5c7bf5' });
@@ -309,6 +330,9 @@ export const initializeData = async (context, withMarkings = true) => {
   await createDefaultStatusTemplates(context);
   await createBasicRolesAndCapabilities(context);
   await createVocabularies(context);
+  if (isFeatureEnabled('FILE_RETENTION_RULES')) {
+    await createBuiltInRetentionRules(context, SYSTEM_USER);
+  }
   if (withMarkings) {
     await createMarkingDefinitions(context);
   }
