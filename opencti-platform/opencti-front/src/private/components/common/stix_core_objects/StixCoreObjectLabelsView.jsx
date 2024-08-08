@@ -67,7 +67,7 @@ const StixCoreObjectLabelsView = (props) => {
 
 StixCoreObjectLabelsView.propTypes = {
   id: PropTypes.string,
-  labels: PropTypes.object,
+  labels: PropTypes.any,
   entity_type: PropTypes.string,
 };
 

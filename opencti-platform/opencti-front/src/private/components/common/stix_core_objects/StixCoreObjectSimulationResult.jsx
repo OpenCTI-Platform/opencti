@@ -474,7 +474,7 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
         {renderForm()}
       </Drawer>
       <Dialog
-        open={isSubmitting || result || resultError}
+        open={!!(isSubmitting || result || resultError)}
         PaperProps={{ elevation: 1 }}
         TransitionComponent={Transition}
         onClose={handleCloseFinal}
