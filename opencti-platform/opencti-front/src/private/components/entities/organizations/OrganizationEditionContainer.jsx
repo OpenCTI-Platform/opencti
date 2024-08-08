@@ -4,11 +4,14 @@ import { useFormatter } from '../../../../components/i18n';
 import OrganizationEditionOverview from './OrganizationEditionOverview';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 import Drawer, { DrawerVariant } from '../../common/drawer/Drawer';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 const OrganizationEditionContainer = (props) => {
   const { t_i18n } = useFormatter();
+  const { isFeatureEnable } = useHelper();
+  const FABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
-  const { handleClose, organization, open } = props;
+  const { handleClose, organization, open, controlledDial } = props;
   const { editContext } = organization;
 
   return (
@@ -16,8 +19,9 @@ const OrganizationEditionContainer = (props) => {
       title={t_i18n('Update an organization')}
       open={open}
       onClose={handleClose}
-      variant={open == null ? DrawerVariant.update : undefined}
+      variant={!FABReplaced && open == null ? DrawerVariant.update : undefined}
       context={editContext}
+      controlledDial={FABReplaced ? controlledDial : undefined}
     >
       <OrganizationEditionOverview
         organization={organization}

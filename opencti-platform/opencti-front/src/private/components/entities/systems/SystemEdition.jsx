@@ -5,6 +5,7 @@ import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import SystemEditionContainer from './SystemEditionContainer';
 import { systemEditionOverviewFocus } from './SystemEditionOverview';
 import Loader from '../../../../components/Loader';
+import EditEntityControlledDial from '../../../../components/EditEntityControlledDial';
 
 export const systemEditionQuery = graphql`
   query SystemEditionContainerQuery($id: String!) {
@@ -34,7 +35,11 @@ class SystemEdition extends Component {
         render={({ props }) => {
           if (props) {
             return (
-              <SystemEditionContainer system={props.system} handleClose={this.handleClose.bind(this)} />
+              <SystemEditionContainer
+                system={props.system}
+                handleClose={this.handleClose.bind(this)}
+                controlledDial={EditEntityControlledDial}
+              />
             );
           }
           return <Loader variant="inElement" />;

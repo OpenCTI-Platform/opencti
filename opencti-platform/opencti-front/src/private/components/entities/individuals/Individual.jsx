@@ -4,9 +4,6 @@ import { graphql, createFragmentContainer } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import Grid from '@mui/material/Grid';
 import IndividualDetails from './IndividualDetails';
-import IndividualEdition from './IndividualEdition';
-import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
 import StixCoreObjectExternalReferences from '../../analyses/external_references/StixCoreObjectExternalReferences';
@@ -70,11 +67,6 @@ class IndividualComponent extends Component {
           stixCoreObjectOrStixCoreRelationshipId={individual.id}
           defaultMarkings={individual.objectMarking ?? []}
         />
-        {!individual.isUser && (
-          <Security needs={[KNOWLEDGE_KNUPDATE]}>
-            <IndividualEdition individualId={individual.id} />
-          </Security>
-        )}
       </>
     );
   }

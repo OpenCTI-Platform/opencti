@@ -23,6 +23,9 @@ import EntityStixSightingRelationships from '../../events/stix_sighting_relation
 import inject18n from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
+import Security from '../../../../utils/Security';
+import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import EventEdition from './EventEdition';
 
 const subscription = graphql`
   subscription RootEventsSubscription($id: ID!) {
@@ -138,6 +141,11 @@ class RootEvent extends Component {
                         stixDomainObject={event}
                         enableQuickSubscription={true}
                         PopoverComponent={<EventPopover />}
+                        EditComponent={(
+                          <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                            <EventEdition eventId={event.id} />
+                          </Security>
+                        )}
                       />
                       <Box
                         sx={{
