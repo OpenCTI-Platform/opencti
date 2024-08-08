@@ -97,18 +97,6 @@ export const importContentQuery = graphql`
         }
       }
     }
-    pendingFiles(first: 500)
-      @connection(key: "Pagination_global_pendingFiles") {
-      edges {
-        node {
-          id
-          ...WorkbenchFileLine_file
-          metaData {
-            mimetype
-          }
-        }
-      }
-    }
   }
 `;
 

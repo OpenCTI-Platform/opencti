@@ -1,5 +1,5 @@
 import ImportConnectors from '@components/data/import/ImportConnectors';
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent } from 'react';
 import ImportContent, { importContentQuery } from '@components/data/import/ImportContent';
 import { ImportContentQuery } from '@components/import/__generated__/ImportContentQuery.graphql';
 import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
@@ -47,7 +47,6 @@ const ImportContentContainer: FunctionComponent<ImportContentContainerProps> = (
     return (
       <ImportWorkbenches
         connectors={connectors}
-        pendingFiles={data.pendingFiles}
       />
     );
   }
