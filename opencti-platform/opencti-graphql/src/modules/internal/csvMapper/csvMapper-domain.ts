@@ -100,7 +100,7 @@ export const csvMapperSchemaAttributes = async (context: AuthContext, user: Auth
   types.forEach((type) => {
     const attributesDef = schemaAttributesDefinition.getAttributes(type);
     const attributes: CsvMapperSchemaAttribute[] = Array.from(attributesDef.values()).flatMap((attribute) => {
-      if (INTERNAL_ATTRIBUTES.includes(attribute.name)) return [];
+      if (INTERNAL_ATTRIBUTES.includes(attribute.name) || attribute.label === 'Original creation date') return [];
       return [{
         name: attribute.name,
         label: attribute.label,

@@ -1,7 +1,6 @@
 import {
   aliases,
   baseType,
-  created,
   createdAt,
   creators,
   entityLocationType,
@@ -35,7 +34,6 @@ export const INTERNAL_ATTRIBUTES = [
   updatedAt.name,
   modified.name,
   // Technical
-  created.name,
   entityType.name,
   parentTypes.name,
   entityLocationType.name,
