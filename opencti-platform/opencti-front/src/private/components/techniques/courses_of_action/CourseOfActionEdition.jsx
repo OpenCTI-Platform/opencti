@@ -7,6 +7,7 @@ import inject18n from '../../../../components/i18n';
 import CourseOfActionEditionContainer from './CourseOfActionEditionContainer';
 import { courseOfActionEditionOverviewFocus } from './CourseOfActionEditionOverview';
 import Loader from '../../../../components/Loader';
+import EditEntityControlledDial from '../../../../components/EditEntityControlledDial';
 
 export const courseOfActionEditionQuery = graphql`
   query CourseOfActionEditionContainerQuery($id: String!) {
@@ -39,6 +40,7 @@ class CourseOfActionEdition extends Component {
               <CourseOfActionEditionContainer
                 courseOfAction={props.courseOfAction}
                 handleClose={this.handleClose.bind(this)}
+                controlledDial={EditEntityControlledDial}
               />
             );
           }

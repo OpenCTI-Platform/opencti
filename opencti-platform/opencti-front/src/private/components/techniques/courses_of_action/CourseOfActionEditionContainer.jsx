@@ -4,11 +4,14 @@ import { useFormatter } from '../../../../components/i18n';
 import CourseOfActionEditionOverview from './CourseOfActionEditionOverview';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 import Drawer, { DrawerVariant } from '../../common/drawer/Drawer';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 const CourseOfActionEditionContainer = (props) => {
   const { t_i18n } = useFormatter();
+  const { isFeatureEnable } = useHelper();
+  const FABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
-  const { handleClose, courseOfAction, open } = props;
+  const { handleClose, courseOfAction, open, controlledDial } = props;
   const { editContext } = courseOfAction;
 
   return (
@@ -16,8 +19,9 @@ const CourseOfActionEditionContainer = (props) => {
       title={t_i18n('Update a course of action')}
       open={open}
       onClose={handleClose}
-      variant={open == null ? DrawerVariant.update : undefined}
+      variant={!FABReplaced && open == null ? DrawerVariant.update : undefined}
       context={editContext}
+      controlledDial={FABReplaced ? controlledDial : undefined}
     >
       <CourseOfActionEditionOverview
         courseOfAction={courseOfAction}

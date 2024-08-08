@@ -336,7 +336,7 @@ const DataComponentCreation: FunctionComponent<{
   const { isFeatureEnable } = useHelper();
   const { t_i18n } = useFormatter();
   const [bulkOpen, setBulkOpen] = useState(false);
-  const isFABReplaced = isFeatureEnable('FAB_REPLACED');
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const [open, setOpen] = useState(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
