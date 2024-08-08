@@ -8,6 +8,8 @@ import { truncate } from '../../../../utils/String';
 import StixCoreObjectEnrichment from '../../common/stix_core_objects/StixCoreObjectEnrichment';
 import StixCoreObjectSharing from '../../common/stix_core_objects/StixCoreObjectSharing';
 import useGranted, { KNOWLEDGE_KNENRICHMENT, KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import StixCyberObservableEdition from './StixCyberObservableEdition';
+import Security from '../../../../utils/Security';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -59,6 +61,11 @@ const StixCyberObservableHeaderComponent = ({
             stixCyberObservableId={stixCyberObservable.id}
             isArtifact={isArtifact}
           />
+          <Security needs={[KNOWLEDGE_KNUPDATE]}>
+            <StixCyberObservableEdition
+              stixCyberObservableId={stixCyberObservable.id}
+            />
+          </Security>
         </div>
       </div>
       <div className="clearfix" />
