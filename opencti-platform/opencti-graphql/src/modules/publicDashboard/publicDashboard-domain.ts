@@ -79,7 +79,9 @@ export const findAll = async (
   );
 
   const dashboardIds = dashboards.edges.map((n) => (n.node.id));
-  const filters = addFilter(args.filters ?? undefined, 'dashboard_id', dashboardIds);
+  const filters = dashboardIds.length > 0
+    ? addFilter(args.filters ?? undefined, 'dashboard_id', dashboardIds)
+    : args.filters;
   return listEntitiesPaginated<BasicStoreEntityPublicDashboard>(
     context,
     user,

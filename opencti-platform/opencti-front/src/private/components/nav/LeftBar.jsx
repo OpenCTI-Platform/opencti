@@ -364,7 +364,7 @@ const LeftBar = () => {
   const generateSubMenu = (menu, entries) => {
     return navOpen ? (
       <Collapse in={selectedMenu.includes(menu)} timeout="auto" unmountOnExit={true}>
-        <MenuList component="nav" disablePadding={true} className='subMenu'>
+        <MenuList component="nav" disablePadding={true}>
           {entries.filter((entry) => entry.granted !== false && !hiddenEntities.includes(entry.type)).map((entry) => {
             return (
               <StyledTooltip key={entry.label} title={t_i18n(entry.label)} placement="right">
