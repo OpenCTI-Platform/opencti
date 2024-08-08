@@ -3,9 +3,6 @@ import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import makeStyles from '@mui/styles/makeStyles';
 import IntrusionSetDetails from './IntrusionSetDetails';
-import IntrusionSetEdition from './IntrusionSetEdition';
-import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
 import StixCoreObjectExternalReferences from '../../analyses/external_references/StixCoreObjectExternalReferences';
@@ -118,9 +115,6 @@ const IntrusionSetComponent = ({
         stixCoreObjectOrStixCoreRelationshipId={intrusionSetData.id}
         defaultMarkings={intrusionSetData.objectMarking ?? []}
       />
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
-        <IntrusionSetEdition intrusionSetId={intrusionSetData.id} />
-      </Security>
     </>
   );
 };

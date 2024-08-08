@@ -23,6 +23,10 @@ import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreO
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
+import useHelper from '../../../../utils/hooks/useHelper';
+import Security from '../../../../utils/Security';
+import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import ThreatActorGroupEdition from './ThreatActorGroupEdition';
 
 const subscription = graphql`
   subscription RootThreatActorsGroupSubscription($id: ID!) {
@@ -85,6 +89,8 @@ const RootThreatActorGroup = ({ queryRef, threatActorGroupId }: RootThreatActorG
   const location = useLocation();
   const { t_i18n } = useFormatter();
   useSubscription<RootThreatActorsGroupSubscription>(subConfig);
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   const {
     threatActorGroup,
@@ -138,6 +144,11 @@ const RootThreatActorGroup = ({ queryRef, threatActorGroupId }: RootThreatActorG
               entityType="Threat-Actor-Group"
               stixDomainObject={threatActorGroup}
               PopoverComponent={<ThreatActorGroupPopover />}
+              EditComponent={isFABReplaced && (
+                <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                  <ThreatActorGroupEdition threatActorGroupId={threatActorGroup.id} />
+                </Security>
+              )}
               enableQuickSubscription={true}
             />
             <Box
