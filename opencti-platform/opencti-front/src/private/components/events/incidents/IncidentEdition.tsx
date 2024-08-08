@@ -5,6 +5,7 @@ import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { IncidentEditionContainerQuery } from './__generated__/IncidentEditionContainerQuery.graphql';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import EditEntityControlledDial from '../../../../components/EditEntityControlledDial';
 
 const IncidentEdition = ({ incidentId }: { incidentId: string }) => {
   const [commit] = useApiMutation(incidentEditionOverviewFocus);
@@ -30,6 +31,7 @@ const IncidentEdition = ({ incidentId }: { incidentId: string }) => {
           <IncidentEditionContainer
             queryRef={queryRef}
             handleClose={handleClose}
+            controlledDial={EditEntityControlledDial}
           />
         </React.Suspense>
       )}
