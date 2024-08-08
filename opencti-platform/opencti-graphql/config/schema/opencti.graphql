@@ -896,6 +896,7 @@ enum BackgroundTaskScope {
   KNOWLEDGE
   USER
   SETTINGS
+  IMPORT
 }
 enum BackgroundTaskActionType {
   DELETE

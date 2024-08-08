@@ -3,7 +3,7 @@ import { uniq } from 'ramda';
 import { generateInternalId, generateStandardId } from '../schema/identifier';
 import { ENTITY_TYPE_BACKGROUND_TASK } from '../schema/internalObject';
 import { now } from '../utils/format';
-import { BYPASS, isUserHasCapability, MEMBER_ACCESS_RIGHT_ADMIN, SETTINGS_SET_ACCESSES } from '../utils/access';
+import { BYPASS, isUserHasCapability, MEMBER_ACCESS_RIGHT_ADMIN, SETTINGS_SET_ACCESSES, KNOWLEDGE_KNASKIMPORT } from '../utils/access';
 import { isKnowledge, KNOWLEDGE_DELETE, KNOWLEDGE_UPDATE } from '../schema/general';
 import { ForbiddenAccess, UnsupportedError } from '../config/errors';
 import { elIndex } from '../database/engine';
@@ -14,6 +14,7 @@ import { internalLoadById, storeLoadById } from '../database/middleware-loader';
 import { getParentTypes } from '../schema/schemaUtils';
 import { ENTITY_TYPE_VOCABULARY } from '../modules/vocabulary/vocabulary-types';
 import { ENTITY_TYPE_DELETE_OPERATION } from '../modules/deleteOperation/deleteOperation-types';
+import { BackgroundTaskScope } from '../generated/graphql';
 
 export const TASK_TYPE_QUERY = 'QUERY';
 export const TASK_TYPE_RULE = 'RULE';
@@ -37,26 +38,26 @@ export const checkActionValidity = async (context, user, input, scope, taskType)
   const typeFilters = filters.filter((f) => f.key.includes('entity_type'));
   const typeFiltersValues = typeFilters.map((f) => f.values).flat();
   const userCapabilities = R.flatten(user.capabilities.map((c) => c.name.split('_')));
-  if (scope === 'SETTINGS') {
+  if (scope === BackgroundTaskScope.Settings) { // 01. Background task of scope Settings
     const isAuthorized = userCapabilities.includes(BYPASS) || userCapabilities.includes('SETTINGS');
     if (!isAuthorized) {
       throw ForbiddenAccess();
     }
-  } else if (scope === 'KNOWLEDGE') { // 01. Background task of scope Knowledge
-    // 1.1. The user should have the capability KNOWLEDGE_UPDATE
+  } else if (scope === BackgroundTaskScope.Knowledge) { // 02. Background task of scope Knowledge
+    // 2.1. The user should have the capability KNOWLEDGE_UPDATE
     const isAuthorized = userCapabilities.includes(BYPASS) || userCapabilities.includes(KNOWLEDGE_UPDATE);
     if (!isAuthorized) {
       throw ForbiddenAccess();
     }
     const askForDeletionRelatedAction = actions.filter((a) => isDeleteRestrictedAction(a)).length > 0;
     if (askForDeletionRelatedAction) {
-      // 1.2. If deletion related action available, the user should have the capability KNOWLEDGE_DELETE
+      // 2.2. If deletion related action available, the user should have the capability KNOWLEDGE_DELETE
       const isDeletionRelatedActionAuthorized = userCapabilities.includes(BYPASS) || userCapabilities.includes(KNOWLEDGE_DELETE);
       if (!isDeletionRelatedActionAuthorized) {
         throw ForbiddenAccess();
       }
     }
-    // 1.3. Check the modified entities are of type Knowledge
+    // 2.3. Check the targeted entities are of type Knowledge
     if (taskType === TASK_TYPE_QUERY) {
       const deleteOperationTypes = typeFiltersValues.every((type) => type === ENTITY_TYPE_DELETE_OPERATION);
       const parentTypes = typeFiltersValues.map((n) => getParentTypes(n));
@@ -76,8 +77,8 @@ export const checkActionValidity = async (context, user, input, scope, taskType)
     } else {
       throw UnsupportedError('A background task should be of type query or list.');
     }
-  } else if (scope === 'USER') { // 02. Background task of scope Notification
-    // Check the modified entities are Notifications
+  } else if (scope === BackgroundTaskScope.User) { // 03. Background task of scope User (i.e. on Notifications)
+    // Check the targeted entities are Notifications
     // and the user has the right to modify them (= notifications are the ones of the user OR the user has SET_ACCESS capability)
     if (taskType === TASK_TYPE_QUERY) {
       const isNotifications = typeFilters.length === 1
@@ -109,8 +110,19 @@ export const checkActionValidity = async (context, user, input, scope, taskType)
     } else {
       throw UnsupportedError('A background task should be of type query or list.');
     }
-  } else { // 03. Background task with an invalid scope
-    throw UnsupportedError('A background task should be of scope Settings, Knowledge or User.');
+  } else if (scope === BackgroundTaskScope.Import) { // 04. Background task of scope Import (i.e. on files and workbenches in Data/import)
+    // The user should have the capability KNOWLEDGE_KNASKIMPORT
+    const isAuthorized = userCapabilities.includes(BYPASS) || userCapabilities.includes(KNOWLEDGE_KNASKIMPORT);
+    if (!isAuthorized) {
+      throw ForbiddenAccess();
+    }
+    // The only operation authorized on these scope is Deletion
+    if (actions.every((a) => a === ACTION_TYPE_DELETE)) {
+      throw UnsupportedError('Background tasks of scope Import can only be deletions.');
+    }
+    // Check the targeted entities are files: not needed because the method used only target files
+  } else { // Background task with an invalid scope
+    throw UnsupportedError('A background task should be of scope: SETTINGS, KNOWLEDGE, USER, IMPORT.');
   }
 };
 
@@ -151,6 +163,8 @@ const authorizedAuthoritiesForTask = (scope) => {
       return ['KNOWLEDGE_KNUPDATE'];
     case 'USER':
       return [SETTINGS_SET_ACCESSES];
+    case 'IMPORT':
+      return [KNOWLEDGE_KNASKIMPORT];
     default:
       return [];
   }
