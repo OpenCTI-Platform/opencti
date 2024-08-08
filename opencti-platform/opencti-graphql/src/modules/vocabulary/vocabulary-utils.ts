@@ -853,6 +853,15 @@ export const openVocabularies: Record<VocabularyCategory, Array<{ key: string, d
       description: 'Specifies the 64-bit x86 architecture.',
     },
   ],
+  persona_type_ov: [
+    { key: 'true name' },
+    { key: 'previous true name' },
+    { key: 'nickname' },
+    { key: 'moniker' },
+    { key: 'assumed name' },
+    { key: 'alternative spelling/transliteration' },
+    { key: 'unknown' },
+  ],
   // R
   reliability_ov: [
     {

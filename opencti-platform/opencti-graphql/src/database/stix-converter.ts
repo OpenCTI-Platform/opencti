@@ -91,6 +91,7 @@ import {
   ENTITY_MUTEX,
   ENTITY_NETWORK_TRAFFIC,
   ENTITY_PAYMENT_CARD,
+  ENTITY_PERSONA,
   ENTITY_PHONE_NUMBER,
   ENTITY_PROCESS,
   ENTITY_SOFTWARE,
@@ -1147,6 +1148,23 @@ const convertX509CertificateToStix = (instance: StoreCyberObservable, type: stri
     })
   };
 };
+const convertPersonaToStix = (instance: StoreCyberObservable, type: string): SCO.StixPersona => {
+  assertType(ENTITY_PERSONA, type);
+  const stixCyberObject = buildStixCyberObservable(instance);
+  return {
+    ...buildStixCyberObservable(instance),
+    persona_name: instance.persona_name,
+    persona_type: instance.persona_type,
+    labels: (instance[INPUT_LABELS] ?? []).map((m) => m.value),
+    score: instance.x_opencti_score,
+    created_by_ref: instance[INPUT_CREATED_BY]?.standard_id,
+    external_references: buildExternalReferences(instance),
+    extensions: {
+      [STIX_EXT_OCTI]: stixCyberObject.extensions[STIX_EXT_OCTI],
+      [STIX_EXT_OCTI_SCO]: { extension_type: 'new-sco' }
+    }
+  };
+};
 
 const checkInstanceCompletion = (instance: StoreRelation) => {
   if (instance.from === undefined || isEmptyField(instance.from)) {
@@ -1506,6 +1524,9 @@ const convertToStix = (instance: StoreCommon): S.StixObject => {
     }
     if (ENTITY_MEDIA_CONTENT === type) {
       return convertMediaContentToStix(cyber, type);
+    }
+    if (ENTITY_PERSONA === type) {
+      return convertPersonaToStix(cyber, type);
     }
     if (ENTITY_MUTEX === type) {
       return convertMutexToStix(cyber, type);

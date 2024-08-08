@@ -127,6 +127,7 @@ const stixBaseCyberObservableContribution = {
     [C.ENTITY_TRACKING_NUMBER]: [{ src: 'value' }],
     [C.ENTITY_PAYMENT_CARD]: [{ src: 'card_number' }],
     [C.ENTITY_MEDIA_CONTENT]: [{ src: 'url' }],
+    [C.ENTITY_PERSONA]: [{ src: 'persona_name' }, { src: 'persona_type' }],
     // Types embedded
     [C.ENTITY_EMAIL_MIME_PART_TYPE]: [], // ALL
     [C.ENTITY_WINDOWS_REGISTRY_VALUE_TYPE]: [], // ALL

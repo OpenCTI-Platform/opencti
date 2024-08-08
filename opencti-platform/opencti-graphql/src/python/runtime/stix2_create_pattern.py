@@ -46,6 +46,7 @@ PATTERN_MAPPING = {
     "Credential": ["value"],
     "Payment-Card": ["card_number"],
     "Media-Content": ["url"],
+    "Persona": ["persona_name", "persona_type"],
 }
 
 

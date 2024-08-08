@@ -491,6 +491,8 @@ interface BasicStoreCyberObservable extends BasicStoreCommon {
   priority: string;
   owner_sid: string;
   window_title: string;
+  persona_name: string;
+  persona_type: string;
   // date
   attribute_date: Date;
   ctime: Date;
