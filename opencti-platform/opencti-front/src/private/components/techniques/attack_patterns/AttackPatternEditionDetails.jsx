@@ -74,15 +74,6 @@ const AttackPatternEditionDetailsComponent = (props) => {
     attackPatternEditionDetailsValidator,
   );
 
-  const handleChangeFocus = (name) => editor.changeFocus({
-    variables: {
-      id: attackPattern.id,
-      input: {
-        focusOn: name,
-      },
-    },
-  });
-
   const onSubmit = (values, { setSubmitting }) => {
     const commitMessage = values.message;
     const references = R.pluck('value', values.references || []);
@@ -194,7 +185,7 @@ const AttackPatternEditionDetailsComponent = (props) => {
             multiline={true}
             rows="4"
             style={{ marginTop: 20 }}
-            onFocus={handleChangeFocus}
+            onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
             helperText={
               <SubscriptionFocus
