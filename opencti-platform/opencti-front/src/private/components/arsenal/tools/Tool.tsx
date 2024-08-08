@@ -3,9 +3,6 @@ import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import makeStyles from '@mui/styles/makeStyles';
 import ToolDetails from './ToolDetails';
-import ToolEdition from './ToolEdition';
-import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
 import StixCoreObjectExternalReferences from '../../analyses/external_references/StixCoreObjectExternalReferences';
@@ -112,9 +109,6 @@ const ToolComponent = ({ tool }: { tool: Tool_tool$key }) => {
         stixCoreObjectOrStixCoreRelationshipId={toolData.id}
         defaultMarkings={toolData.objectMarking ?? []}
       />
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
-        <ToolEdition toolId={toolData.id} />
-      </Security>
     </>
   );
 };

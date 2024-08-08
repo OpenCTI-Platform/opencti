@@ -22,6 +22,10 @@ import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 import { RootToolQuery } from './__generated__/RootToolQuery.graphql';
 import { RootToolSubscription } from './__generated__/RootToolSubscription.graphql';
+import useHelper from '../../../../utils/hooks/useHelper';
+import Security from '../../../../utils/Security';
+import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import ToolEdition from './ToolEdition';
 
 const subscription = graphql`
   subscription RootToolSubscription($id: ID!) {
@@ -84,6 +88,8 @@ const RootTool = ({ queryRef, toolId }: RootToolProps) => {
   const location = useLocation();
   const { t_i18n } = useFormatter();
   useSubscription<RootToolSubscription>(subConfig);
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   const {
     tool,
@@ -132,6 +138,11 @@ const RootTool = ({ queryRef, toolId }: RootToolProps) => {
               entityType="Tool"
               stixDomainObject={tool}
               PopoverComponent={<ToolPopover />}
+              EditComponent={isFABReplaced && (
+                <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                  <ToolEdition toolId={tool.id} />
+                </Security>
+              )}
               enableQuickSubscription={true}
             />
             <Box

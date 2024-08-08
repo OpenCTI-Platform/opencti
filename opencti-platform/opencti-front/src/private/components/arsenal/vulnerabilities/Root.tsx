@@ -22,6 +22,10 @@ import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 import { RootVulnerabilityQuery } from './__generated__/RootVulnerabilityQuery.graphql';
 import { RootVulnerabilitySubscription } from './__generated__/RootVulnerabilitySubscription.graphql';
+import useHelper from '../../../../utils/hooks/useHelper';
+import Security from '../../../../utils/Security';
+import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import VulnerabilityEdition from './VulnerabilityEdition';
 
 const subscription = graphql`
   subscription RootVulnerabilitySubscription($id: ID!) {
@@ -82,6 +86,8 @@ const RootVulnerability = ({ queryRef, vulnerabilityId }: RootVulnerabilityProps
   const location = useLocation();
   const { t_i18n } = useFormatter();
   useSubscription<RootVulnerabilitySubscription>(subConfig);
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   const {
     vulnerability,
@@ -131,6 +137,11 @@ const RootVulnerability = ({ queryRef, vulnerabilityId }: RootVulnerabilityProps
               entityType="Vulnerability"
               stixDomainObject={vulnerability}
               PopoverComponent={<VulnerabilityPopover />}
+              EditComponent={isFABReplaced && (
+                <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                  <VulnerabilityEdition vulnerabilityId={vulnerability.id} />
+                </Security>
+              )}
               enableQuickSubscription={true}
               isOpenctiAlias={true}
             />

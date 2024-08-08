@@ -4,11 +4,14 @@ import Drawer, { DrawerVariant } from '../../common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
 import ToolEditionOverview from './ToolEditionOverview';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 const ToolEditionContainer = (props) => {
   const { t_i18n } = useFormatter();
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
-  const { handleClose, tool, open } = props;
+  const { handleClose, tool, open, controlledDial } = props;
   const { editContext } = tool;
 
   return (
@@ -16,8 +19,9 @@ const ToolEditionContainer = (props) => {
       title={t_i18n('Update a tool')}
       open={open}
       onClose={handleClose}
-      variant={open == null ? DrawerVariant.update : undefined}
+      variant={!isFABReplaced && open == null ? DrawerVariant.update : undefined}
       context={editContext}
+      controlledDial={isFABReplaced ? controlledDial : undefined}
     >
       <ToolEditionOverview
         tool={tool}

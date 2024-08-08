@@ -22,6 +22,10 @@ import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 import { RootChannelSubscription } from './__generated__/RootChannelSubscription.graphql';
 import { RootChannelQuery } from './__generated__/RootChannelQuery.graphql';
+import useHelper from '../../../../utils/hooks/useHelper';
+import Security from '../../../../utils/Security';
+import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import ChannelEdition from './ChannelEdition';
 
 const subscription = graphql`
   subscription RootChannelSubscription($id: ID!) {
@@ -82,6 +86,8 @@ const RootChannel = ({ queryRef, channelId }: RootChannelProps) => {
   const location = useLocation();
   const { t_i18n } = useFormatter();
   useSubscription<RootChannelSubscription>(subConfig);
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   const {
     channel,
@@ -131,6 +137,11 @@ const RootChannel = ({ queryRef, channelId }: RootChannelProps) => {
               entityType="Channel"
               stixDomainObject={channel}
               PopoverComponent={<ChannelPopover />}
+              EditComponent={isFABReplaced && (
+                <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                  <ChannelEdition channelId={channel.id} />
+                </Security>
+              )}
               enableQuickSubscription={true}
             />
             <Box
