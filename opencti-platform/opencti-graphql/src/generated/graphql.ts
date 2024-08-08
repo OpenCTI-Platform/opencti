@@ -19636,6 +19636,8 @@ export type QueryRetentionRuleArgs = {
 export type QueryRetentionRulesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
   first?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<RetentionRuleOrdering>;
+  orderMode?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']['input']>;
 };
 
@@ -21420,6 +21422,14 @@ export type RetentionRuleEditMutations = {
 export type RetentionRuleEditMutationsFieldPatchArgs = {
   input: Array<InputMaybe<EditInput>>;
 };
+
+export enum RetentionRuleOrdering {
+  LastExecutionDate = 'last_execution_date',
+  MaxRetention = 'max_retention',
+  Name = 'name',
+  RemainingCount = 'remaining_count',
+  Scope = 'scope'
+}
 
 export enum RetentionRuleScope {
   File = 'file',
@@ -29396,6 +29406,7 @@ export type ResolversTypes = ResolversObject<{
   RetentionRuleConnection: ResolverTypeWrapper<RetentionRuleConnection>;
   RetentionRuleEdge: ResolverTypeWrapper<RetentionRuleEdge>;
   RetentionRuleEditMutations: ResolverTypeWrapper<RetentionRuleEditMutations>;
+  RetentionRuleOrdering: RetentionRuleOrdering;
   RetentionRuleScope: RetentionRuleScope;
   Role: ResolverTypeWrapper<Role>;
   RoleAddInput: RoleAddInput;

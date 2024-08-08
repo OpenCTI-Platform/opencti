@@ -102,7 +102,7 @@ export const RetentionLine: FunctionComponent<RetentionLineProps> = ({ dataColum
             </div>
             <div
               className={classes.bodyItem}
-              style={{ width: dataColumns.retention.width }}
+              style={{ width: dataColumns.max_retention.width }}
             >
               {data.max_retention} {t_i18n('day(s)')}
             </div>
@@ -198,7 +198,7 @@ export const RetentionLineDummy = ({ dataColumns }: { dataColumns: DataColumns }
             </div>
             <div
               className={classes.bodyItem}
-              style={{ width: dataColumns.retention.width }}
+              style={{ width: dataColumns.max_retention.width }}
             >
               <Skeleton
                 animation="wave"

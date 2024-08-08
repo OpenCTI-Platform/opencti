@@ -1048,6 +1048,13 @@ input RetentionRuleAddInput {
   max_retention: Int! @constraint(min: 1)
   scope: RetentionRuleScope!
 }
+enum RetentionRuleOrdering {
+  name
+  scope
+  remaining_count
+  last_execution_date
+  max_retention
+}
 enum RetentionRuleScope {
   knowledge
   file
@@ -11344,7 +11351,13 @@ type Query {
   ): AttributeConnection @auth(for: [KNOWLEDGE])
   schemaAttributeNames(elementType: [String]!) : AttributeConnection @auth(for: [KNOWLEDGE, TAXIIAPI_SETCOLLECTIONS])
   retentionRule(id: String!): RetentionRule @auth(for: [SETTINGS_SETCUSTOMIZATION])
-  retentionRules(first: Int, after: ID, search: String): RetentionRuleConnection @auth(for: [SETTINGS_SETCUSTOMIZATION])
+  retentionRules(
+    first: Int,
+    after: ID,
+    search: String,
+    orderBy: RetentionRuleOrdering
+    orderMode: OrderingMode
+  ): RetentionRuleConnection @auth(for: [SETTINGS_SETCUSTOMIZATION])
   taxiiCollection(id: String!): TaxiiCollection @auth(for: [TAXIIAPI_SETCOLLECTIONS])
   taxiiCollections(
     first: Int

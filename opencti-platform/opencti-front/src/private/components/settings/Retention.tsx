@@ -38,33 +38,36 @@ const Retention = () => {
     helpers: storageHelpers,
   } = usePaginationLocalStorage<RetentionLinesPaginationQuery$variables>(LOCAL_STORAGE_KEY, {
     searchTerm: '',
+    sortBy: 'name',
+    orderAsc: true,
   });
+  const { searchTerm, sortBy, orderAsc } = viewStorage;
   const dataColumns = isFeatureEnable('FILE_RETENTION_RULES')
     ? {
       name: {
         label: 'Name',
         width: '15%',
-        isSortable: false,
+        isSortable: true,
       },
-      retention: {
+      max_retention: {
         label: 'Max retention',
         width: '15%',
-        isSortable: false,
+        isSortable: true,
       },
       last_execution_date: {
         label: 'Last execution',
         width: '15%',
-        isSortable: false,
+        isSortable: true,
       },
       remaining_count: {
         label: 'Remaining',
         width: '10%',
-        isSortable: false,
+        isSortable: true,
       },
       scope: {
         label: 'Scope',
         width: '10%',
-        isSortable: false,
+        isSortable: true,
       },
       filters: {
         label: 'Apply on',
@@ -76,22 +79,22 @@ const Retention = () => {
       name: {
         label: 'Name',
         width: '15%',
-        isSortable: false,
+        isSortable: true,
       },
-      retention: {
+      max_retention: {
         label: 'Max retention',
         width: '20%',
-        isSortable: false,
+        isSortable: true,
       },
       last_execution_date: {
         label: 'Last execution',
         width: '20%',
-        isSortable: false,
+        isSortable: true,
       },
       remaining_count: {
         label: 'Remaining',
         width: '10%',
-        isSortable: false,
+        isSortable: true,
       },
       filters: {
         label: 'Apply on',
@@ -119,7 +122,10 @@ const Retention = () => {
         handleSearch={storageHelpers.handleSearch}
         displayImport={false}
         secondaryAction={true}
-        keyword={viewStorage.searchTerm}
+        keyword={searchTerm}
+        sortBy={sortBy}
+        orderAsc={orderAsc}
+        handleSort={storageHelpers.handleSort}
       >
         {queryRef && (
           <React.Suspense
