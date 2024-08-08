@@ -20716,7 +20716,7 @@ export type QueryTask = BackgroundTask & {
 export type QueryTaskAddInput = {
   actions: Array<InputMaybe<BackgroundTaskActionInput>>;
   excluded_ids?: InputMaybe<Array<InputMaybe<Scalars['ID']['input']>>>;
-  filters: Scalars['String']['input'];
+  filters?: InputMaybe<Scalars['String']['input']>;
   scope: BackgroundTaskScope;
   search?: InputMaybe<Scalars['String']['input']>;
 };

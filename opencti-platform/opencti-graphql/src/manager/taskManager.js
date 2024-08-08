@@ -76,6 +76,7 @@ import { stixDomainObjectAddRelation } from '../domain/stixDomainObject';
 import { BackgroundTaskScope } from '../generated/graphql';
 import { ENTITY_TYPE_INTERNAL_FILE } from '../schema/internalObject';
 import { deleteFile } from '../database/file-storage';
+import { paginatedForPathWithEnrichment } from '../modules/internal/document/document-domain';
 
 // Task manager responsible to execute long manual tasks
 // Each API will start is task manager.
@@ -153,18 +154,32 @@ const computeRuleTaskElements = async (context, user, task) => {
   }
   return { actions, elements: processingElements };
 };
+
+export const fetchImportDataForQueryTask = async (context, user, filters, search, position) => {
+  const data = await paginatedForPathWithEnrichment(
+    context,
+    user,
+    'import/global', // TODO or 'import/pending' for worbench (set filters according to the screen)
+    undefined,
+    {} // TODO: filters, search and position are not managed for the moment !!
+  );
+  return data;
+};
 export const computeQueryTaskElements = async (context, user, task) => {
-  const { actions, task_position, task_filters, task_search = null, task_excluded_ids = [] } = task;
+  const { actions, task_position, task_filters, task_search = null, task_excluded_ids = [], scope } = task;
   const processingElements = [];
   // Fetch the information
   // note that the query is filtered to allow only elements with matching confidence level
-  const data = await executeTaskQuery(context, user, task_filters, task_search, task_position);
+  // TODO if scope = IMPORT, fetch only the pending/import files
+  const data = scope === BackgroundTaskScope.Import
+    ? await fetchImportDataForQueryTask(context, user, task_filters, task_search, task_position)
+    : await executeTaskQuery(context, user, task_filters, task_search, task_position);
   // const expectedNumber = data.pageInfo.globalCount;
   const elements = data.edges;
   // Apply the actions for each element
   for (let elementIndex = 0; elementIndex < elements.length; elementIndex += 1) {
     const element = elements[elementIndex];
-    if (!task_excluded_ids.includes(element.node.id)) {
+    if (!task_excluded_ids.includes(element.node.id)) { // keep only the elements that are not excluded (via uncoched checkboxes in UI)
       processingElements.push({ element: element.node, next: element.cursor });
     }
   }

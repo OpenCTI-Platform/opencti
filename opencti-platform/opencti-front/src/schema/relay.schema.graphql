@@ -1082,7 +1082,7 @@ input ListTaskAddInput {
 }
 
 input QueryTaskAddInput {
-  filters: String!
+  filters: String
   search: String
   excluded_ids: [ID]
   actions: [BackgroundTaskActionInput]!

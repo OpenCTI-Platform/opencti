@@ -15,6 +15,7 @@ import { getParentTypes } from '../schema/schemaUtils';
 import { ENTITY_TYPE_VOCABULARY } from '../modules/vocabulary/vocabulary-types';
 import { ENTITY_TYPE_DELETE_OPERATION } from '../modules/deleteOperation/deleteOperation-types';
 import { BackgroundTaskScope } from '../generated/graphql';
+import { isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
 
 export const TASK_TYPE_QUERY = 'QUERY';
 export const TASK_TYPE_RULE = 'RULE';
@@ -34,7 +35,9 @@ const areParentTypesKnowledge = (parentTypes) => parentTypes && parentTypes.flat
 // check a user has the right to create a list or a query background task
 export const checkActionValidity = async (context, user, input, scope, taskType) => {
   const { actions, filters: baseFilterObject, ids } = input;
-  const filters = (baseFilterObject && JSON.parse(baseFilterObject)?.filters) ?? [];
+  const filters = isFilterGroupNotEmpty(baseFilterObject)
+    ? (JSON.parse(baseFilterObject)?.filters ?? [])
+    : [];
   const typeFilters = filters.filter((f) => f.key.includes('entity_type'));
   const typeFiltersValues = typeFilters.map((f) => f.values).flat();
   const userCapabilities = R.flatten(user.capabilities.map((c) => c.name.split('_')));

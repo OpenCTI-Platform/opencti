@@ -45,9 +45,7 @@ const ImportContentContainer: FunctionComponent<ImportContentContainerProps> = (
   }
   if (tab === 'workbench') {
     return (
-      <ImportWorkbenches
-        connectors={connectors}
-      />
+      <ImportWorkbenches />
     );
   }
   return (
