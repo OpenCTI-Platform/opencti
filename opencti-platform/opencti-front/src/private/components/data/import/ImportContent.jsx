@@ -2,14 +2,13 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
 import { graphql } from 'react-relay';
-import { interval } from 'rxjs';
 import withStyles from '@mui/styles/withStyles';
 import Typography from '@mui/material/Typography';
 import List from '@mui/material/List';
 import Paper from '@mui/material/Paper';
 import Grid from '@mui/material/Grid';
 import { Link } from 'react-router-dom';
-import { Add, Extension } from '@mui/icons-material';
+import { Extension } from '@mui/icons-material';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Tooltip from '@mui/material/Tooltip';
@@ -23,17 +22,14 @@ import DialogActions from '@mui/material/DialogActions';
 import { ListItemButton } from '@mui/material';
 import Button from '@mui/material/Button';
 import * as Yup from 'yup';
-import Fab from '@mui/material/Fab';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import SelectField from '../../../../components/fields/SelectField';
-import { FIVE_SECONDS } from '../../../../utils/Time';
 import { fileManagerAskJobImportMutation, scopesConn } from '../../common/files/FileManager';
 import FileLine from '../../common/files/FileLine';
 import inject18n from '../../../../components/i18n';
 import FileUploader from '../../common/files/FileUploader';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import FreeTextUploader from '../../common/files/FreeTextUploader';
-import WorkbenchFileCreator from '../../common/files/workbench/WorkbenchFileCreator';
 import ManageImportConnectorMessage from './ManageImportConnectorMessage';
 import { truncate } from '../../../../utils/String';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
@@ -41,8 +37,6 @@ import withRouter from '../../../../utils/compat-router/withRouter';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { resolveHasUserChoiceParsedCsvMapper } from '../../../../utils/csvMapperUtils';
 import ImportMenu from '../ImportMenu';
-
-const interval$ = interval(FIVE_SECONDS);
 
 const styles = (theme) => ({
   container: {
@@ -84,11 +78,6 @@ const styles = (theme) => ({
   },
   itemIcon: {
     color: theme.palette.primary.main,
-  },
-  createButton: {
-    position: 'fixed',
-    bottom: 30,
-    right: 30,
   },
 });
 
@@ -141,7 +130,7 @@ class ImportContent extends Component {
     super(props);
     this.state = {
       fileToImport: null,
-      displayCreate: false,
+      fileToValidate: null,
       selectedConnector: null,
       hasUserChoiceCsvMapper: false,
     };
@@ -167,12 +156,8 @@ class ImportContent extends Component {
     });
   }
 
-  handleOpenCreate() {
-    this.setState({ displayCreate: true });
-  }
-
-  handleCloseCreate() {
-    this.setState({ displayCreate: false });
+  handleCloseValidate() {
+    this.setState({ fileToValidate: null });
   }
 
   onSubmitImport(values, { setSubmitting, resetForm }) {
@@ -207,21 +192,17 @@ class ImportContent extends Component {
     commitMutation({
       mutation: fileManagerAskJobImportMutation,
       variables: {
-        fileName: this.props.fileToValidate.id,
+        fileName: this.state.fileToValidate.id,
         connectorId: values.connector_id,
         bypassValidation: true,
       },
       onCompleted: () => {
         setSubmitting(false);
         resetForm();
-        this.props.handleCloseValidate();
+        this.handleCloseValidate();
         MESSAGING$.notifySuccess(this.props.t('Import successfully asked'));
       },
     });
-  }
-
-  onCreateWorkbenchCompleted() {
-    this.props.relay.refetch();
   }
 
   render() {
@@ -234,7 +215,7 @@ class ImportContent extends Component {
       relay,
     } = this.props;
     const { edges: importFilesEdges } = importFiles;
-    const { fileToImport, displayCreate } = this.state;
+    const { fileToImport, fileToValidate } = this.state;
     const importConnsPerFormat = scopesConn(connectors);
     const handleSelectConnector = (_, value) => {
       const selectedConnector = connectors.find((c) => c.id === value);
@@ -476,15 +457,15 @@ class ImportContent extends Component {
             initialValues={{ connector_id: '' }}
             validationSchema={importValidation(t)}
             onSubmit={this.onSubmitValidate.bind(this)}
-            onReset={this.props.handleCloseValidate.bind(this)}
+            onReset={this.handleCloseValidate.bind(this)}
           >
             {({ submitForm, handleReset, isSubmitting }) => (
               <Form style={{ margin: '0 0 20px 0' }}>
                 <Dialog
-                  open={this.props.fileToValidate}
+                  open={fileToValidate}
                   PaperProps={{ elevation: 1 }}
                   keepMounted={true}
-                  onClose={this.props.handleCloseValidate.bind(this)}
+                  onClose={this.handleCloseValidate.bind(this)}
                   fullWidth={true}
                 >
                   <DialogTitle>{t('Validate and send for import')}</DialogTitle>
@@ -498,10 +479,10 @@ class ImportContent extends Component {
                       containerstyle={{ width: '100%' }}
                     >
                       {connectors.map((connector, i) => {
-                        const disabled = !this.props.fileToValidate
+                        const disabled = !fileToValidate
                           || (connector.connector_scope.length > 0
                             && !R.includes(
-                              this.props.fileToValidate.metaData.mimetype,
+                              fileToValidate.metaData.mimetype,
                               connector.connector_scope,
                             ));
                         return (
@@ -532,20 +513,7 @@ class ImportContent extends Component {
               </Form>
             )}
           </Formik>
-          <WorkbenchFileCreator
-            handleCloseCreate={this.handleCloseCreate.bind(this)}
-            openCreate={displayCreate}
-            onCompleted={this.onCreateWorkbenchCompleted.bind(this)}
-          />
         </div>
-        <Fab
-          onClick={this.handleOpenCreate.bind(this)}
-          color="primary"
-          aria-label="Add"
-          className={classes.createButton}
-        >
-          <Add />
-        </Fab>
       </div>
     );
   }
@@ -557,9 +525,6 @@ ImportContent.propTypes = {
   classes: PropTypes.object,
   t: PropTypes.func,
   nsdt: PropTypes.func,
-  fileToValidate: PropTypes.object,
-  handleCloseValidate: PropTypes.func,
-  handleOpenValidate: PropTypes.func,
 };
 
 export default R.compose(inject18n, withStyles(styles), withRouter)(ImportContent);

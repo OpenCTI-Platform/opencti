@@ -5,18 +5,20 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import WorkbenchFileLine from '@components/common/files/workbench/WorkbenchFileLine';
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useState } from 'react';
 import { ImportContentContainer_connectorsImport$data } from '@components/data/import/__generated__/ImportContentContainer_connectorsImport.graphql';
 import { ImportContentQuery$data } from '@components/import/__generated__/ImportContentQuery.graphql';
 import makeStyles from '@mui/styles/makeStyles';
 import { scopesConn } from '@components/common/files/FileManager';
 import ImportMenu from '@components/data/ImportMenu';
+import Fab from '@mui/material/Fab';
+import { Add } from '@mui/icons-material';
+import WorkbenchFileCreator from '@components/common/files/workbench/WorkbenchFileCreator';
 import { useFormatter } from '../../../../components/i18n';
 
 interface ImportWorkbenchesProps {
   pendingFiles: ImportContentQuery$data['pendingFiles'],
   connectors: ImportContentContainer_connectorsImport$data,
-  handleOpenValidate: (file) => void,
 }
 
 const useStyles = makeStyles(() => ({
@@ -28,6 +30,11 @@ const useStyles = makeStyles(() => ({
   itemHead: {
     paddingLeft: 10,
     textTransform: 'uppercase',
+  },
+  createButton: {
+    position: 'fixed',
+    bottom: 30,
+    right: 230,
   },
 }));
 
@@ -67,7 +74,6 @@ const inlineStylesHeaders = {
 const ImportWorkbenches: FunctionComponent<ImportWorkbenchesProps> = ({
   pendingFiles,
   connectors,
-  handleOpenValidate,
 }) => {
   const pendingFilesEdges = pendingFiles?.edges ?? [];
   const importConnsPerFormat = scopesConn(connectors);
@@ -75,12 +81,22 @@ const ImportWorkbenches: FunctionComponent<ImportWorkbenchesProps> = ({
   const { t_i18n } = useFormatter();
   const classes = useStyles();
 
+  const [displayCreate, setDisplayCreate] = useState(false);
+
   const header = (field: string, label: string) => {
     return (
       <div style={inlineStylesHeaders[field]}>
         <span>{t_i18n(label)}</span>
       </div>
     );
+  };
+
+  const handleOpenCreate = () => {
+    setDisplayCreate(true);
+  };
+
+  const handleCloseCreate = () => {
+    setDisplayCreate(false);
   };
 
   return (
@@ -122,12 +138,24 @@ const ImportWorkbenches: FunctionComponent<ImportWorkbenchesProps> = ({
                 key={file.node.id}
                 file={file.node}
                 connectors={importConnsPerFormat[file.node.metaData.mimetype]}
-                handleOpenImport={handleOpenValidate}
               />
             ))}
           </List>
         </Paper>
       </div>
+      <WorkbenchFileCreator
+        handleCloseCreate={handleCloseCreate}
+        openCreate={displayCreate}
+        onCompleted={undefined}
+      />
+      <Fab
+        onClick={handleOpenCreate}
+        color="primary"
+        aria-label="Add"
+        className={classes.createButton}
+      >
+        <Add />
+      </Fab>
     </>
   );
 };

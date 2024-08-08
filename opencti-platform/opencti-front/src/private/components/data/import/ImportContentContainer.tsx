@@ -36,16 +36,6 @@ const ImportContentContainer: FunctionComponent<ImportContentContainerProps> = (
   );
   const connectors = connectorsData.filter((n) => !n.only_contextual); // Can be null but not empty
 
-  const [fileToValidate, setFileToValidate] = useState(null);
-
-  const handleOpenValidate = (file) => {
-    setFileToValidate(file);
-  };
-
-  const handleCloseValidate = () => {
-    setFileToValidate(null);
-  };
-
   if (tab === 'connectors') {
     return (
       <ImportConnectors
@@ -58,7 +48,6 @@ const ImportContentContainer: FunctionComponent<ImportContentContainerProps> = (
       <ImportWorkbenches
         connectors={connectors}
         pendingFiles={data.pendingFiles}
-        handleOpenValidate={handleOpenValidate}
       />
     );
   }
@@ -66,9 +55,6 @@ const ImportContentContainer: FunctionComponent<ImportContentContainerProps> = (
     <ImportContent
       connectors={connectors}
       importFiles={data.importFiles}
-      fileToValidate={fileToValidate}
-      handleOpenValidate={handleOpenValidate}
-      handleCloseValidate={handleCloseValidate}
     />
   );
 };

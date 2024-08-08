@@ -298,7 +298,6 @@ WorkbenchFileLineComponent.propTypes = {
   connectors: PropTypes.array,
   dense: PropTypes.bool,
   directDownload: PropTypes.bool,
-  handleOpenImport: PropTypes.func,
   nested: PropTypes.bool,
 };
 
