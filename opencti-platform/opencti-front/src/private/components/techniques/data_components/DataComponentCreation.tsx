@@ -379,7 +379,7 @@ const DataComponentCreation: FunctionComponent<{
     <div style={{ display: display ? 'block' : 'none' }}>
       {isFABReplaced
         ? (
-          <div style={{ marginTop: '5px' }}>
+          <div>
             {CreateDataComponentControlledDialContextual}
           </div>
         ) : (
