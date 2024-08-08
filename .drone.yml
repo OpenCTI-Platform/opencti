@@ -191,7 +191,7 @@ steps:
         from_secret: octi-s3-access-key
       secret_key:
         from_secret: octi-s3-secret-key
-      source: opencti-platform/opencti-front/static/**/*
+      source: /drone/src/opencti-platform/opencti-front/src/**/*
       target: /octi/opencti-front
 #    depends_on:
 #      - frontend-tests
