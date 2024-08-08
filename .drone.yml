@@ -107,7 +107,7 @@ steps:
     failure: ignore
     volumes:
       - name: cache-node-frontend-e2e-sandbox
-        path: /drone/src/e2e-front-sandbox/node_modules
+        path: /drone/src/opencti-platform/e2e-front-sandbox/node_modules
     environment:
       BACK_END_URL: http://opencti-e2e-start:4500
       E2E_TEST: true
@@ -184,17 +184,18 @@ steps:
     image: plugins/s3
     failure: ignore
     settings:
-      endpoint: https://s3.testing.octi.staging.filigran.io/
+      endpoint: https://s3.testing.octi.staging.filigran.io
       bucket: octi-drone-artefact
+      path_style: true
       access_key:
         from_secret: octi-s3-access-key
       secret_key:
         from_secret: octi-s3-secret-key
-      source: opencti-platform/opencti-front/test-results/**/*
-      target: /octi/$DRONE_BUILD_NUMBER/opencti-front
-    depends_on:
-      - frontend-tests
-      - frontend-e2e-tests
+      source: opencti-platform/opencti-front/static/**/*
+      target: /octi/opencti-front
+#    depends_on:
+#      - frontend-tests
+#      - frontend-e2e-tests
 
 services:
   - name: redis
