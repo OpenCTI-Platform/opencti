@@ -289,7 +289,7 @@ test('Dashboard restriction access', async ({ page }) => {
   const goToDashboardAsJeanMichel = async (dashboardName: string) => {
     await topBar.logout();
     await loginForm.login('jean.michel@filigran.test', 'jeanmichel');
-    await leftBar.clickOnMenu('Dashboards');
+    await leftBar.clickOnMenu('Dashboards', 'Custom dashboards');
     await dashboardPage.getItemFromList(dashboardName).click();
   };
 
@@ -297,7 +297,7 @@ test('Dashboard restriction access', async ({ page }) => {
   const goToDashboardAsAdmin = async (dashboardName: string) => {
     await topBar.logout();
     await loginForm.login();
-    await leftBar.clickOnMenu('Dashboards');
+    await leftBar.clickOnMenu('Dashboards', 'Custom dashboards');
     await dashboardPage.getItemFromList(dashboardName).click();
   };
 
@@ -361,7 +361,7 @@ test('Dashboard restriction access', async ({ page }) => {
   await dashboardDetailsPage.getActionsPopover().click();
   await dashboardDetailsPage.getActionButton('Duplicate').click();
   await dashboardDetailsPage.getDuplicateButton().click();
-  await leftBar.clickOnMenu('Dashboards');
+  await leftBar.clickOnMenu('Dashboards', 'Custom dashboards');
   await expect(dashboardPage.getItemFromList(`${dashboardName} - copy`)).toBeVisible();
   await dashboardPage.getItemFromList(`${dashboardName} - copy`).click();
   await dashboardDetailsPage.getActionsPopover().click();
@@ -390,7 +390,7 @@ test('Dashboard restriction access', async ({ page }) => {
 
   await topBar.logout();
   await loginForm.login('jean.michel@filigran.test', 'jeanmichel');
-  await leftBar.clickOnMenu('Dashboards');
+  await leftBar.clickOnMenu('Dashboards', 'Custom dashboards');
   await expect(dashboardPage.getItemFromList(dashboardName)).toBeHidden();
 
   // ---------
@@ -415,6 +415,6 @@ test('Dashboard restriction access', async ({ page }) => {
   // To reset the token with an admin token
   await topBar.logout();
   await loginForm.login();
-  await leftBar.clickOnMenu('Dashboards');
+  await leftBar.clickOnMenu('Dashboards', 'Custom dashboards');
   await page.context().storageState({ path: 'tests_e2e/.setup/.auth/user.json' });
 });
