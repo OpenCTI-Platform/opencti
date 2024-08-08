@@ -23,7 +23,7 @@ export default class LeftBarPage {
 
     await this.page.getByRole('menuitem', { name: menuName, exact: true }).click();
     if (subMenuItem) {
-      await this.page.locator('.subMenu').getByRole('menuitem', { name: subMenuItem }).click();
+      await this.page.getByRole('menuitem', { name: subMenuItem }).click();
     }
   }
 
