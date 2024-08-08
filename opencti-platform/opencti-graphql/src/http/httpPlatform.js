@@ -13,7 +13,7 @@ import validator from 'validator';
 import archiverZipEncrypted from 'archiver-zip-encrypted';
 import rateLimit from 'express-rate-limit';
 import contentDisposition from 'content-disposition';
-import { basePath, baseUrl, booleanConf, DEV_MODE, ENABLED_UI, logApp, OPENCTI_SESSION } from '../config/conf';
+import { basePath, booleanConf, DEV_MODE, ENABLED_UI, logApp, OPENCTI_SESSION } from '../config/conf';
 import passport, { isStrategyActivated, STRATEGY_CERT } from '../config/providers';
 import { authenticateUser, authenticateUserFromRequest, HEADERS_AUTHENTICATORS, loginFromProvider, userWithOrigin } from '../domain/user';
 import { downloadFile, getFileContent, loadFile, isStorageAlive } from '../database/file-storage';
@@ -89,11 +89,15 @@ const createApp = async (app) => {
       res.status(429).send({ message: 'Too many requests, please try again later.' });
     },
   });
-  const scriptSrc = ["'self'", "'unsafe-inline'", 'http://cdn.jsdelivr.net/npm/@apollographql/', 'https://www.googletagmanager.com/'];
+
+  // Init the http server
+  app.set('trust proxy', ['loopback', 'linklocal', 'uniquelocal']);
+  app.use(limiter);
   if (DEV_MODE) {
-    scriptSrc.push("'unsafe-eval'");
+    app.set('json spaces', 2);
   }
 
+  // Configure server security
   const buildSecurity = (opts) => helmet({
     expectCt: { enforce: true, maxAge: 30 },
     referrerPolicy: { policy: 'unsafe-url' },
@@ -104,7 +108,7 @@ const createApp = async (app) => {
       useDefaults: false,
       directives: {
         defaultSrc: ["'self'"],
-        scriptSrc: securityOpts.scriptSrc,
+        scriptSrc: opts.scriptSrc,
         styleSrc: [
           "'self'",
           "'unsafe-inline'",
@@ -129,25 +133,34 @@ const createApp = async (app) => {
     xFrameOptions: !opts.isIframeAllowed,
   });
 
-  // Init the http server
-  app.set('trust proxy', ['loopback', 'linklocal', 'uniquelocal']);
-  app.use(limiter);
-  if (DEV_MODE) {
-    app.set('json spaces', 2);
-  }
-
   const ancestorsFromConfig = nconf.get('app:public_dashboard_authorized_domains')?.trim() ?? '';
   const frameAncestorDomains = ancestorsFromConfig === '' ? "'none'" : ancestorsFromConfig;
-  const allowedFrameSrc = [`${baseUrl}/${basePath}/public/*`];
+  const allowedFrameSrc = ["'self'"];
+  const scriptSrc = ["'self'", "'unsafe-inline'", 'http://cdn.jsdelivr.net/npm/@apollographql/', 'https://www.googletagmanager.com/'];
+  if (DEV_MODE) {
+    scriptSrc.push("'unsafe-eval'");
+  }
   const securityOpts = {
-    frameAncestorDomains,
+    frameAncestorDomains: "'none'",
     allowedFrameSrc,
     scriptSrc,
-    isIframeAllowed: frameAncestorDomains !== "'none'",
+    isIframeAllowed: false,
   };
-  const securityMiddleware = buildSecurity(securityOpts);
-  logApp.info('[INIT] starting app with iframe configuration', { securityOpts });
-  app.use(securityMiddleware);
+
+  app.use((req, res, next) => {
+    const urlString = req.url;
+    if (urlString && (urlString.startsWith(`${basePath}/public`))) {
+      const securityMiddleware = buildSecurity({
+        ...securityOpts,
+        frameAncestorDomains,
+        isIframeAllowed: frameAncestorDomains !== "'none'",
+      });
+      securityMiddleware(req, res, next);
+    } else {
+      const securityMiddleware = buildSecurity(securityOpts);
+      securityMiddleware(req, res, next);
+    }
+  });
 
   app.use(compression({}));
 
