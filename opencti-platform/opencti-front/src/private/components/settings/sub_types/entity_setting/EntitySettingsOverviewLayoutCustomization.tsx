@@ -79,7 +79,6 @@ const EntitySettingsOverviewLayoutCustomization: React.FC<EntitySettingsOverview
       value: editInputsKeys.map((inputKey) => ({
         key: inputKey,
         width: (values[`${inputKey}_isFullWidth`] as boolean) ? 12 : 6,
-        order: (values[`${inputKey}_order`] as number),
         label: editLabels[inputKey],
       })),
     };

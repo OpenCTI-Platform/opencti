@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useMemo } from 'react';
 import { useFragment } from 'react-relay';
 import { EntitySettingSettings_entitySetting$key } from '@components/settings/sub_types/entity_setting/__generated__/EntitySettingSettings_entitySetting.graphql';
 import { entitySettingFragment } from '@components/settings/sub_types/entity_setting/EntitySettingSettings';
@@ -11,9 +11,7 @@ const useOverviewLayoutCustomization: (entityType: string) => OverviewWidgetLayo
   const entitySettingsData = entitySettings?.edges?.map((setting) => (
     useFragment<EntitySettingSettings_entitySetting$key>(entitySettingFragment, setting.node)));
 
-  const [overviewLayoutCustomization, setOverviewLayoutCustomization] = useState<OverviewWidgetLayout[]>([]);
-
-  useEffect(() => {
+  const overviewLayoutCustomization = useMemo(() => {
     const overviewLayoutCustomizationEntries = entitySettingsData
       ?.map(({ target_type, overview_layout_customization }) => ({ key: target_type, values: overview_layout_customization }))
       .filter((entry) => !!entry.values)
@@ -21,7 +19,7 @@ const useOverviewLayoutCustomization: (entityType: string) => OverviewWidgetLayo
     const overviewLayoutCustomizations = overviewLayoutCustomizationEntries
       ? new Map(overviewLayoutCustomizationEntries.map(([key, values]) => [key, values]))
       : new Map();
-    setOverviewLayoutCustomization(overviewLayoutCustomizations.get(entityType) ?? []);
+    return overviewLayoutCustomizations.get(entityType) ?? [];
   }, [entitySettingsData, entityType]);
 
   return overviewLayoutCustomization;
