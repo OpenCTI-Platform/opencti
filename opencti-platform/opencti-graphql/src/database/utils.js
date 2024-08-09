@@ -220,6 +220,19 @@ export const fromBase64 = (base64String) => {
   return buff.toString('utf-8');
 };
 
+export const emptyPaginationResult = () => {
+  return {
+    edges: [],
+    pageInfo: {
+      startCursor: '',
+      endCursor: '',
+      hasNextPage: false,
+      hasPreviousPage: false,
+      globalCount: 0,
+    }
+  };
+};
+
 export const buildPagination = (limit, searchAfter, instances, globalCount) => {
   const edges = R.pipe(
     R.mapObjIndexed((record) => {
