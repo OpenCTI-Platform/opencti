@@ -131,7 +131,7 @@ const Groupings: FunctionComponent<GroupingsProps> = () => {
       },
     };
     return (
-      <div data-testid="groupings-page">
+      <div data-testid='groupings-page'>
         <ListLines
           helpers={storageHelpers}
           sortBy={sortBy}

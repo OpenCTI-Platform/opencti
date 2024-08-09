@@ -11,7 +11,7 @@ test('Create a new grouping', async ({ page }) => {
   const stixDomainObjectContentTab = new StixDomainObjectContentTabPage(page);
 
   // go to groupings
-  await page.goto('/dashboard/analyses/groupings');
+  await groupingsPage.goto();
   await expect(groupingsPage.getPage()).toBeVisible();
   // add a new grouping
   await groupingsPage.addNew();
@@ -20,7 +20,7 @@ test('Create a new grouping', async ({ page }) => {
   await groupingForm.submit();
   // open it
   await groupingsPage.getItemFromList('Test grouping e2e').click();
-  await expect(groupingDetails.getGroupingDetailsPage()).toBeVisible();
+  await expect(groupingDetails.getPage()).toBeVisible();
   await expect(groupingDetails.getTitle('Test grouping e2e')).toBeVisible();
   // add content
   await groupingDetails.goToTab('Content');

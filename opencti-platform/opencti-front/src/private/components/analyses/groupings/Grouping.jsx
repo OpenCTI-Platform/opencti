@@ -25,7 +25,7 @@ const GroupingComponent = ({ grouping }) => {
   const { isFeatureEnable } = useHelper();
   const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   return (
-    <div data-testid="grouping-details-page">
+    <div data-testid='grouping-details-page'>
       <Grid
         container={true}
         spacing={3}

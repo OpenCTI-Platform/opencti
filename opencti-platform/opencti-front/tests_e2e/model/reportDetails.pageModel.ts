@@ -1,8 +1,10 @@
 import { Page } from '@playwright/test';
 import AutocompleteFieldPageModel from './field/AutocompleteField.pageModel';
+import SDOTabs from './SDOTabs.pageModel';
 
 export default class ReportDetailsPage {
   labelsSelect = new AutocompleteFieldPageModel(this.page, 'Labels', true);
+  tabs = new SDOTabs(this.page);
 
   constructor(private page: Page) {}
 
@@ -18,32 +20,8 @@ export default class ReportDetailsPage {
     return this.page.getByLabel('Update', { exact: true });
   }
 
-  async goToOverviewTab() {
-    await this.page.getByRole('tab', { name: 'Overview' }).click();
-  }
-
-  goToKnowledgeTab() {
-    return this.page.getByRole('tab', { name: 'Knowledge' }).click();
-  }
-
-  goToEntitiesTab() {
-    return this.page.getByRole('tab', { name: 'Entities' }).click();
-  }
-
-  goToContentTab() {
-    return this.page.getByRole('tab', { name: 'Content' }).click();
-  }
-
-  goToDataTab() {
-    return this.page.getByRole('tab', { name: 'Data' }).click();
-  }
-
   getContentFile(fileName: string) {
     return this.page.getByLabel(fileName);
-  }
-
-  goToObservablesTab() {
-    return this.page.getByRole('tab', { name: 'Observables' }).click();
   }
 
   getTextForHeading(heading: string, text: string) {
