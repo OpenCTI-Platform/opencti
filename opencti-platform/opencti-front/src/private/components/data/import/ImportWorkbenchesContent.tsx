@@ -300,6 +300,7 @@ const ImportWorkbenchesContent = () => {
           resolvePath={(data: ImportWorkbenchesContentLines_data$data) => data.pendingFiles?.edges?.map(({ node }) => node)}
           storageKey={LOCAL_STORAGE_KEY}
           entityTypes={['InternalFile']}
+          searchContextFinal={{ entityTypes: ['InternalFile'] }}
           toolbarFilters={initialFilters}
           lineFragment={workbenchLineFragment}
           initialValues={initialValues}

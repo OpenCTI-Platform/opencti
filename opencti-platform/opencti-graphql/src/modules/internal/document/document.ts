@@ -52,7 +52,7 @@ const attributes: Array<AttributeDefinition> = [
   // This mapping is only valid for FILES INDEX
   // internalId,
   // name
-  { name: 'indexed_at', label: 'Index date', type: 'date', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+  { name: 'indexed_at', label: 'Index date', type: 'date', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: false },
   {
     name: 'attachment',
     label: 'Attachment',
@@ -62,7 +62,7 @@ const attributes: Array<AttributeDefinition> = [
     editDefault: false,
     multiple: false,
     upsert: false,
-    isFilterable: true,
+    isFilterable: false,
     mappings: [
       { name: 'author', label: 'Author', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
       { name: 'comments', label: 'Comments', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },

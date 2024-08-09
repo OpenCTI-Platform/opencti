@@ -300,6 +300,7 @@ const ImportFilesContent = () => {
           resolvePath={(data: ImportFilesContentLines_data$data) => data.importFiles?.edges?.map(({ node }) => node)}
           storageKey={LOCAL_STORAGE_KEY}
           entityTypes={['InternalFile']}
+          searchContextFinal={{ entityTypes: ['InternalFile'] }}
           toolbarFilters={initialFilters}
           lineFragment={workbenchLineFragment}
           initialValues={initialValues}
