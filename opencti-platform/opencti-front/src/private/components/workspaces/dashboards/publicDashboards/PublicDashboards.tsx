@@ -7,6 +7,7 @@ import PublicDashboardLineActions from '@components/workspaces/dashboards/public
 import { useNavigate } from 'react-router-dom';
 import { PublicDashboardsFragment$data } from '@components/workspaces/dashboards/publicDashboards/__generated__/PublicDashboardsFragment.graphql';
 import { PublicDashboardsListQuery, PublicDashboardsListQuery$variables } from '@components/workspaces/dashboards/publicDashboards/__generated__/PublicDashboardsListQuery.graphql';
+import PublicDashboardCreation from '@components/workspaces/dashboards/publicDashboards/PublicDashboardCreation';
 import { useFormatter } from '../../../../../components/i18n';
 import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../../../utils/filters/filtersUtils';
 import DataTable from '../../../../../components/dataGrid/DataTable';
@@ -16,6 +17,8 @@ import { usePaginationLocalStorage } from '../../../../../utils/hooks/useLocalSt
 import ItemBoolean from '../../../../../components/ItemBoolean';
 import { DataTableProps } from '../../../../../components/dataGrid/dataTableTypes';
 import { textInTooltip } from '../../../../../components/dataGrid/dataTableUtils';
+import Security from '../../../../../utils/Security';
+import { EXPLORE_EXUPDATE_PUBLISH } from '../../../../../utils/hooks/useGranted';
 import useHelper from '../../../../../utils/hooks/useHelper';
 
 const publicDashboardFragment = graphql`
@@ -218,6 +221,11 @@ const PublicDashboards = () => {
               publicDashboard={row}
               paginationOptions={queryPaginationOptions}
             />
+          )}
+          createButton={isFeatureEnable('FAB_REPLACEMENT') && (
+            <Security needs={[EXPLORE_EXUPDATE_PUBLISH]}>
+              <PublicDashboardCreation paginationOptions={queryPaginationOptions} />
+            </Security>
           )}
         />
       )}

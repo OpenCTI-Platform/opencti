@@ -6,12 +6,8 @@ import Typography from '@mui/material/Typography';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import ToggleButton from '@mui/material/ToggleButton';
 import Tooltip from '@mui/material/Tooltip';
-import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import { ContentCopy, Delete, DoNotDisturbAlt, Done, ReportGmailerrorred } from '@mui/icons-material';
 import { useTheme } from '@mui/styles';
-import DeleteIcon from '@mui/icons-material/Delete';
-import DoNotDisturbAltIcon from '@mui/icons-material/DoNotDisturbAlt';
-import DoneIcon from '@mui/icons-material/Done';
-import { ReportGmailerrorred } from '@mui/icons-material';
 import { useFormatter } from '../../../components/i18n';
 import type { Theme } from '../../../components/Theme';
 import { copyToClipboard } from '../../../utils/utils';
@@ -120,7 +116,7 @@ const WorkspaceShareList = ({ queryRef, onDelete, onToggleEnabled }: WorkspaceSh
                       value="copy-link"
                       onClick={() => copyLinkUrl(dashboard.uri_key)}
                     >
-                      <ContentCopyIcon fontSize="small" color="primary" />
+                      <ContentCopy fontSize="small" color="primary" />
                     </ToggleButton>
                   </Tooltip>
                   <Tooltip title={dashboard.enabled ? t_i18n('Disable public dashboard') : t_i18n('Enable public dashboard')}>
@@ -130,8 +126,8 @@ const WorkspaceShareList = ({ queryRef, onDelete, onToggleEnabled }: WorkspaceSh
                       value="disable-link"
                       onClick={() => onToggleEnabled(dashboard.id, !dashboard.enabled)}
                     >
-                      {dashboard.enabled && <DoNotDisturbAltIcon fontSize="small" color="primary" />}
-                      {!dashboard.enabled && <DoneIcon fontSize="small" color="primary" />}
+                      {dashboard.enabled && <DoNotDisturbAlt fontSize="small" color="primary" />}
+                      {!dashboard.enabled && <Done fontSize="small" color="primary" />}
                     </ToggleButton>
                   </Tooltip>
                   <Tooltip title={t_i18n('Delete public dashboard')}>
@@ -141,7 +137,7 @@ const WorkspaceShareList = ({ queryRef, onDelete, onToggleEnabled }: WorkspaceSh
                       value="delete-link"
                       onClick={() => onDelete(dashboard.id)}
                     >
-                      <DeleteIcon fontSize="small" color="primary" />
+                      <Delete fontSize="small" color="primary" />
                     </ToggleButton>
                   </Tooltip>
                 </ToggleButtonGroup>
