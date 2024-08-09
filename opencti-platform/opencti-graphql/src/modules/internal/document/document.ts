@@ -9,10 +9,10 @@ const attributes: Array<AttributeDefinition> = [
   standardId,
   entityType,
   { name: 'name', label: 'Name', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
-  { name: 'size', label: 'Size', type: 'numeric', precision: 'long', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
-  { name: 'information', label: 'Information', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+  { name: 'size', label: 'Size', type: 'numeric', precision: 'long', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+  { name: 'information', label: 'Information', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: false },
   { name: 'lastModified', label: 'Last modification date', type: 'date', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
-  { name: 'lastModifiedSinceMin', label: 'Last modification since', type: 'numeric', precision: 'integer', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+  { name: 'lastModifiedSinceMin', label: 'Last modification since', type: 'numeric', precision: 'integer', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: false },
   { name: 'uploadStatus', label: 'Upload status', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
   { name: 'objectMarking', label: 'Object markings', type: 'string', format: 'id', entityTypes: [ENTITY_TYPE_MARKING_DEFINITION], mandatoryType: 'internal', editDefault: false, multiple: true, upsert: false, isFilterable: false },
   {
