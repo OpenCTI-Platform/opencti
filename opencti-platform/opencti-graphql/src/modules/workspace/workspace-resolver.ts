@@ -7,6 +7,7 @@ import {
   generateWorkspaceExportConfiguration,
   getCurrentUserAccessRight,
   getOwnerId,
+  isDashboardShared,
   objects,
   workspaceCleanContext,
   workspaceDelete,
@@ -42,6 +43,7 @@ const workspaceResolvers: Resolvers = {
     toStixReportBundle: (workspace, _, context) => toStixReportBundle(context, context.user, workspace),
     toConfigurationExport: (workspace, _, context) => generateWorkspaceExportConfiguration(context, context.user, workspace),
     toWidgetExport: (workspace, { widgetId }, context) => generateWidgetExportConfiguration(context, context.user, workspace, widgetId),
+    isShared: (workspace, _, context) => isDashboardShared(context, workspace)
   },
   Mutation: {
     workspaceAdd: (_, { input }, context) => {

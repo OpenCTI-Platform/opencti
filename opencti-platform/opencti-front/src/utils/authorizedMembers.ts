@@ -1,6 +1,4 @@
 import { Option } from '@components/common/form/ReferenceField';
-import { Feedback_case$data } from '@components/cases/feedbacks/__generated__/Feedback_case.graphql';
-import { CaseUtils_case$data } from '@components/cases/__generated__/CaseUtils_case.graphql';
 
 export const INPUT_AUTHORIZED_MEMBERS = 'authorized_members';
 
@@ -56,9 +54,9 @@ export const authorizedMembersToOptions = (
     });
 };
 
-export const getCurrentUserAccessRight = (entityData: Feedback_case$data | CaseUtils_case$data) => {
-  const canManage = entityData.currentUserAccessRight === 'admin';
-  const canEdit = canManage || entityData.currentUserAccessRight === 'edit';
-  const canView = canManage || canEdit || entityData.currentUserAccessRight === 'view';
+export const getCurrentUserAccessRight = (userAccessRight: string | null | undefined) => {
+  const canManage = userAccessRight === 'admin';
+  const canEdit = canManage || userAccessRight === 'edit';
+  const canView = canManage || canEdit || userAccessRight === 'view';
   return { canManage, canEdit, canView };
 };

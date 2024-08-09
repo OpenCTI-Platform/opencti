@@ -30,7 +30,8 @@ type OCTIDataTableProps = Pick<DataTableProps, 'dataColumns'
 | 'redirectionModeEnabled'
 | 'additionalFilterKeys'
 | 'variant'
-| 'entityTypes'> & {
+| 'entityTypes'
+| 'actions'> & {
   lineFragment: GraphQLTaggedNode
   preloadedPaginationProps: UsePreloadedPaginationFragment<OperationType>,
   availableRelationFilterTypes?: FilterIconButtonProps['availableRelationFilterTypes']

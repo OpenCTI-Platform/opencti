@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { ReactNode } from 'react';
 import Chip from '@mui/material/Chip';
 import makeStyles from '@mui/styles/makeStyles';
 import StixCoreObjectLabels from '@components/common/stix_core_objects/StixCoreObjectLabels';
@@ -21,6 +21,18 @@ import ItemOpenVocab from '../ItemOpenVocab';
 import ItemBoolean from '../ItemBoolean';
 
 const MAGICAL_SIZE = 0.113;
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
+type TextInTooltip = (val?: string, helpers?: any) => ReactNode;
+export const textInTooltip: TextInTooltip = (val, helpers) => {
+  const value = val ?? '-';
+  const { column: { size } } = helpers;
+  return (
+    <Tooltip title={value}>
+      <div>{truncate(value, size * MAGICAL_SIZE)}</div>
+    </Tooltip>
+  );
+};
 
 // TODO improve this with a proper context definition
 export const DataTableContext = React.createContext({});
@@ -76,6 +88,18 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 const defaultColumns: DataTableProps['dataColumns'] = {
+  allowed_markings: {
+    id: 'allowed_markings',
+    flexSize: 16,
+    label: 'Allowed markings',
+    isSortable: false,
+    render: ({ allowed_markings }) => (
+      <ItemMarkings
+        variant="inList"
+        markingDefinitions={allowed_markings ?? []}
+        limit={2}
+      />),
+  },
   analyses: {
     id: 'analyses',
     label: 'Analyses',

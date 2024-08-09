@@ -197,6 +197,14 @@ export const schemaAttributesDefinition = {
     return R.uniqBy((a) => a.name, Object.values(this.attributes).map((a) => Array.from(a.values())).flat());
   },
 
+  getIdAttributes() {
+    return this.getAllAttributes().filter((attr) => attr.type === 'string' && attr.format === 'id');
+  },
+
+  getIdAttributeNames() {
+    return this.getIdAttributes().map((attr) => attr.name);
+  },
+
   getRegisteredTypes() {
     return this.registeredTypes;
   },

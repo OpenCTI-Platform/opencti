@@ -563,3 +563,15 @@ export const workspaceImportWidgetConfiguration = async (
   });
   return notify(BUS_TOPICS[ENTITY_TYPE_WORKSPACE].EDIT_TOPIC, element, user);
 };
+
+export const isDashboardShared = async (context: AuthContext, workspace: BasicStoreEntityWorkspace) => {
+  if (workspace.type !== 'dashboard') return false;
+  const publicDashboards = await getEntitiesListFromCache<PublicDashboardCached>(
+    context,
+    SYSTEM_USER,
+    ENTITY_TYPE_PUBLIC_DASHBOARD
+  );
+  return publicDashboards.some((publicDashboard) => (
+    publicDashboard.dashboard_id === workspace.id && publicDashboard.enabled
+  ));
+};

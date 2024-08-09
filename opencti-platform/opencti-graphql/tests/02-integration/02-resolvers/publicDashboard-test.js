@@ -40,6 +40,21 @@ const READ_QUERY = gql`
       name
       uri_key
       enabled
+      dashboard_id
+      dashboard {
+        id
+      }
+    }
+  }
+`;
+
+const READ_QUERY_PRIVATE_DASHBOARD = gql`
+  query workspace($id: String!) {
+    workspace(id: $id) {
+      id
+      type
+      name
+      isShared
     }
   }
 `;
@@ -367,6 +382,12 @@ describe('PublicDashboard resolver', () => {
         expect(publicDashboard.data.publicDashboardAdd.name).toEqual(publicDashboardName);
         publicDashboardInternalId = publicDashboard.data.publicDashboardAdd.id;
         publicDashboardUriKey = publicDashboard.data.publicDashboardAdd.uri_key;
+
+        const queryResult2 = await queryAsAdmin({
+          query: READ_QUERY_PRIVATE_DASHBOARD,
+          variables: { id: privateDashboardInternalId },
+        });
+        expect(queryResult2.data.workspace.isShared).toEqual(true);
       });
 
       it('should publicDashboard loaded by internal id', async () => {
@@ -377,6 +398,7 @@ describe('PublicDashboard resolver', () => {
         expect(queryResult).not.toBeNull();
         expect(queryResult.data.publicDashboard).not.toBeNull();
         expect(queryResult.data.publicDashboard.id).toEqual(publicDashboardInternalId);
+        expect(queryResult.data.publicDashboard.dashboard_id).toEqual(queryResult.data.publicDashboard.dashboard.id);
       });
 
       it('should fetch publicDashboard by uri key', async () => {
@@ -412,6 +434,20 @@ describe('PublicDashboard resolver', () => {
         expect(queryResult.errors.at(0).message).toEqual('Validation error');
       });
 
+      it('should not update publicDashboard if not allowed', async () => {
+        const updatedName = `${publicDashboardName} - updated`;
+        const queryResult = await participantQuery({
+          query: UPDATE_QUERY,
+          variables: {
+            id: publicDashboardInternalId,
+            input: { key: 'name', value: updatedName },
+          },
+        });
+        expect(queryResult).not.toBeNull();
+        expect(queryResult.errors.length).toEqual(1);
+        expect(queryResult.errors.at(0).message).toEqual('You are not allowed to do this.');
+      });
+
       it('should update publicDashboard', async () => {
         const updatedName = `${publicDashboardName} - updated`;
         const queryResult = await queryAsAdmin({
@@ -422,19 +458,6 @@ describe('PublicDashboard resolver', () => {
           },
         });
         expect(queryResult.data.publicDashboardFieldPatch.name).toEqual(updatedName);
-      });
-
-      it('User with EXPLORE_EXUPDATE_PUBLISH capability but view access right cannot update public dashboard', async () => {
-        const queryResult = await editorQuery({
-          query: UPDATE_QUERY,
-          variables: {
-            id: publicDashboardInternalId,
-            input: { key: 'name', value: ['updated name'] },
-          },
-        });
-        expect(queryResult).not.toBeNull();
-        expect(queryResult.errors.length).toEqual(1);
-        expect(queryResult.errors.at(0).message).toEqual('You are not allowed to do this.');
       });
 
       it('should disabled/enabled publicDashboard', async () => {
@@ -606,6 +629,7 @@ describe('PublicDashboard resolver', () => {
               input: { key: 'enabled', value: false },
             },
           });
+          resetCacheForEntity(ENTITY_TYPE_PUBLIC_DASHBOARD);
           expect(disabledQueryResult.data.publicDashboardFieldPatch.enabled).toEqual(false);
 
           const API_SCO_NUMBER_QUERY = gql`
@@ -643,6 +667,7 @@ describe('PublicDashboard resolver', () => {
               input: { key: 'enabled', value: true },
             },
           });
+          resetCacheForEntity(ENTITY_TYPE_PUBLIC_DASHBOARD);
           expect(enabledQueryResult.data.publicDashboardFieldPatch.enabled).toEqual(true);
         });
 
@@ -939,6 +964,17 @@ describe('PublicDashboard resolver', () => {
           expect(publicStixRelationships.edges[0].node.relationship_type).toEqual('targets');
           expect(publicStixRelationships.pageInfo.globalCount).toEqual(4);
         });
+      });
+
+      it('should not delete publicDashboard if not allowed', async () => {
+        // Delete the publicDashboard
+        const queryResult = await participantQuery({
+          query: DELETE_QUERY,
+          variables: { id: publicDashboardInternalId },
+        });
+        expect(queryResult).not.toBeNull();
+        expect(queryResult.errors.length).toEqual(1);
+        expect(queryResult.errors.at(0).message).toEqual('You are not allowed to do this.');
       });
 
       it('should delete publicDashboard', async () => {

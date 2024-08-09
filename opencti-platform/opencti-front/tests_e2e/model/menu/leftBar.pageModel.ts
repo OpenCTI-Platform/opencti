@@ -27,8 +27,7 @@ export default class LeftBarPage {
     }
   }
 
-  async expectPage(menuName: string, pageName: string) {
-    await this.page.getByRole('menuitem', { name: pageName, exact: true }).click();
-    await expect(this.page.getByText(`${menuName}/${pageName}`)).toBeVisible();
+  async expectBreadcrumb(...items: string[]) {
+    return expect(this.page.getByText(items.join('/'))).toBeVisible();
   }
 }
