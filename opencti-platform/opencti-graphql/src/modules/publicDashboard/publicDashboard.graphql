@@ -36,6 +36,7 @@ enum PublicDashboardsOrdering {
   user_id
   enabled
   dashboard
+  uri_key
   _score
 }
 
