@@ -90,13 +90,14 @@ const useStyles = makeStyles<Theme>((theme) => ({
 const defaultColumns: DataTableProps['dataColumns'] = {
   allowed_markings: {
     id: 'allowed_markings',
-    flexSize: 10,
-    label: 'Max markings shared',
-    isSortable: true,
+    flexSize: 16,
+    label: 'Allowed markings',
+    isSortable: false,
     render: ({ allowed_markings }) => (
       <ItemMarkings
         variant="inList"
         markingDefinitions={allowed_markings ?? []}
+        limit={2}
       />),
   },
   analyses: {

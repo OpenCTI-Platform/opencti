@@ -139,12 +139,12 @@ const PublicDashboards = () => {
     name: {
       id: 'name',
       flexSize: 18,
-      label: 'Name',
     },
     uri_key: {
       id: 'uri_key',
       flexSize: 18,
-      label: 'URI Key',
+      label: 'URI key',
+      isSortable: true,
       render: ({ uri_key }, h) => textInTooltip(uri_key, h),
     },
     dashboard: {
@@ -156,9 +156,6 @@ const PublicDashboards = () => {
     },
     allowed_markings: {
       id: 'allowed_markings',
-      flexSize: 16,
-      label: 'Max markings shared',
-      isSortable: false,
     },
     enabled: {
       id: 'enabled',
