@@ -188,13 +188,14 @@ const notMergableTypes = [
   'Case-Template',
   'Task',
   'DeleteOperation',
+  'PublicDashboard',
 ];
-const notAddableTypes = ['Label', 'Vocabulary', 'Case-Template', 'DeleteOperation'];
-const notUpdatableTypes = ['Label', 'Vocabulary', 'Case-Template', 'Task', 'DeleteOperation'];
-const notScannableTypes = ['Label', 'Vocabulary', 'Case-Template', 'Task', 'DeleteOperation'];
-const notEnrichableTypes = ['Label', 'Vocabulary', 'Case-Template', 'Task', 'DeleteOperation'];
+const notAddableTypes = ['Label', 'Vocabulary', 'Case-Template', 'DeleteOperation', 'PublicDashboard'];
+const notUpdatableTypes = ['Label', 'Vocabulary', 'Case-Template', 'Task', 'DeleteOperation', 'PublicDashboard'];
+const notScannableTypes = ['Label', 'Vocabulary', 'Case-Template', 'Task', 'DeleteOperation', 'PublicDashboard'];
+const notEnrichableTypes = ['Label', 'Vocabulary', 'Case-Template', 'Task', 'DeleteOperation', 'PublicDashboard'];
 const typesWithScore = ['Stix-Cyber-Observable', 'Indicator'];
-const notShareableTypes = ['Label', 'Vocabulary', 'Case-Template', 'DeleteOperation'];
+const notShareableTypes = ['Label', 'Vocabulary', 'Case-Template', 'DeleteOperation', 'PublicDashboard'];
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -597,21 +598,13 @@ class DataTableToolBar extends Component {
     const filteredStixDomainObjects = keptEntityId
       ? R.filter((n) => n.id !== keptEntityId, selectedElementsList)
       : R.tail(selectedElementsList);
-    let scope = 'KNOWLEDGE';
-    if (
-      selectedElementsList.some(
-        ({ entity_type }) => entity_type === 'Vocabulary',
-      )
-    ) {
-      scope = 'SETTINGS';
-    }
     const actions = [
       {
         type: 'MERGE',
         context: { values: filteredStixDomainObjects },
       },
     ];
-    this.setState({ scope, actions, mergingElement: keptElement }, () => {
+    this.setState({ actions, mergingElement: keptElement }, () => {
       this.handleCloseMerge();
       this.handleOpenTask();
     });
@@ -631,7 +624,7 @@ class DataTableToolBar extends Component {
 
   submitTask(availableFilterKeys) {
     this.setState({ processing: true });
-    const { actions, mergingElement, scope, promoteToContainer } = this.state;
+    const { actions, mergingElement, promoteToContainer } = this.state;
     const {
       filters,
       search,
@@ -648,6 +641,14 @@ class DataTableToolBar extends Component {
       removeIdAndIncorrectKeysFromFilterGroupObject(filters, availableFilterKeys),
     );
 
+    const selectedElementsList = R.values(selectedElements);
+    const { selectedTypes } = this.getSelectedTypes();
+    let scope = 'KNOWLEDGE';
+    if (selectedElementsList.some(({ entity_type }) => entity_type === 'Vocabulary')) {
+      scope = 'SETTINGS';
+    } else if (selectedTypes.at(0) === 'PublicDashboard' && !this.state.scope) {
+      scope = 'DASHBOARD';
+    }
     const finalActions = R.map(
       (n) => ({
         type: n.type,
@@ -1271,6 +1272,15 @@ class DataTableToolBar extends Component {
 
   togglePromoteToContainer() {
     this.setState((prevState) => ({ promoteToContainer: !prevState.promoteToContainer }));
+  }
+
+  getSelectedTypes() {
+    const entityTypeFilterValues = findFilterFromKey(this.props.filters?.filters ?? [], 'entity_type', 'eq')?.values ?? [];
+    const selectedElementsList = Object.values(this.props.selectedElements || {});
+
+    const selectedTypes = R.uniq([...selectedElementsList.map((o) => o.entity_type), ...entityTypeFilterValues]
+      .filter((entity_type) => entity_type !== undefined));
+    return { entityTypeFilterValues, selectedElementsList, selectedTypes };
   }
 
   render() {

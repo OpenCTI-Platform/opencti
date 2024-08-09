@@ -73,6 +73,7 @@ import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { processDeleteOperation, restoreDelete } from '../modules/deleteOperation/deleteOperation-domain';
 import { addOrganizationRestriction, removeOrganizationRestriction } from '../domain/stix';
 import { stixDomainObjectAddRelation } from '../domain/stixDomainObject';
+import { BackgroundTaskScope } from '../generated/graphql';
 
 // Task manager responsible to execute long manual tasks
 // Each API will start is task manager.
@@ -208,8 +209,12 @@ const generatePatch = (field, values, type) => {
   throw ValidationError(basicErrors.at(0) ?? extensionErrors.at(0), { message: 'You cannot update incompatible attribute' });
 };
 
-const executeDelete = async (context, user, element) => {
-  await deleteElementById(context, user, element.internal_id, element.entity_type);
+const executeDelete = async (context, user, element, scope) => {
+  if (scope === BackgroundTaskScope.Dashboard) {
+    console.log(element);
+  } else {
+    await deleteElementById(context, user, element.internal_id, element.entity_type);
+  }
 };
 const executeCompleteDelete = async (context, user, element) => {
   await processDeleteOperation(context, user, element.internal_id, { isRestoring: false });
@@ -407,7 +412,7 @@ const executeShareMultiple = async (context, user, actionContext, element) => {
 const executeUnshareMultiple = async (context, user, actionContext, element) => {
   await Promise.all(actionContext.values.map((organizationId) => removeOrganizationRestriction(context, user, element.id, organizationId)));
 };
-const executeProcessing = async (context, user, job) => {
+const executeProcessing = async (context, user, job, scope) => {
   const errors = [];
   for (let index = 0; index < job.actions.length; index += 1) {
     const { type, context: actionContext, containerId } = job.actions[index];
@@ -460,7 +465,7 @@ const executeProcessing = async (context, user, job) => {
         const { element } = job.elements[elementIndex];
         try {
           if (type === ACTION_TYPE_DELETE) {
-            await executeDelete(context, user, element);
+            await executeDelete(context, user, element, scope);
           }
           if (type === ACTION_TYPE_COMPLETE_DELETE) {
             await executeCompleteDelete(context, user, element);
@@ -559,7 +564,7 @@ const taskHandler = async () => {
     const processingElements = jobToExecute.elements;
     if (processingElements.length > 0) {
       lock.signal.throwIfAborted();
-      const errors = await executeProcessing(context, user, jobToExecute);
+      const errors = await executeProcessing(context, user, jobToExecute, task.scope);
       await appendTaskErrors(task, errors);
     }
     // Update the task

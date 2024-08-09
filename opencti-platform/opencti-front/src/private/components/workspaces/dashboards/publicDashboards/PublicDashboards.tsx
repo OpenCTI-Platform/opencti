@@ -26,6 +26,7 @@ const publicDashboardFragment = graphql`
     id
     uri_key
     enabled
+    entity_type
     name
     owner {
       name
@@ -204,6 +205,7 @@ const PublicDashboards = () => {
             linesQuery: publicDashboardsListQuery,
             linesFragment: publicDashboardsFragment,
             queryRef,
+            nodePath: ['publicDashboards', 'pageInfo', 'globalCount'],
             setNumberOfElements: helpers.handleSetNumberOfElements,
           }}
           lineFragment={publicDashboardFragment}

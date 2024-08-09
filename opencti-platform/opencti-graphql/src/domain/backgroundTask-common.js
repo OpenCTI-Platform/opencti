@@ -109,8 +109,26 @@ export const checkActionValidity = async (context, user, input, scope, taskType)
     } else {
       throw UnsupportedError('A background task should be of type query or list.');
     }
+  } else if (scope === 'DASHBOARD') {
+    const isAuthorized = isUserHasCapability(user, 'EXPLORE_EXUPDATE_EXDELETE');
+    if (!isAuthorized) {
+      throw ForbiddenAccess();
+    }
+    if (taskType === TASK_TYPE_QUERY) {
+      console.log('query');
+      console.log(typeFilters);
+      // Check some stuff, idk what yet
+    } else if (taskType === TASK_TYPE_LIST) {
+      console.log('list');
+      console.log(ids);
+      // Check that every elements are either public dashboard or custom dashboard
+      // Check that for each custom dashboard you have 'can manage' right
+      // Check that for each public dashboard you have 'can manage' right on its custom dahsboard
+    } else {
+      throw UnsupportedError('A background task should be of type query or list.');
+    }
   } else { // 03. Background task with an invalid scope
-    throw UnsupportedError('A background task should be of scope Settings, Knowledge or User.');
+    throw UnsupportedError('A background task should be of scope Settings, Knowledge, User or Dashboard.');
   }
 };
 
@@ -151,6 +169,8 @@ const authorizedAuthoritiesForTask = (scope) => {
       return ['KNOWLEDGE_KNUPDATE'];
     case 'USER':
       return [SETTINGS_SET_ACCESSES];
+    case 'DASHBOARD':
+      return ['EXPLORE_EXUPDATE_EXDELETE'];
     default:
       return [];
   }

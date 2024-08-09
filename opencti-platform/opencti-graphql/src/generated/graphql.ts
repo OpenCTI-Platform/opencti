@@ -1214,6 +1214,7 @@ export type BackgroundTaskError = {
 };
 
 export enum BackgroundTaskScope {
+  Dashboard = 'DASHBOARD',
   Knowledge = 'KNOWLEDGE',
   Settings = 'SETTINGS',
   User = 'USER'
