@@ -1963,6 +1963,7 @@ const WorkbenchFileContentComponent = ({
       'City',
       'Position',
       'Event',
+      'Administrative-Area',
     ];
     const attributedToTo = ['Threat-Actor', 'Intrusion-Set', 'Campaign'];
     const usesTo = ['Attack-Pattern', 'Malware', 'Tool'];
@@ -2069,6 +2070,7 @@ const WorkbenchFileContentComponent = ({
                   'Position',
                   'Event',
                   'Vulnerability',
+                  'Administrative-Area',
                 ]}
                 stixDomainObjects={stixDomainObjects}
               />

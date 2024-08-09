@@ -191,6 +191,9 @@ export const resolveLocationType = (entity: Record<string, string>): string => {
   if (entity.region) {
     return 'Region';
   }
+  if (entity.area) {
+    return 'Administrative-Area';
+  }
   return 'Position';
 };
 
