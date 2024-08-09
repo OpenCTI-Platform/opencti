@@ -21,6 +21,7 @@ import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEdito
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { GenericContext } from '../../common/model/GenericContextModel';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
+import AdministrativeAreaPopover from './AdministrativeAreaPopover';
 
 const administrativeAreaMutationFieldPatch = graphql`
   mutation AdministrativeAreaEditionOverviewFieldPatchMutation(
@@ -257,7 +258,7 @@ AdministrativeAreaEditionOverviewProps
             onSubmit={handleSubmitField}
             helperText={
               <SubscriptionFocus context={context} fieldName="name" />
-            }
+              }
           />
           <Field
             component={MarkdownField}
@@ -271,7 +272,7 @@ AdministrativeAreaEditionOverviewProps
             onSubmit={handleSubmitField}
             helperText={
               <SubscriptionFocus context={context} fieldName="description" />
-            }
+              }
           />
           <ConfidenceField
             onFocus={editor.changeFocus}
@@ -292,7 +293,7 @@ AdministrativeAreaEditionOverviewProps
             onSubmit={handleSubmitField}
             helperText={
               <SubscriptionFocus context={context} fieldName="latitude" />
-            }
+              }
           />
           <Field
             component={TextField}
@@ -305,23 +306,23 @@ AdministrativeAreaEditionOverviewProps
             onSubmit={handleSubmitField}
             helperText={
               <SubscriptionFocus context={context} fieldName="longitude" />
-            }
-          />
-          {administrativeArea?.workflowEnabled && (
-            <StatusField
-              name="x_opencti_workflow_id"
-              type="Administrative-Area"
-              onFocus={editor.changeFocus}
-              onChange={handleSubmitField}
-              setFieldValue={setFieldValue}
-              style={{ marginTop: 20 }}
-              helpertext={
-                <SubscriptionFocus
-                  context={context}
-                  fieldName="x_opencti_workflow_id"
-                />
               }
-            />
+          />
+          {administrativeArea.workflowEnabled && (
+          <StatusField
+            name="x_opencti_workflow_id"
+            type="Administrative-Area"
+            onFocus={editor.changeFocus}
+            onChange={handleSubmitField}
+            setFieldValue={setFieldValue}
+            style={{ marginTop: 20 }}
+            helpertext={
+              <SubscriptionFocus
+                context={context}
+                fieldName="x_opencti_workflow_id"
+              />
+                }
+          />
           )}
           <CreatedByField
             name="createdBy"
@@ -329,7 +330,7 @@ AdministrativeAreaEditionOverviewProps
             setFieldValue={setFieldValue}
             helpertext={
               <SubscriptionFocus context={context} fieldName="createdBy" />
-            }
+              }
             onChange={editor.changeCreated}
           />
           <ObjectMarkingField
@@ -337,20 +338,23 @@ AdministrativeAreaEditionOverviewProps
             style={fieldSpacingContainerStyle}
             helpertext={
               <SubscriptionFocus context={context} fieldname="objectMarking" />
-            }
+              }
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
           />
           {enableReferences && (
-            <CommitMessage
-              submitForm={submitForm}
-              disabled={isSubmitting || !isValid || !dirty}
-              setFieldValue={setFieldValue}
-              open={false}
-              values={values.references}
-              id={administrativeArea.id}
-            />
+          <CommitMessage
+            submitForm={submitForm}
+            disabled={isSubmitting || !isValid || !dirty}
+            setFieldValue={setFieldValue}
+            open={false}
+            values={values.references}
+            id={administrativeArea.id}
+          />
           )}
+          <AdministrativeAreaPopover
+            id={administrativeArea.id}
+          />
         </Form>
       )}
     </Formik>

@@ -5,6 +5,7 @@ import PositionEditionOverview from './PositionEditionOverview';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 import Drawer, { DrawerVariant } from '../../common/drawer/Drawer';
 import useHelper from '../../../../utils/hooks/useHelper';
+import ErrorNotFound from '../../../../components/ErrorNotFound';
 
 const PositionEditionContainer = (props) => {
   const { t_i18n } = useFormatter();
@@ -12,6 +13,9 @@ const PositionEditionContainer = (props) => {
   const FABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const { handleClose, position, open, controlledDial } = props;
   const { editContext } = position;
+  if (editContext === null) {
+    return <ErrorNotFound />;
+  }
   return (
     <Drawer
       title={t_i18n('Update a position')}

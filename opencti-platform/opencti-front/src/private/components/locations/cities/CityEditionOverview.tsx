@@ -21,6 +21,7 @@ import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySet
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
+import CityPopover from './CityPopover';
 
 const cityMutationFieldPatch = graphql`
   mutation CityEditionOverviewFieldPatchMutation(
@@ -294,7 +295,7 @@ const CityEditionOverview: FunctionComponent<CityEditionOverviewProps> = ({
               <SubscriptionFocus context={context} fieldName="longitude" />
             }
           />
-          {city?.workflowEnabled && (
+          {city.workflowEnabled && (
             <StatusField
               name="x_opencti_workflow_id"
               type="City"
@@ -338,6 +339,9 @@ const CityEditionOverview: FunctionComponent<CityEditionOverviewProps> = ({
               id={city.id}
             />
           )}
+          <CityPopover
+            id={city.id}
+          />
         </Form>
       )}
     </Formik>

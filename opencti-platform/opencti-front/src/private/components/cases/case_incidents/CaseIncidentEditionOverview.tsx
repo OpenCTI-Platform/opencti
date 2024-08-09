@@ -26,6 +26,7 @@ import StatusField from '../../common/form/StatusField';
 import { CaseIncidentEditionOverview_case$key } from './__generated__/CaseIncidentEditionOverview_case.graphql';
 import ObjectParticipantField from '../../common/form/ObjectParticipantField';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
+import CaseIncidentPopover from './CaseIncidentPopover';
 
 export const caseIncidentMutationFieldPatch = graphql`
   mutation CaseIncidentEditionOverviewCaseFieldPatchMutation(
@@ -171,7 +172,6 @@ const CaseIncidentEditionOverview: FunctionComponent<CaseIncidentEditionOverview
 }) => {
   const { t_i18n } = useFormatter();
   const caseData = useFragment(caseIncidentEditionOverviewFragment, caseRef);
-
   const basicShape = {
     name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
     severity: Yup.string().nullable(),
@@ -183,16 +183,22 @@ const CaseIncidentEditionOverview: FunctionComponent<CaseIncidentEditionOverview
     confidence: Yup.number().nullable(),
   };
   const caseIncidentValidator = useSchemaEditionValidation('Case-Incident', basicShape);
-
   const queries = {
     fieldPatch: caseIncidentMutationFieldPatch,
     relationAdd: caseIncidentMutationRelationAdd,
     relationDelete: caseIncidentMutationRelationDelete,
     editionFocus: caseIncidentEditionOverviewFocus,
   };
-  const editor = useFormEditor(caseData as GenericData, enableReferences, queries, caseIncidentValidator);
-
-  const onSubmit: FormikConfig<CaseIncidentEditionFormValues>['onSubmit'] = (values, { setSubmitting }) => {
+  const editor = useFormEditor(
+    caseData as GenericData,
+    enableReferences,
+    queries,
+    caseIncidentValidator,
+  );
+  const onSubmit: FormikConfig<CaseIncidentEditionFormValues>['onSubmit'] = (
+    values,
+    { setSubmitting },
+  ) => {
     const { message, references, ...otherValues } = values;
     const commitMessage = message ?? '';
     const commitReferences = (references ?? []).map(({ value }) => value);
@@ -292,7 +298,7 @@ const CaseIncidentEditionOverview: FunctionComponent<CaseIncidentEditionOverview
               variant: 'standard',
               fullWidth: true,
               helperText: (
-                <SubscriptionFocus context={context} fieldName="created"/>
+                <SubscriptionFocus context={context} fieldName="created" />
               ),
               style: { marginTop: 20 },
             }}
@@ -411,6 +417,9 @@ const CaseIncidentEditionOverview: FunctionComponent<CaseIncidentEditionOverview
               id={caseData.id}
             />
           )}
+          <CaseIncidentPopover
+            id={caseData.id}
+          />
         </Form>
       )}
     </Formik>

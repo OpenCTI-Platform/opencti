@@ -8,14 +8,15 @@ import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
+import Security from 'src/utils/Security';
 import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreObjectContentRoot';
 import AdministrativeArea from './AdministrativeArea';
 import AdministrativeAreaKnowledge from './AdministrativeAreaKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import FileManager from '../../common/files/FileManager';
-import AdministrativeAreaPopover from './AdministrativeAreaPopover';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
 import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
+import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
@@ -24,11 +25,10 @@ import { RootAdministrativeAreasSubscription } from './__generated__/RootAdminis
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { useFormatter } from '../../../../components/i18n';
+import AdministrativeAreaPopover from './AdministrativeAreaPopover';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 import AdministrativeAreaEdition from './AdministrativeAreaEdition';
-import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 
 const subscription = graphql`
   subscription RootAdministrativeAreasSubscription($id: ID!) {
@@ -74,9 +74,7 @@ const administrativeAreaQuery = graphql`
 `;
 
 const RootAdministrativeAreaComponent = ({ queryRef, administrativeAreaId }) => {
-  const subConfig = useMemo<
-  GraphQLSubscriptionConfig<RootAdministrativeAreasSubscription>
-  >(
+  const subConfig = useMemo<GraphQLSubscriptionConfig<RootAdministrativeAreasSubscription>>(
     () => ({
       subscription,
       variables: { id: administrativeAreaId },
@@ -143,6 +141,7 @@ const RootAdministrativeAreaComponent = ({ queryRef, administrativeAreaId }) => 
               )}
               enableQuickSubscription={true}
               isOpenctiAlias={true}
+              redirectToContent={true}
             />
             <Box
               sx={{
@@ -203,13 +202,13 @@ const RootAdministrativeAreaComponent = ({ queryRef, administrativeAreaId }) => 
                 path="/"
                 element={
                   <AdministrativeArea administrativeAreaData={administrativeArea} />
-              }
+                }
               />
               <Route
                 path="/knowledge"
                 element={
                   <Navigate to={`/dashboard/locations/administrative_areas/${administrativeArea.id}/knowledge/overview`} replace={true} />
-              }
+                }
               />
               <Route
                 path="/content/*"
@@ -217,19 +216,19 @@ const RootAdministrativeAreaComponent = ({ queryRef, administrativeAreaId }) => 
                   <StixCoreObjectContentRoot
                     stixCoreObject={administrativeArea}
                   />
-              }
+                }
               />
               <Route
                 path="/knowledge/*"
                 element={
                   <AdministrativeAreaKnowledge administrativeAreaData={administrativeArea} />
-              }
+                }
               />
               <Route
                 path="/analyses"
                 element={
                   <StixCoreObjectOrStixCoreRelationshipContainers stixDomainObjectOrStixCoreRelationship={administrativeArea} />
-              }
+                }
               />
               <Route
                 path="/sightings"
@@ -240,7 +239,7 @@ const RootAdministrativeAreaComponent = ({ queryRef, administrativeAreaId }) => 
                     noPadding={true}
                     isTo={true}
                   />
-              }
+                }
               />
               <Route
                 path="/files"
@@ -251,13 +250,13 @@ const RootAdministrativeAreaComponent = ({ queryRef, administrativeAreaId }) => 
                     connectorsExport={connectorsForExport}
                     entity={administrativeArea}
                   />
-              }
+                }
               />
               <Route
                 path="/history"
                 element={
                   <StixCoreObjectHistory stixCoreObjectId={administrativeAreaId} />
-              }
+                }
               />
             </Routes>
           </div>

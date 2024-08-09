@@ -39,7 +39,6 @@ import ContainerHeader from '../../common/containers/ContainerHeader';
 import { reportMutationFieldPatch } from './ReportEditionOverview';
 import ReportKnowledgeGraphBar from './ReportKnowledgeGraphBar';
 import { reportKnowledgeGraphMutationRelationDeleteMutation, reportKnowledgeGraphtMutationRelationAddMutation } from './ReportKnowledgeGraphQuery';
-import ReportPopover from './ReportPopover';
 import { UserContext } from '../../../../utils/hooks/useAuth';
 import investigationAddFromContainer from '../../../../utils/InvestigationUtils';
 import { isNotEmptyField } from '../../../../utils/utils';
@@ -1025,7 +1024,7 @@ class ReportKnowledgeGraphComponent extends Component {
             <>
               <ContainerHeader
                 container={report}
-                PopoverComponent={<ReportPopover />}
+                PopoverComponent={null}
                 link={`/dashboard/analyses/reports/${report.id}/knowledge`}
                 modes={[
                   'graph',

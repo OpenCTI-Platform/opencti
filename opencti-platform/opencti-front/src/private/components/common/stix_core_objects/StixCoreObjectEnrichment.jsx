@@ -14,36 +14,23 @@ class StixCoreObjectEnrichment extends Component {
     this.state = { open: false, search: '' };
   }
 
-  handleOpen() {
-    if (this.props.closeMenu) {
-      this.props.closeMenu();
-    }
-    this.setState({ open: true });
-  }
-
-  handleClose() {
-    this.setState({ open: false, search: '' });
-  }
-
   render() {
-    const { t, stixCoreObjectId, handleClose, open } = this.props;
+    const { t, stixCoreObjectId, displayEnrichment, handleOpenEnrichment, handleClose } = this.props;
     return (
       <>
-        {!handleClose
-          && <Tooltip title={t('Enrichment')}>
-            <ToggleButton
-              onClick={this.handleOpen.bind(this)}
-              value="enrich"
-              size="small"
-              style={{ marginRight: 3 }}
-            >
-              <CloudRefreshOutline fontSize="small" color="primary" />
-            </ToggleButton>
-          </Tooltip>
-        }
+        <Tooltip title={t('Enrichment')}>
+          <ToggleButton
+            onClick={handleOpenEnrichment}
+            value="enrich"
+            size="small"
+            style={{ marginRight: 3 }}
+          >
+            <CloudRefreshOutline fontSize="small" color="primary" />
+          </ToggleButton>
+        </Tooltip>
         <Drawer
-          open={open || this.state.open}
-          onClose={handleClose || this.handleClose.bind(this)}
+          open={displayEnrichment}
+          onClose={handleClose}
           title={t('Enrichment connectors')}
         >
           <QueryRenderer

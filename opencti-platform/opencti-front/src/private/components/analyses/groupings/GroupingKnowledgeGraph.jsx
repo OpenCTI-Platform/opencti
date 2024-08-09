@@ -36,7 +36,6 @@ import GroupingKnowledgeGraphBar from './GroupingKnowledgeGraphBar';
 import { groupingMutationFieldPatch } from './GroupingEditionOverview';
 import { groupingKnowledgeGraphMutationRelationDeleteMutation, groupingKnowledgeGraphtMutationRelationAddMutation } from './GroupingKnowledgeGraphQuery';
 import ContainerHeader from '../../common/containers/ContainerHeader';
-import GroupingPopover from './GroupingPopover';
 import EntitiesDetailsRightsBar from '../../../../utils/graph/EntitiesDetailsRightBar';
 import LassoSelection from '../../../../utils/graph/LassoSelection';
 import { hexToRGB } from '../../../../utils/Colors';
@@ -1024,7 +1023,7 @@ class GroupingKnowledgeGraphComponent extends Component {
             <>
               <ContainerHeader
                 container={grouping}
-                PopoverComponent={<GroupingPopover />}
+                PopoverComponent={null}
                 link={`/dashboard/analyses/groupings/${grouping.id}/knowledge`}
                 modes={['graph', 'content', 'correlation', 'matrix']}
                 currentMode={mode}

@@ -2,12 +2,12 @@ import React, { FunctionComponent } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import Drawer, { DrawerControlledDialType, DrawerVariant } from '@components/common/drawer/Drawer';
 import { CityEditionOverview_city$key } from '@components/locations/cities/__generated__/CityEditionOverview_city.graphql';
+import useHelper from 'src/utils/hooks/useHelper';
 import CityEditionOverview from './CityEditionOverview';
 import { useFormatter } from '../../../../components/i18n';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import { CityEditionContainerQuery } from './__generated__/CityEditionContainerQuery.graphql';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
-import useHelper from '../../../../utils/hooks/useHelper';
 
 interface CityEditionContainerProps {
   queryRef: PreloadedQuery<CityEditionContainerQuery>

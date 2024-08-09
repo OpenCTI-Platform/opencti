@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { FunctionComponent } from 'react';
 import { graphql } from 'react-relay';
 import NoteEditionContainer from './NoteEditionContainer';
 import { QueryRenderer } from '../../../../relay/environment';
@@ -21,7 +21,7 @@ export const noteEditionQuery = graphql`
   }
 `;
 
-const NoteEdition = ({ noteId }: { noteId: string }) => {
+const NoteEdition: FunctionComponent<{ noteId: string }> = ({ noteId }) => {
   const [commit] = useApiMutation(noteEditionOverviewFocus);
 
   const handleClose = () => {

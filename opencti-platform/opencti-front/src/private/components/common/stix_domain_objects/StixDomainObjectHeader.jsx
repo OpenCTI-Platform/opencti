@@ -33,7 +33,7 @@ import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import { useFormatter } from '../../../../components/i18n';
 import Security from '../../../../utils/Security';
-import useGranted, { KNOWLEDGE_KNENRICHMENT, KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import useGranted, { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import CommitMessage from '../form/CommitMessage';
 import StixCoreObjectSharing from '../stix_core_objects/StixCoreObjectSharing';
 import { truncate } from '../../../../utils/String';
@@ -185,11 +185,9 @@ const StixDomainObjectHeader = (props) => {
   const {
     stixDomainObject,
     isOpenctiAlias,
-    PopoverComponent,
     EditComponent,
     viewAs,
     onViewAs,
-    disablePopover,
     disableSharing,
     noAliases,
     entityType, // Should migrate all the parent component to call the useIsEnforceReference as the top
@@ -204,7 +202,6 @@ const StixDomainObjectHeader = (props) => {
   const [newAlias, setNewAlias] = useState('');
   const [aliasToDelete, setAliasToDelete] = useState(null);
   const isKnowledgeUpdater = useGranted([KNOWLEDGE_KNUPDATE]);
-  const isKnowledgeEnricher = useGranted([KNOWLEDGE_KNENRICHMENT]);
   let type = 'unsupported';
   const isThreat = ['Threat-Actor-Group', 'Threat-Actor-Individual', 'Intrusion-Set', 'Campaign', 'Incident', 'Malware', 'Tool'].includes(stixDomainObject.entity_type);
   const isVictim = ['Sector', 'Organization', 'System', 'Individual', 'Region', 'Country', 'Administrative-Area', 'City', 'Position'].includes(stixDomainObject.entity_type);
@@ -530,22 +527,6 @@ const StixDomainObjectHeader = (props) => {
               instanceMarkings={stixDomainObject.objectMarking.map(({ id }) => id) ?? []}
               type={type}
             />
-          )}
-          {(isKnowledgeUpdater || isKnowledgeEnricher) && (
-          <div className={classes.popover}>
-            {/* TODO remove this when all components are pure function without compose() */}
-            {!React.isValidElement(PopoverComponent) ? (
-              <PopoverComponent
-                disabled={disablePopover}
-                id={stixDomainObject.id}
-              />
-            ) : (
-              React.cloneElement(PopoverComponent, {
-                id: stixDomainObject.id,
-                disabled: disablePopover,
-              })
-            )}
-          </div>
           )}
           {EditComponent}
         </div>

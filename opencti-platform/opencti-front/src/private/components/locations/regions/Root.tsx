@@ -10,6 +10,7 @@ import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
+import Security from 'src/utils/Security';
 import Region from './Region';
 import RegionKnowledge from './RegionKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
@@ -18,6 +19,7 @@ import RegionPopover from './RegionPopover';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
 import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
 import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
+import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
 import { RootCountriesSubscription } from '../countries/__generated__/RootCountriesSubscription.graphql';
@@ -28,8 +30,6 @@ import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 import RegionEdition from './RegionEdition';
-import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 
 const subscription = graphql`
   subscription RootRegionsSubscription($id: ID!) {
@@ -141,6 +141,7 @@ const RootRegionComponent = ({ queryRef, regionId }) => {
               )}
               enableQuickSubscription={true}
               isOpenctiAlias={true}
+              redirectToContent={true}
             />
             <Box
               sx={{
@@ -205,7 +206,7 @@ const RootRegionComponent = ({ queryRef, regionId }) => {
                 path="/knowledge"
                 element={
                   <Navigate to={`/dashboard/locations/regions/${regionId}/knowledge/overview`} replace={true} />
-              }
+                }
               />
               <Route
                 path="/knowledge/*"
@@ -217,13 +218,13 @@ const RootRegionComponent = ({ queryRef, regionId }) => {
                   <StixCoreObjectContentRoot
                     stixCoreObject={region}
                   />
-              }
+                }
               />
               <Route
                 path="/analyses"
                 element={
                   <StixCoreObjectOrStixCoreRelationshipContainers stixDomainObjectOrStixCoreRelationship={region} />
-              }
+                }
               />
               <Route
                 path="/sightings"
@@ -234,7 +235,7 @@ const RootRegionComponent = ({ queryRef, regionId }) => {
                     noPadding={true}
                     isTo={true}
                   />
-              }
+                }
               />
               <Route
                 path="/files"
@@ -245,13 +246,13 @@ const RootRegionComponent = ({ queryRef, regionId }) => {
                     connectorsExport={connectorsForExport}
                     entity={region}
                   />
-              }
+                }
               />
               <Route
                 path="/history"
                 element={
                   <StixCoreObjectHistory stixCoreObjectId={regionId} />
-              }
+                }
               />
             </Routes>
           </div>
@@ -263,8 +264,8 @@ const RootRegionComponent = ({ queryRef, regionId }) => {
   );
 };
 
-const RootRegion = () => {
-  const { regionId } = useParams() as { regionId: string };
+const Root = () => {
+  const { regionId } = useParams();
   const queryRef = useQueryLoading<RootRegionQuery>(regionQuery, {
     id: regionId,
   });
@@ -279,4 +280,4 @@ const RootRegion = () => {
   );
 };
 
-export default RootRegion;
+export default Root;
