@@ -454,7 +454,6 @@ class StixCoreObjectHistoryLineComponent extends Component {
               {t('Cancel')}
             </Button>
             <Button
-              button={true}
               color="secondary"
               onClick={this.handleBrowseExternalLink.bind(this)}
             >

@@ -1864,30 +1864,21 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@babel/runtime@npm:^7.12.1, @babel/runtime@npm:^7.24.1":
+  version: 7.25.0
+  resolution: "@babel/runtime@npm:7.25.0"
+  dependencies:
+    regenerator-runtime: "npm:^0.14.0"
+  checksum: 10/6870e9e0e9125075b3aeba49a266f442b10820bfc693019eb6c1785c5a0edbe927e98b8238662cdcdba17842107c040386c3b69f39a0a3b217f9d00ffe685b27
+  languageName: node
+  linkType: hard
+
 "@babel/runtime@npm:^7.13.10":
   version: 7.24.6
   resolution: "@babel/runtime@npm:7.24.6"
   dependencies:
     regenerator-runtime: "npm:^0.14.0"
   checksum: 10/6c4e12731cd9206a883c19d48fa04f6aaaf7ee83f049b22631e6521b866edc20832b4d5db30aa86d8ae799c4dcf57761fe8a4af2bf7e233245c079c1dafb5668
-  languageName: node
-  linkType: hard
-
-"@babel/runtime@npm:^7.15.4":
-  version: 7.24.5
-  resolution: "@babel/runtime@npm:7.24.5"
-  dependencies:
-    regenerator-runtime: "npm:^0.14.0"
-  checksum: 10/e0f4f4d4503f7338749d1dd92361ad132d683bde64e6b61d6c855e100dcd01592295fcfdcc960c946b85ef7908dc2f501080da58447c05812cf3cd80c599bb62
-  languageName: node
-  linkType: hard
-
-"@babel/runtime@npm:^7.24.1":
-  version: 7.25.0
-  resolution: "@babel/runtime@npm:7.25.0"
-  dependencies:
-    regenerator-runtime: "npm:^0.14.0"
-  checksum: 10/6870e9e0e9125075b3aeba49a266f442b10820bfc693019eb6c1785c5a0edbe927e98b8238662cdcdba17842107c040386c3b69f39a0a3b217f9d00ffe685b27
   languageName: node
   linkType: hard
 
@@ -3653,6 +3644,24 @@ __metadata:
   bin:
     proto-loader-gen-types: build/bin/proto-loader-gen-types.js
   checksum: 10/c8a9f915d44881ca7dce108dfb81d853912d95d756308f1ea6b688f63c5342ada4fe0a7cfacc0b28f89a77a4e65cce91fad99e65d5ae49b3d4e1ec4863f84ad4
+  languageName: node
+  linkType: hard
+
+"@hello-pangea/dnd@npm:^16.6.0":
+  version: 16.6.0
+  resolution: "@hello-pangea/dnd@npm:16.6.0"
+  dependencies:
+    "@babel/runtime": "npm:^7.24.1"
+    css-box-model: "npm:^1.2.1"
+    memoize-one: "npm:^6.0.0"
+    raf-schd: "npm:^4.0.3"
+    react-redux: "npm:^8.1.3"
+    redux: "npm:^4.2.1"
+    use-memo-one: "npm:^1.1.3"
+  peerDependencies:
+    react: ^16.8.5 || ^17.0.0 || ^18.0.0
+    react-dom: ^16.8.5 || ^17.0.0 || ^18.0.0
+  checksum: 10/f377461d400c8223174745e4d7ecf4fb0146f9e807413f98120ebbcf075282e631273988d336daaf1fb8e6b6c6a1a8e4f99beefecd7a6b68ccc3bb064d38f13f
   languageName: node
   linkType: hard
 
@@ -6997,7 +7006,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/hoist-non-react-statics@npm:^3.3.0, @types/hoist-non-react-statics@npm:^3.3.1, @types/hoist-non-react-statics@npm:^3.3.5":
+"@types/hoist-non-react-statics@npm:^3.3.1, @types/hoist-non-react-statics@npm:^3.3.5":
   version: 3.3.5
   resolution: "@types/hoist-non-react-statics@npm:3.3.5"
   dependencies:
@@ -7158,15 +7167,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react-beautiful-dnd@npm:^13.1.8":
-  version: 13.1.8
-  resolution: "@types/react-beautiful-dnd@npm:13.1.8"
-  dependencies:
-    "@types/react": "npm:*"
-  checksum: 10/cb8a182ed0ea6f680c7c343fcb4e54237437ca90dc88c2a70f4a203ec8ad0740e389e3ab7772c8cc1479f05e5a046bccbc33d54055b94e0fe5b22be030ab23d2
-  languageName: node
-  linkType: hard
-
 "@types/react-csv@npm:1.1.10":
   version: 1.1.10
   resolution: "@types/react-csv@npm:1.1.10"
@@ -7191,18 +7191,6 @@ __metadata:
   dependencies:
     "@types/react": "npm:*"
   checksum: 10/21599054dfa977ed8445b1ab3198a842531cb36bd620564c3f8a469688cbea051149eb644a99b2f8f6d02f8d9909a6145668f385781b5647601e9663de216946
-  languageName: node
-  linkType: hard
-
-"@types/react-redux@npm:^7.1.20":
-  version: 7.1.33
-  resolution: "@types/react-redux@npm:7.1.33"
-  dependencies:
-    "@types/hoist-non-react-statics": "npm:^3.3.0"
-    "@types/react": "npm:*"
-    hoist-non-react-statics: "npm:^3.3.0"
-    redux: "npm:^4.0.0"
-  checksum: 10/65f4e0a3f0e532bbbe44ae6522d1fce91bfcb3bacc90904c35d3f819e77932cc489b6945988acb4a2320f6e78c57dd1c149556aa241a68efc51de15a2cd73fc0
   languageName: node
   linkType: hard
 
@@ -7346,6 +7334,13 @@ __metadata:
   version: 2.0.10
   resolution: "@types/unist@npm:2.0.10"
   checksum: 10/e2924e18dedf45f68a5c6ccd6015cd62f1643b1b43baac1854efa21ae9e70505db94290434a23da1137d9e31eb58e54ca175982005698ac37300a1c889f6c4aa
+  languageName: node
+  linkType: hard
+
+"@types/use-sync-external-store@npm:^0.0.3":
+  version: 0.0.3
+  resolution: "@types/use-sync-external-store@npm:0.0.3"
+  checksum: 10/161ddb8eec5dbe7279ac971531217e9af6b99f7783213566d2b502e2e2378ea19cf5e5ea4595039d730aa79d3d35c6567d48599f69773a02ffcff1776ec2a44e
   languageName: node
   linkType: hard
 
@@ -9923,7 +9918,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"css-box-model@npm:^1.2.0":
+"css-box-model@npm:^1.2.1":
   version: 1.2.1
   resolution: "css-box-model@npm:1.2.1"
   dependencies:
@@ -15785,10 +15780,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"memoize-one@npm:^5.1.1":
-  version: 5.2.1
-  resolution: "memoize-one@npm:5.2.1"
-  checksum: 10/b7141dc148b5c6fdd51e77ecf0421fd2581681eb8756e0b3dfbd4fe765b5e2b5a6bc90214bb6f19a96b6aed44de17eda3407142a7be9e24ccd0774bbd9874d1b
+"memoize-one@npm:^6.0.0":
+  version: 6.0.0
+  resolution: "memoize-one@npm:6.0.0"
+  checksum: 10/28feaf7e9a870efef1187df110b876ce42deaf86c955f4111d72d23b96e44eed573469316e6ad0d2cc7fa3b1526978215617b126158015f957242c7493babca9
   languageName: node
   linkType: hard
 
@@ -17247,6 +17242,7 @@ __metadata:
     "@emotion/styled": "npm:11.13.0"
     "@fontsource/geologica": "npm:5.0.5"
     "@fontsource/ibm-plex-sans": "npm:5.0.20"
+    "@hello-pangea/dnd": "npm:^16.6.0"
     "@mui/icons-material": "npm:5.16.6"
     "@mui/lab": "npm:5.0.0-alpha.173"
     "@mui/material": "npm:5.16.6"
@@ -17265,7 +17261,6 @@ __metadata:
     "@types/qrcode": "npm:1.5.5"
     "@types/ramda": "npm:0.29.11"
     "@types/react": "npm:18.3.2"
-    "@types/react-beautiful-dnd": "npm:^13.1.8"
     "@types/react-csv": "npm:1.1.10"
     "@types/react-dom": "npm:18.3.0"
     "@types/react-grid-layout": "npm:1.3.5"
@@ -17331,7 +17326,6 @@ __metadata:
     ramda: "npm:0.29.1"
     react: "npm:18.3.1"
     react-apexcharts: "npm:1.4.1"
-    react-beautiful-dnd: "npm:13.1.1"
     react-color: "npm:2.19.3"
     react-cookie: "npm:7.2.0"
     react-csv: "npm:2.2.2"
@@ -18614,7 +18608,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"raf-schd@npm:^4.0.2":
+"raf-schd@npm:^4.0.3":
   version: 4.0.3
   resolution: "raf-schd@npm:4.0.3"
   checksum: 10/45514041c5ad31fa96aef3bb3c572a843b92da2f2cd1cb4a47c9ad58e48761d3a4126e18daa32b2bfa0bc2551a42d8f324a0e40e536cb656969929602b4e8b58
@@ -18677,24 +18671,6 @@ __metadata:
     apexcharts: ^3.41.0
     react: ">=0.13"
   checksum: 10/0f0963ad31b5fc30b094f7b44536f6d3a95dc3453276589d39195f43c233ec983843b94066d53b3ef3a3bff43465453291567c3d4b9eaa54d66f28badf8c0e4c
-  languageName: node
-  linkType: hard
-
-"react-beautiful-dnd@npm:13.1.1":
-  version: 13.1.1
-  resolution: "react-beautiful-dnd@npm:13.1.1"
-  dependencies:
-    "@babel/runtime": "npm:^7.9.2"
-    css-box-model: "npm:^1.2.0"
-    memoize-one: "npm:^5.1.1"
-    raf-schd: "npm:^4.0.2"
-    react-redux: "npm:^7.2.0"
-    redux: "npm:^4.0.4"
-    use-memo-one: "npm:^1.1.1"
-  peerDependencies:
-    react: ^16.8.5 || ^17.0.0 || ^18.0.0
-    react-dom: ^16.8.5 || ^17.0.0 || ^18.0.0
-  checksum: 10/2de8162a74f7fc78294e5a928b92d3fff02c579d137a25d53b1ab4313abeb108709bb7281512f7f94d18257de3122b8c85cb5a8375113cb8657088b1a9bda65b
   languageName: node
   linkType: hard
 
@@ -18891,7 +18867,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-is@npm:^17.0.1, react-is@npm:^17.0.2":
+"react-is@npm:^17.0.1":
   version: 17.0.2
   resolution: "react-is@npm:17.0.2"
   checksum: 10/73b36281e58eeb27c9cc6031301b6ae19ecdc9f18ae2d518bdb39b0ac564e65c5779405d623f1df9abf378a13858b79442480244bd579968afc1faf9a2ce5e05
@@ -19038,24 +19014,35 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-redux@npm:^7.2.0":
-  version: 7.2.9
-  resolution: "react-redux@npm:7.2.9"
+"react-redux@npm:^8.1.3":
+  version: 8.1.3
+  resolution: "react-redux@npm:8.1.3"
   dependencies:
-    "@babel/runtime": "npm:^7.15.4"
-    "@types/react-redux": "npm:^7.1.20"
+    "@babel/runtime": "npm:^7.12.1"
+    "@types/hoist-non-react-statics": "npm:^3.3.1"
+    "@types/use-sync-external-store": "npm:^0.0.3"
     hoist-non-react-statics: "npm:^3.3.2"
-    loose-envify: "npm:^1.4.0"
-    prop-types: "npm:^15.7.2"
-    react-is: "npm:^17.0.2"
+    react-is: "npm:^18.0.0"
+    use-sync-external-store: "npm:^1.0.0"
   peerDependencies:
-    react: ^16.8.3 || ^17 || ^18
+    "@types/react": ^16.8 || ^17.0 || ^18.0
+    "@types/react-dom": ^16.8 || ^17.0 || ^18.0
+    react: ^16.8 || ^17.0 || ^18.0
+    react-dom: ^16.8 || ^17.0 || ^18.0
+    react-native: ">=0.59"
+    redux: ^4 || ^5.0.0-beta.0
   peerDependenciesMeta:
+    "@types/react":
+      optional: true
+    "@types/react-dom":
+      optional: true
     react-dom:
       optional: true
     react-native:
       optional: true
-  checksum: 10/1c3018bd2601e6d18339281867910b583dcbb3d8856403086e08c00abf0dfe467a94c0d1356bafa8cdf107bf1e2c9899a28486e4778e85c8bc4dfed2076b116f
+    redux:
+      optional: true
+  checksum: 10/c4c7586cff3abeb784e73598d330f5301116a4e9942fd36895f2bccd8990001709c6c3ea1817edb75ee477470d6c67c9113e05a7f86b2b68a3950c9c29fe20cb
   languageName: node
   linkType: hard
 
@@ -19511,7 +19498,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"redux@npm:^4.0.0, redux@npm:^4.0.4":
+"redux@npm:^4.2.1":
   version: 4.2.1
   resolution: "redux@npm:4.2.1"
   dependencies:
@@ -22364,7 +22351,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"use-memo-one@npm:^1.1.1":
+"use-memo-one@npm:^1.1.3":
   version: 1.1.3
   resolution: "use-memo-one@npm:1.1.3"
   peerDependencies:
@@ -22395,6 +22382,15 @@ __metadata:
   peerDependencies:
     react: ^16.8.0 || ^17.0.0 || ^18.0.0
   checksum: 10/a676216affc203876bd47981103f201f28c2731361bb186367e12d287a7566763213a8816910c6eb88265eccd4c230426eb783d64c373c4a180905be8820ed8e
+  languageName: node
+  linkType: hard
+
+"use-sync-external-store@npm:^1.0.0":
+  version: 1.2.2
+  resolution: "use-sync-external-store@npm:1.2.2"
+  peerDependencies:
+    react: ^16.8.0 || ^17.0.0 || ^18.0.0
+  checksum: 10/671e9c190aab9a8374a5d468c6ba17f52c38b6fae970110bc196fc1e2b57204149aea9619be49a1bb5207fb6e51d8afd19c3bcb94afe61813fed039821461dc0
   languageName: node
   linkType: hard
 

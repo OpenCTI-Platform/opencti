@@ -3,7 +3,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import Checkbox from '@mui/material/Checkbox';
 import { DragIndicatorOutlined } from '@mui/icons-material';
 import Menu from '@mui/material/Menu';
-import { DragDropContext, Draggable, DraggableLocation, Droppable } from 'react-beautiful-dnd';
+import { DragDropContext, Draggable, DraggableLocation, Droppable } from '@hello-pangea/dnd';
 import MenuItem from '@mui/material/MenuItem';
 import { PopoverProps } from '@mui/material/Popover/Popover';
 import { useTheme } from '@mui/styles';

@@ -3,6 +3,8 @@ import React, { useMemo } from 'react';
 import Paper from '@mui/material/Paper';
 import makeStyles from '@mui/styles/makeStyles';
 import { graphql, useFragment, useSubscription } from 'react-relay';
+import Grid from '@mui/material/Grid';
+import EntitySettingCustomOverview from '@components/settings/sub_types/entity_setting/EntitySettingCustomOverview';
 import { useFormatter } from '../../../../components/i18n';
 import ItemStatusTemplate from '../../../../components/ItemStatusTemplate';
 import SubTypeStatusPopover from './SubTypeWorkflowPopover';
@@ -13,6 +15,7 @@ import CustomizationMenu from '../CustomizationMenu';
 import SearchInput from '../../../../components/SearchInput';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import { DataSourcesLinesPaginationQuery$variables } from '../../techniques/data_sources/__generated__/DataSourcesLinesPaginationQuery.graphql';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -47,6 +50,7 @@ const subTypeFragment = graphql`
     settings {
       id
       availableSettings
+      ...EntitySettingsOverviewLayoutCustomization_entitySetting
       ...EntitySettingSettings_entitySetting
       ...EntitySettingAttributes_entitySetting
     }
@@ -61,27 +65,37 @@ const subTypeFragment = graphql`
   }
 `;
 
-const SubType = ({ data }: { data: SubType_subType$key }) => {
+interface SubTypeProps {
+  data: SubType_subType$key;
+}
+
+const SubType: React.FC<SubTypeProps> = ({ data }) => {
   const { t_i18n } = useFormatter();
+  const { isFeatureEnable } = useHelper();
+  const isOverviewLayoutCustomizationEnabled = isFeatureEnable('OVERVIEW_LAYOUT_CUSTOMIZATION');
   const classes = useStyles();
-  const subType = useFragment(subTypeFragment, data);
+  const subType = useFragment<SubType_subType$key>(subTypeFragment, data);
+
   const subTypeSettingsId = subType.settings?.id;
-  if (subTypeSettingsId) {
-    const config = useMemo(
-      () => ({
-        subscription: entitySettingSubscription,
-        variables: { id: subTypeSettingsId },
-      }),
-      [subType.settings],
-    );
-    useSubscription(config);
+  if (!subTypeSettingsId) {
+    return null;
   }
+  const config = useMemo(
+    () => ({
+      subscription: entitySettingSubscription,
+      variables: { id: subTypeSettingsId },
+    }),
+    [subType.settings],
+  );
+  useSubscription(config);
+
   const LOCAL_STORAGE_KEY = `${subType.id}-attributes`;
   const { viewStorage, helpers } = usePaginationLocalStorage<DataSourcesLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY,
     { searchTerm: '' },
   );
   const { searchTerm } = viewStorage;
+
   return (
     <div className={classes.container}>
       <CustomizationMenu />
@@ -90,51 +104,63 @@ const SubType = ({ data }: { data: SubType_subType$key }) => {
           {t_i18n(`entity_${subType.label}`)}
         </Typography>
       </div>
-      <Typography variant="h4" gutterBottom={true}>
-        {t_i18n('Configuration')}
-      </Typography>
-      <Paper
-        classes={{ root: classes.paper }}
-        variant="outlined"
-        style={{ marginBottom: 30 }}
+      <Grid
+        container
+        spacing={3}
       >
-        <EntitySettingSettings entitySettingsData={subType.settings} />
-        {subType.settings?.availableSettings.includes('workflow_configuration')
-          && <>
-            <div style={{ marginTop: 10 }}>
-              <Typography variant="h3" gutterBottom={true}>
-                {t_i18n('Workflow')}
-                <SubTypeStatusPopover subTypeId={subType.id} />
-              </Typography>
-            </div>
-            <ItemStatusTemplate
-              statuses={subType.statuses}
-              disabled={!subType.workflowEnabled}
-            />
-          </>
-        }
-      </Paper>
-      {subType.settings?.availableSettings.includes('attributes_configuration')
-        && <>
-          <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
-            {t_i18n('Attributes')}
+        <Grid item xs={12}>
+          <Typography variant="h4" gutterBottom={true}>
+            {t_i18n('Configuration')}
           </Typography>
-          <div style={{ float: 'right', marginTop: -12 }}>
-            <SearchInput
-              variant="thin"
-              onSubmit={helpers.handleSearch}
-              keyword={searchTerm}
-            />
-          </div>
-          <div className="clearfix" />
-          <Paper classes={{ root: classes.paper }} variant="outlined" style={{ paddingTop: 5 }}>
-            <EntitySettingAttributes
-              entitySettingsData={subType.settings}
-              searchTerm={searchTerm}
-            ></EntitySettingAttributes>
+          <Paper
+            classes={{ root: classes.paper }}
+            variant="outlined"
+            className={'paper-for-grid'}
+          >
+            <EntitySettingSettings entitySettingsData={subType.settings} />
+            {subType.settings?.availableSettings.includes('workflow_configuration')
+              && <>
+                <div style={{ marginTop: 10 }}>
+                  <Typography variant="h3" gutterBottom={true}>
+                    {t_i18n('Workflow')}
+                    <SubTypeStatusPopover subTypeId={subType.id} />
+                  </Typography>
+                </div>
+                <ItemStatusTemplate
+                  statuses={subType.statuses}
+                  disabled={!subType.workflowEnabled}
+                />
+              </>
+            }
           </Paper>
-        </>
-      }
+        </Grid>
+        {subType.settings?.availableSettings.includes('attributes_configuration') && (
+          <Grid item xs={12}>
+            <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
+              {t_i18n('Attributes')}
+            </Typography>
+            <div style={{ float: 'right', marginTop: -12 }}>
+              <SearchInput
+                variant="thin"
+                onSubmit={helpers.handleSearch}
+                keyword={searchTerm}
+              />
+            </div>
+            <div className="clearfix" />
+            <Paper classes={{ root: classes.paper }} variant="outlined" className={'paper-for-grid'}>
+              <EntitySettingAttributes
+                entitySettingsData={subType.settings}
+                searchTerm={searchTerm}
+              ></EntitySettingAttributes>
+            </Paper>
+          </Grid>
+        )}
+        { isOverviewLayoutCustomizationEnabled && (
+          <EntitySettingCustomOverview
+            entitySettingsData={subType.settings}
+          />
+        )}
+      </Grid>
     </div>
   );
 };

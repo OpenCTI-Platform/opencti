@@ -909,7 +909,8 @@ const rebuildAndMergeInputFromExistingData = (rawInput, instance) => {
         finalVal = value;
       }
     }
-    if (compareUnsorted(finalVal ?? [], currentValues)) {
+    // TODO: solve case where ordering is important and we should use regular 'compare'
+    if (key !== 'overview_layout_customization' && compareUnsorted(finalVal ?? [], currentValues)) {
       return {}; // No need to update the attribute
     }
   } else if (isObjectAttribute(key) && object_path) {

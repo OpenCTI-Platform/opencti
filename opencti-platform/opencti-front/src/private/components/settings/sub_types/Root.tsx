@@ -1,15 +1,10 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-// TODO Remove this when V6
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-nocheck
-import React from 'react';
-import { Route, Routes, useParams } from 'react-router-dom';
-import { graphql } from 'react-relay';
-import { QueryRenderer } from '../../../../relay/environment';
+import React, { Suspense } from 'react';
+import { useParams } from 'react-router-dom';
+import { graphql, useLazyLoadQuery } from 'react-relay';
+import { RootSubTypeQuery } from '@components/settings/sub_types/__generated__/RootSubTypeQuery.graphql';
 import Loader from '../../../../components/Loader';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import SubType from './SubType';
-import { RootSubTypeQuery$data } from './__generated__/RootEntityTypeQuery.graphql';
 
 export const subTypeQuery = graphql`
   query RootSubTypeQuery($id: String!) {
@@ -21,27 +16,15 @@ export const subTypeQuery = graphql`
 
 const RootSubType = () => {
   const { subTypeId } = useParams() as { subTypeId: string };
+
+  const data = useLazyLoadQuery<RootSubTypeQuery>(subTypeQuery, { id: subTypeId });
+
   return (
-    <QueryRenderer
-      query={subTypeQuery}
-      variables={{ id: subTypeId }}
-      render={({ props }: { props: RootSubTypeQuery$data }) => {
-        if (props) {
-          if (props.subType) {
-            return (
-              <Routes>
-                <Route
-                  path="/"
-                  element={ <SubType data={props.subType} />}
-                />
-              </Routes>
-            );
-          }
-          return <ErrorNotFound />;
-        }
-        return <Loader />;
-      }}
-    />
+    <Suspense fallback={<Loader />}>
+      {
+        data.subType ? <SubType data={data.subType} /> : <ErrorNotFound />
+      }
+    </Suspense>
   );
 };
 

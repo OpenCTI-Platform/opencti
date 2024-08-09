@@ -45,10 +45,11 @@ const useStyles = makeStyles((theme) => ({
   charts: {
     display: 'grid',
     gridAutoFlow: 'column',
-    gridAutoColumns: '40px 40px 40px',
+    gridAutoColumns: 40,
+    marginLeft: 10,
   },
   chartContainer: {
-    marginLeft: -27,
+    marginLeft: -31,
     position: 'relative',
   },
   iconOverlay: {
@@ -473,7 +474,7 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
         {renderForm()}
       </Drawer>
       <Dialog
-        open={isSubmitting || result || resultError}
+        open={!!(isSubmitting || result || resultError)}
         PaperProps={{ elevation: 1 }}
         TransitionComponent={Transition}
         onClose={handleCloseFinal}

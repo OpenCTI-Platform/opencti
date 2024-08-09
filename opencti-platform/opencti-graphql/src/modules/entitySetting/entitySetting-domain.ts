@@ -79,7 +79,6 @@ export const entitySettingEditField = async (context: AuthContext, user: AuthUse
       throw FunctionalError('It should have at least one member with admin access');
     }
   }
-
   const { element } = await updateAttribute(context, user, entitySettingId, ENTITY_TYPE_ENTITY_SETTING, input);
   await publishUserAction({
     user,

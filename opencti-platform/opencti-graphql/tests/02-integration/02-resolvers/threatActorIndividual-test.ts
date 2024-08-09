@@ -1,12 +1,7 @@
 import gql from 'graphql-tag';
 import { describe, expect, it } from 'vitest';
 import { queryAsAdmin } from '../../utils/testQuery';
-import type {
-  EditInput,
-  EntitySettingEdge,
-  ThreatActorIndividualAddInput,
-  OverviewLayoutCustomization as ResponseOverviewLayoutCustomization
-} from '../../../src/generated/graphql';
+import type { EditInput, EntitySettingEdge, ThreatActorIndividualAddInput } from '../../../src/generated/graphql';
 import { EditOperation } from '../../../src/generated/graphql';
 import { executionContext, SYSTEM_USER } from '../../../src/utils/access';
 import { initCreateEntitySettings } from '../../../src/modules/entitySetting/entitySetting-domain';
@@ -55,6 +50,7 @@ const isDate = (value: string) => !Number.isNaN(new Date(value).getTime());
 
 describe('Threat actor individual resolver standard behavior', () => {
   let threatActorIndividualEntitySettingId: string;
+  let defaultTAIOverviewLayoutCustomization: OverviewLayoutCustomization[];
 
   it('should create threat actor individual', async () => {
     const CREATE_QUERY = gql`
@@ -115,10 +111,11 @@ describe('Threat actor individual resolver standard behavior', () => {
             node {
               id
               target_type
-                overview_layout_customization {
-                  key
-                  width
-                }
+              overview_layout_customization {
+                key
+                width
+                label
+              }
             }
           }
         }
@@ -131,10 +128,13 @@ describe('Threat actor individual resolver standard behavior', () => {
     const threatActorIndividualEntitySettingResponse = queryResult.data?.entitySettings.edges
       .find((entitySetting: EntitySettingEdge) => entitySetting.node.target_type === ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL);
     expect(threatActorIndividualEntitySettingResponse).toBeTruthy();
+    // save id info for next tests
     threatActorIndividualEntitySettingId = threatActorIndividualEntitySettingResponse?.node.id;
-    expect(threatActorIndividualEntitySettingResponse?.node.overview_layout_customization).toBeTruthy();
-    const defaultOverviewLayoutCustomization = threatActorIndividualEntitySettingResponse?.node.overview_layout_customization as OverviewLayoutCustomization[];
-    expect(defaultOverviewLayoutCustomization.every(({ key, width }) => !!key && !!width)).toBe(true);
+
+    expect(threatActorIndividualEntitySettingResponse?.node.overview_layout_customization).toHaveLength(9);
+    // save default config for next tests
+    defaultTAIOverviewLayoutCustomization = threatActorIndividualEntitySettingResponse?.node.overview_layout_customization as OverviewLayoutCustomization[];
+    expect(defaultTAIOverviewLayoutCustomization.every(({ key, width, label }) => !!key && !!width && !!label)).toBe(true);
     const defaultOverviewLayoutCustomizationKeys = [
       'details',
       'basicInformation',
@@ -146,7 +146,7 @@ describe('Threat actor individual resolver standard behavior', () => {
       'mostRecentHistory',
       'notes',
     ];
-    expect(defaultOverviewLayoutCustomizationKeys.every((key) => defaultOverviewLayoutCustomization.map(({ key: widgetKey }) => widgetKey).includes(key))).toEqual(true);
+    expect(defaultOverviewLayoutCustomizationKeys.every((key) => defaultTAIOverviewLayoutCustomization.map(({ key: widgetKey }) => widgetKey).includes(key))).toEqual(true);
   });
   describe('Overview layout customization', async () => {
     const ENTITY_SETTINGS_UPDATE_QUERY = gql`
@@ -154,144 +154,72 @@ describe('Threat actor individual resolver standard behavior', () => {
         entitySettingsFieldPatch(ids: $ids, input: $input) {
           id
           target_type
-            overview_layout_customization {
-              key
-              width
-            }
+          overview_layout_customization {
+            key
+            width
+            label
+          }
         }
       }
   `;
     it('should update width', async () => {
       // Customize the overview layout width
-      const overviewLayoutCustomizationConfiguration: OverviewLayoutCustomization[] = [{
-        key: 'details',
-        width: 12,
-      }, {
-        key: 'basicInformation',
-        width: 12,
-      }, {
-        key: 'demographics',
-        width: 6,
-      }, {
-        key: 'biographics',
-        width: 6,
-      }, {
-        key: 'latestCreatedRelationships',
-        width: 6,
-      }, {
-        key: 'latestContainers',
-        width: 6,
-      }, {
-        key: 'externalReferences',
-        width: 6,
-      }, {
-        key: 'mostRecentHistory',
-        width: 6,
-      }, {
-        key: 'notes',
-        width: 12,
-      }];
+      const overviewLayoutCustomizationConfiguration: OverviewLayoutCustomization[] = [
+        { key: 'details', width: 12, label: 'Entity details' }, // 6 -> 12
+        { key: 'basicInformation', width: 12, label: 'Basic information' }, // 6 -> 12
+        { key: 'demographics', width: 6, label: 'Demographics' },
+        { key: 'biographics', width: 6, label: 'Biographics' },
+        { key: 'latestCreatedRelationships', width: 6, label: 'Latest created relationships' },
+        { key: 'latestContainers', width: 6, label: 'Latest containers' },
+        { key: 'externalReferences', width: 6, label: 'External references' },
+        { key: 'mostRecentHistory', width: 6, label: 'Most recent history' },
+        { key: 'notes', width: 12, label: 'Notes about this entity' },
+      ];
       const entitySettingsUpdateResult = await queryAsAdmin({
         query: ENTITY_SETTINGS_UPDATE_QUERY,
-        variables: { ids: [threatActorIndividualEntitySettingId],
+        variables: {
+          ids: [threatActorIndividualEntitySettingId],
           input: {
             key: 'overview_layout_customization',
             value: overviewLayoutCustomizationConfiguration,
-          } }
+          }
+        }
       });
-      const expectedOverviewLayoutCustomization: ResponseOverviewLayoutCustomization[] = overviewLayoutCustomizationConfiguration
-        .map(({ key, width }) => ({ key, width }));
+
       expect(
         entitySettingsUpdateResult.data?.entitySettingsFieldPatch?.[0]?.overview_layout_customization
       ).toEqual(
-        expectedOverviewLayoutCustomization
+        overviewLayoutCustomizationConfiguration
       );
     });
     it('should update order', async () => {
       // Customize the overview layout order
-      const overviewLayoutCustomizationConfiguration: OverviewLayoutCustomization[] = [{
-        key: 'basicInformation',
-        width: 6,
-      }, {
-        key: 'details',
-        width: 6,
-      }, {
-        key: 'demographics',
-        width: 6,
-      }, {
-        key: 'biographics',
-        width: 6,
-      }, {
-        key: 'latestCreatedRelationships',
-        width: 6,
-      }, {
-        key: 'latestContainers',
-        width: 6,
-      }, {
-        key: 'externalReferences',
-        width: 6,
-      }, {
-        key: 'mostRecentHistory',
-        width: 6,
-      }, {
-        key: 'notes',
-        width: 12,
-      }];
+      const overviewLayoutCustomizationConfiguration: OverviewLayoutCustomization[] = [
+        { key: 'basicInformation', width: 6, label: 'Basic information' }, // order + 1
+        { key: 'details', width: 6, label: 'Entity details' }, // order - 1
+        { key: 'demographics', width: 6, label: 'Demographics' },
+        { key: 'biographics', width: 6, label: 'Biographics' },
+        { key: 'latestCreatedRelationships', width: 6, label: 'Latest created relationships' },
+        { key: 'latestContainers', width: 6, label: 'Latest containers' },
+        { key: 'externalReferences', width: 6, label: 'External references' },
+        { key: 'mostRecentHistory', width: 6, label: 'Most recent history' },
+        { key: 'notes', width: 12, label: 'Notes about this entity' },
+      ];
       const entitySettingsUpdateResult = await queryAsAdmin({
-        query: ENTITY_SETTINGS_UPDATE_QUERY,
-        variables: { ids: [threatActorIndividualEntitySettingId],
-          input: {
-            key: 'overview_layout_customization',
-            value: overviewLayoutCustomizationConfiguration,
-          } }
-      });
-      const expectedOverviewLayoutCustomization: ResponseOverviewLayoutCustomization[] = overviewLayoutCustomizationConfiguration
-        .map(({ key, width }) => ({ key, width }));
-      expect(entitySettingsUpdateResult.data?.entitySettingsFieldPatch?.[0]?.overview_layout_customization).toEqual(expectedOverviewLayoutCustomization);
-    });
-    it('should update overview_layout_customization', async () => {
-      const replace_all_overviewLayoutCustomization: EditInput = {
-        key: 'overview_layout_customization',
-        value: [{
-          key: 'basicInformation',
-          width: 12,
-        }, {
-          key: 'details',
-          width: 12,
-        }, {
-          key: 'demographics',
-          width: 6,
-        }, {
-          key: 'biographics',
-          width: 6,
-        }, {
-          key: 'latestCreatedRelationships',
-          width: 6,
-        }, {
-          key: 'latestContainers',
-          width: 6,
-        }, {
-          key: 'externalReferences',
-          width: 12,
-        }, {
-          key: 'mostRecentHistory',
-          width: 12,
-        }, {
-          key: 'notes',
-          width: 12,
-        }],
-      };
-      const replaceAll = await queryAsAdmin({
         query: ENTITY_SETTINGS_UPDATE_QUERY,
         variables: {
           ids: [threatActorIndividualEntitySettingId],
-          input: [replace_all_overviewLayoutCustomization]
+          input: {
+            key: 'overview_layout_customization',
+            value: overviewLayoutCustomizationConfiguration,
+          }
         }
       });
-      const threatActorIndividualEntitySettings = replaceAll?.data?.entitySettingsFieldPatch;
-      expect(threatActorIndividualEntitySettings).not.toBeNull();
-      expect(threatActorIndividualEntitySettings).toBeDefined();
-      expect(threatActorIndividualEntitySettings[0].overview_layout_customization).toHaveLength(9);
+      expect(
+        entitySettingsUpdateResult.data?.entitySettingsFieldPatch?.[0]?.overview_layout_customization
+      ).toEqual(
+        overviewLayoutCustomizationConfiguration
+      );
     });
     // reset entity settings overview_layout_customization
     it('should reset overview_layout_customization', async () => {
@@ -301,10 +229,15 @@ describe('Threat actor individual resolver standard behavior', () => {
           ids: [threatActorIndividualEntitySettingId],
           input: {
             key: 'overview_layout_customization',
-            value: undefined,
-          } }
+            value: [],
+          }
+        }
       });
-      expect(entitySettingsUpdateResult.data?.entitySettingsFieldPatch?.[0]?.overview_layout_customization).toBeUndefined();
+      expect(
+        entitySettingsUpdateResult.data?.entitySettingsFieldPatch?.[0]?.overview_layout_customization
+      ).toEqual(
+        defaultTAIOverviewLayoutCustomization
+      );
       resetCacheForEntity(ENTITY_TYPE_SETTINGS);
     });
   });

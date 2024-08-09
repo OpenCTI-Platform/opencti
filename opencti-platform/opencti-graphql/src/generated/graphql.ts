@@ -16800,6 +16800,7 @@ export type OtpElement = {
 export type OverviewLayoutCustomization = {
   __typename?: 'OverviewLayoutCustomization';
   key: Scalars['String']['output'];
+  label: Scalars['String']['output'];
   width: Scalars['Int']['output'];
 };
 
@@ -35620,6 +35621,7 @@ export type OtpElementResolvers<ContextType = any, ParentType extends ResolversP
 
 export type OverviewLayoutCustomizationResolvers<ContextType = any, ParentType extends ResolversParentTypes['OverviewLayoutCustomization'] = ResolversParentTypes['OverviewLayoutCustomization']> = ResolversObject<{
   key?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  label?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   width?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
