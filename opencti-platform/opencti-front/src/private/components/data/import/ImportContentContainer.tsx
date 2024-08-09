@@ -4,7 +4,7 @@ import { ImportContentQuery } from '@components/import/__generated__/ImportConte
 import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
 import ImportWorkbenchesContent from '@components/data/import/ImportWorkbenchesContent';
 import ImportFilesContent from '@components/data/import/ImportFilesContent';
-import { ImportContentContainer_connectorsImport$key } from './__generated__/ImportContentContainer_connectorsImport.graphql';
+import { ImportContentContainer_connectorsImport$key } from '@components/data/import/__generated__/ImportContentContainer_connectorsImport.graphql';
 
 interface ImportContentContainerProps {
   tab?: string;
@@ -32,7 +32,7 @@ const ImportContentContainer: FunctionComponent<ImportContentContainerProps> = (
   const data = usePreloadedQuery(importContentQuery, queryRef);
   const connectorsData = useFragment<ImportContentContainer_connectorsImport$key>(
     importConnectorsFragment,
-    data.connectorsForImport as ImportContentContainer_connectorsImport$key | null | undefined,
+    data.connectorsForImport as unknown as ImportContentContainer_connectorsImport$key,
   );
   const connectors = connectorsData?.filter((n) => !n.only_contextual); // Can be null but not empty
 

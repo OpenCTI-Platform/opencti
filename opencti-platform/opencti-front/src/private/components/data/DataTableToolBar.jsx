@@ -624,7 +624,7 @@ class DataTableToolBar extends Component {
 
   submitTask(availableFilterKeys) {
     this.setState({ processing: true });
-    const { actions, mergingElement, scope: stateScope, promoteToContainer } = this.state;
+    const { actions, mergingElement, promoteToContainer } = this.state;
     const {
       filters,
       search,
@@ -642,9 +642,12 @@ class DataTableToolBar extends Component {
     );
 
     const selectedElementsList = R.values(selectedElements);
-    let scope = stateScope ?? 'KNOWLEDGE';
-    if (!stateScope && selectedElementsList.some(({ entity_type }) => entity_type === 'Vocabulary')) {
+    const { selectedTypes } = this.getSelectedTypes();
+    let scope = 'KNOWLEDGE';
+    if (selectedElementsList.some(({ entity_type }) => entity_type === 'Vocabulary')) {
       scope = 'SETTINGS';
+    } else if (selectedTypes.at(0) === 'InternalFile' && !this.state.scope) {
+      scope = 'IMPORT';
     }
     const finalActions = R.map(
       (n) => ({
@@ -1271,6 +1274,15 @@ class DataTableToolBar extends Component {
     this.setState((prevState) => ({ promoteToContainer: !prevState.promoteToContainer }));
   }
 
+  getSelectedTypes() {
+    const entityTypeFilterValues = findFilterFromKey(this.props.filters?.filters ?? [], 'entity_type', 'eq')?.values ?? [];
+    const selectedElementsList = Object.values(this.props.selectedElements || {});
+
+    const selectedTypes = R.uniq([...selectedElementsList.map((o) => o.entity_type), ...entityTypeFilterValues]
+      .filter((entity_type) => entity_type !== undefined));
+    return { entityTypeFilterValues, selectedElementsList, selectedTypes };
+  }
+
   render() {
     const {
       t,
@@ -1294,16 +1306,7 @@ class DataTableToolBar extends Component {
       warningMessage,
     } = this.props;
     const { actions, keptEntityId, mergingElement, actionsInputs, promoteToContainer } = this.state;
-
-    const entityTypeFilterValues = findFilterFromKey(filters?.filters ?? [], 'entity_type', 'eq')?.values ?? [];
-    const selectedElementsList = Object.values(selectedElements || {});
-
-    const selectedTypes = R.uniq([...selectedElementsList.map((o) => o.entity_type), ...entityTypeFilterValues]
-      .filter((entity_type) => entity_type !== undefined));
-
-    if (selectedTypes.at(0) === 'InternalFile' && !this.state.scope) {
-      this.setState({ scope: 'IMPORT' });
-    }
+    const { entityTypeFilterValues, selectedElementsList, selectedTypes } = this.getSelectedTypes();
 
     const typesAreDifferent = selectedTypes.length > 1;
     const preventMerge = selectedTypes.at(0) === 'Vocabulary'
