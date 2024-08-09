@@ -381,11 +381,6 @@ const LeftBar = () => {
                   component={Link}
                   to={entry.link}
                   selected={entry.exact ? location.pathname === entry.link : location.pathname.includes(entry.link)}
-                  sx={{
-                    color: location.pathname.includes(entry.link.substring(0, entry.link.lastIndexOf('/')))
-                      ? theme.palette.primary.main
-                      : theme.palette.common.white,
-                  }}
                   dense={true}
                   classes={{ root: classes.menuSubItem }}
                 >
@@ -538,36 +533,11 @@ const LeftBar = () => {
             {!hideAnalyses && generateSubMenu(
               'analyses',
               [
-                {
-                  type: 'Report',
-                  link: '/dashboard/analyses/reports',
-                  label: 'Reports',
-                  icon: location.pathname.includes('/dashboard/analyses') ? <DescriptionOutlined fontSize="small" color="primary"/> : <DescriptionOutlined fontSize="small" />,
-                },
-                {
-                  type: 'Grouping',
-                  link: '/dashboard/analyses/groupings',
-                  label: 'Groupings',
-                  icon: location.pathname.includes('/dashboard/analyses') ? <WorkspacesOutlined fontSize="small" color="primary"/> : <WorkspacesOutlined fontSize="small" />,
-                },
-                {
-                  type: 'Malware-Analysis',
-                  link: '/dashboard/analyses/malware_analyses',
-                  label: 'Malware analyses',
-                  icon: location.pathname.includes('/dashboard/analyses') ? <BiotechOutlined fontSize="small" color="primary" /> : <BiotechOutlined fontSize="small" />,
-                },
-                {
-                  type: 'Note',
-                  link: '/dashboard/analyses/notes',
-                  label: 'Notes',
-                  icon: location.pathname.includes('/dashboard/analyses') ? <SubjectOutlined fontSize="inherit" color="primary" /> : <SubjectOutlined fontSize="inherit" />,
-                },
-                {
-                  type: 'External-Reference',
-                  link: '/dashboard/analyses/external_references',
-                  label: 'External references',
-                  icon: location.pathname.includes('/dashboard/analyses') ? <LocalOfferOutlined fontSize="small" color="primary" /> : <LocalOfferOutlined fontSize="small" />,
-                },
+                { type: 'Report', link: '/dashboard/analyses/reports', label: 'Reports', icon: <DescriptionOutlined fontSize="small"/> },
+                { type: 'Grouping', link: '/dashboard/analyses/groupings', label: 'Groupings', icon: <WorkspacesOutlined fontSize="small" /> },
+                { type: 'Malware-Analysis', link: '/dashboard/analyses/malware_analyses', label: 'Malware analyses', icon: <BiotechOutlined fontSize="small" /> },
+                { type: 'Note', link: '/dashboard/analyses/notes', label: 'Notes', icon: <SubjectOutlined fontSize="inherit" /> },
+                { type: 'External-Reference', link: '/dashboard/analyses/external_references', label: 'External references', icon: <LocalOfferOutlined fontSize="small" /> },
               ],
             )}
             {!hideCases && (
@@ -602,36 +572,11 @@ const LeftBar = () => {
             {!hideCases && generateSubMenu(
               'cases',
               [
-                {
-                  type: 'Case-Incident',
-                  link: '/dashboard/cases/incidents',
-                  label: 'Incident responses',
-                  icon: location.pathname.includes('/dashboard/cases') ? <BriefcaseEyeOutline fontSize="small" color="primary"/> : <BriefcaseEyeOutline fontSize="small" />,
-                },
-                {
-                  type: 'Case-Rfi',
-                  link: '/dashboard/cases/rfis',
-                  label: 'Requests for information',
-                  icon: location.pathname.includes('/dashboard/cases') ? <BriefcaseSearchOutline fontSize="small" color="primary"/> : <BriefcaseSearchOutline fontSize="small" />,
-                },
-                {
-                  type: 'Case-Rft',
-                  link: '/dashboard/cases/rfts',
-                  label: 'Requests for takedown',
-                  icon: location.pathname.includes('/dashboard/cases') ? <BriefcaseRemoveOutline fontSize="small" color="primary"/> : <BriefcaseRemoveOutline fontsize="small" />,
-                },
-                {
-                  type: 'Task',
-                  link: '/dashboard/cases/tasks',
-                  label: 'Tasks',
-                  icon: location.pathname.includes('/dashboard/cases') ? <TaskAltOutlined fontSize="small" color="primary"/> : <TaskAltOutlined fontSize="small" />,
-                },
-                {
-                  type: 'Feedback',
-                  link: '/dashboard/cases/feedbacks',
-                  label: 'Feedbacks',
-                  icon: location.pathname.includes('/dashboard/cases') ? <BriefcaseEditOutline fontSize="small" color="primary"/> : <BriefcaseEditOutline fontSize="small" />,
-                },
+                { type: 'Case-Incident', link: '/dashboard/cases/incidents', label: 'Incident responses', icon: <BriefcaseEyeOutline fontSize="small" /> },
+                { type: 'Case-Rfi', link: '/dashboard/cases/rfis', label: 'Requests for information', icon: <BriefcaseSearchOutline fontSize="small" /> },
+                { type: 'Case-Rft', link: '/dashboard/cases/rfts', label: 'Requests for takedown', icon: <BriefcaseRemoveOutline fontsize="small" /> },
+                { type: 'Task', link: '/dashboard/cases/tasks', label: 'Tasks', icon: <TaskAltOutlined fontSize="small" /> },
+                { type: 'Feedback', link: '/dashboard/cases/feedbacks', label: 'Feedbacks', icon: <BriefcaseEditOutline fontSize="small" /> },
               ],
             )}
             {!hideEvents && (
@@ -666,24 +611,9 @@ const LeftBar = () => {
             {!hideEvents && generateSubMenu(
               'events',
               [
-                {
-                  type: 'Incident',
-                  link: '/dashboard/events/incidents',
-                  label: 'Incidents',
-                  icon: location.pathname.includes('/dashboard/events') ? <Fire fontSize="small" color="primary"/> : <Fire fontSize="small" />,
-                },
-                {
-                  type: 'stix-sighting-relationship',
-                  link: '/dashboard/events/sightings',
-                  label: 'Sightings',
-                  icon: location.pathname.includes('/dashboard/events') ? <VisibilityOutlined fontSize="small" color="primary"/> : <VisibilityOutlined fontSize="small" />,
-                },
-                {
-                  type: 'Observed-Data',
-                  link: '/dashboard/events/observed_data',
-                  label: 'Observed datas',
-                  icon: location.pathname.includes('/dashboard/events') ? <WifiTetheringOutlined fontSize="small" color="primary"/> : <WifiTetheringOutlined fontSize="small" />,
-                },
+                { type: 'Incident', link: '/dashboard/events/incidents', label: 'Incidents', icon: <Fire fontSize="small" /> },
+                { type: 'stix-sighting-relationship', link: '/dashboard/events/sightings', label: 'Sightings', icon: <VisibilityOutlined fontSize="small" /> },
+                { type: 'Observed-Data', link: '/dashboard/events/observed_data', label: 'Observed datas', icon: <WifiTetheringOutlined fontSize="small" /> },
               ],
             )}
             {!hideObservations && (
@@ -718,30 +648,10 @@ const LeftBar = () => {
             {!hideObservations && generateSubMenu(
               'observations',
               [
-                {
-                  type: 'Stix-Cyber-Observable',
-                  link: '/dashboard/observations/observables',
-                  label: 'Observables',
-                  icon: location.pathname.includes('/dashboard/observations') ? <HexagonOutline color="primary" fontSize="small" /> : <HexagonOutline fontSize="small" />,
-                },
-                {
-                  type: 'Artifact',
-                  link: '/dashboard/observations/artifacts',
-                  label: 'Artifacts',
-                  icon: location.pathname.includes('/dashboard/observations') ? <ArchiveOutline color="primary" fontSize="small"/> : <ArchiveOutline fontSize="small"/>,
-                },
-                {
-                  type: 'Indicator',
-                  link: '/dashboard/observations/indicators',
-                  label: 'Indicators',
-                  icon: location.pathname.includes('/dashboard/observations') ? <ShieldSearch color="primary" fontSize="small"/> : <ShieldSearch fontSize="small"/>,
-                },
-                {
-                  type: 'Infrastructure',
-                  link: '/dashboard/observations/infrastructures',
-                  label: 'Infrastructures',
-                  icon: location.pathname.includes('/dashboard/observations') ? <ServerNetwork color="primary" fontSize="small" /> : <ServerNetwork fontSize="small" />,
-                },
+                { type: 'Stix-Cyber-Observable', link: '/dashboard/observations/observables', label: 'Observables', icon: <HexagonOutline fontSize="small" /> },
+                { type: 'Artifact', link: '/dashboard/observations/artifacts', label: 'Artifacts', icon: <ArchiveOutline fontSize="small"/> },
+                { type: 'Indicator', link: '/dashboard/observations/indicators', label: 'Indicators', icon: <ShieldSearch fontSize="small"/> },
+                { type: 'Infrastructure', link: '/dashboard/observations/infrastructures', label: 'Infrastructures', icon: <ServerNetwork fontSize="small" /> },
               ],
             )}
           </MenuList>
@@ -779,30 +689,10 @@ const LeftBar = () => {
             {!hideThreats && generateSubMenu(
               'threats',
               [
-                {
-                  type: 'Threat-Actor-Group',
-                  link: '/dashboard/threats/threat_actors_group',
-                  label: 'Threat actors (group)',
-                  icon: location.pathname.includes('/dashboard/threats') ? <AccountMultipleOutline fontSize="small" color="primary"/> : <AccountMultipleOutline fontsize="small" />,
-                },
-                {
-                  type: 'Threat-Actor-Individual',
-                  link: '/dashboard/threats/threat_actors_individual',
-                  label: 'Threat actors (individual)',
-                  icon: location.pathname.includes('/dashboard/threats') ? <LaptopAccount fontSize="small" color="primary"/> : <LaptopAccount fontsize="small" />,
-                },
-                {
-                  type: 'Intrusion-Set',
-                  link: '/dashboard/threats/intrusion_sets',
-                  label: 'Intrusion sets',
-                  icon: location.pathname.includes('/dashboard/threats') ? <DiamondOutlined fontSize="small" color="primary"/> : <DiamondOutlined fontsize="small" />,
-                },
-                {
-                  type: 'Campaign',
-                  link: '/dashboard/threats/campaigns',
-                  label: 'Campaigns',
-                  icon: location.pathname.includes('/dashboard/threats') ? <ChessKnight fontSize="small" color="primary"/> : <ChessKnight fontsize="small"/>,
-                },
+                { type: 'Threat-Actor-Group', link: '/dashboard/threats/threat_actors_group', label: 'Threat actors (group)', icon: <AccountMultipleOutline fontsize="small" /> },
+                { type: 'Threat-Actor-Individual', link: '/dashboard/threats/threat_actors_individual', label: 'Threat actors (individual)', icon: <LaptopAccount fontsize="small" /> },
+                { type: 'Intrusion-Set', link: '/dashboard/threats/intrusion_sets', label: 'Intrusion sets', icon: <DiamondOutlined fontsize="small" /> },
+                { type: 'Campaign', link: '/dashboard/threats/campaigns', label: 'Campaigns', icon: <ChessKnight fontsize="small"/> },
               ],
             )}
             {!hideArsenal && (
@@ -837,30 +727,10 @@ const LeftBar = () => {
             {!hideArsenal && generateSubMenu(
               'arsenal',
               [
-                {
-                  type: 'Malware',
-                  link: '/dashboard/arsenal/malwares',
-                  label: 'Malwares',
-                  icon: location.pathname.includes('/dashboard/arsenal') ? <Biohazard fontSize="small" color="primary"/> : <Biohazard fontSize="small" />,
-                },
-                {
-                  type: 'Channel',
-                  link: '/dashboard/arsenal/channels',
-                  label: 'Channels',
-                  icon: location.pathname.includes('/dashboard/arsenal') ? <SurroundSoundOutlined fontSize="small" color="primary"/> : <SurroundSoundOutlined fontSize="small" />,
-                },
-                {
-                  type: 'Tool',
-                  link: '/dashboard/arsenal/tools',
-                  label: 'Tools',
-                  icon: location.pathname.includes('/dashboard/arsenal') ? <WebAssetOutlined fontSize="small" color="primary"/> : <WebAssetOutlined fontSize="small" />,
-                },
-                {
-                  type: 'Vulnerability',
-                  link: '/dashboard/arsenal/vulnerabilities',
-                  label: 'Vulnerabilities',
-                  icon: location.pathname.includes('/dashboard/arsenal') ? <BugReportOutlined fontSize="small" color="primary"/> : <BugReportOutlined fontSize="small" />,
-                },
+                { type: 'Malware', link: '/dashboard/arsenal/malwares', label: 'Malwares', icon: <Biohazard fontSize="small" /> },
+                { type: 'Channel', link: '/dashboard/arsenal/channels', label: 'Channels', icon: <SurroundSoundOutlined fontSize="small" /> },
+                { type: 'Tool', link: '/dashboard/arsenal/tools', label: 'Tools', icon: <WebAssetOutlined fontSize="small" /> },
+                { type: 'Vulnerability', link: '/dashboard/arsenal/vulnerabilities', label: 'Vulnerabilities', icon: <BugReportOutlined fontSize="small" /> },
               ],
             )}
             {!hideTechniques && (
@@ -895,36 +765,11 @@ const LeftBar = () => {
             {!hideTechniques && generateSubMenu(
               'techniques',
               [
-                {
-                  type: 'Attack-Pattern',
-                  link: '/dashboard/techniques/attack_patterns',
-                  label: 'Attack patterns',
-                  icon: location.pathname.includes('/dashboard/techniques') ? <LockPattern fontSize="small" color="primary"/> : <LockPattern fontSize="small" />,
-                },
-                {
-                  type: 'Narrative',
-                  link: '/dashboard/techniques/narratives',
-                  label: 'Narratives',
-                  icon: location.pathname.includes('/dashboard/techniques') ? <SpeakerNotesOutlined fontSize="small" color="primary"/> : <SpeakerNotesOutlined fontSize="small" />,
-                },
-                {
-                  type: 'Course-Of-Action',
-                  link: '/dashboard/techniques/courses_of_action',
-                  label: 'Courses of action',
-                  icon: location.pathname.includes('/dashboard/techniques') ? <ProgressWrench fontSize="small" color="primary"/> : <ProgressWrench fontSize="small" />,
-                },
-                {
-                  type: 'Data-Component',
-                  link: '/dashboard/techniques/data_components',
-                  label: 'Data components',
-                  icon: location.pathname.includes('/dashboard/techniques') ? <SourceOutlined fontSize="small" color="primary"/> : <SourceOutlined fontSize="small" />,
-                },
-                {
-                  type: 'Data-Source',
-                  link: '/dashboard/techniques/data_sources',
-                  label: 'Data sources',
-                  icon: location.pathname.includes('/dashboard/techniques') ? <StreamOutlined fontSize="small" color="primary"/> : <StreamOutlined fontSize="small" />,
-                },
+                { type: 'Attack-Pattern', link: '/dashboard/techniques/attack_patterns', label: 'Attack patterns', icon: <LockPattern fontSize="small" /> },
+                { type: 'Narrative', link: '/dashboard/techniques/narratives', label: 'Narratives', icon: <SpeakerNotesOutlined fontSize="small" /> },
+                { type: 'Course-Of-Action', link: '/dashboard/techniques/courses_of_action', label: 'Courses of action', icon: <ProgressWrench fontSize="small" /> },
+                { type: 'Data-Component', link: '/dashboard/techniques/data_components', label: 'Data components', icon: <SourceOutlined fontSize="small" /> },
+                { type: 'Data-Source', link: '/dashboard/techniques/data_sources', label: 'Data sources', icon: <StreamOutlined fontSize="small" /> },
               ],
             )}
             {!hideEntities && (
@@ -959,36 +804,11 @@ const LeftBar = () => {
             {!hideEntities && generateSubMenu(
               'entities',
               [
-                {
-                  type: 'Sector',
-                  link: '/dashboard/entities/sectors',
-                  label: 'Sectors',
-                  icon: location.pathname.includes('/dashboard/entities') ? <DomainOutlined fontSize="small" color="primary"/> : <DomainOutlined fontSize="small"/>,
-                },
-                {
-                  type: 'Event',
-                  link: '/dashboard/entities/events',
-                  label: 'Events',
-                  icon: location.pathname.includes('/dashboard/entities') ? <EventOutlined fontSize="small" color="primary"/> : <EventOutlined fontSize="small" />,
-                },
-                {
-                  type: 'Organization',
-                  link: '/dashboard/entities/organizations',
-                  label: 'Organizations',
-                  icon: location.pathname.includes('/dashboard/entities') ? <AccountBalanceOutlined fontSize="small" color="primary" /> : <AccountBalanceOutlined fontSize="small"/>,
-                },
-                {
-                  type: 'System',
-                  link: '/dashboard/entities/systems',
-                  label: 'Systems',
-                  icon: location.pathname.includes('/dashboard/entities') ? <StorageOutlined fontSize="small" color="primary" /> : <StorageOutlined fontSize="small" />,
-                },
-                {
-                  type: 'Individual',
-                  link: '/dashboard/entities/individuals',
-                  label: 'Individuals',
-                  icon: location.pathname.includes('/dashboard/entities') ? <PersonOutlined fontSize="small" color="primary" /> : <PersonOutlined fontSize="small" />,
-                },
+                { type: 'Sector', link: '/dashboard/entities/sectors', label: 'Sectors', icon: <DomainOutlined fontSize="small"/> },
+                { type: 'Event', link: '/dashboard/entities/events', label: 'Events', icon: <EventOutlined fontSize="small" /> },
+                { type: 'Organization', link: '/dashboard/entities/organizations', label: 'Organizations', icon: <AccountBalanceOutlined fontSize="small"/> },
+                { type: 'System', link: '/dashboard/entities/systems', label: 'Systems', icon: <StorageOutlined fontSize="small" /> },
+                { type: 'Individual', link: '/dashboard/entities/individuals', label: 'Individuals', icon: <PersonOutlined fontSize="small" /> },
               ],
             )}
             {!hideLocations && (
@@ -1023,36 +843,11 @@ const LeftBar = () => {
             {!hideLocations && generateSubMenu(
               'locations',
               [
-                {
-                  type: 'Region',
-                  link: '/dashboard/locations/regions',
-                  label: 'Regions',
-                  icon: location.pathname.includes('/dashboard/locations') ? <PublicOutlined fontSize="small" color="primary" /> : <PublicOutlined fontSize="small" />,
-                },
-                {
-                  type: 'Country',
-                  link: '/dashboard/locations/countries',
-                  label: 'Countries',
-                  icon: location.pathname.includes('/dashboard/locations') ? <FlagOutlined fontSize="small" color="primary"/> : <FlagOutlined fontSize="small" />,
-                },
-                {
-                  type: 'Administrative-Area',
-                  link: '/dashboard/locations/administrative_areas',
-                  label: 'Administrative areas',
-                  icon: location.pathname.includes('/dashboard/locations') ? <MapOutlined fontSize="small" color="primary" /> : <MapOutlined fontSize="small" />,
-                },
-                {
-                  type: 'City',
-                  link: '/dashboard/locations/cities',
-                  label: 'Cities',
-                  icon: location.pathname.includes('/dashboard/locations') ? <CityVariantOutline fontSize="small" color="primary" /> : <CityVariantOutline fontSize="small" />,
-                },
-                {
-                  type: 'Position',
-                  link: '/dashboard/locations/positions',
-                  label: 'Positions',
-                  icon: location.pathname.includes('/dashboard/locations') ? <PlaceOutlined fontSize="small" color="primary" /> : <PlaceOutlined fontSize="small" />,
-                },
+                { type: 'Region', link: '/dashboard/locations/regions', label: 'Regions', icon: location.pathname.includes('/dashboard/locations') ? <PublicOutlined fontSize="small" color="primary" /> : <PublicOutlined fontSize="small" /> },
+                { type: 'Country', link: '/dashboard/locations/countries', label: 'Countries', icon: <FlagOutlined fontSize="small" /> },
+                { type: 'Administrative-Area', link: '/dashboard/locations/administrative_areas', label: 'Administrative areas', icon: <MapOutlined fontSize="small" /> },
+                { type: 'City', link: '/dashboard/locations/cities', label: 'Cities', icon: <CityVariantOutline fontSize="small" /> },
+                { type: 'Position', link: '/dashboard/locations/positions', label: 'Positions', icon: <PlaceOutlined fontSize="small" /> },
               ],
             )}
           </MenuList>
