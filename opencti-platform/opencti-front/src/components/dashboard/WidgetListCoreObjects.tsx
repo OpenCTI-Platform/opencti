@@ -42,6 +42,7 @@ const WidgetListCoreObjects = ({
     pageSize={pageSize.toString()}
     disableNavigation={publicWidget}
     rootRef={rootRef}
+    allowBackgroundtasks={false}
   />
 );
 

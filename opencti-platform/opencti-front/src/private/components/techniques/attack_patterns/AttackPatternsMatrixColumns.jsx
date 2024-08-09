@@ -262,6 +262,8 @@ class AttackPatternsMatrixColumnsComponent extends Component {
       currentModeOnlyActive,
       hideBar,
       handleAdd,
+      selectedKillChain,
+      hideSwitchKillChainNavOpen,
     } = this.props;
     const { hover, menuElement, navOpen } = this.state;
     let toggleModeOnlyActive = handleToggleModeOnlyActive;
@@ -300,10 +302,15 @@ class AttackPatternsMatrixColumnsComponent extends Component {
         R.values,
       )(selectedPatterns),
     );
+
+    const activeKillChain = hideSwitchKillChainNavOpen
+      ? selectedKillChain
+      : this.state.currentKillChain;
+
     const killChains = R.uniq(data.attackPatternsMatrix.attackPatternsOfPhases.map((a) => a.kill_chain_name))
       .sort((a, b) => a.localeCompare(b));
     const attackPatternsOfPhases = data.attackPatternsMatrix.attackPatternsOfPhases
-      .filter((a) => a.kill_chain_name === this.state.currentKillChain)
+      .filter((a) => a.kill_chain_name === activeKillChain)
       .sort((a, b) => a.x_opencti_order - b.x_opencti_order)
       .map((a) => {
         return {
@@ -340,7 +347,7 @@ class AttackPatternsMatrixColumnsComponent extends Component {
                 maxHeight: `calc(100vh - ${heightCalc}px)`,
               }}
             >
-              {hideBar ? (
+              {hideBar && !hideSwitchKillChainNavOpen ? (
                 <div
                   className={
                     navOpen
@@ -364,16 +371,18 @@ class AttackPatternsMatrixColumnsComponent extends Component {
                   </FormControl>
                 </div>
               ) : (
-                <AttackPtternsMatrixBar
-                  currentModeOnlyActive={modeOnlyActive}
-                  handleToggleModeOnlyActive={toggleModeOnlyActive.bind(this)}
-                  currentColorsReversed={modeColorsReversed}
-                  handleToggleColorsReversed={toggleColorsReversed.bind(this)}
-                  currentKillChain={this.state.currentKillChain}
-                  handleChangeKillChain={this.handleChangeKillChain.bind(this)}
-                  killChains={killChains}
-                  navOpen={navOpen}
-                />
+                !hideSwitchKillChainNavOpen && (
+                  <AttackPtternsMatrixBar
+                    currentModeOnlyActive={modeOnlyActive}
+                    handleToggleModeOnlyActive={toggleModeOnlyActive.bind(this)}
+                    currentColorsReversed={modeColorsReversed}
+                    handleToggleColorsReversed={toggleColorsReversed.bind(this)}
+                    currentKillChain={this.state.currentKillChain}
+                    handleChangeKillChain={this.handleChangeKillChain.bind(this)}
+                    killChains={killChains}
+                    navOpen={navOpen}
+                  />
+                )
               )}
               <div
                 id="container"
@@ -488,6 +497,8 @@ AttackPatternsMatrixColumnsComponent.propTypes = {
   currentModeOnlyActive: PropTypes.bool,
   hideBar: PropTypes.bool,
   handleAdd: PropTypes.func,
+  selectedKillChain: PropTypes.string,
+  hideSwitchKillChainNavOpen: PropTypes.bool,
 };
 
 export const attackPatternsMatrixColumnsQuery = graphql`
