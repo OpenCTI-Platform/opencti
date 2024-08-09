@@ -189,8 +189,8 @@ const PublicDashboards = () => {
           { label: t_i18n('Dashboards') },
           { label: t_i18n('Public dashboards'), current: true },
         ]}
-      />
 
+      />
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}
