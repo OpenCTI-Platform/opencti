@@ -13,8 +13,8 @@ const useApiMutation = <T extends MutationParameters>(
     errorMessage?: string,
     successMessage?: string,
   },
-) => {
-  const [commit] = useMutation(query, fn);
+): [(args: UseMutationConfig<T>) => void, boolean] => {
+  const [commit, inFlight] = useMutation(query, fn);
   const commitWithError = useCallback((args: UseMutationConfig<T>) => {
     commit({
       ...args,
@@ -32,7 +32,7 @@ const useApiMutation = <T extends MutationParameters>(
       },
     });
   }, [commit]);
-  return [commitWithError];
+  return [commitWithError, inFlight];
 };
 
 export default useApiMutation;

@@ -70,7 +70,7 @@ const EntitySettingsOverviewLayoutCustomization: React.FC<EntitySettingsOverview
 
   const initialValues = getFormValuesFromData(overview_layout_customization);
 
-  const [commitUpdate] = useApiMutation((entitySettingsOverviewLayoutCustomizationEdit));
+  const [commitUpdate, updateInFlight] = useApiMutation(entitySettingsOverviewLayoutCustomizationEdit);
   const editInputsKeys = overview_layout_customization.map(({ key }) => key);
   const editLabels: Record<string, string> = overview_layout_customization.reduce((o, { key, label }) => ({ ...o, [key]: label }), {});
   const updateLayout = (values: Record<string, boolean | number>) => {
@@ -144,7 +144,7 @@ const EntitySettingsOverviewLayoutCustomization: React.FC<EntitySettingsOverview
                   >
                     {
                       overview_layout_customization.map(({ key, label }, index) => (
-                        <Draggable key={key} draggableId={`${key}_order`} index={index}>
+                        <Draggable key={key} draggableId={`${key}_order`} index={index} isDragDisabled={updateInFlight}>
                           {(providedDrag, snapshotDrag) => (
                             <TableRow
                               key={key}
@@ -177,6 +177,7 @@ const EntitySettingsOverviewLayoutCustomization: React.FC<EntitySettingsOverview
                                       handleSubmitIsFullWidthField({ ...values, [`${key}_isFullWidth`]: value });
                                     }
                                   }
+                                  disabled={updateInFlight}
                                 />
                               </TableCell>
                             </TableRow>
