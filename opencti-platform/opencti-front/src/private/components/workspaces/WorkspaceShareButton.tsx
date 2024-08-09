@@ -5,27 +5,17 @@ import Tooltip from '@mui/material/Tooltip';
 import React, { Suspense, useEffect, useRef, useState } from 'react';
 import Drawer from '@components/common/drawer/Drawer';
 import Typography from '@mui/material/Typography';
-import WorkspaceShareForm, { WorkspaceShareFormData } from '@components/workspaces/WorkspaceShareForm';
+import PublicDashboardCreationForm, { dashboardsQuery } from '@components/workspaces/dashboards/publicDashboards/PublicDashboardCreationForm';
 import WorkspaceShareList, { workspaceShareListQuery } from '@components/workspaces/WorkspaceShareList';
 import { WorkspaceShareListQuery } from '@components/workspaces/__generated__/WorkspaceShareListQuery.graphql';
-import { graphql, useQueryLoader, UseQueryLoaderLoadQueryOptions } from 'react-relay';
-import { FormikConfig } from 'formik/dist/types';
+import { graphql, useQueryLoader } from 'react-relay';
 import Alert from '@mui/material/Alert';
+import { PublicDashboardCreationFormDashboardsQuery } from '@components/workspaces/dashboards/publicDashboards/__generated__/PublicDashboardCreationFormDashboardsQuery.graphql';
 import { useFormatter } from '../../../components/i18n';
 import Loader, { LoaderVariant } from '../../../components/Loader';
 import DeleteDialog from '../../../components/DeleteDialog';
 import useDeletion from '../../../utils/hooks/useDeletion';
-import { handleError } from '../../../relay/environment';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
-
-const workspaceShareButtonCreateMutation = graphql`
-  mutation WorkspaceShareButtonCreateMutation($input: PublicDashboardAddInput!) {
-    publicDashboardAdd(input: $input) {
-      id
-      uri_key
-    }
-  }
-`;
 
 const workspaceShareButtonDeleteMutation = graphql`
   mutation WorkspaceShareButtonDeleteMutation($id: ID!) {
@@ -54,55 +44,47 @@ const WorkspaceShareButton = ({ workspaceId }: WorkspaceShareButtonProps) => {
   const deletion = useDeletion({});
 
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [commitCreateMutation] = useApiMutation(workspaceShareButtonCreateMutation);
   const [commitDeleteMutation] = useApiMutation(workspaceShareButtonDeleteMutation);
   const [commitEditMutation] = useApiMutation(workspaceShareButtonEditMutation);
 
-  const [publicDashboardsQueryRef, fetchList] = useQueryLoader<WorkspaceShareListQuery>(workspaceShareListQuery);
-  const fetchWithFilters = (options?: UseQueryLoaderLoadQueryOptions) => {
-    fetchList(
+  const [publicDashboardsQueryRef, fetchPublicDashboards] = useQueryLoader<WorkspaceShareListQuery>(workspaceShareListQuery);
+  const fetchPublicDashboardsWithFilters = () => {
+    fetchPublicDashboards(
       {
         filters: {
           mode: 'and',
           filterGroups: [],
           filters: [{
             key: ['dashboard_id'],
-            mode: 'or',
-            operator: 'eq',
             values: [workspaceId],
           }],
         },
       },
-      options,
+      { fetchPolicy: 'store-and-network' },
+    );
+  };
+
+  const [dashboardsQueryRef, fetchDashboards] = useQueryLoader<PublicDashboardCreationFormDashboardsQuery>(dashboardsQuery);
+  const fetchDashboardsWithFilters = () => {
+    fetchDashboards(
+      {
+        filters: {
+          mode: 'and',
+          filterGroups: [],
+          filters: [{
+            key: ['type'],
+            values: ['dashboard'],
+          }],
+        },
+      },
+      { fetchPolicy: 'store-and-network' },
     );
   };
 
   useEffect(() => {
-    fetchWithFilters({ fetchPolicy: 'store-and-network' });
+    fetchPublicDashboardsWithFilters();
+    fetchDashboardsWithFilters();
   }, []);
-
-  const onSubmit: FormikConfig<WorkspaceShareFormData>['onSubmit'] = (values, { setSubmitting, resetForm }) => {
-    commitCreateMutation({
-      variables: {
-        input: {
-          name: values.name,
-          enabled: values.enabled,
-          uri_key: values.uri_key,
-          dashboard_id: workspaceId,
-          allowed_markings_ids: values.max_markings.map((marking) => marking.value),
-        },
-      },
-      onCompleted: () => {
-        setSubmitting(false);
-        resetForm();
-        fetchWithFilters({ fetchPolicy: 'store-and-network' });
-      },
-      onError: (error) => {
-        setSubmitting(false);
-        handleError(error);
-      },
-    });
-  };
 
   const confirmDelete = (id: string) => {
     idToDelete.current = id;
@@ -120,7 +102,7 @@ const WorkspaceShareButton = ({ workspaceId }: WorkspaceShareButtonProps) => {
           deletion.setDeleting(false);
           deletion.handleCloseDelete();
           idToDelete.current = undefined;
-          fetchWithFilters({ fetchPolicy: 'store-and-network' });
+          fetchPublicDashboardsWithFilters();
         },
       });
     }
@@ -136,7 +118,7 @@ const WorkspaceShareButton = ({ workspaceId }: WorkspaceShareButtonProps) => {
         }],
       },
       onCompleted: () => {
-        fetchWithFilters({ fetchPolicy: 'store-and-network' });
+        fetchPublicDashboardsWithFilters();
       },
     });
   };
@@ -177,7 +159,15 @@ const WorkspaceShareButton = ({ workspaceId }: WorkspaceShareButtonProps) => {
               {t_i18n('Create a new public dashboard')}
             </Typography>
 
-            <WorkspaceShareForm onSubmit={onSubmit} />
+            {dashboardsQueryRef && (
+              <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+                <PublicDashboardCreationForm
+                  dashboard_id={workspaceId}
+                  queryRef={dashboardsQueryRef}
+                  onCompleted={fetchPublicDashboardsWithFilters}
+                />
+              </Suspense>
+            )}
           </section>
 
           <section>

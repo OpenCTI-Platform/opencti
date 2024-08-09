@@ -146,6 +146,8 @@ const depsToOptimize = [
   "@mui/lab/LoadingButton",
   "@mui/material/Breadcrumbs",
   "classnames",
+  "react-draggable",
+  "react-beautiful-dnd"
 ]
 
 const logger = createLogger()
