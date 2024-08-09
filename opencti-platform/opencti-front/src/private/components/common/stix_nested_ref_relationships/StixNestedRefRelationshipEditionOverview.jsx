@@ -96,12 +96,14 @@ export const stixRefRelationshipEditionFocus = graphql`
 `;
 
 const stixNestedRefRelationshipValidation = (t) => Yup.object().shape({
-  start_time: Yup.date()
+  start_time: Yup.date().nullable()
+    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
+  stop_time: Yup.date().nullable()
     .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
-    .required(t('This field is required')),
-  stop_time: Yup.date()
-    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
-    .required(t('This field is required')),
+    .min(
+      Yup.ref('start_time'),
+      "The end date can't be before the start date",
+    ),
 });
 
 class StixNestedRefRelationshipEditionOverview extends Component {
