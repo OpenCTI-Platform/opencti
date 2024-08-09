@@ -27,7 +27,7 @@ import type { StixObject } from '../types/stix-common';
 import { schemaTypesDefinition } from './schema-types';
 import { ENTITY_TYPE_CONTAINER_CASE } from '../modules/case/case-types';
 import { registerEntityOverviewLayoutCustomization } from './overviewLayoutCustomization-register';
-import type { OverviewLayoutCustomization } from '../generated/graphql';
+import type { OverviewWidgetCustomization } from '../generated/graphql';
 
 export interface ModuleDefinition<T extends StoreEntity, Z extends StixObject> {
   type: {
@@ -46,7 +46,7 @@ export interface ModuleDefinition<T extends StoreEntity, Z extends StixObject> {
   };
   representative: RepresentativeFn<Z>
   converter: ConvertFn<T, Z>
-  overviewLayoutCustomization?: Array<OverviewLayoutCustomization>
+  overviewLayoutCustomization?: Array<OverviewWidgetCustomization>
   attributes: Array<AttributeDefinition>
   relations: Array<{
     name: string;

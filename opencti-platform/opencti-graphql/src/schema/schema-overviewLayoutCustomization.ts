@@ -1,3 +1,4 @@
-import type { OverviewLayoutCustomization } from '../generated/graphql';
+import type { OverviewWidgetCustomization } from '../generated/graphql';
 
-export const schemaOverviewLayoutCustomization = new Map<string, Array<OverviewLayoutCustomization>>();
+// map <entity_type, layout>
+export const schemaOverviewLayoutCustomization = new Map<string, Array<OverviewWidgetCustomization>>();
