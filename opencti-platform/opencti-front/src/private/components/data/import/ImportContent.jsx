@@ -90,7 +90,7 @@ const styles = (theme) => ({
   createButton: {
     position: 'fixed',
     bottom: 30,
-    right: 30,
+    right: 230,
   },
 });
 
