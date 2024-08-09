@@ -25,7 +25,7 @@ const styles = () => ({
   },
 });
 
-class AttackPtternsMatrixBar extends Component {
+class AttackPatternsMatrixBar extends Component {
   render() {
     const {
       t,
@@ -140,7 +140,7 @@ class AttackPtternsMatrixBar extends Component {
   }
 }
 
-AttackPtternsMatrixBar.propTypes = {
+AttackPatternsMatrixBar.propTypes = {
   classes: PropTypes.object,
   t: PropTypes.func,
   currentModeOnlyActive: PropTypes.bool,
@@ -152,4 +152,4 @@ AttackPtternsMatrixBar.propTypes = {
   killChains: PropTypes.array,
 };
 
-export default R.compose(inject18n, withStyles(styles))(AttackPtternsMatrixBar);
+export default R.compose(inject18n, withStyles(styles))(AttackPatternsMatrixBar);

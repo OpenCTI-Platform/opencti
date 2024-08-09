@@ -67,7 +67,16 @@ const StixDomainObjectAttackPatternsKillChainLines: FunctionComponent<StixDomain
   type NonNullableCoursesOfAction = NonNullable<NonNullable<NonNullable<AttackPatternNode['coursesOfAction']>['edges']>[number]>;
   interface FormattedAttackPattern extends AttackPatternNode {
     killChainPhase: NonNullable<AttackPatternNode['killChainPhases']>[number];
+    kill_chain_name: string;
     subattackPatterns_text: string;
+  }
+
+  interface KillChainPhaseElement {
+    id: string;
+    phase_name: string;
+    kill_chain_name: string;
+    x_opencti_order: number;
+    attackPatterns: FormattedAttackPattern[];
   }
 
   // Extract all kill chain phases
@@ -82,31 +91,42 @@ const StixDomainObjectAttackPatternsKillChainLines: FunctionComponent<StixDomain
       || (n.subattackPatterns_text ?? '')
         .toLowerCase()
         .indexOf(searchTerm.toLowerCase()) !== -1;
+
   const killChainPhases = uniq((data.attackPatterns?.edges ?? [])
     .map((n) => (n.node.killChainPhases && n.node.killChainPhases.length > 0
       ? n.node.killChainPhases[0]
-      : { id: 'unknown', phase_name: t_i18n('Unknown'), x_opencti_order: 99 })));
+      : { id: 'unknown', phase_name: t_i18n('Unknown'), kill_chain_name: t_i18n('Unknown'), x_opencti_order: 99 })));
+
   const killChainPhasesById = R.indexBy(R.prop('id'), killChainPhases);
+
   const formattedAttackPatterns = (data.attackPatterns?.edges ?? [])
     .map((n) => n.node)
     .map((n) => ({
       ...n,
       killChainPhase: n.killChainPhases && n.killChainPhases.length > 0
-        ? n.killChainPhases[0]
-        : { id: 'unknown', phase_name: t_i18n('Unknown'), x_opencti_order: 99 },
+        ? { ...n.killChainPhases[0], kill_chain_name: n.killChainPhases[0].kill_chain_name ?? t_i18n('Unknown') }
+        : { id: 'unknown', phase_name: t_i18n('Unknown'), kill_chain_name: t_i18n('Unknown'), x_opencti_order: 99 },
+      kill_chain_name: n.killChainPhases && n.killChainPhases.length > 0 ? n.killChainPhases[0].kill_chain_name : t_i18n('Unknown'),
       subattackPatterns_text: (n.subAttackPatterns?.edges ?? [])
         .map((o) => `${o.node.x_mitre_id} ${o.node.name} ${o.node.description}`)
         .join(' | '),
     }))
     .sort((a, b) => a.name.localeCompare(b.name))
     .filter(filterByKeyword);
+
   const groupedAttackPatterns = R.groupBy((n) => n.killChainPhase.id, formattedAttackPatterns);
+
   const finalAttackPatternsElement = R.pipe(
-    R.mapObjIndexed((value, key) => R.assoc('attackPatterns', value, killChainPhasesById[key])),
+    R.mapObjIndexed((value, key) => R.assoc('attackPatterns', value, {
+      ...killChainPhasesById[key],
+      kill_chain_name: killChainPhasesById[key].kill_chain_name,
+    })),
     R.values,
-  )(groupedAttackPatterns) as { id: string, phase_name: string, x_opencti_order: number, attackPatterns: AttackPatternNode[] }[];
+  )(groupedAttackPatterns) as KillChainPhaseElement[];
+
   const sortedAttackPatternsElement = finalAttackPatternsElement
     .sort((a, b) => (b.x_opencti_order ?? Number.POSITIVE_INFINITY) - (a.x_opencti_order ?? Number.POSITIVE_INFINITY));
+
   return (
     <div>
       <div className={classes.container} id="container">
@@ -120,7 +140,7 @@ const StixDomainObjectAttackPatternsKillChainLines: FunctionComponent<StixDomain
                 <ListItemIcon>
                   <Launch color="primary" role="img" />
                 </ListItemIcon>
-                <ListItemText primary={element.phase_name} />
+                <ListItemText primary={`[${element.kill_chain_name}] - ${element.phase_name}`} />
                 <ListItemSecondaryAction>
                   <IconButton
                     onClick={() => handleToggleLine(element.id)}

@@ -53,6 +53,13 @@ const stixDomainObjectAttackPatternsKillChainContainerFragment = graphql`
                     x_mitre_platforms
                     x_mitre_permissions_required
                     x_mitre_detection
+                    created
+                    modified
+                    objectLabel {
+                        id
+                        value
+                        color
+                    }
                     isSubAttackPattern
                     objectMarking {
                         id
@@ -93,8 +100,13 @@ const stixDomainObjectAttackPatternsKillChainContainerFragment = graphql`
                     }
                     killChainPhases {
                         id
+                        kill_chain_name
                         phase_name
                         x_opencti_order
+                    }
+                    creators {
+                        id
+                        name
                     }
                 }
             }
