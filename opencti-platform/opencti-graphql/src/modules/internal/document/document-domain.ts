@@ -222,5 +222,5 @@ export const paginatedForPathWithEnrichment = async (context: AuthContext, user:
     pagination.edges = [...progressFiles.map((p: any) => ({ node: p, cursor: uuidv4() })), ...pagination.edges];
   }
   // endregion
-  return pagination;
+  return pagination ?? [];
 };

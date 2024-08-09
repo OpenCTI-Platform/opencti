@@ -113,7 +113,7 @@ const DataTablePagination = ({
             }}
           >
             <Typography variant="body2">
-              <span>{`${firstItem} - ${lastItem} `}</span>
+              <span>{`${lastItem ? firstItem : 0} - ${lastItem} `}</span>
               <span style={{ opacity: 0.6 }}>
                 {`/ ${numberOfElements.number}${numberOfElements.symbol}`}
               </span>

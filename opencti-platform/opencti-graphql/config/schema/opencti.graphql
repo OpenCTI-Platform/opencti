@@ -824,8 +824,14 @@ type FileMetadata {
   analysis_content_type: String
   analysis_type: String
 }
+enum FileOrdering {
+  _score
+  name
+  lastModified
+}
 type File {
   id: ID!
+  entity_type: String!
   name: String!
   size: Int
   lastModified: DateTime
@@ -840,7 +846,7 @@ type FileEdge {
 }
 type FileConnection {
   pageInfo: PageInfo!
-  edges: [FileEdge]
+  edges: [FileEdge!]!
 }
 
 type IndexedFile {
@@ -896,6 +902,7 @@ enum BackgroundTaskScope {
   KNOWLEDGE
   USER
   SETTINGS
+  IMPORT
 }
 enum BackgroundTaskActionType {
   DELETE
@@ -1035,7 +1042,7 @@ input ListTaskAddInput {
   scope: BackgroundTaskScope!
 }
 input QueryTaskAddInput {
-  filters: String!
+  filters: String
   search: String
   excluded_ids: [ID]
   actions: [BackgroundTaskActionInput]!
@@ -2063,8 +2070,21 @@ type ExternalReference implements BasicObject & StixObject & StixMetaObject {
   fileId: String
   # Technical
   creators: [Creator!]
-  importFiles(first: Int, prefixMimeType: String): FileConnection
-  pendingFiles(first: Int): FileConnection
+  importFiles(
+    first: Int
+    prefixMimeType: String
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection!
+  pendingFiles(
+    first: Int
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection!
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -2268,8 +2288,21 @@ interface StixCoreObject {
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int, prefixMimeType: String): FileConnection
-  pendingFiles(first: Int): FileConnection
+  importFiles(
+    first: Int
+    prefixMimeType: String
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
+  pendingFiles(
+    first: Int
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -2426,8 +2459,21 @@ interface StixDomainObject {
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int, prefixMimeType: String): FileConnection
-  pendingFiles(first: Int): FileConnection
+  importFiles(
+    first: Int
+    prefixMimeType: String
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
+  pendingFiles(
+    first: Int
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -2590,8 +2636,21 @@ type AttackPattern implements BasicObject & StixObject & StixCoreObject & StixDo
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int, prefixMimeType: String): FileConnection
-  pendingFiles(first: Int): FileConnection
+  importFiles(
+    first: Int
+    prefixMimeType: String
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
+  pendingFiles(
+    first: Int
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -2754,8 +2813,21 @@ type Campaign implements BasicObject & StixObject & StixCoreObject & StixDomainO
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int, prefixMimeType: String): FileConnection
-  pendingFiles(first: Int): FileConnection
+  importFiles(
+    first: Int
+    prefixMimeType: String
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
+  pendingFiles(
+    first: Int
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -3079,8 +3151,21 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int, prefixMimeType: String): FileConnection
-  pendingFiles(first: Int): FileConnection
+  importFiles(
+    first: Int
+    prefixMimeType: String
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
+  pendingFiles(
+    first: Int
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -3280,8 +3365,21 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int, prefixMimeType: String): FileConnection
-  pendingFiles(first: Int): FileConnection
+  importFiles(
+    first: Int
+    prefixMimeType: String
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
+  pendingFiles(
+    first: Int
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -3457,8 +3555,21 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int, prefixMimeType: String): FileConnection
-  pendingFiles(first: Int): FileConnection
+  importFiles(
+    first: Int
+    prefixMimeType: String
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
+  pendingFiles(
+    first: Int
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -3659,8 +3770,21 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int, prefixMimeType: String): FileConnection
-  pendingFiles(first: Int): FileConnection
+  importFiles(
+    first: Int
+    prefixMimeType: String
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
+  pendingFiles(
+    first: Int
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -3824,8 +3948,21 @@ type CourseOfAction implements BasicObject & StixObject & StixCoreObject & StixD
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int, prefixMimeType: String): FileConnection
-  pendingFiles(first: Int): FileConnection
+  importFiles(
+    first: Int
+    prefixMimeType: String
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
+  pendingFiles(
+    first: Int
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -3984,8 +4121,21 @@ interface Identity {
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int, prefixMimeType: String): FileConnection
-  pendingFiles(first: Int): FileConnection
+  importFiles(
+    first: Int
+    prefixMimeType: String
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
+  pendingFiles(
+    first: Int
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -4145,8 +4295,21 @@ type Individual implements BasicObject & StixObject & StixCoreObject & StixDomai
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int, prefixMimeType: String): FileConnection
-  pendingFiles(first: Int): FileConnection
+  importFiles(
+    first: Int
+    prefixMimeType: String
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
+  pendingFiles(
+    first: Int
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -4313,8 +4476,21 @@ type Sector implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int, prefixMimeType: String): FileConnection
-  pendingFiles(first: Int): FileConnection
+  importFiles(
+    first: Int
+    prefixMimeType: String
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
+  pendingFiles(
+    first: Int
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -4474,8 +4650,21 @@ type System implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int, prefixMimeType: String): FileConnection
-  pendingFiles(first: Int): FileConnection
+  importFiles(
+    first: Int
+    prefixMimeType: String
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
+  pendingFiles(
+    first: Int
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -4641,8 +4830,21 @@ type Infrastructure implements BasicObject & StixObject & StixCoreObject & StixD
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int, prefixMimeType: String): FileConnection
-  pendingFiles(first: Int): FileConnection
+  importFiles(
+    first: Int
+    prefixMimeType: String
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
+  pendingFiles(
+    first: Int
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -4807,8 +5009,21 @@ type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDom
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int, prefixMimeType: String): FileConnection
-  pendingFiles(first: Int): FileConnection
+  importFiles(
+    first: Int
+    prefixMimeType: String
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
+  pendingFiles(
+    first: Int
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -4969,8 +5184,21 @@ interface Location {
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int, prefixMimeType: String): FileConnection
-  pendingFiles(first: Int): FileConnection
+  importFiles(
+    first: Int
+    prefixMimeType: String
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
+  pendingFiles(
+    first: Int
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -5131,8 +5359,21 @@ type Position implements BasicObject & StixObject & StixCoreObject & StixDomainO
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int, prefixMimeType: String): FileConnection
-  pendingFiles(first: Int): FileConnection
+  importFiles(
+    first: Int
+    prefixMimeType: String
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
+  pendingFiles(
+    first: Int
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -5295,8 +5536,21 @@ type City implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int, prefixMimeType: String): FileConnection
-  pendingFiles(first: Int): FileConnection
+  importFiles(
+    first: Int
+    prefixMimeType: String
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
+  pendingFiles(
+    first: Int
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -5453,8 +5707,21 @@ type Country implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int, prefixMimeType: String): FileConnection
-  pendingFiles(first: Int): FileConnection
+  importFiles(
+    first: Int
+    prefixMimeType: String
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
+  pendingFiles(
+    first: Int
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -5613,8 +5880,21 @@ type Region implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int, prefixMimeType: String): FileConnection
-  pendingFiles(first: Int): FileConnection
+  importFiles(
+    first: Int
+    prefixMimeType: String
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
+  pendingFiles(
+    first: Int
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -5782,8 +6062,21 @@ type Malware implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int, prefixMimeType: String): FileConnection
-  pendingFiles(first: Int): FileConnection
+  importFiles(
+    first: Int
+    prefixMimeType: String
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
+  pendingFiles(
+    first: Int
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -5962,8 +6255,21 @@ interface ThreatActor implements BasicObject & StixObject & StixCoreObject & Sti
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int, prefixMimeType: String): FileConnection
-  pendingFiles(first: Int): FileConnection
+  importFiles(
+    first: Int
+    prefixMimeType: String
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
+  pendingFiles(
+    first: Int
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -6096,8 +6402,21 @@ type ThreatActorGroup implements BasicObject & StixObject & StixCoreObject & Sti
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int, prefixMimeType: String): FileConnection
-  pendingFiles(first: Int): FileConnection
+  importFiles(
+    first: Int
+    prefixMimeType: String
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
+  pendingFiles(
+    first: Int
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -6263,8 +6582,21 @@ type Tool implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int, prefixMimeType: String): FileConnection
-  pendingFiles(first: Int): FileConnection
+  importFiles(
+    first: Int
+    prefixMimeType: String
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
+  pendingFiles(
+    first: Int
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -6432,8 +6764,21 @@ type Vulnerability implements BasicObject & StixObject & StixCoreObject & StixDo
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int, prefixMimeType: String): FileConnection
-  pendingFiles(first: Int): FileConnection
+  importFiles(
+    first: Int
+    prefixMimeType: String
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
+  pendingFiles(
+    first: Int
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -6608,8 +6953,21 @@ type Incident implements BasicObject & StixObject & StixCoreObject & StixDomainO
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int, prefixMimeType: String): FileConnection
-  pendingFiles(first: Int): FileConnection
+  importFiles(
+    first: Int
+    prefixMimeType: String
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
+  pendingFiles(
+    first: Int
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -6759,8 +7117,21 @@ interface StixCyberObservable {
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int, prefixMimeType: String): FileConnection
-  pendingFiles(first: Int): FileConnection
+  importFiles(
+    first: Int
+    prefixMimeType: String
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
+  pendingFiles(
+    first: Int
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -6864,8 +7235,21 @@ type AutonomousSystem implements BasicObject & StixObject & StixCoreObject & Sti
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int, prefixMimeType: String): FileConnection
-  pendingFiles(first: Int): FileConnection
+  importFiles(
+    first: Int
+    prefixMimeType: String
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
+  pendingFiles(
+    first: Int
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -6977,8 +7361,21 @@ type Directory implements BasicObject & StixObject & StixCoreObject & StixCyberO
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int, prefixMimeType: String): FileConnection
-  pendingFiles(first: Int): FileConnection
+  importFiles(
+    first: Int
+    prefixMimeType: String
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
+  pendingFiles(
+    first: Int
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -7088,8 +7485,21 @@ type DomainName implements BasicObject & StixObject & StixCoreObject & StixCyber
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int, prefixMimeType: String): FileConnection
-  pendingFiles(first: Int): FileConnection
+  importFiles(
+    first: Int
+    prefixMimeType: String
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
+  pendingFiles(
+    first: Int
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -7196,8 +7606,21 @@ type EmailAddr implements BasicObject & StixObject & StixCoreObject & StixCyberO
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int, prefixMimeType: String): FileConnection
-  pendingFiles(first: Int): FileConnection
+  importFiles(
+    first: Int
+    prefixMimeType: String
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
+  pendingFiles(
+    first: Int
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -7310,8 +7733,21 @@ type EmailMessage implements BasicObject & StixObject & StixCoreObject & StixCyb
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int, prefixMimeType: String): FileConnection
-  pendingFiles(first: Int): FileConnection
+  importFiles(
+    first: Int
+    prefixMimeType: String
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
+  pendingFiles(
+    first: Int
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -7425,8 +7861,21 @@ type EmailMimePartType implements BasicObject & StixObject & StixCoreObject & St
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int, prefixMimeType: String): FileConnection
-  pendingFiles(first: Int): FileConnection
+  importFiles(
+    first: Int
+    prefixMimeType: String
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
+  pendingFiles(
+    first: Int
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -7550,8 +7999,21 @@ interface HashedObservable {
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int, prefixMimeType: String): FileConnection
-  pendingFiles(first: Int): FileConnection
+  importFiles(
+    first: Int
+    prefixMimeType: String
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
+  pendingFiles(
+    first: Int
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -7660,8 +8122,21 @@ type Artifact implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int, prefixMimeType: String): FileConnection
-  pendingFiles(first: Int): FileConnection
+  importFiles(
+    first: Int
+    prefixMimeType: String
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
+  pendingFiles(
+    first: Int
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -7785,8 +8260,21 @@ type StixFile implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int, prefixMimeType: String): FileConnection
-  pendingFiles(first: Int): FileConnection
+  importFiles(
+    first: Int
+    prefixMimeType: String
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
+  pendingFiles(
+    first: Int
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -7931,8 +8419,21 @@ type X509Certificate implements BasicObject & StixObject & StixCoreObject & Stix
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int, prefixMimeType: String): FileConnection
-  pendingFiles(first: Int): FileConnection
+  importFiles(
+    first: Int
+    prefixMimeType: String
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
+  pendingFiles(
+    first: Int
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -8067,8 +8568,21 @@ type IPv4Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int, prefixMimeType: String): FileConnection
-  pendingFiles(first: Int): FileConnection
+  importFiles(
+    first: Int
+    prefixMimeType: String
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
+  pendingFiles(
+    first: Int
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -8177,8 +8691,21 @@ type IPv6Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int, prefixMimeType: String): FileConnection
-  pendingFiles(first: Int): FileConnection
+  importFiles(
+    first: Int
+    prefixMimeType: String
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
+  pendingFiles(
+    first: Int
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -8284,8 +8811,21 @@ type MacAddr implements BasicObject & StixObject & StixCoreObject & StixCyberObs
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int, prefixMimeType: String): FileConnection
-  pendingFiles(first: Int): FileConnection
+  importFiles(
+    first: Int
+    prefixMimeType: String
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
+  pendingFiles(
+    first: Int
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -8391,8 +8931,21 @@ type Mutex implements BasicObject & StixObject & StixCoreObject & StixCyberObser
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int, prefixMimeType: String): FileConnection
-  pendingFiles(first: Int): FileConnection
+  importFiles(
+    first: Int
+    prefixMimeType: String
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
+  pendingFiles(
+    first: Int
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -8508,8 +9061,21 @@ type NetworkTraffic implements BasicObject & StixObject & StixCoreObject & StixC
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int, prefixMimeType: String): FileConnection
-  pendingFiles(first: Int): FileConnection
+  importFiles(
+    first: Int
+    prefixMimeType: String
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
+  pendingFiles(
+    first: Int
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -8649,8 +9215,21 @@ type Process implements BasicObject & StixObject & StixCoreObject & StixCyberObs
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int, prefixMimeType: String): FileConnection
-  pendingFiles(first: Int): FileConnection
+  importFiles(
+    first: Int
+    prefixMimeType: String
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
+  pendingFiles(
+    first: Int
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -8785,8 +9364,21 @@ type Software implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int, prefixMimeType: String): FileConnection
-  pendingFiles(first: Int): FileConnection
+  importFiles(
+    first: Int
+    prefixMimeType: String
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
+  pendingFiles(
+    first: Int
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -8905,8 +9497,21 @@ type Url implements BasicObject & StixObject & StixCoreObject & StixCyberObserva
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int, prefixMimeType: String): FileConnection
-  pendingFiles(first: Int): FileConnection
+  importFiles(
+    first: Int
+    prefixMimeType: String
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
+  pendingFiles(
+    first: Int
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -9026,8 +9631,21 @@ type UserAccount implements BasicObject & StixObject & StixCoreObject & StixCybe
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int, prefixMimeType: String): FileConnection
-  pendingFiles(first: Int): FileConnection
+  importFiles(
+    first: Int
+    prefixMimeType: String
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
+  pendingFiles(
+    first: Int
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -9148,8 +9766,21 @@ type WindowsRegistryKey implements BasicObject & StixObject & StixCoreObject & S
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int, prefixMimeType: String): FileConnection
-  pendingFiles(first: Int): FileConnection
+  importFiles(
+    first: Int
+    prefixMimeType: String
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
+  pendingFiles(
+    first: Int
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -9259,8 +9890,21 @@ type WindowsRegistryValueType implements BasicObject & StixObject & StixCoreObje
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int, prefixMimeType: String): FileConnection
-  pendingFiles(first: Int): FileConnection
+  importFiles(
+    first: Int
+    prefixMimeType: String
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
+  pendingFiles(
+    first: Int
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -9368,8 +10012,21 @@ type CryptographicKey implements BasicObject & StixObject & StixCoreObject & Sti
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int, prefixMimeType: String): FileConnection
-  pendingFiles(first: Int): FileConnection
+  importFiles(
+    first: Int
+    prefixMimeType: String
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
+  pendingFiles(
+    first: Int
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -9475,8 +10132,21 @@ type CryptocurrencyWallet implements BasicObject & StixObject & StixCoreObject &
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int, prefixMimeType: String): FileConnection
-  pendingFiles(first: Int): FileConnection
+  importFiles(
+    first: Int
+    prefixMimeType: String
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
+  pendingFiles(
+    first: Int
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -9582,8 +10252,21 @@ type Hostname implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int, prefixMimeType: String): FileConnection
-  pendingFiles(first: Int): FileConnection
+  importFiles(
+    first: Int
+    prefixMimeType: String
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
+  pendingFiles(
+    first: Int
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -9689,8 +10372,21 @@ type Text implements BasicObject & StixObject & StixCoreObject & StixCyberObserv
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int, prefixMimeType: String): FileConnection
-  pendingFiles(first: Int): FileConnection
+  importFiles(
+    first: Int
+    prefixMimeType: String
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
+  pendingFiles(
+    first: Int
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -9796,8 +10492,21 @@ type UserAgent implements BasicObject & StixObject & StixCoreObject & StixCyberO
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int, prefixMimeType: String): FileConnection
-  pendingFiles(first: Int): FileConnection
+  importFiles(
+    first: Int
+    prefixMimeType: String
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
+  pendingFiles(
+    first: Int
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -9906,8 +10615,21 @@ type BankAccount implements BasicObject & StixObject & StixCoreObject & StixCybe
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int, prefixMimeType: String): FileConnection
-  pendingFiles(first: Int): FileConnection
+  importFiles(
+    first: Int
+    prefixMimeType: String
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
+  pendingFiles(
+    first: Int
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -10018,8 +10740,21 @@ type TrackingNumber implements BasicObject & StixObject & StixCoreObject & StixC
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int, prefixMimeType: String): FileConnection
-  pendingFiles(first: Int): FileConnection
+  importFiles(
+    first: Int
+    prefixMimeType: String
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
+  pendingFiles(
+    first: Int
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -10128,8 +10863,21 @@ type Credential implements BasicObject & StixObject & StixCoreObject & StixCyber
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int, prefixMimeType: String): FileConnection
-  pendingFiles(first: Int): FileConnection
+  importFiles(
+    first: Int
+    prefixMimeType: String
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
+  pendingFiles(
+    first: Int
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -10235,8 +10983,21 @@ type PhoneNumber implements BasicObject & StixObject & StixCoreObject & StixCybe
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int, prefixMimeType: String): FileConnection
-  pendingFiles(first: Int): FileConnection
+  importFiles(
+    first: Int
+    prefixMimeType: String
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
+  pendingFiles(
+    first: Int
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -10345,8 +11106,21 @@ type PaymentCard implements BasicObject & StixObject & StixCoreObject & StixCybe
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int, prefixMimeType: String): FileConnection
-  pendingFiles(first: Int): FileConnection
+  importFiles(
+    first: Int
+    prefixMimeType: String
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
+  pendingFiles(
+    first: Int
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -10460,8 +11234,21 @@ type MediaContent implements BasicObject & StixObject & StixCoreObject & StixCyb
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int, prefixMimeType: String): FileConnection
-  pendingFiles(first: Int): FileConnection
+  importFiles(
+    first: Int
+    prefixMimeType: String
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
+  pendingFiles(
+    first: Int
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -11283,8 +12070,20 @@ type Query {
     search: String
   ): SubTypeConnection! @auth
   file(id: String!): File @auth(for: [KNOWLEDGE_KNASKIMPORT])
-  importFiles(first: Int): FileConnection @auth(for: [KNOWLEDGE_KNASKIMPORT])
-  pendingFiles(first: Int): FileConnection @auth(for: [KNOWLEDGE_KNASKIMPORT])
+  importFiles(
+    first: Int
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection @auth(for: [KNOWLEDGE_KNASKIMPORT])
+  pendingFiles(
+    first: Int
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FileConnection @auth(for: [KNOWLEDGE_KNASKIMPORT])
   filesMetrics: FilesMetrics @auth(for: [SETTINGS_FILEINDEXING])
 
   ######## INDEXED FILES

@@ -184,7 +184,7 @@ const DataTableLine = ({
           width: 'calc(var(--col-navigate-size) * 1px)',
         }}
         onClick={(e) => {
-          if (actions) {
+          if (actions && navigable) {
             e.preventDefault();
             e.stopPropagation();
           }

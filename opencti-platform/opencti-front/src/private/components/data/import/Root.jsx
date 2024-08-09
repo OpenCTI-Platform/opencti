@@ -10,6 +10,18 @@ const Root = () => (
       path="/pending/:fileId"
       element={<WorkbenchFile />}
     />
+    <Route
+      path="/file"
+      element={<Import tab={'file'}/>}
+    />
+    <Route
+      path="/workbench"
+      element={<Import tab={'workbench'}/>}
+    />
+    <Route
+      path="/connectors"
+      element={<Import tab={'connectors'}/>}
+    />
   </Routes>
 );
 

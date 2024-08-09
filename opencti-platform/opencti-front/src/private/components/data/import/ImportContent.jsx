@@ -25,6 +25,7 @@ import { ListItemButton } from '@mui/material';
 import Button from '@mui/material/Button';
 import * as Yup from 'yup';
 import Fab from '@mui/material/Fab';
+import ImportMenu from '../ImportMenu';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import SelectField from '../../../../components/fields/SelectField';
 import { FIVE_SECONDS } from '../../../../utils/Time';
@@ -89,7 +90,7 @@ const styles = (theme) => ({
   createButton: {
     position: 'fixed',
     bottom: 30,
-    right: 30,
+    right: 230,
   },
 });
 
@@ -129,6 +130,7 @@ const inlineStylesHeaders = {
 export const importContentQuery = graphql`
   query ImportContentQuery {
     connectorsForImport {
+      ...ImportContentContainer_connectorsImport
       ...ImportContent_connectorsImport
     }
     importFiles(first: 500) @connection(key: "Pagination_global_importFiles") {
@@ -143,11 +145,11 @@ export const importContentQuery = graphql`
       }
     }
     pendingFiles(first: 500)
-      @connection(key: "Pagination_global_pendingFiles") {
+    @connection(key: "Pagination_global_pendingFiles") {
       edges {
         node {
           id
-          ...WorkbenchFileLine_file
+          ...ImportWorkbenchesContentFileLine_file
           metaData {
             mimetype
           }
@@ -328,10 +330,11 @@ class ImportContentComponent extends Component {
       this.setState({ selectedConnector });
     };
     const invalidCsvMapper = this.state.selectedConnector?.name === 'ImportCsv'
-        && this.state.selectedConnector?.configurations?.length === 0;
+      && this.state.selectedConnector?.configurations?.length === 0;
     return (
-      <>
+      <div style={{ paddingRight: 200 }}>
         <Breadcrumbs variant="list" elements={[{ label: t('Data') }, { label: t('Import'), current: true }]} />
+        <ImportMenu />
         <Grid
           container={true}
           spacing={3}
@@ -689,7 +692,7 @@ class ImportContentComponent extends Component {
         >
           <Add />
         </Fab>
-      </>
+      </div>
     );
   }
 }

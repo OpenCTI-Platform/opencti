@@ -12,11 +12,11 @@ const domainLoader = batchLoader(batchStixDomainObjects);
 const fileResolvers = {
   Query: {
     file: (_, { id }, context) => loadFile(context, context.user, id),
-    importFiles: (_, { first }, context) => {
-      return paginatedForPathWithEnrichment(context, context.user, 'import/global', undefined, { first });
+    importFiles: (_, opts, context) => {
+      return paginatedForPathWithEnrichment(context, context.user, 'import/global', undefined, opts);
     },
-    pendingFiles: (_, { first }, context) => { // correspond to global workbenches (i.e. worbenches in Data > Import)
-      return paginatedForPathWithEnrichment(context, context.user, 'import/pending', undefined, { first });
+    pendingFiles: (_, opts, context) => { // correspond to global workbenches (i.e. worbenches in Data > Import)
+      return paginatedForPathWithEnrichment(context, context.user, 'import/pending', undefined, opts);
     },
     filesMetrics: (_, args, context) => filesMetrics(context, context.user),
   },
