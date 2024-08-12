@@ -61,7 +61,6 @@ import './internal/document/document';
 import './publicDashboard/publicDashboard';
 import './deleteOperation/deleteOperation';
 import './support/support';
-import './stixCyberObservable/stixCyberObservable';
 
 // incomplete modules
 import './report/report';
@@ -69,8 +68,10 @@ import './note/note';
 import './externalReference/externalReference';
 import './incident/incident';
 import './observedData/observedData';
+import './stixCyberObservable/stixCyberObservable';
 import './threatActorGroup/threatActorGroup';
 import './intrusionSet/intrusionSet';
+import './campaign/campaign';
 // endregion
 
 // region graphql registration
