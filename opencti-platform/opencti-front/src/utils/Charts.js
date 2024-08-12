@@ -774,6 +774,7 @@ export const donutChartOptions = (
   displayValue = true,
   displayTooltip = true,
   size = 70,
+  withBackground = true,
 ) => {
   const temp = theme.palette.mode === 'dark' ? 400 : 600;
   let dataLabelsColors = labels.map(() => theme.palette.text.primary);
@@ -800,7 +801,7 @@ export const donutChartOptions = (
   return {
     chart: {
       type: 'donut',
-      background: theme.palette.background.paper,
+      background: withBackground ? theme.palette.background.paper : 'transparent',
       toolbar: toolbarOptions,
       foreColor: theme.palette.text.secondary,
       width: '100%',
