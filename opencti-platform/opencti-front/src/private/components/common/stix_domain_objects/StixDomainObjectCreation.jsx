@@ -10,7 +10,6 @@ import { Add } from '@mui/icons-material';
 import { Select } from '@mui/material';
 import makeStyles from '@mui/styles/makeStyles';
 import { ConnectionHandler } from 'relay-runtime';
-
 import { useFormatter } from '../../../../components/i18n';
 import { MalwareAnalysisCreationForm } from '../../analyses/malware_analyses/MalwareAnalysisCreation';
 import { MalwareCreationForm } from '../../arsenal/malwares/MalwareCreation';

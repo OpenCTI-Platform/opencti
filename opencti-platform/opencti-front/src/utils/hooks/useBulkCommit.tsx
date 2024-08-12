@@ -56,7 +56,6 @@ function useBulkCommit<M extends MutationParameters>({
     setCount(variables.length);
     setCurrentCount(0);
     setInError([]);
-
     variables.forEach((variable) => {
       commit({
         variables: variable,
