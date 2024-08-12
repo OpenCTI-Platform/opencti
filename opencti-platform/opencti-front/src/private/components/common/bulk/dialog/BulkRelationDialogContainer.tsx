@@ -47,7 +47,7 @@ const BulkRelationDialogContainer = ({
 
   return (
     <>
-      <Button onClick={handleOpenDialog} color="secondary" variant="outlined" sx={inlinedStyle.button} size="small">
+      <Button onClick={handleOpenDialog} color="primary" variant="outlined" sx={inlinedStyle.button} size="small">
         {t_i18n('Create bulk relations')}
       </Button>
       {isDialogOpen && (

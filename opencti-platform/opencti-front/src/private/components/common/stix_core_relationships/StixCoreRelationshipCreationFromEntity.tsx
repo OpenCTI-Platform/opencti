@@ -880,7 +880,7 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
                 onOpen={handleOpenSpeedDial}
                 open={openSpeedDial}
                 FabProps={{
-                  color: 'secondary',
+                  color: 'primary',
                 }}
               >
                 <SpeedDialAction
@@ -934,7 +934,7 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
               variant="extended"
               className={classes.continue}
               size="small"
-              color="secondary"
+              color="primary"
               onClick={handleNextStep}
             >
               {t_i18n('Continue')}
