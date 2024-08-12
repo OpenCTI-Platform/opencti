@@ -1963,6 +1963,7 @@ const WorkbenchFileContentComponent = ({
       'City',
       'Position',
       'Event',
+      'Administrative-Area',
     ];
     const attributedToTo = ['Threat-Actor', 'Intrusion-Set', 'Campaign'];
     const usesTo = ['Attack-Pattern', 'Malware', 'Tool'];
@@ -2059,15 +2060,16 @@ const WorkbenchFileContentComponent = ({
                 title={t_i18n('relationship_targets')}
                 fullWidth
                 types={[
-                  'Sector',
-                  'Organization',
-                  'Individual',
-                  'System',
-                  'Region',
-                  'Country',
+                  'Administrative-Area',
                   'City',
-                  'Position',
+                  'Country',
                   'Event',
+                  'Individual',
+                  'Organization',
+                  'Position',
+                  'Region',
+                  'Sector',
+                  'System',
                   'Vulnerability',
                 ]}
                 stixDomainObjects={stixDomainObjects}
