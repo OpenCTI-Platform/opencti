@@ -70,6 +70,7 @@ import './externalReference/externalReference';
 import './incident/incident';
 import './observedData/observedData';
 import './threatActorGroup/threatActorGroup';
+import './intrusionSet/intrusionSet';
 // endregion
 
 // region graphql registration

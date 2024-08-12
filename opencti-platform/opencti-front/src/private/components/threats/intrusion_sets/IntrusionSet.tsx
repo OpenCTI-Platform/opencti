@@ -2,6 +2,7 @@ import React from 'react';
 import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import makeStyles from '@mui/styles/makeStyles';
+import ThreatActorGroupDetails from '@components/threats/threat_actors_group/ThreatActorGroupDetails';
 import IntrusionSetDetails from './IntrusionSetDetails';
 import IntrusionSetEdition from './IntrusionSetEdition';
 import Security from '../../../../utils/Security';
@@ -13,6 +14,7 @@ import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCore
 import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../common/stix_core_relationships/SimpleStixObjectOrStixRelationshipStixCoreRelationships';
 import { IntrusionSet_intrusionSet$key } from './__generated__/IntrusionSet_intrusionSet.graphql';
 import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
+import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -75,12 +77,13 @@ const intrusionSetFragment = graphql`
 `;
 
 const IntrusionSetComponent = ({
-  intrusionSet,
+  intrusionSetData,
 }: {
-  intrusionSet: IntrusionSet_intrusionSet$key;
+  intrusionSetData: IntrusionSet_intrusionSet$key;
 }) => {
-  const intrusionSetData = useFragment(intrusionSetFragment, intrusionSet);
+  const intrusionSet = useFragment<IntrusionSet_intrusionSet$key>(intrusionSetFragment, intrusionSetData);
   const classes = useStyles();
+  const overviewLayoutCustomization = useOverviewLayoutCustomization(intrusionSet.entity_type);
   return (
     <>
       <Grid
@@ -88,38 +91,71 @@ const IntrusionSetComponent = ({
         spacing={3}
         classes={{ container: classes.gridContainer }}
       >
-        <Grid item xs={6}>
-          <IntrusionSetDetails intrusionSet={intrusionSetData} />
-        </Grid>
-        <Grid item xs={6}>
-          <StixDomainObjectOverview stixDomainObject={intrusionSetData} />
-        </Grid>
-        <Grid item xs={6}>
-          <SimpleStixObjectOrStixRelationshipStixCoreRelationships
-            stixObjectOrStixRelationshipId={intrusionSetData.id}
-            stixObjectOrStixRelationshipLink={`/dashboard/threats/intrusion_sets/${intrusionSetData.id}/knowledge`}
-          />
-        </Grid>
-        <Grid item xs={6}>
-          <StixCoreObjectOrStixRelationshipLastContainers
-            stixCoreObjectOrStixRelationshipId={intrusionSetData.id}
-          />
-        </Grid>
-        <Grid item xs={6}>
-          <StixCoreObjectExternalReferences
-            stixCoreObjectId={intrusionSetData.id}
-          />
-        </Grid>
-        <Grid item xs={6}>
-          <StixCoreObjectLatestHistory stixCoreObjectId={intrusionSetData.id} />
-        </Grid>
+        {
+          overviewLayoutCustomization.map(({ key, width }) => {
+            switch (key) {
+              case 'details':
+                return (
+                  <Grid key={key} item xs={width}>
+                    <IntrusionSetDetails intrusionSet={intrusionSet} />
+                  </Grid>
+                );
+              case 'basicInformation':
+                return (
+                  <Grid key={key} item xs={width}>
+                    <StixDomainObjectOverview stixDomainObject={intrusionSet} />
+                  </Grid>
+                );
+              case 'latestCreatedRelationships':
+                return (
+                  <Grid key={key} item xs={width}>
+                    <SimpleStixObjectOrStixRelationshipStixCoreRelationships
+                      stixObjectOrStixRelationshipId={intrusionSet.id}
+                      stixObjectOrStixRelationshipLink={`/dashboard/threats/intrusion_sets/${intrusionSet.id}/knowledge`}
+                    />
+                  </Grid>
+                );
+              case 'latestContainers':
+                return (
+                  <Grid key={key} item xs={width}>
+                    <StixCoreObjectOrStixRelationshipLastContainers
+                      stixCoreObjectOrStixRelationshipId={intrusionSet.id}
+                    />
+                  </Grid>
+                );
+              case 'externalReferences':
+                return (
+                  <Grid key={key} item xs={width}>
+                    <StixCoreObjectExternalReferences
+                      stixCoreObjectId={intrusionSet.id}
+                    />
+                  </Grid>
+                );
+              case 'mostRecentHistory':
+                return (
+                  <Grid key={key} item xs={width}>
+                    <StixCoreObjectLatestHistory
+                      stixCoreObjectId={intrusionSet.id}
+                    />
+                  </Grid>
+                );
+              case 'notes':
+                return (
+                  <Grid key={key} item xs={width}>
+                    <StixCoreObjectOrStixCoreRelationshipNotes
+                      stixCoreObjectOrStixCoreRelationshipId={intrusionSet.id}
+                      defaultMarkings={intrusionSet.objectMarking ?? []}
+                    />
+                  </Grid>
+                );
+              default:
+                return null;
+            }
+          })
+        }
       </Grid>
-      <StixCoreObjectOrStixCoreRelationshipNotes
-        stixCoreObjectOrStixCoreRelationshipId={intrusionSetData.id}
-        defaultMarkings={intrusionSetData.objectMarking ?? []}
-      />
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
-        <IntrusionSetEdition intrusionSetId={intrusionSetData.id} />
+        <IntrusionSetEdition intrusionSetId={intrusionSet.id} />
       </Security>
     </>
   );
