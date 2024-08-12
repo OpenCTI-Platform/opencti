@@ -96,6 +96,11 @@ type entityTypeListType = {
   id: string;
 };
 
+type missingEntityType = {
+  key: string;
+  values: string[];
+};
+
 const classes = {
   dialog: {
     '.MuiDialog-paper': {
@@ -143,6 +148,8 @@ export const matchHeaderWidth = 180;
 
 type EntityTypeFromMissingEntitiesType = Record<string, string[]>;
 
+const EntityTypeWithoutBulkEntityCreation = ['Attack-Pattern', 'Course-of-Action', 'Feedback', 'Grouping', 'Incident, "Malware-Analysis', 'Note', 'Report', 'Opinion', 'Position'];
+
 const BulkRelationDialog : FunctionComponent<BulkRelationDialogProps> = ({
   stixDomainObjectId,
   stixDomainObjectType,
@@ -161,7 +168,7 @@ const BulkRelationDialog : FunctionComponent<BulkRelationDialogProps> = ({
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [entityTypeFromMissingEntities, setEntityTypeFromMissingEntities] = useState<EntityTypeFromMissingEntitiesType>();
   const [isSDOCreationFormOpen, setIsSDOCreationFormOpen] = useState<boolean>(false);
-
+  const [missingEntity, setMissingEntity] = useState<missingEntityType>();
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       const newEntityToSearch = [...textAreaValue];
@@ -196,7 +203,7 @@ const BulkRelationDialog : FunctionComponent<BulkRelationDialogProps> = ({
       const newEntityTypeFromMissingEntities = bulkEntityList.reduce((acc: EntityTypeFromMissingEntitiesType, cur) => {
         const { isExisting, selectedEntityType: { toEntitytype }, searchTerm } = cur;
         if (!isExisting) {
-          if (!acc[toEntitytype]) return { ...acc, [toEntitytype]: [searchTerm] };
+          if (!acc[toEntitytype] || EntityTypeWithoutBulkEntityCreation.includes(toEntitytype)) return { ...acc, [toEntitytype]: [searchTerm] };
           return { ...acc,
             [toEntitytype]: acc[toEntitytype] && acc[toEntitytype].includes(searchTerm)
               ? [...acc[toEntitytype]]
@@ -209,8 +216,28 @@ const BulkRelationDialog : FunctionComponent<BulkRelationDialogProps> = ({
     }
   }, [bulkEntityList]);
 
+  const selectMissingEntites = (currentBulkEntityList) => {
+    const foundMissingEntity = currentBulkEntityList.find((item) => !item.isExisting);
+    if (!foundMissingEntity) return;
+    if (EntityTypeWithoutBulkEntityCreation.includes(foundMissingEntity.selectedEntityType.toEntitytype)) {
+      setMissingEntity({
+        key: foundMissingEntity.selectedEntityType.toEntitytype,
+        values: [foundMissingEntity.searchTerm],
+      });
+    } else {
+      const { selectedEntityType: { toEntitytype } } = foundMissingEntity;
+      setMissingEntity({
+        key: toEntitytype,
+        values: currentBulkEntityList
+          .filter((item) => item.selectedEntityType.toEntitytype === toEntitytype)
+          .map((item) => item.searchTerm),
+      });
+    }
+  };
+
   useEffect(() => {
     const getBulkEntities = async () => {
+      if (missingEntity) setMissingEntity(undefined);
       const rawLinesPromises: Promise<StixCoreResultsType>[] = entityToSearch.map((content) => querySearchEntityByText(content));
       const resultsAwait: StixCoreResultsType[] = await Promise.all(rawLinesPromises);
       const newBulkEntityList = resultsAwait.reduce((acc: BulkEntityTypeInfo[], cur: StixCoreResultsType, index: number) => {
@@ -245,6 +272,7 @@ const BulkRelationDialog : FunctionComponent<BulkRelationDialogProps> = ({
           searchTerm: cur.searchTerm,
         }];
       }, []);
+      selectMissingEntites(newBulkEntityList);
       setBulkEntityList([...newBulkEntityList]);
     };
     getBulkEntities().catch(() => false);
@@ -292,7 +320,10 @@ const BulkRelationDialog : FunctionComponent<BulkRelationDialogProps> = ({
 
   const handleOpenSDOCreateEntityForm = () => setIsSDOCreationFormOpen(true);
 
-  const handleRefreshBulkEntityList = () => setEntityToSearch([...entityToSearch]);
+  const handleRefreshBulkEntityList = () => {
+    setMissingEntity(undefined);
+    setEntityToSearch([...entityToSearch]);
+  };
 
   const handleCloseSDOCreateEntityForm = () => {
     setIsSDOCreationFormOpen(false);
@@ -364,22 +395,16 @@ const BulkRelationDialog : FunctionComponent<BulkRelationDialogProps> = ({
   const renderStixDomainObjectCreationForm = () => {
     if (!isSDOCreationFormOpen || !entityTypeFromMissingEntities) return null;
     const selectedEntityTypeToCreate = Object.entries(entityTypeFromMissingEntities)[0];
-    // const paginationOptions = getPaginationOptions(selectedEntityTypeToCreate[0]);
-    // const paginationOptions = {
-    //   orderBy: '_score',
-    //   orderMode: 'desc',
-    //   search: '',
-    //   types: ['Stix-Domain-Object'],
-    // };
+    console.log('missingEntity ; ', missingEntity);
     return (
       <StixDomainObjectCreation
         paginationOptions={paginationOptions}
         open={isSDOCreationFormOpen}
         speeddial={isSDOCreationFormOpen}
-        inputValue={selectedEntityTypeToCreate[1].join('\n')}
+        inputValue={missingEntity.values?.join('\n') ?? ''}
         display={isSDOCreationFormOpen}
         paginationKey={paginationKey}
-        stixDomainObjectTypes={selectedEntityTypeToCreate[0]}
+        stixDomainObjectTypes={missingEntity.key}
         handleClose={handleCloseSDOCreateEntityForm}
         confidence={undefined}
         defaultCreatedBy={undefined}
