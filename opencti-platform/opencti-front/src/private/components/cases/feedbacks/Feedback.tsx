@@ -13,6 +13,7 @@ import StixCoreObjectExternalReferences from '../../analyses/external_references
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
 import { Feedback_case$key } from './__generated__/Feedback_case.graphql';
 import { getCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
+import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -92,6 +93,7 @@ const FeedbackComponent: FunctionComponent<FeedbackProps> = ({ data, enableRefer
   const feedbackData = useFragment(feedbackFragment, data);
   const { isFeatureEnable } = useHelper();
   const FABReplaced = isFeatureEnable('FAB_REPLACEMENT');
+  const overviewLayoutCustomization = useOverviewLayoutCustomization('Feedback');
 
   const { canEdit } = getCurrentUserAccessRight(feedbackData.currentUserAccessRight);
 
@@ -102,31 +104,58 @@ const FeedbackComponent: FunctionComponent<FeedbackProps> = ({ data, enableRefer
         spacing={3}
         classes={{ container: classes.gridContainer }}
       >
-        <Grid item xs={6}>
-          <FeedbackDetails feedbackData={feedbackData} />
-        </Grid>
-        <Grid item xs={6}>
-          <StixDomainObjectOverview
-            stixDomainObject={feedbackData}
-            displayAssignees={true}
-            displayConfidence={false}
-          />
-        </Grid>
-        <Grid item xs={12}>
-          <ContainerStixObjectsOrStixRelationships
-            isSupportParticipation={false}
-            container={feedbackData}
-            enableReferences={enableReferences}
-          />
-        </Grid>
-        <Grid item xs={6}>
-          <StixCoreObjectExternalReferences
-            stixCoreObjectId={feedbackData.id}
-          />
-        </Grid>
-        <Grid item xs={6}>
-          <StixCoreObjectLatestHistory stixCoreObjectId={feedbackData.id} />
-        </Grid>
+        {
+          overviewLayoutCustomization.map(({ key, width }) => {
+            switch (key) {
+              case 'details':
+                return (
+                  <Grid key={key} item xs={width}>
+                    <FeedbackDetails
+                      feedbackData={feedbackData}
+                    />
+                  </Grid>
+                );
+              case 'basicInformation':
+                return (
+                  <Grid key={key} item xs={width}>
+                    <StixDomainObjectOverview
+                      stixDomainObject={feedbackData}
+                      displayAssignees={true}
+                      displayConfidence={false}
+                    />
+                  </Grid>
+                );
+              case 'relatedEntities':
+                return (
+                  <Grid key={key} item xs={width}>
+                    <ContainerStixObjectsOrStixRelationships
+                      isSupportParticipation={false}
+                      container={feedbackData}
+                      enableReferences={enableReferences}
+                    />
+                  </Grid>
+                );
+              case 'externalReferences':
+                return (
+                  <Grid key={key} item xs={width}>
+                    <StixCoreObjectExternalReferences
+                      stixCoreObjectId={feedbackData.id}
+                    />
+                  </Grid>
+                );
+              case 'mostRecentHistory':
+                return (
+                  <Grid key={key} item xs={width}>
+                    <StixCoreObjectLatestHistory
+                      stixCoreObjectId={feedbackData.id}
+                    />
+                  </Grid>
+                );
+              default:
+                return null;
+            }
+          })
+        }
       </Grid>
       {!FABReplaced
         && <Security needs={[KNOWLEDGE_KNUPDATE]} hasAccess={canEdit}>
