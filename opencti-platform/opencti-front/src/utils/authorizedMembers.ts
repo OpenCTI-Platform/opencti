@@ -1,6 +1,4 @@
 import { Option } from '@components/common/form/ReferenceField';
-import { Feedback_case$data } from '@components/cases/feedbacks/__generated__/Feedback_case.graphql';
-import { CaseUtils_case$data } from '@components/cases/__generated__/CaseUtils_case.graphql';
 
 export const INPUT_AUTHORIZED_MEMBERS = 'authorized_members';
 
