@@ -30,7 +30,7 @@ const CASE_INCIDENT_DEFINITION: ModuleDefinition<StoreEntityCaseIncident, StixCa
     { key: 'task', width: 6, label: 'Tasks' },
     { key: 'originOfTheCase', width: 6, label: 'Origin of the case' },
     { key: 'observables', width: 6, label: 'Observables' },
-    { key: 'otherEntities', width: 6, label: 'Other entities' },
+    { key: 'relatedEntities', width: 6, label: 'Related entities' },
     { key: 'externalReferences', width: 6, label: 'External references' },
     { key: 'mostRecentHistory', width: 6, label: 'Most recent history' },
     { key: 'notes', width: 12, label: 'Notes about this entity' },

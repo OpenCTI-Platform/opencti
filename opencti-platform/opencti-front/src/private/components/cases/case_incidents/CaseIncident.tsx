@@ -186,7 +186,7 @@ const CaseIncidentComponent: FunctionComponent<CaseIncidentProps> = ({ data, ena
                     />
                   </Grid>
                 );
-              case 'otherEntities':
+              case 'relatedEntities':
                 return (
                   <Grid key={key} item xs={width}>
                     <ContainerStixObjectsOrStixRelationships
