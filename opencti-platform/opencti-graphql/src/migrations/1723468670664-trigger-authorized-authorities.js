@@ -14,8 +14,10 @@ export const up = async (next) => {
   const callback = async (notifiers) => {
     for (let i = 0; i < notifiers.length; i += 1) {
       const notifier = notifiers[i];
-      const patch = { authorized_authorities: ['SETTINGS_SECURITYACTIVITY'] };
-      await elReplace(notifier._index, notifier.internal_id, { doc: patch });
+      if (notifier.trigger_scope === 'activity') {
+        const patch = { authorized_authorities: ['SETTINGS_SECURITYACTIVITY'] };
+        await elReplace(notifier._index, notifier.internal_id, { doc: patch });
+      }
     }
   };
   const opts = { types: [ENTITY_TYPE_TRIGGER], callback };
