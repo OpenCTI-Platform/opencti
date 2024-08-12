@@ -49,7 +49,7 @@ const useStyles = makeStyles((theme) => ({
     marginLeft: 10,
   },
   chartContainer: {
-    marginLeft: -31,
+    left: -31,
     position: 'relative',
   },
   iconOverlay: {
@@ -237,6 +237,7 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
             true,
             false,
             65,
+            false,
           );
           if (props && props.obasStixCoreObjectSimulationsResult) {
             const { prevention, detection, human } = props.obasStixCoreObjectSimulationsResult;
