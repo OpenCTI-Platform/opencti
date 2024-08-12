@@ -25,6 +25,7 @@ import {
 import {
   StixCoreRelationshipCreationFromEntityStixCoreObjectsLines_data$data,
 } from '@components/common/stix_core_relationships/__generated__/StixCoreRelationshipCreationFromEntityStixCoreObjectsLines_data.graphql';
+import { PaginationOptions } from 'src/components/list_lines';
 import { commitMutation, handleErrorInForm, QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import { formatDate } from '../../../../utils/Time';
@@ -760,17 +761,16 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
     };
   };
   const contextFilters = useBuildEntityTypeBasedFilterContext(virtualEntityTypes, filters);
-  const searchPaginationOptions = {
+  const searchPaginationOptions: PaginationOptions = {
     search: searchTerm,
     filters: contextFilters,
     orderBy: sortBy,
     orderMode: orderAsc ? 'asc' : 'desc',
-    count: 100,
-  } as unknown as StixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery$variables;
+  } as PaginationOptions;
 
   const queryRef = useQueryLoading<StixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQueryType>(
     stixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery,
-    searchPaginationOptions,
+    { ...searchPaginationOptions, count: 100 } as StixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery$variables,
   );
 
   const preloadedPaginationProps = {
@@ -784,7 +784,6 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
   const [tableRootRef, setTableRootRef] = useState<HTMLDivElement | null>(null);
 
   const renderSelectEntity = (entity_type: string, name = '') => {
-    console.log('name : ', name);
     return (
       <div
         style={{
@@ -826,6 +825,8 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
                       entityTypes={virtualEntityTypes}
                       additionalHeaderButtons={[(
                         <BulkRelationDialogContainer
+                          paginationOptions={searchPaginationOptions}
+                          paginationKey="Pagination_stixCoreObjects"
                           key="BulkRelationDialogContainer"
                           stixDomainObjectId={entityId}
                           stixDomainObjectName={name}

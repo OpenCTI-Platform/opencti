@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Button from '@mui/material/Button';
 import BulkRelationDialog from '@components/common/bulk/dialog/BulkRelationDialog';
+import { PaginationOptions } from 'src/components/list_lines';
 import { useFormatter } from 'src/components/i18n';
 import useHelper from 'src/utils/hooks/useHelper';
 
@@ -10,6 +11,8 @@ type BulkRelationDialogContainerProps = {
   stixDomainObjectType: string;
   selectedEntities: string[];
   defaultRelationshipType?: string;
+  paginationKey: string;
+  paginationOptions: PaginationOptions;
 };
 
 const inlinedStyle = {
@@ -26,6 +29,8 @@ const BulkRelationDialogContainer = ({
   stixDomainObjectType,
   selectedEntities,
   defaultRelationshipType,
+  paginationKey,
+  paginationOptions,
 }: BulkRelationDialogContainerProps) => {
   const { isFeatureEnable } = useHelper();
   const { t_i18n } = useFormatter();
@@ -46,15 +51,17 @@ const BulkRelationDialogContainer = ({
         {t_i18n('Create bulk relations')}
       </Button>
       {isDialogOpen && (
-      <BulkRelationDialog
-        stixDomainObjectId={stixDomainObjectId}
-        stixDomainObjectName={stixDomainObjectName}
-        stixDomainObjectType={stixDomainObjectType}
-        defaultRelationshipType={defaultRelationshipType}
-        isOpen={isDialogOpen}
-        onClose={handleCloseDialog}
-        selectedEntities={selectedEntities}
-      />
+        <BulkRelationDialog
+          paginationKey={paginationKey}
+          paginationOptions={paginationOptions}
+          stixDomainObjectId={stixDomainObjectId}
+          stixDomainObjectName={stixDomainObjectName}
+          stixDomainObjectType={stixDomainObjectType}
+          defaultRelationshipType={defaultRelationshipType}
+          isOpen={isDialogOpen}
+          onClose={handleCloseDialog}
+          selectedEntities={selectedEntities}
+        />
       )}
     </>
   );

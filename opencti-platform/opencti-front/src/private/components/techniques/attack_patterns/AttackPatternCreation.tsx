@@ -174,7 +174,6 @@ export const AttackPatternCreationForm: FunctionComponent<AttackPatternFormProps
       },
     });
   };
-
   const initialValues = useDefaultValues(
     ATTACK_PATTERN_TYPE,
     {
@@ -190,7 +189,6 @@ export const AttackPatternCreationForm: FunctionComponent<AttackPatternFormProps
       file: undefined,
     },
   );
-
   return (
     <Formik
       initialValues={initialValues}
