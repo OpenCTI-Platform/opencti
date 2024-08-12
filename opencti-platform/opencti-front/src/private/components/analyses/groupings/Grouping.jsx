@@ -49,8 +49,6 @@ const GroupingComponent = ({ grouping }) => {
                   <Grid key={key} item xs={width}>
                     <StixDomainObjectOverview
                       stixDomainObject={grouping}
-                      displayAssignees
-                      displayParticipants
                     />
                   </Grid>
                 );

@@ -12,6 +12,7 @@ import StixCoreObjectExternalReferences from '../external_references/StixCoreObj
 import NoteEdition from './NoteEdition';
 import { Note_note$key } from './__generated__/Note_note.graphql';
 import NoteDetails from './NoteDetails';
+import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
 
 const NoteComponentFragment = graphql`
   fragment Note_note on Note {
@@ -75,52 +76,62 @@ const NoteComponent: FunctionComponent<NoteComponentProps> = ({
   const note = useFragment(NoteComponentFragment, noteFragment);
   const { isFeatureEnable } = useHelper();
   const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
+  const overviewLayoutCustomization = useOverviewLayoutCustomization(note.entity_type);
 
   return (<>
     <Grid
       container={true}
       spacing={3}
       style={{
-        marginTop: 25,
-      }}
-    >
-      <Grid item xs={6}>
-        <NoteDetails note={note} />
-      </Grid>
-      <Grid item xs={6}>
-        <StixDomainObjectOverview stixDomainObject={note} />
-      </Grid>
-    </Grid>
-    <Grid
-      container={true}
-      spacing={3}
-      style={{
-        marginTop: 25,
         marginBottom: 20,
       }}
     >
-      <Grid item xs={12}>
-        <ContainerStixObjectsOrStixRelationships
-          isSupportParticipation={true}
-          container={note}
-          enableReferences={enableReferences}
-        />
-      </Grid>
-    </Grid>
-    <Grid
-      container={true}
-      spacing={3}
-      style={{
-        marginTop: 25,
-        marginBottom: 20,
-      }}
-    >
-      <Grid item xs={6}>
-        <StixCoreObjectExternalReferences stixCoreObjectId={note.id} />
-      </Grid>
-      <Grid item xs={6}>
-        <StixCoreObjectLatestHistory stixCoreObjectId={note.id} />
-      </Grid>
+      {
+        overviewLayoutCustomization.map(({ key, width }) => {
+          switch (key) {
+            case 'details':
+              return (
+                <Grid key={key} item xs={width}>
+                  <NoteDetails note={note} />
+                </Grid>
+              );
+            case 'basicInformation':
+              return (
+                <Grid key={key} item xs={width}>
+                  <StixDomainObjectOverview stixDomainObject={note} />
+                </Grid>
+              );
+            case 'relatedEntities':
+              return (
+                <Grid key={key} item xs={width}>
+                  <ContainerStixObjectsOrStixRelationships
+                    isSupportParticipation={true}
+                    container={note}
+                    enableReferences={enableReferences}
+                  />
+                </Grid>
+              );
+            case 'externalReferences':
+              return (
+                <Grid key={key} item xs={width}>
+                  <StixCoreObjectExternalReferences
+                    stixCoreObjectId={note.id}
+                  />
+                </Grid>
+              );
+            case 'mostRecentHistory':
+              return (
+                <Grid key={key} item xs={width}>
+                  <StixCoreObjectLatestHistory
+                    stixCoreObjectId={note.id}
+                  />
+                </Grid>
+              );
+            default:
+              return null;
+          }
+        })
+      }
     </Grid>
     {!isFABReplaced && (
       <CollaborativeSecurity data={note} needs={[KNOWLEDGE_KNUPDATE]}>
