@@ -225,6 +225,7 @@ const LeftBar = () => {
     SETTINGS_SECURITYACTIVITY,
     SETTINGS_FILEINDEXING,
     SETTINGS_SUPPORT,
+    VIRTUAL_ORGANIZATION_ADMIN,
   ]);
   const isGrantedToParameters = useGranted([SETTINGS_SETPARAMETERS]);
   const isGrantedToTaxonomies = useGranted([SETTINGS_SETLABELS]);
