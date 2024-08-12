@@ -56,7 +56,7 @@ export const authorizedMembersToOptions = (
     });
 };
 
-export const getCurrentUserAccessRight = (entityData: Feedback_case$data | CaseUtils_case$data) => {
+export const getCurrentUserAccessRight = (entityData: { currentUserAccessRight: string | null | undefined }) => {
   const canManage = entityData.currentUserAccessRight === 'admin';
   const canEdit = canManage || entityData.currentUserAccessRight === 'edit';
   const canView = canManage || canEdit || entityData.currentUserAccessRight === 'view';
