@@ -67,6 +67,7 @@ import './stixCyberObservable/stixCyberObservable';
 import './report/report';
 import './note/note';
 import './externalReference/externalReference';
+import './incident/incident';
 // endregion
 
 // region graphql registration
