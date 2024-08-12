@@ -2060,17 +2060,17 @@ const WorkbenchFileContentComponent = ({
                 title={t_i18n('relationship_targets')}
                 fullWidth
                 types={[
-                  'Sector',
-                  'Organization',
-                  'Individual',
-                  'System',
-                  'Region',
-                  'Country',
-                  'City',
-                  'Position',
-                  'Event',
-                  'Vulnerability',
                   'Administrative-Area',
+                  'City',
+                  'Country',
+                  'Event',
+                  'Individual',
+                  'Organization',
+                  'Position',
+                  'Region',
+                  'Sector',
+                  'System',
+                  'Vulnerability',
                 ]}
                 stixDomainObjects={stixDomainObjects}
               />
