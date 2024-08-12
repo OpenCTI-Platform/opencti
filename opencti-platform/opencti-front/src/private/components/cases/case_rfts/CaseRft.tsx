@@ -27,6 +27,7 @@ import { tasksDataColumns } from '../tasks/TasksLine';
 import { CaseTasksLineDummy } from '../tasks/CaseTasksLine';
 import { isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
 import { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
+import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -53,6 +54,7 @@ const CaseRftComponent: FunctionComponent<CaseRftProps> = ({ data, enableReferen
   const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const ref = useRef(null);
   const caseRftData = useFragment(caseFragment, data);
+  const overviewLayoutCustomization = useOverviewLayoutCustomization(caseRftData.entity_type);
   const LOCAL_STORAGE_KEY_CASE_TASKS = `cases-${caseRftData.id}-caseTask`;
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<CaseTasksLinesQuery$variables>(
     LOCAL_STORAGE_KEY_CASE_TASKS,
@@ -88,99 +90,138 @@ const CaseRftComponent: FunctionComponent<CaseRftProps> = ({ data, enableReferen
         spacing={3}
         classes={{ container: classes.gridContainer }}
       >
-        <Grid item xs={6}>
-          <CaseRftDetails caseRftData={caseRftData} />
-        </Grid>
-        <Grid item xs={6}>
-          <StixDomainObjectOverview
-            stixDomainObject={caseRftData}
-            displayAssignees
-            displayParticipants
-          />
-        </Grid>
-        <Grid item xs={6} ref={ref}>
-          {queryRef && (
-            <React.Suspense
-              fallback={
-                <div style={{ height: '100%' }}>
-                  <Typography
-                    variant="h4"
-                    gutterBottom={true}
-                    style={{ marginBottom: 10 }}
-                  >
-                    {t_i18n('Tasks')}
-                  </Typography>
-                  <Paper classes={{ root: classes.paper }} variant="outlined">
-                    <ListLines
-                      helpers={helpers}
-                      sortBy={sortBy}
-                      orderAsc={orderAsc}
-                      handleSort={helpers.handleSort}
-                      dataColumns={tasksDataColumns}
-                      inline={true}
-                      secondaryAction={true}
-                    >
-                      {Array(20)
-                        .fill(0)
-                        .map((_, idx) => (
-                          <CaseTasksLineDummy key={idx} />
-                        ))}
-                    </ListLines>
-                  </Paper>
-                </div>
-              }
-            >
-              <CaseTasksLines
-                queryRef={queryRef}
-                paginationOptions={queryTaskPaginationOptions}
-                caseId={caseRftData.id}
-                sortBy={sortBy}
-                orderAsc={orderAsc}
-                handleSort={helpers.handleSort}
-                defaultMarkings={convertMarkings(caseRftData)}
-                containerRef={ref}
-                enableReferences={enableReferences}
-              />
-            </React.Suspense>
-          )}
-        </Grid>
-        <Grid item xs={6}>
-          <ContainerStixObjectsOrStixRelationships
-            isSupportParticipation={false}
-            container={caseRftData}
-            types={['Incident', 'stix-sighting-relationship', 'Report']}
-            title={t_i18n('Origin of the case')}
-            enableReferences={enableReferences}
-          />
-        </Grid>
-        <Grid item xs={6}>
-          <ContainerStixObjectsOrStixRelationships
-            isSupportParticipation={false}
-            container={caseRftData}
-            types={['Stix-Cyber-Observable']}
-            title={t_i18n('Observables')}
-            enableReferences={enableReferences}
-          />
-        </Grid>
-        <Grid item xs={6}>
-          <ContainerStixObjectsOrStixRelationships
-            isSupportParticipation={false}
-            container={caseRftData}
-            enableReferences={enableReferences}
-          />
-        </Grid>
-        <Grid item xs={6}>
-          <StixCoreObjectExternalReferences stixCoreObjectId={caseRftData.id} />
-        </Grid>
-        <Grid item xs={6}>
-          <StixCoreObjectLatestHistory stixCoreObjectId={caseRftData.id} />
-        </Grid>
-        <Grid item xs={12}>
-          <StixCoreObjectOrStixCoreRelationshipNotes
-            stixCoreObjectOrStixCoreRelationshipId={caseRftData.id}
-            defaultMarkings={caseRftData.objectMarking ?? []}
-          />
-        </Grid>
+        {
+          overviewLayoutCustomization.map(({ key, width }) => {
+            switch (key) {
+              case 'details':
+                return (
+                  <Grid key={key} item xs={width}>
+                    <CaseRftDetails caseRftData={caseRftData} />
+                  </Grid>
+                );
+              case 'basicInformation':
+                return (
+                  <Grid key={key} item xs={width}>
+                    <StixDomainObjectOverview
+                      stixDomainObject={caseRftData}
+                      displayAssignees
+                      displayParticipants
+                    />
+                  </Grid>
+                );
+              case 'task':
+                return (
+                  <Grid key={key} item xs={width} ref={ref}>
+                    {queryRef && (
+                      <React.Suspense
+                        fallback={
+                          <div style={{ height: '100%' }}>
+                            <Typography
+                              variant="h4"
+                              gutterBottom={true}
+                              style={{ marginBottom: 10 }}
+                            >
+                              {t_i18n('Tasks')}
+                            </Typography>
+                            <Paper classes={{ root: classes.paper }} variant="outlined">
+                              <ListLines
+                                helpers={helpers}
+                                sortBy={sortBy}
+                                orderAsc={orderAsc}
+                                handleSort={helpers.handleSort}
+                                dataColumns={tasksDataColumns}
+                                inline={true}
+                                secondaryAction={true}
+                              >
+                                {Array(20)
+                                  .fill(0)
+                                  .map((_, idx) => (
+                                    <CaseTasksLineDummy key={idx} />
+                                  ))}
+                              </ListLines>
+                            </Paper>
+                          </div>
+                        }
+                      >
+                        <CaseTasksLines
+                          queryRef={queryRef}
+                          paginationOptions={queryTaskPaginationOptions}
+                          caseId={caseRftData.id}
+                          sortBy={sortBy}
+                          orderAsc={orderAsc}
+                          handleSort={helpers.handleSort}
+                          defaultMarkings={convertMarkings(caseRftData)}
+                          containerRef={ref}
+                          enableReferences={enableReferences}
+                        />
+                      </React.Suspense>
+                    )}
+                  </Grid>
+                );
+              case 'originOfTheCase':
+                return (
+                  <Grid key={key} item xs={width}>
+                    <ContainerStixObjectsOrStixRelationships
+                      isSupportParticipation={false}
+                      container={caseRftData}
+                      types={['Incident', 'stix-sighting-relationship', 'Report']}
+                      title={t_i18n('Origin of the case')}
+                      enableReferences={enableReferences}
+                    />
+                  </Grid>
+                );
+              case 'observables':
+                return (
+                  <Grid key={key} item xs={width}>
+                    <ContainerStixObjectsOrStixRelationships
+                      isSupportParticipation={false}
+                      container={caseRftData}
+                      types={['Stix-Cyber-Observable']}
+                      title={t_i18n('Observables')}
+                      enableReferences={enableReferences}
+                    />
+                  </Grid>
+                );
+              case 'relatedEntities':
+                return (
+                  <Grid key={key} item xs={width}>
+                    <ContainerStixObjectsOrStixRelationships
+                      isSupportParticipation={false}
+                      container={caseRftData}
+                      enableReferences={enableReferences}
+                    />
+                  </Grid>
+                );
+              case 'externalReferences':
+                return (
+                  <Grid key={key} item xs={width}>
+                    <StixCoreObjectExternalReferences
+                      stixCoreObjectId={caseRftData.id}
+                    />
+                  </Grid>
+                );
+              case 'mostRecentHistory':
+                return (
+                  <Grid key={key} item xs={width}>
+                    <StixCoreObjectLatestHistory
+                      stixCoreObjectId={caseRftData.id}
+                    />
+                  </Grid>
+                );
+              case 'notes':
+                return (
+                  <Grid key={key} item xs={width}>
+                    <StixCoreObjectOrStixCoreRelationshipNotes
+                      stixCoreObjectOrStixCoreRelationshipId={caseRftData.id}
+                      defaultMarkings={caseRftData.objectMarking ?? []}
+                    />
+                  </Grid>
+                );
+              default:
+                return null;
+            }
+          })
+        }
       </Grid>
       {!isFABReplaced && (
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
