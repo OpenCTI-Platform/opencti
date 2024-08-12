@@ -12,6 +12,7 @@ import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import TaskEdition from './TaskEdition';
 import ContainerStixObjectsOrStixRelationships from '../../common/containers/ContainerStixObjectsOrStixRelationships';
+import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -84,6 +85,7 @@ const TaskComponent = ({ data, enableReferences }: { data: Tasks_tasks$key, enab
   const task = useFragment(taskFragment, data);
   const { isFeatureEnable } = useHelper();
   const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
+  const overviewLayoutCustomization = useOverviewLayoutCustomization('Task');
   return (
     <>
       <Grid
@@ -91,32 +93,59 @@ const TaskComponent = ({ data, enableReferences }: { data: Tasks_tasks$key, enab
         spacing={3}
         classes={{ container: classes.gridContainer }}
       >
-        <Grid item xs={6}>
-          <TaskDetails tasksData={task} />
-        </Grid>
-        <Grid item xs={6}>
-          <StixDomainObjectOverview
-            stixDomainObject={task}
-            displayAssignees
-            displayParticipants
-          />
-        </Grid>
-        <Grid item xs={6}>
-          <ContainerStixObjectsOrStixRelationships
-            isSupportParticipation={false}
-            container={task}
-            enableReferences={enableReferences}
-          />
-        </Grid>
-        <Grid item xs={6}>
-          <StixCoreObjectLatestHistory stixCoreObjectId={task.id} />
-        </Grid>
-        <Grid item xs={12}>
-          <StixCoreObjectOrStixCoreRelationshipNotes
-            stixCoreObjectOrStixCoreRelationshipId={task.id}
-            defaultMarkings={task.objectMarking ?? []}
-          />
-        </Grid>
+        {
+          overviewLayoutCustomization.map(({ key, width }) => {
+            switch (key) {
+              case 'details':
+                return (
+                  <Grid key={key} item xs={width}>
+                    <TaskDetails
+                      tasksData={task}
+                    />
+                  </Grid>
+                );
+              case 'basicInformation':
+                return (
+                  <Grid key={key} item xs={width}>
+                    <StixDomainObjectOverview
+                      stixDomainObject={task}
+                      displayAssignees
+                      displayParticipants
+                    />
+                  </Grid>
+                );
+              case 'relatedEntities':
+                return (
+                  <Grid key={key} item xs={width}>
+                    <ContainerStixObjectsOrStixRelationships
+                      isSupportParticipation={false}
+                      container={task}
+                      enableReferences={enableReferences}
+                    />
+                  </Grid>
+                );
+              case 'mostRecentHistory':
+                return (
+                  <Grid key={key} item xs={width}>
+                    <StixCoreObjectLatestHistory
+                      stixCoreObjectId={task.id}
+                    />
+                  </Grid>
+                );
+              case 'notes':
+                return (
+                  <Grid key={key} item xs={width}>
+                    <StixCoreObjectOrStixCoreRelationshipNotes
+                      stixCoreObjectOrStixCoreRelationshipId={task.id}
+                      defaultMarkings={task.objectMarking ?? []}
+                    />
+                  </Grid>
+                );
+              default:
+                return null;
+            }
+          })
+        }
       </Grid>
       {!isFABReplaced && (
         <Security needs={[KNOWLEDGE_KNUPDATE]}>

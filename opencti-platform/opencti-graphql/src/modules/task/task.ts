@@ -22,6 +22,13 @@ const CASE_TASK_DEFINITION: ModuleDefinition<StoreEntityTask, StixTask> = {
       },
     },
   },
+  overviewLayoutCustomization: [
+    { key: 'details', width: 6, label: 'Entity details' },
+    { key: 'basicInformation', width: 6, label: 'Basic information' },
+    { key: 'relatedEntities', width: 6, label: 'Related entities' },
+    { key: 'mostRecentHistory', width: 6, label: 'Most recent history' },
+    { key: 'notes', width: 12, label: 'Notes about this entity' },
+  ],
   attributes: [
     { name: 'name', label: 'Name', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true, isFilterable: true },
     { name: 'description', label: 'Description', type: 'string', format: 'text', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
