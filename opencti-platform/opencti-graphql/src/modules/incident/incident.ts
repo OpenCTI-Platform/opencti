@@ -1,5 +1,5 @@
 /**
- * Placeholder for a note Module Definition
+ * Placeholder for Module Definition
  */
 
 import type { OverviewLayoutCustomization } from '../entitySetting/entitySetting-types';
