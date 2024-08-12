@@ -157,7 +157,7 @@ const ThreatActorIndividualComponent = ({
     threatActorIndividualFragment,
     data,
   );
-  const threatActorIndividualOverviewLayoutCustomization = useOverviewLayoutCustomization(threatActorIndividual.entity_type);
+  const overviewLayoutCustomization = useOverviewLayoutCustomization(threatActorIndividual.entity_type);
   return (
     <>
       <Grid
@@ -167,7 +167,7 @@ const ThreatActorIndividualComponent = ({
         classes={{ container: classes.gridContainer }}
       >
         {
-          threatActorIndividualOverviewLayoutCustomization.map(({ key, width }) => {
+          overviewLayoutCustomization.map(({ key, width }) => {
             switch (key) {
               case 'details':
                 return (

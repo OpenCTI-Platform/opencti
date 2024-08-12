@@ -69,6 +69,7 @@ import './note/note';
 import './externalReference/externalReference';
 import './incident/incident';
 import './observedData/observedData';
+import './threatActorGroup/threatActorGroup';
 // endregion
 
 // region graphql registration
