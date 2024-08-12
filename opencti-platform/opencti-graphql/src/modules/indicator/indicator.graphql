@@ -178,6 +178,7 @@ type Indicator implements BasicObject & StixObject & StixCoreObject & StixDomain
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   pendingFiles(
     first: Int
@@ -185,6 +186,7 @@ type Indicator implements BasicObject & StixObject & StixCoreObject & StixDomain
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]

@@ -160,6 +160,7 @@ export type AdministrativeAreaGroupingsArgs = {
 
 export type AdministrativeAreaImportFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -190,6 +191,7 @@ export type AdministrativeAreaOpinionsArgs = {
 
 export type AdministrativeAreaPendingFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -452,6 +454,7 @@ export type ArtifactGroupingsArgs = {
 
 export type ArtifactImportFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -487,6 +490,7 @@ export type ArtifactOpinionsArgs = {
 
 export type ArtifactPendingFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -688,6 +692,7 @@ export type AttackPatternGroupingsArgs = {
 
 export type AttackPatternImportFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -718,6 +723,7 @@ export type AttackPatternOpinionsArgs = {
 
 export type AttackPatternPendingFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -1044,6 +1050,7 @@ export type AutonomousSystemGroupingsArgs = {
 
 export type AutonomousSystemImportFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -1079,6 +1086,7 @@ export type AutonomousSystemOpinionsArgs = {
 
 export type AutonomousSystemPendingFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -1348,6 +1356,7 @@ export type BankAccountGroupingsArgs = {
 
 export type BankAccountImportFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -1383,6 +1392,7 @@ export type BankAccountOpinionsArgs = {
 
 export type BankAccountPendingFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -1574,6 +1584,7 @@ export type CampaignGroupingsArgs = {
 
 export type CampaignImportFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -1604,6 +1615,7 @@ export type CampaignOpinionsArgs = {
 
 export type CampaignPendingFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -1922,6 +1934,7 @@ export type CaseGroupingsArgs = {
 
 export type CaseImportFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -1964,6 +1977,7 @@ export type CaseOpinionsArgs = {
 
 export type CasePendingFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -2160,6 +2174,7 @@ export type CaseIncidentGroupingsArgs = {
 
 export type CaseIncidentImportFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -2202,6 +2217,7 @@ export type CaseIncidentOpinionsArgs = {
 
 export type CaseIncidentPendingFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -2445,6 +2461,7 @@ export type CaseRfiGroupingsArgs = {
 
 export type CaseRfiImportFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -2487,6 +2504,7 @@ export type CaseRfiOpinionsArgs = {
 
 export type CaseRfiPendingFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -2729,6 +2747,7 @@ export type CaseRftGroupingsArgs = {
 
 export type CaseRftImportFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -2771,6 +2790,7 @@ export type CaseRftOpinionsArgs = {
 
 export type CaseRftPendingFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -3059,6 +3079,7 @@ export type ChannelGroupingsArgs = {
 
 export type ChannelImportFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -3089,6 +3110,7 @@ export type ChannelOpinionsArgs = {
 
 export type ChannelPendingFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -3317,6 +3339,7 @@ export type CityGroupingsArgs = {
 
 export type CityImportFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -3347,6 +3370,7 @@ export type CityOpinionsArgs = {
 
 export type CityPendingFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -3965,6 +3989,7 @@ export type CountryGroupingsArgs = {
 
 export type CountryImportFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -3995,6 +4020,7 @@ export type CountryOpinionsArgs = {
 
 export type CountryPendingFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -4229,6 +4255,7 @@ export type CourseOfActionGroupingsArgs = {
 
 export type CourseOfActionImportFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -4259,6 +4286,7 @@ export type CourseOfActionOpinionsArgs = {
 
 export type CourseOfActionPendingFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -4513,6 +4541,7 @@ export type CredentialGroupingsArgs = {
 
 export type CredentialImportFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -4548,6 +4577,7 @@ export type CredentialOpinionsArgs = {
 
 export type CredentialPendingFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -4709,6 +4739,7 @@ export type CryptocurrencyWalletGroupingsArgs = {
 
 export type CryptocurrencyWalletImportFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -4744,6 +4775,7 @@ export type CryptocurrencyWalletOpinionsArgs = {
 
 export type CryptocurrencyWalletPendingFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -4902,6 +4934,7 @@ export type CryptographicKeyGroupingsArgs = {
 
 export type CryptographicKeyImportFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -4937,6 +4970,7 @@ export type CryptographicKeyOpinionsArgs = {
 
 export type CryptographicKeyPendingFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -5234,6 +5268,7 @@ export type DataComponentGroupingsArgs = {
 
 export type DataComponentImportFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -5264,6 +5299,7 @@ export type DataComponentOpinionsArgs = {
 
 export type DataComponentPendingFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -5474,6 +5510,7 @@ export type DataSourceGroupingsArgs = {
 
 export type DataSourceImportFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -5504,6 +5541,7 @@ export type DataSourceOpinionsArgs = {
 
 export type DataSourcePendingFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -5881,6 +5919,7 @@ export type DirectoryGroupingsArgs = {
 
 export type DirectoryImportFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -5916,6 +5955,7 @@ export type DirectoryOpinionsArgs = {
 
 export type DirectoryPendingFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -6108,6 +6148,7 @@ export type DomainNameGroupingsArgs = {
 
 export type DomainNameImportFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -6143,6 +6184,7 @@ export type DomainNameOpinionsArgs = {
 
 export type DomainNamePendingFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -6361,6 +6403,7 @@ export type EmailAddrGroupingsArgs = {
 
 export type EmailAddrImportFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -6396,6 +6439,7 @@ export type EmailAddrOpinionsArgs = {
 
 export type EmailAddrPendingFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -6561,6 +6605,7 @@ export type EmailMessageGroupingsArgs = {
 
 export type EmailMessageImportFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -6596,6 +6641,7 @@ export type EmailMessageOpinionsArgs = {
 
 export type EmailMessagePendingFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -6762,6 +6808,7 @@ export type EmailMimePartTypeGroupingsArgs = {
 
 export type EmailMimePartTypeImportFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -6797,6 +6844,7 @@ export type EmailMimePartTypeOpinionsArgs = {
 
 export type EmailMimePartTypePendingFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -7006,6 +7054,7 @@ export type EventGroupingsArgs = {
 
 export type EventImportFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -7036,6 +7085,7 @@ export type EventOpinionsArgs = {
 
 export type EventPendingFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -7217,6 +7267,7 @@ export type ExternalReferenceExportFilesArgs = {
 
 export type ExternalReferenceImportFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -7232,6 +7283,7 @@ export type ExternalReferenceJobsArgs = {
 
 export type ExternalReferencePendingFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -7495,6 +7547,7 @@ export type FeedbackGroupingsArgs = {
 
 export type FeedbackImportFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -7537,6 +7590,7 @@ export type FeedbackOpinionsArgs = {
 
 export type FeedbackPendingFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -7685,6 +7739,7 @@ export type File = {
   lastModifiedSinceMin?: Maybe<Scalars['Int']['output']>;
   metaData?: Maybe<FileMetadata>;
   name: Scalars['String']['output'];
+  objectMarking: Array<MarkingDefinition>;
   size?: Maybe<Scalars['Int']['output']>;
   uploadStatus: State;
   works?: Maybe<Array<Maybe<Work>>>;
@@ -8007,6 +8062,7 @@ export type GroupingGroupingsArgs = {
 
 export type GroupingImportFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -8049,6 +8105,7 @@ export type GroupingOpinionsArgs = {
 
 export type GroupingPendingFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -8287,6 +8344,7 @@ export type HashedObservableGroupingsArgs = {
 
 export type HashedObservableImportFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -8322,6 +8380,7 @@ export type HashedObservableOpinionsArgs = {
 
 export type HashedObservablePendingFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -8475,6 +8534,7 @@ export type HostnameGroupingsArgs = {
 
 export type HostnameImportFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -8510,6 +8570,7 @@ export type HostnameOpinionsArgs = {
 
 export type HostnamePendingFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -8669,6 +8730,7 @@ export type IPv4AddrGroupingsArgs = {
 
 export type IPv4AddrImportFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -8704,6 +8766,7 @@ export type IPv4AddrOpinionsArgs = {
 
 export type IPv4AddrPendingFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -8865,6 +8928,7 @@ export type IPv6AddrGroupingsArgs = {
 
 export type IPv6AddrImportFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -8900,6 +8964,7 @@ export type IPv6AddrOpinionsArgs = {
 
 export type IPv6AddrPendingFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -9078,6 +9143,7 @@ export type IdentityGroupingsArgs = {
 
 export type IdentityImportFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -9108,6 +9174,7 @@ export type IdentityOpinionsArgs = {
 
 export type IdentityPendingFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -9362,6 +9429,7 @@ export type IncidentGroupingsArgs = {
 
 export type IncidentImportFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -9392,6 +9460,7 @@ export type IncidentOpinionsArgs = {
 
 export type IncidentPendingFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -9692,6 +9761,7 @@ export type IndicatorGroupingsArgs = {
 
 export type IndicatorImportFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -9727,6 +9797,7 @@ export type IndicatorOpinionsArgs = {
 
 export type IndicatorPendingFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -9979,6 +10050,7 @@ export type IndividualGroupingsArgs = {
 
 export type IndividualImportFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -10009,6 +10081,7 @@ export type IndividualOpinionsArgs = {
 
 export type IndividualPendingFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -10270,6 +10343,7 @@ export type InfrastructureGroupingsArgs = {
 
 export type InfrastructureImportFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -10300,6 +10374,7 @@ export type InfrastructureOpinionsArgs = {
 
 export type InfrastructurePendingFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -10753,6 +10828,7 @@ export type IntrusionSetGroupingsArgs = {
 
 export type IntrusionSetImportFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -10783,6 +10859,7 @@ export type IntrusionSetOpinionsArgs = {
 
 export type IntrusionSetPendingFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -11192,6 +11269,7 @@ export type LanguageGroupingsArgs = {
 
 export type LanguageImportFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -11222,6 +11300,7 @@ export type LanguageOpinionsArgs = {
 
 export type LanguagePendingFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -11452,6 +11531,7 @@ export type LocationGroupingsArgs = {
 
 export type LocationImportFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -11482,6 +11562,7 @@ export type LocationOpinionsArgs = {
 
 export type LocationPendingFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -11764,6 +11845,7 @@ export type MacAddrGroupingsArgs = {
 
 export type MacAddrImportFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -11799,6 +11881,7 @@ export type MacAddrOpinionsArgs = {
 
 export type MacAddrPendingFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -11974,6 +12057,7 @@ export type MalwareGroupingsArgs = {
 
 export type MalwareImportFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -12004,6 +12088,7 @@ export type MalwareOpinionsArgs = {
 
 export type MalwarePendingFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -12224,6 +12309,7 @@ export type MalwareAnalysisGroupingsArgs = {
 
 export type MalwareAnalysisImportFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -12254,6 +12340,7 @@ export type MalwareAnalysisOpinionsArgs = {
 
 export type MalwareAnalysisPendingFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -12729,6 +12816,7 @@ export type MediaContentGroupingsArgs = {
 
 export type MediaContentImportFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -12764,6 +12852,7 @@ export type MediaContentOpinionsArgs = {
 
 export type MediaContentPendingFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -15276,6 +15365,7 @@ export type MutexGroupingsArgs = {
 
 export type MutexImportFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -15311,6 +15401,7 @@ export type MutexOpinionsArgs = {
 
 export type MutexPendingFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -15481,6 +15572,7 @@ export type NarrativeGroupingsArgs = {
 
 export type NarrativeImportFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -15511,6 +15603,7 @@ export type NarrativeOpinionsArgs = {
 
 export type NarrativePendingFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -15722,6 +15815,7 @@ export type NetworkTrafficGroupingsArgs = {
 
 export type NetworkTrafficImportFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -15757,6 +15851,7 @@ export type NetworkTrafficOpinionsArgs = {
 
 export type NetworkTrafficPendingFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -15938,6 +16033,7 @@ export type NoteGroupingsArgs = {
 
 export type NoteImportFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -15980,6 +16076,7 @@ export type NoteOpinionsArgs = {
 
 export type NotePendingFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -16392,6 +16489,7 @@ export type ObservedDataGroupingsArgs = {
 
 export type ObservedDataImportFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -16434,6 +16532,7 @@ export type ObservedDataOpinionsArgs = {
 
 export type ObservedDataPendingFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -16707,6 +16806,7 @@ export type OpinionGroupingsArgs = {
 
 export type OpinionImportFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -16749,6 +16849,7 @@ export type OpinionOpinionsArgs = {
 
 export type OpinionPendingFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -17042,6 +17143,7 @@ export type OrganizationGroupingsArgs = {
 
 export type OrganizationImportFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -17082,6 +17184,7 @@ export type OrganizationOpinionsArgs = {
 
 export type OrganizationPendingFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -17343,6 +17446,7 @@ export type PaymentCardGroupingsArgs = {
 
 export type PaymentCardImportFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -17378,6 +17482,7 @@ export type PaymentCardOpinionsArgs = {
 
 export type PaymentCardPendingFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -17539,6 +17644,7 @@ export type PhoneNumberGroupingsArgs = {
 
 export type PhoneNumberImportFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -17574,6 +17680,7 @@ export type PhoneNumberOpinionsArgs = {
 
 export type PhoneNumberPendingFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -17855,6 +17962,7 @@ export type PositionGroupingsArgs = {
 
 export type PositionImportFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -17885,6 +17993,7 @@ export type PositionOpinionsArgs = {
 
 export type PositionPendingFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -18147,6 +18256,7 @@ export type ProcessGroupingsArgs = {
 
 export type ProcessImportFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -18182,6 +18292,7 @@ export type ProcessOpinionsArgs = {
 
 export type ProcessPendingFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -19304,6 +19415,7 @@ export type QueryIdentityArgs = {
 
 export type QueryImportFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -19875,6 +19987,7 @@ export type QueryParticipantsArgs = {
 
 export type QueryPendingFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -21310,6 +21423,7 @@ export type RegionGroupingsArgs = {
 
 export type RegionImportFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -21340,6 +21454,7 @@ export type RegionOpinionsArgs = {
 
 export type RegionPendingFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -21606,6 +21721,7 @@ export type ReportGroupingsArgs = {
 
 export type ReportImportFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -21648,6 +21764,7 @@ export type ReportOpinionsArgs = {
 
 export type ReportPendingFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -22134,6 +22251,7 @@ export type SectorGroupingsArgs = {
 
 export type SectorImportFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -22164,6 +22282,7 @@ export type SectorOpinionsArgs = {
 
 export type SectorPendingFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -22553,6 +22672,7 @@ export type SoftwareGroupingsArgs = {
 
 export type SoftwareImportFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -22588,6 +22708,7 @@ export type SoftwareOpinionsArgs = {
 
 export type SoftwarePendingFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -22832,6 +22953,7 @@ export type StixCoreObjectGroupingsArgs = {
 
 export type StixCoreObjectImportFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -22862,6 +22984,7 @@ export type StixCoreObjectOpinionsArgs = {
 
 export type StixCoreObjectPendingFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -23460,6 +23583,7 @@ export type StixCyberObservableGroupingsArgs = {
 
 export type StixCyberObservableImportFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -23495,6 +23619,7 @@ export type StixCyberObservableOpinionsArgs = {
 
 export type StixCyberObservablePendingFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -23751,6 +23876,7 @@ export type StixDomainObjectGroupingsArgs = {
 
 export type StixDomainObjectImportFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -23781,6 +23907,7 @@ export type StixDomainObjectOpinionsArgs = {
 
 export type StixDomainObjectPendingFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -24117,6 +24244,7 @@ export type StixFileGroupingsArgs = {
 
 export type StixFileImportFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -24152,6 +24280,7 @@ export type StixFileOpinionsArgs = {
 
 export type StixFilePendingFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -25241,6 +25370,7 @@ export type SystemGroupingsArgs = {
 
 export type SystemImportFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -25271,6 +25401,7 @@ export type SystemOpinionsArgs = {
 
 export type SystemPendingFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -25518,6 +25649,7 @@ export type TaskGroupingsArgs = {
 
 export type TaskImportFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -25560,6 +25692,7 @@ export type TaskOpinionsArgs = {
 
 export type TaskPendingFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -25865,6 +25998,7 @@ export type TextGroupingsArgs = {
 
 export type TextImportFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -25900,6 +26034,7 @@ export type TextOpinionsArgs = {
 
 export type TextPendingFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -26077,6 +26212,7 @@ export type ThreatActorGroupingsArgs = {
 
 export type ThreatActorImportFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -26107,6 +26243,7 @@ export type ThreatActorOpinionsArgs = {
 
 export type ThreatActorPendingFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -26292,6 +26429,7 @@ export type ThreatActorGroupGroupingsArgs = {
 
 export type ThreatActorGroupImportFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -26322,6 +26460,7 @@ export type ThreatActorGroupOpinionsArgs = {
 
 export type ThreatActorGroupPendingFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -26583,6 +26722,7 @@ export type ThreatActorIndividualGroupingsArgs = {
 
 export type ThreatActorIndividualImportFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -26613,6 +26753,7 @@ export type ThreatActorIndividualOpinionsArgs = {
 
 export type ThreatActorIndividualPendingFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -26874,6 +27015,7 @@ export type ToolGroupingsArgs = {
 
 export type ToolImportFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -26904,6 +27046,7 @@ export type ToolOpinionsArgs = {
 
 export type ToolPendingFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -27139,6 +27282,7 @@ export type TrackingNumberGroupingsArgs = {
 
 export type TrackingNumberImportFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -27174,6 +27318,7 @@ export type TrackingNumberOpinionsArgs = {
 
 export type TrackingNumberPendingFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -27458,6 +27603,7 @@ export type UrlGroupingsArgs = {
 
 export type UrlImportFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -27493,6 +27639,7 @@ export type UrlOpinionsArgs = {
 
 export type UrlPendingFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -27727,6 +27874,7 @@ export type UserAccountGroupingsArgs = {
 
 export type UserAccountImportFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -27762,6 +27910,7 @@ export type UserAccountOpinionsArgs = {
 
 export type UserAccountPendingFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -27953,6 +28102,7 @@ export type UserAgentGroupingsArgs = {
 
 export type UserAgentImportFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -27988,6 +28138,7 @@ export type UserAgentOpinionsArgs = {
 
 export type UserAgentPendingFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -28393,6 +28544,7 @@ export type VulnerabilityGroupingsArgs = {
 
 export type VulnerabilityImportFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -28423,6 +28575,7 @@ export type VulnerabilityOpinionsArgs = {
 
 export type VulnerabilityPendingFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -28662,6 +28815,7 @@ export type WindowsRegistryKeyGroupingsArgs = {
 
 export type WindowsRegistryKeyImportFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -28697,6 +28851,7 @@ export type WindowsRegistryKeyOpinionsArgs = {
 
 export type WindowsRegistryKeyPendingFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -28859,6 +29014,7 @@ export type WindowsRegistryValueTypeGroupingsArgs = {
 
 export type WindowsRegistryValueTypeImportFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -28894,6 +29050,7 @@ export type WindowsRegistryValueTypeOpinionsArgs = {
 
 export type WindowsRegistryValueTypePendingFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -29247,6 +29404,7 @@ export type X509CertificateGroupingsArgs = {
 
 export type X509CertificateImportFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -29282,6 +29440,7 @@ export type X509CertificateOpinionsArgs = {
 
 export type X509CertificatePendingFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FileOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -33523,6 +33682,7 @@ export type FileResolvers<ContextType = any, ParentType extends ResolversParentT
   lastModifiedSinceMin?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   metaData?: Resolver<Maybe<ResolversTypes['FileMetadata']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  objectMarking?: Resolver<Array<ResolversTypes['MarkingDefinition']>, ParentType, ContextType>;
   size?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   uploadStatus?: Resolver<ResolversTypes['State'], ParentType, ContextType>;
   works?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType>;

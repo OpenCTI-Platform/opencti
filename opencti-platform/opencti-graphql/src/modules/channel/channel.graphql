@@ -108,6 +108,7 @@ type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainOb
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
     pendingFiles(
     first: Int
@@ -115,6 +116,7 @@ type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainOb
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
     exportFiles(first: Int): FileConnection
     editContext: [EditUserContext!]

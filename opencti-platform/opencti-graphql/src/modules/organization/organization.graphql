@@ -128,6 +128,7 @@ type Organization implements BasicObject & StixObject & StixCoreObject & StixDom
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   pendingFiles(
     first: Int
@@ -135,6 +136,7 @@ type Organization implements BasicObject & StixObject & StixCoreObject & StixDom
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]

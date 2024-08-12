@@ -16,6 +16,8 @@ import { controlUserConfidenceAgainstElement } from '../utils/confidence-level';
 import { uploadToStorage } from '../database/file-storage-helper';
 import { extractContentFrom } from '../utils/fileToContent';
 import { stixLoadById } from '../database/middleware';
+import { getEntitiesMapFromCache } from '../database/cache';
+import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 
 export const buildOptionsFromFileManager = async (context) => {
   let importPaths = ['import/'];
@@ -181,4 +183,15 @@ export const deleteImport = async (context, user, fileName) => {
     context_data: contextData
   });
   return fileName;
+};
+
+export const batchFileMarkingDefinitions = async (context, user, files) => {
+  const markingsFromCache = await getEntitiesMapFromCache(context, user, ENTITY_TYPE_MARKING_DEFINITION);
+  return files.map((s) => {
+    const markings = (s.metaData.file_markings ?? []).map((id) => markingsFromCache.get(id));
+    return R.sortWith([
+      R.ascend(R.propOr('TLP', 'definition_type')),
+      R.descend(R.propOr(0, 'x_opencti_order')),
+    ])(markings);
+  });
 };

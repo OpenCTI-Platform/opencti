@@ -23,6 +23,7 @@ import { emptyFilterGroup } from '../../../../utils/filters/filtersUtils';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import DataTable from '../../../../components/dataGrid/DataTable';
 import { UsePreloadedPaginationFragment } from '../../../../utils/hooks/usePreloadedPaginationFragment';
+import { deleteNode } from '../../../../utils/store';
 
 export const WorkbenchFileLineDeleteMutation = graphql`
   mutation ImportWorkbenchesContentFileLineDeleteMutation($fileName: String) {
@@ -141,6 +142,7 @@ const importWorkbenchLinesFragment = graphql`
     orderBy: { type: "FileOrdering" }
     orderMode: { type: "OrderingMode", defaultValue: desc }
     search: { type: "String" }
+    filters: { type: "FilterGroup" }
   )
   @refetchable(queryName: "ImportWorkbenchesRefetchQuery") {
     pendingFiles(
@@ -149,6 +151,7 @@ const importWorkbenchLinesFragment = graphql`
       orderBy: $orderBy,
       orderMode: $orderMode,
       search: $search,
+      filters: $filters,
     )
     @connection(key: "Pagination_global_pendingFiles") {
       edges {
@@ -170,6 +173,7 @@ export const importWorkbenchesContentQuery = graphql`
     $orderBy: FileOrdering,
     $orderMode: OrderingMode,
     $search: String,
+    $filters: FilterGroup,
   ) {
     ...ImportWorkbenchesContentLines_data
     @arguments(
@@ -178,6 +182,7 @@ export const importWorkbenchesContentQuery = graphql`
       orderBy: $orderBy
       orderMode: $orderMode
       search: $search
+      filters: $filters
     )
   }
 `;
@@ -237,6 +242,7 @@ const ImportWorkbenchesContent = () => {
         const fileStore = store.get(id);
         fileStore?.setValue(0, 'lastModifiedSinceMin');
         fileStore?.setValue('progress', 'uploadStatus');
+        deleteNode(store, 'Pagination_global_pendingFiles', queryPaginationOptions, id);
       },
       onCompleted: () => setDisplayDelete(''),
       onError: () => setDisplayDelete(''),
@@ -304,6 +310,7 @@ const ImportWorkbenchesContent = () => {
           toolbarFilters={initialFilters}
           lineFragment={workbenchLineFragment}
           initialValues={initialValues}
+          hideFilters
           preloadedPaginationProps={preloadedPaginationProps}
           actions={(file: ImportWorkbenchesContentFileLine_file$data) => {
             const { id, metaData, uploadStatus } = file;

@@ -110,6 +110,7 @@ type Event implements BasicObject & StixCoreObject & StixDomainObject & StixObje
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
 
     pendingFiles(
@@ -118,6 +119,7 @@ type Event implements BasicObject & StixCoreObject & StixDomainObject & StixObje
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
     exportFiles(first: Int): FileConnection
     editContext: [EditUserContext!]

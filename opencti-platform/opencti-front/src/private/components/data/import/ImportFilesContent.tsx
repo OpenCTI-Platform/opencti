@@ -2,7 +2,6 @@ import { graphql } from 'react-relay';
 import React, { useState } from 'react';
 import ImportMenu from '@components/data/ImportMenu';
 import { ImportFilesContentQuery, ImportFilesContentQuery$variables } from '@components/data/import/__generated__/ImportFilesContentQuery.graphql';
-import StixCoreObjectLabels from '@components/common/stix_core_objects/StixCoreObjectLabels';
 import Tooltip from '@mui/material/Tooltip';
 import IconButton from '@mui/material/IconButton';
 import { DeleteOutlined, GetAppOutlined } from '@mui/icons-material';
@@ -23,6 +22,7 @@ import Transition from '../../../../components/Transition';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { UsePreloadedPaginationFragment } from '../../../../utils/hooks/usePreloadedPaginationFragment';
+import { deleteNode } from '../../../../utils/store';
 
 export const WorkbenchFileLineDeleteMutation = graphql`
   mutation ImportFilesContentFileLineDeleteMutation($fileName: String) {
@@ -38,6 +38,13 @@ export const workbenchLineFragment = graphql`
     uploadStatus
     lastModified
     lastModifiedSinceMin
+    objectMarking {
+      id
+      definition_type
+      definition
+      x_opencti_order
+      x_opencti_color
+    }
     metaData {
       mimetype
       list_filters
@@ -141,6 +148,7 @@ const importWorkbenchLinesFragment = graphql`
     orderBy: { type: "FileOrdering" }
     orderMode: { type: "OrderingMode", defaultValue: desc }
     search: { type: "String" }
+    filters: { type: "FilterGroup" }
   )
   @refetchable(queryName: "ImportFilesRefetchQuery") {
     importFiles(
@@ -149,6 +157,7 @@ const importWorkbenchLinesFragment = graphql`
       orderBy: $orderBy,
       orderMode: $orderMode,
       search: $search,
+      filters: $filters,
     )
     @connection(key: "Pagination_global_importFiles") {
       edges {
@@ -170,6 +179,7 @@ export const importFilesContentQuery = graphql`
     $orderBy: FileOrdering,
     $orderMode: OrderingMode,
     $search: String,
+    $filters: FilterGroup,
   ) {
     ...ImportFilesContentLines_data
     @arguments(
@@ -178,6 +188,7 @@ export const importFilesContentQuery = graphql`
       orderBy: $orderBy
       orderMode: $orderMode
       search: $search
+      filters: $filters
     )
   }
 `;
@@ -237,6 +248,7 @@ const ImportFilesContent = () => {
         const fileStore = store.get(id);
         fileStore?.setValue(0, 'lastModifiedSinceMin');
         fileStore?.setValue('progress', 'uploadStatus');
+        deleteNode(store, 'Pagination_global_importFiles', queryPaginationOptions, id);
       },
       onCompleted: () => setDisplayDelete(''),
       onError: () => setDisplayDelete(''),
@@ -278,16 +290,8 @@ const ImportFilesContent = () => {
               flexSize: 15,
               render: (({ metaData: { creator } }) => creator?.name ?? '-'),
             },
-            objectLabel: {
+            objectMarking: {
               flexSize: 15,
-              render: ({ metaData: { labels } }) => {
-                return (
-                  <StixCoreObjectLabels
-                    variant="inList"
-                    labels={labels}
-                  />
-                );
-              },
             },
             lastModified: {
               id: 'lastModified',
@@ -303,6 +307,7 @@ const ImportFilesContent = () => {
           searchContextFinal={{ entityTypes: ['InternalFile'] }}
           toolbarFilters={initialFilters}
           lineFragment={workbenchLineFragment}
+          hideFilters
           initialValues={initialValues}
           preloadedPaginationProps={preloadedPaginationProps}
           actions={(file: ImportFilesContentFileLine_file$data) => {

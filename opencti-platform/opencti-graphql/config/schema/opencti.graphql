@@ -837,6 +837,7 @@ type File {
   lastModified: DateTime
   lastModifiedSinceMin: Int
   metaData: FileMetadata
+  objectMarking: [MarkingDefinition!]!
   uploadStatus: State!
   works: [Work]
 }
@@ -2077,6 +2078,7 @@ type ExternalReference implements BasicObject & StixObject & StixMetaObject {
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection!
   pendingFiles(
     first: Int
@@ -2084,6 +2086,7 @@ type ExternalReference implements BasicObject & StixObject & StixMetaObject {
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection!
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -2295,6 +2298,7 @@ interface StixCoreObject {
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   pendingFiles(
     first: Int
@@ -2302,6 +2306,7 @@ interface StixCoreObject {
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -2466,6 +2471,7 @@ interface StixDomainObject {
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   pendingFiles(
     first: Int
@@ -2473,6 +2479,7 @@ interface StixDomainObject {
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -2643,6 +2650,7 @@ type AttackPattern implements BasicObject & StixObject & StixCoreObject & StixDo
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   pendingFiles(
     first: Int
@@ -2650,6 +2658,7 @@ type AttackPattern implements BasicObject & StixObject & StixCoreObject & StixDo
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -2820,6 +2829,7 @@ type Campaign implements BasicObject & StixObject & StixCoreObject & StixDomainO
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   pendingFiles(
     first: Int
@@ -2827,6 +2837,7 @@ type Campaign implements BasicObject & StixObject & StixCoreObject & StixDomainO
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -3158,6 +3169,7 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   pendingFiles(
     first: Int
@@ -3165,6 +3177,7 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -3372,6 +3385,7 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   pendingFiles(
     first: Int
@@ -3379,6 +3393,7 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -3562,6 +3577,7 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   pendingFiles(
     first: Int
@@ -3569,6 +3585,7 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -3777,6 +3794,7 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   pendingFiles(
     first: Int
@@ -3784,6 +3802,7 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -3955,6 +3974,7 @@ type CourseOfAction implements BasicObject & StixObject & StixCoreObject & StixD
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   pendingFiles(
     first: Int
@@ -3962,6 +3982,7 @@ type CourseOfAction implements BasicObject & StixObject & StixCoreObject & StixD
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -4128,6 +4149,7 @@ interface Identity {
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   pendingFiles(
     first: Int
@@ -4135,6 +4157,7 @@ interface Identity {
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -4302,6 +4325,7 @@ type Individual implements BasicObject & StixObject & StixCoreObject & StixDomai
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   pendingFiles(
     first: Int
@@ -4309,6 +4333,7 @@ type Individual implements BasicObject & StixObject & StixCoreObject & StixDomai
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -4483,6 +4508,7 @@ type Sector implements BasicObject & StixObject & StixCoreObject & StixDomainObj
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   pendingFiles(
     first: Int
@@ -4490,6 +4516,7 @@ type Sector implements BasicObject & StixObject & StixCoreObject & StixDomainObj
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -4657,6 +4684,7 @@ type System implements BasicObject & StixObject & StixCoreObject & StixDomainObj
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   pendingFiles(
     first: Int
@@ -4664,6 +4692,7 @@ type System implements BasicObject & StixObject & StixCoreObject & StixDomainObj
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -4837,6 +4866,7 @@ type Infrastructure implements BasicObject & StixObject & StixCoreObject & StixD
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   pendingFiles(
     first: Int
@@ -4844,6 +4874,7 @@ type Infrastructure implements BasicObject & StixObject & StixCoreObject & StixD
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -5016,6 +5047,7 @@ type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDom
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   pendingFiles(
     first: Int
@@ -5023,6 +5055,7 @@ type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDom
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -5191,6 +5224,7 @@ interface Location {
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   pendingFiles(
     first: Int
@@ -5198,6 +5232,7 @@ interface Location {
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -5366,6 +5401,7 @@ type Position implements BasicObject & StixObject & StixCoreObject & StixDomainO
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   pendingFiles(
     first: Int
@@ -5373,6 +5409,7 @@ type Position implements BasicObject & StixObject & StixCoreObject & StixDomainO
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -5543,6 +5580,7 @@ type City implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   pendingFiles(
     first: Int
@@ -5550,6 +5588,7 @@ type City implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -5714,6 +5753,7 @@ type Country implements BasicObject & StixObject & StixCoreObject & StixDomainOb
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   pendingFiles(
     first: Int
@@ -5721,6 +5761,7 @@ type Country implements BasicObject & StixObject & StixCoreObject & StixDomainOb
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -5887,6 +5928,7 @@ type Region implements BasicObject & StixObject & StixCoreObject & StixDomainObj
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   pendingFiles(
     first: Int
@@ -5894,6 +5936,7 @@ type Region implements BasicObject & StixObject & StixCoreObject & StixDomainObj
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -6069,6 +6112,7 @@ type Malware implements BasicObject & StixObject & StixCoreObject & StixDomainOb
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   pendingFiles(
     first: Int
@@ -6076,6 +6120,7 @@ type Malware implements BasicObject & StixObject & StixCoreObject & StixDomainOb
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -6262,6 +6307,7 @@ interface ThreatActor implements BasicObject & StixObject & StixCoreObject & Sti
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   pendingFiles(
     first: Int
@@ -6269,6 +6315,7 @@ interface ThreatActor implements BasicObject & StixObject & StixCoreObject & Sti
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -6409,6 +6456,7 @@ type ThreatActorGroup implements BasicObject & StixObject & StixCoreObject & Sti
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   pendingFiles(
     first: Int
@@ -6416,6 +6464,7 @@ type ThreatActorGroup implements BasicObject & StixObject & StixCoreObject & Sti
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -6589,6 +6638,7 @@ type Tool implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   pendingFiles(
     first: Int
@@ -6596,6 +6646,7 @@ type Tool implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -6771,6 +6822,7 @@ type Vulnerability implements BasicObject & StixObject & StixCoreObject & StixDo
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   pendingFiles(
     first: Int
@@ -6778,6 +6830,7 @@ type Vulnerability implements BasicObject & StixObject & StixCoreObject & StixDo
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -6960,6 +7013,7 @@ type Incident implements BasicObject & StixObject & StixCoreObject & StixDomainO
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   pendingFiles(
     first: Int
@@ -6967,6 +7021,7 @@ type Incident implements BasicObject & StixObject & StixCoreObject & StixDomainO
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -7124,6 +7179,7 @@ interface StixCyberObservable {
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   pendingFiles(
     first: Int
@@ -7131,6 +7187,7 @@ interface StixCyberObservable {
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -7242,6 +7299,7 @@ type AutonomousSystem implements BasicObject & StixObject & StixCoreObject & Sti
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   pendingFiles(
     first: Int
@@ -7249,6 +7307,7 @@ type AutonomousSystem implements BasicObject & StixObject & StixCoreObject & Sti
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -7368,6 +7427,7 @@ type Directory implements BasicObject & StixObject & StixCoreObject & StixCyberO
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   pendingFiles(
     first: Int
@@ -7375,6 +7435,7 @@ type Directory implements BasicObject & StixObject & StixCoreObject & StixCyberO
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -7492,6 +7553,7 @@ type DomainName implements BasicObject & StixObject & StixCoreObject & StixCyber
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   pendingFiles(
     first: Int
@@ -7499,6 +7561,7 @@ type DomainName implements BasicObject & StixObject & StixCoreObject & StixCyber
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -7613,6 +7676,7 @@ type EmailAddr implements BasicObject & StixObject & StixCoreObject & StixCyberO
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   pendingFiles(
     first: Int
@@ -7620,6 +7684,7 @@ type EmailAddr implements BasicObject & StixObject & StixCoreObject & StixCyberO
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -7740,6 +7805,7 @@ type EmailMessage implements BasicObject & StixObject & StixCoreObject & StixCyb
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   pendingFiles(
     first: Int
@@ -7747,6 +7813,7 @@ type EmailMessage implements BasicObject & StixObject & StixCoreObject & StixCyb
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -7868,6 +7935,7 @@ type EmailMimePartType implements BasicObject & StixObject & StixCoreObject & St
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   pendingFiles(
     first: Int
@@ -7875,6 +7943,7 @@ type EmailMimePartType implements BasicObject & StixObject & StixCoreObject & St
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -8006,6 +8075,7 @@ interface HashedObservable {
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   pendingFiles(
     first: Int
@@ -8013,6 +8083,7 @@ interface HashedObservable {
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -8129,6 +8200,7 @@ type Artifact implements BasicObject & StixObject & StixCoreObject & StixCyberOb
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   pendingFiles(
     first: Int
@@ -8136,6 +8208,7 @@ type Artifact implements BasicObject & StixObject & StixCoreObject & StixCyberOb
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -8267,6 +8340,7 @@ type StixFile implements BasicObject & StixObject & StixCoreObject & StixCyberOb
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   pendingFiles(
     first: Int
@@ -8274,6 +8348,7 @@ type StixFile implements BasicObject & StixObject & StixCoreObject & StixCyberOb
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -8426,6 +8501,7 @@ type X509Certificate implements BasicObject & StixObject & StixCoreObject & Stix
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   pendingFiles(
     first: Int
@@ -8433,6 +8509,7 @@ type X509Certificate implements BasicObject & StixObject & StixCoreObject & Stix
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -8575,6 +8652,7 @@ type IPv4Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   pendingFiles(
     first: Int
@@ -8582,6 +8660,7 @@ type IPv4Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -8698,6 +8777,7 @@ type IPv6Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   pendingFiles(
     first: Int
@@ -8705,6 +8785,7 @@ type IPv6Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -8818,6 +8899,7 @@ type MacAddr implements BasicObject & StixObject & StixCoreObject & StixCyberObs
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   pendingFiles(
     first: Int
@@ -8825,6 +8907,7 @@ type MacAddr implements BasicObject & StixObject & StixCoreObject & StixCyberObs
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -8938,6 +9021,7 @@ type Mutex implements BasicObject & StixObject & StixCoreObject & StixCyberObser
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   pendingFiles(
     first: Int
@@ -8945,6 +9029,7 @@ type Mutex implements BasicObject & StixObject & StixCoreObject & StixCyberObser
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -9068,6 +9153,7 @@ type NetworkTraffic implements BasicObject & StixObject & StixCoreObject & StixC
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   pendingFiles(
     first: Int
@@ -9075,6 +9161,7 @@ type NetworkTraffic implements BasicObject & StixObject & StixCoreObject & StixC
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -9222,6 +9309,7 @@ type Process implements BasicObject & StixObject & StixCoreObject & StixCyberObs
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   pendingFiles(
     first: Int
@@ -9229,6 +9317,7 @@ type Process implements BasicObject & StixObject & StixCoreObject & StixCyberObs
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -9371,6 +9460,7 @@ type Software implements BasicObject & StixObject & StixCoreObject & StixCyberOb
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   pendingFiles(
     first: Int
@@ -9378,6 +9468,7 @@ type Software implements BasicObject & StixObject & StixCoreObject & StixCyberOb
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -9504,6 +9595,7 @@ type Url implements BasicObject & StixObject & StixCoreObject & StixCyberObserva
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   pendingFiles(
     first: Int
@@ -9511,6 +9603,7 @@ type Url implements BasicObject & StixObject & StixCoreObject & StixCyberObserva
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -9638,6 +9731,7 @@ type UserAccount implements BasicObject & StixObject & StixCoreObject & StixCybe
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   pendingFiles(
     first: Int
@@ -9645,6 +9739,7 @@ type UserAccount implements BasicObject & StixObject & StixCoreObject & StixCybe
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -9773,6 +9868,7 @@ type WindowsRegistryKey implements BasicObject & StixObject & StixCoreObject & S
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   pendingFiles(
     first: Int
@@ -9780,6 +9876,7 @@ type WindowsRegistryKey implements BasicObject & StixObject & StixCoreObject & S
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -9897,6 +9994,7 @@ type WindowsRegistryValueType implements BasicObject & StixObject & StixCoreObje
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   pendingFiles(
     first: Int
@@ -9904,6 +10002,7 @@ type WindowsRegistryValueType implements BasicObject & StixObject & StixCoreObje
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -10019,6 +10118,7 @@ type CryptographicKey implements BasicObject & StixObject & StixCoreObject & Sti
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   pendingFiles(
     first: Int
@@ -10026,6 +10126,7 @@ type CryptographicKey implements BasicObject & StixObject & StixCoreObject & Sti
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -10139,6 +10240,7 @@ type CryptocurrencyWallet implements BasicObject & StixObject & StixCoreObject &
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   pendingFiles(
     first: Int
@@ -10146,6 +10248,7 @@ type CryptocurrencyWallet implements BasicObject & StixObject & StixCoreObject &
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -10259,6 +10362,7 @@ type Hostname implements BasicObject & StixObject & StixCoreObject & StixCyberOb
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   pendingFiles(
     first: Int
@@ -10266,6 +10370,7 @@ type Hostname implements BasicObject & StixObject & StixCoreObject & StixCyberOb
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -10379,6 +10484,7 @@ type Text implements BasicObject & StixObject & StixCoreObject & StixCyberObserv
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   pendingFiles(
     first: Int
@@ -10386,6 +10492,7 @@ type Text implements BasicObject & StixObject & StixCoreObject & StixCyberObserv
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -10499,6 +10606,7 @@ type UserAgent implements BasicObject & StixObject & StixCoreObject & StixCyberO
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   pendingFiles(
     first: Int
@@ -10506,6 +10614,7 @@ type UserAgent implements BasicObject & StixObject & StixCoreObject & StixCyberO
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -10622,6 +10731,7 @@ type BankAccount implements BasicObject & StixObject & StixCoreObject & StixCybe
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   pendingFiles(
     first: Int
@@ -10629,6 +10739,7 @@ type BankAccount implements BasicObject & StixObject & StixCoreObject & StixCybe
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -10747,6 +10858,7 @@ type TrackingNumber implements BasicObject & StixObject & StixCoreObject & StixC
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   pendingFiles(
     first: Int
@@ -10754,6 +10866,7 @@ type TrackingNumber implements BasicObject & StixObject & StixCoreObject & StixC
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -10870,6 +10983,7 @@ type Credential implements BasicObject & StixObject & StixCoreObject & StixCyber
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   pendingFiles(
     first: Int
@@ -10877,6 +10991,7 @@ type Credential implements BasicObject & StixObject & StixCoreObject & StixCyber
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -10990,6 +11105,7 @@ type PhoneNumber implements BasicObject & StixObject & StixCoreObject & StixCybe
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   pendingFiles(
     first: Int
@@ -10997,6 +11113,7 @@ type PhoneNumber implements BasicObject & StixObject & StixCoreObject & StixCybe
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -11113,6 +11230,7 @@ type PaymentCard implements BasicObject & StixObject & StixCoreObject & StixCybe
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   pendingFiles(
     first: Int
@@ -11120,6 +11238,7 @@ type PaymentCard implements BasicObject & StixObject & StixCoreObject & StixCybe
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -11241,6 +11360,7 @@ type MediaContent implements BasicObject & StixObject & StixCoreObject & StixCyb
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   pendingFiles(
     first: Int
@@ -11248,6 +11368,7 @@ type MediaContent implements BasicObject & StixObject & StixCoreObject & StixCyb
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -12076,6 +12197,7 @@ type Query {
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection @auth(for: [KNOWLEDGE_KNASKIMPORT])
   pendingFiles(
     first: Int
@@ -12083,6 +12205,7 @@ type Query {
     orderBy: FileOrdering
     orderMode: OrderingMode
     search: String
+    filters: FilterGroup
   ): FileConnection @auth(for: [KNOWLEDGE_KNASKIMPORT])
   filesMetrics: FilesMetrics @auth(for: [SETTINGS_FILEINDEXING])
 
