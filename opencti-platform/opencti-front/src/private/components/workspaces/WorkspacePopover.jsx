@@ -204,12 +204,17 @@ const WorkspacePopover = ({ workspace, paginationOptions }) => {
         onClose={handleCloseCreate}
         aria-labelledby="create-public-dashboard-dialog"
       >
-        <React.Suspense fallback={<div/>}>
-          <PublicDashboardCreationForm
-            queryRef={dashboardsQueryRef}
-            onClose={handleCloseCreate}
-          />
-        </React.Suspense>
+        {({ onClose }) => (
+          <React.Suspense fallback={<div/>}>
+            <PublicDashboardCreationForm
+              queryRef={dashboardsQueryRef}
+              onClose={handleCloseCreate}
+              onCompleted={() => {
+                onClose();
+              }}
+            />
+          </React.Suspense>
+        )}
       </Drawer>
       )}
       <WorkspaceDuplicationDialog
