@@ -11,7 +11,7 @@ interface ImportContentContainerProps {
   queryRef: PreloadedQuery<ImportContentQuery>;
 }
 
-const importConnectorsFragment = graphql`
+export const importConnectorsFragment = graphql`
   fragment ImportContentContainer_connectorsImport on Connector
   @relay(plural: true) {
     id
@@ -30,12 +30,6 @@ const importConnectorsFragment = graphql`
 
 const ImportContentContainer: FunctionComponent<ImportContentContainerProps> = ({ tab, queryRef }) => {
   const data = usePreloadedQuery(importContentQuery, queryRef);
-  const connectorsData = useFragment<ImportContentContainer_connectorsImport$key>(
-    importConnectorsFragment,
-    data.connectorsForImport as unknown as ImportContentContainer_connectorsImport$key,
-  );
-  const connectors = connectorsData?.filter((n) => !n.only_contextual); // Can be null but not empty
-
   if (tab === 'file') {
     return (
       <ImportFilesContent />
@@ -48,7 +42,7 @@ const ImportContentContainer: FunctionComponent<ImportContentContainerProps> = (
   }
   return (
     <ImportContent
-      connectorsImport={connectors}
+      connectorsImport={data.connectorsForImport}
       importFiles={data.importFiles}
       pendingFiles={data.pendingFiles}
     />

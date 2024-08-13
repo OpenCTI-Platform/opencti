@@ -43,6 +43,7 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import withRouter from '../../../../utils/compat-router/withRouter';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { resolveHasUserChoiceParsedCsvMapper } from '../../../../utils/csvMapperUtils';
+import { importConnectorsFragment } from './ImportContentContainer';
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -131,7 +132,6 @@ export const importContentQuery = graphql`
   query ImportContentQuery {
     connectorsForImport {
       ...ImportContentContainer_connectorsImport
-      ...ImportContent_connectorsImport
     }
     importFiles(first: 500) @connection(key: "Pagination_global_importFiles") {
       edges {
@@ -709,22 +709,7 @@ ImportContentComponent.propTypes = {
 const ImportContent = createRefetchContainer(
   ImportContentComponent,
   {
-    connectorsImport: graphql`
-      fragment ImportContent_connectorsImport on Connector
-      @relay(plural: true) {
-        id
-        name
-        active
-        only_contextual
-        connector_scope
-        updated_at
-        configurations {
-          id
-          name,
-          configuration
-        }
-      }
-    `,
+    connectorsImport: importConnectorsFragment,
   },
   importContentQuery,
 );
