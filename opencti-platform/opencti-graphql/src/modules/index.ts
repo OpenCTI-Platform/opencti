@@ -74,6 +74,7 @@ import './intrusionSet/intrusionSet';
 import './campaign/campaign';
 import './malware/malware';
 import './tool/tool';
+import './vulnerability/vulnerability';
 // endregion
 
 // region graphql registration
