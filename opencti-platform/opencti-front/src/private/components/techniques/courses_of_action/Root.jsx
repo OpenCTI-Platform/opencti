@@ -147,7 +147,7 @@ class RootCourseOfAction extends Component {
                       <Route
                         path="/"
                         element={
-                          <CourseOfAction courseOfAction={props.courseOfAction}/>
+                          <CourseOfAction courseOfActionData={props.courseOfAction}/>
                         }
                       />
                       <Route
