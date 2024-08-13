@@ -1,8 +1,6 @@
 import React from 'react';
 import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
-import { makeStyles } from '@mui/styles';
-import IntrusionSetDetails from '@components/threats/intrusion_sets/IntrusionSetDetails';
 import CampaignDetails from './CampaignDetails';
 import CampaignEdition from './CampaignEdition';
 import Security from '../../../../utils/Security';
@@ -15,14 +13,6 @@ import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../commo
 import { Campaign_campaign$key } from './__generated__/Campaign_campaign.graphql';
 import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
 import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  gridContainer: {
-    marginBottom: 20,
-  },
-}));
 
 const campaignFragment = graphql`
   fragment Campaign_campaign on Campaign {
@@ -82,14 +72,14 @@ const CampaignComponent = ({
   campaignData: Campaign_campaign$key;
 }) => {
   const campaign = useFragment<Campaign_campaign$key>(campaignFragment, campaignData);
-  const classes = useStyles();
   const overviewLayoutCustomization = useOverviewLayoutCustomization(campaign.entity_type);
+
   return (
     <>
       <Grid
         container={true}
         spacing={3}
-        classes={{ container: classes.gridContainer }}
+        style={{ marginBottom: 20 }}
       >
         {
           overviewLayoutCustomization.map(({ key, width }) => {

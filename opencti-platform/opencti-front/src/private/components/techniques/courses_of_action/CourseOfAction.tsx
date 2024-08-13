@@ -2,7 +2,6 @@ import React from 'react';
 import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import { CourseOfAction_courseOfAction$key } from '@components/techniques/courses_of_action/__generated__/CourseOfAction_courseOfAction.graphql';
-import NarrativeDetails from '@components/techniques/narratives/NarrativeDetails';
 import CourseOfActionDetails from './CourseOfActionDetails';
 import CourseOfActionEdition from './CourseOfActionEdition';
 import Security from '../../../../utils/Security';

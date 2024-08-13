@@ -1,5 +1,5 @@
 import React from 'react';
-import { graphql, createFragmentContainer, useFragment } from 'react-relay';
+import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import { Channel_channel$key } from '@components/arsenal/channels/__generated__/Channel_channel.graphql';
 import ChannelDetails from './ChannelDetails';
