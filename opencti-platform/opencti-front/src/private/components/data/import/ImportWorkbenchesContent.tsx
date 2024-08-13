@@ -56,74 +56,10 @@ export const workbenchLineFragment = graphql`
       }
       entity_id
       entity {
-        ... on AttackPattern {
-          name
-        }
-        ... on Campaign {
-          name
-        }
-        ... on Report {
-          name
-        }
-        ... on Grouping {
-          name
-        }
-        ... on CourseOfAction {
-          name
-        }
-        ... on Individual {
-          name
-        }
-        ... on Organization {
-          name
-        }
-        ... on Sector {
-          name
-        }
-        ... on System {
-          name
-        }
-        ... on Indicator {
-          name
-        }
-        ... on Infrastructure {
-          name
-        }
-        ... on IntrusionSet {
-          name
-        }
-        ... on Position {
-          name
-        }
-        ... on City {
-          name
-        }
-        ... on AdministrativeArea {
-          name
-        }
-        ... on Country {
-          name
-        }
-        ... on Region {
-          name
-        }
-        ... on Malware {
-          name
-        }
-        ... on ThreatActor {
-          name
-        }
-        ... on Tool {
-          name
-        }
-        ... on Vulnerability {
-          name
-        }
-        ... on Incident {
-          name
-        }
-        ... on StixCyberObservable {
-          observable_value
+        ... on StixObject{
+          representative {
+            main
+          }
         }
       }
     }
@@ -279,7 +215,7 @@ const ImportWorkbenchesContent = () => {
       {queryRef && (
         <DataTable
           dataColumns={{
-            name: { flexSize: 50 },
+            value: { flexSize: 50 },
             createdBy: {
               flexSize: 15,
               render: (({ metaData: { creator } }) => creator?.name ?? '-'),
@@ -312,6 +248,7 @@ const ImportWorkbenchesContent = () => {
           initialValues={initialValues}
           hideFilters
           preloadedPaginationProps={preloadedPaginationProps}
+          taskScope='IMPORT'
           actions={(file: ImportWorkbenchesContentFileLine_file$data) => {
             const { id, metaData, uploadStatus } = file;
             const isProgress = uploadStatus === 'progress' || uploadStatus === 'wait';

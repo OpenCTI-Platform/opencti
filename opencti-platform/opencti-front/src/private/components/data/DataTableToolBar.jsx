@@ -634,6 +634,7 @@ class DataTableToolBar extends Component {
       numberOfSelectedElements,
       handleClearSelectedElements,
       container,
+      taskScope: scope = 'KNOWLEDGE',
       t,
     } = this.props;
     if (numberOfSelectedElements === 0) return;
@@ -641,14 +642,6 @@ class DataTableToolBar extends Component {
       removeIdAndIncorrectKeysFromFilterGroupObject(filters, availableFilterKeys),
     );
 
-    const selectedElementsList = R.values(selectedElements);
-    const { selectedTypes } = this.getSelectedTypes();
-    let scope = 'KNOWLEDGE';
-    if (selectedElementsList.some(({ entity_type }) => entity_type === 'Vocabulary')) {
-      scope = 'SETTINGS';
-    } else if (selectedTypes.at(0) === 'InternalFile' && !this.state.scope) {
-      scope = 'IMPORT';
-    }
     const finalActions = R.map(
       (n) => ({
         type: n.type,
@@ -2533,6 +2526,7 @@ DataTableToolBar.propTypes = {
   rightOffset: PropTypes.number,
   mergeDisable: PropTypes.bool,
   deleteOperationEnabled: PropTypes.bool,
+  taskScope: PropTypes.string,
 };
 
 export default R.compose(inject18n, withTheme, withStyles(styles))(DataTableToolBar);

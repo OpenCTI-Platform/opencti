@@ -43,6 +43,7 @@ type OCTIDataTableProps = Pick<DataTableProps, 'dataColumns'
   createButton?: ReactNode
   currentView?: string
   hideFilters?: boolean
+  taskScope?: string
 };
 
 const DataTable = (props: OCTIDataTableProps) => {
@@ -68,6 +69,7 @@ const DataTable = (props: OCTIDataTableProps) => {
     additionalHeaderButtons,
     currentView,
     hideFilters,
+    taskScope,
   } = props;
 
   const {
@@ -181,6 +183,7 @@ const DataTable = (props: OCTIDataTableProps) => {
             search={searchTerm}
             filters={toolbarFilters}
             handleClearSelectedElements={handleClearSelectedElements}
+            taskScope={taskScope}
           />
         </div>
       )}

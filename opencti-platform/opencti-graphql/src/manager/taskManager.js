@@ -165,7 +165,7 @@ export const computeQueryTaskElements = async (context, user, task) => {
   // Apply the actions for each element
   for (let elementIndex = 0; elementIndex < elements.length; elementIndex += 1) {
     const element = elements[elementIndex];
-    if (!task_excluded_ids.includes(element.node.id)) { // keep only the elements that are not excluded (via uncoched checkboxes in UI)
+    if (!task_excluded_ids.includes(element.node.id)) { // keep only the elements that are not excluded (via unticked checkboxes in UI)
       processingElements.push({ element: element.node, next: element.cursor });
     }
   }
