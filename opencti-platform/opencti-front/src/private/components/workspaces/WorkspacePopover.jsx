@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Button from '@mui/material/Button';
@@ -8,10 +8,12 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import MoreVert from '@mui/icons-material/MoreVert';
-import { graphql } from 'react-relay';
+import { graphql, useQueryLoader } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import PropTypes from 'prop-types';
 import { useNavigate } from 'react-router-dom';
+import PublicDashboardCreationForm, { dashboardsQuery } from '@components/workspaces/dashboards/publicDashboards/PublicDashboardCreationForm';
+import Drawer from '@components/common/drawer/Drawer';
 import { useFormatter } from '../../../components/i18n';
 import { QueryRenderer } from '../../../relay/environment';
 import WorkspaceEditionContainer from './WorkspaceEditionContainer';
@@ -125,6 +127,34 @@ const WorkspacePopover = ({ workspace, paginationOptions }) => {
     };
     navigate(`/dashboard/workspaces/public_dashboards?filters=${JSON.stringify(filter)}`);
   };
+  const [dashboardsQueryRef, fetchDashboards] = useQueryLoader(dashboardsQuery);
+  const fetchDashboardsWithFilters = () => {
+    fetchDashboards(
+      {
+        filters: {
+          mode: 'and',
+          filterGroups: [],
+          filters: [{
+            key: ['type'],
+            values: ['dashboard'],
+          }],
+        },
+      },
+      { fetchPolicy: 'store-and-network' },
+    );
+  };
+
+  useEffect(() => {
+    fetchDashboardsWithFilters();
+  }, []);
+  // -- Creation public dashboard --
+  const [displayCreate, setDisplayCreate] = useState(false);
+
+  const handleOpenCreation = () => {
+    setDisplayCreate(true);
+    handleClose();
+  };
+  const handleCloseCreate = () => setDisplayCreate(false);
 
   return (
     <div className={classes.container}>
@@ -152,6 +182,7 @@ const WorkspacePopover = ({ workspace, paginationOptions }) => {
             </Security>
             <Security needs={[EXPLORE_EXUPDATE_EXDELETE]} hasAccess={canManage}>
               <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
+              <MenuItem onClick={handleOpenCreation}>{t_i18n('Create public dashboard')}</MenuItem>
             </Security>
             {isFeatureEnable('PUBLIC_DASHBOARD_LIST') && (
               <MenuItem onClick={() => goToPublicDashboards()}>
@@ -166,6 +197,21 @@ const WorkspacePopover = ({ workspace, paginationOptions }) => {
           </Security>
         )}
       </Menu>
+      {dashboardsQueryRef && (
+      <Drawer
+        title={t_i18n('Create public dashboard')}
+        open={displayCreate}
+        onClose={handleCloseCreate}
+        aria-labelledby="create-public-dashboard-dialog"
+      >
+        <React.Suspense fallback={<div/>}>
+          <PublicDashboardCreationForm
+            queryRef={dashboardsQueryRef}
+            onClose={handleCloseCreate}
+          />
+        </React.Suspense>
+      </Drawer>
+      )}
       <WorkspaceDuplicationDialog
         workspace={workspace}
         displayDuplicate={displayDuplicate}
