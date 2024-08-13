@@ -12,7 +12,9 @@ import { graphql, useQueryLoader } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import PropTypes from 'prop-types';
 import { useNavigate } from 'react-router-dom';
+// eslint-disable-next-line import/no-unresolved
 import PublicDashboardCreationForm, { dashboardsQuery } from '@components/workspaces/dashboards/publicDashboards/PublicDashboardCreationForm';
+// eslint-disable-next-line import/no-unresolved
 import Drawer from '@components/common/drawer/Drawer';
 import { useFormatter } from '../../../components/i18n';
 import { QueryRenderer } from '../../../relay/environment';
