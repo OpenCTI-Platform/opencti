@@ -75,6 +75,7 @@ import './campaign/campaign';
 import './malware/malware';
 import './tool/tool';
 import './vulnerability/vulnerability';
+import './attackPattern/attackPattern';
 // endregion
 
 // region graphql registration
