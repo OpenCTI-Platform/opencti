@@ -1,8 +1,6 @@
 import React from 'react';
 import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
-import makeStyles from '@mui/styles/makeStyles';
-import ThreatActorGroupDetails from '@components/threats/threat_actors_group/ThreatActorGroupDetails';
 import IntrusionSetDetails from './IntrusionSetDetails';
 import IntrusionSetEdition from './IntrusionSetEdition';
 import Security from '../../../../utils/Security';
@@ -15,14 +13,6 @@ import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../commo
 import { IntrusionSet_intrusionSet$key } from './__generated__/IntrusionSet_intrusionSet.graphql';
 import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
 import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  gridContainer: {
-    marginBottom: 20,
-  },
-}));
 
 const intrusionSetFragment = graphql`
   fragment IntrusionSet_intrusionSet on IntrusionSet {
@@ -76,20 +66,19 @@ const intrusionSetFragment = graphql`
   }
 `;
 
-const IntrusionSetComponent = ({
-  intrusionSetData,
-}: {
+interface IntrusionSetProps {
   intrusionSetData: IntrusionSet_intrusionSet$key;
-}) => {
+}
+
+const IntrusionSet: React.FC<IntrusionSetProps> = ({ intrusionSetData }) => {
   const intrusionSet = useFragment<IntrusionSet_intrusionSet$key>(intrusionSetFragment, intrusionSetData);
-  const classes = useStyles();
   const overviewLayoutCustomization = useOverviewLayoutCustomization(intrusionSet.entity_type);
   return (
     <>
       <Grid
         container={true}
         spacing={3}
-        classes={{ container: classes.gridContainer }}
+        style={{ marginBottom: 20 }}
       >
         {
           overviewLayoutCustomization.map(({ key, width }) => {
@@ -161,4 +150,4 @@ const IntrusionSetComponent = ({
   );
 };
 
-export default IntrusionSetComponent;
+export default IntrusionSet;
