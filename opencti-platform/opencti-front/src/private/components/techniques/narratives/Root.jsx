@@ -188,7 +188,7 @@ class RootNarrative extends Component {
                         <Route
                           path="/"
                           element={
-                            <Narrative narrative={props.narrative} />
+                            <Narrative narrativeData={props.narrative} />
                         }
                         />
                         <Route
