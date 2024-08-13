@@ -24,6 +24,7 @@ import MenuItem from '@mui/material/MenuItem';
 import * as R from 'ramda';
 import * as Yup from 'yup';
 import makeStyles from '@mui/styles/makeStyles';
+import useHelper from '../../../../utils/hooks/useHelper';
 import { stixCoreObjectQuickSubscriptionContentQuery } from '../stix_core_objects/stixCoreObjectTriggersUtils';
 import StixCoreObjectAskAI from '../stix_core_objects/StixCoreObjectAskAI';
 import StixCoreObjectSubscribers from '../stix_core_objects/StixCoreObjectSubscribers';
@@ -178,7 +179,6 @@ export const stixDomainObjectMutation = graphql`
 const aliasValidation = (t) => Yup.object().shape({
   references: Yup.array().required(t('This field is required')),
 });
-
 const StixDomainObjectHeader = (props) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
@@ -205,6 +205,8 @@ const StixDomainObjectHeader = (props) => {
   const [aliasToDelete, setAliasToDelete] = useState(null);
   const isKnowledgeUpdater = useGranted([KNOWLEDGE_KNUPDATE]);
   const isKnowledgeEnricher = useGranted([KNOWLEDGE_KNENRICHMENT]);
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   let type = 'unsupported';
   const isThreat = ['Threat-Actor-Group', 'Threat-Actor-Individual', 'Intrusion-Set', 'Campaign', 'Incident', 'Malware', 'Tool'].includes(stixDomainObject.entity_type);
   const isVictim = ['Sector', 'Organization', 'System', 'Individual', 'Region', 'Country', 'Administrative-Area', 'City', 'Position'].includes(stixDomainObject.entity_type);
@@ -531,7 +533,7 @@ const StixDomainObjectHeader = (props) => {
               type={type}
             />
           )}
-          {(isKnowledgeUpdater || isKnowledgeEnricher) && (
+          {!isFABReplaced && (isKnowledgeUpdater || isKnowledgeEnricher) && (
           <div className={classes.popover}>
             {/* TODO remove this when all components are pure function without compose() */}
             {!React.isValidElement(PopoverComponent) ? (

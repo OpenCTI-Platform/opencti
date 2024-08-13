@@ -251,6 +251,8 @@ class ReportKnowledgeComponent extends Component {
       orderBy,
       orderMode: 'desc',
     };
+    // const { isFeatureEnable } = useHelper();
+    // const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
     return (
       <div
         className={classes.container}
@@ -258,17 +260,30 @@ class ReportKnowledgeComponent extends Component {
         data-testid='report-knowledge'
       >
         {mode !== 'graph' && (
-        <ContainerHeader
-          container={report}
-          PopoverComponent={<ReportPopover />}
-          link={`/dashboard/analyses/reports/${report.id}/knowledge`}
-          modes={['graph', 'timeline', 'correlation', 'matrix']}
-          currentMode={mode}
-          knowledge={true}
-          enableSuggestions={true}
-          investigationAddFromContainer={investigationAddFromContainer}
-        />
-        )}
+          <ContainerHeader
+            container={report}
+            PopoverComponent={<ReportPopover />}
+            link={`/dashboard/analyses/reports/${report.id}/knowledge`}
+            modes={['graph', 'timeline', 'correlation', 'matrix']}
+            currentMode={mode}
+            knowledge={true}
+            enableSuggestions={true}
+            investigationAddFromContainer={investigationAddFromContainer}
+          />
+        )
+        }
+        {/* {isFABReplaced && mode !== 'graph' && (
+          <ContainerHeader
+            container={report}
+            PopoverComponent={null}
+            link={`/dashboard/analyses/reports/${report.id}/knowledge`}
+            modes={['graph', 'timeline', 'correlation', 'matrix']}
+            currentMode={mode}
+            knowledge={true}
+            enableSuggestions={true}
+            investigationAddFromContainer={investigationAddFromContainer}
+          />
+        )} */}
         <Routes>
           <Route
             path="/graph"
@@ -279,7 +294,7 @@ class ReportKnowledgeComponent extends Component {
                 render={({ props }) => {
                   if (props && props.report) {
                     return (
-                      <ReportKnowledgeGraph report={props.report} mode={mode} enableReferences={enableReferences}/>
+                      <ReportKnowledgeGraph report={props.report} mode={mode} enableReferences={enableReferences} />
                     );
                   }
                   return (

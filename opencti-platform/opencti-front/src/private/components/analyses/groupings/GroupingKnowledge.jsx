@@ -16,6 +16,7 @@ import AttackPatternsMatrix from '../../techniques/attack_patterns/AttackPattern
 import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../../utils/ListParameters';
 import investigationAddFromContainer from '../../../../utils/InvestigationUtils';
 import withRouter from '../../../../utils/compat-router/withRouter';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 const styles = () => ({
   container: {
@@ -147,15 +148,29 @@ class GroupingKnowledgeComponent extends Component {
       enableReferences,
     } = this.props;
     const { currentModeOnlyActive, currentColorsReversed, currentKillChain } = this.state;
+    const { isFeatureEnable } = useHelper();
+    const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
     return (
       <div
         className={classes.container}
         id={location.pathname.includes('matrix') ? 'parent' : 'container'}
       >
-        {mode !== 'graph' && (
+        {!isFABReplaced && mode !== 'graph' && (
           <ContainerHeader
             container={grouping}
             PopoverComponent={<GroupingPopover />}
+            link={`/dashboard/analyses/groupings/${grouping.id}/knowledge`}
+            modes={['graph', 'correlation', 'matrix']}
+            currentMode={mode}
+            knowledge={true}
+            enableSuggestions={true}
+            investigationAddFromContainer={investigationAddFromContainer}
+          />
+        )}
+        {isFABReplaced && mode !== 'graph' && (
+          <ContainerHeader
+            container={grouping}
+            PopoverComponent={null}
             link={`/dashboard/analyses/groupings/${grouping.id}/knowledge`}
             modes={['graph', 'correlation', 'matrix']}
             currentMode={mode}

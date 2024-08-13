@@ -112,12 +112,21 @@ const RootReport = () => {
                     { label: report.name, current: true },
                   ]}
                   />
-                  <ContainerHeader
+                  {!isFABReplaced && <ContainerHeader
                     container={report}
                     PopoverComponent={
                       <ReportPopover id={reportId} />
                     }
-                    EditComponent={isFABReplaced && (
+                    enableQuickSubscription={true}
+                    enableQuickExport={true}
+                    enableAskAi={true}
+                    overview={isOverview}
+                    redirectToContent={true}
+                                     />}
+                  {isFABReplaced && <ContainerHeader
+                    container={report}
+                    PopoverComponent={null}
+                    EditComponent={(
                       <Security needs={[KNOWLEDGE_KNUPDATE]}>
                         <ReportEdition reportId={report.id} />
                       </Security>
@@ -127,7 +136,7 @@ const RootReport = () => {
                     enableAskAi={true}
                     overview={isOverview}
                     redirectToContent={true}
-                  />
+                                    />}
                   <Box
                     sx={{
                       borderBottom: 1,

@@ -23,8 +23,10 @@ import MenuItem from '@mui/material/MenuItem';
 import CircularProgress from '@mui/material/CircularProgress';
 import { makeStyles } from '@mui/styles';
 import Box from '@mui/material/Box';
+import useHelper from '../../../../utils/hooks/useHelper';
 import { stixCoreObjectQuickSubscriptionContentQuery } from '../stix_core_objects/stixCoreObjectTriggersUtils';
 import StixCoreObjectAskAI from '../stix_core_objects/StixCoreObjectAskAI';
+import StixCoreObjectEnrichment from '../stix_core_objects/StixCoreObjectEnrichment';
 import { useSettingsMessagesBannerHeight } from '../../settings/settings_messages/SettingsMessagesBanner';
 import StixCoreObjectSubscribers from '../stix_core_objects/StixCoreObjectSubscribers';
 import FormAuthorizedMembersDialog from '../form/FormAuthorizedMembersDialog';
@@ -469,6 +471,10 @@ const ContainerHeader = (props) => {
   const [selectedEntity, setSelectedEntity] = useState({});
   const [applying, setApplying] = useState([]);
   const [applied, setApplied] = useState([]);
+  const [displayEnrichment, setDisplayEnrichment] = useState(false);
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
+
   // Suggestions
   const resolveThreats = (objects) => objects.filter(
     (o) => [
@@ -515,7 +521,12 @@ const ContainerHeader = (props) => {
       localStorage.getItem(`suggestions-rules-${container.id}`) || '[]',
     );
   };
-
+  const handleCloseEnrichment = () => {
+    setDisplayEnrichment(false);
+  };
+  const handleOpenEnrichment = () => {
+    setDisplayEnrichment(true);
+  };
   const generateSuggestions = (objects) => {
     const suggestions = [];
     const resolvedThreats = resolveThreats(objects);
@@ -1063,9 +1074,19 @@ const ContainerHeader = (props) => {
                 type="container"
               />
             )}
-            {!knowledge && (
+            {!isFABReplaced && !knowledge && (
               <Security needs={popoverSecurity || [KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNENRICHMENT]}>
                 {React.cloneElement(PopoverComponent, { id: container.id })}
+              </Security>
+            )}
+            {isFABReplaced && (
+              <Security needs={[KNOWLEDGE_KNENRICHMENT]}>
+                <StixCoreObjectEnrichment
+                  stixCoreObjectId={container.id}
+                  displayEnrichment={displayEnrichment}
+                  handleOpenEnrichment={handleOpenEnrichment}
+                  handleClose={handleCloseEnrichment}
+                />
               </Security>
             )}
             {EditComponent}

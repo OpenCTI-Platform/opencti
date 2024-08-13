@@ -10,22 +10,16 @@ import ReportEditionContainer from './ReportEditionContainer';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNENRICHMENT, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import { QueryRenderer } from '../../../../relay/environment';
-import ReportPopoverDeletion from './ReportPopoverDeletion';
 
 const ReportPopover = ({ id }) => {
   const { t_i18n } = useFormatter();
   const [anchorEl, setAnchorEl] = useState(null);
-  const [displayDelete, setDisplayDelete] = useState(false);
   const [displayEdit, setDisplayEdit] = useState(false);
   const [displayEnrichment, setDisplayEnrichment] = useState(false);
   const handleOpen = (event) => setAnchorEl(event.currentTarget);
   const handleClose = () => setAnchorEl(null);
   const handleOpenDelete = () => {
-    setDisplayDelete(true);
     handleClose();
-  };
-  const handleCloseDelete = () => {
-    setDisplayDelete(false);
   };
   const handleOpenEdit = () => {
     setDisplayEdit(true);
@@ -59,12 +53,6 @@ const ReportPopover = ({ id }) => {
         </Security>
       </Menu>
       <StixCoreObjectEnrichment stixCoreObjectId={id} open={displayEnrichment} handleClose={handleCloseEnrichment} />
-      <ReportPopoverDeletion
-        reportId={id}
-        displayDelete={displayDelete}
-        handleClose={handleClose}
-        handleCloseDelete={handleCloseDelete}
-      />
       <QueryRenderer
         query={reportEditionQuery}
         variables={{ id }}

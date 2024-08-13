@@ -29,6 +29,7 @@ import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings
 import useGranted, { KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE, KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 import GroupingEdition from './GroupingEdition';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 const subscription = graphql`
   subscription RootGroupingSubscription($id: ID!) {
@@ -89,6 +90,8 @@ const RootGrouping = () => {
   const location = useLocation();
   const enableReferences = useIsEnforceReference('Grouping') && !useGranted([KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE]);
   const { t_i18n } = useFormatter();
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   useSubscription(subConfig);
 
   return (
@@ -110,7 +113,7 @@ const RootGrouping = () => {
                     { label: grouping.name, current: true },
                   ]}
                   />
-                  <ContainerHeader
+                  {!isFABReplaced && <ContainerHeader
                     container={grouping}
                     PopoverComponent={<GroupingPopover />}
                     EditComponent={(
@@ -122,7 +125,20 @@ const RootGrouping = () => {
                     enableQuickExport={true}
                     enableAskAi={true}
                     redirectToContent={true}
-                  />
+                                     />}
+                  {isFABReplaced && <ContainerHeader
+                    container={grouping}
+                    PopoverComponent={null}
+                    EditComponent={(
+                      <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                        <GroupingEdition groupingId={grouping.id} />
+                      </Security>
+                    )}
+                    enableQuickSubscription={true}
+                    enableQuickExport={true}
+                    enableAskAi={true}
+                    redirectToContent={true}
+                                    />}
                   <Box
                     sx={{
                       borderBottom: 1,

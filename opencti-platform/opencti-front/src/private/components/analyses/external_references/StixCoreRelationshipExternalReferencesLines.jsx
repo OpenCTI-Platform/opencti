@@ -22,6 +22,7 @@ import { interval } from 'rxjs';
 import { Link } from 'react-router-dom';
 import Tooltip from '@mui/material/Tooltip';
 import IconButton from '@mui/material/IconButton';
+import useHelper from '../../../../utils/hooks/useHelper';
 import inject18n from '../../../../components/i18n';
 import { truncate } from '../../../../utils/String';
 import { commitMutation } from '../../../../relay/environment';
@@ -36,6 +37,7 @@ import { FIVE_SECONDS } from '../../../../utils/Time';
 import ExternalReferencePopover from './ExternalReferencePopover';
 import { isNotEmptyField } from '../../../../utils/utils';
 import ItemIcon from '../../../../components/ItemIcon';
+import ExternalReferencePopoverDeletion from './ExternalReferencePopoverDeletion';
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -176,6 +178,8 @@ class StixCoreRelationshipExternalReferencesLinesContainer extends Component {
     const { expanded } = this.state;
     const externalReferencesEdges = data.stixCoreRelationship.externalReferences.edges;
     const expandable = externalReferencesEdges.length > 7;
+    const { isFeatureEnable } = useHelper();
+    const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
     return (
       <div style={{ height: '100%' }}>
         <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
@@ -266,7 +270,7 @@ class StixCoreRelationshipExternalReferencesLinesContainer extends Component {
                               </Security>
                             )}
                             <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                              <ExternalReferencePopover
+                              {!isFABReplaced && <ExternalReferencePopover
                                 id={externalReference.id}
                                 isExternalReferenceAttachment={isFileAttached}
                                 objectId={stixCoreRelationshipId}
@@ -274,7 +278,16 @@ class StixCoreRelationshipExternalReferencesLinesContainer extends Component {
                                   this,
                                   externalReferenceEdge,
                                 )}
-                              />
+                                                 />}
+                              {isFABReplaced && <ExternalReferencePopoverDeletion
+                                id={externalReference.id}
+                                isExternalReferenceAttachment={isFileAttached}
+                                objectId={stixCoreRelationshipId}
+                                handleRemove={this.handleOpenDialog.bind(
+                                  this,
+                                  externalReferenceEdge,
+                                )}
+                                                />}
                             </Security>
                           </ListItemSecondaryAction>
                         </ListItem>
@@ -323,13 +336,20 @@ class StixCoreRelationshipExternalReferencesLinesContainer extends Component {
                             />
                           </Security>
                           <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                            <ExternalReferencePopover
+                            {!isFABReplaced && <ExternalReferencePopover
                               id={externalReference.id}
                               handleRemove={this.handleOpenDialog.bind(
                                 this,
                                 externalReferenceEdge,
                               )}
-                            />
+                                               />}
+                            {isFABReplaced && <ExternalReferencePopoverDeletion
+                              id={externalReference.id}
+                              handleRemove={this.handleOpenDialog.bind(
+                                this,
+                                externalReferenceEdge,
+                              )}
+                                              />}
                           </Security>
                         </ListItemSecondaryAction>
                       </ListItem>

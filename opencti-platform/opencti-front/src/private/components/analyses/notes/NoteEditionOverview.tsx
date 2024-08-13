@@ -3,6 +3,7 @@ import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import { GenericContext } from '@components/common/model/GenericContextModel';
+import useHelper from 'src/utils/hooks/useHelper';
 import { useFormatter } from '../../../../components/i18n';
 import MarkdownField from '../../../../components/fields/MarkdownField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
@@ -23,6 +24,7 @@ import SliderField from '../../../../components/fields/SliderField';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
+import NotePopoverDeletion from './NotePopoverDeletion';
 
 export const noteMutationFieldPatch = graphql`
   mutation NoteEditionOverviewFieldPatchMutation(
@@ -146,6 +148,8 @@ NoteEditionOverviewProps
     objectMarking: convertMarkings(note),
     x_opencti_workflow_id: convertStatus(t_i18n, note) as Option,
   };
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   return (
     <Formik
@@ -271,6 +275,10 @@ NoteEditionOverviewProps
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
           />
+          {isFABReplaced
+            && <NotePopoverDeletion
+              id={note.id}
+               />}
         </Form>
       )}
     </Formik>

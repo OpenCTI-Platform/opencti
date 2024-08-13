@@ -22,6 +22,7 @@ import { interval } from 'rxjs';
 import Tooltip from '@mui/material/Tooltip';
 import IconButton from '@mui/material/IconButton';
 import { Link } from 'react-router-dom';
+import useHelper from '../../../../utils/hooks/useHelper';
 import inject18n from '../../../../components/i18n';
 import { truncate } from '../../../../utils/String';
 import { commitMutation } from '../../../../relay/environment';
@@ -36,6 +37,7 @@ import ExternalReferencePopover from './ExternalReferencePopover';
 import ExternalReferenceEnrichment from './ExternalReferenceEnrichment';
 import { isNotEmptyField } from '../../../../utils/utils';
 import ItemIcon from '../../../../components/ItemIcon';
+import ExternalReferencePopoverDeletion from './ExternalReferencePopoverDeletion';
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -176,6 +178,8 @@ class StixSightingRelationshipExternalReferencesLinesContainer extends Component
     const { expanded } = this.state;
     const externalReferencesEdges = data.stixSightingRelationship.externalReferences.edges;
     const expandable = externalReferencesEdges.length > 7;
+    const { isFeatureEnable } = useHelper();
+    const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
     return (
       <div style={{ height: '100%' }}>
         <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
@@ -263,7 +267,7 @@ class StixSightingRelationshipExternalReferencesLinesContainer extends Component
                               </Security>
                             )}
                             <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                              <ExternalReferencePopover
+                              {!isFABReplaced && <ExternalReferencePopover
                                 id={externalReference.id}
                                 objectId={stixSightingRelationshipId}
                                 isExternalReferenceAttachment={isFileAttached}
@@ -271,7 +275,16 @@ class StixSightingRelationshipExternalReferencesLinesContainer extends Component
                                   this,
                                   externalReferenceEdge,
                                 )}
-                              />
+                                                 />}
+                              {isFABReplaced && <ExternalReferencePopoverDeletion
+                                id={externalReference.id}
+                                objectId={stixSightingRelationshipId}
+                                isExternalReferenceAttachment={isFileAttached}
+                                handleRemove={this.handleOpenDialog.bind(
+                                  this,
+                                  externalReferenceEdge,
+                                )}
+                                                />}
                             </Security>
                           </ListItemSecondaryAction>
                         </ListItem>
@@ -319,14 +332,22 @@ class StixSightingRelationshipExternalReferencesLinesContainer extends Component
                             />
                           </Security>
                           <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                            <ExternalReferencePopover
+                            {!isFABReplaced && <ExternalReferencePopover
                               id={externalReference.id}
                               isExternalReferenceAttachment={isFileAttached}
                               handleRemove={this.handleOpenDialog.bind(
                                 this,
                                 externalReferenceEdge,
                               )}
-                            />
+                                               />}
+                            {isFABReplaced && <ExternalReferencePopoverDeletion
+                              id={externalReference.id}
+                              isExternalReferenceAttachment={isFileAttached}
+                              handleRemove={this.handleOpenDialog.bind(
+                                this,
+                                externalReferenceEdge,
+                              )}
+                                              />}
                           </Security>
                         </ListItemSecondaryAction>
                       </ListItem>

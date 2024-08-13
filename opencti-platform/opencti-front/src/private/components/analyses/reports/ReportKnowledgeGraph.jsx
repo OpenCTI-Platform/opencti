@@ -93,8 +93,7 @@ class ReportKnowledgeGraphComponent extends Component {
       R.map((n) => R.assoc(
         'tlabel',
         props.t(
-          `${n.relationship_type ? 'relationship_' : 'entity_'}${
-            n.entity_type
+          `${n.relationship_type ? 'relationship_' : 'entity_'}${n.entity_type
           }`,
         ),
         n,
@@ -395,8 +394,7 @@ class ReportKnowledgeGraphComponent extends Component {
         R.map((n) => ({
           label: n,
           tlabel: this.props.t(
-            `${n.relationship_type ? 'relationship_' : 'entity_'}${
-              n.entity_type
+            `${n.relationship_type ? 'relationship_' : 'entity_'}${n.entity_type
             }`,
           ),
         })),
@@ -970,12 +968,12 @@ class ReportKnowledgeGraphComponent extends Component {
     if (isNotEmptyField(keyword)) {
       const filterByKeyword = (n) => keyword === ''
         || (getMainRepresentative(n) || '').toLowerCase().indexOf(keyword.toLowerCase())
-          !== -1
+        !== -1
         || (getSecondaryRepresentative(n) || '')
           .toLowerCase()
           .indexOf(keyword.toLowerCase()) !== -1
         || (n.entity_type || '').toLowerCase().indexOf(keyword.toLowerCase())
-          !== -1;
+        !== -1;
       R.map(
         (n) => filterByKeyword(n) && this.selectedNodes.add(n),
         this.state.graphData.nodes,

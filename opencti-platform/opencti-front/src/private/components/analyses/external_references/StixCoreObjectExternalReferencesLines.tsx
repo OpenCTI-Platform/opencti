@@ -25,6 +25,7 @@ import { FormikConfig } from 'formik/dist/types';
 import { Link } from 'react-router-dom';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
+import useHelper from 'src/utils/hooks/useHelper';
 import { FileLine_file$data } from '@components/common/files/__generated__/FileLine_file.graphql';
 import ManageImportConnectorMessage from '@components/data/import/ManageImportConnectorMessage';
 import ObjectMarkingField from '@components/common/form/ObjectMarkingField';
@@ -49,6 +50,7 @@ import { isNotEmptyField } from '../../../../utils/utils';
 import ItemIcon from '../../../../components/ItemIcon';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { resolveHasUserChoiceParsedCsvMapper } from '../../../../utils/csvMapperUtils';
+import ExternalReferencePopoverDeletion from './ExternalReferencePopoverDeletion';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -235,6 +237,8 @@ StixCoreObjectExternalReferencesLinesContainerProps
     });
   };
   const [hasUserChoiceCsvMapper, setHasUserChoiceCsvMapper] = useState(false);
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const onCsvMapperSelection = (option: CsvMapperFieldOption | string) => {
     const parsedOption = typeof option === 'string' ? JSON.parse(option) : option;
     const parsedRepresentations = JSON.parse(parsedOption.representations);
@@ -336,14 +340,25 @@ StixCoreObjectExternalReferencesLinesContainerProps
                               externalReferenceId={externalReference.id}
                             />
                           </Security>
-                          <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                            <ExternalReferencePopover
+                          {!isFABReplaced
+                            && <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                              <ExternalReferencePopover
+                                id={externalReference.id}
+                                handleRemove={() => handleOpenDialog(externalReferenceEdge)
+                                }
+                                objectId={stixCoreObjectId}
+                              />
+                            </Security>
+                          }
+                          {isFABReplaced && <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                            <ExternalReferencePopoverDeletion
                               id={externalReference.id}
                               handleRemove={() => handleOpenDialog(externalReferenceEdge)
                               }
                               objectId={stixCoreObjectId}
                             />
                           </Security>
+                          }
                         </ListItemSecondaryAction>
                       </ListItem>
                       {externalReference.importFiles?.edges
@@ -400,8 +415,18 @@ StixCoreObjectExternalReferencesLinesContainerProps
                             />
                           </Security>
                         )}
-                        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                          <ExternalReferencePopover
+                        {!isFABReplaced
+                          && <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                            <ExternalReferencePopover
+                              id={externalReference.id}
+                              isExternalReferenceAttachment={isFileAttached}
+                              handleRemove={() => handleOpenDialog(externalReferenceEdge)
+                              }
+                              objectId={stixCoreObjectId}
+                            />
+                          </Security>}
+                        {isFABReplaced && <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                          <ExternalReferencePopoverDeletion
                             id={externalReference.id}
                             isExternalReferenceAttachment={isFileAttached}
                             handleRemove={() => handleOpenDialog(externalReferenceEdge)
@@ -409,6 +434,7 @@ StixCoreObjectExternalReferencesLinesContainerProps
                             objectId={stixCoreObjectId}
                           />
                         </Security>
+                        }
                       </ListItemSecondaryAction>
                     </ListItem>
                     {externalReference.importFiles?.edges

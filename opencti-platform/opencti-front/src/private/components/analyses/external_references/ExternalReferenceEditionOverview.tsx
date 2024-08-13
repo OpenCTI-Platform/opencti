@@ -59,7 +59,6 @@ const ExternalReferenceEditionOverviewComponent: FunctionComponent<
 ExternalReferenceEditionOverviewComponentProps
 > = ({ externalReference, context }) => {
   const { t_i18n } = useFormatter();
-
   const [commitMutationExternalReferenceEditionOverviewFocus] = useApiMutation(
     externalReferenceEditionOverviewFocus,
   );
@@ -71,7 +70,6 @@ ExternalReferenceEditionOverviewComponentProps
     ['source_name', 'external_id', 'url', 'description'],
     externalReference,
   );
-
   const handleChangeFocus = (name: string) => {
     commitMutationExternalReferenceEditionOverviewFocus({
       variables: {

@@ -8,6 +8,7 @@ import ExternalReferenceDetails from './ExternalReferenceDetails';
 import ExternalReferenceEdition from './ExternalReferenceEdition';
 import Security from '../../../../utils/Security';
 import ExternalReferencePopover from './ExternalReferencePopover';
+import ExternalReferencePopoverDeletion from './ExternalReferencePopoverDeletion';
 import ExternalReferenceHeader from './ExternalReferenceHeader';
 import ExternalReferenceFileImportViewer from './ExternalReferenceFileImportViewer';
 import ExternalReferenceStixCoreObjects from './ExternalReferenceStixCoreObjects';
@@ -44,7 +45,7 @@ ExternalReferenceComponentProps
   const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   return (
     <div className={classes.container}>
-      <ExternalReferenceHeader
+      {!isFABReplaced && (<ExternalReferenceHeader
         externalReference={externalReference}
         PopoverComponent={
           <ExternalReferencePopover id={''} handleRemove={undefined} />
@@ -54,7 +55,18 @@ ExternalReferenceComponentProps
             <ExternalReferenceEdition externalReferenceId={externalReference.id} />
           </Security>
         )}
-      />
+                          />)}
+      {isFABReplaced && (<ExternalReferenceHeader
+        externalReference={externalReference}
+        PopoverComponent={
+          <ExternalReferencePopoverDeletion id={'externalReference.id'} handleRemove={undefined} />
+        }
+        EditComponent={(
+          <Security needs={[KNOWLEDGE_KNUPDATE]}>
+            <ExternalReferenceEdition externalReferenceId={externalReference.id} />
+          </Security>
+        )}
+                         />)}
       <Grid
         container={true}
         spacing={3}

@@ -35,11 +35,13 @@ const NoteEditionContainer: FunctionComponent<NoteEditionContainerProps> = ({
       controlledDial={isFABReplaced ? controlledDial : undefined}
     >
       {({ onClose }) => (
-        <NoteEditionOverview
-          note={note}
-          context={editContext}
-          handleClose={onClose}
-        />
+        <>
+          <NoteEditionOverview
+            note={note}
+            context={editContext}
+            handleClose={onClose}
+          />
+        </>
       )}
     </Drawer>
   );

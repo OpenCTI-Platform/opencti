@@ -2,6 +2,7 @@ import React, { FunctionComponent, ReactElement } from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
 import Typography from '@mui/material/Typography';
 import makeStyles from '@mui/styles/makeStyles';
+import useHelper from 'src/utils/hooks/useHelper';
 import { truncate } from '../../../../utils/String';
 import Security from '../../../../utils/Security';
 import { ExternalReferenceHeader_externalReference$data } from './__generated__/ExternalReferenceHeader_externalReference.graphql';
@@ -27,6 +28,8 @@ interface ExternalReferenceHeaderComponentProps {
 
 const ExternalReferenceHeaderComponent: FunctionComponent<ExternalReferenceHeaderComponentProps> = ({ externalReference, PopoverComponent, EditComponent }) => {
   const classes = useStyles();
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   return (
     <div
@@ -44,11 +47,11 @@ const ExternalReferenceHeaderComponent: FunctionComponent<ExternalReferenceHeade
         >
           {truncate(externalReference.source_name, 80)}
         </Typography>
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+        {!isFABReplaced && <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <div className={classes.popover}>
             {React.cloneElement(PopoverComponent, { id: externalReference.id })}
           </div>
-        </Security>
+        </Security>}
         <div className="clearfix" />
       </div>
       {EditComponent}

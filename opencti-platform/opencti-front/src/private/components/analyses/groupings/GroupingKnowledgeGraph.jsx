@@ -46,6 +46,7 @@ import { isNotEmptyField } from '../../../../utils/utils';
 import RelationSelection from '../../../../utils/graph/RelationSelection';
 import withRouter from '../../../../utils/compat-router/withRouter';
 import { containerTypes } from '../../../../utils/hooks/useAttributes';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 const ignoredStixCoreObjectsTypes = ['Note', 'Opinion'];
 
@@ -1013,6 +1014,8 @@ class GroupingKnowledgeGraphComponent extends Component {
       timeRangeInterval,
       this.graphObjects,
     );
+    const { isFeatureEnable } = useHelper();
+    const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
     return (
       <UserContext.Consumer>
@@ -1022,7 +1025,7 @@ class GroupingKnowledgeGraphComponent extends Component {
             || window.innerHeight - 235 - bannerSettings.bannerHeightNumber * 2;
           return (
             <>
-              <ContainerHeader
+              {!isFABReplaced && <ContainerHeader
                 container={grouping}
                 PopoverComponent={<GroupingPopover />}
                 link={`/dashboard/analyses/groupings/${grouping.id}/knowledge`}
@@ -1033,7 +1036,19 @@ class GroupingKnowledgeGraphComponent extends Component {
                 enableSuggestions={true}
                 onApplied={this.handleApplySuggestion.bind(this)}
                 investigationAddFromContainer={investigationAddFromContainer}
-              />
+                                 />}
+              {isFABReplaced && <ContainerHeader
+                container={grouping}
+                PopoverComponent={null}
+                link={`/dashboard/analyses/groupings/${grouping.id}/knowledge`}
+                modes={['graph', 'content', 'correlation', 'matrix']}
+                currentMode={mode}
+                adjust={this.handleZoomToFit.bind(this)}
+                knowledge={true}
+                enableSuggestions={true}
+                onApplied={this.handleApplySuggestion.bind(this)}
+                investigationAddFromContainer={investigationAddFromContainer}
+                                />}
               <GroupingKnowledgeGraphBar
                 handleToggle3DMode={this.handleToggle3DMode.bind(this)}
                 currentMode3D={mode3D}
