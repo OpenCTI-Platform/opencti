@@ -1,9 +1,8 @@
 import React, { FunctionComponent } from 'react';
 import ImportContent, { importContentQuery } from '@components/data/import/ImportContent';
-import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
+import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import ImportWorkbenchesContent from '@components/data/import/ImportWorkbenchesContent';
 import ImportFilesContent from '@components/data/import/ImportFilesContent';
-import { ImportContentContainer_connectorsImport$key } from '@components/data/import/__generated__/ImportContentContainer_connectorsImport.graphql';
 import { ImportContentQuery } from './__generated__/ImportContentQuery.graphql';
 
 interface ImportContentContainerProps {

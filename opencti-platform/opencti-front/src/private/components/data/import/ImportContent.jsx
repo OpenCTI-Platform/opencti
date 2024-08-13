@@ -530,7 +530,7 @@ class ImportContentComponent extends Component {
             {({ submitForm, handleReset, isSubmitting, setFieldValue, isValid }) => (
               <Form style={{ margin: '0 0 20px 0' }}>
                 <Dialog
-                  open={fileToImport}
+                  open={!!fileToImport}
                   PaperProps={{ elevation: 1 }}
                   keepMounted={true}
                   onClose={() => handleReset()}
@@ -627,7 +627,7 @@ class ImportContentComponent extends Component {
             {({ submitForm, handleReset, isSubmitting }) => (
               <Form style={{ margin: '0 0 20px 0' }}>
                 <Dialog
-                  open={fileToValidate}
+                  open={!!fileToValidate}
                   PaperProps={{ elevation: 1 }}
                   keepMounted={true}
                   onClose={this.handleCloseValidate.bind(this)}
