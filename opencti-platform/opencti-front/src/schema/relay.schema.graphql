@@ -7814,7 +7814,7 @@ type Subscription {
   markingDefinition(id: ID!): MarkingDefinition
   killChainPhase(id: ID!): KillChainPhase
   stixCoreObject(id: ID!): StixCoreObject
-  internalObject(id: ID!): InternalObject @deprecated(reason: "[>=6.3 & <6.3]. Not used in the platform.")
+  internalObject(id: ID!): InternalObject @deprecated(reason: "[>=6.3 & <6.6]. Not used in the platform.")
   stixDomainObject(id: ID!): StixDomainObject
   stixCyberObservable(id: ID!): StixCyberObservable
   stixCoreRelationship(id: ID!): StixCoreRelationship
