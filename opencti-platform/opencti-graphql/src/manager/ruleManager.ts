@@ -304,7 +304,7 @@ const initRuleManager = () => {
       }
       logApp.info('[OPENCTI-MODULE] End of rule manager processing');
     } catch (e: any) {
-      if (e.name === TYPE_LOCK_ERROR) {
+      if (e.extensions.name === TYPE_LOCK_ERROR) {
         logApp.debug('[OPENCTI-MODULE] Rule engine already started by another API');
       } else {
         logApp.error(e, { manager: 'RULE_ENGINE' });

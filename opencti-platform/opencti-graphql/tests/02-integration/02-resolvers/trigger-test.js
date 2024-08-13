@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
-import { ADMIN_USER, AMBER_GROUP, editorQuery, queryAsAdmin, securityQuery } from '../../utils/testQuery';
+import { ADMIN_USER, AMBER_GROUP, editorQuery, queryAsAdmin, securityQuery, USER_EDITOR } from '../../utils/testQuery';
 import { EVENT_TYPE_CREATE } from '../../../src/database/utils';
+import { queryAsUserIsExpectedForbidden } from '../../utils/testQueryHelper';
 
 const LIST_QUERY = gql`
     query triggers(
@@ -215,13 +216,10 @@ describe('Trigger resolver standard behavior', () => {
     expect(queryResult.data.triggersKnowledge.edges.length).toEqual(1);
   });
   it('editor user should not update group trigger', async () => {
-    const queryResult = await editorQuery({
+    await queryAsUserIsExpectedForbidden(USER_EDITOR.client, {
       query: UPDATE_QUERY,
       variables: { id: triggerGroupInternalId, input: { key: 'name', value: ['group trigger - updated'] } },
     });
-    expect(queryResult).not.toBeNull();
-    expect(queryResult.errors.length).toEqual(1);
-    expect(queryResult.errors.at(0).name).toEqual('FORBIDDEN_ACCESS');
   });
   it('security user should group trigger deleted', async () => {
     // Delete the trigger
@@ -259,13 +257,10 @@ describe('Trigger resolver standard behavior', () => {
     expect(queryResult.data.triggersKnowledge.edges.length).toEqual(1);
   });
   it('editor user should not update organization trigger', async () => {
-    const queryResult = await editorQuery({
+    await queryAsUserIsExpectedForbidden(USER_EDITOR.client, {
       query: UPDATE_QUERY,
       variables: { id: triggerOrganizationInternalId, input: { key: 'name', value: ['organization trigger - updated'] } },
     });
-    expect(queryResult).not.toBeNull();
-    expect(queryResult.errors.length).toEqual(1);
-    expect(queryResult.errors.at(0).name).toEqual('FORBIDDEN_ACCESS');
   });
   it('security user should organization trigger deleted', async () => {
     // Delete the trigger

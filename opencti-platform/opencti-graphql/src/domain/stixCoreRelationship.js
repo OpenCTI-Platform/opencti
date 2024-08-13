@@ -1,5 +1,6 @@
 import * as R from 'ramda';
-import { UserInputError } from 'apollo-server-express';
+import { GraphQLError } from 'graphql/index';
+import { ApolloServerErrorCode } from '@apollo/server/errors';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import { createRelation, deleteElementById, deleteRelationsByFromAndTo, timeSeriesRelations, updateAttribute } from '../database/middleware';
 import { BUS_TOPICS } from '../config/conf';
@@ -30,7 +31,7 @@ const buildStixCoreRelationshipTypes = (relationshipTypes) => {
   }
   const isValidRelationshipTypes = relationshipTypes.every((type) => isStixCoreRelationship(type));
   if (!isValidRelationshipTypes) {
-    throw new UserInputError('Invalid argument: relationship_type is not a stix-core-relationship');
+    throw new GraphQLError('Invalid argument: relationship_type is not a stix-core-relationship', { extensions: { code: ApolloServerErrorCode.BAD_USER_INPUT } });
   }
   return relationshipTypes;
 };

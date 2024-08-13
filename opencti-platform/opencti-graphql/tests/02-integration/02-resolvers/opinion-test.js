@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
-import { ADMIN_USER, editorQuery, participantQuery, testContext } from '../../utils/testQuery';
+import { ADMIN_USER, editorQuery, participantQuery, testContext, USER_PARTICIPATE } from '../../utils/testQuery';
 import { elLoadById } from '../../../src/database/engine';
 import { now } from '../../../src/utils/format';
+import { queryAsUserIsExpectedForbidden } from '../../utils/testQueryHelper';
 
 const LIST_QUERY = gql`
   query opinions(
@@ -566,13 +567,10 @@ describe('Opinion resolver behavior with Participant and Editor users', () => {
         }
     `;
 
-    const queryResult = await participantQuery({
+    await queryAsUserIsExpectedForbidden(USER_PARTICIPATE.client, {
       query: UPDATE_QUERY,
       variables: { id: editorOpinionStixId, input: { key: 'opinion', value: 'agree' } },
     });
-    expect(queryResult).not.toBeNull();
-    expect(queryResult.errors.length).toEqual(1);
-    expect(queryResult.errors.at(0).name).toEqual('FORBIDDEN_ACCESS');
   });
 
   it('Editor should update his own opinion', async () => {

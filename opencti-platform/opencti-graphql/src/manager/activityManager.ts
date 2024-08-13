@@ -161,7 +161,7 @@ const initActivityManager = () => {
       }
       logApp.info('[OPENCTI-MODULE] End of Activity manager processing');
     } catch (e: any) {
-      if (e.name === TYPE_LOCK_ERROR) {
+      if (e.extensions.name === TYPE_LOCK_ERROR) {
         logApp.debug('[OPENCTI-MODULE] Activity manager already started by another API');
       } else {
         logApp.error(e, { manager: 'ACTIVITY_MANAGER' });
