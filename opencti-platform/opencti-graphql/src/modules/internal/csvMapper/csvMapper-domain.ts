@@ -17,6 +17,7 @@ import { schemaTypesDefinition } from '../../../schema/schema-types';
 import { ABSTRACT_STIX_CORE_RELATIONSHIP, ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_DOMAIN_OBJECT, ABSTRACT_STIX_META_OBJECT } from '../../../schema/general';
 import { type BasicStoreEntityIngestionCsv, ENTITY_TYPE_INGESTION_CSV } from '../../ingestion/ingestion-types';
 import { FunctionalError } from '../../../config/errors';
+import { created } from '../../../schema/attribute-definition';
 
 // -- UTILS --
 
@@ -100,7 +101,7 @@ export const csvMapperSchemaAttributes = async (context: AuthContext, user: Auth
   types.forEach((type) => {
     const attributesDef = schemaAttributesDefinition.getAttributes(type);
     const attributes: CsvMapperSchemaAttribute[] = Array.from(attributesDef.values()).flatMap((attribute) => {
-      if (INTERNAL_ATTRIBUTES.includes(attribute.name) || attribute.label === 'Original creation date') return [];
+      if (INTERNAL_ATTRIBUTES.includes(attribute.name) || attribute === created) return [];
       return [{
         name: attribute.name,
         label: attribute.label,
