@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
-import { graphql, createFragmentContainer } from 'react-relay';
+import { createFragmentContainer, graphql } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import IconButton from '@mui/material/IconButton';
 import { FileOutline } from 'mdi-material-ui';
@@ -20,6 +20,7 @@ import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import Slide from '@mui/material/Slide';
 import Chip from '@mui/material/Chip';
+import { WorkbenchFileLineDeleteMutation, workbenchLineFragment } from '../../../data/import/ImportWorkbenchesContent';
 import FileWork from '../FileWork';
 import inject18n from '../../../../../components/i18n';
 import { APP_BASE_PATH, commitMutation, MESSAGING$ } from '../../../../../relay/environment';
@@ -101,12 +102,6 @@ const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
 ));
 Transition.displayName = 'TransitionSlide';
-
-const WorkbenchFileLineDeleteMutation = graphql`
-  mutation WorkbenchFileLineDeleteMutation($fileName: String) {
-    deleteImport(fileName: $fileName)
-  }
-`;
 
 const WorkbenchFileLineAskDeleteMutation = graphql`
   mutation WorkbenchFileLineAskDeleteMutation($workId: ID!) {
@@ -298,112 +293,11 @@ WorkbenchFileLineComponent.propTypes = {
   connectors: PropTypes.array,
   dense: PropTypes.bool,
   directDownload: PropTypes.bool,
-  handleOpenImport: PropTypes.func,
   nested: PropTypes.bool,
 };
 
 const WorkbenchFileLine = createFragmentContainer(WorkbenchFileLineComponent, {
-  file: graphql`
-    fragment WorkbenchFileLine_file on File {
-      id
-      name
-      uploadStatus
-      lastModified
-      lastModifiedSinceMin
-      metaData {
-        mimetype
-        list_filters
-        labels
-        messages {
-          timestamp
-          message
-        }
-        errors {
-          timestamp
-          message
-        }
-        creator {
-          name
-        }
-        entity_id
-        entity {
-          ... on AttackPattern {
-            name
-          }
-          ... on Campaign {
-            name
-          }
-          ... on Report {
-            name
-          }
-          ... on Grouping {
-            name
-          }
-          ... on CourseOfAction {
-            name
-          }
-          ... on Individual {
-            name
-          }
-          ... on Organization {
-            name
-          }
-          ... on Sector {
-            name
-          }
-          ... on System {
-            name
-          }
-          ... on Indicator {
-            name
-          }
-          ... on Infrastructure {
-            name
-          }
-          ... on IntrusionSet {
-            name
-          }
-          ... on Position {
-            name
-          }
-          ... on City {
-            name
-          }
-          ... on AdministrativeArea {
-            name
-          }
-          ... on Country {
-            name
-          }
-          ... on Region {
-            name
-          }
-          ... on Malware {
-            name
-          }
-          ... on ThreatActor {
-            name
-          }
-          ... on Tool {
-            name
-          }
-          ... on Vulnerability {
-            name
-          }
-          ... on Incident {
-            name
-          }
-          ... on StixCyberObservable {
-            observable_value
-          }
-        }
-      }
-      works {
-        id
-      }
-      ...FileWork_file
-    }
-  `,
+  file: workbenchLineFragment,
 });
 
 export default compose(inject18n, withStyles(styles))(WorkbenchFileLine);

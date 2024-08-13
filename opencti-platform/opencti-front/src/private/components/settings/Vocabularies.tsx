@@ -169,6 +169,7 @@ const Vocabularies = () => {
               noWarning={true}
               deleteDisable={true}
               filters={toolBarFilters}
+              taskScope='SETTINGS'
               variant="medium"
             />
           </>

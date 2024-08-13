@@ -1,5 +1,5 @@
 import { loadFile } from '../database/file-storage';
-import { askJobImport, deleteImport, filesMetrics, uploadImport, uploadPending } from '../domain/file';
+import { askJobImport, batchFileMarkingDefinitions, deleteImport, filesMetrics, uploadImport, uploadPending } from '../domain/file';
 import { worksForSource } from '../domain/work';
 import { batchLoader } from '../database/middleware';
 import { batchCreator } from '../domain/user';
@@ -8,19 +8,21 @@ import { paginatedForPathWithEnrichment } from '../modules/internal/document/doc
 
 const creatorLoader = batchLoader(batchCreator);
 const domainLoader = batchLoader(batchStixDomainObjects);
+const markingDefinitionsLoader = batchLoader(batchFileMarkingDefinitions);
 
 const fileResolvers = {
   Query: {
     file: (_, { id }, context) => loadFile(context, context.user, id),
-    importFiles: (_, { first }, context) => {
-      return paginatedForPathWithEnrichment(context, context.user, 'import/global', undefined, { first });
+    importFiles: (_, opts, context) => {
+      return paginatedForPathWithEnrichment(context, context.user, 'import/global', undefined, opts);
     },
-    pendingFiles: (_, { first }, context) => { // correspond to global workbenches (i.e. worbenches in Data > Import)
-      return paginatedForPathWithEnrichment(context, context.user, 'import/pending', undefined, { first });
+    pendingFiles: (_, opts, context) => { // correspond to global workbenches (i.e. worbenches in Data > Import)
+      return paginatedForPathWithEnrichment(context, context.user, 'import/pending', undefined, opts);
     },
     filesMetrics: (_, args, context) => filesMetrics(context, context.user),
   },
   File: {
+    objectMarking: (rel, _, context) => markingDefinitionsLoader.load(rel, context, context.user),
     works: (file, _, context) => worksForSource(context, context.user, file.id),
   },
   FileMetadata: {

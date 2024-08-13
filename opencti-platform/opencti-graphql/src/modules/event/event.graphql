@@ -103,9 +103,24 @@ type Event implements BasicObject & StixCoreObject & StixDomainObject & StixObje
     # Technical
     creators: [Creator!]
     toStix: String
-    importFiles(first: Int, prefixMimeType: String): FileConnection
+    importFiles(
+    first: Int
+    prefixMimeType: String
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+    filters: FilterGroup
+  ): FileConnection
 
-    pendingFiles(first: Int): FileConnection
+    pendingFiles(
+    first: Int
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+    filters: FilterGroup
+  ): FileConnection
     exportFiles(first: Int): FileConnection
     editContext: [EditUserContext!]
     connectors(onlyAlive: Boolean): [Connector]

@@ -30,6 +30,7 @@ type OCTIDataTableProps = Pick<DataTableProps, 'dataColumns'
 | 'redirectionModeEnabled'
 | 'additionalFilterKeys'
 | 'variant'
+| 'actions'
 | 'entityTypes'> & {
   lineFragment: GraphQLTaggedNode
   preloadedPaginationProps: UsePreloadedPaginationFragment<OperationType>,
@@ -41,6 +42,8 @@ type OCTIDataTableProps = Pick<DataTableProps, 'dataColumns'
   additionalHeaderButtons?: ReactNode[]
   createButton?: ReactNode
   currentView?: string
+  hideFilters?: boolean
+  taskScope?: string
 };
 
 const DataTable = (props: OCTIDataTableProps) => {
@@ -65,6 +68,8 @@ const DataTable = (props: OCTIDataTableProps) => {
     variant = DataTableVariant.default,
     additionalHeaderButtons,
     currentView,
+    hideFilters,
+    taskScope,
   } = props;
 
   const {
@@ -138,25 +143,29 @@ const DataTable = (props: OCTIDataTableProps) => {
               onSubmit={helpers.handleSearch}
               keyword={searchTerm}
             />
-            <DataTableFilters
-              availableFilterKeys={availableFilterKeys}
-              searchContextFinal={searchContextFinal}
-              availableEntityTypes={availableEntityTypes}
-              availableRelationshipTypes={availableRelationshipTypes}
-              availableRelationFilterTypes={availableRelationFilterTypes}
-              exportContext={exportContext}
-              paginationOptions={paginationOptions}
-              additionalHeaderButtons={additionalHeaderButtons}
-              currentView={currentView}
-            />
+            {!hideFilters && (
+              <DataTableFilters
+                availableFilterKeys={availableFilterKeys}
+                searchContextFinal={searchContextFinal}
+                availableEntityTypes={availableEntityTypes}
+                availableRelationshipTypes={availableRelationshipTypes}
+                availableRelationFilterTypes={availableRelationFilterTypes}
+                exportContext={exportContext}
+                paginationOptions={paginationOptions}
+                additionalHeaderButtons={additionalHeaderButtons}
+                currentView={currentView}
+              />
+            )}
           </div>
-          <DataTableDisplayFilters
-            availableFilterKeys={availableFilterKeys}
-            availableRelationFilterTypes={availableRelationFilterTypes}
-            additionalFilterKeys={additionalFilterKeys}
-            entityTypes={computedEntityTypes}
-            paginationOptions={paginationOptions}
-          />
+          {!hideFilters ? (
+            <DataTableDisplayFilters
+              availableFilterKeys={availableFilterKeys}
+              availableRelationFilterTypes={availableRelationFilterTypes}
+              additionalFilterKeys={additionalFilterKeys}
+              entityTypes={computedEntityTypes}
+              paginationOptions={paginationOptions}
+            />
+          ) : (<div style={{ minHeight: 10 }} />)}
         </>
       )}
       dataTableToolBarComponent={(
@@ -174,6 +183,7 @@ const DataTable = (props: OCTIDataTableProps) => {
             search={searchTerm}
             filters={toolbarFilters}
             handleClearSelectedElements={handleClearSelectedElements}
+            taskScope={taskScope}
           />
         </div>
       )}

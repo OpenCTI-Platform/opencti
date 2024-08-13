@@ -69,6 +69,7 @@ class ToolBar extends Component {
       noMarking,
       handleCopy,
       search,
+      taskScope,
     } = this.props;
     const { navOpen } = this.state;
     const isOpen = numberOfSelectedElements > 0;
@@ -120,6 +121,7 @@ class ToolBar extends Component {
               mergeDisable={mergeDisable}
               deleteOperationEnabled={deleteOperationEnabled}
               handleCopy={handleCopy}
+              taskScope={taskScope}
             />
           </Drawer>
         )}
@@ -149,6 +151,7 @@ ToolBar.propTypes = {
   noWarning: PropTypes.bool,
   mergeDisable: PropTypes.bool,
   deleteOperationEnabled: PropTypes.bool,
+  taskScope: PropTypes.string,
 };
 
 export default R.compose(withStyles(styles))(ToolBar);

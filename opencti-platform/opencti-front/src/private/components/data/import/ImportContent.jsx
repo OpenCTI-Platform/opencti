@@ -25,6 +25,7 @@ import { ListItemButton } from '@mui/material';
 import Button from '@mui/material/Button';
 import * as Yup from 'yup';
 import Fab from '@mui/material/Fab';
+import ImportMenu from '../ImportMenu';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import SelectField from '../../../../components/fields/SelectField';
 import { FIVE_SECONDS } from '../../../../utils/Time';
@@ -42,6 +43,7 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import withRouter from '../../../../utils/compat-router/withRouter';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { resolveHasUserChoiceParsedCsvMapper } from '../../../../utils/csvMapperUtils';
+import { importConnectorsFragment } from './ImportContentContainer';
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -89,7 +91,7 @@ const styles = (theme) => ({
   createButton: {
     position: 'fixed',
     bottom: 30,
-    right: 30,
+    right: 230,
   },
 });
 
@@ -129,7 +131,7 @@ const inlineStylesHeaders = {
 export const importContentQuery = graphql`
   query ImportContentQuery {
     connectorsForImport {
-      ...ImportContent_connectorsImport
+      ...ImportContentContainer_connectorsImport
     }
     importFiles(first: 500) @connection(key: "Pagination_global_importFiles") {
       edges {
@@ -143,11 +145,11 @@ export const importContentQuery = graphql`
       }
     }
     pendingFiles(first: 500)
-      @connection(key: "Pagination_global_pendingFiles") {
+    @connection(key: "Pagination_global_pendingFiles") {
       edges {
         node {
           id
-          ...WorkbenchFileLine_file
+          ...ImportWorkbenchesContentFileLine_file
           metaData {
             mimetype
           }
@@ -328,10 +330,11 @@ class ImportContentComponent extends Component {
       this.setState({ selectedConnector });
     };
     const invalidCsvMapper = this.state.selectedConnector?.name === 'ImportCsv'
-        && this.state.selectedConnector?.configurations?.length === 0;
+      && this.state.selectedConnector?.configurations?.length === 0;
     return (
-      <>
+      <div style={{ paddingRight: 200 }}>
         <Breadcrumbs variant="list" elements={[{ label: t('Data') }, { label: t('Import'), current: true }]} />
+        <ImportMenu />
         <Grid
           container={true}
           spacing={3}
@@ -527,7 +530,7 @@ class ImportContentComponent extends Component {
             {({ submitForm, handleReset, isSubmitting, setFieldValue, isValid }) => (
               <Form style={{ margin: '0 0 20px 0' }}>
                 <Dialog
-                  open={fileToImport}
+                  open={!!fileToImport}
                   PaperProps={{ elevation: 1 }}
                   keepMounted={true}
                   onClose={() => handleReset()}
@@ -624,7 +627,7 @@ class ImportContentComponent extends Component {
             {({ submitForm, handleReset, isSubmitting }) => (
               <Form style={{ margin: '0 0 20px 0' }}>
                 <Dialog
-                  open={fileToValidate}
+                  open={!!fileToValidate}
                   PaperProps={{ elevation: 1 }}
                   keepMounted={true}
                   onClose={this.handleCloseValidate.bind(this)}
@@ -689,7 +692,7 @@ class ImportContentComponent extends Component {
         >
           <Add />
         </Fab>
-      </>
+      </div>
     );
   }
 }
@@ -706,22 +709,7 @@ ImportContentComponent.propTypes = {
 const ImportContent = createRefetchContainer(
   ImportContentComponent,
   {
-    connectorsImport: graphql`
-      fragment ImportContent_connectorsImport on Connector
-      @relay(plural: true) {
-        id
-        name
-        active
-        only_contextual
-        connector_scope
-        updated_at
-        configurations {
-          id
-          name,
-          configuration
-        }
-      }
-    `,
+    connectorsImport: importConnectorsFragment,
   },
   importContentQuery,
 );

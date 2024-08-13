@@ -29,7 +29,7 @@ import {
   mergeEntities,
   patchAttribute,
   stixLoadById,
-  storeLoadByIdWithRefs,
+  storeLoadByIdWithRefs
 } from '../database/middleware';
 import { now } from '../utils/format';
 import { EVENT_TYPE_CREATE, READ_DATA_INDICES, READ_DATA_INDICES_WITHOUT_INFERRED, UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE } from '../database/utils';
@@ -57,22 +57,25 @@ import { indicatorEditField, promoteIndicatorToObservables } from '../modules/in
 import { askElementEnrichmentForConnector } from '../domain/stixCoreObject';
 import { RELATION_GRANTED_TO, RELATION_OBJECT } from '../schema/stixRefRelationship';
 import {
-  ACTION_TYPE_DELETE,
   ACTION_TYPE_COMPLETE_DELETE,
+  ACTION_TYPE_DELETE,
   ACTION_TYPE_RESTORE,
   ACTION_TYPE_SHARE,
+  ACTION_TYPE_SHARE_MULTIPLE,
   ACTION_TYPE_UNSHARE,
+  ACTION_TYPE_UNSHARE_MULTIPLE,
   TASK_TYPE_LIST,
   TASK_TYPE_QUERY,
-  TASK_TYPE_RULE,
-  ACTION_TYPE_SHARE_MULTIPLE,
-  ACTION_TYPE_UNSHARE_MULTIPLE
+  TASK_TYPE_RULE
 } from '../domain/backgroundTask-common';
 import { validateUpdatableAttribute } from '../schema/schema-validator';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { processDeleteOperation, restoreDelete } from '../modules/deleteOperation/deleteOperation-domain';
 import { addOrganizationRestriction, removeOrganizationRestriction } from '../domain/stix';
 import { stixDomainObjectAddRelation } from '../domain/stixDomainObject';
+import { BackgroundTaskScope } from '../generated/graphql';
+import { ENTITY_TYPE_INTERNAL_FILE } from '../schema/internalObject';
+import { deleteFile } from '../database/file-storage';
 
 // Task manager responsible to execute long manual tasks
 // Each API will start is task manager.
@@ -150,34 +153,35 @@ const computeRuleTaskElements = async (context, user, task) => {
   }
   return { actions, elements: processingElements };
 };
+
 export const computeQueryTaskElements = async (context, user, task) => {
-  const { actions, task_position, task_filters, task_search = null, task_excluded_ids = [] } = task;
+  const { actions, task_position, task_filters, task_search = null, task_excluded_ids = [], scope } = task;
   const processingElements = [];
   // Fetch the information
   // note that the query is filtered to allow only elements with matching confidence level
-  const data = await executeTaskQuery(context, user, task_filters, task_search, task_position);
+  const data = await executeTaskQuery(context, user, task_filters, task_search, scope, task_position);
   // const expectedNumber = data.pageInfo.globalCount;
   const elements = data.edges;
   // Apply the actions for each element
   for (let elementIndex = 0; elementIndex < elements.length; elementIndex += 1) {
     const element = elements[elementIndex];
-    if (!task_excluded_ids.includes(element.node.id)) {
+    if (!task_excluded_ids.includes(element.node.id)) { // keep only the elements that are not excluded (via unticked checkboxes in UI)
       processingElements.push({ element: element.node, next: element.cursor });
     }
   }
   return { actions, elements: processingElements };
 };
 const computeListTaskElements = async (context, user, task) => {
-  const { actions, task_position, task_ids } = task;
+  const { actions, task_position, task_ids, scope } = task;
   const isUndefinedPosition = R.isNil(task_position) || R.isEmpty(task_position);
   const startIndex = isUndefinedPosition ? 0 : task_ids.findIndex((id) => task_position === id) + 1;
   const ids = R.take(MAX_TASK_ELEMENTS, task_ids.slice(startIndex));
 
   // processing elements in descending order makes possible restoring from trash elements with dependencies
   const options = {
-    type: DEFAULT_ALLOWED_TASK_ENTITY_TYPES,
+    type: scope === BackgroundTaskScope.Import ? [ENTITY_TYPE_INTERNAL_FILE] : DEFAULT_ALLOWED_TASK_ENTITY_TYPES,
     orderMode: 'desc',
-    orderBy: 'created_at',
+    orderBy: scope === BackgroundTaskScope.Import ? 'lastModified' : 'created_at',
   };
   const elements = await internalFindByIds(context, user, ids, options);
   const processingElements = elements.map((element) => ({ element, next: element.id }));
@@ -208,8 +212,12 @@ const generatePatch = (field, values, type) => {
   throw ValidationError(basicErrors.at(0) ?? extensionErrors.at(0), { message: 'You cannot update incompatible attribute' });
 };
 
-const executeDelete = async (context, user, element) => {
-  await deleteElementById(context, user, element.internal_id, element.entity_type);
+const executeDelete = async (context, user, element, scope) => {
+  if (scope === BackgroundTaskScope.Import) {
+    await deleteFile(context, user, element.id);
+  } else {
+    await deleteElementById(context, user, element.internal_id, element.entity_type);
+  }
 };
 const executeCompleteDelete = async (context, user, element) => {
   await processDeleteOperation(context, user, element.internal_id, { isRestoring: false });
@@ -407,7 +415,7 @@ const executeShareMultiple = async (context, user, actionContext, element) => {
 const executeUnshareMultiple = async (context, user, actionContext, element) => {
   await Promise.all(actionContext.values.map((organizationId) => removeOrganizationRestriction(context, user, element.id, organizationId)));
 };
-const executeProcessing = async (context, user, job) => {
+const executeProcessing = async (context, user, job, scope) => {
   const errors = [];
   for (let index = 0; index < job.actions.length; index += 1) {
     const { type, context: actionContext, containerId } = job.actions[index];
@@ -460,7 +468,7 @@ const executeProcessing = async (context, user, job) => {
         const { element } = job.elements[elementIndex];
         try {
           if (type === ACTION_TYPE_DELETE) {
-            await executeDelete(context, user, element);
+            await executeDelete(context, user, element, scope);
           }
           if (type === ACTION_TYPE_COMPLETE_DELETE) {
             await executeCompleteDelete(context, user, element);
@@ -559,7 +567,7 @@ const taskHandler = async () => {
     const processingElements = jobToExecute.elements;
     if (processingElements.length > 0) {
       lock.signal.throwIfAborted();
-      const errors = await executeProcessing(context, user, jobToExecute);
+      const errors = await executeProcessing(context, user, jobToExecute, task.scope);
       await appendTaskErrors(task, errors);
     }
     // Update the task
