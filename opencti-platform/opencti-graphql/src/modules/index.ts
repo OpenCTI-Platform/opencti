@@ -72,6 +72,7 @@ import './stixCyberObservable/stixCyberObservable';
 import './threatActorGroup/threatActorGroup';
 import './intrusionSet/intrusionSet';
 import './campaign/campaign';
+import './malware/malware';
 // endregion
 
 // region graphql registration
