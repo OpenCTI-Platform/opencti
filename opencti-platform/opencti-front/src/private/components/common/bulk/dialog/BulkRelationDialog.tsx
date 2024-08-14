@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useState, ChangeEvent, useEffect, useCallback } from 'react';
+import React, { FunctionComponent, useState, ChangeEvent, useEffect } from 'react';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
@@ -6,7 +6,7 @@ import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import BulkSelectRawLineData from '@components/common/bulk/BulkSelectRawLineData';
 import EntityRelationshipCard from '@components/common/bulk/EntityRelationshipCard';
-import { stixCoreRelationshipCreationFromEntityFromMutation } from '@components/common/stix_core_relationships/StixCoreRelationshipCreationFromEntity';
+import { stixCoreRelationshipCreationFromEntityFromMutation, TargetEntity } from '@components/common/stix_core_relationships/StixCoreRelationshipCreationFromEntity';
 import { commitMutation, fetchQuery, MESSAGING$ } from 'src/relay/environment';
 import Typography from '@mui/material/Typography';
 import { useFormatter } from 'src/components/i18n';
@@ -24,6 +24,7 @@ import { ForceUpdateEvent } from '@components/common/bulk/useForceUpdate';
 import BulkTextModalButton from 'src/components/fields/BulkTextField/BulkTextModalButton';
 import StixDomainObjectCreation from '@components/common/stix_domain_objects/StixDomainObjectCreation';
 import { PaginationOptions } from 'src/components/list_lines';
+import StixCyberObservableCreation from '@components/observations/stix_cyber_observables/StixCyberObservableCreation';
 import { allEntitiesKeyList, type StixCoreResultsType } from '../utils/querySearchEntityByText';
 import { getRelationsFromOneEntityToAny, RelationsDataFromEntity, RelationsToEntity } from '../../../../../utils/Relation';
 
@@ -72,7 +73,7 @@ interface BulkRelationDialogProps {
   stixDomainObjectType: string;
   isOpen: boolean;
   onClose: () => void;
-  selectedEntities: string[];
+  selectedEntities: TargetEntity[];
   defaultRelationshipType?: string;
   paginationKey: string;
   paginationOptions: PaginationOptions;
@@ -146,9 +147,18 @@ export const entityTypeHeaderWidth = 180;
 export const entityNameHeaderWidth = 180;
 export const matchHeaderWidth = 180;
 
-type EntityTypeFromMissingEntitiesType = Record<string, string[]>;
-
-const EntityTypeWithoutBulkEntityCreation = ['Attack-Pattern', 'Course-of-Action', 'Feedback', 'Grouping', 'Incident, "Malware-Analysis', 'Note', 'Report', 'Opinion', 'Position'];
+const EntityTypeWithoutBulkEntityCreation = [
+  'Attack-Pattern',
+  'Course-of-Action',
+  'Feedback',
+  'Grouping',
+  'Incident',
+  'Malware-Analysis',
+  'Note',
+  'Report',
+  'Opinion',
+  'Position',
+];
 
 const BulkRelationDialog : FunctionComponent<BulkRelationDialogProps> = ({
   stixDomainObjectId,
@@ -162,13 +172,14 @@ const BulkRelationDialog : FunctionComponent<BulkRelationDialogProps> = ({
   paginationOptions,
 }) => {
   const { t_i18n } = useFormatter();
-  const [textAreaValue, setTextAreaValue] = useState<string[]>([...selectedEntities]);
+  const [textAreaValue, setTextAreaValue] = useState<string[]>([...selectedEntities.map((item) => item.name ?? '')]);
   const [entityToSearch, setEntityToSearch] = useState<string[]>([]);
   const [bulkEntityList, setBulkEntityList] = useState<BulkEntityTypeInfo[]>([]);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
-  const [entityTypeFromMissingEntities, setEntityTypeFromMissingEntities] = useState<EntityTypeFromMissingEntitiesType>();
-  const [isSDOCreationFormOpen, setIsSDOCreationFormOpen] = useState<boolean>(false);
+  const [isObjectCreationFormOpen, setIsObjectCreationFormOpen] = useState<boolean>(false);
   const [missingEntity, setMissingEntity] = useState<missingEntityType>();
+  const [isFirstLoadDone, setIsFirstLoadDone] = useState<boolean>(false);
+
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       const newEntityToSearch = [...textAreaValue];
@@ -179,6 +190,7 @@ const BulkRelationDialog : FunctionComponent<BulkRelationDialogProps> = ({
   }, [textAreaValue, 500]);
 
   const { schema } = useAuth();
+  const scoLabelList = schema.scos.map(({ label }) => label);
   const resolvedRelations: RelationsDataFromEntity = getRelationsFromOneEntityToAny(stixDomainObjectType, schema);
   const entityList = resolvedRelations.allRelationsToEntity;
   const relationListArray = resolvedRelations.allPossibleRelations;
@@ -197,27 +209,8 @@ const BulkRelationDialog : FunctionComponent<BulkRelationDialogProps> = ({
     return !!(selectedEntityType?.legitRelations.includes(selectedRelationType) && matchingEntity);
   };
 
-  useEffect(() => {
-    const areAllEntitiesCreated = bulkEntityList.every((item) => item.isExisting);
-    if (!areAllEntitiesCreated) {
-      const newEntityTypeFromMissingEntities = bulkEntityList.reduce((acc: EntityTypeFromMissingEntitiesType, cur) => {
-        const { isExisting, selectedEntityType: { toEntitytype }, searchTerm } = cur;
-        if (!isExisting) {
-          if (!acc[toEntitytype] || EntityTypeWithoutBulkEntityCreation.includes(toEntitytype)) return { ...acc, [toEntitytype]: [searchTerm] };
-          return { ...acc,
-            [toEntitytype]: acc[toEntitytype] && acc[toEntitytype].includes(searchTerm)
-              ? [...acc[toEntitytype]]
-              : [...acc[toEntitytype], searchTerm],
-          };
-        }
-        return { ...acc };
-      }, {});
-      setEntityTypeFromMissingEntities({ ...newEntityTypeFromMissingEntities });
-    }
-  }, [bulkEntityList]);
-
   const selectMissingEntites = (currentBulkEntityList) => {
-    const foundMissingEntity = currentBulkEntityList.find((item) => !item.isExisting);
+    const foundMissingEntity = currentBulkEntityList.find((item) => !item.isMatchingEntity);
     if (!foundMissingEntity) return;
     if (EntityTypeWithoutBulkEntityCreation.includes(foundMissingEntity.selectedEntityType.toEntitytype)) {
       setMissingEntity({
@@ -236,6 +229,10 @@ const BulkRelationDialog : FunctionComponent<BulkRelationDialogProps> = ({
   };
 
   useEffect(() => {
+    selectMissingEntites(bulkEntityList);
+  }, [bulkEntityList]);
+
+  useEffect(() => {
     const getBulkEntities = async () => {
       if (missingEntity) setMissingEntity(undefined);
       const rawLinesPromises: Promise<StixCoreResultsType>[] = entityToSearch.map((content) => querySearchEntityByText(content));
@@ -252,13 +249,20 @@ const BulkRelationDialog : FunctionComponent<BulkRelationDialogProps> = ({
           }));
           const foundEntityType = entityList.filter((entityType) => entityType.toEntitytype === entityTypeList[0].entity_type);
           const newSelectedEntityType: RelationsToEntity = foundEntityType.length ? foundEntityType[0] : entityList[0];
+          let selectedEntityType = foundItem?.selectedEntityType ?? newSelectedEntityType;
           const isMatchingEntity = getRelationMatchStatus(newSelectedEntityType, entityTypeList);
+          const foundSelectedItem = selectedEntities.find((item) => item.name === cur.searchTerm);
+          if (!isFirstLoadDone) {
+            const selectedEntityTypeFromSelectedEntity = entityList.find((item) => item.toEntitytype === foundSelectedItem?.entity_type);
+            if (selectedEntityTypeFromSelectedEntity) selectedEntityType = selectedEntityTypeFromSelectedEntity;
+            setIsFirstLoadDone(true);
+          }
           return [...acc, {
             representative: foundItem?.representative ?? stixObject.representative.main,
             entityTypeList,
             isMatchingEntity,
             isExisting: true,
-            selectedEntityType: foundItem?.selectedEntityType ?? newSelectedEntityType,
+            selectedEntityType,
             index,
             searchTerm: cur.searchTerm,
           }];
@@ -272,7 +276,6 @@ const BulkRelationDialog : FunctionComponent<BulkRelationDialogProps> = ({
           searchTerm: cur.searchTerm,
         }];
       }, []);
-      selectMissingEntites(newBulkEntityList);
       setBulkEntityList([...newBulkEntityList]);
     };
     getBulkEntities().catch(() => false);
@@ -316,18 +319,20 @@ const BulkRelationDialog : FunctionComponent<BulkRelationDialogProps> = ({
     bulkEntityListToEdit[entityIndex].selectedEntityType = value;
     bulkEntityListToEdit[entityIndex].isMatchingEntity = getRelationMatchStatus(value, entityTypeList ?? []);
     setBulkEntityList([...bulkEntityListToEdit]);
+    selectMissingEntites(bulkEntityList);
   };
 
-  const handleOpenSDOCreateEntityForm = () => setIsSDOCreationFormOpen(true);
+  const handleOpenObjectCreateEntityForm = () => setIsObjectCreationFormOpen(true);
 
   const handleRefreshBulkEntityList = () => {
-    setMissingEntity(undefined);
     setEntityToSearch([...entityToSearch]);
   };
 
-  const handleCloseSDOCreateEntityForm = () => {
-    setIsSDOCreationFormOpen(false);
+  const handleCloseObjectCreateEntityForm = () => setIsObjectCreationFormOpen(false);
+
+  const onCompletedObjectCreation = () => {
     handleRefreshBulkEntityList();
+    handleCloseObjectCreateEntityForm();
   };
 
   const commit = (finalValues: StixCoreRelationshipAddInput) => {
@@ -373,7 +378,6 @@ const BulkRelationDialog : FunctionComponent<BulkRelationDialogProps> = ({
     dispatchEvent(new CustomEvent(ForceUpdateEvent));
   };
   const getTextAreaValue = () => textAreaValue.join('\n');
-
   const isSubmitDisable = !bulkEntityList.every((item) => item.isMatchingEntity) || bulkEntityList.length === 0;
 
   const renderHeaders = () => (
@@ -393,19 +397,34 @@ const BulkRelationDialog : FunctionComponent<BulkRelationDialogProps> = ({
   );
 
   const renderStixDomainObjectCreationForm = () => {
-    if (!isSDOCreationFormOpen || !entityTypeFromMissingEntities) return null;
-    const selectedEntityTypeToCreate = Object.entries(entityTypeFromMissingEntities)[0];
-    console.log('missingEntity ; ', missingEntity);
+    if (!isObjectCreationFormOpen || !missingEntity) return null;
+
+    if (scoLabelList.includes(missingEntity.key)) {
+      return (
+        <StixCyberObservableCreation
+          paginationOptions={paginationOptions}
+          open={isObjectCreationFormOpen}
+          speeddial={isObjectCreationFormOpen}
+          inputValue={missingEntity.values?.join('\n') ?? ''}
+          display={isObjectCreationFormOpen}
+          paginationKey={paginationKey}
+          handleClose={handleCloseObjectCreateEntityForm}
+          type={missingEntity.key}
+          contextual
+        />
+      );
+    }
     return (
       <StixDomainObjectCreation
         paginationOptions={paginationOptions}
-        open={isSDOCreationFormOpen}
-        speeddial={isSDOCreationFormOpen}
+        onCompleted={onCompletedObjectCreation}
+        open={isObjectCreationFormOpen}
+        speeddial={isObjectCreationFormOpen}
         inputValue={missingEntity.values?.join('\n') ?? ''}
-        display={isSDOCreationFormOpen}
+        display={isObjectCreationFormOpen}
         paginationKey={paginationKey}
         stixDomainObjectTypes={missingEntity.key}
-        handleClose={handleCloseSDOCreateEntityForm}
+        handleClose={handleCloseObjectCreateEntityForm}
         confidence={undefined}
         defaultCreatedBy={undefined}
         defaultMarkingDefinitions={undefined}
@@ -419,7 +438,7 @@ const BulkRelationDialog : FunctionComponent<BulkRelationDialogProps> = ({
         {isSubmitting && renderLoader()}
         <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>{t_i18n(`Create relationships in bulk for ${stixDomainObjectType}`)}</div>
-          {entityTypeFromMissingEntities ? <BulkTextModalButton onClick={handleOpenSDOCreateEntityForm} /> : null}
+          {missingEntity ? <BulkTextModalButton title={t_i18n('Create missing entities')} onClick={handleOpenObjectCreateEntityForm} /> : null}
         </DialogTitle>
         <DialogContent id="container" sx={{ display: 'flex', overflow: 'hidden', height: '40vh', paddingTop: '20px' }}>
           <Box sx={{ display: 'flex', flexDirection: 'column' }}>
