@@ -380,9 +380,21 @@ const SearchBulk = () => {
     setOrderAsc((prevOrderAsc) => !prevOrderAsc);
     const newOrder = !orderAsc;
     const sort = (a, b) => {
+      if (field === 'markings') {
+        const definitionA = a.markings[0]?.definition || '';
+        const definitionB = b.markings[0]?.definition || '';
+        if (definitionA < definitionB) {
+          return newOrder ? -1 : 1;
+        }
+        if (definitionA > definitionB) {
+          return newOrder ? 1 : -1;
+        }
+        return 0;
+      }
       if (a[field] < b[field]) {
         return newOrder ? -1 : 1;
-      } if (a[field] > b[field]) {
+      }
+      if (a[field] > b[field]) {
         return newOrder ? 1 : -1;
       }
       return 0;
