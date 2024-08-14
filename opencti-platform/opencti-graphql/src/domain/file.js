@@ -1,8 +1,9 @@
 import * as R from 'ramda';
 import { Readable } from 'stream';
+import { SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION } from '@opentelemetry/semantic-conventions';
 import { logApp } from '../config/conf';
 import { deleteFile, loadFile, uploadJobImport } from '../database/file-storage';
-import { internalLoadById } from '../database/middleware-loader';
+import { internalLoadById, listAllEntities } from '../database/middleware-loader';
 import { buildContextDataForFile, completeContextDataForEntity, publishUserAction } from '../listener/UserActionListener';
 import { stixCoreObjectImportDelete } from './stixCoreObject';
 import { extractEntityRepresentativeName } from '../database/entity-representative';
@@ -10,7 +11,7 @@ import { allFilesMimeTypeDistribution, allRemainingFilesCount } from '../modules
 import { getManagerConfigurationFromCache } from '../modules/managerConfiguration/managerConfiguration-domain';
 import { supportedMimeTypes } from '../modules/managerConfiguration/managerConfiguration-utils';
 import { SYSTEM_USER } from '../utils/access';
-import { isEmptyField, isNotEmptyField, READ_INDEX_FILES } from '../database/utils';
+import { isEmptyField, isNotEmptyField, READ_INDEX_FILES, READ_INDEX_HISTORY } from '../database/utils';
 import { getStats } from '../database/engine';
 import { controlUserConfidenceAgainstElement } from '../utils/confidence-level';
 import { uploadToStorage } from '../database/file-storage-helper';
@@ -18,6 +19,9 @@ import { extractContentFrom } from '../utils/fileToContent';
 import { stixLoadById } from '../database/middleware';
 import { getEntitiesMapFromCache } from '../database/cache';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
+import { FilterMode, OrderingMode } from '../generated/graphql';
+import { telemetry } from '../config/tracing';
+import { ENTITY_TYPE_WORK } from '../schema/internalObject';
 
 export const buildOptionsFromFileManager = async (context) => {
   let importPaths = ['import/'];
@@ -194,4 +198,26 @@ export const batchFileMarkingDefinitions = async (context, user, files) => {
       R.descend(R.propOr(0, 'x_opencti_order')),
     ])(markings);
   });
+};
+
+export const batchFileWorks = async (context, user, files) => {
+  const getWorkForFileFn = async () => {
+    const filters = {
+      mode: FilterMode.And,
+      filters: [{ key: ['event_source_id'], values: files }],
+      filterGroups: [],
+    };
+    const items = await listAllEntities(context, user, [ENTITY_TYPE_WORK], {
+      indices: [READ_INDEX_HISTORY],
+      connectionFormat: false,
+      orderBy: 'timestamp',
+      orderMode: OrderingMode.Desc,
+      filters,
+    });
+    return files.map((fileId) => items.filter(({ event_source_id }) => event_source_id === fileId));
+  };
+  return telemetry(context, user, 'BATCH works for file', {
+    [SEMATTRS_DB_NAME]: 'file_domain',
+    [SEMATTRS_DB_OPERATION]: 'read',
+  }, getWorkForFileFn);
 };
