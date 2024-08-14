@@ -898,7 +898,7 @@ export const userDelete = async (context, user, userId) => {
     // When user is organization admin, we make sure that the deleted user is in one of the administrated organizations of the admin
     const userData = await storeLoadById(context, user, userId, ENTITY_TYPE_USER);
     const myAdministratedOrganizationsIds = user.administrated_organizations.map(({ id }) => id);
-    if (!userData.objectOrganization.find((orga) => myAdministratedOrganizationsIds.includes(orga))) {
+    if (!userData['rel_granted.internal_id'].find((orga) => myAdministratedOrganizationsIds.includes(orga))) {
       throw ForbiddenAccess();
     }
   }
