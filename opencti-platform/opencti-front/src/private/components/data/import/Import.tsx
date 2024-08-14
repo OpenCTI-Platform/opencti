@@ -1,18 +1,32 @@
-import React from 'react';
-import { importContentQuery } from './ImportContent';
+import React, { FunctionComponent } from 'react';
+import { PreloadedQuery, usePreloadedQuery } from 'react-relay';
+import ImportContent, { importContentQuery } from './ImportContent';
 import Loader from '../../../../components/Loader';
-import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import ImportContentContainer from './ImportContentContainer';
 import { ImportContentQuery } from './__generated__/ImportContentQuery.graphql';
+import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 
-const Import = ({ tab }: { tab: string }) => {
+interface ImportContentContainerProps {
+  queryRef: PreloadedQuery<ImportContentQuery>;
+}
+
+const ImportContentContainer: FunctionComponent<ImportContentContainerProps> = ({ queryRef }) => {
+  const data = usePreloadedQuery(importContentQuery, queryRef);
+  return (
+    <ImportContent
+      connectorsImport={data.connectorsForImport}
+      importFiles={data.importFiles}
+      pendingFiles={data.pendingFiles}
+    />
+  );
+};
+
+const Import = () => {
   const queryRef = useQueryLoading<ImportContentQuery>(importContentQuery, {});
   return (
     <>
       {queryRef && (
-        <React.Suspense fallback={<Loader/>}>
+        <React.Suspense fallback={<Loader />}>
           <ImportContentContainer
-            tab={tab}
             queryRef={queryRef}
           />
         </React.Suspense>
