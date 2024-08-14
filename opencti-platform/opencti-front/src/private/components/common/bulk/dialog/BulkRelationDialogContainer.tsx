@@ -4,12 +4,13 @@ import BulkRelationDialog from '@components/common/bulk/dialog/BulkRelationDialo
 import { PaginationOptions } from 'src/components/list_lines';
 import { useFormatter } from 'src/components/i18n';
 import useHelper from 'src/utils/hooks/useHelper';
+import { TargetEntity } from '@components/common/stix_core_relationships/StixCoreRelationshipCreationFromEntity';
 
 type BulkRelationDialogContainerProps = {
   stixDomainObjectId: string;
   stixDomainObjectName: string;
   stixDomainObjectType: string;
-  selectedEntities: string[];
+  selectedEntities: TargetEntity[];
   defaultRelationshipType?: string;
   paginationKey: string;
   paginationOptions: PaginationOptions;

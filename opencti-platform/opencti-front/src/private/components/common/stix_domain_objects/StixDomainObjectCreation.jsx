@@ -194,6 +194,7 @@ const StixDomainPanel = ({
   queryRef,
   stixDomainObjectTypes,
   onClose,
+  onCompleted,
   creationUpdater,
   confidence,
   inputValue,
@@ -234,7 +235,7 @@ const StixDomainPanel = ({
           updater={creationUpdater}
           bulkModalOpen={bulkOpen}
           onBulkModalClose={() => setBulkOpen(false)}
-          onCompleted={onClose}
+          onCompleted={onCompleted ?? onClose}
         />
       );
     }
@@ -261,7 +262,7 @@ const StixDomainPanel = ({
           updater={creationUpdater}
           bulkModalOpen={bulkOpen}
           onBulkModalClose={() => setBulkOpen(false)}
-          onCompleted={onClose}
+          onCompleted={onCompleted ?? onClose}
         />
       );
     }
@@ -313,7 +314,7 @@ const StixDomainPanel = ({
           updater={creationUpdater}
           bulkModalOpen={bulkOpen}
           onBulkModalClose={() => setBulkOpen(false)}
-          onCompleted={onClose}
+          onCompleted={onCompleted ?? onClose}
         />
       );
     }
@@ -327,7 +328,7 @@ const StixDomainPanel = ({
           updater={creationUpdater}
           bulkModalOpen={bulkOpen}
           onBulkModalClose={() => setBulkOpen(false)}
-          onCompleted={onClose}
+          onCompleted={onCompleted ?? onClose}
         />
       );
     }
@@ -341,7 +342,7 @@ const StixDomainPanel = ({
           updater={creationUpdater}
           bulkModalOpen={bulkOpen}
           onBulkModalClose={() => setBulkOpen(false)}
-          onCompleted={onClose}
+          onCompleted={onCompleted ?? onClose}
         />
       );
     }
@@ -370,7 +371,7 @@ const StixDomainPanel = ({
           updater={creationUpdater}
           bulkModalOpen={bulkOpen}
           onBulkModalClose={() => setBulkOpen(false)}
-          onCompleted={onClose}
+          onCompleted={onCompleted ?? onClose}
         />
       );
     }
@@ -386,7 +387,7 @@ const StixDomainPanel = ({
           updater={creationUpdater}
           bulkModalOpen={bulkOpen}
           onBulkModalClose={() => setBulkOpen(false)}
-          onCompleted={onClose}
+          onCompleted={onCompleted ?? onClose}
         />
       );
     }
@@ -401,7 +402,7 @@ const StixDomainPanel = ({
           updater={creationUpdater}
           bulkModalOpen={bulkOpen}
           onBulkModalClose={() => setBulkOpen(false)}
-          onCompleted={onClose}
+          onCompleted={onCompleted ?? onClose}
         />
       );
     }
@@ -456,7 +457,7 @@ const StixDomainPanel = ({
           updater={creationUpdater}
           bulkModalOpen={bulkOpen}
           onBulkModalClose={() => setBulkOpen(false)}
-          onCompleted={onClose}
+          onCompleted={onCompleted ?? onClose}
         />
       );
     }
@@ -472,7 +473,7 @@ const StixDomainPanel = ({
           updater={creationUpdater}
           bulkModalOpen={bulkOpen}
           onBulkModalClose={() => setBulkOpen(false)}
-          onCompleted={onClose}
+          onCompleted={onCompleted ?? onClose}
         />
       );
     }
@@ -488,7 +489,7 @@ const StixDomainPanel = ({
           updater={creationUpdater}
           bulkModalOpen={bulkOpen}
           onBulkModalClose={() => setBulkOpen(false)}
-          onCompleted={onClose}
+          onCompleted={onCompleted ?? onClose}
         />
       );
     }
@@ -504,7 +505,7 @@ const StixDomainPanel = ({
           updater={creationUpdater}
           bulkModalOpen={bulkOpen}
           onBulkModalClose={() => setBulkOpen(false)}
-          onCompleted={onClose}
+          onCompleted={onCompleted ?? onClose}
         />
       );
     }
@@ -519,7 +520,7 @@ const StixDomainPanel = ({
           updater={creationUpdater}
           bulkModalOpen={bulkOpen}
           onBulkModalClose={() => setBulkOpen(false)}
-          onCompleted={onClose}
+          onCompleted={onCompleted ?? onClose}
         />
       );
     }
@@ -583,7 +584,7 @@ const StixDomainPanel = ({
           updater={creationUpdater}
           bulkModalOpen={bulkOpen}
           onBulkModalClose={() => setBulkOpen(false)}
-          onCompleted={onClose}
+          onCompleted={onCompleted ?? onClose}
         />
       );
     }
@@ -598,7 +599,7 @@ const StixDomainPanel = ({
           updater={creationUpdater}
           bulkModalOpen={bulkOpen}
           onBulkModalClose={() => setBulkOpen(false)}
-          onCompleted={onClose}
+          onCompleted={onCompleted ?? onClose}
         />
       );
     }
@@ -613,7 +614,7 @@ const StixDomainPanel = ({
           updater={creationUpdater}
           bulkModalOpen={bulkOpen}
           onBulkModalClose={() => setBulkOpen(false)}
-          onCompleted={onClose}
+          onCompleted={onCompleted ?? onClose}
         />
       );
     }
@@ -641,7 +642,7 @@ const StixDomainPanel = ({
           updater={creationUpdater}
           bulkModalOpen={bulkOpen}
           onBulkModalClose={() => setBulkOpen(false)}
-          onCompleted={onClose}
+          onCompleted={onCompleted ?? onClose}
         />
       );
     }
@@ -656,7 +657,7 @@ const StixDomainPanel = ({
           updater={creationUpdater}
           bulkModalOpen={bulkOpen}
           onBulkModalClose={() => setBulkOpen(false)}
-          onCompleted={onClose}
+          onCompleted={onCompleted ?? onClose}
         />
       );
     }
@@ -671,7 +672,7 @@ const StixDomainPanel = ({
           updater={creationUpdater}
           bulkModalOpen={bulkOpen}
           onBulkModalClose={() => setBulkOpen(false)}
-          onCompleted={onClose}
+          onCompleted={onCompleted ?? onClose}
         />
       );
     }
@@ -686,7 +687,7 @@ const StixDomainPanel = ({
           updater={creationUpdater}
           bulkModalOpen={bulkOpen}
           onBulkModalClose={() => setBulkOpen(false)}
-          onCompleted={onClose}
+          onCompleted={onCompleted ?? onClose}
         />
       );
     }
@@ -702,7 +703,7 @@ const StixDomainPanel = ({
           updater={creationUpdater}
           bulkModalOpen={bulkOpen}
           onBulkModalClose={() => setBulkOpen(false)}
-          onCompleted={onClose}
+          onCompleted={onCompleted ?? onClose}
         />
       );
     }
@@ -718,7 +719,7 @@ const StixDomainPanel = ({
           updater={creationUpdater}
           bulkModalOpen={bulkOpen}
           onBulkModalClose={() => setBulkOpen(false)}
-          onCompleted={onClose}
+          onCompleted={onCompleted ?? onClose}
         />
       );
     }
@@ -798,6 +799,7 @@ const StixDomainObjectCreation = ({
   handleClose,
   paginationKey,
   paginationOptions,
+  onCompleted,
 }) => {
   const classes = useStyles();
   const [status, setStatus] = useState({ open: false, type: null });
@@ -830,6 +832,7 @@ const StixDomainObjectCreation = ({
         paginationKey || 'Pagination_stixDomainObjects',
         newEdge,
       );
+      if (onCompleted) onCompleted();
     }
   };
 
@@ -838,7 +841,7 @@ const StixDomainObjectCreation = ({
       {!speeddial && (
         <Fab
           onClick={stateHandleOpen}
-          color="secondary"
+          color="primary"
           aria-label="Add"
           className={classes.createButton}
         >
@@ -855,6 +858,7 @@ const StixDomainObjectCreation = ({
             defaultMarkingDefinitions={defaultMarkingDefinitions}
             stixDomainObjectTypes={stixDomainObjectTypes}
             creationUpdater={creationUpdater}
+            onCompleted={onCompleted}
             onClose={speeddial ? handleClose : stateHandleClose}
           />
         </React.Suspense>

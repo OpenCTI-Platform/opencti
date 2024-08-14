@@ -521,6 +521,7 @@
   "Create dashboard": "대시보드 생성",
   "Create external reference at upload": "업로드 시 외부 참조 생성",
   "Create investigation": "조사 생성",
+  "Create missing entities": "누락된 엔티티 만들기",
   "Create multiple entities": "여러 엔터티 만들기",
   "Create multiple observables": "여러 관측값 만들기",
   "Create observables from this indicator": "이 지표에서 관찰 가능 항목 생성",

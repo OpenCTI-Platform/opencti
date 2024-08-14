@@ -521,6 +521,7 @@
   "Create dashboard": "ダッシュボードの作成",
   "Create external reference at upload": "アップロード時に外部参照を作成",
   "Create investigation": "調査を行う",
+  "Create missing entities": "不足しているエンティティを作成する",
   "Create multiple entities": "複数のエンティティを作成する",
   "Create multiple observables": "複数のオブザーバブルを作成する",
   "Create observables from this indicator": "このインジケータから観測値を作成する",

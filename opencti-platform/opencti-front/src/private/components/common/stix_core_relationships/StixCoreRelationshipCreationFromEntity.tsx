@@ -832,7 +832,7 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
                           stixDomainObjectName={name}
                           stixDomainObjectType={entity_type}
                           defaultRelationshipType={allowedRelationshipTypes?.[0]}
-                          selectedEntities={targetEntities.map((item) => item.name ?? '')}
+                          selectedEntities={targetEntities}
                         />
                       )]}
                     />
