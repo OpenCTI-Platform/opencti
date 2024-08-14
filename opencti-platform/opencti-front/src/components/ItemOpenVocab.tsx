@@ -33,7 +33,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
         ? 'rgba(255, 255, 255, .1)'
         : 'rgba(0, 0, 0, .1)',
     '& .MuiChip-label': {
-      whiteSpace: 'normal',
+      whiteSpace: 'nowrap',
       padding: '4px 6px',
     },
   },
