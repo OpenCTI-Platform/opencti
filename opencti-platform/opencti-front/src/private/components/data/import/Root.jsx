@@ -2,6 +2,8 @@ import React from 'react';
 import { Route, Routes } from 'react-router-dom';
 import Import from './Import';
 import WorkbenchFile from '../../common/files/workbench/WorkbenchFile';
+import ImportFilesContent from './ImportFilesContent';
+import ImportWorkbenchesContent from './ImportWorkbenchesContent';
 
 const Root = () => (
   <Routes>
@@ -12,15 +14,11 @@ const Root = () => (
     />
     <Route
       path="/file"
-      element={<Import tab={'file'}/>}
+      element={<ImportFilesContent />}
     />
     <Route
       path="/workbench"
-      element={<Import tab={'workbench'}/>}
-    />
-    <Route
-      path="/connectors"
-      element={<Import tab={'connectors'}/>}
+      element={<ImportWorkbenchesContent />}
     />
   </Routes>
 );

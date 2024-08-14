@@ -28,7 +28,7 @@ import Fab from '@mui/material/Fab';
 import ImportMenu from '../ImportMenu';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import SelectField from '../../../../components/fields/SelectField';
-import { FIVE_SECONDS } from '../../../../utils/Time';
+import { TEN_SECONDS } from '../../../../utils/Time';
 import { fileManagerAskJobImportMutation, scopesConn } from '../../common/files/FileManager';
 import FileLine from '../../common/files/FileLine';
 import inject18n from '../../../../components/i18n';
@@ -43,9 +43,8 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import withRouter from '../../../../utils/compat-router/withRouter';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { resolveHasUserChoiceParsedCsvMapper } from '../../../../utils/csvMapperUtils';
-import { importConnectorsFragment } from './ImportContentContainer';
 
-const interval$ = interval(FIVE_SECONDS);
+const interval$ = interval(TEN_SECONDS);
 
 const styles = (theme) => ({
   container: {
@@ -128,12 +127,29 @@ const inlineStylesHeaders = {
   },
 };
 
+const importConnectorsFragment = graphql`
+  fragment ImportContentContainer_connectorsImport on Connector
+  @relay(plural: true) {
+    id
+    name
+    active
+    only_contextual
+    connector_scope
+    updated_at
+    configurations {
+      id
+      name,
+      configuration
+    }
+  }
+`;
+
 export const importContentQuery = graphql`
   query ImportContentQuery {
     connectorsForImport {
       ...ImportContentContainer_connectorsImport
     }
-    importFiles(first: 500) @connection(key: "Pagination_global_importFiles") {
+    importFiles(first: 100) @connection(key: "Pagination_global_importFiles") {
       edges {
         node {
           id
@@ -144,7 +160,7 @@ export const importContentQuery = graphql`
         }
       }
     }
-    pendingFiles(first: 500)
+    pendingFiles(first: 100)
     @connection(key: "Pagination_global_pendingFiles") {
       edges {
         node {

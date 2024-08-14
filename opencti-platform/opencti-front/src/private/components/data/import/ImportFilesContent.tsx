@@ -61,18 +61,7 @@ export const workbenchLineFragment = graphql`
         name
       }
       entity_id
-      entity {
-        ... on StixObject{
-          representative {
-            main
-          }
-        }
-      }
     }
-    works {
-      id
-    }
-    ...FileWork_file
   }
 `;
 
