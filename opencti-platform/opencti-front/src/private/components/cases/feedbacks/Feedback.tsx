@@ -1,7 +1,6 @@
-import React, { FunctionComponent } from 'react';
+import React from 'react';
 import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
-import makeStyles from '@mui/styles/makeStyles';
 import useHelper from 'src/utils/hooks/useHelper';
 import FeedbackDetails from './FeedbackDetails';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
@@ -14,14 +13,6 @@ import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCore
 import { Feedback_case$key } from './__generated__/Feedback_case.graphql';
 import { getCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
 import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  gridContainer: {
-    marginBottom: 20,
-  },
-}));
 
 const feedbackFragment = graphql`
   fragment Feedback_case on Feedback {
@@ -84,25 +75,23 @@ const feedbackFragment = graphql`
 `;
 
 interface FeedbackProps {
-  data: Feedback_case$key;
+  feedbackData: Feedback_case$key;
   enableReferences: boolean;
 }
 
-const FeedbackComponent: FunctionComponent<FeedbackProps> = ({ data, enableReferences }) => {
-  const classes = useStyles();
-  const feedbackData = useFragment(feedbackFragment, data);
+const Feedback: React.FC<FeedbackProps> = ({ feedbackData, enableReferences }) => {
+  const feedback = useFragment(feedbackFragment, feedbackData);
   const { isFeatureEnable } = useHelper();
   const FABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const overviewLayoutCustomization = useOverviewLayoutCustomization('Feedback');
-
-  const { canEdit } = getCurrentUserAccessRight(feedbackData.currentUserAccessRight);
+  const { canEdit } = getCurrentUserAccessRight(feedback.currentUserAccessRight);
 
   return (
     <>
       <Grid
         container={true}
         spacing={3}
-        classes={{ container: classes.gridContainer }}
+        style={{ marginBottom: 20 }}
       >
         {
           overviewLayoutCustomization.map(({ key, width }) => {
@@ -111,7 +100,7 @@ const FeedbackComponent: FunctionComponent<FeedbackProps> = ({ data, enableRefer
                 return (
                   <Grid key={key} item xs={width}>
                     <FeedbackDetails
-                      feedbackData={feedbackData}
+                      feedbackData={feedback}
                     />
                   </Grid>
                 );
@@ -119,7 +108,7 @@ const FeedbackComponent: FunctionComponent<FeedbackProps> = ({ data, enableRefer
                 return (
                   <Grid key={key} item xs={width}>
                     <StixDomainObjectOverview
-                      stixDomainObject={feedbackData}
+                      stixDomainObject={feedback}
                       displayAssignees={true}
                       displayConfidence={false}
                     />
@@ -130,7 +119,7 @@ const FeedbackComponent: FunctionComponent<FeedbackProps> = ({ data, enableRefer
                   <Grid key={key} item xs={width}>
                     <ContainerStixObjectsOrStixRelationships
                       isSupportParticipation={false}
-                      container={feedbackData}
+                      container={feedback}
                       enableReferences={enableReferences}
                     />
                   </Grid>
@@ -139,7 +128,7 @@ const FeedbackComponent: FunctionComponent<FeedbackProps> = ({ data, enableRefer
                 return (
                   <Grid key={key} item xs={width}>
                     <StixCoreObjectExternalReferences
-                      stixCoreObjectId={feedbackData.id}
+                      stixCoreObjectId={feedback.id}
                     />
                   </Grid>
                 );
@@ -147,7 +136,7 @@ const FeedbackComponent: FunctionComponent<FeedbackProps> = ({ data, enableRefer
                 return (
                   <Grid key={key} item xs={width}>
                     <StixCoreObjectLatestHistory
-                      stixCoreObjectId={feedbackData.id}
+                      stixCoreObjectId={feedback.id}
                     />
                   </Grid>
                 );
@@ -159,11 +148,11 @@ const FeedbackComponent: FunctionComponent<FeedbackProps> = ({ data, enableRefer
       </Grid>
       {!FABReplaced
         && <Security needs={[KNOWLEDGE_KNUPDATE]} hasAccess={canEdit}>
-          <FeedbackEdition feedbackId={feedbackData.id} />
+          <FeedbackEdition feedbackId={feedback.id} />
         </Security>
       }
     </>
   );
 };
 
-export default FeedbackComponent;
+export default Feedback;

@@ -2,7 +2,6 @@ import React from 'react';
 import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import { ThreatActorGroup_ThreatActorGroup$key } from '@components/threats/threat_actors_group/__generated__/ThreatActorGroup_ThreatActorGroup.graphql';
-import makeStyles from '@mui/styles/makeStyles';
 import ThreatActorGroupDetails from './ThreatActorGroupDetails';
 import ThreatActorGroupEdition from './ThreatActorGroupEdition';
 import Security from '../../../../utils/Security';
@@ -14,14 +13,6 @@ import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCore
 import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../common/stix_core_relationships/SimpleStixObjectOrStixRelationshipStixCoreRelationships';
 import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
 import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  gridContainer: {
-    marginBottom: 20,
-  },
-}));
 
 const threatActorGroupFragment = graphql`
   fragment ThreatActorGroup_ThreatActorGroup on ThreatActorGroup {
@@ -81,7 +72,6 @@ interface ThreatActorGroupProps {
 }
 
 const ThreatActorGroup: React.FC<ThreatActorGroupProps> = ({ threatActorGroupData }) => {
-  const classes = useStyles();
   const threatActorGroup = useFragment<ThreatActorGroup_ThreatActorGroup$key>(
     threatActorGroupFragment,
     threatActorGroupData,
@@ -93,7 +83,7 @@ const ThreatActorGroup: React.FC<ThreatActorGroupProps> = ({ threatActorGroupDat
       <Grid
         container={true}
         spacing={3}
-        classes={{ container: classes.gridContainer }}
+        style={{ marginBottom: 20 }}
       >
         {
           overviewLayoutCustomization.map(({ key, width }) => {

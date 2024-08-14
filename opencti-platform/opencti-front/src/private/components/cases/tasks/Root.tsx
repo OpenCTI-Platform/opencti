@@ -142,7 +142,7 @@ const RootTaskComponent = ({ queryRef, taskId }) => {
           <Routes>
             <Route
               path="/"
-              element={<CaseTask data={data} enableReferences={enableReferences} />}
+              element={<CaseTask taskData={data} enableReferences={enableReferences} />}
             />
             <Route
               path="/content/*"

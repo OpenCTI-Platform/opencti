@@ -164,7 +164,7 @@ const RootCaseRftComponent = ({ queryRef, caseId }) => {
           <Routes>
             <Route
               path="/"
-              element={<CaseRft data={caseData} enableReferences={enableReferences} />}
+              element={<CaseRft caseRftData={caseData} enableReferences={enableReferences} />}
             />
             <Route
               path="/entities"

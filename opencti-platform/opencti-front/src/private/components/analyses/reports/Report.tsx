@@ -1,5 +1,5 @@
 import { Grid } from '@mui/material';
-import React, { FunctionComponent } from 'react';
+import React from 'react';
 import useHelper from 'src/utils/hooks/useHelper';
 import Security from 'src/utils/Security';
 import { KNOWLEDGE_KNUPDATE } from 'src/utils/hooks/useGranted';
@@ -13,7 +13,7 @@ import StixCoreObjectOrStixCoreRelationshipNotes from '../notes/StixCoreObjectOr
 import { Report_report$key } from './__generated__/Report_report.graphql';
 import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
 
-const ReportComponentFragment = graphql`
+const reportComponentFragment = graphql`
   fragment Report_report on Report {
     id
     standard_id
@@ -79,11 +79,9 @@ interface ReportComponentProps {
   reportFragment: Report_report$key;
 }
 
-const ReportComponent: FunctionComponent<ReportComponentProps> = ({
-  reportFragment,
-}) => {
+const Report: React.FC<ReportComponentProps> = ({ reportFragment }) => {
   const report = useFragment<Report_report$key>(
-    ReportComponentFragment,
+    reportComponentFragment,
     reportFragment,
   );
   const { isFeatureEnable } = useHelper();
@@ -155,4 +153,4 @@ const ReportComponent: FunctionComponent<ReportComponentProps> = ({
   </>);
 };
 
-export default ReportComponent;
+export default Report;

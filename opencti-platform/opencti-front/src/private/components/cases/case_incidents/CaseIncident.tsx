@@ -1,6 +1,6 @@
 import Grid from '@mui/material/Grid';
 import makeStyles from '@mui/styles/makeStyles';
-import React, { FunctionComponent, useRef } from 'react';
+import React, { useRef } from 'react';
 import { useFragment } from 'react-relay';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
@@ -33,9 +33,6 @@ import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewL
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
 const useStyles = makeStyles(() => ({
-  gridContainer: {
-    marginBottom: 20,
-  },
   paper: {
     margin: '10px 0 0 0',
     padding: 0,
@@ -44,20 +41,20 @@ const useStyles = makeStyles(() => ({
 }));
 
 interface CaseIncidentProps {
-  data: CaseUtils_case$key;
+  caseIncidentData: CaseUtils_case$key;
   enableReferences: boolean;
 }
 
-const CaseIncidentComponent: FunctionComponent<CaseIncidentProps> = ({ data, enableReferences }) => {
+const CaseIncident: React.FC<CaseIncidentProps> = ({ caseIncidentData, enableReferences }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const ref = useRef(null);
-  const caseIncidentData = useFragment(caseFragment, data);
+  const caseIncident = useFragment(caseFragment, caseIncidentData);
   const { isFeatureEnable } = useHelper();
   const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
-  const { canEdit } = getCurrentUserAccessRight(caseIncidentData.currentUserAccessRight);
+  const { canEdit } = getCurrentUserAccessRight(caseIncident.currentUserAccessRight);
 
-  const LOCAL_STORAGE_KEY_CASE_TASKS = `cases-${caseIncidentData.id}-caseTask`;
+  const LOCAL_STORAGE_KEY_CASE_TASKS = `cases-${caseIncident.id}-caseTask`;
 
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<CaseTasksLinesQuery$variables>(
     LOCAL_STORAGE_KEY_CASE_TASKS,
@@ -73,7 +70,7 @@ const CaseIncidentComponent: FunctionComponent<CaseIncidentProps> = ({ data, ena
     mode: 'and',
     filters: [
       { key: 'entity_type', operator: 'eq', mode: 'or', values: ['Task'] },
-      { key: 'objects', operator: 'eq', mode: 'or', values: [caseIncidentData.id] },
+      { key: 'objects', operator: 'eq', mode: 'or', values: [caseIncident.id] },
     ],
     filterGroups: userFilters && isFilterGroupNotEmpty(userFilters) ? [userFilters] : [],
   };
@@ -86,14 +83,14 @@ const CaseIncidentComponent: FunctionComponent<CaseIncidentProps> = ({ data, ena
     queryTaskPaginationOptions,
   );
 
-  const caseIncidentResponseOverviewLayoutCustomization = useOverviewLayoutCustomization(caseIncidentData.entity_type);
+  const caseIncidentResponseOverviewLayoutCustomization = useOverviewLayoutCustomization(caseIncident.entity_type);
 
   return (
     <>
       <Grid
         container={true}
         spacing={3}
-        classes={{ container: classes.gridContainer }}
+        style={{ marginBottom: 20 }}
       >
         {
           caseIncidentResponseOverviewLayoutCustomization.map(({ key, width }) => {
@@ -101,14 +98,14 @@ const CaseIncidentComponent: FunctionComponent<CaseIncidentProps> = ({ data, ena
               case 'details':
                 return (
                   <Grid key={key} item xs={width}>
-                    <CaseIncidentDetails caseIncidentData={caseIncidentData} />
+                    <CaseIncidentDetails caseIncidentData={caseIncident} />
                   </Grid>
                 );
               case 'basicInformation':
                 return (
                   <Grid key={key} item xs={width}>
                     <StixDomainObjectOverview
-                      stixDomainObject={caseIncidentData}
+                      stixDomainObject={caseIncident}
                       displayAssignees
                       displayParticipants
                     />
@@ -150,11 +147,11 @@ const CaseIncidentComponent: FunctionComponent<CaseIncidentProps> = ({ data, ena
                       <CaseTasksLines
                         queryRef={queryRef}
                         paginationOptions={queryTaskPaginationOptions}
-                        caseId={caseIncidentData.id}
+                        caseId={caseIncident.id}
                         sortBy={sortBy}
                         orderAsc={orderAsc}
                         handleSort={helpers.handleSort}
-                        defaultMarkings={convertMarkings(caseIncidentData)}
+                        defaultMarkings={convertMarkings(caseIncident)}
                         containerRef={ref}
                         enableReferences={enableReferences}
                       />
@@ -167,7 +164,7 @@ const CaseIncidentComponent: FunctionComponent<CaseIncidentProps> = ({ data, ena
                   <Grid key={key} item xs={width}>
                     <ContainerStixObjectsOrStixRelationships
                       isSupportParticipation={false}
-                      container={caseIncidentData}
+                      container={caseIncident}
                       types={['Incident', 'stix-sighting-relationship', 'Report']}
                       title={t_i18n('Origin of the case')}
                       enableReferences={enableReferences}
@@ -179,7 +176,7 @@ const CaseIncidentComponent: FunctionComponent<CaseIncidentProps> = ({ data, ena
                   <Grid key={key} item xs={width}>
                     <ContainerStixObjectsOrStixRelationships
                       isSupportParticipation={false}
-                      container={caseIncidentData}
+                      container={caseIncident}
                       types={['Stix-Cyber-Observable']}
                       title={t_i18n('Observables')}
                       enableReferences={enableReferences}
@@ -191,7 +188,7 @@ const CaseIncidentComponent: FunctionComponent<CaseIncidentProps> = ({ data, ena
                   <Grid key={key} item xs={width}>
                     <ContainerStixObjectsOrStixRelationships
                       isSupportParticipation={false}
-                      container={caseIncidentData}
+                      container={caseIncident}
                       types={[
                         'Threat-Actor',
                         'Intrusion-Set',
@@ -211,7 +208,7 @@ const CaseIncidentComponent: FunctionComponent<CaseIncidentProps> = ({ data, ena
                 return (
                   <Grid key={key} item xs={width}>
                     <StixCoreObjectExternalReferences
-                      stixCoreObjectId={caseIncidentData.id}
+                      stixCoreObjectId={caseIncident.id}
                     />
                   </Grid>
                 );
@@ -219,7 +216,7 @@ const CaseIncidentComponent: FunctionComponent<CaseIncidentProps> = ({ data, ena
                 return (
                   <Grid key={key} item xs={width}>
                     <StixCoreObjectLatestHistory
-                      stixCoreObjectId={caseIncidentData.id}
+                      stixCoreObjectId={caseIncident.id}
                     />
                   </Grid>
                 );
@@ -227,8 +224,8 @@ const CaseIncidentComponent: FunctionComponent<CaseIncidentProps> = ({ data, ena
                 return (
                   <Grid key={key} item xs={width}>
                     <StixCoreObjectOrStixCoreRelationshipNotes
-                      stixCoreObjectOrStixCoreRelationshipId={caseIncidentData.id}
-                      defaultMarkings={caseIncidentData.objectMarking ?? []}
+                      stixCoreObjectOrStixCoreRelationshipId={caseIncident.id}
+                      defaultMarkings={caseIncident.objectMarking ?? []}
                     />
                   </Grid>
                 );
@@ -240,11 +237,11 @@ const CaseIncidentComponent: FunctionComponent<CaseIncidentProps> = ({ data, ena
       </Grid>
       {!isFABReplaced && (
         <Security needs={[KNOWLEDGE_KNUPDATE]} hasAccess={canEdit}>
-          <CaseIncidentEdition caseId={caseIncidentData.id} />
+          <CaseIncidentEdition caseId={caseIncident.id} />
         </Security>
       )}
     </>
   );
 };
 
-export default CaseIncidentComponent;
+export default CaseIncident;

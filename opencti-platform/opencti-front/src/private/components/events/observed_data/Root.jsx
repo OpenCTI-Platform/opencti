@@ -170,7 +170,7 @@ class RootObservedData extends Component {
                     <Route
                       path="/"
                       element={
-                        <ObservedData data={props.observedData} />
+                        <ObservedData observedDataData={props.observedData} />
                       }
                     />
                     <Route

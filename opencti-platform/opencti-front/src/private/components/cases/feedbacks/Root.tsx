@@ -183,7 +183,7 @@ const RootFeedbackComponent = ({ queryRef, caseId }) => {
               path="/"
               element={
                 <Feedback
-                  data={feedbackData}
+                  feedbackData={feedbackData}
                   enableReferences={enableReferences}
                 />}
             />

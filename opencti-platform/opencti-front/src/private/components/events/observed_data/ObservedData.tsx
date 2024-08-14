@@ -1,7 +1,6 @@
 import React from 'react';
 import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
-import makeStyles from '@mui/styles/makeStyles';
 import { ObservedData_observedData$key } from '@components/events/observed_data/__generated__/ObservedData_observedData.graphql';
 import ObservedDataDetails from './ObservedDataDetails';
 import ObservedDataEdition from './ObservedDataEdition';
@@ -14,14 +13,6 @@ import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCore
 import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../common/stix_core_relationships/SimpleStixObjectOrStixRelationshipStixCoreRelationships';
 import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
 import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  gridContainer: {
-    marginBottom: 20,
-  },
-}));
 
 export const observedDataFragment = graphql`
   fragment ObservedData_observedData on ObservedData {
@@ -74,16 +65,20 @@ export const observedDataFragment = graphql`
   }
 `;
 
-const ObservedData = ({ data } : { data: ObservedData_observedData$key }) => {
-  const classes = useStyles();
-  const observedData = useFragment <ObservedData_observedData$key>(observedDataFragment, data);
+interface ObservedDataProps {
+  observedDataData: ObservedData_observedData$key
+}
+
+const ObservedData: React.FC<ObservedDataProps> = ({ observedDataData }) => {
+  const observedData = useFragment <ObservedData_observedData$key>(observedDataFragment, observedDataData);
   const overviewLayoutCustomization = useOverviewLayoutCustomization(observedData.entity_type);
+
   return (
     <>
       <Grid
         container={true}
         spacing={3}
-        classes={{ container: classes.gridContainer }}
+        style={{ marginBottom: 20 }}
       >
         {
           overviewLayoutCustomization.map(({ key, width }) => {

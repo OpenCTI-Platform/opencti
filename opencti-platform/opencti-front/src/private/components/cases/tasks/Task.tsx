@@ -1,5 +1,4 @@
 import Grid from '@mui/material/Grid';
-import makeStyles from '@mui/styles/makeStyles';
 import React from 'react';
 import { graphql, useFragment } from 'react-relay';
 import useHelper from 'src/utils/hooks/useHelper';
@@ -13,14 +12,6 @@ import Security from '../../../../utils/Security';
 import TaskEdition from './TaskEdition';
 import ContainerStixObjectsOrStixRelationships from '../../common/containers/ContainerStixObjectsOrStixRelationships';
 import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  gridContainer: {
-    marginBottom: 20,
-  },
-}));
 
 export const taskFragment = graphql`
   fragment Tasks_tasks on Task {
@@ -80,18 +71,23 @@ export const taskFragment = graphql`
   }
 `;
 
-const TaskComponent = ({ data, enableReferences }: { data: Tasks_tasks$key, enableReferences: boolean }) => {
-  const classes = useStyles();
-  const task = useFragment(taskFragment, data);
+interface TaskProps {
+  taskData: Tasks_tasks$key
+  enableReferences: boolean
+}
+
+const Task: React.FC<TaskProps> = ({ taskData, enableReferences }) => {
+  const task = useFragment(taskFragment, taskData);
   const { isFeatureEnable } = useHelper();
   const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const overviewLayoutCustomization = useOverviewLayoutCustomization('Task');
+
   return (
     <>
       <Grid
         container={true}
         spacing={3}
-        classes={{ container: classes.gridContainer }}
+        style={{ marginBottom: 20 }}
       >
         {
           overviewLayoutCustomization.map(({ key, width }) => {
@@ -156,4 +152,4 @@ const TaskComponent = ({ data, enableReferences }: { data: Tasks_tasks$key, enab
   );
 };
 
-export default TaskComponent;
+export default Task;

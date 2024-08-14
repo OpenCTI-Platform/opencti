@@ -1,6 +1,6 @@
 import Grid from '@mui/material/Grid';
 import makeStyles from '@mui/styles/makeStyles';
-import React, { FunctionComponent, useRef } from 'react';
+import React, { useRef } from 'react';
 import { useFragment } from 'react-relay';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
@@ -32,9 +32,6 @@ import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewL
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
 const useStyles = makeStyles(() => ({
-  gridContainer: {
-    marginBottom: 20,
-  },
   paper: {
     margin: '10px 0 0 0',
     padding: 0,
@@ -43,19 +40,19 @@ const useStyles = makeStyles(() => ({
 }));
 
 interface CaseRftProps {
-  data: CaseUtils_case$key;
+  caseRftData: CaseUtils_case$key;
   enableReferences: boolean;
 }
 
-const CaseRftComponent: FunctionComponent<CaseRftProps> = ({ data, enableReferences }) => {
+const CaseRft: React.FC<CaseRftProps> = ({ caseRftData, enableReferences }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const { isFeatureEnable } = useHelper();
   const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const ref = useRef(null);
-  const caseRftData = useFragment(caseFragment, data);
-  const overviewLayoutCustomization = useOverviewLayoutCustomization(caseRftData.entity_type);
-  const LOCAL_STORAGE_KEY_CASE_TASKS = `cases-${caseRftData.id}-caseTask`;
+  const caseRft = useFragment(caseFragment, caseRftData);
+  const overviewLayoutCustomization = useOverviewLayoutCustomization(caseRft.entity_type);
+  const LOCAL_STORAGE_KEY_CASE_TASKS = `cases-${caseRft.id}-caseTask`;
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<CaseTasksLinesQuery$variables>(
     LOCAL_STORAGE_KEY_CASE_TASKS,
     {
@@ -71,7 +68,7 @@ const CaseRftComponent: FunctionComponent<CaseRftProps> = ({ data, enableReferen
     mode: 'and',
     filters: [
       { key: 'entity_type', operator: 'eq', mode: 'or', values: ['Task'] },
-      { key: 'objects', operator: 'eq', mode: 'or', values: [caseRftData.id] },
+      { key: 'objects', operator: 'eq', mode: 'or', values: [caseRft.id] },
     ],
     filterGroups: userFilters && isFilterGroupNotEmpty(userFilters) ? [userFilters] : [],
   };
@@ -88,7 +85,7 @@ const CaseRftComponent: FunctionComponent<CaseRftProps> = ({ data, enableReferen
       <Grid
         container={true}
         spacing={3}
-        classes={{ container: classes.gridContainer }}
+        style={{ marginBottom: 20 }}
       >
         {
           overviewLayoutCustomization.map(({ key, width }) => {
@@ -96,14 +93,14 @@ const CaseRftComponent: FunctionComponent<CaseRftProps> = ({ data, enableReferen
               case 'details':
                 return (
                   <Grid key={key} item xs={width}>
-                    <CaseRftDetails caseRftData={caseRftData} />
+                    <CaseRftDetails caseRftData={caseRft} />
                   </Grid>
                 );
               case 'basicInformation':
                 return (
                   <Grid key={key} item xs={width}>
                     <StixDomainObjectOverview
-                      stixDomainObject={caseRftData}
+                      stixDomainObject={caseRft}
                       displayAssignees
                       displayParticipants
                     />
@@ -146,11 +143,11 @@ const CaseRftComponent: FunctionComponent<CaseRftProps> = ({ data, enableReferen
                         <CaseTasksLines
                           queryRef={queryRef}
                           paginationOptions={queryTaskPaginationOptions}
-                          caseId={caseRftData.id}
+                          caseId={caseRft.id}
                           sortBy={sortBy}
                           orderAsc={orderAsc}
                           handleSort={helpers.handleSort}
-                          defaultMarkings={convertMarkings(caseRftData)}
+                          defaultMarkings={convertMarkings(caseRft)}
                           containerRef={ref}
                           enableReferences={enableReferences}
                         />
@@ -163,7 +160,7 @@ const CaseRftComponent: FunctionComponent<CaseRftProps> = ({ data, enableReferen
                   <Grid key={key} item xs={width}>
                     <ContainerStixObjectsOrStixRelationships
                       isSupportParticipation={false}
-                      container={caseRftData}
+                      container={caseRft}
                       types={['Incident', 'stix-sighting-relationship', 'Report']}
                       title={t_i18n('Origin of the case')}
                       enableReferences={enableReferences}
@@ -175,7 +172,7 @@ const CaseRftComponent: FunctionComponent<CaseRftProps> = ({ data, enableReferen
                   <Grid key={key} item xs={width}>
                     <ContainerStixObjectsOrStixRelationships
                       isSupportParticipation={false}
-                      container={caseRftData}
+                      container={caseRft}
                       types={['Stix-Cyber-Observable']}
                       title={t_i18n('Observables')}
                       enableReferences={enableReferences}
@@ -187,7 +184,7 @@ const CaseRftComponent: FunctionComponent<CaseRftProps> = ({ data, enableReferen
                   <Grid key={key} item xs={width}>
                     <ContainerStixObjectsOrStixRelationships
                       isSupportParticipation={false}
-                      container={caseRftData}
+                      container={caseRft}
                       enableReferences={enableReferences}
                     />
                   </Grid>
@@ -196,7 +193,7 @@ const CaseRftComponent: FunctionComponent<CaseRftProps> = ({ data, enableReferen
                 return (
                   <Grid key={key} item xs={width}>
                     <StixCoreObjectExternalReferences
-                      stixCoreObjectId={caseRftData.id}
+                      stixCoreObjectId={caseRft.id}
                     />
                   </Grid>
                 );
@@ -204,7 +201,7 @@ const CaseRftComponent: FunctionComponent<CaseRftProps> = ({ data, enableReferen
                 return (
                   <Grid key={key} item xs={width}>
                     <StixCoreObjectLatestHistory
-                      stixCoreObjectId={caseRftData.id}
+                      stixCoreObjectId={caseRft.id}
                     />
                   </Grid>
                 );
@@ -212,8 +209,8 @@ const CaseRftComponent: FunctionComponent<CaseRftProps> = ({ data, enableReferen
                 return (
                   <Grid key={key} item xs={width}>
                     <StixCoreObjectOrStixCoreRelationshipNotes
-                      stixCoreObjectOrStixCoreRelationshipId={caseRftData.id}
-                      defaultMarkings={caseRftData.objectMarking ?? []}
+                      stixCoreObjectOrStixCoreRelationshipId={caseRft.id}
+                      defaultMarkings={caseRft.objectMarking ?? []}
                     />
                   </Grid>
                 );
@@ -225,11 +222,11 @@ const CaseRftComponent: FunctionComponent<CaseRftProps> = ({ data, enableReferen
       </Grid>
       {!isFABReplaced && (
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <CaseRftEdition caseId={caseRftData.id} />
+          <CaseRftEdition caseId={caseRft.id} />
         </Security>
       )}
     </>
   );
 };
 
-export default CaseRftComponent;
+export default CaseRft;

@@ -1,7 +1,6 @@
 import React from 'react';
 import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
-import makeStyles from '@mui/styles/makeStyles';
 import IncidentDetails from './IncidentDetails';
 import IncidentEdition from './IncidentEdition';
 import Security from '../../../../utils/Security';
@@ -14,14 +13,6 @@ import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../commo
 import { Incident_incident$key } from './__generated__/Incident_incident.graphql';
 import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
 import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  gridContainer: {
-    marginBottom: 20,
-  },
-}));
 
 const incidentFragment = graphql`
   fragment Incident_incident on Incident {
@@ -45,6 +36,7 @@ const incidentFragment = graphql`
       }
     }
     creators {
+      id
       name
     }
     objectMarking {
@@ -84,23 +76,23 @@ const incidentFragment = graphql`
   }
 `;
 
-const Incident = ({
-  incidentData,
-}: {
+interface IncidentProps {
   incidentData: Incident_incident$key;
-}) => {
-  const classes = useStyles();
+}
+
+const Incident = ({ incidentData }) => {
   const incident = useFragment<Incident_incident$key>(
     incidentFragment,
     incidentData,
   );
   const overviewLayoutCustomization = useOverviewLayoutCustomization(incident.entity_type);
+
   return (
     <>
       <Grid
         container={true}
         spacing={3}
-        classes={{ container: classes.gridContainer }}
+        style={{ marginBottom: 20 }}
       >
         {
           overviewLayoutCustomization.map(({ key, width }) => {
