@@ -1,6 +1,7 @@
 import * as C from '@mui/material/colors';
 import { resolveLink } from './Entity';
 import { truncate } from './String';
+import { dateFormat, timestamp } from './Time';
 
 const colors = (temp) => [
   C.red[temp],
@@ -31,6 +32,7 @@ const toolbarOptions = {
       columnDelimiter: ',',
       headerCategory: 'category',
       headerValue: 'value',
+      // eslint-disable-next-line @typescript-eslint/no-shadow
       dateFormatter(timestamp) {
         return new Date(timestamp).toDateString();
       },
@@ -524,7 +526,17 @@ export const horizontalBarsChartOptions = (
     show: stackType !== '100%',
     labels: {
       show: stackType !== '100%',
-      formatter: (value) => (yFormatter && typeof value === 'number' ? yFormatter(value) : value),
+      formatter: (value) => {
+        if (yFormatter && typeof value === 'number') {
+          return yFormatter(value);
+        }
+        if (typeof value === 'string' && value.length === 15) {
+          const timestampInMs = parseInt(value, 10);
+          const convertedDate = timestamp(timestampInMs);
+          return dateFormat(convertedDate, 'DD-MM-YYYY');
+        }
+        return value;
+      },
       style: {
         fontFamily: '"IBM Plex Sans", sans-serif',
       },
