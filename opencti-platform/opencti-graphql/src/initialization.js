@@ -1,7 +1,7 @@
 // Admin user initialization
 import { v4 as uuidv4 } from 'uuid';
 import semver from 'semver';
-import { logApp, PLATFORM_VERSION } from './config/conf';
+import { DISABLED_FEATURE_FLAGS, logApp, PLATFORM_VERSION } from './config/conf';
 import { elUpdateIndicesMappings, initializeSchema, searchEngineInit } from './database/engine';
 import { initializeAdminUser } from './config/providers';
 import { initializeBucket, storageInit } from './database/file-storage';
@@ -23,6 +23,12 @@ import { initializeData } from './database/data-initialization';
 // region Platform constants
 const PLATFORM_LOCK_ID = 'platform_init_lock';
 // endregion
+
+export const checkDeactivatedFeatureFlags = () => {
+  if (DISABLED_FEATURE_FLAGS.length > 0) {
+    logApp.info(`[FEATURE-FLAG] Deactivated features still in development: ${DISABLED_FEATURE_FLAGS}`);
+  }
+};
 
 // Check every dependency
 export const checkSystemDependencies = async () => {
