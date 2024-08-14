@@ -13,9 +13,11 @@ export const CampaignCardFragment = graphql`
     created
     modified
     createdBy {
+      id
       name
     }
     creators {
+      id
       name
     }
     objectMarking {

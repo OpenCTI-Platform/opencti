@@ -1,6 +1,6 @@
 import Grid from '@mui/material/Grid';
 import makeStyles from '@mui/styles/makeStyles';
-import React, { FunctionComponent, useRef } from 'react';
+import React, { useRef } from 'react';
 import { useFragment } from 'react-relay';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
