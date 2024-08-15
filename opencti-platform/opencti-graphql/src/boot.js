@@ -1,5 +1,5 @@
 import { environment, getStoppingState, logApp, setStoppingState } from './config/conf';
-import platformInit, { checkSystemDependencies } from './initialization';
+import platformInit, { checkDeactivatedFeatureFlags, checkSystemDependencies } from './initialization';
 import cacheManager from './manager/cacheManager';
 import { shutdownRedisClients } from './database/redis';
 import { shutdownModules, startModules } from './managers';
@@ -8,6 +8,7 @@ import { shutdownModules, startModules } from './managers';
 export const platformStart = async () => {
   logApp.info('[OPENCTI] Starting platform', { environment });
   try {
+    checkDeactivatedFeatureFlags();
     // Check all dependencies access
     try {
       await checkSystemDependencies();
