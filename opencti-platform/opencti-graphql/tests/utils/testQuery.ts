@@ -470,7 +470,7 @@ const ORGANIZATION_ASSIGN_MUTATION = `
     userEdit(id: $userId) {
       relationAdd(input: {
         toId: $toId
-        relationship_type: "member-of"
+        relationship_type: "participate-to"
       }) {
         id
       }
@@ -605,6 +605,53 @@ export const getUserIdByEmail = async (email: string) => {
   }
   return data.users.edges[0].node.id;
 };
+
+// endregion
+
+// Search for test organizations
+const ORGANIZATION_SEARCH_QUERY = `
+  query OrganizationTestSearchQuery($search: String) {
+    organizations(search: $search) {
+      edges {
+        node {
+          name
+          id
+        }
+      }
+    }
+  }
+`;
+export const getOrganizationIdByName = async (name: string) => {
+  const { data } = await internalAdminQuery(ORGANIZATION_SEARCH_QUERY, { search: `"${name}"` });
+  if (!data?.organizations.edges.length) {
+    return null;
+  }
+  return data.organizations.edges[0].node.id;
+};
+
+// endregion
+
+// Search for test group
+const GROUP_SEARCH_QUERY = `
+  query GroupTestSearchQuery($search: String) {
+    groups(search: $search) {
+      edges {
+        node {
+          name
+          id
+        }
+      }
+    }
+  }
+`;
+export const getGroupIdByName = async (name: string) => {
+  const { data } = await internalAdminQuery(GROUP_SEARCH_QUERY, { search: `"${name}"` });
+  if (!data?.groups.edges.length) {
+    return null;
+  }
+  return data.groups.edges[0].node.id;
+};
+
 // endregion
 
 type markingType = { standard_id: string; internal_id: string };

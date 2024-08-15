@@ -47,14 +47,17 @@ export const editAuthorizedAuthorities = async (context: AuthContext, user: Auth
 export const organizationAdminAdd = async (context: AuthContext, user: AuthUser, organizationId: string, memberId: string) => {
   // Get Orga and members
   const organization = await findById(context, user, organizationId);
-  const members: BasicStoreEntity[] = await listAllFromEntitiesThroughRelations(context, user, organizationId, RELATION_PARTICIPATE_TO, ENTITY_TYPE_USER);
+  if (!organization) {
+    throw FunctionalError('Organization not found');
+  }
+  const members: BasicStoreEntity[] = await listAllFromEntitiesThroughRelations(context, user, organization.id, RELATION_PARTICIPATE_TO, ENTITY_TYPE_USER);
   const updatedUser = members.find(({ id }) => id === memberId);
   // Check if user is part of Orga. If not, throw exception
   if (!updatedUser) {
-    throw FunctionalError('User is not part of the organization');
+    throw FunctionalError('User is not part of the organization', { members, memberId });
   }
   // Add user to organization admins list
-  const updated = await editAuthorizedAuthorities(context, user, organizationId, [...(organization.authorized_authorities ?? []), memberId]);
+  const updated = await editAuthorizedAuthorities(context, user, organization.id, [...(organization.authorized_authorities ?? []), memberId]);
   await publishUserAction({
     user,
     event_type: 'mutation',
@@ -70,7 +73,10 @@ export const organizationAdminAdd = async (context: AuthContext, user: AuthUser,
 export const organizationAdminRemove = async (context: AuthContext, user: AuthUser, organizationId: string, memberId: string) => {
   // Get Orga and members
   const organization = await findById(context, user, organizationId);
-  const members: BasicStoreEntity[] = await listAllFromEntitiesThroughRelations(context, user, organizationId, RELATION_PARTICIPATE_TO, ENTITY_TYPE_USER);
+  if (!organization) {
+    throw FunctionalError('Organization not found');
+  }
+  const members: BasicStoreEntity[] = await listAllFromEntitiesThroughRelations(context, user, organization.id, RELATION_PARTICIPATE_TO, ENTITY_TYPE_USER);
   const updatedUser = members.find(({ id }) => id === memberId);
   // Check if user is part of Orga and is orga_admin. If not, throw exception
   if (!updatedUser) {
