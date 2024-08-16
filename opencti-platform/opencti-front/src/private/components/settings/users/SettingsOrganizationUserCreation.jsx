@@ -24,6 +24,7 @@ import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { insertNode } from '../../../../utils/store';
+import { isOnlyOrganizationAdmin } from '../../../../utils/hooks/useGranted';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -87,6 +88,7 @@ const SettingsOrganizationUserCreation = ({
   const { me, settings } = useAuth();
   const { t_i18n } = useFormatter();
   const classes = useStyles();
+  const userIsOnlyOrganizationAdmin = isOnlyOrganizationAdmin();
   const [openAddUser, setOpenAddUser] = useState(false);
   const onReset = () => setOpenAddUser(false);
   const onSubmit = (values, { setSubmitting, resetForm }) => {
@@ -240,7 +242,9 @@ const SettingsOrganizationUserCreation = ({
               />
               <ObjectOrganizationField
                 outlined={false}
-                filters={[{ key: 'authorized_authorities', values: [me.id] }]}
+                filters={userIsOnlyOrganizationAdmin ? { mode: 'and', filters: [{ key: ['authorized_authorities'], values: [me.id] }], filterGroups: [] }
+                  : null
+                }
                 name="objectOrganization"
                 label="Organizations"
                 style={fieldSpacingContainerStyle}
