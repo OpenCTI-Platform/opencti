@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
-import { ADMIN_USER, editorQuery, getUserIdByEmail, queryAsAdmin, USER_EDITOR, USER_PARTICIPATE } from '../../utils/testQuery';
+import { ADMIN_USER, editorQuery, getUserIdByEmail, participantQuery, queryAsAdmin, USER_EDITOR, USER_PARTICIPATE } from '../../utils/testQuery';
 import { toBase64 } from '../../../src/database/utils';
 import { PRIVATE_DASHBOARD_MANIFEST } from './publicDashboard-data';
 import { resetCacheForEntity } from '../../../src/database/cache';
