@@ -419,6 +419,11 @@ export const assignOrganizationToUser = async (context, user, userId, organizati
   if (!isUserHasCapability(user, SETTINGS_SET_ACCESSES) && isUserHasCapability(user, VIRTUAL_ORGANIZATION_ADMIN)) {
     throw ForbiddenAccess();
   }
+  const targetUser = await storeLoadById(context, user, userId, ENTITY_TYPE_USER);
+  if (!targetUser) {
+    throw FunctionalError('Cannot add the relation, User cannot be found.');
+  }
+
   const input = { fromId: userId, toId: organizationId, relationship_type: RELATION_PARTICIPATE_TO };
   const created = await createRelation(context, user, input);
   const actionEmail = ENABLED_DEMO_MODE ? REDACTED_USER.user_email : created.from.user_email;
@@ -433,7 +438,7 @@ export const assignOrganizationToUser = async (context, user, userId, organizati
 
   await userSessionRefresh(userId);
   resetCacheForEntity(ENTITY_TYPE_SETTINGS);
-  return user;
+  return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, targetUser, user);
 };
 
 export const assignOrganizationNameToUser = async (context, user, userId, organizationName) => {
