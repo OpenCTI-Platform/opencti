@@ -147,6 +147,8 @@ const StixDomainObjectDiamondComponent = ({ entityLink, data }) => {
           nodesConnectable={false}
           zoomOnDoubleClick={false}
           proOptions={proOptions}
+          zoomOnScroll={false}
+          preventScrolling={false}
         />
       </>
     );
