@@ -183,7 +183,7 @@ const WorkspacePopover = ({ workspace, paginationOptions }) => {
         )}
       </Menu>
       <Drawer
-        title={t_i18n('Create public dashboard')}
+        title={t_i18n('Create a public dashboard')}
         open={displayCreate}
         onClose={handleCloseCreate}
       >
