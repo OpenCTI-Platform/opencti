@@ -1,5 +1,5 @@
 import { Field, Form, Formik } from 'formik';
-import React from 'react';
+import React, { Suspense, useEffect } from 'react';
 import ObjectMarkingField from '@components/common/form/ObjectMarkingField';
 import InputAdornment from '@mui/material/InputAdornment';
 import Button from '@mui/material/Button';
@@ -7,7 +7,7 @@ import { Option } from '@components/common/form/ReferenceField';
 import { FormikConfig } from 'formik/dist/types';
 import * as Yup from 'yup';
 import Alert from '@mui/material/Alert';
-import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
+import { graphql, PreloadedQuery, usePreloadedQuery, useQueryLoader } from 'react-relay';
 import MenuItem from '@mui/material/MenuItem';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { PublicDashboardCreationFormDashboardsQuery } from '@components/workspaces/dashboards/publicDashboards/__generated__/PublicDashboardCreationFormDashboardsQuery.graphql';
@@ -18,6 +18,7 @@ import SwitchField from '../../../../../components/fields/SwitchField';
 import SelectField from '../../../../../components/fields/SelectField';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 import { handleError } from '../../../../../relay/environment';
+import Loader, { LoaderVariant } from '../../../../../components/Loader';
 
 const publicDashboardCreateMutation = graphql`
   mutation PublicDashboardCreationFormCreateMutation($input: PublicDashboardAddInput!) {
@@ -49,7 +50,7 @@ export interface PublicDashboardCreationFormData {
   dashboard_id: string;
 }
 
-interface PublicDashboardCreationFormProps {
+interface PublicDashboardCreationFormComponentProps {
   queryRef: PreloadedQuery<PublicDashboardCreationFormDashboardsQuery>
   dashboard_id?: string
   updater?: (store: RecordSourceSelectorProxy, key: string) => void
@@ -57,13 +58,13 @@ interface PublicDashboardCreationFormProps {
   onCompleted?: () => void
 }
 
-const PublicDashboardCreationForm = ({
+const PublicDashboardCreationFormComponent = ({
   queryRef,
   dashboard_id,
   updater,
   onCancel,
   onCompleted,
-}: PublicDashboardCreationFormProps) => {
+}: PublicDashboardCreationFormComponentProps) => {
   const { t_i18n } = useFormatter();
   const [commitCreateMutation] = useApiMutation(publicDashboardCreateMutation);
 
@@ -213,6 +214,40 @@ const PublicDashboardCreationForm = ({
         </Form>
       )}
     </Formik>
+  );
+};
+
+type PublicDashboardCreationFormProps = Omit<PublicDashboardCreationFormComponentProps, 'queryRef'>;
+
+const PublicDashboardCreationForm = (props: PublicDashboardCreationFormProps) => {
+  const [queryRef, fetchDashboards] = useQueryLoader<PublicDashboardCreationFormDashboardsQuery>(dashboardsQuery);
+  const fetchDashboardsWithFilters = () => {
+    fetchDashboards(
+      {
+        filters: {
+          mode: 'and',
+          filterGroups: [],
+          filters: [{
+            key: ['type'],
+            values: ['dashboard'],
+          }],
+        },
+      },
+      { fetchPolicy: 'store-and-network' },
+    );
+  };
+
+  useEffect(() => {
+    fetchDashboardsWithFilters();
+  }, []);
+
+  return queryRef && (
+    <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+      <PublicDashboardCreationFormComponent
+        queryRef={queryRef}
+        {...props}
+      />
+    </Suspense>
   );
 };
 

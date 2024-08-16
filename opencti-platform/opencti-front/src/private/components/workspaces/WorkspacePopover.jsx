@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Button from '@mui/material/Button';
@@ -8,19 +8,17 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import MoreVert from '@mui/icons-material/MoreVert';
-import { graphql, useQueryLoader } from 'react-relay';
+import { graphql } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import PropTypes from 'prop-types';
 import { useNavigate } from 'react-router-dom';
-// eslint-disable-next-line import/no-unresolved
-import PublicDashboardCreationForm, { dashboardsQuery } from '@components/workspaces/dashboards/publicDashboards/PublicDashboardCreationForm';
-// eslint-disable-next-line import/no-unresolved
-import Drawer from '@components/common/drawer/Drawer';
+import PublicDashboardCreationForm from './dashboards/publicDashboards/PublicDashboardCreationForm';
+import Drawer from '../common/drawer/Drawer';
 import { useFormatter } from '../../../components/i18n';
 import { QueryRenderer } from '../../../relay/environment';
 import WorkspaceEditionContainer from './WorkspaceEditionContainer';
 import Security from '../../../utils/Security';
-import { EXPLORE_EXUPDATE, EXPLORE_EXUPDATE_EXDELETE, INVESTIGATION_INUPDATE_INDELETE } from '../../../utils/hooks/useGranted';
+import { EXPLORE_EXUPDATE, EXPLORE_EXUPDATE_EXDELETE, EXPLORE_EXUPDATE_PUBLISH, INVESTIGATION_INUPDATE_INDELETE } from '../../../utils/hooks/useGranted';
 import Transition from '../../../components/Transition';
 import { deleteNode, insertNode } from '../../../utils/store';
 import handleExportJson from './workspaceExportHandler';
@@ -129,26 +127,7 @@ const WorkspacePopover = ({ workspace, paginationOptions }) => {
     };
     navigate(`/dashboard/workspaces/public_dashboards?filters=${JSON.stringify(filter)}`);
   };
-  const [dashboardsQueryRef, fetchDashboards] = useQueryLoader(dashboardsQuery);
-  const fetchDashboardsWithFilters = () => {
-    fetchDashboards(
-      {
-        filters: {
-          mode: 'and',
-          filterGroups: [],
-          filters: [{
-            key: ['type'],
-            values: ['dashboard'],
-          }],
-        },
-      },
-      { fetchPolicy: 'store-and-network' },
-    );
-  };
 
-  useEffect(() => {
-    fetchDashboardsWithFilters();
-  }, []);
   // -- Creation public dashboard --
   const [displayCreate, setDisplayCreate] = useState(false);
 
@@ -184,12 +163,16 @@ const WorkspacePopover = ({ workspace, paginationOptions }) => {
             </Security>
             <Security needs={[EXPLORE_EXUPDATE_EXDELETE]} hasAccess={canManage}>
               <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
-              <MenuItem onClick={handleOpenCreation}>{t_i18n('Create public dashboard')}</MenuItem>
             </Security>
             {isFeatureEnable('PUBLIC_DASHBOARD_LIST') && (
-              <MenuItem onClick={() => goToPublicDashboards()}>
-                {t_i18n('View associated public dashboards')}
-              </MenuItem>
+              <>
+                <MenuItem onClick={() => goToPublicDashboards()}>
+                  {t_i18n('View associated public dashboards')}
+                </MenuItem>
+                <Security needs={[EXPLORE_EXUPDATE_PUBLISH]} hasAccess={canManage}>
+                  <MenuItem onClick={handleOpenCreation}>{t_i18n('Create a public dashboard')}</MenuItem>
+                </Security>
+              </>
             )}
           </>
         )}
@@ -199,26 +182,18 @@ const WorkspacePopover = ({ workspace, paginationOptions }) => {
           </Security>
         )}
       </Menu>
-      {dashboardsQueryRef && (
       <Drawer
         title={t_i18n('Create public dashboard')}
         open={displayCreate}
         onClose={handleCloseCreate}
-        aria-labelledby="create-public-dashboard-dialog"
       >
         {({ onClose }) => (
-          <React.Suspense fallback={<div/>}>
-            <PublicDashboardCreationForm
-              queryRef={dashboardsQueryRef}
-              onClose={handleCloseCreate}
-              onCompleted={() => {
-                onClose();
-              }}
-            />
-          </React.Suspense>
+          <PublicDashboardCreationForm
+            onClose={handleCloseCreate}
+            onCompleted={onClose}
+          />
         )}
       </Drawer>
-      )}
       <WorkspaceDuplicationDialog
         workspace={workspace}
         displayDuplicate={displayDuplicate}

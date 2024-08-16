@@ -5,12 +5,11 @@ import Tooltip from '@mui/material/Tooltip';
 import React, { Suspense, useEffect, useRef, useState } from 'react';
 import Drawer from '@components/common/drawer/Drawer';
 import Typography from '@mui/material/Typography';
-import PublicDashboardCreationForm, { dashboardsQuery } from '@components/workspaces/dashboards/publicDashboards/PublicDashboardCreationForm';
+import PublicDashboardCreationForm from '@components/workspaces/dashboards/publicDashboards/PublicDashboardCreationForm';
 import WorkspaceShareList, { workspaceShareListQuery } from '@components/workspaces/WorkspaceShareList';
 import { WorkspaceShareListQuery } from '@components/workspaces/__generated__/WorkspaceShareListQuery.graphql';
 import { graphql, useQueryLoader } from 'react-relay';
 import Alert from '@mui/material/Alert';
-import { PublicDashboardCreationFormDashboardsQuery } from '@components/workspaces/dashboards/publicDashboards/__generated__/PublicDashboardCreationFormDashboardsQuery.graphql';
 import { useFormatter } from '../../../components/i18n';
 import Loader, { LoaderVariant } from '../../../components/Loader';
 import DeleteDialog from '../../../components/DeleteDialog';
@@ -64,26 +63,8 @@ const WorkspaceShareButton = ({ workspaceId }: WorkspaceShareButtonProps) => {
     );
   };
 
-  const [dashboardsQueryRef, fetchDashboards] = useQueryLoader<PublicDashboardCreationFormDashboardsQuery>(dashboardsQuery);
-  const fetchDashboardsWithFilters = () => {
-    fetchDashboards(
-      {
-        filters: {
-          mode: 'and',
-          filterGroups: [],
-          filters: [{
-            key: ['type'],
-            values: ['dashboard'],
-          }],
-        },
-      },
-      { fetchPolicy: 'store-and-network' },
-    );
-  };
-
   useEffect(() => {
     fetchPublicDashboardsWithFilters();
-    fetchDashboardsWithFilters();
   }, []);
 
   const confirmDelete = (id: string) => {
@@ -159,15 +140,10 @@ const WorkspaceShareButton = ({ workspaceId }: WorkspaceShareButtonProps) => {
               {t_i18n('Create a new public dashboard')}
             </Typography>
 
-            {dashboardsQueryRef && (
-              <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-                <PublicDashboardCreationForm
-                  dashboard_id={workspaceId}
-                  queryRef={dashboardsQueryRef}
-                  onCompleted={fetchPublicDashboardsWithFilters}
-                />
-              </Suspense>
-            )}
+            <PublicDashboardCreationForm
+              dashboard_id={workspaceId}
+              onCompleted={fetchPublicDashboardsWithFilters}
+            />
           </section>
 
           <section>
