@@ -54,8 +54,13 @@ const useStyles = makeStyles<Theme>((theme) => ({
     height: 50,
   },
   bodyItem: {
-    height: '100%',
+    height: 20,
     fontSize: 13,
+    float: 'left',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    paddingRight: 10,
   },
   icon: {
     color: theme.palette.primary.main,
@@ -418,6 +423,7 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
                         <ItemBoolean
                           status={connector.active}
                           label={connector.active ? t_i18n('Active') : t_i18n('Inactive')}
+                          variant="inList"
                         />
                       </div>
                       <div
