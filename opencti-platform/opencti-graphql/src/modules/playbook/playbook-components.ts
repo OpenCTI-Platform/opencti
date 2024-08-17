@@ -763,7 +763,7 @@ const PLAYBOOK_RULE_COMPONENT: PlaybookComponent<RuleConfiguration> = {
     }
     if (rule === RESOLVE_OBSERVABLES) {
       // RESOLVE_OBSERVABLES is for now only triggered on indicator creation / update
-      if (type === ENTITY_TYPE_INDICATOR) {
+      if (type === ENTITY_TYPE_INDICATOR && isNotEmptyField(id)) {
         // Indicator (based on) --> Observable
         // eslint-disable-next-line max-len
         const relationOpts = { fromId: id, toTypes: [ABSTRACT_STIX_CYBER_OBSERVABLE], indices: inferences ? READ_RELATIONSHIPS_INDICES : READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED };
@@ -1061,53 +1061,55 @@ const PLAYBOOK_CREATE_INDICATOR_COMPONENT: PlaybookComponent<CreateIndicatorConf
             relationship.extensions[STIX_EXT_OCTI].granted_refs = granted_refs;
           }
           objectsToPush.push(relationship);
-          const relationsOfObservables = await listAllRelations(
-            context,
-            AUTOMATION_MANAGER_USER,
-            ABSTRACT_STIX_CORE_RELATIONSHIP,
-            {
-              fromId: id,
-              toTypes: [
-                ENTITY_TYPE_THREAT_ACTOR,
-                ENTITY_TYPE_INTRUSION_SET,
-                ENTITY_TYPE_CAMPAIGN,
-                ENTITY_TYPE_MALWARE,
-                ENTITY_TYPE_INCIDENT,
-                ENTITY_TYPE_TOOL,
-                ENTITY_TYPE_ATTACK_PATTERN
-              ],
-              baseData: true,
-              indices: READ_RELATIONSHIPS_INDICES
-            }
-          ) as StoreRelation[];
-          const idsToResolve = R.uniq(relationsOfObservables.map((r) => r.toId));
-          const elements = await stixLoadByIds(context, AUTOMATION_MANAGER_USER, idsToResolve);
-          for (let indexElements = 0; indexElements < elements.length; indexElements += 1) {
-            const element = elements[indexElements] as StixCoreObject;
-            const relationIndicatesBaseData = {
-              source_ref: indicator.id,
-              target_ref: element.id,
-              relationship_type: RELATION_INDICATES,
-            };
-            const relationIndicatesStandardId = idGenFromData('relationship', relationIndicatesBaseData);
-            const relationshipIndicates = {
-              id: relationIndicatesStandardId,
-              type: 'relationship',
-              ...relationIndicatesBaseData,
-              object_marking_refs: observable.object_marking_refs ?? [],
-              created: now(),
-              modified: now(),
-              extensions: {
-                [STIX_EXT_OCTI]: {
-                  extension_type: 'property-extension',
-                  type: RELATION_INDICATES
-                }
+          if (isNotEmptyField(id)) {
+            const relationsOfObservables = await listAllRelations(
+              context,
+              AUTOMATION_MANAGER_USER,
+              ABSTRACT_STIX_CORE_RELATIONSHIP,
+              {
+                fromOrToId: id,
+                toTypes: [
+                  ENTITY_TYPE_THREAT_ACTOR,
+                  ENTITY_TYPE_INTRUSION_SET,
+                  ENTITY_TYPE_CAMPAIGN,
+                  ENTITY_TYPE_MALWARE,
+                  ENTITY_TYPE_INCIDENT,
+                  ENTITY_TYPE_TOOL,
+                  ENTITY_TYPE_ATTACK_PATTERN
+                ],
+                baseData: true,
+                indices: READ_RELATIONSHIPS_INDICES
               }
-            } as StixRelation;
-            if (granted_refs) {
-              relationshipIndicates.extensions[STIX_EXT_OCTI].granted_refs = granted_refs;
+            ) as StoreRelation[];
+            const idsToResolve = R.uniq(relationsOfObservables.map((r) => r.toId));
+            const elements = await stixLoadByIds(context, AUTOMATION_MANAGER_USER, idsToResolve);
+            for (let indexElements = 0; indexElements < elements.length; indexElements += 1) {
+              const element = elements[indexElements] as StixCoreObject;
+              const relationIndicatesBaseData = {
+                source_ref: indicator.id,
+                target_ref: element.id,
+                relationship_type: RELATION_INDICATES,
+              };
+              const relationIndicatesStandardId = idGenFromData('relationship', relationIndicatesBaseData);
+              const relationshipIndicates = {
+                id: relationIndicatesStandardId,
+                type: 'relationship',
+                ...relationIndicatesBaseData,
+                object_marking_refs: observable.object_marking_refs ?? [],
+                created: now(),
+                modified: now(),
+                extensions: {
+                  [STIX_EXT_OCTI]: {
+                    extension_type: 'property-extension',
+                    type: RELATION_INDICATES
+                  }
+                }
+              } as StixRelation;
+              if (granted_refs) {
+                relationshipIndicates.extensions[STIX_EXT_OCTI].granted_refs = granted_refs;
+              }
+              objectsToPush.push(relationshipIndicates);
             }
-            objectsToPush.push(relationshipIndicates);
           }
           if (wrap_in_container && isBaseDataAContainer) {
             (baseData as StixContainer).object_refs.push(relationship.id);
