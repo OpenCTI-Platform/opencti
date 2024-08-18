@@ -323,6 +323,9 @@ export const validateDataBeforeIndexing = (element: any) => {
     throw FunctionalError('Validation against schema failed: element has no entity_type');
   }
 
+  // just check the given entity_type is in schema ; this call would throw a DatabaseError
+  schemaAttributesDefinition.getAttributes(element.entity_type);
+
   Object.keys(element).forEach((elementKey) => {
     const input = element[elementKey];
     const attributeSchemaDef = schemaAttributesDefinition.getAttributeByName(elementKey);
