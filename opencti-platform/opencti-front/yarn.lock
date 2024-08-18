@@ -7307,10 +7307,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/relay-runtime@npm:14.1.24":
-  version: 14.1.24
-  resolution: "@types/relay-runtime@npm:14.1.24"
-  checksum: 10/97775be4fcdbb0ee431d15d0b6812e0501cfaefdd5049e7a3b0e98077f7f603c47576d3c1c982fb1a2996e479adc0aada90b2c41acf054adefbcb47a689e6225
+"@types/relay-runtime@npm:17.0.4":
+  version: 17.0.4
+  resolution: "@types/relay-runtime@npm:17.0.4"
+  checksum: 10/c163e6d1453d1d37dc45ac09295a66a0cf6417a9da1f81e98d1e286ea37b4c7bb226fa7fecbec8146f37856ff977c68a17121adcfa46126b98456de7e7e7abca
   languageName: node
   linkType: hard
 
@@ -17311,7 +17311,7 @@ __metadata:
     "@types/react-router-dom": "npm:5.3.3"
     "@types/react-syntax-highlighter": "npm:15.5.13"
     "@types/react-test-renderer": "npm:18.3.0"
-    "@types/relay-runtime": "npm:14.1.24"
+    "@types/relay-runtime": "npm:17.0.4"
     "@types/relay-test-utils": "npm:14.1.4"
     "@types/uuid": "npm:9.0.8"
     "@vitejs/plugin-react": "npm:4.3.1"
@@ -17396,7 +17396,7 @@ __metadata:
     reactflow: "npm:11.11.4"
     recharts: "npm:2.12.7"
     relay-compiler: "npm:16.2.0"
-    relay-runtime: "npm:16.2.0"
+    relay-runtime: "npm:17.0.0"
     relay-test-utils: "npm:16.2.0"
     remark-flexible-markers: "npm:1.2.1"
     remark-gfm: "npm:4.0.0"
@@ -19672,6 +19672,17 @@ __metadata:
     fbjs: "npm:^3.0.2"
     invariant: "npm:^2.2.4"
   checksum: 10/fbb68d3ef96d3d2d89695f6a10162391e633c304b429ff40b2a3fcb146981d75b0ba178c2c5a4ab149900e8b0a95be30659640b2740fdd836528294a3607de63
+  languageName: node
+  linkType: hard
+
+"relay-runtime@npm:17.0.0":
+  version: 17.0.0
+  resolution: "relay-runtime@npm:17.0.0"
+  dependencies:
+    "@babel/runtime": "npm:^7.0.0"
+    fbjs: "npm:^3.0.2"
+    invariant: "npm:^2.2.4"
+  checksum: 10/33e0d88a56604a254753bb9a1f2bbd9e7c59bed105d274c82f3ab28086e7a1e6f5308976c4be0bf8ef9f9281c551b5b6ddd26409293613f37b5f1ec9aad47240
   languageName: node
   linkType: hard
 
