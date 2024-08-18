@@ -45,28 +45,18 @@ const scaleValidation = (scale: Scale) => {
     const maxValue = scale.local_config.max.value;
     const valuesOfTick = scale.local_config.ticks.sort().map(({ value }) => value);
     if (minValue < 0 || minValue > 100) {
-      throw ValidationError(minValue, {
-        message: 'The min value must be between 0 and 100',
-      });
+      throw ValidationError('The min value must be between 0 and 100', minValue);
     } else if (maxValue > 100 || maxValue < 0) {
-      throw ValidationError(maxValue, {
-        message: 'The max value must be between 0 and 100',
-      });
+      throw ValidationError('The max value must be between 0 and 100', maxValue);
     }
     if (minValue > maxValue) {
-      throw ValidationError(minValue, {
-        message: 'The min value cannot be greater than max value'
-      });
+      throw ValidationError('The min value cannot be greater than max value', minValue);
     } else if (maxValue < minValue) {
-      throw ValidationError(maxValue, {
-        message: 'The max value cannot be lower than min value'
-      });
+      throw ValidationError('The max value cannot be lower than min value', maxValue);
     }
     valuesOfTick.forEach((tick) => {
       if (tick < minValue || tick > maxValue) {
-        throw ValidationError(tick, {
-          message: 'Each tick value must be between min and max value'
-        });
+        throw ValidationError('Each tick value must be between min and max value', tick);
       }
     });
   }
@@ -83,20 +73,14 @@ const attributesConfigurationValidation = async (targetType: string, input: Basi
       if (attr.mandatory) {
         const mandatoryType = attributeDefinition?.mandatoryType || relationRefDefinition?.mandatoryType;
         if (mandatoryType !== 'customizable') {
-          throw ValidationError(attr.name, {
-            message: 'This attribute is not customizable for this entity',
-            data: { attribute: attr.name, entityType: targetType }
-          });
+          throw ValidationError('This attribute is not customizable for this entity', attr.name, { entityType: targetType });
         }
       }
       // Scale
       if (attr.scale) {
         // Relation ref can't be scalable
         if (attributeDefinition?.type === 'numeric' && !attributeDefinition?.scalable) {
-          throw ValidationError(attr.name, {
-            message: 'This attribute is not scalable for this entity',
-            data: { attribute: attr.name, entityType: targetType }
-          });
+          throw ValidationError('This attribute is not scalable for this entity', attr.name, { entityType: targetType });
         }
         scaleValidation(attr.scale);
       }
@@ -112,10 +96,7 @@ const attributesConfigurationValidation = async (targetType: string, input: Basi
         } else if (relationRefDefinition) {
           if (relationRefDefinition.name === INPUT_MARKINGS) {
             if (getDefaultValues(attr, false) !== 'false' && getDefaultValues(attr, false) !== 'true') {
-              throw ValidationError(attr.name, {
-                message: 'This field is not supported to declare a default value. You can only activate/deactivate the possibility to have a default value.',
-                data: { attribute: attr.name, entityType: targetType }
-              });
+              throw ValidationError('This field is not supported to declare a default value. You can only activate/deactivate the possibility to have a default value.', attr.name, { entityType: targetType });
             } else {
               return;
             }

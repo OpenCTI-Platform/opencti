@@ -406,7 +406,7 @@ describe('PublicDashboard resolver', () => {
         });
         expect(queryResult).not.toBeNull();
         expect(queryResult.errors.length).toEqual(1);
-        expect(queryResult.errors.at(0).message).toEqual('Validation error');
+        expect(queryResult.errors.at(0).message).toEqual('You cannot update incompatible attribute');
       });
 
       it('should update publicDashboard', async () => {

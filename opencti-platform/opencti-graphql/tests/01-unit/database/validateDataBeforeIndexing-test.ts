@@ -70,7 +70,7 @@ describe('validateDataBeforeIndexing', () => {
       entity_type: 'Wrong',
     };
     expect(() => validateDataBeforeIndexing(invalidUser))
-      .toThrowError('Validation against schema failed: this entity_type is not supported');
+      .toThrowError('Type Wrong not supported');
 
     invalidUser = {
       ...user,

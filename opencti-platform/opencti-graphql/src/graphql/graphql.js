@@ -1,14 +1,13 @@
 import { ApolloServer } from '@apollo/server';
-import { formatError as apolloFormatError } from 'apollo-errors';
 import { ApolloArmor } from '@escape.tech/graphql-armor';
 import { dissocPath } from 'ramda';
 import { ApolloServerPluginLandingPageDisabled } from '@apollo/server/plugin/disabled';
 import { ApolloServerPluginLandingPageGraphQLPlayground } from '@apollo/server-plugin-landing-page-graphql-playground';
 import { ApolloServerErrorCode } from '@apollo/server/errors';
 import { createValidation as createAliasBatch } from 'graphql-no-alias';
-import ConstraintDirectiveError from 'graphql-constraint-directive/lib/error';
-import { constraintDirectiveDocumentation, createApolloQueryValidationPlugin } from 'graphql-constraint-directive';
+import { constraintDirectiveDocumentation } from 'graphql-constraint-directive';
 import { GraphQLError } from 'graphql/error';
+import { createApollo4QueryValidationPlugin } from 'graphql-constraint-directive/apollo4';
 import createSchema from './schema';
 import conf, { basePath, DEV_MODE, ENABLED_TRACING, GRAPHQL_ARMOR_ENABLED, logApp, PLAYGROUND_ENABLED, PLAYGROUND_INTROSPECTION_DISABLED } from '../config/conf';
 import { authenticateUserFromRequest, userWithOrigin } from '../domain/user';
@@ -29,7 +28,7 @@ const createApolloServer = () => {
       return true;
     }
   };
-  const constraintPlugin = createApolloQueryValidationPlugin({ schema }, { formats });
+  const constraintPlugin = createApollo4QueryValidationPlugin({ formats });
   schema = constraintDirectiveDocumentation()(schema);
   const apolloPlugins = [loggerPlugin, httpResponsePlugin, constraintPlugin];
   // Protect batch graphql through alias usage
@@ -83,11 +82,12 @@ const createApolloServer = () => {
   apolloPlugins.push(PLAYGROUND_ENABLED ? playgroundPlugin : ApolloServerPluginLandingPageDisabled());
   // Schema introspection must be accessible only for auth users.
   const secureIntrospectionPlugin = {
-    requestDidStart: ({ request, context }) => {
+    requestDidStart: (requestContext) => {
+      const { contextValue, request } = requestContext;
       // Is schema have introspection request
       if (['__schema'].some((pattern) => request.query.includes(pattern))) {
         // If introspection explicitly disabled or user is not authenticated
-        if (!PLAYGROUND_ENABLED || PLAYGROUND_INTROSPECTION_DISABLED || !context.user) {
+        if (!PLAYGROUND_ENABLED || PLAYGROUND_INTROSPECTION_DISABLED || !contextValue?.user) {
           throw ForbiddenAccess('GraphQL introspection not authorized!');
         }
       }
@@ -124,19 +124,16 @@ const createApolloServer = () => {
     },
     tracing: DEV_MODE,
     plugins: apolloPlugins,
-    formatError: (error, initialError) => {
-      let e = error;
-      const formattedError = apolloFormatError(initialError);
-      if (error.extensions?.code === ApolloServerErrorCode.BAD_USER_INPUT) {
-        if (formattedError.originalError instanceof ConstraintDirectiveError) {
-          const { originalError } = formattedError.originalError;
-          const { fieldName } = originalError;
-          const ConstraintError = ValidationError(fieldName, originalError);
-          e = apolloFormatError(ConstraintError);
-        }
+    formatError: (formattedError) => {
+      let error = formattedError;
+      // For constraint lib user input failure, replace the lib error by the opencti validation one.
+      if (formattedError.extensions?.code === ApolloServerErrorCode.BAD_USER_INPUT) {
+        error = ValidationError(formattedError.message, formattedError.extensions?.field, formattedError.extensions);
       }
+      // To maintain compatibility with client in version 3.
+      const enrichedError = { ...error, name: error.extensions?.code ?? error.name };
       // Remove the exception stack in production.
-      return DEV_MODE ? e : dissocPath(['extensions', 'exception'], e);
+      return DEV_MODE ? enrichedError : dissocPath(['extensions', 'exception'], enrichedError);
     },
   });
   return { schema, apolloServer };

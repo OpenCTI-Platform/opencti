@@ -8,8 +8,8 @@ import ipaddr from 'ipaddr.js';
 import DailyRotateFile from 'winston-daily-rotate-file';
 import { HttpsProxyAgent } from 'https-proxy-agent';
 import { HttpProxyAgent } from 'http-proxy-agent';
-import { ApolloError } from 'apollo-errors';
 import { v4 as uuid } from 'uuid';
+import { GraphQLError } from 'graphql/error';
 import * as O from '../schema/internalObject';
 import * as M from '../schema/stixMetaObject';
 import {
@@ -193,12 +193,15 @@ const telemetryLogger = winston.createLogger({
 const LOG_APP = 'APP';
 const buildMetaErrors = (error) => {
   const errors = [];
-  if (error instanceof ApolloError) {
-    const attributes = R.dissoc('cause', error.data);
-    const baseError = { name: error.name, message: error.message, stack: error.stack, attributes };
+  if (error instanceof GraphQLError) {
+    const extensions = error.extensions ?? {};
+    const extensionsData = extensions.data ?? {};
+    // const attributes = R.dissoc('cause', extensionsData);
+    const { cause: _, ...attributes } = extensionsData;
+    const baseError = { name: extensions.code ?? error.name, message: error.message, stack: error.stack, attributes };
     errors.push(baseError);
-    if (error.data.cause && error.data.cause instanceof Error) {
-      errors.push(...buildMetaErrors(error.data.cause));
+    if (extensionsData.cause && extensionsData.cause instanceof Error) {
+      errors.push(...buildMetaErrors(extensionsData.cause));
     }
   } else if (error instanceof Error) {
     const baseError = { name: error.name, message: error.message, stack: error.stack };
@@ -229,7 +232,7 @@ export const logApp = {
     const message = isError ? messageOrError.message : messageOrError;
     let error = null;
     if (isError) {
-      if (messageOrError instanceof ApolloError) {
+      if (messageOrError instanceof GraphQLError) {
         error = messageOrError;
       } else {
         error = UnknownError(message, { cause: messageOrError });
