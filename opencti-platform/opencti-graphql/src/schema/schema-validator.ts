@@ -35,7 +35,7 @@ export const validateAndFormatSchemaAttribute = (
     // with a patch object, the value matches something inside the object and not the object itself
     // so we cannot check directly the multiplicity as it concerns an internal mapping
     // let's assume it's OK, and validateDataBeforeIndexing would check it.
-    throw ValidationError(attributeName, { message: 'Attribute cannot be multiple', ...extendedErrors({ input: editInput }) });
+    throw ValidationError('Attribute cannot be multiple', attributeName, extendedErrors({ input: editInput }));
   }
   // Data validation
   if (attributeDefinition.type === 'string') {
@@ -43,7 +43,7 @@ export const validateAndFormatSchemaAttribute = (
     for (let index = 0; index < editInput.value.length; index += 1) {
       const value = editInput.value[index];
       if (value && !R.is(String, value)) {
-        throw ValidationError(attributeName, { message: 'Attribute must be a string', ...extendedErrors({ input: editInput }) });
+        throw ValidationError('Attribute must be a string', attributeName, extendedErrors({ input: editInput }));
       } else {
         values.push(value ? value.trim() : value);
       }
@@ -58,14 +58,14 @@ export const validateAndFormatSchemaAttribute = (
       const jsonValue = R.head(editInput.value); // json cannot be multiple
       const valid = validate(JSON.parse(jsonValue as string));
       if (!valid) {
-        throw ValidationError(attributeName, { message: 'The JSON schema is not valid', data: validate.errors });
+        throw ValidationError('The JSON schema is not valid', attributeName, { errors: validate.errors });
       }
     }
   }
   if (attributeDefinition.type === 'boolean') {
     editInput.value.forEach((value) => {
       if (value && !R.is(Boolean, value) && !R.is(String, value)) {
-        throw ValidationError(attributeName, { message: 'Attribute must be a boolean/string', ...extendedErrors({ input: editInput }) });
+        throw ValidationError('Attribute must be a boolean/string', attributeName, extendedErrors({ input: editInput }));
       }
     });
   }
@@ -73,7 +73,7 @@ export const validateAndFormatSchemaAttribute = (
     // Test date value (Accept only ISO date string)
     editInput.value.forEach((value) => {
       if (value && !R.is(String, value) && !utcDate(value).isValid()) {
-        throw ValidationError(attributeName, { message: 'Attribute must be a boolean/string', ...extendedErrors({ input: editInput }) });
+        throw ValidationError('Attribute must be a boolean/string', attributeName, extendedErrors({ input: editInput }));
       }
     });
   }
@@ -81,7 +81,7 @@ export const validateAndFormatSchemaAttribute = (
     // Test numeric value (Accept string)
     editInput.value.forEach((value) => {
       if (value && Number.isNaN(Number(value))) {
-        throw ValidationError(attributeName, { message: 'Attribute must be a numeric/string', ...extendedErrors({ input: editInput }) });
+        throw ValidationError('Attribute must be a numeric/string', attributeName, extendedErrors({ input: editInput }));
       }
     });
   }
@@ -128,7 +128,7 @@ const validateMandatoryAttributes = (
   const inputKeys = Object.keys(input);
   mandatoryAttributes.forEach((attr) => {
     if (!(validation(inputKeys, attr.name))) {
-      throw ValidationError(attr.name, { message: 'This attribute is mandatory', attribute: attr.name });
+      throw ValidationError('This attribute is mandatory', attr.name);
     }
   });
 };
@@ -231,7 +231,7 @@ export const validateInputUpdate = async (
     await validateMandatoryAttributesOnUpdate(context, user, instanceFromInputs, entitySetting);
     const errors = validateUpdatableAttribute(instanceType, instanceFromInputs);
     if (errors.length > 0) {
-      throw ValidationError(errors.at(0), { message: 'You cannot update incompatible attribute' });
+      throw ValidationError('You cannot update incompatible attribute', errors.at(0));
     }
     // Functional validator
     const validator = getEntityValidatorUpdate(instanceType);

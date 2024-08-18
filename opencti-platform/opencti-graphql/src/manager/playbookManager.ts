@@ -335,7 +335,7 @@ const initPlaybookManager = () => {
       }
       logApp.info('[OPENCTI-MODULE] End of playbook manager processing');
     } catch (e: any) {
-      if (e.extensions.name === TYPE_LOCK_ERROR) {
+      if (e.name === TYPE_LOCK_ERROR) {
         logApp.debug('[OPENCTI-MODULE] Playbook manager already started by another API');
       } else {
         logApp.error(e, { manager: 'PLAYBOOK_MANAGER' });
