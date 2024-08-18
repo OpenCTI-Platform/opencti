@@ -70,7 +70,10 @@ class OpenCTIApiConnector:
                             pass
                         }
                         listen
+                        listen_exchange
                         push
+                        push_exchange
+                        push_routing
                     }
                 }
             }
