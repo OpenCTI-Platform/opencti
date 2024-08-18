@@ -73,7 +73,7 @@ const initManager = (manager: ManagerDefinition) => {
           await manager.cronSchedulerHandler.handler(cronInput);
         }
       } catch (e: any) {
-        if (e.extensions.name === TYPE_LOCK_ERROR) {
+        if (e.name === TYPE_LOCK_ERROR) {
           logApp.debug(`[OPENCTI-MODULE] ${manager.label} already started by another API`);
         } else {
           logApp.error(e, { manager: manager.id });
@@ -107,7 +107,7 @@ const initManager = (manager: ManagerDefinition) => {
         }
         logApp.info(`[OPENCTI-MODULE] End of ${manager.label} stream handler`);
       } catch (e: any) {
-        if (e.extensions.name === TYPE_LOCK_ERROR) {
+        if (e.name === TYPE_LOCK_ERROR) {
           logApp.debug(`[OPENCTI-MODULE] ${manager.label} stream handler already started by another API`);
         } else {
           logApp.error(e, { manager: manager.id });

@@ -580,7 +580,7 @@ const taskHandler = async () => {
     };
     await updateTask(context, task.id, patch);
   } catch (e) {
-    if (e.extensions.name === TYPE_LOCK_ERROR) {
+    if (e.name === TYPE_LOCK_ERROR) {
       logApp.debug('[OPENCTI-MODULE] Task manager already in progress by another API');
     } else {
       logApp.error(e, { manager: 'TASK_MANAGER' });

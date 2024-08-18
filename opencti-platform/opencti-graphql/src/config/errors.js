@@ -4,7 +4,7 @@ const CATEGORY_TECHNICAL = 'TECHNICAL';
 const CATEGORY_BUSINESS = 'BUSINESS';
 
 const error = (type, message, data) => {
-  return new GraphQLError(message, { extensions: { code: type, name: type, data } });
+  return new GraphQLError(message, { extensions: { code: type, data } });
 };
 
 export const AUTH_FAILURE = 'AUTH_FAILURE';

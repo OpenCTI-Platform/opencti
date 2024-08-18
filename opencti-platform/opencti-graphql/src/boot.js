@@ -57,7 +57,7 @@ export const platformStop = async () => {
 
 // region signals management
 process.on('unhandledRejection', (reason, p) => {
-  logApp.error('Engine unhandled rejection', { reason, promise: p });
+  logApp.error('Engine unhandled rejection', { reason: reason?.stack, promise: p?.stack });
 });
 
 ['SIGTERM', 'SIGINT', 'message'].forEach((signal) => {

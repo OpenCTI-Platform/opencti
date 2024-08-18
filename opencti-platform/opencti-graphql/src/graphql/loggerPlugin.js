@@ -114,20 +114,20 @@ export default {
           size,
         };
         if (isCallError) {
-          const currentError = head(context.errors);
+          const callError = head(context.errors);
           if (appLogExtendedErrors) {
             callMetaData.variables = variables;
             callMetaData.operation_query = stripIgnoredCharacters(context.request.query);
           } else {
-            callMetaData.query_attributes = (currentError.nodes ?? []).map((node) => graphQLNodeParser(node));
+            callMetaData.query_attributes = (callError.nodes ?? []).map((node) => graphQLNodeParser(node));
           }
-          const callError = currentError.originalError ? currentError.originalError : currentError;
+          const errorCode = callError.extensions?.code ?? callError.name;
           const isRetryableCall = isNotEmptyField(origin?.call_retry_number) && ![
             UNSUPPORTED_ERROR,
             ALREADY_DELETED_ERROR,
             VALIDATION_ERROR,
-          ].includes(callError.name);
-          const isAuthenticationCall = includes(callError.name, [AUTH_REQUIRED]);
+          ].includes(errorCode);
+          const isAuthenticationCall = includes(errorCode, [AUTH_REQUIRED]);
           // Don't log for a simple missing authentication
           if (isAuthenticationCall) {
             return;
@@ -136,7 +136,7 @@ export default {
           // If worker is still retrying, this is not yet a problem, can be logged in warning until then.
           if (isRetryableCall) {
             logApp.warn(callError, callMetaData);
-          } else if (callError.name === FORBIDDEN_ACCESS) {
+          } else if (errorCode === FORBIDDEN_ACCESS) {
             await publishUserAction({
               user: contextUser,
               event_type: isWrite ? 'mutation' : 'read',
