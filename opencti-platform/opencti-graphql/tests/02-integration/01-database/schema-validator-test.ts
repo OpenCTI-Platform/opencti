@@ -110,7 +110,7 @@ describe('Create and Update Validation', () => {
     expect(queryResult.errors[0].name).toEqual(VALIDATION_ERROR);
     expect(queryResult.errors[0].message).toEqual('This attribute is mandatory');
     expect(queryResult.errors[0].extensions.code).toEqual(VALIDATION_ERROR);
-    expect(queryResult.errors[0].extensions.data.attribute).toEqual('description');
+    expect(queryResult.errors[0].extensions.data.field).toEqual('description');
   });
 
   it('should not verify mandatory attributes at creation for bypass users', async () => {
