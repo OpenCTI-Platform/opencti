@@ -22,7 +22,7 @@ from opentelemetry.sdk.metrics import MeterProvider
 from opentelemetry.sdk.resources import SERVICE_NAME, Resource
 from pika.adapters.blocking_connection import BlockingChannel
 from prometheus_client import start_http_server
-from pycti import OpenCTIApiClient
+from pycti import OpenCTIApiClient, OpenCTIStix2Splitter
 from pycti.connector.opencti_connector_helper import (
     create_mq_ssl_context,
     get_config_variable,
@@ -229,10 +229,47 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
         try:
             if event_type == "bundle":
                 content = base64.b64decode(data["content"]).decode("utf-8")
-                update = data["update"] if "update" in data else False
-                imported_items = self.api.stix2.import_bundle_from_json(
-                    content, update, types, work_id
-                )
+                content_json = json.loads(content)
+                if "objects" not in content_json or len(content_json["objects"]) == 0:
+                    raise ValueError("JSON data type is not a STIX2 bundle")
+                if len(content_json["objects"]) == 1:
+                    update = data["update"] if "update" in data else False
+                    imported_items = self.api.stix2.import_bundle_from_json(
+                        content, update, types, work_id
+                    )
+                else:
+                    # As bundle is received as complete, split and requeue
+                    # Create a specific channel to push the split bundles
+                    push_pika_connection = pika.BlockingConnection(self.pika_parameters)
+                    push_channel = push_pika_connection.channel()
+                    try:
+                        push_channel.confirm_delivery()
+                    except Exception as err:  # pylint: disable=broad-except
+                        self.worker_logger.warning(str(err))
+                    # Instance spliter and split the big bundle
+                    event_version = (
+                        content_json["x_opencti_event_version"]
+                        if "x_opencti_event_version" in content_json
+                        else None
+                    )
+                    stix2_splitter = OpenCTIStix2Splitter()
+                    bundles = stix2_splitter.split_bundle(content_json, False, event_version)
+                    # For each split bundle, send it to the same queue
+                    for bundle in bundles:
+                        text_bundle = json.dumps(bundle)
+                        data["content"] = base64.b64encode(text_bundle.encode("utf-8", "escape")).decode(
+                            "utf-8"
+                        )
+                        push_channel.basic_publish(
+                            exchange=self.connector["config"]["push_exchange"],
+                            routing_key=self.connector["config"]["push_routing"],
+                            body=json.dumps(data),
+                            properties=pika.BasicProperties(
+                                delivery_mode=2, content_encoding="utf-8"  # make message persistent
+                            ),
+                        )
+                    push_channel.close()
+
             elif event_type == "event":
                 event = base64.b64decode(data["content"]).decode("utf-8")
                 event_content = json.loads(event)
