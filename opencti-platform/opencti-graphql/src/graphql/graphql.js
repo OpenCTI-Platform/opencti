@@ -5,13 +5,13 @@ import { ApolloServerPluginLandingPageDisabled } from '@apollo/server/plugin/dis
 import { ApolloServerPluginLandingPageGraphQLPlayground } from '@apollo/server-plugin-landing-page-graphql-playground';
 import { ApolloServerErrorCode } from '@apollo/server/errors';
 import { createValidation as createAliasBatch } from 'graphql-no-alias';
-import ConstraintDirectiveError from 'graphql-constraint-directive/lib/error';
-import { constraintDirectiveDocumentation, createApolloQueryValidationPlugin } from 'graphql-constraint-directive';
+import { constraintDirectiveDocumentation } from 'graphql-constraint-directive';
 import { GraphQLError } from 'graphql/error';
+import { createApollo4QueryValidationPlugin } from 'graphql-constraint-directive/apollo4';
 import createSchema from './schema';
 import conf, { basePath, DEV_MODE, ENABLED_TRACING, GRAPHQL_ARMOR_ENABLED, logApp, PLAYGROUND_ENABLED, PLAYGROUND_INTROSPECTION_DISABLED } from '../config/conf';
 import { authenticateUserFromRequest, userWithOrigin } from '../domain/user';
-import { ForbiddenAccess, ValidationError } from '../config/errors';
+import { ForbiddenAccess, VALIDATION_ERROR } from '../config/errors';
 import loggerPlugin from './loggerPlugin';
 import telemetryPlugin from './telemetryPlugin';
 import httpResponsePlugin from './httpResponsePlugin';
@@ -28,7 +28,7 @@ const createApolloServer = () => {
       return true;
     }
   };
-  const constraintPlugin = createApolloQueryValidationPlugin({ schema }, { formats });
+  const constraintPlugin = createApollo4QueryValidationPlugin({ formats });
   schema = constraintDirectiveDocumentation()(schema);
   const apolloPlugins = [loggerPlugin, httpResponsePlugin, constraintPlugin];
   // Protect batch graphql through alias usage
@@ -125,14 +125,12 @@ const createApolloServer = () => {
     tracing: DEV_MODE,
     plugins: apolloPlugins,
     formatError: (formattedError) => {
-      let error = formattedError;
+      const error = formattedError;
+      // For constraint lib user input failure, replace the code by the opencti validation one.
       if (formattedError.extensions?.code === ApolloServerErrorCode.BAD_USER_INPUT) {
-        if (formattedError.originalError instanceof ConstraintDirectiveError) {
-          const { originalError } = formattedError.originalError;
-          const { fieldName } = originalError;
-          error = ValidationError(fieldName, originalError);
-        }
+        error.extensions.code = VALIDATION_ERROR;
       }
+      // To maintain compatibility with client in version 3.
       const enrichedError = { ...error, name: error.extensions?.code ?? error.name };
       // Remove the exception stack in production.
       return DEV_MODE ? enrichedError : dissocPath(['extensions', 'exception'], enrichedError);
