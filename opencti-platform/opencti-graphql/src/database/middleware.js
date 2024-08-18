@@ -1009,7 +1009,7 @@ export const hashMergeValidation = (instances) => {
       const hashes = R.uniq(values.map(([, data]) => data));
       if (hashes.length > 1) {
         const field = `hashes_${algo.toUpperCase()}`;
-        throw ValidationError(`Hashes collision`, field, { algorithm: algo });
+        throw ValidationError('Hashes collision', field, { algorithm: algo });
       }
     });
   }
