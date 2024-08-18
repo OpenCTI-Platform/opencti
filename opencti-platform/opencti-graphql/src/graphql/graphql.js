@@ -11,7 +11,7 @@ import { createApollo4QueryValidationPlugin } from 'graphql-constraint-directive
 import createSchema from './schema';
 import conf, { basePath, DEV_MODE, ENABLED_TRACING, GRAPHQL_ARMOR_ENABLED, logApp, PLAYGROUND_ENABLED, PLAYGROUND_INTROSPECTION_DISABLED } from '../config/conf';
 import { authenticateUserFromRequest, userWithOrigin } from '../domain/user';
-import { ForbiddenAccess, VALIDATION_ERROR } from '../config/errors';
+import { ForbiddenAccess, ValidationError } from '../config/errors';
 import loggerPlugin from './loggerPlugin';
 import telemetryPlugin from './telemetryPlugin';
 import httpResponsePlugin from './httpResponsePlugin';
@@ -125,10 +125,10 @@ const createApolloServer = () => {
     tracing: DEV_MODE,
     plugins: apolloPlugins,
     formatError: (formattedError) => {
-      const error = formattedError;
-      // For constraint lib user input failure, replace the code by the opencti validation one.
+      let error = formattedError;
+      // For constraint lib user input failure, replace the lib error by the opencti validation one.
       if (formattedError.extensions?.code === ApolloServerErrorCode.BAD_USER_INPUT) {
-        error.extensions.code = VALIDATION_ERROR;
+        error = ValidationError(formattedError.message, formattedError.extensions?.field, formattedError.extensions);
       }
       // To maintain compatibility with client in version 3.
       const enrichedError = { ...error, name: error.extensions?.code ?? error.name };

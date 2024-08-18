@@ -91,7 +91,7 @@ const computeValidUntil = (indicator: IndicatorAddInput, validFrom: Moment, life
     const validUntilDate = utcDate(indicator.valid_until as string);
     // Ensure valid_until is strictly greater than valid_from
     if (validUntilDate <= validFrom) {
-      throw ValidationError('valid_until', { message: 'The valid until date must be greater than the valid from date' });
+      throw ValidationError('The valid until date must be greater than the valid from date', 'valid_until');
     } else {
       validUntil = utcDate(indicator.valid_until);
     }

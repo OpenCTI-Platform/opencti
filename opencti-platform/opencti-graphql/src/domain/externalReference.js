@@ -44,9 +44,7 @@ export const addExternalReference = async (context, user, externalReference) => 
   const userCapabilities = R.flatten(user.capabilities.map((c) => c.name.split('_')));
   const isAllowedToByPass = userCapabilities.includes(BYPASS) || userCapabilities.includes(KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE);
   if (!isAllowedToByPass && referenceAttachment && isEmptyField(externalReference.file)) {
-    throw ValidationError('file', {
-      message: 'You must provide an attachment to create a new external reference',
-    });
+    throw ValidationError('You must provide an attachment to create a new external reference', 'file');
   }
   const created = await createEntity(context, user, externalReference, ENTITY_TYPE_EXTERNAL_REFERENCE);
   return notify(BUS_TOPICS[ENTITY_TYPE_EXTERNAL_REFERENCE].ADDED_TOPIC, created, user);

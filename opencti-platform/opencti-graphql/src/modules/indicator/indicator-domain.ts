@@ -312,7 +312,7 @@ export const indicatorEditField = async (context: AuthContext, user: AuthUser, i
     if (e.key === 'valid_until') [valid_until] = e.value;
   });
   if (new Date(valid_until) <= new Date(valid_from)) {
-    throw ValidationError('valid_from', { message: 'The valid until date must be greater than the valid from date' });
+    throw ValidationError('The valid until date must be greater than the valid from date', 'valid_from');
   }
   const scoreEditInput = input.find((e) => e.key === 'x_opencti_score');
   if (scoreEditInput) {

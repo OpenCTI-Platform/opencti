@@ -1009,8 +1009,7 @@ export const hashMergeValidation = (instances) => {
       const hashes = R.uniq(values.map(([, data]) => data));
       if (hashes.length > 1) {
         const field = `hashes_${algo.toUpperCase()}`;
-        const message = { message: `Hashes collision for ${algo} algorithm` };
-        throw ValidationError(field, message);
+        throw ValidationError(`Hashes collision`, field, { algorithm: algo });
       }
     });
   }
@@ -1860,7 +1859,7 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
     if (!isAllowedToByPass && entitySetting?.enforce_reference) {
       const isNoReferenceKey = noReferenceAttributes.includes(R.head(keys)) && keys.length === 1;
       if (!isNoReferenceKey && isEmptyField(opts.references)) {
-        throw ValidationError('references', { message: 'You must provide at least one external reference to update' });
+        throw ValidationError('You must provide at least one external reference to update', 'references');
       }
     }
   }
@@ -2297,9 +2296,7 @@ const validateEntityAndRelationCreation = async (context, user, input, type, ent
     const isAllowedToByPass = isUserHasCapability(user, KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE);
     if (!isAllowedToByPass && entitySetting?.enforce_reference) {
       if (isEmptyField(input.externalReferences)) {
-        throw ValidationError('externalReferences', {
-          message: 'You must provide at least one external reference for this type of entity/relationship',
-        });
+        throw ValidationError('You must provide at least one external reference for this type of entity/relationship', 'externalReferences');
       }
     }
     await validateInputCreation(context, user, type, input, entitySetting);
@@ -3256,7 +3253,7 @@ export const deleteRelationsByFromAndTo = async (context, user, fromId, toId, re
   if (attributesMandatory.length > 0) {
     const attribute = attributesMandatory.find((attr) => attr === schemaRelationsRefDefinition.convertDatabaseNameToInputName(fromThing.entity_type, relationshipType));
     if (attribute && fromThing[buildRefRelationKey(relationshipType)].length === 1) {
-      throw ValidationError(attribute, { validation: 'This attribute is mandatory', attribute });
+      throw ValidationError('This attribute is mandatory', attribute, { attribute });
     }
   }
   const toThing = await internalLoadById(context, user, toId, opts);// check if user has "edit" access on from and to

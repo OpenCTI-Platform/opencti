@@ -17,7 +17,7 @@ import { FilterMode } from '../generated/graphql';
 
 const checkFeedIntegrity = (input: FeedAddInput) => {
   if (input.separator.length > 1) {
-    throw ValidationError('separator', { message: 'Separator must be only one char' });
+    throw ValidationError('Separator must be only one char', 'separator');
   }
   // Check that every type in feed are correct
   for (let index = 0; index < input.feed_types.length; index += 1) {

@@ -209,7 +209,7 @@ const generatePatch = (field, values, type) => {
   if (extensionErrors.length === 0) {
     return { [`x_opencti_${field}`]: values };
   }
-  throw ValidationError(basicErrors.at(0) ?? extensionErrors.at(0), { message: 'You cannot update incompatible attribute' });
+  throw ValidationError('You cannot update incompatible attribute', basicErrors.at(0) ?? extensionErrors.at(0));
 };
 
 const executeDelete = async (context, user, element, scope) => {
