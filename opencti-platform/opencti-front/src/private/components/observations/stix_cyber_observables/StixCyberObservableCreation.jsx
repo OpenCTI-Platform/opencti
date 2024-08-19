@@ -899,7 +899,6 @@ const StixCyberObservableCreation = ({
   };
 
   const renderContextual = () => {
-    console.log('open contextual : ', open);
     return (
       <div style={{ display: display ? 'block' : 'none' }}>
         {!speeddial && (
