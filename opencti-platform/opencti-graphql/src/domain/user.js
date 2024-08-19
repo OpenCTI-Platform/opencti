@@ -419,7 +419,7 @@ export const assignOrganizationToUser = async (context, user, userId, organizati
   if (!isUserHasCapability(user, SETTINGS_SET_ACCESSES) && isUserHasCapability(user, VIRTUAL_ORGANIZATION_ADMIN)) {
     throw ForbiddenAccess();
   }
-  const targetUser = await storeLoadById(context, user, userId, ENTITY_TYPE_USER);
+  const targetUser = await findById(context, user, userId);
   if (!targetUser) {
     throw FunctionalError('Cannot add the relation, User cannot be found.');
   }
@@ -984,7 +984,7 @@ export const userDeleteOrganizationRelation = async (context, user, userId, toId
   if (!isUserHasCapability(user, SETTINGS_SET_ACCESSES) && isUserHasCapability(user, VIRTUAL_ORGANIZATION_ADMIN)) {
     throw ForbiddenAccess();
   }
-  const targetUser = await storeLoadById(context, user, userId, ENTITY_TYPE_USER);
+  const targetUser = await findById(context, user, userId);
   if (!targetUser) {
     throw FunctionalError('Cannot delete the relation, User cannot be found.');
   }
