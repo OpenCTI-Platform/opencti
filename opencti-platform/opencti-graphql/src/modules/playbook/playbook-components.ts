@@ -1061,6 +1061,48 @@ const PLAYBOOK_CREATE_INDICATOR_COMPONENT: PlaybookComponent<CreateIndicatorConf
             relationship.extensions[STIX_EXT_OCTI].granted_refs = granted_refs;
           }
           objectsToPush.push(relationship);
+
+          // Resolve relationships in the bundle
+          const stixRelationshipsInBundle = bundle.objects.filter((r) => r.type === 'relationship') as StixRelation[];
+          const stixRelationships = stixRelationshipsInBundle.filter((r) => r.relationship_type === 'related-to'
+              && r.source_ref === baseData.id
+              && (
+                r.target_ref.startsWith('threat-actor')
+                  || r.target_ref.startsWith('intrusion-set')
+                  || r.target_ref.startsWith('campaign')
+                  || r.target_ref.startsWith('malware')
+                  || r.target_ref.startsWith('incident')
+                  || r.target_ref.startsWith('tool')
+                  || r.target_ref.startsWith('attack-pattern')
+              ));
+          for (let indexStixRelationships = 0; indexStixRelationships < stixRelationships.length; indexStixRelationships += 1) {
+            const stixRelationship = stixRelationships[indexStixRelationships] as StixRelation;
+            const relationIndicatesBaseData = {
+              source_ref: indicator.id,
+              target_ref: stixRelationship.target_ref,
+              relationship_type: RELATION_INDICATES,
+            };
+            const relationIndicatesStandardId = idGenFromData('relationship', relationIndicatesBaseData);
+            const relationshipIndicates = {
+              id: relationIndicatesStandardId,
+              type: 'relationship',
+              ...relationIndicatesBaseData,
+              object_marking_refs: observable.object_marking_refs ?? [],
+              created: now(),
+              modified: now(),
+              extensions: {
+                [STIX_EXT_OCTI]: {
+                  extension_type: 'property-extension',
+                  type: RELATION_INDICATES
+                }
+              }
+            } as StixRelation;
+            if (granted_refs) {
+              relationshipIndicates.extensions[STIX_EXT_OCTI].granted_refs = granted_refs;
+            }
+            objectsToPush.push(relationshipIndicates);
+          }
+          // Resolve relationships in database
           if (isNotEmptyField(id)) {
             const relationsOfObservables = await listAllRelations(
               context,
