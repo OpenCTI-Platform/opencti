@@ -1,5 +1,5 @@
 import { getEntitiesListFromCache, getEntitiesMapFromCache } from '../../database/cache';
-import { getUserAccessRight, SYSTEM_USER } from '../../utils/access';
+import { getUserAccessRight, MEMBER_ACCESS_RIGHT_ADMIN, SYSTEM_USER } from '../../utils/access';
 import { ENTITY_TYPE_PUBLIC_DASHBOARD, type PublicDashboardCached, type PublicDashboardCachedWidget } from './publicDashboard-types';
 import { ENTITY_TYPE_USER } from '../../schema/internalObject';
 import type { AuthContext, AuthUser, UserCapability } from '../../types/user';
@@ -129,7 +129,7 @@ export const checkUserIsAdminOnDashboard = async (context: AuthContext, user: Au
   }
   const dash = await findWorkspace(context, user, publicDashboard.dashboard_id);
   const userAccessRight = getUserAccessRight(user, dash);
-  if (userAccessRight !== 'admin') {
+  if (userAccessRight !== MEMBER_ACCESS_RIGHT_ADMIN) {
     throw ForbiddenAccess();
   }
 };

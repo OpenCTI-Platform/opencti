@@ -30,7 +30,7 @@ import { publishUserAction } from '../../listener/UserActionListener';
 import { findAll as findAllWorkspaces } from '../workspace/workspace-domain';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
 import { getEntitiesMapFromCache } from '../../database/cache';
-import type { BasicStoreRelation, NumberResult, StoreMarkingDefinition, StoreRelationConnection } from '../../types/store';
+import type { BasicStoreRelation, NumberResult, StoreEntityConnection, StoreMarkingDefinition, StoreRelationConnection } from '../../types/store';
 import { checkUserIsAdminOnDashboard, getWidgetArguments } from './publicDashboard-utils';
 import {
   findAll as stixCoreObjects,
@@ -65,7 +65,7 @@ export const findAll = async (
   context: AuthContext,
   user: AuthUser,
   args: QueryPublicDashboardsArgs,
-) => {
+): Promise<StoreEntityConnection<BasicStoreEntityPublicDashboard>> => {
   const dashboards = await findAllWorkspaces(
     context,
     user,
@@ -79,9 +79,20 @@ export const findAll = async (
   );
 
   const dashboardIds = dashboards.edges.map((n) => (n.node.id));
-  const filters = dashboardIds.length > 0
-    ? addFilter(args.filters ?? undefined, 'dashboard_id', dashboardIds)
-    : args.filters;
+  if (dashboardIds.length === 0) {
+    return {
+      edges: [],
+      pageInfo: {
+        globalCount: 0,
+        hasNextPage: false,
+        hasPreviousPage: false,
+        endCursor: '',
+        startCursor: ''
+      }
+    };
+  }
+
+  const filters = addFilter(args.filters ?? undefined, 'dashboard_id', dashboardIds);
   return listEntitiesPaginated<BasicStoreEntityPublicDashboard>(
     context,
     user,
