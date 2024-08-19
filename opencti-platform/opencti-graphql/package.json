@@ -161,10 +161,10 @@
   },
   "devDependencies": {
     "@graphql-codegen/cli": "5.0.2",
-    "@graphql-codegen/client-preset": "4.2.4",
+    "@graphql-codegen/client-preset": "4.3.3",
     "@graphql-codegen/introspection": "4.0.3",
-    "@graphql-codegen/typescript": "4.0.6",
-    "@graphql-codegen/typescript-resolvers": "4.0.6",
+    "@graphql-codegen/typescript": "4.0.9",
+    "@graphql-codegen/typescript-resolvers": "4.2.1",
     "@luckycatfactory/esbuild-graphql-loader": "3.8.1",
     "@rollup/plugin-graphql": "2.0.4",
     "@types/archiver": "6.0.2",
