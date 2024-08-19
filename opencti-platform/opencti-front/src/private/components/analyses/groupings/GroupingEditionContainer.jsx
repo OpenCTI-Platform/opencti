@@ -5,6 +5,7 @@ import { useFormatter } from '../../../../components/i18n';
 import GroupingEditionOverview from './GroupingEditionOverview';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 import useHelper from '../../../../utils/hooks/useHelper';
+import GroupingDeletion from './GroupingDeletion';
 
 const GroupingEditionContainer = (props) => {
   const { t_i18n } = useFormatter();
@@ -22,12 +23,19 @@ const GroupingEditionContainer = (props) => {
       context={editContext}
       controlledDial={isFABReplaced ? controlledDial : undefined}
     >
-      <GroupingEditionOverview
-        grouping={grouping}
-        enableReferences={useIsEnforceReference('Grouping')}
-        context={editContext}
-        handleClose={handleClose}
-      />
+      <>
+        <GroupingEditionOverview
+          grouping={grouping}
+          enableReferences={useIsEnforceReference('Grouping')}
+          context={editContext}
+          handleClose={handleClose}
+        />
+        {isFABReplaced && (
+          <GroupingDeletion
+            groupingId={grouping.id}
+          />
+        )}
+      </>
     </Drawer>
   );
 };
