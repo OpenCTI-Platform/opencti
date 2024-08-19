@@ -156,7 +156,7 @@
     "validator": "13.11.0",
     "winston": "3.13.0",
     "winston-daily-rotate-file": "5.0.0",
-    "ws": "8.17.1",
+    "ws": "8.18.0",
     "xml2js": "0.6.2"
   },
   "devDependencies": {

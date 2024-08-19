@@ -11055,7 +11055,7 @@ __metadata:
     vitest: "npm:1.4.0"
     winston: "npm:3.13.0"
     winston-daily-rotate-file: "npm:5.0.0"
-    ws: "npm:8.17.1"
+    ws: "npm:8.18.0"
     xml2js: "npm:0.6.2"
   languageName: unknown
   linkType: soft
@@ -14031,22 +14031,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ws@npm:8.17.1":
-  version: 8.17.1
-  resolution: "ws@npm:8.17.1"
-  peerDependencies:
-    bufferutil: ^4.0.1
-    utf-8-validate: ">=5.0.2"
-  peerDependenciesMeta:
-    bufferutil:
-      optional: true
-    utf-8-validate:
-      optional: true
-  checksum: 10/4264ae92c0b3e59c7e309001e93079b26937aab181835fb7af79f906b22cd33b6196d96556dafb4e985742dd401e99139572242e9847661fdbc96556b9e6902d
-  languageName: node
-  linkType: hard
-
-"ws@npm:^8.12.0, ws@npm:^8.17.1":
+"ws@npm:8.18.0, ws@npm:^8.12.0, ws@npm:^8.17.1":
   version: 8.18.0
   resolution: "ws@npm:8.18.0"
   peerDependencies:
