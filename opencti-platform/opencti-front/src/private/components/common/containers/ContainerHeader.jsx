@@ -1074,7 +1074,7 @@ const ContainerHeader = (props) => {
                 type="container"
               />
             )}
-            {!isFABReplaced && !knowledge && (
+            {!knowledge && (
               <Security needs={popoverSecurity || [KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNENRICHMENT]}>
                 {React.cloneElement(PopoverComponent, { id: container.id })}
               </Security>

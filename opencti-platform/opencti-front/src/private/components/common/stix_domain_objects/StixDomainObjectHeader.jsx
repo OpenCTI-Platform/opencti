@@ -533,7 +533,7 @@ const StixDomainObjectHeader = (props) => {
               type={type}
             />
           )}
-          {!isFABReplaced && (isKnowledgeUpdater || isKnowledgeEnricher) && (
+          {(isKnowledgeUpdater || isKnowledgeEnricher) && (
           <div className={classes.popover}>
             {/* TODO remove this when all components are pure function without compose() */}
             {!React.isValidElement(PopoverComponent) ? (

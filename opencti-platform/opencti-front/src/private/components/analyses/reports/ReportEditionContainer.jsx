@@ -38,14 +38,10 @@ const ReportEditionContainer = (props) => {
           handleClose={handleClose}
         />
         {isFABReplaced
-          && <ReportPopoverDeletion
+          && (<ReportPopoverDeletion
             reportId={report.id}
-            displayDelete={displayDelete}
-            handleClose={handleClose}
-            handleCloseDelete={handleCloseDelete}
-            handleOpenDelete={handleOpenDelete}
-             />
-        }
+          />
+        )}
       </>
     </Drawer>
   );

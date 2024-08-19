@@ -1,23 +1,16 @@
-import { graphql } from 'react-relay';
-import DialogContent from '@mui/material/DialogContent';
-import Alert from '@mui/material/Alert';
-import AlertTitle from '@mui/material/AlertTitle';
-import FormGroup from '@mui/material/FormGroup';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Checkbox from '@mui/material/Checkbox';
-import DialogActions from '@mui/material/DialogActions';
-import Button from '@mui/material/Button';
-import Dialog from '@mui/material/Dialog';
 import React, { FunctionComponent, useState } from 'react';
-import { useTheme } from '@mui/styles';
+import { graphql } from 'react-relay';
 import { useNavigate } from 'react-router-dom';
-import DialogContentText from '@mui/material/DialogContentText';
-import { QueryRenderer } from '../../../../relay/environment';
+import { Alert, AlertTitle, Button, Checkbox, Dialog, DialogActions, DialogContent, DialogContentText, FormControlLabel, FormGroup } from '@mui/material';
+import { useTheme } from '@mui/styles';
 import { useFormatter } from '../../../../components/i18n';
-import { ReportPopoverDeletionQuery$data } from './__generated__/ReportPopoverDeletionQuery.graphql';
-import type { Theme } from '../../../../components/Theme';
-import Transition from '../../../../components/Transition';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import Security from '../../../../utils/Security';
+import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
+import Transition from '../../../../components/Transition';
+import { QueryRenderer } from '../../../../relay/environment';
+import type { Theme } from '../../../../components/Theme';
+import { ReportDeletionQuery$data } from './__generated__/ReportDeletionQuery.graphql';
 
 const reportPopoverDeletionQuery = graphql`
   query ReportPopoverDeletionQuery($id: String) {
@@ -35,49 +28,62 @@ const reportPopoverDeletionMutation = graphql`
   }
 `;
 
-interface ReportPopoverDeletionProps {
+interface ReportDeletionProps {
   reportId: string;
-  displayDelete: boolean;
-  handleClose: () => void;
-  handleCloseDelete: () => void;
-  handleOpenDelete: () => void;
+  handleClose?: () => void;
 }
 
-const ReportPopoverDeletion: FunctionComponent<ReportPopoverDeletionProps> = ({
+const ReportPopoverDeletion: FunctionComponent<ReportDeletionProps> = ({
   reportId,
-  displayDelete,
   handleClose,
-  handleCloseDelete,
-  handleOpenDelete,
 }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const navigate = useNavigate();
+  const [displayDelete, setDisplayDelete] = useState(false);
   const [purgeElements, setPurgeElements] = useState(false);
   const [deleting, setDeleting] = useState(false);
-  const [commitMutation] = useApiMutation(reportPopoverDeletionMutation);
+  const deleteSuccessMessage = t_i18n('', {
+    id: '... successfully deleted',
+    values: { entity_type: t_i18n('entity_Report') },
+  });
+  const [commitMutation] = useApiMutation(
+    reportPopoverDeletionMutation,
+    undefined,
+    { successMessage: deleteSuccessMessage },
+  );
+
+  const handleOpenDelete = () => setDisplayDelete(true);
+  const handleCloseDelete = () => {
+    setDeleting(false);
+    setDisplayDelete(false);
+  };
+
   const submitDelete = () => {
     setDeleting(true);
     commitMutation({
       variables: { id: reportId, purgeElements },
       onCompleted: () => {
         setDeleting(false);
-        handleClose();
+        if (typeof handleClose === 'function') handleClose();
         navigate('/dashboard/analyses/reports');
       },
     });
   };
+
   return (
-    <React.Fragment>
-      <Button
-        color="error"
-        variant="contained"
-        onClick={handleOpenDelete}
-        disabled={deleting}
-        sx={{ marginTop: 2 }}
-      >
-        {t_i18n('Delete')}
-      </Button>
+    <>
+      <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
+        <Button
+          color="error"
+          variant="contained"
+          onClick={handleOpenDelete}
+          disabled={deleting}
+          sx={{ marginTop: 2 }}
+        >
+          {t_i18n('Delete')}
+        </Button>
+      </Security>
       <Dialog
         open={displayDelete}
         TransitionComponent={Transition}
@@ -91,7 +97,7 @@ const ReportPopoverDeletion: FunctionComponent<ReportPopoverDeletionProps> = ({
           <QueryRenderer
             query={reportPopoverDeletionQuery}
             variables={{ id: reportId }}
-            render={(result: { props: ReportPopoverDeletionQuery$data }) => {
+            render={(result: { props: ReportDeletionQuery$data }) => {
               const numberOfDeletions = result.props?.report?.deleteWithElementsCount ?? 0;
               if (numberOfDeletions === 0) return <div />;
               return (
@@ -124,8 +130,7 @@ const ReportPopoverDeletion: FunctionComponent<ReportPopoverDeletionProps> = ({
                 </Alert>
               );
             }}
-          >
-          </QueryRenderer>
+          ></QueryRenderer>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseDelete} disabled={deleting}>
@@ -136,7 +141,7 @@ const ReportPopoverDeletion: FunctionComponent<ReportPopoverDeletionProps> = ({
           </Button>
         </DialogActions>
       </Dialog>
-    </React.Fragment>
+    </>
   );
 };
 
