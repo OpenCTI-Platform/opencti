@@ -366,9 +366,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@aws-sdk/client-s3@npm:3.632.0":
-  version: 3.632.0
-  resolution: "@aws-sdk/client-s3@npm:3.632.0"
+"@aws-sdk/client-s3@npm:3.633.0":
+  version: 3.633.0
+  resolution: "@aws-sdk/client-s3@npm:3.633.0"
   dependencies:
     "@aws-crypto/sha1-browser": "npm:5.2.0"
     "@aws-crypto/sha256-browser": "npm:5.2.0"
@@ -384,11 +384,11 @@ __metadata:
     "@aws-sdk/middleware-location-constraint": "npm:3.609.0"
     "@aws-sdk/middleware-logger": "npm:3.609.0"
     "@aws-sdk/middleware-recursion-detection": "npm:3.620.0"
-    "@aws-sdk/middleware-sdk-s3": "npm:3.629.0"
+    "@aws-sdk/middleware-sdk-s3": "npm:3.633.0"
     "@aws-sdk/middleware-ssec": "npm:3.609.0"
     "@aws-sdk/middleware-user-agent": "npm:3.632.0"
     "@aws-sdk/region-config-resolver": "npm:3.614.0"
-    "@aws-sdk/signature-v4-multi-region": "npm:3.629.0"
+    "@aws-sdk/signature-v4-multi-region": "npm:3.633.0"
     "@aws-sdk/types": "npm:3.609.0"
     "@aws-sdk/util-endpoints": "npm:3.632.0"
     "@aws-sdk/util-user-agent-browser": "npm:3.609.0"
@@ -428,7 +428,7 @@ __metadata:
     "@smithy/util-utf8": "npm:^3.0.0"
     "@smithy/util-waiter": "npm:^3.1.2"
     tslib: "npm:^2.6.2"
-  checksum: 10/675dd9c2e7f77ed643438874171f4c7f79a1d5b1b2b9320472083729f6f49ee04ac351fb5a06a2f27af73f70dd4bbde286a9f11e6f7bc18224756c0f29974dde
+  checksum: 10/290c4ac89dea1c0327aef98caba8cf4840da8e7784283b5911e8c7a01126ee2a513e1a5af9c556279888e7b1c6424f904732c77447d3c4c97c2b68ec93f7e94d
   languageName: node
   linkType: hard
 
@@ -705,9 +705,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@aws-sdk/lib-storage@npm:3.632.0":
-  version: 3.632.0
-  resolution: "@aws-sdk/lib-storage@npm:3.632.0"
+"@aws-sdk/lib-storage@npm:3.633.0":
+  version: 3.633.0
+  resolution: "@aws-sdk/lib-storage@npm:3.633.0"
   dependencies:
     "@smithy/abort-controller": "npm:^3.1.1"
     "@smithy/middleware-endpoint": "npm:^3.1.0"
@@ -717,8 +717,8 @@ __metadata:
     stream-browserify: "npm:3.0.0"
     tslib: "npm:^2.6.2"
   peerDependencies:
-    "@aws-sdk/client-s3": ^3.632.0
-  checksum: 10/17c3bdcca3f4ad0bdedad4658ddcca3cc8cd0e562af0840ccba6fc67f2955be57d96e78a349b72cc7a7985494d4d5612997139713f0907ac637c90726e8899ee
+    "@aws-sdk/client-s3": ^3.633.0
+  checksum: 10/84acdfd0601f05211fc85dada603f9c2e40745ba67eddfa7008ac8252f7f8698e5340e3fbfc849ae92155caaac9ce6a65e5496aa53edf37b674a6f7c494800f7
   languageName: node
   linkType: hard
 
@@ -811,9 +811,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@aws-sdk/middleware-sdk-s3@npm:3.629.0":
-  version: 3.629.0
-  resolution: "@aws-sdk/middleware-sdk-s3@npm:3.629.0"
+"@aws-sdk/middleware-sdk-s3@npm:3.633.0":
+  version: 3.633.0
+  resolution: "@aws-sdk/middleware-sdk-s3@npm:3.633.0"
   dependencies:
     "@aws-sdk/core": "npm:3.629.0"
     "@aws-sdk/types": "npm:3.609.0"
@@ -829,7 +829,7 @@ __metadata:
     "@smithy/util-stream": "npm:^3.1.3"
     "@smithy/util-utf8": "npm:^3.0.0"
     tslib: "npm:^2.6.2"
-  checksum: 10/45fe0d903e6caa19acacce1fe21dc7d17ba7cf58d3837eeb57feb3f26e19579d42fcf522799dd5fdf7b3fb577609bd775b0819900b12805d056169ad54b80fad
+  checksum: 10/f5267b6453d5174a85279b8fc5d909eadc395045f6375056c1776bcccd8c0d839ea9a6e5e6adc8f8e35d813e7123c25e170535ffcd7380820af099daba50ebcb
   languageName: node
   linkType: hard
 
@@ -881,17 +881,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@aws-sdk/signature-v4-multi-region@npm:3.629.0":
-  version: 3.629.0
-  resolution: "@aws-sdk/signature-v4-multi-region@npm:3.629.0"
+"@aws-sdk/signature-v4-multi-region@npm:3.633.0":
+  version: 3.633.0
+  resolution: "@aws-sdk/signature-v4-multi-region@npm:3.633.0"
   dependencies:
-    "@aws-sdk/middleware-sdk-s3": "npm:3.629.0"
+    "@aws-sdk/middleware-sdk-s3": "npm:3.633.0"
     "@aws-sdk/types": "npm:3.609.0"
     "@smithy/protocol-http": "npm:^4.1.0"
     "@smithy/signature-v4": "npm:^4.1.0"
     "@smithy/types": "npm:^3.3.0"
     tslib: "npm:^2.6.2"
-  checksum: 10/33ec82af478657ed662ea86eb20ce9d35f7e0b2b91e559550cf2bd2c4565941dc289cc6e14d21a7b7ecb534c36b18cfbb62de601cc3e692bc067d5aa40ba5354
+  checksum: 10/987e0566a134a657ead9dc2c2ad5363690a8db89ac5147ca60882494eae67f8f7f82669fef463e7e922c345bb8f0ef1e1c6c625274d3d945a760081f8f1b87ea
   languageName: node
   linkType: hard
 
@@ -10937,10 +10937,10 @@ __metadata:
   dependencies:
     "@apollo/server": "npm:4.11.0"
     "@apollo/server-plugin-landing-page-graphql-playground": "npm:4.0.1"
-    "@aws-sdk/client-s3": "npm:3.632.0"
+    "@aws-sdk/client-s3": "npm:3.633.0"
     "@aws-sdk/client-sts": "npm:3.632.0"
     "@aws-sdk/credential-provider-node": "npm:3.632.0"
-    "@aws-sdk/lib-storage": "npm:3.632.0"
+    "@aws-sdk/lib-storage": "npm:3.633.0"
     "@aws-sdk/property-provider": "npm:3.374.0"
     "@elastic/elasticsearch": "npm:8.14.0"
     "@escape.tech/graphql-armor": "npm:2.4.0"
