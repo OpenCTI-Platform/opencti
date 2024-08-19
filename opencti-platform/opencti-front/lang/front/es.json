@@ -1,6 +1,7 @@
 {
   " (reversed)": "(invertido)",
   " & ": "&",
+  "... successfully deleted": "{entity_type} eliminado exitosamente",
   "+ N override(s)": "+ {count} anulación(es)",
   "0 equals no maximum": "0 es igual a ningún máximo",
   "24 hours": "24 horas",
