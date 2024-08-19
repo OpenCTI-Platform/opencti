@@ -274,6 +274,7 @@ class StixCoreRelationshipExternalReferencesLinesContainer extends Component {
                                   this,
                                   externalReferenceEdge,
                                 )}
+                                variant="inLine"
                               />
                             </Security>
                           </ListItemSecondaryAction>
@@ -329,6 +330,7 @@ class StixCoreRelationshipExternalReferencesLinesContainer extends Component {
                                 this,
                                 externalReferenceEdge,
                               )}
+                              variant="inLine"
                             />
                           </Security>
                         </ListItemSecondaryAction>
