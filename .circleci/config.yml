@@ -383,6 +383,9 @@ jobs:
           at: ~/
       - run: sudo apt-get update -qq && sudo apt install curl        
       - run:
+          name: Replace pycti requirement of stable version with latest master branch code
+          command: find . -name requirements.txt -exec sed 's|^pycti==.*$|pycti @ git+https://github.com/OpenCTI-Platform/client-python@master|' -i {} \;      
+      - run:
           name: Install buildx
           command: |
             BUILDX_BINARY_URL="https://github.com/docker/buildx/releases/download/v0.8.2/buildx-v0.8.2.linux-amd64"
@@ -423,6 +426,9 @@ jobs:
       - attach_workspace:
           at: ~/
       - run: sudo apt-get update -qq && sudo apt install curl
+      - run:
+          name: Replace pycti requirement of stable version with latest master branch code
+          command: find . -name requirements.txt -exec sed 's|^pycti==.*$|pycti @ git+https://github.com/OpenCTI-Platform/client-python@master|' -i {} \;
       - run:
           name: Install buildx
           command: |
