@@ -8786,12 +8786,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"graphql-ws@npm:5.14.0":
-  version: 5.14.0
-  resolution: "graphql-ws@npm:5.14.0"
+"graphql-ws@npm:5.16.0":
+  version: 5.16.0
+  resolution: "graphql-ws@npm:5.16.0"
   peerDependencies:
     graphql: ">=0.11 <=16"
-  checksum: 10/0e985798f67c13c95eae3442dc3b6b32b472484011cdc3b610e50bbed71f62e4adbc8acf81139c91317ca27ef303b9a301efc4ee2234d71ed8c6cdebeae1f810
+  checksum: 10/e56d903920c78fa88966e31940d281f8b35ef8c9f4543255bfe349e47a0e972c6ca746bcb52040b1c6938d22e42560228994399972abc473cfa6bcd183aca709
   languageName: node
   linkType: hard
 
@@ -11100,7 +11100,7 @@ __metadata:
     graphql-subscriptions: "npm:2.0.0"
     graphql-tag: "npm:2.12.6"
     graphql-upload: "npm:16.0.2"
-    graphql-ws: "npm:5.14.0"
+    graphql-ws: "npm:5.16.0"
     helmet: "npm:7.1.0"
     http-proxy-agent: "npm:7.0.2"
     https-proxy-agent: "npm:7.0.5"
