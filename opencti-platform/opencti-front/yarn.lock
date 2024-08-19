@@ -6769,12 +6769,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/ramda@npm:0.29.11":
-  version: 0.29.11
-  resolution: "@types/ramda@npm:0.29.11"
+"@types/ramda@npm:0.30.1":
+  version: 0.30.1
+  resolution: "@types/ramda@npm:0.30.1"
   dependencies:
-    types-ramda: "npm:^0.29.9"
-  checksum: 10/62a9a6d45884854711987a5a760ec8f58ad4584cfe2935abf4b19f59a7572bb222c1453ff8c5d447f44c1dec9fadb528bd9c4a61de9c36d1c45206dc971d954e
+    types-ramda: "npm:^0.30.1"
+  checksum: 10/3975599065ebfb4a923566ec17e04e5c59ab3b010dc09fb4462393c0e1b6962ff88c852d43f0f524788e589efea09d0ccdf242306c32872d48caaf7ff0362934
   languageName: node
   linkType: hard
 
@@ -16842,7 +16842,7 @@ __metadata:
     "@testing-library/user-event": "npm:14.5.2"
     "@types/node": "npm:20.16.1"
     "@types/qrcode": "npm:1.5.5"
-    "@types/ramda": "npm:0.29.11"
+    "@types/ramda": "npm:0.30.1"
     "@types/react": "npm:18.3.3"
     "@types/react-csv": "npm:1.1.10"
     "@types/react-dom": "npm:18.3.0"
@@ -16907,7 +16907,7 @@ __metadata:
     pdfmake: "npm:0.2.10"
     prop-types: "npm:15.8.1"
     qrcode: "npm:1.5.3"
-    ramda: "npm:0.29.1"
+    ramda: "npm:0.30.1"
     react: "npm:18.3.1"
     react-apexcharts: "npm:1.4.1"
     react-color: "npm:2.19.3"
@@ -18184,10 +18184,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ramda@npm:0.29.1":
-  version: 0.29.1
-  resolution: "ramda@npm:0.29.1"
-  checksum: 10/5824249efa18f3c013ea0bae6cdcc167ef357fff5441586b7ad98759e902b1397297d92b50bdc317f49fe73fa6b0e17f806f4d0f7a95270f05c25afa733a8fc5
+"ramda@npm:0.30.1":
+  version: 0.30.1
+  resolution: "ramda@npm:0.30.1"
+  checksum: 10/f3e1a7bc11f3a113edb3bb4764c2c22088c5896594934c01cf1980184d00f1d5a7af82761a3389419e2d51542ad2121ff44e718f40792d167e2846bba79a4c6d
   languageName: node
   linkType: hard
 
@@ -21454,12 +21454,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"types-ramda@npm:^0.29.9":
-  version: 0.29.10
-  resolution: "types-ramda@npm:0.29.10"
+"types-ramda@npm:^0.30.1":
+  version: 0.30.1
+  resolution: "types-ramda@npm:0.30.1"
   dependencies:
     ts-toolbelt: "npm:^9.6.0"
-  checksum: 10/7b63decbe8b37e4908d4e9177814fed9a096680436b94815072522ba3bf1751d9cf97b39983a6ba8e85d8b52666763e327ef016a1606ee2438c3c7a58723c166
+  checksum: 10/b865c8f97df911b82b51b3cb4afa9b52b971d344dd79d203cd118e424a03761aebfea538c643f6283f700a3b4000d07d2168e353691b5caff076542bad78e420
   languageName: node
   linkType: hard
 
