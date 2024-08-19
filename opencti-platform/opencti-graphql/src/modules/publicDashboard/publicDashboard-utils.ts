@@ -121,7 +121,7 @@ export const getWidgetArguments = async (
   };
 };
 
-export const checkUserAccessRights = async (context: AuthContext, user: AuthUser, id: string) => {
+export const checkUserIsAdminOnDashboard = async (context: AuthContext, user: AuthUser, id: string) => {
   const publicDashboards = await getEntitiesListFromCache<PublicDashboardCached>(context, SYSTEM_USER, ENTITY_TYPE_PUBLIC_DASHBOARD);
   const publicDashboard = publicDashboards.find((p) => (p.id === id));
   if (publicDashboard === undefined) {

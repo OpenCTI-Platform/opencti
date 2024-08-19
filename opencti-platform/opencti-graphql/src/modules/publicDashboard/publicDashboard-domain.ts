@@ -31,7 +31,7 @@ import { findAll as findAllWorkspaces } from '../workspace/workspace-domain';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
 import { getEntitiesMapFromCache } from '../../database/cache';
 import type { BasicStoreRelation, NumberResult, StoreMarkingDefinition, StoreRelationConnection } from '../../types/store';
-import { checkUserAccessRights, getWidgetArguments } from './publicDashboard-utils';
+import { checkUserIsAdminOnDashboard, getWidgetArguments } from './publicDashboard-utils';
 import {
   findAll as stixCoreObjects,
   stixCoreObjectsDistribution,
@@ -232,7 +232,7 @@ export const publicDashboardEditField = async (
   id: string,
   input: EditInput[],
 ) => {
-  await checkUserAccessRights(context, user, id);
+  await checkUserIsAdminOnDashboard(context, user, id);
   const { element } = await updateAttribute(
     context,
     user,
@@ -254,7 +254,7 @@ export const publicDashboardEditField = async (
 };
 
 export const publicDashboardDelete = async (context: AuthContext, user: AuthUser, id: string) => {
-  await checkUserAccessRights(context, user, id);
+  await checkUserIsAdminOnDashboard(context, user, id);
   const deleted = await deleteElementById(
     context,
     user,
