@@ -117,7 +117,7 @@ const WorkspaceHeader = ({
   const [openTag, setOpenTag] = useState(false);
   const [newTag, setNewTag] = useState('');
   const [openTags, setOpenTags] = useState(false);
-  const { canManage, canEdit } = getCurrentUserAccessRight(workspace);
+  const { canManage, canEdit } = getCurrentUserAccessRight(workspace.currentUserAccessRight);
   const [displayDuplicate, setDisplayDuplicate] = useState(false);
   const handleCloseDuplicate = () => setDisplayDuplicate(false);
   const [duplicating, setDuplicating] = useState(false);

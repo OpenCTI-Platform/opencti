@@ -1,14 +1,15 @@
-import { getEntitiesMapFromCache, getEntitiesListFromCache } from '../../database/cache';
-import { SYSTEM_USER } from '../../utils/access';
+import { getEntitiesListFromCache, getEntitiesMapFromCache } from '../../database/cache';
+import { getUserAccessRight, SYSTEM_USER } from '../../utils/access';
 import { ENTITY_TYPE_PUBLIC_DASHBOARD, type PublicDashboardCached, type PublicDashboardCachedWidget } from './publicDashboard-types';
 import { ENTITY_TYPE_USER } from '../../schema/internalObject';
 import type { AuthContext, AuthUser, UserCapability } from '../../types/user';
-import { UnsupportedError } from '../../config/errors';
+import { ForbiddenAccess, FunctionalError, UnsupportedError } from '../../config/errors';
 import { computeAvailableMarkings } from '../../domain/user';
 import type { StoreMarkingDefinition } from '../../types/store';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
 import { elLoadById } from '../../database/engine';
 import { cleanMarkings } from '../../utils/markingDefinition-utils';
+import { findById as findWorkspace } from '../workspace/workspace-domain';
 
 /**
  * Find which markings should be used when searching the data to populate in the widgets.
@@ -118,4 +119,17 @@ export const getWidgetArguments = async (
     parameters,
     dataSelection
   };
+};
+
+export const checkUserIsAdminOnDashboard = async (context: AuthContext, user: AuthUser, id: string) => {
+  const publicDashboards = await getEntitiesListFromCache<PublicDashboardCached>(context, SYSTEM_USER, ENTITY_TYPE_PUBLIC_DASHBOARD);
+  const publicDashboard = publicDashboards.find((p) => (p.id === id));
+  if (publicDashboard === undefined) {
+    throw FunctionalError('No public dashboard found', { id });
+  }
+  const dash = await findWorkspace(context, user, publicDashboard.dashboard_id);
+  const userAccessRight = getUserAccessRight(user, dash);
+  if (userAccessRight !== 'admin') {
+    throw ForbiddenAccess();
+  }
 };

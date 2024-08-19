@@ -132,7 +132,6 @@ const DataTableLine = ({
   }
 
   const startsWithSelect = effectiveColumns.at(0)?.id === 'select';
-
   return (
     <div
       key={row.id}

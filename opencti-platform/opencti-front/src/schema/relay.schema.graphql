@@ -10465,6 +10465,7 @@ type Workspace implements InternalObject & BasicObject {
   toStixReportBundle: String
   toConfigurationExport: String!
   toWidgetExport(widgetId: ID!): String!
+  isShared: Boolean
 }
 
 enum WorkspacesOrdering {
@@ -11630,8 +11631,10 @@ type PublicDashboard implements InternalObject & BasicObject {
   standard_id: String!
   parent_types: [String!]!
   name: String!
+  owner: Creator
   description: String
-  dashboard_id: String
+  dashboard_id: String!
+  dashboard: Workspace!
   user_id: String!
   public_manifest: String
   private_manifest: String
@@ -11641,7 +11644,6 @@ type PublicDashboard implements InternalObject & BasicObject {
   created_at: DateTime
   updated_at: DateTime
   editContext: [EditUserContext!]
-  authorized_members: [MemberAccess!]
   enabled: Boolean!
 }
 
@@ -11656,7 +11658,10 @@ enum PublicDashboardsOrdering {
   name
   created_at
   updated_at
-  creator
+  user_id
+  enabled
+  dashboard
+  uri_key
   _score
 }
 

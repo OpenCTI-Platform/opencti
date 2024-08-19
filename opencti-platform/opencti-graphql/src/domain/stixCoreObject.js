@@ -1,14 +1,12 @@
 import * as R from 'ramda';
 import { createEntity, createRelationRaw, deleteElementById, distributionEntities, storeLoadByIdWithRefs, timeSeriesEntities } from '../database/middleware';
-import { internalFindByIds, internalLoadById, listEntitiesPaginated, listEntitiesThroughRelationsPaginated, storeLoadById, storeLoadByIds } from '../database/middleware-loader';
+import { internalFindByIds, internalLoadById, listEntitiesPaginated, listEntitiesThroughRelationsPaginated, storeLoadById } from '../database/middleware-loader';
 import { findAll as relationFindAll } from './stixCoreRelationship';
 import { delEditContext, lockResource, notify, setEditContext, storeUpdateEvent } from '../database/redis';
 import { BUS_TOPICS, logApp } from '../config/conf';
 import { FunctionalError, LockTimeoutError, TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
 import { isStixCoreObject, stixCoreObjectOptions } from '../schema/stixCoreObject';
-import { findById as findStatusById } from './status';
 import {
-  ABSTRACT_BASIC_OBJECT,
   ABSTRACT_STIX_CORE_OBJECT,
   ABSTRACT_STIX_CORE_RELATIONSHIP,
   ABSTRACT_STIX_DOMAIN_OBJECT,
@@ -38,15 +36,13 @@ import { elCount, elFindByIds, elUpdateElement } from '../database/engine';
 import { generateStandardId, getInstanceIds } from '../schema/identifier';
 import { askEntityExport, askListExport, exportTransformFilters } from './stix';
 import { isEmptyField, isNotEmptyField, READ_ENTITIES_INDICES, READ_INDEX_INFERRED_ENTITIES } from '../database/utils';
-import { STIX_CORE_RELATIONSHIPS } from '../schema/stixCoreRelationship';
 import { ENTITY_TYPE_CONTAINER_CASE } from '../modules/case/case-types';
 import { getEntitySettingFromCache } from '../modules/entitySetting/entitySetting-utils';
 import { stixObjectOrRelationshipAddRefRelation, stixObjectOrRelationshipAddRefRelations, stixObjectOrRelationshipDeleteRefRelation } from './stixObjectOrStixRelationship';
 import { buildContextDataForFile, completeContextDataForEntity, publishUserAction } from '../listener/UserActionListener';
 import { extractEntityRepresentativeName } from '../database/entity-representative';
-import { addFilter, extractFilterGroupValues, findFiltersFromKey } from '../utils/filtering/filtering-utils';
-import { INSTANCE_REGARDING_OF, specialFilterKeysWhoseValueToResolve } from '../utils/filtering/filtering-constants';
-import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
+import { addFilter, findFiltersFromKey } from '../utils/filtering/filtering-utils';
+import { INSTANCE_REGARDING_OF } from '../utils/filtering/filtering-constants';
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../modules/grouping/grouping-types';
 import { getEntitiesMapFromCache } from '../database/cache';
 import { isUserCanAccessStoreElement, SYSTEM_USER } from '../utils/access';
@@ -756,38 +752,4 @@ export const stixCoreObjectEditContext = async (context, user, stixCoreObjectId,
     return notify(BUS_TOPICS[ABSTRACT_STIX_CORE_OBJECT].EDIT_TOPIC, stixCoreObject, user);
   });
 };
-// endregion
-
-// region filters representatives
-// return an array of the value of the ids existing in inputFilters:
-// the entity representative for entities, null for deleted or restricted entities, the id for ids not corresponding to an entity
-export const findFiltersRepresentatives = async (context, user, inputFilters) => {
-  const filtersRepresentatives = [];
-  // extract the ids to resolve from inputFilters
-  const keysToResolve = schemaRelationsRefDefinition.getAllInputNames()
-    .concat(STIX_CORE_RELATIONSHIPS)
-    .concat(specialFilterKeysWhoseValueToResolve);
-  const idsToResolve = extractFilterGroupValues(inputFilters, keysToResolve);
-  const otherIds = extractFilterGroupValues(inputFilters, keysToResolve, true);
-  // resolve the ids
-  const resolvedEntities = await storeLoadByIds(context, user, idsToResolve, ABSTRACT_BASIC_OBJECT);
-  // resolve status ids differently
-  for (let index = 0; index < resolvedEntities.length; index += 1) {
-    let entity = resolvedEntities[index];
-    if (entity?.entity_type === 'Status') {
-      // complete the result with the cache for statuses to have all the infos to fetch the representative
-      entity = await findStatusById(context, user, entity.id);
-    }
-    // add the entity representative in 'value', or null for deleted/restricted entities
-    filtersRepresentatives.push({
-      id: idsToResolve[index],
-      value: (entity ? extractEntityRepresentativeName(entity) : null),
-      entity_type: entity?.entity_type ?? null,
-      color: entity?.color || entity?.x_opencti_color || null
-    });
-  }
-  // add ids that don't require a resolution
-  return filtersRepresentatives.concat(otherIds.map((id) => ({ id, value: id })));
-};
-
 // endregion

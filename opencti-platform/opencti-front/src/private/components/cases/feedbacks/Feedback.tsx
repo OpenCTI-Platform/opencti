@@ -93,7 +93,7 @@ const FeedbackComponent: FunctionComponent<FeedbackProps> = ({ data, enableRefer
   const { isFeatureEnable } = useHelper();
   const FABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
-  const { canEdit } = getCurrentUserAccessRight(feedbackData);
+  const { canEdit } = getCurrentUserAccessRight(feedbackData.currentUserAccessRight);
 
   return (
     <>

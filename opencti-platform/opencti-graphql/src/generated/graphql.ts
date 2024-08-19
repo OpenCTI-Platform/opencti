@@ -18405,15 +18405,16 @@ export type PublicDashboard = BasicObject & InternalObject & {
   __typename?: 'PublicDashboard';
   allowed_markings?: Maybe<Array<MarkingDefinitionShort>>;
   allowed_markings_ids?: Maybe<Array<Scalars['String']['output']>>;
-  authorized_members?: Maybe<Array<MemberAccess>>;
   created_at?: Maybe<Scalars['DateTime']['output']>;
-  dashboard_id?: Maybe<Scalars['String']['output']>;
+  dashboard: Workspace;
+  dashboard_id: Scalars['String']['output'];
   description?: Maybe<Scalars['String']['output']>;
   editContext?: Maybe<Array<EditUserContext>>;
   enabled: Scalars['Boolean']['output'];
   entity_type: Scalars['String']['output'];
   id: Scalars['ID']['output'];
   name: Scalars['String']['output'];
+  owner?: Maybe<Creator>;
   parent_types: Array<Scalars['String']['output']>;
   private_manifest?: Maybe<Scalars['String']['output']>;
   public_manifest?: Maybe<Scalars['String']['output']>;
@@ -18447,9 +18448,12 @@ export type PublicDashboardEdge = {
 export enum PublicDashboardsOrdering {
   Score = '_score',
   CreatedAt = 'created_at',
-  Creator = 'creator',
+  Dashboard = 'dashboard',
+  Enabled = 'enabled',
   Name = 'name',
-  UpdatedAt = 'updated_at'
+  UpdatedAt = 'updated_at',
+  UriKey = 'uri_key',
+  UserId = 'user_id'
 }
 
 export type PublicDistribution = {
@@ -29238,6 +29242,7 @@ export type Workspace = BasicObject & InternalObject & {
   graph_data?: Maybe<Scalars['String']['output']>;
   id: Scalars['ID']['output'];
   investigated_entities_ids?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+  isShared?: Maybe<Scalars['Boolean']['output']>;
   manifest?: Maybe<Scalars['String']['output']>;
   name: Scalars['String']['output'];
   objects?: Maybe<StixObjectOrStixRelationshipRefConnection>;
@@ -36804,15 +36809,16 @@ export type ProviderResolvers<ContextType = any, ParentType extends ResolversPar
 export type PublicDashboardResolvers<ContextType = any, ParentType extends ResolversParentTypes['PublicDashboard'] = ResolversParentTypes['PublicDashboard']> = ResolversObject<{
   allowed_markings?: Resolver<Maybe<Array<ResolversTypes['MarkingDefinitionShort']>>, ParentType, ContextType>;
   allowed_markings_ids?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
-  authorized_members?: Resolver<Maybe<Array<ResolversTypes['MemberAccess']>>, ParentType, ContextType>;
   created_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
-  dashboard_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  dashboard?: Resolver<ResolversTypes['Workspace'], ParentType, ContextType>;
+  dashboard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   enabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  owner?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   private_manifest?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   public_manifest?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -39843,6 +39849,7 @@ export type WorkspaceResolvers<ContextType = any, ParentType extends ResolversPa
   graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   investigated_entities_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  isShared?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   manifest?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   objects?: Resolver<Maybe<ResolversTypes['StixObjectOrStixRelationshipRefConnection']>, ParentType, ContextType, Partial<WorkspaceObjectsArgs>>;

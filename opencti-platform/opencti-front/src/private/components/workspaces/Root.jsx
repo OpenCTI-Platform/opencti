@@ -5,6 +5,7 @@ import RootDashboard from './dashboards/Root';
 import RootInvestigation from './investigations/Root';
 import { EXPLORE, INVESTIGATION } from '../../../utils/hooks/useGranted';
 import Security from '../../../utils/Security';
+import PublicDashboard from './dashboards/publicDashboards/PublicDashboards';
 
 const Root = () => (
   <Routes>
@@ -21,6 +22,14 @@ const Root = () => (
       element={
         <Security needs={[EXPLORE]} placeholder={<Navigate to="/dashboard" />}>
           <RootDashboard />
+        </Security>
+      }
+    />
+    <Route
+      path="/public_dashboards/*"
+      element={
+        <Security needs={[EXPLORE]} placeholder={<Navigate to="/dashboard"/>}>
+          <PublicDashboard/>
         </Security>
       }
     />

@@ -27,11 +27,11 @@ import {
 import { ForbiddenAccess, FunctionalError, UnsupportedError } from '../../config/errors';
 import { getUserAccessRight, MEMBER_ACCESS_RIGHT_ADMIN, SYSTEM_USER } from '../../utils/access';
 import { publishUserAction } from '../../listener/UserActionListener';
-import { initializeAuthorizedMembers } from '../workspace/workspace-domain';
+import { findAll as findAllWorkspaces } from '../workspace/workspace-domain';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
 import { getEntitiesMapFromCache } from '../../database/cache';
 import type { BasicStoreRelation, NumberResult, StoreMarkingDefinition, StoreRelationConnection } from '../../types/store';
-import { getWidgetArguments } from './publicDashboard-utils';
+import { checkUserIsAdminOnDashboard, getWidgetArguments } from './publicDashboard-utils';
 import {
   findAll as stixCoreObjects,
   stixCoreObjectsDistribution,
@@ -46,6 +46,7 @@ import { daysAgo } from '../../utils/format';
 import { isStixCoreObject } from '../../schema/stixCoreObject';
 import { ES_MAX_CONCURRENCY } from '../../database/engine';
 import { findById as findMarkingDefinitionById } from '../../domain/markingDefinition';
+import { addFilter } from '../../utils/filtering/filtering-utils';
 
 export const findById = (
   context: AuthContext,
@@ -60,16 +61,32 @@ export const findById = (
   );
 };
 
-export const findAll = (
+export const findAll = async (
   context: AuthContext,
   user: AuthUser,
   args: QueryPublicDashboardsArgs,
 ) => {
+  const dashboards = await findAllWorkspaces(
+    context,
+    user,
+    {
+      filters: {
+        mode: FilterMode.And,
+        filters: [{ key: ['type'], values: ['dashboard'] }],
+        filterGroups: []
+      }
+    }
+  );
+
+  const dashboardIds = dashboards.edges.map((n) => (n.node.id));
+  const filters = dashboardIds.length > 0
+    ? addFilter(args.filters ?? undefined, 'dashboard_id', dashboardIds)
+    : args.filters;
   return listEntitiesPaginated<BasicStoreEntityPublicDashboard>(
     context,
     user,
     [ENTITY_TYPE_PUBLIC_DASHBOARD],
-    args,
+    { ...args, filters },
   );
 };
 
@@ -173,11 +190,6 @@ export const addPublicDashboard = async (
   // Create public manifest
   const publicManifest = toBase64(JSON.stringify(parsedManifest) ?? '{}');
 
-  const authorizedMembers = initializeAuthorizedMembers(
-    [{ id: user.id, access_right: 'admin' }, { id: 'ALL', access_right: 'view' }],
-    user,
-  );
-
   // Create publicDashboard
   const publicDashboardToCreate = {
     name: input.name,
@@ -188,7 +200,6 @@ export const addPublicDashboard = async (
     dashboard_id: input.dashboard_id,
     user_id: user.id,
     uri_key: uriKey,
-    authorized_members: authorizedMembers,
     allowed_markings_ids: input.allowed_markings_ids,
   };
 
@@ -221,6 +232,7 @@ export const publicDashboardEditField = async (
   id: string,
   input: EditInput[],
 ) => {
+  await checkUserIsAdminOnDashboard(context, user, id);
   const { element } = await updateAttribute(
     context,
     user,
@@ -234,7 +246,7 @@ export const publicDashboardEditField = async (
     event_type: 'mutation',
     event_scope: 'update',
     event_access: 'administration',
-    message: 'Uupdate public dashbaord',
+    message: 'Update public dashboard',
     context_data: { id: element.id, entity_type: ENTITY_TYPE_PUBLIC_DASHBOARD, input },
   });
 
@@ -242,6 +254,7 @@ export const publicDashboardEditField = async (
 };
 
 export const publicDashboardDelete = async (context: AuthContext, user: AuthUser, id: string) => {
+  await checkUserIsAdminOnDashboard(context, user, id);
   const deleted = await deleteElementById(
     context,
     user,
