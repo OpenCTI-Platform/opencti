@@ -6,7 +6,6 @@ import {
   READ_RELATIONSHIPS_INDICES,
   READ_INDEX_STIX_CORE_RELATIONSHIPS,
   READ_INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS,
-  INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS
 } from '../database/utils';
 import { RELATION_RELATED_TO } from '../schema/stixCoreRelationship';
 import { executionContext, SYSTEM_USER } from '../utils/access';
@@ -98,7 +97,7 @@ export const up = async (next) => {
 
   const reindexLinkedToToRelatedToQuery = {
     source: {
-      index: INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS,
+      index: READ_INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS,
       query: {
         bool: {
           must: { term: { 'entity_type.keyword': { value: linkedToType } } },

@@ -3,7 +3,6 @@ import { elDeleteByQueryForMigration, elList, elRawCount, elReindexByQueryForMig
 import {
   INDEX_STIX_CORE_RELATIONSHIPS,
   READ_DATA_INDICES,
-  INDEX_STIX_META_RELATIONSHIPS,
   READ_INDEX_STIX_META_RELATIONSHIPS,
   READ_RELATIONSHIPS_INDICES,
   READ_INDEX_STIX_CORE_RELATIONSHIPS
@@ -98,7 +97,7 @@ export const up = async (next) => {
 
   const reindexLinkedToToRelatedToQuery = {
     source: {
-      index: INDEX_STIX_META_RELATIONSHIPS,
+      index: READ_INDEX_STIX_META_RELATIONSHIPS,
       query: {
         bool: {
           must: { term: { 'entity_type.keyword': { value: linkedToType } } },
