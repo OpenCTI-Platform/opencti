@@ -119,7 +119,7 @@
     "js-deep-equals": "2.1.1",
     "json-to-plain-text": "1.1.4",
     "jwt-decode": "4.0.0",
-    "lru-cache": "10.2.0",
+    "lru-cache": "10.4.3",
     "migrate": "2.1.0",
     "mime-types": "2.1.35",
     "moment": "2.30.1",
