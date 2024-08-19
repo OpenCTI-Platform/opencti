@@ -10,6 +10,7 @@ import Tooltip from '@mui/material/Tooltip';
 import { InformationOutline } from 'mdi-material-ui';
 import Button from '@mui/material/Button';
 import Box from '@mui/material/Box';
+import MenuItem from '@mui/material/MenuItem';
 import inject18n from '../../../../components/i18n';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
@@ -19,6 +20,8 @@ import { deserializeFilterGroupForFrontend, isFilterGroupNotEmpty, serializeFilt
 import FilterIconButton from '../../../../components/FilterIconButton';
 import Drawer from '../../common/drawer/Drawer';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
+import SelectField from '../../../../components/fields/SelectField';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 const styles = (theme) => ({
   header: {
@@ -79,7 +82,7 @@ const retentionValidation = (t) => Yup.object().shape({
 
 const RetentionEditionContainer = (props) => {
   const { t, classes, open, handleClose, retentionRule } = props;
-  const initialValues = R.pickAll(['name', 'max_retention'], retentionRule);
+  const initialValues = R.pickAll(['name', 'max_retention', 'retention_unit'], retentionRule);
   const [filters, helpers] = useFiltersState(deserializeFilterGroupForFrontend(props.retentionRule?.filters ?? undefined));
   const [verified, setVerified] = useState(true);
   const onSubmit = (values, { setSubmitting }) => {
@@ -147,10 +150,22 @@ const RetentionEditionContainer = (props) => {
               fullWidth={true}
             />
             <Field
+              component={SelectField}
+              variant="standard"
+              name="retention_unit"
+              label={t('Unit')}
+              fullWidth={true}
+              containerstyle={fieldSpacingContainerStyle}
+            >
+              <MenuItem value="minutes">{t('minutes')}</MenuItem>
+              <MenuItem value="hours">{t('hours')}</MenuItem>
+              <MenuItem value="days">{t('days')}</MenuItem>
+            </Field>
+            <Field
               component={TextField}
               variant="standard"
               name="max_retention"
-              label={t('Maximum retention days')}
+              label={t('Maximum retention')}
               onChange={() => setVerified(false)}
               fullWidth={true}
               style={{ marginTop: 20 }}
@@ -159,7 +174,7 @@ const RetentionEditionContainer = (props) => {
                   <InputAdornment position="end">
                     <Tooltip
                       title={t(
-                        'All objects matching the filters that have not been updated since this amount of days will be deleted',
+                        'All objects matching the filters that have not been updated since this amount of units will be deleted',
                       )}
                     >
                       <InformationOutline
@@ -259,6 +274,7 @@ const RetentionEditionFragment = createFragmentContainer(
             fragment RetentionEdition_retentionRule on RetentionRule {
                 id
                 name
+                retention_unit
                 max_retention
                 filters
                 scope

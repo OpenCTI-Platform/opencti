@@ -503,6 +503,7 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
     { name: 'name', label: 'Name', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false, isFilterable: true },
     { name: 'filters', label: 'Filters', type: 'string', format: 'text', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false, isFilterable: false },
     { name: 'max_retention', label: 'Maximum retention', type: 'numeric', precision: 'integer', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false, isFilterable: true },
+    { name: 'retention_unit', label: 'Maximum retention unit', type: 'string', format: 'enum', values: ['minutes', 'hours', 'days'], mandatoryType: 'no', editDefault: true, multiple: false, upsert: false, isFilterable: true },
     { name: 'last_execution_date', label: 'Last execution date', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'last_deleted_count', label: 'Last deleted count', precision: 'integer', type: 'numeric', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'remaining_count', label: 'Remaining count', precision: 'integer', type: 'numeric', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },

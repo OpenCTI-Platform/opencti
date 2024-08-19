@@ -21979,6 +21979,7 @@ export type RetentionRule = {
   max_retention: Scalars['Int']['output'];
   name: Scalars['String']['output'];
   remaining_count?: Maybe<Scalars['Int']['output']>;
+  retention_unit?: Maybe<RetentionUnit>;
   scope: RetentionRuleScope;
   standard_id: Scalars['String']['output'];
 };
@@ -21987,6 +21988,7 @@ export type RetentionRuleAddInput = {
   filters: Scalars['String']['input'];
   max_retention: Scalars['Int']['input'];
   name: Scalars['String']['input'];
+  retention_unit?: InputMaybe<RetentionUnit>;
   scope: RetentionRuleScope;
 };
 
@@ -22025,6 +22027,12 @@ export enum RetentionRuleScope {
   File = 'file',
   Knowledge = 'knowledge',
   Workbench = 'workbench'
+}
+
+export enum RetentionUnit {
+  Days = 'days',
+  Hours = 'hours',
+  Minutes = 'minutes'
 }
 
 export type Role = BasicObject & InternalObject & {
@@ -30209,6 +30217,7 @@ export type ResolversTypes = ResolversObject<{
   RetentionRuleEditMutations: ResolverTypeWrapper<RetentionRuleEditMutations>;
   RetentionRuleOrdering: RetentionRuleOrdering;
   RetentionRuleScope: RetentionRuleScope;
+  RetentionUnit: RetentionUnit;
   Role: ResolverTypeWrapper<Role>;
   RoleAddInput: RoleAddInput;
   RoleConnection: ResolverTypeWrapper<RoleConnection>;
@@ -37411,6 +37420,7 @@ export type RetentionRuleResolvers<ContextType = any, ParentType extends Resolve
   max_retention?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   remaining_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  retention_unit?: Resolver<Maybe<ResolversTypes['RetentionUnit']>, ParentType, ContextType>;
   scope?: Resolver<ResolversTypes['RetentionRuleScope'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;

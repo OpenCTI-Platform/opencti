@@ -15,6 +15,7 @@ import { Option } from '@components/common/form/ReferenceField';
 import { RetentionCreationCheckMutation$data } from '@components/settings/retention/__generated__/RetentionCreationCheckMutation.graphql';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import Alert from '@mui/material/Alert';
+import MenuItem from '@mui/material/MenuItem';
 import Drawer, { DrawerVariant } from '../../common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
@@ -26,6 +27,8 @@ import { insertNode } from '../../../../utils/store';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import useHelper from '../../../../utils/hooks/useHelper';
+import SelectField from '../../../../components/fields/SelectField';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   buttons: {
@@ -58,12 +61,14 @@ const RetentionCheckMutation = graphql`
 
 const RetentionCreationValidation = (t: (text: string) => string) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
+  retention_unit: Yup.string().required(t('This field is required')),
   max_retention: Yup.number().min(1, t('This field must be >= 1')),
 });
 
 interface RetentionFormValues {
   name: string,
   max_retention: string,
+  retention_unit: 'minutes' | 'hours' | 'days',
   scope: { value: string, label: string },
   filters: string,
 }
@@ -146,7 +151,7 @@ const RetentionCreation = ({ paginationOptions }: { paginationOptions: Retention
     >
       {({ onClose }) => (
         <Formik
-          initialValues={{ name: '', max_retention: '31', scope: { value: 'knowledge', label: 'Knowledge' }, filters: '' }}
+          initialValues={{ name: '', max_retention: '31', retention_unit: 'days', scope: { value: 'knowledge', label: 'Knowledge' }, filters: '' }}
           validationSchema={RetentionCreationValidation(t_i18n)}
           onSubmit={onSubmit}
           onReset={onClose}
@@ -161,10 +166,22 @@ const RetentionCreation = ({ paginationOptions }: { paginationOptions: Retention
                 fullWidth={true}
               />
               <Field
+                component={SelectField}
+                variant="standard"
+                name="retention_unit"
+                label={t_i18n('Unit')}
+                fullWidth={true}
+                containerstyle={fieldSpacingContainerStyle}
+              >
+                <MenuItem value="minutes">{t_i18n('minutes')}</MenuItem>
+                <MenuItem value="hours">{t_i18n('hours')}</MenuItem>
+                <MenuItem value="days">{t_i18n('days')}</MenuItem>
+              </Field>
+              <Field
                 component={TextField}
                 variant="standard"
                 name="max_retention"
-                label={t_i18n('Maximum retention days')}
+                label={t_i18n('Maximum retention')}
                 fullWidth={true}
                 onChange={() => setVerified(false)}
                 style={{ marginTop: 20 }}
@@ -173,7 +190,7 @@ const RetentionCreation = ({ paginationOptions }: { paginationOptions: Retention
                     <InputAdornment position="end">
                       <Tooltip
                         title={t_i18n(
-                          'All objects matching the filters that have not been updated since this amount of days will be deleted',
+                          'All objects matching the filters that have not been updated since this amount of units will be deleted',
                         )}
                       >
                         <InformationOutline
