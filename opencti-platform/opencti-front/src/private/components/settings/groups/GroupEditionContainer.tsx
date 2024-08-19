@@ -39,7 +39,7 @@ const GroupEditionContainerFragment = graphql`
     rolesOrderMode: { type: "OrderingMode", defaultValue: asc }
   ) {
     id
-    members {
+    members(first: 500) {
       edges {
         node {
           id
