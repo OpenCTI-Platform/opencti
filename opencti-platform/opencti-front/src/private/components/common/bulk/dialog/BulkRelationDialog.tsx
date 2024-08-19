@@ -209,7 +209,7 @@ const BulkRelationDialog : FunctionComponent<BulkRelationDialogProps> = ({
     return !!(selectedEntityType?.legitRelations.includes(selectedRelationType) && matchingEntity);
   };
 
-  const selectMissingEntites = (currentBulkEntityList) => {
+  const selectMissingEntites = (currentBulkEntityList: BulkEntityTypeInfo[]) => {
     const foundMissingEntity = currentBulkEntityList.find((item) => !item.isMatchingEntity);
     if (!foundMissingEntity) return;
     if (EntityTypeWithoutBulkEntityCreation.includes(foundMissingEntity.selectedEntityType.toEntitytype)) {
