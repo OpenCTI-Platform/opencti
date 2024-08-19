@@ -427,6 +427,7 @@ const BulkRelationDialog : FunctionComponent<BulkRelationDialogProps> = ({
         handleClose={handleCloseObjectCreateEntityForm}
         confidence={undefined}
         defaultCreatedBy={undefined}
+        creationCallback={undefined}
         defaultMarkingDefinitions={undefined}
       />
     );
