@@ -3,9 +3,9 @@ import { elDeleteByQueryForMigration, elList, elRawCount, elReindexByQueryForMig
 import {
   INDEX_STIX_CORE_RELATIONSHIPS,
   READ_DATA_INDICES,
-  READ_INDEX_STIX_META_RELATIONSHIPS,
   READ_RELATIONSHIPS_INDICES,
-  READ_INDEX_STIX_CORE_RELATIONSHIPS
+  READ_INDEX_STIX_CORE_RELATIONSHIPS,
+  READ_INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS,
 } from '../database/utils';
 import { RELATION_RELATED_TO } from '../schema/stixCoreRelationship';
 import { executionContext, SYSTEM_USER } from '../utils/access';
@@ -19,7 +19,7 @@ export const up = async (next) => {
   const relRelatedTo = `rel_${RELATION_RELATED_TO}.internal_id`;
 
   // We get all current linked-to relations: will be used to check for duplicates in linked-to to related-to migration
-  const linkedToRefRelations = await elList(context, SYSTEM_USER, READ_INDEX_STIX_META_RELATIONSHIPS, { types: [linkedToType] });
+  const linkedToRefRelations = await elList(context, SYSTEM_USER, READ_INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS, { types: [linkedToType] });
 
   // If no linked-to refs exist, we can skip the migration process
   if (linkedToRefRelations.length === 0) {
@@ -97,7 +97,7 @@ export const up = async (next) => {
 
   const reindexLinkedToToRelatedToQuery = {
     source: {
-      index: READ_INDEX_STIX_META_RELATIONSHIPS,
+      index: READ_INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS,
       query: {
         bool: {
           must: { term: { 'entity_type.keyword': { value: linkedToType } } },
@@ -176,7 +176,7 @@ export const up = async (next) => {
 
   await elDeleteByQueryForMigration(
     '[MIGRATION] Deleting all linked-to refs',
-    [READ_INDEX_STIX_META_RELATIONSHIPS],
+    [READ_INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS],
     {
       query: {
         term: { 'entity_type.keyword': { value: linkedToType } }
