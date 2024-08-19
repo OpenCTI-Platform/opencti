@@ -46,7 +46,6 @@ import { isNotEmptyField } from '../../../../utils/utils';
 import RelationSelection from '../../../../utils/graph/RelationSelection';
 import withRouter from '../../../../utils/compat-router/withRouter';
 import { containerTypes } from '../../../../utils/hooks/useAttributes';
-import useHelper from '../../../../utils/hooks/useHelper';
 
 const ignoredStixCoreObjectsTypes = ['Note', 'Opinion'];
 
@@ -91,8 +90,7 @@ class GroupingKnowledgeGraphComponent extends Component {
       R.map((n) => R.assoc(
         'tlabel',
         props.t(
-          `${n.relationship_type ? 'relationship_' : 'entity_'}${
-            n.entity_type
+          `${n.relationship_type ? 'relationship_' : 'entity_'}${n.entity_type
           }`,
         ),
         n,
@@ -392,8 +390,7 @@ class GroupingKnowledgeGraphComponent extends Component {
         R.map((n) => ({
           label: n,
           tlabel: this.props.t(
-            `${n.relationship_type ? 'relationship_' : 'entity_'}${
-              n.entity_type
+            `${n.relationship_type ? 'relationship_' : 'entity_'}${n.entity_type
             }`,
           ),
         })),
@@ -969,12 +966,12 @@ class GroupingKnowledgeGraphComponent extends Component {
     if (isNotEmptyField(keyword)) {
       const filterByKeyword = (n) => keyword === ''
         || (getMainRepresentative(n) || '').toLowerCase().indexOf(keyword.toLowerCase())
-          !== -1
+        !== -1
         || (getSecondaryRepresentative(n) || '')
           .toLowerCase()
           .indexOf(keyword.toLowerCase()) !== -1
         || (n.entity_type || '').toLowerCase().indexOf(keyword.toLowerCase())
-          !== -1;
+        !== -1;
       R.map(
         (n) => filterByKeyword(n) && this.selectedNodes.add(n),
         this.state.graphData.nodes,
@@ -1014,8 +1011,6 @@ class GroupingKnowledgeGraphComponent extends Component {
       timeRangeInterval,
       this.graphObjects,
     );
-    const { isFeatureEnable } = useHelper();
-    const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
     return (
       <UserContext.Consumer>
@@ -1025,7 +1020,7 @@ class GroupingKnowledgeGraphComponent extends Component {
             || window.innerHeight - 235 - bannerSettings.bannerHeightNumber * 2;
           return (
             <>
-              {!isFABReplaced && <ContainerHeader
+              <ContainerHeader
                 container={grouping}
                 PopoverComponent={<GroupingPopover />}
                 link={`/dashboard/analyses/groupings/${grouping.id}/knowledge`}
@@ -1036,19 +1031,7 @@ class GroupingKnowledgeGraphComponent extends Component {
                 enableSuggestions={true}
                 onApplied={this.handleApplySuggestion.bind(this)}
                 investigationAddFromContainer={investigationAddFromContainer}
-                                 />}
-              {isFABReplaced && <ContainerHeader
-                container={grouping}
-                PopoverComponent={null}
-                link={`/dashboard/analyses/groupings/${grouping.id}/knowledge`}
-                modes={['graph', 'content', 'correlation', 'matrix']}
-                currentMode={mode}
-                adjust={this.handleZoomToFit.bind(this)}
-                knowledge={true}
-                enableSuggestions={true}
-                onApplied={this.handleApplySuggestion.bind(this)}
-                investigationAddFromContainer={investigationAddFromContainer}
-                                />}
+              />
               <GroupingKnowledgeGraphBar
                 handleToggle3DMode={this.handleToggle3DMode.bind(this)}
                 currentMode3D={mode3D}
