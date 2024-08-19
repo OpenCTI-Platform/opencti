@@ -1049,13 +1049,16 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
                           'attribute',
                           event.target.value,
                         )
-                                                        }
+                        }
                       >
                         <MenuItem key="internal_id" value="internal_id">
                           {t_i18n('Entity')}
                         </MenuItem>
                         <MenuItem key="entity_type" value="entity_type">
                           {t_i18n('Entity type')}
+                        </MenuItem>
+                        <MenuItem key="relationship_type" value="relationship_type">
+                          {t_i18n('Relationship type')}
                         </MenuItem>
                         <MenuItem
                           key="created-by.internal_id"
