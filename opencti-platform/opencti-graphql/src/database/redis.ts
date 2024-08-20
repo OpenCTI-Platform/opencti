@@ -8,7 +8,16 @@ import type { ChainableCommander } from 'ioredis/built/utils/RedisCommander';
 import type { ClusterOptions } from 'ioredis/built/cluster/ClusterOptions';
 import type { SentinelConnectionOptions } from 'ioredis/built/connectors/SentinelConnector';
 import conf, { booleanConf, configureCA, DEV_MODE, getStoppingState, loadCert, logApp, REDIS_PREFIX } from '../config/conf';
-import { asyncListTransformation, EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE, EVENT_TYPE_UPDATE, isEmptyField, waitInSec } from './utils';
+import {
+  asyncListTransformation,
+  EVENT_TYPE_CREATE,
+  EVENT_TYPE_DELETE,
+  EVENT_TYPE_MERGE,
+  EVENT_TYPE_UPDATE,
+  isEmptyField,
+  MAX_EVENT_LOOP_PROCESSING_TIME,
+  waitInSec
+} from './utils';
 import { isStixExportableData } from '../schema/stixCoreObject';
 import { DatabaseError, LockTimeoutError, UnsupportedError } from '../config/errors';
 import { mergeDeepRightAll, now, utcDate } from '../utils/format';
@@ -19,7 +28,6 @@ import type { BaseEvent, CreateEventOpts, DeleteEvent, EventOpts, MergeEvent, Ss
 import type { StixCoreObject } from '../types/stix-common';
 import type { EditContext } from '../generated/graphql';
 import { telemetry } from '../config/tracing';
-import { filterEmpty } from '../types/type-utils';
 import type { ClusterConfig } from '../manager/clusterManager';
 import type { ActivityStreamEvent } from '../manager/activityListener';
 import type { ExecutionEnvelop } from '../manager/playbookManager';
@@ -232,9 +240,22 @@ const keysFromList = async (listId: string, expirationTime?: number) => {
         const [, data] = results[1] as string[];
         return data ? { id: i, ttl, data } : null;
       })));
-    return instancesConfig.filter(filterEmpty).map((n) => {
-      return { redis_key_id: n.id, redis_key_ttl: n.ttl, ...JSON.parse(n.data) };
-    });
+    const keysElements = [];
+    let startProcessingTime = new Date().getTime();
+    for (let n = 0; n < instancesConfig.length; n += 1) {
+      const keyData = instancesConfig[n];
+      if (keyData) {
+        keysElements.push({ redis_key_id: keyData.id, redis_key_ttl: keyData.ttl, ...JSON.parse(keyData.data) });
+        // Prevent event loop locking more than MAX_EVENT_LOOP_PROCESSING_TIME
+        if (new Date().getTime() - startProcessingTime > MAX_EVENT_LOOP_PROCESSING_TIME) {
+          startProcessingTime = new Date().getTime();
+          await new Promise((resolve) => {
+            setImmediate(resolve);
+          });
+        }
+      }
+    }
+    return keysElements;
   }
   return [];
 };
