@@ -183,7 +183,7 @@
     "@types/xml2js": "0.4.14",
     "@typescript-eslint/eslint-plugin": "7.3.1",
     "@typescript-eslint/parser": "7.3.1",
-    "@vitest/coverage-v8": "1.4.0",
+    "@vitest/coverage-v8": "2.0.5",
     "apollo-server-errors": "3.3.1",
     "cross-env": "7.0.3",
     "esbuild": "0.23.1",
@@ -201,7 +201,7 @@
     "graphql-tag": "2.12.6",
     "ts-loader": "9.5.1",
     "typescript": "5.5.4",
-    "vitest": "1.4.0"
+    "vitest": "2.0.5"
   },
   "resolutions": {
     "json5": "2.2.3",
