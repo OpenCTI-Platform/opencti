@@ -19,9 +19,9 @@ export const buildTestConfig = (include: string[]) => defineConfig({
       reporter: ['text', 'json', 'html'],
     },
     poolOptions: {
-      threads: {
-        singleThread: true
-      }
+      forks: {
+        singleFork: true,
+      },
     },
     sequence: {
       shuffle: false,
