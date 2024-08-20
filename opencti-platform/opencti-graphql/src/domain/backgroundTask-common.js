@@ -2,7 +2,7 @@ import { uniq } from 'ramda';
 import { generateInternalId, generateStandardId } from '../schema/identifier';
 import { ENTITY_TYPE_BACKGROUND_TASK } from '../schema/internalObject';
 import { now } from '../utils/format';
-import { isUserHasCapability, MEMBER_ACCESS_RIGHT_ADMIN, SETTINGS_SET_ACCESSES, KNOWLEDGE_KNASKIMPORT } from '../utils/access';
+import { isUserHasCapability, MEMBER_ACCESS_RIGHT_ADMIN, SETTINGS_SET_ACCESSES, KNOWLEDGE_KNASKIMPORT, SETTINGS_SETLABELS, KNOWLEDGE_KNUPDATE } from '../utils/access';
 import { isKnowledge, KNOWLEDGE_DELETE, KNOWLEDGE_UPDATE } from '../schema/general';
 import { ForbiddenAccess, UnsupportedError } from '../config/errors';
 import { elIndex } from '../database/engine';
@@ -114,7 +114,7 @@ export const checkActionValidity = async (context, user, input, scope, taskType)
     }
   } else if (scope === BackgroundTaskScope.Import) { // 04. Background task of scope Import (i.e. on files and workbenches in Data/import)
     // The user should have the capability KNOWLEDGE_KNASKIMPORT
-    const isAuthorized = userCapabilities.includes(BYPASS) || userCapabilities.includes(KNOWLEDGE_KNASKIMPORT);
+    const isAuthorized = isUserHasCapability(user, KNOWLEDGE_KNASKIMPORT);
     if (!isAuthorized) {
       throw ForbiddenAccess();
     }
