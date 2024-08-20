@@ -216,16 +216,6 @@ const LeftBar = () => {
   const isGrantedToImport = useGranted([KNOWLEDGE_KNASKIMPORT]);
   const isGrantedToProcessing = useGranted([KNOWLEDGE_KNUPDATE, SETTINGS_SETACCESSES, CSVMAPPERS]);
   const isGrantedToSharing = useGranted([TAXIIAPI]);
-  const isGrantedToSettings = useGranted([
-    SETTINGS_SETPARAMETERS,
-    SETTINGS_SETACCESSES,
-    SETTINGS_SETMARKINGS,
-    SETTINGS_SETCUSTOMIZATION,
-    SETTINGS_SETLABELS,
-    SETTINGS_SECURITYACTIVITY,
-    SETTINGS_FILEINDEXING,
-    SETTINGS_SUPPORT,
-  ]);
   const isGrantedToParameters = useGranted([SETTINGS_SETPARAMETERS]);
   const isGrantedToTaxonomies = useGranted([SETTINGS_SETLABELS]);
   const isGrantedToFileIndexing = useGranted([SETTINGS_FILEINDEXING]);
@@ -233,7 +223,7 @@ const LeftBar = () => {
   const isGrantedToIngestion = useGranted([MODULES, INGESTION, INGESTION_SETINGESTIONS]);
   const isOrganizationAdmin = useGranted([VIRTUAL_ORGANIZATION_ADMIN]);
   const isGrantedToCustomization = useGranted([SETTINGS_SETCUSTOMIZATION]);
-  const isGrantedToSecurity = useGranted([SETTINGS_SETMARKINGS, SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN]);
+  const isGrantedToSecurity = useGranted([SETTINGS_SETMARKINGS, SETTINGS_SETACCESSES]);
   const isGrantedToAudit = useGranted([SETTINGS_SECURITYACTIVITY]);
   const isGrantedToExplore = useGranted([EXPLORE]);
   const anchors = {
@@ -937,56 +927,31 @@ const LeftBar = () => {
         >
           <Divider />
           <MenuList component="nav">
-            {isOrganizationAdmin && !isGrantedToSettings ? (
-              <StyledTooltip
-                title={!navOpen && t_i18n('Settings')}
-                placement="right"
-              >
-                <MenuItem
-                  component={Link}
-                  to="/dashboard/settings/accesses/organizations"
-                  selected={!navOpen && location.pathname.includes('/dashboard/settings')}
-                  dense={true}
-                  classes={{ root: classes.menuItem }}
-                >
-                  <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
-                    <CogOutline />
-                  </ListItemIcon>
-                  {navOpen && (
-                    <ListItemText
-                      classes={{ primary: classes.menuItemText }}
-                      primary={t_i18n('Settings')}
-                    />
-                  )}
-                </MenuItem>
-              </StyledTooltip>
-            ) : (
-              <MenuItem
-                ref={anchors.settings}
-                selected={!navOpen && location.pathname.includes('/dashboard/settings')}
-                dense={true}
-                classes={{ root: classes.menuItem }}
-                onClick={() => (isMobile || navOpen ? handleSelectedMenuToggle('settings') : handleGoToPage('/dashboard/settings'))}
-                onMouseEnter={() => !navOpen && handleSelectedMenuOpen('settings')}
-                onMouseLeave={() => !navOpen && handleSelectedMenuClose()}
-              >
-                <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
-                  <CogOutline />
-                </ListItemIcon>
-                {navOpen && (
-                  <ListItemText
-                    classes={{ primary: classes.menuItemText }}
-                    primary={t_i18n('Settings')}
-                  />
-                )}
-                {navOpen && (selectedMenu.includes('settings') ? <ExpandLessOutlined /> : <ExpandMoreOutlined />)}
-              </MenuItem>
-            )}
-            {isGrantedToSettings && generateSubMenu(
+            <MenuItem
+              ref={anchors.settings}
+              selected={!navOpen && location.pathname.includes('/dashboard/settings')}
+              dense={true}
+              classes={{ root: classes.menuItem }}
+              onClick={() => (isMobile || navOpen ? handleSelectedMenuToggle('settings') : handleGoToPage('/dashboard/settings'))}
+              onMouseEnter={() => !navOpen && handleSelectedMenuOpen('settings')}
+              onMouseLeave={() => !navOpen && handleSelectedMenuClose()}
+            >
+              <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
+                <CogOutline />
+              </ListItemIcon>
+              {navOpen && (
+                <ListItemText
+                  classes={{ primary: classes.menuItemText }}
+                  primary={t_i18n('Settings')}
+                />
+              )}
+              {navOpen && (selectedMenu.includes('settings') ? <ExpandLessOutlined /> : <ExpandMoreOutlined />)}
+            </MenuItem>
+            {generateSubMenu(
               'settings',
               [
                 { granted: isGrantedToParameters, link: '/dashboard/settings', label: 'Parameters', exact: true },
-                { granted: isGrantedToSecurity, link: '/dashboard/settings/accesses', label: 'Security' },
+                { granted: isGrantedToSecurity || isOrganizationAdmin, link: '/dashboard/settings/accesses', label: 'Security' },
                 { granted: isGrantedToCustomization, link: '/dashboard/settings/customization', label: 'Customization' },
                 { granted: isGrantedToTaxonomies, link: '/dashboard/settings/vocabularies', label: 'Taxonomies' },
                 { granted: isGrantedToAudit, link: '/dashboard/settings/activity', label: 'Activity' },
