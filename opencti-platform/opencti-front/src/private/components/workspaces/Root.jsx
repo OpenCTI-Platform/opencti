@@ -26,7 +26,7 @@ const Root = () => (
       }
     />
     <Route
-      path="/public_dashboards/*"
+      path="/dashboards_public/*"
       element={
         <Security needs={[EXPLORE]} placeholder={<Navigate to="/dashboard"/>}>
           <PublicDashboard/>

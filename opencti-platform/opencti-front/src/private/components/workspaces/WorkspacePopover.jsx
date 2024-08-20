@@ -123,7 +123,7 @@ const WorkspacePopover = ({ workspace, paginationOptions }) => {
         operator: 'eq',
       }],
     };
-    navigate(`/dashboard/workspaces/public_dashboards?filters=${JSON.stringify(filter)}`);
+    navigate(`/dashboard/workspaces/dashboards_public?filters=${JSON.stringify(filter)}`);
   };
 
   return (

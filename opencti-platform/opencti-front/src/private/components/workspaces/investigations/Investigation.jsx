@@ -13,7 +13,7 @@ const styles = () => ({
   container: {
     width: '100%',
     height: '100%',
-    margin: 0,
+    margin: '10px 0 0 0',
     padding: 0,
   },
 });

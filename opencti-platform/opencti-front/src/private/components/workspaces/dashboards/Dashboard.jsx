@@ -753,7 +753,7 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
       id="container"
       style={{
         paddingBottom: noToolbar ? 0 : 50,
-        marginTop: noToolbar ? -20 : 0,
+        marginTop: noToolbar ? -20 : 10,
       }}
     >
       {!noToolbar && (

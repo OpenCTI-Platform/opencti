@@ -794,38 +794,58 @@ const LeftBar = () => {
           <Divider />
           <MenuList component="nav">
             <Security needs={[EXPLORE]}>
-              <StyledTooltip title={!navOpen && t_i18n('Dashboards')} placement="right">
-                <MenuItem
-                  ref={anchors.dashboards}
-                  selected={!navOpen && location.pathname.includes('/dashboard/workspaces/dashboards')}
-                  dense={true}
-                  classes={{ root: classes.menuItem }}
-                  onClick={() => (isMobile || navOpen ? handleSelectedMenuToggle('dashboards') : handleGoToPage('/dashboard/dashboards'))}
-                  onMouseEnter={() => !navOpen && handleSelectedMenuOpen('dashboards')}
-                  onMouseLeave={() => !navOpen && handleSelectedMenuClose()}
-                >
-                  <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
-                    <InsertChartOutlinedOutlined />
-                  </ListItemIcon>
-                  {navOpen && (
+              {isFeatureEnable('PUBLIC_DASHBOARD_LIST') ? (
+                <>
+                  <MenuItem
+                    ref={anchors.dashboards}
+                    selected={!navOpen && location.pathname.includes('/dashboard/workspaces/dashboards')}
+                    dense={true}
+                    classes={{ root: classes.menuItem }}
+                    onClick={() => (isMobile || navOpen ? handleSelectedMenuToggle('dashboards') : handleGoToPage('/dashboard/workspaces/dashboards'))}
+                    onMouseEnter={() => !navOpen && handleSelectedMenuOpen('dashboards')}
+                    onMouseLeave={() => !navOpen && handleSelectedMenuClose()}
+                  >
+                    <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
+                      <InsertChartOutlinedOutlined />
+                    </ListItemIcon>
+                    {navOpen && (
+                      <ListItemText
+                        classes={{ primary: classes.menuItemText }}
+                        primary={t_i18n('Dashboards')}
+                      />
+                    )}
+                    {navOpen && (selectedMenu.includes('dashboards') ? <ExpandLessOutlined/> : <ExpandMoreOutlined/>)}
+                  </MenuItem>
+                  {generateSubMenu(
+                    'dashboards',
+                    [
+                      { granted: isGrantedToExplore, type: 'Dashboard', link: '/dashboard/workspaces/dashboards', label: 'Custom dashboards', exact: true },
+                      { granted: isGrantedToExplore, type: 'Dashboard', link: '/dashboard/workspaces/dashboards_public', label: 'Public dashboards', exact: true },
+                    ],
+                  )}
+                </>
+              ) : (
+                <StyledTooltip title={!navOpen && t_i18n('Dashboards')} placement="right">
+                  <MenuItem
+                    component={Link}
+                    to="/dashboard/workspaces/dashboards"
+                    selected={!navOpen && location.pathname.includes('/dashboard/workspaces/dashboards')}
+                    dense={true}
+                    classes={{ root: classes.menuItem }}
+                  >
+                    <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
+                      <InsertChartOutlinedOutlined />
+                    </ListItemIcon>
+                    {navOpen && (
                     <ListItemText
                       classes={{ primary: classes.menuItemText }}
                       primary={t_i18n('Dashboards')}
                     />
-                  )}
-                  {navOpen && (selectedMenu.includes('dashboards') ? <ExpandLessOutlined/> : <ExpandMoreOutlined/>)}
-                </MenuItem>
-              </StyledTooltip>
+                    )}
+                  </MenuItem>
+                </StyledTooltip>
+              )}
             </Security>
-            {generateSubMenu(
-              'dashboards',
-              isFeatureEnable('PUBLIC_DASHBOARD_LIST') ? [
-                { granted: isGrantedToExplore, type: 'Dashboard', link: '/dashboard/workspaces/dashboards', label: 'Custom dashboards' },
-                { granted: isGrantedToExplore, type: 'Dashboard', link: '/dashboard/workspaces/public_dashboards', label: 'Public dashboards' },
-              ] : [
-                { granted: isGrantedToExplore, type: 'Dashboard', link: '/dashboard/workspaces/dashboards', label: 'Custom dashboards' },
-              ],
-            )}
             <Security needs={[INVESTIGATION]}>
               <StyledTooltip title={!navOpen && t_i18n('Investigations')} placement="right">
                 <MenuItem
