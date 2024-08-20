@@ -337,7 +337,7 @@ export const indicatorEditField = async (context: AuthContext, user: AuthUser, i
     }
   }
   logApp.info('indicatorEditField finalInput', { finalInput });
-  return stixDomainObjectEditField(context, context.user, id, finalInput, opts);
+  return stixDomainObjectEditField(context, user, id, finalInput, opts);
 };
 
 export interface IndicatorPatch {
