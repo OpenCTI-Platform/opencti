@@ -80,7 +80,7 @@ interface IncidentProps {
   incidentData: Incident_incident$key;
 }
 
-const Incident = ({ incidentData }) => {
+const Incident: React.FC<IncidentProps> = ({ incidentData }) => {
   const incident = useFragment<Incident_incident$key>(
     incidentFragment,
     incidentData,

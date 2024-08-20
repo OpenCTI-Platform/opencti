@@ -141,10 +141,10 @@ interface ThreatActorIndividualProps {
   threatActorIndividualData: ThreatActorIndividual_ThreatActorIndividual$key;
 }
 
-const ThreatActorIndividual = ({ data }) => {
+const ThreatActorIndividual: React.FC<ThreatActorIndividualProps> = ({ threatActorIndividualData }) => {
   const threatActorIndividual = useFragment<ThreatActorIndividual_ThreatActorIndividual$key>(
     threatActorIndividualFragment,
-    data,
+    threatActorIndividualData,
   );
   const overviewLayoutCustomization = useOverviewLayoutCustomization(threatActorIndividual.entity_type);
 
