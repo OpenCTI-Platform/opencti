@@ -24,6 +24,13 @@ const FEEDBACK_DEFINITION: ModuleDefinition<StoreEntityFeedback, StixFeedback> =
       },
     },
   },
+  overviewLayoutCustomization: [
+    { key: 'details', width: 6, label: 'Entity details' },
+    { key: 'basicInformation', width: 6, label: 'Basic information' },
+    { key: 'relatedEntities', width: 12, label: 'Related entities' },
+    { key: 'externalReferences', width: 6, label: 'External references' },
+    { key: 'mostRecentHistory', width: 6, label: 'Most recent history' },
+  ],
   attributes: [
     { name: 'rating', label: 'Rating', type: 'numeric', precision: 'integer', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true, isFilterable: true },
     { ...authorizedMembers, editDefault: true }

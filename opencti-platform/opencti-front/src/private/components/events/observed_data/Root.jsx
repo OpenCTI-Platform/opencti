@@ -41,6 +41,7 @@ const observedDataQuery = graphql`
       id
       standard_id
       entity_type
+      name
       ...ObservedData_observedData
       ...ObservedDataDetails_observedData
       ...ContainerHeader_container
@@ -169,7 +170,7 @@ class RootObservedData extends Component {
                     <Route
                       path="/"
                       element={
-                        <ObservedData observedData={props.observedData} />
+                        <ObservedData observedDataData={props.observedData} />
                       }
                     />
                     <Route

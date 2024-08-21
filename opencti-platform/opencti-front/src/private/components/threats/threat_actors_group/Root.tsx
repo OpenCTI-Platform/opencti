@@ -198,7 +198,7 @@ const RootThreatActorGroup = ({ queryRef, threatActorGroupId }: RootThreatActorG
               <Route
                 path="/"
                 element={
-                  <ThreatActorGroup threatActorGroup={threatActorGroup} />
+                  <ThreatActorGroup threatActorGroupData={threatActorGroup} />
                 }
               />
               <Route

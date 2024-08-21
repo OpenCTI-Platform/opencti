@@ -132,7 +132,7 @@ const RootDataSourceComponent = ({ queryRef, dataSourceId }) => {
             <Route
               path="/"
               element={
-                <DataSource data={dataSource}/>
+                <DataSource dataSourceData={dataSource}/>
               }
             />
             <Route

@@ -196,7 +196,7 @@ const RootCampaign = ({ campaignId, queryRef }: RootCampaignProps) => {
               <Route
                 path="/"
                 element={
-                  <Campaign campaign={campaign} />
+                  <Campaign campaignData={campaign} />
                 }
               />
               <Route

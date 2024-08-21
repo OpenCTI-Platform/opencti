@@ -145,7 +145,7 @@ const RootDataComponent = () => {
                     <Route
                       path="/"
                       element={
-                        <DataComponent data={dataComponent}/>
+                        <DataComponent dataComponentData={dataComponent}/>
                       }
                     />
                     <Route

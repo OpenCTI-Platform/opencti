@@ -191,7 +191,7 @@ class RootAttackPattern extends Component {
                         <Route
                           path="/"
                           element={
-                            <AttackPattern attackPattern={props.attackPattern} />
+                            <AttackPattern attackPatternData={props.attackPattern} />
                         }
                         />
                         <Route

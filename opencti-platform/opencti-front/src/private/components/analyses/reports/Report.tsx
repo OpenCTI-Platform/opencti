@@ -1,5 +1,5 @@
 import { Grid } from '@mui/material';
-import React, { FunctionComponent } from 'react';
+import React from 'react';
 import useHelper from 'src/utils/hooks/useHelper';
 import Security from 'src/utils/Security';
 import { KNOWLEDGE_KNUPDATE } from 'src/utils/hooks/useGranted';
@@ -11,8 +11,9 @@ import ReportDetails from './ReportDetails';
 import StixCoreObjectExternalReferences from '../external_references/StixCoreObjectExternalReferences';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../notes/StixCoreObjectOrStixCoreRelationshipNotes';
 import { Report_report$key } from './__generated__/Report_report.graphql';
+import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
 
-const ReportComponentFragment = graphql`
+const reportComponentFragment = graphql`
   fragment Report_report on Report {
     id
     standard_id
@@ -78,15 +79,15 @@ interface ReportComponentProps {
   reportFragment: Report_report$key;
 }
 
-const ReportComponent: FunctionComponent<ReportComponentProps> = ({
-  reportFragment,
-}) => {
+const Report: React.FC<ReportComponentProps> = ({ reportFragment }) => {
   const report = useFragment<Report_report$key>(
-    ReportComponentFragment,
+    reportComponentFragment,
     reportFragment,
   );
   const { isFeatureEnable } = useHelper();
   const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
+
+  const reportOverviewLayoutCustomization = useOverviewLayoutCustomization(report.entity_type);
 
   return (<>
     <Grid
@@ -94,28 +95,55 @@ const ReportComponent: FunctionComponent<ReportComponentProps> = ({
       spacing={3}
       style={{ marginBottom: 20 }}
     >
-      <Grid item xs={6}>
-        <ReportDetails report={report} />
-      </Grid>
-      <Grid item xs={6}>
-        <StixDomainObjectOverview
-          stixDomainObject={report}
-          displayAssignees
-          displayParticipants
-        />
-      </Grid>
-      <Grid item xs={6}>
-        <StixCoreObjectExternalReferences stixCoreObjectId={report.id} />
-      </Grid>
-      <Grid item xs={6}>
-        <StixCoreObjectLatestHistory stixCoreObjectId={report.id} />
-      </Grid>
-      <Grid item xs={12}>
-        <StixCoreObjectOrStixCoreRelationshipNotes
-          stixCoreObjectOrStixCoreRelationshipId={report.id}
-          defaultMarkings={report.objectMarking ?? []}
-        />
-      </Grid>
+      {
+        reportOverviewLayoutCustomization.map(({ key, width }) => {
+          switch (key) {
+            case 'details':
+              return (
+                <Grid key={key} item xs={width}>
+                  <ReportDetails report={report} />
+                </Grid>
+              );
+            case 'basicInformation':
+              return (
+                <Grid key={key} item xs={width}>
+                  <StixDomainObjectOverview
+                    stixDomainObject={report}
+                    displayAssignees
+                    displayParticipants
+                  />
+                </Grid>
+              );
+            case 'externalReferences':
+              return (
+                <Grid key={key} item xs={width}>
+                  <StixCoreObjectExternalReferences
+                    stixCoreObjectId={report.id}
+                  />
+                </Grid>
+              );
+            case 'mostRecentHistory':
+              return (
+                <Grid key={key} item xs={width}>
+                  <StixCoreObjectLatestHistory
+                    stixCoreObjectId={report.id}
+                  />
+                </Grid>
+              );
+            case 'notes':
+              return (
+                <Grid key={key} item xs={width}>
+                  <StixCoreObjectOrStixCoreRelationshipNotes
+                    stixCoreObjectOrStixCoreRelationshipId={report.id}
+                    defaultMarkings={report.objectMarking ?? []}
+                  />
+                </Grid>
+              );
+            default:
+              return null;
+          }
+        })
+      }
     </Grid>
     {!isFABReplaced && (
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
@@ -125,4 +153,4 @@ const ReportComponent: FunctionComponent<ReportComponentProps> = ({
   </>);
 };
 
-export default ReportComponent;
+export default Report;

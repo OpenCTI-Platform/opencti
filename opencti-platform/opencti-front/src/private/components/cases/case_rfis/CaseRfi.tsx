@@ -1,6 +1,6 @@
 import Grid from '@mui/material/Grid';
 import makeStyles from '@mui/styles/makeStyles';
-import React, { FunctionComponent, useRef } from 'react';
+import React, { useRef } from 'react';
 import { useFragment } from 'react-relay';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
@@ -27,13 +27,11 @@ import { tasksDataColumns } from '../tasks/TasksLine';
 import { CaseTasksLineDummy } from '../tasks/CaseTasksLine';
 import { isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
 import { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
+import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
 const useStyles = makeStyles(() => ({
-  gridContainer: {
-    marginBottom: 20,
-  },
   paper: {
     margin: '10px 0 0 0',
     padding: 0,
@@ -42,19 +40,20 @@ const useStyles = makeStyles(() => ({
 }));
 
 interface CaseRfiProps {
-  data: CaseUtils_case$key;
+  caseRfiData: CaseUtils_case$key;
   enableReferences: boolean;
 }
 
-const CaseRfiComponent: FunctionComponent<CaseRfiProps> = ({ data, enableReferences }) => {
+const CaseRfi: React.FC<CaseRfiProps> = ({ caseRfiData, enableReferences }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const ref = useRef(null);
-  const caseRfiData = useFragment(caseFragment, data);
+  const caseRfi = useFragment(caseFragment, caseRfiData);
   const { isFeatureEnable } = useHelper();
   const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
+  const overviewLayoutCustomization = useOverviewLayoutCustomization(caseRfi.entity_type);
 
-  const LOCAL_STORAGE_KEY = `cases-${caseRfiData.id}-caseTask`;
+  const LOCAL_STORAGE_KEY = `cases-${caseRfi.id}-caseTask`;
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<CaseTasksLinesQuery$variables>(
     LOCAL_STORAGE_KEY,
     {
@@ -70,7 +69,7 @@ const CaseRfiComponent: FunctionComponent<CaseRfiProps> = ({ data, enableReferen
     mode: 'and',
     filters: [
       { key: 'entity_type', operator: 'eq', mode: 'or', values: ['Task'] },
-      { key: 'objects', operator: 'eq', mode: 'or', values: [caseRfiData.id] },
+      { key: 'objects', operator: 'eq', mode: 'or', values: [caseRfi.id] },
     ],
     filterGroups: userFilters && isFilterGroupNotEmpty(userFilters) ? [userFilters] : [],
   };
@@ -88,109 +87,148 @@ const CaseRfiComponent: FunctionComponent<CaseRfiProps> = ({ data, enableReferen
       <Grid
         container={true}
         spacing={3}
-        classes={{ container: classes.gridContainer }}
+        style={{ marginBottom: 20 }}
       >
-        <Grid item xs={6}>
-          <CaseRfiDetails caseRfiData={caseRfiData} />
-        </Grid>
-        <Grid item xs={6}>
-          <StixDomainObjectOverview
-            stixDomainObject={caseRfiData}
-            displayAssignees
-            displayParticipants
-          />
-        </Grid>
-        <Grid item xs={6} ref={ref}>
-          {queryRef && (
-            <React.Suspense
-              fallback={
-                <div style={{ height: '100%' }}>
-                  <Typography
-                    variant="h4"
-                    gutterBottom={true}
-                    style={{ marginBottom: 10 }}
-                  >
-                    {t_i18n('Tasks')}
-                  </Typography>
-                  <Paper classes={{ root: classes.paper }} variant="outlined">
-                    <ListLines
-                      helpers={helpers}
-                      sortBy={sortBy}
-                      orderAsc={orderAsc}
-                      handleSort={helpers.handleSort}
-                      dataColumns={tasksDataColumns}
-                      inline={true}
-                      secondaryAction={true}
-                    >
-                      {Array(20)
-                        .fill(0)
-                        .map((_, idx) => (
-                          <CaseTasksLineDummy key={idx} />
-                        ))}
-                    </ListLines>
-                  </Paper>
-                </div>
-              }
-            >
-              <CaseTasksLines
-                queryRef={queryRef}
-                paginationOptions={queryTaskPaginationOptions}
-                caseId={caseRfiData.id}
-                sortBy={sortBy}
-                orderAsc={orderAsc}
-                handleSort={helpers.handleSort}
-                defaultMarkings={convertMarkings(caseRfiData)}
-                containerRef={ref}
-                enableReferences={enableReferences}
-              />
-            </React.Suspense>
-          )}
-        </Grid>
-        <Grid item xs={6}>
-          <ContainerStixObjectsOrStixRelationships
-            isSupportParticipation={false}
-            container={caseRfiData}
-            types={['Incident', 'stix-sighting-relationship', 'Report']}
-            title={t_i18n('Origin of the case')}
-            enableReferences={enableReferences}
-          />
-        </Grid>
-        <Grid item xs={6}>
-          <ContainerStixObjectsOrStixRelationships
-            isSupportParticipation={false}
-            container={caseRfiData}
-            types={['Stix-Cyber-Observable']}
-            title={t_i18n('Observables')}
-            enableReferences={enableReferences}
-          />
-        </Grid>
-        <Grid item xs={6}>
-          <ContainerStixObjectsOrStixRelationships
-            isSupportParticipation={false}
-            container={caseRfiData}
-            enableReferences={enableReferences}
-          />
-        </Grid>
-        <Grid item xs={6}>
-          <StixCoreObjectExternalReferences stixCoreObjectId={caseRfiData.id} />
-        </Grid>
-        <Grid item xs={6}>
-          <StixCoreObjectLatestHistory stixCoreObjectId={caseRfiData.id} />
-        </Grid>
-        <Grid item xs={12}>
-          <StixCoreObjectOrStixCoreRelationshipNotes
-            stixCoreObjectOrStixCoreRelationshipId={caseRfiData.id}
-            defaultMarkings={caseRfiData.objectMarking ?? []}
-          />
-        </Grid>
+        {
+          overviewLayoutCustomization.map(({ key, width }) => {
+            switch (key) {
+              case 'details':
+                return (
+                  <Grid key={key} item xs={width}>
+                    <CaseRfiDetails caseRfiData={caseRfi} />
+                  </Grid>
+                );
+              case 'basicInformation':
+                return (
+                  <Grid key={key} item xs={width}>
+                    <StixDomainObjectOverview
+                      stixDomainObject={caseRfi}
+                      displayAssignees
+                      displayParticipants
+                    />
+                  </Grid>
+                );
+              case 'task':
+                return (
+                  <Grid key={key} item xs={width} ref={ref}>
+                    {queryRef && (
+                      <React.Suspense
+                        fallback={
+                          <div style={{ height: '100%' }}>
+                            <Typography
+                              variant="h4"
+                              gutterBottom={true}
+                              style={{ marginBottom: 10 }}
+                            >
+                              {t_i18n('Tasks')}
+                            </Typography>
+                            <Paper classes={{ root: classes.paper }} variant="outlined">
+                              <ListLines
+                                helpers={helpers}
+                                sortBy={sortBy}
+                                orderAsc={orderAsc}
+                                handleSort={helpers.handleSort}
+                                dataColumns={tasksDataColumns}
+                                inline={true}
+                                secondaryAction={true}
+                              >
+                                {Array(20)
+                                  .fill(0)
+                                  .map((_, idx) => (
+                                    <CaseTasksLineDummy key={idx} />
+                                  ))}
+                              </ListLines>
+                            </Paper>
+                          </div>
+                        }
+                      >
+                        <CaseTasksLines
+                          queryRef={queryRef}
+                          paginationOptions={queryTaskPaginationOptions}
+                          caseId={caseRfi.id}
+                          sortBy={sortBy}
+                          orderAsc={orderAsc}
+                          handleSort={helpers.handleSort}
+                          defaultMarkings={convertMarkings(caseRfi)}
+                          containerRef={ref}
+                          enableReferences={enableReferences}
+                        />
+                      </React.Suspense>
+                    )}
+                  </Grid>
+                );
+              case 'originOfTheCase':
+                return (
+                  <Grid key={key} item xs={width}>
+                    <ContainerStixObjectsOrStixRelationships
+                      isSupportParticipation={false}
+                      container={caseRfi}
+                      types={['Incident', 'stix-sighting-relationship', 'Report']}
+                      title={t_i18n('Origin of the case')}
+                      enableReferences={enableReferences}
+                    />
+                  </Grid>
+                );
+              case 'observables':
+                return (
+                  <Grid key={key} item xs={width}>
+                    <ContainerStixObjectsOrStixRelationships
+                      isSupportParticipation={false}
+                      container={caseRfi}
+                      types={['Stix-Cyber-Observable']}
+                      title={t_i18n('Observables')}
+                      enableReferences={enableReferences}
+                    />
+                  </Grid>
+                );
+              case 'relatedEntities':
+                return (
+                  <Grid key={key} item xs={width}>
+                    <ContainerStixObjectsOrStixRelationships
+                      isSupportParticipation={false}
+                      container={caseRfi}
+                      enableReferences={enableReferences}
+                    />
+                  </Grid>
+                );
+              case 'externalReferences':
+                return (
+                  <Grid key={key} item xs={width}>
+                    <StixCoreObjectExternalReferences
+                      stixCoreObjectId={caseRfi.id}
+                    />
+                  </Grid>
+                );
+              case 'mostRecentHistory':
+                return (
+                  <Grid key={key} item xs={width}>
+                    <StixCoreObjectLatestHistory
+                      stixCoreObjectId={caseRfi.id}
+                    />
+                  </Grid>
+                );
+              case 'notes':
+                return (
+                  <Grid key={key} item xs={width}>
+                    <StixCoreObjectOrStixCoreRelationshipNotes
+                      stixCoreObjectOrStixCoreRelationshipId={caseRfi.id}
+                      defaultMarkings={caseRfi.objectMarking ?? []}
+                    />
+                  </Grid>
+                );
+              default:
+                return null;
+            }
+          })
+        }
       </Grid>
       {!isFABReplaced && (
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <CaseRfiEdition caseId={caseRfiData.id} />
+          <CaseRfiEdition caseId={caseRfi.id} />
         </Security>
       )}
     </>
   );
 };
 
-export default CaseRfiComponent;
+export default CaseRfi;

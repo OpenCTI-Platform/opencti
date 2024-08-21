@@ -187,7 +187,7 @@ const RootVulnerability = ({ queryRef, vulnerabilityId }: RootVulnerabilityProps
                 path="/"
                 element={(
                   <Vulnerability
-                    vulnerability={vulnerability}
+                    vulnerabilityData={vulnerability}
                   />
                 )}
               />

@@ -1,7 +1,6 @@
 import React from 'react';
 import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
-import makeStyles from '@mui/styles/makeStyles';
 import IncidentDetails from './IncidentDetails';
 import IncidentEdition from './IncidentEdition';
 import Security from '../../../../utils/Security';
@@ -13,14 +12,7 @@ import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCore
 import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../common/stix_core_relationships/SimpleStixObjectOrStixRelationshipStixCoreRelationships';
 import { Incident_incident$key } from './__generated__/Incident_incident.graphql';
 import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  gridContainer: {
-    marginBottom: 20,
-  },
-}));
+import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
 
 const incidentFragment = graphql`
   fragment Incident_incident on Incident {
@@ -44,6 +36,7 @@ const incidentFragment = graphql`
       }
     }
     creators {
+      id
       name
     }
     objectMarking {
@@ -83,56 +76,90 @@ const incidentFragment = graphql`
   }
 `;
 
-const Incident = ({
-  incidentData,
-}: {
+interface IncidentProps {
   incidentData: Incident_incident$key;
-}) => {
-  const classes = useStyles();
+}
+
+const Incident: React.FC<IncidentProps> = ({ incidentData }) => {
   const incident = useFragment<Incident_incident$key>(
     incidentFragment,
     incidentData,
   );
+  const overviewLayoutCustomization = useOverviewLayoutCustomization(incident.entity_type);
+
   return (
     <>
       <Grid
         container={true}
         spacing={3}
-        classes={{ container: classes.gridContainer }}
+        style={{ marginBottom: 20 }}
       >
-        <Grid item xs={6}>
-          <IncidentDetails incidentData={incident} />
-        </Grid>
-        <Grid item xs={6}>
-          <StixDomainObjectOverview
-            stixDomainObject={incident}
-            displayAssignees
-            displayParticipants
-          />
-        </Grid>
-        <Grid item xs={6}>
-          <SimpleStixObjectOrStixRelationshipStixCoreRelationships
-            stixObjectOrStixRelationshipId={incident.id}
-            stixObjectOrStixRelationshipLink={`/dashboard/events/incidents/${incident.id}/knowledge`}
-          />
-        </Grid>
-        <Grid item xs={6}>
-          <StixCoreObjectOrStixRelationshipLastContainers
-            stixCoreObjectOrStixRelationshipId={incident.id}
-          />
-        </Grid>
-        <Grid item xs={6}>
-          <StixCoreObjectExternalReferences stixCoreObjectId={incident.id} />
-        </Grid>
-        <Grid item xs={6}>
-          <StixCoreObjectLatestHistory stixCoreObjectId={incident.id} />
-        </Grid>
-        <Grid item xs={12}>
-          <StixCoreObjectOrStixCoreRelationshipNotes
-            stixCoreObjectOrStixCoreRelationshipId={incident.id}
-            defaultMarkings={incident.objectMarking ?? []}
-          />
-        </Grid>
+        {
+          overviewLayoutCustomization.map(({ key, width }) => {
+            switch (key) {
+              case 'details':
+                return (
+                  <Grid key={key} item xs={width}>
+                    <IncidentDetails incidentData={incident} />
+                  </Grid>
+                );
+              case 'basicInformation':
+                return (
+                  <Grid key={key} item xs={width}>
+                    <StixDomainObjectOverview
+                      stixDomainObject={incident}
+                      displayAssignees
+                      displayParticipants
+                    />
+                  </Grid>
+                );
+              case 'latestCreatedRelationships':
+                return (
+                  <Grid key={key} item xs={width}>
+                    <SimpleStixObjectOrStixRelationshipStixCoreRelationships
+                      stixObjectOrStixRelationshipId={incident.id}
+                      stixObjectOrStixRelationshipLink={`/dashboard/events/incidents/${incident.id}/knowledge`}
+                    />
+                  </Grid>
+                );
+              case 'latestContainers':
+                return (
+                  <Grid key={key} item xs={width}>
+                    <StixCoreObjectOrStixRelationshipLastContainers
+                      stixCoreObjectOrStixRelationshipId={incident.id}
+                    />
+                  </Grid>
+                );
+              case 'externalReferences':
+                return (
+                  <Grid key={key} item xs={width}>
+                    <StixCoreObjectExternalReferences
+                      stixCoreObjectId={incident.id}
+                    />
+                  </Grid>
+                );
+              case 'mostRecentHistory':
+                return (
+                  <Grid key={key} item xs={width}>
+                    <StixCoreObjectLatestHistory
+                      stixCoreObjectId={incident.id}
+                    />
+                  </Grid>
+                );
+              case 'notes':
+                return (
+                  <Grid key={key} item xs={width}>
+                    <StixCoreObjectOrStixCoreRelationshipNotes
+                      stixCoreObjectOrStixCoreRelationshipId={incident.id}
+                      defaultMarkings={incident.objectMarking ?? []}
+                    />
+                  </Grid>
+                );
+              default:
+                return null;
+            }
+          })
+        }
       </Grid>
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
         <IncidentEdition incidentId={incident.id} />

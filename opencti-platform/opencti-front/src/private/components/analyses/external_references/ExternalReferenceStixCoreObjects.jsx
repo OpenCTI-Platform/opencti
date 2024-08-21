@@ -36,7 +36,7 @@ const ExternalReferenceStixCoreObjectsComponent = ({ externalReference }) => {
       <Typography variant="h4" gutterBottom={true}>
         {t_i18n('Linked objects')}
       </Typography>
-      <Paper classes={{ root: classes.paper }} variant="outlined">
+      <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
         <List classes={{ root: classes.list }}>
           {stixCoreObjects.map((stixCoreObjectOrRelationship) => (
             <ListItem

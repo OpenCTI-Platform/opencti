@@ -27,7 +27,8 @@ type DefaultValueAttribute {
   defaultValues: [DefaultValue!]!
 }
 
-type OverviewLayoutCustomization {
+# OverviewLayoutCustomization
+type OverviewWidgetCustomization {
   key: String!
   width: Int!
   label: String!
@@ -51,7 +52,7 @@ type EntitySetting implements InternalObject & BasicObject {
   availableSettings: [String!]! @auth
   created_at: DateTime! @auth
   updated_at: DateTime! @auth
-  overview_layout_customization: [OverviewLayoutCustomization!] @auth
+  overview_layout_customization: [OverviewWidgetCustomization!] @auth
 }
 
 # Ordering

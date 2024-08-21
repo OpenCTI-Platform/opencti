@@ -208,7 +208,7 @@ const RootCaseIncidentComponent = ({ queryRef, caseId }) => {
           <Routes>
             <Route
               path="/"
-              element={<CaseIncident data={caseData} enableReferences={enableReferences} />}
+              element={<CaseIncident caseIncidentData={caseData} enableReferences={enableReferences} />}
             />
             <Route
               path="/entities"

@@ -1,7 +1,6 @@
 import React from 'react';
 import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
-import { makeStyles } from '@mui/styles';
 import CampaignDetails from './CampaignDetails';
 import CampaignEdition from './CampaignEdition';
 import Security from '../../../../utils/Security';
@@ -13,14 +12,7 @@ import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCore
 import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../common/stix_core_relationships/SimpleStixObjectOrStixRelationshipStixCoreRelationships';
 import { Campaign_campaign$key } from './__generated__/Campaign_campaign.graphql';
 import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  gridContainer: {
-    marginBottom: 20,
-  },
-}));
+import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
 
 const campaignFragment = graphql`
   fragment Campaign_campaign on Campaign {
@@ -75,51 +67,85 @@ const campaignFragment = graphql`
 `;
 
 const CampaignComponent = ({
-  campaign,
+  campaignData,
 }: {
-  campaign: Campaign_campaign$key;
+  campaignData: Campaign_campaign$key;
 }) => {
-  const campaignData = useFragment(campaignFragment, campaign);
-  const classes = useStyles();
+  const campaign = useFragment<Campaign_campaign$key>(campaignFragment, campaignData);
+  const overviewLayoutCustomization = useOverviewLayoutCustomization(campaign.entity_type);
+
   return (
     <>
       <Grid
         container={true}
         spacing={3}
-        classes={{ container: classes.gridContainer }}
+        style={{ marginBottom: 20 }}
       >
-        <Grid item xs={6}>
-          <CampaignDetails campaign={campaignData} />
-        </Grid>
-        <Grid item xs={6}>
-          <StixDomainObjectOverview stixDomainObject={campaignData} />
-        </Grid>
-        <Grid item xs={6}>
-          <SimpleStixObjectOrStixRelationshipStixCoreRelationships
-            stixObjectOrStixRelationshipId={campaignData.id}
-            stixObjectOrStixRelationshipLink={`/dashboard/threats/campaigns/${campaignData.id}/knowledge`}
-          />
-        </Grid>
-        <Grid item xs={6}>
-          <StixCoreObjectOrStixRelationshipLastContainers
-            stixCoreObjectOrStixRelationshipId={campaignData.id}
-          />
-        </Grid>
-        <Grid item xs={6}>
-          <StixCoreObjectExternalReferences
-            stixCoreObjectId={campaignData.id}
-          />
-        </Grid>
-        <Grid item xs={6}>
-          <StixCoreObjectLatestHistory stixCoreObjectId={campaignData.id} />
-        </Grid>
+        {
+          overviewLayoutCustomization.map(({ key, width }) => {
+            switch (key) {
+              case 'details':
+                return (
+                  <Grid key={key} item xs={width}>
+                    <CampaignDetails campaign={campaign} />
+                  </Grid>
+                );
+              case 'basicInformation':
+                return (
+                  <Grid key={key} item xs={width}>
+                    <StixDomainObjectOverview stixDomainObject={campaign} />
+                  </Grid>
+                );
+              case 'latestCreatedRelationships':
+                return (
+                  <Grid key={key} item xs={width}>
+                    <SimpleStixObjectOrStixRelationshipStixCoreRelationships
+                      stixObjectOrStixRelationshipId={campaign.id}
+                      stixObjectOrStixRelationshipLink={`/dashboard/threats/campaigns/${campaign.id}/knowledge`}
+                    />
+                  </Grid>
+                );
+              case 'latestContainers':
+                return (
+                  <Grid key={key} item xs={width}>
+                    <StixCoreObjectOrStixRelationshipLastContainers
+                      stixCoreObjectOrStixRelationshipId={campaign.id}
+                    />
+                  </Grid>
+                );
+              case 'externalReferences':
+                return (
+                  <Grid key={key} item xs={width}>
+                    <StixCoreObjectExternalReferences
+                      stixCoreObjectId={campaign.id}
+                    />
+                  </Grid>
+                );
+              case 'mostRecentHistory':
+                return (
+                  <Grid key={key} item xs={width}>
+                    <StixCoreObjectLatestHistory
+                      stixCoreObjectId={campaign.id}
+                    />
+                  </Grid>
+                );
+              case 'notes':
+                return (
+                  <Grid key={key} item xs={width}>
+                    <StixCoreObjectOrStixCoreRelationshipNotes
+                      stixCoreObjectOrStixCoreRelationshipId={campaign.id}
+                      defaultMarkings={campaign.objectMarking ?? []}
+                    />
+                  </Grid>
+                );
+              default:
+                return null;
+            }
+          })
+        }
       </Grid>
-      <StixCoreObjectOrStixCoreRelationshipNotes
-        stixCoreObjectOrStixCoreRelationshipId={campaignData.id}
-        defaultMarkings={campaignData.objectMarking ?? []}
-      />
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
-        <CampaignEdition campaignId={campaignData.id} />
+        <CampaignEdition campaignId={campaign.id} />
       </Security>
     </>
   );

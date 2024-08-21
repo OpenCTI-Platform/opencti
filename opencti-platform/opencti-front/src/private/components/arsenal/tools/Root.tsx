@@ -186,7 +186,7 @@ const RootTool = ({ queryRef, toolId }: RootToolProps) => {
               <Route
                 path="/"
                 element={ (
-                  <Tool tool={tool} />
+                  <Tool toolData={tool} />
                 )}
               />
               <Route

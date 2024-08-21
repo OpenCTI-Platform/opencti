@@ -215,7 +215,7 @@ const RootIntrusionSet = ({ intrusionSetId, queryRef }: RootIntrusionSetProps) =
               <Route
                 path="/"
                 element={
-                  <IntrusionSet intrusionSet={intrusionSet} />
+                  <IntrusionSet intrusionSetData={intrusionSet} />
                 }
               />
               <Route

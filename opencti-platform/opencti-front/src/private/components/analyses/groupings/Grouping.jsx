@@ -11,6 +11,7 @@ import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../notes/StixCoreObjectOrStixCoreRelationshipNotes';
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
+import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -24,6 +25,9 @@ const GroupingComponent = ({ grouping }) => {
   const classes = useStyles();
   const { isFeatureEnable } = useHelper();
   const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
+
+  const overviewLayoutCustomization = useOverviewLayoutCustomization(grouping.entity_type);
+
   return (
     <div data-testid="grouping-details-page">
       <Grid
@@ -31,24 +35,53 @@ const GroupingComponent = ({ grouping }) => {
         spacing={3}
         classes={{ container: classes.gridContainer }}
       >
-        <Grid item xs={6}>
-          <GroupingDetails grouping={grouping} />
-        </Grid>
-        <Grid item xs={6}>
-          <StixDomainObjectOverview stixDomainObject={grouping} />
-        </Grid>
-        <Grid item xs={6}>
-          <StixCoreObjectExternalReferences stixCoreObjectId={grouping.id} />
-        </Grid>
-        <Grid item xs={6}>
-          <StixCoreObjectLatestHistory stixCoreObjectId={grouping.id} />
-        </Grid>
-        <Grid item xs={12}>
-          <StixCoreObjectOrStixCoreRelationshipNotes
-            stixCoreObjectOrStixCoreRelationshipId={grouping.id}
-            defaultMarkings={grouping.objectMarking ?? []}
-          />
-        </Grid>
+        {
+          overviewLayoutCustomization.map(({ key, width }) => {
+            switch (key) {
+              case 'details':
+                return (
+                  <Grid key={key} item xs={width}>
+                    <GroupingDetails grouping={grouping} />
+                  </Grid>
+                );
+              case 'basicInformation':
+                return (
+                  <Grid key={key} item xs={width}>
+                    <StixDomainObjectOverview
+                      stixDomainObject={grouping}
+                    />
+                  </Grid>
+                );
+              case 'externalReferences':
+                return (
+                  <Grid key={key} item xs={width}>
+                    <StixCoreObjectExternalReferences
+                      stixCoreObjectId={grouping.id}
+                    />
+                  </Grid>
+                );
+              case 'mostRecentHistory':
+                return (
+                  <Grid key={key} item xs={width}>
+                    <StixCoreObjectLatestHistory
+                      stixCoreObjectId={grouping.id}
+                    />
+                  </Grid>
+                );
+              case 'notes':
+                return (
+                  <Grid key={key} item xs={width}>
+                    <StixCoreObjectOrStixCoreRelationshipNotes
+                      stixCoreObjectOrStixCoreRelationshipId={grouping.id}
+                      defaultMarkings={grouping.objectMarking ?? []}
+                    />
+                  </Grid>
+                );
+              default:
+                return null;
+            }
+          })
+        }
       </Grid>
       {!isFABReplaced && (
         <Security needs={[KNOWLEDGE_KNUPDATE]}>

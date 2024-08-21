@@ -1,7 +1,6 @@
 import React from 'react';
 import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
-import makeStyles from '@mui/styles/makeStyles';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
@@ -13,14 +12,7 @@ import { DataSource_dataSource$key } from './__generated__/DataSource_dataSource
 import DataSourceEdition from './DataSourceEdition';
 import DataSourceDetailsComponent from './DataSourceDetails';
 import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  gridContainer: {
-    marginBottom: 20,
-  },
-}));
+import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
 
 const dataSourceFragment = graphql`
   fragment DataSource_dataSource on DataSource {
@@ -75,44 +67,85 @@ const dataSourceFragment = graphql`
   }
 `;
 
-const DataSourceComponent = ({ data }: { data: DataSource_dataSource$key }) => {
-  const classes = useStyles();
-  const dataSource = useFragment(dataSourceFragment, data);
+interface DataSourceProps {
+  dataSourceData: DataSource_dataSource$key
+}
+
+const DataSourceComponent: React.FC<DataSourceProps> = ({ dataSourceData }) => {
+  const dataSource = useFragment<DataSource_dataSource$key>(dataSourceFragment, dataSourceData);
+  const overviewLayoutCustomization = useOverviewLayoutCustomization(dataSource.entity_type);
+
   return (
     <>
       <Grid
         container={true}
         spacing={3}
-        classes={{ container: classes.gridContainer }}
+        style={{ marginBottom: 20 }}
       >
-        <Grid item xs={6}>
-          <DataSourceDetailsComponent dataSource={dataSource} />
-        </Grid>
-        <Grid item xs={6}>
-          <StixDomainObjectOverview stixDomainObject={dataSource} />
-        </Grid>
-        <Grid item xs={6}>
-          <SimpleStixObjectOrStixRelationshipStixCoreRelationships
-            stixObjectOrStixRelationshipId={dataSource.id}
-            stixObjectOrStixRelationshipLink={`/dashboard/techniques/data_sources/${dataSource.id}/knowledge`}
-          />
-        </Grid>
-        <Grid item xs={6}>
-          <StixCoreObjectOrStixRelationshipLastContainers
-            stixCoreObjectOrStixRelationshipId={dataSource.id}
-          />
-        </Grid>
-        <Grid item xs={6}>
-          <StixCoreObjectExternalReferences stixCoreObjectId={dataSource.id} />
-        </Grid>
-        <Grid item xs={6}>
-          <StixCoreObjectLatestHistory stixCoreObjectId={dataSource.id} />
-        </Grid>
+
+        {
+          overviewLayoutCustomization.map(({ key, width }) => {
+            switch (key) {
+              case 'details':
+                return (
+                  <Grid key={key} item xs={width}>
+                    <DataSourceDetailsComponent dataSource={dataSource} />
+                  </Grid>
+                );
+              case 'basicInformation':
+                return (
+                  <Grid key={key} item xs={width}>
+                    <StixDomainObjectOverview stixDomainObject={dataSource} />
+                  </Grid>
+                );
+              case 'latestCreatedRelationships':
+                return (
+                  <Grid key={key} item xs={width}>
+                    <SimpleStixObjectOrStixRelationshipStixCoreRelationships
+                      stixObjectOrStixRelationshipId={dataSource.id}
+                      stixObjectOrStixRelationshipLink={`/dashboard/techniques/data_sources/${dataSource.id}/knowledge`}
+                    />
+                  </Grid>
+                );
+              case 'latestContainers':
+                return (
+                  <Grid key={key} item xs={width}>
+                    <StixCoreObjectOrStixRelationshipLastContainers
+                      stixCoreObjectOrStixRelationshipId={dataSource.id}
+                    />
+                  </Grid>
+                );
+              case 'externalReferences':
+                return (
+                  <Grid key={key} item xs={width}>
+                    <StixCoreObjectExternalReferences
+                      stixCoreObjectId={dataSource.id}
+                    />
+                  </Grid>
+                );
+              case 'mostRecentHistory':
+                return (
+                  <Grid key={key} item xs={width}>
+                    <StixCoreObjectLatestHistory
+                      stixCoreObjectId={dataSource.id}
+                    />
+                  </Grid>
+                );
+              case 'notes':
+                return (
+                  <Grid key={key} item xs={width}>
+                    <StixCoreObjectOrStixCoreRelationshipNotes
+                      stixCoreObjectOrStixCoreRelationshipId={dataSource.id}
+                      defaultMarkings={dataSource.objectMarking ?? []}
+                    />
+                  </Grid>
+                );
+              default:
+                return null;
+            }
+          })
+        }
       </Grid>
-      <StixCoreObjectOrStixCoreRelationshipNotes
-        stixCoreObjectOrStixCoreRelationshipId={dataSource.id}
-        defaultMarkings={dataSource.objectMarking ?? []}
-      />
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
         <DataSourceEdition dataSourceId={dataSource.id} />
       </Security>

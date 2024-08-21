@@ -185,7 +185,7 @@ const RootChannel = ({ queryRef, channelId }: RootChannelProps) => {
               <Route
                 path="/"
                 element={(
-                  <Channel channel={channel} />
+                  <Channel channelData={channel} />
                 )}
               />
               <Route

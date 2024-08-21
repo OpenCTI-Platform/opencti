@@ -13,6 +13,7 @@ import ExternalReferenceFileImportViewer from './ExternalReferenceFileImportView
 import ExternalReferenceStixCoreObjects from './ExternalReferenceStixCoreObjects';
 import { ExternalReference_externalReference$data } from './__generated__/ExternalReference_externalReference.graphql';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -42,6 +43,7 @@ ExternalReferenceComponentProps
   const classes = useStyles();
   const { isFeatureEnable } = useHelper();
   const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
+  const overviewLayoutCustomization = useOverviewLayoutCustomization('External-Reference');
   return (
     <div className={classes.container}>
       <ExternalReferenceHeader
@@ -60,23 +62,43 @@ ExternalReferenceComponentProps
         spacing={3}
         classes={{ container: classes.gridContainer }}
       >
-        <Grid item xs={6} >
-          <ExternalReferenceOverview externalReference={externalReference} />
-        </Grid>
-        <Grid item xs={6} >
-          <ExternalReferenceDetails externalReference={externalReference} />
-        </Grid>
-        <Grid item xs={6}>
-          <ExternalReferenceStixCoreObjects
-            externalReference={externalReference}
-          />
-        </Grid>
-        <Grid item xs={6}>
-          <ExternalReferenceFileImportViewer
-            externalReference={externalReference}
-            connectorsImport={connectorsImport}
-          />
-        </Grid>
+        {
+          overviewLayoutCustomization.map(({ key, width }) => {
+            switch (key) {
+              case 'basicInformation':
+                return (
+                  <Grid key={key} item xs={width}>
+                    <ExternalReferenceOverview externalReference={externalReference} />
+                  </Grid>
+                );
+              case 'details':
+                return (
+                  <Grid key={key} item xs={width}>
+                    <ExternalReferenceDetails externalReference={externalReference} />
+                  </Grid>
+                );
+              case 'linkedObjects':
+                return (
+                  <Grid key={key} item xs={width}>
+                    <ExternalReferenceStixCoreObjects
+                      externalReference={externalReference}
+                    />
+                  </Grid>
+                );
+              case 'uploadedFiles':
+                return (
+                  <Grid key={key} item xs={width}>
+                    <ExternalReferenceFileImportViewer
+                      externalReference={externalReference}
+                      connectorsImport={connectorsImport}
+                    />
+                  </Grid>
+                );
+              default:
+                return null;
+            }
+          })
+        }
       </Grid>
       {!isFABReplaced && (
         <Security needs={[KNOWLEDGE_KNUPDATE]}>

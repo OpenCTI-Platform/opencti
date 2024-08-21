@@ -1,7 +1,6 @@
 import React from 'react';
 import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
-import makeStyles from '@mui/styles/makeStyles';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
@@ -19,15 +18,6 @@ import {
   ThreatActorIndividual_ThreatActorIndividual$key,
 } from './__generated__/ThreatActorIndividual_ThreatActorIndividual.graphql';
 import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  gridContainer: {
-    marginBottom: 20,
-    display: 'inline-flex',
-  },
-}));
 
 export const threatActorIndividualFragment = graphql`
   fragment ThreatActorIndividual_ThreatActorIndividual on ThreatActorIndividual {
@@ -147,27 +137,27 @@ const hasDemographicsOrBiographics = (
   return false;
 };
 
-const ThreatActorIndividualComponent = ({
-  data,
-}: {
-  data: ThreatActorIndividual_ThreatActorIndividual$key;
-}) => {
-  const classes = useStyles();
+interface ThreatActorIndividualProps {
+  threatActorIndividualData: ThreatActorIndividual_ThreatActorIndividual$key;
+}
+
+const ThreatActorIndividual: React.FC<ThreatActorIndividualProps> = ({ threatActorIndividualData }) => {
   const threatActorIndividual = useFragment<ThreatActorIndividual_ThreatActorIndividual$key>(
     threatActorIndividualFragment,
-    data,
+    threatActorIndividualData,
   );
-  const threatActorIndividualOverviewLayoutCustomization = useOverviewLayoutCustomization(threatActorIndividual.entity_type);
+  const overviewLayoutCustomization = useOverviewLayoutCustomization(threatActorIndividual.entity_type);
+
   return (
     <>
       <Grid
         container
         columnSpacing={2}
         rowSpacing={3}
-        classes={{ container: classes.gridContainer }}
+        style={{ marginBottom: 20 }}
       >
         {
-          threatActorIndividualOverviewLayoutCustomization.map(({ key, width }) => {
+          overviewLayoutCustomization.map(({ key, width }) => {
             switch (key) {
               case 'details':
                 return (
@@ -262,4 +252,4 @@ const ThreatActorIndividualComponent = ({
   );
 };
 
-export default ThreatActorIndividualComponent;
+export default ThreatActorIndividual;

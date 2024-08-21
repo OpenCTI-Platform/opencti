@@ -6937,7 +6937,7 @@ export type EntitySetting = BasicObject & InternalObject & {
   entity_type: Scalars['String']['output'];
   id: Scalars['ID']['output'];
   mandatoryAttributes: Array<Scalars['String']['output']>;
-  overview_layout_customization?: Maybe<Array<OverviewLayoutCustomization>>;
+  overview_layout_customization?: Maybe<Array<OverviewWidgetCustomization>>;
   parent_types: Array<Scalars['String']['output']>;
   platform_entity_files_ref?: Maybe<Scalars['Boolean']['output']>;
   platform_hidden_type?: Maybe<Scalars['Boolean']['output']>;
@@ -17316,18 +17316,18 @@ export type OtpElement = {
   uri: Scalars['String']['output'];
 };
 
-export type OverviewLayoutCustomization = {
-  __typename?: 'OverviewLayoutCustomization';
-  key: Scalars['String']['output'];
-  label: Scalars['String']['output'];
-  width: Scalars['Int']['output'];
-};
-
 export type OverviewMetrics = {
   __typename?: 'OverviewMetrics';
   message_stats?: Maybe<MessagesStats>;
   object_totals?: Maybe<ObjectTotals>;
   queue_totals?: Maybe<QueueTotals>;
+};
+
+export type OverviewWidgetCustomization = {
+  __typename?: 'OverviewWidgetCustomization';
+  key: Scalars['String']['output'];
+  label: Scalars['String']['output'];
+  width: Scalars['Int']['output'];
 };
 
 export enum PackageStatus {
@@ -30148,8 +30148,8 @@ export type ResolversTypes = ResolversObject<{
   OrganizationOrIndividual: ResolverTypeWrapper<ResolversUnionTypes<ResolversTypes>['OrganizationOrIndividual']>;
   OrganizationsOrdering: OrganizationsOrdering;
   OtpElement: ResolverTypeWrapper<OtpElement>;
-  OverviewLayoutCustomization: ResolverTypeWrapper<OverviewLayoutCustomization>;
   OverviewMetrics: ResolverTypeWrapper<OverviewMetrics>;
+  OverviewWidgetCustomization: ResolverTypeWrapper<OverviewWidgetCustomization>;
   PackageStatus: PackageStatus;
   PageInfo: ResolverTypeWrapper<PageInfo>;
   Participant: ResolverTypeWrapper<Participant>;
@@ -30900,8 +30900,8 @@ export type ResolversParentTypes = ResolversObject<{
   OrganizationEdge: Omit<OrganizationEdge, 'node'> & { node: ResolversParentTypes['Organization'] };
   OrganizationOrIndividual: ResolversUnionTypes<ResolversParentTypes>['OrganizationOrIndividual'];
   OtpElement: OtpElement;
-  OverviewLayoutCustomization: OverviewLayoutCustomization;
   OverviewMetrics: OverviewMetrics;
+  OverviewWidgetCustomization: OverviewWidgetCustomization;
   PageInfo: PageInfo;
   Participant: Participant;
   ParticipantConnection: ParticipantConnection;
@@ -33429,7 +33429,7 @@ export type EntitySettingResolvers<ContextType = any, ParentType extends Resolve
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   mandatoryAttributes?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
-  overview_layout_customization?: Resolver<Maybe<Array<ResolversTypes['OverviewLayoutCustomization']>>, ParentType, ContextType>;
+  overview_layout_customization?: Resolver<Maybe<Array<ResolversTypes['OverviewWidgetCustomization']>>, ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   platform_entity_files_ref?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   platform_hidden_type?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
@@ -36435,17 +36435,17 @@ export type OtpElementResolvers<ContextType = any, ParentType extends ResolversP
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
-export type OverviewLayoutCustomizationResolvers<ContextType = any, ParentType extends ResolversParentTypes['OverviewLayoutCustomization'] = ResolversParentTypes['OverviewLayoutCustomization']> = ResolversObject<{
-  key?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  label?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  width?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-}>;
-
 export type OverviewMetricsResolvers<ContextType = any, ParentType extends ResolversParentTypes['OverviewMetrics'] = ResolversParentTypes['OverviewMetrics']> = ResolversObject<{
   message_stats?: Resolver<Maybe<ResolversTypes['MessagesStats']>, ParentType, ContextType>;
   object_totals?: Resolver<Maybe<ResolversTypes['ObjectTotals']>, ParentType, ContextType>;
   queue_totals?: Resolver<Maybe<ResolversTypes['QueueTotals']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type OverviewWidgetCustomizationResolvers<ContextType = any, ParentType extends ResolversParentTypes['OverviewWidgetCustomization'] = ResolversParentTypes['OverviewWidgetCustomization']> = ResolversObject<{
+  key?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  label?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  width?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -40264,8 +40264,8 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   OrganizationEdge?: OrganizationEdgeResolvers<ContextType>;
   OrganizationOrIndividual?: OrganizationOrIndividualResolvers<ContextType>;
   OtpElement?: OtpElementResolvers<ContextType>;
-  OverviewLayoutCustomization?: OverviewLayoutCustomizationResolvers<ContextType>;
   OverviewMetrics?: OverviewMetricsResolvers<ContextType>;
+  OverviewWidgetCustomization?: OverviewWidgetCustomizationResolvers<ContextType>;
   PageInfo?: PageInfoResolvers<ContextType>;
   Participant?: ParticipantResolvers<ContextType>;
   ParticipantConnection?: ParticipantConnectionResolvers<ContextType>;

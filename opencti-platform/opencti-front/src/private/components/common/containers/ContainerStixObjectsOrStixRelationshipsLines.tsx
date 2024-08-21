@@ -26,7 +26,7 @@ ContainerStixObjectsOrStixRelationshipsLinesProps
             const object = objectEdge?.node;
             return (
               <ContainerStixObjectOrStixRelationshipLine
-                key={container?.id ?? null}
+                key={object?.id ?? null}
                 containerId={container?.id ?? null}
                 node={object}
                 dataColumns={dataColumns}
