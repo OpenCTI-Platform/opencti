@@ -670,7 +670,7 @@ export const userEditField = async (context, user, userId, rawInputs) => {
   // Check in an organization admin edits a user that's not in its administrated organizations
   const myAdministratedOrganizationsIds = user.administrated_organizations.map((orga) => orga.id);
   if (!isUserHasCapability(user, SETTINGS_SET_ACCESSES) && isUserHasCapability(user, VIRTUAL_ORGANIZATION_ADMIN)) {
-    if (!userToUpdate.objectOrganization.find((orga) => myAdministratedOrganizationsIds.includes(orga))) {
+    if (userId !== user.id && !userToUpdate[RELATION_PARTICIPATE_TO].find((orga) => myAdministratedOrganizationsIds.includes(orga))) {
       throw ForbiddenAccess();
     }
   }

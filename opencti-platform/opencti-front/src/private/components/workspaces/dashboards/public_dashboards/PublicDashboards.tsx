@@ -5,8 +5,11 @@ import { ViewListOutlined } from '@mui/icons-material';
 import { graphql } from 'react-relay';
 import PublicDashboardLineActions from '@components/workspaces/dashboards/public_dashboards/PublicDashboardLineActions';
 import { useNavigate } from 'react-router-dom';
-import { PublicDashboardsFragment$data } from '@components/workspaces/dashboards/publicDashboards/__generated__/PublicDashboardsFragment.graphql';
-import { PublicDashboardsListQuery, PublicDashboardsListQuery$variables } from '@components/workspaces/dashboards/publicDashboards/__generated__/PublicDashboardsListQuery.graphql';
+import { PublicDashboardsFragment$data } from '@components/workspaces/dashboards/public_dashboards/__generated__/PublicDashboardsFragment.graphql';
+import {
+  PublicDashboardsListQuery,
+  PublicDashboardsListQuery$variables,
+} from '@components/workspaces/dashboards/public_dashboards/__generated__/PublicDashboardsListQuery.graphql';
 import { useFormatter } from '../../../../../components/i18n';
 import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../../../utils/filters/filtersUtils';
 import DataTable from '../../../../../components/dataGrid/DataTable';
