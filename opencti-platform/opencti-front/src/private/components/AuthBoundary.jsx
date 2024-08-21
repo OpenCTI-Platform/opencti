@@ -2,7 +2,7 @@ import React from 'react';
 import { compose, includes, map } from 'ramda';
 import * as PropTypes from 'prop-types';
 import LoginRoot from '../../public/LoginRoot';
-import withRouter from '../../utils/compat-router/withRouter';
+import withRouter from '../../utils/compat_router/withRouter';
 
 class AuthBoundaryComponent extends React.Component {
   constructor(props) {

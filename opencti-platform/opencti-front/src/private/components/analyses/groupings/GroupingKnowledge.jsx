@@ -15,7 +15,7 @@ import GroupingPopover from './GroupingPopover';
 import AttackPatternsMatrix from '../../techniques/attack_patterns/AttackPatternsMatrix';
 import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../../utils/ListParameters';
 import investigationAddFromContainer from '../../../../utils/InvestigationUtils';
-import withRouter from '../../../../utils/compat-router/withRouter';
+import withRouter from '../../../../utils/compat_router/withRouter';
 
 const styles = () => ({
   container: {

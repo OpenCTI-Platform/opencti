@@ -6,7 +6,7 @@ import { QueryRenderer } from '../../../../../relay/environment';
 import WorkbenchFileContent from './WorkbenchFileContent';
 import Loader from '../../../../../components/Loader';
 import { fromB64 } from '../../../../../utils/String';
-import withRouter from '../../../../../utils/compat-router/withRouter';
+import withRouter from '../../../../../utils/compat_router/withRouter';
 
 const workbenchFileQuery = graphql`
   query WorkbenchFileQuery($id: String!) {

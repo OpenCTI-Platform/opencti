@@ -9,7 +9,7 @@ import { createFragmentContainer, graphql } from 'react-relay';
 import { Subject, timer } from 'rxjs';
 import { debounce } from 'rxjs/operators';
 import SpriteText from 'three-spritetext';
-import withRouter from '../../../../utils/compat-router/withRouter';
+import withRouter from '../../../../utils/compat_router/withRouter';
 import {
   knowledgeGraphQueryCheckObjectQuery,
   knowledgeGraphQueryStixObjectDeleteMutation,

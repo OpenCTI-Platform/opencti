@@ -16,7 +16,7 @@ import { graphql } from 'react-relay';
 import inject18n from '../../../../../components/i18n';
 import { APP_BASE_PATH, commitMutation } from '../../../../../relay/environment';
 import { resolveLink } from '../../../../../utils/Entity';
-import withRouter from '../../../../../utils/compat-router/withRouter';
+import withRouter from '../../../../../utils/compat_router/withRouter';
 
 const styles = (theme) => ({
   container: {

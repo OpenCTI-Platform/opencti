@@ -7,7 +7,7 @@ import { QueryRenderer, requestSubscription } from '../../../../relay/environmen
 import Opinion from './Opinion';
 import Loader from '../../../../components/Loader';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
-import withRouter from '../../../../utils/compat-router/withRouter';
+import withRouter from '../../../../utils/compat_router/withRouter';
 
 const subscription = graphql`
   subscription RootOpinionSubscription($id: ID!) {

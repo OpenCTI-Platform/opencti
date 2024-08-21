@@ -10,7 +10,7 @@ import ListLines from '../../../components/list_lines/ListLines';
 import KillChainPhasesLines, { killChainPhasesLinesQuery } from './kill_chain_phases/KillChainPhasesLines';
 import KillChainPhaseCreation from './kill_chain_phases/KillChainPhaseCreation';
 import LabelsVocabulariesMenu from './LabelsVocabulariesMenu';
-import withRouter from '../../../utils/compat-router/withRouter';
+import withRouter from '../../../utils/compat_router/withRouter';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 
 const styles = () => ({

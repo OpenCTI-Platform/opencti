@@ -3,7 +3,7 @@ import ToggleButton from '@mui/material/ToggleButton';
 import Tooltip from '@mui/material/Tooltip';
 import { ViewListOutlined } from '@mui/icons-material';
 import { graphql } from 'react-relay';
-import PublicDashboardLineActions from '@components/workspaces/dashboards/publicDashboards/PublicDashboardLineActions';
+import PublicDashboardLineActions from '@components/workspaces/dashboards/public_dashboards/PublicDashboardLineActions';
 import { useNavigate } from 'react-router-dom';
 import { PublicDashboardsFragment$data } from '@components/workspaces/dashboards/publicDashboards/__generated__/PublicDashboardsFragment.graphql';
 import { PublicDashboardsListQuery, PublicDashboardsListQuery$variables } from '@components/workspaces/dashboards/publicDashboards/__generated__/PublicDashboardsListQuery.graphql';

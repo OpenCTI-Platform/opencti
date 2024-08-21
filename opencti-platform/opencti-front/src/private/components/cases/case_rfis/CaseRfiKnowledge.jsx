@@ -18,7 +18,7 @@ import CaseRfiKnowledgeTimeLine, { caseRfiKnowledgeTimeLineQuery } from './CaseR
 import CaseRfiKnowledgeCorrelation, { caseRfiKnowledgeCorrelationQuery } from './CaseRfiKnowledgeCorrelation';
 import ContentKnowledgeTimeLineBar from '../../common/containers/ContainertKnowledgeTimeLineBar';
 import investigationAddFromContainer from '../../../../utils/InvestigationUtils';
-import withRouter from '../../../../utils/compat-router/withRouter';
+import withRouter from '../../../../utils/compat_router/withRouter';
 
 const styles = () => ({
   container: {

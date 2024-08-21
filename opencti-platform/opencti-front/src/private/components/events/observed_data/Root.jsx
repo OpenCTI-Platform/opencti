@@ -7,7 +7,7 @@ import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
-import withRouter from '../../../../utils/compat-router/withRouter';
+import withRouter from '../../../../utils/compat_router/withRouter';
 import { QueryRenderer, requestSubscription } from '../../../../relay/environment';
 import ObservedData from './ObservedData';
 import ObservedDataPopover from './ObservedDataPopover';

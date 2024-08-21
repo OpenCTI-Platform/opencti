@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Route, Routes } from 'react-router-dom';
 import { graphql } from 'react-relay';
-import withRouter from '../../../../utils/compat-router/withRouter';
+import withRouter from '../../../../utils/compat_router/withRouter';
 import { QueryRenderer, requestSubscription } from '../../../../relay/environment';
 import Investigation from './Investigation';
 import Loader from '../../../../components/Loader';

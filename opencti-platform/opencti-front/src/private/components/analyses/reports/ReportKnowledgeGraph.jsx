@@ -44,7 +44,7 @@ import { UserContext } from '../../../../utils/hooks/useAuth';
 import investigationAddFromContainer from '../../../../utils/InvestigationUtils';
 import { isNotEmptyField } from '../../../../utils/utils';
 import RelationSelection from '../../../../utils/graph/RelationSelection';
-import withRouter from '../../../../utils/compat-router/withRouter';
+import withRouter from '../../../../utils/compat_router/withRouter';
 import { containerTypes } from '../../../../utils/hooks/useAttributes';
 
 const ignoredStixCoreObjectsTypes = ['Note', 'Opinion'];

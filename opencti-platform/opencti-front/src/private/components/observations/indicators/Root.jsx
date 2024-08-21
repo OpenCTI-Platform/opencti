@@ -22,7 +22,7 @@ import IndicatorPopover from './IndicatorPopover';
 import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
 import inject18n from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
-import withRouter from '../../../../utils/compat-router/withRouter';
+import withRouter from '../../../../utils/compat_router/withRouter';
 import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 
 const subscription = graphql`

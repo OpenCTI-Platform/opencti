@@ -18,7 +18,7 @@ import NotePopover from './NotePopover';
 import inject18n from '../../../../components/i18n';
 import { CollaborativeSecurity } from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
-import withRouter from '../../../../utils/compat-router/withRouter';
+import withRouter from '../../../../utils/compat_router/withRouter';
 import NoteEdition from './NoteEdition';
 
 const subscription = graphql`

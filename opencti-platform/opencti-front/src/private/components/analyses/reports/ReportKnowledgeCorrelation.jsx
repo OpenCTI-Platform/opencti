@@ -29,7 +29,7 @@ import { reportMutationFieldPatch } from './ReportEditionOverview';
 import ReportKnowledgeGraphBar from './ReportKnowledgeGraphBar';
 import { UserContext } from '../../../../utils/hooks/useAuth';
 import EntitiesDetailsRightsBar from '../../../../utils/graph/EntitiesDetailsRightBar';
-import withRouter from '../../../../utils/compat-router/withRouter';
+import withRouter from '../../../../utils/compat_router/withRouter';
 
 const PARAMETERS$ = new Subject().pipe(debounce(() => timer(2000)));
 const POSITIONS$ = new Subject().pipe(debounce(() => timer(2000)));

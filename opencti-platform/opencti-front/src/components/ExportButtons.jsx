@@ -17,7 +17,7 @@ import { commitLocalUpdate } from '../relay/environment';
 import { exportImage, exportPdf } from '../utils/Image';
 import inject18n from './i18n';
 import Loader from './Loader';
-import withRouter from '../utils/compat-router/withRouter';
+import withRouter from '../utils/compat_router/withRouter';
 
 const styles = () => ({
   exportButtons: {

@@ -9,7 +9,7 @@ import { QueryRenderer } from '../../relay/environment';
 import { resolveLink } from '../../utils/Entity';
 import Loader from '../../components/Loader';
 import ErrorNotFound from '../../components/ErrorNotFound';
-import withRouter from '../../utils/compat-router/withRouter';
+import withRouter from '../../utils/compat_router/withRouter';
 
 const styles = () => ({
   container: {

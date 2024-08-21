@@ -8,7 +8,7 @@ import Loader from '../../../../components/Loader';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import inject18n from '../../../../components/i18n';
-import withRouter from '../../../../utils/compat-router/withRouter';
+import withRouter from '../../../../utils/compat_router/withRouter';
 
 class RootConnector extends Component {
   render() {

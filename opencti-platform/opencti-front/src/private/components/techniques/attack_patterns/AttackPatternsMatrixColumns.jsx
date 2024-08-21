@@ -12,7 +12,7 @@ import InputLabel from '@mui/material/InputLabel';
 import Menu from '@mui/material/Menu';
 import { AddCircleOutlineOutlined, InfoOutlined } from '@mui/icons-material';
 import { ListItemIcon, ListItemText } from '@mui/material';
-import withRouter from '../../../../utils/compat-router/withRouter';
+import withRouter from '../../../../utils/compat_router/withRouter';
 import inject18n from '../../../../components/i18n';
 import { attackPatternsLinesQuery } from './AttackPatternsLines';
 import { computeLevel } from '../../../../utils/Number';

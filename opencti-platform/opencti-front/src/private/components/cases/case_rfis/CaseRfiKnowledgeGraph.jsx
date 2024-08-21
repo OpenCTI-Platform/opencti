@@ -16,7 +16,7 @@ import {
   knowledgeGraphStixCoreObjectQuery,
   knowledgeGraphStixRelationshipQuery,
 } from '../../common/containers/KnowledgeGraphQuery';
-import withRouter from '../../../../utils/compat-router/withRouter';
+import withRouter from '../../../../utils/compat_router/withRouter';
 import inject18n from '../../../../components/i18n';
 import { commitMutation, fetchQuery, MESSAGING$ } from '../../../../relay/environment';
 import { hexToRGB } from '../../../../utils/Colors';

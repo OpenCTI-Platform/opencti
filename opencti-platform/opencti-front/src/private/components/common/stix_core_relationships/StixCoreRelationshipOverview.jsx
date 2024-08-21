@@ -44,7 +44,7 @@ import StixCoreObjectOrStixRelationshipLastContainers from '../containers/StixCo
 import StixCoreRelationshipObjectLabelsView from './StixCoreRelationshipLabelsView';
 import Transition from '../../../../components/Transition';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
-import withRouter from '../../../../utils/compat-router/withRouter';
+import withRouter from '../../../../utils/compat_router/withRouter';
 
 const styles = (theme) => ({
   container: {

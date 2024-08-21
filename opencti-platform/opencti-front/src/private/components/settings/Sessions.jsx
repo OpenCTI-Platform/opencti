@@ -8,7 +8,7 @@ import { QueryRenderer } from '../../../relay/environment';
 import SessionsList, { sessionsListQuery } from './SessionsList';
 import SearchInput from '../../../components/SearchInput';
 import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../utils/ListParameters';
-import withRouter from '../../../utils/compat-router/withRouter';
+import withRouter from '../../../utils/compat_router/withRouter';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 
 const styles = () => ({

@@ -11,7 +11,7 @@ import GroupsLines, { groupsLinesQuery } from './groups/GroupsLines';
 import GroupCreation from './groups/GroupCreation';
 import AccessesMenu from './AccessesMenu';
 import Breadcrumbs from '../../../components/Breadcrumbs';
-import withRouter from '../../../utils/compat-router/withRouter';
+import withRouter from '../../../utils/compat_router/withRouter';
 
 export const groupsSearchQuery = graphql`
   query GroupsSearchQuery($search: String) {

@@ -30,7 +30,7 @@ import StixCoreRelationshipsExports from '../stix_core_relationships/StixCoreRel
 import ItemMarkings from '../../../../components/ItemMarkings';
 import { export_max_size } from '../../../../utils/utils';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
-import withRouter from '../../../../utils/compat-router/withRouter';
+import withRouter from '../../../../utils/compat_router/withRouter';
 
 const styles = (theme) => ({
   container: {

@@ -6,7 +6,7 @@ import { QueryRenderer, requestSubscription } from '../../../../relay/environmen
 import ExternalReference from './ExternalReference';
 import Loader from '../../../../components/Loader';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
-import withRouter from '../../../../utils/compat-router/withRouter';
+import withRouter from '../../../../utils/compat_router/withRouter';
 
 const subscription = graphql`
   subscription RootExternalReferenceSubscription($id: ID!) {

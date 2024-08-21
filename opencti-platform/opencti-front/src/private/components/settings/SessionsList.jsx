@@ -23,7 +23,7 @@ import { FIVE_SECONDS, timestamp } from '../../../utils/Time';
 import { userSessionKillMutation } from './users/User';
 import ItemIcon from '../../../components/ItemIcon';
 import Transition from '../../../components/Transition';
-import withRouter from '../../../utils/compat-router/withRouter';
+import withRouter from '../../../utils/compat_router/withRouter';
 
 const interval$ = interval(FIVE_SECONDS);
 

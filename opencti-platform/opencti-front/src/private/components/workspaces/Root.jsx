@@ -5,7 +5,7 @@ import RootDashboard from './dashboards/Root';
 import RootInvestigation from './investigations/Root';
 import { EXPLORE, INVESTIGATION } from '../../../utils/hooks/useGranted';
 import Security from '../../../utils/Security';
-import PublicDashboard from './dashboards/publicDashboards/PublicDashboards';
+import PublicDashboard from './dashboards/public_dashboards/PublicDashboards';
 
 const Root = () => (
   <Routes>

@@ -9,7 +9,7 @@ import ListLines from '../../../components/list_lines/ListLines';
 import RolesLines, { rolesLinesQuery } from './roles/RolesLines';
 import AccessesMenu from './AccessesMenu';
 import RoleCreation from './roles/RoleCreation';
-import withRouter from '../../../utils/compat-router/withRouter';
+import withRouter from '../../../utils/compat_router/withRouter';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 
 const styles = () => ({

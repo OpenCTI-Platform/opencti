@@ -8,7 +8,7 @@ import { debounce } from 'rxjs/operators';
 import ForceGraph3D from 'react-force-graph-3d';
 import SpriteText from 'three-spritetext';
 import ForceGraph2D from 'react-force-graph-2d';
-import withRouter from '../../../../utils/compat-router/withRouter';
+import withRouter from '../../../../utils/compat_router/withRouter';
 import {
   applyFilters,
   buildGraphData,

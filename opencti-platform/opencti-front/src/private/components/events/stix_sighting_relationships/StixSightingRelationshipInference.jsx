@@ -6,7 +6,7 @@ import withTheme from '@mui/styles/withTheme';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
 import ForceGraph2D from 'react-force-graph-2d';
-import withRouter from '../../../../utils/compat-router/withRouter';
+import withRouter from '../../../../utils/compat_router/withRouter';
 import inject18n from '../../../../components/i18n';
 import { buildGraphData, linkPaint, nodeAreaPaint, nodePaint } from '../../../../utils/Graph';
 import { resolveLink } from '../../../../utils/Entity';

@@ -10,7 +10,7 @@ import ListLines from '../../../components/list_lines/ListLines';
 import StreamLines, { StreamLinesQuery } from './stream/StreamLines';
 import StreamCollectionCreation from './stream/StreamCollectionCreation';
 import SharingMenu from './SharingMenu';
-import withRouter from '../../../utils/compat-router/withRouter';
+import withRouter from '../../../utils/compat_router/withRouter';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import { TAXIIAPI_SETCOLLECTIONS } from '../../../utils/hooks/useGranted';
 import Security from '../../../utils/Security';

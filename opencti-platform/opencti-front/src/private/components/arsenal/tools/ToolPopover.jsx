@@ -19,7 +19,7 @@ import ToolEditionContainer from './ToolEditionContainer';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNENRICHMENT, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import Transition from '../../../../components/Transition';
-import withRouter from '../../../../utils/compat-router/withRouter';
+import withRouter from '../../../../utils/compat_router/withRouter';
 
 const ToolPopoverDeletionMutation = graphql`
   mutation ToolPopoverDeletionMutation($id: ID!) {
