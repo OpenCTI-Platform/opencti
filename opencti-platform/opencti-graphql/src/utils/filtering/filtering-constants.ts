@@ -44,7 +44,11 @@ export const CONFIDENCE_FILTER = 'confidence';
 export const REVOKED_FILTER = 'revoked';
 export const PATTERN_FILTER = 'pattern_type';
 export const MAIN_OBSERVABLE_TYPE_FILTER = 'x_opencti_main_observable_type';
-
+export const CISA_KEV_FILTER = 'x_opencti_cisa_kev';
+export const EPSS_PERCENTILE_FILTER = 'x_opencti_epss_percentile';
+export const EPSS_SCORE_FILTER = 'x_opencti_epss_score';
+export const CVSS_BASE_SCORE_FILTER = 'x_opencti_cvss_base_score';
+export const CVSS_BASE_SEVERITY_FILTER = 'x_opencti_cvss_base_severity';
 // special cases
 export const IDS_FILTER = 'ids';
 export const SIGHTED_BY_FILTER = 'sightedBy';
