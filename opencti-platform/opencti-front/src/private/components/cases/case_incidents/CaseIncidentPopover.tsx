@@ -20,6 +20,7 @@ import useDeletion from '../../../../utils/hooks/useDeletion';
 import CaseIncidentEditionContainer, { caseIncidentEditionQuery } from './CaseIncidentEditionContainer';
 import { CaseIncidentEditionContainerCaseQuery } from './__generated__/CaseIncidentEditionContainerCaseQuery.graphql';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 const caseIncidentPopoverDeletionMutation = graphql`
   mutation CaseIncidentPopoverCaseDeletionMutation($id: ID!) {
@@ -37,6 +38,8 @@ const CaseIncidentPopover = ({ id }: { id: string }) => {
     caseIncidentEditionQuery,
     { id },
   );
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const handleOpen = (event: React.SyntheticEvent) => {
     setAnchorEl(event.currentTarget);
   };
@@ -70,44 +73,46 @@ const CaseIncidentPopover = ({ id }: { id: string }) => {
       },
     });
   };
-  return (
-    <>
-      <ToggleButton
-        value="popover"
-        size="small"
-        onClick={handleOpen}
-        title={t_i18n('Incident response actions')}
-      >
-        <MoreVert fontSize="small" color="primary" />
-      </ToggleButton>
-      <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
-        <MenuItem onClick={handleOpenEdit}>{t_i18n('Update')}</MenuItem>
-        <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
-          <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
-        </Security>
-      </Menu>
-      <Dialog
-        PaperProps={{ elevation: 1 }}
-        open={displayDelete}
-        keepMounted={true}
-        TransitionComponent={Transition}
-        onClose={handleCloseDelete}
-      >
-        <DialogContent>
-          <DialogContentText>
-            {t_i18n('Do you want to delete this incident response?')}
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseDelete} disabled={deleting}>
-            {t_i18n('Cancel')}
-          </Button>
-          <Button color="secondary" onClick={submitDelete} disabled={deleting}>
-            {t_i18n('Delete')}
-          </Button>
-        </DialogActions>
-      </Dialog>
-      {queryRef && (
+  return isFABReplaced
+    ? (<></>)
+    : (
+      <>
+        <ToggleButton
+          value="popover"
+          size="small"
+          onClick={handleOpen}
+          title={t_i18n('Incident response actions')}
+        >
+          <MoreVert fontSize="small" color="primary" />
+        </ToggleButton>
+        <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
+          <MenuItem onClick={handleOpenEdit}>{t_i18n('Update')}</MenuItem>
+          <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
+            <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
+          </Security>
+        </Menu>
+        <Dialog
+          PaperProps={{ elevation: 1 }}
+          open={displayDelete}
+          keepMounted={true}
+          TransitionComponent={Transition}
+          onClose={handleCloseDelete}
+        >
+          <DialogContent>
+            <DialogContentText>
+              {t_i18n('Do you want to delete this incident response?')}
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleCloseDelete} disabled={deleting}>
+              {t_i18n('Cancel')}
+            </Button>
+            <Button color="secondary" onClick={submitDelete} disabled={deleting}>
+              {t_i18n('Delete')}
+            </Button>
+          </DialogActions>
+        </Dialog>
+        {queryRef && (
         <React.Suspense
           fallback={<div />}
         >
@@ -117,9 +122,9 @@ const CaseIncidentPopover = ({ id }: { id: string }) => {
             open={displayEdit}
           />
         </React.Suspense>
-      )}
-    </>
-  );
+        )}
+      </>
+    );
 };
 
 export default CaseIncidentPopover;
