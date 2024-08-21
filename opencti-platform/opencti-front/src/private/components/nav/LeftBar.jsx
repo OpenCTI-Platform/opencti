@@ -146,7 +146,7 @@ const useStyles = makeStyles((theme) => createStyles({
   },
   menuItemText: {
     padding: '1px 0 0 15px',
-    fontWeight: 500,
+    fontWeight: 600,
     fontSize: 14,
   },
   menuSubItemText: {
