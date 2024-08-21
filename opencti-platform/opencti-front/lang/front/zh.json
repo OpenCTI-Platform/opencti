@@ -1,6 +1,7 @@
 {
   " (reversed)": "（反向）",
   " & ": "&；",
+  "... successfully deleted": "{entity_type} 成功删除",
   "+ N override(s)": "+ {count} 覆盖",
   "0 equals no maximum": "0 等于没有最大值",
   "24 hours": "24小时",

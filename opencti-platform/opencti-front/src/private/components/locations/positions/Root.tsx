@@ -141,7 +141,7 @@ const RootPosition = ({ positionId, queryRef }: RootPositionProps) => {
               entityType="Position"
               disableSharing={true}
               stixDomainObject={position}
-              PopoverComponent={<PositionPopover />}
+              PopoverComponent={<PositionPopover id={position.id} />}
               EditComponent={isFABReplaced && (
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <PositionEdition positionId={position.id} />

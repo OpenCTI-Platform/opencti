@@ -4,6 +4,7 @@ import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import { FormikConfig } from 'formik/dist/types';
 import ConfidenceField from '@components/common/form/ConfidenceField';
+import useHelper from 'src/utils/hooks/useHelper';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
@@ -21,6 +22,7 @@ import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEdito
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { GenericContext } from '../../common/model/GenericContextModel';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
+import CountryPopoverDeletion from './CountryPopoverDeletion';
 
 const countryMutationFieldPatch = graphql`
   mutation CountryEditionOverviewFieldPatchMutation(
@@ -213,6 +215,8 @@ CountryEditionOverviewProps
     objectMarking: convertMarkings(country),
     x_opencti_workflow_id: convertStatus(t_i18n, country) as Option,
   };
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   return (
     <Formik
       enableReinitialize={true}
@@ -308,6 +312,9 @@ CountryEditionOverviewProps
               id={country.id}
             />
           )}
+          {isFABReplaced && <CountryPopoverDeletion
+            id={country.id}
+                            />}
         </Form>
       )}
     </Formik>

@@ -1,144 +1,76 @@
-import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
+import React, { useState } from 'react';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
-import Button from '@mui/material/Button';
 import ToggleButton from '@mui/material/ToggleButton';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
 import Slide from '@mui/material/Slide';
 import MoreVert from '@mui/icons-material/MoreVert';
-import { graphql } from 'react-relay';
-import withRouter from '../../../../utils/compat_router/withRouter';
-import inject18n from '../../../../components/i18n';
-import { commitMutation, QueryRenderer } from '../../../../relay/environment';
+import { useFormatter } from '../../../../components/i18n';
 import { positionEditionQuery } from './PositionEdition';
 import PositionEditionContainer from './PositionEditionContainer';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
+import useHelper from '../../../../utils/hooks/useHelper';
+import { QueryRenderer } from '../../../../relay/environment';
+import PositionPopoverDeletion from './PositionPopoverDeletion';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
 ));
 Transition.displayName = 'TransitionSlide';
 
-const PositionPopoverDeletionMutation = graphql`
-  mutation PositionPopoverDeletionMutation($id: ID!) {
-    positionEdit(id: $id) {
-      delete
-    }
-  }
-`;
+const PositionPopover = ({ id }) => {
+  const { t_i18n } = useFormatter();
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [displayDelete, setDisplayDelete] = useState(false);
+  const [displayEdit, setDisplayEdit] = useState(false);
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
+  const handleOpen = (event) => setAnchorEl(event.currentTarget);
+  const handleClose = () => setAnchorEl(null);
+  const handleOpenDelete = () => {
+    setDisplayDelete(true);
+    handleClose();
+  };
+  const handleCloseDelete = () => {
+    setDisplayDelete(false);
+  };
+  const handleOpenEdit = () => {
+    setDisplayEdit(true);
+    handleClose();
+  };
+  const handleCloseEdit = () => setDisplayEdit(false);
 
-class PositionPopover extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      anchorEl: null,
-      displayDelete: false,
-      displayEdit: false,
-      deleting: false,
-    };
-  }
-
-  handleOpen(event) {
-    this.setState({ anchorEl: event.currentTarget });
-  }
-
-  handleClose() {
-    this.setState({ anchorEl: null });
-  }
-
-  handleOpenDelete() {
-    this.setState({ displayDelete: true });
-    this.handleClose();
-  }
-
-  handleCloseDelete() {
-    this.setState({ displayDelete: false });
-  }
-
-  submitDelete() {
-    this.setState({ deleting: true });
-    commitMutation({
-      mutation: PositionPopoverDeletionMutation,
-      variables: {
-        id: this.props.id,
-      },
-      onCompleted: () => {
-        this.setState({ deleting: false });
-        this.handleClose();
-        this.props.navigate('/dashboard/locations/positions');
-      },
-    });
-  }
-
-  handleOpenEdit() {
-    this.setState({ displayEdit: true });
-    this.handleClose();
-  }
-
-  handleCloseEdit() {
-    this.setState({ displayEdit: false });
-  }
-
-  render() {
-    const { t, id } = this.props;
-    return (
+  return isFABReplaced
+    ? (<></>)
+    : (
       <>
         <ToggleButton
           value="popover"
           size="small"
-
-          onClick={this.handleOpen.bind(this)}
+          onClick={handleOpen}
         >
           <MoreVert fontSize="small" color="primary" />
         </ToggleButton>
         <Menu
-          anchorEl={this.state.anchorEl}
-          open={Boolean(this.state.anchorEl)}
-          onClose={this.handleClose.bind(this)}
+          anchorEl={anchorEl}
+          open={Boolean(anchorEl)}
+          onClose={handleClose}
         >
-          <MenuItem onClick={this.handleOpenEdit.bind(this)}>
-            {t('Update')}
+          <MenuItem onClick={handleOpenEdit}>
+            {t_i18n('Update')}
           </MenuItem>
           <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
-            <MenuItem onClick={this.handleOpenDelete.bind(this)}>
-              {t('Delete')}
+            <MenuItem onClick={handleOpenDelete}>
+              {t_i18n('Delete')}
             </MenuItem>
           </Security>
         </Menu>
-        <Dialog
-          PaperProps={{ elevation: 1 }}
-          open={this.state.displayDelete}
-          keepMounted={true}
-          TransitionComponent={Transition}
-          onClose={this.handleCloseDelete.bind(this)}
-        >
-          <DialogContent>
-            <DialogContentText>
-              {t('Do you want to delete this position?')}
-            </DialogContentText>
-          </DialogContent>
-          <DialogActions>
-            <Button
-              onClick={this.handleCloseDelete.bind(this)}
-              disabled={this.state.deleting}
-            >
-              {t('Cancel')}
-            </Button>
-            <Button
-              color="secondary"
-              onClick={this.submitDelete.bind(this)}
-              disabled={this.state.deleting}
-            >
-              {t('Delete')}
-            </Button>
-          </DialogActions>
-        </Dialog>
+        <PositionPopoverDeletion
+          positionId={id}
+          displayDelete={displayDelete}
+          handleClose={handleClose}
+          handleCloseDelete={handleCloseDelete}
+        />
         <QueryRenderer
           query={positionEditionQuery}
           variables={{ id }}
@@ -147,8 +79,8 @@ class PositionPopover extends Component {
               return (
                 <PositionEditionContainer
                   position={props.position}
-                  handleClose={this.handleCloseEdit.bind(this)}
-                  open={this.state.displayEdit}
+                  handleClose={handleCloseEdit}
+                  open={displayEdit}
                 />
               );
             }
@@ -157,13 +89,5 @@ class PositionPopover extends Component {
         />
       </>
     );
-  }
-}
-
-PositionPopover.propTypes = {
-  id: PropTypes.string,
-  t: PropTypes.func,
-  navigate: PropTypes.func,
 };
-
-export default compose(inject18n, withRouter)(PositionPopover);
+export default PositionPopover;
