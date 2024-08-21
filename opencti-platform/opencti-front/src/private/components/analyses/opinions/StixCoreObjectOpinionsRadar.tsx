@@ -78,7 +78,7 @@ StixCoreObjectOpinionsRadarProps
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       // Need to migrate Chart Charts.js file to TSX
-      options={radarChartOptions(theme, labels, simpleNumberFormat, colors, true, true)}
+      options={radarChartOptions(theme, labels, simpleNumberFormat, colors, true, true, 'transparent')}
       series={chartData}
       type="radar"
       width="100%"
