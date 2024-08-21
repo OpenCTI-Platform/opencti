@@ -71,7 +71,7 @@ const ThreatActorIndividualKnowledgeComponent = ({
         element={
           <EntityStixCoreRelationships
             entityId={threatActorIndividual.id}
-            relationshipTypes={['related-to', 'part-of', 'known-as']}
+            relationshipTypes={['related-to', 'part-of', 'known-as', 'impersonates']}
             entityLink={link}
             defaultStartTime={threatActorIndividual.first_seen}
             defaultStopTime={threatActorIndividual.last_seen}
