@@ -4,6 +4,7 @@ import React, { FunctionComponent } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import * as Yup from 'yup';
 import { GenericContext } from '@components/common/model/GenericContextModel';
+import useHelper from 'src/utils/hooks/useHelper';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { useFormatter } from '../../../../components/i18n';
 import MarkdownField from '../../../../components/fields/MarkdownField';
@@ -26,6 +27,7 @@ import StatusField from '../../common/form/StatusField';
 import { CaseRftEditionOverview_case$key } from './__generated__/CaseRftEditionOverview_case.graphql';
 import ObjectParticipantField from '../../common/form/ObjectParticipantField';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
+import CaseRftPopoverDeletion from './CaseRftPopoverDeletion';
 
 export const caseRftMutationFieldPatch = graphql`
   mutation CaseRftEditionOverviewCaseFieldPatchMutation(
@@ -251,6 +253,9 @@ const CaseRftEditionOverview: FunctionComponent<CaseRftEditionOverviewProps> = (
     x_opencti_workflow_id: convertStatus(t_i18n, caseData) as Option,
     references: [],
   };
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
+
   return (
     <Formik
       enableReinitialize={true}
@@ -406,6 +411,9 @@ const CaseRftEditionOverview: FunctionComponent<CaseRftEditionOverviewProps> = (
               values={values.references}
               id={caseData.id}
             />
+          )}
+          {isFABReplaced && (
+            <CaseRftPopoverDeletion id={caseData.id} />
           )}
         </Form>
       )}
