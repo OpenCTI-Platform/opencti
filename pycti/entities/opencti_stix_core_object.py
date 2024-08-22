@@ -639,6 +639,10 @@ class StixCoreObject:
                 cvv
                 holder_name
             }
+            ... on Persona {
+                persona_name
+                persona_type
+            }
             ... on MediaContent {
                 title
                 content_alt: content
@@ -1299,6 +1303,10 @@ class StixCoreObject:
                 expiration_date
                 cvv
                 holder_name
+            }
+            ... on Persona {
+                persona_name
+                persona_type
             }
             ... on MediaContent {
                 title

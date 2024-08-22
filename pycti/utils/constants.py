@@ -47,6 +47,7 @@ class StixCyberObservableTypes(Enum):
     PAYMENT_CARD = "Payment-Card"
     MEDIA_CONTENT = "Media-Content"
     SIMPLE_OBSERVABLE = "Simple-Observable"
+    PERSONA = "Persona"
 
     @classmethod
     def has_value(cls, value):

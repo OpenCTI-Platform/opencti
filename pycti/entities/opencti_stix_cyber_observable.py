@@ -275,6 +275,8 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
             type = "IPv4-Addr"
         elif type.lower() == "ipv6-addr":
             type = "IPv6-Addr"
+        elif type.lower() == "persona":
+            type = "Persona"
         elif type.lower() == "hostname" or type.lower() == "x-opencti-hostname":
             type = "Hostname"
         elif type.lower() == "payment-card" or type.lower() == "x-opencti-payment-card":
@@ -406,6 +408,7 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                     $Credential: CredentialAddInput
                     $TrackingNumber: TrackingNumberAddInput
                     $PaymentCard: PaymentCardAddInput
+                    $Persona: PersonaAddInput
                     $MediaContent: MediaContentAddInput
                 ) {
                     stixCyberObservableAdd(
@@ -450,6 +453,7 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                         Credential: $Credential
                         TrackingNumber: $TrackingNumber
                         PaymentCard: $PaymentCard
+                        Persona: $Persona
                         MediaContent: $MediaContent
                     ) {
                         id
@@ -1009,6 +1013,19 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                     "publication_date": (
                         observable_data["publication_date"]
                         if "publication_date" in observable_data
+                        else None
+                    ),
+                }
+            elif type == "Persona":
+                input_variables["Persona"] = {
+                    "persona_name": (
+                        observable_data["persona_name"]
+                        if "persona_name" in observable_data
+                        else None
+                    ),
+                    "persona_type": (
+                        observable_data["persona_type"]
+                        if "persona_type" in observable_data
                         else None
                     ),
                 }
