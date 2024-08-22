@@ -241,7 +241,6 @@ const keysFromList = async (listId: string, expirationTime?: number) => {
           const key = partInstances[index];
           tx.get(key).ttl(key);
           if (new Date().getTime() - startProcessingTime > MAX_EVENT_LOOP_PROCESSING_TIME) {
-            console.log('event loop control sessions');
             startProcessingTime = new Date().getTime();
             await new Promise((resolve) => {
               setImmediate(resolve);

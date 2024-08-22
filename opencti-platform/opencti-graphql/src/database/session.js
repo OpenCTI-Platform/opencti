@@ -77,7 +77,6 @@ export const findSessions = async () => {
       preparedSessions[currentUserId] = { sessions: [data], total: 1 };
     }
     if (new Date().getTime() - startProcessingTime > MAX_EVENT_LOOP_PROCESSING_TIME) {
-      console.log('event loop control findSessions');
       startProcessingTime = new Date().getTime();
       await new Promise((resolve) => {
         setImmediate(resolve);
