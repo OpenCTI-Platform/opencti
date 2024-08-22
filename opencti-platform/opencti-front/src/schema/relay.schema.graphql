@@ -1749,6 +1749,7 @@ type MeUser implements BasicObject & InternalObject {
 
 type SessionDetail {
   id: ID!
+  user_execution: User
   created: DateTime
   ttl: Int
   originalMaxAge: Int
@@ -1756,6 +1757,7 @@ type SessionDetail {
 
 type UserSession {
   user: Creator
+  total: Int
   sessions: [SessionDetail]
 }
 
@@ -8728,6 +8730,7 @@ type Mutation {
   logout: ID
   roleAdd(input: RoleAddInput!): Role
   sessionKill(id: ID!): ID
+  cleanAllSessions: Boolean
   userSessionsKill(id: ID!): [ID]
   roleEdit(id: ID!): RoleEditMutations
   pingConnector(id: ID!, state: String, connectorInfo: ConnectorInfoInput): Connector

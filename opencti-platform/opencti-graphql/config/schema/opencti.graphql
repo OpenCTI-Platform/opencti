@@ -1673,12 +1673,14 @@ type MeUser implements BasicObject & InternalObject {
 }
 type SessionDetail {
   id: ID!
+  user_execution: User
   created: DateTime
   ttl: Int
   originalMaxAge: Int
 }
 type UserSession {
   user: Creator
+  total: Int
   sessions: [SessionDetail]
 }
 input UserAddInput {
@@ -14420,6 +14422,7 @@ type Mutation {
   logout: ID @auth
   roleAdd(input: RoleAddInput!): Role @auth(for: [SETTINGS_SETACCESSES])
   sessionKill(id: ID!): ID @auth(for: [SETTINGS_SETACCESSES])
+  cleanAllSessions: Boolean @auth(for: [SETTINGS_SETACCESSES])
   userSessionsKill(id: ID!): [ID] @auth(for: [SETTINGS_SETACCESSES])
   roleEdit(id: ID!): RoleEditMutations @auth(for: [SETTINGS_SETACCESSES])
   pingConnector(id: ID!, state: String, connectorInfo: ConnectorInfoInput): Connector @auth(for: [CONNECTORAPI])

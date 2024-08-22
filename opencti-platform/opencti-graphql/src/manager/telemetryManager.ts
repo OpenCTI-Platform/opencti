@@ -4,7 +4,7 @@ import { SEMRESATTRS_SERVICE_INSTANCE_ID } from '@opentelemetry/semantic-convent
 import { ConsoleMetricExporter, InstrumentType, MeterProvider } from '@opentelemetry/sdk-metrics';
 import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-http';
 import { AggregationTemporality } from '@opentelemetry/sdk-metrics/build/src/export/AggregationTemporality';
-import conf, { DEV_MODE, isFeatureEnabled, logApp, PLATFORM_VERSION } from '../config/conf';
+import conf, { DEV_MODE, logApp, PLATFORM_VERSION } from '../config/conf';
 import { executionContext, SYSTEM_USER, TELEMETRY_MANAGER_USER } from '../utils/access';
 import { getClusterInformation } from '../domain/settings';
 import { usersWithActiveSession } from '../database/session';
@@ -35,8 +35,6 @@ const TELEMETRY_COLLECT_INTERVAL = DEV_MODE ? ONE_MINUTE : ONE_HOUR;
 const TELEMETRY_EXPORT_INTERVAL = DEV_MODE ? TWO_MINUTE : SIX_HOUR;
 // Manager schedule, data point generation
 const COMPUTE_SCHEDULE_TIME = DEV_MODE ? ONE_MINUTE / 2 : ONE_HOUR / 2;
-
-const TELEMETRY_COUNT_ACTIVE_USERS = isFeatureEnabled('TELEMETRY_COUNT_ACTIVE_USERS');
 
 const telemetryInitializer = async (): Promise<HandlerInput> => {
   const context = executionContext('telemetry_manager');
@@ -116,10 +114,8 @@ const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     manager.setInstancesCount(clusterInfo.info.instances_number);
     // endregion
     // region Users information
-    if (TELEMETRY_COUNT_ACTIVE_USERS) {
-      const activUsers = await usersWithActiveSession(TELEMETRY_COLLECT_INTERVAL / 1000 / 60);
-      manager.setActiveUsersCount(activUsers.length);
-    }
+    const activUsers = await usersWithActiveSession(TELEMETRY_COLLECT_INTERVAL / 1000 / 60);
+    manager.setActiveUsersCount(activUsers.length);
     const users = await getEntitiesListFromCache(context, TELEMETRY_MANAGER_USER, ENTITY_TYPE_USER);
     manager.setUsersCount(users.length);
     // endregion

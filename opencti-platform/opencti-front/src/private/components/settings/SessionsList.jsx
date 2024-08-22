@@ -30,24 +30,13 @@ const useStyles = makeStyles((theme) => ({
     paddingLeft: theme.spacing(4),
   },
   name: {
-    width: '20%',
+    width: '100%',
     height: 20,
     lineHeight: '20px',
     float: 'left',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
-  },
-  email: {
-    width: '70%',
-    height: 20,
-    lineHeight: '20px',
-    float: 'left',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    color: '#a5a5a5',
-    fontSize: 12,
   },
   created: {
     width: '50%',
@@ -57,6 +46,7 @@ const useStyles = makeStyles((theme) => ({
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
+    fontSize: 12,
   },
   ttl: {
     width: '40%',
@@ -147,11 +137,8 @@ const SessionsListComponent = ({ relay, data, keyword }) => {
                 </ListItemIcon>
                 <ListItemText
                   primary={
-                    <div>
-                      <div className={classes.name}>{user.name}</div>
-                      <div className={classes.email}>{user.email}</div>
-                    </div>
-                  }
+                    <div className={classes.name}>{user.name} (last 10 of {session.total} sessions)</div>
+                    }
                 />
                 <ListItemIcon classes={{ root: classes.goIcon }}>
                   &nbsp;
@@ -171,7 +158,7 @@ const SessionsListComponent = ({ relay, data, keyword }) => {
                       primary={
                         <div>
                           <div className={classes.created}>
-                            {nsdt(userSession.created)}
+                            {nsdt(userSession.created)} {userSession.user_execution?.name ? (<b>- Impersonating {userSession.user_execution?.name}</b>) : ''}
                           </div>
                           <div className={classes.ttl}>
                             {Math.round(userSession.ttl / 60)}{' '}
@@ -246,10 +233,14 @@ export default createRefetchContainer(
             id
             name
           }
+          total
           sessions {
             id
             created
             ttl
+            user_execution {
+              name
+            }
             originalMaxAge
           }
         }

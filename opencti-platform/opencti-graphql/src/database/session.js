@@ -6,6 +6,7 @@ import conf, { booleanConf, OPENCTI_SESSION } from '../config/conf';
 import SessionStoreMemory from './sessionStore-memory';
 import RedisStore from './sessionStore-redis';
 import { getSession } from './redis';
+import { MAX_EVENT_LOOP_PROCESSING_TIME } from './utils';
 
 const sessionManager = nconf.get('app:session_manager');
 const sessionSecret = nconf.get('app:session_secret') || nconf.get('app:admin:password');
@@ -44,25 +45,52 @@ const createSessionMiddleware = () => {
   };
 };
 
-export const findSessions = () => {
+export const findSessions = async () => {
   const { store } = applicationSession;
-  return new Promise((accept) => {
-    store.all((_, result) => {
-      const sessionsPerUser = R.groupBy((s) => s.user.id, R.filter((n) => n.user, result));
-      const sessions = Object.entries(sessionsPerUser).map(([k, v]) => {
-        const userSessions = v.map((s) => {
-          return {
-            id: s.redis_key_id,
-            created: s.user.session_creation,
-            ttl: s.redis_key_ttl,
-            originalMaxAge: Math.round(s.cookie.originalMaxAge / 1000)
-          };
-        });
-        return { user_id: k, sessions: userSessions };
-      });
-      accept(sessions);
+  const fetchedSessions = await new Promise((accept, reject) => {
+    store.all((err, result) => {
+      if (err) {
+        reject(err);
+      } else {
+        accept(result);
+      }
     });
   });
+  const preparedSessions = {};
+  let startProcessingTime = new Date().getTime();
+  for (let index = 0; index < fetchedSessions.length; index += 1) {
+    const s = fetchedSessions[index];
+    const currentUserId = s.user.impersonate_user_id ?? s.user.id;
+    const data = {
+      id: s.redis_key_id,
+      user_execution_id: currentUserId !== s.user.id ? s.user.id : undefined,
+      created: s.user.session_creation,
+      ttl: s.redis_key_ttl,
+      originalMaxAge: Math.round(s.cookie.originalMaxAge / 1000)
+    };
+    if (preparedSessions[currentUserId]) {
+      preparedSessions[currentUserId].total += 1;
+      if (preparedSessions[currentUserId].sessions.length < 10) {
+        preparedSessions[currentUserId].sessions.push(data);
+      }
+    } else {
+      preparedSessions[currentUserId] = { sessions: [data], total: 1 };
+    }
+    if (new Date().getTime() - startProcessingTime > MAX_EVENT_LOOP_PROCESSING_TIME) {
+      console.log('event loop control findSessions');
+      startProcessingTime = new Date().getTime();
+      await new Promise((resolve) => {
+        setImmediate(resolve);
+      });
+    }
+  }
+  const sessions = [];
+  const refEntries = Object.entries(preparedSessions);
+  for (let indexRef = 0; indexRef < refEntries.length; indexRef += 1) {
+    const [user_id, data] = refEntries[indexRef];
+    sessions.push({ user_id, ...data });
+  }
+  return sessions;
 };
 
 // return the list of users ids that have a session activ in the last maxInactivityDuration min
