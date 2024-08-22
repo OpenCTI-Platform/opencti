@@ -106,7 +106,7 @@ export const deleteAllObjectFiles = async (context: AuthContext, user: AuthUser,
     ]);
     ids = [...importFiles, ...exportFiles].map((file) => file.id);
   }
-  logApp.info('[FILE STORAGE] deleting all files with ids:', { ids });
+  logApp.debug('[FILE STORAGE] deleting all files with ids:', { ids });
   return deleteFiles(context, user, ids);
 };
 

@@ -273,6 +273,7 @@ export const itemColor = (type, dark = false, reversed = false) => {
     case 'Phone-Number':
     case 'Payment-Card':
     case 'Media-Content':
+    case 'Persona':
       if (dark) {
         return '#84ffff';
       }

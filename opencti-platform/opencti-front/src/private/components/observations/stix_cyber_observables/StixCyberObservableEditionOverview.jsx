@@ -790,6 +790,10 @@ const StixCyberObservableEditionOverview = createFragmentContainer(
           url
           publication_date
         }
+        ... on Persona {
+          persona_name
+          persona_type
+        }
         x_opencti_score
         x_opencti_description
         createdBy {

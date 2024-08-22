@@ -125,6 +125,7 @@ export const resolveLink = (type = 'unknown'): string | null => {
     case 'Phone-Number':
     case 'Payment-Card':
     case 'Media-Content':
+    case 'Persona':
       return '/dashboard/observations/observables';
     default:
       return null;

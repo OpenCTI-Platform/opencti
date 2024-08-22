@@ -32,6 +32,7 @@ export const ENTITY_TRACKING_NUMBER = 'Tracking-Number'; // Custom
 export const ENTITY_PHONE_NUMBER = 'Phone-Number'; // Custom
 export const ENTITY_PAYMENT_CARD = 'Payment-Card'; // Custom
 export const ENTITY_MEDIA_CONTENT = 'Media-Content'; // Custom
+export const ENTITY_PERSONA = 'Persona'; // Custom
 
 const STIX_CYBER_OBSERVABLES_HASHED_OBSERVABLES = [
   ENTITY_HASHED_OBSERVABLE_ARTIFACT,
@@ -71,6 +72,7 @@ export const STIX_CYBER_OBSERVABLES = [
   ENTITY_TRACKING_NUMBER,
   ENTITY_PAYMENT_CARD,
   ENTITY_MEDIA_CONTENT,
+  ENTITY_PERSONA,
 ];
 schemaTypesDefinition.register(ABSTRACT_STIX_CYBER_OBSERVABLE, STIX_CYBER_OBSERVABLES);
 

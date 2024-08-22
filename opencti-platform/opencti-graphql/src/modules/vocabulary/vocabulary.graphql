@@ -43,6 +43,7 @@ enum VocabularyCategory {
   marital_status_ov
   hair_color_ov
   eye_color_ov
+  persona_type_ov
 }
 
 type VocabularyFieldDefinition {

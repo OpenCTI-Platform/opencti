@@ -14,6 +14,7 @@ import {
   RELATION_EMPLOYED_BY,
   RELATION_HOSTS,
   RELATION_IMPERSONATES,
+  RELATION_KNOWN_AS,
   RELATION_LOCATED_AT,
   RELATION_NATIONAL_OF,
   RELATION_OWNS,
@@ -43,7 +44,7 @@ import { REL_BUILT_IN, REL_EXTENDED, REL_NEW } from '../../database/stix';
 import { ENTITY_TYPE_NARRATIVE } from '../narrative/narrative-types';
 import { ENTITY_TYPE_CHANNEL } from '../channel/channel-types';
 import { ENTITY_TYPE_EVENT } from '../event/event-types';
-import { ENTITY_HASHED_OBSERVABLE_STIX_FILE } from '../../schema/stixCyberObservable';
+import { ENTITY_HASHED_OBSERVABLE_STIX_FILE, ENTITY_PERSONA } from '../../schema/stixCyberObservable';
 import { ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA } from '../administrativeArea/administrativeArea-types';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-types';
 
@@ -257,6 +258,16 @@ const THREAT_ACTOR_INDIVIDUAL_DEFINITION: ModuleDefinition<StoreEntityThreatActo
     { name: RELATION_NATIONAL_OF,
       targets: [
         { name: ENTITY_TYPE_LOCATION_COUNTRY, type: REL_EXTENDED },
+      ]
+    },
+    { name: RELATION_KNOWN_AS,
+      targets: [
+        { name: ENTITY_PERSONA, type: REL_EXTENDED },
+      ]
+    },
+    { name: RELATION_KNOWN_AS,
+      targets: [
+        { name: ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL, type: REL_EXTENDED },
       ]
     },
   ],

@@ -401,6 +401,7 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
     case 'credential':
     case 'tracking-number':
     case 'media-content':
+    case 'persona':
       return <HexagonOutline style={style} fontSize={fontSize} role="img" />;
     case 'stix-sighting-relationship':
     case 'sighting':
@@ -446,6 +447,7 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
     case 'located-at':
     case 'related-to':
     case 'mitigates':
+    case 'known-as':
     case 'impersonates':
     case 'indicates':
     case 'comes-after':
