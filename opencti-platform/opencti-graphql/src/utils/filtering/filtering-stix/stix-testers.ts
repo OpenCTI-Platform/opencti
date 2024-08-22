@@ -353,8 +353,9 @@ export const testCvssScore = (stix: any, filter: Filter) => {
 };
 
 export const testCvssSeverity = (stix: any, filter: Filter) => {
-  const stixValue: number | null = stix.x_opencti_cvss_base_severity ?? stix.extensions?.[STIX_EXT_OCTI].base_severity ?? null;
-  return testNumericFilter(filter, stixValue);
+  const stixValue: string | null = stix.x_opencti_cvss_base_severity ?? stix.extensions?.[STIX_EXT_OCTI].base_severity ?? null;
+  const value = stixValue ? [stixValue] : [];
+  return testStringFilter(filter, value);
 };
 
 /**
