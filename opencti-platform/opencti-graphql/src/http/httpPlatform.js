@@ -489,10 +489,10 @@ const createApp = async (app) => {
   });
 
   // Error handling
-  app.use((err, req, res, next) => {
-    logApp.error(UnknownError('Http call interceptor fail', { cause: err, referer: req.headers.referer }));
-    res.redirect('/');
-    next();
+  app.use((err, req, res) => {
+    const error = UnknownError('Http call interceptor fail', { cause: err, referer: req.headers.referer });
+    logApp.error(error);
+    res.status(500).send({ status: 'error', error: err.stack });
   });
   return { sseMiddleware };
 };
