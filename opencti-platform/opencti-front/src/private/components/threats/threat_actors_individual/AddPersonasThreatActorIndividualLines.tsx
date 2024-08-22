@@ -9,7 +9,7 @@ import { defaultCommitMutation } from 'src/relay/environment';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { ThreatActorIndividualDetails_ThreatActorIndividual$data } from './__generated__/ThreatActorIndividualDetails_ThreatActorIndividual.graphql';
 import { AddPersonasThreatActorIndividualLines_data$key } from './__generated__/AddPersonasThreatActorIndividualLines_data.graphql';
-import { scoRelationshipAdd, scoRelationshipDelete } from './ThreatActorIndividualMutations';
+import { scoRelationshipAdd, scoRelationshipDelete } from './threatActorIndividualMutations';
 
 export const addPersonasThreatActorIndividualLinesQuery = graphql`
   query AddPersonasThreatActorIndividualLinesQuery(

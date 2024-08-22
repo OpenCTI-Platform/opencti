@@ -1,7 +1,7 @@
 import { graphql } from 'relay-runtime';
 
 export const scoRelationshipAdd = graphql`
-  mutation ThreatActorIndividualMutationsRelationshipAddMutation(
+  mutation threatActorIndividualMutationsRelationshipAddMutation(
     $input: StixCoreRelationshipAddInput
   ) {
     stixCoreRelationshipAdd(input: $input) {
@@ -31,7 +31,7 @@ export const scoRelationshipAdd = graphql`
 `;
 
 export const scoRelationshipDelete = graphql`
-  mutation ThreatActorIndividualMutationsRelationshipDeleteMutation(
+  mutation threatActorIndividualMutationsRelationshipDeleteMutation(
     $fromId: StixRef!
     $toId: StixRef!
     $relationship_type: String!
