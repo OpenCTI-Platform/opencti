@@ -389,11 +389,8 @@ const SearchBulk = () => {
       return obj[field];
     };
     const sort = (a, b) => {
-      const valueA = getFieldValue(a, field);
-      const valueB = getFieldValue(b, field);
-
-      if (valueA < valueB) return newOrder ? -1 : 1;
-      if (valueA > valueB) return newOrder ? 1 : -1;
+      if (getFieldValue(a) < getFieldValue(b)) return newOrder ? -1 : 1;
+      if (getFieldValue(a) > getFieldValue(b)) return newOrder ? 1 : -1;
       return 0;
     };
     setResolvedEntities(resolvedEntities.sort(sort));
