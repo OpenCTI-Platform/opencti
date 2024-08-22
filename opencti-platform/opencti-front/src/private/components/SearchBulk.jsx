@@ -379,24 +379,21 @@ const SearchBulk = () => {
     setSortBy(field);
     setOrderAsc((prevOrderAsc) => !prevOrderAsc);
     const newOrder = !orderAsc;
-    const sort = (a, b) => {
+    const getFieldValue = (obj) => {
       if (field === 'markings') {
-        const definitionA = a.markings[0]?.definition || '';
-        const definitionB = b.markings[0]?.definition || '';
-        if (definitionA < definitionB) {
-          return newOrder ? -1 : 1;
-        }
-        if (definitionA > definitionB) {
-          return newOrder ? 1 : -1;
-        }
-        return 0;
+        return obj.markings[0]?.definition || '';
       }
-      if (a[field] < b[field]) {
-        return newOrder ? -1 : 1;
+      if (field === 'creator') {
+        return obj.creators;
       }
-      if (a[field] > b[field]) {
-        return newOrder ? 1 : -1;
-      }
+      return obj[field];
+    };
+    const sort = (a, b) => {
+      const valueA = getFieldValue(a, field);
+      const valueB = getFieldValue(b, field);
+
+      if (valueA < valueB) return newOrder ? -1 : 1;
+      if (valueA > valueB) return newOrder ? 1 : -1;
       return 0;
     };
     setResolvedEntities(resolvedEntities.sort(sort));
