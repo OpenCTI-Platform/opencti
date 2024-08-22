@@ -576,7 +576,7 @@ export const radarChartOptions = (
 ) => ({
   chart: {
     type: 'radar',
-    background: background,
+    background,
     toolbar: toolbarOptions,
     offsetY: offset ? -20 : 0,
     parentHeightOffset: 0,
