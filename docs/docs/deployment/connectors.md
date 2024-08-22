@@ -77,7 +77,20 @@ connector:
 
 ### Advanced parameters
 
-By default, connectors are connecting to `RabbitMQ` using parameters and credentials directly given by the API during the connector registration process. In some cases, you may need to override them.
+By default, connectors are connecting to `RabbitMQ`.
+
+You can also send the Bundle to API (`stixBundlePush`) that will push the bundle to the correct `RabbitMQ` queue.
+
+```yaml
+connector:
+  queue_protocol: 'api' # use api to send bundle through API mutation, amqp (default) to send to rabbit
+```
+
+!!! warning "Limitation"
+
+    Currently the connector can not send bundle larger the the configuration of the OpenCTI backend (default 50Mb)
+
+The connection to `RabbitMQ` is done by using parameters and credentials directly given by the API during the connector registration process. In some cases, you may need to override them.
 
 ```yaml
 - MQ_HOST=rabbit.mydomain.com
