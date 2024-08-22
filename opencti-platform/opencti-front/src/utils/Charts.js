@@ -563,6 +563,7 @@ export const horizontalBarsChartOptions = (
  * @param {string[]} chartColors
  * @param {boolean} legend
  * @param {boolean} offset
+ * @param {string} background
  */
 export const radarChartOptions = (
   theme,
@@ -571,10 +572,11 @@ export const radarChartOptions = (
   chartColors = [],
   legend = false,
   offset = false,
+  background = theme.palette.background.paper,
 ) => ({
   chart: {
     type: 'radar',
-    background: theme.palette.background.paper,
+    background,
     toolbar: toolbarOptions,
     offsetY: offset ? -20 : 0,
     parentHeightOffset: 0,
