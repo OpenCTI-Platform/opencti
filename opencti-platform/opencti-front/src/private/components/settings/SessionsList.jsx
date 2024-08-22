@@ -8,7 +8,6 @@ import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import { DeleteOutlined } from '@mui/icons-material';
 import ListItemText from '@mui/material/ListItemText';
-import { interval } from 'rxjs';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
@@ -19,13 +18,11 @@ import IconButton from '@mui/material/IconButton';
 import { graphql, createRefetchContainer } from 'react-relay';
 import inject18n from '../../../components/i18n';
 import { commitMutation } from '../../../relay/environment';
-import { FIVE_SECONDS, timestamp } from '../../../utils/Time';
+import { timestamp } from '../../../utils/Time';
 import { userSessionKillMutation } from './users/User';
 import ItemIcon from '../../../components/ItemIcon';
 import Transition from '../../../components/Transition';
 import withRouter from '../../../utils/compat_router/withRouter';
-
-const interval$ = interval(FIVE_SECONDS);
 
 const styles = (theme) => ({
   item: {},
@@ -33,7 +30,7 @@ const styles = (theme) => ({
     paddingLeft: theme.spacing(4),
   },
   name: {
-    width: '20%',
+    width: '100%',
     height: 20,
     lineHeight: '20px',
     float: 'left',
@@ -60,6 +57,7 @@ const styles = (theme) => ({
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
+    fontSize: 12,
   },
   ttl: {
     width: '40%',
@@ -87,16 +85,6 @@ class SessionsListComponent extends Component {
       killing: false,
       sessionToKill: null,
     };
-  }
-
-  componentDidMount() {
-    this.subscription = interval$.subscribe(() => {
-      this.props.relay.refetch();
-    });
-  }
-
-  componentWillUnmount() {
-    this.subscription.unsubscribe();
   }
 
   handleOpenKillSession(session) {
@@ -163,14 +151,11 @@ class SessionsListComponent extends Component {
                   </ListItemIcon>
                   <ListItemText
                     primary={
-                      <div>
-                        <div className={classes.name}>{user.name}</div>
-                        <div className={classes.email}>{user.email}</div>
-                      </div>
+                      <div className={classes.name}>{user.name} (last 10 of {session.total} sessions)</div>
                     }
                   />
                   <ListItemIcon classes={{ root: classes.goIcon }}>
-                    &nbsp;
+                  &nbsp;
                   </ListItemIcon>
                 </ListItem>
                 <List style={{ margin: 0, padding: 0 }}>
@@ -187,7 +172,7 @@ class SessionsListComponent extends Component {
                         primary={
                           <div>
                             <div className={classes.created}>
-                              {nsdt(userSession.created)}
+                              {nsdt(userSession.created)} {userSession.user_execution?.name ? (<b>- Impersonating {userSession.user_execution?.name}</b>) : ''}
                             </div>
                             <div className={classes.ttl}>
                               {Math.round(userSession.ttl / 60)}{' '}
@@ -275,10 +260,14 @@ const SessionsList = createRefetchContainer(
             id
             name
           }
+          total
           sessions {
             id
             created
             ttl
+            user_execution {
+              name
+            }
             originalMaxAge
           }
         }
