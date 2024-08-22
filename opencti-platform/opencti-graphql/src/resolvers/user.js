@@ -17,6 +17,7 @@ import {
   batchUserEffectiveConfidenceLevel,
   bookmarks,
   buildCompleteUser,
+  cleanAllSessions,
   deleteBookmark,
   findAll,
   findAllMembers,
@@ -120,6 +121,9 @@ const userResolvers = {
   UserSession: {
     user: (session, _, context) => creatorLoader.load(session.user_id, context, context.user),
   },
+  SessionDetail: {
+    user_execution: (detail, _, context) => (detail.user_execution_id ? creatorLoader.load(detail.user_execution_id, context, context.user) : undefined),
+  },
   Role: {
     editContext: (role) => fetchEditContext(role.id),
     capabilities: (role, _, context) => roleCapabilities(context, context.user, role.id),
@@ -195,6 +199,7 @@ const userResolvers = {
       });
       return id;
     },
+    cleanAllSessions: () => cleanAllSessions(),
     otpUserDeactivation: (_, { id }, context) => otpUserDeactivation(context, context.user, id),
     userSessionsKill: async (_, { id }, context) => {
       const user = await internalLoadById(context, context.user, id);
