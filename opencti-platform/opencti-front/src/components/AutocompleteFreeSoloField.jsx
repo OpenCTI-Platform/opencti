@@ -65,7 +65,7 @@ const AutocompleteFreeSoloField = (props) => {
           }
           return filtered;
         }}
-        getOptionLabel={(option) => (option.label ? option.label : option)}
+        getOptionLabel={(option) => (option.value ? option.value : option)}
         noOptionsText={noOptionsText}
         {...fieldProps}
         renderOption={renderOption}
