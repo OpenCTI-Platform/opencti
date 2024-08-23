@@ -359,6 +359,7 @@ export const itemColor = (type, dark = false, reversed = false) => {
     case 'subnarrative-of':
     case 'subtechnique-of':
     case 'numberOfConnectedElement':
+    case 'known-as':
       if (dark) {
         return '#616161';
       }
