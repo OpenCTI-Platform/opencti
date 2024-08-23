@@ -1,7 +1,20 @@
 import React from 'react';
 import NavToolbarMenu, { MenuEntry } from '@components/common/menus/NavToolbarMenu';
+import useHelper from '../../../utils/hooks/useHelper';
 
 const ImportMenu = () => {
+  const { isFeatureEnable } = useHelper();
+  const isDataTableEnabled = isFeatureEnable('DATA_TABLES');
+  if (!isDataTableEnabled) {
+    return (
+      <NavToolbarMenu
+        entries={[{
+          path: '/dashboard/data/import',
+          label: 'Import',
+        }]}
+      />
+    );
+  }
   const entries: MenuEntry[] = [
     {
       path: '/dashboard/data/import',

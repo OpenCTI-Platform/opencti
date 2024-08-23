@@ -4,23 +4,32 @@ import Import from './Import';
 import WorkbenchFile from '../../common/files/workbench/WorkbenchFile';
 import ImportFilesContent from './ImportFilesContent';
 import ImportWorkbenchesContent from './ImportWorkbenchesContent';
+import useHelper from '../../../../utils/hooks/useHelper';
 
-const Root = () => (
-  <Routes>
-    <Route path="/" Component={Import} />
-    <Route
-      path="/pending/:fileId"
-      element={<WorkbenchFile />}
-    />
-    <Route
-      path="/file"
-      element={<ImportFilesContent />}
-    />
-    <Route
-      path="/workbench"
-      element={<ImportWorkbenchesContent />}
-    />
-  </Routes>
-);
+const Root = () => {
+  const { isFeatureEnable } = useHelper();
+  const isDataTableEnabled = isFeatureEnable('DATA_TABLES');
+  return (
+    <Routes>
+      <Route path="/" Component={Import} />
+      <Route
+        path="/pending/:fileId"
+        element={<WorkbenchFile />}
+      />
+      {isDataTableEnabled && (
+        <Route
+          path="/file"
+          element={<ImportFilesContent />}
+        />
+      )}
+      {isDataTableEnabled && (
+        <Route
+          path="/workbench"
+          element={<ImportWorkbenchesContent />}
+        />
+      )}
+    </Routes>
+  );
+};
 
 export default Root;
