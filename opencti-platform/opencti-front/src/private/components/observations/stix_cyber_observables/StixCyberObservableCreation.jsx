@@ -760,7 +760,7 @@ const StixCyberObservableCreation = ({
                               variant="standard"
                               key={attribute.value}
                               name={attribute.value}
-                              label={attribute.value}
+                              label={t_i18n(attribute.value)}
                               fullWidth={true}
                               style={{ marginTop: 20 }}
                             />
