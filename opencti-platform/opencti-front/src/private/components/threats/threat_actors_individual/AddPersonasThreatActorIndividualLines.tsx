@@ -7,9 +7,9 @@ import { CheckCircle } from '@mui/icons-material';
 import useApiMutation from 'src/utils/hooks/useApiMutation';
 import { defaultCommitMutation } from 'src/relay/environment';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
+import { scoRelationshipAdd, scoRelationshipDelete } from '@components/threats/threat_actors_individual/AddIndividualsThreatActorIndividualLines';
 import { ThreatActorIndividualDetails_ThreatActorIndividual$data } from './__generated__/ThreatActorIndividualDetails_ThreatActorIndividual.graphql';
 import { AddPersonasThreatActorIndividualLines_data$key } from './__generated__/AddPersonasThreatActorIndividualLines_data.graphql';
-import { scoRelationshipAdd, scoRelationshipDelete } from './threatActorIndividualMutations';
 
 export const addPersonasThreatActorIndividualLinesQuery = graphql`
   query AddPersonasThreatActorIndividualLinesQuery(

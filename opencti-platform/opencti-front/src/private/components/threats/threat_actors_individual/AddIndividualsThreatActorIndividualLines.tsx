@@ -9,7 +9,50 @@ import useApiMutation from 'src/utils/hooks/useApiMutation';
 import { defaultCommitMutation } from 'src/relay/environment';
 import { ThreatActorIndividualDetails_ThreatActorIndividual$data } from './__generated__/ThreatActorIndividualDetails_ThreatActorIndividual.graphql';
 import { AddIndividualsThreatActorIndividualLines_data$key } from './__generated__/AddIndividualsThreatActorIndividualLines_data.graphql';
-import { scoRelationshipAdd, scoRelationshipDelete } from './threatActorIndividualMutations';
+
+export const scoRelationshipAdd = graphql`
+  mutation AddIndividualsThreatActorIndividualLinesRelationAddMutation(
+    $input: StixCoreRelationshipAddInput
+  ) {
+    stixCoreRelationshipAdd(input: $input) {
+      from {
+        ... on ThreatActorIndividual {
+          id
+          stixCoreRelationships {
+            edges {
+              node {
+                id
+                fromId
+                toId
+                entity_type
+                relationship_type
+              }
+            }
+          }
+        }
+      }
+      to {
+        ... on Individual {
+          id
+        }
+      }
+    }
+  }
+`;
+
+export const scoRelationshipDelete = graphql`
+  mutation AddIndividualsThreatActorIndividualLinesRelationDeleteMutation(
+    $fromId: StixRef!
+    $toId: StixRef!
+    $relationship_type: String!
+  ) {
+    stixCoreRelationshipDelete(
+      fromId: $fromId,
+      toId: $toId,
+      relationship_type: $relationship_type
+    )
+  }
+`;
 
 export const addIndividualsThreatActorIndividualLinesQuery = graphql`
   query AddIndividualsThreatActorIndividualLinesQuery(
