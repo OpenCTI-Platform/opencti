@@ -43,7 +43,7 @@ If you want to know more on OpenCTI, you can read the [documentation on the tool
 
 ## Releases download
 
-The releases are available on the [Github releases page](https://github.com/OpenCTI-Platform/opencti/releases). You can also access the [rolling release package](https://releases.opencti.io) generated from the master branch of the repository.
+The releases are available on the [GitHub releases page](https://github.com/OpenCTI-Platform/opencti/releases). You can also access the [rolling release package](https://releases.opencti.io) generated from the master branch of the repository.
 
 ## Installation
 
@@ -76,7 +76,7 @@ If you want to actively help OpenCTI, we created a [dedicated documentation](htt
 
 ### Status & bugs
 
-Currently OpenCTI is under heavy development, if you wish to report bugs or ask for new features, you can directly use the [Github issues module](https://github.com/OpenCTI-Platform/opencti/issues).
+Currently OpenCTI is under heavy development, if you wish to report bugs or ask for new features, you can directly use the [GitHub issues module](https://github.com/OpenCTI-Platform/opencti/issues).
 
 ### Discussion
 
