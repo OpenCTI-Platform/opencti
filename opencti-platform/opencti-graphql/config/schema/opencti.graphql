@@ -13447,7 +13447,7 @@ type Subscription {
   markingDefinition(id: ID!): MarkingDefinition @auth(for: [SETTINGS_SETMARKINGS])
   killChainPhase(id: ID!): KillChainPhase @auth(for: [SETTINGS_SETLABELS])
   stixCoreObject(id: ID!): StixCoreObject @auth(for: [KNOWLEDGE])
-  internalObject(id: ID!): InternalObject @auth(for: [SETTINGS])
+  internalObject(id: ID!): InternalObject @auth(for: [SETTINGS]) @deprecated(reason: "[>=6.3 & <6.6]. Not used in the platform.")
   stixDomainObject(id: ID!): StixDomainObject @auth(for: [KNOWLEDGE])
   stixCyberObservable(id: ID!): StixCyberObservable @auth(for: [KNOWLEDGE])
   stixCoreRelationship(id: ID!): StixCoreRelationship @auth(for: [KNOWLEDGE])
