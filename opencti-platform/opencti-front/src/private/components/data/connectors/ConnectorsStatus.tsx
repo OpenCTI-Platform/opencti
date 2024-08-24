@@ -459,7 +459,7 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
                           }}
                           aria-haspopup="true"
                           color="primary"
-                          disabled={!!connector.active}
+                          disabled={!!connector.active || !!connector.built_in}
                           size="large"
                         >
                           <DeleteOutlined />

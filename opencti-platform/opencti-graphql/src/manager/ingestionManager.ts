@@ -2,7 +2,7 @@ import type { convertableToString } from 'xml2js';
 import { parseStringPromise as xmlParse } from 'xml2js';
 import TurndownService from 'turndown';
 import * as R from 'ramda';
-import { v4 as uuidv4 } from 'uuid';
+import { v4 as uuidv4, v5 as uuidv5 } from 'uuid';
 import { clearIntervalAsync, setIntervalAsync } from 'set-interval-async/dynamic';
 import type { SetIntervalAsyncTimer } from 'set-interval-async/fixed';
 import type { Moment } from 'moment';
@@ -15,8 +15,8 @@ import { isEmptyField, isNotEmptyField } from '../database/utils';
 import { FROM_START_STR, now, sanitizeForMomentParsing, utcDate } from '../utils/format';
 import { generateStandardId } from '../schema/identifier';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../schema/stixDomainObject';
-import { pushToWorkerForSync } from '../database/rabbitmq';
-import { OPENCTI_SYSTEM_UUID } from '../schema/general';
+import { pushToWorkerForConnector } from '../database/rabbitmq';
+import { OPENCTI_NAMESPACE, OPENCTI_SYSTEM_UUID } from '../schema/general';
 import { findAllRssIngestions, patchRssIngestion } from '../modules/ingestion/ingestion-rss-domain';
 import type { AuthContext } from '../types/user';
 import type { BasicStoreEntityIngestionCsv, BasicStoreEntityIngestionRss, BasicStoreEntityIngestionTaxii } from '../modules/ingestion/ingestion-types';
@@ -27,10 +27,12 @@ import type { CsvMapperParsed } from '../modules/internal/csvMapper/csvMapper-ty
 import { findById } from '../modules/internal/csvMapper/csvMapper-domain';
 import { bundleProcess } from '../parser/csv-bundler';
 import { createWork, updateExpectationsNumber } from '../domain/work';
-import { IMPORT_CSV_CONNECTOR } from '../connector/importCsv/importCsv';
 import { parseCsvMapper } from '../modules/internal/csvMapper/csvMapper-utils';
 import { findById as findUserById } from '../domain/user';
 import { compareHashSHA256, hashSHA256 } from '../utils/hash';
+import { storeLoadById } from '../database/middleware-loader';
+import { ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
+import type { StixBundle, StixObject } from '../types/stix-common';
 
 // Ingestion manager responsible to cleanup old data
 // Each API will start is ingestion manager.
@@ -49,6 +51,24 @@ const asArray = (data: unknown) => {
     return [data];
   }
   return [];
+};
+
+const pushBundleToConnectorQueue = async (context: AuthContext, ingestion: BasicStoreEntityIngestionTaxii
+| BasicStoreEntityIngestionRss | BasicStoreEntityIngestionCsv, bundle: StixBundle) => {
+  // Push the bundle to absorption queue
+  const connector: any = await storeLoadById(context, SYSTEM_USER, uuidv5(ingestion.id, OPENCTI_NAMESPACE), ENTITY_TYPE_CONNECTOR);
+  const workName = `run @ ${now()}`;
+  const work: any = await createWork(context, SYSTEM_USER, connector, workName, connector.internal_id, { receivedTime: now() });
+  const stixBundle = JSON.stringify(bundle);
+  const content = Buffer.from(stixBundle, 'utf-8').toString('base64');
+  await updateExpectationsNumber(context, SYSTEM_USER, work.id, bundle.objects.length);
+  await pushToWorkerForConnector(connector.id, {
+    type: 'bundle',
+    applicant_id: ingestion.user_id ?? OPENCTI_SYSTEM_UUID,
+    content,
+    work_id: work.id,
+    update: true
+  });
 };
 // endregion
 
@@ -170,11 +190,9 @@ const rssDataHandler = async (context: AuthContext, httpRssGet: Getter, turndown
       }
       return report;
     });
-    const bundle = { type: 'bundle', id: `bundle--${uuidv4()}`, objects: reports };
+    const bundle: StixBundle = { type: 'bundle', spec_version: '2.1', id: `bundle--${uuidv4()}`, objects: reports };
     // Push the bundle to absorption queue
-    const stixBundle = JSON.stringify(bundle);
-    const content = Buffer.from(stixBundle, 'utf-8').toString('base64');
-    await pushToWorkerForSync({ type: 'bundle', applicant_id: ingestion.user_id ?? OPENCTI_SYSTEM_UUID, content, update: true });
+    await pushBundleToConnectorQueue(context, ingestion, bundle);
     // Update the state
     const lastPubDate = R.last(items)?.pubDate;
     await patchRssIngestion(context, SYSTEM_USER, ingestion.internal_id, { current_state_date: lastPubDate });
@@ -206,7 +224,7 @@ const rssExecutor = async (context: AuthContext, turndownService: TurndownServic
 
 // region Taxii ingestion
 export interface TaxiiResponseData {
-  data: { more: boolean | undefined, next: string | undefined, objects: object[] },
+  data: { more: boolean | undefined, next: string | undefined, objects: StixObject[] },
   addedLastHeader: string | undefined | null
 }
 
@@ -272,17 +290,9 @@ export const processTaxiiResponse = async (context: AuthContext, ingestion: Basi
   const { data, addedLastHeader } = taxiResponse;
   if (data.objects && data.objects.length > 0) {
     logApp.info(`[OPENCTI-MODULE] Taxii ingestion execution for ${data.objects.length} items, sending stix bundle to workers.`, { ingestionId: ingestion.id });
-
-    const bundle = { type: 'bundle', id: `bundle--${uuidv4()}`, objects: taxiResponse.data.objects };
+    const bundle: StixBundle = { type: 'bundle', spec_version: '2.1', id: `bundle--${uuidv4()}`, objects: taxiResponse.data.objects };
     // Push the bundle to absorption queue
-    const stixBundle = JSON.stringify(bundle);
-    const content = Buffer.from(stixBundle, 'utf-8').toString('base64');
-    await pushToWorkerForSync({
-      type: 'bundle',
-      applicant_id: ingestion.user_id ?? OPENCTI_SYSTEM_UUID,
-      content,
-      update: true
-    });
+    await pushBundleToConnectorQueue(context, ingestion, bundle);
     const more = data.more || false;
     // Update the state
     if (more && data.next) {
@@ -383,20 +393,9 @@ const csvDataHandler = async (context: AuthContext, ingestion: BasicStoreEntityI
   }
 
   const objects = await csvDataToObjects(data, ingestion, csvMapperParsed, context);
-  const bundleSize = 1000;
-  for (let index = 0; index < objects.length; index += bundleSize) {
-    // Filter objects already added to queue
-    const splitBundle = objects.slice(index, index + bundleSize);
-    const bundle = { type: 'bundle', id: `bundle--${uuidv4()}`, objects: splitBundle };
-    const stixBundle = JSON.stringify(bundle);
-    const content = Buffer.from(stixBundle, 'utf-8').toString('base64');
-    const friendlyName = 'CSV feed Ingestion';
-    const work = await createWork(context, user, IMPORT_CSV_CONNECTOR, friendlyName, IMPORT_CSV_CONNECTOR.id) as unknown as Work;
-    await updateExpectationsNumber(context, user, work.id, 1);
-    logApp.info(`[OPENCTI-MODULE] INGESTION - New work pushed for csv ingest: ${ingestion.name}`);
-    await pushToWorkerForSync({ type: 'bundle', applicant_id: ingestion.user_id ?? OPENCTI_SYSTEM_UUID, work_id: work.id, content, update: true });
-  }
-
+  const bundle: StixBundle = { type: 'bundle', spec_version: '2.1', id: `bundle--${uuidv4()}`, objects };
+  // Push the bundle to absorption queue
+  await pushBundleToConnectorQueue(context, ingestion, bundle);
   // Update the state
   const hashedIncomingData = hashSHA256(data.toString());
   await patchCsvIngestion(context, SYSTEM_USER, ingestion.internal_id, {

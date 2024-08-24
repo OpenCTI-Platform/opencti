@@ -99,7 +99,11 @@ export const resetStateConnector = async (context: AuthContext, user: AuthUser, 
   await purgeConnectorQueues(element);
   return storeLoadById(context, user, id, ENTITY_TYPE_CONNECTOR).then((data) => completeConnector(data));
 };
-export const registerConnector = async (context: AuthContext, user:AuthUser, connectorData:RegisterConnectorInput) => {
+interface RegisterOptions {
+  built_in?: boolean
+  active?: boolean
+}
+export const registerConnector = async (context: AuthContext, user:AuthUser, connectorData:RegisterConnectorInput, opts: RegisterOptions = {}) => {
   // eslint-disable-next-line camelcase
   const { id, name, type, scope, auto = null, only_contextual = null, playbook_compatible = false } = connectorData;
   const conn = await storeLoadById(context, user, id, ENTITY_TYPE_CONNECTOR);
@@ -107,15 +111,17 @@ export const registerConnector = async (context: AuthContext, user:AuthUser, con
   await registerConnectorQueues(id, name, type, scope);
   if (conn) {
     // Simple connector update
-    const patch = {
+    const patch: any = {
       name,
       updated_at: now(),
-      connector_user_id: user.id,
-      connector_scope: scope && scope.length > 0 ? scope.join(',') : null,
       connector_type: type,
+      connector_scope: scope && scope.length > 0 ? scope.join(',') : null,
       auto,
       only_contextual,
-      playbook_compatible
+      playbook_compatible,
+      connector_user_id: user.id,
+      built_in: opts.built_in ?? false,
+      active: opts.active
     };
     const { element } = await patchAttribute(context, user, id, ENTITY_TYPE_CONNECTOR, patch);
     // Notify configuration change for caching system
@@ -123,7 +129,7 @@ export const registerConnector = async (context: AuthContext, user:AuthUser, con
     return storeLoadById(context, user, id, ENTITY_TYPE_CONNECTOR).then((data) => completeConnector(data));
   }
   // Need to create the connector
-  const connectorToCreate = {
+  const connectorToCreate: any = {
     internal_id: id,
     name,
     connector_type: type,
@@ -132,6 +138,8 @@ export const registerConnector = async (context: AuthContext, user:AuthUser, con
     only_contextual,
     playbook_compatible,
     connector_user_id: user.id,
+    built_in: opts.built_in ?? false,
+    active: opts.active
   };
   const createdConnector = await createEntity(context, user, connectorToCreate, ENTITY_TYPE_CONNECTOR);
   await publishUserAction({

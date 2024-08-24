@@ -13,7 +13,7 @@ export const completeConnector = (connector) => {
     const completed = { ...connector };
     completed.connector_scope = connector.connector_scope ? connector.connector_scope.split(',') : [];
     completed.config = connectorConfig(connector.id);
-    completed.active = connector.built_in ? true : (sinceNowInMinutes(connector.updated_at) < 5);
+    completed.active = connector.built_in ? (connector.active ?? true) : (sinceNowInMinutes(connector.updated_at) < 5);
     return completed;
   }
   return null;

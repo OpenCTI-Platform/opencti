@@ -304,7 +304,7 @@ const ConnectorComponent = ({ connector, relay }) => {
                 onClick={handleOpenDelete}
                 aria-haspopup="true"
                 color="primary"
-                disabled={connector.active}
+                disabled={connector.active || connector.built_in}
                 size="large"
               >
                 <Delete />
