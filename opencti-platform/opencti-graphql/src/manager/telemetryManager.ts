@@ -9,7 +9,7 @@ import { executionContext, TELEMETRY_MANAGER_USER } from '../utils/access';
 import { isNotEmptyField } from '../database/utils';
 import type { Settings } from '../generated/graphql';
 import { getClusterInformation, getSettings } from '../domain/settings';
-import { usersWithActiveSession } from '../database/session';
+import { usersWithActiveSessionCount } from '../database/session';
 import { TELEMETRY_SERVICE_NAME, TelemetryMeterManager } from '../telemetry/TelemetryMeterManager';
 import type { HandlerInput, ManagerDefinition } from './managerModule';
 import { registerManager } from './managerModule';
@@ -116,8 +116,8 @@ const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     manager.setInstancesCount(clusterInfo.info.instances_number);
     // endregion
     // region Users information
-    const activUsers = await usersWithActiveSession(TELEMETRY_COLLECT_INTERVAL / 1000 / 60);
-    manager.setActiveUsersCount(activUsers.length);
+    const activUsersCount = await usersWithActiveSessionCount(TELEMETRY_COLLECT_INTERVAL / 1000 / 60);
+    manager.setActiveUsersCount(activUsersCount);
     const users = await getEntitiesListFromCache(context, TELEMETRY_MANAGER_USER, ENTITY_TYPE_USER);
     manager.setUsersCount(users.length);
     // endregion

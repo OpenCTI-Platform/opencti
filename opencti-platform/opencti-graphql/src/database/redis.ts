@@ -315,8 +315,7 @@ export const getSessionTtl = (baseKeyId: string) => {
 export const setSession = (key: string, value: any, expirationTime: number) => {
   return setKeyWithList(key, PLATFORM_KEY_SESSIONS, value, expirationTime);
 };
-export const killSession = async (baseKeyId: string) => {
-  const key = `{${PLATFORM_KEY_SESSIONS}}:${baseKeyId}`; // Key of a list must be attached to the same redis slot
+export const killSession = async (key: string) => {
   const currentSession = await getSession(key);
   await delKeyWithList(key, PLATFORM_KEY_SESSIONS);
   return { sessionId: key, session: currentSession };
@@ -327,7 +326,8 @@ export const getSessionKeys = () => {
 export const getSessions = () => {
   return keysFromList(PLATFORM_KEY_SESSIONS);
 };
-export const extendSession = async (sessionId: string, extension: number) => {
+export const extendSession = async (baseKeyId: string, extension: number) => {
+  const sessionId = `{${PLATFORM_KEY_SESSIONS}}:${baseKeyId}`; // Key of a list must be attached to the same redis slot
   const sessionExtensionPromise = getClientBase().expire(sessionId, extension);
   const refreshListPromise = setInList(PLATFORM_KEY_SESSIONS, sessionId, extension);
   const [sessionExtension] = await Promise.all([sessionExtensionPromise, refreshListPromise]);
