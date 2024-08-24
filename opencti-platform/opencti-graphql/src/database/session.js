@@ -45,7 +45,7 @@ const createSessionMiddleware = () => {
   };
 };
 
-export const findSessions = async () => {
+export const findSessions = async (maxInactivityDurationInMin = 1) => {
   const { store } = applicationSession;
   const fetchedSessions = await new Promise((accept, reject) => {
     store.all((err, result) => {
@@ -68,13 +68,15 @@ export const findSessions = async () => {
       ttl: s.redis_key_ttl,
       originalMaxAge: Math.round(s.cookie.originalMaxAge / 1000)
     };
+    const isActiveSession = (s.cookie.originalMaxAge / 1000 - s.redis_key_ttl) / 60 < maxInactivityDurationInMin;
     if (preparedSessions[currentUserId]) {
       preparedSessions[currentUserId].total += 1;
+      preparedSessions[currentUserId].isActiveUser = preparedSessions[currentUserId].isActiveUser || isActiveSession;
       if (preparedSessions[currentUserId].sessions.length < 10) {
         preparedSessions[currentUserId].sessions.push(data);
       }
     } else {
-      preparedSessions[currentUserId] = { sessions: [data], total: 1 };
+      preparedSessions[currentUserId] = { sessions: [data], total: 1, isActiveUser: isActiveSession };
     }
     if (new Date().getTime() - startProcessingTime > MAX_EVENT_LOOP_PROCESSING_TIME) {
       startProcessingTime = new Date().getTime();
@@ -93,17 +95,9 @@ export const findSessions = async () => {
 };
 
 // return the list of users ids that have a session activ in the last maxInactivityDuration min
-export const usersWithActiveSession = (maxInactivityDurationInMin = 1) => {
-  const { store } = applicationSession;
-  return new Promise((accept) => {
-    store.all((_, result) => {
-      const usersWithSession = uniq(result
-        .filter((n) => n.user
-          && (n.cookie.originalMaxAge / 1000 - n.redis_key_ttl) / 60 < maxInactivityDurationInMin) // the time with no activity in the session is < to 1 hour
-        .map((s) => s.user.id));
-      accept(usersWithSession);
-    });
-  });
+export const usersWithActiveSessionCount = async (maxInactivityDurationInMin = 1) => {
+  const sessions = await findSessions(maxInactivityDurationInMin);
+  return sessions.filter((s) => s.isActiveUser).length;
 };
 
 export const findUserSessions = async (userId) => {
