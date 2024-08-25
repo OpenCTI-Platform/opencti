@@ -9,7 +9,7 @@ import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import { graphql, PreloadedQuery, useQueryLoader } from 'react-relay';
-import { DeleteOutlined, ExtensionOutlined, PlaylistRemoveOutlined } from '@mui/icons-material';
+import { DeleteOutlined, DeveloperBoardOutlined, ExtensionOutlined, PlaylistRemoveOutlined } from '@mui/icons-material';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
@@ -383,7 +383,7 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
                 to={`/dashboard/data/ingestion/connectors/${connector.id}`}
               >
                 <ListItemIcon>
-                  <ExtensionOutlined />
+                  {connector.built_in ? <DeveloperBoardOutlined /> : <ExtensionOutlined />}
                 </ListItemIcon>
                 <ListItemText
                   primary={

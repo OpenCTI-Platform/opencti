@@ -78,7 +78,7 @@ const Sync = () => {
   }
   return (
     <div className={classes.container}>
-      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Data') }, { label: t_i18n('Ingestion') }, { label: t_i18n('Remote OCTI streams'), current: true }]} />
+      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Data') }, { label: t_i18n('Ingestion') }, { label: t_i18n('OpenCTI Streams'), current: true }]} />
       <IngestionMenu/>
       <ListLines
         sortBy={viewStorage.sortBy}
@@ -92,7 +92,7 @@ const Sync = () => {
         message={
           <>
             {t_i18n(
-              'You can configure your platform to consume remote OCTI streams. A list of public and commercial native feeds is available in the',
+              'You can configure your platform to consume OpenCTI Streams. A list of public and commercial native feeds is available in the',
             )}{' '}
             <a
               href="https://filigran.notion.site/63392969969c4941905520d37dc7ad4a?v=0a5716cac77b4406825ba3db0acfaeb2"
