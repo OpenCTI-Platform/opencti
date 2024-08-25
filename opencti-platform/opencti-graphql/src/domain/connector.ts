@@ -1,3 +1,4 @@
+import { v5 as uuidv5 } from 'uuid';
 import { createEntity, deleteElementById, internalDeleteElementById, patchAttribute, updateAttribute } from '../database/middleware';
 import { type GetHttpClient, getHttpClient } from '../utils/http-client';
 import { completeConnector, connector, connectors, connectorsFor } from '../database/repository';
@@ -9,14 +10,22 @@ import { isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
 import { now } from '../utils/format';
 import { elLoadById } from '../database/engine';
 import { INTERNAL_SYNC_QUEUE, isEmptyField, READ_INDEX_HISTORY } from '../database/utils';
-import { ABSTRACT_INTERNAL_OBJECT, CONNECTOR_INTERNAL_EXPORT_FILE } from '../schema/general';
+import { ABSTRACT_INTERNAL_OBJECT, CONNECTOR_INTERNAL_EXPORT_FILE, OPENCTI_NAMESPACE } from '../schema/general';
 import { isUserHasCapability, SETTINGS_SET_ACCESSES, SYSTEM_USER } from '../utils/access';
 import { delEditContext, notify, redisGetWork, setEditContext } from '../database/redis';
 import { listEntities, storeLoadById } from '../database/middleware-loader';
 import { publishUserAction } from '../listener/UserActionListener';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { BasicStoreEntityConnector, ConnectorInfo } from '../types/connector';
-import type { EditInput, RegisterConnectorInput, SynchronizerAddInput, SynchronizerFetchInput, EditContext, MutationSynchronizerTestArgs } from '../generated/graphql';
+import {
+  type EditInput,
+  type RegisterConnectorInput,
+  type SynchronizerAddInput,
+  type SynchronizerFetchInput,
+  type EditContext,
+  type MutationSynchronizerTestArgs,
+  ConnectorType
+} from '../generated/graphql';
 import { BUS_TOPICS } from '../config/conf';
 import { deleteWorkForConnector } from './work';
 import { testSync as testSyncUtils } from './connector-utils';
@@ -120,9 +129,11 @@ export const registerConnector = async (context: AuthContext, user:AuthUser, con
       only_contextual,
       playbook_compatible,
       connector_user_id: user.id,
-      built_in: opts.built_in ?? false,
-      active: opts.active
+      built_in: opts.built_in ?? false
     };
+    if (opts.active !== undefined) {
+      patch.active = opts.active;
+    }
     const { element } = await patchAttribute(context, user, id, ENTITY_TYPE_CONNECTOR, patch);
     // Notify configuration change for caching system
     await notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, element, user);
@@ -139,8 +150,10 @@ export const registerConnector = async (context: AuthContext, user:AuthUser, con
     playbook_compatible,
     connector_user_id: user.id,
     built_in: opts.built_in ?? false,
-    active: opts.active
   };
+  if (opts.active !== undefined) {
+    connectorToCreate.active = opts.active;
+  }
   const createdConnector = await createEntity(context, user, connectorToCreate, ENTITY_TYPE_CONNECTOR);
   await publishUserAction({
     user,
@@ -209,7 +222,27 @@ export const connectorTriggerUpdate = async (context: AuthContext, user: AuthUse
 // endregion
 
 // region syncs
-export const patchSync = async (context: AuthContext, user: AuthUser, id: string, patch: { runnning: boolean }) => {
+export const registerConnectorForIngestion = async (context: AuthContext, type: string, id: string, name: string, is_running: boolean) => {
+  // Create the representing connector
+  await registerConnector(context, SYSTEM_USER, {
+    id: uuidv5(id, OPENCTI_NAMESPACE),
+    name: `[FEED] ${name} (${type})`,
+    type: ConnectorType.ExternalImport,
+    auto: true,
+    scope: ['application/stix+json;version=2.1'],
+    only_contextual: false,
+    playbook_compatible: false
+  }, {
+    active: is_running,
+    built_in: true
+  });
+};
+
+export const unregisterConnectorForIngestion = async (context: AuthContext, id: string) => {
+  await connectorDelete(context, SYSTEM_USER, uuidv5(id, OPENCTI_NAMESPACE));
+};
+
+export const patchSync = async (context: AuthContext, user: AuthUser, id: string, patch: { running: boolean }) => {
   const patched = await patchAttribute(context, user, id, ENTITY_TYPE_SYNC, patch);
   return patched.element;
 };

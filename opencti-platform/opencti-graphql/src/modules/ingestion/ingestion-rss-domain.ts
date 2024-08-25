@@ -7,7 +7,7 @@ import { notify } from '../../database/redis';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import type { AuthContext, AuthUser } from '../../types/user';
 import type { EditInput, IngestionRssAddInput } from '../../generated/graphql';
-import { registerConnectorForIngestion, unregisterConnectorForIngestion } from './ingestion';
+import { registerConnectorForIngestion, unregisterConnectorForIngestion } from '../../domain/connector';
 
 export const findById = (context: AuthContext, user: AuthUser, ingestionId: string) => {
   return storeLoadById<BasicStoreEntityIngestionRss>(context, user, ingestionId, ENTITY_TYPE_INGESTION_RSS);
@@ -24,7 +24,7 @@ export const findAllRssIngestions = async (context: AuthContext, user: AuthUser,
 export const addIngestion = async (context: AuthContext, user: AuthUser, input: IngestionRssAddInput) => {
   const { element, isCreation } = await createEntity(context, user, input, ENTITY_TYPE_INGESTION_RSS, { complete: true });
   if (isCreation) {
-    await registerConnectorForIngestion(context, 'RSS', element);
+    await registerConnectorForIngestion(context, 'RSS', element.id, element.name, element.ingestion_running);
     await publishUserAction({
       user,
       event_type: 'mutation',
@@ -44,7 +44,7 @@ export const patchRssIngestion = async (context: AuthContext, user: AuthUser, id
 
 export const ingestionEditField = async (context: AuthContext, user: AuthUser, ingestionId: string, input: EditInput[]) => {
   const { element } = await updateAttribute(context, user, ingestionId, ENTITY_TYPE_INGESTION_RSS, input);
-  await registerConnectorForIngestion(context, 'RSS', element);
+  await registerConnectorForIngestion(context, 'RSS', element.id, element.name, element.ingestion_running);
   await publishUserAction({
     user,
     event_type: 'mutation',
@@ -58,7 +58,7 @@ export const ingestionEditField = async (context: AuthContext, user: AuthUser, i
 
 export const ingestionDelete = async (context: AuthContext, user: AuthUser, ingestionId: string) => {
   const deleted = await deleteElementById(context, user, ingestionId, ENTITY_TYPE_INGESTION_RSS);
-  await unregisterConnectorForIngestion(context, deleted);
+  await unregisterConnectorForIngestion(context, deleted.id);
   await publishUserAction({
     user,
     event_type: 'mutation',
