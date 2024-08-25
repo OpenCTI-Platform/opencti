@@ -120,6 +120,7 @@ export const collectionQuery = async (context, user, collection, args) => {
   const filters = collection.filters ? JSON.parse(collection.filters) : undefined;
   const options = await convertFiltersToQueryOptions(filters, { after: added_after });
   options.after = next;
+  options.bypassSizeLimit = true;
   let maxSize = MAX_TAXII_PAGINATION;
   if (limit) {
     const paramLimit = parseInt(limit, 10);
