@@ -776,6 +776,9 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         self.connect_id = get_config_variable(
             "CONNECTOR_ID", ["connector", "id"], config
         )
+        self.queue_protocol = get_config_variable(
+            "QUEUE_PROTOCOL", ["connector", "queue_protocol"], config, default="amqp"
+        )
         self.connect_type = get_config_variable(
             "CONNECTOR_TYPE", ["connector", "type"], config
         )
@@ -994,7 +997,6 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
 
         # Start ping thread
         if not self.connect_run_and_terminate:
-
             is_run_and_terminate = False
             if self.connect_duration_period == 0:
                 is_run_and_terminate = True
@@ -1689,10 +1691,11 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             expectations_number = len(json.loads(bundle)["objects"])
         else:
             stix2_splitter = OpenCTIStix2Splitter()
-            expectations_number, bundles = (
-                stix2_splitter.split_bundle_with_expectations(
-                    bundle, True, event_version
-                )
+            (
+                expectations_number,
+                bundles,
+            ) = stix2_splitter.split_bundle_with_expectations(
+                bundle, True, event_version
             )
 
         if len(bundles) == 0:
@@ -1704,42 +1707,53 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
                 self.api.work.add_expectations(work_id, expectations_number)
             if entities_types is None:
                 entities_types = []
-            pika_credentials = pika.PlainCredentials(
-                self.connector_config["connection"]["user"],
-                self.connector_config["connection"]["pass"],
-            )
-            pika_parameters = pika.ConnectionParameters(
-                host=self.connector_config["connection"]["host"],
-                port=self.connector_config["connection"]["port"],
-                virtual_host=self.connector_config["connection"]["vhost"],
-                credentials=pika_credentials,
-                ssl_options=(
-                    pika.SSLOptions(
-                        create_mq_ssl_context(self.config),
-                        self.connector_config["connection"]["host"],
-                    )
-                    if self.connector_config["connection"]["use_ssl"]
-                    else None
-                ),
-            )
-            pika_connection = pika.BlockingConnection(pika_parameters)
-            channel = pika_connection.channel()
-            try:
-                channel.confirm_delivery()
-            except Exception as err:  # pylint: disable=broad-except
-                self.connector_logger.warning(str(err))
-            self.connector_logger.info(self.connect_name + " sending bundle to queue")
-            for sequence, bundle in enumerate(bundles, start=1):
-                self._send_bundle(
-                    channel,
-                    bundle,
-                    work_id=work_id,
-                    entities_types=entities_types,
-                    sequence=sequence,
-                    update=update,
+            if self.queue_protocol == "amqp":
+                pika_credentials = pika.PlainCredentials(
+                    self.connector_config["connection"]["user"],
+                    self.connector_config["connection"]["pass"],
                 )
-            channel.close()
-            pika_connection.close()
+                pika_parameters = pika.ConnectionParameters(
+                    host=self.connector_config["connection"]["host"],
+                    port=self.connector_config["connection"]["port"],
+                    virtual_host=self.connector_config["connection"]["vhost"],
+                    credentials=pika_credentials,
+                    ssl_options=(
+                        pika.SSLOptions(
+                            create_mq_ssl_context(self.config),
+                            self.connector_config["connection"]["host"],
+                        )
+                        if self.connector_config["connection"]["use_ssl"]
+                        else None
+                    ),
+                )
+                pika_connection = pika.BlockingConnection(pika_parameters)
+                channel = pika_connection.channel()
+                try:
+                    channel.confirm_delivery()
+                except Exception as err:  # pylint: disable=broad-except
+                    self.connector_logger.warning(str(err))
+                self.connector_logger.info(
+                    self.connect_name + " sending bundle to queue"
+                )
+                for sequence, bundle in enumerate(bundles, start=1):
+                    self._send_bundle(
+                        channel,
+                        bundle,
+                        work_id=work_id,
+                        entities_types=entities_types,
+                        sequence=sequence,
+                        update=update,
+                    )
+                channel.close()
+                pika_connection.close()
+            elif self.queue_protocol == "api":
+                self.api.send_bundle_to_api(
+                    connector_id=self.connector_id, bundle=bundle
+                )
+            else:
+                raise ValueError(
+                    f"{self.queue_protocol}: this queue protocol is not supported"
+                )
 
         return bundles
 
