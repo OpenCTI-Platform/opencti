@@ -59,7 +59,7 @@ export const getElementsToDelete = async (context: AuthContext, scope: string, b
   } else {
     throw Error(`[Retention manager] Scope ${scope} not existing for Retention Rule.`);
   }
-  if (scope === 'file' || scope === 'knowledge') { // don't delete files with ongoing works or incomplete status
+  if (scope === 'file' || scope === 'workbench') { // don't delete files with ongoing works or incomplete status
     const resultEdges = result.edges.filter((e: FileEdge) => e.node.uploadStatus === 'complete'
       && (e.node.works ?? []).every((work) => work?.status === 'complete'));
     result.edges = resultEdges;
