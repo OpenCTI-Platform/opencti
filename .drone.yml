@@ -405,6 +405,3 @@ volumes:
   - name: cache-node-frontend-e2e
     host:
       path: /tmp/cache-node-frontend-e2e
-  - name: cache-node-frontend-e2e-flake
-    host:
-      path: /tmp/cache-node-frontend-e2e-flake
