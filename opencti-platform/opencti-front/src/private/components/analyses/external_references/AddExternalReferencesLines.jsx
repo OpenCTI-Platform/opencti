@@ -215,9 +215,19 @@ class AddExternalReferencesLinesContainer extends Component {
                   key={externalReference.id}
                   classes={{ root: classes.menuItem }}
                   divider={true}
+                  button={true}
+                  onClick={this.toggleExternalReference.bind(
+                    this,
+                    externalReference,
+                    false,
+                  )}
                 >
                   <ListItemIcon>
-                    <DocumentScannerOutlined />
+                    {alreadyAdded ? (
+                      <CheckCircle classes={{ root: classes.icon }} />
+                    ) : (
+                      <DocumentScannerOutlined />
+                    )}
                   </ListItemIcon>
                   {computeTextItem(externalReferenceNode)}
                 </ListItem>
