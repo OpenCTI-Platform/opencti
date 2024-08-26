@@ -2990,23 +2990,23 @@ export const elAggregationRelationsCount = async (context, user, indexName, opti
     });
 };
 
-export const elAggregationNestedTerms = async (context, user, indexName, aggregation, opts = {}) => {
+export const elAggregationNestedTermsWithFilter = async (context, user, indexName, aggregation, opts = {}) => {
   const { types = [], size = 500 } = opts;
-  const { path, field } = aggregation;
+  const { path, field, filter } = aggregation;
   const body = await elQueryBodyBuilder(context, user, { ...opts, noSize: true, noSort: true });
   body.size = 0;
   body.aggs = {
     nestedAgg: {
-      nested: {
-        path
-      },
+      nested: { path },
       aggs: {
-        termsAgg: {
-          terms: {
-            field,
-            size,
-          }
-        }
+        filterAggs: {
+          filter,
+          aggs: {
+            termsAgg: {
+              terms: { field, size },
+            }
+          },
+        },
       }
     }
   };
@@ -3014,11 +3014,10 @@ export const elAggregationNestedTerms = async (context, user, indexName, aggrega
     index: indexName,
     body,
   };
-  logApp.info('[SEARCH] elAggregationNestedTerms', { query });
+  logApp.debug('[SEARCH] elAggregationNestedTermsWithFilter', { query });
   return elRawSearch(context, user, types, query)
     .then((data) => {
-      const aggBucketsResult = data.aggregations?.nestedAgg?.termsAgg?.buckets ?? [];
-      logApp.info('===== DEBUG ===== elAggregationNestedTerms result', { data, aggBucketsResult });
+      const aggBucketsResult = data.aggregations?.nestedAgg?.filterAggs?.termsAgg?.buckets ?? [];
       return aggBucketsResult.map((b) => {
         let label = b.key;
         if (typeof label === 'number') {

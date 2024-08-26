@@ -1,5 +1,5 @@
 import { createEntity } from '../database/middleware';
-import { BUS_TOPICS, logApp } from '../config/conf';
+import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_COURSE_OF_ACTION, ENTITY_TYPE_DATA_COMPONENT } from '../schema/stixDomainObject';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../schema/general';
@@ -49,7 +49,6 @@ export const isSubAttackPattern = async (context: AuthContext, user: AuthUser, a
 };
 export const batchIsSubAttackPattern = async (context: AuthContext, user: AuthUser, attackPatternsIds: string[]) => {
   const resultIds = await findEntitiesIdsWithRelations(context, user, attackPatternsIds, RELATION_SUBTECHNIQUE_OF, ENTITY_TYPE_ATTACK_PATTERN, false);
-  logApp.info('===== DEBUG ===== batchIsSubAttackPattern', { resultIds });
   return attackPatternsIds.map((id) => {
     return resultIds.includes(id);
   });

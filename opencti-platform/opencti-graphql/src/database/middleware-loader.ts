@@ -12,7 +12,7 @@ import {
   READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED
 } from './utils';
 import {
-  elAggregationNestedTerms,
+  elAggregationNestedTermsWithFilter,
   elAggregationsList,
   elCount,
   elFindByIds,
@@ -42,7 +42,6 @@ import { ASSIGNEE_FILTER, CREATOR_FILTER, INSTANCE_REGARDING_OF, PARTICIPANT_FIL
 import { completeContextDataForEntity, publishUserAction } from '../listener/UserActionListener';
 import type { UserReadActionContextData } from '../listener/UserActionListener';
 import { extractEntityRepresentativeName } from './entity-representative';
-import { logApp } from '../config/conf';
 
 export interface FiltersWithNested extends Filter {
   nested?: Array<{
@@ -550,57 +549,6 @@ export const listEntitiesThroughRelationsPaginated = async <T extends BasicStore
   };
 };
 
-/* export const listEntitiesThroughRelationsPaginated2 = async <T extends BasicStoreCommon>(context: AuthContext, user: AuthUser, connectedEntityId: string,
-  relationType: string, entityType: string | string[], reverse_relation: boolean, args: EntityOptions<T> = {}): Promise<StoreCommonConnection<T>> => {
-  const entityTypes = Array.isArray(entityType) ? entityType : [entityType];
-  const { indices = READ_ENTITIES_INDICES, connectionFormat } = args;
-  if (connectionFormat === false) {
-    throw UnsupportedError('List connected entities paginated require connectionFormat option to true');
-  }
-  if (UNIMPACTED_ENTITIES_ROLE.includes(`${relationType}_to`)) {
-    throw UnsupportedError('List connected entities paginated cant be used', { type: entityType });
-  }
-  const connectedEntitiesIds = [connectedEntityId]; // TODO batch
-  const connectionsFilters: FilterGroupWithNested = {
-    mode: FilterMode.And,
-    filters: [
-      {
-        key: ['connections'],
-        values: [],
-        nested: [
-          { key: 'internal_id', values: connectedEntitiesIds },
-          ...(reverse_relation ? [] : [{ key: 'types', values: entityTypes }]),
-          { key: 'role', values: [reverse_relation ? '*_to' : '*_from'], operator: FilterOperator.Wildcard },
-        ],
-      }],
-    filterGroups: [],
-  };
-  const listArgs = { filters: connectionsFilters, connectionFormat: false, logQuery: true };
-  const connectedRelations = await listAllRelations<BasicStoreRelation>(context, user, relationType, listArgs);
-  // TODO refactor this code
-  const relationsEntityMap = new Map();
-  connectedRelations.forEach((relation) => {
-    const id = reverse_relation ? relation.fromId : relation.toId;
-    if (relationsEntityMap.has(id)) {
-      relationsEntityMap.set(id, [...relationsEntityMap.get(id), relation]);
-    } else {
-      relationsEntityMap.set(id, [relation]);
-    }
-  });
-  const rebuildEdges: BasicStoreCommonEdge<T>[] = [];
-  entityPagination.edges.forEach((edge) => {
-    const relatedRelations = relationsEntityMap.get(edge.node.id);
-    if (relatedRelations) {
-      const types = relatedRelations.map((relation: BasicStoreRelation) => (isInferredIndex(relation._index) ? 'inferred' : 'manual'));
-      const newEdge: BasicStoreCommonEdge<T> = { types, node: edge.node, cursor: edge.cursor };
-      rebuildEdges.push(newEdge);
-    }
-  });
-  return {
-    edges: rebuildEdges,
-    pageInfo: { ...entityPagination.pageInfo, globalCount: entityPagination.pageInfo.globalCount - (entityPagination.edges.length - rebuildEdges.length) },
-  };
-}; */
 export const findEntitiesIdsWithRelations = async (
   context: AuthContext,
   user: AuthUser,
@@ -610,6 +558,7 @@ export const findEntitiesIdsWithRelations = async (
   reverse_relation: boolean
 ) => {
   const entityTypes = Array.isArray(entityType) ? entityType : [entityType];
+  const connectionRole = reverse_relation ? `${relationType}_to` : `${relationType}_from`;
   const connectionsFilters: FilterGroupWithNested = {
     mode: FilterMode.And,
     filters: [
@@ -619,17 +568,19 @@ export const findEntitiesIdsWithRelations = async (
         nested: [
           { key: 'internal_id', values: connectedEntitiesIds },
           ...(reverse_relation ? [] : [{ key: 'types', values: entityTypes }]),
-          { key: 'role', values: [reverse_relation ? `${relationType}_to` : `${relationType}_from`] },
+          { key: 'role', values: [connectionRole] },
         ],
       }],
     filterGroups: [],
   };
-  // TODO not working yet, need to find a way to filter the aggregation result with nested filter
-  // size: connectedEntitiesIds.length
+  // add a filter on role for aggregation to return only matching connections for the right role
+  const aggFilter = {
+    bool: { filter: [{ term: { 'connections.role.keyword': connectionRole } }] }
+  };
+  // TODO size: connectedEntitiesIds.length
   const args = { filters: connectionsFilters, types: [relationType], resolveToRepresentative: false };
-  const aggregation = { field: 'connections.internal_id.keyword', path: 'connections' };
-  const aggregationResult = await elAggregationNestedTerms(context, user, READ_RELATIONSHIPS_INDICES, aggregation, args);
-  logApp.info('===== DEBUG ===== aggregationsList', { aggregationResult });
+  const aggregation = { field: 'connections.internal_id.keyword', path: 'connections', filter: aggFilter };
+  const aggregationResult = await elAggregationNestedTermsWithFilter(context, user, READ_RELATIONSHIPS_INDICES, aggregation, args);
   const resultEntityIds = aggregationResult.map((agg: { label: string; }) => agg.label)
     .filter((id: string) => connectedEntitiesIds.includes(id)); // keep only ids we were looking for
   return resultEntityIds;
