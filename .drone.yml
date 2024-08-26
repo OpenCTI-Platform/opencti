@@ -112,6 +112,10 @@ steps:
       BACK_END_URL: http://opencti-e2e-start:4500
       E2E_TEST: true
       TEAMS_WEBHOOK: teams-webhook-url
+    when:
+      event:
+        include:
+        - pull_request
     commands:
       - apt-get update
       - apt-get -y install netcat-traditional
@@ -124,7 +128,7 @@ steps:
       - yarn build
       - yarn test:e2e:sandbox
     depends_on:
-      - frontend-tests
+      - frontend-e2e-tests
 
   - name: frontend-verify-translation
     image: node:20.16.0
@@ -180,9 +184,13 @@ steps:
       - frontend-tests
       - frontend-e2e-tests
 
-  - name: upload-frontend-artefacts
+  - name: upload-frontend-test-results
     image: plugins/s3
     failure: ignore
+    when:
+      event:
+        include:
+        - pull_request
     settings:
       endpoint: https://s3.testing.octi.staging.filigran.io
       bucket: octi-drone-artefact
@@ -191,11 +199,11 @@ steps:
         from_secret: octi-s3-access-key
       secret_key:
         from_secret: octi-s3-secret-key
-      source: /drone/src/opencti-platform/opencti-front/src/**/*
+      source: /drone/src/opencti-platform/opencti-front/test-results/**/*
       target: /octi/opencti-front
-#    depends_on:
-#      - frontend-tests
-#      - frontend-e2e-tests
+    depends_on:
+      - frontend-tests
+      - frontend-e2e-tests
 
 services:
   - name: redis
