@@ -85,6 +85,11 @@ export const stixFilters = [
   'fromTypes',
   'toTypes',
   'representative',
+  'x_opencti_cisa_kev',
+  'x_opencti_epss_score',
+  'x_opencti_epss_percentile',
+  'x_opencti_cvss_base_score',
+  'x_opencti_cvss_base_severity',
 ];
 
 //----------------------------------------------------------------------------------------------------------------------

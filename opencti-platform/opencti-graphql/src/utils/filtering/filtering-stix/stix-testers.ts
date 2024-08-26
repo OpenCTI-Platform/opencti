@@ -30,7 +30,12 @@ import {
   SCORE_FILTER,
   SEVERITY_FILTER,
   TYPE_FILTER,
-  WORKFLOW_FILTER
+  WORKFLOW_FILTER,
+  CISA_KEV_FILTER,
+  EPSS_PERCENTILE_FILTER,
+  EPSS_SCORE_FILTER,
+  CVSS_BASE_SCORE_FILTER,
+  CVSS_BASE_SEVERITY_FILTER
 } from '../filtering-constants';
 import type { Filter } from '../../../generated/graphql';
 import { STIX_RESOLUTION_MAP_PATHS } from '../filtering-resolution';
@@ -327,6 +332,32 @@ export const testConnectedToSideEvents = (stix: any, filter: Filter) => {
   return testStringFilter(filter, aggregatedStixValues);
 };
 
+export const testCisaKev = (stix: any, filter: Filter) => {
+  const stixValue: boolean | null = stix.x_opencti_cisa_kev ?? stix.extensions?.[STIX_EXT_OCTI].cisa_kev ?? null;
+  return testBooleanFilter(filter, stixValue);
+};
+
+export const testEpssPercentile = (stix: any, filter: Filter) => {
+  const stixValue: number | null = stix.x_opencti_epss_percentile ?? stix.extensions?.[STIX_EXT_OCTI].epss_percentile ?? null;
+  return testNumericFilter(filter, stixValue);
+};
+
+export const testEpssScore = (stix: any, filter: Filter) => {
+  const stixValue: number | null = stix.x_opencti_epss_score ?? stix.extensions?.[STIX_EXT_OCTI].epss_score ?? null;
+  return testNumericFilter(filter, stixValue);
+};
+
+export const testCvssScore = (stix: any, filter: Filter) => {
+  const stixValue: number | null = stix.x_opencti_cvss_base_score ?? stix.extensions?.[STIX_EXT_OCTI].base_score ?? null;
+  return testNumericFilter(filter, stixValue);
+};
+
+export const testCvssSeverity = (stix: any, filter: Filter) => {
+  const stixValue: string | null = stix.x_opencti_cvss_base_severity ?? stix.extensions?.[STIX_EXT_OCTI].base_severity ?? null;
+  const value = stixValue ? [stixValue] : [];
+  return testStringFilter(filter, value);
+};
+
 /**
  * TODO: This mapping could be given by the schema, like we do with stix converters
  */
@@ -350,6 +381,11 @@ export const FILTER_KEY_TESTERS_MAP: Record<string, TesterFunction> = {
   [SCORE_FILTER]: testScore,
   [TYPE_FILTER]: testEntityType,
   [WORKFLOW_FILTER]: testWorkflow,
+  [CISA_KEV_FILTER]: testCisaKev,
+  [EPSS_PERCENTILE_FILTER]: testEpssPercentile,
+  [EPSS_SCORE_FILTER]: testEpssScore,
+  [CVSS_BASE_SCORE_FILTER]: testCvssScore,
+  [CVSS_BASE_SEVERITY_FILTER]: testCvssSeverity,
 
   // special keys (more complex behavior)
   [CONNECTED_TO_INSTANCE_FILTER]: testConnectedTo, // instance trigger, direct events
