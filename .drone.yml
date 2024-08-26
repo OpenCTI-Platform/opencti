@@ -116,6 +116,7 @@ steps:
       event:
         include:
         - pull_request
+        - push
     commands:
       - apt-get update
       - apt-get -y install netcat-traditional
