@@ -226,7 +226,7 @@ class AddExternalReferencesLinesContainer extends Component {
                     {alreadyAdded ? (
                       <CheckCircle classes={{ root: classes.icon }} />
                     ) : (
-                      <DocumentScannerOutlined />
+                      <ItemIcon type="External-Reference" />
                     )}
                   </ListItemIcon>
                   {computeTextItem(externalReferenceNode)}
