@@ -240,7 +240,11 @@ const SettingsOrganizationUserCreation = ({
               />
               <ObjectOrganizationField
                 outlined={false}
-                filters={[{ key: 'authorized_authorities', values: [me.id] }]}
+                filters={{
+                  mode: 'and',
+                  filters: [{ key: 'authorized_authorities', values: [me.id] }],
+                  filterGroups: [],
+                }}
                 name="objectOrganization"
                 label="Organizations"
                 style={fieldSpacingContainerStyle}

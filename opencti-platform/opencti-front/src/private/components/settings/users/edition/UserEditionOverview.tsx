@@ -277,7 +277,11 @@ UserEditionOverviewComponentProps
           <ObjectOrganizationField
             name="objectOrganization"
             label="Organizations"
-            filters={userIsOnlyOrganizationAdmin ? [{ key: 'authorized_authorities', values: [me.id] }] : null}
+            filters={userIsOnlyOrganizationAdmin ? {
+              mode: 'and',
+              filters: [{ key: 'authorized_authorities', values: [me.id] }],
+              filterGroups: [],
+            } : null}
             onChange={handleChangeObjectOrganization}
             style={fieldSpacingContainerStyle}
             outlined={false}
