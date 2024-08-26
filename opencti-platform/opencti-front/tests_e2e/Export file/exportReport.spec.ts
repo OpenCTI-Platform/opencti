@@ -4,7 +4,7 @@ import FormExportPageModel from '../model/form/formExport.pageModel';
 import ReportPage from '../model/report.pageModel';
 import ReportFormPage from '../model/form/reportForm.pageModel';
 
-test.skip('Add an Export in a report and check the export is present in content', async ({ page }) => {
+test('Add an Export in a report and check the export is present in content', { tag: ['@sandbox'] }, async ({ page }) => {
   const reportPage = new ReportPage(page);
   const reportForm = new ReportFormPage(page);
   const reportDetailsPage = new ReportDetailsPage(page);

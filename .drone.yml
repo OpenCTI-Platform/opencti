@@ -101,6 +101,34 @@ steps:
       - yarn test:e2e
     depends_on:
       - frontend-tests
+  
+  - name: frontend-e2e-tests-sandbox
+    image: node:20.16.0
+    failure: ignore
+    volumes:
+      - name: cache-node-frontend-e2e-sandbox
+        path: /drone/src/opencti-platform/e2e-front-sandbox/node_modules
+    environment:
+      BACK_END_URL: http://opencti-e2e-start:4500
+      E2E_TEST: true
+      TEAMS_WEBHOOK: teams-webhook-url
+    when:
+      event:
+        include:
+        - pull_request
+    commands:
+      - apt-get update
+      - apt-get -y install netcat-traditional
+      - mkdir e2e-front-sandbox
+      - cp -R opencti-platform/opencti-front/* e2e-front-sandbox
+      - cd e2e-front-sandbox
+      - ls -lart
+      - yarn install
+      - npx playwright install --with-deps chromium
+      - yarn build
+      - yarn test:e2e:sandbox
+    depends_on:
+      - frontend-e2e-tests
 
   - name: frontend-verify-translation
     image: node:20.16.0
@@ -379,3 +407,6 @@ volumes:
   - name: cache-node-frontend-e2e
     host:
       path: /tmp/cache-node-frontend-e2e
+ - name: cache-node-frontend-e2e-flake
+    host:
+      path: /tmp/cache-node-frontend-e2e-flake
