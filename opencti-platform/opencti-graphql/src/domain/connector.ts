@@ -222,24 +222,31 @@ export const connectorTriggerUpdate = async (context: AuthContext, user: AuthUse
 // endregion
 
 // region syncs
-export const registerConnectorForIngestion = async (context: AuthContext, type: string, id: string, name: string, is_running: boolean) => {
+interface ConnectorIngestionInput {
+  id: string,
+  type: 'RSS' | 'CSV' | 'TAXII',
+  name: string,
+  is_running: boolean
+}
+export const connectorIdFromIngestId = (id: string) => uuidv5(id, OPENCTI_NAMESPACE);
+export const registerConnectorForIngestion = async (context: AuthContext, input: ConnectorIngestionInput) => {
   // Create the representing connector
   await registerConnector(context, SYSTEM_USER, {
-    id: uuidv5(id, OPENCTI_NAMESPACE),
-    name: `[FEED] ${name} (${type})`,
+    id: connectorIdFromIngestId(input.id),
+    name: `[FEED] ${input.name} (${input.type})`,
     type: ConnectorType.ExternalImport,
     auto: true,
     scope: ['application/stix+json;version=2.1'],
     only_contextual: false,
     playbook_compatible: false
   }, {
-    active: is_running,
+    active: input.is_running,
     built_in: true
   });
 };
-
 export const unregisterConnectorForIngestion = async (context: AuthContext, id: string) => {
-  await connectorDelete(context, SYSTEM_USER, uuidv5(id, OPENCTI_NAMESPACE));
+  const connectorId = connectorIdFromIngestId(id);
+  await connectorDelete(context, SYSTEM_USER, connectorId);
 };
 
 export const patchSync = async (context: AuthContext, user: AuthUser, id: string, patch: { running: boolean }) => {

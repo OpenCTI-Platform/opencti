@@ -2,7 +2,7 @@ import type { convertableToString } from 'xml2js';
 import { parseStringPromise as xmlParse } from 'xml2js';
 import TurndownService from 'turndown';
 import * as R from 'ramda';
-import { v4 as uuidv4, v5 as uuidv5 } from 'uuid';
+import { v4 as uuidv4 } from 'uuid';
 import { clearIntervalAsync, setIntervalAsync } from 'set-interval-async/dynamic';
 import type { SetIntervalAsyncTimer } from 'set-interval-async/fixed';
 import type { Moment } from 'moment';
@@ -16,7 +16,7 @@ import { FROM_START_STR, now, sanitizeForMomentParsing, utcDate } from '../utils
 import { generateStandardId } from '../schema/identifier';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../schema/stixDomainObject';
 import { pushToWorkerForConnector } from '../database/rabbitmq';
-import { OPENCTI_NAMESPACE, OPENCTI_SYSTEM_UUID } from '../schema/general';
+import { OPENCTI_SYSTEM_UUID } from '../schema/general';
 import { findAllRssIngestions, patchRssIngestion } from '../modules/ingestion/ingestion-rss-domain';
 import type { AuthContext } from '../types/user';
 import type { BasicStoreEntityIngestionCsv, BasicStoreEntityIngestionRss, BasicStoreEntityIngestionTaxii } from '../modules/ingestion/ingestion-types';
@@ -33,6 +33,7 @@ import { compareHashSHA256, hashSHA256 } from '../utils/hash';
 import type { StixBundle, StixObject } from '../types/stix-common';
 import { patchAttribute } from '../database/middleware';
 import { ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
+import { connectorIdFromIngestId } from '../domain/connector';
 
 // Ingestion manager responsible to cleanup old data
 // Each API will start is ingestion manager.
@@ -55,7 +56,6 @@ const asArray = (data: unknown) => {
 
 const updateBuiltInConnectorInfo = async (context: AuthContext, id: string, state: object) => {
   // Patch the related connector
-  const connectorId = uuidv5(id, OPENCTI_NAMESPACE);
   const csvNow = utcDate();
   const connectorPatch: any = {
     updated_at: csvNow.toISOString(),
@@ -69,13 +69,14 @@ const updateBuiltInConnectorInfo = async (context: AuthContext, id: string, stat
     },
     connector_state: JSON.stringify(state)
   };
+  const connectorId = connectorIdFromIngestId(id);
   await patchAttribute(context, SYSTEM_USER, connectorId, ENTITY_TYPE_CONNECTOR, connectorPatch);
 };
 
 const pushBundleToConnectorQueue = async (context: AuthContext, ingestion: BasicStoreEntityIngestionTaxii
 | BasicStoreEntityIngestionRss | BasicStoreEntityIngestionCsv, bundle: StixBundle) => {
   // Push the bundle to absorption queue
-  const connector = { internal_id: uuidv5(ingestion.id, OPENCTI_NAMESPACE), connector_type: ConnectorType.ExternalImport };
+  const connector = { internal_id: connectorIdFromIngestId(ingestion.id), connector_type: ConnectorType.ExternalImport };
   const workName = `run @ ${now()}`;
   const work: any = await createWork(context, SYSTEM_USER, connector, workName, connector.internal_id, { receivedTime: now() });
   const stixBundle = JSON.stringify(bundle);

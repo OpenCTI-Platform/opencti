@@ -24,7 +24,12 @@ export const findAllRssIngestions = async (context: AuthContext, user: AuthUser,
 export const addIngestion = async (context: AuthContext, user: AuthUser, input: IngestionRssAddInput) => {
   const { element, isCreation } = await createEntity(context, user, input, ENTITY_TYPE_INGESTION_RSS, { complete: true });
   if (isCreation) {
-    await registerConnectorForIngestion(context, 'RSS', element.id, element.name, element.ingestion_running);
+    await registerConnectorForIngestion(context, {
+      id: element.id,
+      type: 'RSS',
+      name: element.name,
+      is_running: element.ingestion_running
+    });
     await publishUserAction({
       user,
       event_type: 'mutation',
@@ -44,7 +49,12 @@ export const patchRssIngestion = async (context: AuthContext, user: AuthUser, id
 
 export const ingestionEditField = async (context: AuthContext, user: AuthUser, ingestionId: string, input: EditInput[]) => {
   const { element } = await updateAttribute(context, user, ingestionId, ENTITY_TYPE_INGESTION_RSS, input);
-  await registerConnectorForIngestion(context, 'RSS', element.id, element.name, element.ingestion_running);
+  await registerConnectorForIngestion(context, {
+    id: element.id,
+    type: 'RSS',
+    name: element.name,
+    is_running: element.ingestion_running
+  });
   await publishUserAction({
     user,
     event_type: 'mutation',

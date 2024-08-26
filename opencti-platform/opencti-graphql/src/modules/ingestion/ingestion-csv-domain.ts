@@ -40,7 +40,12 @@ export const addIngestionCsv = async (context: AuthContext, user: AuthUser, inpu
   }
   const { element, isCreation } = await createEntity(context, user, input, ENTITY_TYPE_INGESTION_CSV, { complete: true });
   if (isCreation) {
-    await registerConnectorForIngestion(context, 'CSV', element.id, element.name, element.ingestion_running);
+    await registerConnectorForIngestion(context, {
+      id: element.id,
+      type: 'CSV',
+      name: element.name,
+      is_running: element.ingestion_running
+    });
     await publishUserAction({
       user,
       event_type: 'mutation',
@@ -68,7 +73,12 @@ export const ingestionCsvEditField = async (context: AuthContext, user: AuthUser
   }
 
   const { element } = await updateAttribute(context, user, ingestionId, ENTITY_TYPE_INGESTION_CSV, input);
-  await registerConnectorForIngestion(context, 'CSV', element.id, element.name, element.ingestion_running);
+  await registerConnectorForIngestion(context, {
+    id: element.id,
+    type: 'CSV',
+    name: element.name,
+    is_running: element.ingestion_running
+  });
   await publishUserAction({
     user,
     event_type: 'mutation',

@@ -6,27 +6,30 @@ import { registerConnectorForIngestion } from '../domain/connector';
 
 const message = '[MIGRATION] Ingestion dedicated built in connector creation';
 
+const generateConnectorInput = async (context, type, element) => {
+  const connector = {
+    id: element.id,
+    type,
+    name: element.name,
+    is_running: element.ingestion_running
+  };
+  return registerConnectorForIngestion(context, connector);
+};
+
+const generateConnectorsForIngestEntityType = async (context, entityType, connectorType) => {
+  const csvIngests = await listAllEntities(context, SYSTEM_USER, [entityType]);
+  for (let index = 0; index < csvIngests.length; index += 1) {
+    const element = csvIngests[index];
+    await generateConnectorInput(context, connectorType, element);
+  }
+};
+
 export const up = async (next) => {
   const context = executionContext('migration');
   logApp.info(`${message} > started`);
-  // CSV
-  const csvIngests = await listAllEntities(context, SYSTEM_USER, [ENTITY_TYPE_INGESTION_CSV]);
-  for (let index = 0; index < csvIngests.length; index += 1) {
-    const element = csvIngests[index];
-    await registerConnectorForIngestion(context, 'CSV', element.id, element.name, element.ingestion_running);
-  }
-  // RSS
-  const rssIngests = await listAllEntities(context, SYSTEM_USER, [ENTITY_TYPE_INGESTION_RSS]);
-  for (let index = 0; index < rssIngests.length; index += 1) {
-    const element = rssIngests[index];
-    await registerConnectorForIngestion(context, 'RSS', element.id, element.name, element.ingestion_running);
-  }
-  // TAXII
-  const taxiiIngests = await listAllEntities(context, SYSTEM_USER, [ENTITY_TYPE_INGESTION_TAXII]);
-  for (let index = 0; index < taxiiIngests.length; index += 1) {
-    const element = taxiiIngests[index];
-    await registerConnectorForIngestion(context, 'TAXII', element.id, element.name, element.ingestion_running);
-  }
+  await generateConnectorsForIngestEntityType(context, ENTITY_TYPE_INGESTION_CSV, 'CSV');
+  await generateConnectorsForIngestEntityType(context, ENTITY_TYPE_INGESTION_RSS, 'RSS');
+  await generateConnectorsForIngestEntityType(context, ENTITY_TYPE_INGESTION_TAXII, 'TAXII');
   logApp.info(`${message} > done`);
   next();
 };

@@ -28,7 +28,12 @@ export const addIngestion = async (context: AuthContext, user: AuthUser, input: 
   }
   const { element, isCreation } = await createEntity(context, user, input, ENTITY_TYPE_INGESTION_TAXII, { complete: true });
   if (isCreation) {
-    await registerConnectorForIngestion(context, 'TAXII', element.id, element.name, element.ingestion_running);
+    await registerConnectorForIngestion(context, {
+      id: element.id,
+      type: 'TAXII',
+      name: element.name,
+      is_running: element.ingestion_running
+    });
     await publishUserAction({
       user,
       event_type: 'mutation',
@@ -55,7 +60,12 @@ export const ingestionEditField = async (context: AuthContext, user: AuthUser, i
     }
   }
   const { element } = await updateAttribute(context, user, ingestionId, ENTITY_TYPE_INGESTION_TAXII, input);
-  await registerConnectorForIngestion(context, 'TAXII', element.id, element.name, element.ingestion_running);
+  await registerConnectorForIngestion(context, {
+    id: element.id,
+    type: 'TAXII',
+    name: element.name,
+    is_running: element.ingestion_running
+  });
   await publishUserAction({
     user,
     event_type: 'mutation',
