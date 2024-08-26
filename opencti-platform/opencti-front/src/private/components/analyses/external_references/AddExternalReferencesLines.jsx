@@ -1,13 +1,13 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { graphql, createPaginationContainer } from 'react-relay';
-import { map, filter, head, compose } from 'ramda';
+import { createPaginationContainer, graphql } from 'react-relay';
+import { compose, filter, head, map } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import { CheckCircle, DocumentScannerOutlined } from '@mui/icons-material';
+import { CheckCircle } from '@mui/icons-material';
 import { ConnectionHandler } from 'relay-runtime';
 import { truncate } from '../../../../utils/String';
 import inject18n from '../../../../components/i18n';
