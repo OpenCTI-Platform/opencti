@@ -29,7 +29,9 @@ export const ACTION_TYPE_UNSHARE = 'UNSHARE';
 export const ACTION_TYPE_SHARE_MULTIPLE = 'SHARE_MULTIPLE';
 export const ACTION_TYPE_UNSHARE_MULTIPLE = 'UNSHARE_MULTIPLE';
 
-const isDeleteRestrictedAction = (a) => { return a === ACTION_TYPE_DELETE || a === ACTION_TYPE_RESTORE || a === ACTION_TYPE_COMPLETE_DELETE; };
+const isDeleteRestrictedAction = ({ type }) => {
+  return type === ACTION_TYPE_DELETE || type === ACTION_TYPE_RESTORE || type === ACTION_TYPE_COMPLETE_DELETE;
+};
 const areParentTypesKnowledge = (parentTypes) => parentTypes && parentTypes.flat().every((type) => isKnowledge(type));
 
 // check a user has the right to create a list or a query background task
@@ -121,7 +123,7 @@ export const checkActionValidity = async (context, user, input, scope, taskType)
       throw ForbiddenAccess();
     }
     // The only operation authorized on these scope is Deletion
-    if (actions.every((a) => a === ACTION_TYPE_DELETE)) {
+    if (actions.every((a) => a.type === ACTION_TYPE_DELETE)) {
       throw UnsupportedError('Background tasks of scope Import can only be deletions.');
     }
     // Check the targeted entities are files: not needed because the method used only target files
