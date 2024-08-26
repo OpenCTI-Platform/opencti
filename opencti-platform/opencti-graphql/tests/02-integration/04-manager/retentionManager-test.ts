@@ -6,10 +6,12 @@ import { utcDate } from '../../../src/utils/format';
 import { deleteElement, getElementsToDelete } from '../../../src/manager/retentionManager';
 import { allFilesForPaths } from '../../../src/modules/internal/document/document-domain';
 import { uploadToStorage } from '../../../src/database/file-storage-helper';
-import { elRawUpdateByQuery } from '../../../src/database/engine';
-import { READ_INDEX_INTERNAL_OBJECTS } from '../../../src/database/utils';
+import { elLoadById, elRawUpdateByQuery } from '../../../src/database/engine';
+import { READ_INDEX_INTERNAL_OBJECTS, READ_INDEX_STIX_DOMAIN_OBJECTS } from '../../../src/database/utils';
 import { DatabaseError } from '../../../src/config/errors';
 import { deleteFile, loadFile } from '../../../src/database/file-storage';
+import { deleteElementById } from '../../../src/database/middleware';
+import { ENTITY_TYPE_CONTAINER_REPORT } from '../../../src/schema/stixDomainObject';
 
 describe('Retention Manager tests ', () => {
   const context = testContext;
@@ -26,6 +28,8 @@ describe('Retention Manager tests ', () => {
   const workbench1Id = `${pendingPath}/${workbench1Name}`;
   const workbench2Name = 'workbench2';
   const workbench2Id = `${pendingPath}/${workbench2Name}`;
+  let report1Id = '';
+  let report2Id = '';
 
   let filesToDelete;
   let workbenchesToDelete;
@@ -48,6 +52,19 @@ describe('Retention Manager tests ', () => {
           }
       }
   `;
+
+  const CREATE_REPORT_QUERY = gql`
+    mutation ReportAdd($input: ReportAddInput!) {
+      reportAdd(input: $input) {
+        id
+        standard_id
+        name
+        description
+        published
+      }
+    }
+  `;
+
   const emptyStringFilters = JSON.stringify({
     mode: 'and',
     filters: [],
@@ -147,6 +164,61 @@ describe('Retention Manager tests ', () => {
       filename: workbench2Name,
     };
     await uploadToStorage(context, ADMIN_USER, pendingPath, workbench2ToUpload, {});
+    // create a report not modified since '2023-01-01T00:00:00.000Z'
+    const REPORT1_TO_CREATE = {
+      input: {
+        name: 'report1',
+        description: 'Report description',
+        published: '2020-02-26T00:51:35.000Z',
+        objects: [
+          'campaign--92d46985-17a6-4610-8be8-cc70c82ed214',
+          'relationship--e35b3fc1-47f3-4ccb-a8fe-65a0864edd02',
+        ],
+      },
+    };
+    const report1 = await queryAsAdmin({
+      query: CREATE_REPORT_QUERY,
+      variables: REPORT1_TO_CREATE,
+    });
+    report1Id = <string>report1?.data?.reportAdd?.id || '';
+    const report1UpdateQuery = {
+      script: {
+        params: { lastModified },
+        source: 'ctx._source.updated_at = params.lastModified;',
+      },
+      query: {
+        bool: {
+          must: [
+            { term: { 'internal_id.keyword': { value: report1Id } } },
+          ],
+        },
+      },
+    };
+    await elRawUpdateByQuery({
+      index: [READ_INDEX_STIX_DOMAIN_OBJECTS],
+      refresh: true,
+      wait_for_completion: true,
+      body: report1UpdateQuery
+    }).catch((err: Error) => {
+      throw DatabaseError('Error updating elastic', { cause: err });
+    });
+    // create a report (not modified since now)
+    const REPORT2_TO_CREATE = {
+      input: {
+        name: 'report2',
+        description: 'Report description',
+        published: '2020-02-26T00:51:35.000Z',
+        objects: [
+          'campaign--92d46985-17a6-4610-8be8-cc70c82ed214',
+          'relationship--e35b3fc1-47f3-4ccb-a8fe-65a0864edd02',
+        ],
+      },
+    };
+    const report2 = await queryAsAdmin({
+      query: CREATE_REPORT_QUERY,
+      variables: REPORT2_TO_CREATE,
+    });
+    report2Id = <string>report2?.data?.reportAdd?.id || '';
   });
   afterAll(async () => {
     // delete the remaining file
@@ -155,6 +227,9 @@ describe('Retention Manager tests ', () => {
     // delete the remaining workbench
     const workbench2Deleted = await deleteFile(context, ADMIN_USER, workbench2Id);
     expect(workbench2Deleted?.id).toEqual(workbench2Id);
+    // delete the remaining report
+    const report2Deleted = await deleteElementById(context, ADMIN_USER, report2Id, ENTITY_TYPE_CONTAINER_REPORT);
+    expect(report2Deleted?.id).toEqual(report2Id);
   });
   it('should create and delete retention rules', async () => {
     // create retention rules
@@ -224,6 +299,13 @@ describe('Retention Manager tests ', () => {
     expect(workbenchesToDelete.edges.length).toEqual(1); // workbench1 is the only workbench that has not been modified since 'before'
     expect(workbenchesToDelete.edges[0].node.id).toEqual(workbench1Id);
   });
+  it('should fetch the correct report to be deleted by a retention rule on knowledge', async () => {
+    // retention rule on workbenches not modified since 2023-07-01
+    const before = utcDate('2023-07-01T00:00:00.000Z');
+    const reportsToDelete = await getElementsToDelete(context, 'knowledge', before);
+    expect(reportsToDelete.edges.length).toEqual(1); // workbench1 is the only workbench that has not been modified since 'before'
+    expect(reportsToDelete.edges[0].node.id).toEqual(report1Id);
+  });
   it('should delete the fetched files and workbenches', async () => {
     // delete file
     await deleteElement(context, 'file', fileId); // should delete fileToTestRetentionRule
@@ -233,5 +315,9 @@ describe('Retention Manager tests ', () => {
     await deleteElement(context, 'workbench', workbench1Id); // should delete workbench1
     const workbenches = await allFilesForPaths(testContext, ADMIN_USER, [pendingPath]);
     expect(workbenches.length).toEqual(1); // the 2 created workbenches - workbench1 that should have been deleted
+    // delete report
+    await deleteElement(context, 'knowledge', report1Id, ENTITY_TYPE_CONTAINER_REPORT); // should delete report1
+    const report1deleted = await elLoadById(testContext, ADMIN_USER, report1Id);
+    expect(report1deleted).toBeUndefined();
   });
 });
