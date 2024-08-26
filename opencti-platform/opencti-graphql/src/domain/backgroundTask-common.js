@@ -188,7 +188,7 @@ export const checkActionValidity = async (context, user, input, scope, taskType)
       if (!isPublicDashboards) {
         throw ForbiddenAccess('The targeted ids are not public dashboards.');
       }
-      const dashboards = listEntitiesPaginated(
+      const dashboards = await listEntitiesPaginated(
         context,
         user,
         [ENTITY_TYPE_WORKSPACE],
