@@ -211,7 +211,10 @@ const BulkRelationDialog : FunctionComponent<BulkRelationDialogProps> = ({
 
   const selectMissingEntites = (currentBulkEntityList: BulkEntityTypeInfo[]) => {
     const foundMissingEntity = currentBulkEntityList.find((item) => !item.isMatchingEntity);
-    if (!foundMissingEntity) return;
+    if (!foundMissingEntity) {
+      if (missingEntity) setMissingEntity(undefined);
+      return;
+    }
     if (EntityTypeWithoutBulkEntityCreation.includes(foundMissingEntity.selectedEntityType.toEntitytype)) {
       setMissingEntity({
         key: foundMissingEntity.selectedEntityType.toEntitytype,
@@ -319,7 +322,7 @@ const BulkRelationDialog : FunctionComponent<BulkRelationDialogProps> = ({
     bulkEntityListToEdit[entityIndex].selectedEntityType = value;
     bulkEntityListToEdit[entityIndex].isMatchingEntity = getRelationMatchStatus(value, entityTypeList ?? []);
     setBulkEntityList([...bulkEntityListToEdit]);
-    selectMissingEntites(bulkEntityList);
+    selectMissingEntites(bulkEntityListToEdit);
   };
 
   const handleOpenObjectCreateEntityForm = () => setIsObjectCreationFormOpen(true);

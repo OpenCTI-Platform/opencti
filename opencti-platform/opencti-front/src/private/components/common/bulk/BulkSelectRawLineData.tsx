@@ -71,7 +71,7 @@ const BulkSelectRawLineData : FunctionComponent<BulkSelectRawLineDataProps> = ({
 
   const getAutocompleteValue = () => {
     const autocompleteOptions = getAutocompleteOptions();
-    return autocompleteOptions.find((option) => option.label === entity.selectedEntityType.toEntitytype);
+    return autocompleteOptions.find((option) => option.value.toEntitytype === entity.selectedEntityType.toEntitytype);
   };
 
   return (
@@ -90,8 +90,8 @@ const BulkSelectRawLineData : FunctionComponent<BulkSelectRawLineDataProps> = ({
           noOptionsText={t_i18n('No available options')}
           disablePortal
           options={getAutocompleteOptions()}
-          onInputChange={(event, selectedOption) => {
-            handleChangeEntityType(selectedOption);
+          onChange={(event, selectedOption) => {
+            handleChangeEntityType(selectedOption.value.toEntitytype);
           }}
           value={getAutocompleteValue()}
           groupBy={(option) => option.groupLabel}
