@@ -19,6 +19,7 @@ import Breadcrumbs from '../../../components/Breadcrumbs';
 import { useFormatter } from '../../../components/i18n';
 import DataTable from '../../../components/dataGrid/DataTable';
 import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
+import { textInTooltip } from '../../../components/dataGrid/dataTableUtils';
 
 interface WorkspacesProps {
   type: string;
@@ -84,6 +85,8 @@ const Workspaces: FunctionComponent<WorkspacesProps> = ({
     const dataColumns: DataTableProps['dataColumns'] = {
       name: {
         id: 'name',
+        flexSize: 33,
+        render: ({ name }, h) => textInTooltip(name, h),
       },
       tags: {
         id: 'tags',
@@ -93,11 +96,11 @@ const Workspaces: FunctionComponent<WorkspacesProps> = ({
       },
       created_at: {
         id: 'created_at',
-        flexSize: 20,
+        flexSize: 16,
       },
       updated_at: {
         id: 'updated_at',
-        flexSize: type === 'dashboard' ? 20 : 28,
+        flexSize: type === 'dashboard' ? 16 : 24,
       },
       ...(type === 'dashboard' ? {
         isShared: {
@@ -109,6 +112,7 @@ const Workspaces: FunctionComponent<WorkspacesProps> = ({
     return queryRef && (
       <DataTable
         dataColumns={dataColumns}
+        isNavigable={true}
         resolvePath={(data: WorkspacesLines_data$data) => {
           return data.workspaces?.edges?.map((n) => n?.node);
         }}

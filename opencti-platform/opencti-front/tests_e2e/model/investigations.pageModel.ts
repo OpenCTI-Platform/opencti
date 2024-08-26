@@ -1,23 +1,14 @@
 import { Page } from '@playwright/test';
 
 export default class InvestigationsPage {
-  constructor(private page: Page) {
-  }
+  constructor(private page: Page) {}
 
   getPage() {
     return this.page.getByTestId('investigations-page');
   }
 
-  openButtonModal() {
-    return this.page.getByLabel('Create', { exact: true });
-  }
-
   addNewInvestigation() {
     return this.page.getByText('Create an investigation', { exact: true });
-  }
-
-  getInvestigationNameInput() {
-    return this.page.getByLabel('Name');
   }
 
   getCreateInvestigationButton() {
@@ -25,6 +16,6 @@ export default class InvestigationsPage {
   }
 
   getItemFromList(name: string) {
-    return this.page.getByRole('link', { name }).first();
+    return this.page.getByText(name, { exact: true });
   }
 }

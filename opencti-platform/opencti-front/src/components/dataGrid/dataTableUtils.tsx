@@ -37,7 +37,7 @@ export const textInTooltip: TextInTooltip = (val, helpers) => {
   const { column: { size } } = helpers;
   return (
     <Tooltip title={value}>
-      <div>{truncate(value, size * MAGICAL_SIZE)}</div>
+      <div>{truncate(value, size * MAGICAL_SIZE, false)}</div>
     </Tooltip>
   );
 };
