@@ -12,11 +12,13 @@ import { graphql } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import PropTypes from 'prop-types';
 import { useNavigate } from 'react-router-dom';
+import PublicDashboardCreationForm from './dashboards/public_dashboards/PublicDashboardCreationForm';
+import Drawer from '../common/drawer/Drawer';
 import { useFormatter } from '../../../components/i18n';
 import { QueryRenderer } from '../../../relay/environment';
 import WorkspaceEditionContainer from './WorkspaceEditionContainer';
 import Security from '../../../utils/Security';
-import { EXPLORE_EXUPDATE, EXPLORE_EXUPDATE_EXDELETE, INVESTIGATION_INUPDATE_INDELETE } from '../../../utils/hooks/useGranted';
+import { EXPLORE_EXUPDATE, EXPLORE_EXUPDATE_EXDELETE, EXPLORE_EXUPDATE_PUBLISH, INVESTIGATION_INUPDATE_INDELETE } from '../../../utils/hooks/useGranted';
 import Transition from '../../../components/Transition';
 import { deleteNode, insertNode } from '../../../utils/store';
 import handleExportJson from './workspaceExportHandler';
@@ -126,6 +128,15 @@ const WorkspacePopover = ({ workspace, paginationOptions }) => {
     navigate(`/dashboard/workspaces/dashboards_public?filters=${JSON.stringify(filter)}`);
   };
 
+  // -- Creation public dashboard --
+  const [displayCreate, setDisplayCreate] = useState(false);
+
+  const handleOpenCreation = () => {
+    setDisplayCreate(true);
+    handleClose();
+  };
+  const handleCloseCreate = () => setDisplayCreate(false);
+
   return (
     <div className={classes.container}>
       <IconButton
@@ -154,9 +165,14 @@ const WorkspacePopover = ({ workspace, paginationOptions }) => {
               <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
             </Security>
             {isFeatureEnable('PUBLIC_DASHBOARD_LIST') && (
-              <MenuItem onClick={() => goToPublicDashboards()}>
-                {t_i18n('View associated public dashboards')}
-              </MenuItem>
+              <>
+                <MenuItem onClick={() => goToPublicDashboards()}>
+                  {t_i18n('View associated public dashboards')}
+                </MenuItem>
+                <Security needs={[EXPLORE_EXUPDATE_PUBLISH]} hasAccess={canManage}>
+                  <MenuItem onClick={handleOpenCreation}>{t_i18n('Create a public dashboard')}</MenuItem>
+                </Security>
+              </>
             )}
           </>
         )}
@@ -166,6 +182,19 @@ const WorkspacePopover = ({ workspace, paginationOptions }) => {
           </Security>
         )}
       </Menu>
+      <Drawer
+        title={t_i18n('Create a public dashboard')}
+        open={displayCreate}
+        onClose={handleCloseCreate}
+      >
+        {({ onClose }) => (
+          <PublicDashboardCreationForm
+            onClose={handleCloseCreate}
+            onCompleted={onClose}
+            dashboard_id={workspace.id || undefined}
+          />
+        )}
+      </Drawer>
       <WorkspaceDuplicationDialog
         workspace={workspace}
         displayDuplicate={displayDuplicate}

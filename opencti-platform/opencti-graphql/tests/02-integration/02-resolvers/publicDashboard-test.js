@@ -445,6 +445,20 @@ describe('PublicDashboard resolver', () => {
         expect(queryResult.errors.at(0).message).toEqual('You are not allowed to do this.');
       });
 
+      it('should not update publicDashboard if not allowed', async () => {
+        const updatedName = `${publicDashboardName} - updated`;
+        const queryResult = await participantQuery({
+          query: UPDATE_QUERY,
+          variables: {
+            id: publicDashboardInternalId,
+            input: { key: 'name', value: updatedName },
+          },
+        });
+        expect(queryResult).not.toBeNull();
+        expect(queryResult.errors.length).toEqual(1);
+        expect(queryResult.errors.at(0).message).toEqual('You are not allowed to do this.');
+      });
+
       it('should update publicDashboard', async () => {
         const updatedName = `${publicDashboardName} - updated`;
         const queryResult = await queryAsAdmin({
