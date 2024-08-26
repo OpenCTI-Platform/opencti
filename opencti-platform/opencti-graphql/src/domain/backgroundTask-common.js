@@ -200,6 +200,10 @@ export const checkActionValidity = async (context, user, input, scope, taskType)
           }
         }
       );
+      // This check is because we base our control on authorized members of the
+      // associated custom dashboards and not the public dashboard entity itself.
+      // If length === 0, it means the user has access to no custom dashboards and
+      // so cannot delete public ones.
       if (dashboards.edges.length === 0) {
         throw ForbiddenAccess('No public dashboards to delete.');
       }
