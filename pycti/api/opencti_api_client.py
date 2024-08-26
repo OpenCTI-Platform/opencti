@@ -700,6 +700,36 @@ class OpenCTIApiClient:
             self.app_logger.error("[upload] Missing parameter: file_name")
             return None
 
+    def send_bundle_to_api(self, **kwargs):
+        """Push a bundle to a queue through OpenCTI API
+
+        :param `**kwargs`: arguments for bundle push (required: `connectorId` and `bundle`)
+        :return: returns the query response for the bundle push
+        :rtype: dict
+        """
+
+        connector_id = kwargs.get("connector_id", None)
+        bundle = kwargs.get("bundle", None)
+
+        if connector_id is not None and bundle is not None:
+            self.app_logger.info(
+                "Pushing a bundle to queue through API", {connector_id}
+            )
+            mutation = """
+                    mutation StixBundlePush($connectorId: String!, $bundle: String!) {
+                        stixBundlePush(connectorId: $connectorId, bundle: $bundle)
+                    }
+                 """
+            return self.query(
+                mutation,
+                {"connectorId": connector_id, "bundle": bundle},
+            )
+        else:
+            self.app_logger.error(
+                "[bundle push] Missing parameter: connector_id or bundle"
+            )
+            return None
+
     def get_stix_content(self, id):
         """get the STIX content of any entity
 
