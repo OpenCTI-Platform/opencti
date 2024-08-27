@@ -121,15 +121,14 @@ steps:
       # Collect git info
       - jf rt bag $JFROG_BUILD_NAME $DRONE_BUILD_NUMBER
       # Archive and upload each artefact that we need
-      #- tar -czvf frontend-test-results.tar.gz opencti-platform/opencti-front/test-results
-      - tar -czvf frontend-test-results-$DRONE_BUILD_NUMBER.tar.gz opencti-platform/opencti-front/tests_e2e
+      - tar -czvf frontend-test-results.tar.gz opencti-platform/opencti-front/test-results
       - jf rt u frontend-test-results-$DRONE_BUILD_NUMBER.tar.gz $JFROG_REPOSITORY --build-name=$JFROG_BUILD_NAME --build-number=$DRONE_BUILD_NUMBER --url=$JFROG_URL --access-token=$JFROG_TOKEN
       # Next line should be done only once at the end: it's recording and gathering build info
       - jf rt bp $JFROG_BUILD_NAME $DRONE_BUILD_NUMBER --url=$JFROG_URL --access-token=$JFROG_TOKEN --build-url=$DRONE_BUILD_LINK
       # Cleaning up old build in JFrog
       - jf rt bdi $JFROG_BUILD_NAME --max-days=30 --url=$JFROG_URL --access-token=$JFROG_TOKEN
-    #depends_on:
-    #  - frontend-e2e-tests
+    depends_on:
+      - frontend-e2e-tests
 
   - name: frontend-verify-translation
     image: node:20.16.0
