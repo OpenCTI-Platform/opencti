@@ -127,7 +127,7 @@ steps:
       # Next line should be done only once at the end: it's recording and gathering build info
       - jf rt bp $JFROG_BUILD_NAME $DRONE_BUILD_NUMBER --url=$JFROG_URL --access-token=$JFROG_TOKEN --build-url=$DRONE_BUILD_LINK
       # Cleaning up old build in JFrog
-      - jf rt bdi $JFROG_BUILD_NAME --max-days=30
+      - jf rt bdi $JFROG_BUILD_NAME --max-days=30 --url=$JFROG_URL --access-token=$JFROG_TOKEN
     #depends_on:
     #  - frontend-e2e-tests
 
