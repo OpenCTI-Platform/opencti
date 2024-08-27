@@ -112,18 +112,22 @@ steps:
       JFROG_REPOSITORY: opencti-drone
       JFROG_URL: https://filigran.jfrog.io/artifactory
     commands:
-      - echo $DRONE_BUILD_NUMBER
+      - echo "DRONE_BUILD_NUMBER = $DRONE_BUILD_NUMBER"
+      - echo "CI = $CI"
       - apt-get update
       # see https://docs.jfrog-applications.jfrog.io/jfrog-applications/jfrog-cli/cli-for-jfrog-artifactory
       - npm install -g jfrog-cli-v2-jf
       - set -x
-      # Next line should be done only once it's recording build info
-      - jf rt bp $JFROG_BUILD_NAME $DRONE_BUILD_NUMBER --url="https://filigran.jfrog.io/artifactory" --access-token=$JFROG_TOKEN
-      - sleep 2
-      # Then archive and upload each artefact that we need
+      # Collect git info
+      - jf rt bag $JFROG_BUILD_NAME $DRONE_BUILD_NUMBER
+      # Archive and upload each artefact that we need
       #- tar -czvf frontend-test-results.tar.gz opencti-platform/opencti-front/test-results
       - tar -czvf frontend-test-results-$DRONE_BUILD_NUMBER.tar.gz opencti-platform/opencti-front/tests_e2e
       - jf rt u frontend-test-results-$DRONE_BUILD_NUMBER.tar.gz $JFROG_REPOSITORY --build-name=$JFROG_BUILD_NAME --build-number=$DRONE_BUILD_NUMBER --url=$JFROG_URL --access-token=$JFROG_TOKEN
+      # Next line should be done only once at the end: it's recording and gathering build info
+      - jf rt bp $JFROG_BUILD_NAME $DRONE_BUILD_NUMBER --url=$JFROG_URL --access-token=$JFROG_TOKEN --build-url=$DRONE_BUILD_LINK
+      # Cleaning up old build in JFrog
+      - jf rt bdi $JFROG_BUILD_NAME --max-days=30
     #depends_on:
     #  - frontend-e2e-tests
 
