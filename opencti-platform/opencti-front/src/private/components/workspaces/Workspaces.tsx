@@ -149,7 +149,7 @@ const Workspaces: FunctionComponent<WorkspacesProps> = ({
           <Security needs={row.type === 'dashboard' ? [EXPLORE] : [INVESTIGATION_INUPDATE]}>
             <WorkspacePopover
               workspace={row}
-              paginationOptions={paginationOptions}
+              paginationOptions={workspacePaginationOptions}
             />
           </Security>
         )}
