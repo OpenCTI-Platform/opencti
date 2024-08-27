@@ -862,7 +862,7 @@ const StixDomainObjectCreation = ({
             creationUpdater={creationUpdater}
             onCompleted={onCompleted}
             onClose={speeddial ? handleClose : stateHandleClose}
-            isFromBulkRelation
+            isFromBulkRelation={isFromBulkRelation}
           />
         </React.Suspense>
       )}

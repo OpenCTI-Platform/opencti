@@ -249,6 +249,7 @@ const StixCyberObservableCreation = ({
   defaultCreatedBy = null,
   defaultMarkingDefinitions = null,
   isFromBulkRelation,
+  onCompleted,
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
@@ -402,6 +403,7 @@ const StixCyberObservableCreation = ({
           resetForm();
           localHandleClose();
         }
+        if (onCompleted) onCompleted();
       },
     });
   };
@@ -580,7 +582,7 @@ const StixCyberObservableCreation = ({
                   resetForm,
                 }) => (
                   <>
-                    {isFeatureEnable('BULK_ENTITIES') && bulkConf && !isFromBulkRelation && (
+                    {isFeatureEnable('BULK_ENTITIES') && bulkConf && (
                       <>
                         <BulkTextModal
                           title={t_i18n('Create multiple observables')}

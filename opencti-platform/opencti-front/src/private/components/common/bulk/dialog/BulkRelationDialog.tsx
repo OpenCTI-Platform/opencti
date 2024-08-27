@@ -209,8 +209,7 @@ const BulkRelationDialog : FunctionComponent<BulkRelationDialogProps> = ({
     return !!(selectedEntityType?.legitRelations.includes(selectedRelationType) && matchingEntity);
   };
 
-  const selectMissingEntites = (currentBulkEntityList: BulkEntityTypeInfo[]) => {
-    console.log('currentBulkEntityList : ', currentBulkEntityList);
+  const selectMissingEntities = (currentBulkEntityList: BulkEntityTypeInfo[]) => {
     const foundMissingEntity = currentBulkEntityList.find((item) => !item.isExisting);
     if (!foundMissingEntity) {
       if (missingEntity) setMissingEntity(undefined);
@@ -226,14 +225,14 @@ const BulkRelationDialog : FunctionComponent<BulkRelationDialogProps> = ({
       setMissingEntity({
         key: toEntitytype,
         values: currentBulkEntityList
-          .filter((item) => item.selectedEntityType.toEntitytype === toEntitytype)
+          .filter((item) => item.selectedEntityType.toEntitytype === toEntitytype && !item.isExisting)
           .map((item) => item.searchTerm),
       });
     }
   };
 
   useEffect(() => {
-    selectMissingEntites(bulkEntityList);
+    selectMissingEntities(bulkEntityList);
   }, [bulkEntityList]);
 
   useEffect(() => {
@@ -327,7 +326,7 @@ const BulkRelationDialog : FunctionComponent<BulkRelationDialogProps> = ({
     bulkEntityListToEdit[entityIndex].selectedEntityType = value;
     bulkEntityListToEdit[entityIndex].isMatchingEntity = getRelationMatchStatus(value, entityTypeList ?? []);
     setBulkEntityList([...bulkEntityListToEdit]);
-    selectMissingEntites(bulkEntityListToEdit);
+    selectMissingEntities(bulkEntityListToEdit);
   };
 
   const handleOpenObjectCreateEntityForm = () => setIsObjectCreationFormOpen(true);
@@ -413,6 +412,7 @@ const BulkRelationDialog : FunctionComponent<BulkRelationDialogProps> = ({
           paginationOptions={paginationOptions}
           open={isObjectCreationFormOpen}
           speeddial={isObjectCreationFormOpen}
+          onCompleted={onCompletedObjectCreation}
           inputValue={missingEntity.values?.join('\n') ?? ''}
           display={isObjectCreationFormOpen}
           paginationKey={paginationKey}
