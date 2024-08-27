@@ -2527,6 +2527,28 @@ input AttackPatternAddInput {
   file: Upload
 }
 
+type AttackPatternForMatrix {
+  id: ID!
+  name: String!
+  description: String
+  x_mitre_id: String
+  subAttackPatternsIds: [String!]
+  subattackPatterns_text: String
+  killChainPhasesIds: [String!]
+}
+
+type AttackPatternsByKillChain {
+  id: ID!
+  kill_chain_name: String!
+  phase_name: String!
+  x_opencti_order: Int!
+  attackPatterns: [AttackPatternForMatrix!]
+}
+
+type AttackPatternsMatrix {
+  attackPatternsOfPhases: [AttackPatternsByKillChain!]
+}
+
 enum CampaignsOrdering {
   name
   first_seen
@@ -7591,6 +7613,7 @@ type Query {
   stixDomainObjectsDistribution(objectId: [String], relationship_type: [String], toTypes: [String], elementWithTargetTypes: [String], field: String!, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: FilterGroup, search: String): [Distribution]
   attackPattern(id: String): AttackPattern
   attackPatterns(first: Int, after: ID, orderBy: AttackPatternsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, toStix: Boolean): AttackPatternConnection
+  attackPatternsMatrix: AttackPatternsMatrix
   campaign(id: String): Campaign
   campaigns(first: Int, after: ID, orderBy: CampaignsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, toStix: Boolean): CampaignConnection
   campaignsTimeSeries(objectId: String, field: String!, operation: StatsOperation!, startDate: DateTime!, endDate: DateTime!, interval: String!, relationship_type: [String]): [TimeSeries]

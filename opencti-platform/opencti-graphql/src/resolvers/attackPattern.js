@@ -6,7 +6,8 @@ import {
   coursesOfActionPaginated,
   dataComponentsPaginated,
   findAll,
-  findById
+  findById,
+  getAttackPatternsMatrix,
 } from '../domain/attackPattern';
 import {
   stixDomainObjectAddRelation,
@@ -28,6 +29,7 @@ const attackPatternResolvers = {
   Query: {
     attackPattern: (_, { id }, context) => findById(context, context.user, id),
     attackPatterns: (_, args, context) => findAll(context, context.user, args),
+    attackPatternsMatrix: (_, __, context) => getAttackPatternsMatrix(context, context.user),
   },
   AttackPattern: {
     killChainPhases: (attackPattern, _, context) => loadThroughDenormalized(context, context.user, attackPattern, INPUT_KILLCHAIN, { sortBy: 'phase_name' }),

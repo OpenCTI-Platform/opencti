@@ -2725,7 +2725,25 @@ input AttackPatternAddInput {
   update: Boolean
   file: Upload
 }
-
+type AttackPatternForMatrix {
+  id: ID! # Attack Pattern ID (internal id)
+  name: String!
+  description: String
+  x_mitre_id: String
+  subAttackPatternsIds: [String!]
+  subattackPatterns_text: String
+  killChainPhasesIds: [String!]
+}
+type AttackPatternsByKillChain {
+  id: ID! # Kill Chain ID (internal id)
+  kill_chain_name: String!
+  phase_name: String!
+  x_opencti_order: Int!
+  attackPatterns: [AttackPatternForMatrix!]
+}
+type AttackPatternsMatrix {
+  attackPatternsOfPhases: [AttackPatternsByKillChain!]
+}
 ############## Campaigns
 enum CampaignsOrdering {
   name
@@ -12699,6 +12717,7 @@ type Query {
     search: String
     toStix: Boolean
   ): AttackPatternConnection @auth(for: [KNOWLEDGE])
+  attackPatternsMatrix: AttackPatternsMatrix @auth(for: [KNOWLEDGE])
   campaign(id: String): Campaign @auth(for: [KNOWLEDGE])
   campaigns(
     first: Int
