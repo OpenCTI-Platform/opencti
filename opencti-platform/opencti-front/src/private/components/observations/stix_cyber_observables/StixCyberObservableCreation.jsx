@@ -248,6 +248,7 @@ const StixCyberObservableCreation = ({
   controlledDialStyles = {},
   defaultCreatedBy = null,
   defaultMarkingDefinitions = null,
+  isFromBulkRelation,
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
@@ -579,7 +580,7 @@ const StixCyberObservableCreation = ({
                   resetForm,
                 }) => (
                   <>
-                    {isFeatureEnable('BULK_ENTITIES') && bulkConf && (
+                    {isFeatureEnable('BULK_ENTITIES') && bulkConf && !isFromBulkRelation && (
                       <>
                         <BulkTextModal
                           title={t_i18n('Create multiple observables')}
@@ -806,14 +807,16 @@ const StixCyberObservableCreation = ({
                         containerstyle={{ marginTop: 20 }}
                       />
                       <div className={classes.buttons}>
-                        <Button
-                          variant={contextual ? 'text' : 'contained'}
-                          onClick={() => selectType(null)}
-                          disabled={isSubmitting}
-                          classes={{ root: classes.button }}
-                        >
-                          {t_i18n('Back')}
-                        </Button>
+                        {!isFromBulkRelation && (
+                          <Button
+                            variant={contextual ? 'text' : 'contained'}
+                            onClick={() => selectType(null)}
+                            disabled={isSubmitting}
+                            classes={{ root: classes.button }}
+                          >
+                            {t_i18n('Back')}
+                          </Button>
+                        )}
                         <Button
                           variant={contextual ? 'text' : 'contained'}
                           onClick={handleReset}
@@ -881,7 +884,7 @@ const StixCyberObservableCreation = ({
               <Close fontSize="small" color="primary" />
             </IconButton>
             <Typography variant="h6">{t_i18n('Create an observable')}</Typography>
-            {isFeatureEnable('BULK_ENTITIES') && status.type
+            {isFeatureEnable('BULK_ENTITIES') && !isFromBulkRelation && status.type
               ? <BulkTextModalButton
                   onClick={() => setBulkOpen(true)}
                   title={t_i18n('Create multiple observables')}
@@ -919,7 +922,7 @@ const StixCyberObservableCreation = ({
         >
           <DialogTitle style={{ display: 'flex' }}>
             {t_i18n('Create an observable')}
-            {isFeatureEnable('BULK_ENTITIES') && status.type
+            {isFeatureEnable('BULK_ENTITIES') && !isFromBulkRelation && status.type
               ? <BulkTextModalButton
                   sx={{ marginRight: 0 }}
                   onClick={() => setBulkOpen(true)}
