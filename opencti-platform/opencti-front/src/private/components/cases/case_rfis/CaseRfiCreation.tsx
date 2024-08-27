@@ -91,6 +91,7 @@ interface CaseRfiFormProps {
   defaultConfidence?: number;
   defaultCreatedBy?: { value: string; label: string };
   defaultMarkingDefinitions?: { value: string; label: string }[];
+  inputValue?: string;
 }
 
 const CASE_RFI_TYPE = 'Case-Rfi';
@@ -101,6 +102,7 @@ export const CaseRfiCreationForm: FunctionComponent<CaseRfiFormProps> = ({
   defaultConfidence,
   defaultCreatedBy,
   defaultMarkingDefinitions,
+  inputValue,
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
@@ -170,7 +172,7 @@ export const CaseRfiCreationForm: FunctionComponent<CaseRfiFormProps> = ({
   };
 
   const initialValues = useDefaultValues<FormikCaseRfiAddInput>(CASE_RFI_TYPE, {
-    name: '',
+    name: inputValue ?? '',
     confidence: defaultConfidence,
     description: '',
     content: '',

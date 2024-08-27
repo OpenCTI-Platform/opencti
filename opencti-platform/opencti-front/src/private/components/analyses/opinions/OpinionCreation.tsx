@@ -82,6 +82,7 @@ interface OpinionFormProps {
   defaultCreatedBy?: Option;
   defaultMarkingDefinitions?: Option[];
   defaultConfidence?: number;
+  inputValue?: string;
 }
 
 const OPINION_TYPE = 'Opinion';
@@ -93,6 +94,7 @@ export const OpinionCreationFormKnowledgeEditor: FunctionComponent<OpinionFormPr
   defaultConfidence,
   defaultCreatedBy,
   defaultMarkingDefinitions,
+  inputValue,
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
@@ -148,7 +150,7 @@ export const OpinionCreationFormKnowledgeEditor: FunctionComponent<OpinionFormPr
   const initialValues = useDefaultValues<OpinionAddInput>(
     OPINION_TYPE,
     {
-      opinion: '',
+      opinion: inputValue ?? '',
       explanation: '',
       confidence: defaultConfidence,
       createdBy: defaultCreatedBy,
@@ -244,6 +246,7 @@ export const OpinionCreationFormKnowledgeParticipant: FunctionComponent<OpinionF
   defaultConfidence,
   defaultCreatedBy,
   defaultMarkingDefinitions,
+  inputValue,
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
@@ -301,7 +304,7 @@ export const OpinionCreationFormKnowledgeParticipant: FunctionComponent<OpinionF
   const initialValues = useDefaultValues<OpinionAddInput>(
     OPINION_TYPE,
     {
-      opinion: '',
+      opinion: inputValue ?? '',
       explanation: '',
       confidence: defaultConfidence,
       createdBy: defaultCreatedBy,

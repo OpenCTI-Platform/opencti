@@ -91,6 +91,7 @@ interface CaseRftFormProps {
   defaultConfidence?: number;
   defaultCreatedBy?: { value: string; label: string };
   defaultMarkingDefinitions?: { value: string; label: string }[];
+  inputValue?: string;
 }
 
 const CASE_RFT_TYPE = 'Case-Rft';
@@ -101,6 +102,7 @@ export const CaseRftCreationForm: FunctionComponent<CaseRftFormProps> = ({
   defaultConfidence,
   defaultCreatedBy,
   defaultMarkingDefinitions,
+  inputValue,
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
@@ -172,7 +174,7 @@ export const CaseRftCreationForm: FunctionComponent<CaseRftFormProps> = ({
   };
 
   const initialValues = useDefaultValues<FormikCaseRftAddInput>(CASE_RFT_TYPE, {
-    name: '',
+    name: inputValue ?? '',
     confidence: defaultConfidence,
     description: '',
     content: '',

@@ -80,6 +80,7 @@ export const CountryCreationForm: FunctionComponent<CountryFormProps> = ({
   defaultMarkingDefinitions,
   bulkModalOpen = false,
   onBulkModalClose,
+  inputValue,
 }) => {
   const { isFeatureEnable } = useHelper();
   const { t_i18n } = useFormatter();
@@ -155,7 +156,7 @@ export const CountryCreationForm: FunctionComponent<CountryFormProps> = ({
   };
 
   const initialValues = useDefaultValues<CountryAddInput>(COUNTRY_TYPE, {
-    name: '',
+    name: inputValue ?? '',
     description: '',
     confidence: null,
     createdBy: defaultCreatedBy ?? null,

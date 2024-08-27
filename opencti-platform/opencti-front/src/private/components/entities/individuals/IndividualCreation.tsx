@@ -82,6 +82,7 @@ export const IndividualCreationForm: FunctionComponent<IndividualFormProps> = ({
   defaultMarkingDefinitions,
   bulkModalOpen = false,
   onBulkModalClose,
+  inputValue,
 }) => {
   const { isFeatureEnable } = useHelper();
   const { t_i18n } = useFormatter();
@@ -163,7 +164,7 @@ export const IndividualCreationForm: FunctionComponent<IndividualFormProps> = ({
   const initialValues = useDefaultValues(
     INDIVIDUAL_TYPE,
     {
-      name: '',
+      name: inputValue ?? '',
       description: '',
       x_opencti_reliability: undefined,
       confidence: null,
