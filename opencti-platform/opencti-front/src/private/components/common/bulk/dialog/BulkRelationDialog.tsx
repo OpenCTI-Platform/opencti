@@ -210,7 +210,8 @@ const BulkRelationDialog : FunctionComponent<BulkRelationDialogProps> = ({
   };
 
   const selectMissingEntites = (currentBulkEntityList: BulkEntityTypeInfo[]) => {
-    const foundMissingEntity = currentBulkEntityList.find((item) => !item.isMatchingEntity);
+    console.log('currentBulkEntityList : ', currentBulkEntityList);
+    const foundMissingEntity = currentBulkEntityList.find((item) => !item.isExisting);
     if (!foundMissingEntity) {
       if (missingEntity) setMissingEntity(undefined);
       return;
@@ -318,7 +319,11 @@ const BulkRelationDialog : FunctionComponent<BulkRelationDialogProps> = ({
     const bulkEntityListToEdit = bulkEntityList;
     const { entityTypeList } = bulkEntityListToEdit[entityIndex];
     const foundEntityType = (entityTypeList ?? []).find((item) => item.entity_type === value.toEntitytype);
-    if (foundEntityType) bulkEntityListToEdit[entityIndex].representative = foundEntityType.representative;
+    if (foundEntityType) {
+      bulkEntityListToEdit[entityIndex].representative = foundEntityType.representative;
+      bulkEntityListToEdit[entityIndex].isExisting = true;
+    }
+    if (!foundEntityType) bulkEntityListToEdit[entityIndex].isExisting = false;
     bulkEntityListToEdit[entityIndex].selectedEntityType = value;
     bulkEntityListToEdit[entityIndex].isMatchingEntity = getRelationMatchStatus(value, entityTypeList ?? []);
     setBulkEntityList([...bulkEntityListToEdit]);
@@ -414,6 +419,7 @@ const BulkRelationDialog : FunctionComponent<BulkRelationDialogProps> = ({
           handleClose={handleCloseObjectCreateEntityForm}
           type={missingEntity.key}
           contextual
+          isFromBulkRelation
         />
       );
     }
@@ -432,6 +438,7 @@ const BulkRelationDialog : FunctionComponent<BulkRelationDialogProps> = ({
         defaultCreatedBy={undefined}
         creationCallback={undefined}
         defaultMarkingDefinitions={undefined}
+        isFromBulkRelation
       />
     );
   };
@@ -441,7 +448,7 @@ const BulkRelationDialog : FunctionComponent<BulkRelationDialogProps> = ({
       <Dialog open={isOpen} PaperProps={{ elevation: 1 }} scroll='paper' sx={{ overflowY: 'hidden', ...classes.dialog, ...classes.dialogContent }} onClose={onClose} maxWidth="xl">
         {isSubmitting && renderLoader()}
         <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div>{t_i18n(`Create relationships in bulk for ${stixDomainObjectType}`)}</div>
+          <div>{t_i18n('Create relationships in bulk for')}: {t_i18n(`entity_${stixDomainObjectType}`)}</div>
           {missingEntity ? <BulkTextModalButton title={t_i18n('Create missing entities')} onClick={handleOpenObjectCreateEntityForm} /> : null}
         </DialogTitle>
         <DialogContent id="container" sx={{ display: 'flex', overflow: 'hidden', height: '40vh', paddingTop: '20px' }}>

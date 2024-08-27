@@ -200,6 +200,7 @@ const StixDomainPanel = ({
   inputValue,
   defaultCreatedBy,
   defaultMarkingDefinitions,
+  isFromBulkRelation,
 }) => {
   const { isFeatureEnable } = useHelper();
   const [bulkOpen, setBulkOpen] = useState(false);
@@ -759,7 +760,7 @@ const StixDomainPanel = ({
     >
       <DialogTitle style={{ display: 'flex' }}>
         {t_i18n('Create an entity')}
-        {isFeatureEnable('BULK_ENTITIES') && (
+        {isFeatureEnable('BULK_ENTITIES') && !isFromBulkRelation && (
           <BulkTextModalButton
             onClick={() => setBulkOpen(true)}
             sx={{ marginRight: 0 }}
@@ -800,6 +801,7 @@ const StixDomainObjectCreation = ({
   paginationKey,
   paginationOptions,
   onCompleted,
+  isFromBulkRelation,
 }) => {
   const classes = useStyles();
   const [status, setStatus] = useState({ open: false, type: null });
@@ -860,6 +862,7 @@ const StixDomainObjectCreation = ({
             creationUpdater={creationUpdater}
             onCompleted={onCompleted}
             onClose={speeddial ? handleClose : stateHandleClose}
+            isFromBulkRelation
           />
         </React.Suspense>
       )}
