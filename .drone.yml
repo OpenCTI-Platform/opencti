@@ -102,23 +102,25 @@ steps:
     depends_on:
       - frontend-tests
 
-  - name: upload-frontend-test-results
-    image: plugins/s3
-    failure: ignore
-    when:
-      event:
-        include:
-        - pull_request
-    settings:
-      endpoint: https://s3.testing.octi.staging.filigran.io
-      bucket: octi-drone-artefact
-      path_style: true
-      access_key:
-        from_secret: octi-s3-access-key
-      secret_key:
-        from_secret: octi-s3-secret-key
-      source: /drone/src/opencti-platform/opencti-front/test-results/**/*
-      target: /octi/opencti-front
+  - name: upload-build-artefact
+    image: node:20.16.0
+    environment:
+      JFROG_TOKEN:
+          from_secret: jfrog_token
+      JFROG_BUILD_NAME: opencti-build
+      JFROG_REPOSITORY: opencti-drone
+      JFROG_URL: https://filigran.jfrog.io/artifactory
+    commands:
+      - echo $DRONE_BUILD_NUMBER
+      - apt-get update
+      # see https://docs.jfrog-applications.jfrog.io/jfrog-applications/jfrog-cli/cli-for-jfrog-artifactory
+      - npm install -g jfrog-cli-v2-jf
+      - set -x
+      # Next line should be done only once it's recording build info
+      - jf rt bp $JFROG_BUILD_NAME $DRONE_BUILD_NUMBER --url="https://filigran.jfrog.io/artifactory" --access-token=$JFROG_TOKEN
+      # Then upload each artefact that we need
+      - tar -czvf frontend-test-results.tar.gz opencti-platform/opencti-front/test-results
+      - jf rt u frontend-test-results.tar.gz $JFROG_REPOSITORY --build-name=$JFROG_BUILD_NAME --build-number=$DRONE_BUILD_NUMBER --url=$JFROG_URL --access-token=$JFROG_TOKEN
     depends_on:
       - frontend-e2e-tests
 
