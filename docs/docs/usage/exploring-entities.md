@@ -29,6 +29,7 @@ When clicking on a `Sector` in the list, you land on its Overview tab. For a Sec
 
 - Overview: as described [here](overview.md#overview-section).
 - Knowledge: a complex tab that regroups all the structured Knowledge linked to the Sector. Different thematic views are proposed to easily see the related entities, the threats, the incidents, etc. linked to the Sector. As described [here](overview.md#knowledge-section).
+- Content: This specific tab allows to previzualize, manage and write deliverable associated with the Sector. For example an analytic report to share with other teams, a markdown files to feed a collaborative wiki with, etc. As described [here](overview.md#content-section).
 - Analyses: as described [here](overview.md#analyses-section).
 - Sightings: a table containing all `Sightings` relationships corresponding to events in which an `Indicator` (IP, domain name, url, etc.) is sighted in the Sector.
 - Data: as described [here](overview.md#data-section).
@@ -53,6 +54,7 @@ When clicking on an `Event` in the list, you land on its Overview tab. For an Ev
 
 - Overview: as described [here](overview.md#overview-section).
 - Knowledge: a complex tab that regroups all the structured Knowledge linked to the Event. Different thematic views are proposed to easily see the related entities, the threats, the locations, etc. linked to the Event. As described [here](overview.md#knowledge-section).
+- Content: This specific tab allows to previzualize, manage and write deliverable associated with the Event. For example an analytic report to share with other teams, a markdown files to feed a collaborative wiki with, etc. As described [here](overview.md#content-section).
 - Analyses: as described [here](overview.md#analyses-section).
 - Sightings: a table containing all `Sightings` relationships corresponding to events in which an `Indicator` (IP, domain name, url, etc.) is sighted during an attack against the Event.
 - Data: as described [here](overview.md#data-section).
@@ -75,6 +77,7 @@ When clicking on an `Organization` in the list, you land on its Overview tab. Fo
 
 - Overview: as described [here](overview.md#overview-section).
 - Knowledge: a complex tab that regroups all the structured Knowledge linked to the Organization. Different thematic views are proposed to easily see the related entities, the threats, the locations, etc. linked to the Organization. As described [here](overview.md#knowledge-section).
+- Content: This specific tab allows to previzualize, manage and write deliverable associated with the Organization. For example an analytic report to share with other teams, a markdown files to feed a collaborative wiki with, etc. As described [here](overview.md#content-section).
 - Analyses: as described [here](overview.md#analyses-section).
 - Sightings: a table containing all `Sightings` relationships corresponding to events in which an `Indicator` (IP, domain name, url, etc.) is sighted in the Organization.
 - Data: as described [here](overview.md#data-section).
@@ -105,6 +108,7 @@ When clicking on a `System` in the list, you land on its Overview tab. For a Sys
 
 - Overview: as described [here](overview.md#overview-section).
 - Knowledge: a complex tab that regroups all the structured Knowledge linked to the System. Different thematic views are proposed to easily see the related entities, the threats, the incidents, etc. linked to the System. As described [here](overview.md#knowledge-section).
+- Content: This specific tab allows to previzualize, manage and write deliverable associated with the System. For example an analytic report to share with other teams, a markdown files to feed a collaborative wiki with, etc. As described [here](overview.md#content-section).
 - Analyses: as described [here](overview.md#analyses-section).
 - Sightings: a table containing all `Sightings` relationships corresponding to events in which an `Indicator` (IP, domain name, url, etc.) is sighted in the System.
 - Data: as described [here](overview.md#data-section).
@@ -133,6 +137,7 @@ When clicking on an `Individual` in the list, you land on its Overview tab. For 
 
 - Overview: as described [here](overview.md#overview-section).
 - Knowledge: a complex tab that regroups all the structured Knowledge linked to the Individual. Different thematic views are proposed to easily see the related entities, the threats, the locations, etc. linked to the Individual. As described [here](overview.md#knowledge-section).
+- Content: This specific tab allows to previzualize, manage and write deliverable associated with the Individual. For example an analytic report to share with other teams, a markdown files to feed a collaborative wiki with, etc. As described [here](overview.md#content-section).
 - Analyses: as described [here](overview.md#analyses-section).
 - Sightings: a table containing all `Sightings` relationships corresponding to events in which an `Indicator` (IP, domain name, url, etc.) is sighted in the Individual.
 - Data: as described [here](overview.md#data-section).

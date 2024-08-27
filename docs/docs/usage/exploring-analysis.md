@@ -32,7 +32,7 @@ When clicking on a Report, you land on the Overview tab. For a Report, the follo
 
 - Overview: as described [here](overview.md#overview-section).
 - Knowledge: a complex tab that regroups all the structured Knowledge contained in the report, accessible through different views (See below for a dive-in). As described [here](overview.md#knowledge-section).
-- Content: a tab to upload or creates outcomes document displaying the content of the Report (for example in PDF, text, HTML or markdown files). The Content of the document is displayed to ease the access of Knowledge through a readable format. As described [here](overview.md#content-section).
+- Content: a tab to provide access to content mapping, suggested mapping and allows to preview, manage and write the deliverables associated with the Report. For example, an analytical report to share with other teams, a markdown file to feed a collaborative wiki, etc. As described [here](overview.md#content-section).
 - Entities: A table containing all SDO (Stix Domain Objects) contained in the Report, with search and filters available. It also displays if the SDO has been added directly or through [inferences with the reasoning engine](inferences.md)
 - Observables: A table containing all SCO (Stix Cyber Observable) contained in the Report, with search and filters available. It also displays if the SCO has been added directly or through [inferences with the reasoning engine](inferences.md)
 - Data: as described [here](overview.md#data-section).
@@ -53,12 +53,6 @@ At the bottom, you have many option to manipulate the graph:
 - Multiple filters, including a time range selector allowing you to see the evolution of the Knowledge within the Report.
 - Multiple creation and edition tools to modify the Knowledge contained in the Report.
 
-#### Content mapping view
-
-![Content mapping view of a Report](assets/report-content-mapping-view.png)
-
-Through this view, you can map exsisting or new Objects directly from a readable content, allowing you to quickly append structured Knowledge in your Report before refining it with relationships and details. 
-This view is a great place to see the continuum between unstructured and structured Knowledge of a specific Intelligence Production.
 
 #### Timeline view
 
@@ -93,6 +87,7 @@ When clicking on the Groupings tab at the top of the interface, you see the list
 Clicking on a Grouping, you land on its Overview tab. For a Groupings, the following tabs are accessible:
 - Overview: as described [here](overview.md#overview-section).
 - Knowledge: a complex tab that regroups all the structured Knowledge contained in the groupings, as for a Report, except for the Timeline view. As described [here](overview.md#knowledge-section).
+- Content: a tab to provide access to content mapping, suggested mapping and allows to preview, manage and write the deliverables associated with the Grouping. For example, an analytical report to share with other teams, a markdown file to feed a collaborative wiki, etc. As described [here](overview.md#content-section).
 - Entities: A table containing all SDO (Stix Domain Objects) contained in the Grouping, with search and filters available. It also display if the SDO has been added directly or through [inferences with the reasonging engine](inferences.md)
 - Observables: A table containing all SCO (Stix Cyber Observable) contained in the Grouping, with search and filters available. It also display if the SDO has been added directly or through [inferences with the reasonging engine](inferences.md)
 - Data: as described [here](overview.md#data-section).
@@ -112,6 +107,7 @@ When clicking on the Malware Analyses tab at the top of the interface, you see t
 Clicking on a Malware Analyses, you land on its Overview tab. The following tabs are accessible:
 - Overview: This view contains some additions from the common Overview [here](overview.md#overview-section). You will find here details about how the analysis have been performed, what is the global result regarding the malicioussness of the analysed artifact and all the Observables that have been found during the analysis. 
 - Knowledge: If you Malware analysis is linked to other Objects that are not part of the analysis result, they will be displayed here. As described [here](overview.md#knowledge-section).
+- Content: This specific tab allows to previzualize, manage and write deliverable associated with the Malware Analyses. For example an analytic report to share with other teams, a markdown files to feed a collaborative wiki with, etc. As described [here](overview.md#content-section).
 - Data: as described [here](overview.md#data-section).
 - History: as described [here](overview.md#history-section).
 

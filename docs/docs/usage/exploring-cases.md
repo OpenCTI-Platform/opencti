@@ -34,7 +34,7 @@ When clicking on an Incident Response, Request for Information or Request for Ta
 
 - Overview: Overview of Cases are slightly different from the usual (described [here](overview.md#overview-section)). Cases' Overview displays also the list of the tasks associated with the case. It also let you highlight Incident, Report or Sighting at the origin of the case. If other cases contains some Observables with your Case, they will be displayed as Related Cases in the Overview.
 - Knowledge: a complex tab that regroups all the structured Knowledge contained in the Case, accessible through different views (See below for a dive-in). As described [here](overview.md#knowledge-section).
-- Content: a tab to upload or creates outcomes document displaying the content of the Case (for example in PDF, text, HTML or markdown files). The Content of the document is displayed to ease the access of Knowledge through a readable format. As described [here](overview.md#content-section).
+- Content: a tab to provide access to content mapping, suggested mapping and allows to preview, manage and write the deliverables associated with the Case. For example, an analytical report to share with other teams, a markdown file to feed a collaborative wiki, etc. As described [here](overview.md#content-section).
 - Entities: A table containing all SDO (Stix Domain Objects) contained in the Case, with search and filters available. It also displays if the SDO has been added directly or through [inferences with the reasoning engine](inferences.md)
 - Observables: A table containing all SCO (Stix Cyber Observable) contained in the Case, with search and filters available. It also displays if the SDO has been added directly or through [inferences with the reasoning engine](inferences.md)
 - Data: as described [here](overview.md#data-section).
@@ -56,12 +56,6 @@ At the bottom, you have many option to manipulate the graph:
 - Multiple filters, including a time range selector allowing you to see the evolution of the Knowledge within the Case.
 - Multiple creation and edition tools to modify the Knowledge contained in the Case.
 
-#### Content mapping view
-
-![Content mapping view of a Case](assets/case-content-mapping.png)
-
-Through this view, you can map existing or new Objects directly from a readable content, allowing you to quickly append structured Knowledge in your Case before refining it with relationships and details.
-This view is a great place to see the continuum between unstructured and structured Knowledge.
 
 #### Timeline view
 
@@ -84,6 +78,7 @@ When clicking on the Tasks tab at the top of the interface, you see the list of 
 Clicking on a Task, you land on its Overview tab. For a Tasks, the following tabs are accessible:
 
 - Overview: as described [here](overview.md#overview-section).
+- Content: as described [here](overview.md#content-section).
 - Data: as described [here](overview.md#data-section).
 - History: as described [here](overview.md#history-section).
 

@@ -30,6 +30,7 @@ When clicking on an `Malware` card you land on its Overview tab. For a Malware, 
 
 - Overview: as described [here](overview.md#overview-section).
 - Knowledge: a complex tab that regroups all the structured Knowledge linked to the Malware. Different thematic views are proposed to easily see the victimology, the threat actors and intrusion sets using the Malware, etc. As described [here](overview.md#knowledge-section).
+- Content: This specific tab allows to previzualize, manage and write deliverable associated with the Malware. For example an analytic report to share with other teams, a markdown files to feed a collaborative wiki with, etc. As described [here](overview.md#content-section).
 - Analyses: as described [here](overview.md#analyses-section).
 - Data: as described [here](overview.md#data-section).
 - History: as described [here](overview.md#history-section).
@@ -53,6 +54,7 @@ When clicking on a `Channel` in the list, you land on its Overview tab. For a Ch
 
 - Overview: as described [here](overview.md#overview-section).
 - Knowledge: a complex tab that regroups all the structured Knowledge linked to the Channel. Different thematic views are proposed to easily see the victimology, the threat actors and intrusion sets using the Malware, etc. As described [here](overview.md#knowledge-section).
+- Content: This specific tab allows to previzualize, manage and write deliverable associated with the Channel. For example an analytic report to share with other teams, a markdown files to feed a collaborative wiki with, etc. As described [here](overview.md#content-section).
 - Analyses: as described [here](overview.md#analyses-section).
 - Data: as described [here](overview.md#data-section).
 - History: as described [here](overview.md#history-section).
@@ -74,6 +76,7 @@ When clicking on a `Tool` in the list, you land on its Overview tab. For a Tool,
 
 - Overview: as described [here](overview.md#overview-section).
 - Knowledge: a complex tab that regroups all the structured Knowledge linked to the Tool. Different thematic views are proposed to easily see the threat actors, the intrusion sets and the malware using the Tool. As described [here](overview.md#knowledge-section).
+- Content: This specific tab allows to previzualize, manage and write deliverable associated with the Tool. For example an analytic report to share with other teams, a markdown files to feed a collaborative wiki with, etc. As described [here](overview.md#content-section).
 - Analyses: as described [here](overview.md#analyses-section).
 - Data: as described [here](overview.md#data-section).
 - History: as described [here](overview.md#history-section).
@@ -95,6 +98,7 @@ When clicking on a `Vulnerabilities` in the list, you land on its Overview tab. 
 
 - Overview: as described [here](overview.md#overview-section).
 - Knowledge: a complex tab that regroups all the structured Knowledge linked to the Vulnerability. Different thematic views are proposed to easily see the threat actors, the intrusion sets and the malware exploiting the Vulnerability. As described [here](overview.md#knowledge-section).
+- Content: This specific tab allows to previzualize, manage and write deliverable associated with the Vulnerability. For example an analytic report to share with other teams, a markdown files to feed a collaborative wiki with, etc. As described [here](overview.md#content-section).
 - Analyses: as described [here](overview.md#analyses-section).
 - Data: as described [here](overview.md#data-section).
 - History: as described [here](overview.md#history-section).

@@ -41,6 +41,7 @@ When clicking on a Threat actor Card, you land on its Overview tab. For a Threat
 
 - Overview: as described [here](overview.md#overview-section).
 - Knowledge: a complex tab that regroups all the structured Knowledge linked to the Threat actor. Different thematic views are proposed to easily see the victimology, arsenal and techniques used by the Threat actor, etc. As described [here](overview.md#knowledge-section).
+- Content: This specific tab allows to previzualize, manage and write deliverable associated with the Threat actor. For example an analytic report to share with other teams, a markdown files to feed a collaborative wiki with, etc. As described [here](overview.md#content-section).
 - Analyses: as described [here](overview.md#analyses-section).
 - Data: as described [here](overview.md#data-section).
 - History: as described [here](overview.md#history-section).
@@ -69,6 +70,7 @@ When clicking on an Intrusion set Card, you land on its Overview tab. The follow
 
 - Overview: as described [here](overview.md#overview-section).
 - Knowledge: a complex tab that regroups all the structured Knowledge linked to the Intrusion Set. Different thematic views are proposed to easily see the victimology, arsenal and techniques used by the Intrusion Set, etc. As described [here](overview.md#knowledge-section).
+- Content: This specific tab allows to previzualize, manage and write deliverable associated with the Intrusion set. For example an analytic report to share with other teams, a markdown files to feed a collaborative wiki with, etc. As described [here](overview.md#content-section).
 - Analyses: as described [here](overview.md#analyses-section).
 - Data: as described [here](overview.md#data-section).
 - History: as described [here](overview.md#history-section).
@@ -92,6 +94,7 @@ When clicking on an Campaign Card, you land on its Overview tab. The following t
 
 - Overview: as described [here](overview.md#overview-section).
 - Knowledge: a complex tab that regroups all the structured Knowledge linked to the Campaign. Different thematic views are proposed to easily see the victimology, arsenal and techniques used in the context of the Campaign. As described [here](overview.md#knowledge-section).
+- Content: This specific tab allows to previzualize, manage and write deliverable associated with the Campaign. For example an analytic report to share with other teams, a markdown files to feed a collaborative wiki with, etc. As described [here](overview.md#content-section).
 - Analyses: as described [here](overview.md#analyses-section).
 - Data: as described [here](overview.md#data-section).
 - History: as described [here](overview.md#history-section).

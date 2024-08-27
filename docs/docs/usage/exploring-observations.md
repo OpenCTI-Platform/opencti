@@ -26,6 +26,7 @@ When clicking on an `Observable` in the list, you land on its Overview tab. For 
 
 - Overview: as described [here](overview.md#overview-section), with the particularity to display Indicators composed with the Observable.
 - Knowledge: a tab listing all its relationships and [nested objects](nested.md).
+- Content: This specific tab allows to previzualize, manage and write deliverable associated with the Observation. For example an analytic report to share with other teams, a markdown files to feed a collaborative wiki with, etc. As described [here](overview.md#content-section).
 - Analyses: as described [here](overview.md#analyses-section).
 - Sightings: a table containing all `Sightings` relationships corresponding to events in which the `Observable` (IP, domain name, url, etc.) has been sighted.
 - Data: as described [here](overview.md#data-section).
@@ -50,6 +51,7 @@ When clicking on an `Artefact` in the list, you land on its Overview tab. For an
 
 - Overview: as described [here](overview.md#overview-section), with the particularity to be able to download the attached file.
 - Knowledge: a tab listing all its relationships and [nested objects](nested.md).
+- Content: This specific tab allows to previzualize, manage and write deliverable associated with the Artefact. For example an analytic report to share with other teams, a markdown files to feed a collaborative wiki with, etc. As described [here](overview.md#content-section).
 - Analyses: as described [here](overview.md#analyses-section).
 - Sightings: a table containing all `Sightings` relationships corresponding to events in which the `Artefact` has been sighted.
 - Data: as described [here](overview.md#data-section).
@@ -79,6 +81,7 @@ When clicking on an `Indicator` in the list, you land on its Overview tab. For a
 
 - Overview: as described [here](overview.md#overview-section), with the particularity to display the Observables on which it is based.
 - Knowledge: a tab listing all its relationships.
+- Content: This specific tab allows to previzualize, manage and write deliverable associated with the Indicator. For example an analytic report to share with other teams, a markdown files to feed a collaborative wiki with, etc. As described [here](overview.md#content-section).
 - Analyses: as described [here](overview.md#analyses-section).
 - Sightings: a table containing all `Sightings` relationships corresponding to events in which the `Indicator` has been sighted.
 - Data: as described [here](overview.md#data-section).
@@ -103,6 +106,7 @@ When clicking on an `Infrastructure` in the list, you land on its Overview tab. 
 
 - Overview: as described [here](overview.md#overview-section), with the particularity to display distribution graphs of its related Observable (STIX SCO).
 - Knowledge: a complex tab that regroups all the structured Knowledge linked to the Infrastructure. Different thematic views are proposed to easily see the threats, the arsenal, the observations, etc. linked to the Infrastructure. As described [here](overview.md#knowledge-section).
+- Content: This specific tab allows to previzualize, manage and write deliverable associated with the Infrastructure. For example an analytic report to share with other teams, a markdown files to feed a collaborative wiki with, etc. As described [here](overview.md#content-section).
 - Analyses: as described [here](overview.md#analyses-section).
 - Data: as described [here](overview.md#data-section).
 - History: as described [here](overview.md#history-section).
