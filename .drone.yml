@@ -106,9 +106,9 @@ steps:
     image: node:20.16.0
     failure: ignore
     when:
-    status:
-      - failure
-      - success
+      status:
+        - failure
+        - success
     environment:
       JFROG_TOKEN:
           from_secret: jfrog_token
