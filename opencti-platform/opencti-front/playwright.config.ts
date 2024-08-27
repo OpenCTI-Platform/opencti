@@ -1,5 +1,5 @@
 import { defineConfig, devices } from '@playwright/test';
-import teamsWebhook from './tests_e2e/webhooks/teams-webhook.js';
+// import teamsWebhook from './tests_e2e/webhooks/teams-webhook.js';
 // https://playwright.dev/docs/browsers
 
 /**
