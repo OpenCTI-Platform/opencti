@@ -489,7 +489,7 @@ const BulkRelationDialog : FunctionComponent<BulkRelationDialogProps> = ({
                   onChange={handleChangeTextArea}
                   multiline
                   minRows={10}
-                  placeholder={'Type or copy paste data in this area.'}
+                  placeholder={t_i18n('Type or copy paste data in this area.')}
                   variant="outlined"
                 />
               </Box>

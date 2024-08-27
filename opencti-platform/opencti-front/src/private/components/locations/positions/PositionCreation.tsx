@@ -84,6 +84,7 @@ export const PositionCreationForm: FunctionComponent<PositionFormProps> = ({
   defaultMarkingDefinitions,
   bulkModalOpen = false,
   onBulkModalClose,
+  inputValue,
 }) => {
   const { isFeatureEnable } = useHelper();
   const { t_i18n } = useFormatter();
@@ -173,7 +174,7 @@ export const PositionCreationForm: FunctionComponent<PositionFormProps> = ({
   };
 
   const initialValues = useDefaultValues(POSITION_TYPE, {
-    name: '',
+    name: inputValue ?? '',
     description: '',
     confidence: null,
     latitude: '',

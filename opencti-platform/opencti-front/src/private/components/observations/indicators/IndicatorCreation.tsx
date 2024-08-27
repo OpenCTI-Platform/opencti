@@ -116,6 +116,7 @@ export const IndicatorCreationForm: FunctionComponent<IndicatorFormProps> = ({
   defaultConfidence,
   defaultCreatedBy,
   defaultMarkingDefinitions,
+  inputValue,
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
@@ -203,7 +204,7 @@ export const IndicatorCreationForm: FunctionComponent<IndicatorFormProps> = ({
   const initialValues = useDefaultValues(
     INDICATOR_TYPE,
     {
-      name: '',
+      name: inputValue ?? '',
       confidence: defaultConfidence,
       indicator_types: [],
       pattern: '',

@@ -92,6 +92,7 @@ interface IncidentFormProps {
   defaultConfidence?: number;
   defaultCreatedBy?: { value: string; label: string };
   defaultMarkingDefinitions?: { value: string; label: string }[];
+  inputValue?: string;
 }
 
 const CASE_INCIDENT_TYPE = 'Case-Incident';
@@ -102,6 +103,7 @@ export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
   defaultConfidence,
   defaultCreatedBy,
   defaultMarkingDefinitions,
+  inputValue,
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
@@ -174,7 +176,7 @@ export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
   const initialValues = useDefaultValues<FormikCaseIncidentAddInput>(
     CASE_INCIDENT_TYPE,
     {
-      name: '',
+      name: inputValue ?? '',
       confidence: defaultConfidence,
       description: '',
       content: '',

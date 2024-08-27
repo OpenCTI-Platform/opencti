@@ -92,6 +92,7 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
   defaultConfidence,
   defaultCreatedBy,
   defaultMarkingDefinitions,
+  inputValue,
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
@@ -158,7 +159,7 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
   };
 
   const initialValues = useDefaultValues(GROUPING_TYPE, {
-    name: '',
+    name: inputValue ?? '',
     confidence: defaultConfidence,
     context: '',
     description: '',

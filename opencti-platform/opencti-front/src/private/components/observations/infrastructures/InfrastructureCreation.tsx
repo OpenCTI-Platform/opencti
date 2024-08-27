@@ -89,6 +89,7 @@ export const InfrastructureCreationForm: FunctionComponent<InfrastructureFormPro
   defaultMarkingDefinitions,
   bulkModalOpen = false,
   onBulkModalClose,
+  inputValue,
 }) => {
   const { isFeatureEnable } = useHelper();
   const { t_i18n } = useFormatter();
@@ -182,7 +183,7 @@ export const InfrastructureCreationForm: FunctionComponent<InfrastructureFormPro
   const initialValues = useDefaultValues(
     INFRASTRUCTURE_TYPE,
     {
-      name: '',
+      name: inputValue ?? '',
       infrastructure_types: [],
       confidence: defaultConfidence ?? null,
       description: '',
