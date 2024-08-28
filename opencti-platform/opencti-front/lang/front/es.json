@@ -2591,6 +2591,7 @@
   "This configuration is not available for this entity type": "Esta configuración no está disponible para este tipo de entidad",
   "This connector is active": "Este conector está activo",
   "This connector is disconnected": "Este conector está desconectado",
+  "This entity has several key fields, which is incompatible with bulk creation": "Esta entidad tiene varios campos clave, lo que es incompatible con la creación masiva",
   "This feature is not available yet.": "Está funcionalidad todavía no está disponible.",
   "This feature is only available in OpenCTI Enterprise Edition.": "Esta función sólo está disponible en OpenCTI Enterprise Edition.",
   "This field is required": "Este campo es requerido",
