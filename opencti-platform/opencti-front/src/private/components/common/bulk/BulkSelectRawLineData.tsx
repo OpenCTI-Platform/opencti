@@ -61,7 +61,7 @@ const BulkSelectRawLineData : FunctionComponent<BulkSelectRawLineDataProps> = ({
     return entityList.map((item) => {
       const isSuggestion = possibleEntityTypes.includes(item.toEntitytype);
       return {
-        label: t_i18n(item.toEntitytype),
+        label: t_i18n(`entity_${item.toEntitytype}`),
         value: item,
         groupLabel: isSuggestion ? t_i18n('Suggestions') : t_i18n('Entity list'),
         groupOrder: isSuggestion ? 0 : 1,

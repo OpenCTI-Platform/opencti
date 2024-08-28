@@ -168,6 +168,7 @@ const WorkspaceTurnToContainerDialog: FunctionComponent<WorkspaceTurnToContainer
       <DialogTitle>{t_i18n('Add to container')}</DialogTitle>
       <DialogContent>
         <StixDomainObjectCreation
+          isFromBulkRelation={undefined}
           inputValue={actionsInputs?.inputValue || ''}
           open={containerCreation}
           display={true}

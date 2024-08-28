@@ -222,6 +222,7 @@ ContainerAddStixCoreObjectsInLineProps
         handleClose={() => setOpenCreateEntity(false)}
         creationCallback={undefined}
         onCompleted={undefined}
+        isFromBulkRelation={undefined}
         confidence={confidence}
         defaultCreatedBy={defaultCreatedBy}
         defaultMarkingDefinitions={defaultMarkingDefinitions}
