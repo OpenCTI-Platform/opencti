@@ -8,6 +8,7 @@ import { formDataToCsvMapper } from '@components/data/csvMapper/CsvMapperUtils';
 import { csvMappers_MappersQuery$variables } from '@components/data/csvMapper/__generated__/csvMappers_MappersQuery.graphql';
 import { insertNode } from '../../../../utils/store';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import { handleErrorInForm } from '../../../../relay/environment';
 
 const csvMapperCreation = graphql`
   mutation CsvMapperCreationContainerMutation($input: CsvMapperAddInput!) {
@@ -35,7 +36,7 @@ const CsvMapperCreation: FunctionComponent<CsvMapperCreationFormProps> = ({
 
   const onSubmit: FormikConfig<CsvMapperFormData>['onSubmit'] = (
     values,
-    { resetForm },
+    { resetForm, setSubmitting, setErrors },
   ) => {
     const formattedValues = formDataToCsvMapper(values);
     const input: CsvMapperAddInput = {
@@ -60,6 +61,10 @@ const CsvMapperCreation: FunctionComponent<CsvMapperCreationFormProps> = ({
         if (onClose) {
           onClose();
         }
+      },
+      onError: (error) => {
+        handleErrorInForm(error, setErrors);
+        setSubmitting(false);
       },
     });
   };
