@@ -35,14 +35,6 @@ class AttackPatternsMatrix extends Component {
       <div className={classes.container}>
         <QueryRenderer
           query={attackPatternsMatrixColumnsQuery}
-          variables={{
-            count: 5000,
-            filters: {
-              mode: 'and',
-              filters: [{ key: 'revoked', values: ['false'] }],
-              filterGroups: [],
-            },
-          }}
           render={({ props }) => {
             if (props) {
               return (
