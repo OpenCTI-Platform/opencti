@@ -99,7 +99,7 @@ const TaskFilterValue = ({
                   )}
                   {isOperatorDisplayed
                     ? convertOperatorToIcon(currentFilter.operator ?? 'eq')
-                    : currentFilter.values.length > 0 && ':'}
+                    : currentFilter.values.length > 0 && ': '}
                   {currentFilter.values.map((o) => {
                     const localFilterMode = t_i18n(
                       (currentFilter.mode ?? 'or').toUpperCase(),
