@@ -870,6 +870,8 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
               handleClose={undefined}
               type={undefined}
               speeddial={undefined}
+              onCompleted={undefined}
+              isFromBulkRelation={undefined}
             />
           )}
           {targetEntities.length === 0 && !isOnlySDOs && !isOnlySCOs && (
@@ -930,6 +932,8 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
                 open={openCreateObservable}
                 handleClose={handleCloseCreateObservable}
                 type={undefined}
+                onCompleted={undefined}
+                isFromBulkRelation={undefined}
               />
             </>
           )}

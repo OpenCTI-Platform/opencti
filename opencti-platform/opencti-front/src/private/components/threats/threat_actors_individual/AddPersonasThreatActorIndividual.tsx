@@ -80,8 +80,10 @@ AddPersonaThreatActorIndividualProps
             type="Persona"
             open={undefined}
             handleClose={undefined}
+            onCompleted={undefined}
             display={undefined}
             speeddial={undefined}
+            isFromBulkRelation={undefined}
             inputValue={search}
             paginationOptions={{ search, types: ['Persona'] }}
             paginationKey="Pagination_stixCyberObservables"
