@@ -221,7 +221,7 @@ const RetentionCreation = ({ paginationOptions }: { paginationOptions: Retention
                 textfieldprops={{
                   label: t_i18n('Scope'),
                 }}
-               />
+              />
               {formValues.scope?.value === 'file'
                 && <Alert severity="info" style={{ margin: '15px 15px 0 15px' }}>
                   {t_i18n('The retention policy will be applied on global files (i.e. files contained in Data/Import)')}

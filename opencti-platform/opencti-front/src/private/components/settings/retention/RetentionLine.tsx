@@ -120,7 +120,7 @@ export const RetentionLine: FunctionComponent<RetentionLineProps> = ({ dataColum
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.scope.width }}
-               >
+            >
               <Chip
                 color={scopeColor as 'warning' | 'secondary' | 'primary'}
                 classes={{ root: classes.chipInList }}
@@ -229,7 +229,7 @@ export const RetentionLineDummy = ({ dataColumns }: { dataColumns: DataColumns }
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.scope.width }}
-               >
+            >
               <Skeleton
                 animation="wave"
                 variant="rectangular"
