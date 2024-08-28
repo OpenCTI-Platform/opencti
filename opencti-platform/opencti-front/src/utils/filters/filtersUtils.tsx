@@ -464,7 +464,7 @@ export const addFilter = (
 // create a new filter: filterGroup1 AND filterGroup2
 export const addFilterGroup = (
   filters1: FilterGroup | undefined,
-  filters2: any,
+  filters2: FilterGroup,
   mode = 'and',
 ): FilterGroup | undefined => {
   return (filters1

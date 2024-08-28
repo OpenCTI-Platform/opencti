@@ -1390,7 +1390,6 @@ class DataTableToolBar extends Component {
 
           const entityTypes = selectedTypes.length > 0 ? selectedTypes : [this.props.type ?? 'Stix-Core-Object'];
           const filterKeysMap = new Map();
-          console.log('entityTypes', entityTypes);
           entityTypes.forEach((entityType) => {
             const currentMap = schema.filterKeysSchema.get(entityType);
             currentMap?.forEach((value, key) => filterKeysMap.set(key, value));
