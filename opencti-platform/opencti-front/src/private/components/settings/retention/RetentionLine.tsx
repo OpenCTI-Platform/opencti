@@ -105,7 +105,7 @@ export const RetentionLine: FunctionComponent<RetentionLineProps> = ({ dataColum
               className={classes.bodyItem}
               style={{ width: dataColumns.max_retention.width }}
             >
-              {data.max_retention} {t_i18n(data.retention_unit ?? 'days')}
+              {data.max_retention} {t_i18n(data.retention_unit)}
             </div>
             <div
               className={classes.bodyItem}

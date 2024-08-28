@@ -22183,7 +22183,7 @@ export type RetentionRule = {
   max_retention: Scalars['Int']['output'];
   name: Scalars['String']['output'];
   remaining_count?: Maybe<Scalars['Int']['output']>;
-  retention_unit?: Maybe<RetentionUnit>;
+  retention_unit: RetentionUnit;
   scope: RetentionRuleScope;
   standard_id: Scalars['String']['output'];
 };
@@ -22192,7 +22192,7 @@ export type RetentionRuleAddInput = {
   filters: Scalars['String']['input'];
   max_retention: Scalars['Int']['input'];
   name: Scalars['String']['input'];
-  retention_unit?: InputMaybe<RetentionUnit>;
+  retention_unit: RetentionUnit;
   scope: RetentionRuleScope;
 };
 
@@ -37678,7 +37678,7 @@ export type RetentionRuleResolvers<ContextType = any, ParentType extends Resolve
   max_retention?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   remaining_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
-  retention_unit?: Resolver<Maybe<ResolversTypes['RetentionUnit']>, ParentType, ContextType>;
+  retention_unit?: Resolver<ResolversTypes['RetentionUnit'], ParentType, ContextType>;
   scope?: Resolver<ResolversTypes['RetentionRuleScope'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
