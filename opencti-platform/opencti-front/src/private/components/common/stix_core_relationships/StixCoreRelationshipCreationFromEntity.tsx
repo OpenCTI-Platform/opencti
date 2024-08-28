@@ -852,6 +852,7 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
               confidence={undefined}
               defaultCreatedBy={undefined}
               defaultMarkingDefinitions={undefined}
+              isFromBulkRelation={undefined}
               open={undefined}
               speeddial={undefined}
               handleClose={undefined}
@@ -915,6 +916,7 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
                 creationCallback={undefined}
                 confidence={undefined}
                 defaultCreatedBy={undefined}
+                isFromBulkRelation={undefined}
                 defaultMarkingDefinitions={undefined}
                 stixDomainObjectTypes={undefined}
               />
