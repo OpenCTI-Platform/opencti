@@ -2533,7 +2533,7 @@ type AttackPatternForMatrix {
   description: String
   x_mitre_id: String
   subAttackPatternsIds: [String!]
-  subattackPatterns_text: String
+  subAttackPatternsSearchText: String
   killChainPhasesIds: [String!]
 }
 

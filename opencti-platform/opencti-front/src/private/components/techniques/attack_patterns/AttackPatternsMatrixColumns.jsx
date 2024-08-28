@@ -286,7 +286,7 @@ class AttackPatternsMatrixColumnsComponent extends Component {
       || R.propOr('', 'x_mitre_id', n)
         .toLowerCase()
         .indexOf(searchTerm.toLowerCase()) !== -1
-      || R.propOr('', 'subattackPatterns_text', n)
+      || R.propOr('', 'subAttackPatternsSearchText', n)
         .toLowerCase()
         .indexOf(searchTerm.toLowerCase()) !== -1;
     const maxNumberOfSameAttackPattern = Math.max(
@@ -510,7 +510,7 @@ const AttackPatternsMatrixColumns = createRefetchContainer(
               description
               x_mitre_id
               subAttackPatternsIds
-              subattackPatterns_text
+              subAttackPatternsSearchText
               killChainPhasesIds
             }
           }
