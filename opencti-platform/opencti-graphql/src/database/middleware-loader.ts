@@ -577,8 +577,8 @@ export const findEntitiesIdsWithRelations = async (
   const aggFilter = {
     bool: { filter: [{ term: { 'connections.role.keyword': connectionRole } }] }
   };
-  // TODO size: connectedEntitiesIds.length
-  const args = { filters: connectionsFilters, types: [relationType], resolveToRepresentative: false };
+  const aggSize = connectedEntitiesIds.length;
+  const args = { filters: connectionsFilters, types: [relationType], size: aggSize };
   const aggregation = { field: 'connections.internal_id.keyword', path: 'connections', filter: aggFilter };
   const aggregationResult = await elAggregationNestedTermsWithFilter(context, user, READ_RELATIONSHIPS_INDICES, aggregation, args);
   const resultEntityIds = aggregationResult.map((agg: { label: string; }) => agg.label)
@@ -591,7 +591,6 @@ export const batchListEntitiesThroughRelationsPaginated = async <T extends Basic
   for (let i = 0; i < connectedEntitiesIds.length; i += 1) {
     const entityId = connectedEntitiesIds[i];
     const result = await listEntitiesThroughRelationsPaginated(context, user, entityId, relationType, entityType, reverse_relation, args);
-    // logApp.info('result for entity', { entityId, result });
     resultMap.set(entityId, result);
   }
   return connectedEntitiesIds.map((entityId) => {
