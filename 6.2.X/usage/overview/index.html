@@ -1630,6 +1630,34 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Content">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#content-mapping-view" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Content mapping view
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#suggested-mapping-view" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Suggested mapping view
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
         
           <li class="md-nav__item">
@@ -4958,6 +4986,34 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Content">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#content-mapping-view" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Content mapping view
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#suggested-mapping-view" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Suggested mapping view
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
         
           <li class="md-nav__item">
@@ -5182,9 +5238,23 @@
 <p><a class="glightbox" href="../assets/knowledge_focus_indicators_observable_views.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="The Knowledge Focus on Indicators and Observables views" src="../assets/knowledge_focus_indicators_observable_views.png" /></a></p>
 <p><a id="content-section"></a></p>
 <h3 id="content">Content</h3>
-<p>The <code>Content</code> tab allows for uploading and creating outcomes documents related to the content of the current entity (in PDF, text, HTML or markdown files). This specific tab enable to previzualize, manage and write deliverable associated with the entity. For example an analytic report to share with other teams, a markdown files to feed a collaborative wiki with, etc.</p>
-<p>The <code>Content</code> tab is available for a subset of entities: <code>Report</code>, <code>Incident</code>, <code>Incident response</code>, <code>Request for Information</code>, and <code>Request for Takedown</code>.</p>
-<p><a class="glightbox" href="../assets/entity-content-tab.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="The Content tab of an Incident" src="../assets/entity-content-tab.png" /></a></p>
+<p>The <code>Content</code> tab is available for all entities. It allows for uploading and creating outcomes documents related to the content of the current entity (in PDF, text, HTML or markdown files). This specific tab enable to previzualize, manage and write deliverable associated with the entity. For example an analytic report to share with other teams, a markdown files to feed a collaborative wiki with, etc.</p>
+<p>The <code>Content mapping view</code> and the <code>Suggested mapping view</code>  are available for a subset of entities: <code>Report</code>, <code>Grouping</code>, <code>Incident</code>, <code>Incident response</code>, <code>Request for Information</code>, and <code>Request for Takedown</code>.</p>
+<p><a class="glightbox" href="../assets/entity-content-tab.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="The Content tab of a Malware" src="../assets/entity-content-tab.png" /></a></p>
+<h4 id="content-mapping-view">Content mapping view</h4>
+<p><a class="glightbox" href="../assets/case-content-mapping.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Content mapping view of a Case" src="../assets/case-content-mapping.png" /></a></p>
+<p>The <code>Content mapping view</code> displays the mappable content of your container on the left (Description and Content), and the objects contained in the container on the right.</p>
+<p>This view allows you to map readable content to existing or new Objects by selecting text on the left. Mapping an object will add it to your container, and the object will then be displayed on the right.
+You can clear all mappings that you added by clicking on the <code>Clear mappings</code> button. This action will only remove the mapping: the objects will still be contained in your container.</p>
+<p>This allows you to quickly append structured Knowledge in your Case before refining it with relationships and details, and makes it a great place to see the continuum between unstructured and structured Knowledge.</p>
+<h4 id="suggested-mapping-view">Suggested mapping view</h4>
+<p><a class="glightbox" href="../assets/suggested-mapping.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Suggested mapping view of a Report" src="../assets/suggested-mapping.png" /></a></p>
+<p>The <code>Suggested mapping view</code> displays the mappable content of your container on the left (Description and Content), and the suggested entity mapping on the right.</p>
+<p>This view allows you to get a suggestion list of existing Objects based on your mappable content by clicking on <code>Suggest new mapping</code>. 
+To be able to get a suggestion, you need to have at least one analysis connector of type <code>INTERNAL_ANALYSIS</code> configured. 
+Once the suggestion has been computed by the connector, it will be available on the right.
+You can the remove the suggestion that you are not interested in, and click on the <code>Validate</code> button to add the mapped objects to your container.</p>
+<p>This allows you to quickly fill your Container with the data that you need, without having to manually map every related Objects.</p>
 <p><a id="analyses-section"></a></p>
 <h3 id="analyses">Analyses</h3>
 <p>The <code>Analyses</code> tab contains the list of all Analyses (<code>Report</code>, <code>Groupings</code>) and Cases (<code>Incident response</code>, <code>Request for Information</code>, <code>Request for Takedown</code>) in which the entity has been identified.</p>
@@ -5241,7 +5311,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1-2.1-2M12.5 7v5.2l4 2.4-1 1L11 13V7h1.5M11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2v1.8Z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2024-01-18T10:16:21+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2024-01-18</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2024-07-01T14:03:22+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2024-07-01</span>
   </span>
 
     

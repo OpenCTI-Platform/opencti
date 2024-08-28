@@ -5261,28 +5261,37 @@
 </span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">  </span><span class="nt">log_level</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;info&#39;</span>
 </span></code></pre></div>
 <h3 id="advanced-parameters">Advanced parameters</h3>
-<p>By default, connectors are connecting to <code>RabbitMQ</code> using parameters and credentials directly given by the API during the connector registration process. In some cases, you may need to override them.</p>
-<div class="highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">MQ_HOST=rabbit.mydomain.com</span>
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">MQ_PORT=5672</span>
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">MQ_VHOST=/</span>
-</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">MQ_USE_SSL=false</span>
-</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">MQ_USER=guest</span>
-</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">MQ_PASS=guest</span>
+<p>By default, connectors are connecting to <code>RabbitMQ</code>.</p>
+<p>You can also send the Bundle to API (<code>stixBundlePush</code>) that will push the bundle to the correct <code>RabbitMQ</code> queue.</p>
+<div class="highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="nt">connector</span><span class="p">:</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">  </span><span class="nt">queue_protocol</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;api&#39;</span><span class="w"> </span><span class="c1"># use api to send bundle through API mutation, amqp (default) to send to rabbit</span>
+</span></code></pre></div>
+<div class="admonition warning">
+<p class="admonition-title">Limitation</p>
+<p>Currently the connector can not send bundle larger the the configuration of the OpenCTI backend (default 50Mb)</p>
+</div>
+<p>The connection to <code>RabbitMQ</code> is done by using parameters and credentials directly given by the API during the connector registration process. In some cases, you may need to override them.</p>
+<div class="highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">MQ_HOST=rabbit.mydomain.com</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">MQ_PORT=5672</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">MQ_VHOST=/</span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">MQ_USE_SSL=false</span>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">MQ_USER=guest</span>
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">MQ_PASS=guest</span>
 </span></code></pre></div>
 <p>Here is an example in a connector <code>config.yml</code> file:</p>
-<div class="highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="nt">mq</span><span class="p">:</span>
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">  </span><span class="nt">host</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;rabbit.mydomain.com&#39;</span>
-</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">  </span><span class="nt">port</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;5672&#39;</span>
-</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="w">  </span><span class="nt">use_ssl</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
-</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="w">  </span><span class="nt">user</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;guest&#39;</span>
-</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="w">  </span><span class="nt">pass</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;guest&#39;</span>
+<div class="highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="nt">mq</span><span class="p">:</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">  </span><span class="nt">host</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;rabbit.mydomain.com&#39;</span>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">  </span><span class="nt">port</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;5672&#39;</span>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="w">  </span><span class="nt">use_ssl</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="w">  </span><span class="nt">user</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;guest&#39;</span>
+</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="w">  </span><span class="nt">pass</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;guest&#39;</span>
 </span></code></pre></div>
 <h2 id="networking">Networking</h2>
 <p>Be aware that all connectors are reaching RabbitMQ based the RabbitMQ configuration provided by the OpenCTI platform. The connector must be able to reach RabbitMQ on the specified hostname and port. If you have a specific Docker network configuration, please be sure to adapt your <code>docker-compose.yml</code> file in such way that the connector container gets attached to the OpenCTI Network, e.g.:</p>
-<div class="highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="nt">networks</span><span class="p">:</span>
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">  </span><span class="nt">default</span><span class="p">:</span>
-</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">    </span><span class="nt">external</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
-</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">opencti-docker_default</span>
+<div class="highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="nt">networks</span><span class="p">:</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">  </span><span class="nt">default</span><span class="p">:</span>
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="w">    </span><span class="nt">external</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">opencti-docker_default</span>
 </span></code></pre></div>
 <p><a id="connector-token-section"></a></p>
 <h2 id="connector-token">Connector token</h2>
@@ -5299,50 +5308,50 @@
 <p>You can either directly run the Docker image of connectors or add them to your current <code>docker-compose.yml</code> file.</p>
 <h3 id="add-a-connector-to-your-deployment">Add a connector to your deployment</h3>
 <p>For instance, to enable the MISP connector, you can add a new service to your <code>docker-compose.yml</code> file:</p>
-<div class="highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="w">  </span>connector-misp:
-</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">    </span>image:<span class="w"> </span>opencti/connector-misp:latest
-</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="w">    </span>environment:
-</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="w">      </span>-<span class="w"> </span><span class="nv">OPENCTI_URL</span><span class="o">=</span>http://localhost
-</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="w">      </span>-<span class="w"> </span><span class="nv">OPENCTI_TOKEN</span><span class="o">=</span>ChangeMe
-</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="w">      </span>-<span class="w"> </span><span class="nv">CONNECTOR_ID</span><span class="o">=</span>ChangeMe
-</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="w">      </span>-<span class="w"> </span><span class="nv">CONNECTOR_TYPE</span><span class="o">=</span>EXTERNAL_IMPORT
-</span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="w">      </span>-<span class="w"> </span><span class="nv">CONNECTOR_NAME</span><span class="o">=</span>MISP
-</span><span id="__span-5-9"><a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a><span class="w">      </span>-<span class="w"> </span><span class="nv">CONNECTOR_SCOPE</span><span class="o">=</span>misp
-</span><span id="__span-5-10"><a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a><span class="w">      </span>-<span class="w"> </span><span class="nv">CONNECTOR_LOG_LEVEL</span><span class="o">=</span>info
-</span><span id="__span-5-11"><a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a><span class="w">      </span>-<span class="w"> </span><span class="nv">MISP_URL</span><span class="o">=</span>http://localhost<span class="w"> </span>#<span class="w"> </span>Required
-</span><span id="__span-5-12"><a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a><span class="w">      </span>-<span class="w"> </span><span class="nv">MISP_KEY</span><span class="o">=</span>ChangeMe<span class="w"> </span>#<span class="w"> </span>Required
-</span><span id="__span-5-13"><a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a><span class="w">      </span>-<span class="w"> </span><span class="nv">MISP_SSL_VERIFY</span><span class="o">=</span>False<span class="w"> </span>#<span class="w"> </span>Required
-</span><span id="__span-5-14"><a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a><span class="w">      </span>-<span class="w"> </span><span class="nv">MISP_CREATE_REPORTS</span><span class="o">=</span>True<span class="w"> </span>#<span class="w"> </span>Required,<span class="w"> </span>create<span class="w"> </span>report<span class="w"> </span><span class="k">for</span><span class="w"> </span>MISP<span class="w"> </span>event
-</span><span id="__span-5-15"><a id="__codelineno-5-15" name="__codelineno-5-15" href="#__codelineno-5-15"></a><span class="w">      </span>-<span class="w"> </span><span class="nv">MISP_REPORT_CLASS</span><span class="o">=</span>MISP<span class="w"> </span>event<span class="w"> </span>#<span class="w"> </span>Optional,<span class="w"> </span>report_class<span class="w"> </span><span class="k">if</span><span class="w"> </span>creating<span class="w"> </span>report<span class="w"> </span><span class="k">for</span><span class="w"> </span>event
-</span><span id="__span-5-16"><a id="__codelineno-5-16" name="__codelineno-5-16" href="#__codelineno-5-16"></a><span class="w">      </span>-<span class="w"> </span><span class="nv">MISP_IMPORT_FROM_DATE</span><span class="o">=</span><span class="m">2000</span>-01-01<span class="w"> </span>#<span class="w"> </span>Optional,<span class="w"> </span>import<span class="w"> </span>all<span class="w"> </span>event<span class="w"> </span>from<span class="w"> </span>this<span class="w"> </span>date
-</span><span id="__span-5-17"><a id="__codelineno-5-17" name="__codelineno-5-17" href="#__codelineno-5-17"></a><span class="w">      </span>-<span class="w"> </span><span class="nv">MISP_IMPORT_TAGS</span><span class="o">=</span>opencti:import,type:osint<span class="w"> </span>#<span class="w"> </span>Optional,<span class="w"> </span>list<span class="w"> </span>of<span class="w"> </span>tags<span class="w"> </span>used<span class="w"> </span><span class="k">for</span><span class="w"> </span>import<span class="w"> </span>events
-</span><span id="__span-5-18"><a id="__codelineno-5-18" name="__codelineno-5-18" href="#__codelineno-5-18"></a><span class="w">      </span>-<span class="w"> </span><span class="nv">MISP_INTERVAL</span><span class="o">=</span><span class="m">1</span><span class="w"> </span>#<span class="w"> </span>Required,<span class="w"> </span><span class="k">in</span><span class="w"> </span>minutes
-</span><span id="__span-5-19"><a id="__codelineno-5-19" name="__codelineno-5-19" href="#__codelineno-5-19"></a><span class="w">    </span>restart:<span class="w"> </span>always
+<div class="highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="w">  </span>connector-misp:
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="w">    </span>image:<span class="w"> </span>opencti/connector-misp:latest
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="w">    </span>environment:
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="w">      </span>-<span class="w"> </span><span class="nv">OPENCTI_URL</span><span class="o">=</span>http://localhost
+</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="w">      </span>-<span class="w"> </span><span class="nv">OPENCTI_TOKEN</span><span class="o">=</span>ChangeMe
+</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="w">      </span>-<span class="w"> </span><span class="nv">CONNECTOR_ID</span><span class="o">=</span>ChangeMe
+</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="w">      </span>-<span class="w"> </span><span class="nv">CONNECTOR_TYPE</span><span class="o">=</span>EXTERNAL_IMPORT
+</span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="w">      </span>-<span class="w"> </span><span class="nv">CONNECTOR_NAME</span><span class="o">=</span>MISP
+</span><span id="__span-6-9"><a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a><span class="w">      </span>-<span class="w"> </span><span class="nv">CONNECTOR_SCOPE</span><span class="o">=</span>misp
+</span><span id="__span-6-10"><a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a><span class="w">      </span>-<span class="w"> </span><span class="nv">CONNECTOR_LOG_LEVEL</span><span class="o">=</span>info
+</span><span id="__span-6-11"><a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a><span class="w">      </span>-<span class="w"> </span><span class="nv">MISP_URL</span><span class="o">=</span>http://localhost<span class="w"> </span>#<span class="w"> </span>Required
+</span><span id="__span-6-12"><a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a><span class="w">      </span>-<span class="w"> </span><span class="nv">MISP_KEY</span><span class="o">=</span>ChangeMe<span class="w"> </span>#<span class="w"> </span>Required
+</span><span id="__span-6-13"><a id="__codelineno-6-13" name="__codelineno-6-13" href="#__codelineno-6-13"></a><span class="w">      </span>-<span class="w"> </span><span class="nv">MISP_SSL_VERIFY</span><span class="o">=</span>False<span class="w"> </span>#<span class="w"> </span>Required
+</span><span id="__span-6-14"><a id="__codelineno-6-14" name="__codelineno-6-14" href="#__codelineno-6-14"></a><span class="w">      </span>-<span class="w"> </span><span class="nv">MISP_CREATE_REPORTS</span><span class="o">=</span>True<span class="w"> </span>#<span class="w"> </span>Required,<span class="w"> </span>create<span class="w"> </span>report<span class="w"> </span><span class="k">for</span><span class="w"> </span>MISP<span class="w"> </span>event
+</span><span id="__span-6-15"><a id="__codelineno-6-15" name="__codelineno-6-15" href="#__codelineno-6-15"></a><span class="w">      </span>-<span class="w"> </span><span class="nv">MISP_REPORT_CLASS</span><span class="o">=</span>MISP<span class="w"> </span>event<span class="w"> </span>#<span class="w"> </span>Optional,<span class="w"> </span>report_class<span class="w"> </span><span class="k">if</span><span class="w"> </span>creating<span class="w"> </span>report<span class="w"> </span><span class="k">for</span><span class="w"> </span>event
+</span><span id="__span-6-16"><a id="__codelineno-6-16" name="__codelineno-6-16" href="#__codelineno-6-16"></a><span class="w">      </span>-<span class="w"> </span><span class="nv">MISP_IMPORT_FROM_DATE</span><span class="o">=</span><span class="m">2000</span>-01-01<span class="w"> </span>#<span class="w"> </span>Optional,<span class="w"> </span>import<span class="w"> </span>all<span class="w"> </span>event<span class="w"> </span>from<span class="w"> </span>this<span class="w"> </span>date
+</span><span id="__span-6-17"><a id="__codelineno-6-17" name="__codelineno-6-17" href="#__codelineno-6-17"></a><span class="w">      </span>-<span class="w"> </span><span class="nv">MISP_IMPORT_TAGS</span><span class="o">=</span>opencti:import,type:osint<span class="w"> </span>#<span class="w"> </span>Optional,<span class="w"> </span>list<span class="w"> </span>of<span class="w"> </span>tags<span class="w"> </span>used<span class="w"> </span><span class="k">for</span><span class="w"> </span>import<span class="w"> </span>events
+</span><span id="__span-6-18"><a id="__codelineno-6-18" name="__codelineno-6-18" href="#__codelineno-6-18"></a><span class="w">      </span>-<span class="w"> </span><span class="nv">MISP_INTERVAL</span><span class="o">=</span><span class="m">1</span><span class="w"> </span>#<span class="w"> </span>Required,<span class="w"> </span><span class="k">in</span><span class="w"> </span>minutes
+</span><span id="__span-6-19"><a id="__codelineno-6-19" name="__codelineno-6-19" href="#__codelineno-6-19"></a><span class="w">    </span>restart:<span class="w"> </span>always
 </span></code></pre></div>
 <h3 id="launch-a-standalone-connector">Launch a standalone connector</h3>
 <p>To launch a standalone connector, you can use the <code>docker-compose.yml</code> file of the connector itself. Just download the latest <a href="https://github.com/OpenCTI-Platform/connectors/releases">release</a> and start the connector:</p>
-<div class="highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>$ wget https://github.com/OpenCTI-Platform/connectors/archive/{RELEASE_VERSION}.zip
-</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>$ unzip {RELEASE_VERSION}.zip
-</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>$ cd connectors-{RELEASE_VERSION}/misp/
+<div class="highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>$ wget https://github.com/OpenCTI-Platform/connectors/archive/{RELEASE_VERSION}.zip
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>$ unzip {RELEASE_VERSION}.zip
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>$ cd connectors-{RELEASE_VERSION}/misp/
 </span></code></pre></div>
 <p>Change the configuration in the <code>docker-compose.yml</code> according to the parameters of the platform and of the targeted service. Then launch the connector:</p>
-<div class="highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>$ docker-compose up
+<div class="highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>$ docker-compose up
 </span></code></pre></div>
 <h2 id="manual-activation">Manual activation</h2>
 <p>If you want to manually launch connector, you just have to install Python 3 and pip3 for dependencies:</p>
-<div class="highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>$ apt install python3 python3-pip
+<div class="highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>$ apt install python3 python3-pip
 </span></code></pre></div>
 <p>Download the release of the connectors:</p>
-<div class="highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>$ wget &lt;https://github.com/OpenCTI-Platform/connectors/archive/{RELEASE_VERSION}.zip&gt;
-</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>$ unzip {RELEASE_VERSION}.zip
-</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>$ cd connectors-{RELEASE_VERSION}/misp/src/
+<div class="highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>$ wget &lt;https://github.com/OpenCTI-Platform/connectors/archive/{RELEASE_VERSION}.zip&gt;
+</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>$ unzip {RELEASE_VERSION}.zip
+</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>$ cd connectors-{RELEASE_VERSION}/misp/src/
 </span></code></pre></div>
 <p>Install dependencies and initialize the configuration:</p>
-<div class="highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>$ pip3 install -r requirements.txt
-</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>$ cp config.yml.sample config.yml
+<div class="highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>$ pip3 install -r requirements.txt
+</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>$ cp config.yml.sample config.yml
 </span></code></pre></div>
 <p>Change the <code>config.yml</code> content according to the parameters of the platform and of the targeted service and launch the connector:</p>
-<div class="highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>$ python3 misp.py
+<div class="highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>$ python3 misp.py
 </span></code></pre></div>
 <h2 id="connectors-status">Connectors status</h2>
 <p>The connector status can be displayed in the dedicated section of the platform available in Data &gt; Ingestion &gt; Connectors. You will be able to see the statistics of the RabbitMQ queue of the connector:</p>
@@ -5373,7 +5382,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1-2.1-2M12.5 7v5.2l4 2.4-1 1L11 13V7h1.5M11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2v1.8Z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2024-06-09T08:35:35+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2024-06-09</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2024-08-22T13:51:05+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2024-08-22</span>
   </span>
 
     
@@ -5401,6 +5410,11 @@
     
     <nav>
       
+        <a href="https://github.com/Kedae" class="md-author" title="@Kedae">
+          
+          <img src="https://avatars.githubusercontent.com/u/50013774?v=4&size=72" alt="Kedae">
+        </a>
+      
         <a href="https://github.com/clenk" class="md-author" title="@clenk">
           
           <img src="https://avatars.githubusercontent.com/u/402940?v=4&size=72" alt="clenk">
@@ -5416,16 +5430,11 @@
           <img src="https://avatars.githubusercontent.com/u/70956706?v=4&size=72" alt="Lhorus6">
         </a>
       
-        <a href="https://github.com/yassine-ouaamou" class="md-author" title="@yassine-ouaamou">
-          
-          <img src="https://avatars.githubusercontent.com/u/7083405?v=4&size=72" alt="yassine-ouaamou">
-        </a>
-      
       
       
         
           <a href="https://github.com/OpenCTI-Platform/docs/blob/main/docs/deployment/connectors.md" class="md-author md-author--more">
-            +1
+            +2
           </a>
         
       
