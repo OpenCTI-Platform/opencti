@@ -82,7 +82,7 @@ const buildFileFilters = (paths: string[], opts?: FilesOptions<BasicStoreEntityD
   const filters: FilterGroupWithNested = {
     mode: FilterMode.And,
     filters: [{ key: ['internal_id'], values: preparedPaths, operator: FilterOperator.StartsWith }],
-    filterGroups: opts.filters ? [opts.filters] : [],
+    filterGroups: opts?.filters ? [opts.filters] : [],
   };
   if (opts?.excludedPaths && opts?.excludedPaths.length > 0) {
     filters.filters.push({ key: ['internal_id'], values: opts.excludedPaths, mode: FilterMode.And, operator: FilterOperator.NotStartsWith });
