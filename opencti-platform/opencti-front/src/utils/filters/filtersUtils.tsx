@@ -705,7 +705,6 @@ export const useAvailableFilterKeysForEntityTypes = (entityTypes: string[]) => {
 
 export const useRemoveIdAndIncorrectKeysFromFilterGroupObject = (filters?: FilterGroup | null, entityTypes = ['Stix-Core-Object']): FilterGroup | undefined => {
   const availableFilterKeys = useAvailableFilterKeysForEntityTypes(entityTypes).concat('entity_type');
-  console.log('available', availableFilterKeys);
   if (!filters) {
     return undefined;
   }
