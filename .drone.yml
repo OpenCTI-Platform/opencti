@@ -116,12 +116,9 @@ steps:
       JFROG_REPOSITORY: opencti-drone
       JFROG_URL: https://filigran.jfrog.io/artifactory
     commands:
-      - echo "DRONE_BUILD_NUMBER = $DRONE_BUILD_NUMBER"
-      - echo "CI = $CI"
       - apt-get update
       # see https://docs.jfrog-applications.jfrog.io/jfrog-applications/jfrog-cli/cli-for-jfrog-artifactory
       - npm install -g jfrog-cli-v2-jf
-      - set -x
       # Collect git info
       - jf rt bag $JFROG_BUILD_NAME $DRONE_BUILD_NUMBER
       # Archive and upload each artefact that we need
