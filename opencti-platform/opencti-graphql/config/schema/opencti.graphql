@@ -828,6 +828,7 @@ enum FileOrdering {
   _score
   name
   lastModified
+  objectMarking
 }
 type File {
   id: ID!
