@@ -2,15 +2,16 @@ import { ENTITY_TYPE_INTERNAL_FILE } from '../../../schema/internalObject';
 import { schemaAttributesDefinition } from '../../../schema/schema-attributes';
 import { type AttributeDefinition, createdAt, creators, entityType, id, internalId, standardId, updatedAt } from '../../../schema/attribute-definition';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../../schema/stixMetaObject';
+import { ABSTRACT_STIX_CORE_OBJECT } from '../../../schema/general';
 
 const attributes: Array<AttributeDefinition> = [
   id,
   internalId,
   standardId,
   entityType,
-  { ...creators, isFilterable: false },
-  { ...updatedAt, isFilterable: false },
-  { ...createdAt, isFilterable: false },
+  { ...creators, isFilterable: false } as AttributeDefinition,
+  { ...updatedAt, isFilterable: false } as AttributeDefinition,
+  { ...createdAt, isFilterable: false } as AttributeDefinition,
   { name: 'name', label: 'Name', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
   { name: 'size', label: 'Size', type: 'numeric', precision: 'long', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: false },
   { name: 'information', label: 'Information', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: false },
@@ -86,8 +87,8 @@ const attributes: Array<AttributeDefinition> = [
     ]
   },
   { name: 'uploaded_at', label: 'Upload date', type: 'date', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: false },
-  { name: 'file_id', label: 'File identifier', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: false },
-  { name: 'entity_id', label: 'Related entity', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+  { name: 'file_id', label: 'File identifier', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+  { name: 'entity_id', label: 'Related entity', type: 'string', format: 'id', entityTypes: [ABSTRACT_STIX_CORE_OBJECT], mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
   { name: 'removed', label: 'Removed', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
 ];
 

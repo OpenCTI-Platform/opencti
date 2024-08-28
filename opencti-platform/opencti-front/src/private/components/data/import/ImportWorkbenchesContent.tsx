@@ -139,7 +139,7 @@ const ImportWorkbenchesContent = () => {
     filters: [
       {
         key: 'entity_type',
-        values: ['Internal-File'],
+        values: ['InternalFile'],
         operator: 'eq',
         mode: 'or',
       },

@@ -175,7 +175,7 @@ const ImportFilesContent = () => {
     filters: [
       {
         key: 'entity_type',
-        values: ['Internal-File'],
+        values: ['InternalFile'],
         operator: 'eq',
         mode: 'or',
       },
@@ -247,7 +247,7 @@ const ImportFilesContent = () => {
           lineFragment={workbenchLineFragment}
           initialValues={initialValues}
           preloadedPaginationProps={preloadedPaginationProps}
-          taskScope='IMPORT'
+          taskScope={'IMPORT'}
           actions={(file: ImportFilesContentFileLine_file$data) => {
             const { id, metaData, uploadStatus } = file;
             const isProgress = uploadStatus === 'progress' || uploadStatus === 'wait';
