@@ -204,8 +204,8 @@ const ReportEditionOverviewComponent = (props) => {
       enableReinitialize={true}
       initialValues={initialValues}
       validationSchema={reportValidator}
-      validateOnChange={false} // Validation will occur on submission, required fields all have *'s
-      validateOnBlur={false} // Validation will occur on submission, required fields all have *'s
+      validateOnChange={true}
+      validateOnBlur={true}
       onSubmit={onSubmit}
     >
       {({
