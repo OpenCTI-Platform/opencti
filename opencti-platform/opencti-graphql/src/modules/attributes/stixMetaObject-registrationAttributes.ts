@@ -29,7 +29,7 @@ const stixMetaObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
   [ENTITY_TYPE_KILL_CHAIN_PHASE]: [
     { name: 'kill_chain_name', label: 'Kill chain name', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'phase_name', label: 'Phase name', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: false, upsert: false, isFilterable: true },
-    { name: 'x_opencti_order', label: 'Order', type: 'numeric', precision: 'integer', mandatoryType: 'external', editDefault: false, multiple: false, upsert: true, isFilterable: true },
+    { name: 'x_opencti_order', label: 'Order', type: 'numeric', precision: 'integer', mandatoryType: 'external', editDefault: false, multiple: false, upsert: false, isFilterable: true },
   ],
 };
 R.forEachObjIndexed((value, key) => schemaAttributesDefinition.registerAttributes(key as string, value), stixMetaObjectsAttributes);
