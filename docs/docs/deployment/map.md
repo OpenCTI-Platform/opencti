@@ -12,10 +12,10 @@ When you will launch the map server container, it will be necessary to mount a v
 mkdir /var/YOUR_DATA_DIR
 ```
 
-We have hosted the free-to-use planet tiles, just download the [planet data](https://filigran.io/app/uploads/maptiler-osm-2020-02-10-v3.11-planet.mbtiles) from filigran.io.
+We have hosted the free-to-use planet tiles, just download the [planet data](https://filigran-marketplace-assets.s3.eu-west-3.amazonaws.com/maptiler-osm-2020-02-10-v3.11-planet.mbtiles) from filigran.io.
 
 ```bash
-wget https://filigran.io/app/uploads/maptiler-osm-2020-02-10-v3.11-planet.mbtiles
+wget https://filigran-marketplace-assets.s3.eu-west-3.amazonaws.com/maptiler-osm-2020-02-10-v3.11-planet.mbtiles
 ```
 
 Put the file `maptiler-osm-2020-12-14-v3.11-planet.mbtiles` in the data directory:
