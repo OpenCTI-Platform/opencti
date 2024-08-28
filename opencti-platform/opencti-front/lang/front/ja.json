@@ -2599,6 +2599,7 @@
   "This configuration is not available for this entity type": "この構成は、このエンティティ タイプでは使用できません",
   "This connector is active": "このコネクタはアクティブです",
   "This connector is disconnected": "このコネクタとの接続が切れています",
+  "This entity has several key fields, which is incompatible with bulk creation": "このエンティティは複数のキーフィールドを持つため、一括作成とは互換性がありません。",
   "This feature is not available yet.": "この機能はまだ利用できません。",
   "This feature is only available in OpenCTI Enterprise Edition.": "この機能は OpenCTI Enterprise Edition でのみ利用可能です。",
   "This field is required": "このフィールドは必須です",

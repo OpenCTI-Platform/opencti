@@ -5,6 +5,7 @@ import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import Fab from '@mui/material/Fab';
+import Alert from '@mui/lab/Alert';
 import { Add, Close } from '@mui/icons-material';
 import { assoc, compose, dissoc, filter, fromPairs, includes, map, pipe, pluck, prop, propOr, sortBy, toLower, toPairs } from 'ramda';
 import * as Yup from 'yup';
@@ -903,6 +904,21 @@ const StixCyberObservableCreation = ({
     );
   };
 
+  const renderUnavailableBulkMessage = () => {
+    if (isFeatureEnable('BULK_ENTITIES') && isFromBulkRelation && !bulkConf) {
+      return (
+        <Alert
+          severity="info"
+          variant="outlined"
+          style={{ marginBottom: 10 }}
+        >
+          {t_i18n('This entity has several key fields, which is incompatible with bulk creation')}
+        </Alert>
+      );
+    }
+    return null;
+  };
+
   const renderContextual = () => {
     return (
       <div style={{ display: display ? 'block' : 'none' }}>
@@ -935,6 +951,7 @@ const StixCyberObservableCreation = ({
             }
           </DialogTitle>
           <DialogContent style={{ paddingTop: 0 }}>
+            {renderUnavailableBulkMessage()}
             {!status.type ? renderList() : renderForm()}
           </DialogContent>
         </Dialog>
