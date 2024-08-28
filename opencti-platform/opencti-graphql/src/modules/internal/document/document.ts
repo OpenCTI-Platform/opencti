@@ -1,13 +1,6 @@
 import { ENTITY_TYPE_INTERNAL_FILE } from '../../../schema/internalObject';
 import { schemaAttributesDefinition } from '../../../schema/schema-attributes';
-import {
-  type AttributeDefinition,
-  createdAt, creators,
-  entityType,
-  id,
-  internalId,
-  standardId, updatedAt
-} from '../../../schema/attribute-definition';
+import { type AttributeDefinition, createdAt, creators, entityType, id, internalId, standardId, updatedAt } from '../../../schema/attribute-definition';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../../schema/stixMetaObject';
 
 const attributes: Array<AttributeDefinition> = [
