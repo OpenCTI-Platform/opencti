@@ -432,7 +432,7 @@ export const deserializeDashboardManifestForFrontend = (
 
 //----------------------------------------------------------------------------------------------------------------------
 
-// forcefully add a filter into a filterGroup, no check done
+// create a new filter: filters AND new filter built with (key, value, operator, mode)
 export const addFilter = (
   filters: FilterGroup | undefined,
   key: string,
@@ -455,10 +455,25 @@ export const addFilter = (
     };
   }
   return {
-    mode: filters?.mode ?? 'and',
-    filters: (filters?.filters ?? []).concat([filterFromParameters]),
-    filterGroups: filters?.filterGroups ?? [],
+    mode: 'and',
+    filters: [filterFromParameters],
+    filterGroups: [filters],
   };
+};
+
+// create a new filter: filterGroup1 AND filterGroup2
+export const addFilterGroup = (
+  filters1: FilterGroup | undefined,
+  filters2: any,
+  mode = 'and',
+): FilterGroup | undefined => {
+  return (filters1
+    ? {
+      mode,
+      filters: [],
+      filterGroups: [filters1, filters2],
+    }
+    : filters2) as FilterGroup | undefined;
 };
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -690,6 +705,7 @@ export const useAvailableFilterKeysForEntityTypes = (entityTypes: string[]) => {
 
 export const useRemoveIdAndIncorrectKeysFromFilterGroupObject = (filters?: FilterGroup | null, entityTypes = ['Stix-Core-Object']): FilterGroup | undefined => {
   const availableFilterKeys = useAvailableFilterKeysForEntityTypes(entityTypes).concat('entity_type');
+  console.log('available', availableFilterKeys);
   if (!filters) {
     return undefined;
   }
