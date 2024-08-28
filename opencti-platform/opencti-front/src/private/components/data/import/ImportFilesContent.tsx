@@ -170,6 +170,29 @@ const ImportFilesContent = () => {
     });
   };
 
+  const toolbarFilters = {
+    mode: 'and',
+    filters: [
+      {
+        key: 'entity_type',
+        values: ['Internal-File'],
+        operator: 'eq',
+        mode: 'or',
+      },
+      {
+        key: 'entity_id',
+        values: [],
+        operator: 'nil',
+      },
+      {
+        key: 'file_id',
+        values: ['import/global'],
+        operator: 'starts_with',
+      },
+    ],
+    filterGroups: finalFilters ? [finalFilters] : [],
+  };
+
   return (
     <div style={{ height: '100%', paddingRight: 200 }} className="break">
       <Breadcrumbs variant="list" elements={[{ label: t_i18n('Data') }, { label: t_i18n('Uploaded Files'), current: true }]} />
@@ -220,7 +243,7 @@ const ImportFilesContent = () => {
           storageKey={LOCAL_STORAGE_KEY}
           entityTypes={['InternalFile']}
           searchContextFinal={{ entityTypes: ['InternalFile'] }}
-          toolbarFilters={finalFilters}
+          toolbarFilters={toolbarFilters}
           lineFragment={workbenchLineFragment}
           initialValues={initialValues}
           preloadedPaginationProps={preloadedPaginationProps}
