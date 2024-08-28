@@ -461,6 +461,21 @@ export const addFilter = (
   };
 };
 
+// create a new filter: filterGroup1 AND filterGroup2
+export const addFilterGroup = (
+  filters1: FilterGroup | undefined,
+  filters2: FilterGroup,
+  mode = 'and',
+): FilterGroup | undefined => {
+  return (filters1
+    ? {
+      mode,
+      filters: [],
+      filterGroups: [filters1, filters2],
+    }
+    : filters2) as FilterGroup | undefined;
+};
+
 //----------------------------------------------------------------------------------------------------------------------
 
 // add a filter (k, id, op) in a filterGroup smartly, for usage in forms
