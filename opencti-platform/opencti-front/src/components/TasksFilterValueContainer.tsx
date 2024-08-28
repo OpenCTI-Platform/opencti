@@ -20,6 +20,7 @@ const TasksFilterValueContainer = ({ filters, entityTypes }: { filters: FilterGr
           <TaskFilterValue
             filters={cleanUpFilters}
             queryRef={queryRef}
+            entityTypes={entityTypes}
           />
         </React.Suspense>
       )}

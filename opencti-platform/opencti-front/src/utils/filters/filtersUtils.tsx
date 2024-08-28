@@ -856,6 +856,18 @@ export const getSelectedOptions = (
   return mapFilterValues.sort((a, b) => a.label.localeCompare(b.label));
 };
 
+// filter operators that can display with an icon
+export const filterOperatorsWithIcon = [
+  'lt',
+  'lte',
+  'gt',
+  'gte',
+  'nil',
+  'not_nil',
+  'eq',
+  'not_eq',
+];
+
 export const convertOperatorToIcon = (operator: string) => {
   switch (operator) {
     case 'lt':

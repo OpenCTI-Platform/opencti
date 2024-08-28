@@ -9,7 +9,7 @@ import { truncate } from '../utils/String';
 import { DataColumns } from './list_lines';
 import { useFormatter } from './i18n';
 import type { Theme } from './Theme';
-import { convertOperatorToIcon, FilterSearchContext, FiltersRestrictions, isFilterEditable, useFilterDefinition } from '../utils/filters/filtersUtils';
+import { convertOperatorToIcon, filterOperatorsWithIcon, FilterSearchContext, FiltersRestrictions, isFilterEditable, useFilterDefinition } from '../utils/filters/filtersUtils';
 import { FilterValuesContentQuery } from './__generated__/FilterValuesContentQuery.graphql';
 import FilterValues from './filters/FilterValues';
 import { FilterChipPopover, FilterChipsParameter } from './filters/FilterChipPopover';
@@ -211,16 +211,6 @@ FilterIconButtonContainerProps
       handleRemoveFilter(filterKey, filterOperator ?? undefined);
     }
   };
-  const operatorIcon = [
-    'lt',
-    'lte',
-    'gt',
-    'gte',
-    'nil',
-    'not_nil',
-    'eq',
-    'not_eq',
-  ];
   const isReadWriteFilter = !!(helpers || handleRemoveFilter);
   let classOperator = classes.operator1;
   let margin = '8px';
@@ -263,7 +253,7 @@ FilterIconButtonContainerProps
         const filterLabel = t_i18n(useFilterDefinition(filterKey, entityTypes)?.label ?? filterKey);
         const filterOperator = currentFilter.operator ?? 'eq';
         const filterValues = currentFilter.values;
-        const isOperatorDisplayed = operatorIcon.includes(filterOperator ?? 'eq');
+        const isOperatorDisplayed = filterOperatorsWithIcon.includes(filterOperator ?? 'eq');
         const keyLabel = (
           <>
             {truncate(filterLabel, 20)}
