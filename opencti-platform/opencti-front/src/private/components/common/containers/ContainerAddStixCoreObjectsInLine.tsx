@@ -240,6 +240,8 @@ ContainerAddStixCoreObjectsInLineProps
         open={openCreateObservable}
         handleClose={() => setOpenCreateObservable(false)}
         type={undefined}
+        onCompleted={undefined}
+        isFromBulkRelation={undefined}
       />
     </>);
   };
