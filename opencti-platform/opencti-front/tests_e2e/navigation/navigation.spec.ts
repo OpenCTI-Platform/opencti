@@ -35,7 +35,7 @@ const navigateReports = async (page: Page) => {
 
   // -- Knowledge
   await reportDetailsPage.goToKnowledgeTab();
-  await expect(page.getByTestId('report-knowledge-fail')).toBeVisible();
+  await expect(page.getByTestId('report-knowledge')).toBeVisible();
   await page.getByLabel('TimeLine view').click();
   await page.getByLabel('Correlation view').click();
   await page.getByLabel('Tactics matrix view').click();
