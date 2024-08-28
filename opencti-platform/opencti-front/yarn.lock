@@ -8191,7 +8191,7 @@ __metadata:
     raw-loader: "npm:^4.0.2"
     style-loader: "npm:^4.0.0"
     terser-webpack-plugin: "npm:^5.0.0"
-    webpack: "npm:^5.83.1"
+    webpack: "npm:^5.94.0"
     webpack-cli: "npm:^5.0.0"
   languageName: unknown
   linkType: soft
