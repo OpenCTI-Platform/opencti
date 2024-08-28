@@ -13,7 +13,6 @@ import { RETENTION_MANAGER } from '../../../utils/platformModulesHelper';
 import CustomizationMenu from './CustomizationMenu';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import useHelper from '../../../utils/hooks/useHelper';
 import { DataColumns } from '../../../components/list_lines';
 
 const LOCAL_STORAGE_KEY = 'retention';
@@ -31,7 +30,6 @@ const Retention = () => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const { platformModuleHelpers } = useAuth();
-  const { isFeatureEnable } = useHelper();
   const {
     viewStorage,
     paginationOptions,
@@ -42,66 +40,38 @@ const Retention = () => {
     orderAsc: true,
   });
   const { searchTerm, sortBy, orderAsc } = viewStorage;
-  const dataColumns = isFeatureEnable('FILE_RETENTION_RULES')
-    ? {
-      name: {
-        label: 'Name',
-        width: '15%',
-        isSortable: true,
-      },
-      max_retention: {
-        label: 'Max retention',
-        width: '15%',
-        isSortable: true,
-      },
-      last_execution_date: {
-        label: 'Last execution',
-        width: '15%',
-        isSortable: true,
-      },
-      remaining_count: {
-        label: 'Remaining',
-        width: '10%',
-        isSortable: true,
-      },
-      scope: {
-        label: 'Scope',
-        width: '10%',
-        isSortable: true,
-      },
-      filters: {
-        label: 'Apply on',
-        width: '35%',
-        isSortable: false,
-      },
-    }
-    : {
-      name: {
-        label: 'Name',
-        width: '15%',
-        isSortable: true,
-      },
-      max_retention: {
-        label: 'Max retention',
-        width: '20%',
-        isSortable: true,
-      },
-      last_execution_date: {
-        label: 'Last execution',
-        width: '20%',
-        isSortable: true,
-      },
-      remaining_count: {
-        label: 'Remaining',
-        width: '10%',
-        isSortable: true,
-      },
-      filters: {
-        label: 'Apply on',
-        width: '35%',
-        isSortable: false,
-      },
-    } as DataColumns;
+  const dataColumns = {
+    name: {
+      label: 'Name',
+      width: '15%',
+      isSortable: true,
+    },
+    max_retention: {
+      label: 'Max retention',
+      width: '15%',
+      isSortable: true,
+    },
+    last_execution_date: {
+      label: 'Last execution',
+      width: '15%',
+      isSortable: true,
+    },
+    remaining_count: {
+      label: 'Remaining',
+      width: '10%',
+      isSortable: true,
+    },
+    scope: {
+      label: 'Scope',
+      width: '10%',
+      isSortable: true,
+    },
+    filters: {
+      label: 'Apply on',
+      width: '35%',
+      isSortable: false,
+    },
+  } as DataColumns;
   if (!platformModuleHelpers.isRetentionManagerEnable()) {
     return (
       <div className={classes.container}>
