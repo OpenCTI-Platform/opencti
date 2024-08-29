@@ -129,7 +129,7 @@ const Workspaces: FunctionComponent<WorkspacesProps> = ({
           setNumberOfElements: storageHelpers.handleSetNumberOfElements,
         }}
         lineFragment={workspaceLineFragment}
-        exportContext={{ entity_type: 'Workspace' }}
+        entityTypes={['Workspace']}
         searchContextFinal={{ entityTypes: ['Workspace'] }}
         additionalHeaderButtons={[
           <ToggleButton key="cards" value="lines" aria-label="lines">

@@ -209,7 +209,7 @@ const PublicDashboards = () => {
             setNumberOfElements: helpers.handleSetNumberOfElements,
           }}
           lineFragment={publicDashboardFragment}
-          exportContext={{ entity_type: 'PublicDashboard' }}
+          entityTypes={['PublicDashboard']}
           searchContextFinal={{ entityTypes: ['PublicDashboard'] }}
           additionalHeaderButtons={[
             <ToggleButton key="cards" value="lines" aria-label="lines">
