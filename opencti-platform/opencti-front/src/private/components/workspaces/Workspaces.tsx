@@ -91,8 +91,10 @@ const Workspaces: FunctionComponent<WorkspacesProps> = ({
       tags: {
         id: 'tags',
       },
-      owner: {
-        id: 'owner',
+      creator: {
+        id: 'creator',
+        isSortable: true,
+        render: ({ owner }, h) => textInTooltip(owner.name, h),
       },
       created_at: {
         id: 'created_at',
