@@ -52,7 +52,7 @@ import {
   BYPASS,
   executionContext,
   INTERNAL_USERS,
-  isAdminWithoutSettingsSetAccessCapability,
+  isOnlyOrgaAdmin,
   isBypassUser,
   isUserHasCapability,
   REDACTED_USER,
@@ -417,7 +417,7 @@ export const roleEditContext = async (context, user, roleId, input) => {
 };
 
 export const assignOrganizationToUser = async (context, user, userId, organizationId) => {
-  if (!isAdminWithoutSettingsSetAccessCapability(user)) {
+  if (isOnlyOrgaAdmin(user)) {
     throw ForbiddenAccess();
   }
   const targetUser = await findById(context, user, userId);
@@ -670,7 +670,7 @@ export const userEditField = async (context, user, userId, rawInputs) => {
   const userToUpdate = await internalLoadById(context, user, userId);
   // Check in an organization admin edits a user that's not in its administrated organizations
   const myAdministratedOrganizationsIds = user.administrated_organizations.map((orga) => orga.id);
-  if (!isAdminWithoutSettingsSetAccessCapability(user)) {
+  if (isOnlyOrgaAdmin(user)) {
     if (userId !== user.id && !userToUpdate[RELATION_PARTICIPATE_TO].find((orga) => myAdministratedOrganizationsIds.includes(orga))) {
       throw ForbiddenAccess();
     }
@@ -895,7 +895,7 @@ export const deleteAllNotificationByUser = async (userId) => {
  * @returns {Promise<*>}
  */
 export const userDelete = async (context, user, userId) => {
-  if (!isAdminWithoutSettingsSetAccessCapability(user)) {
+  if (isOnlyOrgaAdmin(user)) {
     // When user is organization admin, we make sure that the deleted user is in one of the administrated organizations of the admin
     const userData = await storeLoadById(context, user, userId, ENTITY_TYPE_USER);
     const myAdministratedOrganizationsIds = user.administrated_organizations.map(({ id }) => id);
@@ -931,7 +931,7 @@ export const userAddRelation = async (context, user, userId, input) => {
   }
   // Check in case organization admins adds non-grantable goup a user
   const myGrantableGroups = R.uniq(user.administrated_organizations.map((orga) => orga.grantable_groups).flat());
-  if (!isAdminWithoutSettingsSetAccessCapability(user)) {
+  if (isOnlyOrgaAdmin(user)) {
     if (input.relationship_type === 'member-of' && !myGrantableGroups.includes(input.toId)) {
       throw ForbiddenAccess();
     }
@@ -982,7 +982,7 @@ export const userIdDeleteRelation = async (context, user, userId, toId, relation
 };
 
 export const userDeleteOrganizationRelation = async (context, user, userId, toId) => {
-  if (!isAdminWithoutSettingsSetAccessCapability(user)) {
+  if (isOnlyOrgaAdmin(user)) {
     throw ForbiddenAccess();
   }
   const targetUser = await findById(context, user, userId);

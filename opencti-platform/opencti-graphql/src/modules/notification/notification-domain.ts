@@ -41,7 +41,7 @@ import {
   SETTINGS_SET_ACCESSES,
   SYSTEM_USER,
   SETTINGS_SECURITYACTIVITY,
-  isAdminWithoutSettingsSetAccessCapability
+  isOnlyOrgaAdmin
 } from '../../utils/access';
 import { ForbiddenAccess, UnsupportedError } from '../../config/errors';
 import { ENTITY_TYPE_GROUP, ENTITY_TYPE_USER } from '../../schema/internalObject';
@@ -233,7 +233,7 @@ export const triggerDelete = async (context: AuthContext, user: AuthUser, trigge
     throw ForbiddenAccess();
   }
   // If user is only organization admin, check if he has access on all targets
-  if (!isAdminWithoutSettingsSetAccessCapability(user)) {
+  if (isOnlyOrgaAdmin(user)) {
     const memberIds = (trigger.authorized_members ?? []).map((a: AuthorizedMember) => a.id);
     const adminOrganizationIds = (user.administrated_organizations ?? []).map((o) => o.internal_id);
     if (!adminOrganizationIds.every((v) => memberIds.includes(v))) {

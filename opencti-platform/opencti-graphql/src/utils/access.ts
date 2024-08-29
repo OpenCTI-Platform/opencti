@@ -390,7 +390,7 @@ export const isUserHasCapabilities = (user: AuthUser, capabilities: string[] = [
   return capabilities.every((capability) => isUserHasCapability(user, capability));
 };
 
-export const isAdminWithoutSettingsSetAccessCapability = (user: AuthUser) => {
+export const isOnlyOrgaAdmin = (user: AuthUser) => {
   return !isUserHasCapability(user, SETTINGS_SET_ACCESSES) && isUserHasCapability(user, VIRTUAL_ORGANIZATION_ADMIN);
 };
 

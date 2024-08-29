@@ -54,7 +54,7 @@ export const organizationAdminAdd = async (context: AuthContext, user: AuthUser,
   const updatedUser = members.find(({ id }) => id === memberId);
   // Check if user is part of Orga. If not, throw exception
   if (!updatedUser) {
-    throw FunctionalError('User is not part of the organization', { members, memberId });
+    throw FunctionalError('User is not part of the organization');
   }
   // Add user to organization admins list
   const updated = await editAuthorizedAuthorities(context, user, organization.id, [...(organization.authorized_authorities ?? []), memberId]);
