@@ -8,7 +8,7 @@ export default class InvestigationsPage {
   }
 
   addNewInvestigation() {
-    return this.page.getByText('Create an investigation', { exact: true });
+    return this.page.getByRole('button', { name: 'Create investigation' });
   }
 
   getCreateInvestigationButton() {
