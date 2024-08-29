@@ -249,6 +249,9 @@ const SCO_DEFAULT_FIELD = [
   { type: 'User-Account', field: 'account_login' },
   { type: 'Windows-Registry-Key', field: 'attribute_key' },
   { type: 'Windows-Registry-Value-Type', field: 'name' },
+  { type: 'StixFile', field: 'name' },
+  { type: 'Artifact', field: 'hashes_MD5' },
+  { type: 'X509-Certificate', field: 'hashes_MD5' },
 ];
 
 const stixCyberObservableValidation = () => Yup.object().shape({
@@ -585,16 +588,17 @@ const StixCyberObservableCreation = ({
               } else {
                 initialValues[attribute.value] = '';
               }
-              if (isFromBulkRelation) {
-                const foundEntityType = SCO_DEFAULT_FIELD.find((item) => item.type === status.type);
-                if (foundEntityType && attribute.value === foundEntityType.field) initialValues[attribute.value] = inputValue;
-              }
             }
 
             const stixCyberObservableValidationFinal = Yup.object().shape({
               ...stixCyberObservableValidation,
               ...extraFieldsToValidate,
             }, requiredOneOfFields);
+
+            if (isFromBulkRelation) {
+              const foundEntityType = SCO_DEFAULT_FIELD.find((item) => item.type === status.type);
+              if (foundEntityType) initialValues[foundEntityType.field] = inputValue;
+            }
 
             const isFieldInBulk = (name) => isFeatureEnable('BULK_ENTITIES') && name === bulkSelectedKey;
 
