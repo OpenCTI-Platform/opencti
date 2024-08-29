@@ -13,7 +13,7 @@ import validator from 'validator';
 import archiverZipEncrypted from 'archiver-zip-encrypted';
 import rateLimit from 'express-rate-limit';
 import contentDisposition from 'content-disposition';
-import { basePath, booleanConf, DEV_MODE, ENABLED_UI, logApp, OPENCTI_SESSION } from '../config/conf';
+import { basePath, booleanConf, DEV_MODE, ENABLED_UI, getBaseUrl, logApp, OPENCTI_SESSION } from '../config/conf';
 import passport, { isStrategyActivated, STRATEGY_CERT } from '../config/providers';
 import { authenticateUser, authenticateUserFromRequest, HEADERS_AUTHENTICATORS, loginFromProvider, userWithOrigin } from '../domain/user';
 import { downloadFile, getFileContent, loadFile, isStorageAlive } from '../database/file-storage';
@@ -343,7 +343,7 @@ const createApp = async (app) => {
   // Logout
   app.get(`${basePath}/logout`, async (req, res, next) => {
     try {
-      const referer = extractRefererPathFromReq(req) ?? '/';
+      const referer = extractRefererPathFromReq(req) ?? getBaseUrl(req);
       const provider = req.session.session_provider?.provider;
       const { user } = req.session;
       if (user) {
