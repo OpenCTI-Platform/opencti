@@ -107,9 +107,7 @@ const PublicDashboards = () => {
   const { isFeatureEnable } = useHelper();
   const navigate = useNavigate();
 
-  if (!isFeatureEnable('PUBLIC_DASHBOARD_LIST')) {
-    navigate('/dashboard');
-  }
+  navigate('/dashboard');
 
   const initialValues = {
     searchTerm: '',
@@ -182,7 +180,7 @@ const PublicDashboards = () => {
     },
   };
 
-  return !isFeatureEnable('PUBLIC_DASHBOARD_LIST') ? null : (
+  return (
     <>
       <Breadcrumbs
         variant="list"

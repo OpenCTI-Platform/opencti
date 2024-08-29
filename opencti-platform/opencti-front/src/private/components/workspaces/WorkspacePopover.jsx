@@ -165,16 +165,14 @@ const WorkspacePopover = ({ workspace, paginationOptions }) => {
             <Security needs={[EXPLORE_EXUPDATE_EXDELETE]} hasAccess={canManage}>
               <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
             </Security>
-            {isFeatureEnable('PUBLIC_DASHBOARD_LIST') && (
-              <Box>
-                <MenuItem onClick={() => goToPublicDashboards()}>
-                  {t_i18n('View associated public dashboards')}
-                </MenuItem>
-                <Security needs={[EXPLORE_EXUPDATE_PUBLISH]} hasAccess={canManage}>
-                  <MenuItem onClick={handleOpenCreation}>{t_i18n('Create a public dashboard')}</MenuItem>
-                </Security>
-              </Box>
-            )}
+            <Box>
+              <MenuItem onClick={() => goToPublicDashboards()}>
+                {t_i18n('View associated public dashboards')}
+              </MenuItem>
+              <Security needs={[EXPLORE_EXUPDATE_PUBLISH]} hasAccess={canManage}>
+                <MenuItem onClick={handleOpenCreation}>{t_i18n('Create a public dashboard')}</MenuItem>
+              </Security>
+            </Box>
           </Box>
         )}
         {workspace.type === 'investigation' && (
