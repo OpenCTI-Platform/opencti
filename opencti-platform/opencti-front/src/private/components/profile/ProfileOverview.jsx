@@ -452,7 +452,7 @@ const ProfileOverviewComponent = (props) => {
                   onChange={(_, value) => handleSubmitField('submenu_auto_collapse', value)}
                 />
               </ListItem>
-              {/* <ListItem style={{ padding: '10px 0 0 0' }}>
+              <ListItem style={{ padding: '10px 0 0 0' }}>
                 <ListItemText
                   primary={t('Monochrome labels and entity types')}
                 />
@@ -463,7 +463,7 @@ const ProfileOverviewComponent = (props) => {
                   checked={initialValues.monochrome_labels}
                   onChange={(_, value) => handleSubmitField('monochrome_labels', value)}
                 />
-              </ListItem> */}
+              </ListItem>
               <pre>{t('When an event happens on a knowledge your participate, you will receive notification through your personal notifiers')}</pre>
               <NotifierField
                 label={t('Personal notifiers')}
