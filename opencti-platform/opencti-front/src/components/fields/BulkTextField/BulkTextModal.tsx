@@ -1,6 +1,5 @@
-import { DialogTitle, DialogContent, Alert, Dialog, DialogActions, TextField, Button } from '@mui/material';
+import { DialogTitle, DialogContent, Alert, Dialog, DialogActions, TextField, Button, Typography, MenuItem, Select, FormControl, InputLabel } from '@mui/material';
 import React, { useEffect, useState } from 'react';
-import Typography from '@mui/material/Typography';
 import { useFormatter } from '../../i18n';
 import { splitMultilines } from '../../../utils/String';
 
@@ -10,11 +9,23 @@ interface BulkTextModalProps {
   onValidate: (value: string) => void
   formValue: string
   title?: string
+  selectedKey?: string
+  availableKeys?: string[]
+  onSelectKey?: (key: string) => void
 }
 
 const MAX_LINES = 50;
 
-const BulkTextModal = ({ open, onClose, onValidate, formValue, title }: BulkTextModalProps) => {
+const BulkTextModal = ({
+  open,
+  onClose,
+  onValidate,
+  formValue,
+  title,
+  selectedKey,
+  availableKeys,
+  onSelectKey,
+}: BulkTextModalProps) => {
   const { t_i18n } = useFormatter();
   const [value, setValue] = useState('');
   const nbLines = splitMultilines(value).length;
@@ -51,6 +62,25 @@ const BulkTextModal = ({ open, onClose, onValidate, formValue, title }: BulkText
           </Typography>
         </Alert>
 
+        {availableKeys && (
+          <FormControl>
+            <InputLabel id="bulk-text-modal-key-select">
+              {t_i18n('Attribute used to create multiple')}
+            </InputLabel>
+            <Select
+              labelId="bulk-text-modal-key-select"
+              label={t_i18n('Attribute used to create multiple')}
+              value={selectedKey ?? ''}
+              onChange={(event) => onSelectKey?.(event.target.value)}
+              fullWidth={true}
+            >
+              {availableKeys?.map((key) => (
+                <MenuItem key={key} value={key}>{key}</MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        )}
+
         <TextField
           label={label}
           variant="outlined"
@@ -75,7 +105,7 @@ const BulkTextModal = ({ open, onClose, onValidate, formValue, title }: BulkText
         <Button
           color="secondary"
           onClick={validate}
-          disabled={nbLines === 0 || nbLines > MAX_LINES}
+          disabled={nbLines === 0 || nbLines > MAX_LINES || (availableKeys && !selectedKey)}
         >
           {t_i18n('Validate')}
         </Button>
