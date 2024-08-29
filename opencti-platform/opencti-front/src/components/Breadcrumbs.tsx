@@ -45,16 +45,16 @@ const Breadcrumbs: FunctionComponent<BreadcrumbsProps> = ({ elements, variant })
       {elements.map((element) => {
         if (element.current) {
           return (
-            <Typography key={element.label} color="text.primary">{truncate(element.label, 26)}</Typography>
+            <Typography key={element.label} color="text.primary">{truncate(element.label, 30, false)}</Typography>
           );
         }
         if (!element.link) {
           return (
-            <Typography key={element.label} color="inherit">{truncate(element.label, 26)}</Typography>
+            <Typography key={element.label} color="inherit">{truncate(element.label, 30, false)}</Typography>
           );
         }
         return (
-          <Link key={element.label} to={element.link}>{truncate(element.label, 26)}</Link>
+          <Link key={element.label} to={element.link}>{truncate(element.label, 30, false)}</Link>
         );
       })}
     </MUIBreadcrumbs>

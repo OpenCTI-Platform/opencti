@@ -232,6 +232,14 @@ const PublicDashboards = () => {
           taskScope='PUBLIC_DASHBOARD'
         />
       )}
+
+      {!isFeatureEnable('FAB_REPLACEMENT') && (
+        <Security needs={[EXPLORE_EXUPDATE_PUBLISH]}>
+          <PublicDashboardCreation
+            paginationOptions={queryPaginationOptions}
+          />
+        </Security>
+      )}
     </>
   );
 };
