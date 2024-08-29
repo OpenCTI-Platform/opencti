@@ -233,6 +233,24 @@ const BULK_OBSERVABLES = [
   { type: 'X509-Certificate', keys: ['hashes_MD5', 'hashes_SHA-1', 'hashes_SHA-256', 'hashes_SHA-512'] },
 ];
 
+const SCO_DEFAULT_FIELD = [
+  { type: 'Bank-Account', field: 'iban' },
+  { type: 'Autonomous-System', field: 'name' },
+  { type: 'Directory', field: '' }, // Date ?
+  { type: 'Email-Message', field: 'body' },
+  { type: 'Email-Mime-Part-Type', field: 'body' },
+  { type: 'Media-Content', field: '' }, // ?  Missing required elements for Media-Content creation (url) stixCyberObservableAdd(type: $type, x_opencti_score: $x_op
+  { type: 'Mutex', field: 'name' },
+  { type: 'Network-Traffic', field: 'dst_port' },
+  { type: 'Payment-Card', field: 'card_number' },
+  { type: 'Persona', field: 'persona_name' },
+  { type: 'Process', field: 'command_line' },
+  { type: 'Software', field: 'name' },
+  { type: 'User-Account', field: 'account_login' },
+  { type: 'Windows-Registry-Key', field: 'attribute_key' },
+  { type: 'Windows-Registry-Value-Type', field: 'name' },
+];
+
 const stixCyberObservableValidation = () => Yup.object().shape({
   x_opencti_score: Yup.number().nullable(),
   x_opencti_description: Yup.string().nullable(),
@@ -460,7 +478,6 @@ const StixCyberObservableCreation = ({
       />
     );
   };
-
   const renderForm = () => {
     return (
       <QueryRenderer
@@ -567,6 +584,10 @@ const StixCyberObservableCreation = ({
                 ];
               } else {
                 initialValues[attribute.value] = '';
+              }
+              if (isFromBulkRelation) {
+                const foundEntityType = SCO_DEFAULT_FIELD.find((item) => item.type === status.type);
+                if (foundEntityType && attribute.value === foundEntityType.field) initialValues[attribute.value] = inputValue;
               }
             }
 
