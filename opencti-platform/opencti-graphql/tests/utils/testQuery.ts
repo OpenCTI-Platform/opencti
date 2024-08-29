@@ -608,7 +608,11 @@ export const getUserIdByEmail = async (email: string) => {
 // endregion
 
 type markingType = { standard_id: string; internal_id: string };
-export const buildStandardUser = (allowedMarkings: markingType[], allMarkings?: markingType[]): AuthUser => {
+export const buildStandardUser = (
+  allowedMarkings: markingType[],
+  allMarkings?: markingType[],
+  capabilities?: { name: string }[]
+): AuthUser => {
   return {
     administrated_organizations: [],
     entity_type: 'User',
@@ -620,7 +624,7 @@ export const buildStandardUser = (allowedMarkings: markingType[], allMarkings?: 
     user_email: 'user@opencti.io',
     roles: [DEFAULT_ROLE],
     groups: [],
-    capabilities: [{ name: 'KNOWLEDGE_KNUPDATE_KNDELETE' }],
+    capabilities: capabilities ?? [{ name: 'KNOWLEDGE_KNUPDATE_KNDELETE' }],
     all_marking: (allMarkings ?? []) as StoreMarkingDefinition[],
     allowed_organizations: [],
     inside_platform_organization: true,

@@ -123,7 +123,7 @@ export const checkActionValidity = async (context, user, input, scope, taskType)
       throw ForbiddenAccess();
     }
     // The only operation authorized on these scope is Deletion
-    if (actions.every((a) => a.type === ACTION_TYPE_DELETE)) {
+    if (!actions.every((a) => a.type === ACTION_TYPE_DELETE)) {
       throw UnsupportedError('Background tasks of scope Import can only be deletions.');
     }
     // Check the targeted entities are files: not needed because the method used only target files
@@ -165,7 +165,7 @@ export const checkActionValidity = async (context, user, input, scope, taskType)
       const typeValues = extractFilterGroupValues(baseFilterObject, 'type');
       const isInvestigations = typeValues.length === 1 && typeValues[0] === 'investigation';
       if (!isWorkspaces || !isInvestigations) {
-        throw ForbiddenAccess('The targeted ids are not investigation.');
+        throw ForbiddenAccess('The targeted ids are not investigations.');
       }
     } else if (taskType === TASK_TYPE_LIST) {
       const objects = await internalFindByIds(context, user, ids);
