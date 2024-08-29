@@ -1,5 +1,5 @@
 import { defineConfig, devices } from '@playwright/test';
-import teamsWebhook from './tests_e2e/webhooks/teams-webhook.js';
+// import teamsWebhook from './tests_e2e/webhooks/teams-webhook.js';
 // https://playwright.dev/docs/browsers
 
 /**
@@ -31,10 +31,11 @@ export default defineConfig({
         entryFilter: (entry) => true,
         sourceFilter: (sourcePath) => sourcePath.startsWith('src'),
       },
+      /*
       onEnd: async (reportData) => {
         // teams integration with webhook
         await teamsWebhook(reportData);
-      }
+      } */
     }]
   ],
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
@@ -44,7 +45,8 @@ export default defineConfig({
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
-    screenshot: "only-on-failure",
+    screenshot: 'only-on-failure',
+    video: 'on-first-retry',
     ignoreHTTPSErrors: true,
   },
   expect: { timeout: 60000 },
