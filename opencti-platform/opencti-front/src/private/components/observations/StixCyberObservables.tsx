@@ -160,6 +160,8 @@ const StixCyberObservables: FunctionComponent = () => {
               contextual={false}
               open={false}
               handleClose={undefined}
+              onCompleted={undefined}
+              isFromBulkRelation={undefined}
               type={undefined}
               display={undefined}
               speeddial={false}
