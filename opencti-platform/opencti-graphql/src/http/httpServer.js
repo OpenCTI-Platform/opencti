@@ -108,7 +108,7 @@ const createHttpServer = async () => {
   app.use(express.json({ limit: requestSizeLimit }));
   app.use(graphqlUploadExpress());
   app.use(
-    '/graphql',
+    `${basePath}/graphql`,
     cors({ origin: basePath }),
     json(),
     expressMiddleware(apolloServer, {
