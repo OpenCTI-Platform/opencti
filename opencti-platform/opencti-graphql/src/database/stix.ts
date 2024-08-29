@@ -567,6 +567,9 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
   [`${ENTITY_TYPE_INTRUSION_SET}_${ENTITY_TYPE_THREAT_ACTOR_GROUP}`]: [
     { name: RELATION_ATTRIBUTED_TO, type: REL_BUILT_IN }
   ],
+  [`${ENTITY_TYPE_INTRUSION_SET}_${ENTITY_TYPE_CAMPAIGN}`]: [
+    { name: RELATION_ATTRIBUTED_TO, type: REL_BUILT_IN }
+  ],
   [`${ENTITY_TYPE_INTRUSION_SET}_${ENTITY_TYPE_TOOL}`]: [
     { name: RELATION_USES, type: REL_BUILT_IN }
   ],
