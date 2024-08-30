@@ -52,6 +52,7 @@ const MarkdownField = (props) => {
   return (
     <div
       style={{ ...style, position: 'relative' }}
+      className={meta.error ? 'error' : 'main'}
       onBlur={internalOnBlur}
       onFocus={internalOnFocus}
     >
@@ -93,7 +94,7 @@ const MarkdownField = (props) => {
         minEditorHeight={height || 100}
         maxEditorHeight={height || 100}
       />
-      {!meta.error && (
+      {meta.error && (
         <FormHelperText error={true}>{meta.error}</FormHelperText>
       )}
       {askAi && (
