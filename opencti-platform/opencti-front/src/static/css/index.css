@@ -3,7 +3,7 @@
 }
 
 #root{
-  maxHeight: 100vh;
+  max-height: 100vh;
   height: 100vh;
   overflow-x: hidden;
 }
