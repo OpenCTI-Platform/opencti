@@ -205,7 +205,7 @@ StixCoreObjectOrStixCoreRelationshipNotesCardsProps
   });
   const scrollToBottom = () => {
     setTimeout(() => {
-      bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+      bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
     }, 300);
   };
   const handleToggleWrite = () => {
