@@ -488,11 +488,18 @@ const createApp = async (app) => {
     return res.status(503).send({ status: 'error', error: 'Interface is disabled by configuration' });
   });
 
+  // Any random unexpected request not GET
+  app.use((req, res, next) => {
+    res.status(404).send({ status: 'error', error: 'Path not found' });
+    next();
+  });
+
   // Error handling
-  app.use((err, req, res) => {
-    const error = UnknownError('Http call interceptor fail', { cause: err, referer: req.headers.referer });
+  app.use((err, req, res, next) => {
+    const error = UnknownError('Http call interceptor fail', { cause: err, referer: req.headers?.referer });
     logApp.error(error);
     res.status(500).send({ status: 'error', error: err.stack });
+    next();
   });
   return { sseMiddleware };
 };
