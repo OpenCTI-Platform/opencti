@@ -619,7 +619,7 @@ class DataTableToolBar extends Component {
         ) + maxNumberOfObservablesToCopy
       })`;
     }
-    return t('Copy');
+    return t('Copy to clipboard');
   }
 
   submitTask(availableFilterKeys) {

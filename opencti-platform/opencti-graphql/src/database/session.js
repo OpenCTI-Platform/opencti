@@ -5,7 +5,7 @@ import { uniq } from 'ramda';
 import conf, { booleanConf, OPENCTI_SESSION } from '../config/conf';
 import SessionStoreMemory from './sessionStore-memory';
 import RedisStore from './sessionStore-redis';
-import { getSession, setSession } from './redis';
+import { getSession } from './redis';
 
 const sessionManager = nconf.get('app:session_manager');
 const sessionSecret = nconf.get('app:session_secret') || nconf.get('app:admin:password');
@@ -112,12 +112,21 @@ export const killUserSessions = async (userId) => {
 };
 
 export const markSessionForRefresh = async (id) => {
+  const { store } = applicationSession;
   const currentSession = await getSession(id);
   if (currentSession) {
     const newSession = { ...currentSession, session_refresh: true };
-    await setSession(id, newSession, currentSession.expiration);
+    const sessId = id.includes(store.prefix) ? id.split(store.prefix)[1] : id;
+    store.set(sessId, newSession); // this will ensure the session is updated in the cache
+    // TODO check what to do with currentSession.expiration
+    // await setSession(id, newSession, currentSession.expiration);
   }
   return undefined;
+};
+
+export const markAllSessionsForRefresh = async () => {
+  const sessions = (await findSessions()).map((s) => s.sessions).flat();
+  await Promise.all(sessions.map((s) => markSessionForRefresh(s.id)));
 };
 
 export const findSessionsForUsers = async (userIds) => {

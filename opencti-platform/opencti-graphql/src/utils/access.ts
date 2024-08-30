@@ -390,6 +390,10 @@ export const isUserHasCapabilities = (user: AuthUser, capabilities: string[] = [
   return capabilities.every((capability) => isUserHasCapability(user, capability));
 };
 
+export const isOnlyOrgaAdmin = (user: AuthUser) => {
+  return !isUserHasCapability(user, SETTINGS_SET_ACCESSES) && isUserHasCapability(user, VIRTUAL_ORGANIZATION_ADMIN);
+};
+
 export const userFilterStoreElements = async (context: AuthContext, user: AuthUser, elements: Array<BasicStoreCommon>) => {
   const userFilterStoreElementsFn = async () => {
     // If user have bypass, grant access to all
