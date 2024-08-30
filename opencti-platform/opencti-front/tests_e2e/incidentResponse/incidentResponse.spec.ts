@@ -32,7 +32,8 @@ test('Incident Response Creation', async ({ page }) => {
   const leftNavigation = new LeftBarPage(page);
   const incidentResponsePage = new IncidentResponsePage(page);
   const incidentResponseDetailsPage = new IncidentResponseDetailsPage(page);
-  const incidentResponseForm = new IncidentResponseFormPage(page);
+  const incidentResponseForm = new IncidentResponseFormPage(page, 'Create an incident response');
+  const incidentResponseUpdateForm = new IncidentResponseFormPage(page, 'Update an incident response');
 
   await page.goto('/dashboard/cases/incidents');
   // open nav bar once and for all
@@ -193,59 +194,59 @@ test('Incident Response Creation', async ({ page }) => {
 
   const incidentResponseNameUpdate = `Incident Response updated - ${uuid()}`;
   await incidentResponseDetailsPage.getEditButton().click();
-  await incidentResponseForm.nameField.fill(incidentResponseNameUpdate);
-  await incidentResponseForm.getUpdateTitle().click();
-  await incidentResponseForm.getCloseButton().click();
+  await incidentResponseUpdateForm.nameField.fill(incidentResponseNameUpdate);
+  await incidentResponseUpdateForm.getUpdateTitle().click();
+  await incidentResponseUpdateForm.getCloseButton().click();
 
   await incidentResponseDetailsPage.getEditButton().click();
-  await incidentResponseForm.incidentDateField.fill('2023-12-25 18:00 PM');
-  await incidentResponseForm.getUpdateTitle().click();
-  await incidentResponseForm.getCloseButton().click();
+  await incidentResponseUpdateForm.incidentDateField.fill('2023-12-25 18:00 PM');
+  await incidentResponseUpdateForm.getUpdateTitle().click();
+  await incidentResponseUpdateForm.getCloseButton().click();
   originalCreationDate = incidentResponseDetailsPage.getTextForHeading('Original creation date', 'December 25, 2023');
   await expect(originalCreationDate).toBeVisible();
 
   await incidentResponseDetailsPage.getEditButton().click();
-  await incidentResponseForm.severityAutocomplete.selectOption('high');
-  await incidentResponseForm.getUpdateTitle().click();
-  await incidentResponseForm.getCloseButton().click();
+  await incidentResponseUpdateForm.severityAutocomplete.selectOption('high');
+  await incidentResponseUpdateForm.getUpdateTitle().click();
+  await incidentResponseUpdateForm.getCloseButton().click();
   severity = incidentResponseDetailsPage.getTextForHeading('Severity', 'critical');
   await expect(severity).toBeHidden();
   severity = incidentResponseDetailsPage.getTextForHeading('Severity', 'high');
   await expect(severity).toBeVisible();
 
   await incidentResponseDetailsPage.getEditButton().click();
-  await incidentResponseForm.priorityAutocomplete.selectOption('P3');
-  await incidentResponseForm.getUpdateTitle().click();
-  await incidentResponseForm.getCloseButton().click();
+  await incidentResponseUpdateForm.priorityAutocomplete.selectOption('P3');
+  await incidentResponseUpdateForm.getUpdateTitle().click();
+  await incidentResponseUpdateForm.getCloseButton().click();
   priority = incidentResponseDetailsPage.getTextForHeading('Priority', 'P3');
   await expect(priority).toBeVisible();
 
   await incidentResponseDetailsPage.getEditButton().click();
-  await incidentResponseForm.confidenceLevelField.fillInput('50');
-  await incidentResponseForm.getUpdateTitle().click();
-  await incidentResponseForm.getCloseButton().click();
+  await incidentResponseUpdateForm.confidenceLevelField.fillInput('50');
+  await incidentResponseUpdateForm.getUpdateTitle().click();
+  await incidentResponseUpdateForm.getCloseButton().click();
   confidenceLevel = incidentResponseDetailsPage.getTextForHeading('Confidence level', '3 - Possibly True');
   await expect(confidenceLevel).toBeVisible();
 
   await incidentResponseDetailsPage.getEditButton().click();
-  await incidentResponseForm.descriptionField.fill('Updated test e2e Description');
-  await incidentResponseForm.getUpdateTitle().click();
-  await incidentResponseForm.getCloseButton().click();
+  await incidentResponseUpdateForm.descriptionField.fill('Updated test e2e Description');
+  await incidentResponseUpdateForm.getUpdateTitle().click();
+  await incidentResponseUpdateForm.getCloseButton().click();
   description = incidentResponseDetailsPage.getTextForHeading('Description', 'Updated test e2e Description');
   await expect(description).toBeVisible();
 
   await incidentResponseDetailsPage.getEditButton().click();
-  await incidentResponseForm.authorAutocomplete.selectOption('ANSSI');
-  await incidentResponseForm.getUpdateTitle().click();
-  await incidentResponseForm.getCloseButton().click();
+  await incidentResponseUpdateForm.authorAutocomplete.selectOption('ANSSI');
+  await incidentResponseUpdateForm.getUpdateTitle().click();
+  await incidentResponseUpdateForm.getCloseButton().click();
   author = incidentResponseDetailsPage.getTextForHeading('Author', 'ANSSI');
   await expect(author).toBeVisible();
 
   await incidentResponseDetailsPage.getEditButton().click();
-  await incidentResponseForm.markingsAutocomplete.selectOption('PAP:CLEAR');
-  await incidentResponseForm.markingsAutocomplete.selectOption('PAP:GREEN');
-  await incidentResponseForm.getUpdateTitle().click();
-  await incidentResponseForm.getCloseButton().click();
+  await incidentResponseUpdateForm.markingsAutocomplete.selectOption('PAP:CLEAR');
+  await incidentResponseUpdateForm.markingsAutocomplete.selectOption('PAP:GREEN');
+  await incidentResponseUpdateForm.getUpdateTitle().click();
+  await incidentResponseUpdateForm.getCloseButton().click();
   markingClear = incidentResponseDetailsPage.getTextForHeading('Marking', 'PAP:CLEAR');
   await expect(markingClear).toBeHidden();
   const markingPapGreen = incidentResponseDetailsPage.getTextForHeading('Marking', 'PAP:GREEN');
@@ -254,9 +255,9 @@ test('Incident Response Creation', async ({ page }) => {
   await expect(markingGreen).toBeVisible();
 
   await incidentResponseDetailsPage.getEditButton().click();
-  await incidentResponseForm.responseTypeAutocomplete.selectOption('data-leak');
-  await incidentResponseForm.getUpdateTitle().click();
-  await incidentResponseForm.getCloseButton().click();
+  await incidentResponseUpdateForm.responseTypeAutocomplete.selectOption('data-leak');
+  await incidentResponseUpdateForm.getUpdateTitle().click();
+  await incidentResponseUpdateForm.getCloseButton().click();
   const incidentResponseType = incidentResponseDetailsPage.getTextForHeading('Incident response type', 'data-leak');
   await expect(incidentResponseType).toBeVisible();
 
@@ -301,7 +302,7 @@ test('Incident response live entities creation and relationships', async ({ page
   const leftNavigation = new LeftBarPage(page);
   const toolbar = new ToolbarPageModel(page);
   const incidentResponsePage = new IncidentResponsePage(page);
-  const incidentResponseForm = new IncidentResponseFormPage(page);
+  const incidentResponseForm = new IncidentResponseFormPage(page, 'Create an incident response');
   const authorForm = new AuthorFormPageModel(page);
   const labelForm = new LabelFormPageModel(page);
   const incidentResponseDetailsPage = new IncidentResponseDetailsPage(page);
