@@ -115,7 +115,7 @@ const RichTextField = (props) => {
   );
 
   return (
-    <div style={{ ...style, position: 'relative' }}>
+    <div style={{ ...style, position: 'relative' }} className={meta.error ? 'error' : 'main'}>
       <InputLabel
         shrink={true}
         required={required}
@@ -154,7 +154,7 @@ const RichTextField = (props) => {
           <div className={classes.container}>
             {CKEditorInstance}
           </div>
-          {!meta.error && (
+          {meta.error && (
             <FormHelperText error={true}>{meta.error}</FormHelperText>
           )}
           <DialogActions>
@@ -162,7 +162,7 @@ const RichTextField = (props) => {
           </DialogActions>
         </Dialog>
       ) : CKEditorInstance}
-      {!meta.error && (
+      {meta.error && (
         <FormHelperText error={true}>{meta.error}</FormHelperText>
       )}
       {askAi && (
