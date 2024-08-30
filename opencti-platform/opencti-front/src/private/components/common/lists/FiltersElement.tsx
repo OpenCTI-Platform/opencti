@@ -140,8 +140,7 @@ const FiltersElement: FunctionComponent<FiltersElementProps> = ({
         })}
       </Grid>
       <div className={classes.helpertext}>
-        {t_i18n('Use')} <code>alt</code> + <code>click</code> {t_i18n('to exclude items')}
-        .
+        {t_i18n('Use Alt + click to exclude items')}
       </div>
     </>
   );
