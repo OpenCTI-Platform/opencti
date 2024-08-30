@@ -2,23 +2,23 @@ import React, { useMemo, Suspense, useState } from 'react';
 import { Route, Routes, Link, Navigate, useLocation, useParams, useNavigate } from 'react-router-dom';
 import { graphql, useSubscription, usePreloadedQuery, PreloadedQuery } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
+import { propOr } from 'ramda';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
-import { RootOrganizationQuery } from '@components/entities/organizations/__generated__/RootOrganizationQuery.graphql';
-import useQueryLoading from 'src/utils/hooks/useQueryLoading';
+import { RootIndividualQuery } from '@components/entities/individuals/__generated__/RootIndividualQuery.graphql';
+import { RootIndicatorSubscription } from '@components/observations/indicators/__generated__/RootIndicatorSubscription.graphql';
 import useForceUpdate from '@components/common/bulk/useForceUpdate';
-import { RootOrganizationSubscription } from '@components/entities/organizations/__generated__/RootOrganizationSubscription.graphql';
-import { propOr } from 'ramda';
+import useQueryLoading from 'src/utils/hooks/useQueryLoading';
 import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreObjectContentRoot';
-import Organization from './Organization';
-import OrganizationKnowledge from './OrganizationKnowledge';
+import Individual from './Individual';
+import IndividualKnowledge from './IndividualKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import FileManager from '../../common/files/FileManager';
-import OrganizationPopover from './OrganizationPopover';
+import IndividualPopover from './IndividualPopover';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
-import OrganizationAnalysis from './OrganizationAnalysis';
+import IndividualAnalysis from './IndividualAnalysis';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../../utils/ListParameters';
 import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
@@ -28,11 +28,11 @@ import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 
 const subscription = graphql`
-  subscription RootOrganizationSubscription($id: ID!) {
+  subscription RootIndividualsSubscription($id: ID!) {
     stixDomainObject(id: $id) {
-      ... on Organization {
-        ...Organization_organization
-        ...OrganizationEditionContainer_organization
+      ... on Individual {
+        ...Individual_individual
+        ...IndividualEditionContainer_individual
       }
       ...FileImportViewer_entity
       ...FileExportViewer_entity
@@ -43,9 +43,9 @@ const subscription = graphql`
   }
 `;
 
-const organizationQuery = graphql`
-  query RootOrganizationQuery($id: String!) {
-    organization(id: $id) {
+const individualQuery = graphql`
+  query RootIndividualQuery($id: String!) {
+    individual(id: $id) {
       id
       entity_type
       name
@@ -53,9 +53,9 @@ const organizationQuery = graphql`
       stixCoreObjectsDistribution(field: "entity_type", operation: count) {
         label
         value
-      }
-      ...Organization_organization
-      ...OrganizationKnowledge_organization
+      }  
+      ...Individual_individual
+      ...IndividualKnowledge_individual
       ...FileImportViewer_entity
       ...FileExportViewer_entity
       ...FileExternalReferencesViewer_entity
@@ -72,19 +72,19 @@ const organizationQuery = graphql`
   }
 `;
 
-type RootOrganizationProps = {
-  organizationId: string;
-  queryRef: PreloadedQuery<RootOrganizationQuery>;
+type RootIndividualProps = {
+  individualId: string;
+  queryRef: PreloadedQuery<RootIndividualQuery>;
 };
 
-const RootOrganization = ({ organizationId, queryRef }: RootOrganizationProps) => {
-  const subConfig = useMemo<GraphQLSubscriptionConfig<RootOrganizationSubscription>>(() => ({
+const RootIndividual = ({ individualId, queryRef }: RootIndividualProps) => {
+  const subConfig = useMemo<GraphQLSubscriptionConfig<RootIndicatorSubscription>>(() => ({
     subscription,
-    variables: { id: organizationId },
-  }), [organizationId]);
+    variables: { id: individualId },
+  }), [individualId]);
   const location = useLocation();
   const navigate = useNavigate();
-  const LOCAL_STORAGE_KEY = `organization-${organizationId}`;
+  const LOCAL_STORAGE_KEY = `individual-${individualId}`;
   const params = buildViewParamsFromUrlAndStorage(
     navigate,
     location,
@@ -108,21 +108,25 @@ const RootOrganization = ({ organizationId, queryRef }: RootOrganizationProps) =
   };
 
   const { t_i18n } = useFormatter();
-  useSubscription<RootOrganizationSubscription>(subConfig);
+  useSubscription<RootIndicatorSubscription>(subConfig);
 
   const {
-    organization,
+    individual,
     connectorsForExport,
     connectorsForImport,
-  } = usePreloadedQuery<RootOrganizationQuery>(organizationQuery, queryRef);
+  } = usePreloadedQuery<RootIndividualQuery>(individualQuery, queryRef);
 
   const { forceUpdate } = useForceUpdate();
 
-  const link = `/dashboard/entities/organizations/${organizationId}/knowledge`;
-  const paddingRight = getPaddingRight(location.pathname, organizationId, '/dashboard/entities/organizations', viewAs === 'knowledge');
+  const link = `/dashboard/entities/individuals/${individualId}/knowledge`;
+  let paddingRight = 0;
+  if (viewAs === 'knowledge') {
+    paddingRight = getPaddingRight(location.pathname, individualId, '/dashboard/entities/individuals');
+  }
+
   return (
     <>
-      {organization ? (
+      {individual ? (
         <>
           <Routes>
             <Route
@@ -131,11 +135,8 @@ const RootOrganization = ({ organizationId, queryRef }: RootOrganizationProps) =
                 <StixCoreObjectKnowledgeBar
                   stixCoreObjectLink={link}
                   availableSections={[
-                    'sectors',
                     'organizations',
-                    'individuals',
                     'locations',
-                    'used_tools',
                     'threats',
                     'threat_actors',
                     'intrusion_sets',
@@ -144,10 +145,9 @@ const RootOrganization = ({ organizationId, queryRef }: RootOrganizationProps) =
                     'malwares',
                     'attack_patterns',
                     'tools',
-                    'vulnerabilities',
                     'observables',
                   ]}
-                  stixCoreObjectsDistribution={organization.stixCoreObjectsDistribution}
+                  stixCoreObjectsDistribution={individual.stixCoreObjectsDistribution}
                 />
               )}
             />
@@ -155,17 +155,16 @@ const RootOrganization = ({ organizationId, queryRef }: RootOrganizationProps) =
           <div style={{ paddingRight }}>
             <Breadcrumbs variant="object" elements={[
               { label: t_i18n('Entities') },
-              { label: t_i18n('Organizations'), link: '/dashboard/entities/organizations' },
-              { label: organization.name, current: true },
+              { label: t_i18n('Individuals'), link: '/dashboard/entities/individuals' },
+              { label: individual.name, current: true },
             ]}
             />
             <StixDomainObjectHeader
-              entityType="Organization"
-              disableSharing={true}
-              stixDomainObject={organization}
+              entityType="Individual"
+              stixDomainObject={individual}
               isOpenctiAlias={true}
               enableQuickSubscription={true}
-              PopoverComponent={<OrganizationPopover />}
+              PopoverComponent={<IndividualPopover />}
               onViewAs={handleChangeViewAs}
               viewAs={viewAs}
             />
@@ -177,48 +176,48 @@ const RootOrganization = ({ organizationId, queryRef }: RootOrganizationProps) =
               }}
             >
               <Tabs
-                value={getCurrentTab(location.pathname, organization.id, '/dashboard/entities/organizations')}
+                value={getCurrentTab(location.pathname, individual.id, '/dashboard/entities/individuals')}
               >
                 <Tab
                   component={Link}
-                  to={`/dashboard/entities/organizations/${organization.id}`}
-                  value={`/dashboard/entities/organizations/${organization.id}`}
+                  to={`/dashboard/entities/individuals/${individual.id}`}
+                  value={`/dashboard/entities/individuals/${individual.id}`}
                   label={t_i18n('Overview')}
                 />
                 <Tab
                   component={Link}
-                  to={`/dashboard/entities/organizations/${organization.id}/knowledge/overview`}
-                  value={`/dashboard/entities/organizations/${organization.id}/knowledge`}
+                  to={`/dashboard/entities/individuals/${individual.id}/knowledge/overview`}
+                  value={`/dashboard/entities/individuals/${individual.id}/knowledge`}
                   label={t_i18n('Knowledge')}
                 />
                 <Tab
                   component={Link}
-                  to={`/dashboard/entities/organizations/${organization.id}/content`}
-                  value={`/dashboard/entities/organizations/${organization.id}/content`}
+                  to={`/dashboard/entities/individuals/${individual.id}/content`}
+                  value={`/dashboard/entities/individuals/${individual.id}/content`}
                   label={t_i18n('Content')}
                 />
                 <Tab
                   component={Link}
-                  to={`/dashboard/entities/organizations/${organization.id}/analyses`}
-                  value={`/dashboard/entities/organizations/${organization.id}/analyses`}
+                  to={`/dashboard/entities/individuals/${individual.id}/analyses`}
+                  value={`/dashboard/entities/individuals/${individual.id}/analyses`}
                   label={t_i18n('Analyses')}
                 />
                 <Tab
                   component={Link}
-                  to={`/dashboard/entities/organizations/${organization.id}/sightings`}
-                  value={`/dashboard/entities/organizations/${organization.id}/sightings`}
+                  to={`/dashboard/entities/individuals/${individual.id}/sightings`}
+                  value={`/dashboard/entities/individuals/${individual.id}/sightings`}
                   label={t_i18n('Sightings')}
                 />
                 <Tab
                   component={Link}
-                  to={`/dashboard/entities/organizations/${organization.id}/files`}
-                  value={`/dashboard/entities/organizations/${organization.id}/files`}
+                  to={`/dashboard/entities/individuals/${individual.id}/files`}
+                  value={`/dashboard/entities/individuals/${individual.id}/files`}
                   label={t_i18n('Data')}
                 />
                 <Tab
                   component={Link}
-                  to={`/dashboard/entities/organizations/${organization.id}/history`}
-                  value={`/dashboard/entities/organizations/${organization.id}/history`}
+                  to={`/dashboard/entities/individuals/${individual.id}/history`}
+                  value={`/dashboard/entities/individuals/${individual.id}/history`}
                   label={t_i18n('History')}
                 />
               </Tabs>
@@ -227,8 +226,8 @@ const RootOrganization = ({ organizationId, queryRef }: RootOrganizationProps) =
               <Route
                 path="/"
                 element={
-                  <Organization
-                    organization={organization}
+                  <Individual
+                    individual={individual}
                     viewAs={viewAs}
                   />
                 }
@@ -238,7 +237,7 @@ const RootOrganization = ({ organizationId, queryRef }: RootOrganizationProps) =
                 element={
                   <Navigate
                     replace={true}
-                    to={`/dashboard/entities/organizations/${organizationId}/knowledge/overview`}
+                    to={`/dashboard/entities/individuals/${individualId}/knowledge/overview`}
                   />
                 }
               />
@@ -246,8 +245,8 @@ const RootOrganization = ({ organizationId, queryRef }: RootOrganizationProps) =
                 path="/knowledge/*"
                 element={
                   <div key={forceUpdate}>
-                    <OrganizationKnowledge
-                      organization={organization}
+                    <IndividualKnowledge
+                      individual={individual}
                       viewAs={viewAs}
                     />
                   </div>
@@ -257,17 +256,16 @@ const RootOrganization = ({ organizationId, queryRef }: RootOrganizationProps) =
                 path="/content/*"
                 element={
                   <StixCoreObjectContentRoot
-                    stixCoreObject={organization}
+                    stixCoreObject={individual}
                   />
                 }
               />
               <Route
                 path="/analyses"
                 element={
-                  <OrganizationAnalysis
-                    organization={organization}
+                  <IndividualAnalysis
+                    individual={individual}
                     viewAs={viewAs}
-                    onViewAs={handleChangeViewAs}
                   />
                 }
               />
@@ -275,7 +273,7 @@ const RootOrganization = ({ organizationId, queryRef }: RootOrganizationProps) =
                 path="/sightings"
                 element={
                   <EntityStixSightingRelationships
-                    entityId={organization.id}
+                    entityId={individual.id}
                     entityLink={link}
                     noPadding={true}
                     isTo={true}
@@ -286,10 +284,10 @@ const RootOrganization = ({ organizationId, queryRef }: RootOrganizationProps) =
                 path="/files"
                 element={
                   <FileManager
-                    id={organizationId}
+                    id={individualId}
                     connectorsImport={connectorsForImport}
                     connectorsExport={connectorsForExport}
-                    entity={organization}
+                    entity={individual}
                   />
                 }
               />
@@ -297,7 +295,7 @@ const RootOrganization = ({ organizationId, queryRef }: RootOrganizationProps) =
                 path="/history"
                 element={
                   <StixCoreObjectHistory
-                    stixCoreObjectId={organizationId}
+                    stixCoreObjectId={individualId}
                   />
                 }
               />
@@ -311,16 +309,16 @@ const RootOrganization = ({ organizationId, queryRef }: RootOrganizationProps) =
   );
 };
 const Root = () => {
-  const { organizationId } = useParams() as { organizationId: string; };
-  const queryRef = useQueryLoading<RootOrganizationQuery>(organizationQuery, {
-    id: organizationId,
+  const { individualId } = useParams() as { individualId: string; };
+  const queryRef = useQueryLoading<RootIndividualQuery>(individualQuery, {
+    id: individualId,
   });
 
   return (
     <>
       {queryRef && (
         <Suspense fallback={<Loader variant={LoaderVariant.container} />}>
-          <RootOrganization organizationId={organizationId} queryRef={queryRef} />
+          <RootIndividual individualId={individualId} queryRef={queryRef} />
         </Suspense>
       )}
     </>

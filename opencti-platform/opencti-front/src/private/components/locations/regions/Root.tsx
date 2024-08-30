@@ -10,6 +10,7 @@ import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
+import useForceUpdate from '@components/common/bulk/useForceUpdate';
 import Region from './Region';
 import RegionKnowledge from './RegionKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
@@ -87,6 +88,7 @@ const RootRegionComponent = ({ queryRef, regionId }) => {
   useSubscription(subConfig);
   const location = useLocation();
   const { t_i18n } = useFormatter();
+  const { forceUpdate } = useForceUpdate();
   const data = usePreloadedQuery(regionQuery, queryRef);
   const { region, connectorsForImport, connectorsForExport } = data;
   const link = `/dashboard/locations/regions/${regionId}/knowledge`;
@@ -209,7 +211,11 @@ const RootRegionComponent = ({ queryRef, regionId }) => {
               />
               <Route
                 path="/knowledge/*"
-                element={<RegionKnowledge regionData={region} />}
+                element={
+                  <div key={forceUpdate}>
+                    <RegionKnowledge regionData={region} />
+                  </div>
+              }
               />
               <Route
                 path="/content/*"

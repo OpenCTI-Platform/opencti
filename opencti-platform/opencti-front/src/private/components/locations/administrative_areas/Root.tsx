@@ -8,6 +8,7 @@ import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
+import useForceUpdate from '@components/common/bulk/useForceUpdate';
 import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreObjectContentRoot';
 import AdministrativeArea from './AdministrativeArea';
 import AdministrativeAreaKnowledge from './AdministrativeAreaKnowledge';
@@ -87,6 +88,7 @@ const RootAdministrativeAreaComponent = ({ queryRef, administrativeAreaId }) => 
   const location = useLocation();
   const { t_i18n } = useFormatter();
   const data = usePreloadedQuery(administrativeAreaQuery, queryRef);
+  const { forceUpdate } = useForceUpdate();
   const { administrativeArea, connectorsForImport, connectorsForExport } = data;
   const link = `/dashboard/locations/administrative_areas/${administrativeAreaId}/knowledge`;
   const paddingRight = getPaddingRight(location.pathname, administrativeArea?.id, '/dashboard/locations/administrative_areas');
@@ -222,8 +224,10 @@ const RootAdministrativeAreaComponent = ({ queryRef, administrativeAreaId }) => 
               <Route
                 path="/knowledge/*"
                 element={
-                  <AdministrativeAreaKnowledge administrativeAreaData={administrativeArea} />
-              }
+                  <div key={forceUpdate}>
+                    <AdministrativeAreaKnowledge administrativeAreaData={administrativeArea} />
+                  </div>
+                }
               />
               <Route
                 path="/analyses"
