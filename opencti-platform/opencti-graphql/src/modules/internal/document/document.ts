@@ -87,8 +87,8 @@ const attributes: Array<AttributeDefinition> = [
     ]
   },
   { name: 'uploaded_at', label: 'Upload date', type: 'date', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: false },
-  { name: 'file_id', label: 'File identifier', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
-  { name: 'entity_id', label: 'Related entity', type: 'string', format: 'id', entityTypes: [ABSTRACT_STIX_CORE_OBJECT], mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+  { name: 'file_id', label: 'File identifier', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+  { name: 'entity_id', label: 'Related entity', type: 'string', format: 'id', entityTypes: [ABSTRACT_STIX_CORE_OBJECT], mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: false },
   { name: 'removed', label: 'Removed', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
 ];
 
