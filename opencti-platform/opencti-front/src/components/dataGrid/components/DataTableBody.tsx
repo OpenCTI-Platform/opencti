@@ -38,7 +38,6 @@ const DataTableBody = ({
   dataQueryArgs,
   pageStart,
   pageSize,
-  isNavigable = false,
 }: DataTableBodyProps) => {
   const {
     rootRef,
@@ -257,7 +256,6 @@ const DataTableBody = ({
                   effectiveColumns={effectiveColumns}
                   index={index}
                   onToggleShiftEntity={onToggleShiftEntity}
-                  isNavigable={isNavigable}
                 />
               );
             })}

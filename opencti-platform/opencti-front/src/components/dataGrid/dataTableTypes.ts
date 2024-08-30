@@ -122,7 +122,6 @@ export interface DataTableProps {
   pageSize?: string
   disableNavigation?: boolean
   onLineClick?: (line: any) => void
-  isNavigable?: boolean
 }
 
 export interface DataTableBodyProps {
@@ -137,7 +136,6 @@ export interface DataTableBodyProps {
   dataQueryArgs: DataTableProps['dataQueryArgs']
   pageSize: number
   pageStart: number
-  isNavigable?: boolean
 }
 
 export interface DataTableDisplayFiltersProps {
@@ -185,7 +183,6 @@ export interface DataTableLineProps {
   storageHelpers: DataTableProps['storageHelpers']
   index: number
   onToggleShiftEntity: (currentIndex: number, currentEntity: { id: string }, event?: React.SyntheticEvent) => void
-  isNavigable?: boolean
 }
 
 export interface DataTableCellProps {

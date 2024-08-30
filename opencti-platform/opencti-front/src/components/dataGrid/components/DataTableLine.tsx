@@ -101,7 +101,6 @@ const DataTableLine = ({
   effectiveColumns,
   index,
   onToggleShiftEntity,
-  isNavigable = false,
 }: DataTableLineProps) => {
   const navigate = useNavigate();
 
@@ -122,7 +121,7 @@ const DataTableLine = ({
     link = `${link}/${redirectionMode}`;
   }
 
-  const navigable = isNavigable || !disableNavigation || !onLineClick;
+  const navigable = !disableNavigation && !onLineClick;
   const internalOnClick = () => {
     if (onLineClick) {
       onLineClick(data);

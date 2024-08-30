@@ -188,6 +188,7 @@ const PublicDashboards = () => {
       />
       {queryRef && (
         <DataTable
+          disableNavigation
           dataColumns={dataColumns}
           resolvePath={(data: PublicDashboardsFragment$data) => {
             return data.publicDashboards?.edges?.map((n) => n?.node);
