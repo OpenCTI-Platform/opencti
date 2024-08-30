@@ -223,7 +223,7 @@ const ImportFilesContent = () => {
       {queryRef && (
         <DataTable
           dataColumns={{
-            value: { percentWidth: 50 },
+            name: { percentWidth: 50 },
             createdBy: {
               percentWidth: 15,
               render: (({ metaData: { creator } }) => creator?.name ?? '-'),
