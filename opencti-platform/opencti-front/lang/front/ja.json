@@ -211,6 +211,7 @@
   "Attribute \"notifiers\" of a trigger should have at least one notifier.": "トリガーの属性「結果」には、少なくとも 1 つの結果が必要です。",
   "Attribute \"trigger_events\" of a live trigger should have at least one event.": "",
   "Attribute mapping configuration": "属性マッピングの設定",
+  "Attribute used to create multiple": "複数の",
   "Attributed to this actor": "この脅威アクターに帰属するもの",
   "Attributed to this campaign": "このキャンペーンに帰属するもの",
   "Attributed to this country": "この国に帰属するもの",

@@ -211,6 +211,7 @@
   "Attribute \"notifiers\" of a trigger should have at least one notifier.": "触发器的属性“結果”应至少有一个結果。",
   "Attribute \"trigger_events\" of a live trigger should have at least one event.": "实时触发器的属性 \"trigger_events\" 应至少有一个事件。",
   "Attribute mapping configuration": "属性映射配置",
+  "Attribute used to create multiple": "用于创建多个",
   "Attributed to this actor": "归因到此威胁主体",
   "Attributed to this campaign": "归因到该攻击活动",
   "Attributed to this country": "归因到此国家/地区",
