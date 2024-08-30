@@ -46,7 +46,7 @@ export const checkRetentionRule = async (context, input) => {
 export const createRetentionRule = async (_, user, input) => {
   // filters must be a valid json
   let { filters } = input;
-  if (!filters || filters === '') {
+  if (!filters) { // filters is undefined or an empty string
     filters = JSON.stringify({ mode: 'and', filters: [], filterGroups: [] });
   }
   try {
