@@ -78,6 +78,7 @@ const DataTableHeaders: FunctionComponent<DataTableHeadersProps> = ({
     >
       {effectiveColumns.some(({ id }) => id === 'select') && (
         <div
+          data-testid="dataTableCheckAll"
           style={{
             width: 'calc(var(--header-select-size) * 1px)',
             background: (Object.keys(selectedElements).length > 0 || selectAll) ? theme.palette.background.accent : 'unset',
