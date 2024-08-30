@@ -1055,9 +1055,9 @@ input QueryTaskAddInput {
 
 input RetentionRuleAddInput {
   name: String! @constraint(minLength:2, format: "not-blank")
-  filters: String!
+  filters: String
   max_retention: Int! @constraint(min: 1)
-  retention_unit: RetentionUnit!
+  retention_unit: RetentionUnit
   scope: RetentionRuleScope!
 }
 enum RetentionRuleOrdering {

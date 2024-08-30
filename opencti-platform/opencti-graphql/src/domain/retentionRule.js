@@ -45,7 +45,10 @@ export const checkRetentionRule = async (context, input) => {
 // input { name, filters }
 export const createRetentionRule = async (_, user, input) => {
   // filters must be a valid json
-  const { filters } = input;
+  let { filters } = input;
+  if (!filters || filters === '') {
+    filters = JSON.stringify({ mode: 'and', filters: [], filterGroups: [] });
+  }
   try {
     JSON.parse(filters);
   } catch {
@@ -61,6 +64,8 @@ export const createRetentionRule = async (_, user, input) => {
     last_execution_date: null,
     last_deleted_count: null,
     remaining_count: null,
+    retention_unit: input.retention_unit ?? 'days',
+    filters,
     ...input,
   };
   await elIndex(INDEX_INTERNAL_OBJECTS, retentionRule);

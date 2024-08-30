@@ -22189,10 +22189,10 @@ export type RetentionRule = {
 };
 
 export type RetentionRuleAddInput = {
-  filters: Scalars['String']['input'];
+  filters?: InputMaybe<Scalars['String']['input']>;
   max_retention: Scalars['Int']['input'];
   name: Scalars['String']['input'];
-  retention_unit: RetentionUnit;
+  retention_unit?: InputMaybe<RetentionUnit>;
   scope: RetentionRuleScope;
 };
 

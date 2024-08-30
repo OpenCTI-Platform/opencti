@@ -1102,9 +1102,9 @@ input QueryTaskAddInput {
 
 input RetentionRuleAddInput {
   name: String!
-  filters: String!
+  filters: String
   max_retention: Int!
-  retention_unit: RetentionUnit!
+  retention_unit: RetentionUnit
   scope: RetentionRuleScope!
 }
 
