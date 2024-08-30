@@ -211,6 +211,7 @@
   "Attribute \"notifiers\" of a trigger should have at least one notifier.": "Attribut \"notifiers\" eines Triggers sollte mindestens einen Notifier haben.",
   "Attribute \"trigger_events\" of a live trigger should have at least one event.": "Das Attribut \"trigger_events\" eines Live-Triggers sollte mindestens ein Ereignis enthalten.",
   "Attribute mapping configuration": "Konfiguration der Attributabbildung",
+  "Attribute used to create multiple": "Attribut zur Erstellung mehrerer",
   "Attributed to this actor": "Diesem Akteur zugeschrieben",
   "Attributed to this campaign": "Dieser Kampagne zugeschrieben",
   "Attributed to this country": "Diesem Land zugeschrieben",

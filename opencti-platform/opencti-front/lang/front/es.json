@@ -211,6 +211,7 @@
   "Attribute \"notifiers\" of a trigger should have at least one notifier.": "Los \"resultados\" de un desencadenante deben tener al menos un resultado.",
   "Attribute \"trigger_events\" of a live trigger should have at least one event.": "El atributo \"eventos desencadenantes\" de un desencadenador en vivo debe tener al menos un evento.",
   "Attribute mapping configuration": "Configuración de mapeo de atributos",
+  "Attribute used to create multiple": "Atributo utilizado para crear múltiples",
   "Attributed to this actor": "Atribuido a este actor",
   "Attributed to this campaign": "Atribuido a esta campaña",
   "Attributed to this country": "Atribuido a este país",

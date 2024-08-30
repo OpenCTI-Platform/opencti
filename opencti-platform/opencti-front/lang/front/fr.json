@@ -211,6 +211,7 @@
   "Attribute \"notifiers\" of a trigger should have at least one notifier.": "L' attribut \"notifiers\" d’un déclencheur doit contenir au moins un type de notification.",
   "Attribute \"trigger_events\" of a live trigger should have at least one event.": "L' attribut \"type d'évènement\" d’un déclencheur doit contenir au moins un type d'évènement.",
   "Attribute mapping configuration": "Configuration de mappage d'attributs",
+  "Attribute used to create multiple": "Attribut utilisé pour créer plusieurs",
   "Attributed to this actor": "Attribué à cet acteur",
   "Attributed to this campaign": "Attribué à cette campagne",
   "Attributed to this country": "Attribué à ce pays",

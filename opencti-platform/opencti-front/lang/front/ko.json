@@ -211,6 +211,7 @@
   "Attribute \"notifiers\" of a trigger should have at least one notifier.": "트리거의 '알림자' 속성에는 최소 하나의 알림자가 있어야 합니다.",
   "Attribute \"trigger_events\" of a live trigger should have at least one event.": "라이브 트리거의 '트리거 이벤트' 속성에는 최소 하나의 이벤트가 있어야 합니다.",
   "Attribute mapping configuration": "속성 매핑 구성",
+  "Attribute used to create multiple": "속성을 여러 개 생성하는 데 사용되는",
   "Attributed to this actor": "이 액터에 귀속됨",
   "Attributed to this campaign": "이 캠페인에 귀속됨",
   "Attributed to this country": "이 국가에 귀속됨",
