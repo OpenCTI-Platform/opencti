@@ -257,6 +257,12 @@ const authorizedAuthoritiesForTask = (scope) => {
       return [SETTINGS_SET_ACCESSES];
     case 'IMPORT':
       return [KNOWLEDGE_KNASKIMPORT];
+    case 'DASHBOARD':
+      return [Capabilities.ExploreExupdateExdelete];
+    case 'INVESTIGATION':
+      return [Capabilities.InvestigationInupdateIndelete];
+    case 'PUBLIC_DASHBOARD':
+      return [Capabilities.ExploreExupdatePublish];
     default:
       return [];
   }
@@ -267,6 +273,9 @@ const authorizedMembersForTask = (user, scope) => {
     case 'SETTINGS':
     case 'KNOWLEDGE':
     case 'USER':
+    case 'DASHBOARD':
+    case 'INVESTIGATION':
+    case 'PUBLIC_DASHBOARD':
       return [{ id: user.id, access_right: MEMBER_ACCESS_RIGHT_ADMIN }];
     default:
       return [];
