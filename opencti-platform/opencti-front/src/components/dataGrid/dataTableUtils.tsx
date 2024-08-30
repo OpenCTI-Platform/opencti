@@ -357,7 +357,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
   isShared: {
     id: 'isShared',
     label: 'Shared',
-    flexSize: 8,
+    percentWidth: 8,
     isSortable: false,
     render: ({ isShared }, { t_i18n }) => (
       <ItemBoolean
@@ -505,7 +505,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
   owner: {
     id: 'owner',
     label: 'Owner',
-    flexSize: 12,
+    percentWidth: 12,
     isSortable: true,
     render: ({ owner }, h) => textInTooltip(owner.name, h),
   },
@@ -705,7 +705,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
   tags: {
     id: 'tags',
     label: 'Tags',
-    flexSize: 15,
+    percentWidth: 15,
     isSortable: false,
     render: ({ tags }) => {
       if (!tags || tags.length === 0) return '-';
@@ -750,7 +750,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
   updated_at: {
     id: 'updated_at',
     label: 'Modification date',
-    flexSize: 15,
+    percentWidth: 15,
     isSortable: true,
     render: ({ updated_at }, { fd }) => fd(updated_at),
   },
