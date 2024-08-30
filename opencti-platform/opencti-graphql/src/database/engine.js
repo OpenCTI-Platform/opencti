@@ -183,7 +183,6 @@ const ES_INDEX_SHARD_NUMBER = conf.get('elasticsearch:number_of_shards');
 const ES_INDEX_REPLICA_NUMBER = conf.get('elasticsearch:number_of_replicas');
 
 const ES_PRIMARY_SHARD_SIZE = conf.get('elasticsearch:max_primary_shard_size') || '50gb';
-const ES_MAX_AGE = conf.get('elasticsearch:max_age') || '365d';
 const ES_MAX_DOCS = conf.get('elasticsearch:max_docs') || 75000000;
 
 const TOO_MANY_CLAUSES = 'too_many_nested_clauses';
@@ -582,7 +581,6 @@ const elCreateLifecyclePolicy = async () => {
               actions: {
                 rollover: {
                   max_primary_shard_size: ES_PRIMARY_SHARD_SIZE,
-                  max_age: ES_MAX_AGE,
                   max_docs: ES_MAX_DOCS
                 },
                 set_priority: {
@@ -611,7 +609,6 @@ const elCreateLifecyclePolicy = async () => {
                 {
                   rollover: {
                     min_primary_shard_size: ES_PRIMARY_SHARD_SIZE,
-                    min_index_age: ES_MAX_AGE,
                     min_doc_count: ES_MAX_DOCS
                   }
                 }],
