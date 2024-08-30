@@ -128,7 +128,8 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
   // Core
   // region ATTACK_PATTERN
   [`${ENTITY_TYPE_ATTACK_PATTERN}_${ENTITY_TYPE_ATTACK_PATTERN}`]: [
-    { name: RELATION_SUBTECHNIQUE_OF, type: REL_NEW }
+    { name: RELATION_SUBTECHNIQUE_OF, type: REL_NEW },
+    { name: RELATION_DERIVED_FROM, type: REL_BUILT_IN }
   ],
   [`${ENTITY_TYPE_ATTACK_PATTERN}_${ENTITY_TYPE_IDENTITY_INDIVIDUAL}`]: [
     { name: RELATION_TARGETS, type: REL_BUILT_IN }
@@ -241,6 +242,9 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
   [`${ENTITY_TYPE_CAMPAIGN}_${ENTITY_TYPE_VULNERABILITY}`]: [
     { name: RELATION_TARGETS, type: REL_BUILT_IN }
   ],
+  [`${ENTITY_TYPE_CAMPAIGN}_${ENTITY_TYPE_CAMPAIGN}`]: [
+    { name: RELATION_DERIVED_FROM, type: REL_BUILT_IN }
+  ],
   // endregion
   // region COURSE_OF_ACTION
   [`${ENTITY_TYPE_COURSE_OF_ACTION}_${ENTITY_TYPE_ATTACK_PATTERN}`]: [
@@ -261,10 +265,14 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
     { name: RELATION_MITIGATES, type: REL_BUILT_IN },
     { name: RELATION_REMEDIATES, type: REL_BUILT_IN },
   ],
+  [`${ENTITY_TYPE_COURSE_OF_ACTION}_${ENTITY_TYPE_COURSE_OF_ACTION}`]: [
+    { name: RELATION_DERIVED_FROM, type: REL_BUILT_IN }
+  ],
   // endregion
   // region INDIVIDUAL
   [`${ENTITY_TYPE_IDENTITY_INDIVIDUAL}_${ENTITY_TYPE_IDENTITY_INDIVIDUAL}`]: [
-    { name: RELATION_PART_OF, type: REL_NEW }
+    { name: RELATION_PART_OF, type: REL_NEW },
+    { name: RELATION_DERIVED_FROM, type: REL_BUILT_IN }
   ],
   [`${ENTITY_TYPE_IDENTITY_INDIVIDUAL}_${ENTITY_TYPE_IDENTITY_ORGANIZATION}`]: [
     { name: RELATION_PART_OF, type: REL_NEW }
@@ -290,7 +298,8 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
   // endregion
   // region SECTOR
   [`${ENTITY_TYPE_IDENTITY_SECTOR}_${ENTITY_TYPE_IDENTITY_SECTOR}`]: [
-    { name: RELATION_PART_OF, type: REL_NEW }
+    { name: RELATION_PART_OF, type: REL_NEW },
+    { name: RELATION_DERIVED_FROM, type: REL_BUILT_IN }
   ],
   [`${ENTITY_TYPE_IDENTITY_SECTOR}_${ENTITY_TYPE_LOCATION_POSITION}`]: [
     { name: RELATION_LOCATED_AT, type: REL_BUILT_IN }
@@ -326,6 +335,9 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
   ],
   [`${ENTITY_TYPE_IDENTITY_SYSTEM}_${ENTITY_TYPE_LOCATION_REGION}`]: [
     { name: RELATION_LOCATED_AT, type: REL_BUILT_IN }
+  ],
+  [`${ENTITY_TYPE_IDENTITY_SYSTEM}_${ENTITY_TYPE_IDENTITY_SYSTEM}`]: [
+    { name: RELATION_DERIVED_FROM, type: REL_BUILT_IN }
   ],
   // endregion
   // region INCIDENT
@@ -401,6 +413,9 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
   [`${ENTITY_TYPE_INCIDENT}_${ENTITY_TYPE_VULNERABILITY}`]: [
     { name: RELATION_TARGETS, type: REL_EXTENDED }
   ],
+  [`${ENTITY_TYPE_INCIDENT}_${ENTITY_TYPE_INCIDENT}`]: [
+    { name: RELATION_DERIVED_FROM, type: REL_BUILT_IN }
+  ],
   // endregion
   // region INDICATOR
   [`${ENTITY_TYPE_INDICATOR}_${ABSTRACT_STIX_CYBER_OBSERVABLE}`]: [
@@ -467,6 +482,7 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
     { name: RELATION_CONSISTS_OF, type: REL_BUILT_IN },
     { name: RELATION_CONTROLS, type: REL_BUILT_IN },
     { name: RELATION_USES, type: REL_BUILT_IN },
+    { name: RELATION_DERIVED_FROM, type: REL_BUILT_IN }
   ],
   [`${ENTITY_TYPE_INFRASTRUCTURE}_${ENTITY_TYPE_LOCATION_POSITION}`]: [
     { name: RELATION_LOCATED_AT, type: REL_BUILT_IN }
@@ -579,6 +595,9 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
   [`${ENTITY_TYPE_INTRUSION_SET}_${ENTITY_HASHED_OBSERVABLE_STIX_FILE}`]: [
     { name: RELATION_USES, type: REL_EXTENDED }
   ],
+  [`${ENTITY_TYPE_INTRUSION_SET}_${ENTITY_TYPE_INTRUSION_SET}`]: [
+    { name: RELATION_DERIVED_FROM, type: REL_BUILT_IN }
+  ],
   // endregion
   // region POSITION
   [`${ENTITY_TYPE_LOCATION_POSITION}_${ENTITY_TYPE_LOCATION_CITY}`]: [
@@ -593,6 +612,9 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
   [`${ENTITY_TYPE_LOCATION_POSITION}_${ENTITY_TYPE_LOCATION_REGION}`]: [
     { name: RELATION_LOCATED_AT, type: REL_BUILT_IN }
   ],
+  [`${ENTITY_TYPE_LOCATION_POSITION}_${ENTITY_TYPE_LOCATION_POSITION}`]: [
+    { name: RELATION_DERIVED_FROM, type: REL_BUILT_IN }
+  ],
   // endregion
   // region CITY
   [`${ENTITY_TYPE_LOCATION_CITY}_${ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA}`]: [
@@ -604,15 +626,22 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
   [`${ENTITY_TYPE_LOCATION_CITY}_${ENTITY_TYPE_LOCATION_REGION}`]: [
     { name: RELATION_LOCATED_AT, type: REL_BUILT_IN }
   ],
+  [`${ENTITY_TYPE_LOCATION_CITY}_${ENTITY_TYPE_LOCATION_CITY}`]: [
+    { name: RELATION_DERIVED_FROM, type: REL_BUILT_IN }
+  ],
   // endregion
   // region COUNTRY
   [`${ENTITY_TYPE_LOCATION_COUNTRY}_${ENTITY_TYPE_LOCATION_REGION}`]: [
     { name: RELATION_LOCATED_AT, type: REL_BUILT_IN }
   ],
+  [`${ENTITY_TYPE_LOCATION_COUNTRY}_${ENTITY_TYPE_LOCATION_COUNTRY}`]: [
+    { name: RELATION_DERIVED_FROM, type: REL_BUILT_IN }
+  ],
   // endregion
   // region LOCATION_REGION
   [`${ENTITY_TYPE_LOCATION_REGION}_${ENTITY_TYPE_LOCATION_REGION}`]: [
-    { name: RELATION_LOCATED_AT, type: REL_BUILT_IN }
+    { name: RELATION_LOCATED_AT, type: REL_BUILT_IN },
+    { name: RELATION_DERIVED_FROM, type: REL_BUILT_IN }
   ],
   // endregion
   // region MALWARE
@@ -682,6 +711,7 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
     { name: RELATION_DROPS, type: REL_BUILT_IN },
     { name: RELATION_USES, type: REL_BUILT_IN },
     { name: RELATION_VARIANT_OF, type: REL_BUILT_IN },
+    { name: RELATION_DERIVED_FROM, type: REL_BUILT_IN }
   ],
   [`${ENTITY_TYPE_MALWARE}_${ENTITY_TYPE_THREAT_ACTOR}`]: [
     { name: RELATION_AUTHORED_BY, type: REL_BUILT_IN }
@@ -769,10 +799,12 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
   [`${ENTITY_TYPE_THREAT_ACTOR}_${ENTITY_TYPE_THREAT_ACTOR}`]: [
     { name: RELATION_PART_OF, type: REL_NEW },
     { name: RELATION_COOPERATES_WITH, type: REL_NEW },
+    { name: RELATION_DERIVED_FROM, type: REL_BUILT_IN }
   ],
   [`${ENTITY_TYPE_THREAT_ACTOR}_${ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL}`]: [
     { name: RELATION_PART_OF, type: REL_NEW },
     { name: RELATION_COOPERATES_WITH, type: REL_NEW },
+    { name: RELATION_DERIVED_FROM, type: REL_BUILT_IN }
   ],
   [`${ENTITY_TYPE_THREAT_ACTOR}_${ENTITY_TYPE_TOOL}`]: [
     { name: RELATION_USES, type: REL_BUILT_IN }
@@ -848,10 +880,12 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
   [`${ENTITY_TYPE_THREAT_ACTOR_GROUP}_${ENTITY_TYPE_THREAT_ACTOR_GROUP}`]: [
     { name: RELATION_PART_OF, type: REL_NEW },
     { name: RELATION_COOPERATES_WITH, type: REL_NEW },
+    { name: RELATION_DERIVED_FROM, type: REL_BUILT_IN }
   ],
   [`${ENTITY_TYPE_THREAT_ACTOR_GROUP}_${ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL}`]: [
     { name: RELATION_PART_OF, type: REL_NEW },
     { name: RELATION_COOPERATES_WITH, type: REL_NEW },
+    { name: RELATION_DERIVED_FROM, type: REL_BUILT_IN }
   ],
   [`${ENTITY_TYPE_THREAT_ACTOR_GROUP}_${ENTITY_TYPE_TOOL}`]: [
     { name: RELATION_USES, type: REL_BUILT_IN }
@@ -861,6 +895,14 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
   ],
   [`${ENTITY_TYPE_THREAT_ACTOR_GROUP}_${ENTITY_HASHED_OBSERVABLE_STIX_FILE}`]: [
     { name: RELATION_USES, type: REL_EXTENDED }
+  ],
+  // endregion
+  // region THREAT_ACTOR_INDIVIDUAL
+  [`${ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL}_${ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL}`]: [
+    { name: RELATION_DERIVED_FROM, type: REL_BUILT_IN }
+  ],
+  [`${ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL}_${ENTITY_TYPE_THREAT_ACTOR_GROUP}`]: [
+    { name: RELATION_DERIVED_FROM, type: REL_BUILT_IN }
   ],
   // endregion
   // region TOOL
@@ -909,6 +951,9 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
     { name: RELATION_HAS, type: REL_BUILT_IN },
     { name: RELATION_TARGETS, type: REL_BUILT_IN }
   ],
+  [`${ENTITY_TYPE_TOOL}_${ENTITY_TYPE_TOOL}`]: [
+    { name: RELATION_DERIVED_FROM, type: REL_BUILT_IN }
+  ],
   // endregion
   // Observables
   // region HOSTNAME
@@ -932,19 +977,43 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
   [`${ENTITY_HOSTNAME}_${ENTITY_HASHED_OBSERVABLE_STIX_FILE}`]: [
     { name: RELATION_DROPS, type: REL_EXTENDED }
   ],
+  [`${ENTITY_HOSTNAME}_${ENTITY_HOSTNAME}`]: [
+    { name: RELATION_DERIVED_FROM, type: REL_BUILT_IN }
+  ],
   // endregion
   // region URL
   [`${ENTITY_URL}_${ENTITY_TYPE_NARRATIVE}`]: [
     { name: RELATION_USES, type: REL_EXTENDED }
+  ],
+  [`${ENTITY_URL}_${ENTITY_URL}`]: [
+    { name: RELATION_DERIVED_FROM, type: REL_BUILT_IN }
   ],
   // endregion
   // region TEXT
   [`${ENTITY_TEXT}_${ENTITY_TYPE_NARRATIVE}`]: [
     { name: RELATION_USES, type: REL_EXTENDED }
   ],
+  [`${ENTITY_TEXT}_${ENTITY_TEXT}`]: [
+    { name: RELATION_DERIVED_FROM, type: REL_BUILT_IN }
+  ],
   // endregion
   // region ARTIFACT
   [`${ENTITY_HASHED_OBSERVABLE_ARTIFACT}_${ENTITY_TYPE_NARRATIVE}`]: [
+    { name: RELATION_USES, type: REL_EXTENDED }
+  ],
+  [`${ENTITY_HASHED_OBSERVABLE_ARTIFACT}_${ENTITY_HASHED_OBSERVABLE_ARTIFACT}`]: [
+    { name: RELATION_DERIVED_FROM, type: REL_BUILT_IN }
+  ],
+  [`${ENTITY_HASHED_OBSERVABLE_ARTIFACT}_${ENTITY_IPV4_ADDR}`]: [
+    { name: RELATION_COMMUNICATES_WITH, type: REL_EXTENDED }
+  ],
+  [`${ENTITY_HASHED_OBSERVABLE_ARTIFACT}_${ENTITY_IPV6_ADDR}`]: [
+    { name: RELATION_COMMUNICATES_WITH, type: REL_EXTENDED }
+  ],
+  [`${ENTITY_HASHED_OBSERVABLE_ARTIFACT}_${ENTITY_DOMAIN_NAME}`]: [
+    { name: RELATION_COMMUNICATES_WITH, type: REL_EXTENDED }
+  ],
+  [`${ENTITY_HASHED_OBSERVABLE_ARTIFACT}_${ENTITY_TYPE_ATTACK_PATTERN}`]: [
     { name: RELATION_USES, type: REL_EXTENDED }
   ],
   // endregion
@@ -976,6 +1045,9 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
   [`${ENTITY_IPV4_ADDR}_${ENTITY_TYPE_IDENTITY_INDIVIDUAL}`]: [
     { name: RELATION_BELONGS_TO, type: REL_EXTENDED }
   ],
+  [`${ENTITY_IPV4_ADDR}_${ENTITY_IPV4_ADDR}`]: [
+    { name: RELATION_DERIVED_FROM, type: REL_BUILT_IN }
+  ],
   // endregion
   // region IPV6_ADDR
   [`${ENTITY_IPV6_ADDR}_${ENTITY_TYPE_LOCATION_POSITION}`]: [
@@ -1005,10 +1077,14 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
   [`${ENTITY_IPV6_ADDR}_${ENTITY_TYPE_IDENTITY_INDIVIDUAL}`]: [
     { name: RELATION_BELONGS_TO, type: REL_EXTENDED }
   ],
+  [`${ENTITY_IPV6_ADDR}_${ENTITY_IPV6_ADDR}`]: [
+    { name: RELATION_DERIVED_FROM, type: REL_BUILT_IN }
+  ],
   // endregion
   // region DOMAIN_NAME
   [`${ENTITY_DOMAIN_NAME}_${ENTITY_DOMAIN_NAME}`]: [
-    { name: RELATION_RESOLVES_TO, type: REL_BUILT_IN }
+    { name: RELATION_RESOLVES_TO, type: REL_BUILT_IN },
+    { name: RELATION_DERIVED_FROM, type: REL_BUILT_IN }
   ],
   [`${ENTITY_DOMAIN_NAME}_${ENTITY_IPV4_ADDR}`]: [
     { name: RELATION_RESOLVES_TO, type: REL_BUILT_IN }
@@ -1035,7 +1111,8 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
   ],
   [`${ENTITY_HASHED_OBSERVABLE_STIX_FILE}_${ENTITY_HASHED_OBSERVABLE_STIX_FILE}`]: [
     { name: RELATION_DROPS, type: REL_EXTENDED },
-    { name: RELATION_DOWNLOADS, type: REL_EXTENDED }
+    { name: RELATION_DOWNLOADS, type: REL_EXTENDED },
+    { name: RELATION_DERIVED_FROM, type: REL_BUILT_IN }
   ],
   [`${ENTITY_HASHED_OBSERVABLE_STIX_FILE}_${ENTITY_IPV4_ADDR}`]: [
     { name: RELATION_COMMUNICATES_WITH, type: REL_EXTENDED }
@@ -1050,23 +1127,12 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
     { name: RELATION_TARGETS, type: REL_EXTENDED }
   ],
   // endregion
-  // region ARTIFACT
-  [`${ENTITY_HASHED_OBSERVABLE_ARTIFACT}_${ENTITY_IPV4_ADDR}`]: [
-    { name: RELATION_COMMUNICATES_WITH, type: REL_EXTENDED }
-  ],
-  [`${ENTITY_HASHED_OBSERVABLE_ARTIFACT}_${ENTITY_IPV6_ADDR}`]: [
-    { name: RELATION_COMMUNICATES_WITH, type: REL_EXTENDED }
-  ],
-  [`${ENTITY_HASHED_OBSERVABLE_ARTIFACT}_${ENTITY_DOMAIN_NAME}`]: [
-    { name: RELATION_COMMUNICATES_WITH, type: REL_EXTENDED }
-  ],
-  [`${ENTITY_HASHED_OBSERVABLE_ARTIFACT}_${ENTITY_TYPE_ATTACK_PATTERN}`]: [
-    { name: RELATION_USES, type: REL_EXTENDED }
-  ],
-  // endregion
   // region SOFTWARE
   [`${ENTITY_SOFTWARE}_${ENTITY_TYPE_VULNERABILITY}`]: [
     { name: RELATION_HAS, type: REL_EXTENDED }
+  ],
+  [`${ENTITY_SOFTWARE}_${ENTITY_SOFTWARE}`]: [
+    { name: RELATION_DERIVED_FROM, type: REL_BUILT_IN }
   ],
   // From MEDIA CONTENT
   [`${ENTITY_MEDIA_CONTENT}_${ENTITY_TYPE_IDENTITY_INDIVIDUAL}`]: [
@@ -1078,9 +1144,15 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
   [`${ENTITY_MEDIA_CONTENT}_${ENTITY_USER_ACCOUNT}`]: [
     { name: RELATION_AUTHORED_BY, type: REL_EXTENDED }
   ],
+  [`${ENTITY_MEDIA_CONTENT}_${ENTITY_MEDIA_CONTENT}`]: [
+    { name: RELATION_DERIVED_FROM, type: REL_BUILT_IN }
+  ],
   // From USER_ACCOUNT
   [`${ENTITY_USER_ACCOUNT}_${ENTITY_MEDIA_CONTENT}`]: [
     { name: RELATION_PUBLISHES, type: REL_NEW }
+  ],
+  [`${ENTITY_USER_ACCOUNT}_${ENTITY_USER_ACCOUNT}`]: [
+    { name: RELATION_DERIVED_FROM, type: REL_BUILT_IN }
   ],
   // endregion
   // Extended

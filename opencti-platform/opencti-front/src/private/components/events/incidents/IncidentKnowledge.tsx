@@ -70,7 +70,7 @@ const IncidentKnowledge = ({
           element={ (
             <EntityStixCoreRelationships
               entityId={incident.id}
-              relationshipTypes={['related-to']}
+              relationshipTypes={['related-to', 'derived-from']}
               entityLink={link}
               defaultStartTime={incident.first_seen}
               defaultStopTime={incident.last_seen}

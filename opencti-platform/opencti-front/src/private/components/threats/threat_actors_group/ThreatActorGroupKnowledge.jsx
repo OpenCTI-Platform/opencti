@@ -76,7 +76,7 @@ class ThreatActorGroupKnowledgeComponent extends Component {
             element={
               <EntityStixCoreRelationships
                 entityId={threatActorGroup.id}
-                relationshipTypes={['part-of', 'cooperates-with', 'employed-by']}
+                relationshipTypes={['part-of', 'cooperates-with', 'employed-by', 'derived-from']}
                 stixCoreObjectTypes={['Threat-Actor']}
                 entityLink={link}
                 defaultStartTime={threatActorGroup.first_seen}
