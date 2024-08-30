@@ -39,7 +39,7 @@ const SearchContainer: FunctionComponent<SearchRootComponentProps> = ({ children
         sx={{
           borderBottom: 1,
           borderColor: 'divider',
-          marginBottom: 4,
+          marginBottom: 3,
         }}
       >
         <Tabs value={searchType}>

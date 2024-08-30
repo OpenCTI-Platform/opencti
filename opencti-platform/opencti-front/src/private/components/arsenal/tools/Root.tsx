@@ -138,7 +138,7 @@ const RootTool = ({ queryRef, toolId }: RootToolProps) => {
               sx={{
                 borderBottom: 1,
                 borderColor: 'divider',
-                marginBottom: 4,
+                marginBottom: 3,
               }}
             >
               <Tabs

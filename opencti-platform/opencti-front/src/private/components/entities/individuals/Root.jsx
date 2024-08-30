@@ -182,7 +182,7 @@ class RootIndividual extends Component {
                         sx={{
                           borderBottom: 1,
                           borderColor: 'divider',
-                          marginBottom: 4,
+                          marginBottom: 3,
                         }}
                       >
                         <Tabs

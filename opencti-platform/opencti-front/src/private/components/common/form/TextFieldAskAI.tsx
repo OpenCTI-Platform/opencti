@@ -234,13 +234,13 @@ const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({
       <>
         <EETooltip forAi={true} title={t_i18n('Ask AI')}>
           <IconButton
-            size="medium"
+            size="small"
             color="secondary"
             onClick={(event) => ((isEnterpriseEdition && enabled && configured) ? handleOpenMenu(event) : null)}
             disabled={disabled || currentValue.length < 10}
-            style={{ marginRight: -10 }}
+            style={{ marginTop: 4 }}
           >
-            <AutoAwesomeOutlined fontSize='medium'/>
+            <AutoAwesomeOutlined fontSize='small' />
           </IconButton>
         </EETooltip>
         <Menu
@@ -329,20 +329,20 @@ const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({
   };
   if (variant === 'markdown') {
     return (
-      <div style={style || { position: 'absolute', top: 15, right: 0 }}>
+      <div style={style || { position: 'absolute', top: 17, right: 0 }}>
         {renderButton()}
       </div>
     );
   }
   if (variant === 'html') {
     return (
-      <div style={style || { position: 'absolute', top: -12, right: 35 }}>
+      <div style={style || { position: 'absolute', top: -12, right: 30 }}>
         {renderButton()}
       </div>
     );
   }
   return (
-    <InputAdornment position="end" style={{ position: 'absolute', top: 5, right: 0 }}>
+    <InputAdornment position="end" style={{ position: 'absolute', top: 7, right: 0 }}>
       {renderButton()}
     </InputAdornment>
   );

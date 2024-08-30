@@ -161,30 +161,31 @@ const RichTextField = (props) => {
         <FormHelperText error={true}>{meta.error}</FormHelperText>
       )}
       {askAi && (
-      <TextFieldAskAI
-        currentValue={value ?? ''}
-        setFieldValue={(val) => {
-          setFieldValue(name, val);
-          if (typeof onSubmit === 'function') {
-            onSubmit(name, val || '');
-          }
-        }}
-        format="html"
-        variant="html"
-        disabled={props.disabled}
-      />
+        <TextFieldAskAI
+          currentValue={value ?? ''}
+          setFieldValue={(val) => {
+            setFieldValue(name, val);
+            if (typeof onSubmit === 'function') {
+              onSubmit(name, val || '');
+            }
+          }}
+          format="html"
+          variant="html"
+          disabled={props.disabled}
+        />
       )}
       {handleDownloadPdf && (
-        <Tooltip title={t_i18n('Download in pdf')}>
-          <IconButton
-            color="primary"
-            onClick={handleDownloadPdf}
-            size="large"
-            style={{ position: 'absolute', top: -15, right: 55 }}
-          >
-            <FilePdfBox />
-          </IconButton>
-        </Tooltip>
+        <div style={{ position: 'absolute', top: -7, right: askAi ? 57 : 30 }}>
+          <Tooltip title={t_i18n('Download in pdf')}>
+            <IconButton
+              color="primary"
+              onClick={handleDownloadPdf}
+              size="small"
+            >
+              <FilePdfBox fontSize="small" />
+            </IconButton>
+          </Tooltip>
+        </div>
       )}
     </div>
   );
