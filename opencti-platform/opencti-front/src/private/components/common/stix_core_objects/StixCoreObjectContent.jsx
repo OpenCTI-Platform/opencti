@@ -100,6 +100,10 @@ const styles = () => ({
     borderRadius: 4,
     position: 'relative',
   },
+  editorContainerPreview: {
+    overflowY: 'scroll',
+    overflowX: 'hidden',
+  },
 });
 
 const interval$ = interval(FIVE_SECONDS);
@@ -657,11 +661,13 @@ class StixCoreObjectContentComponent extends Component {
                     selectedTab={markdownSelectedTab}
                     onTabChange={this.onMarkdownChangeTab.bind(this)}
                     generateMarkdownPreview={(markdown) => Promise.resolve(
-                      <MarkdownDisplay
-                        content={markdown}
-                        remarkGfmPlugin={true}
-                        commonmark={true}
-                      />,
+                      <div className={classes.editorContainerPreview} style={{ height: height - 80, maxHeight: height - 80 }}>
+                        <MarkdownDisplay
+                          content={markdown}
+                          remarkGfmPlugin={true}
+                          commonmark={true}
+                        />
+                      </div>,
                     )
                     }
                     l18n={{

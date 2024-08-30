@@ -117,7 +117,7 @@ const RootCaseRftComponent = ({ queryRef, caseId }) => {
             sx={{
               borderBottom: 1,
               borderColor: 'divider',
-              marginBottom: 4,
+              marginBottom: 3,
             }}
           >
             <Tabs

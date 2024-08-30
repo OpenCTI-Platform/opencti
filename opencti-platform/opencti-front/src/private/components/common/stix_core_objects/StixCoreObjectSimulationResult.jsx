@@ -40,7 +40,10 @@ import useXTM from '../../../../utils/hooks/useXTM';
 const useStyles = makeStyles((theme) => ({
   simulationResults: {
     display: 'flex',
+    position: 'absolute',
     alignItems: 'center',
+    top: 0,
+    right: 0,
   },
   charts: {
     display: 'grid',
@@ -49,7 +52,7 @@ const useStyles = makeStyles((theme) => ({
     marginLeft: 10,
   },
   chartContainer: {
-    left: -31,
+    left: -28,
     position: 'relative',
   },
   iconOverlay: {
@@ -448,6 +451,7 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
   return (
     <>
       {!oBasDisableDisplay && (
+      <div style={{ position: 'relative' }}>
         <div className={classes.simulationResults}>
           <Tooltip title={`${t_i18n('Check the posture in OpenBAS')}`}>
             <Button
@@ -466,6 +470,7 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
           </Tooltip>
           {renderCharts()}
         </div>
+      </div>
       )}
       <Drawer
         title={t_i18n('Generate a simulation scenario')}

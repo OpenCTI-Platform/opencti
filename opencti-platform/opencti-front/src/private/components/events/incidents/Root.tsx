@@ -139,7 +139,7 @@ const RootIncidentComponent = ({ queryRef }) => {
               sx={{
                 borderBottom: 1,
                 borderColor: 'divider',
-                marginBottom: 4,
+                marginBottom: 3,
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItem: 'center',

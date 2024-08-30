@@ -208,6 +208,7 @@ const StixCoreObjectMappableContent: FunctionComponent<StixCoreObjectMappableCon
               onSubmit={debouncedSubmit}
               onSelect={handleTextSelection}
               disabled={!editionMode}
+              askAi={askAi}
               helperText={
                 <SubscriptionFocus
                   context={containerData.editContext}
