@@ -143,7 +143,7 @@ const RootCaseIncidentComponent = ({ queryRef, caseId }) => {
         container={caseData}
         PopoverComponent={<CaseIncidentPopover id={caseData.id} />}
         EditComponent={
-          <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <Security needs={[KNOWLEDGE_KNUPDATE]} hasAccess={currentAccessRight.canEdit}>
             <CaseIncidentEdition caseId={caseData.id} />
           </Security>
         }

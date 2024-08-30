@@ -42,7 +42,7 @@ import StixCoreObjectQuickSubscription from '../stix_core_objects/StixCoreObject
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 import StixCoreObjectFileExport from '../stix_core_objects/StixCoreObjectFileExport';
 import Transition from '../../../../components/Transition';
-import { authorizedMembersToOptions } from '../../../../utils/authorizedMembers';
+import { authorizedMembersToOptions, useGetCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -753,6 +753,7 @@ const ContainerHeader = (props) => {
       ],
     },
   };
+  const { canEdit } = useGetCurrentUserAccessRight(container.currentUserAccessRight);
   const triggerData = useLazyLoadQuery(stixCoreObjectQuickSubscriptionContentQuery, { first: 20, ...triggersPaginationOptions });
   return (
     <Box sx={containerStyle}>
@@ -1064,7 +1065,7 @@ const ContainerHeader = (props) => {
               />
             )}
             {!knowledge && (
-              <Security needs={popoverSecurity || [KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNENRICHMENT]}>
+              <Security needs={popoverSecurity || [KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNENRICHMENT]} hasAccess={canEdit}>
                 {React.cloneElement(PopoverComponent, { id: container.id })}
               </Security>
             )}
@@ -1098,9 +1099,11 @@ export default createFragmentContainer(ContainerHeader, {
       }
       ... on Case {
         name
+        currentUserAccessRight
       }
       ... on Feedback {
         name
+        currentUserAccessRight
       }
       ... on Task {
         name
