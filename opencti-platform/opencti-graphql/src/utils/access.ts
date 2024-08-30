@@ -6,7 +6,7 @@ import { context as telemetryContext, trace } from '@opentelemetry/api';
 import { OPENCTI_SYSTEM_UUID } from '../schema/general';
 import { RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
 import { getEntityFromCache } from '../database/cache';
-import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
+import { ENTITY_TYPE_SETTINGS, isInternalObject } from '../schema/internalObject';
 import { STIX_EXT_OCTI } from '../types/stix-extensions';
 import type { AuthContext, AuthUser, UserRole } from '../types/user';
 import type { BasicStoreCommon } from '../types/store';
@@ -19,6 +19,7 @@ import { ACCOUNT_STATUS_ACTIVE } from '../config/conf';
 import { schemaAttributesDefinition } from '../schema/schema-attributes';
 import { FunctionalError } from '../config/errors';
 import { isNotEmptyField } from '../database/utils';
+import { isStixObject } from '../schema/stixCoreObject';
 
 export const DEFAULT_INVALID_CONF_VALUE = 'ChangeMe';
 
@@ -31,6 +32,7 @@ export const CSVMAPPERS = 'CSVMAPPERS';
 export const KNOWLEDGE = 'KNOWLEDGE';
 export const KNOWLEDGE_KNUPDATE = 'KNOWLEDGE_KNUPDATE';
 export const KNOWLEDGE_ORGANIZATION_RESTRICT = 'KNOWLEDGE_KNUPDATE_KNORGARESTRICT';
+export const KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS = 'KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS';
 export const KNOWLEDGE_KNASKIMPORT = 'KNOWLEDGE_KNASKIMPORT';
 export const VIRTUAL_ORGANIZATION_ADMIN = 'VIRTUAL_ORGANIZATION_ADMIN';
 export const SETTINGS_SECURITYACTIVITY = 'SETTINGS_SECURITYACTIVITY';
@@ -520,7 +522,7 @@ export const isDirectAdministrator = (user: AuthUser, element: any) => {
   return elementAccessIds.some((a: string) => userMemberAccessIds.includes(a));
 };
 export const getUserAccessRight = (user: AuthUser, element: any) => {
-  if (!element.authorized_members) { // no restricted user access on element
+  if (!element.authorized_members || element.authorized_members.length === 0) { // no restricted user access on element
     return MEMBER_ACCESS_RIGHT_ADMIN;
   }
   const accessMembers = [...element.authorized_members];
@@ -544,8 +546,11 @@ export const getUserAccessRight = (user: AuthUser, element: any) => {
 
 // ensure that user can access the element (operation: edit / delete / manage-access)
 export const validateUserAccessOperation = (user: AuthUser, element: any, operation: 'edit' | 'delete' | 'manage-access') => {
-  if (isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
+  if (isInternalObject(element.entity_type) && isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
     return true;
+  }
+  if (isStixObject(element.entity_type) && operation === 'manage-access' && !isUserHasCapability(user, KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS)) {
+    return false;
   }
   const userAccessRight = getUserAccessRight(user, element);
   if (!userAccessRight) { // user has no access
