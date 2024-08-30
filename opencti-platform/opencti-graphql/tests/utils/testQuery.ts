@@ -22,8 +22,8 @@ export const SYNC_LIVE_START_REMOTE_URI = conf.get('app:sync_live_start_remote_u
 export const SYNC_DIRECT_START_REMOTE_URI = conf.get('app:sync_direct_start_remote_uri');
 export const SYNC_RESTORE_START_REMOTE_URI = conf.get('app:sync_restore_start_remote_uri');
 export const SYNC_TEST_REMOTE_URI = `http://api-tests:${PORT}`;
-export const RAW_EVENTS_SIZE = 1059;
-export const SYNC_LIVE_EVENTS_SIZE = 600;
+export const RAW_EVENTS_SIZE = 1075;
+export const SYNC_LIVE_EVENTS_SIZE = 607;
 
 export const PYTHON_PATH = './src/python/testing';
 export const API_URI = `http://localhost:${conf.get('app:port')}`;
@@ -470,7 +470,7 @@ const ORGANIZATION_ASSIGN_MUTATION = `
     userEdit(id: $userId) {
       relationAdd(input: {
         toId: $toId
-        relationship_type: "member-of"
+        relationship_type: "participate-to"
       }) {
         id
       }
@@ -605,6 +605,53 @@ export const getUserIdByEmail = async (email: string) => {
   }
   return data.users.edges[0].node.id;
 };
+
+// endregion
+
+// Search for test organizations
+const ORGANIZATION_SEARCH_QUERY = `
+  query OrganizationTestSearchQuery($search: String) {
+    organizations(search: $search) {
+      edges {
+        node {
+          name
+          id
+        }
+      }
+    }
+  }
+`;
+export const getOrganizationIdByName = async (name: string) => {
+  const { data } = await internalAdminQuery(ORGANIZATION_SEARCH_QUERY, { search: `"${name}"` });
+  if (!data?.organizations.edges.length) {
+    return null;
+  }
+  return data.organizations.edges[0].node.id;
+};
+
+// endregion
+
+// Search for test group
+const GROUP_SEARCH_QUERY = `
+  query GroupTestSearchQuery($search: String) {
+    groups(search: $search) {
+      edges {
+        node {
+          name
+          id
+        }
+      }
+    }
+  }
+`;
+export const getGroupIdByName = async (name: string) => {
+  const { data } = await internalAdminQuery(GROUP_SEARCH_QUERY, { search: `"${name}"` });
+  if (!data?.groups.edges.length) {
+    return null;
+  }
+  return data.groups.edges[0].node.id;
+};
+
 // endregion
 
 type markingType = { standard_id: string; internal_id: string };

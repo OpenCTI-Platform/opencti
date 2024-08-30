@@ -3,8 +3,23 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { elLoadById } from '../../../src/database/engine';
 import { generateStandardId } from '../../../src/schema/identifier';
 import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_GROUP, ENTITY_TYPE_USER } from '../../../src/schema/internalObject';
-import { ADMIN_USER, adminQuery, editorQuery, queryAsAdmin, testContext, TESTING_GROUPS, TESTING_USERS } from '../../utils/testQuery';
+import {
+  ADMIN_USER,
+  adminQuery,
+  AMBER_GROUP,
+  editorQuery,
+  getGroupIdByName,
+  getOrganizationIdByName,
+  getUserIdByEmail,
+  queryAsAdmin,
+  TEST_ORGANIZATION,
+  testContext,
+  TESTING_GROUPS,
+  TESTING_USERS,
+  USER_EDITOR
+} from '../../utils/testQuery';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../src/modules/organization/organization-types';
+import { VIRTUAL_ORGANIZATION_ADMIN } from '../../../src/utils/access';
 
 const LIST_QUERY = gql`
   query users(
@@ -682,5 +697,149 @@ describe('User has no capability query behavior', () => {
         input: { key: 'default_assignation', value: [true] }
       },
     });
+  });
+});
+
+describe('User has no settings capability and is organization admin query behavior', () => {
+  let userInternalId;
+  let userEditorId;
+  let testOrganizationId;
+  let amberGroupId;
+  afterAll(async () => {
+    // remove the capability to administrate the Organization
+    const ORGA_ADMIN_DELETE_QUERY = gql`
+      mutation OrganizationAdminRemove($id: ID!, $memberId: String!) {
+        organizationAdminRemove(id: $id, memberId: $memberId) {
+          id
+        }
+      }
+    `;
+    await adminQuery({
+      query: ORGA_ADMIN_DELETE_QUERY,
+      variables: {
+        id: testOrganizationId,
+        memberId: userEditorId,
+      },
+    });
+
+    // remove granted_groups to TEST_ORGANIZATION
+    const UPDATE_QUERY = gql`
+      mutation OrganizationEdit($id: ID!, $input: [EditInput]!) {
+        organizationFieldPatch(id: $id, input: $input) {
+          id
+          name
+          grantable_groups {
+            id
+          }
+        }
+      }
+    `;
+    await adminQuery({
+      query: UPDATE_QUERY,
+      variables: { id: testOrganizationId, input: { key: 'grantable_groups', value: [] } },
+    });
+  });
+  it('should has the capability to administrate the Organization', async () => {
+    const ORGA_ADMIN_ADD_QUERY = gql`
+      mutation OrganizationAdminAdd($id: ID!, $memberId: String!) {
+        organizationAdminAdd(id: $id, memberId: $memberId) {
+          id
+          standard_id
+        }
+      }
+    `;
+    userEditorId = await getUserIdByEmail(USER_EDITOR.email); // USER_EDITOR is perfect because she has no settings capabilities and is part of TEST_ORGANIZATION
+    const queryResult = await adminQuery({
+      query: ORGA_ADMIN_ADD_QUERY,
+      variables: {
+        id: TEST_ORGANIZATION.id,
+        memberId: userEditorId,
+      },
+    });
+    expect(queryResult).not.toBeNull();
+    expect(queryResult.data.organizationAdminAdd).not.toBeNull();
+    expect(queryResult.data.organizationAdminAdd.standard_id).toEqual(TEST_ORGANIZATION.id);
+
+    // Check that USER_EDITOR is Organization administrator
+    const editorUserQueryResult = await adminQuery({ query: READ_QUERY, variables: { id: userEditorId } });
+    expect(editorUserQueryResult).not.toBeNull();
+    expect(editorUserQueryResult.data.user).not.toBeNull();
+    expect(editorUserQueryResult.data.user.capabilities.length).toEqual(5);
+    const { capabilities } = editorUserQueryResult.data.user;
+    expect(capabilities.some((capa) => capa.name === VIRTUAL_ORGANIZATION_ADMIN)).toEqual(true);
+  });
+  it('should user created', async () => {
+    // Create the user
+    testOrganizationId = await getOrganizationIdByName(TEST_ORGANIZATION.name);
+    amberGroupId = await getGroupIdByName(AMBER_GROUP.name);
+    const USER_TO_CREATE = {
+      input: {
+        name: 'User',
+        description: 'User description',
+        password: 'user',
+        user_email: 'user@mail.com',
+        firstname: 'User',
+        lastname: 'OpenCTI',
+        objectOrganization: [testOrganizationId],
+        groups: [amberGroupId],
+      },
+    };
+
+    // Need to add granted_groups to TEST_ORGANIZATION because of line 533 in domain/user.js
+    const UPDATE_QUERY = gql`
+      mutation OrganizationEdit($id: ID!, $input: [EditInput]!) {
+        organizationFieldPatch(id: $id, input: $input) {
+          id
+          name
+          grantable_groups {
+            id
+          }
+        }
+      }
+    `;
+    const queryResult = await adminQuery({
+      query: UPDATE_QUERY,
+      variables: { id: testOrganizationId, input: { key: 'grantable_groups', value: [amberGroupId] } },
+    });
+    expect(queryResult.data.organizationFieldPatch.grantable_groups.length).toEqual(1);
+    expect(queryResult.data.organizationFieldPatch.grantable_groups[0]).toEqual({ id: amberGroupId });
+
+    // Create User
+    const user = await editorQuery({
+      query: CREATE_QUERY,
+      variables: USER_TO_CREATE,
+    });
+    expect(user).not.toBeNull();
+    expect(user.data.userAdd).not.toBeNull();
+    userInternalId = user.data.userAdd.id;
+
+    expect(user.data.userAdd.name).toEqual('User');
+  });
+  it('should update user from its own organization', async () => {
+    const UPDATE_QUERY = gql`
+      mutation UserEdit($id: ID!, $input: [EditInput]!) {
+        userEdit(id: $id) {
+          fieldPatch(input: $input) {
+            account_status
+          }
+        }
+      }
+    `;
+    const queryResult = await editorQuery({
+      query: UPDATE_QUERY,
+      variables: { id: userInternalId, input: { key: 'account_status', value: ['Inactive'] } },
+    });
+    expect(queryResult.data.userEdit.fieldPatch.account_status).toEqual('Inactive');
+  });
+  it('should user deleted', async () => {
+    // Delete user
+    await editorQuery({
+      query: DELETE_QUERY,
+      variables: { id: userInternalId },
+    });
+    // Verify is no longer found
+    const queryResult = await adminQuery({ query: READ_QUERY, variables: { id: userInternalId } });
+    expect(queryResult).not.toBeNull();
+    expect(queryResult.data.user).toBeNull();
   });
 });
