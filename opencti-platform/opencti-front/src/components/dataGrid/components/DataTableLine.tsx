@@ -101,6 +101,7 @@ const DataTableLine = ({
   effectiveColumns,
   index,
   onToggleShiftEntity,
+  isNavigable = false,
 }: DataTableLineProps) => {
   const theme = useTheme<Theme>();
 
@@ -112,7 +113,7 @@ const DataTableLine = ({
     actions,
   } = useDataTableContext();
 
-  const navigable = !actions;
+  const navigable = isNavigable || !actions;
   const classes = useStyles({ navigable });
 
   const {
@@ -136,6 +137,7 @@ const DataTableLine = ({
     <div
       key={row.id}
       className={classes.row}
+      style={{ cursor: navigable ? 'pointer' : 'default' }}
       onClick={() => (navigable ? navigate(link) : undefined)}
     >
       {startsWithSelect && (

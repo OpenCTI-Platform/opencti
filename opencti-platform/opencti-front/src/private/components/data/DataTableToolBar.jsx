@@ -69,7 +69,14 @@ import { objectMarkingFieldAllowedMarkingsQuery } from '../common/form/ObjectMar
 import { identitySearchIdentitiesSearchQuery } from '../common/identities/IdentitySearch';
 import { labelsSearchQuery } from '../settings/LabelsQuery';
 import Security from '../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE, KNOWLEDGE_KNUPDATE_KNORGARESTRICT } from '../../../utils/hooks/useGranted';
+import {
+  EXPLORE_EXUPDATE_EXDELETE,
+  EXPLORE_EXUPDATE_PUBLISH,
+  INVESTIGATION_INUPDATE_INDELETE,
+  KNOWLEDGE_KNUPDATE,
+  KNOWLEDGE_KNUPDATE_KNDELETE,
+  KNOWLEDGE_KNUPDATE_KNORGARESTRICT,
+} from '../../../utils/hooks/useGranted';
 import { UserContext } from '../../../utils/hooks/useAuth';
 import { statusFieldStatusesSearchQuery } from '../common/form/StatusField';
 import { hexToRGB } from '../../../utils/Colors';
@@ -180,22 +187,13 @@ const styles = (theme) => ({
   },
 });
 
-const notMergableTypes = [
-  'Indicator',
-  'Note',
-  'Opinion',
-  'Label',
-  'Case-Template',
-  'Task',
-  'DeleteOperation',
-  'InternalFile',
-];
-const notAddableTypes = ['Label', 'Vocabulary', 'Case-Template', 'DeleteOperation', 'InternalFile'];
-const notUpdatableTypes = ['Label', 'Vocabulary', 'Case-Template', 'Task', 'DeleteOperation', 'InternalFile'];
-const notScannableTypes = ['Label', 'Vocabulary', 'Case-Template', 'Task', 'DeleteOperation', 'InternalFile'];
-const notEnrichableTypes = ['Label', 'Vocabulary', 'Case-Template', 'Task', 'DeleteOperation', 'InternalFile'];
+const notMergableTypes = ['Indicator', 'Note', 'Opinion', 'Label', 'Case-Template', 'Task', 'DeleteOperation', 'InternalFile', 'PublicDashboard', 'Workspace'];
+const notAddableTypes = ['Label', 'Vocabulary', 'Case-Template', 'DeleteOperation', 'InternalFile', 'PublicDashboard', 'Workspace'];
+const notUpdatableTypes = ['Label', 'Vocabulary', 'Case-Template', 'Task', 'DeleteOperation', 'InternalFile', 'PublicDashboard', 'Workspace'];
+const notScannableTypes = ['Label', 'Vocabulary', 'Case-Template', 'Task', 'DeleteOperation', 'InternalFile', 'PublicDashboard', 'Workspace'];
+const notEnrichableTypes = ['Label', 'Vocabulary', 'Case-Template', 'Task', 'DeleteOperation', 'InternalFile', 'PublicDashboard', 'Workspace'];
 const typesWithScore = ['Stix-Cyber-Observable', 'Indicator'];
-const notShareableTypes = ['Label', 'Vocabulary', 'Case-Template', 'DeleteOperation', 'InternalFile'];
+const notShareableTypes = ['Label', 'Vocabulary', 'Case-Template', 'DeleteOperation', 'InternalFile', 'PublicDashboard', 'Workspace'];
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -1297,6 +1295,7 @@ class DataTableToolBar extends Component {
       deleteOperationEnabled,
       warning,
       warningMessage,
+      taskScope,
     } = this.props;
     const { actions, keptEntityId, mergingElement, actionsInputs, promoteToContainer } = this.state;
     const { entityTypeFilterValues, selectedElementsList, selectedTypes } = this.getSelectedTypes();
@@ -1361,6 +1360,12 @@ class DataTableToolBar extends Component {
     }
     const typesHaveScore = selectedTypes.every((selectedType) => typesWithScore.includes(selectedType))
       && entityTypeFilterValues.every((filterType) => typesWithScore.includes(filterType));
+
+    let deleteCapability = KNOWLEDGE_KNUPDATE_KNDELETE;
+    if (taskScope === 'DASHBOARD') deleteCapability = EXPLORE_EXUPDATE_EXDELETE;
+    if (taskScope === 'PUBLIC_DASHBOARD') deleteCapability = EXPLORE_EXUPDATE_PUBLISH;
+    if (taskScope === 'INVESTIGATION') deleteCapability = INVESTIGATION_INUPDATE_INDELETE;
+
     return (
       <UserContext.Consumer>
         {({ schema, settings }) => {
@@ -1619,7 +1624,7 @@ class DataTableToolBar extends Component {
                     </>
                   )}
                   {deleteDisable !== true && (
-                    <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
+                    <Security needs={[deleteCapability]}>
                       <Tooltip title={warningMessage || t('Delete')}>
                         <span>
                           <IconButton

@@ -40,6 +40,7 @@ const DataTableComponent = ({
   actions,
   createButton,
   pageSize,
+  isNavigable = false,
 }: DataTableProps) => {
   const localStorageColumns = useDataTableLocalStorage<LocalStorageColumns>(`${storageKey}_columns`, {}, true)[0];
   const toggleHelper = useDataTableToggle(storageKey);
@@ -164,6 +165,7 @@ const DataTableComponent = ({
             dataTableToolBarComponent={dataTableToolBarComponent}
             pageStart={pageStart}
             pageSize={currentPageSize}
+            isNavigable={isNavigable}
           />
         </React.Suspense>
       </div>

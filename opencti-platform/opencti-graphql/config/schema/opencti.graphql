@@ -904,6 +904,9 @@ enum BackgroundTaskScope {
   USER
   SETTINGS
   IMPORT
+  DASHBOARD
+  PUBLIC_DASHBOARD
+  INVESTIGATION
 }
 enum BackgroundTaskActionType {
   DELETE

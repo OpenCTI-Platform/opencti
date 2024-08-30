@@ -1,14 +1,13 @@
 import { expect, test } from '../fixtures/baseFixtures';
-import InvestigationsPage from 'tests_e2e/model/investigations.pageModel';
 import InvestigationDetailsPage from '../model/investigationDetails.pageModel';
 import InvestigationsFormPage from '../model/form/investigationsForm.pageModel';
+import InvestigationsPage from '../model/investigations.pageModel';
 
 test('Create a new investigations page', async ({ page }) => {
   const investigationsPage = new InvestigationsPage(page);
   const investigationDetailsPage = new InvestigationDetailsPage(page);
   const investigationsForm = new InvestigationsFormPage(page);
   await page.goto('/dashboard/workspaces/investigations');
-  // await investigationsPage.openButtonModal().hover();
   await investigationsPage.addNewInvestigation().click();
   await investigationsForm.fillNameInput('Test e2e');
   await investigationsPage.getCreateInvestigationButton().click();

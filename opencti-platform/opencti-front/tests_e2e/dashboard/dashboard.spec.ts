@@ -39,21 +39,15 @@ test('Dashboard CRUD', async ({ page }) => {
   await leftBarPage.open();
 
   const dashboardName = `Dashboard - ${uuid()}`;
-  const updateDashboardName = `UpdateDashboard - ${uuid()}`;
+  const updateDashboardName = `Updated - ${uuid()}`;
 
   // region Check open/close form.
   // -----------------------------
 
-  // await dashboardPage.getCreateMenuButton().hover();
-  // await expect(dashboardPage.getAddNewButton()).toBeVisible();
-  // await expect(dashboardPage.getImportButton()).toBeVisible();
-  // await dashboardPage.getAddNewButton().click();
   await dashboardPage.getAddNewDashboardButton().click();
   await expect(dashboardForm.getCreateTitle()).toBeVisible();
   await dashboardForm.getCancelButton().click();
   await expect(dashboardForm.getCreateTitle()).toBeHidden();
-  // await dashboardPage.getCreateMenuButton().hover();
-  // await dashboardPage.getAddNewButton().click();
   await dashboardPage.getAddNewDashboardButton().click();
   await expect(dashboardForm.getCreateTitle()).toBeVisible();
 

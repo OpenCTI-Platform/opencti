@@ -4,6 +4,7 @@ import MenuItem from '@mui/material/MenuItem';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import Dialog from '@mui/material/Dialog';
+import Box from '@mui/material/Box';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
@@ -154,7 +155,7 @@ const WorkspacePopover = ({ workspace, paginationOptions }) => {
           <MenuItem onClick={handleOpenEdit}>{t_i18n('Update')}</MenuItem>
         </Security>
         {workspace.type === 'dashboard' && (
-          <>
+          <Box>
             <Security needs={[EXPLORE_EXUPDATE]} hasAccess={canEdit}>
               <MenuItem onClick={handleDashboardDuplication}>{t_i18n('Duplicate')}</MenuItem>
             </Security>
@@ -165,16 +166,16 @@ const WorkspacePopover = ({ workspace, paginationOptions }) => {
               <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
             </Security>
             {isFeatureEnable('PUBLIC_DASHBOARD_LIST') && (
-              <>
+              <Box>
                 <MenuItem onClick={() => goToPublicDashboards()}>
                   {t_i18n('View associated public dashboards')}
                 </MenuItem>
                 <Security needs={[EXPLORE_EXUPDATE_PUBLISH]} hasAccess={canManage}>
                   <MenuItem onClick={handleOpenCreation}>{t_i18n('Create a public dashboard')}</MenuItem>
                 </Security>
-              </>
+              </Box>
             )}
-          </>
+          </Box>
         )}
         {workspace.type === 'investigation' && (
           <Security needs={[INVESTIGATION_INUPDATE_INDELETE]} hasAccess={canManage}>

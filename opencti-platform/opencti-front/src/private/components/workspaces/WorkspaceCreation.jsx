@@ -17,6 +17,7 @@ import MarkdownField from '../../../components/fields/MarkdownField';
 import { resolveLink } from '../../../utils/Entity';
 import { insertNode } from '../../../utils/store';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
+import CreateEntityControlledDial from '../../../components/CreateEntityControlledDial';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -114,37 +115,19 @@ const WorkspaceCreation = ({ paginationOptions, type }) => {
     });
   };
 
-  const createInvestigationButton = FAB_REPLACED ? ({ onOpen }) => (
-    <Button
-      color='primary'
-      size='small'
-      variant='contained'
-      disableElevation
-      onClick={onOpen}
-    >
-      {t_i18n('Create an investigation')}
-    </Button>
+  const createInvestigationButton = FAB_REPLACED ? (props) => (
+    <CreateEntityControlledDial entityType='Investigation' {...props} />
   ) : undefined;
 
-  const createDashboardButton = FAB_REPLACED ? ({ onOpen }) => (
+  const createDashboardButton = FAB_REPLACED ? (props) => (
     <div>
+      <CreateEntityControlledDial entityType='Dashboard' {...props} />
       <Button
         color='primary'
-        size='small'
-        variant='contained'
-        disableElevation
-        onClick={onOpen}
-        data-testid='CreateDashboard'
-      >
-        {t_i18n('Create dashboard')}
-      </Button>
-      <Button
-        color='primary'
-        size='small'
         variant='outlined'
         disableElevation
         onClick={() => inputRef.current?.click()}
-        sx={{ marginLeft: '3px' }}
+        sx={{ marginLeft: '10px' }}
         data-testid='ImportDashboard'
       >
         {t_i18n('Import dashboard')}

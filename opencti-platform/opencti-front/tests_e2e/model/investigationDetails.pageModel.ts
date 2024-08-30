@@ -13,7 +13,7 @@ export default class InvestigationDetailsPage {
   }
 
   openPopUpButton() {
-    return this.page.getByLabel('Workspace popover of actions')
+    return this.page.getByLabel('Workspace popover of actions');
   }
 
   getEditButton() {

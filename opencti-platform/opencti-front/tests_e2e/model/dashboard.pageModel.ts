@@ -11,16 +11,12 @@ export default class DashboardPage {
     return this.page.getByText('Dashboards', { exact: true });
   }
 
-  getCreateMenuButton() {
-    return this.page.getByLabel('Create', { exact: true });
-  }
-
   getImportDashboardButton() {
-    return this.page.getByTestId('ImportDashboard');
+    return this.page.getByRole('button', { name: 'Import Dashboard' });
   }
 
   getAddNewDashboardButton() {
-    return this.page.getByTestId('CreateDashboard');
+    return this.page.getByRole('button', { name: 'Create Dashboard' });
   }
 
   getItemFromList(name: string) {

@@ -132,25 +132,28 @@ const WorkspaceLineComponent = ({ dataColumns, node, paginationOptions }) => {
   );
 };
 
-export const WorkspaceLine = createFragmentContainer(WorkspaceLineComponent, {
-  node: graphql`
-    fragment WorkspaceLine_node on Workspace {
+export const workspaceLineFragment = graphql`
+  fragment WorkspaceLine_node on Workspace {
+    id
+    name
+    tags
+    created_at
+    updated_at
+    type
+    manifest
+    isShared
+    entity_type
+    owner {
       id
       name
-      tags
-      created_at
-      updated_at
-      type
-      manifest
-      isShared
-      owner {
-        id
-        name
-        entity_type
-      }
-      currentUserAccessRight
+      entity_type
     }
-  `,
+    currentUserAccessRight
+  }
+`;
+
+export const WorkspaceLine = createFragmentContainer(WorkspaceLineComponent, {
+  node: workspaceLineFragment,
 });
 
 export const WorkspaceLineDummy = ({ dataColumns }) => {

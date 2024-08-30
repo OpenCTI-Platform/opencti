@@ -26,6 +26,7 @@ const publicDashboardFragment = graphql`
     id
     uri_key
     enabled
+    entity_type
     name
     owner {
       name
@@ -204,10 +205,11 @@ const PublicDashboards = () => {
             linesQuery: publicDashboardsListQuery,
             linesFragment: publicDashboardsFragment,
             queryRef,
+            nodePath: ['publicDashboards', 'pageInfo', 'globalCount'],
             setNumberOfElements: helpers.handleSetNumberOfElements,
           }}
           lineFragment={publicDashboardFragment}
-          exportContext={{ entity_type: 'PublicDashboard' }}
+          entityTypes={['PublicDashboard']}
           searchContextFinal={{ entityTypes: ['PublicDashboard'] }}
           additionalHeaderButtons={[
             <ToggleButton key="cards" value="lines" aria-label="lines">
@@ -227,7 +229,16 @@ const PublicDashboards = () => {
               <PublicDashboardCreation paginationOptions={queryPaginationOptions} />
             </Security>
           )}
+          taskScope='PUBLIC_DASHBOARD'
         />
+      )}
+
+      {!isFeatureEnable('FAB_REPLACEMENT') && (
+        <Security needs={[EXPLORE_EXUPDATE_PUBLISH]}>
+          <PublicDashboardCreation
+            paginationOptions={queryPaginationOptions}
+          />
+        </Security>
       )}
     </>
   );
