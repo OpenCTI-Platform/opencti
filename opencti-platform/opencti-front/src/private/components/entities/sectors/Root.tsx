@@ -1,35 +1,36 @@
-import React, { Suspense, useMemo } from 'react';
-import { Link, Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom';
+import React, { useMemo, Suspense } from 'react';
+import { Route, Routes, Link, Navigate, useLocation, useParams } from 'react-router-dom';
 import { graphql, useSubscription, usePreloadedQuery, PreloadedQuery } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
+import { RootSectorQuery } from '@components/entities/sectors/__generated__/RootSectorQuery.graphql';
+import { RootSectorSubscription } from '@components/entities/sectors/__generated__/RootSectorSubscription.graphql';
 import useQueryLoading from 'src/utils/hooks/useQueryLoading';
 import useForceUpdate from '@components/common/bulk/useForceUpdate';
 import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreObjectContentRoot';
-import Channel from './Channel';
-import ChannelKnowledge from './ChannelKnowledge';
+import Sector from './Sector';
+import SectorKnowledge from './SectorKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
+import SectorPopover from './SectorPopover';
 import FileManager from '../../common/files/FileManager';
-import ChannelPopover from './ChannelPopover';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
 import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
 import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
+import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
-import { RootChannelSubscription } from './__generated__/RootChannelSubscription.graphql';
-import { RootChannelQuery } from './__generated__/RootChannelQuery.graphql';
 
 const subscription = graphql`
-  subscription RootChannelSubscription($id: ID!) {
+  subscription RootSectorSubscription($id: ID!) {
     stixDomainObject(id: $id) {
-      ... on Channel {
-        ...Channel_channel
-        ...ChannelEditionContainer_channel
+      ... on Sector {
+        ...Sector_sector
+        ...SectorEditionContainer_sector
       }
       ...FileImportViewer_entity
       ...FileExportViewer_entity
@@ -39,21 +40,21 @@ const subscription = graphql`
   }
 `;
 
-const channelQuery = graphql`
-  query RootChannelQuery($id: String!) {
-    channel(id: $id) {
+const sectorQuery = graphql`
+  query RootSectorQuery($id: String!) {
+    sector(id: $id) {
       id
       standard_id
       entity_type
       name
-      aliases
+      x_opencti_aliases
       x_opencti_graph_data
       stixCoreObjectsDistribution(field: "entity_type", operation: count) {
         label
         value
-      }   
-      ...Channel_channel
-      ...ChannelKnowledge_channel
+      }
+      ...Sector_sector
+      ...SectorKnowledge_sector
       ...FileImportViewer_entity
       ...FileExportViewer_entity
       ...FileExternalReferencesViewer_entity
@@ -69,43 +70,43 @@ const channelQuery = graphql`
   }
 `;
 
-type RootChannelProps = {
-  channelId: string;
-  queryRef: PreloadedQuery<RootChannelQuery>;
+type RootSectorProps = {
+  sectorId: string;
+  queryRef: PreloadedQuery<RootSectorQuery>;
 };
 
-const RootChannel = ({ queryRef, channelId }: RootChannelProps) => {
-  const subConfig = useMemo<GraphQLSubscriptionConfig<RootChannelSubscription>>(() => ({
+const RootSector = ({ sectorId, queryRef }: RootSectorProps) => {
+  const subConfig = useMemo<GraphQLSubscriptionConfig<RootSectorSubscription>>(() => ({
     subscription,
-    variables: { id: channelId },
-  }), [channelId]);
+    variables: { id: sectorId },
+  }), [sectorId]);
 
   const location = useLocation();
   const { t_i18n } = useFormatter();
-  useSubscription<RootChannelSubscription>(subConfig);
+  useSubscription<RootSectorSubscription>(subConfig);
 
   const {
-    channel,
+    sector,
     connectorsForExport,
     connectorsForImport,
-  } = usePreloadedQuery<RootChannelQuery>(channelQuery, queryRef);
+  } = usePreloadedQuery<RootSectorQuery>(sectorQuery, queryRef);
 
   const { forceUpdate } = useForceUpdate();
 
-  const paddingRight = getPaddingRight(location.pathname, channelId, '/dashboard/arsenal/channels');
-  const link = `/dashboard/arsenal/channels/${channelId}/knowledge`;
+  const paddingRight = getPaddingRight(location.pathname, sectorId, '/dashboard/entities/sectors');
+  const link = `/dashboard/entities/sectors/${sectorId}/knowledge`;
   return (
     <>
-      {channel ? (
+      {sector ? (
         <>
           <Routes>
             <Route
               path="/knowledge/*"
-              element= {
+              element={
                 <StixCoreObjectKnowledgeBar
                   stixCoreObjectLink={link}
                   availableSections={[
-                    'victimology',
+                    'organizations',
                     'threats',
                     'threat_actors',
                     'intrusion_sets',
@@ -113,28 +114,28 @@ const RootChannel = ({ queryRef, channelId }: RootChannelProps) => {
                     'incidents',
                     'malwares',
                     'attack_patterns',
-                    'vulnerabilities',
+                    'tools',
                     'observables',
-                    'sightings',
-                    'channels',
                   ]}
-                  stixCoreObjectsDistribution={channel.stixCoreObjectsDistribution}
+                  stixCoreObjectsDistribution={sector.stixCoreObjectsDistribution}
                 />
               }
             />
           </Routes>
           <div style={{ paddingRight }}>
             <Breadcrumbs variant="object" elements={[
-              { label: t_i18n('Arsenal') },
-              { label: t_i18n('Channels'), link: '/dashboard/arsenal/channels' },
-              { label: channel.name, current: true },
+              { label: t_i18n('Entities') },
+              { label: t_i18n('Sectors'), link: '/dashboard/entities/sectors' },
+              { label: sector.name, current: true },
             ]}
             />
             <StixDomainObjectHeader
-              entityType="Channel"
-              stixDomainObject={channel}
-              PopoverComponent={<ChannelPopover />}
+              entityType="Sector"
+              disableSharing={true}
+              stixDomainObject={sector}
+              isOpenctiAlias={true}
               enableQuickSubscription={true}
+              PopoverComponent={<SectorPopover />}
             />
             <Box
               sx={{
@@ -144,42 +145,48 @@ const RootChannel = ({ queryRef, channelId }: RootChannelProps) => {
               }}
             >
               <Tabs
-                value={getCurrentTab(location.pathname, channel.id, '/dashboard/arsenal/channels')}
+                value={getCurrentTab(location.pathname, sector.id, '/dashboard/entities/sectors')}
               >
                 <Tab
                   component={Link}
-                  to={`/dashboard/arsenal/channels/${channel.id}`}
-                  value={`/dashboard/arsenal/channels/${channel.id}`}
+                  to={`/dashboard/entities/sectors/${sector.id}`}
+                  value={`/dashboard/entities/sectors/${sector.id}`}
                   label={t_i18n('Overview')}
                 />
                 <Tab
                   component={Link}
-                  to={`/dashboard/arsenal/channels/${channel.id}/knowledge/overview`}
-                  value={`/dashboard/arsenal/channels/${channel.id}/knowledge`}
+                  to={`/dashboard/entities/sectors/${sector.id}/knowledge/overview`}
+                  value={`/dashboard/entities/sectors/${sector.id}/knowledge`}
                   label={t_i18n('Knowledge')}
                 />
                 <Tab
                   component={Link}
-                  to={`/dashboard/arsenal/channels/${channel.id}/content`}
-                  value={`/dashboard/arsenal/channels/${channel.id}/content`}
+                  to={`/dashboard/entities/sectors/${sector.id}/content`}
+                  value={`/dashboard/entities/sectors/${sector.id}/content`}
                   label={t_i18n('Content')}
                 />
                 <Tab
                   component={Link}
-                  to={`/dashboard/arsenal/channels/${channel.id}/analyses`}
-                  value={`/dashboard/arsenal/channels/${channel.id}/analyses`}
+                  to={`/dashboard/entities/sectors/${sector.id}/analyses`}
+                  value={`/dashboard/entities/sectors/${sector.id}/analyses`}
                   label={t_i18n('Analyses')}
                 />
                 <Tab
                   component={Link}
-                  to={`/dashboard/arsenal/channels/${channel.id}/files`}
-                  value={`/dashboard/arsenal/channels/${channel.id}/files`}
+                  to={`/dashboard/entities/sectors/${sector.id}/sightings`}
+                  value={`/dashboard/entities/sectors/${sector.id}/sightings`}
+                  label={t_i18n('Sightings')}
+                />
+                <Tab
+                  component={Link}
+                  to={`/dashboard/entities/sectors/${sector.id}/files`}
+                  value={`/dashboard/entities/sectors/${sector.id}/files`}
                   label={t_i18n('Data')}
                 />
                 <Tab
                   component={Link}
-                  to={`/dashboard/arsenal/channels/${channel.id}/history`}
-                  value={`/dashboard/arsenal/channels/${channel.id}/history`}
+                  to={`/dashboard/entities/sectors/${sector.id}/history`}
+                  value={`/dashboard/entities/sectors/${sector.id}/history`}
                   label={t_i18n('History')}
                 />
               </Tabs>
@@ -188,58 +195,69 @@ const RootChannel = ({ queryRef, channelId }: RootChannelProps) => {
               <Route
                 path="/"
                 element={(
-                  <Channel channelData={channel} />
+                  <Sector sector={sector} />
                 )}
               />
               <Route
                 path="/knowledge"
-                element={(
+                element={
                   <Navigate
                     replace={true}
-                    to={`/dashboard/arsenal/channels/${channelId}/knowledge/overview`}
+                    to={`/dashboard/entities/sectors/${sectorId}/knowledge/overview`}
                   />
-                )}
+                }
               />
               <Route
                 path="/knowledge/*"
-                element={
+                element={(
                   <div key={forceUpdate}>
-                    <ChannelKnowledge channel={channel} />
+                    <SectorKnowledge sector={sector} />
                   </div>
-                }
+                )}
               />
               <Route
                 path="/content/*"
                 element={
                   <StixCoreObjectContentRoot
-                    stixCoreObject={channel}
+                    stixCoreObject={sector}
                   />
                 }
               />
               <Route
-                path="/analyses/*"
-                element={
+                path="/analyses"
+                element={ (
                   <StixCoreObjectOrStixCoreRelationshipContainers
-                    stixDomainObjectOrStixCoreRelationship={channel}
+                    stixDomainObjectOrStixCoreRelationship={sector}
                   />
-                }
+                )}
+              />
+              <Route
+                path="/sightings"
+                element={ (
+                  <EntityStixSightingRelationships
+                    entityId={sector.id}
+                    entityLink={link}
+                    noPadding={true}
+                    isTo={true}
+                  />
+                )}
               />
               <Route
                 path="/files"
-                element={ (
+                element={(
                   <FileManager
-                    id={channelId}
+                    id={sectorId}
                     connectorsImport={connectorsForImport}
                     connectorsExport={connectorsForExport}
-                    entity={channel}
+                    entity={sector}
                   />
                 )}
               />
               <Route
                 path="/history"
-                element={ (
+                element={(
                   <StixCoreObjectHistory
-                    stixCoreObjectId={channelId}
+                    stixCoreObjectId={sectorId}
                   />
                 )}
               />
@@ -252,18 +270,17 @@ const RootChannel = ({ queryRef, channelId }: RootChannelProps) => {
     </>
   );
 };
-
 const Root = () => {
-  const { channelId } = useParams() as { channelId: string };
-  const queryRef = useQueryLoading<RootChannelQuery>(channelQuery, {
-    id: channelId,
+  const { sectorId } = useParams() as { sectorId: string; };
+  const queryRef = useQueryLoading<RootSectorQuery>(sectorQuery, {
+    id: sectorId,
   });
 
   return (
     <>
       {queryRef && (
         <Suspense fallback={<Loader variant={LoaderVariant.container} />}>
-          <RootChannel queryRef={queryRef} channelId={channelId} />
+          <RootSector sectorId={sectorId} queryRef={queryRef} />
         </Suspense>
       )}
     </>

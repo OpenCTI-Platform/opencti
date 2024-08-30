@@ -6,6 +6,7 @@ import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import useQueryLoading from 'src/utils/hooks/useQueryLoading';
+import useForceUpdate from '@components/common/bulk/useForceUpdate';
 import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreObjectContentRoot';
 import Tool from './Tool';
 import ToolKnowledge from './ToolKnowledge';
@@ -90,6 +91,8 @@ const RootTool = ({ queryRef, toolId }: RootToolProps) => {
     connectorsForExport,
     connectorsForImport,
   } = usePreloadedQuery<RootToolQuery>(toolQuery, queryRef);
+
+  const { forceUpdate } = useForceUpdate();
 
   const paddingRight = getPaddingRight(location.pathname, toolId, '/dashboard/arsenal/tools');
   const link = `/dashboard/arsenal/tools/${toolId}/knowledge`;
@@ -200,7 +203,11 @@ const RootTool = ({ queryRef, toolId }: RootToolProps) => {
               />
               <Route
                 path="/knowledge/*"
-                element={<ToolKnowledge tool={tool} />}
+                element={
+                  <div key={forceUpdate}>
+                    <ToolKnowledge tool={tool} />
+                  </div>
+                }
               />
               <Route
                 path="/content/*"

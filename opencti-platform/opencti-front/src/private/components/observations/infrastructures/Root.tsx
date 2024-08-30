@@ -10,6 +10,7 @@ import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
+import useForceUpdate from '@components/common/bulk/useForceUpdate';
 import InfrastructureKnowledge from './InfrastructureKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import FileManager from '../../common/files/FileManager';
@@ -79,6 +80,9 @@ const RootInfrastructureComponent = ({ queryRef, infrastructureId }) => {
   useSubscription(subConfig);
   const data = usePreloadedQuery(infrastructureQuery, queryRef);
   const { infrastructure, connectorsForImport, connectorsForExport } = data;
+
+  const { forceUpdate } = useForceUpdate();
+
   const paddingRightValue = () => {
     if (location.pathname.includes(`/dashboard/observations/infrastructures/${infrastructure.id}/knowledge`)) return 200;
     if (location.pathname.includes(`/dashboard/observations/infrastructures/${infrastructure.id}/content`)) return 350;
@@ -148,7 +152,6 @@ const RootInfrastructureComponent = ({ queryRef, infrastructureId }) => {
             </Tabs>
           </Box>
           <Routes>
-
             <Route
               path="/"
               element={<Infrastructure data={infrastructure}/>}
@@ -164,7 +167,11 @@ const RootInfrastructureComponent = ({ queryRef, infrastructureId }) => {
             />
             <Route
               path="/knowledge/*"
-              element={<InfrastructureKnowledge infrastructure={infrastructure}/>}
+              element={
+                <div key={forceUpdate}>
+                  <InfrastructureKnowledge infrastructure={infrastructure}/>
+                </div>
+              }
             />
             <Route
               path="/content/*"
