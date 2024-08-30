@@ -37,6 +37,7 @@ const SelectField = (props) => {
   const {
     form: { setFieldValue, setFieldTouched },
     field: { name },
+    required = false,
     onChange,
     onFocus,
     onSubmit,
@@ -80,7 +81,7 @@ const SelectField = (props) => {
         style={{ color: props.disabled ? '#4f4f4f' : '' }}
         variant={props.variant}
         id={labelId}
-        required
+        required={required}
       >
         {props.label}
       </InputLabel>
