@@ -389,6 +389,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
     }
     if (strategy === STRATEGY_FACEBOOK) {
       const providerRef = identifier || 'facebook';
+      const autoCreateUsers = mappedConfig.auto_create_users || true;
       const specificConfig = { profileFields: ['id', 'emails', 'name'], scope: 'email' };
       const facebookOptions = { passReqToCallback: true, ...mappedConfig, ...specificConfig };
       const facebookStrategy = new FacebookStrategy(
@@ -397,7 +398,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
           const data = profile._json;
           logApp.info('[FACEBOOK] Successfully logged', { profile: data });
           const { email } = data;
-          providerLoginHandler({ email, name: data.first_name }, done);
+          providerLoginHandler({ email, name: data.first_name }, done, { auto_create_users: autoCreateUsers });
         }
       );
       passport.use(providerRef, facebookStrategy);
@@ -406,6 +407,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
     if (strategy === STRATEGY_GOOGLE) {
       const providerRef = identifier || 'google';
       const domains = mappedConfig.domains || [];
+      const autoCreateUsers = mappedConfig.auto_create_users || true;
       const specificConfig = { scope: ['email', 'profile'] };
       const googleOptions = { passReqToCallback: true, ...mappedConfig, ...specificConfig };
       const googleStrategy = new GoogleStrategy(googleOptions, (_, __, ___, profile, done) => {
@@ -418,7 +420,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
           authorized = domains.includes(domain);
         }
         if (authorized) {
-          providerLoginHandler({ email, name }, done);
+          providerLoginHandler({ email, name }, done, { auto_create_users: autoCreateUsers });
         } else {
           done({ message: 'Restricted access, ask your administrator' });
         }
@@ -428,6 +430,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
     }
     if (strategy === STRATEGY_GITHUB) {
       const providerRef = identifier || 'github';
+      const autoCreateUsers = mappedConfig.auto_create_users || true;
       const organizations = mappedConfig.organizations || [];
       const scope = organizations.length > 0 ? 'user:email,read:org' : 'user:email';
       const githubOptions = { passReqToCallback: true, ...mappedConfig, scope };
@@ -447,7 +450,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
             done({ message: 'You need a public email in your github account' });
           } else {
             const email = R.head(profile.emails).value;
-            providerLoginHandler({ email, name: displayName }, done);
+            providerLoginHandler({ email, name: displayName }, done, { auto_create_users: autoCreateUsers });
           }
         } else {
           done({ message: 'Restricted access, ask your administrator' });
