@@ -188,6 +188,7 @@ const DataTableLine = ({
         className={classes.cellContainer}
         style={{
           width: 'calc(var(--col-navigate-size) * 1px)',
+          overflow: 'initial',
         }}
         onClick={(e) => {
           if (actions && navigable) {
