@@ -29,6 +29,7 @@ import { useSettingsMessagesBannerHeight } from '../../settings/settings_message
 import StixCoreObjectSubscribers from '../stix_core_objects/StixCoreObjectSubscribers';
 import FormAuthorizedMembersDialog from '../form/FormAuthorizedMembersDialog';
 import ExportButtons from '../../../../components/ExportButtons';
+import useHelper from '../../../../utils/hooks/useHelper';
 import Security from '../../../../utils/Security';
 import { useFormatter } from '../../../../components/i18n';
 import { truncate } from '../../../../utils/String';
@@ -464,6 +465,7 @@ const ContainerHeader = (props) => {
   } = props;
   const classes = useStyles();
   const { t_i18n, fd } = useFormatter();
+  const { isFeatureEnable } = useHelper();
   const userIsKnowledgeEditor = useGranted([KNOWLEDGE_KNUPDATE]);
   const [displaySuggestions, setDisplaySuggestions] = useState(false);
   const [selectedEntity, setSelectedEntity] = useState({});
@@ -753,7 +755,8 @@ const ContainerHeader = (props) => {
       ],
     },
   };
-  const { canEdit } = useGetCurrentUserAccessRight(container.currentUserAccessRight);
+  const currentAccessRight = useGetCurrentUserAccessRight(container.currentUserAccessRight);
+  const canEdit = currentAccessRight.canEdit || container.entity_type !== 'Case-Incident' || !isFeatureEnable('CONTAINERS_AUTHORIZED_MEMBERS');
   const triggerData = useLazyLoadQuery(stixCoreObjectQuickSubscriptionContentQuery, { first: 20, ...triggersPaginationOptions });
   return (
     <Box sx={containerStyle}>
@@ -1099,7 +1102,6 @@ export default createFragmentContainer(ContainerHeader, {
       }
       ... on Case {
         name
-        currentUserAccessRight
       }
       ... on Feedback {
         name
@@ -1110,6 +1112,7 @@ export default createFragmentContainer(ContainerHeader, {
       }
       ... on CaseIncident {
         name
+        currentUserAccessRight
         authorized_members {
           id
           name
