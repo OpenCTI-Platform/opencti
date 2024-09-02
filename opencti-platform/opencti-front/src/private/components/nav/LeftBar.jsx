@@ -107,7 +107,6 @@ import logoFiligranTextDark from '../../../static/images/logo_filigran_text_dark
 import logoFiligranTextLight from '../../../static/images/logo_filigran_text_light.png';
 import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
 import useDimensions from '../../../utils/hooks/useDimensions';
-import useHelper from '../../../utils/hooks/useHelper';
 
 const SMALL_BAR_WIDTH = 55;
 const OPEN_BAR_WIDTH = 180;
@@ -203,7 +202,6 @@ const StyledTooltip = styled(({ className, ...props }) => (
 const LeftBar = () => {
   const theme = useTheme();
   const location = useLocation();
-  const { isFeatureEnable } = useHelper();
   const ref = useRef();
   const { t_i18n } = useFormatter();
   const {
@@ -784,57 +782,35 @@ const LeftBar = () => {
           <Divider />
           <MenuList component="nav">
             <Security needs={[EXPLORE]}>
-              {isFeatureEnable('PUBLIC_DASHBOARD_LIST') ? (
-                <>
-                  <MenuItem
-                    ref={anchors.dashboards}
-                    selected={!navOpen && location.pathname.includes('/dashboard/workspaces/dashboards')}
-                    dense={true}
-                    classes={{ root: classes.menuItem }}
-                    onClick={() => (isMobile || navOpen ? handleSelectedMenuToggle('dashboards') : handleGoToPage('/dashboard/workspaces/dashboards'))}
-                    onMouseEnter={() => !navOpen && handleSelectedMenuOpen('dashboards')}
-                    onMouseLeave={() => !navOpen && handleSelectedMenuClose()}
-                  >
-                    <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
-                      <InsertChartOutlinedOutlined />
-                    </ListItemIcon>
-                    {navOpen && (
-                      <ListItemText
-                        classes={{ primary: classes.menuItemText }}
-                        primary={t_i18n('Dashboards')}
-                      />
-                    )}
-                    {navOpen && (selectedMenu.includes('dashboards') ? <ExpandLessOutlined/> : <ExpandMoreOutlined/>)}
-                  </MenuItem>
-                  {generateSubMenu(
-                    'dashboards',
-                    [
-                      { granted: isGrantedToExplore, type: 'Dashboard', link: '/dashboard/workspaces/dashboards', label: 'Custom dashboards', exact: true },
-                      { granted: isGrantedToExplore, type: 'Dashboard', link: '/dashboard/workspaces/dashboards_public', label: 'Public dashboards', exact: true },
-                    ],
+              <>
+                <MenuItem
+                  ref={anchors.dashboards}
+                  selected={!navOpen && location.pathname.includes('/dashboard/workspaces/dashboards')}
+                  dense={true}
+                  classes={{ root: classes.menuItem }}
+                  onClick={() => (isMobile || navOpen ? handleSelectedMenuToggle('dashboards') : handleGoToPage('/dashboard/workspaces/dashboards'))}
+                  onMouseEnter={() => !navOpen && handleSelectedMenuOpen('dashboards')}
+                  onMouseLeave={() => !navOpen && handleSelectedMenuClose()}
+                >
+                  <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
+                    <InsertChartOutlinedOutlined/>
+                  </ListItemIcon>
+                  {navOpen && (
+                  <ListItemText
+                    classes={{ primary: classes.menuItemText }}
+                    primary={t_i18n('Dashboards')}
+                  />
                   )}
-                </>
-              ) : (
-                <StyledTooltip title={!navOpen && t_i18n('Dashboards')} placement="right">
-                  <MenuItem
-                    component={Link}
-                    to="/dashboard/workspaces/dashboards"
-                    selected={!navOpen && location.pathname.includes('/dashboard/workspaces/dashboards')}
-                    dense={true}
-                    classes={{ root: classes.menuItem }}
-                  >
-                    <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
-                      <InsertChartOutlinedOutlined />
-                    </ListItemIcon>
-                    {navOpen && (
-                    <ListItemText
-                      classes={{ primary: classes.menuItemText }}
-                      primary={t_i18n('Dashboards')}
-                    />
-                    )}
-                  </MenuItem>
-                </StyledTooltip>
-              )}
+                  {navOpen && (selectedMenu.includes('dashboards') ? <ExpandLessOutlined/> : <ExpandMoreOutlined/>)}
+                </MenuItem>
+                {generateSubMenu(
+                  'dashboards',
+                  [
+                    { granted: isGrantedToExplore, type: 'Dashboard', link: '/dashboard/workspaces/dashboards', label: 'Custom dashboards', exact: true },
+                    { granted: isGrantedToExplore, type: 'Dashboard', link: '/dashboard/workspaces/dashboards_public', label: 'Public dashboards', exact: true },
+                  ],
+                )}
+              </>
             </Security>
             <Security needs={[INVESTIGATION]}>
               <StyledTooltip title={!navOpen && t_i18n('Investigations')} placement="right">

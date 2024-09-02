@@ -3,7 +3,6 @@ import ToggleButton from '@mui/material/ToggleButton';
 import Tooltip from '@mui/material/Tooltip';
 import { ViewListOutlined } from '@mui/icons-material';
 import { graphql } from 'react-relay';
-import { useNavigate } from 'react-router-dom';
 import PublicDashboardLineActions from './PublicDashboardLineActions';
 import PublicDashboardCreation from './PublicDashboardCreation';
 import { useFormatter } from '../../../../../components/i18n';
@@ -105,11 +104,6 @@ const LOCAL_STORAGE_KEY = 'PublicDashboard';
 const PublicDashboards = () => {
   const { t_i18n } = useFormatter();
   const { isFeatureEnable } = useHelper();
-  const navigate = useNavigate();
-
-  if (!isFeatureEnable('PUBLIC_DASHBOARD_LIST')) {
-    navigate('/dashboard');
-  }
 
   const initialValues = {
     searchTerm: '',
@@ -182,7 +176,7 @@ const PublicDashboards = () => {
     },
   };
 
-  return !isFeatureEnable('PUBLIC_DASHBOARD_LIST') ? null : (
+  return (
     <>
       <Breadcrumbs
         variant="list"
