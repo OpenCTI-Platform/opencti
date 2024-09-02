@@ -47,6 +47,9 @@ const rootSettingsFragment = graphql`
     platform_openmtd_url
     platform_theme
     platform_whitemark
+    platform_organization {
+      id
+    }
     platform_session_idle_timeout
     platform_session_timeout
     platform_feature_flags {

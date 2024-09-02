@@ -32,6 +32,7 @@ import useGranted, { KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE, KNOWLEDGE_KNUPDATE } 
 import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 import CaseIncidentEdition from './CaseIncidentEdition';
 import useHelper from '../../../../utils/hooks/useHelper';
+import { useGetCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
 
 const subscription = graphql`
   subscription RootIncidentCaseSubscription($id: ID!) {
@@ -104,9 +105,7 @@ const caseIncidentAuthorizedMembersMutation = graphql`
 `;
 
 const RootCaseIncidentComponent = ({ queryRef, caseId }) => {
-  const subConfig = useMemo<
-  GraphQLSubscriptionConfig<RootIncidentSubscription>
-  >(
+  const subConfig = useMemo<GraphQLSubscriptionConfig<RootIncidentSubscription>>(
     () => ({
       subscription,
       variables: { id: caseId },
@@ -123,151 +122,150 @@ const RootCaseIncidentComponent = ({ queryRef, caseId }) => {
     connectorsForExport,
     connectorsForImport,
   } = usePreloadedQuery<RootIncidentCaseQuery>(caseIncidentQuery, queryRef);
-  const isOverview = location.pathname === `/dashboard/cases/incidents/${caseData?.id}`;
-  const paddingRight = getPaddingRight(location.pathname, caseData?.id, '/dashboard/cases/incidents', false);
+  if (!caseData) {
+    return <ErrorNotFound />;
+  }
+  const isOverview = location.pathname === `/dashboard/cases/incidents/${caseData.id}`;
+  const paddingRight = getPaddingRight(location.pathname, caseData.id, '/dashboard/cases/incidents', false);
   const { isFeatureEnable } = useHelper();
-  const canManageAuthorizedMembers = caseData?.currentUserAccessRight === 'admin' && isFeatureEnable('CONTAINERS_AUTHORIZED_MEMBERS');
+
+  const currentAccessRight = useGetCurrentUserAccessRight(caseData.currentUserAccessRight);
+  const canManageAuthorizedMembers = currentAccessRight.canManage && isFeatureEnable('CONTAINERS_AUTHORIZED_MEMBERS');
   return (
-    <>
-      {caseData ? (
-        <div style={{ paddingRight }} data-testid="incident-details-page">
-          <Breadcrumbs variant="object" elements={[
-            { label: t_i18n('Cases') },
-            { label: t_i18n('Incident responses'), link: '/dashboard/cases/incidents' },
-            { label: caseData.name, current: true },
-          ]}
+    <div style={{ paddingRight }} data-testid="incident-details-page">
+      <Breadcrumbs variant="object" elements={[
+        { label: t_i18n('Cases') },
+        { label: t_i18n('Incident responses'), link: '/dashboard/cases/incidents' },
+        { label: caseData.name, current: true },
+      ]}
+      />
+      <ContainerHeader
+        container={caseData}
+        PopoverComponent={<CaseIncidentPopover id={caseData.id} />}
+        EditComponent={
+          <Security needs={[KNOWLEDGE_KNUPDATE]} hasAccess={currentAccessRight.canEdit}>
+            <CaseIncidentEdition caseId={caseData.id} />
+          </Security>
+        }
+        enableQuickSubscription={true}
+        enableAskAi={true}
+        redirectToContent={true}
+        enableManageAuthorizedMembers={canManageAuthorizedMembers}
+        authorizedMembersMutation={caseIncidentAuthorizedMembersMutation}
+      />
+      <Box
+        sx={{
+          borderBottom: 1,
+          borderColor: 'divider',
+          marginBottom: 3,
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItem: 'center',
+        }}
+      >
+        <Tabs
+          value={getCurrentTab(location.pathname, caseData.id, '/dashboard/cases/incidents')}
+        >
+          <Tab
+            component={Link}
+            to={`/dashboard/cases/incidents/${caseData.id}`}
+            value={`/dashboard/cases/incidents/${caseData.id}`}
+            label={t_i18n('Overview')}
           />
-          <ContainerHeader
-            container={caseData}
-            PopoverComponent={<CaseIncidentPopover id={caseData.id} />}
-            EditComponent={
-              <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                <CaseIncidentEdition caseId={caseData.id} />
-              </Security>
-            }
-            enableQuickSubscription={true}
-            enableAskAi={true}
-            redirectToContent={true}
-            enableManageAuthorizedMembers={canManageAuthorizedMembers}
-            authorizedMembersMutation={caseIncidentAuthorizedMembersMutation}
+          <Tab
+            component={Link}
+            to={`/dashboard/cases/incidents/${caseData.id}/knowledge/graph`}
+            value={`/dashboard/cases/incidents/${caseData.id}/knowledge`}
+            label={t_i18n('Knowledge')}
           />
-          <Box
-            sx={{
-              borderBottom: 1,
-              borderColor: 'divider',
-              marginBottom: 3,
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItem: 'center',
-            }}
-          >
-            <Tabs
-              value={getCurrentTab(location.pathname, caseData.id, '/dashboard/cases/incidents')}
-            >
-              <Tab
-                component={Link}
-                to={`/dashboard/cases/incidents/${caseData.id}`}
-                value={`/dashboard/cases/incidents/${caseData.id}`}
-                label={t_i18n('Overview')}
-              />
-              <Tab
-                component={Link}
-                to={`/dashboard/cases/incidents/${caseData.id}/knowledge/graph`}
-                value={`/dashboard/cases/incidents/${caseData.id}/knowledge`}
-                label={t_i18n('Knowledge')}
-              />
-              <Tab
-                component={Link}
-                to={`/dashboard/cases/incidents/${caseData.id}/content`}
-                value={`/dashboard/cases/incidents/${caseData.id}/content`}
-                label={t_i18n('Content')}
-              />
-              <Tab
-                component={Link}
-                to={`/dashboard/cases/incidents/${caseData.id}/entities`}
-                value={`/dashboard/cases/incidents/${caseData.id}/entities`}
-                label={t_i18n('Entities')}
-              />
-              <Tab
-                component={Link}
-                to={`/dashboard/cases/incidents/${caseData.id}/observables`}
-                value={`/dashboard/cases/incidents/${caseData.id}/observables`}
-                label={t_i18n('Observables')}
-              />
-              <Tab
-                component={Link}
-                to={`/dashboard/cases/incidents/${caseData.id}/files`}
-                value={`/dashboard/cases/incidents/${caseData.id}/files`}
-                label={t_i18n('Data')}
-              />
-            </Tabs>
-            {isOverview && (
-            <StixCoreObjectSimulationResult id={caseData.id} type="container" />
-            )}
-          </Box>
-          <Routes>
-            <Route
-              path="/"
-              element={<CaseIncident caseIncidentData={caseData} enableReferences={enableReferences} />}
+          <Tab
+            component={Link}
+            to={`/dashboard/cases/incidents/${caseData.id}/content`}
+            value={`/dashboard/cases/incidents/${caseData.id}/content`}
+            label={t_i18n('Content')}
+          />
+          <Tab
+            component={Link}
+            to={`/dashboard/cases/incidents/${caseData.id}/entities`}
+            value={`/dashboard/cases/incidents/${caseData.id}/entities`}
+            label={t_i18n('Entities')}
+          />
+          <Tab
+            component={Link}
+            to={`/dashboard/cases/incidents/${caseData.id}/observables`}
+            value={`/dashboard/cases/incidents/${caseData.id}/observables`}
+            label={t_i18n('Observables')}
+          />
+          <Tab
+            component={Link}
+            to={`/dashboard/cases/incidents/${caseData.id}/files`}
+            value={`/dashboard/cases/incidents/${caseData.id}/files`}
+            label={t_i18n('Data')}
+          />
+        </Tabs>
+        {isOverview && (
+          <StixCoreObjectSimulationResult id={caseData.id} type="container" />
+        )}
+      </Box>
+      <Routes>
+        <Route
+          path="/"
+          element={<CaseIncident caseIncidentData={caseData} enableReferences={enableReferences} />}
+        />
+        <Route
+          path="/entities"
+          element={
+            <ContainerStixDomainObjects
+              container={caseData}
+              enableReferences={enableReferences}
+            />}
+        />
+        <Route
+          path="/observables"
+          element={
+            <ContainerStixCyberObservables
+              container={caseData}
+              enableReferences={enableReferences}
+            />}
+        />
+        <Route
+          path="/knowledge"
+          element={
+            <Navigate
+              replace={true}
+              to={`/dashboard/cases/incidents/${caseId}/knowledge/graph`}
+            />}
+        />
+        <Route
+          path="/content/*"
+          element={
+            <StixCoreObjectContentRoot
+              stixCoreObject={caseData}
+              isContainer={true}
             />
-            <Route
-              path="/entities"
-              element={
-                <ContainerStixDomainObjects
-                  container={caseData}
-                  enableReferences={enableReferences}
-                />}
-            />
-            <Route
-              path="/observables"
-              element={
-                <ContainerStixCyberObservables
-                  container={caseData}
-                  enableReferences={enableReferences}
-                />}
-            />
-            <Route
-              path="/knowledge"
-              element={
-                <Navigate
-                  replace={true}
-                  to={`/dashboard/cases/incidents/${caseId}/knowledge/graph`}
-                />}
-            />
-            <Route
-              path="/content/*"
-              element={
-                <StixCoreObjectContentRoot
-                  stixCoreObject={caseData}
-                  isContainer={true}
-                />
-              }
-            />
-            <Route
-              path="/knowledge/*"
-              element={
-                <IncidentKnowledge caseData={caseData}
-                  enableReferences={enableReferences}
-                />}
-            />
-            <Route
-              path="/files"
-              element={
-                <StixCoreObjectFilesAndHistory
-                  id={caseId}
-                  connectorsExport={connectorsForExport}
-                  connectorsImport={connectorsForImport}
-                  entity={caseData}
-                  withoutRelations={true}
-                  bypassEntityId={true}
-                />}
-            />
-          </Routes>
-        </div>
-      ) : (
-        <ErrorNotFound />
-      )}
-    </>
+          }
+        />
+        <Route
+          path="/knowledge/*"
+          element={
+            <IncidentKnowledge caseData={caseData}
+              enableReferences={enableReferences}
+            />}
+        />
+        <Route
+          path="/files"
+          element={
+            <StixCoreObjectFilesAndHistory
+              id={caseId}
+              connectorsExport={connectorsForExport}
+              connectorsImport={connectorsForImport}
+              entity={caseData}
+              withoutRelations={true}
+              bypassEntityId={true}
+            />}
+        />
+      </Routes>
+    </div>
   );
 };
 

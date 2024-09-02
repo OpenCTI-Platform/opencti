@@ -54,7 +54,7 @@ export const authorizedMembersToOptions = (
     });
 };
 
-export const getCurrentUserAccessRight = (userAccessRight: string | null | undefined) => {
+export const useGetCurrentUserAccessRight = (userAccessRight: string | null | undefined) => {
   const canManage = userAccessRight === 'admin';
   const canEdit = canManage || userAccessRight === 'edit';
   const canView = canManage || canEdit || userAccessRight === 'view';

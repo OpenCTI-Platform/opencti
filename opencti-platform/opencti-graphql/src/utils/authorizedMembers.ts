@@ -21,6 +21,9 @@ import { FunctionalError } from '../config/errors';
 import { patchAttribute } from '../database/middleware';
 import { notify } from '../database/redis';
 import { BUS_TOPICS } from '../config/conf';
+import { getEntityFromCache } from '../database/cache';
+import { ENTITY_TYPE_SETTINGS, isInternalObject } from '../schema/internalObject';
+import type { BasicStoreSettings } from '../types/settings';
 
 export const getAuthorizedMembers = async (
   context: AuthContext,
@@ -105,6 +108,11 @@ export const editAuthorizedMembers = async (
     const filteredInput = input.filter((value, index, array) => {
       return isValidMemberAccessRight(value.access_right) && array.findIndex((e) => e.id === value.id) === index;
     });
+
+    const settings = await getEntityFromCache<BasicStoreSettings>(context, user, ENTITY_TYPE_SETTINGS);
+    if (filteredInput.some(({ id }) => id === MEMBER_ACCESS_ALL) && settings.platform_organization && !isInternalObject(entityType)) {
+      throw FunctionalError('You can\'t grant access to everyone in an organization sharing context');
+    }
 
     const hasValidAdmin = await containsValidAdmin(
       context,

@@ -27,7 +27,7 @@ import ListLines from '../../../../components/list_lines/ListLines';
 import { CaseTasksLineDummy } from '../tasks/CaseTasksLine';
 import { isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
 import { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
-import { getCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
+import { useGetCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
 import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
 
 // Deprecated - https://mui.com/system/styles/basics/
@@ -52,7 +52,7 @@ const CaseIncident: React.FC<CaseIncidentProps> = ({ caseIncidentData, enableRef
   const caseIncident = useFragment(caseFragment, caseIncidentData);
   const { isFeatureEnable } = useHelper();
   const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
-  const { canEdit } = getCurrentUserAccessRight(caseIncident.currentUserAccessRight);
+  const { canEdit } = useGetCurrentUserAccessRight(caseIncident.currentUserAccessRight);
 
   const LOCAL_STORAGE_KEY_CASE_TASKS = `cases-${caseIncident.id}-caseTask`;
 

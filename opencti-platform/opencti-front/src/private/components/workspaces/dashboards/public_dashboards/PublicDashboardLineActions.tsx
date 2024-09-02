@@ -12,7 +12,7 @@ import useDeletion from '../../../../../utils/hooks/useDeletion';
 import DeleteDialog from '../../../../../components/DeleteDialog';
 import { EXPLORE_EXUPDATE_PUBLISH } from '../../../../../utils/hooks/useGranted';
 import Security from '../../../../../utils/Security';
-import { getCurrentUserAccessRight } from '../../../../../utils/authorizedMembers';
+import { useGetCurrentUserAccessRight } from '../../../../../utils/authorizedMembers';
 import { deleteNode } from '../../../../../utils/store';
 
 interface PublicDashboardLineActionsProps {
@@ -44,7 +44,7 @@ const PublicDashboardLineActions = ({ publicDashboard, paginationOptions }: Publ
   const deletion = useDeletion({});
   const { handleOpenDelete } = deletion;
 
-  const { canManage } = getCurrentUserAccessRight(publicDashboard.dashboard.currentUserAccessRight);
+  const { canManage } = useGetCurrentUserAccessRight(publicDashboard.dashboard.currentUserAccessRight);
 
   const copyLinkUrl = () => {
     copyToClipboard(

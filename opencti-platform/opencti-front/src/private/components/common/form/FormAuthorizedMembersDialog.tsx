@@ -10,6 +10,7 @@ import { AuthorizedMemberOption, Creator } from '../../../../utils/authorizedMem
 import { handleErrorInForm } from '../../../../relay/environment';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import useAuth from '../../../../utils/hooks/useAuth';
 
 interface FormAuthorizedMembersDialogProps {
   id: string;
@@ -27,6 +28,8 @@ const FormAuthorizedMembersDialog = ({
   const { t_i18n } = useFormatter();
   const [open, setOpen] = useState(false);
   const isEnterpriseEdition = useEnterpriseEdition();
+  const { settings } = useAuth();
+  const showAllMembersLine = !settings.platform_organization?.id;
   const [commit] = useApiMutation(mutation);
   const onSubmit = (
     values: FormAuthorizedMembersInputs,
@@ -81,6 +84,7 @@ const FormAuthorizedMembersDialog = ({
         onSubmit={onSubmit}
         owner={owner}
         canDeactivate
+        showAllMembersLine={showAllMembersLine}
       />
     </>
   );

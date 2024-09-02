@@ -25,7 +25,7 @@ import { deleteNode, insertNode } from '../../../utils/store';
 import handleExportJson from './workspaceExportHandler';
 import WorkspaceDuplicationDialog from './WorkspaceDuplicationDialog';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
-import { getCurrentUserAccessRight } from '../../../utils/authorizedMembers';
+import { useGetCurrentUserAccessRight } from '../../../utils/authorizedMembers';
 import useHelper from '../../../utils/hooks/useHelper';
 
 // Deprecated - https://mui.com/system/styles/basics/
@@ -110,7 +110,7 @@ const WorkspacePopover = ({ workspace, paginationOptions }) => {
   };
 
   const handleCloseEdit = () => setDisplayEdit(false);
-  const { canManage, canEdit } = getCurrentUserAccessRight(workspace.currentUserAccessRight);
+  const { canManage, canEdit } = useGetCurrentUserAccessRight(workspace.currentUserAccessRight);
   if (!canEdit && workspace.type !== 'dashboard') {
     return <></>;
   }

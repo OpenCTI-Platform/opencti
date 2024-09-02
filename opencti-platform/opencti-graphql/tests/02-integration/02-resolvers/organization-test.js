@@ -132,7 +132,7 @@ describe('Organization resolver standard behavior', () => {
   });
   it('should list organizations', async () => {
     const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 10 } });
-    expect(queryResult.data.organizations.edges.length).toEqual(8);
+    expect(queryResult.data.organizations.edges.length).toEqual(9);
   });
   it('should update organization', async () => {
     const UPDATE_QUERY = gql`

@@ -29,6 +29,7 @@ import { useSettingsMessagesBannerHeight } from '../../settings/settings_message
 import StixCoreObjectSubscribers from '../stix_core_objects/StixCoreObjectSubscribers';
 import FormAuthorizedMembersDialog from '../form/FormAuthorizedMembersDialog';
 import ExportButtons from '../../../../components/ExportButtons';
+import useHelper from '../../../../utils/hooks/useHelper';
 import Security from '../../../../utils/Security';
 import { useFormatter } from '../../../../components/i18n';
 import { truncate } from '../../../../utils/String';
@@ -42,7 +43,7 @@ import StixCoreObjectQuickSubscription from '../stix_core_objects/StixCoreObject
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 import StixCoreObjectFileExport from '../stix_core_objects/StixCoreObjectFileExport';
 import Transition from '../../../../components/Transition';
-import { authorizedMembersToOptions } from '../../../../utils/authorizedMembers';
+import { authorizedMembersToOptions, useGetCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -464,6 +465,7 @@ const ContainerHeader = (props) => {
   } = props;
   const classes = useStyles();
   const { t_i18n, fd } = useFormatter();
+  const { isFeatureEnable } = useHelper();
   const userIsKnowledgeEditor = useGranted([KNOWLEDGE_KNUPDATE]);
   const [displaySuggestions, setDisplaySuggestions] = useState(false);
   const [selectedEntity, setSelectedEntity] = useState({});
@@ -753,6 +755,8 @@ const ContainerHeader = (props) => {
       ],
     },
   };
+  const currentAccessRight = useGetCurrentUserAccessRight(container.currentUserAccessRight);
+  const canEdit = currentAccessRight.canEdit || container.entity_type !== 'Case-Incident' || !isFeatureEnable('CONTAINERS_AUTHORIZED_MEMBERS');
   const triggerData = useLazyLoadQuery(stixCoreObjectQuickSubscriptionContentQuery, { first: 20, ...triggersPaginationOptions });
   return (
     <Box sx={containerStyle}>
@@ -1064,7 +1068,7 @@ const ContainerHeader = (props) => {
               />
             )}
             {!knowledge && (
-              <Security needs={popoverSecurity || [KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNENRICHMENT]}>
+              <Security needs={popoverSecurity || [KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNENRICHMENT]} hasAccess={canEdit}>
                 {React.cloneElement(PopoverComponent, { id: container.id })}
               </Security>
             )}
@@ -1101,12 +1105,14 @@ export default createFragmentContainer(ContainerHeader, {
       }
       ... on Feedback {
         name
+        currentUserAccessRight
       }
       ... on Task {
         name
       }
       ... on CaseIncident {
         name
+        currentUserAccessRight
         authorized_members {
           id
           name
