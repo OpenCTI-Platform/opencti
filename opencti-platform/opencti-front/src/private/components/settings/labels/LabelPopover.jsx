@@ -74,13 +74,13 @@ class LabelPopover extends Component {
     commitMutation({
       mutation: labelPopoverDeletionMutation,
       variables: {
-        id: this.props.labelId,
+        id: this.props.label.id,
       },
       updater: (store) => deleteNode(
         store,
         'Pagination_labels',
         this.props.paginationOptions,
-        this.props.labelId,
+        this.props.label.id,
       ),
       onCompleted: () => {
         this.setState({ deleting: false });

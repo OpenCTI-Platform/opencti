@@ -17,6 +17,7 @@ import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import KillChainPhaseEdition from './KillChainPhaseEdition';
 import Transition from '../../../../components/Transition';
+import { deleteNode } from '../../../../utils/store';
 
 const styles = () => ({
   container: {
@@ -74,18 +75,15 @@ class KillChainPhasePopover extends Component {
     commitMutation({
       mutation: killChainPhasePopoverDeletionMutation,
       variables: {
-        id: this.props.killChainPhaseId,
+        id: this.props.killChainPhase.id,
       },
       updater: (store) => {
-        const container = store.getRoot();
-        const payload = store.getRootField('killChainPhaseEdit');
-        const userProxy = store.get(container.getDataID());
-        const conn = ConnectionHandler.getConnection(
-          userProxy,
+        deleteNode(
+          store,
           'Pagination_killChainPhases',
           this.props.paginationOptions,
+          this.props.killChainPhase.id,
         );
-        ConnectionHandler.deleteNode(conn, payload.getValue('delete'));
       },
       onCompleted: () => {
         this.setState({ deleting: false });

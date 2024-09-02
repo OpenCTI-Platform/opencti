@@ -157,7 +157,10 @@ const ObservedDatas: FunctionComponent = () => {
 
   const isRuntimeSort = isRuntimeFieldEnable();
   const dataColumns = {
-    name: { percentWidth: 29 },
+    name: {
+      percentWidth: 29,
+      isSortable: false,
+    },
     number_observed: {},
     first_observed: {},
     last_observed: {},
