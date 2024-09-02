@@ -14,7 +14,6 @@ import { useFormatter } from '../../../../components/i18n';
 import { RoleEditionCapabilitiesLinesSearchQuery } from './__generated__/RoleEditionCapabilitiesLinesSearchQuery.graphql';
 import { RoleEditionCapabilities_role$data } from './__generated__/RoleEditionCapabilities_role.graphql';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import useHelper from '../../../../utils/hooks/useHelper';
 import { SETTINGS } from '../../../../utils/hooks/useGranted';
 
 const roleEditionAddCapability = graphql`
@@ -67,7 +66,6 @@ interface RoleEditionCapabilitiesComponentProps {
 
 const RoleEditionCapabilitiesComponent: FunctionComponent<RoleEditionCapabilitiesComponentProps> = ({ role, queryRef }) => {
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper(); // TODO : remove feature flag for 6.3
   const { capabilities } = usePreloadedQuery<RoleEditionCapabilitiesLinesSearchQuery>(
     roleEditionCapabilitiesLinesSearch,
     queryRef,
@@ -108,8 +106,7 @@ const RoleEditionCapabilitiesComponent: FunctionComponent<RoleEditionCapabilitie
       <List dense={true}>
         {capabilities.edges.map((edge) => {
           const capability = edge?.node;
-          const isCapabilityUnderFeatureFlag = capability?.name === 'KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS' && !isFeatureEnable('CAPABILITY_BYPASSFIELDS'); // TODO : remove the feature flag for 6.3
-          if (capability && !isCapabilityUnderFeatureFlag) {
+          if (capability) {
             const paddingLeft = capability.name.split('_').length * 20 - 20;
             const roleCapability = roleCapabilities.find(
               (r) => r.name === capability.name,
