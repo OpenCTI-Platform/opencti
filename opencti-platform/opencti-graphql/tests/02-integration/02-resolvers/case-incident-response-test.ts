@@ -85,20 +85,20 @@ const DELETE_QUERY = gql`
     caseIncidentDelete(id: $id)
   }
 `;
-
 const EDIT_AUTHORIZED_MEMBERS_QUERY = gql`
-  mutation CaseIncidentEditAuthorizedMembers(
+  mutation ContainerHeaderEditAuthorizedMembersMutation(
     $id: ID!
-    $input: [MemberAccessInput!]!
+    $input: [MemberAccessInput!]
   ) {
-    caseIncidentEditAuthorizedMembers(id: $id, input: $input){
-      authorized_members {
-        id
-        name
-        entity_type
-        access_right
+    containerEdit(id: $id) {
+      editAuthorizedMembers(input: $input) {
+        authorized_members {
+          id
+          name
+          entity_type
+          access_right
+        }
       }
-      id
     }
   }
 `;

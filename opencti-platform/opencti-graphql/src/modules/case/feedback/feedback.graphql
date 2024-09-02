@@ -95,6 +95,8 @@ type Feedback implements BasicObject & StixObject & StixCoreObject & StixDomainO
   objectParticipant: [Participant!]
   avatar: OpenCtiFile
   # Container
+  authorized_members: [MemberAccess!]
+  currentUserAccessRight: String
   objects(
     first: Int
     after: ID
@@ -149,8 +151,6 @@ type Feedback implements BasicObject & StixObject & StixCoreObject & StixDomainO
   tasks: TaskConnection!
   # Feedback
   rating: Int
-  authorized_members: [MemberAccess!]
-  currentUserAccessRight: String
 }
 
 # Ordering

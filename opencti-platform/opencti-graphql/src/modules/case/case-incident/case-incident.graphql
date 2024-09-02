@@ -95,6 +95,8 @@ type CaseIncident implements BasicObject & StixObject & StixCoreObject & StixDom
   objectParticipant: [Participant!]
   avatar: OpenCtiFile
   # Container
+  authorized_members: [MemberAccess!]
+  currentUserAccessRight: String
   objects(
     first: Int
     after: ID
@@ -147,8 +149,6 @@ type CaseIncident implements BasicObject & StixObject & StixCoreObject & StixDom
   content: String
   content_mapping: String
   tasks: TaskConnection!
-  authorized_members: [MemberAccess!]
-  currentUserAccessRight: String
   # Incident Response
   rating: Int
   response_types: [String!]
@@ -234,5 +234,4 @@ input CaseIncidentAddInput {
 type Mutation {
   caseIncidentAdd(input: CaseIncidentAddInput!): CaseIncident @auth
   caseIncidentDelete(id: ID!): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  caseIncidentEditAuthorizedMembers(id: ID!, input:[MemberAccessInput!]): CaseIncident @auth(for: [KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS])
 }

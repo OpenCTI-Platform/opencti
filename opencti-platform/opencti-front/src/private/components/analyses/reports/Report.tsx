@@ -12,6 +12,7 @@ import StixCoreObjectExternalReferences from '../external_references/StixCoreObj
 import StixCoreObjectOrStixCoreRelationshipNotes from '../notes/StixCoreObjectOrStixCoreRelationshipNotes';
 import { Report_report$key } from './__generated__/Report_report.graphql';
 import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
+import { useGetCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
 
 const reportComponentFragment = graphql`
   fragment Report_report on Report {
@@ -70,6 +71,7 @@ const reportComponentFragment = graphql`
       }
     }
     workflowEnabled
+    currentUserAccessRight
     ...ReportDetails_report
     ...ContainerHeader_container
   }
@@ -88,6 +90,7 @@ const Report: React.FC<ReportComponentProps> = ({ reportFragment }) => {
   const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   const reportOverviewLayoutCustomization = useOverviewLayoutCustomization(report.entity_type);
+  const { canEdit } = useGetCurrentUserAccessRight(report.currentUserAccessRight);
 
   return (<>
     <Grid
@@ -146,7 +149,7 @@ const Report: React.FC<ReportComponentProps> = ({ reportFragment }) => {
       }
     </Grid>
     {!isFABReplaced && (
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
+      <Security needs={[KNOWLEDGE_KNUPDATE]} hasAccess={canEdit}>
         <ReportEdition reportId={report.id} />
       </Security>
     )}

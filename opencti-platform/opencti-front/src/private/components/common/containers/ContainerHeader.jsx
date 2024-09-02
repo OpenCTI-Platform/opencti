@@ -442,6 +442,24 @@ export const containerHeaderObjectsQuery = graphql`
   }
 `;
 
+const containerHeaderEditAuthorizedMembersMutation = graphql`
+  mutation ContainerHeaderEditAuthorizedMembersMutation(
+    $id: ID!
+    $input: [MemberAccessInput!]
+  ) {
+    containerEdit(id: $id) {
+      editAuthorizedMembers(input: $input) {
+        authorized_members {
+          id
+          name
+          entity_type
+          access_right
+        }
+      }
+    }
+  }
+`;
+
 const ContainerHeader = (props) => {
   const {
     container,
@@ -458,8 +476,6 @@ const ContainerHeader = (props) => {
     onApplied,
     enableQuickSubscription,
     investigationAddFromContainer,
-    enableManageAuthorizedMembers,
-    authorizedMembersMutation,
     enableAskAi,
     redirectToContent,
   } = props;
@@ -755,8 +771,10 @@ const ContainerHeader = (props) => {
       ],
     },
   };
+  const isAuthorizedMembersEnabled = isFeatureEnable('CONTAINERS_AUTHORIZED_MEMBERS') || container.entity_type === 'Feedback';
   const currentAccessRight = useGetCurrentUserAccessRight(container.currentUserAccessRight);
-  const canEdit = currentAccessRight.canEdit || container.entity_type !== 'Case-Incident' || !isFeatureEnable('CONTAINERS_AUTHORIZED_MEMBERS');
+  const canEdit = currentAccessRight.canEdit || !isAuthorizedMembersEnabled;
+  const enableManageAuthorizedMembers = currentAccessRight.canManage && isAuthorizedMembersEnabled;
   const triggerData = useLazyLoadQuery(stixCoreObjectQuickSubscriptionContentQuery, { first: 20, ...triggersPaginationOptions });
   return (
     <Box sx={containerStyle}>
@@ -871,7 +889,7 @@ const ContainerHeader = (props) => {
               <StixCoreObjectSubscribers triggerData={triggerData} />
             )}
             {!knowledge && disableSharing !== true && (
-              <StixCoreObjectSharing elementId={container.id} variant="header" />
+              <StixCoreObjectSharing elementId={container.id} variant="header" disabled={container.authorized_members?.length > 0} />
             )}
             <Security
               needs={[KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]}
@@ -883,7 +901,7 @@ const ContainerHeader = (props) => {
                 authorizedMembers={authorizedMembersToOptions(
                   container.authorized_members,
                 )}
-                mutation={authorizedMembersMutation}
+                mutation={containerHeaderEditAuthorizedMembersMutation}
               />
             </Security>
             {!knowledge && (
@@ -1094,6 +1112,13 @@ export default createFragmentContainer(ContainerHeader, {
         name
         entity_type
       }
+      currentUserAccessRight
+      authorized_members {
+        id
+        name
+        entity_type
+        access_right
+      }
       ... on Report {
         name
       }
@@ -1105,20 +1130,12 @@ export default createFragmentContainer(ContainerHeader, {
       }
       ... on Feedback {
         name
-        currentUserAccessRight
       }
       ... on Task {
         name
       }
       ... on CaseIncident {
         name
-        currentUserAccessRight
-        authorized_members {
-          id
-          name
-          entity_type
-          access_right
-        }
       }
       ... on CaseRfi {
         name

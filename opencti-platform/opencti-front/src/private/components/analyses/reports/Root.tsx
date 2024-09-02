@@ -31,6 +31,7 @@ import useGranted, { KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE, KNOWLEDGE_KNUPDATE } 
 import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 import ReportEdition from './ReportEdition';
 import useHelper from '../../../../utils/hooks/useHelper';
+import { useGetCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
 
 const subscription = graphql`
   subscription RootReportSubscription($id: ID!) {
@@ -56,6 +57,7 @@ const reportQuery = graphql`
       standard_id
       entity_type
       name
+      currentUserAccessRight
       ...Report_report
       ...ReportDetails_report
       ...ReportKnowledge_report
@@ -104,6 +106,7 @@ const RootReport = () => {
               const { report } = props;
               const isOverview = location.pathname === `/dashboard/analyses/reports/${report.id}`;
               const paddingRight = getPaddingRight(location.pathname, reportId, '/dashboard/analyses/reports', false);
+              const currentAccessRight = useGetCurrentUserAccessRight(report.currentUserAccessRight);
               return (
                 <div style={{ paddingRight }} data-testid="report-details-page">
                   <Breadcrumbs variant="object" elements={[
@@ -118,7 +121,7 @@ const RootReport = () => {
                       <ReportPopover id={reportId} />
                     }
                     EditComponent={isFABReplaced && (
-                      <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                      <Security needs={[KNOWLEDGE_KNUPDATE]} hasAccess={currentAccessRight.canEdit}>
                         <ReportEdition reportId={report.id} />
                       </Security>
                     )}

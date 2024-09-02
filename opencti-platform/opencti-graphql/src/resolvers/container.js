@@ -7,7 +7,8 @@ import {
   relatedContainers,
   containersNumber,
   containersNumberByAuthor,
-  containersNumberByEntity
+  containersNumberByEntity,
+  containerEditAuthorizedMembers,
 } from '../domain/container';
 import {
   stixDomainObjectAddRelation,
@@ -18,6 +19,8 @@ import {
   stixDomainObjectEditField,
 } from '../domain/stixDomainObject';
 import { investigationAddFromContainer } from '../modules/workspace/investigation-domain';
+import { getAuthorizedMembers } from '../utils/authorizedMembers';
+import { getUserAccessRight } from '../utils/access';
 
 const containerResolvers = {
   Query: {
@@ -41,6 +44,8 @@ const containerResolvers = {
       }
       return 'Unknown';
     },
+    authorized_members: (container, _, context) => getAuthorizedMembers(context, context.user, container),
+    currentUserAccessRight: (container, _, context) => getUserAccessRight(context.user, container),
     objects: (container, args, context) => objects(context, context.user, container.id, args),
     relatedContainers: (container, args, context) => relatedContainers(context, context.user, container.id, args),
   },
@@ -68,6 +73,7 @@ const containerResolvers = {
       fieldPatch: ({ input, commitMessage, references }) => stixDomainObjectEditField(context, context.user, id, input, { commitMessage, references }),
       contextPatch: ({ input }) => stixDomainObjectEditContext(context, context.user, id, input),
       contextClean: () => stixDomainObjectCleanContext(context, context.user, id),
+      editAuthorizedMembers: ({ input }) => containerEditAuthorizedMembers(context, context.user, id, input),
       relationAdd: ({ input, commitMessage, references }) => stixDomainObjectAddRelation(context, context.user, id, input, { commitMessage, references }),
       // eslint-disable-next-line max-len
       relationDelete: ({ toId, relationship_type: relationshipType, commitMessage, references }) => stixDomainObjectDeleteRelation(context, context.user, id, toId, relationshipType, { commitMessage, references }),

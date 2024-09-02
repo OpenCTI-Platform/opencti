@@ -31,7 +31,6 @@ import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings
 import useGranted, { KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE, KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 import CaseIncidentEdition from './CaseIncidentEdition';
-import useHelper from '../../../../utils/hooks/useHelper';
 import { useGetCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
 
 const subscription = graphql`
@@ -55,12 +54,6 @@ const caseIncidentQuery = graphql`
       standard_id
       entity_type
       currentUserAccessRight
-      authorized_members {
-        id
-        name
-        entity_type
-        access_right
-      }
       creators {
         id
         name
@@ -83,23 +76,6 @@ const caseIncidentQuery = graphql`
     }
     connectorsForImport {
       ...StixCoreObjectFilesAndHistory_connectorsImport
-    }
-  }
-`;
-
-// Mutation to edit authorized members of a Case Incident
-const caseIncidentAuthorizedMembersMutation = graphql`
-  mutation RootCaseIncidentAuthorizedMembersMutation(
-    $id: ID!
-    $input: [MemberAccessInput!]
-  ) {
-    caseIncidentEditAuthorizedMembers(id: $id, input: $input) {
-      authorized_members {
-        id
-        name
-        entity_type
-        access_right
-      }
     }
   }
 `;
@@ -127,10 +103,8 @@ const RootCaseIncidentComponent = ({ queryRef, caseId }) => {
   }
   const isOverview = location.pathname === `/dashboard/cases/incidents/${caseData.id}`;
   const paddingRight = getPaddingRight(location.pathname, caseData.id, '/dashboard/cases/incidents', false);
-  const { isFeatureEnable } = useHelper();
 
   const currentAccessRight = useGetCurrentUserAccessRight(caseData.currentUserAccessRight);
-  const canManageAuthorizedMembers = currentAccessRight.canManage && isFeatureEnable('CONTAINERS_AUTHORIZED_MEMBERS');
   return (
     <div style={{ paddingRight }} data-testid="incident-details-page">
       <Breadcrumbs variant="object" elements={[
@@ -150,8 +124,6 @@ const RootCaseIncidentComponent = ({ queryRef, caseId }) => {
         enableQuickSubscription={true}
         enableAskAi={true}
         redirectToContent={true}
-        enableManageAuthorizedMembers={canManageAuthorizedMembers}
-        authorizedMembersMutation={caseIncidentAuthorizedMembersMutation}
       />
       <Box
         sx={{
