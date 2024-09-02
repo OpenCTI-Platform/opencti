@@ -6,10 +6,10 @@ import InvestigationsPage from '../model/investigations.pageModel';
 test('Create a new investigations page', async ({ page }) => {
   const investigationsPage = new InvestigationsPage(page);
   const investigationDetailsPage = new InvestigationDetailsPage(page);
-  const investigationsForm = new InvestigationsFormPage(page);
+  const investigationsForm = new InvestigationsFormPage(page, 'Create investigation');
   await page.goto('/dashboard/workspaces/investigations');
   await investigationsPage.addNewInvestigation().click();
-  await investigationsForm.fillNameInput('Test e2e');
+  await investigationsForm.nameField.fill('Test e2e');
   await investigationsPage.getCreateInvestigationButton().click();
   await investigationsPage.getItemFromList('Test e2e').click();
   await expect(investigationDetailsPage.getInvestigationDetailsPage()).toBeVisible();

@@ -85,7 +85,7 @@ const Workspaces: FunctionComponent<WorkspacesProps> = ({
     const dataColumns: DataTableProps['dataColumns'] = {
       name: {
         id: 'name',
-        flexSize: 33,
+        percentWidth: 33,
         render: ({ name }, h) => textInTooltip(name, h),
       },
       tags: {
@@ -98,11 +98,11 @@ const Workspaces: FunctionComponent<WorkspacesProps> = ({
       },
       created_at: {
         id: 'created_at',
-        flexSize: 16,
+        percentWidth: 16,
       },
       updated_at: {
         id: 'updated_at',
-        flexSize: type === 'dashboard' ? 16 : 24,
+        percentWidth: type === 'dashboard' ? 16 : 24,
       },
       ...(type === 'dashboard' ? {
         isShared: {
@@ -114,7 +114,6 @@ const Workspaces: FunctionComponent<WorkspacesProps> = ({
     return queryRef && (
       <DataTable
         dataColumns={dataColumns}
-        isNavigable={true}
         resolvePath={(data: WorkspacesLines_data$data) => {
           return data.workspaces?.edges?.map((n) => n?.node);
         }}

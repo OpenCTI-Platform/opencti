@@ -48,6 +48,10 @@ export default class DashboardWidgetsPageModel {
   }
 
   getItemFromWidgetList(name: string) {
+    return this.page.getByTestId(name);
+  }
+
+  getItemFromWidgetTimeline(name: string) {
     return this.page.getByText(name);
   }
 

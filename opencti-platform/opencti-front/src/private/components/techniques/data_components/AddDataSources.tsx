@@ -3,6 +3,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import IconButton from '@mui/material/IconButton';
 import { Add } from '@mui/icons-material';
 import Drawer from '@components/common/drawer/Drawer';
+import { DataSourcesLinesPaginationQuery$variables } from '@components/techniques/__generated__/DataSourcesLinesPaginationQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import DataSourceCreation from '../data_sources/DataSourceCreation';
 import SearchInput from '../../../../components/SearchInput';
@@ -10,7 +11,6 @@ import AddDataSourcesLines, { addDataSourcesLinesQuery } from './AddDataSourcesL
 import { AddDataSourcesLinesQuery } from './__generated__/AddDataSourcesLinesQuery.graphql';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
-import { DataSourcesLinesPaginationQuery$variables } from '../data_sources/__generated__/DataSourcesLinesPaginationQuery.graphql';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.

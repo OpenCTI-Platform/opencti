@@ -1,198 +1,107 @@
 import React, { FunctionComponent } from 'react';
 import useHelper from 'src/utils/hooks/useHelper';
-import ListLines from '../../../components/list_lines/ListLines';
-import IncidentsLines, { incidentsLinesPaginationQuery } from './incidents/IncidentsLines';
+import { IncidentsLinesQuery, IncidentsLinesQuery$variables } from './incidents/__generated__/IncidentsLinesQuery.graphql';
+import { IncidentsLines_data$data } from './incidents/__generated__/IncidentsLines_data.graphql';
+import { incidentLineFragment } from './incidents/IncidentLine';
+import { incidentsLinesFragment, incidentsLinesQuery } from './incidents/IncidentsLines';
 import IncidentCreation from './incidents/IncidentCreation';
 import Security from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import useAuth from '../../../utils/hooks/useAuth';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
-import { IncidentLineDummy } from './incidents/IncidentLine';
-import useEntityToggle from '../../../utils/hooks/useEntityToggle';
-import { IncidentLine_node$data } from './incidents/__generated__/IncidentLine_node.graphql';
-import ToolBar from '../data/ToolBar';
-import ExportContextProvider from '../../../utils/ExportContextProvider';
-import { IncidentsLinesPaginationQuery, IncidentsLinesPaginationQuery$variables } from './incidents/__generated__/IncidentsLinesPaginationQuery.graphql';
-import { useBuildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext, useGetDefaultFilterObject } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
+import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
+import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
+import DataTable from '../../../components/dataGrid/DataTable';
 
 export const LOCAL_STORAGE_KEY = 'incidents';
 
 const Incidents: FunctionComponent = () => {
   const { t_i18n } = useFormatter();
+
   const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
+
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
-  const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<IncidentsLinesPaginationQuery$variables>(
-    LOCAL_STORAGE_KEY,
-    {
-      searchTerm: '',
-      sortBy: 'created',
-      orderAsc: false,
-      openExports: false,
-      filters: emptyFilterGroup,
-    },
-  );
-  const {
-    sortBy,
-    orderAsc,
-    searchTerm,
-    filters,
-    openExports,
-    numberOfElements,
-  } = viewStorage;
-  const {
-    onToggleEntity,
-    numberOfSelectedElements,
-    handleClearSelectedElements,
-    selectedElements,
-    deSelectedElements,
-    handleToggleSelectAll,
-    selectAll,
-  } = useEntityToggle<IncidentLine_node$data>(LOCAL_STORAGE_KEY);
 
-  const contextFilters = useBuildEntityTypeBasedFilterContext('Incident', filters);
+  const initialValues = {
+    filters: {
+      ...emptyFilterGroup,
+      filters: useGetDefaultFilterObject(['incident_type'], ['Incident']),
+    },
+    sortBy: 'created_at',
+    orderAsc: false,
+    openExports: false,
+  };
+
+  const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<IncidentsLinesQuery$variables>(
+    LOCAL_STORAGE_KEY,
+    initialValues,
+  );
+
+  const contextFilters = useBuildEntityTypeBasedFilterContext('Incident', viewStorage.filters);
   const queryPaginationOptions = {
     ...paginationOptions,
     filters: contextFilters,
-  } as unknown as IncidentsLinesPaginationQuery$variables;
-  const queryRef = useQueryLoading<IncidentsLinesPaginationQuery>(
-    incidentsLinesPaginationQuery,
+  } as unknown as IncidentsLinesQuery$variables;
+  const queryRef = useQueryLoading<IncidentsLinesQuery>(
+    incidentsLinesQuery,
     queryPaginationOptions,
   );
 
-  // eslint-disable-next-line class-methods-use-this
   const isRuntimeSort = isRuntimeFieldEnable() ?? false;
-  const dataColumns = {
-    name: {
-      label: 'Name',
-      width: '20%',
-      isSortable: true,
-    },
-    incident_type: {
-      label: 'Incident type',
-      width: '8%',
-      isSortable: true,
-    },
-    severity: {
-      label: 'Severity',
-      width: '5%',
-      isSortable: true,
-    },
-    objectAssignee: {
-      label: 'Assignees',
-      width: '14%',
-      isSortable: isRuntimeSort,
-    },
-    creator: {
-      label: 'Creators',
-      width: '11%',
-      isSortable: isRuntimeSort,
-    },
-    objectLabel: {
-      label: 'Labels',
-      width: '15%',
-      isSortable: false,
-    },
-    created: {
-      label: 'Original creation date',
-      width: '10%',
-      isSortable: true,
-    },
-    x_opencti_workflow_id: {
-      label: 'Status',
-      width: '8%',
-      isSortable: true,
-    },
-    objectMarking: {
-      label: 'Marking',
-      width: '8%',
-      isSortable: isRuntimeSort,
-    },
+  const dataColumns: DataTableProps['dataColumns'] = {
+    name: { percentWidth: 20 },
+    incident_type: { percentWidth: 8 },
+    severity: { percentWidth: 8 },
+    objectAssignee: { percentWidth: 12, isSortable: isRuntimeSort },
+    creator: { percentWidth: 11, isSortable: isRuntimeSort },
+    objectLabel: { percentWidth: 15 },
+    created: { percentWidth: 10 },
+    x_opencti_workflow_id: { percentWidth: 8 },
+    objectMarking: { percentWidth: 8, isSortable: isRuntimeSort },
   };
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
-  const renderLines = () => {
-    return (
-      <div data-testid='incident-page'>
-        <ListLines
-          helpers={helpers}
-          sortBy={sortBy}
-          orderAsc={orderAsc}
+
+  const preloadedPaginationProps = {
+    linesQuery: incidentsLinesQuery,
+    linesFragment: incidentsLinesFragment,
+    queryRef,
+    nodePath: ['incidents', 'pageInfo', 'globalCount'],
+    setNumberOfElements: helpers.handleSetNumberOfElements,
+  } as UsePreloadedPaginationFragment<IncidentsLinesQuery>;
+
+  return (
+    <div data-testid='incident-page'>
+      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Events') }, { label: t_i18n('Incidents'), current: true }]} />
+      {queryRef && (
+        <DataTable
+          storageKey={LOCAL_STORAGE_KEY}
+          initialValues={initialValues}
+          preloadedPaginationProps={preloadedPaginationProps}
+          resolvePath={(data: IncidentsLines_data$data) => data.incidents?.edges?.map((n) => n?.node)}
           dataColumns={dataColumns}
-          handleSort={helpers.handleSort}
-          handleSearch={helpers.handleSearch}
-          handleAddFilter={helpers.handleAddFilter}
-          handleRemoveFilter={helpers.handleRemoveFilter}
-          handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
-          handleSwitchLocalMode={helpers.handleSwitchLocalMode}
-          handleToggleExports={helpers.handleToggleExports}
-          handleToggleSelectAll={handleToggleSelectAll}
-          selectAll={selectAll}
-          openExports={openExports}
+          lineFragment={incidentLineFragment}
+          toolbarFilters={contextFilters}
           exportContext={{ entity_type: 'Incident' }}
-          keyword={searchTerm}
-          filters={filters}
-          paginationOptions={queryPaginationOptions}
-          numberOfElements={numberOfElements}
-          iconExtension={true}
+          availableEntityTypes={['Incident']}
           createButton={isFABReplaced && (
             <Security needs={[KNOWLEDGE_KNUPDATE]}>
               <IncidentCreation paginationOptions={queryPaginationOptions} />
             </Security>
           )}
-        >
-          {queryRef && (
-            <React.Suspense
-              fallback={
-                <>
-                  {Array(20)
-                    .fill(0)
-                    .map((_, idx) => (
-                      <IncidentLineDummy key={idx} dataColumns={dataColumns} />
-                    ))}
-                </>
-              }
-            >
-              <IncidentsLines
-                queryRef={queryRef}
-                paginationOptions={queryPaginationOptions}
-                dataColumns={dataColumns}
-                onLabelClick={helpers.handleAddFilter}
-                setNumberOfElements={helpers.handleSetNumberOfElements}
-                selectedElements={selectedElements}
-                deSelectedElements={deSelectedElements}
-                onToggleEntity={onToggleEntity}
-                selectAll={selectAll}
-              />
-            </React.Suspense>
-          )}
-        </ListLines>
-        <ToolBar
-          selectedElements={selectedElements}
-          deSelectedElements={deSelectedElements}
-          numberOfSelectedElements={numberOfSelectedElements}
-          selectAll={selectAll}
-          search={searchTerm}
-          filters={contextFilters}
-          handleClearSelectedElements={handleClearSelectedElements}
-          type="Incident"
         />
-      </div>
-    );
-  };
-  return (
-    <ExportContextProvider>
-      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Events') }, { label: t_i18n('Incidents'), current: true }]} />
-      {renderLines()}
+      )}
       {!isFABReplaced && (
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <IncidentCreation paginationOptions={queryPaginationOptions} />
         </Security>
       )}
-    </ExportContextProvider>
+    </div>
   );
 };
 

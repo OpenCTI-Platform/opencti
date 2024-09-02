@@ -29,7 +29,7 @@ export default class ReportPage {
   }
 
   getItemFromList(name: string) {
-    return this.page.getByRole('link', { name });
+    return this.page.getByTestId(name);
   }
 
   checkItemInList(name: string) {

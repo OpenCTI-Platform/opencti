@@ -42,23 +42,22 @@ const SearchContainer: FunctionComponent<SearchRootComponentProps> = ({ children
           marginBottom: 3,
         }}
       >
-        <Tabs value={searchType}>
+        <Tabs id="tabs-container" value={searchType}>
           <Tab
             component={Link}
             to={`/dashboard/search/knowledge/${keyword ?? ''}`}
-            value='knowledge'
+            value="knowledge"
             label={t_i18n('Knowledge search')}
           />
           <Tab
             component={Link}
             to={`/dashboard/search/files/${keyword ?? ''}`}
-            value='files'
-            label={<>
+            value="files"
+            label={
               <Badge badgeContent={filesCount} color="primary">
                 <div style={{ padding: '0px 12px', display: 'flex' }}>{t_i18n('Files search')}<EEChip /></div>
               </Badge>
-            </>
-              }
+            }
           />
         </Tabs>
       </Box>

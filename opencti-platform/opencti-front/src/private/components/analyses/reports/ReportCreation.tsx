@@ -9,6 +9,7 @@ import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { useNavigate } from 'react-router-dom';
 import Drawer, { DrawerControlledDialProps, DrawerVariant } from '@components/common/drawer/Drawer';
 import useHelper from 'src/utils/hooks/useHelper';
+import { ReportsLinesPaginationQuery$variables } from '@components/analyses/__generated__/ReportsLinesPaginationQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import { handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
@@ -24,7 +25,6 @@ import OpenVocabField from '../../common/form/OpenVocabField';
 import { insertNode } from '../../../../utils/store';
 import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
 import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
-import { ReportsLinesPaginationQuery$variables } from './__generated__/ReportsLinesPaginationQuery.graphql';
 import { Option } from '../../common/form/ReferenceField';
 import type { Theme } from '../../../../components/Theme';
 import { ReportCreationMutation, ReportCreationMutation$variables } from './__generated__/ReportCreationMutation.graphql';
@@ -57,7 +57,7 @@ export const reportCreationMutation = graphql`
       entity_type
       confidence
       parent_types
-      ...ReportLine_node
+      ...ReportsLine_node
     }
   }
 `;

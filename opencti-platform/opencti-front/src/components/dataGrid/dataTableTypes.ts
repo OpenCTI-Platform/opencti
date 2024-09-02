@@ -15,6 +15,7 @@ export type LocalStorageColumns = Record<string, LocalStorageColumn>;
 export enum DataTableVariant {
   default = 'default',
   inline = 'inline',
+  widget = 'widget',
 }
 
 export interface UseDataTable<T = any> {
@@ -30,7 +31,7 @@ export interface DataTableColumn {
   isSortable?: boolean
   label?: string
   size?: number
-  flexSize: number
+  percentWidth: number
   render?: (v: any, helpers?: any) => ReactNode
   visible?: boolean
   order: number
@@ -67,7 +68,12 @@ export interface DataTableContextProps {
     setSelectedElements: (selectedElements: Record<string, any>) => void
   } | Record<string, any>
   useComputeLink: (entity: any) => string
-  useDataTableLocalStorage: <T extends LocalStorage = LocalStorage>(key: string, initialValues?: T, ignoreUri?: boolean) => [T, Dispatch<SetStateAction<T>>]
+  useDataTableLocalStorage: <T extends LocalStorage = LocalStorage>(
+    key: string,
+    initialValues?: T,
+    ignoreUri?: boolean,
+    ignoreDispatch?: boolean,
+  ) => [T, Dispatch<SetStateAction<T>>]
   onAddFilter: (key: string) => void
   onSort: (sortBy: string, orderAsc: boolean) => void
   formatter: Record<string, (args: any) => any>
@@ -76,6 +82,8 @@ export interface DataTableContextProps {
   rootRef?: DataTableProps['rootRef']
   createButton?: DataTableProps['createButton']
   resetColumns: () => void
+  disableNavigation: DataTableProps['disableNavigation']
+  onLineClick: DataTableProps['onLineClick']
 }
 
 export interface DataTableProps {
@@ -112,7 +120,8 @@ export interface DataTableProps {
   actions?: (row: any) => ReactNode
   createButton?: ReactNode
   pageSize?: string
-  isNavigable?: boolean
+  disableNavigation?: boolean
+  onLineClick?: (line: any) => void
 }
 
 export interface DataTableBodyProps {
@@ -127,7 +136,6 @@ export interface DataTableBodyProps {
   dataQueryArgs: DataTableProps['dataQueryArgs']
   pageSize: number
   pageStart: number
-  isNavigable?: boolean
 }
 
 export interface DataTableDisplayFiltersProps {
@@ -175,7 +183,6 @@ export interface DataTableLineProps {
   storageHelpers: DataTableProps['storageHelpers']
   index: number
   onToggleShiftEntity: (currentIndex: number, currentEntity: { id: string }, event?: React.SyntheticEvent) => void
-  isNavigable?: boolean
 }
 
 export interface DataTableCellProps {

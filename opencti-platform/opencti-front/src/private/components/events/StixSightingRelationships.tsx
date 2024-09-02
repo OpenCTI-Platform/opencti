@@ -1,179 +1,374 @@
 import React from 'react';
-import { QueryRenderer } from '../../../relay/environment';
-import ListLines from '../../../components/list_lines/ListLines';
-import StixSightingRelationshipsLines, { stixSightingRelationshipsLinesQuery } from './stix_sighting_relationships/StixSightingRelationshipsLines';
-import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
+import { graphql } from 'react-relay';
 import {
-  StixSightingRelationshipsLinesPaginationQuery$data,
+  StixSightingRelationshipsLinesPaginationQuery,
   StixSightingRelationshipsLinesPaginationQuery$variables,
-} from './stix_sighting_relationships/__generated__/StixSightingRelationshipsLinesPaginationQuery.graphql';
-import useEntityToggle from '../../../utils/hooks/useEntityToggle';
-import { StixSightingRelationshipLine_node$data } from './stix_sighting_relationships/__generated__/StixSightingRelationshipLine_node.graphql';
-import ToolBar from '../data/ToolBar';
-import ExportContextProvider from '../../../utils/ExportContextProvider';
+} from '@components/events/__generated__/StixSightingRelationshipsLinesPaginationQuery.graphql';
+import { StixSightingRelationshipsLines_data$data } from '@components/events/__generated__/StixSightingRelationshipsLines_data.graphql';
+import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import { useBuildEntityTypeBasedFilterContext, emptyFilterGroup, useGetDefaultFilterObject } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
+import DataTable from '../../../components/dataGrid/DataTable';
+import useQueryLoading from '../../../utils/hooks/useQueryLoading';
+import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
+import { truncate } from '../../../utils/String';
+import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
 
-const dataColumns = {
-  x_opencti_negative: {
-    label: 'x_opencti_negative',
-    width: '10%',
-    isSortable: true,
-  },
-  attribute_count: {
-    label: 'Nb.',
-    width: 80,
-    isSortable: true,
-  },
-  name: {
-    label: 'Source entity',
-    width: '15%',
-    isSortable: false,
-  },
-  entity_type: {
-    label: 'Source type',
-    width: '12%',
-    isSortable: false,
-  },
-  entity: {
-    label: 'Target entity',
-    width: '12%',
-    isSortable: false,
-  },
-  first_seen: {
-    label: 'First obs.',
-    width: '12%',
-    isSortable: true,
-  },
-  last_seen: {
-    label: 'Last obs.',
-    width: '12%',
-    isSortable: true,
-  },
-  confidence: {
-    width: '10%',
-    label: 'Confidence',
-    isSortable: true,
-  },
-  x_opencti_workflow_id: {
-    label: 'Status',
-    isSortable: true,
-  },
-};
+const stixSightingsLineFragment = graphql`
+  fragment StixSightingRelationshipsLine_node on StixSightingRelationship {
+    id
+    entity_type
+    parent_types
+    x_opencti_negative
+    attribute_count
+    confidence
+    first_seen
+    last_seen
+    description
+    status {
+      id
+      order
+      template {
+        name
+        color
+      }
+    }
+    workflowEnabled
+    is_inferred
+    x_opencti_inferences {
+      rule {
+        id
+        name
+      }
+    }
+    from {
+      ... on StixDomainObject {
+        id
+        entity_type
+        parent_types
+        created_at
+        updated_at
+      }
+      ... on AttackPattern {
+        name
+        description
+        x_mitre_id
+        killChainPhases {
+          id
+          phase_name
+          x_opencti_order
+        }
+      }
+      ... on Campaign {
+        name
+        description
+      }
+      ... on CourseOfAction {
+        name
+        description
+      }
+      ... on Individual {
+        name
+        description
+      }
+      ... on Organization {
+        name
+        description
+      }
+      ... on Sector {
+        name
+        description
+      }
+      ... on System {
+        name
+        description
+      }
+      ... on Indicator {
+        name
+        description
+      }
+      ... on Infrastructure {
+        name
+        description
+      }
+      ... on IntrusionSet {
+        name
+        description
+      }
+      ... on Position {
+        name
+        description
+      }
+      ... on City {
+        name
+        description
+      }
+      ... on AdministrativeArea {
+        name
+        description
+      }
+      ... on Country {
+        name
+        description
+      }
+      ... on Region {
+        name
+        description
+      }
+      ... on Malware {
+        name
+        description
+      }
+      ... on ThreatActor {
+        name
+        description
+      }
+      ... on Tool {
+        name
+        description
+      }
+      ... on Vulnerability {
+        name
+        description
+      }
+      ... on Incident {
+        name
+        description
+      }
+      ... on ObservedData {
+        name
+        first_observed
+        last_observed
+      }
+      ... on StixCyberObservable {
+        id
+        entity_type
+        parent_types
+        created_at
+        updated_at
+        observable_value
+      }
+    }
+    to {
+      ... on StixObject {
+        id
+        entity_type
+        parent_types
+        created_at
+        updated_at
+      }
+      ... on Individual {
+        name
+        description
+      }
+      ... on Organization {
+        name
+        description
+      }
+      ... on Sector {
+        name
+        description
+      }
+      ... on System {
+        name
+        description
+      }
+      ... on Position {
+        name
+        description
+      }
+      ... on City {
+        name
+        description
+      }
+      ... on AdministrativeArea {
+        name
+        description
+      }
+      ... on Country {
+        name
+        description
+      }
+      ... on Region {
+        name
+        description
+      }
+    }
+  }
+`;
+
+const stixSightingRelationshipsLinesQuery = graphql`
+  query StixSightingRelationshipsLinesPaginationQuery(
+    $fromId: StixRef
+    $toId: StixRef
+    $toTypes: [String]
+    $search: String
+    $count: Int!
+    $cursor: ID
+    $orderBy: StixSightingRelationshipsOrdering
+    $orderMode: OrderingMode
+    $filters: FilterGroup
+  ) {
+    ...StixSightingRelationshipsLines_data
+    @arguments(
+      fromId: $fromId
+      toId: $toId
+      toTypes: $toTypes
+      search: $search
+      count: $count
+      cursor: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+      filters: $filters
+    )
+  }
+`;
+
+const stixSightingRelationshipsLinesFragment = graphql`
+  fragment StixSightingRelationshipsLines_data on Query
+  @argumentDefinitions(
+    fromId: { type: "StixRef" }
+    toId: { type: "StixRef" }
+    toTypes: { type: "[String]" }
+    search: { type: "String" }
+    count: { type: "Int", defaultValue: 25 }
+    cursor: { type: "ID" }
+    orderBy: {
+      type: "StixSightingRelationshipsOrdering"
+      defaultValue: first_seen
+    }
+    orderMode: { type: "OrderingMode", defaultValue: desc }
+    filters: { type: "FilterGroup" }
+  ) @refetchable(queryName: "StixSightingRelationshipsLinesRefetchQuery") {
+    stixSightingRelationships(
+      fromId: $fromId
+      toId: $toId
+      toTypes: $toTypes
+      search: $search
+      first: $count
+      after: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+      filters: $filters
+    ) @connection(key: "Pagination_stixSightingRelationships") {
+      edges {
+        node {
+          id
+          ...StixSightingRelationshipsLine_node
+        }
+      }
+      pageInfo {
+        endCursor
+        hasNextPage
+        globalCount
+      }
+    }
+  }
+`;
 
 const LOCAL_STORAGE_KEY = 'stixSightingRelationships';
 
 const StixSightingRelationships = () => {
   const { t_i18n } = useFormatter();
+
+  const initialValues = {
+    filters: {
+      ...emptyFilterGroup,
+      filters: useGetDefaultFilterObject(['toSightingId', 'x_opencti_negative'], ['stix-sighting-relationship']),
+    },
+    searchTerm: '',
+    sortBy: 'last_seen',
+    orderAsc: false,
+    openExports: false,
+  };
   const {
     viewStorage,
     paginationOptions,
     helpers: storageHelpers,
   } = usePaginationLocalStorage<StixSightingRelationshipsLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY,
-    {
-      filters: {
-        ...emptyFilterGroup,
-        filters: useGetDefaultFilterObject(['toSightingId', 'x_opencti_negative'], ['stix-sighting-relationship']),
-      },
-      searchTerm: '',
-      sortBy: 'last_seen',
-      orderAsc: false,
-      openExports: false,
-    },
+    initialValues,
   );
 
-  const {
-    numberOfElements,
-    filters,
-    searchTerm,
-    sortBy,
-    orderAsc,
-    openExports,
-  } = viewStorage;
-
-  const {
-    onToggleEntity,
-    numberOfSelectedElements,
-    handleClearSelectedElements,
-    selectedElements,
-    deSelectedElements,
-    handleToggleSelectAll,
-    selectAll,
-  } = useEntityToggle<StixSightingRelationshipLine_node$data>(LOCAL_STORAGE_KEY);
+  const { filters } = viewStorage;
 
   const contextFilters = useBuildEntityTypeBasedFilterContext('stix-sighting-relationship', filters);
-  const queryPaginationOptions = { ...paginationOptions, filters: contextFilters };
+  const queryPaginationOptions = {
+    ...paginationOptions,
+    filters: contextFilters,
+  } as unknown as StixSightingRelationshipsLinesPaginationQuery$variables;
 
-  const renderLines = () => {
-    return (
-      <>
-        <ListLines
-          helpers={storageHelpers}
-          sortBy={sortBy}
-          orderAsc={orderAsc}
-          dataColumns={dataColumns}
-          handleSort={storageHelpers.handleSort}
-          handleSearch={storageHelpers.handleSearch}
-          handleAddFilter={storageHelpers.handleAddFilter}
-          handleRemoveFilter={storageHelpers.handleRemoveFilter}
-          handleSwitchGlobalMode={storageHelpers.handleSwitchGlobalMode}
-          handleSwitchLocalMode={storageHelpers.handleSwitchLocalMode}
-          handleToggleExports={storageHelpers.handleToggleExports}
-          handleToggleSelectAll={handleToggleSelectAll}
-          selectAll={selectAll}
-          openExports={openExports}
-          exportContext={{ entity_type: 'stix-sighting-relationship' }}
-          keyword={searchTerm}
-          filters={filters}
-          paginationOptions={queryPaginationOptions}
-          numberOfElements={numberOfElements}
-          secondaryAction={true}
-          iconExtension={true}
-        >
-          <QueryRenderer
-            query={stixSightingRelationshipsLinesQuery}
-            variables={queryPaginationOptions}
-            render={({
-              props,
-            }: {
-              props: StixSightingRelationshipsLinesPaginationQuery$data;
-            }) => (
-              <StixSightingRelationshipsLines
-                data={props}
-                paginationOptions={queryPaginationOptions}
-                dataColumns={dataColumns}
-                initialLoading={props === null}
-                onLabelClick={storageHelpers.handleAddFilter}
-                setNumberOfElements={storageHelpers.handleSetNumberOfElements}
-                selectedElements={selectedElements}
-                deSelectedElements={deSelectedElements}
-                onToggleEntity={onToggleEntity}
-                selectAll={selectAll}
-              />
-            )}
-          />
-        </ListLines>
-        <ToolBar
-          selectedElements={selectedElements}
-          deSelectedElements={deSelectedElements}
-          numberOfSelectedElements={numberOfSelectedElements}
-          selectAll={selectAll}
-          search={searchTerm}
-          filters={contextFilters}
-          handleClearSelectedElements={handleClearSelectedElements}
-          type="stix-sighting-relationship"
-        />
-      </>
-    );
+  const queryRef = useQueryLoading<StixSightingRelationshipsLinesPaginationQuery>(
+    stixSightingRelationshipsLinesQuery,
+    queryPaginationOptions,
+  );
+
+  const preloadedPaginationProps = {
+    linesQuery: stixSightingRelationshipsLinesQuery,
+    linesFragment: stixSightingRelationshipsLinesFragment,
+    queryRef,
+    nodePath: ['stixSightingRelationships', 'pageInfo', 'globalCount'],
+    setNumberOfElements: storageHelpers.handleSetNumberOfElements,
+  } as UsePreloadedPaginationFragment<StixSightingRelationshipsLinesPaginationQuery>;
+
+  const dataColumns: DataTableProps['dataColumns'] = {
+    x_opencti_negative: {},
+    attribute_count: {},
+    name: {
+      label: 'Name',
+      percentWidth: 15,
+      isSortable: false,
+      render: ({ from }, { fd }) => (from !== null
+        ? from.name
+        || from.attribute_abstract
+        || truncate(from.content, 30)
+        || from.observable_value
+        || `${fd(from.first_observed)} - ${fd(from.last_observed)}`
+        : t_i18n('Restricted')),
+    },
+    entity_type: {
+      label: 'Entity type',
+      percentWidth: 12,
+      isSortable: false,
+      render: ({ from }) => (from !== null
+        ? t_i18n(`entity_${from.entity_type}`)
+        : t_i18n('Restricted')),
+    },
+    entity: {
+      label: 'Entity',
+      percentWidth: 12,
+      isSortable: false,
+      render: ({ to }, { fd }) => (to !== null
+        ? to.name
+        || to.attribute_abstract
+        || truncate(to.content, 30)
+        || to.observable_value
+        || `${fd(to.first_observed)} - ${fd(to.last_observed)}`
+        : t_i18n('Restricted')),
+    },
+    first_seen: {},
+    last_seen: {},
+    confidence: {},
+    x_opencti_workflow_id: {},
   };
 
   return (
-    <ExportContextProvider>
+    <>
       <Breadcrumbs variant="list" elements={[{ label: t_i18n('Events') }, { label: t_i18n('Sightings'), current: true }]} />
-      {renderLines()}
-    </ExportContextProvider>
+      {queryRef && (
+        <DataTable
+          dataColumns={dataColumns}
+          resolvePath={(data: StixSightingRelationshipsLines_data$data) => data.stixSightingRelationships?.edges?.map((n) => n?.node)}
+          storageKey={LOCAL_STORAGE_KEY}
+          initialValues={initialValues}
+          toolbarFilters={contextFilters}
+          preloadedPaginationProps={preloadedPaginationProps}
+          lineFragment={stixSightingsLineFragment}
+          exportContext={{ entity_type: 'stix-sighting-relationship' }}
+        />
+      )}
+    </>
   );
 };
 

@@ -10,13 +10,14 @@ type OCTIDataTableProps = Pick<DataTableProps, 'dataColumns'
 | 'storageKey'
 | 'rootRef'
 | 'actions'
+| 'disableNavigation'
 | 'filtersComponent'
 | 'variant'> & {
   data: unknown,
   globalCount: number
 };
 
-const DataTable = (props: OCTIDataTableProps) => {
+const DataTableWithoutFragment = (props: OCTIDataTableProps) => {
   const formatter = useFormatter();
 
   const {
@@ -44,4 +45,4 @@ const DataTable = (props: OCTIDataTableProps) => {
   );
 };
 
-export default DataTable;
+export default DataTableWithoutFragment;

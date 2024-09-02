@@ -38,7 +38,6 @@ const DataTableBody = ({
   dataQueryArgs,
   pageStart,
   pageSize,
-  isNavigable = false,
 }: DataTableBodyProps) => {
   const {
     rootRef,
@@ -95,15 +94,15 @@ const DataTableBody = ({
     }
     // From there, currentRefContainer is not null
     /* eslint-disable @typescript-eslint/no-non-null-assertion */
-    const clientWidth = currentRefContainer!.clientWidth - storedSize - (variant === DataTableVariant.inline ? 12 : 0) - 12; // Scrollbar size to prevent alignment issues
+    const clientWidth = currentRefContainer!.clientWidth - storedSize - 12; // Scrollbar size to prevent alignment issues
     for (let i = startsWithSelect ? 1 : 0; i < columns.length - (endsWithNavigate ? 1 : 0); i += 1) {
       const column = { ...columns[i], ...localStorageColumns[columns[i].id] };
-      const shouldCompute = (!column.size || resize || !localStorageColumns[columns[i].id]?.size) && (column.flexSize && Boolean(computeState));
+      const shouldCompute = (!column.size || resize || !localStorageColumns[columns[i].id]?.size) && (column.percentWidth && Boolean(computeState));
       let size = column.size ?? 200;
 
       // We must compute px size for columns
       if (shouldCompute) {
-        size = column.flexSize * (clientWidth / 100);
+        size = column.percentWidth * (clientWidth / 100);
         column.size = size;
       }
       localColumns[column.id] = { size };
@@ -134,11 +133,18 @@ const DataTableBody = ({
     }
     colSizes['--header-table-size'] = tableSize; // 50 is almost the scrollbar size
     colSizes['--col-table-size'] = tableSize;
-    if (rootRef) {
+    if (variant === DataTableVariant.widget) {
+      if (!rootRef) {
+        throw Error('Invalid configuration for widget list');
+      }
+      colSizes['--table-height'] = rootRef.offsetHeight + 50;
+    } else if (rootRef) {
       colSizes['--table-height'] = rootRef.offsetHeight - 42; // SIZE OF CONTAINER - Nb Elements - Line Size
     } else {
       const rootSize = (document.getElementById('root')?.offsetHeight ?? 0) - settingsMessagesBannerHeight;
-      colSizes['--table-height'] = rootSize - (hasFilterComponent && (document.getElementById('filter-container')?.children.length) ? 260 : 220);
+      const filterRemoval = (hasFilterComponent && document.getElementById('filter-container')?.children.length) ? 260 : 220;
+      const tabsRemoval = document.getElementById('tabs-container')?.children.length ? 50 : 0;
+      colSizes['--table-height'] = rootSize - filterRemoval - tabsRemoval;
     }
     /* eslint-enable @typescript-eslint/no-non-null-assertion */
 
@@ -224,13 +230,15 @@ const DataTableBody = ({
       className={classes.tableContainer}
       style={{ ...columnSizeVars }}
     >
-      <DataTableHeaders
-        containerRef={containerRef}
-        effectiveColumns={effectiveColumns}
-        sortBy={sortBy}
-        orderAsc={orderAsc}
-        dataTableToolBarComponent={dataTableToolBarComponent}
-      />
+      {variant !== DataTableVariant.widget && (
+        <DataTableHeaders
+          containerRef={containerRef}
+          effectiveColumns={effectiveColumns}
+          sortBy={sortBy}
+          orderAsc={orderAsc}
+          dataTableToolBarComponent={dataTableToolBarComponent}
+        />
+      )}
       <div
         ref={(node) => setComputeState(node)}
         className={classes.linesContainer}
@@ -248,7 +256,6 @@ const DataTableBody = ({
                   effectiveColumns={effectiveColumns}
                   index={index}
                   onToggleShiftEntity={onToggleShiftEntity}
-                  isNavigable={isNavigable}
                 />
               );
             })}

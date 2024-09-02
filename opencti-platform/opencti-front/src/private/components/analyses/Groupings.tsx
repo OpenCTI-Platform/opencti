@@ -1,29 +1,141 @@
 import React, { FunctionComponent } from 'react';
 import useHelper from 'src/utils/hooks/useHelper';
-import ListLines from '../../../components/list_lines/ListLines';
-import GroupingsLines, { groupingsLinesQuery } from './groupings/GroupingsLines';
+import { graphql } from 'react-relay';
+import { GroupingsLinesPaginationQuery, GroupingsLinesPaginationQuery$variables } from '@components/analyses/__generated__/GroupingsLinesPaginationQuery.graphql';
+import { GroupingsLines_data$data } from '@components/analyses/__generated__/GroupingsLines_data.graphql';
 import GroupingCreation from './groupings/GroupingCreation';
-import ToolBar from '../data/ToolBar';
 import Security from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import useAuth from '../../../utils/hooks/useAuth';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
-import useEntityToggle from '../../../utils/hooks/useEntityToggle';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import { GroupingsLinesPaginationQuery, GroupingsLinesPaginationQuery$variables } from './groupings/__generated__/GroupingsLinesPaginationQuery.graphql';
-import { GroupingLine_node$data } from './groupings/__generated__/GroupingLine_node.graphql';
-import { GroupingLineDummy } from './groupings/GroupingLine';
-import { useBuildEntityTypeBasedFilterContext, emptyFilterGroup, useGetDefaultFilterObject } from '../../../utils/filters/filtersUtils';
+import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext, useGetDefaultFilterObject } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
-import ExportContextProvider from '../../../utils/ExportContextProvider';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
+import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
+import DataTable from '../../../components/dataGrid/DataTable';
+import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 
 const LOCAL_STORAGE_KEY = 'groupings';
 
 interface GroupingsProps {
   match: { params: { groupingContext: string } };
 }
+
+const groupingLineFragment = graphql`
+  fragment GroupingsLine_node on Grouping {
+    id
+    entity_type
+    created
+    name
+    description
+    context
+    createdBy {
+      ... on Identity {
+        id
+        name
+        entity_type
+      }
+    }
+    objectMarking {
+      id
+      definition_type
+      definition
+      x_opencti_order
+      x_opencti_color
+    }
+    objectLabel {
+      id
+      value
+      color
+    }
+    creators {
+      id
+      name
+    }
+    status {
+      id
+      order
+      template {
+        name
+        color
+      }
+    }
+    workflowEnabled
+  }
+`;
+
+const groupingsLinesQuery = graphql`
+  query GroupingsLinesPaginationQuery(
+    $search: String
+    $count: Int!
+    $cursor: ID
+    $orderBy: GroupingsOrdering
+    $orderMode: OrderingMode
+    $filters: FilterGroup
+  ) {
+    ...GroupingsLines_data
+    @arguments(
+      search: $search
+      count: $count
+      cursor: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+      filters: $filters
+    )
+  }
+`;
+
+const groupingsLineFragment = graphql`
+  fragment GroupingsLines_data on Query
+  @argumentDefinitions(
+    search: { type: "String" }
+    count: { type: "Int", defaultValue: 25 }
+    cursor: { type: "ID" }
+    orderBy: { type: "GroupingsOrdering", defaultValue: name }
+    orderMode: { type: "OrderingMode", defaultValue: asc }
+    filters: { type: "FilterGroup" }
+  )
+  @refetchable(queryName: "GroupingsLinesRefetchQuery") {
+    groupings(
+      search: $search
+      first: $count
+      after: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+      filters: $filters
+    ) @connection(key: "Pagination_groupings") {
+      edges {
+        node {
+          id
+          name
+          context
+          createdBy {
+            ... on Identity {
+              id
+              name
+              entity_type
+            }
+          }
+          objectMarking {
+            id
+            definition_type
+            definition
+            x_opencti_order
+            x_opencti_color
+          }
+          ...GroupingsLine_node
+        }
+      }
+      pageInfo {
+        endCursor
+        hasNextPage
+        globalCount
+      }
+    }
+  }
+`;
 
 const Groupings: FunctionComponent<GroupingsProps> = () => {
   const { t_i18n } = useFormatter();
@@ -35,41 +147,28 @@ const Groupings: FunctionComponent<GroupingsProps> = () => {
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
 
+  const initialValues = {
+    filters: {
+      ...emptyFilterGroup,
+      filters: useGetDefaultFilterObject(['context'], ['Grouping']),
+    },
+    searchTerm: '',
+    sortBy: 'created',
+    orderAsc: false,
+    openExports: false,
+    count: 25,
+  };
   const {
     viewStorage,
     paginationOptions,
     helpers: storageHelpers,
   } = usePaginationLocalStorage<GroupingsLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY,
-    {
-      numberOfElements: { number: 0, symbol: '', original: 0 },
-      filters: {
-        ...emptyFilterGroup,
-        filters: useGetDefaultFilterObject(['context'], ['Grouping']),
-      },
-      searchTerm: '',
-      sortBy: 'created',
-      orderAsc: false,
-      openExports: false,
-      count: 25,
-    },
+    initialValues,
   );
   const {
-    numberOfElements,
     filters,
-    searchTerm,
-    sortBy,
-    orderAsc,
-    openExports,
   } = viewStorage;
-  const {
-    selectedElements,
-    deSelectedElements,
-    selectAll,
-    handleClearSelectedElements,
-    handleToggleSelectAll,
-    onToggleEntity,
-  } = useEntityToggle<GroupingLine_node$data>(LOCAL_STORAGE_KEY);
 
   const contextFilters = useBuildEntityTypeBasedFilterContext('Grouping', filters);
   const queryPaginationOptions = {
@@ -81,131 +180,52 @@ const Groupings: FunctionComponent<GroupingsProps> = () => {
     queryPaginationOptions,
   );
 
-  const renderLines = () => {
-    let numberOfSelectedElements = Object.keys(selectedElements || {}).length;
-    if (selectAll) {
-      numberOfSelectedElements = (numberOfElements?.original ?? 0)
-        - Object.keys(deSelectedElements || {}).length;
-    }
-    const isRuntimeSort = isRuntimeFieldEnable() ?? false;
-    const dataColumns = {
-      name: {
-        label: 'Name',
-        width: '25%',
-        isSortable: true,
-      },
-      context: {
-        label: 'Context',
-        width: '8%',
-        isSortable: true,
-      },
-      createdBy: {
-        label: 'Author',
-        width: '12%',
-        isSortable: isRuntimeSort,
-      },
-      creator: {
-        label: 'Creators',
-        width: '12%',
-        isSortable: isRuntimeSort,
-      },
-      objectLabel: {
-        label: 'Labels',
-        width: '15%',
-        isSortable: false,
-      },
-      created: {
-        label: 'Original creation date',
-        width: '10%',
-        isSortable: true,
-      },
-      x_opencti_workflow_id: {
-        label: 'Status',
-        width: '8%',
-        isSortable: true,
-      },
-      objectMarking: {
-        label: 'Marking',
-        isSortable: isRuntimeSort,
-        width: '8%',
-      },
-    };
-    return (
-      <div data-testid="groupings-page">
-        <ListLines
-          helpers={storageHelpers}
-          sortBy={sortBy}
-          orderAsc={orderAsc}
-          dataColumns={dataColumns}
-          handleSort={storageHelpers.handleSort}
-          handleSearch={storageHelpers.handleSearch}
-          handleAddFilter={storageHelpers.handleAddFilter}
-          handleRemoveFilter={storageHelpers.handleRemoveFilter}
-          handleToggleExports={storageHelpers.handleToggleExports}
-          handleSwitchLocalMode={storageHelpers.handleSwitchLocalMode}
-          handleSwitchGlobalMode={storageHelpers.handleSwitchGlobalMode}
-          openExports={openExports}
-          handleToggleSelectAll={handleToggleSelectAll}
-          selectAll={selectAll}
-          exportContext={{ entity_type: 'Grouping' }}
-          keyword={searchTerm}
-          filters={filters}
-          paginationOptions={queryPaginationOptions}
-          numberOfElements={numberOfElements}
-          iconExtension={true}
-          createButton={isFABReplaced && <Security needs={[KNOWLEDGE_KNUPDATE]}>
-            <GroupingCreation paginationOptions={queryPaginationOptions} />
-          </Security>}
-        >
-          {queryRef && (
-            <React.Suspense
-              fallback={
-                <>
-                  {Array(20)
-                    .fill(0)
-                    .map((_, idx) => (
-                      <GroupingLineDummy key={idx} dataColumns={dataColumns}/>
-                    ))}
-                </>
-              }
-            >
-              <GroupingsLines
-                queryRef={queryRef}
-                paginationOptions={queryPaginationOptions}
-                dataColumns={dataColumns}
-                onLabelClick={storageHelpers.handleAddFilter}
-                selectedElements={selectedElements}
-                deSelectedElements={deSelectedElements}
-                onToggleEntity={onToggleEntity}
-                selectAll={selectAll}
-                setNumberOfElements={storageHelpers.handleSetNumberOfElements}
-              />
-            </React.Suspense>
-          )}
-        </ListLines>
-        <ToolBar
-          selectedElements={selectedElements}
-          deSelectedElements={deSelectedElements}
-          numberOfSelectedElements={numberOfSelectedElements}
-          selectAll={selectAll}
-          search={searchTerm}
-          filters={contextFilters}
-          handleClearSelectedElements={handleClearSelectedElements}
-          type="Grouping"
-        />
-      </div>
-    );
+  const isRuntimeSort = isRuntimeFieldEnable() ?? false;
+  const dataColumns: DataTableProps['dataColumns'] = {
+    name: { percentWidth: 25 },
+    context: {},
+    createdBy: { isSortable: isRuntimeSort },
+    creator: { isSortable: isRuntimeSort },
+    objectLabel: {},
+    created: { percentWidth: 10 },
+    x_opencti_workflow_id: {},
+    objectMarking: { isSortable: isRuntimeSort },
   };
+
+  const preloadedPaginationProps = {
+    linesQuery: groupingsLinesQuery,
+    linesFragment: groupingsLineFragment,
+    queryRef,
+    nodePath: ['groupings', 'pageInfo', 'globalCount'],
+    setNumberOfElements: storageHelpers.handleSetNumberOfElements,
+  } as UsePreloadedPaginationFragment<GroupingsLinesPaginationQuery>;
+
   return (
-    <ExportContextProvider>
+    <span data-testid="groupings-page">
       <Breadcrumbs variant="list" elements={[{ label: t_i18n('Analyses') }, { label: t_i18n('Groupings'), current: true }]} />
-      {renderLines()}
-      {!isFABReplaced
-        && <Security needs={[KNOWLEDGE_KNUPDATE]}>
+      {queryRef && (
+        <DataTable
+          dataColumns={dataColumns}
+          resolvePath={(data: GroupingsLines_data$data) => data.groupings?.edges?.map((n) => n?.node)}
+          storageKey={LOCAL_STORAGE_KEY}
+          initialValues={initialValues}
+          toolbarFilters={contextFilters}
+          preloadedPaginationProps={preloadedPaginationProps}
+          lineFragment={groupingLineFragment}
+          exportContext={{ entity_type: 'Grouping' }}
+          createButton={isFABReplaced && (
+            <Security needs={[KNOWLEDGE_KNUPDATE]}>
+              <GroupingCreation paginationOptions={queryPaginationOptions} />
+            </Security>
+          )}
+        />
+      )}
+      {!isFABReplaced && (
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <GroupingCreation paginationOptions={queryPaginationOptions} />
         </Security>
-      }
-    </ExportContextProvider>
+      )}
+    </span>
   );
 };
 

@@ -163,6 +163,7 @@ const useLocalStorage = <T extends LocalStorage = LocalStorage>(
   key: string,
   initialValue?: T,
   ignoreUri?: boolean,
+  ignoreDispatch = false,
 ): [T, Dispatch<SetStateAction<T>>] => {
   // State to store our value
   // Pass initial state function to useState so logic is only executed once
@@ -203,7 +204,7 @@ const useLocalStorage = <T extends LocalStorage = LocalStorage>(
   });
 
   const dispatch = useBus(key, (v) => {
-    if (!R.equals(v, storedValue)) {
+    if (!R.equals(v, storedValue) && !ignoreDispatch) {
       setStoredValue(v);
     }
   });
@@ -674,16 +675,14 @@ export const usePaginationLocalStorage = <U>(
       dispatch(`${key}_paginationStorage`, newValue);
     },
     handleAddFilterWithEmptyValue: (filter: Filter) => {
-      if (viewStorage?.filters) {
-        const { filters } = viewStorage;
-        const newValue = {
-          ...viewStorage,
-          filters: handleAddFilterWithEmptyValueUtil({ filters, filter }),
-          latestAddFilterId: filter.id,
-        };
-        setValue(newValue);
-        dispatch(`${key}_paginationStorage`, newValue);
-      }
+      const { filters } = viewStorage;
+      const newValue = {
+        ...viewStorage,
+        filters: handleAddFilterWithEmptyValueUtil({ filters: filters ?? emptyFilterGroup, filter }),
+        latestAddFilterId: filter.id,
+      };
+      setValue(newValue);
+      dispatch(`${key}_paginationStorage`, newValue);
     },
     handleChangeOperatorFilters: (id: string, operator: string) => {
       if (viewStorage?.filters) {

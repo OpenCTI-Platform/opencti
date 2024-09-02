@@ -43,7 +43,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
-const TaskFragment = graphql`
+export const TaskFragment = graphql`
   fragment TasksLine_node on Task {
     id
     standard_id

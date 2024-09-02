@@ -1406,17 +1406,7 @@ class DataTableToolBar extends Component {
                     color="inherit"
                     variant="subtitle1"
                   >
-                    <span
-                      style={{
-                        padding: '2px 5px 2px 5px',
-                        marginRight: 5,
-                        backgroundColor: theme.palette.secondary.main,
-                        color: theme.palette.secondary.contrastText,
-                      }}
-                    >
-                      {numberOfSelectedElements}
-                    </span>{' '}
-                    {t('selected')}{' '}
+                    {`${numberOfSelectedElements} ${t('selected')}`}{' '}
                   </Typography>
                   <IconButton
                     aria-label="clear"
@@ -1698,9 +1688,6 @@ class DataTableToolBar extends Component {
                     <span
                       style={{
                         padding: '2px 5px 2px 5px',
-                        marginRight: 5,
-                        backgroundColor: theme.palette.secondary.main,
-                        color: '#ffffff',
                       }}
                     >
                       {n(numberOfSelectedElements)}

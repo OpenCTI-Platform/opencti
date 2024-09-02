@@ -1,4 +1,4 @@
-import { graphql } from 'react-relay';
+import { graphql, useQueryLoader } from 'react-relay';
 import React, { FunctionComponent, useState } from 'react';
 import { PopoverProps } from '@mui/material/Popover';
 import IconButton from '@mui/material/IconButton';
@@ -16,7 +16,6 @@ import { IngestionCsvLinesPaginationQuery$variables } from '@components/data/ing
 import { IngestionCsvEditionContainerQuery } from '@components/data/ingestionCsv/__generated__/IngestionCsvEditionContainerQuery.graphql';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { deleteNode } from '../../../../utils/store';
-import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { useFormatter } from '../../../../components/i18n';
 import Transition from '../../../../components/Transition';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
@@ -48,9 +47,11 @@ const IngestionCsvPopover: FunctionComponent<IngestionCsvPopoverProps> = ({
   const handleClose = () => setAnchorEl(null);
 
   // -- Edition --
+  const [queryRef, loadQuery] = useQueryLoader<IngestionCsvEditionContainerQuery>(ingestionCsvEditionContainerQuery);
   const [displayUpdate, setDisplayUpdate] = useState<boolean>(false);
   const handleOpenUpdate = () => {
     setDisplayUpdate(true);
+    loadQuery({ id: ingestionCsvId });
     handleClose();
   };
   const handleOpenStart = () => {
@@ -70,10 +71,6 @@ const IngestionCsvPopover: FunctionComponent<IngestionCsvPopoverProps> = ({
   const handleCloseStop = () => {
     setDisplayStop(false);
   };
-  const queryRef = useQueryLoading<IngestionCsvEditionContainerQuery>(
-    ingestionCsvEditionContainerQuery,
-    { id: ingestionCsvId },
-  );
 
   // -- Deletion --
   const [displayDelete, setDisplayDelete] = useState(false);

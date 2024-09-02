@@ -33,7 +33,7 @@ const observedDataLinesMutationRelationAdd = graphql`
       relationAdd(input: $input) {
         id
         from {
-          ...ObservedDataLine_node
+          ...ObservedDatasLine_node
         }
       }
     }

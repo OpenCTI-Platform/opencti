@@ -1,16 +1,15 @@
 import { Page } from '@playwright/test';
+import TextFieldPageModel from '../field/TextField.pageModel';
 
 export default class InvestigationsFormPage {
-  constructor(private page: Page) {
-  }
+  private readonly formLocator;
 
-  getNameInput() {
-    return this.page.getByLabel('Name');
-  }
+  nameField;
 
-  async fillNameInput(input: string) {
-    await this.getNameInput().click();
-    return this.getNameInput().fill(input);
+  constructor(private page: Page, formTitle: string) {
+    this.formLocator = this.page.getByRole('heading', { name: formTitle }).locator('../..');
+
+    this.nameField = new TextFieldPageModel(this.page, 'Name', 'text', this.formLocator);
   }
 
   getCloseButton() {

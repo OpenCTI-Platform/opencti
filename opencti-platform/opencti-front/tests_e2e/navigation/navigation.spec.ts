@@ -204,7 +204,7 @@ const navigateAllMenu = async (page: Page) => {
 
   // Other
   await leftBarPage.clickOnMenu('Investigations');
-  await expect(page.getByRole('paragraph')).toHaveText('Investigations');
+  await leftBarPage.expectBreadcrumb('Investigations');
 };
 
 test('Check navigation on all pages', { tag: ['@navigation'] }, async ({ page }) => {

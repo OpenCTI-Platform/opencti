@@ -1,60 +1,125 @@
 import React from 'react';
-import { ChannelLine_node$data } from '@components/arsenal/channels/__generated__/ChannelLine_node.graphql';
-import ToolBar from '@components/data/ToolBar';
-import ListLines from '../../../components/list_lines/ListLines';
-import ChannelsLines, { channelsLinesQuery } from './channels/ChannelsLines';
+import { graphql } from 'react-relay';
+import { ChannelsLines_data$data } from '@components/arsenal/__generated__/ChannelsLines_data.graphql';
+import { ChannelsLinesPaginationQuery, ChannelsLinesPaginationQuery$variables } from '@components/arsenal/__generated__/ChannelsLinesPaginationQuery.graphql';
 import ChannelCreation from './channels/ChannelCreation';
 import Security from '../../../utils/Security';
 import { KNOWLEDGE_KNPARTICIPATE, KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import { ChannelLineDummy } from './channels/ChannelLine';
-import { ChannelsLinesPaginationQuery, ChannelsLinesPaginationQuery$variables } from './channels/__generated__/ChannelsLinesPaginationQuery.graphql';
 import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext, useGetDefaultFilterObject } from '../../../utils/filters/filtersUtils';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import { useFormatter } from '../../../components/i18n';
+import DataTable from '../../../components/dataGrid/DataTable';
+import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 import useHelper from '../../../utils/hooks/useHelper';
-import useEntityToggle from '../../../utils/hooks/useEntityToggle';
-import ExportContextProvider from '../../../utils/ExportContextProvider';
 
 const LOCAL_STORAGE_KEY = 'channels';
+
+const channelLineFragment = graphql`
+  fragment ChannelsLine_node on Channel {
+    id
+    entity_type
+    name
+    channel_types
+    created
+    modified
+    confidence
+    objectMarking {
+      id
+      definition_type
+      definition
+      x_opencti_order
+      x_opencti_color
+    }
+    objectLabel {
+      id
+      value
+      color
+    }
+  }
+`;
+
+const channelsLinesQuery = graphql`
+  query ChannelsLinesPaginationQuery(
+    $search: String
+    $count: Int!
+    $cursor: ID
+    $orderBy: ChannelsOrdering
+    $orderMode: OrderingMode
+    $filters: FilterGroup
+  ) {
+    ...ChannelsLines_data
+    @arguments(
+      search: $search
+      count: $count
+      cursor: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+      filters: $filters
+    )
+  }
+`;
+
+const channelsLinesFragment = graphql`
+  fragment ChannelsLines_data on Query
+  @argumentDefinitions(
+    search: { type: "String" }
+    count: { type: "Int", defaultValue: 25 }
+    cursor: { type: "ID" }
+    orderBy: { type: "ChannelsOrdering", defaultValue: name }
+    orderMode: { type: "OrderingMode", defaultValue: asc }
+    filters: { type: "FilterGroup" }
+  )
+  @refetchable(queryName: "ChannelsLinesRefetchQuery") {
+    channels(
+      search: $search
+      first: $count
+      after: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+      filters: $filters
+    ) @connection(key: "Pagination_channels") {
+      edges {
+        node {
+          id
+          name
+          description
+          ...ChannelsLine_node
+        }
+      }
+      pageInfo {
+        endCursor
+        hasNextPage
+        globalCount
+      }
+    }
+  }
+`;
 
 const Channels = () => {
   const { t_i18n } = useFormatter();
   const { isFeatureEnable } = useHelper();
   const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
-  const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<ChannelsLinesPaginationQuery$variables>(
-    LOCAL_STORAGE_KEY,
-    {
-      searchTerm: '',
-      sortBy: 'name',
-      orderAsc: true,
-      openExports: false,
-      filters: {
-        ...emptyFilterGroup,
-        filters: useGetDefaultFilterObject(['channel_types'], ['Channel']),
-      },
+
+  const initialValues = {
+    searchTerm: '',
+    sortBy: 'name',
+    orderAsc: true,
+    openExports: false,
+    filters: {
+      ...emptyFilterGroup,
+      filters: useGetDefaultFilterObject(['channel_types'], ['Channel']),
     },
+  };
+  const { viewStorage, helpers: storageHelpers, paginationOptions } = usePaginationLocalStorage<ChannelsLinesPaginationQuery$variables>(
+    LOCAL_STORAGE_KEY,
+    initialValues,
   );
 
   const {
-    sortBy,
-    orderAsc,
-    searchTerm,
     filters,
-    openExports,
-    numberOfElements,
   } = viewStorage;
-
-  const {
-    selectedElements,
-    deSelectedElements,
-    selectAll,
-    handleClearSelectedElements,
-    handleToggleSelectAll,
-    onToggleEntity,
-    numberOfSelectedElements,
-  } = useEntityToggle<ChannelLine_node$data>(LOCAL_STORAGE_KEY);
 
   const contextFilters = useBuildEntityTypeBasedFilterContext('Channel', filters);
   const queryPaginationOptions = {
@@ -62,121 +127,56 @@ const Channels = () => {
     filters: contextFilters,
   } as unknown as ChannelsLinesPaginationQuery$variables;
 
-  const renderLines = () => {
-    const dataColumns = {
-      name: {
-        label: 'Name',
-        width: '30%',
-        isSortable: true,
-      },
-      channel_types: {
-        label: 'Types',
-        width: '15%',
-        isSortable: true,
-      },
-      objectLabel: {
-        label: 'Labels',
-        width: '20%',
-        isSortable: false,
-      },
-      created: {
-        label: 'Original creation date',
-        width: '15%',
-        isSortable: true,
-      },
-      modified: {
-        label: 'Modification date',
-        width: '15%',
-        isSortable: true,
-      },
-    };
-    const queryRef = useQueryLoading<ChannelsLinesPaginationQuery>(
-      channelsLinesQuery,
-      queryPaginationOptions,
-    );
-    return (
-      <>
-        <ListLines
-          helpers={helpers}
-          sortBy={sortBy}
-          orderAsc={orderAsc}
+  const dataColumns = {
+    name: {
+      percentWidth: 30,
+    },
+    channel_types: {},
+    objectLabel: {
+      percentWidth: 20,
+    },
+    created: {},
+    modified: {},
+  };
+  const queryRef = useQueryLoading<ChannelsLinesPaginationQuery>(
+    channelsLinesQuery,
+    queryPaginationOptions,
+  );
+
+  const preloadedPaginationProps = {
+    linesQuery: channelsLinesQuery,
+    linesFragment: channelsLinesFragment,
+    queryRef,
+    nodePath: ['channels', 'pageInfo', 'globalCount'],
+    setNumberOfElements: storageHelpers.handleSetNumberOfElements,
+  } as UsePreloadedPaginationFragment<ChannelsLinesPaginationQuery>;
+
+  return (
+    <>
+      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Arsenal') }, { label: t_i18n('Channels'), current: true }]} />
+      {queryRef && (
+        <DataTable
           dataColumns={dataColumns}
-          handleSort={helpers.handleSort}
-          handleSearch={helpers.handleSearch}
-          handleAddFilter={helpers.handleAddFilter}
-          handleRemoveFilter={helpers.handleRemoveFilter}
-          handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
-          handleSwitchLocalMode={helpers.handleSwitchLocalMode}
-          handleToggleExports={helpers.handleToggleExports}
-          openExports={openExports}
-          handleToggleSelectAll={handleToggleSelectAll}
-          selectAll={selectAll}
+          resolvePath={(data: ChannelsLines_data$data) => data.channels?.edges?.map((n) => n?.node)}
+          storageKey={LOCAL_STORAGE_KEY}
+          initialValues={initialValues}
+          toolbarFilters={contextFilters}
+          preloadedPaginationProps={preloadedPaginationProps}
+          lineFragment={channelLineFragment}
           exportContext={{ entity_type: 'Channel' }}
-          keyword={searchTerm}
-          filters={filters}
-          paginationOptions={queryPaginationOptions}
-          numberOfElements={numberOfElements}
-          iconExtension={true}
           createButton={isFABReplaced && (
             <Security needs={[KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNPARTICIPATE]}>
               <ChannelCreation paginationOptions={queryPaginationOptions} />
             </Security>
           )}
-        >
-          {queryRef && (
-            <React.Suspense
-              fallback={
-                <>
-                  {Array(20)
-                    .fill(0)
-                    .map((_, idx) => (
-                      <ChannelLineDummy
-                        key={idx}
-                        dataColumns={dataColumns}
-                      />
-                    ))
-                  }
-                </>
-              }
-            >
-              <ChannelsLines
-                queryRef={queryRef}
-                paginationOptions={queryPaginationOptions}
-                dataColumns={dataColumns}
-                onLabelClick={helpers.handleAddFilter}
-                selectedElements={selectedElements}
-                deSelectedElements={deSelectedElements}
-                onToggleEntity={onToggleEntity}
-                selectAll={selectAll}
-                setNumberOfElements={helpers.handleSetNumberOfElements}
-              />
-            </React.Suspense>
-          )}
-        </ListLines>
-        <ToolBar
-          selectedElements={selectedElements}
-          deSelectedElements={deSelectedElements}
-          numberOfSelectedElements={numberOfSelectedElements}
-          selectAll={selectAll}
-          search={searchTerm}
-          filters={contextFilters}
-          handleClearSelectedElements={handleClearSelectedElements}
-          type="Channel"
         />
-      </>
-    );
-  };
-
-  return (
-    <ExportContextProvider>
-      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Arsenal') }, { label: t_i18n('Channels'), current: true }]} />
-      {renderLines()}
+      )}
       {!isFABReplaced && (
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <ChannelCreation paginationOptions={queryPaginationOptions} />
         </Security>
       )}
-    </ExportContextProvider>
+    </>
   );
 };
 export default Channels;

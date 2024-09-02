@@ -7,10 +7,10 @@ import SearchInput from 'src/components/SearchInput';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { QueryRenderer } from 'src/relay/environment';
 import { insertNode } from 'src/utils/store';
+import { NotesLinesPaginationQuery$variables } from '@components/analyses/__generated__/NotesLinesPaginationQuery.graphql';
 import AddNotesLines, { addNotesLinesQuery } from './AddNotesLines';
 import { AddNotesLinesQuery$data } from './__generated__/AddNotesLinesQuery.graphql';
 import { NoteCreationForm } from './NoteCreation';
-import { NotesLinesPaginationQuery$variables } from './__generated__/NotesLinesPaginationQuery.graphql';
 import { StixCoreObjectOrStixCoreRelationshipNotesCards_data$data } from './__generated__/StixCoreObjectOrStixCoreRelationshipNotesCards_data.graphql';
 
 interface AddNotesFunctionalComponentProps {

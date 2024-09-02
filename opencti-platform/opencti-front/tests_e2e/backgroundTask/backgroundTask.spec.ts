@@ -6,6 +6,7 @@ import { sleep } from '../utils';
 import FiltersPageModel from '../model/filters.pageModel';
 import SearchPageModel from '../model/search.pageModel';
 import TaskPopup from '../model/taskPopup.pageModel';
+import DataTablePage from '../model/DataTable.pageModel';
 
 /**
  * Goal: validate that background tasks are executed on the expected list of entity.
@@ -27,16 +28,17 @@ test('Verify background tasks execution', { tag: ['@mutation', '@incident', '@ta
   const search = new SearchPageModel(page);
   const tasksPage = new DataProcessingTasksPage(page);
   const taskPopup = new TaskPopup(page);
+  const dataTable = new DataTablePage(page);
 
   await incidentPage.goto();
   await expect(incidentPage.getPage()).toBeVisible();
 
   // Filter on label
   await filter.addFilter('Label', 'background-task', true);
-  await expect(page.getByText('2 entitie(s)')).toBeVisible();
+  await expect(dataTable.getNumberElements(2)).toBeVisible();
 
   // Select all
-  await page.locator('li').filter({ hasText: 'NameIncident' }).getByRole('checkbox').click();
+  await dataTable.getCheckAll().click();
   await taskPopup.launchAddLabel('background-task-filter-add-label', true);
   await expect(incidentPage.getPage()).toBeVisible();
 
@@ -45,8 +47,8 @@ test('Verify background tasks execution', { tag: ['@mutation', '@incident', '@ta
 
   // Filter with a search
   await search.addSearch('"Find this incident in test please"');
-  await expect(page.getByText('1 entitie(s)')).toBeVisible();
-  await page.locator('li').filter({ hasText: 'NameIncident' }).getByRole('checkbox').click();
+  await expect(dataTable.getNumberElements(1)).toBeVisible();
+  await dataTable.getCheckAll().click();
   await taskPopup.launchAddLabel('background-task-search-add-label', false);
 
   await tasksPage.goto();
@@ -74,15 +76,15 @@ test('Verify background tasks execution', { tag: ['@mutation', '@incident', '@ta
 
   // Filter by the new label
   await filter.addFilter('Label', 'background-task-filter-add-label', true);
-  await expect(page.getByText('3 entitie(s)')).toBeVisible(); // 2 by this test + 1 in stix imported data
+  await expect(dataTable.getNumberElements(3)).toBeVisible(); // 2 by this test + 1 in stix imported data
 
   // Clear filter on label
   await filter.removeLastFilter();
 
   await filter.addFilter('Label', 'background-task-search-add-label', true);
-  if (!await page.getByText('2 entitie(s)').isVisible({ timeout: 500 })) {
+  if (!await dataTable.getNumberElements(2).isVisible({ timeout: 500 })) {
     // Try to reload page in case it's a flake.
     await entitiesPage.goto();
   }
-  await expect(page.getByText('2 entitie(s)')).toBeVisible(); // 1 by this test + 1 in stix imported data
+  await expect(dataTable.getNumberElements(2)).toBeVisible(); // 1 by this test + 1 in stix imported data
 });

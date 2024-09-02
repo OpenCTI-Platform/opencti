@@ -15,8 +15,8 @@ test('Create a new grouping', async ({ page }) => {
   await expect(groupingsPage.getPage()).toBeVisible();
   // add a new grouping
   await groupingsPage.addNew();
-  await groupingForm.fillNameInput('Test grouping e2e');
-  await groupingForm.selectContextLabel('A set of STIX content contextually related but without any precise');
+  await groupingForm.nameField.fill('Test grouping e2e');
+  await groupingForm.contextSelect.selectOption('unspecified');
   await groupingForm.submit();
   // open it
   await groupingsPage.getItemFromList('Test grouping e2e').click();

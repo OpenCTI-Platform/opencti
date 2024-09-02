@@ -24,6 +24,6 @@ export default class GroupingsPage {
   }
 
   getItemFromList(name: string) {
-    return this.page.getByRole('link', { name }).first();
+    return this.page.getByTestId(name).first();
   }
 }

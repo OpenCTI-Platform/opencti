@@ -48,7 +48,11 @@ const ItemStatus = (props) => {
       <Chip
         classes={{ root: style }}
         variant="outlined"
-        onClick={onClick}
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          onClick?.('workflow_id', status.id ?? null, 'eq');
+        }}
         label={status.template.name}
         style={{
           color: status.template.color,

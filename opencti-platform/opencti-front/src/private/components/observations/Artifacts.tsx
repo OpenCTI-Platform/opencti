@@ -1,24 +1,142 @@
 import React, { FunctionComponent } from 'react';
-import { ArtifactLine_node$data } from '@components/observations/artifacts/__generated__/ArtifactLine_node.graphql';
-import { ArtifactsLinesPaginationQuery, ArtifactsLinesPaginationQuery$variables } from '@components/observations/artifacts/__generated__/ArtifactsLinesPaginationQuery.graphql';
-import { ArtifactLineDummy } from '@components/observations/artifacts/ArtifactLine';
 import useHelper from 'src/utils/hooks/useHelper';
-import ListLines from '../../../components/list_lines/ListLines';
+import { graphql } from 'react-relay';
+import { ArtifactsLinesPaginationQuery, ArtifactsLinesPaginationQuery$variables } from '@components/observations/__generated__/ArtifactsLinesPaginationQuery.graphql';
+import { ArtifactsLines_data$data } from '@components/observations/__generated__/ArtifactsLines_data.graphql';
+import Tooltip from '@mui/material/Tooltip';
 import Security from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import useAuth from '../../../utils/hooks/useAuth';
-import ToolBar from '../data/ToolBar';
-import ArtifactsLines, { artifactsLinesQuery } from './artifacts/ArtifactsLines';
 import ArtifactCreation from './artifacts/ArtifactCreation';
 import ExportContextProvider from '../../../utils/ExportContextProvider';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
-import useEntityToggle from '../../../utils/hooks/useEntityToggle';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import { useBuildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
+import DataTable from '../../../components/dataGrid/DataTable';
+import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
+import { truncate } from '../../../utils/String';
+import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
 
 const LOCAL_STORAGE_KEY = 'artifacts';
+
+const artifactLineFragment = graphql`
+  fragment ArtifactsLine_node on Artifact {
+    id
+    entity_type
+    parent_types
+    observable_value
+    created_at
+    createdBy {
+      ... on Identity {
+        id
+        name
+        entity_type
+      }
+    }
+    objectMarking {
+      id
+      definition_type
+      definition
+      x_opencti_order
+      x_opencti_color
+    }
+    objectLabel {
+      id
+      value
+      color
+    }
+    creators {
+      id
+      name
+    }
+    importFiles {
+      edges {
+        node {
+          id
+          name
+          size
+          metaData {
+            mimetype
+          }
+        }
+      }
+    }
+  }
+`;
+
+const artifactsLinesQuery = graphql`
+  query ArtifactsLinesPaginationQuery(
+    $types: [String]
+    $search: String
+    $count: Int!
+    $cursor: ID
+    $orderBy: StixCyberObservablesOrdering
+    $orderMode: OrderingMode
+    $filters: FilterGroup
+  ) {
+    ...ArtifactsLines_data
+    @arguments(
+      types: $types
+      search: $search
+      count: $count
+      cursor: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+      filters: $filters
+    )
+  }
+`;
+
+const artifactsLinesFragment = graphql`
+  fragment ArtifactsLines_data on Query
+  @argumentDefinitions(
+    types: { type: "[String]" }
+    search: { type: "String" }
+    count: { type: "Int", defaultValue: 25 }
+    cursor: { type: "ID" }
+    orderBy: {
+      type: "StixCyberObservablesOrdering"
+      defaultValue: created_at
+    }
+    orderMode: { type: "OrderingMode", defaultValue: asc }
+    filters: { type: "FilterGroup" }
+  )
+  @refetchable(queryName: "ArtifactsLinesRefetchQuery") {
+    stixCyberObservables(
+      types: $types
+      search: $search
+      first: $count
+      after: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+      filters: $filters
+    ) @connection(key: "Pagination_stixCyberObservables") {
+      edges {
+        node {
+          id
+          entity_type
+          observable_value
+          created_at
+          objectMarking {
+            id
+            definition_type
+            definition
+            x_opencti_order
+            x_opencti_color
+          }
+          ...ArtifactsLine_node
+        }
+      }
+      pageInfo {
+        endCursor
+        hasNextPage
+        globalCount
+      }
+    }
+  }
+`;
 
 const Artifacts: FunctionComponent = () => {
   const { t_i18n } = useFormatter();
@@ -28,34 +146,18 @@ const Artifacts: FunctionComponent = () => {
   } = useAuth();
   const isRuntimeSort = isRuntimeFieldEnable() ?? false;
 
-  const { viewStorage, paginationOptions, helpers } = usePaginationLocalStorage<ArtifactsLinesPaginationQuery$variables>(
+  const initialValues = {
+    filters: emptyFilterGroup,
+    searchTerm: '',
+    sortBy: 'created_at',
+    orderAsc: false,
+    openExports: false,
+    types: ['Artifact'],
+  };
+  const { viewStorage: { filters }, paginationOptions, helpers: storageHelpers } = usePaginationLocalStorage<ArtifactsLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY,
-    {
-      filters: emptyFilterGroup,
-      searchTerm: '',
-      sortBy: 'created_at',
-      orderAsc: false,
-      openExports: false,
-      types: ['Artifact'],
-    },
+    initialValues,
   );
-  const {
-    numberOfElements,
-    filters,
-    searchTerm,
-    sortBy,
-    orderAsc,
-    openExports,
-  } = viewStorage;
-  const {
-    onToggleEntity,
-    numberOfSelectedElements,
-    handleClearSelectedElements,
-    selectedElements,
-    deSelectedElements,
-    handleToggleSelectAll,
-    selectAll,
-  } = useEntityToggle<ArtifactLine_node$data>(LOCAL_STORAGE_KEY);
 
   const contextFilters = useBuildEntityTypeBasedFilterContext('Artifact', filters);
   const queryPaginationOptions = {
@@ -69,131 +171,86 @@ const Artifacts: FunctionComponent = () => {
 
   const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
-  const dataColumns = {
-    observable_value: {
-      label: 'Value',
-      width: '12%',
-      isSortable: isRuntimeSort,
-    },
+  const dataColumns: DataTableProps['dataColumns'] = {
+    observable_value: { isSortable: isRuntimeSort },
     file_name: {
       label: 'File name',
-      width: '12%',
+      percentWidth: 15,
       isSortable: false,
+      render: (data, { column: { size } }) => {
+        const file = (data.importFiles?.edges && data.importFiles.edges.length > 0)
+          ? data.importFiles.edges[0]?.node
+          : { name: 'N/A', metaData: { mimetype: 'N/A' }, size: 0 };
+        return (<Tooltip title={file?.name}><>{truncate(file?.name, size * 0.113)}</></Tooltip>);
+      },
     },
     file_mime_type: {
       label: 'Mime/Type',
-      width: '8%',
+      percentWidth: 8,
       isSortable: false,
+      render: (data, { column: { size } }) => {
+        const file = (data.importFiles?.edges && data.importFiles.edges.length > 0)
+          ? data.importFiles.edges[0]?.node
+          : { name: 'N/A', metaData: { mimetype: 'N/A' }, size: 0 };
+        return (<Tooltip title={file?.metaData?.mimetype}><>{truncate(file?.metaData?.mimetype, size * 0.113)}</></Tooltip>);
+      },
     },
     file_size: {
       label: 'File size',
-      width: '8%',
+      percentWidth: 7,
       isSortable: false,
+      render: (data, { b }) => {
+        const file = (data.importFiles?.edges && data.importFiles.edges.length > 0)
+          ? data.importFiles.edges[0]?.node
+          : { name: 'N/A', metaData: { mimetype: 'N/A' }, size: 0 };
+        return (<Tooltip title={file?.metaData?.mimetype}><>{b(file?.size)}</></Tooltip>);
+      },
     },
-    createdBy: {
-      label: 'Author',
-      width: '12%',
-      isSortable: isRuntimeSort,
-    },
-    creator: {
-      label: 'Creators',
-      width: '12%',
-      isSortable: isRuntimeSort,
-    },
-    objectLabel: {
-      label: 'Labels',
-      width: '15%',
-      isSortable: false,
-    },
-    created_at: {
-      label: 'Platform creation date',
-      width: '10%',
-      isSortable: true,
-    },
-    objectMarking: {
-      label: 'Marking',
-      width: '10%',
-      isSortable: isRuntimeSort,
-    },
+    createdBy: { percentWidth: 10, isSortable: isRuntimeSort },
+    creator: { percentWidth: 10, isSortable: isRuntimeSort },
+    objectLabel: { percentWidth: 10 },
+    created_at: { percentWidth: 10 },
+    objectMarking: { percentWidth: 10, isSortable: isRuntimeSort },
   };
 
-  const renderLines = () => {
-    return (
-      <ListLines
-        helpers={helpers}
-        sortBy={sortBy}
-        orderAsc={orderAsc}
-        dataColumns={dataColumns}
-        handleSort={helpers.handleSort}
-        handleSearch={helpers.handleSearch}
-        handleAddFilter={helpers.handleAddFilter}
-        handleRemoveFilter={helpers.handleRemoveFilter}
-        handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
-        handleSwitchLocalMode={helpers.handleSwitchLocalMode}
-        handleToggleExports={helpers.handleToggleExports}
-        openExports={openExports}
-        handleToggleSelectAll={handleToggleSelectAll}
-        selectAll={selectAll}
-        exportContext={{ entity_type: 'Artifact' }}
-        keyword={searchTerm}
-        filters={filters}
-        iconExtension={true}
-        paginationOptions={queryPaginationOptions}
-        numberOfElements={numberOfElements}
-        createButton={isFABReplaced && <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <ArtifactCreation
-            paginationOptions={queryPaginationOptions}
-          />
-        </Security>}
-      >
-        {queryRef && (
-        <React.Suspense
-          fallback={
-            <>
-              {Array(20)
-                .fill(0)
-                .map((_, idx) => (
-                  <ArtifactLineDummy key={idx} dataColumns={dataColumns} />
-                ))}
-            </>
-                    }
-        >
-          <ArtifactsLines
-            queryRef={queryRef}
-            paginationOptions={queryPaginationOptions}
-            dataColumns={dataColumns}
-            onLabelClick={helpers.handleAddFilter}
-            selectedElements={selectedElements}
-            deSelectedElements={deSelectedElements}
-            onToggleEntity={onToggleEntity}
-            selectAll={selectAll}
-            setNumberOfElements={helpers.handleSetNumberOfElements}
-          />
-          <ToolBar
-            selectedElements={selectedElements}
-            deSelectedElements={deSelectedElements}
-            numberOfSelectedElements={numberOfSelectedElements}
-            selectAll={selectAll}
-            filters={contextFilters}
-            search={searchTerm}
-            handleClearSelectedElements={handleClearSelectedElements}
-          />
-        </React.Suspense>
-        )}
-      </ListLines>
-    );
-  };
+  const preloadedPaginationOptions = {
+    linesQuery: artifactsLinesQuery,
+    linesFragment: artifactsLinesFragment,
+    queryRef,
+    nodePath: ['stixCyberObservables', 'pageInfo', 'globalCount'],
+    setNumberOfElements: storageHelpers.handleSetNumberOfElements,
+  } as UsePreloadedPaginationFragment<ArtifactsLinesPaginationQuery>;
 
   return (
     <div data-testid="artifact-page">
       <ExportContextProvider>
         <Breadcrumbs variant="list" elements={[{ label: t_i18n('Observations') }, { label: t_i18n('Artifacts'), current: true }]} />
-        {renderLines()}
-        {!isFABReplaced && <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <ArtifactCreation
-            paginationOptions={queryPaginationOptions}
+        {queryRef && (
+          <DataTable
+            dataColumns={dataColumns}
+            resolvePath={(data: ArtifactsLines_data$data) => data.stixCyberObservables?.edges?.map((n) => n?.node)}
+            storageKey={LOCAL_STORAGE_KEY}
+            initialValues={initialValues}
+            toolbarFilters={contextFilters}
+            lineFragment={artifactLineFragment}
+            preloadedPaginationProps={preloadedPaginationOptions}
+            exportContext={{ entity_type: 'Artifact' }}
+            createButton={isFABReplaced && (
+              <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                <ArtifactCreation
+                  paginationOptions={queryPaginationOptions}
+                />
+              </Security>
+            )}
           />
-        </Security>}
+        )}
+        {!isFABReplaced && (
+          <Security needs={[KNOWLEDGE_KNUPDATE]}>
+            <ArtifactCreation
+              paginationOptions={queryPaginationOptions}
+            />
+          </Security>
+        )}
       </ExportContextProvider>
     </div>
   );

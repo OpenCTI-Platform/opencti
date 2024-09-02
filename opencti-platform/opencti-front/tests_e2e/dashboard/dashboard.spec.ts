@@ -30,7 +30,8 @@ test.describe.configure({ mode: 'serial' });
 test('Dashboard CRUD', async ({ page }) => {
   const leftBarPage = new LeftBarPage(page);
   const dashboardPage = new DashboardPage(page);
-  const dashboardForm = new DashboardFormPage(page);
+  const dashboardForm = new DashboardFormPage(page, 'Create dashboard');
+  const dashboardUpdateForm = new DashboardFormPage(page, 'Update dashboard');
   const widgetsPage = new DashboardWidgetsPageModel(page);
   const malwareDetailsPage = new MalwareDetailsPage(page);
   const dashboardDetailsPage = new DashboardDetailsPage(page);
@@ -88,8 +89,8 @@ test('Dashboard CRUD', async ({ page }) => {
   await expect(dashboardDetailsPage.getTitle(dashboardName)).toBeVisible();
   await dashboardDetailsPage.getActionsPopover().click();
   await dashboardDetailsPage.getActionButton('Update').click();
-  expect(await dashboardForm.descriptionField.value()).toEqual('Test e2e Description');
-  await dashboardForm.getCloseButton().click();
+  expect(await dashboardUpdateForm.descriptionField.value()).toEqual('Test e2e Description');
+  await dashboardUpdateForm.getCloseButton().click();
 
   // ---------
   // endregion
@@ -99,10 +100,10 @@ test('Dashboard CRUD', async ({ page }) => {
 
   await dashboardDetailsPage.getActionsPopover().click();
   await dashboardDetailsPage.getActionButton('Update').click();
-  await expect(dashboardForm.getUpdateTitle()).toBeVisible();
-  await dashboardForm.nameField.fill(updateDashboardName);
-  await dashboardForm.getUpdateTitle().click();
-  await dashboardForm.getCloseButton().click();
+  await expect(dashboardUpdateForm.getUpdateTitle()).toBeVisible();
+  await dashboardUpdateForm.nameField.fill(updateDashboardName);
+  await dashboardUpdateForm.getUpdateTitle().click();
+  await dashboardUpdateForm.getCloseButton().click();
   await expect(dashboardDetailsPage.getTitle(updateDashboardName)).toBeVisible();
 
   // ---------
@@ -167,7 +168,6 @@ test('Dashboard CRUD', async ({ page }) => {
 
   // From list page - import
   await leftBarPage.clickOnMenu('Dashboards', 'Custom dashboards');
-  // await dashboardPage.getCreateMenuButton().hover();
   const fileChooserPromise = page.waitForEvent('filechooser');
   await dashboardPage.getImportDashboardButton().click();
   const fileChooser = await fileChooserPromise;
@@ -197,7 +197,7 @@ test('Dashboard CRUD', async ({ page }) => {
   await widgetsPage.getDeleteButton().click();
 
   await widgetsPage.createTimelineOfMalwaresWidget();
-  await widgetsPage.getItemFromWidgetList(malwareName).click();
+  await widgetsPage.getItemFromWidgetTimeline(malwareName).click();
   await expect(malwareDetailsPage.getTitle(malwareName)).toBeVisible();
 
   await widgetsPage.getIconFromWidgetTimeline().click();
@@ -274,7 +274,8 @@ test('Dashboard restriction access', async ({ page }) => {
   const topBar = new TopMenuProfilePage(page);
   const dashboardPage = new DashboardPage(page);
   const loginForm = new LoginFormPageModel(page);
-  const dashboardForm = new DashboardFormPage(page);
+  const dashboardForm = new DashboardFormPage(page, 'Create dashboard');
+  const dashboardUpdateForm = new DashboardFormPage(page, 'Update dashboard');
   const widgetsPage = new DashboardWidgetsPageModel(page);
   const dashboardDetailsPage = new DashboardDetailsPage(page);
   const accessRestriction = new AccessRestrictionPageModel(page);
@@ -342,13 +343,13 @@ test('Dashboard restriction access', async ({ page }) => {
 
   // Try to update
   await dashboardDetailsPage.getActionButton('Update').click();
-  await dashboardForm.nameField.fill('restriction updated');
-  await dashboardForm.getCloseButton().click();
+  await dashboardUpdateForm.nameField.fill('restriction updated');
+  await dashboardUpdateForm.getCloseButton().click();
   await expect(dashboardDetailsPage.getTitle('restriction updated')).toBeVisible();
   await dashboardDetailsPage.getActionsPopover().click();
   await dashboardDetailsPage.getActionButton('Update').click();
-  await dashboardForm.nameField.fill(dashboardName);
-  await dashboardForm.getCloseButton().click();
+  await dashboardUpdateForm.nameField.fill(dashboardName);
+  await dashboardUpdateForm.getCloseButton().click();
   await expect(dashboardDetailsPage.getTitle(dashboardName)).toBeVisible();
 
   // Try to duplicate

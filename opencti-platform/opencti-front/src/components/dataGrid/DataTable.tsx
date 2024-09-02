@@ -31,7 +31,9 @@ type OCTIDataTableProps = Pick<DataTableProps, 'dataColumns'
 | 'additionalFilterKeys'
 | 'variant'
 | 'actions'
-| 'isNavigable'
+| 'rootRef'
+| 'onLineClick'
+| 'disableNavigation'
 | 'entityTypes'> & {
   lineFragment: GraphQLTaggedNode
   preloadedPaginationProps: UsePreloadedPaginationFragment<OperationType>,
@@ -84,8 +86,7 @@ const DataTable = (props: OCTIDataTableProps) => {
     },
     helpers,
     paginationOptions,
-  } = usePaginationLocalStorage(storageKey, initialValues, variant !== DataTableVariant.default);
-
+  } = usePaginationLocalStorage(storageKey, initialValues);
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
 
   const computedEntityTypes = entityTypes ?? (exportContext?.entity_type ? [exportContext.entity_type] : []);
@@ -172,7 +173,7 @@ const DataTable = (props: OCTIDataTableProps) => {
       dataTableToolBarComponent={(
         <div
           style={{
-            background: theme.palette.background.default,
+            background: theme.palette.background.accent,
             width: `calc(( var(--header-table-size) - ${SELECT_COLUMN_SIZE} ) * 1px)`,
           }}
         >

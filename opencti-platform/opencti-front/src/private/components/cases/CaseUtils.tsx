@@ -2,6 +2,40 @@ import { graphql, ConnectionHandler, Variables } from 'react-relay';
 
 export const generateConnectionId = ({ recordId, key, params }: { recordId?: string, key: string, params?: Variables }) => ConnectionHandler.getConnectionID(recordId ?? 'root', key, params ?? {});
 
+export const CaseTaskFragment = graphql`
+  fragment CaseUtilsTasksLine_data on Task {
+    id
+    entity_type
+    standard_id
+    name
+    due_date
+    description
+    workflowEnabled
+    objectMarking {
+      definition
+      definition_type
+      id
+    }
+    objectLabel {
+      id
+      value
+      color
+    }
+    objectAssignee {
+      entity_type
+      id
+      name
+    }
+    status {
+      template {
+        name
+        color
+      }
+    }
+    ...CaseTaskOverview_task
+  }
+`;
+
 export const caseSetTemplateQuery = graphql`
   mutation CaseUtilsSetTemplateMutation($id: ID!, $caseTemplatesId: [ID!]!, $connections: [ID!]!) {
     caseSetTemplate(
@@ -12,7 +46,8 @@ export const caseSetTemplateQuery = graphql`
       tasks {
         edges {
           node @appendNode(connections: $connections, edgeTypeName: "Task") {
-            ...CaseTasksLine_data
+            ...CaseUtilsTasksLine_data
+            ...CaseTaskOverview_task
           }
         }
       }
@@ -27,7 +62,7 @@ export const caseMutationFieldPatch = graphql`
   ) {
     stixDomainObjectEdit(id: $id) {
       fieldPatch(input: $input) {
-        ...CaseTasksLine_data
+        ...CaseUtilsTasksLine_data
         ... on Task {
           objects {
             edges {

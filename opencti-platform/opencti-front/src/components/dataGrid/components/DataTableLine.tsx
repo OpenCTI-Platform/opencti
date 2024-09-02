@@ -4,19 +4,19 @@ import Checkbox from '@mui/material/Checkbox';
 import IconButton from '@mui/material/IconButton';
 import { KeyboardArrowRightOutlined } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
-import { createStyles, useTheme } from '@mui/styles';
+import { createStyles } from '@mui/styles';
 import { useNavigate } from 'react-router-dom';
 import { useDataTableContext } from '../dataTableUtils';
 import type { DataTableCellProps, DataTableLineProps } from '../dataTableTypes';
-import { DataTableColumn } from '../dataTableTypes';
+import { DataTableColumn, DataTableVariant } from '../dataTableTypes';
 import type { Theme } from '../../Theme';
+import { getMainRepresentative } from '../../../utils/defaultRepresentatives';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
 const useStyles = makeStyles<Theme, { cell?: DataTableColumn, navigable?: boolean }>((theme) => createStyles({
   cellContainer: ({ cell }) => ({
     display: 'flex',
-    borderBottom: `1px solid ${theme.palette.background.nav}`,
     width: `calc(var(--col-${cell?.id}-size) * 1px)`,
     height: '50px',
     alignItems: 'center',
@@ -42,8 +42,8 @@ const useStyles = makeStyles<Theme, { cell?: DataTableColumn, navigable?: boolea
     '&:hover': navigable ? {
       backgroundColor:
         theme.palette.mode === 'dark'
-          ? 'rgba(255, 255, 255, .2)'
-          : 'rgba(0, 0, 0, .2)',
+          ? 'rgba(255, 255, 255, .1)'
+          : 'rgba(0, 0, 0, .1)',
     } : {},
   }),
 }));
@@ -101,9 +101,8 @@ const DataTableLine = ({
   effectiveColumns,
   index,
   onToggleShiftEntity,
-  isNavigable = false,
 }: DataTableLineProps) => {
-  const theme = useTheme<Theme>();
+  const navigate = useNavigate();
 
   const {
     storageKey,
@@ -111,9 +110,25 @@ const DataTableLine = ({
     useDataTableToggle,
     useComputeLink,
     actions,
+    disableNavigation,
+    onLineClick,
+    variant,
   } = useDataTableContext();
+  const data = useLineData(row);
 
-  const navigable = isNavigable || !actions;
+  let link = useComputeLink(data);
+  if (redirectionMode && redirectionMode !== 'overview') {
+    link = `${link}/${redirectionMode}`;
+  }
+
+  const navigable = !disableNavigation && !onLineClick;
+  const internalOnClick = () => {
+    if (onLineClick) {
+      onLineClick(data);
+    } else if (navigable) {
+      navigate(link);
+    }
+  };
   const classes = useStyles({ navigable });
 
   const {
@@ -123,22 +138,15 @@ const DataTableLine = ({
     onToggleEntity,
   } = useDataTableToggle(storageKey);
 
-  const data = useLineData(row);
-
-  const navigate = useNavigate();
-
-  let link = useComputeLink(data);
-  if (redirectionMode && redirectionMode !== 'overview') {
-    link = `${link}/${redirectionMode}`;
-  }
-
   const startsWithSelect = effectiveColumns.at(0)?.id === 'select';
   return (
     <div
       key={row.id}
       className={classes.row}
-      style={{ cursor: navigable ? 'pointer' : 'default' }}
-      onClick={() => (navigable ? navigate(link) : undefined)}
+      onMouseDown={variant === DataTableVariant.widget ? internalOnClick : undefined}
+      onClick={variant !== DataTableVariant.widget ? internalOnClick : undefined}
+      style={{ cursor: (navigable || Boolean(onLineClick)) ? 'pointer' : 'unset' }}
+      data-testid={getMainRepresentative(data)}
     >
       {startsWithSelect && (
         <div
@@ -150,9 +158,6 @@ const DataTableLine = ({
         >
 
           <Checkbox
-            sx={{
-              color: theme.palette.primary.main,
-            }}
             onClick={(event) => {
               event.preventDefault();
               event.stopPropagation();
@@ -183,6 +188,7 @@ const DataTableLine = ({
         className={classes.cellContainer}
         style={{
           width: 'calc(var(--col-navigate-size) * 1px)',
+          overflow: 'initial',
         }}
         onClick={(e) => {
           if (actions && navigable) {

@@ -90,7 +90,7 @@ class IndicatorObservablePopover extends Component {
         toId: this.props.observableId,
         relationship_type: 'based-on',
       },
-      updater: (store) => deleteNodeFromEdge(store, 'observables', this.props.indicatorId, this.props.observableId, { first: 200 }),
+      updater: (store) => deleteNodeFromEdge(store, 'observables', this.props.indicatorId, this.props.observableId, { first: 100 }),
       onCompleted: () => {
         this.handleCloseDelete();
         if (this.props.onDelete) {
