@@ -31,19 +31,18 @@ const BulkSelectRawLineData : FunctionComponent<BulkSelectRawLineDataProps> = ({
   isSubmitting,
 }) => {
   const { t_i18n } = useFormatter();
-  const isMatchingEntityType = entity.entityTypeList?.map((item) => item.entity_type).includes(entity.selectedEntityType.toEntitytype) ?? false;
   const isSearchTermEmpty = entity.searchTerm === '';
+  const isMatchingRelationship = entity.selectedEntityType.legitRelations.includes(selectedRelationType);
 
   const getRelationMatchStatus = () => {
-    if (!entity.isExisting || isSearchTermEmpty || !isMatchingEntityType) return t_i18n('Not in platform');
-    if (entity.isMatchingEntity) return t_i18n('Exact match');
+    if (!entity.isExisting && isMatchingRelationship) return t_i18n('Not in platform (compatible)');
+    if (entity.isMatchingEntity && isMatchingRelationship) return t_i18n('Found (compatible)');
     return t_i18n('Incompatible');
   };
 
   const getChipColor = () => {
-    const { selectedEntityType } = entity;
-    if (!entity.isExisting || isSearchTermEmpty || !isMatchingEntityType) return 'error';
-    if (selectedEntityType?.legitRelations.includes(selectedRelationType)) {
+    if (!entity.isExisting && isMatchingRelationship) return 'error';
+    if (entity.isMatchingEntity && isMatchingRelationship) {
       return 'success';
     }
     return 'warning';

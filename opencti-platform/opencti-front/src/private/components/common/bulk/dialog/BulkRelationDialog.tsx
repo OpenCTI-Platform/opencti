@@ -145,7 +145,7 @@ const querySearchEntityByText = async (text: string) => {
 export const toHeaderWidth = 180;
 export const entityTypeHeaderWidth = 180;
 export const entityNameHeaderWidth = 180;
-export const matchHeaderWidth = 180;
+export const matchHeaderWidth = 250;
 
 const EntityTypeWithoutBulkEntityCreation = [
   'Attack-Pattern',
@@ -210,7 +210,7 @@ const BulkRelationDialog : FunctionComponent<BulkRelationDialogProps> = ({
   };
 
   const selectMissingEntities = (currentBulkEntityList: BulkEntityTypeInfo[]) => {
-    const foundMissingEntity = currentBulkEntityList.find((item) => !item.isExisting);
+    const foundMissingEntity = currentBulkEntityList.find((item) => !item.isExisting && item.selectedEntityType.legitRelations.includes(selectedRelationType));
     if (!foundMissingEntity) {
       if (missingEntity) setMissingEntity(undefined);
       return;
@@ -237,7 +237,6 @@ const BulkRelationDialog : FunctionComponent<BulkRelationDialogProps> = ({
 
   useEffect(() => {
     const getBulkEntities = async () => {
-      if (missingEntity) setMissingEntity(undefined);
       const rawLinesPromises: Promise<StixCoreResultsType>[] = entityToSearch.map((content) => querySearchEntityByText(content));
       const resultsAwait: StixCoreResultsType[] = await Promise.all(rawLinesPromises);
       const newBulkEntityList = resultsAwait.reduce((acc: BulkEntityTypeInfo[], cur: StixCoreResultsType, index: number) => {
@@ -447,8 +446,8 @@ const BulkRelationDialog : FunctionComponent<BulkRelationDialogProps> = ({
     <>
       <Dialog open={isOpen} PaperProps={{ elevation: 1 }} scroll='paper' sx={{ overflowY: 'hidden', ...classes.dialog, ...classes.dialogContent }} onClose={onClose} maxWidth="xl">
         {isSubmitting && renderLoader()}
-        <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div>{t_i18n('Create relationships in bulk for')}: {t_i18n(`entity_${stixDomainObjectType}`)}</div>
+        <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', height: '70px' }}>
+          <div>{t_i18n('Create relations in bulk for')}: {t_i18n(`entity_${stixDomainObjectType}`)}</div>
           {missingEntity ? <BulkTextModalButton title={t_i18n('Create missing entities')} onClick={handleOpenObjectCreateEntityForm} /> : null}
         </DialogTitle>
         <DialogContent id="container" sx={{ display: 'flex', overflow: 'hidden', height: '40vh', paddingTop: '20px' }}>
