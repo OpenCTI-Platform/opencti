@@ -45,6 +45,7 @@ export const narrativeLineFragment = graphql`
     description
     created
     modified
+    entity_type
     objectMarking {
       id
       definition_type

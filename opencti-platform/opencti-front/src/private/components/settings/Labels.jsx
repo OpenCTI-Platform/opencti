@@ -10,6 +10,7 @@ import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage'
 import { useFormatter } from '../../../components/i18n';
 import DataTable from '../../../components/dataGrid/DataTable';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
+import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -96,29 +97,21 @@ const Labels = () => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
 
-  const contextFilters = {
-    mode: 'and',
-    filters: [
-      {
-        key: 'entity_type',
-        values: ['Label'],
-        operator: 'eq',
-        mode: 'or',
-      },
-    ],
-    filterGroups: [],
-  };
-
   const initialValues = {
     sortBy: 'value',
     orderAsc: true,
     searchTerm: '',
+    openExports: false,
+    filters: emptyFilterGroup,
   };
 
   const {
     helpers,
     paginationOptions,
+    viewStorage: { filters },
   } = usePaginationLocalStorage(LOCAL_STORAGE_KEY, initialValues);
+
+  const contextFilters = useBuildEntityTypeBasedFilterContext('Label', filters);
   const queryPaginationOptions = {
     ...paginationOptions,
     filters: contextFilters,
@@ -157,18 +150,18 @@ const Labels = () => {
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}
-          resolvePath={(data) => data.labels?.edges?.map((n) => n?.node)}
+          resolvePath={(data) => data.labels?.edges?.map((e) => e?.node)}
           storageKey={LOCAL_STORAGE_KEY}
           initialValues={initialValues}
           toolbarFilters={contextFilters}
           lineFragment={lineFragment}
           preloadedPaginationProps={preloadedPaginationProps}
           actions={(label) => <LabelPopover label={label} paginationOptions={queryPaginationOptions} />}
-          searchContextFinal={{ entityTypes: ['Kill-Chain-Phases'] }}
+          searchContextFinal={{ entityTypes: ['Label'] }}
           disableNavigation
         />
       )}
-      <LabelCreation paginationOptions={paginationOptions} />
+      <LabelCreation paginationOptions={queryPaginationOptions} />
     </div>
   );
 };

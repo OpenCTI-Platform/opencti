@@ -6,7 +6,7 @@ import LabelsVocabulariesMenu from './LabelsVocabulariesMenu';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import DataTable from '../../../components/dataGrid/DataTable';
-import { useBuildEntityTypeBasedFilterContext } from '../../../utils/filters/filtersUtils';
+import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../utils/filters/filtersUtils';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import KillChainPhasePopover from './kill_chain_phases/KillChainPhasePopover';
 
@@ -17,6 +17,7 @@ const killChainPhasesLinesQuery = graphql`
     $cursor: ID
     $orderBy: KillChainPhasesOrdering
     $orderMode: OrderingMode
+    $filters: FilterGroup
   ) {
     ...KillChainPhasesLines_data
     @arguments(
@@ -25,6 +26,7 @@ const killChainPhasesLinesQuery = graphql`
       cursor: $cursor
       orderBy: $orderBy
       orderMode: $orderMode
+      filters: $filters
     )
   }
 `;
@@ -37,6 +39,7 @@ const linesFragment = graphql`
     cursor: { type: "ID" }
     orderBy: { type: "KillChainPhasesOrdering", defaultValue: phase_name }
     orderMode: { type: "OrderingMode", defaultValue: asc }
+    filters: { type: "FilterGroup" }
   )
   @refetchable(queryName: "KillChainPhasesRefetchPaginationQuery"){
     killChainPhases(
@@ -45,9 +48,12 @@ const linesFragment = graphql`
       after: $cursor
       orderBy: $orderBy
       orderMode: $orderMode
+      filters: $filters
     ) @connection(key: "Pagination_killChainPhases") {
       edges {
         node {
+          id
+          entity_type
           ...KillChainPhasesLine_node
         }
       }
@@ -63,6 +69,7 @@ const linesFragment = graphql`
 const lineFragment = graphql`
   fragment KillChainPhasesLine_node on KillChainPhase {
     id
+    entity_type
     kill_chain_name
     phase_name
     x_opencti_order
@@ -99,8 +106,15 @@ const KillChainPhases = () => {
     sortBy: 'x_opencti_order',
     orderAsc: true,
     searchTerm: '',
+    openExports: false,
+    filters: emptyFilterGroup,
   };
-  const { viewStorage: { filters }, paginationOptions, helpers } = usePaginationLocalStorage(LOCAL_STORAGE_KEY, initialValues);
+
+  const {
+    viewStorage: { filters },
+    paginationOptions,
+    helpers,
+  } = usePaginationLocalStorage(LOCAL_STORAGE_KEY, initialValues);
 
   const contextFilters = useBuildEntityTypeBasedFilterContext('Kill-Chain-Phase', filters);
   const queryPaginationOptions = {
@@ -135,14 +149,14 @@ const KillChainPhases = () => {
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}
-          resolvePath={(data) => data.killChainPhases.edges.map(({ node }) => node)}
+          resolvePath={(data) => data.killChainPhases?.edges?.map(({ node }) => node)}
           storageKey={LOCAL_STORAGE_KEY}
           initialValues={initialValues}
           toolbarFilters={contextFilters}
           lineFragment={lineFragment}
           preloadedPaginationProps={preloadedPaginationProps}
           actions={(killChainPhase) => <KillChainPhasePopover killChainPhase={killChainPhase} paginationOptions={queryPaginationOptions} />}
-          searchContextFinal={{ entityTypes: ['Kill-Chain-Phases'] }}
+          searchContextFinal={{ entityTypes: ['Kill-Chain-Phase'] }}
           disableNavigation
         />
       )}

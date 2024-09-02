@@ -6,11 +6,11 @@ import Button from '@mui/material/Button';
 import { assoc, compose, pipe } from 'ramda';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
-import { ConnectionHandler } from 'relay-runtime';
 import Drawer, { DrawerVariant } from '../../common/drawer/Drawer';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
+import { insertNode } from '../../../../utils/store';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -68,16 +68,6 @@ const killChainPhaseValidation = (t) => Yup.object().shape({
   phase_name: Yup.string().required(t('This field is required')),
 });
 
-const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
-  const userProxy = store.get(userId);
-  const conn = ConnectionHandler.getConnection(
-    userProxy,
-    'Pagination_killChainPhases',
-    paginationOptions,
-  );
-  ConnectionHandler.insertEdgeBefore(conn, newEdge);
-};
-
 class KillChainPhaseCreation extends Component {
   onSubmit(values, { setSubmitting, resetForm }) {
     const finalValues = pipe(
@@ -89,14 +79,11 @@ class KillChainPhaseCreation extends Component {
         input: finalValues,
       },
       updater: (store) => {
-        const payload = store.getRootField('killChainPhaseAdd');
-        const newEdge = payload.setLinkedRecord(payload, 'node');
-        const container = store.getRoot();
-        sharedUpdater(
+        insertNode(
           store,
-          container.getDataID(),
+          'Pagination_killChainPhases',
           this.props.paginationOptions,
-          newEdge,
+          'killChainPhaseAdd',
         );
       },
       setSubmitting,

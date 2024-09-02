@@ -106,7 +106,11 @@ const DataComponents: FunctionComponent = () => {
     orderAsc: true,
     openExports: false,
   };
-  const { viewStorage: { filters }, helpers: storageHelpers, paginationOptions } = usePaginationLocalStorage<DataComponentsLinesPaginationQuery$variables>(
+  const {
+    viewStorage: { filters },
+    helpers: storageHelpers,
+    paginationOptions,
+  } = usePaginationLocalStorage<DataComponentsLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY_DATA_COMPONENTS,
     initialValues,
   );
@@ -123,6 +127,7 @@ const DataComponents: FunctionComponent = () => {
     created: {},
     modified: {},
   };
+
   const queryRef = useQueryLoading<DataComponentsLinesPaginationQuery>(
     dataComponentsLinesQuery,
     queryPaginationOptions,
@@ -151,7 +156,7 @@ const DataComponents: FunctionComponent = () => {
           exportContext={{ entity_type: 'Data-Component' }}
           createButton={isFABReplaced && (
             <Security needs={[KNOWLEDGE_KNUPDATE]}>
-              <DataComponentCreation paginationOptions={paginationOptions} />
+              <DataComponentCreation paginationOptions={queryPaginationOptions} />
             </Security>
           )}
         />

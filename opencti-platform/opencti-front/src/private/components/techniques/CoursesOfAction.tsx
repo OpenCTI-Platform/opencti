@@ -100,6 +100,7 @@ const CoursesOfAction = () => {
   const { t_i18n } = useFormatter();
   const { isFeatureEnable } = useHelper();
   const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
+
   const initialValues = {
     searchTerm: '',
     sortBy: 'name',
@@ -107,7 +108,12 @@ const CoursesOfAction = () => {
     openExports: false,
     filters: emptyFilterGroup,
   };
-  const { viewStorage: { filters }, helpers: storageHelpers, paginationOptions } = usePaginationLocalStorage<CoursesOfActionLinesPaginationQuery$variables>(
+
+  const {
+    viewStorage: { filters },
+    helpers: storageHelpers,
+    paginationOptions,
+  } = usePaginationLocalStorage<CoursesOfActionLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY,
     initialValues,
   );
@@ -125,6 +131,7 @@ const CoursesOfAction = () => {
     created: {},
     modified: {},
   };
+
   const queryRef = useQueryLoading<CoursesOfActionLinesPaginationQuery>(
     coursesOfActionLinesQuery,
     queryPaginationOptions,
@@ -149,11 +156,11 @@ const CoursesOfAction = () => {
           toolbarFilters={contextFilters}
           exportContext={{ entity_type: 'Course-Of-Action' }}
           lineFragment={CourseOfActionLineFragment}
-          resolvePath={(data: CoursesOfActionLines_data$data) => data.coursesOfAction?.edges?.map((n) => n?.node)}
+          resolvePath={(data: CoursesOfActionLines_data$data) => data.coursesOfAction?.edges?.map((e) => e?.node)}
           storageKey={LOCAL_STORAGE_KEY}
           createButton={isFABReplaced && (
             <Security needs={[KNOWLEDGE_KNUPDATE]}>
-              <CourseOfActionCreation paginationOptions={paginationOptions} />
+              <CourseOfActionCreation paginationOptions={queryPaginationOptions} />
             </Security>
           )}
         />
