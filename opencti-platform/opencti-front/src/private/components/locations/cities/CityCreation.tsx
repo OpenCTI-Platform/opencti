@@ -84,7 +84,6 @@ export const CityCreationForm: FunctionComponent<CityFormProps> = ({
   onBulkModalClose,
   inputValue,
 }) => {
-  const { isFeatureEnable } = useHelper();
   const { t_i18n } = useFormatter();
   const [progressBarOpen, setProgressBarOpen] = useState(false);
 
@@ -184,38 +183,34 @@ export const CityCreationForm: FunctionComponent<CityFormProps> = ({
     >
       {({ submitForm, handleReset, isSubmitting, setFieldValue, values, resetForm }) => (
         <>
-          {isFeatureEnable('BULK_ENTITIES') && (
-            <>
-              <BulkTextModal
-                open={bulkModalOpen}
-                onClose={onBulkModalClose}
-                onValidate={async (val) => {
-                  await setFieldValue('name', val);
-                  if (splitMultilines(val).length > 1) {
-                    await setFieldValue('file', null);
-                  }
-                }}
-                formValue={values.name}
-              />
-              <ProgressBar
-                open={progressBarOpen}
-                value={(bulkCurrentCount / bulkCount) * 100}
-                label={`${bulkCurrentCount}/${bulkCount}`}
-                title={t_i18n('Create multiple entities')}
-                onClose={() => {
-                  setProgressBarOpen(false);
-                  resetForm();
-                  resetBulk();
-                  onCompleted?.();
-                }}
-              >
-                <BulkResult variablesToString={(v) => v.input.name} />
-              </ProgressBar>
-            </>
-          )}
+          <BulkTextModal
+            open={bulkModalOpen}
+            onClose={onBulkModalClose}
+            onValidate={async (val) => {
+              await setFieldValue('name', val);
+              if (splitMultilines(val).length > 1) {
+                await setFieldValue('file', null);
+              }
+            }}
+            formValue={values.name}
+          />
+          <ProgressBar
+            open={progressBarOpen}
+            value={(bulkCurrentCount / bulkCount) * 100}
+            label={`${bulkCurrentCount}/${bulkCount}`}
+            title={t_i18n('Create multiple entities')}
+            onClose={() => {
+              setProgressBarOpen(false);
+              resetForm();
+              resetBulk();
+              onCompleted?.();
+            }}
+          >
+            <BulkResult variablesToString={(v) => v.input.name} />
+          </ProgressBar>
           <Form style={{ margin: '20px 0 20px 0' }}>
             <Field
-              component={isFeatureEnable('BULK_ENTITIES') ? BulkTextField : TextField}
+              component={BulkTextField}
               name="name"
               label={t_i18n('Name')}
               fullWidth={true}
@@ -328,10 +323,7 @@ const CityCreation = ({
     <Drawer
       title={t_i18n('Create a city')}
       variant={isFABReplaced ? undefined : DrawerVariant.create}
-      header={isFeatureEnable('BULK_ENTITIES')
-        ? <BulkTextModalButton onClick={() => setBulkOpen(true)} />
-        : <></>
-      }
+      header={<BulkTextModalButton onClick={() => setBulkOpen(true)} />}
       controlledDial={isFABReplaced ? CreateCityControlledDial : undefined}
     >
       {({ onClose }) => (
