@@ -151,7 +151,9 @@ class SessionsListComponent extends Component {
                   </ListItemIcon>
                   <ListItemText
                     primary={
-                      <div className={classes.name}>{user.name} (last 10 of {session.total} sessions)</div>
+                      <div className={classes.name}>
+                        {user.name} {orderedSessions.length < session.total && (<span>(last {orderedSessions.length} of {session.total} sessions)</span>)}
+                      </div>
                     }
                   />
                   <ListItemIcon classes={{ root: classes.goIcon }}>
