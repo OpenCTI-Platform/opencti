@@ -223,7 +223,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
   },
   created: {
     id: 'created',
-    label: 'Original creation',
+    label: 'Original creation date',
     percentWidth: 15,
     isSortable: true,
     render: ({ created }, { fd }) => fd(created),
@@ -242,7 +242,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     render: ({ createdBy }) => createdBy?.name ?? '-',
   },
   creator: {
-    id: 'creator_id',
+    id: 'creator',
     label: 'Creators',
     percentWidth: 12,
     render: ({ creators }, helpers) => {
