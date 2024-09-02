@@ -738,22 +738,9 @@ const denormalizeRelationsMappingGenerator = () => {
     relation_genre: keywordMapping,
     element_to_denorm: {
       type: 'join',
-      relations: {
-        element: 'denorm'
-      }
+      relations: { element: 'denorm' },
+      eager_global_ordinals: false // Prevent impacting refresh. Ordinal will be refreshed when needed.
     },
-    // element_to_source: {
-    //   type: 'join',
-    //   relations: {
-    //     element: 'source'
-    //   }
-    // },
-    // element_to_target: {
-    //   type: 'join',
-    //   relations: {
-    //     element: 'target'
-    //   }
-    // }
   };
 };
 const attributesMappingGenerator = () => {
