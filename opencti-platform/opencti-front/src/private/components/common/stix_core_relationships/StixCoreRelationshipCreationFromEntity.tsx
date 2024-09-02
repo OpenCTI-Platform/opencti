@@ -726,7 +726,11 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
   } = useEntityToggle(getLocalStorageKey(entityId));
 
   useEffect(() => {
-    const newTargetEntities: TargetEntity[] = Object.values(selectedElements).map((item) => ({ id: item.id, entity_type: item.entity_type ?? '', name: item.name ?? '' }));
+    const newTargetEntities: TargetEntity[] = Object.values(selectedElements).map((item) => ({
+      id: item.id,
+      entity_type: item.entity_type ?? '',
+      name: item.name ?? String(item.observable_value) ?? '',
+    }));
     setTargetEntities(newTargetEntities);
   }, [selectedElements]);
 
