@@ -111,7 +111,11 @@ const DataSources: FunctionComponent = () => {
     openExports: false,
     filters: emptyFilterGroup,
   };
-  const { viewStorage: { filters }, helpers: storageHelpers, paginationOptions } = usePaginationLocalStorage<DataSourcesLinesPaginationQuery$variables>(
+  const {
+    viewStorage: { filters },
+    helpers: storageHelpers,
+    paginationOptions,
+  } = usePaginationLocalStorage<DataSourcesLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY_DATA_SOURCES,
     initialValues,
   );
@@ -128,6 +132,7 @@ const DataSources: FunctionComponent = () => {
     created: {},
     modified: {},
   };
+
   const queryRef = useQueryLoading<DataSourcesLinesPaginationQuery>(
     dataSourcesLinesQuery,
     queryPaginationOptions,
@@ -147,7 +152,7 @@ const DataSources: FunctionComponent = () => {
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}
-          resolvePath={(data: DataSourcesLines_data$data) => data.dataSources?.edges?.map((n) => n?.node)}
+          resolvePath={(data: DataSourcesLines_data$data) => data.dataSources?.edges?.map((e) => e?.node)}
           storageKey={LOCAL_STORAGE_KEY_DATA_SOURCES}
           initialValues={initialValues}
           toolbarFilters={contextFilters}
@@ -156,14 +161,14 @@ const DataSources: FunctionComponent = () => {
           exportContext={{ entity_type: 'Data-Source' }}
           createButton={isFABReplaced && (
             <Security needs={[KNOWLEDGE_KNUPDATE]}>
-              <DataSourceCreation paginationOptions={paginationOptions} />
+              <DataSourceCreation paginationOptions={queryPaginationOptions} />
             </Security>
           )}
         />
       )}
       {!isFABReplaced && (
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <DataSourceCreation paginationOptions={paginationOptions} />
+          <DataSourceCreation paginationOptions={queryPaginationOptions} />
         </Security>
       )}
     </>

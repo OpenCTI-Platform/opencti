@@ -167,7 +167,7 @@ const CoursesOfAction = () => {
       )}
       {!isFABReplaced && (
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <CourseOfActionCreation paginationOptions={paginationOptions} />
+          <CourseOfActionCreation paginationOptions={queryPaginationOptions} />
         </Security>
       )}
     </>

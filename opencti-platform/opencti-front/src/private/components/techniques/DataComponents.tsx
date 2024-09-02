@@ -163,7 +163,7 @@ const DataComponents: FunctionComponent = () => {
       )}
       {!isFABReplaced && (
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <DataComponentCreation paginationOptions={paginationOptions} />
+          <DataComponentCreation paginationOptions={queryPaginationOptions} />
         </Security>
       )}
     </>
