@@ -56,8 +56,8 @@ class WorkersStatusComponent extends Component {
       this.props.relay.refetch();
       const { data } = this.props;
       const { search, indexing } = data.elasticSearchMetrics;
-      const currentReadOperations = search.query_total;
-      const currentWriteOperations = indexing.index_total + indexing.delete_total;
+      const currentReadOperations = Number(search.query_total);
+      const currentWriteOperations = Number(indexing.index_total) + Number(indexing.delete_total);
       this.lastReadOperations = currentReadOperations;
       this.lastWriteOperations = currentWriteOperations;
     });
@@ -71,12 +71,14 @@ class WorkersStatusComponent extends Component {
     const { classes, t, n, data } = this.props;
     const { consumers, overview } = data.rabbitMQMetrics;
     const { docs, search, indexing } = data.elasticSearchMetrics;
-    const currentReadOperations = search.query_total;
-    const currentWriteOperations = indexing.index_total + indexing.delete_total;
+    const currentReadOperations = Number(search.query_total);
+    const currentWriteOperations = Number(indexing.index_total) + Number(indexing.delete_total);
     let readOperations = null;
     let writeOperations = null;
     if (this.lastReadOperations !== 0) {
       readOperations = (currentReadOperations - this.lastReadOperations) / 5;
+    }
+    if (this.lastWriteOperations !== 0) {
       writeOperations = (currentWriteOperations - this.lastWriteOperations) / 5;
     }
     return (
