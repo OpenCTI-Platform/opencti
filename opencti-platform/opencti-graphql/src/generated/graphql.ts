@@ -7787,7 +7787,8 @@ export type FileMetadata = {
 export enum FileOrdering {
   Score = '_score',
   LastModified = 'lastModified',
-  Name = 'name'
+  Name = 'name',
+  ObjectMarking = 'objectMarking'
 }
 
 export type FilesMetrics = {

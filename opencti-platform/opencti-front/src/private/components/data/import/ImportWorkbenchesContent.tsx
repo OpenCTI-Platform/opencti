@@ -19,7 +19,7 @@ import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { useFormatter } from '../../../../components/i18n';
 import { APP_BASE_PATH } from '../../../../relay/environment';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import { emptyFilterGroup } from '../../../../utils/filters/filtersUtils';
+import { emptyFilterGroup, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import DataTable from '../../../../components/dataGrid/DataTable';
 import { UsePreloadedPaginationFragment } from '../../../../utils/hooks/usePreloadedPaginationFragment';
@@ -117,34 +117,44 @@ const ImportWorkbenchesContent = () => {
   const { t_i18n } = useFormatter();
   const [displayDelete, setDisplayDelete] = useState<string>('');
 
-  const initialFilters = {
-    ...emptyFilterGroup,
-    filters: [{
-      key: 'entity_type',
-      values: ['InternalFile'],
-      operator: 'eq',
-      mode: 'or',
-    }, {
-      key: 'entity_id',
-      values: [],
-      operator: 'nil',
-    }, {
-      key: 'file_id',
-      values: ['import/pending'],
-      operator: 'starts_with',
-    }],
-  };
   const initialValues = {
-    filters: initialFilters,
+    filters: emptyFilterGroup,
+    searchTerm: '',
+    sortBy: 'lastModified',
     orderAsc: false,
   };
-  const { helpers, paginationOptions } = usePaginationLocalStorage<ImportWorkbenchesContentQuery$variables>(LOCAL_STORAGE_KEY, initialValues);
+  const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<ImportWorkbenchesContentQuery$variables>(LOCAL_STORAGE_KEY, initialValues);
+  const { filters } = viewStorage;
+  const finalFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, ['InternalFile']);
   const queryPaginationOptions = {
     ...paginationOptions,
-    filters: initialFilters,
+    filters: finalFilters,
   } as unknown as ImportWorkbenchesContentQuery$variables;
 
   const queryRef = useQueryLoading<ImportWorkbenchesContentQuery>(importWorkbenchesContentQuery, queryPaginationOptions);
+
+  const toolbarFilters = {
+    mode: 'and',
+    filters: [
+      {
+        key: 'entity_type',
+        values: ['InternalFile'],
+        operator: 'eq',
+        mode: 'or',
+      },
+      {
+        key: 'entity_id',
+        values: [],
+        operator: 'nil',
+      },
+      {
+        key: 'file_id',
+        values: ['import/pending'],
+        operator: 'starts_with',
+      },
+    ],
+    filterGroups: finalFilters ? [finalFilters] : [],
+  };
 
   const preloadedPaginationProps = {
     linesQuery: importWorkbenchesContentQuery,
@@ -204,7 +214,7 @@ const ImportWorkbenchesContent = () => {
       {queryRef && (
         <DataTable
           dataColumns={{
-            value: { percentWidth: 50 },
+            name: { percentWidth: 50 },
             createdBy: {
               percentWidth: 15,
               render: (({ metaData: { creator } }) => creator?.name ?? '-'),
@@ -232,10 +242,9 @@ const ImportWorkbenchesContent = () => {
           storageKey={LOCAL_STORAGE_KEY}
           entityTypes={['InternalFile']}
           searchContextFinal={{ entityTypes: ['InternalFile'] }}
-          toolbarFilters={initialFilters}
+          toolbarFilters={toolbarFilters}
           lineFragment={workbenchLineFragment}
           initialValues={initialValues}
-          hideFilters
           preloadedPaginationProps={preloadedPaginationProps}
           taskScope='IMPORT'
           actions={(file: ImportWorkbenchesContentFileLine_file$data) => {

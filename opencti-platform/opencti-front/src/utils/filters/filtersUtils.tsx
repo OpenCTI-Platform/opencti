@@ -432,7 +432,7 @@ export const deserializeDashboardManifestForFrontend = (
 
 //----------------------------------------------------------------------------------------------------------------------
 
-// forcefully add a filter into a filterGroup, no check done
+// create a new filter: filters AND new filter built with (key, value, operator, mode)
 export const addFilter = (
   filters: FilterGroup | undefined,
   key: string,
@@ -455,9 +455,9 @@ export const addFilter = (
     };
   }
   return {
-    mode: filters?.mode ?? 'and',
-    filters: (filters?.filters ?? []).concat([filterFromParameters]),
-    filterGroups: filters?.filterGroups ?? [],
+    mode: 'and',
+    filters: [filterFromParameters],
+    filterGroups: [filters],
   };
 };
 
@@ -644,7 +644,7 @@ export const getAvailableOperatorForFilter = (
   filterDefinition: FilterDefinition | undefined,
   subKey?: string,
 ): string[] => {
-  if (filterDefinition && subKey) return getAvailableOperatorForFilterSubKey(filterDefinition?.filterKey, subKey);
+  if (filterDefinition && subKey) return getAvailableOperatorForFilterSubKey(filterDefinition.filterKey, subKey);
   return getAvailableOperatorForFilterKey(filterDefinition);
 };
 
@@ -840,6 +840,18 @@ export const getSelectedOptions = (
   });
   return mapFilterValues.sort((a, b) => a.label.localeCompare(b.label));
 };
+
+// filter operators that can display with an icon
+export const filterOperatorsWithIcon = [
+  'lt',
+  'lte',
+  'gt',
+  'gte',
+  'nil',
+  'not_nil',
+  'eq',
+  'not_eq',
+];
 
 export const convertOperatorToIcon = (operator: string) => {
   switch (operator) {
