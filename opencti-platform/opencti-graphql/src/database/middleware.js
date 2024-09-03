@@ -2700,7 +2700,7 @@ export const getExistingRelations = async (context, user, input, opts = {}) => {
     const deduplicationFilters = buildRelationDeduplicationFilters(input);
     const searchFilters = {
       mode: 'or',
-      filters: [{ key: 'ids', values: getInputIds(relationshipType, input, false) }],
+      filters: [{ key: 'ids', values: getInputIds(relationshipType, input) }],
       filterGroups: [{
         mode: 'and',
         filters: [
@@ -2754,50 +2754,49 @@ export const createRelationRaw = async (context, user, rawInput, opts = {}) => {
   const filledInput = fillDefaultValues(user, input, entitySetting);
   await validateEntityAndRelationCreation(context, user, filledInput, relationshipType, entitySetting, opts);
 
-  // We need to check existing dependencies
-  const resolvedInput = await inputResolveRefs(context, user, filledInput, relationshipType, entitySetting);
-  const { from, to } = resolvedInput;
-
-  // when creating stix ref, we must check confidence on from side (this count has modifying this element itself)
-  if (isStixRefRelationship(relationshipType)) {
-    controlUserConfidenceAgainstElement(user, from);
-  }
-
-  // check if user has "edit" access on from and to
-  if (!validateUserAccessOperation(user, from, 'edit') || !validateUserAccessOperation(user, to, 'edit')) {
-    throw ForbiddenAccess();
-  }
-
-  // Check consistency
-  await checkRelationConsistency(context, user, relationshipType, from, to);
-  // In some case from and to can be resolved to the same element (because of automatic merging)
-  if (from.internal_id === to.internal_id) {
-    /* v8 ignore next */
-    if (relationshipType === RELATION_REVOKED_BY) {
-      // Because of entity merging, we can receive some revoked-by on the same internal id element
-      // In this case we need to revoke the fromId stixId of the relation
-      // TODO Handle RELATION_REVOKED_BY special case
-    }
-    const errorData = { from: input.fromId, to: input.toId, relationshipType };
-    throw UnsupportedError('Relation cant be created with the same source and target', errorData);
-  }
-  // It's not possible to create a single ref relationship if one already exists
-  if (isSingleRelationsRef(resolvedInput.from.entity_type, relationshipType)) {
-    const key = schemaRelationsRefDefinition.convertDatabaseNameToInputName(resolvedInput.from.entity_type, relationshipType);
-    if (isNotEmptyField(resolvedInput.from[key])) {
-      const errorData = { from: input.fromId, to: input.toId, relationshipType };
-      throw UnsupportedError('Cant add another relation on single ref', errorData);
-    }
-  }
-
   // Build lock ids
-  const inputIds = getInputIds(relationshipType, resolvedInput, fromRule);
-  // if (isImpactedTypeAndSide(relationshipType, ROLE_FROM)) inputIds.push(from.internal_id);
-  // if (isImpactedTypeAndSide(relationshipType, ROLE_TO)) inputIds.push(to.internal_id);
+  const inputIds = getInputIds(relationshipType, filledInput);
   const participantIds = inputIds.filter((e) => !locks.includes(e));
   try {
     // Try to get the lock in redis
     lock = await lockResource(participantIds);
+
+    // We need to check existing dependencies
+    const resolvedInput = await inputResolveRefs(context, user, filledInput, relationshipType, entitySetting);
+    const { from, to } = resolvedInput;
+
+    // when creating stix ref, we must check confidence on from side (this count has modifying this element itself)
+    if (isStixRefRelationship(relationshipType)) {
+      controlUserConfidenceAgainstElement(user, from);
+    }
+
+    // check if user has "edit" access on from and to
+    if (!validateUserAccessOperation(user, from, 'edit') || !validateUserAccessOperation(user, to, 'edit')) {
+      throw ForbiddenAccess();
+    }
+
+    // Check consistency
+    await checkRelationConsistency(context, user, relationshipType, from, to);
+    // In some case from and to can be resolved to the same element (because of automatic merging)
+    if (from.internal_id === to.internal_id) {
+      /* v8 ignore next */
+      if (relationshipType === RELATION_REVOKED_BY) {
+        // Because of entity merging, we can receive some revoked-by on the same internal id element
+        // In this case we need to revoke the fromId stixId of the relation
+        // TODO Handle RELATION_REVOKED_BY special case
+      }
+      const errorData = { from: input.fromId, to: input.toId, relationshipType };
+      throw UnsupportedError('Relation cant be created with the same source and target', errorData);
+    }
+    // It's not possible to create a single ref relationship if one already exists
+    if (isSingleRelationsRef(resolvedInput.from.entity_type, relationshipType)) {
+      const key = schemaRelationsRefDefinition.convertDatabaseNameToInputName(resolvedInput.from.entity_type, relationshipType);
+      if (isNotEmptyField(resolvedInput.from[key])) {
+        const errorData = { from: input.fromId, to: input.toId, relationshipType };
+        throw UnsupportedError('Cant add another relation on single ref', errorData);
+      }
+    }
+
     // region check existing relationship
     const existingRelationships = await getExistingRelations(context, user, resolvedInput, opts);
     let existingRelationship = null;
@@ -2953,7 +2952,7 @@ export const getExistingEntities = async (context, user, input, type) => {
 
 const createEntityRaw = async (context, user, rawInput, type, opts = {}) => {
   // region confidence control
-  const input = { ...rawInput };
+  const input = { ...rawInput, entity_type: type };
   const { confidenceLevelToApply } = controlCreateInputWithUserConfidence(user, input, type);
   input.confidence = confidenceLevelToApply; // confidence of new entity will be capped to user's confidence
   // endregion
@@ -2962,18 +2961,17 @@ const createEntityRaw = async (context, user, rawInput, type, opts = {}) => {
   const filledInput = fillDefaultValues(user, input, entitySetting);
   await validateEntityAndRelationCreation(context, user, filledInput, type, entitySetting, opts);
   // endregion
-  const { fromRule } = opts;
-  // We need to check existing dependencies
-  const resolvedInput = await inputResolveRefs(context, user, filledInput, type, entitySetting);
   // Generate all the possibles ids
   // For marking def, we need to force the standard_id
-  const participantIds = getInputIds(type, resolvedInput, fromRule);
+  const participantIds = getInputIds(type, filledInput);
   // Create the element
   let lock;
   try {
     // Try to get the lock in redis
     lock = await lockResource(participantIds);
     // Generate the internal id if needed
+    // We need to check existing dependencies
+    const resolvedInput = await inputResolveRefs(context, user, filledInput, type, entitySetting);
     const standardId = resolvedInput.standard_id || generateStandardId(type, resolvedInput);
     // Check if the entity exists, must be done with SYSTEM USER to really find it.
     const existingEntities = [];
@@ -3002,7 +3000,7 @@ const createEntityRaw = async (context, user, rawInput, type, opts = {}) => {
         throw UnsupportedError('Restricted entity already exists');
       }
       // If inferred entity
-      if (fromRule) {
+      if (opts.fromRule) {
         // Entity reference must be uniq to be upserted
         if (filteredEntities.length > 1) {
           throw UnsupportedError('Cant upsert inferred entity. Too many entities resolved', { input, entityIds });
