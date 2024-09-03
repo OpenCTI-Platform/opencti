@@ -2,6 +2,7 @@ import React, { FunctionComponent } from 'react';
 import * as R from 'ramda';
 import { graphql, usePreloadedQuery } from 'react-relay';
 import { useTheme } from '@mui/styles';
+import { useTheme as useActiveTheme } from '@mui/material';
 import { PreloadedQuery } from 'react-relay/relay-hooks/EntryPointTypes';
 import Chart from '../../common/charts/Chart';
 import { useFormatter } from '../../../../components/i18n';
@@ -9,6 +10,7 @@ import { radarChartOptions } from '../../../../utils/Charts';
 import { generateGreenToRedColors } from '../../../../utils/Colors';
 import { StixCoreObjectOpinionsRadarDistributionQuery } from './__generated__/StixCoreObjectOpinionsRadarDistributionQuery.graphql';
 import { simpleNumberFormat } from '../../../../utils/Number';
+import useAuth from '../../../../utils/hooks/useAuth';
 
 export const stixCoreObjectOpinionsRadarDistributionQuery = graphql`
   query StixCoreObjectOpinionsRadarDistributionQuery(
@@ -50,6 +52,8 @@ StixCoreObjectOpinionsRadarProps
   height,
   opinionOptions,
 }) => {
+  const { me: { monochrome_labels } } = useAuth();
+  const { palette: { mode } } = useActiveTheme();
   const { t_i18n } = useFormatter();
   const theme = useTheme();
   const { opinionsDistribution } = usePreloadedQuery<StixCoreObjectOpinionsRadarDistributionQuery>(
@@ -71,7 +75,8 @@ StixCoreObjectOpinionsRadarProps
     },
   ];
   const labels = opinionOptions.map((m) => m.label);
-  const colors = generateGreenToRedColors(opinionOptions.length);
+  const monochromaticTextColor = mode === 'dark' ? '#ffffff' : '#000000';
+  const colors = monochrome_labels ? opinionOptions.map(() => monochromaticTextColor) : generateGreenToRedColors(opinionOptions.length);
 
   return (
     <Chart
