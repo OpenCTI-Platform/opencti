@@ -226,7 +226,7 @@ const ImportWorkbenchesContent = () => {
               isSortable: false,
             },
             createdBy: {
-              percentWidth: 15,
+              percentWidth: 13,
               render: (({ metaData: { creator } }) => creator?.name ?? '-'),
             },
             objectLabel: {
