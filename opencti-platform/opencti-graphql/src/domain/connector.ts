@@ -111,6 +111,7 @@ export const resetStateConnector = async (context: AuthContext, user: AuthUser, 
 interface RegisterOptions {
   built_in?: boolean
   active?: boolean
+  connector_user_id?: string | null
 }
 export const registerConnector = async (context: AuthContext, user:AuthUser, connectorData:RegisterConnectorInput, opts: RegisterOptions = {}) => {
   // eslint-disable-next-line camelcase
@@ -128,7 +129,7 @@ export const registerConnector = async (context: AuthContext, user:AuthUser, con
       auto,
       only_contextual,
       playbook_compatible,
-      connector_user_id: user.id,
+      connector_user_id: opts.connector_user_id ?? user.id,
       built_in: opts.built_in ?? false
     };
     if (opts.active !== undefined) {
@@ -148,7 +149,7 @@ export const registerConnector = async (context: AuthContext, user:AuthUser, con
     auto,
     only_contextual,
     playbook_compatible,
-    connector_user_id: user.id,
+    connector_user_id: opts.connector_user_id ?? user.id,
     built_in: opts.built_in ?? false,
   };
   if (opts.active !== undefined) {
@@ -226,6 +227,7 @@ interface ConnectorIngestionInput {
   id: string,
   type: 'RSS' | 'CSV' | 'TAXII',
   name: string,
+  connector_user_id?: string | null,
   is_running: boolean
 }
 export const connectorIdFromIngestId = (id: string) => uuidv5(id, OPENCTI_NAMESPACE);
@@ -240,8 +242,9 @@ export const registerConnectorForIngestion = async (context: AuthContext, input:
     only_contextual: false,
     playbook_compatible: false
   }, {
+    built_in: true,
     active: input.is_running,
-    built_in: true
+    connector_user_id: input.connector_user_id
   });
 };
 export const unregisterConnectorForIngestion = async (context: AuthContext, id: string) => {

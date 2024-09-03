@@ -54,7 +54,7 @@ const asArray = (data: unknown) => {
   return [];
 };
 
-const updateBuiltInConnectorInfo = async (context: AuthContext, id: string, state: object) => {
+const updateBuiltInConnectorInfo = async (context: AuthContext, user_id: string | undefined, id: string, state: object) => {
   // Patch the related connector
   const csvNow = utcDate();
   const connectorPatch: any = {
@@ -67,6 +67,7 @@ const updateBuiltInConnectorInfo = async (context: AuthContext, id: string, stat
       queue_threshold: 0,
       queue_messages_size: 0
     },
+    connector_user_id: user_id,
     connector_state: JSON.stringify(state)
   };
   const connectorId = connectorIdFromIngestId(id);
@@ -217,9 +218,11 @@ const rssDataHandler = async (context: AuthContext, httpRssGet: Getter, turndown
     // Update the state
     lastPubDate = R.last(items)?.pubDate;
     await patchRssIngestion(context, SYSTEM_USER, ingestion.internal_id, { current_state_date: lastPubDate });
+    // Patch the related connector
+    await updateBuiltInConnectorInfo(context, ingestion.user_id, ingestion.id, {
+      current_state_date: lastPubDate
+    });
   }
-  // Patch the related connector
-  await updateBuiltInConnectorInfo(context, ingestion.id, { current_state_date: lastPubDate });
 };
 
 const rssExecutor = async (context: AuthContext, turndownService: TurndownService) => {
@@ -320,26 +323,25 @@ export const processTaxiiResponse = async (context: AuthContext, ingestion: Basi
     // Update the state
     if (more && data.next) {
       // Do not touch to added_after_start
-      await patchTaxiiIngestion(context, SYSTEM_USER, ingestion.internal_id, {
-        current_state_cursor: data.next,
-        taxii_more: more,
-        last_execution_date: now()
-      });
+      const state = { current_state_cursor: data.next, taxii_more: more, last_execution_date: now() };
+      await patchTaxiiIngestion(context, SYSTEM_USER, ingestion.internal_id, state);
+      await updateBuiltInConnectorInfo(context, ingestion.user_id, ingestion.id, state);
     } else {
       // Reset the pagination cursor, and update date
-      await patchTaxiiIngestion(context, SYSTEM_USER, ingestion.internal_id, {
+      const state = {
         current_state_cursor: undefined,
         taxii_more: more,
         added_after_start: addedLastHeader ? utcDate(addedLastHeader) : utcDate(),
         last_execution_date: now()
-      });
+      };
+      await patchTaxiiIngestion(context, SYSTEM_USER, ingestion.internal_id, state);
+      await updateBuiltInConnectorInfo(context, ingestion.user_id, ingestion.id, state);
     }
   } else {
     // Update the last run
-    await patchTaxiiIngestion(context, SYSTEM_USER, ingestion.internal_id, {
-      last_execution_date: now(),
-      current_state_cursor: undefined, // no data = pagination is ended, reset the cursor.
-    });
+    const state = { last_execution_date: now(), current_state_cursor: undefined };
+    await patchTaxiiIngestion(context, SYSTEM_USER, ingestion.internal_id, state);
+    await updateBuiltInConnectorInfo(context, ingestion.user_id, ingestion.id, state);
     logApp.info('[OPENCTI-MODULE] Taxii ingestion - taxii server has not sent any object.', {
       next: data.next,
       more: data.more,
@@ -348,11 +350,6 @@ export const processTaxiiResponse = async (context: AuthContext, ingestion: Basi
       ingestionName: ingestion.name
     });
   }
-  // Patch the related connector
-  await updateBuiltInConnectorInfo(context, ingestion.id, {
-    current_state_cursor: data.next,
-    taxii_more: data.more || false,
-  });
 };
 
 const taxiiV21DataHandler: TaxiiHandlerFn = async (context: AuthContext, ingestion: BasicStoreEntityIngestionTaxii) => {
@@ -432,12 +429,8 @@ const csvDataHandler = async (context: AuthContext, ingestion: BasicStoreEntityI
     // Update the state
     const state = { current_state_hash: hashedIncomingData, added_after_start: utcDate(addedLast) };
     await patchCsvIngestion(context, SYSTEM_USER, ingestion.internal_id, state);
+    await updateBuiltInConnectorInfo(context, ingestion.user_id, ingestion.id, state);
   }
-  // Patch the related connector
-  await updateBuiltInConnectorInfo(context, ingestion.id, {
-    current_state_hash: hashedIncomingData,
-    added_after_start: utcDate(addedLast)
-  });
 };
 
 const csvExecutor = async (context: AuthContext) => {

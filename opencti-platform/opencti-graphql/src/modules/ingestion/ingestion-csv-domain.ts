@@ -44,7 +44,8 @@ export const addIngestionCsv = async (context: AuthContext, user: AuthUser, inpu
       id: element.id,
       type: 'CSV',
       name: element.name,
-      is_running: element.ingestion_running
+      is_running: element.ingestion_running,
+      connector_user_id: input.user_id
     });
     await publishUserAction({
       user,
@@ -77,7 +78,8 @@ export const ingestionCsvEditField = async (context: AuthContext, user: AuthUser
     id: element.id,
     type: 'CSV',
     name: element.name,
-    is_running: element.ingestion_running
+    is_running: element.ingestion_running,
+    connector_user_id: element.user_id
   });
   await publishUserAction({
     user,

@@ -11,7 +11,8 @@ const generateConnectorInput = async (context, type, element) => {
     id: element.id,
     type,
     name: element.name,
-    is_running: element.ingestion_running
+    is_running: element.ingestion_running ?? false,
+    connector_user_id: element.user_id,
   };
   return registerConnectorForIngestion(context, connector);
 };
