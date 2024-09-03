@@ -152,6 +152,18 @@ Ensuring a secure and well-organized environment is paramount in OpenCTI. Here a
 
 By adhering to these best practices, you ensure independence in managing rights for each import source through dedicated user and organization structures. In addition, you enable clear traceability to the entity's creator, facilitating source evaluation, dashboard creation, data filtering and other administrative tasks.
 
+### Automated import behaviors
+
+An ingestion manager runs periodically in background, and for each running feeds:
+- fetches new data from the source. When data is paginated, fetches the next page
+- compose a stix bundle for data and send it in queue to be processed by workers
+
+!!! Note on timeline of data ingestion from Taxii feed, CSV feed, and RSS feed.
+
+    Depending on workers load, the data can take some time between the fetch from source and visibility in the platform.
+
+Periodicity interval is configured with the manager with `ingestion_manager:interval`.
+
 ## Digest
 
 Users can streamline the data ingestion process using various automated import capabilities. Each method proves beneficial in specific circumstances.
