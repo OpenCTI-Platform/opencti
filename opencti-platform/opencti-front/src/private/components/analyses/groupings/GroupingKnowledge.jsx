@@ -5,8 +5,9 @@ import { graphql, createFragmentContainer } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import { Route, Routes } from 'react-router-dom';
 import { propOr } from 'ramda';
+import { containerAddStixCoreObjectsLinesRelationAddMutation } from '../../common/containers/ContainerAddStixCoreObjectsLines';
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
-import { QueryRenderer } from '../../../../relay/environment';
+import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import ContainerHeader from '../../common/containers/ContainerHeader';
 import GroupingKnowledgeGraph, { groupingKnowledgeGraphQuery } from './GroupingKnowledgeGraph';
 import GroupingKnowledgeCorrelation, { groupingKnowledgeCorrelationQuery } from './GroupingKnowledgeCorrelation';
@@ -16,6 +17,7 @@ import AttackPatternsMatrix from '../../techniques/attack_patterns/AttackPattern
 import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../../utils/ListParameters';
 import investigationAddFromContainer from '../../../../utils/InvestigationUtils';
 import withRouter from '../../../../utils/compat_router/withRouter';
+import { insertNode } from '../../../../utils/store';
 
 const styles = () => ({
   container: {
@@ -138,6 +140,32 @@ class GroupingKnowledgeComponent extends Component {
     this.setState({ currentKillChain: value }, () => this.saveView());
   }
 
+  handleAddEntity(entity) {
+    const input = {
+      toId: entity.id,
+      relationship_type: 'object',
+    };
+    commitMutation({
+      mutation: containerAddStixCoreObjectsLinesRelationAddMutation,
+      variables: {
+        id: this.props.grouping.id,
+        input,
+      },
+      updater: (store) => {
+        insertNode(
+          store,
+          'Pagination_objects',
+          undefined,
+          'containerEdit',
+          this.props.grouping.id,
+          'relationAdd',
+          { input },
+          'to',
+        );
+      },
+    });
+  }
+
   render() {
     const {
       classes,
@@ -234,15 +262,10 @@ class GroupingKnowledgeComponent extends Component {
                         currentKillChain={currentKillChain}
                         currentModeOnlyActive={currentModeOnlyActive}
                         currentColorsReversed={currentColorsReversed}
-                        handleChangeKillChain={this.handleChangeKillChain.bind(
-                          this,
-                        )}
-                        handleToggleColorsReversed={this.handleToggleColorsReversed.bind(
-                          this,
-                        )}
-                        handleToggleModeOnlyActive={this.handleToggleModeOnlyActive.bind(
-                          this,
-                        )}
+                        handleChangeKillChain={this.handleChangeKillChain.bind(this)}
+                        handleToggleColorsReversed={this.handleToggleColorsReversed.bind(this)}
+                        handleToggleModeOnlyActive={this.handleToggleModeOnlyActive.bind(this)}
+                        handleAdd={this.handleAddEntity.bind(this)}
                       />
                     );
                   }

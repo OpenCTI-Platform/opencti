@@ -5,8 +5,9 @@ import { propOr } from 'ramda';
 import { createFragmentContainer, graphql } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import { Route, Routes } from 'react-router-dom';
+import { containerAddStixCoreObjectsLinesRelationAddMutation } from '../../common/containers/ContainerAddStixCoreObjectsLines';
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
-import { QueryRenderer } from '../../../../relay/environment';
+import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import ContainerHeader from '../../common/containers/ContainerHeader';
 import ReportKnowledgeGraph, { reportKnowledgeGraphQuery } from './ReportKnowledgeGraph';
 import ReportKnowledgeCorrelation, { reportKnowledgeCorrelationQuery } from './ReportKnowledgeCorrelation';
@@ -19,6 +20,7 @@ import { constructHandleAddFilter, constructHandleRemoveFilter, emptyFilterGroup
 import ContentKnowledgeTimeLineBar from '../../common/containers/ContainertKnowledgeTimeLineBar';
 import investigationAddFromContainer from '../../../../utils/InvestigationUtils';
 import withRouter from '../../../../utils/compat_router/withRouter';
+import { insertNode } from '../../../../utils/store';
 
 const styles = () => ({
   container: {
@@ -214,6 +216,32 @@ class ReportKnowledgeComponent extends Component {
     this.setState({ timeLineSearchTerm: value }, () => this.saveView());
   }
 
+  handleAddEntity(entity) {
+    const input = {
+      toId: entity.id,
+      relationship_type: 'object',
+    };
+    commitMutation({
+      mutation: containerAddStixCoreObjectsLinesRelationAddMutation,
+      variables: {
+        id: this.props.report.id,
+        input,
+      },
+      updater: (store) => {
+        insertNode(
+          store,
+          'Pagination_objects',
+          undefined,
+          'containerEdit',
+          this.props.report.id,
+          'relationAdd',
+          { input },
+          'to',
+        );
+      },
+    });
+  }
+
   render() {
     const {
       classes,
@@ -378,15 +406,10 @@ class ReportKnowledgeComponent extends Component {
                         currentKillChain={currentKillChain}
                         currentModeOnlyActive={currentModeOnlyActive}
                         currentColorsReversed={currentColorsReversed}
-                        handleChangeKillChain={this.handleChangeKillChain.bind(
-                          this,
-                        )}
-                        handleToggleColorsReversed={this.handleToggleColorsReversed.bind(
-                          this,
-                        )}
-                        handleToggleModeOnlyActive={this.handleToggleModeOnlyActive.bind(
-                          this,
-                        )}
+                        handleChangeKillChain={this.handleChangeKillChain.bind(this)}
+                        handleToggleColorsReversed={this.handleToggleColorsReversed.bind(this)}
+                        handleToggleModeOnlyActive={this.handleToggleModeOnlyActive.bind(this)}
+                        handleAdd={this.handleAddEntity.bind(this)}
                       />
                     );
                   }
