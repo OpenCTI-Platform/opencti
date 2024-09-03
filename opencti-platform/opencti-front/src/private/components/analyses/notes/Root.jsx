@@ -107,6 +107,7 @@ class RootNote extends Component {
                             </CollaborativeSecurity>
                           )}
                           redirectToContent={true}
+                          disableAuthorizedMembers={true}
                         />
                       }
                     >
@@ -119,6 +120,7 @@ class RootNote extends Component {
                           </CollaborativeSecurity>
                         )}
                         redirectToContent={false}
+                        disableAuthorizedMembers={true}
                       />
                     </CollaborativeSecurity>
                     <Box

@@ -471,6 +471,7 @@ const ContainerHeader = (props) => {
     currentMode,
     knowledge,
     disableSharing,
+    disableAuthorizedMembers,
     adjust,
     enableSuggestions,
     onApplied,
@@ -771,7 +772,7 @@ const ContainerHeader = (props) => {
       ],
     },
   };
-  const isAuthorizedMembersEnabled = isFeatureEnable('CONTAINERS_AUTHORIZED_MEMBERS') || container.entity_type === 'Feedback';
+  const isAuthorizedMembersEnabled = !disableAuthorizedMembers && (isFeatureEnable('CONTAINERS_AUTHORIZED_MEMBERS') || container.entity_type === 'Feedback');
   const currentAccessRight = useGetCurrentUserAccessRight(container.currentUserAccessRight);
   const canEdit = currentAccessRight.canEdit || !isAuthorizedMembersEnabled;
   const enableManageAuthorizedMembers = currentAccessRight.canManage && isAuthorizedMembersEnabled;

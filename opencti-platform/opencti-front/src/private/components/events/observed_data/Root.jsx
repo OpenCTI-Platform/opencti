@@ -129,6 +129,7 @@ class RootObservedData extends Component {
                       </Security>
                     )}
                     redirectToContent = {false}
+                    disableAuthorizedMembers={true}
                   />
                   <Box
                     sx={{
