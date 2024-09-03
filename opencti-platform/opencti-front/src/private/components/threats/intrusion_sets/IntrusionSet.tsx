@@ -146,7 +146,7 @@ const IntrusionSet: React.FC<IntrusionSetProps> = ({ intrusionSetData }) => {
           })
         }
       </Grid>
-      {isFABReplaced && (
+      {!isFABReplaced && (
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <IntrusionSetEdition intrusionSetId={intrusionSet.id} />
         </Security>
