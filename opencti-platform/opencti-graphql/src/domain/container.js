@@ -17,10 +17,8 @@ import { now } from '../utils/format';
 import { elCount, elFindByIds, ES_DEFAULT_PAGINATION, MAX_RELATED_CONTAINER_RESOLUTION } from '../database/engine';
 import { findById as findInvestigationById } from '../modules/workspace/workspace-domain';
 import { stixCoreObjectAddRelations } from './stixCoreObject';
-import { addFilter } from '../utils/filtering/filtering-utils';
 import { editAuthorizedMembers } from '../utils/authorizedMembers';
-import { isFeatureEnabled } from '../config/conf';
-import { UnsupportedError } from '../config/errors';
+import { addFilter } from '../utils/filtering/filtering-utils';
 
 export const findById = async (context, user, containerId) => {
   return storeLoadById(context, user, containerId, ENTITY_TYPE_CONTAINER);
@@ -225,9 +223,6 @@ export const knowledgeAddFromInvestigation = async (context, user, { containerId
 };
 
 export const containerEditAuthorizedMembers = async (context, user, entityId, input) => {
-  if (!isFeatureEnabled('CONTAINERS_AUTHORIZED_MEMBERS')) {
-    throw UnsupportedError('This feature is disabled');
-  }
   const args = {
     entityId,
     input,
@@ -235,6 +230,5 @@ export const containerEditAuthorizedMembers = async (context, user, entityId, in
     entityType: ENTITY_TYPE_CONTAINER,
     busTopicKey: ABSTRACT_STIX_CORE_OBJECT,
   };
-  // @ts-expect-error TODO improve busTopicKey types to avoid this
   return editAuthorizedMembers(context, user, args);
 };
