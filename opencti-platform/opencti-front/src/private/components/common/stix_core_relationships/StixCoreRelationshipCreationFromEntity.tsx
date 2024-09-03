@@ -739,27 +739,27 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
     return {
       entity_type: {
         label: 'Type',
-        flexSize: 15,
+        percentWidth: 15,
         isSortable: true,
       },
       value: {
         label: 'Value',
-        flexSize: 32,
+        percentWidth: 32,
         isSortable: false,
       },
       createdBy: {
         label: 'Author',
-        flexSize: 15,
+        percentWidth: 15,
         isSortable: isRuntimeSort,
       },
       objectLabel: {
         label: 'Labels',
-        flexSize: 22,
+        percentWidth: 22,
         isSortable: false,
       },
       objectMarking: {
         label: 'Marking',
-        flexSize: 15,
+        percentWidth: 15,
         isSortable: isRuntimeSort,
       },
     };
@@ -817,6 +817,8 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
                 {queryRef && (
                   <div style={{ height: '100%' }} ref={setTableRootRef}>
                     <DataTable
+                      disableToolBar
+                      disableSelectAll
                       rootRef={tableRootRef ?? undefined}
                       variant={DataTableVariant.inline}
                       dataColumns={buildColumns(platformModuleHelpers)}

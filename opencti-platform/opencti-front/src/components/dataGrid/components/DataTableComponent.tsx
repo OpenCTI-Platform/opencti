@@ -41,9 +41,9 @@ const DataTableComponent = ({
   pageSize,
   disableNavigation,
   disableLineSelection,
-  onLineClick,
   disableToolBar,
   disableSelectAll,
+  onLineClick,
 }: DataTableProps) => {
   const localStorageColumns = useDataTableLocalStorage<LocalStorageColumns>(`${storageKey}_columns`, {}, true)[0];
   const toggleHelper = useDataTableToggle(storageKey);
@@ -118,9 +118,9 @@ const DataTableComponent = ({
         actions,
         createButton,
         disableNavigation,
-        onLineClick,
         disableToolBar,
         disableSelectAll,
+        onLineClick,
       } as DataTableContextProps}
     >
       <div ref={dataTableHeaderRef}>
