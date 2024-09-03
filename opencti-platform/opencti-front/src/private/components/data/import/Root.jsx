@@ -8,7 +8,7 @@ import useHelper from '../../../../utils/hooks/useHelper';
 
 const Root = () => {
   const { isFeatureEnable } = useHelper();
-  const isDataTableEnabled = isFeatureEnable('DATA_TABLES');
+  const isNewImportScreensEnables = isFeatureEnable('NEW_IMPORT_SCREENS');
   return (
     <Routes>
       <Route path="/" Component={Import} />
@@ -16,13 +16,13 @@ const Root = () => {
         path="/pending/:fileId"
         element={<WorkbenchFile />}
       />
-      {isDataTableEnabled && (
+      {isNewImportScreensEnables && (
         <Route
           path="/file"
           element={<ImportFilesContent />}
         />
       )}
-      {isDataTableEnabled && (
+      {isNewImportScreensEnables && (
         <Route
           path="/workbench"
           element={<ImportWorkbenchesContent />}
