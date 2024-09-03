@@ -250,6 +250,16 @@ const defaultColumns: DataTableProps['dataColumns'] = {
       return defaultRender(value, helpers);
     },
   },
+  relatedEntity: {
+    id: 'relatedEntity',
+    label: 'Related entity',
+    flexSize: 10,
+    isSortable: false,
+    render: ({ metaData: { entity } }, { column: { size } }) => {
+      const value = isNotEmptyField(entity) ? entity.representative.main : '-';
+      return (<Tooltip title={value}><div>{truncate(value, size * MAGICAL_SIZE)}</div></Tooltip>);
+    },
+  },
   entity_type: {
     id: 'entity_type',
     label: 'Type',

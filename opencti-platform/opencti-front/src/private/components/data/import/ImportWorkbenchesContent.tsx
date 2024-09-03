@@ -54,6 +54,12 @@ export const workbenchLineFragment = graphql`
       creator {
         name
       }
+      entity {
+        representative {
+          main
+        }
+        id
+      }
     }
   }
 `;
@@ -214,13 +220,17 @@ const ImportWorkbenchesContent = () => {
       {queryRef && (
         <DataTable
           dataColumns={{
-            name: { percentWidth: 50 },
+            name: { percentWidth: 40 },
+            relatedEntity: {
+              flexSize: 20,
+              isSortable: false,
+            },
             createdBy: {
               percentWidth: 15,
               render: (({ metaData: { creator } }) => creator?.name ?? '-'),
             },
             objectLabel: {
-              percentWidth: 15,
+              percentWidth: 10,
               render: ({ metaData: { labels } }) => {
                 return (
                   <StixCoreObjectLabels
@@ -234,7 +244,7 @@ const ImportWorkbenchesContent = () => {
               id: 'lastModified',
               label: 'Modification date',
               isSortable: true,
-              percentWidth: 19,
+              percentWidth: 15,
               render: ({ lastModified }, { fd }) => fd(lastModified),
             },
           }}
