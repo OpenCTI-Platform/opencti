@@ -44,7 +44,6 @@ const ItemConfidence: FunctionComponent<ItemConfidenceProps> = ({ confidence, va
   const theme = mode === 'dark'
     ? ThemeDark()
     : ThemeLight();
-  const normalColor = mode === 'dark' ? '#ffffff' : '#000000';
   const classes = useStyles();
   const { level: confidenceLevel } = useLevel(entityType, 'confidence', confidence);
   const style = variant === 'inList' ? classes.chipInList : classes.chip;
@@ -64,7 +63,7 @@ const ItemConfidence: FunctionComponent<ItemConfidenceProps> = ({ confidence, va
           <Chip
             classes={{ root: style, label: classes.label }}
             style={{
-              color: normalColor,
+              color: theme.palette.chip.main,
               borderColor: confidenceLevel.color,
               backgroundColor: hexToRGB(confidenceLevel.color),
             }}

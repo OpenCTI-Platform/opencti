@@ -38,7 +38,6 @@ const StixCoreObjectLabels: React.FC<StixCoreObjectLabelsProps> = ({
   const theme = mode === 'dark'
     ? ThemeDark()
     : ThemeLight();
-  const normalColor = mode === 'dark' ? '#ffffff' : '#000000';
   const normalBackground = mode === 'dark' ? 'transparent' : '#ffffff';
   const hasLabels = !revoked && labels && labels.length > 0;
   let style = {};
@@ -77,7 +76,7 @@ const StixCoreObjectLabels: React.FC<StixCoreObjectLabelsProps> = ({
           label={truncate(label.value, 25)}
           style={{
             ...style,
-            color: monochrome_labels ? theme.palette.chip.main : normalColor,
+            color: theme.palette.chip.main,
             borderColor: monochrome_labels ? undefined : label.color ?? undefined,
             backgroundColor: monochrome_labels ? theme.palette.background.accent : hexToRGB(label.color),
           }}
@@ -112,8 +111,8 @@ const StixCoreObjectLabels: React.FC<StixCoreObjectLabelsProps> = ({
       label={t_i18n('No label')}
       style={{
         ...style,
-        color: monochrome_labels ? theme.palette.chip.main : normalColor,
-        borderColor: monochrome_labels ? undefined : normalColor,
+        color: theme.palette.chip.main,
+        borderColor: monochrome_labels ? undefined : theme.palette.chip.main,
         backgroundColor: monochrome_labels ? theme.palette.background.accent : normalBackground,
       }}
       onClick={typeof onClick === 'function'

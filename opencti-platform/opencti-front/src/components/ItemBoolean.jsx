@@ -7,6 +7,7 @@ import { compose } from 'ramda';
 import CircularProgress from '@mui/material/CircularProgress';
 import { useTheme } from '@mui/styles';
 import inject18n from './i18n';
+import useAuth from '../utils/hooks/useAuth';
 
 const styles = () => ({
   chip: {
@@ -38,27 +39,28 @@ const styles = () => ({
   },
 });
 
-const computeInlineStyles = (theme) => ({
+const computeInlineStyles = (theme, isMonochrome = false) => ({
   green: {
-    backgroundColor: 'rgba(76, 175, 80, 0.08)',
-    color: '#4caf50',
+    backgroundColor: isMonochrome ? theme.palette.background.accent : 'rgba(76, 175, 80, 0.08)',
+    color: theme.palette.chip.main,
   },
   red: {
-    backgroundColor: 'rgba(244, 67, 54, 0.08)',
-    color: '#f44336',
+    backgroundColor: isMonochrome ? theme.palette.background.accent : 'rgba(244, 67, 54, 0.08)',
+    color: theme.palette.chip.main,
   },
   blue: {
-    backgroundColor: 'rgba(92, 123, 245, 0.08)',
-    color: '#5c7bf5',
+    backgroundColor: isMonochrome ? theme.palette.background.accent : 'rgba(92, 123, 245, 0.08)',
+    color: theme.palette.chip.main,
   },
   ee: {
-    backgroundColor: theme.palette.ee.lightBackground,
+    backgroundColor: isMonochrome ? theme.palette.background.accent : theme.palette.ee.lightBackground,
     color: theme.palette.ee.main,
   },
 });
 
 const renderChip = (props) => {
   const { classes, label, neutralLabel, status, variant, t, reverse } = props;
+  const { me: { monochrome_labels } } = useAuth();
   const theme = useTheme();
   let style = classes.chip;
   if (variant === 'inList') {
@@ -66,7 +68,7 @@ const renderChip = (props) => {
   } else if (variant === 'large') {
     style = classes.chipLarge;
   }
-  const inlineStyles = computeInlineStyles(theme);
+  const inlineStyles = computeInlineStyles(theme, monochrome_labels);
   if (status === true) {
     return (
       <Chip
