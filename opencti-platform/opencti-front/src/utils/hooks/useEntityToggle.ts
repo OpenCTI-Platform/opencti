@@ -56,7 +56,6 @@ const useEntityToggle = <T extends UseEntityToggleType>(
     event?: React.SyntheticEvent,
     forceRemove: T[] = [],
   ) => {
-    console.log('entity : ', entity);
     if (event) {
       event.stopPropagation();
       event.preventDefault();
