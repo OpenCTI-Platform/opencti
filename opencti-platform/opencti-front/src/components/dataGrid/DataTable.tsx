@@ -35,6 +35,8 @@ type OCTIDataTableProps = Pick<DataTableProps, 'dataColumns'
 | 'onLineClick'
 | 'disableNavigation'
 | 'disableLineSelection'
+| 'disableToolBar'
+| 'disableSelectAll'
 | 'entityTypes'> & {
   lineFragment: GraphQLTaggedNode
   preloadedPaginationProps: UsePreloadedPaginationFragment<OperationType>,

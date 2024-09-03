@@ -83,6 +83,8 @@ export interface DataTableContextProps {
   createButton?: DataTableProps['createButton']
   resetColumns: () => void
   disableNavigation: DataTableProps['disableNavigation']
+  disableToolBar: DataTableProps['disableToolBar']
+  disableSelectAll: DataTableProps['disableSelectAll']
   onLineClick: DataTableProps['onLineClick']
 }
 
@@ -122,6 +124,8 @@ export interface DataTableProps {
   pageSize?: string
   disableNavigation?: boolean
   disableLineSelection?: boolean
+  disableToolBar?: boolean
+  disableSelectAll?: boolean
   onLineClick?: (line: any) => void
 }
 
