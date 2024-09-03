@@ -2,9 +2,6 @@ import React from 'react';
 import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import ToolDetails from './ToolDetails';
-import ToolEdition from './ToolEdition';
-import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
 import StixCoreObjectExternalReferences from '../../analyses/external_references/StixCoreObjectExternalReferences';
@@ -13,6 +10,10 @@ import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../commo
 import { Tool_tool$key } from './__generated__/Tool_tool.graphql';
 import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
 import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
+import Security from '../../../../utils/Security';
+import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import ToolEdition from './ToolEdition';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 const toolFragment = graphql`
   fragment Tool_tool on Tool {
@@ -74,6 +75,8 @@ const Tool: React.FC<ToolProps> = ({ toolData }) => {
   const tool = useFragment(toolFragment, toolData);
   const overviewLayoutCustomization = useOverviewLayoutCustomization(tool.entity_type);
 
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   return (
     <>
       <Grid
@@ -144,9 +147,11 @@ const Tool: React.FC<ToolProps> = ({ toolData }) => {
           })
         }
       </Grid>
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
-        <ToolEdition toolId={tool.id} />
-      </Security>
+      {!isFABReplaced && (
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <ToolEdition toolId={tool.id} />
+        </Security>
+      )}
     </>
   );
 };

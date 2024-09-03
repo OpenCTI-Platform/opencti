@@ -7,6 +7,7 @@ import inject18n from '../../../../components/i18n';
 import ChannelEditionContainer from './ChannelEditionContainer';
 import { channelEditionOverviewFocus } from './ChannelEditionOverview';
 import Loader from '../../../../components/Loader';
+import EditEntityControlledDial from '../../../../components/EditEntityControlledDial';
 
 export const channelEditionQuery = graphql`
   query ChannelEditionContainerQuery($id: String!) {
@@ -46,7 +47,11 @@ class ChannelEdition extends Component {
         render={({ props }) => {
           if (props) {
             return (
-              <ChannelEditionContainer channel={props.channel} handleClose={this.handleClose.bind(this)}/>
+              <ChannelEditionContainer
+                channel={props.channel}
+                handleClose={this.handleClose.bind(this)}
+                controlledDial={EditEntityControlledDial}
+              />
             );
           }
           return <Loader variant="inElement" />;
