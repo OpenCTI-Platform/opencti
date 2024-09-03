@@ -10,7 +10,7 @@ import type { AuthContext, AuthUser } from '../../../types/user';
 import { type DomainFindById } from '../../../domain/domainTypes';
 import type { BasicStoreEntityDocument } from './document-types';
 import type { BasicStoreCommon, BasicStoreObject } from '../../../types/store';
-import { type File, FilterMode, FilterOperator, OrderingMode } from '../../../generated/graphql';
+import { type File, FilterMode, FilterOperator, OrderingMode, QueryAllPendingFilesArgs } from '../../../generated/graphql';
 import { loadExportWorksAsProgressFiles } from '../../../domain/work';
 import { elSearchFiles } from '../../../database/file-search';
 import { SYSTEM_USER } from '../../../utils/access';
@@ -19,8 +19,7 @@ import type { UserAction } from '../../../listener/UserActionListener';
 import { buildContextDataForFile, publishUserAction } from '../../../listener/UserActionListener';
 import { ForbiddenAccess } from '../../../config/errors';
 import { RELATION_OBJECT_MARKING } from '../../../schema/stixRefRelationship';
-import { buildRefRelationKey } from '../../../schema/general';
-import { findAll as findAllStixCoreObjects } from '../../../domain/stixCoreObject';
+import { ABSTRACT_STIX_CORE_OBJECT, buildRefRelationKey } from '../../../schema/general';
 
 export const getIndexFromDate = async (context: AuthContext) => {
   const searchOptions = {
@@ -226,8 +225,8 @@ export const paginatedForPathWithEnrichment = async (context: AuthContext, user:
   return pagination ?? [];
 };
 
-export const paginatedForAllPendingFiles = async (context: AuthContext, user: AuthUser, opts) => {
-  const stixCoreObjects = await findAllStixCoreObjects(context, user, {});
+export const paginatedForAllPendingFiles = async (context: AuthContext, user: AuthUser, opts?: QueryAllPendingFilesArgs) => {
+  const stixCoreObjects = await listEntitiesPaginated(context, user, [ABSTRACT_STIX_CORE_OBJECT], {});
   const ids = stixCoreObjects.edges.map((n) => n.node.internal_id);
   const pathFilter = { // (entity_id is empty) OR (entity_id = one of the available stix core objects ids)
     mode: FilterMode.Or,

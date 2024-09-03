@@ -218,12 +218,13 @@ const ImportWorkbenchesContent = () => {
           </Button>
         </DialogActions>
       </Dialog>
+      <div>---------TEST---------</div>
       {queryRef && (
         <DataTable
           dataColumns={{
             name: { percentWidth: 40 },
             relatedEntity: {
-              flexSize: 20,
+              percentWidth: 20,
               isSortable: false,
             },
             createdBy: {

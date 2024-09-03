@@ -253,7 +253,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
   relatedEntity: {
     id: 'relatedEntity',
     label: 'Related entity',
-    flexSize: 10,
+    percentWidth: 10,
     isSortable: false,
     render: ({ metaData: { entity } }, { column: { size } }) => {
       const value = isNotEmptyField(entity) ? entity.representative.main : '-';
