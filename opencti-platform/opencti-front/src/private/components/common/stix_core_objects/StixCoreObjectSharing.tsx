@@ -186,7 +186,7 @@ const StixCoreObjectSharing: FunctionComponent<ContainerHeaderSharedProps> = ({
             >
               <BankPlus
                 fontSize="small"
-                color={isEnterpriseEdition ? 'primary' : 'disabled'}
+                color={!disabled && isEnterpriseEdition ? 'primary' : 'disabled'}
               />
             </ToggleButton>
           </EETooltip>
@@ -245,7 +245,7 @@ const StixCoreObjectSharing: FunctionComponent<ContainerHeaderSharedProps> = ({
             size="large"
             disabled={disabled}
           >
-            <BankPlus fontSize="small" color={isEnterpriseEdition ? 'primary' : 'disabled'} />
+            <BankPlus fontSize="small" color={!disabled && isEnterpriseEdition ? 'primary' : 'disabled'} />
           </IconButton>
         </EETooltip>
         <div className="clearfix" />
