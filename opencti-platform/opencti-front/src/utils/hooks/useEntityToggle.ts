@@ -20,6 +20,7 @@ export interface UseEntityToggle<T> {
 type UseEntityToggleType = {
   id: string,
   name?: string | null,
+  observable_value?: string | null,
   entity_type?: string | null
 };
 
@@ -55,6 +56,7 @@ const useEntityToggle = <T extends UseEntityToggleType>(
     event?: React.SyntheticEvent,
     forceRemove: T[] = [],
   ) => {
+    console.log('entity : ', entity);
     if (event) {
       event.stopPropagation();
       event.preventDefault();
