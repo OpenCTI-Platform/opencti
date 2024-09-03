@@ -121,6 +121,7 @@ export interface DataTableProps {
   createButton?: ReactNode
   pageSize?: string
   disableNavigation?: boolean
+  disableLineSelection?: boolean
   onLineClick?: (line: any) => void
 }
 
