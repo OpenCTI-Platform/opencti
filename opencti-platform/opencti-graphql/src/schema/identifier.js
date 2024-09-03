@@ -490,9 +490,13 @@ export const getInputIds = (type, input) => {
   if (isNotEmptyField(input.x_opencti_stix_ids)) {
     ids.push(...input.x_opencti_stix_ids);
   }
-  ids.push(...generateAliasesIdsForInstance(input));
-  ids.push(...getHashIds(type, input.hashes));
-  // For relationship, we lock the combination to prevent concurrency issue
+  if (isStixObjectAliased(input.entity_type)) {
+    ids.push(...generateAliasesIdsForInstance(input));
+  }
+  if (isStixCyberObservableHashedObservable(input.entity_type)) {
+    ids.push(...getHashIds(type, input.hashes));
+  }
+  // For relationship lock the combination
   if (isBasicRelationship(type)) {
     ids.push(`${input.fromId}-${type}-${input.toId}`);
     ids.push(`${input.toId}-${type}-${input.fromId}`);
