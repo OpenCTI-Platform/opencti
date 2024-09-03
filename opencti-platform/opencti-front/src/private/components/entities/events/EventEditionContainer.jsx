@@ -4,11 +4,14 @@ import { useFormatter } from '../../../../components/i18n';
 import EventEditionOverview from './EventEditionOverview';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 import Drawer, { DrawerVariant } from '../../common/drawer/Drawer';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 const EventEditionContainer = (props) => {
   const { t_i18n } = useFormatter();
+  const { isFeatureEnable } = useHelper();
+  const FABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
-  const { handleClose, event, open } = props;
+  const { handleClose, event, open, controlledDial } = props;
   const { editContext } = event;
 
   return (
@@ -16,8 +19,9 @@ const EventEditionContainer = (props) => {
       title={t_i18n('Update an event')}
       open={open}
       onClose={handleClose}
-      variant={open == null ? DrawerVariant.update : undefined}
+      variant={!FABReplaced && open == null ? DrawerVariant.update : undefined}
       context={editContext}
+      controlledDial={FABReplaced ? controlledDial : undefined}
     >
       <EventEditionOverview
         event={event}

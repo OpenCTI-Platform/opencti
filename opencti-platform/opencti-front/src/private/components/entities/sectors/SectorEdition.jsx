@@ -5,6 +5,7 @@ import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import SectorEditionContainer from './SectorEditionContainer';
 import { sectorEditionOverviewFocus } from './SectorEditionOverview';
 import Loader from '../../../../components/Loader';
+import EditEntityControlledDial from '../../../../components/EditEntityControlledDial';
 
 export const sectorEditionQuery = graphql`
   query SectorEditionContainerQuery($id: String!) {
@@ -34,7 +35,11 @@ class SectorEdition extends Component {
         render={({ props }) => {
           if (props) {
             return (
-              <SectorEditionContainer sector={props.sector} handleClose={this.handleClose.bind(this)} />
+              <SectorEditionContainer
+                sector={props.sector}
+                handleClose={this.handleClose.bind(this)}
+                controlledDial={EditEntityControlledDial}
+              />
             );
           }
           return <Loader variant="inElement" />;

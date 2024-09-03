@@ -25,6 +25,9 @@ import EntityStixSightingRelationships from '../../events/stix_sighting_relation
 import inject18n from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
+import Security from '../../../../utils/Security';
+import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import SystemEdition from './SystemEdition';
 
 const subscription = graphql`
   subscription RootSystemsSubscription($id: ID!) {
@@ -170,6 +173,11 @@ class RootSystem extends Component {
                         isOpenctiAlias={true}
                         enableQuickSubscription={true}
                         PopoverComponent={<SystemPopover />}
+                        EditComponent={(
+                          <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                            <SystemEdition systemId={system.id} />
+                          </Security>
+                        )}
                         onViewAs={this.handleChangeViewAs.bind(this)}
                         viewAs={viewAs}
                       />
@@ -232,7 +240,7 @@ class RootSystem extends Component {
                           path="/"
                           element={
                             <System
-                              system={system}
+                              systemData={system}
                               viewAs={viewAs}
                             />
                         }

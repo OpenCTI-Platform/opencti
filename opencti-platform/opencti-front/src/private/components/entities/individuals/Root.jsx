@@ -25,6 +25,9 @@ import EntityStixSightingRelationships from '../../events/stix_sighting_relation
 import inject18n from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
+import IndividualEdition from './IndividualEdition';
+import Security from '../../../../utils/Security';
+import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 
 const subscription = graphql`
   subscription RootIndividualsSubscription($id: ID!) {
@@ -46,6 +49,7 @@ const individualQuery = graphql`
   query RootIndividualQuery($id: String!) {
     individual(id: $id) {
       id
+      isUser
       entity_type
       name
       x_opencti_aliases
@@ -175,6 +179,11 @@ class RootIndividual extends Component {
                         isOpenctiAlias={true}
                         enableQuickSubscription={true}
                         PopoverComponent={<IndividualPopover />}
+                        EditComponent={!individual.isUser && (
+                          <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                            <IndividualEdition individualId={individual.id} />
+                          </Security>
+                        )}
                         onViewAs={this.handleChangeViewAs.bind(this)}
                         viewAs={viewAs}
                       />
@@ -237,7 +246,7 @@ class RootIndividual extends Component {
                           path="/"
                           element={
                             <Individual
-                              individual={individual}
+                              individualData={individual}
                               viewAs={viewAs}
                             />
                         }

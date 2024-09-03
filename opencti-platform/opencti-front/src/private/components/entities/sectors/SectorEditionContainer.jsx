@@ -4,11 +4,14 @@ import { useFormatter } from '../../../../components/i18n';
 import SectorEditionOverview from './SectorEditionOverview';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 import Drawer, { DrawerVariant } from '../../common/drawer/Drawer';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 const SectorEditionContainer = (props) => {
   const { t_i18n } = useFormatter();
+  const { isFeatureEnable } = useHelper();
+  const FABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
-  const { handleClose, sector, open } = props;
+  const { handleClose, sector, open, controlledDial } = props;
   const { editContext } = sector;
 
   return (
@@ -16,8 +19,9 @@ const SectorEditionContainer = (props) => {
       title={t_i18n('Update a sector')}
       open={open}
       onClose={handleClose}
-      variant={open == null ? DrawerVariant.update : undefined}
+      variant={!FABReplaced && open == null ? DrawerVariant.update : undefined}
       context={editContext}
+      controlledDial={FABReplaced ? controlledDial : undefined}
     >
       <SectorEditionOverview
         sector={sector}
