@@ -104,6 +104,62 @@ services:
       ports:
         - "9999:8080"
 
+  # LDAP provider - disabled by default
+  # docker compose --profile ldap up -d
+  # bind_dn is "cn=admin,dc=example,dc=org", bind_credential see LDAP_ADMIN_PASSWORD
+  # search_base is "dc=example,dc=org"
+  opencti-dev-openldap:
+    image: osixia/openldap:1.5.0
+    profiles: [ ldap ]
+    container_name: opencti-dev-openldap
+    environment:
+      LDAP_LOG_LEVEL: "256"
+      LDAP_ORGANISATION: "Example Inc."
+      LDAP_DOMAIN: "example.org"
+      LDAP_BASE_DN: ""
+      LDAP_ADMIN_PASSWORD: "12341234"
+      LDAP_CONFIG_PASSWORD: "config"
+      LDAP_READONLY_USER: "false"
+      LDAP_RFC2307BIS_SCHEMA: "false"
+      LDAP_BACKEND: "mdb"
+      LDAP_TLS: "false"
+      LDAP_TLS_CRT_FILENAME: "ldap.crt"
+      LDAP_TLS_KEY_FILENAME: "ldap.key"
+      LDAP_TLS_DH_PARAM_FILENAME: "dhparam.pem"
+      LDAP_TLS_CA_CRT_FILENAME: "ca.crt"
+      LDAP_TLS_ENFORCE: "false"
+      LDAP_TLS_CIPHER_SUITE: "SECURE256:-VERS-SSL3.0"
+      LDAP_TLS_VERIFY_CLIENT: "demand"
+      LDAP_REPLICATION: "false"
+      KEEP_EXISTING_CONFIG: "false"
+      LDAP_REMOVE_CONFIG_AFTER_SETUP: "true"
+      LDAP_SSL_HELPER_PREFIX: "ldap"
+    tty: true
+    stdin_open: true
+    volumes:
+      - /var/lib/ldap
+      - /etc/ldap/slapd.d
+      - /container/service/slapd/assets/certs/
+    ports:
+      - "389:389"
+      - "636:636"
+    domainname: "example.org"
+    hostname: "ldap-server"
+
+    # UI to configure ldap, localhost:8888, login DN 'cn=admin,dc=example,dc=org'
+    # password see LDAP_ADMIN_PASSWORD above
+  opencti-dev-phpldapadmin:
+    image: osixia/phpldapadmin:latest
+    profiles: [ ldap ]
+    container_name: opencti-dev-phpldapadmin
+    environment:
+      PHPLDAPADMIN_LDAP_HOSTS: "opencti-dev-openldap"
+      PHPLDAPADMIN_HTTPS: "false"
+    ports:
+      - "8888:80"
+    depends_on:
+      - opencti-dev-openldap
+
 volumes:
   esdata:
     driver: local

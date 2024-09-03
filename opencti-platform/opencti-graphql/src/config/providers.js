@@ -154,6 +154,8 @@ for (let i = 0; i < providerKeys.length; i += 1) {
     if (strategy === STRATEGY_LDAP) {
       const providerRef = identifier || 'ldapauth';
       const allowSelfSigned = mappedConfig.allow_self_signed || mappedConfig.allow_self_signed === 'true';
+      // Force bindCredentials to be a String
+      mappedConfig.bindCredentials = `${mappedConfig.bindCredentials}`;
       const tlsConfig = R.assoc('tlsOptions', { rejectUnauthorized: !allowSelfSigned }, mappedConfig);
       const ldapOptions = { server: tlsConfig };
       const ldapStrategy = new LdapStrategy(ldapOptions, (user, done) => {
@@ -180,6 +182,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
           const orgaDefault = mappedConfig.organizations_default ?? [];
           const orgasMapping = mappedConfig.organizations_management?.organizations_mapping || [];
           const orgaPath = mappedConfig.organizations_management?.organizations_path || ['organizations'];
+
           const availableOrgas = R.flatten(
             orgaPath.map((path) => {
               const value = R.path(path.split('.'), user) || [];
