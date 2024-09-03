@@ -252,8 +252,7 @@ export const paginatedForAllPendingFiles = async (context: AuthContext, user: Au
     orderOptions.orderBy = 'lastModified';
     orderOptions.orderMode = OrderingMode.Asc;
   }
-  const listOptions = { ...opts, ...filters, ...orderOptions, indices: [READ_INDEX_INTERNAL_OBJECTS] };
-  // TODO check file access
+  const listOptions = { ...opts, filters, ...orderOptions, indices: [READ_INDEX_INTERNAL_OBJECTS] };
   const pagination = await listEntitiesPaginated<BasicStoreEntityDocument>(context, user, [ENTITY_TYPE_INTERNAL_FILE], listOptions);
   return pagination ?? [];
 };

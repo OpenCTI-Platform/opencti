@@ -69,7 +69,7 @@ const importWorkbenchLinesFragment = graphql`
     filters: { type: "FilterGroup" }
   )
   @refetchable(queryName: "ImportWorkbenchesRefetchQuery") {
-    pendingFiles(
+    allPendingFiles(
       first: $count,
       after: $cursor,
       orderBy: $orderBy,
@@ -77,7 +77,7 @@ const importWorkbenchLinesFragment = graphql`
       search: $search,
       filters: $filters,
     )
-    @connection(key: "Pagination_global_pendingFiles") {
+    @connection(key: "Pagination_global_allPendingFiles") {
       edges {
         node {
           ...ImportWorkbenchesContentFileLine_file
@@ -160,7 +160,7 @@ const ImportWorkbenchesContent = () => {
     linesQuery: importWorkbenchesContentQuery,
     linesFragment: importWorkbenchLinesFragment,
     queryRef,
-    nodePath: ['pendingFiles', 'pageInfo', 'globalCount'],
+    nodePath: ['allPendingFiles', 'pageInfo', 'globalCount'],
     setNumberOfElements: helpers.handleSetNumberOfElements,
   } as UsePreloadedPaginationFragment<ImportWorkbenchesContentQuery>;
 
@@ -177,7 +177,7 @@ const ImportWorkbenchesContent = () => {
         const fileStore = store.get(id);
         fileStore?.setValue(0, 'lastModifiedSinceMin');
         fileStore?.setValue('progress', 'uploadStatus');
-        deleteNode(store, 'Pagination_global_pendingFiles', queryPaginationOptions, id);
+        deleteNode(store, 'Pagination_global_allPendingFiles', queryPaginationOptions, id);
       },
       onCompleted: () => setDisplayDelete(''),
       onError: () => setDisplayDelete(''),
@@ -238,7 +238,7 @@ const ImportWorkbenchesContent = () => {
               render: ({ lastModified }, { fd }) => fd(lastModified),
             },
           }}
-          resolvePath={(data: ImportWorkbenchesContentLines_data$data) => data.pendingFiles?.edges?.map(({ node }) => node)}
+          resolvePath={(data: ImportWorkbenchesContentLines_data$data) => data.allPendingFiles?.edges?.map(({ node }) => node)}
           storageKey={LOCAL_STORAGE_KEY}
           entityTypes={['InternalFile']}
           searchContextFinal={{ entityTypes: ['InternalFile'] }}
