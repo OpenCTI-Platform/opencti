@@ -4,8 +4,8 @@ import useHelper from '../../../utils/hooks/useHelper';
 
 const ImportMenu = () => {
   const { isFeatureEnable } = useHelper();
-  const isDataTableEnabled = isFeatureEnable('DATA_TABLES');
-  if (!isDataTableEnabled) {
+  const isNewImportScreensEnabled = isFeatureEnable('NEW_IMPORT_SCREENS');
+  if (!isNewImportScreensEnabled) {
     return (
       <NavToolbarMenu
         entries={[{
