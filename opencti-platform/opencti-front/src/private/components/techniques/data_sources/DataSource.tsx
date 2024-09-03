@@ -9,10 +9,11 @@ import StixCoreObjectExternalReferences from '../../analyses/external_references
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
 import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../common/stix_core_relationships/SimpleStixObjectOrStixRelationshipStixCoreRelationships';
 import { DataSource_dataSource$key } from './__generated__/DataSource_dataSource.graphql';
-import DataSourceEdition from './DataSourceEdition';
 import DataSourceDetailsComponent from './DataSourceDetails';
 import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
 import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
+import useHelper from '../../../../utils/hooks/useHelper';
+import DataSourceEdition from './DataSourceEdition';
 
 const dataSourceFragment = graphql`
   fragment DataSource_dataSource on DataSource {
@@ -74,6 +75,8 @@ interface DataSourceProps {
 const DataSourceComponent: React.FC<DataSourceProps> = ({ dataSourceData }) => {
   const dataSource = useFragment<DataSource_dataSource$key>(dataSourceFragment, dataSourceData);
   const overviewLayoutCustomization = useOverviewLayoutCustomization(dataSource.entity_type);
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   return (
     <>
@@ -146,9 +149,11 @@ const DataSourceComponent: React.FC<DataSourceProps> = ({ dataSourceData }) => {
           })
         }
       </Grid>
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
-        <DataSourceEdition dataSourceId={dataSource.id} />
-      </Security>
+      {!isFABReplaced && (
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <DataSourceEdition dataSourceId={dataSource.id} />
+        </Security>
+      )}
     </>
   );
 };

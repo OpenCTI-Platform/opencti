@@ -343,7 +343,7 @@ const DataSourceCreation: FunctionComponent<DataSourceCreationProps> = ({
 }) => {
   const { isFeatureEnable } = useHelper();
   const { t_i18n } = useFormatter();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACED');
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const [bulkOpen, setBulkOpen] = useState(false);
 
   const [open, setOpen] = useState(false);

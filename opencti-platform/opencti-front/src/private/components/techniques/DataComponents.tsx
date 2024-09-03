@@ -97,7 +97,7 @@ const dataComponentsLinesFragment = graphql`
 const DataComponents: FunctionComponent = () => {
   const { t_i18n } = useFormatter();
   const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACED');
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   const initialValues = {
     filters: emptyFilterGroup,

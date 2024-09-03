@@ -7,6 +7,7 @@ import inject18n from '../../../../components/i18n';
 import NarrativeEditionContainer from './NarrativeEditionContainer';
 import { narrativeEditionOverviewFocus } from './NarrativeEditionOverview';
 import Loader from '../../../../components/Loader';
+import EditEntityControlledDial from '../../../../components/EditEntityControlledDial';
 
 export const narrativeEditionQuery = graphql`
   query NarrativeEditionContainerQuery($id: String!) {
@@ -39,6 +40,7 @@ class NarrativeEdition extends Component {
               <NarrativeEditionContainer
                 narrative={props.narrative}
                 handleClose={this.handleClose.bind(this)}
+                controlledDial={EditEntityControlledDial}
               />
             );
           }

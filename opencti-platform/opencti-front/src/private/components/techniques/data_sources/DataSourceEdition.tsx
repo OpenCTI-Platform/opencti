@@ -5,6 +5,7 @@ import { dataSourceEditionOverviewFocus } from './DataSourceEditionOverview';
 import DataSourceEditionContainer, { dataSourceEditionQuery } from './DataSourceEditionContainer';
 import { DataSourceEditionContainerQuery } from './__generated__/DataSourceEditionContainerQuery.graphql';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import EditEntityControlledDial from '../../../../components/EditEntityControlledDial';
 
 const DataSourceEdition = ({ dataSourceId }: { dataSourceId: string }) => {
   const [commit] = useApiMutation(dataSourceEditionOverviewFocus);
@@ -32,6 +33,7 @@ const DataSourceEdition = ({ dataSourceId }: { dataSourceId: string }) => {
           <DataSourceEditionContainer
             queryRef={queryRef}
             handleClose={handleClose}
+            controlledDial={EditEntityControlledDial}
           />
         </React.Suspense>
       )}

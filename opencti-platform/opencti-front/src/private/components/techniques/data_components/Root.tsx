@@ -24,6 +24,9 @@ import { RootDataComponentSubscription } from './__generated__/RootDataComponent
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
+import Security from '../../../../utils/Security';
+import DataComponentEdition from './DataComponentEdition';
+import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 
 const subscription = graphql`
   subscription RootDataComponentSubscription($id: ID!) {
@@ -103,6 +106,11 @@ const RootDataComponent = () => {
                     PopoverComponent={
                       <DataComponentPopover dataComponentId={dataComponentId}/>
                     }
+                    EditComponent={(
+                      <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                        <DataComponentEdition dataComponentId={dataComponent.id} />
+                      </Security>
+                    )}
                     noAliases={true}
                   />
                   <Box

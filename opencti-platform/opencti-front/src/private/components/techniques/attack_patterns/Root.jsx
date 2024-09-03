@@ -22,6 +22,9 @@ import ErrorNotFound from '../../../../components/ErrorNotFound';
 import inject18n from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
+import Security from '../../../../utils/Security';
+import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import AttackPatternEdition from './AttackPatternEdition';
 
 const subscription = graphql`
   subscription RootAttackPatternSubscription($id: ID!) {
@@ -138,6 +141,11 @@ class RootAttackPattern extends Component {
                         entityType="Attack-Pattern"
                         stixDomainObject={props.attackPattern}
                         PopoverComponent={<AttackPatternPopover />}
+                        EditComponent={(
+                          <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                            <AttackPatternEdition attackPatternId={attackPattern.id} />
+                          </Security>
+                        )}
                       />
                       <Box
                         sx={{

@@ -24,6 +24,9 @@ import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
+import Security from '../../../../utils/Security';
+import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import DataSourceEdition from './DataSourceEdition';
 
 const subscription = graphql`
   subscription RootDataSourcesSubscription($id: ID!) {
@@ -95,6 +98,11 @@ const RootDataSourceComponent = ({ queryRef, dataSourceId }) => {
             noAliases={true}
             stixDomainObject={dataSource}
             PopoverComponent={<DataSourcePopover id={dataSource.id}/>}
+            EditComponent={(
+              <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                <DataSourceEdition dataSourceId={dataSource.id} />
+              </Security>
+            )}
           />
           <Box
             sx={{ borderBottom: 1, borderColor: 'divider', marginBottom: 4 }}
