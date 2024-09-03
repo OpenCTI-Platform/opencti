@@ -3,7 +3,7 @@ import { askJobImport, batchFileMarkingDefinitions, batchFileWorks, deleteImport
 import { batchLoader } from '../database/middleware';
 import { batchCreator } from '../domain/user';
 import { batchStixDomainObjects } from '../domain/stixDomainObject';
-import { paginatedForPathWithEnrichment } from '../modules/internal/document/document-domain';
+import { paginatedForAllPendingFiles, paginatedForPathWithEnrichment } from '../modules/internal/document/document-domain';
 
 const creatorLoader = batchLoader(batchCreator);
 const domainLoader = batchLoader(batchStixDomainObjects);
@@ -18,6 +18,9 @@ const fileResolvers = {
     },
     pendingFiles: (_, opts, context) => { // correspond to global workbenches (i.e. worbenches in Data > Import)
       return paginatedForPathWithEnrichment(context, context.user, 'import/pending', undefined, opts);
+    },
+    allPendingFiles: (_, opts, context) => { // all the workbenches (i.e. global workbenches and all the workbenches linked to an entity)
+      return paginatedForAllPendingFiles(context, context.user, opts);
     },
     filesMetrics: (_, args, context) => filesMetrics(context, context.user),
   },
