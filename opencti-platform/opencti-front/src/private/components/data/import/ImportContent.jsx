@@ -335,6 +335,7 @@ class ImportContentComponent extends Component {
       nsdt,
       connectorsImport,
       relay,
+      isNewImportScreensEnabled,
     } = this.props;
     const { edges: importFilesEdges } = importFiles;
     const { edges: pendingFilesEdges } = pendingFiles;
@@ -357,7 +358,7 @@ class ImportContentComponent extends Component {
           classes={{ container: classes.gridContainer }}
           style={{ marginTop: 0 }}
         >
-          <Grid item xs={8} style={{ paddingTop: 0 }}>
+          <Grid item xs={isNewImportScreensEnabled ? 12 : 8} style={{ paddingTop: 0 }}>
             <div style={{ height: '100%' }} className="break">
               <Typography
                 variant="h4"
@@ -409,7 +410,7 @@ class ImportContentComponent extends Component {
               </Paper>
             </div>
           </Grid>
-          <Grid item xs={4} style={{ paddingTop: 0 }}>
+          {!isNewImportScreensEnabled && <Grid item xs={4} style={{ paddingTop: 0 }}>
             <Typography variant="h4" gutterBottom={true}>
               {t('Enabled import connectors')}
             </Typography>
@@ -476,7 +477,7 @@ class ImportContentComponent extends Component {
                 </div>
               )}
             </Paper>
-          </Grid>
+          </Grid>}
           <Grid item xs={12}>
             <div style={{ height: '100%' }} className="break">
               <Typography
