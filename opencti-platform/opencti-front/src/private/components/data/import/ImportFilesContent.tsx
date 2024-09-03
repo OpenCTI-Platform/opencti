@@ -129,7 +129,6 @@ const ImportFilesContent = () => {
     searchTerm: '',
     sortBy: 'lastModified',
     orderAsc: false,
-    orderAsc: false,
   };
 
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<ImportFilesContentQuery$variables>(LOCAL_STORAGE_KEY, initialValues);

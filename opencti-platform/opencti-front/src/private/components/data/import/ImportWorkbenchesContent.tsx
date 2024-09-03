@@ -122,7 +122,6 @@ const ImportWorkbenchesContent = () => {
     searchTerm: '',
     sortBy: 'lastModified',
     orderAsc: false,
-    orderAsc: false,
   };
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<ImportWorkbenchesContentQuery$variables>(LOCAL_STORAGE_KEY, initialValues);
   const { filters } = viewStorage;
