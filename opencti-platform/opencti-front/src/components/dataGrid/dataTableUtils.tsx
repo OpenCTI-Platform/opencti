@@ -257,7 +257,8 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     isSortable: false,
     render: ({ metaData: { entity } }, { column: { size } }) => {
       const value = isNotEmptyField(entity) ? entity.representative.main : '-';
-      return (<Tooltip title={value}><div>{truncate(value, size * MAGICAL_SIZE)}</div></Tooltip>);
+      const type = isNotEmptyField(entity) ? entity.entity_type : '';
+      return (<Tooltip title={`${value} (${type})`}><div>{truncate(value, size * MAGICAL_SIZE)}</div></Tooltip>);
     },
   },
   entity_type: {

@@ -59,6 +59,7 @@ export const workbenchLineFragment = graphql`
           main
         }
         id
+        entity_type
       }
     }
   }
