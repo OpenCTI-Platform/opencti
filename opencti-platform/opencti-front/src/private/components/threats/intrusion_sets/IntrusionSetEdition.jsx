@@ -7,6 +7,7 @@ import inject18n from '../../../../components/i18n';
 import IntrusionSetEditionContainer from './IntrusionSetEditionContainer';
 import { intrusionSetEditionOverviewFocus } from './IntrusionSetEditionOverview';
 import Loader from '../../../../components/Loader';
+import EditEntityControlledDial from '../../../../components/EditEntityControlledDial';
 
 export const intrusionSetEditionQuery = graphql`
   query IntrusionSetEditionContainerQuery($id: String!) {
@@ -39,6 +40,7 @@ class IntrusionSetEdition extends Component {
               <IntrusionSetEditionContainer
                 intrusionSet={props.intrusionSet}
                 handleClose={this.handleClose.bind(this)}
+                controlledDial={EditEntityControlledDial}
               />
             );
           }

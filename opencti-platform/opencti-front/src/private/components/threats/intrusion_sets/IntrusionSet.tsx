@@ -2,9 +2,6 @@ import React from 'react';
 import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import IntrusionSetDetails from './IntrusionSetDetails';
-import IntrusionSetEdition from './IntrusionSetEdition';
-import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
 import StixCoreObjectExternalReferences from '../../analyses/external_references/StixCoreObjectExternalReferences';
@@ -13,6 +10,10 @@ import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../commo
 import { IntrusionSet_intrusionSet$key } from './__generated__/IntrusionSet_intrusionSet.graphql';
 import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
 import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
+import useHelper from '../../../../utils/hooks/useHelper';
+import Security from '../../../../utils/Security';
+import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import IntrusionSetEdition from './IntrusionSetEdition';
 
 const intrusionSetFragment = graphql`
   fragment IntrusionSet_intrusionSet on IntrusionSet {
@@ -73,6 +74,8 @@ interface IntrusionSetProps {
 const IntrusionSet: React.FC<IntrusionSetProps> = ({ intrusionSetData }) => {
   const intrusionSet = useFragment<IntrusionSet_intrusionSet$key>(intrusionSetFragment, intrusionSetData);
   const overviewLayoutCustomization = useOverviewLayoutCustomization(intrusionSet.entity_type);
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   return (
     <>
       <Grid
@@ -143,9 +146,11 @@ const IntrusionSet: React.FC<IntrusionSetProps> = ({ intrusionSetData }) => {
           })
         }
       </Grid>
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
-        <IntrusionSetEdition intrusionSetId={intrusionSet.id} />
-      </Security>
+      {!isFABReplaced && (
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <IntrusionSetEdition intrusionSetId={intrusionSet.id} />
+        </Security>
+      )}
     </>
   );
 };
