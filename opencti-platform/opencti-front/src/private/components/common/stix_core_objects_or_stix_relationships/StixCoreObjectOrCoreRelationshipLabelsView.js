@@ -181,31 +181,31 @@ const StixCoreObjectOrCoreRelationshipLabelsView = (props) => {
         {map(
           (label) => (
             <Tooltip title={label.value}>
-                {monochrome_labels
-                  ? (
-                    <Chip
-                      key={label.id}
-                      variant="contained"
-                      classes={{ root: classes.label }}
-                      label={truncate(label.value, 25)}
-                      style={{
-                        color: theme.palette.chip.main,
-                        backgroundColor: theme.palette.background.accent,
-                      }}
-                      onDelete={() => (enableReferences
-                        ? handleOpenCommitDelete(label)
-                        : handleRemoveLabel(label.id))
+              {monochrome_labels
+                ? (
+                  <Chip
+                    key={label.id}
+                    variant="contained"
+                    classes={{ root: classes.label }}
+                    label={truncate(label.value, 25)}
+                    style={{
+                      color: theme.palette.chip.main,
+                      backgroundColor: theme.palette.background.accent,
+                    }}
+                    onDelete={() => (enableReferences
+                      ? handleOpenCommitDelete(label)
+                      : handleRemoveLabel(label.id))
                       }
-                      deleteIcon={
-                        <Clear
-                          style={{
-                            color: theme.palette.chip.main,
-                            fontSize: '16px',
-                          }}
-                        />
+                    deleteIcon={
+                      <Clear
+                        style={{
+                          color: theme.palette.chip.main,
+                          fontSize: '16px',
+                        }}
+                      />
                       }
-                    />
-                  ) : (
+                  />
+                ) : (
                   <Chip
                     key={label.id}
                     variant="outlined"
@@ -222,14 +222,14 @@ const StixCoreObjectOrCoreRelationshipLabelsView = (props) => {
                     }
                     deleteIcon={
                       <Security needs={[KNOWLEDGE_KNUPDATE]} >
-                      <CancelOutlined
+                        <CancelOutlined
                           className={classes.deleteIcon}
                           style={{ color: theme.palette.chip.main }}
                         />
                       </Security>
                     }
                   />
-                  )
+                )
                 }
             </Tooltip>
           ),

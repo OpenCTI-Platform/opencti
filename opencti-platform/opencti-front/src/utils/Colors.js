@@ -1,4 +1,5 @@
 /* eslint-disable no-bitwise */
+import { useTheme } from '@mui/material';
 import invert from 'invert-color';
 
 export const stringToColour = (str, reversed = false) => {
@@ -394,6 +395,10 @@ const generateGreenToRedColor = (n) => {
 };
 
 export const generateGreenToRedColors = (size) => {
+  const theme = useTheme();
+  if (theme.palette.mode === 'light' && size === 5) {
+    return ['#218500', '#628000', '#946f00', '#db3700', '#eb002f'];
+  }
   const fact = 100 / size;
   const ns = Array.from(Array(size).keys()).map((idx) => idx * fact);
   return ns.map((n) => generateGreenToRedColor(n));
