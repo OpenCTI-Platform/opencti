@@ -3,6 +3,7 @@ import { prepareTaxiiGetParam, processTaxiiResponse, type TaxiiResponseData } fr
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import { addIngestion as addTaxiiIngestion, findById as findTaxiiIngestionById } from '../../../src/modules/ingestion/ingestion-taxii-domain';
 import { IngestionAuthType, type IngestionTaxiiAddInput, TaxiiVersion } from '../../../src/generated/graphql';
+import type { StixReport } from '../../../src/types/stix-sdo';
 
 describe('Verify taxii ingestion', () => {
   it('should Taxii server response with no pagination (no next, no more, no x-taxii-date-added-last)', async () => {
@@ -35,7 +36,7 @@ describe('Verify taxii ingestion', () => {
             published: '2024-06-03T20:35:44.000Z',
             revoked: false,
             spec_version: '2.1',
-            type: 'report' }],
+            type: 'report' } as unknown as StixReport],
         more: undefined
       },
       addedLastHeader: undefined
@@ -79,7 +80,7 @@ describe('Verify taxii ingestion', () => {
             published: '2024-06-03T20:35:44.000Z',
             revoked: false,
             spec_version: '2.1',
-            type: 'report' }],
+            type: 'report' } as unknown as StixReport],
         more: true
       },
       addedLastHeader: '2024-02-01T20:35:44.000Z'
@@ -107,7 +108,7 @@ describe('Verify taxii ingestion', () => {
             published: '2024-06-03T20:35:44.000Z',
             revoked: false,
             spec_version: '2.1',
-            type: 'report' }],
+            type: 'report' } as unknown as StixReport],
         more: false
       },
       addedLastHeader: '2024-03-01T20:35:44.000Z'
@@ -150,7 +151,7 @@ describe('Verify taxii ingestion', () => {
             published: '2024-06-03T20:35:44.000Z',
             revoked: false,
             spec_version: '2.1',
-            type: 'report' }],
+            type: 'report' } as unknown as StixReport],
         more: true
       },
       addedLastHeader: '2024-02-01T20:35:44.000Z'
@@ -178,7 +179,7 @@ describe('Verify taxii ingestion', () => {
             published: '2024-06-03T20:35:44.000Z',
             revoked: false,
             spec_version: '2.1',
-            type: 'report' }],
+            type: 'report' } as unknown as StixReport],
         more: false
       },
       addedLastHeader: '2024-03-01T20:44:44.000Z'

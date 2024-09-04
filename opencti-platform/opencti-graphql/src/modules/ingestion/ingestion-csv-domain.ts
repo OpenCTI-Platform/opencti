@@ -14,6 +14,7 @@ import { parseCsvMapper } from '../internal/csvMapper/csvMapper-utils';
 import { type GetHttpClient, getHttpClient, OpenCTIHeaders } from '../../utils/http-client';
 import { verifyIngestionAuthenticationContent } from './ingestion-common';
 import { IngestionAuthType } from '../../generated/graphql';
+import { registerConnectorForIngestion, unregisterConnectorForIngestion } from '../../domain/connector';
 
 export const findById = (context: AuthContext, user: AuthUser, ingestionId: string) => {
   return storeLoadById<BasicStoreEntityIngestionCsv>(context, user, ingestionId, ENTITY_TYPE_INGESTION_CSV);
@@ -39,6 +40,13 @@ export const addIngestionCsv = async (context: AuthContext, user: AuthUser, inpu
   }
   const { element, isCreation } = await createEntity(context, user, input, ENTITY_TYPE_INGESTION_CSV, { complete: true });
   if (isCreation) {
+    await registerConnectorForIngestion(context, {
+      id: element.id,
+      type: 'CSV',
+      name: element.name,
+      is_running: element.ingestion_running,
+      connector_user_id: input.user_id
+    });
     await publishUserAction({
       user,
       event_type: 'mutation',
@@ -66,6 +74,13 @@ export const ingestionCsvEditField = async (context: AuthContext, user: AuthUser
   }
 
   const { element } = await updateAttribute(context, user, ingestionId, ENTITY_TYPE_INGESTION_CSV, input);
+  await registerConnectorForIngestion(context, {
+    id: element.id,
+    type: 'CSV',
+    name: element.name,
+    is_running: element.ingestion_running,
+    connector_user_id: element.user_id
+  });
   await publishUserAction({
     user,
     event_type: 'mutation',
@@ -79,6 +94,7 @@ export const ingestionCsvEditField = async (context: AuthContext, user: AuthUser
 
 export const deleteIngestionCsv = async (context: AuthContext, user: AuthUser, ingestionId: string) => {
   const deleted = await deleteElementById(context, user, ingestionId, ENTITY_TYPE_INGESTION_CSV);
+  await unregisterConnectorForIngestion(context, deleted.id);
   await publishUserAction({
     user,
     event_type: 'mutation',

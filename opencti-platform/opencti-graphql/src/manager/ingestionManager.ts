@@ -15,22 +15,25 @@ import { isEmptyField, isNotEmptyField } from '../database/utils';
 import { FROM_START_STR, now, sanitizeForMomentParsing, utcDate } from '../utils/format';
 import { generateStandardId } from '../schema/identifier';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../schema/stixDomainObject';
-import { pushToWorkerForSync } from '../database/rabbitmq';
+import { pushToWorkerForConnector } from '../database/rabbitmq';
 import { OPENCTI_SYSTEM_UUID } from '../schema/general';
 import { findAllRssIngestions, patchRssIngestion } from '../modules/ingestion/ingestion-rss-domain';
 import type { AuthContext } from '../types/user';
 import type { BasicStoreEntityIngestionCsv, BasicStoreEntityIngestionRss, BasicStoreEntityIngestionTaxii } from '../modules/ingestion/ingestion-types';
 import { findAllTaxiiIngestions, patchTaxiiIngestion } from '../modules/ingestion/ingestion-taxii-domain';
-import { IngestionAuthType, TaxiiVersion } from '../generated/graphql';
+import { ConnectorType, IngestionAuthType, TaxiiVersion } from '../generated/graphql';
 import { fetchCsvFromUrl, findAllCsvIngestions, patchCsvIngestion } from '../modules/ingestion/ingestion-csv-domain';
 import type { CsvMapperParsed } from '../modules/internal/csvMapper/csvMapper-types';
 import { findById } from '../modules/internal/csvMapper/csvMapper-domain';
 import { bundleProcess } from '../parser/csv-bundler';
 import { createWork, updateExpectationsNumber } from '../domain/work';
-import { IMPORT_CSV_CONNECTOR } from '../connector/importCsv/importCsv';
 import { parseCsvMapper } from '../modules/internal/csvMapper/csvMapper-utils';
 import { findById as findUserById } from '../domain/user';
 import { compareHashSHA256, hashSHA256 } from '../utils/hash';
+import type { StixBundle, StixObject } from '../types/stix-common';
+import { patchAttribute } from '../database/middleware';
+import { ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
+import { connectorIdFromIngestId } from '../domain/connector';
 
 // Ingestion manager responsible to cleanup old data
 // Each API will start is ingestion manager.
@@ -49,6 +52,44 @@ const asArray = (data: unknown) => {
     return [data];
   }
   return [];
+};
+
+const updateBuiltInConnectorInfo = async (context: AuthContext, user_id: string | undefined, id: string, state: object) => {
+  // Patch the related connector
+  const csvNow = utcDate();
+  const connectorPatch: any = {
+    updated_at: csvNow.toISOString(),
+    connector_info: {
+      last_run_datetime: csvNow.toISOString(),
+      next_run_datetime: csvNow.add(SCHEDULE_TIME, 'milliseconds').toISOString(),
+      run_and_terminate: false,
+      buffering: false,
+      queue_threshold: 0,
+      queue_messages_size: 0
+    },
+    connector_user_id: user_id,
+    connector_state: JSON.stringify(state)
+  };
+  const connectorId = connectorIdFromIngestId(id);
+  await patchAttribute(context, SYSTEM_USER, connectorId, ENTITY_TYPE_CONNECTOR, connectorPatch);
+};
+
+const pushBundleToConnectorQueue = async (context: AuthContext, ingestion: BasicStoreEntityIngestionTaxii
+| BasicStoreEntityIngestionRss | BasicStoreEntityIngestionCsv, bundle: StixBundle) => {
+  // Push the bundle to absorption queue
+  const connector = { internal_id: connectorIdFromIngestId(ingestion.id), connector_type: ConnectorType.ExternalImport };
+  const workName = `run @ ${now()}`;
+  const work: any = await createWork(context, SYSTEM_USER, connector, workName, connector.internal_id, { receivedTime: now() });
+  const stixBundle = JSON.stringify(bundle);
+  const content = Buffer.from(stixBundle, 'utf-8').toString('base64');
+  await updateExpectationsNumber(context, SYSTEM_USER, work.id, bundle.objects.length);
+  await pushToWorkerForConnector(connector.internal_id, {
+    type: 'bundle',
+    applicant_id: ingestion.user_id ?? OPENCTI_SYSTEM_UUID,
+    content,
+    work_id: work.id,
+    update: true
+  });
 };
 // endregion
 
@@ -147,6 +188,7 @@ const rssDataHandler = async (context: AuthContext, httpRssGet: Getter, turndown
   const data = await httpRssGet(ingestion.uri);
   const items = await rssDataParser(turndownService, data, ingestion.current_state_date);
   // Build Stix bundle from items
+  let lastPubDate;
   if (items.length > 0) {
     logApp.info(`[OPENCTI-MODULE] Rss ingestion execution for ${items.length} items`);
     const reports = items.map((item) => {
@@ -170,14 +212,16 @@ const rssDataHandler = async (context: AuthContext, httpRssGet: Getter, turndown
       }
       return report;
     });
-    const bundle = { type: 'bundle', id: `bundle--${uuidv4()}`, objects: reports };
+    const bundle: StixBundle = { type: 'bundle', spec_version: '2.1', id: `bundle--${uuidv4()}`, objects: reports };
     // Push the bundle to absorption queue
-    const stixBundle = JSON.stringify(bundle);
-    const content = Buffer.from(stixBundle, 'utf-8').toString('base64');
-    await pushToWorkerForSync({ type: 'bundle', applicant_id: ingestion.user_id ?? OPENCTI_SYSTEM_UUID, content, update: true });
+    await pushBundleToConnectorQueue(context, ingestion, bundle);
     // Update the state
-    const lastPubDate = R.last(items)?.pubDate;
+    lastPubDate = R.last(items)?.pubDate;
     await patchRssIngestion(context, SYSTEM_USER, ingestion.internal_id, { current_state_date: lastPubDate });
+    // Patch the related connector
+    await updateBuiltInConnectorInfo(context, ingestion.user_id, ingestion.id, {
+      current_state_date: lastPubDate
+    });
   }
 };
 
@@ -206,7 +250,7 @@ const rssExecutor = async (context: AuthContext, turndownService: TurndownServic
 
 // region Taxii ingestion
 export interface TaxiiResponseData {
-  data: { more: boolean | undefined, next: string | undefined, objects: object[] },
+  data: { more: boolean | undefined, next: string | undefined, objects: StixObject[] },
   addedLastHeader: string | undefined | null
 }
 
@@ -272,42 +316,39 @@ export const processTaxiiResponse = async (context: AuthContext, ingestion: Basi
   const { data, addedLastHeader } = taxiResponse;
   if (data.objects && data.objects.length > 0) {
     logApp.info(`[OPENCTI-MODULE] Taxii ingestion execution for ${data.objects.length} items, sending stix bundle to workers.`, { ingestionId: ingestion.id });
-
-    const bundle = { type: 'bundle', id: `bundle--${uuidv4()}`, objects: taxiResponse.data.objects };
+    const bundle: StixBundle = { type: 'bundle', spec_version: '2.1', id: `bundle--${uuidv4()}`, objects: taxiResponse.data.objects };
     // Push the bundle to absorption queue
-    const stixBundle = JSON.stringify(bundle);
-    const content = Buffer.from(stixBundle, 'utf-8').toString('base64');
-    await pushToWorkerForSync({
-      type: 'bundle',
-      applicant_id: ingestion.user_id ?? OPENCTI_SYSTEM_UUID,
-      content,
-      update: true
-    });
+    await pushBundleToConnectorQueue(context, ingestion, bundle);
     const more = data.more || false;
     // Update the state
     if (more && data.next) {
       // Do not touch to added_after_start
-      await patchTaxiiIngestion(context, SYSTEM_USER, ingestion.internal_id, {
-        current_state_cursor: data.next,
-        taxii_more: more,
-        last_execution_date: now()
-      });
+      const state = { current_state_cursor: data.next, taxii_more: more, last_execution_date: now() };
+      await patchTaxiiIngestion(context, SYSTEM_USER, ingestion.internal_id, state);
+      await updateBuiltInConnectorInfo(context, ingestion.user_id, ingestion.id, state);
     } else {
       // Reset the pagination cursor, and update date
-      await patchTaxiiIngestion(context, SYSTEM_USER, ingestion.internal_id, {
+      const state = {
         current_state_cursor: undefined,
         taxii_more: more,
         added_after_start: addedLastHeader ? utcDate(addedLastHeader) : utcDate(),
         last_execution_date: now()
-      });
+      };
+      await patchTaxiiIngestion(context, SYSTEM_USER, ingestion.internal_id, state);
+      await updateBuiltInConnectorInfo(context, ingestion.user_id, ingestion.id, state);
     }
   } else {
     // Update the last run
-    await patchTaxiiIngestion(context, SYSTEM_USER, ingestion.internal_id, {
-      last_execution_date: now(),
-      current_state_cursor: undefined, // no data = pagination is ended, reset the cursor.
+    const state = { last_execution_date: now(), current_state_cursor: undefined };
+    await patchTaxiiIngestion(context, SYSTEM_USER, ingestion.internal_id, state);
+    await updateBuiltInConnectorInfo(context, ingestion.user_id, ingestion.id, state);
+    logApp.info('[OPENCTI-MODULE] Taxii ingestion - taxii server has not sent any object.', {
+      next: data.next,
+      more: data.more,
+      addedLastHeader,
+      ingestionId: ingestion.id,
+      ingestionName: ingestion.name
     });
-    logApp.info('[OPENCTI-MODULE] Taxii ingestion - taxii server has not sent any object.', { next: data.next, more: data.more, addedLastHeader, ingestionId: ingestion.id, ingestionName: ingestion.name });
   }
 };
 
@@ -376,33 +417,20 @@ const csvDataHandler = async (context: AuthContext, ingestion: BasicStoreEntityI
     throw e;
   }
 
+  const hashedIncomingData = hashSHA256(data.toString());
   const isUnchangedData = compareHashSHA256(data.toString(), ingestion.current_state_hash ?? '');
   if (isUnchangedData) {
     logApp.info(`[OPENCTI-MODULE] INGESTION - Unchanged data for csv ingest: ${ingestion.name}`);
-    return;
+  } else {
+    const objects = await csvDataToObjects(data, ingestion, csvMapperParsed, context);
+    const bundle: StixBundle = { type: 'bundle', spec_version: '2.1', id: `bundle--${uuidv4()}`, objects };
+    // Push the bundle to absorption queue
+    await pushBundleToConnectorQueue(context, ingestion, bundle);
+    // Update the state
+    const state = { current_state_hash: hashedIncomingData, added_after_start: utcDate(addedLast) };
+    await patchCsvIngestion(context, SYSTEM_USER, ingestion.internal_id, state);
+    await updateBuiltInConnectorInfo(context, ingestion.user_id, ingestion.id, state);
   }
-
-  const objects = await csvDataToObjects(data, ingestion, csvMapperParsed, context);
-  const bundleSize = 1000;
-  for (let index = 0; index < objects.length; index += bundleSize) {
-    // Filter objects already added to queue
-    const splitBundle = objects.slice(index, index + bundleSize);
-    const bundle = { type: 'bundle', id: `bundle--${uuidv4()}`, objects: splitBundle };
-    const stixBundle = JSON.stringify(bundle);
-    const content = Buffer.from(stixBundle, 'utf-8').toString('base64');
-    const friendlyName = 'CSV feed Ingestion';
-    const work = await createWork(context, user, IMPORT_CSV_CONNECTOR, friendlyName, IMPORT_CSV_CONNECTOR.id) as unknown as Work;
-    await updateExpectationsNumber(context, user, work.id, 1);
-    logApp.info(`[OPENCTI-MODULE] INGESTION - New work pushed for csv ingest: ${ingestion.name}`);
-    await pushToWorkerForSync({ type: 'bundle', applicant_id: ingestion.user_id ?? OPENCTI_SYSTEM_UUID, work_id: work.id, content, update: true });
-  }
-
-  // Update the state
-  const hashedIncomingData = hashSHA256(data.toString());
-  await patchCsvIngestion(context, SYSTEM_USER, ingestion.internal_id, {
-    current_state_hash: hashedIncomingData,
-    added_after_start: utcDate(addedLast),
-  });
 };
 
 const csvExecutor = async (context: AuthContext) => {
@@ -428,7 +456,7 @@ const csvExecutor = async (context: AuthContext) => {
 // endregion
 
 const ingestionHandler = async () => {
-  logApp.info('[OPENCTI-MODULE] INGESTION - Running ingestion handlers');
+  logApp.debug('[OPENCTI-MODULE] INGESTION - Running ingestion handlers');
   let lock;
   try {
     // Lock the manager

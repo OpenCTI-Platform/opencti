@@ -8,7 +8,7 @@ const IngestionMenu = () => {
   const settingsEntries: MenuEntry[] = [
     {
       path: '/dashboard/data/ingestion/sync',
-      label: 'Remote OCTI Streams',
+      label: 'OpenCTI Streams',
     },
     {
       path: '/dashboard/data/ingestion/taxii',

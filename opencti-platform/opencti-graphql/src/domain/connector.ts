@@ -1,3 +1,4 @@
+import { v5 as uuidv5 } from 'uuid';
 import { createEntity, deleteElementById, internalDeleteElementById, patchAttribute, updateAttribute } from '../database/middleware';
 import { type GetHttpClient, getHttpClient } from '../utils/http-client';
 import { completeConnector, connector, connectors, connectorsFor } from '../database/repository';
@@ -9,14 +10,22 @@ import { isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
 import { now } from '../utils/format';
 import { elLoadById } from '../database/engine';
 import { INTERNAL_SYNC_QUEUE, isEmptyField, READ_INDEX_HISTORY } from '../database/utils';
-import { ABSTRACT_INTERNAL_OBJECT, CONNECTOR_INTERNAL_EXPORT_FILE } from '../schema/general';
+import { ABSTRACT_INTERNAL_OBJECT, CONNECTOR_INTERNAL_EXPORT_FILE, OPENCTI_NAMESPACE } from '../schema/general';
 import { isUserHasCapability, SETTINGS_SET_ACCESSES, SYSTEM_USER } from '../utils/access';
 import { delEditContext, notify, redisGetWork, setEditContext } from '../database/redis';
 import { listEntities, storeLoadById } from '../database/middleware-loader';
 import { publishUserAction } from '../listener/UserActionListener';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { BasicStoreEntityConnector, ConnectorInfo } from '../types/connector';
-import type { EditInput, RegisterConnectorInput, SynchronizerAddInput, SynchronizerFetchInput, EditContext, MutationSynchronizerTestArgs } from '../generated/graphql';
+import {
+  type EditInput,
+  type RegisterConnectorInput,
+  type SynchronizerAddInput,
+  type SynchronizerFetchInput,
+  type EditContext,
+  type MutationSynchronizerTestArgs,
+  ConnectorType
+} from '../generated/graphql';
 import { BUS_TOPICS } from '../config/conf';
 import { deleteWorkForConnector } from './work';
 import { testSync as testSyncUtils } from './connector-utils';
@@ -99,7 +108,12 @@ export const resetStateConnector = async (context: AuthContext, user: AuthUser, 
   await purgeConnectorQueues(element);
   return storeLoadById(context, user, id, ENTITY_TYPE_CONNECTOR).then((data) => completeConnector(data));
 };
-export const registerConnector = async (context: AuthContext, user:AuthUser, connectorData:RegisterConnectorInput) => {
+interface RegisterOptions {
+  built_in?: boolean
+  active?: boolean
+  connector_user_id?: string | null
+}
+export const registerConnector = async (context: AuthContext, user:AuthUser, connectorData:RegisterConnectorInput, opts: RegisterOptions = {}) => {
   // eslint-disable-next-line camelcase
   const { id, name, type, scope, auto = null, only_contextual = null, playbook_compatible = false } = connectorData;
   const conn = await storeLoadById(context, user, id, ENTITY_TYPE_CONNECTOR);
@@ -107,23 +121,27 @@ export const registerConnector = async (context: AuthContext, user:AuthUser, con
   await registerConnectorQueues(id, name, type, scope);
   if (conn) {
     // Simple connector update
-    const patch = {
+    const patch: any = {
       name,
       updated_at: now(),
-      connector_user_id: user.id,
-      connector_scope: scope && scope.length > 0 ? scope.join(',') : null,
       connector_type: type,
+      connector_scope: scope && scope.length > 0 ? scope.join(',') : null,
       auto,
       only_contextual,
-      playbook_compatible
+      playbook_compatible,
+      connector_user_id: opts.connector_user_id ?? user.id,
+      built_in: opts.built_in ?? false
     };
+    if (opts.active !== undefined) {
+      patch.active = opts.active;
+    }
     const { element } = await patchAttribute(context, user, id, ENTITY_TYPE_CONNECTOR, patch);
     // Notify configuration change for caching system
     await notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, element, user);
     return storeLoadById(context, user, id, ENTITY_TYPE_CONNECTOR).then((data) => completeConnector(data));
   }
   // Need to create the connector
-  const connectorToCreate = {
+  const connectorToCreate: any = {
     internal_id: id,
     name,
     connector_type: type,
@@ -131,8 +149,12 @@ export const registerConnector = async (context: AuthContext, user:AuthUser, con
     auto,
     only_contextual,
     playbook_compatible,
-    connector_user_id: user.id,
+    connector_user_id: opts.connector_user_id ?? user.id,
+    built_in: opts.built_in ?? false,
   };
+  if (opts.active !== undefined) {
+    connectorToCreate.active = opts.active;
+  }
   const createdConnector = await createEntity(context, user, connectorToCreate, ENTITY_TYPE_CONNECTOR);
   await publishUserAction({
     user,
@@ -201,7 +223,36 @@ export const connectorTriggerUpdate = async (context: AuthContext, user: AuthUse
 // endregion
 
 // region syncs
-export const patchSync = async (context: AuthContext, user: AuthUser, id: string, patch: { runnning: boolean }) => {
+interface ConnectorIngestionInput {
+  id: string,
+  type: 'RSS' | 'CSV' | 'TAXII',
+  name: string,
+  connector_user_id?: string | null,
+  is_running: boolean
+}
+export const connectorIdFromIngestId = (id: string) => uuidv5(id, OPENCTI_NAMESPACE);
+export const registerConnectorForIngestion = async (context: AuthContext, input: ConnectorIngestionInput) => {
+  // Create the representing connector
+  await registerConnector(context, SYSTEM_USER, {
+    id: connectorIdFromIngestId(input.id),
+    name: `[FEED - ${input.type}] ${input.name}`,
+    type: ConnectorType.ExternalImport,
+    auto: true,
+    scope: ['application/stix+json;version=2.1'],
+    only_contextual: false,
+    playbook_compatible: false
+  }, {
+    built_in: true,
+    active: input.is_running,
+    connector_user_id: input.connector_user_id
+  });
+};
+export const unregisterConnectorForIngestion = async (context: AuthContext, id: string) => {
+  const connectorId = connectorIdFromIngestId(id);
+  await connectorDelete(context, SYSTEM_USER, connectorId);
+};
+
+export const patchSync = async (context: AuthContext, user: AuthUser, id: string, patch: { running: boolean }) => {
   const patched = await patchAttribute(context, user, id, ENTITY_TYPE_SYNC, patch);
   return patched.element;
 };
