@@ -10,6 +10,8 @@ import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import StixCoreObjectSimulationResult from '@components/common/stix_core_objects/StixCoreObjectSimulationResult';
 import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
+import Security from 'src/utils/Security';
+import { KNOWLEDGE_KNUPDATE } from 'src/utils/hooks/useGranted';
 import Incident from './Incident';
 import IncidentKnowledge from './IncidentKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
@@ -26,6 +28,7 @@ import { RootIncidentSubscription } from './__generated__/RootIncidentSubscripti
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { getCurrentTab } from '../../../../utils/utils';
+import IncidentEdition from './IncidentEdition';
 
 const subscription = graphql`
   subscription RootIncidentSubscription($id: ID!) {
@@ -133,6 +136,11 @@ const RootIncidentComponent = ({ queryRef }) => {
               entityType="Incident"
               stixDomainObject={incident}
               PopoverComponent={IncidentPopover}
+              EditComponent={(
+                <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                  <IncidentEdition incidentId={incident.id} />
+                </Security>
+              )}
               enableQuickSubscription={true}
             />
             <Box

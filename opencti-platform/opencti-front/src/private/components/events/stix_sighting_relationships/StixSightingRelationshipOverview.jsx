@@ -211,6 +211,7 @@ class StixSightingRelationshipContainer extends Component {
       classes,
       stixSightingRelationship,
       paddingRight,
+      isFABReplaced = false,
     } = this.props;
     const { from } = stixSightingRelationship;
     const { to } = stixSightingRelationship;
@@ -584,25 +585,27 @@ class StixSightingRelationshipContainer extends Component {
             </>
           )}
         </Grid>
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <Fab
-            onClick={this.handleOpenEdition.bind(this)}
-            color="secondary"
-            aria-label="Edit"
-            className={
-              paddingRight ? classes.editButtonWithPadding : classes.editButton
-            }
-          >
-            <Edit />
-          </Fab>
-          <StixSightingRelationshipEdition
-            open={this.state.openEdit}
-            stixSightingRelationshipId={stixSightingRelationship.id}
-            inferred={stixSightingRelationship.x_opencti_inferences !== null}
-            handleClose={this.handleCloseEdition.bind(this)}
-            handleDelete={this.handleOpenDelete.bind(this)}
-          />
-        </Security>
+        {!isFABReplaced && (
+          <Security needs={[KNOWLEDGE_KNUPDATE]}>
+            <Fab
+              onClick={this.handleOpenEdition.bind(this)}
+              color="secondary"
+              aria-label="Edit"
+              className={
+                paddingRight ? classes.editButtonWithPadding : classes.editButton
+              }
+            >
+              <Edit />
+            </Fab>
+            <StixSightingRelationshipEdition
+              open={this.state.openEdit}
+              stixSightingRelationshipId={stixSightingRelationship.id}
+              inferred={stixSightingRelationship.x_opencti_inferences !== null}
+              handleClose={this.handleCloseEdition.bind(this)}
+              handleDelete={this.handleOpenDelete.bind(this)}
+            />
+          </Security>
+        )}
         <Dialog
           open={this.state.displayDelete}
           PaperProps={{ elevation: 1 }}
@@ -637,13 +640,11 @@ class StixSightingRelationshipContainer extends Component {
 }
 
 StixSightingRelationshipContainer.propTypes = {
-  entityId: PropTypes.string,
   stixSightingRelationship: PropTypes.object,
   paddingRight: PropTypes.bool,
   classes: PropTypes.object,
   t: PropTypes.func,
   nsdt: PropTypes.func,
-  match: PropTypes.object,
   navigate: PropTypes.func,
   location: PropTypes.object,
 };

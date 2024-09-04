@@ -5,6 +5,7 @@ import ObservedDataEditionContainer from './ObservedDataEditionContainer';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import { observedDataEditionOverviewFocus } from './ObservedDataEditionOverview';
 import Loader from '../../../../components/Loader';
+import EditEntityControlledDial from '../../../../components/EditEntityControlledDial';
 
 export const observedDataEditionQuery = graphql`
   query ObservedDataEditionContainerQuery($id: String!) {
@@ -37,6 +38,7 @@ class ObservedDataEdition extends Component {
               <ObservedDataEditionContainer
                 observedData={props.observedData}
                 handleClose={this.handleClose.bind(this)}
+                controlledDial={EditEntityControlledDial}
               />
             );
           }

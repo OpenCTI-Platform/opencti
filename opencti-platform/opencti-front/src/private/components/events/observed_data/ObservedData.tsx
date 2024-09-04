@@ -13,6 +13,7 @@ import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCore
 import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../common/stix_core_relationships/SimpleStixObjectOrStixRelationshipStixCoreRelationships';
 import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
 import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 export const observedDataFragment = graphql`
   fragment ObservedData_observedData on ObservedData {
@@ -72,6 +73,8 @@ interface ObservedDataProps {
 const ObservedData: React.FC<ObservedDataProps> = ({ observedDataData }) => {
   const observedData = useFragment <ObservedData_observedData$key>(observedDataFragment, observedDataData);
   const overviewLayoutCustomization = useOverviewLayoutCustomization(observedData.entity_type);
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   return (
     <>
@@ -143,9 +146,11 @@ const ObservedData: React.FC<ObservedDataProps> = ({ observedDataData }) => {
           })
         }
       </Grid>
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
-        <ObservedDataEdition observedDataId={observedData.id} />
-      </Security>
+      {!isFABReplaced && (
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <ObservedDataEdition observedDataId={observedData.id} />
+        </Security>
+      )}
     </>
   );
 };

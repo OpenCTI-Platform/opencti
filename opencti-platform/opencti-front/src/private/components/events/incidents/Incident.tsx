@@ -1,6 +1,7 @@
 import React from 'react';
 import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
+import useHelper from 'src/utils/hooks/useHelper';
 import IncidentDetails from './IncidentDetails';
 import IncidentEdition from './IncidentEdition';
 import Security from '../../../../utils/Security';
@@ -86,6 +87,8 @@ const Incident: React.FC<IncidentProps> = ({ incidentData }) => {
     incidentData,
   );
   const overviewLayoutCustomization = useOverviewLayoutCustomization(incident.entity_type);
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   return (
     <>
@@ -161,9 +164,11 @@ const Incident: React.FC<IncidentProps> = ({ incidentData }) => {
           })
         }
       </Grid>
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
-        <IncidentEdition incidentId={incident.id} />
-      </Security>
+      {!isFABReplaced && (
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <IncidentEdition incidentId={incident.id} />
+        </Security>
+      )}
     </>
   );
 };
