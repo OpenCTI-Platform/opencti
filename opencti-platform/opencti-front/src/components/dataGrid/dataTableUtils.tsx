@@ -860,6 +860,42 @@ const defaultColumns: DataTableProps['dataColumns'] = {
       />
     ),
   },
+  file_name: {
+    id: 'file_name',
+    label: 'File name',
+    percentWidth: 12,
+    isSortable: false,
+    render: (data, { column: { size } }) => {
+      const file = (data.importFiles?.edges && data.importFiles.edges.length > 0)
+        ? data.importFiles.edges[0]?.node
+        : { name: 'N/A', metaData: { mimetype: 'N/A' }, size: 0 };
+      return (<Tooltip title={file?.name}><>{truncate(file?.name, size * MAGICAL_SIZE)}</></Tooltip>);
+    },
+  },
+  file_mime_type: {
+    id: 'file_mime_type',
+    label: 'Mime/Type',
+    percentWidth: 8,
+    isSortable: false,
+    render: (data, { column: { size } }) => {
+      const file = (data.importFiles?.edges && data.importFiles.edges.length > 0)
+        ? data.importFiles.edges[0]?.node
+        : { name: 'N/A', metaData: { mimetype: 'N/A' }, size: 0 };
+      return (<Tooltip title={file?.metaData?.mimetype}><>{truncate(file?.metaData?.mimetype, size * MAGICAL_SIZE)}</></Tooltip>);
+    },
+  },
+  file_size: {
+    id: 'file_size',
+    label: 'File size',
+    percentWidth: 8,
+    isSortable: false,
+    render: (data, { b }) => {
+      const file = (data.importFiles?.edges && data.importFiles.edges.length > 0)
+        ? data.importFiles.edges[0]?.node
+        : { name: 'N/A', metaData: { mimetype: 'N/A' }, size: 0 };
+      return (<Tooltip title={file?.metaData?.mimetype}><>{b(file?.size)}</></Tooltip>);
+    },
+  },
 };
 
 export const defaultColumnsMap = new Map<string, Partial<DataTableColumn>>(Object.entries(defaultColumns));
