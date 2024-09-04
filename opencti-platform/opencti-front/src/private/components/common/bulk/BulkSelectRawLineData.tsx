@@ -21,6 +21,13 @@ interface BulkSelectRawLineDataProps {
   selectedRelationType: string;
 }
 
+type autocompleteOptionsType = {
+  label: string;
+  value: RelationsToEntity,
+  groupLabel: string;
+  groupOrder: number;
+};
+
 const BulkSelectRawLineData : FunctionComponent<BulkSelectRawLineDataProps> = ({
   entity,
   entityIndex,
@@ -57,7 +64,7 @@ const BulkSelectRawLineData : FunctionComponent<BulkSelectRawLineDataProps> = ({
 
   const getAutocompleteOptions = () => {
     const possibleEntityTypes = entity.entityTypeList?.map((item) => item.entity_type) ?? [];
-    return entityList.reduce((acc, cur) => {
+    return entityList.reduce((acc: autocompleteOptionsType[], cur) => {
       if (!acc.find((item) => item.label === t_i18n(`entity_${cur.toEntitytype}`))) {
         const isSuggestion = possibleEntityTypes.includes(cur.toEntitytype);
         return [...acc, {
