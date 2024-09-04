@@ -40,6 +40,7 @@ SPEC_VERSION = "2.1"
 ERROR_TYPE_LOCK = "LOCK_ERROR"
 ERROR_TYPE_MISSING_REFERENCE = "MISSING_REFERENCE_ERROR"
 ERROR_TYPE_BAD_GATEWAY = "Bad Gateway"
+ERROR_TYPE_TIMEOUT = "Request timed out"
 
 # Extensions
 STIX_EXT_OCTI = "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba"
@@ -63,6 +64,10 @@ bundles_missing_reference_error_counter = meter.create_counter(
 bundles_bad_gateway_error_counter = meter.create_counter(
     name="opencti_bundles_bad_gateway_error_counter",
     description="number of bundles in bad gateway error",
+)
+bundles_timed_out_error_counter = meter.create_counter(
+    name="opencti_bundles_timed_out_error_counter",
+    description="number of bundles in timed out error",
 )
 bundles_technical_error_counter = meter.create_counter(
     name="opencti_bundles_technical_error_counter",
@@ -2591,6 +2596,18 @@ class OpenCTIStix2:
                     {"count": processing_count},
                 )
                 bundles_bad_gateway_error_counter.add(1)
+                time.sleep(60)
+                return self.import_item(
+                    item, update, types, processing_count + 1, work_id
+                )
+            # Request timeout error occurs
+            elif ERROR_TYPE_TIMEOUT in error_msg:
+                worker_logger.error("A connection error occurred")
+                worker_logger.info(
+                    "Message reprocess for request timed out",
+                    {"count": processing_count},
+                )
+                bundles_timed_out_error_counter.add(1)
                 time.sleep(60)
                 return self.import_item(
                     item, update, types, processing_count + 1, work_id
