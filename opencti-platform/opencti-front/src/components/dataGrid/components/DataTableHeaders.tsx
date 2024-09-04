@@ -83,7 +83,7 @@ const DataTableHeaders: FunctionComponent<DataTableHeadersProps> = ({
           data-testid="dataTableCheckAll"
           style={{
             width: 'calc(var(--header-select-size) * 1px)',
-            background: (Object.keys(selectedElements).length > 0 || selectAll) ? theme.palette.background.accent : 'unset',
+            background: (Object.keys(selectedElements).length > 0 || selectAll) && !disableSelectAll ? theme.palette.background.accent : 'unset',
           }}
         >
           <Checkbox
