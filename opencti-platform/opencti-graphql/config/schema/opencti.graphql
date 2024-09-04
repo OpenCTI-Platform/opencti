@@ -13949,7 +13949,7 @@ type Mutation {
   otpActivation(input: UserOTPActivationInput): MeUser @auth
   otpDeactivation: MeUser @auth
   otpUserDeactivation(id: ID!): MeUser @auth(for: [SETTINGS_SETACCESSES])
-  otpLogin(input: UserOTPLoginInput): Boolean @auth
+  otpLogin(input: UserOTPLoginInput): Boolean @auth @rateLimit(limit: 1, duration: 1)
   settingsEdit(id: ID!): SettingsEditMutations @auth
   subTypeEdit(id: ID!): SubTypeEditMutations @auth(for: [SETTINGS_SETCUSTOMIZATION])
   statusTemplateAdd(input: StatusTemplateAddInput!): StatusTemplate! @auth(for: [SETTINGS_SETLABELS])

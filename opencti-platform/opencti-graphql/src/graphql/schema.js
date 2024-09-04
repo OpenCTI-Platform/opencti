@@ -6,6 +6,7 @@ import { constraintDirectiveTypeDefs } from 'graphql-constraint-directive';
 import { validate as uuidValidate } from 'uuid';
 import GraphQLUpload from 'graphql-upload/GraphQLUpload.mjs';
 import { mergeResolvers } from '@graphql-tools/merge';
+import { rateLimitDirective } from 'graphql-rate-limit-directive';
 import settingsResolvers from '../resolvers/settings';
 import logResolvers from '../resolvers/log';
 import attributeResolvers from '../resolvers/attribute';
@@ -263,6 +264,10 @@ export const registerGraphqlSchema = ({ schema, resolver }) => {
   schemaResolvers.push(resolver);
 };
 
+// enabling rate-limit on specific queries with directive @rateLimit
+const { rateLimitDirectiveTypeDefs, rateLimitDirectiveTransformer } = rateLimitDirective();
+schemaTypeDefs.push(rateLimitDirectiveTypeDefs);
+
 const createSchema = () => {
   const resolvers = mergeResolvers(schemaResolvers);
   const { authDirectiveTransformer } = authDirectiveBuilder('auth');
@@ -271,7 +276,7 @@ const createSchema = () => {
     resolvers,
     inheritResolversFromInterfaces: true,
   });
-  schema = authDirectiveTransformer(schema);
+  schema = rateLimitDirectiveTransformer(authDirectiveTransformer(schema));
   return schema;
 };
 
