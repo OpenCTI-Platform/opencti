@@ -179,7 +179,7 @@ const ImportFilesContent = () => {
         mode: 'or',
       },
       {
-        key: 'entity_id',
+        key: 'metaData.entity_id',
         values: [],
         operator: 'nil',
       },
@@ -238,7 +238,7 @@ const ImportFilesContent = () => {
               render: ({ lastModified }, { fd }) => fd(lastModified),
             },
           }}
-          resolvePath={(data: ImportFilesContentLines_data$data) => data.importFiles?.edges?.map(({ node }) => node)}
+          resolvePath={(data: ImportFilesContentLines_data$data) => data.importFiles.edges.map(({ node }) => node)}
           storageKey={LOCAL_STORAGE_KEY}
           entityTypes={['InternalFile']}
           searchContextFinal={{ entityTypes: ['InternalFile'] }}

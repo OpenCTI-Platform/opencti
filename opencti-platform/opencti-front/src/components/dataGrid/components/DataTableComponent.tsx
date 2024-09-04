@@ -44,6 +44,7 @@ const DataTableComponent = ({
   disableToolBar,
   disableSelectAll,
   onLineClick,
+  extraFields,
 }: DataTableProps) => {
   const localStorageColumns = useDataTableLocalStorage<LocalStorageColumns>(`${storageKey}_columns`, {}, true)[0];
   const toggleHelper = useDataTableToggle(storageKey);
@@ -124,7 +125,8 @@ const DataTableComponent = ({
       } as DataTableContextProps}
     >
       <div ref={dataTableHeaderRef}>
-        {filtersComponent ?? (variant === DataTableVariant.inline && (
+        {extraFields}
+      {filtersComponent ?? (variant === DataTableVariant.inline && (
           <div
             style={{
               width: '100%',

@@ -127,6 +127,7 @@ export interface DataTableProps {
   disableToolBar?: boolean
   disableSelectAll?: boolean
   onLineClick?: (line: any) => void
+  extraFields?: ReactNode
 }
 
 export interface DataTableBodyProps {

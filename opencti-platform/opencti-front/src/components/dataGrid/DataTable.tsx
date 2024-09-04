@@ -76,6 +76,7 @@ const DataTable = (props: OCTIDataTableProps) => {
     currentView,
     hideFilters,
     taskScope,
+    extraFields,
   } = props;
 
   const {
@@ -135,6 +136,7 @@ const DataTable = (props: OCTIDataTableProps) => {
       sortBy={sortBy}
       orderAsc={orderAsc}
       pageSize={pageSize}
+      extraFields={extraFields}
       filtersComponent={(
         <>
           <div

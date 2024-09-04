@@ -13,13 +13,15 @@ import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import { ImportWorkbenchesContentFileLine_file$data } from '@components/data/import/__generated__/ImportWorkbenchesContentFileLine_file.graphql';
 import { ImportWorkbenchesContentLines_data$data } from '@components/data/import/__generated__/ImportWorkbenchesContentLines_data.graphql';
+import Checkbox from '@mui/material/Checkbox';
+import FormControlLabel from '@mui/material/FormControlLabel';
 import Transition from '../../../../components/Transition';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { useFormatter } from '../../../../components/i18n';
 import { APP_BASE_PATH } from '../../../../relay/environment';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import { emptyFilterGroup, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
+import { addFilter, emptyFilterGroup, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import DataTable from '../../../../components/dataGrid/DataTable';
 import { UsePreloadedPaginationFragment } from '../../../../utils/hooks/usePreloadedPaginationFragment';
@@ -123,6 +125,7 @@ const LOCAL_STORAGE_KEY = 'importWorkbenches';
 const ImportWorkbenchesContent = () => {
   const { t_i18n } = useFormatter();
   const [displayDelete, setDisplayDelete] = useState<string>('');
+  const [onlyGlobalFiles, setOnlyGlobalFiles] = useState(false);
 
   const initialValues = {
     filters: emptyFilterGroup,
@@ -132,7 +135,10 @@ const ImportWorkbenchesContent = () => {
   };
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<ImportWorkbenchesContentQuery$variables>(LOCAL_STORAGE_KEY, initialValues);
   const { filters } = viewStorage;
-  const finalFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, ['InternalFile']);
+  const finalFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(
+    onlyGlobalFiles ? addFilter(filters, 'metaData.entity_id', [], 'nil') : filters,
+    ['InternalFile'],
+  );
   const queryPaginationOptions = {
     ...paginationOptions,
     filters: finalFilters,
@@ -148,11 +154,6 @@ const ImportWorkbenchesContent = () => {
         values: ['InternalFile'],
         operator: 'eq',
         mode: 'or',
-      },
-      {
-        key: 'entity_id',
-        values: [],
-        operator: 'nil',
       },
       {
         key: 'file_id',
@@ -191,6 +192,23 @@ const ImportWorkbenchesContent = () => {
     });
   };
 
+  const globalFilesField = (
+    <div style={{ marginLeft: 10 }}>
+      <FormControlLabel
+        value="start"
+        control={
+          <Checkbox
+            style={{ padding: 7 }}
+            onChange={() => setOnlyGlobalFiles(!onlyGlobalFiles)}
+            checked={onlyGlobalFiles}
+          />
+        }
+        label={t_i18n('Display only global files')}
+        labelPlacement="end"
+      />
+    </div>
+  );
+
   return (
     <div style={{ height: '100%', paddingRight: 200 }} className="break">
       <Breadcrumbs variant="list" elements={[{ label: t_i18n('Data') }, { label: t_i18n('Analyst workbenches'), current: true }]} />
@@ -218,7 +236,6 @@ const ImportWorkbenchesContent = () => {
           </Button>
         </DialogActions>
       </Dialog>
-      <div>---------TEST---------</div>
       {queryRef && (
         <DataTable
           dataColumns={{
@@ -250,7 +267,7 @@ const ImportWorkbenchesContent = () => {
               render: ({ lastModified }, { fd }) => fd(lastModified),
             },
           }}
-          resolvePath={(data: ImportWorkbenchesContentLines_data$data) => data.allPendingFiles?.edges?.map(({ node }) => node)}
+          resolvePath={(data: ImportWorkbenchesContentLines_data$data) => data.allPendingFiles.edges.map(({ node }) => node)}
           storageKey={LOCAL_STORAGE_KEY}
           entityTypes={['InternalFile']}
           searchContextFinal={{ entityTypes: ['InternalFile'] }}
@@ -259,6 +276,7 @@ const ImportWorkbenchesContent = () => {
           initialValues={initialValues}
           preloadedPaginationProps={preloadedPaginationProps}
           taskScope='IMPORT'
+          extraFields={globalFilesField}
           actions={(file: ImportWorkbenchesContentFileLine_file$data) => {
             const { id, metaData, uploadStatus } = file;
             const isProgress = uploadStatus === 'progress' || uploadStatus === 'wait';
