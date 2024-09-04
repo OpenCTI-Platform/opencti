@@ -10,7 +10,7 @@ import type { AuthContext, AuthUser } from '../../../types/user';
 import { type DomainFindById } from '../../../domain/domainTypes';
 import type { BasicStoreEntityDocument } from './document-types';
 import type { BasicStoreCommon, BasicStoreObject } from '../../../types/store';
-import { type File, FilterMode, FilterOperator, OrderingMode, QueryAllPendingFilesArgs } from '../../../generated/graphql';
+import { type File, FilterMode, FilterOperator, OrderingMode, type QueryAllPendingFilesArgs } from '../../../generated/graphql';
 import { loadExportWorksAsProgressFiles } from '../../../domain/work';
 import { elSearchFiles } from '../../../database/file-search';
 import { SYSTEM_USER } from '../../../utils/access';
