@@ -13,9 +13,15 @@ export default class TaskPopup {
     await this.page.getByLabel('Values').click();
 
     // Need to wait the request that fetch labels (in background task popup) - but only on the first call...
-    if (firstTime) {
+    try {
       await this.page.waitForResponse((resp) => resp.url().includes('/graphql') && resp.status() === 200);
+    } catch (e) {
+      // We don't care, sometimes label requires loading, sometimes no....
     }
+
+    // Redo select label to make resilient above try catch.
+    await this.page.getByRole('heading', { name: 'Update entities' }).click();
+    await this.page.getByLabel('Values').click();
 
     await this.page.getByText(labelName).click();
     await this.page.getByRole('button', { name: 'Update' }).click();
