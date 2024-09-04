@@ -2983,6 +2983,7 @@
   "You are not allowed to do this.": "この操作を行う権限がありません。",
   "You are not authorized to see this data.": "このデータを見る権限がありません。",
   "You are trying to check the security posture of your organization against this threat intelligence set of knowledge using the OpenBAS platform.": "あなたは、OpenBASプラットフォームを使用して、この脅威インテリジェンスセットの知識に対して組織のセキュリティ態勢をチェックしようとしています。",
+  "You can configure your platform to consume OpenCTI Streams. A list of public and commercial native feeds is available in the": "OpenCTIストリームを消費するようにプラットフォームを設定することができます。公開および商用ネイティブフィードのリストは",
   "You can enable/disable default values for marking in the customization of each entity type.": "各エンティティ・タイプのカスタマイズで、マーキングのデフォルト値の有効/無効を設定できます。",
   "You do not have any access to the knowledge of this OpenCTI instance.": "このOpenCTIインスタンスのナレッジデータにアクセスする権限がありません。",
   "You have more than 50 values": "50以上の値があります",

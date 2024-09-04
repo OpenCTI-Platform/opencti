@@ -2983,6 +2983,7 @@
   "You are not allowed to do this.": "Du bist nicht berechtigt, dies zu tun.",
   "You are not authorized to see this data.": "Sie sind nicht berechtigt, diese Daten zu sehen.",
   "You are trying to check the security posture of your organization against this threat intelligence set of knowledge using the OpenBAS platform.": "Sie versuchen, die Sicherheitslage Ihres Unternehmens mit Hilfe der OpenBAS-Plattform anhand dieses Wissens über Bedrohungen zu überprüfen.",
+  "You can configure your platform to consume OpenCTI Streams. A list of public and commercial native feeds is available in the": "Sie können Ihre Plattform so konfigurieren, dass sie OpenCTI-Streams konsumieren kann. Eine Liste öffentlicher und kommerzieller nativer Feeds finden Sie in der",
   "You can enable/disable default values for marking in the customization of each entity type.": "Sie können in der Anpassung jedes Entitätstyps Standardwerte für die Markierung aktivieren/deaktivieren.",
   "You do not have any access to the knowledge of this OpenCTI instance.": "Sie haben keinen Zugriff auf das Wissen dieser OpenCTI-Instanz.",
   "You have more than 50 values": "Sie haben mehr als 50 Werte",

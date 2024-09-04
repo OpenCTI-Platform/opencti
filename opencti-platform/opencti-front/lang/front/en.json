@@ -2983,6 +2983,7 @@
   "You are not allowed to do this.": "You are not allowed to do this.",
   "You are not authorized to see this data.": "You are not authorized to see this data.",
   "You are trying to check the security posture of your organization against this threat intelligence set of knowledge using the OpenBAS platform.": "You are trying to check the security posture of your organization against this threat intelligence set of knowledge using the OpenBAS platform.",
+  "You can configure your platform to consume OpenCTI Streams. A list of public and commercial native feeds is available in the": "You can configure your platform to consume OpenCTI Streams. A list of public and commercial native feeds is available in the",
   "You can enable/disable default values for marking in the customization of each entity type.": "You can enable/disable default values for marking in the customization of each entity type.",
   "You do not have any access to the knowledge of this OpenCTI instance.": "You do not have any access to the knowledge of this OpenCTI instance.",
   "You have more than 50 values": "You have more than 50 values",

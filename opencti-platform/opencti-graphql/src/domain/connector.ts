@@ -235,7 +235,7 @@ export const registerConnectorForIngestion = async (context: AuthContext, input:
   // Create the representing connector
   await registerConnector(context, SYSTEM_USER, {
     id: connectorIdFromIngestId(input.id),
-    name: `[FEED] ${input.name} (${input.type})`,
+    name: `[FEED - ${input.type}] ${input.name}`,
     type: ConnectorType.ExternalImport,
     auto: true,
     scope: ['application/stix+json;version=2.1'],

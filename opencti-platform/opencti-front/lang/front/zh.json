@@ -2983,6 +2983,7 @@
   "You are not allowed to do this.": "您这样操作不被允许。",
   "You are not authorized to see this data.": "您无权查看此数据。",
   "You are trying to check the security posture of your organization against this threat intelligence set of knowledge using the OpenBAS platform.": "您正尝试使用 OpenBAS 平台，根据这套威胁情报知识检查贵组织的安全态势。",
+  "You can configure your platform to consume OpenCTI Streams. A list of public and commercial native feeds is available in the": "您可以对平台进行配置，以便使用 OpenCTI 流。公共和商业原生信息源列表可在",
   "You can enable/disable default values for marking in the customization of each entity type.": "您可以在定制每个实体类型时启用/禁用标记的默认值。",
   "You do not have any access to the knowledge of this OpenCTI instance.": "您无权访问此OpenCTI实例的知识数据。",
   "You have more than 50 values": "您有超过 50 个值",
