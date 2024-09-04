@@ -902,8 +902,8 @@ export type AttackPatternEditMutationsRelationDeleteArgs = {
 
 export type AttackPatternForMatrix = {
   __typename?: 'AttackPatternForMatrix';
+  attack_pattern_id: Scalars['String']['output'];
   description?: Maybe<Scalars['String']['output']>;
-  id: Scalars['ID']['output'];
   killChainPhasesIds?: Maybe<Array<Scalars['String']['output']>>;
   name: Scalars['String']['output'];
   subAttackPatternsIds?: Maybe<Array<Scalars['String']['output']>>;
@@ -914,7 +914,7 @@ export type AttackPatternForMatrix = {
 export type AttackPatternsByKillChain = {
   __typename?: 'AttackPatternsByKillChain';
   attackPatterns?: Maybe<Array<AttackPatternForMatrix>>;
-  id: Scalars['ID']['output'];
+  kill_chain_id: Scalars['String']['output'];
   kill_chain_name: Scalars['String']['output'];
   phase_name: Scalars['String']['output'];
   x_opencti_order: Scalars['Int']['output'];
@@ -31761,8 +31761,8 @@ export type AttackPatternEditMutationsResolvers<ContextType = any, ParentType ex
 }>;
 
 export type AttackPatternForMatrixResolvers<ContextType = any, ParentType extends ResolversParentTypes['AttackPatternForMatrix'] = ResolversParentTypes['AttackPatternForMatrix']> = ResolversObject<{
+  attack_pattern_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   killChainPhasesIds?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   subAttackPatternsIds?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
@@ -31773,7 +31773,7 @@ export type AttackPatternForMatrixResolvers<ContextType = any, ParentType extend
 
 export type AttackPatternsByKillChainResolvers<ContextType = any, ParentType extends ResolversParentTypes['AttackPatternsByKillChain'] = ResolversParentTypes['AttackPatternsByKillChain']> = ResolversObject<{
   attackPatterns?: Resolver<Maybe<Array<ResolversTypes['AttackPatternForMatrix']>>, ParentType, ContextType>;
-  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  kill_chain_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   kill_chain_name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   phase_name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   x_opencti_order?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;

@@ -2528,7 +2528,7 @@ input AttackPatternAddInput {
 }
 
 type AttackPatternForMatrix {
-  id: ID!
+  attack_pattern_id: String!
   name: String!
   description: String
   x_mitre_id: String
@@ -2538,7 +2538,7 @@ type AttackPatternForMatrix {
 }
 
 type AttackPatternsByKillChain {
-  id: ID!
+  kill_chain_id: String!
   kill_chain_name: String!
   phase_name: String!
   x_opencti_order: Int!

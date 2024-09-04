@@ -233,7 +233,7 @@ class AttackPatternsMatrixColumnsComponent extends Component {
   level(attackPattern, maxNumberOfSameAttackPattern) {
     const { attackPatterns } = this.props;
     const numberOfCorrespondingAttackPatterns = R.filter(
-      (n) => n.id === attackPattern.id
+      (n) => n.id === attackPattern.attack_pattern_id
         || (attackPattern.subAttackPatternsIds
           && R.includes(n.id, attackPattern.subAttackPatternsIds)),
       attackPatterns,
@@ -306,8 +306,9 @@ class AttackPatternsMatrixColumnsComponent extends Component {
       .map((a) => {
         return {
           ...a,
+          id: a.kill_chain_id,
           attackPatterns: R.sortBy(R.prop('name'), a.attackPatterns.filter(filterByKeyword).map((ap) => {
-            return { ...ap, level: this.level(ap, maxNumberOfSameAttackPattern) };
+            return { ...ap, id: ap.attack_pattern_id, level: this.level(ap, maxNumberOfSameAttackPattern) };
           })).filter((o) => (modeOnlyActive ? o.level > 0 : o.level >= 0)),
         };
       });
@@ -500,12 +501,12 @@ const AttackPatternsMatrixColumns = createRefetchContainer(
       fragment AttackPatternsMatrixColumns_data on Query {
         attackPatternsMatrix {
           attackPatternsOfPhases {
-            id
+            kill_chain_id
             kill_chain_name
             phase_name
             x_opencti_order
             attackPatterns {
-              id
+              attack_pattern_id
               name
               description
               x_mitre_id

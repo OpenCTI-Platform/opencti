@@ -106,7 +106,7 @@ export const getAttackPatternsMatrix = async (context: AuthContext, user: AuthUs
           }
         }
         return {
-          id: attackPattern.id,
+          attack_pattern_id: attackPattern.id,
           name: attackPattern.name,
           description: attackPattern.description,
           x_mitre_id: attackPattern.x_mitre_id,
@@ -119,7 +119,7 @@ export const getAttackPatternsMatrix = async (context: AuthContext, user: AuthUs
       });
     if (phaseAttackPatterns.length > 0) {
       attackPatternsOfPhases.push({
-        id: killChainPhase.id,
+        kill_chain_id: killChainPhase.id,
         kill_chain_name: killChainPhase.kill_chain_name,
         phase_name: killChainPhase.phase_name,
         x_opencti_order: killChainPhase.x_opencti_order,
