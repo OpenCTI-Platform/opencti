@@ -141,7 +141,7 @@ export const RetentionLine: FunctionComponent<RetentionLineProps> = ({ dataColum
                 {data.scope !== 'knowledge'
                   && <Tooltip
                     title={t_i18n(
-                      'i.e. contained in Data/Import',
+                      'i.e. contained in Data/Import and not in the context of an entity',
                     )}
                      >
                     <InformationOutline
