@@ -168,7 +168,7 @@ class RootArtifact extends Component {
                         path="/"
                         element={(
                           <StixCyberObservable
-                            stixCyberObservable={stixCyberObservable}
+                            stixCyberObservableData={stixCyberObservable}
                           />
                                 )}
                       />

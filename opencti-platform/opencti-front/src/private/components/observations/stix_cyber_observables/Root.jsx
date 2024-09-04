@@ -169,7 +169,7 @@ class RootStixCyberObservable extends Component {
                         path="/"
                         element={
                           <StixCyberObservable
-                            stixCyberObservable={props.stixCyberObservable}
+                            stixCyberObservableData={props.stixCyberObservable}
                           />
                                 }
                       />
