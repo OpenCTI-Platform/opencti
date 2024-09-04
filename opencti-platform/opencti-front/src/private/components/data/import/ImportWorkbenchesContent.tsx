@@ -193,7 +193,7 @@ const ImportWorkbenchesContent = () => {
   };
 
   const globalFilesField = (
-    <div style={{ marginLeft: 10 }}>
+    <div>
       <FormControlLabel
         value="start"
         control={
