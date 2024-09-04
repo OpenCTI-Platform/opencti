@@ -40,13 +40,16 @@ const DataTableComponent = ({
   createButton,
   pageSize,
   disableNavigation,
+  disableLineSelection,
   onLineClick,
+  disableToolBar,
+  disableSelectAll,
 }: DataTableProps) => {
   const localStorageColumns = useDataTableLocalStorage<LocalStorageColumns>(`${storageKey}_columns`, {}, true)[0];
   const toggleHelper = useDataTableToggle(storageKey);
 
   const columnsInitialState = [
-    ...(toggleHelper.onToggleEntity ? [{ id: 'select', visible: true } as DataTableColumn] : []),
+    ...((toggleHelper.onToggleEntity && !disableLineSelection) ? [{ id: 'select', visible: true } as DataTableColumn] : []),
     ...Object.entries(dataColumns).map(([key, column], index) => {
       const currentColumn = localStorageColumns?.[key];
       return R.mergeDeepRight(defaultColumnsMap.get(key) as DataTableColumn, {
@@ -114,6 +117,8 @@ const DataTableComponent = ({
         createButton,
         disableNavigation,
         onLineClick,
+        disableToolBar,
+        disableSelectAll,
       } as DataTableContextProps}
     >
       {filtersComponent ?? (variant === DataTableVariant.inline && (

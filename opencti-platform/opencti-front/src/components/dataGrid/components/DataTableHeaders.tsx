@@ -41,6 +41,8 @@ const DataTableHeaders: FunctionComponent<DataTableHeadersProps> = ({
     availableFilterKeys,
     onAddFilter,
     onSort,
+    disableToolBar,
+    disableSelectAll,
   } = useDataTableContext();
   const { t_i18n } = formatter;
 
@@ -87,11 +89,11 @@ const DataTableHeaders: FunctionComponent<DataTableHeadersProps> = ({
           <Checkbox
             checked={selectAll}
             onChange={handleToggleSelectAll}
-            disabled={!handleToggleSelectAll}
+            disabled={!handleToggleSelectAll || disableSelectAll}
           />
         </div>
       )}
-      {numberOfSelectedElements > 0 ? dataTableToolBarComponent : (
+      {numberOfSelectedElements > 0 && !disableToolBar ? dataTableToolBarComponent : (
         <>
           {anchorEl && (
             <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
