@@ -267,7 +267,7 @@ const ImportWorkbenchesContent = () => {
               render: ({ lastModified }, { fd }) => fd(lastModified),
             },
           }}
-          resolvePath={(data: ImportWorkbenchesContentLines_data$data) => data.allPendingFiles.edges.map(({ node }) => node)}
+          resolvePath={(data: ImportWorkbenchesContentLines_data$data) => (data.allPendingFiles?.edges ?? []).map(({ node }) => node)}
           storageKey={LOCAL_STORAGE_KEY}
           entityTypes={['InternalFile']}
           searchContextFinal={{ entityTypes: ['InternalFile'] }}
