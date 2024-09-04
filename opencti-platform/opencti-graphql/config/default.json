@@ -42,7 +42,13 @@
       "max_time": 1000
     },
     "graphql": {
-      "armor_enabled": false,
+      "armor_protection": {
+        "max_depth": 20,
+        "max_directives": 20,
+        "max_tokens": 100000,
+        "cost_limit": 3000000,
+        "block_field_suggestion": true
+      },
       "batching_protection": {
         "mutation_default": 1,
         "query_default": 2,
