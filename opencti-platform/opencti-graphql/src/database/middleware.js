@@ -1839,7 +1839,7 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
     return { element: initial };
   }
   // Check user access update
-  const manageAccessUpdate = updates.some((e) => e.key === 'authorized_members');
+  const manageAccessUpdate = updates.some((e) => e.key === 'authorized_members' || e.key === 'authorized_authorities');
   if (!validateUserAccessOperation(user, initial, manageAccessUpdate ? 'manage-access' : 'edit')) {
     throw ForbiddenAccess();
   }
