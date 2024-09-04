@@ -26,7 +26,6 @@ import FilterIconButton from '../../../../components/FilterIconButton';
 import { insertNode } from '../../../../utils/store';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
 import AutocompleteField from '../../../../components/AutocompleteField';
-import useHelper from '../../../../utils/hooks/useHelper';
 import SelectField from '../../../../components/fields/SelectField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
@@ -76,7 +75,6 @@ interface RetentionFormValues {
 const RetentionCreation = ({ paginationOptions }: { paginationOptions: RetentionLinesPaginationQuery$variables }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
   const [filters, helpers] = useFiltersState();
   const [verified, setVerified] = useState(false);
   const availableFilterKeys = useAvailableFilterKeysForEntityTypes(['Stix-Core-Object', 'stix-core-relationship']);
@@ -203,29 +201,27 @@ const RetentionCreation = ({ paginationOptions }: { paginationOptions: Retention
                   ),
                 }}
               />
-              {isFeatureEnable('FILE_RETENTION_RULES')
-                && <Field
-                  component={AutocompleteField}
-                  variant="standard"
-                  name="scope"
-                  style={{ marginTop: 20 }}
-                  fullWidth={true}
-                  onChange={setFieldValue}
-                  options={[
-                    { value: 'knowledge', label: 'Knowledge' },
-                    { value: 'file', label: 'File' },
-                    { value: 'workbench', label: 'Workbench' },
-                  ]}
-                  renderOption={(prop: Record<string, unknown>, option: Option) => (
-                    <li {...prop}>
-                      <div className={classes.text}>{t_i18n(option.label)}</div>
-                    </li>
-                  )}
-                  textfieldprops={{
-                    label: t_i18n('Scope'),
-                  }}
-                   />
-              }
+              <Field
+                component={AutocompleteField}
+                variant="standard"
+                name="scope"
+                style={{ marginTop: 20 }}
+                fullWidth={true}
+                onChange={setFieldValue}
+                options={[
+                  { value: 'knowledge', label: 'Knowledge' },
+                  { value: 'file', label: 'File' },
+                  { value: 'workbench', label: 'Workbench' },
+                ]}
+                renderOption={(prop: Record<string, unknown>, option: Option) => (
+                  <li {...prop}>
+                    <div className={classes.text}>{t_i18n(option.label)}</div>
+                  </li>
+                )}
+                textfieldprops={{
+                  label: t_i18n('Scope'),
+                }}
+              />
               {formValues.scope?.value === 'file'
                 && <Alert severity="info" style={{ margin: '15px 15px 0 15px' }}>
                   {t_i18n('The retention policy will be applied on global files (i.e. files contained in Data/Import)')}
