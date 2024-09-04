@@ -28,7 +28,7 @@ const attributes: Array<AttributeDefinition> = [
     editDefault: false,
     multiple: false,
     upsert: false,
-    isFilterable: true,
+    isFilterable: false,
     mappings: [
       { name: 'version', label: 'Version', type: 'date', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: false },
       { name: 'description', label: 'Filename', type: 'string', format: 'text', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: false },
