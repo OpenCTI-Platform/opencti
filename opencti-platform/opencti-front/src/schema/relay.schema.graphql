@@ -1103,7 +1103,7 @@ input QueryTaskAddInput {
 
 input RetentionRuleAddInput {
   name: String!
-  filters: String!
+  filters: String
   max_retention: Int!
   retention_unit: RetentionUnit
   scope: RetentionRuleScope!
@@ -1135,7 +1135,7 @@ type RetentionRule {
   name: String!
   filters: String!
   max_retention: Int!
-  retention_unit: RetentionUnit
+  retention_unit: RetentionUnit!
   last_execution_date: DateTime
   last_deleted_count: Int
   remaining_count: Int

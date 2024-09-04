@@ -237,6 +237,7 @@ describe('Retention Manager tests ', () => {
       input: {
         name: 'Knowledge rule',
         max_retention: 2,
+        retention_unit: 'days',
         scope: 'knowledge',
         filters: emptyStringFilters,
       }
@@ -245,6 +246,7 @@ describe('Retention Manager tests ', () => {
       input: {
         name: 'File rule',
         max_retention: 2,
+        retention_unit: 'days',
         scope: 'file',
         filters: emptyStringFilters,
       }
