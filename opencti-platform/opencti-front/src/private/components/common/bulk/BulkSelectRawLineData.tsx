@@ -21,6 +21,13 @@ interface BulkSelectRawLineDataProps {
   selectedRelationType: string;
 }
 
+type autocompleteOptionsType = {
+  label: string;
+  value: RelationsToEntity,
+  groupLabel: string;
+  groupOrder: number;
+};
+
 const BulkSelectRawLineData : FunctionComponent<BulkSelectRawLineDataProps> = ({
   entity,
   entityIndex,
@@ -31,19 +38,18 @@ const BulkSelectRawLineData : FunctionComponent<BulkSelectRawLineDataProps> = ({
   isSubmitting,
 }) => {
   const { t_i18n } = useFormatter();
-  const isMatchingEntityType = entity.entityTypeList?.map((item) => item.entity_type).includes(entity.selectedEntityType.toEntitytype) ?? false;
   const isSearchTermEmpty = entity.searchTerm === '';
+  const isMatchingRelationship = entity.selectedEntityType.legitRelations.includes(selectedRelationType);
 
   const getRelationMatchStatus = () => {
-    if (!entity.isExisting || isSearchTermEmpty || !isMatchingEntityType) return t_i18n('Not in platform');
-    if (entity.isMatchingEntity) return t_i18n('Exact match');
+    if (!entity.isExisting && isMatchingRelationship) return t_i18n('Not in platform (compatible)');
+    if (entity.isMatchingEntity && isMatchingRelationship) return t_i18n('Found (compatible)');
     return t_i18n('Incompatible');
   };
 
   const getChipColor = () => {
-    const { selectedEntityType } = entity;
-    if (!entity.isExisting || isSearchTermEmpty || !isMatchingEntityType) return 'error';
-    if (selectedEntityType?.legitRelations.includes(selectedRelationType)) {
+    if (!entity.isExisting && isMatchingRelationship) return 'error';
+    if (entity.isMatchingEntity && isMatchingRelationship) {
       return 'success';
     }
     return 'warning';
@@ -58,20 +64,23 @@ const BulkSelectRawLineData : FunctionComponent<BulkSelectRawLineDataProps> = ({
 
   const getAutocompleteOptions = () => {
     const possibleEntityTypes = entity.entityTypeList?.map((item) => item.entity_type) ?? [];
-    return entityList.map((item) => {
-      const isSuggestion = possibleEntityTypes.includes(item.toEntitytype);
-      return {
-        label: t_i18n(item.toEntitytype),
-        value: item,
-        groupLabel: isSuggestion ? t_i18n('Suggestions') : t_i18n('Entity list'),
-        groupOrder: isSuggestion ? 0 : 1,
-      };
-    }).sort((a, b) => a.groupOrder - b.groupOrder);
+    return entityList.reduce((acc: autocompleteOptionsType[], cur) => {
+      if (!acc.find((item) => item.label === t_i18n(`entity_${cur.toEntitytype}`))) {
+        const isSuggestion = possibleEntityTypes.includes(cur.toEntitytype);
+        return [...acc, {
+          label: t_i18n(`entity_${cur.toEntitytype}`),
+          value: cur,
+          groupLabel: isSuggestion ? t_i18n('Suggestions') : t_i18n('Entity list'),
+          groupOrder: isSuggestion ? 0 : 1,
+        }];
+      }
+      return [...acc];
+    }, []).sort((a, b) => a.groupOrder - b.groupOrder);
   };
 
   const getAutocompleteValue = () => {
     const autocompleteOptions = getAutocompleteOptions();
-    return autocompleteOptions.find((option) => option.label === entity.selectedEntityType.toEntitytype);
+    return autocompleteOptions.find((option) => option.value.toEntitytype === entity.selectedEntityType.toEntitytype);
   };
 
   return (
@@ -90,8 +99,8 @@ const BulkSelectRawLineData : FunctionComponent<BulkSelectRawLineDataProps> = ({
           noOptionsText={t_i18n('No available options')}
           disablePortal
           options={getAutocompleteOptions()}
-          onInputChange={(event, selectedOption) => {
-            handleChangeEntityType(selectedOption);
+          onChange={(event, selectedOption) => {
+            handleChangeEntityType(selectedOption.value.toEntitytype);
           }}
           value={getAutocompleteValue()}
           groupBy={(option) => option.groupLabel}

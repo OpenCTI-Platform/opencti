@@ -221,6 +221,8 @@ ContainerAddStixCoreObjectsInLineProps
         open={openCreateEntity}
         handleClose={() => setOpenCreateEntity(false)}
         creationCallback={undefined}
+        onCompleted={undefined}
+        isFromBulkRelation={undefined}
         confidence={confidence}
         defaultCreatedBy={defaultCreatedBy}
         defaultMarkingDefinitions={defaultMarkingDefinitions}
@@ -238,6 +240,8 @@ ContainerAddStixCoreObjectsInLineProps
         open={openCreateObservable}
         handleClose={() => setOpenCreateObservable(false)}
         type={undefined}
+        onCompleted={undefined}
+        isFromBulkRelation={undefined}
       />
     </>);
   };

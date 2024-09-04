@@ -83,6 +83,7 @@ IntrusionSetFormProps
   defaultMarkingDefinitions,
   bulkModalOpen = false,
   onBulkModalClose,
+  inputValue,
 }) => {
   const { isFeatureEnable } = useHelper();
   const { t_i18n } = useFormatter();
@@ -157,7 +158,7 @@ IntrusionSetFormProps
   };
 
   const initialValues = useDefaultValues(INTRUSION_SET_TYPE, {
-    name: '',
+    name: inputValue ?? '',
     confidence: defaultConfidence ?? null,
     description: '',
     createdBy: defaultCreatedBy ?? null,

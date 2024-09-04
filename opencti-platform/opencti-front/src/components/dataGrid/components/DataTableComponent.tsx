@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import * as R from 'ramda';
 import { DataTableLinesDummy } from './DataTableLine';
 import DataTableBody from './DataTableBody';
@@ -41,9 +41,9 @@ const DataTableComponent = ({
   pageSize,
   disableNavigation,
   disableLineSelection,
-  onLineClick,
   disableToolBar,
   disableSelectAll,
+  onLineClick,
 }: DataTableProps) => {
   const localStorageColumns = useDataTableLocalStorage<LocalStorageColumns>(`${storageKey}_columns`, {}, true)[0];
   const toggleHelper = useDataTableToggle(storageKey);
@@ -89,6 +89,8 @@ const DataTableComponent = ({
     return page ? (page - 1) * currentPageSize : 0;
   }, [page, currentPageSize]);
 
+  const dataTableHeaderRef = useRef<HTMLDivElement | null>(null);
+
   return (
     <DataTableContext.Provider
       value={{
@@ -116,23 +118,25 @@ const DataTableComponent = ({
         actions,
         createButton,
         disableNavigation,
-        onLineClick,
         disableToolBar,
         disableSelectAll,
+        onLineClick,
       } as DataTableContextProps}
     >
-      {filtersComponent ?? (variant === DataTableVariant.inline && (
-        <div
-          style={{
-            width: '100%',
-            textAlign: 'right',
-            marginBottom: 10,
-          }}
-        >
-          <strong>{`${numberOfElements?.number}${numberOfElements?.symbol}`}</strong>{' '}
-          {formatter.t_i18n('entitie(s)')}
-        </div>
-      ))}
+      <div ref={dataTableHeaderRef}>
+        {filtersComponent ?? (variant === DataTableVariant.inline && (
+          <div
+            style={{
+              width: '100%',
+              textAlign: 'right',
+              marginBottom: 10,
+            }}
+          >
+            <strong>{`${numberOfElements?.number}${numberOfElements?.symbol}`}</strong>{' '}
+            {formatter.t_i18n('entitie(s)')}
+          </div>
+        ))}
+      </div>
       <div
         style={{
           display: 'flex',
@@ -171,6 +175,7 @@ const DataTableComponent = ({
             dataTableToolBarComponent={dataTableToolBarComponent}
             pageStart={pageStart}
             pageSize={currentPageSize}
+            dataTableHeaderRef={dataTableHeaderRef}
           />
         </React.Suspense>
       </div>

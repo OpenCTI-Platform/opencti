@@ -5,6 +5,7 @@ import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import Fab from '@mui/material/Fab';
+import Alert from '@mui/lab/Alert';
 import { Add, Close } from '@mui/icons-material';
 import { assoc, compose, dissoc, filter, fromPairs, includes, map, pipe, pluck, prop, propOr, sortBy, toLower, toPairs } from 'ramda';
 import * as Yup from 'yup';
@@ -213,20 +214,44 @@ const stixCyberObservableMutation = graphql`
 `;
 
 const BULK_OBSERVABLES = [
-  { type: 'Credential', key: 'value' },
-  { type: 'Cryptocurrency-Wallet', key: 'value' },
-  { type: 'Cryptographic-Key', key: 'value' },
-  { type: 'Domain-Name', key: 'value' },
-  { type: 'Email-Addr', key: 'value' },
-  { type: 'Hostname', key: 'value' },
-  { type: 'IPv4-Addr', key: 'value' },
-  { type: 'IPv6-Addr', key: 'value' },
-  { type: 'Mac-Addr', key: 'value' },
-  { type: 'Phone-Number', key: 'value' },
-  { type: 'Text', key: 'value' },
-  { type: 'Tracking-Number', key: 'value' },
-  { type: 'Url', key: 'value' },
-  { type: 'User-Agent', key: 'value' },
+  { type: 'Credential', keys: ['value'] },
+  { type: 'Cryptocurrency-Wallet', keys: ['value'] },
+  { type: 'Cryptographic-Key', keys: ['value'] },
+  { type: 'Domain-Name', keys: ['value'] },
+  { type: 'Email-Addr', keys: ['value'] },
+  { type: 'Hostname', keys: ['value'] },
+  { type: 'IPv4-Addr', keys: ['value'] },
+  { type: 'IPv6-Addr', keys: ['value'] },
+  { type: 'Mac-Addr', keys: ['value'] },
+  { type: 'Phone-Number', keys: ['value'] },
+  { type: 'Text', keys: ['value'] },
+  { type: 'Tracking-Number', keys: ['value'] },
+  { type: 'Url', keys: ['value'] },
+  { type: 'User-Agent', keys: ['value'] },
+  { type: 'StixFile', keys: ['hashes_MD5', 'hashes_SHA-1', 'hashes_SHA-256', 'hashes_SHA-512'] },
+  { type: 'Artifact', keys: ['hashes_MD5', 'hashes_SHA-1', 'hashes_SHA-256', 'hashes_SHA-512'] },
+  { type: 'X509-Certificate', keys: ['hashes_MD5', 'hashes_SHA-1', 'hashes_SHA-256', 'hashes_SHA-512'] },
+];
+
+const SCO_DEFAULT_FIELD = [
+  { type: 'Bank-Account', field: 'iban' },
+  { type: 'Autonomous-System', field: 'name' },
+  { type: 'Directory', field: '' }, // Date ?
+  { type: 'Email-Message', field: 'body' },
+  { type: 'Email-Mime-Part-Type', field: 'body' },
+  { type: 'Media-Content', field: '' }, // ?  Missing required elements for Media-Content creation (url) stixCyberObservableAdd(type: $type, x_opencti_score: $x_op
+  { type: 'Mutex', field: 'name' },
+  { type: 'Network-Traffic', field: 'dst_port' },
+  { type: 'Payment-Card', field: 'card_number' },
+  { type: 'Persona', field: 'persona_name' },
+  { type: 'Process', field: 'command_line' },
+  { type: 'Software', field: 'name' },
+  { type: 'User-Account', field: 'account_login' },
+  { type: 'Windows-Registry-Key', field: 'attribute_key' },
+  { type: 'Windows-Registry-Value-Type', field: 'name' },
+  { type: 'StixFile', field: 'name' },
+  { type: 'Artifact', field: 'hashes_MD5' },
+  { type: 'X509-Certificate', field: 'hashes_MD5' },
 ];
 
 const stixCyberObservableValidation = () => Yup.object().shape({
@@ -248,6 +273,8 @@ const StixCyberObservableCreation = ({
   controlledDialStyles = {},
   defaultCreatedBy = null,
   defaultMarkingDefinitions = null,
+  isFromBulkRelation,
+  onCompleted,
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
@@ -255,10 +282,15 @@ const StixCyberObservableCreation = ({
   const { isVocabularyField, fieldToCategory } = useVocabularyCategory();
   const { booleanAttributes, dateAttributes, multipleAttributes, numberAttributes, ignoredAttributes } = useAttributes();
   const [status, setStatus] = useState({ open: false, type: type ?? null });
-  const bulkConf = useMemo(() => BULK_OBSERVABLES.find(({ type: obsType }) => obsType === status.type), [status]);
   const inputObsType = useMemo(() => status?.type?.replace(/(?:^|-|_)(\w)/g, (_, l) => l.toUpperCase()), [status]);
   const [bulkOpen, setBulkOpen] = useState(false);
   const [progressBarOpen, setProgressBarOpen] = useState(false);
+
+  const [bulkSelectedKey, setBulkSelectedKey] = useState(null);
+  const bulkConf = useMemo(() => BULK_OBSERVABLES.find(({ type: obsType }) => obsType === status.type), [status]);
+  useEffect(() => {
+    setBulkSelectedKey(bulkConf?.keys.length === 1 ? bulkConf.keys[0] : null);
+  }, [bulkConf]);
 
   const [commit] = useApiMutation(
     stixCyberObservableMutation,
@@ -296,97 +328,97 @@ const StixCyberObservableCreation = ({
   const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   const onSubmit = (values, { setSubmitting, setErrors, resetForm }) => {
-    let adaptedValues = values;
-    // Potential dicts
-    if (
-      adaptedValues.hashes_MD5
-      || adaptedValues['hashes_SHA-1']
-      || adaptedValues['hashes_SHA-256']
-      || adaptedValues['hashes_SHA-512']
-    ) {
-      adaptedValues.hashes = [];
-      if (adaptedValues.hashes_MD5.length > 0) {
-        adaptedValues.hashes.push({
-          algorithm: 'MD5',
-          hash: adaptedValues.hashes_MD5,
-        });
-      }
-      if (adaptedValues['hashes_SHA-1'].length > 0) {
-        adaptedValues.hashes.push({
-          algorithm: 'SHA-1',
-          hash: adaptedValues['hashes_SHA-1'],
-        });
-      }
-      if (adaptedValues['hashes_SHA-256'].length > 0) {
-        adaptedValues.hashes.push({
-          algorithm: 'SHA-256',
-          hash: adaptedValues['hashes_SHA-256'],
-        });
-      }
-      if (adaptedValues['hashes_SHA-512'].length > 0) {
-        adaptedValues.hashes.push({
-          algorithm: 'SHA-512',
-          hash: adaptedValues['hashes_SHA-512'],
-        });
-      }
-    }
-    adaptedValues = pipe(
-      dissoc('x_opencti_description'),
-      dissoc('x_opencti_score'),
-      dissoc('createdBy'),
-      dissoc('objectMarking'),
-      dissoc('objectLabel'),
-      dissoc('externalReferences'),
-      dissoc('createIndicator'),
-      dissoc('hashes_MD5'),
-      dissoc('hashes_SHA-1'),
-      dissoc('hashes_SHA-256'),
-      dissoc('hashes_SHA-512'),
-      toPairs,
-      map((n) => (includes(n[0], dateAttributes)
-        ? [n[0], n[1] ? parse(n[1]).format() : null]
-        : n)),
-      map((n) => (includes(n[0], numberAttributes)
-        ? [n[0], n[1] ? parseInt(n[1], 10) : null]
-        : n)),
-      map((n) => (includes(n[0], multipleAttributes)
-        ? [n[0], n[1] ? n[1].split(',') : null]
-        : n)),
-      fromPairs,
-    )(adaptedValues);
-
-    const singularValues = {
-      type: status.type,
-      x_opencti_description:
-        values.x_opencti_description.length > 0
-          ? values.x_opencti_description
-          : null,
-      x_opencti_score: parseInt(values.x_opencti_score, 10),
-      createdBy: propOr(null, 'value', values.createdBy),
-      objectMarking: pluck('value', values.objectMarking),
-      objectLabel: pluck('value', values.objectLabel),
-      externalReferences: pluck('value', values.externalReferences),
-      createIndicator: values.createIndicator,
-      [inputObsType]: {
-        ...adaptedValues,
-        obsContent: values.obsContent?.value,
-      },
-    };
-    if (values.file) {
-      singularValues.file = values.file;
-    }
-
-    let finalValues = [singularValues];
-    if (bulkConf) {
-      const allValues = splitMultilines(values[bulkConf.key]);
-      finalValues = allValues.map((v) => ({
-        ...singularValues,
-        [inputObsType]: {
-          ...singularValues[inputObsType],
-          [bulkConf.key]: v,
-        },
+    let adaptedValues = [values];
+    if (bulkConf && bulkSelectedKey) {
+      const allValues = splitMultilines(values[bulkSelectedKey]);
+      adaptedValues = allValues.map((v) => ({
+        ...values,
+        [bulkSelectedKey]: v,
       }));
     }
+
+    const finalValues = adaptedValues.map((val) => {
+      let adaptedValue = val;
+      // Potential dicts
+      if (
+        adaptedValue.hashes_MD5
+        || adaptedValue['hashes_SHA-1']
+        || adaptedValue['hashes_SHA-256']
+        || adaptedValue['hashes_SHA-512']
+      ) {
+        adaptedValue.hashes = [];
+        if (adaptedValue.hashes_MD5.length > 0) {
+          adaptedValue.hashes.push({
+            algorithm: 'MD5',
+            hash: adaptedValue.hashes_MD5,
+          });
+        }
+        if (adaptedValue['hashes_SHA-1'].length > 0) {
+          adaptedValue.hashes.push({
+            algorithm: 'SHA-1',
+            hash: adaptedValue['hashes_SHA-1'],
+          });
+        }
+        if (adaptedValue['hashes_SHA-256'].length > 0) {
+          adaptedValue.hashes.push({
+            algorithm: 'SHA-256',
+            hash: adaptedValue['hashes_SHA-256'],
+          });
+        }
+        if (adaptedValue['hashes_SHA-512'].length > 0) {
+          adaptedValue.hashes.push({
+            algorithm: 'SHA-512',
+            hash: adaptedValue['hashes_SHA-512'],
+          });
+        }
+      }
+      adaptedValue = pipe(
+        dissoc('x_opencti_description'),
+        dissoc('x_opencti_score'),
+        dissoc('createdBy'),
+        dissoc('objectMarking'),
+        dissoc('objectLabel'),
+        dissoc('externalReferences'),
+        dissoc('createIndicator'),
+        dissoc('hashes_MD5'),
+        dissoc('hashes_SHA-1'),
+        dissoc('hashes_SHA-256'),
+        dissoc('hashes_SHA-512'),
+        toPairs,
+        map((n) => (includes(n[0], dateAttributes)
+          ? [n[0], n[1] ? parse(n[1]).format() : null]
+          : n)),
+        map((n) => (includes(n[0], numberAttributes)
+          ? [n[0], n[1] ? parseInt(n[1], 10) : null]
+          : n)),
+        map((n) => (includes(n[0], multipleAttributes)
+          ? [n[0], n[1] ? n[1].split(',') : null]
+          : n)),
+        fromPairs,
+      )(adaptedValue);
+
+      const singularValue = {
+        type: status.type,
+        x_opencti_description:
+          values.x_opencti_description.length > 0
+            ? values.x_opencti_description
+            : null,
+        x_opencti_score: parseInt(values.x_opencti_score, 10),
+        createdBy: propOr(null, 'value', values.createdBy),
+        objectMarking: pluck('value', values.objectMarking),
+        objectLabel: pluck('value', values.objectLabel),
+        externalReferences: pluck('value', values.externalReferences),
+        createIndicator: values.createIndicator,
+        [inputObsType]: {
+          ...adaptedValue,
+          obsContent: values.obsContent?.value,
+        },
+      };
+      if (values.file) {
+        singularValue.file = values.file;
+      }
+      return singularValue;
+    });
 
     bulkCommit({
       variables: finalValues,
@@ -401,6 +433,7 @@ const StixCyberObservableCreation = ({
           resetForm();
           localHandleClose();
         }
+        if (onCompleted) onCompleted();
       },
     });
   };
@@ -448,7 +481,6 @@ const StixCyberObservableCreation = ({
       />
     );
   };
-
   const renderForm = () => {
     return (
       <QueryRenderer
@@ -495,10 +527,10 @@ const StixCyberObservableCreation = ({
                 initialValues['hashes_SHA-256'] = '';
                 initialValues['hashes_SHA-512'] = '';
                 // Dynamically include validation options for File Hash Options.
-                const md5Regex = /^[a-f0-9]{32}$/i;
-                const sha1Regex = /^[a-f0-9]{40}$/i;
-                const sha256Regex = /^[a-f0-9]{64}$/i;
-                const sha512Regex = /^[a-f0-9]{128}$/i;
+                const md5Regex = /^([a-f0-9]{32}\n*)+$/i;
+                const sha1Regex = /^([a-f0-9]{40}\n*)+$/i;
+                const sha256Regex = /^([a-f0-9]{64}\n*)+$/i;
+                const sha512Regex = /^([a-f0-9]{128}\n*)+$/i;
                 extraFieldsToValidate = {
                   hashes_MD5: Yup
                     .string()
@@ -563,6 +595,13 @@ const StixCyberObservableCreation = ({
               ...extraFieldsToValidate,
             }, requiredOneOfFields);
 
+            if (isFromBulkRelation) {
+              const foundEntityType = SCO_DEFAULT_FIELD.find((item) => item.type === status.type);
+              if (foundEntityType) initialValues[foundEntityType.field] = inputValue;
+            }
+
+            const isFieldInBulk = (name) => isFeatureEnable('BULK_ENTITIES') && name === bulkSelectedKey;
+
             return (
               <Formik
                 initialValues={initialValues}
@@ -585,13 +624,18 @@ const StixCyberObservableCreation = ({
                           title={t_i18n('Create multiple observables')}
                           open={bulkOpen}
                           onClose={() => setBulkOpen(false)}
+                          availableKeys={bulkConf?.keys.length > 1 ? bulkConf.keys : undefined}
+                          onSelectKey={(key) => setBulkSelectedKey(key || null)}
+                          selectedKey={bulkSelectedKey}
                           onValidate={async (val) => {
-                            await setFieldValue(bulkConf.key, val);
-                            if (splitMultilines(val).length > 1) {
-                              await setFieldValue('file', null);
+                            if (bulkSelectedKey) {
+                              await setFieldValue(bulkSelectedKey, val);
+                              if (splitMultilines(val).length > 1) {
+                                await setFieldValue('file', null);
+                              }
                             }
                           }}
-                          formValue={values[bulkConf.key] ?? ''}
+                          formValue={values[bulkSelectedKey] ?? ''}
                         />
                         <ProgressBar
                           open={progressBarOpen}
@@ -605,7 +649,7 @@ const StixCyberObservableCreation = ({
                             localHandleClose();
                           }}
                         >
-                          <BulkResult variablesToString={(v) => v[inputObsType][bulkConf.key]} />
+                          <BulkResult variablesToString={(v) => v[inputObsType][bulkSelectedKey]} />
                         </ProgressBar>
                       </>
                     )}
@@ -633,7 +677,7 @@ const StixCyberObservableCreation = ({
                           style={{ marginTop: 20 }}
                         />
                         {attributes.map((attribute) => {
-                          if (bulkConf && attribute.value === bulkConf.key) {
+                          if (bulkConf && attribute.value === bulkSelectedKey) {
                             return (
                               <Field
                                 component={isFeatureEnable('BULK_ENTITIES') ? BulkTextField : TextField}
@@ -651,36 +695,40 @@ const StixCyberObservableCreation = ({
                             return (
                               <div key={attribute.value}>
                                 <Field
-                                  component={TextField}
+                                  component={isFieldInBulk('hashes_MD5') ? BulkTextField : TextField}
                                   variant="standard"
                                   name="hashes_MD5"
                                   label={t_i18n('hash_md5')}
                                   fullWidth={true}
                                   style={{ marginTop: 20 }}
+                                  bulkType='observables'
                                 />
                                 <Field
-                                  component={TextField}
+                                  component={isFieldInBulk('hashes_SHA-1') ? BulkTextField : TextField}
                                   variant="standard"
                                   name="hashes_SHA-1"
                                   label={t_i18n('hash_sha-1')}
                                   fullWidth={true}
                                   style={{ marginTop: 20 }}
+                                  bulkType='observables'
                                 />
                                 <Field
-                                  component={TextField}
+                                  component={isFieldInBulk('hashes_SHA-256') ? BulkTextField : TextField}
                                   variant="standard"
                                   name="hashes_SHA-256"
                                   label={t_i18n('hash_sha-256')}
                                   fullWidth={true}
                                   style={{ marginTop: 20 }}
+                                  bulkType='observables'
                                 />
                                 <Field
-                                  component={TextField}
+                                  component={isFieldInBulk('hashes_SHA-512') ? BulkTextField : TextField}
                                   variant="standard"
                                   name="hashes_SHA-512"
                                   label={t_i18n('hash_sha-512')}
                                   fullWidth={true}
                                   style={{ marginTop: 20 }}
+                                  bulkType='observables'
                                 />
                               </div>
                             );
@@ -792,8 +840,8 @@ const StixCyberObservableCreation = ({
                         component={CustomFileUploader}
                         name="file"
                         setFieldValue={setFieldValue}
-                        disabled={bulkConf && splitMultilines(values[bulkConf.key]).length > 1}
-                        noFileSelectedLabel={bulkConf && splitMultilines(values[bulkConf.key]).length > 1
+                        disabled={bulkConf && bulkSelectedKey && splitMultilines(values[bulkSelectedKey]).length > 1}
+                        noFileSelectedLabel={bulkConf && bulkSelectedKey && splitMultilines(values[bulkSelectedKey]).length > 1
                           ? t_i18n('File upload not allowed in bulk creation')
                           : undefined
                         }
@@ -806,14 +854,16 @@ const StixCyberObservableCreation = ({
                         containerstyle={{ marginTop: 20 }}
                       />
                       <div className={classes.buttons}>
-                        <Button
-                          variant={contextual ? 'text' : 'contained'}
-                          onClick={() => selectType(null)}
-                          disabled={isSubmitting}
-                          classes={{ root: classes.button }}
-                        >
-                          {t_i18n('Back')}
-                        </Button>
+                        {!isFromBulkRelation && (
+                          <Button
+                            variant={contextual ? 'text' : 'contained'}
+                            onClick={() => selectType(null)}
+                            disabled={isSubmitting}
+                            classes={{ root: classes.button }}
+                          >
+                            {t_i18n('Back')}
+                          </Button>
+                        )}
                         <Button
                           variant={contextual ? 'text' : 'contained'}
                           onClick={handleReset}
@@ -824,7 +874,7 @@ const StixCyberObservableCreation = ({
                         </Button>
                         <Button
                           variant={contextual ? 'text' : 'contained'}
-                          color="secondary"
+                          color="primary"
                           onClick={submitForm}
                           disabled={isSubmitting}
                           classes={{ root: classes.button }}
@@ -881,7 +931,7 @@ const StixCyberObservableCreation = ({
               <Close fontSize="small" color="primary" />
             </IconButton>
             <Typography variant="h6">{t_i18n('Create an observable')}</Typography>
-            {isFeatureEnable('BULK_ENTITIES') && status.type
+            {isFeatureEnable('BULK_ENTITIES') && !isFromBulkRelation && status.type
               ? <BulkTextModalButton
                   onClick={() => setBulkOpen(true)}
                   title={t_i18n('Create multiple observables')}
@@ -896,6 +946,21 @@ const StixCyberObservableCreation = ({
         </Drawer>
       </>
     );
+  };
+
+  const renderUnavailableBulkMessage = () => {
+    if (isFeatureEnable('BULK_ENTITIES') && isFromBulkRelation && !bulkConf) {
+      return (
+        <Alert
+          severity="info"
+          variant="outlined"
+          style={{ marginBottom: 10 }}
+        >
+          {t_i18n('This entity has several key fields, which is incompatible with bulk creation')}
+        </Alert>
+      );
+    }
+    return null;
   };
 
   const renderContextual = () => {
@@ -919,7 +984,7 @@ const StixCyberObservableCreation = ({
         >
           <DialogTitle style={{ display: 'flex' }}>
             {t_i18n('Create an observable')}
-            {isFeatureEnable('BULK_ENTITIES') && status.type
+            {isFeatureEnable('BULK_ENTITIES') && !isFromBulkRelation && status.type
               ? <BulkTextModalButton
                   sx={{ marginRight: 0 }}
                   onClick={() => setBulkOpen(true)}
@@ -930,6 +995,7 @@ const StixCyberObservableCreation = ({
             }
           </DialogTitle>
           <DialogContent style={{ paddingTop: 0 }}>
+            {renderUnavailableBulkMessage()}
             {!status.type ? renderList() : renderForm()}
           </DialogContent>
         </Dialog>

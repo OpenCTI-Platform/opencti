@@ -83,6 +83,7 @@ export const OrganizationCreationForm: FunctionComponent<OrganizationFormProps> 
   defaultMarkingDefinitions,
   bulkModalOpen = false,
   onBulkModalClose,
+  inputValue,
 }) => {
   const { isFeatureEnable } = useHelper();
   const { t_i18n } = useFormatter();
@@ -167,7 +168,7 @@ export const OrganizationCreationForm: FunctionComponent<OrganizationFormProps> 
   const initialValues = useDefaultValues(
     ORGANIZATION_TYPE,
     {
-      name: '',
+      name: inputValue ?? '',
       description: '',
       x_opencti_reliability: undefined,
       x_opencti_organization_type: undefined,

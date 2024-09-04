@@ -82,6 +82,7 @@ export const CityCreationForm: FunctionComponent<CityFormProps> = ({
   defaultMarkingDefinitions,
   bulkModalOpen = false,
   onBulkModalClose,
+  inputValue,
 }) => {
   const { isFeatureEnable } = useHelper();
   const { t_i18n } = useFormatter();
@@ -162,7 +163,7 @@ export const CityCreationForm: FunctionComponent<CityFormProps> = ({
   };
 
   const initialValues = useDefaultValues(CITY_TYPE, {
-    name: '',
+    name: inputValue ?? '',
     description: '',
     latitude: '',
     longitude: '',

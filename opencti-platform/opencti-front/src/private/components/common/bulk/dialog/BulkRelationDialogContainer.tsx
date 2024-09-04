@@ -1,25 +1,38 @@
 import React, { useState } from 'react';
 import Button from '@mui/material/Button';
 import BulkRelationDialog from '@components/common/bulk/dialog/BulkRelationDialog';
+import { PaginationOptions } from 'src/components/list_lines';
 import { useFormatter } from 'src/components/i18n';
 import useHelper from 'src/utils/hooks/useHelper';
+import { TargetEntity } from '@components/common/stix_core_relationships/StixCoreRelationshipCreationFromEntity';
 
 type BulkRelationDialogContainerProps = {
   stixDomainObjectId: string;
   stixDomainObjectName: string;
   stixDomainObjectType: string;
-  handleRefetch: () => void;
+  selectedEntities: TargetEntity[];
+  defaultRelationshipType?: string;
+  paginationKey: string;
+  paginationOptions: PaginationOptions;
 };
 
 const inlinedStyle = {
   button: {
     display: 'flex',
-    margin: '-45px 0px 0 0',
     float: 'right',
     alignItems: 'center',
+    margin: '0 10px',
   },
 };
-const BulkRelationDialogContainer = ({ stixDomainObjectId, stixDomainObjectName, stixDomainObjectType, handleRefetch }: BulkRelationDialogContainerProps) => {
+const BulkRelationDialogContainer = ({
+  stixDomainObjectId,
+  stixDomainObjectName,
+  stixDomainObjectType,
+  selectedEntities,
+  defaultRelationshipType,
+  paginationKey,
+  paginationOptions,
+}: BulkRelationDialogContainerProps) => {
   const { isFeatureEnable } = useHelper();
   const { t_i18n } = useFormatter();
 
@@ -35,18 +48,21 @@ const BulkRelationDialogContainer = ({ stixDomainObjectId, stixDomainObjectName,
 
   return (
     <>
-      <Button onClick={handleOpenDialog} variant="outlined" sx={inlinedStyle.button}>
-        {t_i18n('Create bulk relations')}
+      <Button onClick={handleOpenDialog} color="primary" variant="outlined" sx={inlinedStyle.button} size="small">
+        {t_i18n('Create relations in bulk')}
       </Button>
       {isDialogOpen && (
-      <BulkRelationDialog
-        stixDomainObjectId={stixDomainObjectId}
-        stixDomainObjectName={stixDomainObjectName}
-        stixDomainObjectType={stixDomainObjectType}
-        isOpen={isDialogOpen}
-        onClose={handleCloseDialog}
-        handleRefetch={handleRefetch}
-      />
+        <BulkRelationDialog
+          paginationKey={paginationKey}
+          paginationOptions={paginationOptions}
+          stixDomainObjectId={stixDomainObjectId}
+          stixDomainObjectName={stixDomainObjectName}
+          stixDomainObjectType={stixDomainObjectType}
+          defaultRelationshipType={defaultRelationshipType}
+          isOpen={isDialogOpen}
+          onClose={handleCloseDialog}
+          selectedEntities={selectedEntities}
+        />
       )}
     </>
   );

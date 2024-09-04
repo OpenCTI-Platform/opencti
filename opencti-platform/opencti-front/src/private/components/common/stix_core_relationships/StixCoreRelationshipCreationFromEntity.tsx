@@ -1,5 +1,4 @@
 import React, { FunctionComponent, useEffect, useRef, useState } from 'react';
-import { v4 as uuid } from 'uuid';
 import { graphql } from 'react-relay';
 import * as R from 'ramda';
 import Drawer from '@mui/material/Drawer';
@@ -15,11 +14,18 @@ import SpeedDialIcon from '@mui/material/SpeedDialIcon';
 import SpeedDialAction from '@mui/material/SpeedDialAction';
 import { GlobeModel, HexagonOutline } from 'mdi-material-ui';
 import { StixCoreRelationshipCreationFromEntityQuery$data } from '@components/common/stix_core_relationships/__generated__/StixCoreRelationshipCreationFromEntityQuery.graphql';
-import {
-  StixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery$data,
-} from '@components/common/stix_core_relationships/__generated__/StixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery.graphql';
 import { FormikConfig } from 'formik/dist/types';
 import { Option } from '@components/common/form/ReferenceField';
+import { UsePreloadedPaginationFragment } from 'src/utils/hooks/usePreloadedPaginationFragment';
+import { usePaginationLocalStorage } from 'src/utils/hooks/useLocalStorage';
+import BulkRelationDialogContainer from '@components/common/bulk/dialog/BulkRelationDialogContainer';
+import {
+  StixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery$variables,
+} from '@components/common/stix_core_relationships/__generated__/StixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery.graphql';
+import {
+  StixCoreRelationshipCreationFromEntityStixCoreObjectsLines_data$data,
+} from '@components/common/stix_core_relationships/__generated__/StixCoreRelationshipCreationFromEntityStixCoreObjectsLines_data.graphql';
+import { PaginationOptions } from 'src/components/list_lines';
 import { commitMutation, handleErrorInForm, QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import { formatDate } from '../../../../utils/Time';
@@ -29,15 +35,16 @@ import { isNodeInConnection } from '../../../../utils/store';
 import StixCoreRelationshipCreationForm from './StixCoreRelationshipCreationForm';
 import { resolveRelationsTypes } from '../../../../utils/Relation';
 import { UserContext } from '../../../../utils/hooks/useAuth';
-import ListLines from '../../../../components/list_lines/ListLines';
-import { emptyFilterGroup, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
-import StixCoreRelationshipCreationFromEntityStixCoreObjectsLines, {
-  stixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery,
-} from './StixCoreRelationshipCreationFromEntityStixCoreObjectsLines';
-import useFiltersState from '../../../../utils/filters/useFiltersState';
+import { useBuildEntityTypeBasedFilterContext } from '../../../../utils/filters/filtersUtils';
+import {
+  type StixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery as StixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQueryType,
+} from './__generated__/StixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery.graphql';
 import type { Theme } from '../../../../components/Theme';
 import { ModuleHelper } from '../../../../utils/platformModulesHelper';
 import useEntityToggle from '../../../../utils/hooks/useEntityToggle';
+import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import DataTable from '../../../../components/dataGrid/DataTable';
+import { DataTableVariant } from '../../../../components/dataGrid/dataTableTypes';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -78,18 +85,275 @@ const useStyles = makeStyles<Theme>((theme) => ({
     zIndex: 1001,
   },
   container: {
-    padding: '15px 0 0 15px',
-    height: '100%',
+    padding: '15px',
+    paddingBottom: 0,
+    flex: 1,
     width: '100%',
   },
-  speedDialButton: {
-    backgroundColor: theme.palette.primary.main,
-    color: theme.palette.primary.contrastText,
-    '&:hover': {
-      backgroundColor: theme.palette.primary.main,
-    },
-  },
 }));
+
+export const stixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery = graphql`
+  query StixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery(
+    $types: [String]
+    $search: String
+    $count: Int!
+    $cursor: ID
+    $orderBy: StixCoreObjectsOrdering
+    $orderMode: OrderingMode
+    $filters: FilterGroup
+  ) {
+    ...StixCoreRelationshipCreationFromEntityStixCoreObjectsLines_data
+    @arguments(
+      types: $types
+      search: $search
+      count: $count
+      cursor: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+      filters: $filters
+    )
+  }
+`;
+export const stixCoreRelationshipCreationFromEntityStixCoreObjectsLinesFragment = graphql`
+  fragment StixCoreRelationshipCreationFromEntityStixCoreObjectsLines_data on Query
+  @argumentDefinitions(
+    types: { type: "[String]" }
+    search: { type: "String" }
+    count: { type: "Int", defaultValue: 25 }
+    cursor: { type: "ID" }
+    orderBy: { type: "StixCoreObjectsOrdering", defaultValue: created_at }
+    orderMode: { type: "OrderingMode", defaultValue: asc }
+    filters: { type: "FilterGroup" }
+  ) @refetchable(queryName: "StixCoreRelationshipCreationFromEntityStixCoreObjectsLinesRefetchQuery") {
+    stixCoreObjects(
+      types: $types
+      search: $search
+      first: $count
+      after: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+      filters: $filters
+    ) @connection(key: "Pagination_stixCoreObjects") {
+      edges {
+        node {
+          id
+          standard_id
+          entity_type
+          created_at
+          createdBy {
+            ... on Identity {
+              name
+            }
+          }
+          creators {
+            id
+            name
+          }
+          objectMarking {
+            id
+            definition_type
+            definition
+            x_opencti_order
+            x_opencti_color
+          }
+          ...StixCoreRelationshipCreationFromEntityStixCoreObjectsLine_node
+        }
+      }
+      pageInfo {
+        endCursor
+        hasNextPage
+        globalCount
+      }
+    }
+  }
+`;
+export const stixCoreRelationshipCreationFromEntityStixCoreObjectsLineFragment = graphql`
+  fragment StixCoreRelationshipCreationFromEntityStixCoreObjectsLine_node on StixCoreObject {
+    id
+    standard_id
+    parent_types
+    entity_type
+    created_at
+    ... on AttackPattern {
+      name
+      description
+      aliases
+      x_mitre_id
+    }
+    ... on Campaign {
+      name
+      description
+      aliases
+    }
+    ... on Note {
+      attribute_abstract
+      content
+    }
+    ... on ObservedData {
+      name
+      first_observed
+      last_observed
+    }
+    ... on Opinion {
+      opinion
+      explanation
+    }
+    ... on Report {
+      name
+      description
+    }
+    ... on Grouping {
+      name
+      description
+    }
+    ... on CourseOfAction {
+      name
+      description
+      x_opencti_aliases
+      x_mitre_id
+    }
+    ... on Individual {
+      name
+      description
+      x_opencti_aliases
+    }
+    ... on Organization {
+      name
+      description
+      x_opencti_aliases
+    }
+    ... on Sector {
+      name
+      description
+      x_opencti_aliases
+    }
+    ... on System {
+      name
+      description
+      x_opencti_aliases
+    }
+    ... on Indicator {
+      name
+      description
+    }
+    ... on Infrastructure {
+      name
+      description
+    }
+    ... on IntrusionSet {
+      name
+      aliases
+      description
+    }
+    ... on Position {
+      name
+      description
+      x_opencti_aliases
+    }
+    ... on City {
+      name
+      description
+      x_opencti_aliases
+    }
+    ... on AdministrativeArea {
+      name
+      description
+      x_opencti_aliases
+    }
+    ... on Country {
+      name
+      description
+      x_opencti_aliases
+    }
+    ... on Region {
+      name
+      description
+      x_opencti_aliases
+    }
+    ... on Malware {
+      name
+      aliases
+      description
+    }
+    ... on MalwareAnalysis {
+      result_name
+    }
+    ... on ThreatActor {
+      name
+      aliases
+      description
+    }
+    ... on Tool {
+      name
+      aliases
+      description
+    }
+    ... on Vulnerability {
+      name
+      description
+    }
+    ... on Incident {
+      name
+      aliases
+      description
+    }
+    ... on Event {
+      name
+      description
+      aliases
+    }
+    ... on Channel {
+      name
+      description
+      aliases
+    }
+    ... on Narrative {
+      name
+      description
+      aliases
+    }
+    ... on Language {
+      name
+      aliases
+    }
+    ... on DataComponent {
+      name
+    }
+    ... on DataSource {
+      name
+    }
+    ... on Case {
+      name
+    }
+    ... on StixCyberObservable {
+      observable_value
+    }
+    createdBy {
+      id
+      entity_type
+      ... on Identity {
+        name
+      }
+    }
+    objectMarking {
+      id
+      definition_type
+      definition
+      x_opencti_order
+      x_opencti_color
+    }
+    objectLabel {
+      id
+      value
+      color
+    }
+    creators {
+      id
+      name
+    }
+  }
+
+`;
 
 const stixCoreRelationshipCreationFromEntityQuery = graphql`
   query StixCoreRelationshipCreationFromEntityQuery($id: String!) {
@@ -225,6 +489,7 @@ interface StixCoreRelationshipCreationFromEntityProps {
   openExports?: boolean;
   handleReverseRelation?: () => void;
 }
+
 interface StixCoreRelationshipCreationFromEntityForm {
   confidence: string;
   start_time: string;
@@ -234,10 +499,15 @@ interface StixCoreRelationshipCreationFromEntityForm {
   objectMarking: Option[];
   externalReferences: Option[];
 }
+
 export interface TargetEntity {
   id: string;
   entity_type: string;
+  name?: string;
 }
+
+const getLocalStorageKey = (entityId: string) => `${entityId}_stixCoreRelationshipCreationFromEntity`;
+
 const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelationshipCreationFromEntityProps> = (props) => {
   const {
     targetEntities: targetEntitiesProps = [],
@@ -265,7 +535,7 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
   let virtualEntityTypes = ['Stix-Domain-Object', 'Stix-Cyber-Observable'];
   if (
     (targetStixDomainObjectTypes ?? []).length > 0
-        && (targetStixCyberObservableTypes ?? []).length === 0
+    && (targetStixCyberObservableTypes ?? []).length === 0
   ) {
     isOnlySDOs = true;
     virtualEntityTypes = targetStixDomainObjectTypes;
@@ -274,7 +544,7 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
     }
   } else if (
     (targetStixCyberObservableTypes ?? []).length > 0
-        && (targetStixDomainObjectTypes ?? []).length === 0
+    && (targetStixDomainObjectTypes ?? []).length === 0
   ) {
     isOnlySCOs = true;
     virtualEntityTypes = targetStixCyberObservableTypes;
@@ -283,26 +553,14 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
     }
   } else if (
     (targetStixCyberObservableTypes ?? []).length > 0
-        && (targetStixDomainObjectTypes ?? []).length > 0
+    && (targetStixDomainObjectTypes ?? []).length > 0
   ) {
     virtualEntityTypes = [
       ...targetStixDomainObjectTypes,
       ...targetStixCyberObservableTypes,
     ];
   }
-  const actualTypeFilters = actualTypeFilterValues.length > 0
-    ? {
-      mode: 'and',
-      filterGroups: [],
-      filters: [{
-        id: uuid(),
-        key: 'entity_type',
-        values: actualTypeFilterValues,
-        operator: 'eq',
-        mode: 'or',
-      }],
-    }
-    : emptyFilterGroup;
+
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const [open, setOpen] = useState(targetEntitiesProps.length !== 0);
@@ -322,13 +580,19 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
   }, [targetEntitiesProps]);
   const [sortBy, setSortBy] = useState('_score');
   const [orderAsc, setOrderAsc] = useState(false);
-  const [filters, helpers] = useFiltersState(actualTypeFilters, actualTypeFilters);
-  const [numberOfElements, setNumberOfElements] = useState({
-    number: 0,
-    symbol: '',
-  });
-  const [searchTerm, setSearchTerm] = useState('');
+
   const containerRef = useRef(null);
+
+  const { viewStorage, helpers } = usePaginationLocalStorage<StixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery$variables>(
+    getLocalStorageKey(entityId),
+    {},
+  );
+  const { searchTerm = '', orderAsc: storageOrderAsc, sortBy: storageSortBy, filters } = viewStorage;
+
+  useEffect(() => {
+    if (storageSortBy && (storageSortBy !== sortBy)) setSortBy(storageSortBy);
+    if (storageOrderAsc !== undefined && (storageOrderAsc !== orderAsc)) setOrderAsc(storageOrderAsc);
+  }, [storageOrderAsc, storageSortBy]);
 
   const handleOpenSpeedDial = () => {
     setOpenSpeedDial(true);
@@ -392,7 +656,7 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
 
             if (conn && payload !== null
               && !isNodeInConnection(payload, conn)
-                && !isNodeInConnection(payload.getLinkedRecord(isRelationReversed ? 'from' : 'to'), conn)
+              && !isNodeInConnection(payload.getLinkedRecord(isRelationReversed ? 'from' : 'to'), conn)
             ) {
               const newEdge = payload.setLinkedRecord(createdNode, 'node');
               ConnectionHandler.insertEdgeBefore(conn, newEdge);
@@ -453,76 +717,85 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
     setTargetEntities([]);
   };
 
-  const handleSort = (field: string, sortOrderAsc: boolean) => {
-    setSortBy(field);
-    setOrderAsc(sortOrderAsc);
-  };
-
   const handleNextStep = () => {
     setStep(1);
   };
 
   const {
-    onToggleEntity,
     selectedElements,
-    deSelectedElements,
-  } = useEntityToggle(`${entityId}_stixCoreRelationshipCreationFromEntity`);
+  } = useEntityToggle(getLocalStorageKey(entityId));
 
-  const onInstanceToggleEntity = (entity: TargetEntity) => {
-    onToggleEntity(entity);
-    if (entity.id in (selectedElements || {})) {
-      const newSelectedElements = R.omit([entity.id], selectedElements);
-      setTargetEntities(R.values(newSelectedElements));
-    } else {
-      const newSelectedElements = R.assoc(
-        entity.id,
-        entity,
-        selectedElements || {},
-      );
-      setTargetEntities(R.values(newSelectedElements));
-    }
-  };
+  useEffect(() => {
+    const newTargetEntities: TargetEntity[] = Object.values(selectedElements).map((item) => ({
+      id: item.id,
+      entity_type: item.entity_type ?? '',
+      name: item.name ?? item.observable_value ?? '',
+    }));
+    setTargetEntities(newTargetEntities);
+  }, [selectedElements]);
 
   const buildColumns = (platformModuleHelpers: ModuleHelper | undefined) => {
     const isRuntimeSort = platformModuleHelpers?.isRuntimeFieldEnable();
     return {
       entity_type: {
         label: 'Type',
-        width: '15%',
+        percentWidth: 15,
         isSortable: true,
       },
       value: {
         label: 'Value',
-        width: '32%',
+        percentWidth: 32,
         isSortable: false,
       },
       createdBy: {
         label: 'Author',
-        width: '15%',
+        percentWidth: 15,
         isSortable: isRuntimeSort,
       },
       objectLabel: {
         label: 'Labels',
-        width: '22%',
+        percentWidth: 22,
         isSortable: false,
       },
       objectMarking: {
         label: 'Marking',
-        width: '15%',
+        percentWidth: 15,
         isSortable: isRuntimeSort,
       },
     };
   };
-  const searchPaginationOptions = {
+  const contextFilters = useBuildEntityTypeBasedFilterContext(virtualEntityTypes, filters);
+  const searchPaginationOptions: PaginationOptions = {
     search: searchTerm,
-    filters: useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, virtualEntityTypes),
+    filters: contextFilters,
     orderBy: sortBy,
     orderMode: orderAsc ? 'asc' : 'desc',
-  };
+  } as PaginationOptions;
 
-  const renderSelectEntity = () => {
+  const queryRef = useQueryLoading<StixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQueryType>(
+    stixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery,
+    { ...searchPaginationOptions, count: 100 } as StixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery$variables,
+  );
+
+  const preloadedPaginationProps = {
+    linesQuery: stixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery,
+    linesFragment: stixCoreRelationshipCreationFromEntityStixCoreObjectsLinesFragment,
+    queryRef,
+    nodePath: ['stixCoreObjects', 'pageInfo', 'globalCount'],
+    setNumberOfElements: helpers.handleSetNumberOfElements,
+  } as UsePreloadedPaginationFragment<StixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQueryType>;
+
+  const [tableRootRef, setTableRootRef] = useState<HTMLDivElement | null>(null);
+
+  const renderSelectEntity = (entity_type: string, name = '') => {
     return (
-      <div data-testid="stixCoreRelationshipCreationFromEntity-component">
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          height: '100%',
+        }}
+      >
         <div className={classes.header}>
           <IconButton
             aria-label="Close"
@@ -530,161 +803,157 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
             onClick={() => handleClose()}
             size="large"
           >
-            <Close fontSize="small" color="primary"/>
+            <Close fontSize="small" color="primary" />
           </IconButton>
           <Typography variant="h6" classes={{ root: classes.title }}>
             {t_i18n('Create a relationship')}
           </Typography>
-          <div className="clearfix"/>
+          <div className="clearfix" />
         </div>
-        <div className={classes.container}>
+        <div data-testid="stixCoreRelationshipCreationFromEntity-component" className={classes.container}>
           <UserContext.Consumer>
             {({ platformModuleHelpers }) => (
               <>
-                <ListLines
-                  sortBy={sortBy}
-                  orderAsc={orderAsc}
-                  dataColumns={buildColumns(platformModuleHelpers)}
-                  handleSearch={setSearchTerm}
-                  keyword={searchTerm}
-                  handleSort={handleSort}
-                  helpers={helpers}
-                  disableCards={true}
-                  filters={filters}
-                  disableExport={true}
-                  paginationOptions={searchPaginationOptions}
-                  numberOfElements={numberOfElements}
-                  iconExtension={true}
-                  parametersWithPadding={true}
-                  availableEntityTypes={virtualEntityTypes}
-                  handleToggleSelectAll="no"
-                  entityTypes={virtualEntityTypes}
-                  additionalFilterKeys={{
-                    filterKeys: ['entity_type'],
-                    filtersRestrictions: { preventFilterValuesEditionFor: new Map([['entity_type', actualTypeFilterValues]]) } }
-                  }
-                >
-                  <QueryRenderer
-                    query={stixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery}
-                    variables={{ count: 100, ...searchPaginationOptions }}
-                    render={({ props: renderProps }: { props: StixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery$data }) => (
-                      <StixCoreRelationshipCreationFromEntityStixCoreObjectsLines
-                        data={renderProps}
-                        paginationOptions={paginationOptions}
-                        dataColumns={buildColumns(platformModuleHelpers)}
-                        initialLoading={renderProps === null}
-                        setNumberOfElements={setNumberOfElements}
-                        containerRef={containerRef}
-                        selectedElements={selectedElements}
-                        deSelectedElements={deSelectedElements}
-                        selectAll={false}
-                        onToggleEntity={onInstanceToggleEntity}
-                      />
-                    )}
-                  />
-                </ListLines>
+                {queryRef && (
+                  <div style={{ height: '100%' }} ref={setTableRootRef}>
+                    <DataTable
+                      disableToolBar
+                      disableSelectAll
+                      rootRef={tableRootRef ?? undefined}
+                      variant={DataTableVariant.inline}
+                      dataColumns={buildColumns(platformModuleHelpers)}
+                      resolvePath={(data: StixCoreRelationshipCreationFromEntityStixCoreObjectsLines_data$data) => data.stixCoreObjects?.edges?.map((n) => n?.node)}
+                      storageKey={getLocalStorageKey(entityId)}
+                      lineFragment={stixCoreRelationshipCreationFromEntityStixCoreObjectsLineFragment}
+                      initialValues={{}}
+                      toolbarFilters={contextFilters}
+                      preloadedPaginationProps={preloadedPaginationProps}
+                      entityTypes={virtualEntityTypes}
+                      additionalHeaderButtons={[(
+                        <BulkRelationDialogContainer
+                          paginationOptions={searchPaginationOptions}
+                          paginationKey="Pagination_stixCoreObjects"
+                          key="BulkRelationDialogContainer"
+                          stixDomainObjectId={entityId}
+                          stixDomainObjectName={name}
+                          stixDomainObjectType={entity_type}
+                          defaultRelationshipType={allowedRelationshipTypes?.[0]}
+                          selectedEntities={targetEntities}
+                        />
+                      )]}
+                    />
+                  </div>
+                )}
               </>
             )}
           </UserContext.Consumer>
           {targetEntities.length === 0 && isOnlySDOs && (
-          <StixDomainObjectCreation
-            display={open}
-            inputValue={searchTerm}
-            paginationKey="Pagination_stixCoreObjects"
-            paginationOptions={searchPaginationOptions}
-            stixDomainObjectTypes={actualTypeFilterValues}
-            creationCallback={undefined}
-            confidence={undefined}
-            defaultCreatedBy={undefined}
-            defaultMarkingDefinitions={undefined}
-            open={undefined}
-            speeddial={undefined}
-            handleClose={undefined}
-          />
-          )}
-          {targetEntities.length === 0 && isOnlySCOs && (
-          <StixCyberObservableCreation
-            display={open}
-            contextual={true}
-            inputValue={searchTerm}
-            paginationKey="Pagination_stixCoreObjects"
-            paginationOptions={searchPaginationOptions}
-            open={undefined}
-            handleClose={undefined}
-            type={undefined}
-            speeddial={undefined}
-          />
-          )}
-          {targetEntities.length === 0 && !isOnlySDOs && !isOnlySCOs && (
-          <>
-            <SpeedDial
-              className={classes.createButton}
-              ariaLabel="Create"
-              icon={<SpeedDialIcon/>}
-              onClose={handleCloseSpeedDial}
-              onOpen={handleOpenSpeedDial}
-              open={openSpeedDial}
-              FabProps={{
-                color: 'secondary',
-              }}
-            >
-              <SpeedDialAction
-                title={t_i18n('Create an observable')}
-                icon={<HexagonOutline/>}
-                tooltipTitle={t_i18n('Create an observable')}
-                onClick={handleOpenCreateObservable}
-                FabProps={{
-                  classes: { root: classes.speedDialButton },
-                }}
-              />
-              <SpeedDialAction
-                title={t_i18n('Create an entity')}
-                icon={<GlobeModel/>}
-                tooltipTitle={t_i18n('Create an entity')}
-                onClick={handleOpenCreateEntity}
-                FabProps={{
-                  classes: { root: classes.speedDialButton },
-                }}
-              />
-            </SpeedDial>
             <StixDomainObjectCreation
               display={open}
               inputValue={searchTerm}
               paginationKey="Pagination_stixCoreObjects"
               paginationOptions={searchPaginationOptions}
-              speeddial={true}
-              open={openCreateEntity}
-              handleClose={handleCloseCreateEntity}
+              stixDomainObjectTypes={actualTypeFilterValues}
               creationCallback={undefined}
               confidence={undefined}
               defaultCreatedBy={undefined}
               defaultMarkingDefinitions={undefined}
-              stixDomainObjectTypes={undefined}
+              isFromBulkRelation={undefined}
+              open={undefined}
+              speeddial={undefined}
+              handleClose={undefined}
+              onCompleted={undefined}
             />
+          )}
+          {targetEntities.length === 0 && isOnlySCOs && (
             <StixCyberObservableCreation
               display={open}
               contextual={true}
               inputValue={searchTerm}
               paginationKey="Pagination_stixCoreObjects"
               paginationOptions={searchPaginationOptions}
-              speeddial={true}
-              open={openCreateObservable}
-              handleClose={handleCloseCreateObservable}
+              open={undefined}
+              handleClose={undefined}
               type={undefined}
+              speeddial={undefined}
+              onCompleted={undefined}
+              isFromBulkRelation={undefined}
             />
-          </>
+          )}
+          {targetEntities.length === 0 && !isOnlySDOs && !isOnlySCOs && (
+            <>
+              <SpeedDial
+                className={classes.createButton}
+                ariaLabel="Create"
+                icon={<SpeedDialIcon/>}
+                onClose={handleCloseSpeedDial}
+                onOpen={handleOpenSpeedDial}
+                open={openSpeedDial}
+                FabProps={{
+                  color: 'primary',
+                }}
+              >
+                <SpeedDialAction
+                  title={t_i18n('Create an observable')}
+                  icon={<HexagonOutline/>}
+                  tooltipTitle={t_i18n('Create an observable')}
+                  onClick={handleOpenCreateObservable}
+                  FabProps={{
+                    classes: { root: classes.speedDialButton },
+                  }}
+                />
+                <SpeedDialAction
+                  title={t_i18n('Create an entity')}
+                  icon={<GlobeModel/>}
+                  tooltipTitle={t_i18n('Create an entity')}
+                  onClick={handleOpenCreateEntity}
+                  FabProps={{
+                    classes: { root: classes.speedDialButton },
+                  }}
+                />
+              </SpeedDial>
+              <StixDomainObjectCreation
+                display={open}
+                inputValue={searchTerm}
+                paginationKey="Pagination_stixCoreObjects"
+                paginationOptions={searchPaginationOptions}
+                speeddial={true}
+                open={openCreateEntity}
+                handleClose={handleCloseCreateEntity}
+                onCompleted={undefined}
+                creationCallback={undefined}
+                confidence={undefined}
+                defaultCreatedBy={undefined}
+                isFromBulkRelation={undefined}
+                defaultMarkingDefinitions={undefined}
+                stixDomainObjectTypes={undefined}
+              />
+              <StixCyberObservableCreation
+                display={open}
+                contextual={true}
+                inputValue={searchTerm}
+                paginationKey="Pagination_stixCoreObjects"
+                paginationOptions={searchPaginationOptions}
+                speeddial={true}
+                open={openCreateObservable}
+                handleClose={handleCloseCreateObservable}
+                type={undefined}
+                onCompleted={undefined}
+                isFromBulkRelation={undefined}
+              />
+            </>
           )}
           {targetEntities.length > 0 && (
-          <Fab
-            variant="extended"
-            className={classes.continue}
-            size="small"
-            color="secondary"
-            onClick={() => handleNextStep()}
-          >
-            {t_i18n('Continue')}
-            <ChevronRightOutlined/>
-          </Fab>
+            <Fab
+              variant="extended"
+              className={classes.continue}
+              size="small"
+              color="primary"
+              onClick={handleNextStep}
+            >
+              {t_i18n('Continue')}
+              <ChevronRightOutlined/>
+            </Fab>
           )}
         </div>
       </div>
@@ -704,9 +973,9 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
         {({ schema }) => {
           const relationshipTypes = R.uniq(R.filter(
             (n) => R.isNil(allowedRelationshipTypes)
-            || allowedRelationshipTypes.length === 0
-            || allowedRelationshipTypes.includes('stix-core-relationship')
-            || allowedRelationshipTypes.includes(n),
+              || allowedRelationshipTypes.length === 0
+              || allowedRelationshipTypes.includes('stix-core-relationship')
+              || allowedRelationshipTypes.includes(n),
             resolveRelationsTypes(
               fromEntities[0].entity_type,
               toEntities[0].entity_type,
@@ -719,10 +988,10 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
                 <IconButton
                   aria-label="Close"
                   className={classes.closeButton}
-                  onClick={() => handleClose()}
+                  onClick={handleClose}
                   size="large"
                 >
-                  <Close fontSize="small" color="primary"/>
+                  <Close fontSize="small" color="primary" />
                 </IconButton>
                 <Typography variant="h6">
                   {t_i18n('Create a relationship')}
@@ -759,7 +1028,7 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
             textAlign: 'center',
           }}
         >
-          <CircularProgress size={80} thickness={2}/>
+          <CircularProgress size={80} thickness={2} />
         </span>
       </div>
     );
@@ -776,7 +1045,7 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
           style={{ float: 'left', margin: '-15px 0 0 -2px' }}
           size="large"
         >
-          <Add fontSize="small"/>
+          <Add fontSize="small" />
         </IconButton>
       ) : !openExports ? (
         <Fab
@@ -786,7 +1055,7 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
           className={classes.createButton}
           style={{ right: paddingRight || 30 }}
         >
-          <Add/>
+          <Add />
         </Fab>
       ) : (
         ''
@@ -809,11 +1078,12 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
           variables={{ id: entityId }}
           render={({ props: renderProps }: ({ props: StixCoreRelationshipCreationFromEntityQuery$data })) => {
             if (renderProps && renderProps.stixCoreObject) {
+              const { name, entity_type, observable_value } = renderProps.stixCoreObject;
               return (
-                <div style={{ minHeight: '100%' }}>
-                  {step === 0 ? renderSelectEntity() : ''}
-                  {step === 1 ? renderForm(renderProps.stixCoreObject) : ''}
-                </div>
+                <>
+                  {step === 0 ? renderSelectEntity(entity_type, name || observable_value) : null}
+                  {step === 1 ? renderForm(renderProps.stixCoreObject) : null}
+                </>
               );
             }
             return renderLoader();

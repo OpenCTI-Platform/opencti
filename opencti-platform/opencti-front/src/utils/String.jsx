@@ -129,7 +129,7 @@ export const emptyFilled = (str) => (isNotEmptyField(str) ? str : '-');
  * @param str {string}
  * @returns {string[]}
  */
-export const splitMultilines = (str) => str
+export const splitMultilines = (str) => (str ?? '')
   .split(/\r?\n/)
   .filter((v) => !!v)
   .map((s) => s.trim());
