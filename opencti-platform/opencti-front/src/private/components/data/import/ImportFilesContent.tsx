@@ -247,6 +247,7 @@ const ImportFilesContent = () => {
           initialValues={initialValues}
           preloadedPaginationProps={preloadedPaginationProps}
           taskScope={'IMPORT'}
+          disableNavigation
           actions={(file: ImportFilesContentFileLine_file$data) => {
             const { id, metaData, uploadStatus } = file;
             const isProgress = uploadStatus === 'progress' || uploadStatus === 'wait';

@@ -277,6 +277,7 @@ const ImportWorkbenchesContent = () => {
           preloadedPaginationProps={preloadedPaginationProps}
           taskScope='IMPORT'
           extraFields={globalFilesField}
+          disableNavigation
           actions={(file: ImportWorkbenchesContentFileLine_file$data) => {
             const { id, metaData, uploadStatus } = file;
             const isProgress = uploadStatus === 'progress' || uploadStatus === 'wait';
