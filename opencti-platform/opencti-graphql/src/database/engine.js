@@ -2991,7 +2991,7 @@ export const elAggregationRelationsCount = async (context, user, indexName, opti
 };
 
 export const elAggregationNestedTermsWithFilter = async (context, user, indexName, aggregation, opts = {}) => {
-  const { types = [], size = 500 } = opts;
+  const { types = [], size = ES_DEFAULT_PAGINATION } = opts;
   const { path, field, filter } = aggregation;
   const body = await elQueryBodyBuilder(context, user, { ...opts, noSize: true, noSort: true });
   body.size = 0;
