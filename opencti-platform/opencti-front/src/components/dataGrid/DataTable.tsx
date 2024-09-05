@@ -166,6 +166,7 @@ const DataTable = (props: OCTIDataTableProps) => {
             <DataTableDisplayFilters
               availableFilterKeys={availableFilterKeys}
               availableRelationFilterTypes={availableRelationFilterTypes}
+              availableEntityTypes={availableEntityTypes}
               additionalFilterKeys={additionalFilterKeys}
               entityTypes={computedEntityTypes}
               paginationOptions={paginationOptions}

@@ -57,6 +57,7 @@ export const DataTableDisplayFilters = ({
   availableFilterKeys,
   availableRelationFilterTypes,
   additionalFilterKeys,
+  availableEntityTypes,
   entityTypes,
 }: DataTableDisplayFiltersProps) => {
   const classes = useStyles();
@@ -73,6 +74,7 @@ export const DataTableDisplayFilters = ({
         handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
         handleSwitchLocalMode={helpers.handleSwitchLocalMode}
         availableRelationFilterTypes={availableRelationFilterTypes}
+        availableEntityTypes={availableEntityTypes}
         entityTypes={entityTypes}
         filtersRestrictions={{
           preventRemoveFor: additionalFilterKeys,

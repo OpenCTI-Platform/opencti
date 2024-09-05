@@ -1316,7 +1316,7 @@ class DataTableToolBar extends Component {
         && notScannableTypes.includes(entityTypeFilterValues[0]));
     // endregion
     // region enrich
-    const isManualEnrichSelect = !selectAll && selectedTypes.length === 1;
+    const isManualEnrichSelect = !selectAll && (selectedTypes.filter((st) => !['Stix-Cyber-Observable'].includes(st))).length === 1;
     const isAllEnrichSelect = selectAll
       && entityTypeFilterValues.length === 1
       && entityTypeFilterValues[0] !== 'Stix-Cyber-Observable'
