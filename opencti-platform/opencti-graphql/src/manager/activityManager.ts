@@ -108,7 +108,7 @@ const historyIndexing = async (context: AuthContext, events: Array<SseEvent<Acti
       };
     });
   // Bulk the history data insertions
-  return elIndexElements(context, SYSTEM_USER, `activity (${historyElements.length})`, historyElements);
+  return elIndexElements(context, SYSTEM_USER, ENTITY_TYPE_ACTIVITY, historyElements);
 };
 
 const eventsApplyHandler = async (context: AuthContext, events: Array<SseEvent<ActivityStreamEvent>>) => {

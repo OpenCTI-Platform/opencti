@@ -129,7 +129,7 @@ const eventsApplyHandler = async (context: AuthContext, events: Array<SseEvent<S
     };
   });
   // Bulk the history data insertions
-  await elIndexElements(context, SYSTEM_USER, `history (${historyElements.length})`, historyElements);
+  await elIndexElements(context, SYSTEM_USER, ENTITY_TYPE_HISTORY, historyElements);
 };
 
 const historyStreamHandler = async (streamEvents: Array<SseEvent<StreamDataEvent>>) => {

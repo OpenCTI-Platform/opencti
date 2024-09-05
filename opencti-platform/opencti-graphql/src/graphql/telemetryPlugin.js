@@ -23,7 +23,6 @@ export default {
   requestDidStart: /* v8 ignore next */ () => {
     let tracingSpan;
     const start = Date.now();
-    meterManager.request();
     return {
       didResolveOperation: (resolveContext) => {
         const isWrite = resolveContext.operation && resolveContext.operation.operation === 'mutation';
@@ -48,14 +47,22 @@ export default {
           tracingSpan.setAttribute(SEMATTRS_MESSAGING_MESSAGE_PAYLOAD_COMPRESSED_SIZE_BYTES, payloadSize);
         }
         if (requestError) {
-          meterManager.error();
+          const operation = sendContext.request.query.startsWith('mutation') ? 'mutation' : 'query';
+          const { operationName } = sendContext.request;
+          const type = sendContext.response.body.singleResult.errors.at(0)?.name ?? requestError.name;
+          const operationAttributes = { operation, name: operationName, type };
+          meterManager.error(operationAttributes);
           if (tracingSpan) {
             tracingSpan.setStatus({ code: 2, message: requestError.name });
           }
         } else {
+          const operation = sendContext.operation?.operation ?? 'query';
+          const operationName = sendContext.operationName ?? 'Unspecified';
+          const operationAttributes = { operation, name: operationName };
+          meterManager.request(operationAttributes);
           const stop = Date.now();
           const elapsed = stop - start;
-          meterManager.latency(elapsed);
+          meterManager.latency(elapsed, operationAttributes);
           if (tracingSpan) {
             tracingSpan.setStatus({ code: 1 });
           }
