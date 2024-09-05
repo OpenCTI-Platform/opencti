@@ -9,6 +9,7 @@
     "disabled_dev_features": [
       "FAB_REPLACEMENT",
       "4352_BULK_RELATIONS",
+      "NEW_IMPORT_SCREENS",
       "FILIGRAN_LOADER",
       "BULK_ENTITIES",
       "CONTAINERS_AUTHORIZED_MEMBERS",
