@@ -84,7 +84,7 @@ const publishFileRead = async (executeContext, auth, file) => {
 const createApp = async (app) => {
   const limiter = rateLimit({
     windowMs: nconf.get('app:rate_protection:time_window') * 1000, // seconds
-    max: nconf.get('app:rate_protection:max_requests'),
+    limit: nconf.get('app:rate_protection:max_requests'),
     handler: (req, res /* , next */) => {
       res.status(429).send({ message: 'Too many requests, please try again later.' });
     },
