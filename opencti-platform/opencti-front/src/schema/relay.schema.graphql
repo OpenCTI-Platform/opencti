@@ -4,6 +4,15 @@ directive @public on OBJECT | FIELD_DEFINITION
 
 directive @constraint(minLength: Int, maxLength: Int, startsWith: String, endsWith: String, notContains: String, pattern: String, format: String, min: Int, max: Int, exclusiveMin: Int, exclusiveMax: Int, multipleOf: Int) on INPUT_FIELD_DEFINITION
 
+"""Controls the rate of traffic."""
+directive @rateLimit(
+  """Number of occurrences allowed over duration."""
+  limit: Int! = 60
+
+  """Number of seconds before limit is reset."""
+  duration: Int! = 60
+) on OBJECT | FIELD_DEFINITION
+
 """
 A date-time string at UTC, such as 2007-12-03T10:15:30Z, compliant with the `date-time` format outlined in section 5.6 of the RFC 3339 profile of the ISO 8601 standard for representation of dates and times using the Gregorian calendar.
 """
