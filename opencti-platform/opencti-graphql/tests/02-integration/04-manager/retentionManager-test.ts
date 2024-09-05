@@ -102,7 +102,7 @@ describe('Retention Manager tests ', () => {
     expect(file?.lastModified).toEqual(lastModified);
     expect(file?.uploadStatus).toEqual('complete');
     expect(file?.id).toEqual(fileId);
-    // create a file not modified since '2023-01-01T00:00:00.000Z' and with uploadStatus = 'pending'
+    // create a file not modified since '2023-01-01T00:00:00.000Z' and with uploadStatus = 'progress'
     const progressFileToUpload = {
       createReadStream: () => Readable.from('This is a file content.'),
       filename: progressFileName,
