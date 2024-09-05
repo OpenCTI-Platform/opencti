@@ -769,7 +769,7 @@ describe('Elasticsearch reindex', () => {
     expect(data.toId === attackPatternId).toBeTruthy(); // attack-pattern--2fc04aa5-48c1-49ec-919a-b88241ef1d17
   });
   it('should relation reindex check consistency', async () => {
-    const indexPromise = elIndexElements(testContext, ADMIN_USER, 'test', [{ relationship_type: 'uses' }]);
+    const indexPromise = elIndexElements(testContext, ADMIN_USER, 'uses', [{ relationship_type: 'uses' }]);
     // noinspection ES6MissingAwait
     expect(indexPromise).rejects.toThrow();
   });

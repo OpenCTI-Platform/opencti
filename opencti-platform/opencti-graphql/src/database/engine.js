@@ -106,7 +106,7 @@ import { now, runtimeFieldObservableValueScript } from '../utils/format';
 import { ENTITY_TYPE_KILL_CHAIN_PHASE, ENTITY_TYPE_MARKING_DEFINITION, isStixMetaObject } from '../schema/stixMetaObject';
 import { getEntitiesListFromCache, getEntityFromCache } from './cache';
 import { ENTITY_TYPE_MIGRATION_STATUS, ENTITY_TYPE_SETTINGS, ENTITY_TYPE_STATUS, ENTITY_TYPE_USER, isInternalObject } from '../schema/internalObject';
-import { telemetry } from '../config/tracing';
+import { meterManager, telemetry } from '../config/tracing';
 import {
   isBooleanAttribute,
   isDateAttribute,
@@ -3571,7 +3571,7 @@ const prepareIndexing = async (elements) => {
   }
   return preparedElements;
 };
-export const elIndexElements = async (context, user, message, elements) => {
+export const elIndexElements = async (context, user, indexingType, elements) => {
   const elIndexElementsFn = async () => {
     // 00. Relations must be transformed before indexing.
     const transformedElements = await prepareIndexing(elements);
@@ -3581,6 +3581,7 @@ export const elIndexElements = async (context, user, message, elements) => {
       R.pipe(R.dissoc('_index'))(doc),
     ]);
     if (body.length > 0) {
+      meterManager.directBulk(body.length, { type: indexingType });
       await elBulk({ refresh: true, timeout: BULK_TIMEOUT, body });
     }
     // 02. If relation, generate impacts for from and to sides
@@ -3649,12 +3650,13 @@ export const elIndexElements = async (context, user, message, elements) => {
       R.dissoc('_index', doc.data),
     ]);
     if (bodyUpdate.length > 0) {
+      meterManager.sideBulk(bodyUpdate.length, { type: indexingType });
       const bulkPromise = elBulk({ refresh: true, timeout: BULK_TIMEOUT, body: bodyUpdate });
       await Promise.all([bulkPromise]);
     }
     return transformedElements.length;
   };
-  return telemetry(context, user, `INSERT ${message}`, {
+  return telemetry(context, user, `INSERT ${indexingType}`, {
     [SEMATTRS_DB_NAME]: 'search_engine',
     [SEMATTRS_DB_OPERATION]: 'insert',
   }, elIndexElementsFn);

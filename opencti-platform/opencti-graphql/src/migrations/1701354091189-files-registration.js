@@ -4,6 +4,7 @@ import { logApp } from '../config/conf';
 import { buildFileDataForIndexing } from '../modules/internal/document/document-domain';
 import { elIndexElements } from '../database/engine';
 import { INDEX_INTERNAL_OBJECTS } from '../database/utils';
+import { ENTITY_TYPE_INTERNAL_FILE } from '../schema/internalObject';
 
 export const up = async (next) => {
   const context = executionContext('migration');
@@ -17,7 +18,7 @@ export const up = async (next) => {
     const elements = files
       .filter((file) => file.name.length <= 200)
       .map((file) => ({ _index: INDEX_INTERNAL_OBJECTS, ...buildFileDataForIndexing(file) }));
-    await elIndexElements(context, SYSTEM_USER, 'Migration files registration', elements);
+    await elIndexElements(context, SYSTEM_USER, ENTITY_TYPE_INTERNAL_FILE, elements);
     if (elementNotIndexed.length > 0) {
       logApp.error('[MIGRATION] Some files were not indexed, you will need to re-upload them', { elementNotIndexed });
     }

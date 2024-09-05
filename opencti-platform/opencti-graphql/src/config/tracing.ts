@@ -1,6 +1,6 @@
 import { SEMATTRS_ENDUSER_ID } from '@opentelemetry/semantic-conventions';
 import { MeterProvider, MetricReader, PeriodicExportingMetricReader } from '@opentelemetry/sdk-metrics';
-import { type ObservableResult, ValueType } from '@opentelemetry/api-metrics';
+import { ValueType } from '@opentelemetry/api-metrics';
 import type { Counter } from '@opentelemetry/api-metrics/build/src/types/Metric';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
@@ -8,6 +8,7 @@ import nodeMetrics from 'opentelemetry-node-metrics';
 import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-http';
 import nconf from 'nconf';
 import { PrometheusExporter } from '@opentelemetry/exporter-prometheus';
+import type { Gauge } from '@opentelemetry/api/build/src/metrics/Metric';
 import type { AuthContext, AuthUser } from '../types/user';
 import { ENABLED_METRICS, ENABLED_TRACING } from './conf';
 import { isNotEmptyField } from '../database/utils';
@@ -19,27 +20,38 @@ class MeterManager {
 
   private errors: Counter | null = null;
 
-  private latencies = 0;
+  private latencyGauge: Gauge | null = null;
+
+  private directBulkGauge: Gauge | null = null;
+
+  private sideBulkGauge: Gauge | null = null;
 
   constructor(meterProvider: MeterProvider) {
     this.meterProvider = meterProvider;
   }
 
-  request() {
-    this.requests?.add(1);
+  request(attributes: any) {
+    this.requests?.add(1, attributes);
   }
 
-  error() {
-    this.errors?.add(1);
+  error(attributes: any) {
+    this.errors?.add(1, attributes);
   }
 
-  latency(val: number) {
-    this.latencies = val;
+  latency(val: number, attributes: any) {
+    this.latencyGauge?.record(val, attributes);
+  }
+
+  directBulk(val: number, attributes: any) {
+    this.directBulkGauge?.record(val, attributes);
+  }
+
+  sideBulk(val: number, attributes: any) {
+    this.sideBulkGauge?.record(val, attributes);
   }
 
   registerMetrics() {
     const meter = this.meterProvider.getMeter('opencti-api');
-    // Register manual metrics
     // - Basic counters
     this.requests = meter.createCounter('opencti_api_requests', {
       valueType: ValueType.INT,
@@ -50,9 +62,17 @@ class MeterManager {
       description: 'Counts total number of errors'
     });
     // - Gauges
-    const latencyGauge = meter.createObservableGauge('opencti_api_latency');
-    latencyGauge.addCallback((observableResult: ObservableResult) => {
-      observableResult.observe(this.latencies);
+    this.latencyGauge = meter.createGauge('opencti_api_latency', {
+      valueType: ValueType.INT,
+      description: 'Latency computing per query'
+    });
+    this.directBulkGauge = meter.createGauge('opencti_api_direct_bulk', {
+      valueType: ValueType.INT,
+      description: 'Size of bulks for direct absorption'
+    });
+    this.sideBulkGauge = meter.createGauge('opencti_api_side_bulk', {
+      valueType: ValueType.INT,
+      description: 'Size of bulk for absorption impacts'
     });
     // - Library metrics
     nodeMetrics(this.meterProvider, { prefix: '' });
