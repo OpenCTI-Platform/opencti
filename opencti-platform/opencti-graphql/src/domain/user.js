@@ -781,6 +781,23 @@ export const addBookmark = async (context, user, id, type) => {
 
 const PROTECTED_USER_ATTRIBUTES = ['api_token', 'external'];
 const PROTECTED_EXTERNAL_ATTRIBUTES = ['user_email', 'user_name'];
+const ME_USER_MODIFIABLE_ATTRIBUTES = [
+  'user_email',
+  'user_name',
+  'description',
+  'firstname',
+  'lastname',
+  'theme',
+  'language',
+  'personal_notifiers',
+  'default_dashboards',
+  'default_time_field',
+  'unit_system',
+  'submenu_show_icons',
+  'submenu_auto_collapse',
+  'monochrome_labels',
+  'password',
+];
 export const meEditField = async (context, user, userId, inputs, password = null) => {
   const input = R.head(inputs);
   const { key } = input;
@@ -790,6 +807,10 @@ export const meEditField = async (context, user, userId, inputs, password = null
   }
   // If the user is external, some extra attributes must be protected
   if (user.external && PROTECTED_EXTERNAL_ATTRIBUTES.includes(key)) {
+    throw ForbiddenAccess();
+  }
+  // On MeUser only some fields are updatable
+  if (!ME_USER_MODIFIABLE_ATTRIBUTES.includes(key)) {
     throw ForbiddenAccess();
   }
   // Check password confirmation in case of password change
