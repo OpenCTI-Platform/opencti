@@ -504,27 +504,6 @@ export const buildDataRestrictions = async (context, user, opts = {}) => {
         // Finally build the bool should search
         must.push({ bool: { should, minimum_should_match: 1 } });
       }
-    } else {
-      // Data with Empty granted_refs are granted to everyone
-      const should = [excludedEntityMatches];
-      should.push({ bool: { must_not: [{ exists: { field: buildRefRelationSearchKey(RELATION_GRANTED_TO) } }] } });
-      // Data with granted_refs users that participate to at least one
-      if (user.allowed_organizations.length > 0) {
-        const shouldOrgs = user.allowed_organizations
-          .map((m) => ({ match: { [buildRefRelationSearchKey(RELATION_GRANTED_TO)]: m.internal_id } }));
-        should.push(...shouldOrgs);
-      }
-      // User individual or data created by this individual must be accessible
-      if (user.individual_id) {
-        should.push({ match: { 'internal_id.keyword': user.individual_id } });
-        should.push({ match: { [buildRefRelationSearchKey(RELATION_CREATED_BY)]: user.individual_id } });
-      }
-      // For tasks
-      should.push({ match: { 'initiator_id.keyword': user.internal_id } });
-      // Access to authorized members
-      should.push(...buildUserMemberAccessFilter(user, { includeAuthorities: opts?.includeAuthorities, excludeEmptyAuthorizedMembers: true }));
-      // Finally build the bool should search
-      must.push({ bool: { should, minimum_should_match: 1 } });
     }
     // endregion
   }
