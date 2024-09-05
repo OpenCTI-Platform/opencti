@@ -1270,7 +1270,7 @@ class DataTableToolBar extends Component {
     const selectedElementsList = Object.values(this.props.selectedElements || {});
 
     const selectedTypes = R.uniq([...selectedElementsList.map((o) => o.entity_type), ...entityTypeFilterValues]
-      .filter((entity_type) => entity_type !== undefined && entity_type !== 'Stix-Cyber-Observable'));
+      .filter((entity_type) => entity_type !== undefined && entity_type !== typesWithScore[0]));
     return { entityTypeFilterValues, selectedElementsList, selectedTypes };
   }
 
