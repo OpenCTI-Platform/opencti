@@ -66,3 +66,12 @@ Once you have customized your scale, click on "Update" to save your configuratio
 !!! note "Max confidence level"
 
     The above scale also needs to take into account the confidence level per user. To understand the concept, please navigate to this [page](../usage/reliability-confidence.md)
+
+
+### Overview layout customization
+At the platform level, the Overview layout tab of the containers can be rearranged to fit the users needs.
+The widgets can be reordered or extended to their full width.
+
+![Overview layout customization settings](assets/overview-layout-customization.png)
+
+To reset the layout to its default version, click the button next to the section title.
