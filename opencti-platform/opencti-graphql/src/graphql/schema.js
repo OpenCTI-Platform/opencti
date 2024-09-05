@@ -73,6 +73,7 @@ import stixRefRelationshipResolvers from '../resolvers/stixRefRelationship';
 import stixMetaObjectResolvers from '../resolvers/stixMetaObject';
 import filterKeysSchemaResolver from '../resolvers/filterKeysSchema';
 import basicObjectResolvers from '../resolvers/basicObject';
+import { FunctionalError } from '../config/errors';
 
 const schemaTypeDefs = [globalTypeDefs];
 
@@ -265,7 +266,11 @@ export const registerGraphqlSchema = ({ schema, resolver }) => {
 };
 
 // enabling rate-limit on specific queries with directive @rateLimit
-const { rateLimitDirectiveTypeDefs, rateLimitDirectiveTransformer } = rateLimitDirective();
+const { rateLimitDirectiveTypeDefs, rateLimitDirectiveTransformer } = rateLimitDirective({
+  onLimit: () => {
+    throw FunctionalError('Too many requests');
+  }
+});
 schemaTypeDefs.push(rateLimitDirectiveTypeDefs);
 
 const createSchema = () => {
