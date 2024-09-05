@@ -546,11 +546,20 @@ export const getUserAccessRight = (user: AuthUser, element: any) => {
 };
 
 // ensure that user can access the element (operation: edit / delete / manage-access)
-export const validateUserAccessOperation = (user: AuthUser, element: any, operation: 'edit' | 'delete' | 'manage-access') => {
+export const validateUserAccessOperation = (user: AuthUser, element: any, operation: 'edit' | 'delete' | 'manage-access' | 'manage-authorities-access') => {
   if (isInternalObject(element.entity_type) && isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
     return true;
   }
-  if (isStixObject(element.entity_type) && operation === 'manage-access' && !isUserHasCapability(user, KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS)) {
+  if (isStixObject(element.entity_type)
+    && (operation === 'manage-access' || operation === 'manage-authorities-access')
+    && !isUserHasCapability(user, KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS)
+  ) {
+    return false;
+  }
+  if (isStixObject(element.entity_type)
+    && operation === 'manage-authorities-access'
+    && !isUserHasCapability(user, SETTINGS_SET_ACCESSES)
+  ) {
     return false;
   }
   const userAccessRight = getUserAccessRight(user, element);
