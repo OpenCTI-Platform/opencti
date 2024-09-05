@@ -31,6 +31,28 @@ const LIST_QUERY = gql`
   }
 `;
 
+const MATRIX_QUERY = gql`
+  query attackPatternsMatrix {
+    attackPatternsMatrix {
+      attackPatternsOfPhases {
+        kill_chain_id
+        kill_chain_name
+        phase_name
+        x_opencti_order
+        attackPatterns {
+          attack_pattern_id
+          name
+          description
+          x_mitre_id
+          subAttackPatternsIds
+          subAttackPatternsSearchText
+          killChainPhasesIds
+        }
+      }
+    }
+  }
+`;
+
 const READ_QUERY = gql`
   query attackPattern($id: String!) {
     attackPattern(id: $id) {
@@ -121,6 +143,20 @@ describe('AttackPattern resolver standard behavior', () => {
   it('should list attackPatterns', async () => {
     const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 10 } });
     expect(queryResult.data.attackPatterns.edges.length).toEqual(3);
+  });
+  it('should query attackPatterns matrix', async () => {
+    const queryResult = await queryAsAdmin({ query: MATRIX_QUERY });
+    expect(queryResult.data.attackPatternsMatrix).not.toBeNull();
+    expect(queryResult.data.attackPatternsMatrix.attackPatternsOfPhases).not.toBeNull();
+    expect(queryResult.data.attackPatternsMatrix.attackPatternsOfPhases.length).toEqual(2);
+    expect(queryResult.data.attackPatternsMatrix.attackPatternsOfPhases[0].kill_chain_name).toEqual('mitre-pre-attack');
+    expect(queryResult.data.attackPatternsMatrix.attackPatternsOfPhases[0].phase_name).toEqual('launch');
+    expect(queryResult.data.attackPatternsMatrix.attackPatternsOfPhases[0].x_opencti_order).toEqual(0);
+    expect(queryResult.data.attackPatternsMatrix.attackPatternsOfPhases[0].attackPatterns.length).toEqual(2);
+    expect(queryResult.data.attackPatternsMatrix.attackPatternsOfPhases[1].kill_chain_name).toEqual('mitre-attack');
+    expect(queryResult.data.attackPatternsMatrix.attackPatternsOfPhases[1].phase_name).toEqual('persistence');
+    expect(queryResult.data.attackPatternsMatrix.attackPatternsOfPhases[1].x_opencti_order).toEqual(20);
+    expect(queryResult.data.attackPatternsMatrix.attackPatternsOfPhases[1].attackPatterns.length).toEqual(1);
   });
   it('should update attackPattern', async () => {
     const UPDATE_QUERY = gql`
