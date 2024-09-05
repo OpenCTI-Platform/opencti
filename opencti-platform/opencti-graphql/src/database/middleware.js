@@ -1839,14 +1839,14 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
     return { element: initial };
   }
   // Check user access update
-  let operation = 'edit';
+  let accessOperation = 'edit';
   if (updates.some((e) => e.key === 'authorized_members')) {
-    operation = 'manage-access';
+    accessOperation = 'manage-access';
   }
   if (updates.some((e) => e.key === 'authorized_authorities')) {
-    operation = 'manage-authorities-access';
+    accessOperation = 'manage-authorities-access';
   }
-  if (!validateUserAccessOperation(user, initial, operation)) {
+  if (!validateUserAccessOperation(user, initial, accessOperation)) {
     throw ForbiddenAccess();
   }
   // Split attributes and meta
