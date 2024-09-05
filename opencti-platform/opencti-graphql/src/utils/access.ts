@@ -551,13 +551,12 @@ export const validateUserAccessOperation = (user: AuthUser, element: any, operat
     return true;
   }
   if (isStixObject(element.entity_type)
-    && (operation === 'manage-access' || operation === 'manage-authorities-access')
+    && operation === 'manage-access'
     && !isUserHasCapability(user, KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS)
   ) {
     return false;
   }
-  if (isStixObject(element.entity_type)
-    && operation === 'manage-authorities-access'
+  if (operation === 'manage-authorities-access'
     && !isUserHasCapability(user, SETTINGS_SET_ACCESSES)
   ) {
     return false;

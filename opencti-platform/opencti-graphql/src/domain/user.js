@@ -782,8 +782,6 @@ export const addBookmark = async (context, user, id, type) => {
 const PROTECTED_USER_ATTRIBUTES = ['api_token', 'external'];
 const PROTECTED_EXTERNAL_ATTRIBUTES = ['user_email', 'user_name'];
 const ME_USER_MODIFIABLE_ATTRIBUTES = [
-  'api_token',
-  'external',
   'user_email',
   'user_name',
   'description',
