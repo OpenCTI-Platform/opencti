@@ -59,7 +59,6 @@ import {
   SETTINGS_SET_ACCESSES,
   SYSTEM_USER,
   VIRTUAL_ORGANIZATION_ADMIN,
-  SETTINGS_SETACCESSES
 } from '../utils/access';
 import { ASSIGNEE_FILTER, CREATOR_FILTER, PARTICIPANT_FILTER } from '../utils/filtering/filtering-constants';
 import { now, utcDate } from '../utils/format';
@@ -782,8 +781,11 @@ export const addBookmark = async (context, user, id, type) => {
 
 const PROTECTED_USER_ATTRIBUTES = ['api_token', 'external'];
 const PROTECTED_EXTERNAL_ATTRIBUTES = ['user_email', 'user_name'];
-const USER_EDITION_CAPABILITIES = [BYPASS, SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN];
-const USER_MODIFIABLE_ATTRIBUTES = [
+const ME_USER_MODIFIABLE_ATTRIBUTES = [
+  'api_token',
+  'external',
+  'user_email',
+  'user_name',
   'description',
   'firstname',
   'lastname',
@@ -809,12 +811,8 @@ export const meEditField = async (context, user, userId, inputs, password = null
   if (user.external && PROTECTED_EXTERNAL_ATTRIBUTES.includes(key)) {
     throw ForbiddenAccess();
   }
-  // Check the user has the capability to edit some fields
-  const capabilities = user.capabilities.map((c) => c.name);
-  if (
-    !capabilities.some((c) => USER_EDITION_CAPABILITIES.includes(c))
-    && !USER_MODIFIABLE_ATTRIBUTES.includes(key)
-  ) {
+  // On MeUser only some fields are updatable
+  if (!ME_USER_MODIFIABLE_ATTRIBUTES.includes(key)) {
     throw ForbiddenAccess();
   }
   // Check password confirmation in case of password change
