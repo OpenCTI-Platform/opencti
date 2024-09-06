@@ -123,34 +123,3 @@ export const stixCyberObservablesLinesFragment = graphql`
     }
   }
   `;
-
-// export default createPaginationContainer(
-//   StixCyberObservablesLines,
-//   {
-//     data: stixCyberObservablesLinesFragment,
-//   },
-//   {
-//     direction: 'forward',
-//     getConnectionFromProps(props) {
-//       return props.data && props.data.stixCyberObservables;
-//     },
-//     getFragmentVariables(prevVars, totalCount) {
-//       return {
-//         ...prevVars,
-//         count: totalCount,
-//       };
-//     },
-//     getVariables(props, { count, cursor }, fragmentVariables) {
-//       return {
-//         types: fragmentVariables.types,
-//         search: fragmentVariables.search,
-//         count,
-//         cursor,
-//         orderBy: fragmentVariables.orderBy,
-//         orderMode: fragmentVariables.orderMode,
-//         filters: fragmentVariables.filters,
-//       };
-//     },
-//     query: stixCyberObservablesLinesQuery,
-//   },
-// );
