@@ -1399,7 +1399,7 @@ class DataTableToolBar extends Component {
           // endregion
           return (
             <>
-              <Toolbar style={{ minHeight: 40, display: 'flex', justifyContent: 'space-between', height: '100%' }} data-testid='opencti-toolbar'>
+              <Toolbar style={{ minHeight: 40, display: 'flex', justifyContent: 'space-between', height: '100%', paddingRight: 12, paddingLeft: 12 }} data-testid='opencti-toolbar'>
                 <div style={{ display: 'flex', alignItems: 'center' }}>
                   <Typography
                     className={classes.title}
