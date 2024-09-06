@@ -224,12 +224,12 @@ const RetentionCreation = ({ paginationOptions }: { paginationOptions: Retention
               />
               {formValues.scope?.value === 'file'
                 && <Alert severity="info" style={{ margin: '15px 15px 0 15px' }}>
-                  {t_i18n('The retention policy will be applied on global files (i.e. files contained in Data/Import)')}
+                  {`${t_i18n('The retention policy will be applied on global files (files contained in')} ${t_i18n('Data')}/${t_i18n('Import')})`}
                 </Alert>
               }
               {formValues.scope?.value === 'workbench'
                 && <Alert severity="info" style={{ margin: '15px 15px 0 15px' }}>
-                  {t_i18n('The retention policy will be applied on global workbenches (i.e. workbenches contained in Data/Import)')}
+                    {`${t_i18n('The retention policy will be applied on global workbenches (workbenches contained in')} ${t_i18n('Data')}/${t_i18n('Import')})`}
                 </Alert>
               }
               {formValues.scope?.value === 'knowledge' && <>

@@ -140,9 +140,7 @@ export const RetentionLine: FunctionComponent<RetentionLineProps> = ({ dataColum
                 <span>{appliedOnContent}</span>
                 {data.scope !== 'knowledge'
                   && <Tooltip
-                    title={t_i18n(
-                      'i.e. contained in Data/Import',
-                    )}
+                    title={`${t_i18n('Files contained in')} ${t_i18n('Data')}/${t_i18n('Import')}`}
                      >
                     <InformationOutline
                       fontSize="small"
