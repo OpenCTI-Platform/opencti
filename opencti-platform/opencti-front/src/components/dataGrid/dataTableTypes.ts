@@ -85,6 +85,7 @@ export interface DataTableContextProps {
   disableNavigation: DataTableProps['disableNavigation']
   disableToolBar: DataTableProps['disableToolBar']
   disableSelectAll: DataTableProps['disableSelectAll']
+  disableRedirectOnRowClick: DataTableProps['disableRedirectOnRowClick']
   onLineClick: DataTableProps['onLineClick']
 }
 
@@ -126,6 +127,7 @@ export interface DataTableProps {
   disableLineSelection?: boolean
   disableToolBar?: boolean
   disableSelectAll?: boolean
+  disableRedirectOnRowClick?: boolean
   onLineClick?: (line: any) => void
 }
 

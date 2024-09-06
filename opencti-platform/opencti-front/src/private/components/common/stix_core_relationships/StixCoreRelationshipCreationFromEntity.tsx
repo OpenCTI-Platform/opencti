@@ -819,6 +819,7 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
                     <DataTable
                       disableToolBar
                       disableSelectAll
+                      disableRedirectOnRowClick
                       rootRef={tableRootRef ?? undefined}
                       variant={DataTableVariant.inline}
                       dataColumns={buildColumns(platformModuleHelpers)}

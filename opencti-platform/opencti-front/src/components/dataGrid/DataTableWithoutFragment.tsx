@@ -14,6 +14,7 @@ type OCTIDataTableProps = Pick<DataTableProps, 'dataColumns'
 | 'disableLineSelection'
 | 'disableToolBar'
 | 'disableSelectAll'
+| 'disableRedirectOnRowClick'
 | 'filtersComponent'
 | 'variant'> & {
   data: unknown,

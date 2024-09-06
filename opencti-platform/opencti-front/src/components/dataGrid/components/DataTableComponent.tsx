@@ -43,6 +43,7 @@ const DataTableComponent = ({
   disableLineSelection,
   disableToolBar,
   disableSelectAll,
+  disableRedirectOnRowClick,
   onLineClick,
 }: DataTableProps) => {
   const localStorageColumns = useDataTableLocalStorage<LocalStorageColumns>(`${storageKey}_columns`, {}, true)[0];
@@ -59,7 +60,7 @@ const DataTableComponent = ({
         ...(currentColumn?.size ? { size: currentColumn?.size } : {}),
       });
     }),
-    ...(actions ? [] : [{ id: 'navigate', visible: true } as DataTableColumn]),
+    ...(actions || disableRedirectOnRowClick ? [] : [{ id: 'navigate', visible: true } as DataTableColumn]),
   ];
 
   const [columns, setColumns] = useState<DataTableColumns>(columnsInitialState);
@@ -120,6 +121,7 @@ const DataTableComponent = ({
         disableNavigation,
         disableToolBar,
         disableSelectAll,
+        disableRedirectOnRowClick,
         onLineClick,
       } as DataTableContextProps}
     >

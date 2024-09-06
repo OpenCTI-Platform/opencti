@@ -112,6 +112,7 @@ const DataTableLine = ({
     actions,
     disableNavigation,
     onLineClick,
+    disableRedirectOnRowClick,
     variant,
   } = useDataTableContext();
   const data = useLineData(row);
@@ -139,12 +140,31 @@ const DataTableLine = ({
   } = useDataTableToggle(storageKey);
 
   const startsWithSelect = effectiveColumns.at(0)?.id === 'select';
+
+  const handleSelectLine = (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    if (event.shiftKey) {
+      onToggleShiftEntity(index, data, event);
+    } else {
+      onToggleEntity(data, event);
+    }
+  };
+
+  const handleRowClick = (event) => {
+    if (disableRedirectOnRowClick) {
+      handleSelectLine(event);
+      return undefined;
+    }
+    if (variant !== DataTableVariant.widget) internalOnClick();
+    return undefined;
+  };
+
   return (
     <div
       key={row.id}
       className={classes.row}
-      onMouseDown={variant === DataTableVariant.widget ? internalOnClick : undefined}
-      onClick={variant !== DataTableVariant.widget ? internalOnClick : undefined}
+      onClick={handleRowClick}
       style={{ cursor: (navigable || Boolean(onLineClick)) ? 'pointer' : 'unset' }}
       data-testid={getMainRepresentative(data)}
     >
@@ -158,15 +178,7 @@ const DataTableLine = ({
         >
 
           <Checkbox
-            onClick={(event) => {
-              event.preventDefault();
-              event.stopPropagation();
-              if (event.shiftKey) {
-                onToggleShiftEntity(index, data, event);
-              } else {
-                onToggleEntity(data, event);
-              }
-            }}
+            onClick={handleSelectLine}
             checked={
               (selectAll
                 && !((data.id || 'id') in (deSelectedElements || {})))
@@ -175,7 +187,7 @@ const DataTableLine = ({
           />
         </div>
       )}
-      {effectiveColumns.slice(startsWithSelect ? 1 : 0, actions ? undefined : -1).map((column) => (
+      {effectiveColumns.slice(startsWithSelect ? 1 : 0, actions || disableRedirectOnRowClick ? undefined : -1).map((column) => (
         <DataTableCell
           key={column.id}
           cell={column}
@@ -183,6 +195,7 @@ const DataTableLine = ({
           storageHelpers={storageHelpers}
         />
       ))}
+
       <div
         key={`navigate_${data.id}`}
         className={classes.cellContainer}
@@ -199,11 +212,12 @@ const DataTableLine = ({
       >
         {actions && actions(data)}
         {effectiveColumns.at(-1)?.id === 'navigate' && (
-          <IconButton onClick={() => navigate(link)}>
-            <KeyboardArrowRightOutlined />
-          </IconButton>
+        <IconButton onClick={() => navigate(link)}>
+          <KeyboardArrowRightOutlined />
+        </IconButton>
         )}
       </div>
+
     </div>
   );
 };
