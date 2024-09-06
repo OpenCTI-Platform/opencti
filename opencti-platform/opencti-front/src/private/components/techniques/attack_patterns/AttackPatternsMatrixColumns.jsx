@@ -233,7 +233,7 @@ class AttackPatternsMatrixColumnsComponent extends Component {
   level(attackPattern, maxNumberOfSameAttackPattern) {
     const { attackPatterns } = this.props;
     const numberOfCorrespondingAttackPatterns = R.filter(
-      (n) => n.id === attackPattern.id
+      (n) => n.id === attackPattern.attack_pattern_id
         || (attackPattern.subAttackPatternsIds
           && R.includes(n.id, attackPattern.subAttackPatternsIds)),
       attackPatterns,
@@ -280,15 +280,13 @@ class AttackPatternsMatrixColumnsComponent extends Component {
     if (R.isNil(modeColorsReversed)) {
       modeColorsReversed = this.state.currentColorsReversed;
     }
-    const sortByOrder = R.sortBy(R.prop('x_opencti_order'));
-    const sortByName = R.sortBy(R.prop('name'));
     const filterByKeyword = (n) => searchTerm === ''
       || n.name.toLowerCase().indexOf(searchTerm.toLowerCase()) !== -1
       || n.description?.toLowerCase().indexOf(searchTerm.toLowerCase()) !== -1
       || R.propOr('', 'x_mitre_id', n)
         .toLowerCase()
         .indexOf(searchTerm.toLowerCase()) !== -1
-      || R.propOr('', 'subattackPatterns_text', n)
+      || R.propOr('', 'subAttackPatternsSearchText', n)
         .toLowerCase()
         .indexOf(searchTerm.toLowerCase()) !== -1;
     const maxNumberOfSameAttackPattern = Math.max(
@@ -302,63 +300,18 @@ class AttackPatternsMatrixColumnsComponent extends Component {
         R.values,
       )(selectedPatterns),
     );
-    const filterSubattackPattern = (n) => n.isSubAttackPattern === false;
-    const attackPatterns = R.pipe(
-      R.map((n) => ({
-        ...n.node,
-        subAttackPatternsIds: R.map(
-          (o) => o.node.id,
-          n.node.subAttackPatterns.edges,
-        ),
-      })),
-      R.map((n) => ({
-        ...n,
-        level: this.level(n, maxNumberOfSameAttackPattern),
-        subattackPatterns_text: R.pipe(
-          R.map(
-            (o) => `${o.node.x_mitre_id} ${o.node.name} ${o.node.description}`,
-          ),
-          R.join(' | '),
-        )(R.pathOr([], ['subAttackPatterns', 'edges'], n)),
-        subAttackPatterns: R.pipe(
-          R.map((o) => R.assoc(
-            'level',
-            this.level(o.node, maxNumberOfSameAttackPattern),
-            o.node,
-          )),
-          sortByName,
-        )(n.subAttackPatterns.edges),
-        killChainPhasesIds: R.map((o) => o.id, n.killChainPhases),
-      })),
-      R.filter(filterSubattackPattern),
-      R.filter(filterByKeyword),
-      R.filter((o) => (modeOnlyActive ? o.level > 0 : o.level >= 0)),
-    )(data.attackPatterns.edges);
-    const killChainPhases = R.pipe(
-      R.map((n) => n.node.killChainPhases),
-      R.flatten,
-      R.uniq,
-      R.filter((n) => n.kill_chain_name === this.state.currentKillChain),
-      sortByOrder,
-    )(data.attackPatterns.edges);
-    const killChains = R.uniq([
-      'mitre-attack',
-      ...R.pipe(
-        R.map((n) => n.node.killChainPhases),
-        R.flatten,
-        R.map((n) => n.kill_chain_name),
-      )(data.attackPatterns.edges),
-    ]);
-    const attackPatternsOfPhases = R.map(
-      (n) => ({
-        ...n,
-        attackPatterns: R.pipe(
-          R.filter((o) => R.includes(n.id, o.killChainPhasesIds)),
-          sortByName,
-        )(attackPatterns),
-      }),
-      killChainPhases,
-    );
+    const killChains = R.sortBy(R.prop('name'), R.uniq(data.attackPatternsMatrix.attackPatternsOfPhases.map((a) => a.kill_chain_name)));
+    const attackPatternsOfPhases = data.attackPatternsMatrix.attackPatternsOfPhases
+      .filter((a) => a.kill_chain_name === this.state.currentKillChain)
+      .map((a) => {
+        return {
+          ...a,
+          id: a.kill_chain_id,
+          attackPatterns: R.sortBy(R.prop('name'), a.attackPatterns.filter(filterByKeyword).map((ap) => {
+            return { ...ap, id: ap.attack_pattern_id, level: this.level(ap, maxNumberOfSameAttackPattern) };
+          })).filter((o) => (modeOnlyActive ? o.level > 0 : o.level >= 0)),
+        };
+      });
     let heightCalc = 310;
     let className = navOpen ? classes.containerNavOpen : classes.container;
     if (marginRight) {
@@ -536,21 +489,8 @@ AttackPatternsMatrixColumnsComponent.propTypes = {
 };
 
 export const attackPatternsMatrixColumnsQuery = graphql`
-  query AttackPatternsMatrixColumnsQuery(
-    $orderBy: AttackPatternsOrdering
-    $orderMode: OrderingMode
-    $count: Int!
-    $cursor: ID
-    $filters: FilterGroup
-  ) {
+  query AttackPatternsMatrixColumnsQuery {
     ...AttackPatternsMatrixColumns_data
-      @arguments(
-        orderBy: $orderBy
-        orderMode: $orderMode
-        count: $count
-        cursor: $cursor
-        filters: $filters
-      )
   }
 `;
 
@@ -558,46 +498,21 @@ const AttackPatternsMatrixColumns = createRefetchContainer(
   AttackPatternsMatrixColumnsComponent,
   {
     data: graphql`
-      fragment AttackPatternsMatrixColumns_data on Query
-      @argumentDefinitions(
-        orderBy: { type: "AttackPatternsOrdering", defaultValue: x_mitre_id }
-        orderMode: { type: "OrderingMode", defaultValue: asc }
-        count: { type: "Int", defaultValue: 25 }
-        cursor: { type: "ID" }
-        filters: { type: "FilterGroup" }
-      ) {
-        attackPatterns(
-          orderBy: $orderBy
-          orderMode: $orderMode
-          first: $count
-          after: $cursor
-          filters: $filters
-        ) {
-          edges {
-            node {
-              id
-              entity_type
-              parent_types
+      fragment AttackPatternsMatrixColumns_data on Query {
+        attackPatternsMatrix {
+          attackPatternsOfPhases {
+            kill_chain_id
+            kill_chain_name
+            phase_name
+            x_opencti_order
+            attackPatterns {
+              attack_pattern_id
               name
               description
-              isSubAttackPattern
               x_mitre_id
-              subAttackPatterns {
-                edges {
-                  node {
-                    id
-                    name
-                    description
-                    x_mitre_id
-                  }
-                }
-              }
-              killChainPhases {
-                id
-                kill_chain_name
-                phase_name
-                x_opencti_order
-              }
+              subAttackPatternsIds
+              subAttackPatternsSearchText
+              killChainPhasesIds
             }
           }
         }

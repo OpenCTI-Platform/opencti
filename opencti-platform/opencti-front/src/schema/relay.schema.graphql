@@ -2492,9 +2492,9 @@ type AttackPattern implements BasicObject & StixObject & StixCoreObject & StixDo
   x_mitre_detection: String
   x_mitre_id: String
   killChainPhases: [KillChainPhase!]
-  coursesOfAction: CourseOfActionConnection
-  parentAttackPatterns: AttackPatternConnection
-  subAttackPatterns: AttackPatternConnection
+  coursesOfAction(first: Int, after: ID, orderBy: CoursesOfActionOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): CourseOfActionConnection
+  parentAttackPatterns(first: Int, after: ID, orderBy: AttackPatternsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): AttackPatternConnection
+  subAttackPatterns(first: Int, after: ID, orderBy: AttackPatternsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): AttackPatternConnection
   isSubAttackPattern: Boolean
   dataComponents: DataComponentConnection
   creators: [Creator!]
@@ -2534,6 +2534,28 @@ input AttackPatternAddInput {
   clientMutationId: String
   update: Boolean
   file: Upload
+}
+
+type AttackPatternForMatrix {
+  attack_pattern_id: String!
+  name: String!
+  description: String
+  x_mitre_id: String
+  subAttackPatternsIds: [String!]
+  subAttackPatternsSearchText: String
+  killChainPhasesIds: [String!]
+}
+
+type AttackPatternsByKillChain {
+  kill_chain_id: String!
+  kill_chain_name: String!
+  phase_name: String!
+  x_opencti_order: Int!
+  attackPatterns: [AttackPatternForMatrix!]
+}
+
+type AttackPatternsMatrix {
+  attackPatternsOfPhases: [AttackPatternsByKillChain!]
 }
 
 enum CampaignsOrdering {
@@ -7600,6 +7622,7 @@ type Query {
   stixDomainObjectsDistribution(objectId: [String], relationship_type: [String], toTypes: [String], elementWithTargetTypes: [String], field: String!, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: FilterGroup, search: String): [Distribution]
   attackPattern(id: String): AttackPattern
   attackPatterns(first: Int, after: ID, orderBy: AttackPatternsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, toStix: Boolean): AttackPatternConnection
+  attackPatternsMatrix: AttackPatternsMatrix
   campaign(id: String): Campaign
   campaigns(first: Int, after: ID, orderBy: CampaignsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, toStix: Boolean): CampaignConnection
   campaignsTimeSeries(objectId: String, field: String!, operation: StatsOperation!, startDate: DateTime!, endDate: DateTime!, interval: String!, relationship_type: [String]): [TimeSeries]

@@ -675,6 +675,16 @@ export type AttackPatternContainersArgs = {
 };
 
 
+export type AttackPatternCoursesOfActionArgs = {
+  after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<CoursesOfActionOrdering>;
+  orderMode?: InputMaybe<OrderingMode>;
+  search?: InputMaybe<Scalars['String']['input']>;
+};
+
+
 export type AttackPatternExportFilesArgs = {
   first?: InputMaybe<Scalars['Int']['input']>;
 };
@@ -718,6 +728,16 @@ export type AttackPatternObservedDataArgs = {
 
 export type AttackPatternOpinionsArgs = {
   first?: InputMaybe<Scalars['Int']['input']>;
+};
+
+
+export type AttackPatternParentAttackPatternsArgs = {
+  after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<AttackPatternsOrdering>;
+  orderMode?: InputMaybe<OrderingMode>;
+  search?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -798,6 +818,16 @@ export type AttackPatternStixCoreRelationshipsDistributionArgs = {
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
 
+
+export type AttackPatternSubAttackPatternsArgs = {
+  after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<AttackPatternsOrdering>;
+  orderMode?: InputMaybe<OrderingMode>;
+  search?: InputMaybe<Scalars['String']['input']>;
+};
+
 export type AttackPatternAddInput = {
   aliases?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   clientMutationId?: InputMaybe<Scalars['String']['input']>;
@@ -868,6 +898,31 @@ export type AttackPatternEditMutationsRelationAddArgs = {
 export type AttackPatternEditMutationsRelationDeleteArgs = {
   relationship_type: Scalars['String']['input'];
   toId: Scalars['StixRef']['input'];
+};
+
+export type AttackPatternForMatrix = {
+  __typename?: 'AttackPatternForMatrix';
+  attack_pattern_id: Scalars['String']['output'];
+  description?: Maybe<Scalars['String']['output']>;
+  killChainPhasesIds?: Maybe<Array<Scalars['String']['output']>>;
+  name: Scalars['String']['output'];
+  subAttackPatternsIds?: Maybe<Array<Scalars['String']['output']>>;
+  subAttackPatternsSearchText?: Maybe<Scalars['String']['output']>;
+  x_mitre_id?: Maybe<Scalars['String']['output']>;
+};
+
+export type AttackPatternsByKillChain = {
+  __typename?: 'AttackPatternsByKillChain';
+  attackPatterns?: Maybe<Array<AttackPatternForMatrix>>;
+  kill_chain_id: Scalars['String']['output'];
+  kill_chain_name: Scalars['String']['output'];
+  phase_name: Scalars['String']['output'];
+  x_opencti_order: Scalars['Int']['output'];
+};
+
+export type AttackPatternsMatrix = {
+  __typename?: 'AttackPatternsMatrix';
+  attackPatternsOfPhases?: Maybe<Array<AttackPatternsByKillChain>>;
 };
 
 export enum AttackPatternsOrdering {
@@ -18673,6 +18728,7 @@ export type Query = {
   assignees?: Maybe<AssigneeConnection>;
   attackPattern?: Maybe<AttackPattern>;
   attackPatterns?: Maybe<AttackPatternConnection>;
+  attackPatternsMatrix?: Maybe<AttackPatternsMatrix>;
   audits?: Maybe<LogConnection>;
   auditsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   auditsMultiTimeSeries?: Maybe<Array<Maybe<MultiTimeSeries>>>;
@@ -29887,6 +29943,9 @@ export type ResolversTypes = ResolversObject<{
   AttackPatternConnection: ResolverTypeWrapper<Omit<AttackPatternConnection, 'edges'> & { edges: Array<ResolversTypes['AttackPatternEdge']> }>;
   AttackPatternEdge: ResolverTypeWrapper<Omit<AttackPatternEdge, 'node'> & { node: ResolversTypes['AttackPattern'] }>;
   AttackPatternEditMutations: ResolverTypeWrapper<Omit<AttackPatternEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['AttackPattern']>, contextPatch?: Maybe<ResolversTypes['AttackPattern']>, fieldPatch?: Maybe<ResolversTypes['AttackPattern']>, relationAdd?: Maybe<ResolversTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversTypes['AttackPattern']> }>;
+  AttackPatternForMatrix: ResolverTypeWrapper<AttackPatternForMatrix>;
+  AttackPatternsByKillChain: ResolverTypeWrapper<AttackPatternsByKillChain>;
+  AttackPatternsMatrix: ResolverTypeWrapper<AttackPatternsMatrix>;
   AttackPatternsOrdering: AttackPatternsOrdering;
   Attribute: ResolverTypeWrapper<Attribute>;
   AttributeBasedOn: ResolverTypeWrapper<AttributeBasedOn>;
@@ -30711,6 +30770,9 @@ export type ResolversParentTypes = ResolversObject<{
   AttackPatternConnection: Omit<AttackPatternConnection, 'edges'> & { edges: Array<ResolversParentTypes['AttackPatternEdge']> };
   AttackPatternEdge: Omit<AttackPatternEdge, 'node'> & { node: ResolversParentTypes['AttackPattern'] };
   AttackPatternEditMutations: Omit<AttackPatternEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['AttackPattern']>, contextPatch?: Maybe<ResolversParentTypes['AttackPattern']>, fieldPatch?: Maybe<ResolversParentTypes['AttackPattern']>, relationAdd?: Maybe<ResolversParentTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversParentTypes['AttackPattern']> };
+  AttackPatternForMatrix: AttackPatternForMatrix;
+  AttackPatternsByKillChain: AttackPatternsByKillChain;
+  AttackPatternsMatrix: AttackPatternsMatrix;
   Attribute: Attribute;
   AttributeBasedOn: AttributeBasedOn;
   AttributeBasedOnInput: AttributeBasedOnInput;
@@ -31621,7 +31683,7 @@ export type AttackPatternResolvers<ContextType = any, ParentType extends Resolve
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<AttackPatternConnectorsArgs>>;
   containers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<AttackPatternContainersArgs>>;
   containersNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType>;
-  coursesOfAction?: Resolver<Maybe<ResolversTypes['CourseOfActionConnection']>, ParentType, ContextType>;
+  coursesOfAction?: Resolver<Maybe<ResolversTypes['CourseOfActionConnection']>, ParentType, ContextType, Partial<AttackPatternCoursesOfActionArgs>>;
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
@@ -31650,7 +31712,7 @@ export type AttackPatternResolvers<ContextType = any, ParentType extends Resolve
   objectOrganization?: Resolver<Maybe<Array<ResolversTypes['Organization']>>, ParentType, ContextType>;
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<AttackPatternObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<AttackPatternOpinionsArgs>>;
-  parentAttackPatterns?: Resolver<Maybe<ResolversTypes['AttackPatternConnection']>, ParentType, ContextType>;
+  parentAttackPatterns?: Resolver<Maybe<ResolversTypes['AttackPatternConnection']>, ParentType, ContextType, Partial<AttackPatternParentAttackPatternsArgs>>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<AttackPatternPendingFilesArgs>>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<AttackPatternReportsArgs>>;
@@ -31662,7 +31724,7 @@ export type AttackPatternResolvers<ContextType = any, ParentType extends Resolve
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<AttackPatternStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<AttackPatternStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<AttackPatternStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
-  subAttackPatterns?: Resolver<Maybe<ResolversTypes['AttackPatternConnection']>, ParentType, ContextType>;
+  subAttackPatterns?: Resolver<Maybe<ResolversTypes['AttackPatternConnection']>, ParentType, ContextType, Partial<AttackPatternSubAttackPatternsArgs>>;
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
@@ -31695,6 +31757,31 @@ export type AttackPatternEditMutationsResolvers<ContextType = any, ParentType ex
   fieldPatch?: Resolver<Maybe<ResolversTypes['AttackPattern']>, ParentType, ContextType, RequireFields<AttackPatternEditMutationsFieldPatchArgs, 'input'>>;
   relationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<AttackPatternEditMutationsRelationAddArgs, 'input'>>;
   relationDelete?: Resolver<Maybe<ResolversTypes['AttackPattern']>, ParentType, ContextType, RequireFields<AttackPatternEditMutationsRelationDeleteArgs, 'relationship_type' | 'toId'>>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type AttackPatternForMatrixResolvers<ContextType = any, ParentType extends ResolversParentTypes['AttackPatternForMatrix'] = ResolversParentTypes['AttackPatternForMatrix']> = ResolversObject<{
+  attack_pattern_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  killChainPhasesIds?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  subAttackPatternsIds?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
+  subAttackPatternsSearchText?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  x_mitre_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type AttackPatternsByKillChainResolvers<ContextType = any, ParentType extends ResolversParentTypes['AttackPatternsByKillChain'] = ResolversParentTypes['AttackPatternsByKillChain']> = ResolversObject<{
+  attackPatterns?: Resolver<Maybe<Array<ResolversTypes['AttackPatternForMatrix']>>, ParentType, ContextType>;
+  kill_chain_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  kill_chain_name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  phase_name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  x_opencti_order?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type AttackPatternsMatrixResolvers<ContextType = any, ParentType extends ResolversParentTypes['AttackPatternsMatrix'] = ResolversParentTypes['AttackPatternsMatrix']> = ResolversObject<{
+  attackPatternsOfPhases?: Resolver<Maybe<Array<ResolversTypes['AttackPatternsByKillChain']>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -37109,6 +37196,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   assignees?: Resolver<Maybe<ResolversTypes['AssigneeConnection']>, ParentType, ContextType, Partial<QueryAssigneesArgs>>;
   attackPattern?: Resolver<Maybe<ResolversTypes['AttackPattern']>, ParentType, ContextType, Partial<QueryAttackPatternArgs>>;
   attackPatterns?: Resolver<Maybe<ResolversTypes['AttackPatternConnection']>, ParentType, ContextType, Partial<QueryAttackPatternsArgs>>;
+  attackPatternsMatrix?: Resolver<Maybe<ResolversTypes['AttackPatternsMatrix']>, ParentType, ContextType>;
   audits?: Resolver<Maybe<ResolversTypes['LogConnection']>, ParentType, ContextType, Partial<QueryAuditsArgs>>;
   auditsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<QueryAuditsDistributionArgs, 'field' | 'operation'>>;
   auditsMultiTimeSeries?: Resolver<Maybe<Array<Maybe<ResolversTypes['MultiTimeSeries']>>>, ParentType, ContextType, RequireFields<QueryAuditsMultiTimeSeriesArgs, 'interval' | 'operation' | 'startDate'>>;
@@ -40222,6 +40310,9 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   AttackPatternConnection?: AttackPatternConnectionResolvers<ContextType>;
   AttackPatternEdge?: AttackPatternEdgeResolvers<ContextType>;
   AttackPatternEditMutations?: AttackPatternEditMutationsResolvers<ContextType>;
+  AttackPatternForMatrix?: AttackPatternForMatrixResolvers<ContextType>;
+  AttackPatternsByKillChain?: AttackPatternsByKillChainResolvers<ContextType>;
+  AttackPatternsMatrix?: AttackPatternsMatrixResolvers<ContextType>;
   Attribute?: AttributeResolvers<ContextType>;
   AttributeBasedOn?: AttributeBasedOnResolvers<ContextType>;
   AttributeColumn?: AttributeColumnResolvers<ContextType>;

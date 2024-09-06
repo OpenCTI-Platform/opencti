@@ -1,6 +1,7 @@
 import * as R from 'ramda';
 import {
   buildPagination,
+  emptyPaginationResult,
   isEmptyField,
   isInferredIndex,
   isNotEmptyField,
@@ -10,7 +11,17 @@ import {
   READ_RELATIONSHIPS_INDICES,
   READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED
 } from './utils';
-import { elAggregationsList, elCount, elFindByIds, elList, elLoadById, elPaginate, ES_MINIMUM_FIXED_PAGINATION, UNIMPACTED_ENTITIES_ROLE } from './engine';
+import {
+  elAggregationNestedTermsWithFilter,
+  elAggregationsList,
+  elCount,
+  elFindByIds,
+  elList,
+  elLoadById,
+  elPaginate,
+  ES_MINIMUM_FIXED_PAGINATION,
+  UNIMPACTED_ENTITIES_ROLE
+} from './engine';
 import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CORE_RELATIONSHIP, ABSTRACT_STIX_OBJECT, ABSTRACT_STIX_RELATIONSHIP, buildRefRelationKey } from '../schema/general';
 import type { AuthContext, AuthUser } from '../types/user';
 import type {
@@ -479,7 +490,11 @@ export const listEntitiesThroughRelationsPaginated = async <T extends BasicStore
     orderMode: args.orderMode ?? OrderingMode.Desc,
     filters: connectedFilters
   });
-  const entityPagination = await elPaginate(context, user, indices, paginateArgs) as StoreCommonConnection<T>;
+  const entityPagination = await elPaginate(context, user, indices, { ...paginateArgs }) as StoreCommonConnection<T>;
+  if (entityPagination.edges.length === 0) {
+    // no result, just return entityPagination, there is no relationships to find
+    return entityPagination;
+  }
   // As rel de-normalization are currently not directional, we need to post filters the result
   // Some entities could be found because of the none-directionality.
   const entityIds = entityPagination.edges.map((e) => e.node.internal_id);
@@ -506,6 +521,10 @@ export const listEntitiesThroughRelationsPaginated = async <T extends BasicStore
     filterGroups: [],
   };
   const connectedRelations = await listAllRelations<BasicStoreRelation>(context, user, relationType, { filters, connectionFormat: false });
+  if (connectedRelations.length === 0) {
+    // no connection found (because of relation direction), just return an empty result
+    return emptyPaginationResult();
+  }
   const relationsEntityMap = new Map();
   connectedRelations.forEach((relation) => {
     const id = reverse_relation ? relation.fromId : relation.toId;
@@ -528,6 +547,55 @@ export const listEntitiesThroughRelationsPaginated = async <T extends BasicStore
     edges: rebuildEdges,
     pageInfo: { ...entityPagination.pageInfo, globalCount: entityPagination.pageInfo.globalCount - (entityPagination.edges.length - rebuildEdges.length) },
   };
+};
+
+export const findEntitiesIdsWithRelations = async (
+  context: AuthContext,
+  user: AuthUser,
+  connectedEntitiesIds: string[],
+  relationType: string,
+  entityType: string | string[],
+  reverse_relation: boolean
+) => {
+  const entityTypes = Array.isArray(entityType) ? entityType : [entityType];
+  const connectionRole = reverse_relation ? `${relationType}_to` : `${relationType}_from`;
+  const connectionsFilters: FilterGroupWithNested = {
+    mode: FilterMode.And,
+    filters: [
+      {
+        key: ['connections'],
+        values: [],
+        nested: [
+          { key: 'internal_id', values: connectedEntitiesIds },
+          ...(reverse_relation ? [] : [{ key: 'types', values: entityTypes }]),
+          { key: 'role', values: [connectionRole] },
+        ],
+      }],
+    filterGroups: [],
+  };
+  // add a filter on role for aggregation to return only matching connections for the right role
+  const aggFilter = {
+    bool: { filter: [{ term: { 'connections.role.keyword': connectionRole } }] }
+  };
+  const aggSize = connectedEntitiesIds.length;
+  const args = { filters: connectionsFilters, types: [relationType], size: aggSize };
+  const aggregation = { field: 'connections.internal_id.keyword', path: 'connections', filter: aggFilter };
+  const aggregationResult = await elAggregationNestedTermsWithFilter(context, user, READ_RELATIONSHIPS_INDICES, aggregation, args);
+  const resultEntityIds = aggregationResult.map((agg: { label: string; }) => agg.label)
+    .filter((id: string) => connectedEntitiesIds.includes(id)); // keep only ids we were looking for
+  return resultEntityIds;
+};
+export const batchListEntitiesThroughRelationsPaginated = async <T extends BasicStoreCommon>(context: AuthContext, user: AuthUser, connectedEntitiesIds: string[],
+  relationType: string, entityType: string | string[], reverse_relation: boolean, args: EntityOptions<T> = {}) => {
+  const resultMap = new Map();
+  for (let i = 0; i < connectedEntitiesIds.length; i += 1) {
+    const entityId = connectedEntitiesIds[i];
+    const result = await listEntitiesThroughRelationsPaginated(context, user, entityId, relationType, entityType, reverse_relation, args);
+    resultMap.set(entityId, result);
+  }
+  return connectedEntitiesIds.map((entityId) => {
+    return resultMap.get(entityId);
+  });
 };
 
 export const loadEntityThroughRelationsPaginated = async <T extends BasicStoreCommon>(context: AuthContext, user: AuthUser, connectedEntityId: string,

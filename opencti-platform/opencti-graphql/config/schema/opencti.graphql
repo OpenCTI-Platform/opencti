@@ -2646,11 +2646,32 @@ type AttackPattern implements BasicObject & StixObject & StixCoreObject & StixDo
   x_mitre_detection: String
   x_mitre_id: String
   killChainPhases: [KillChainPhase!]
-  coursesOfAction: CourseOfActionConnection
-  parentAttackPatterns: AttackPatternConnection
-  subAttackPatterns: AttackPatternConnection
+  coursesOfAction(
+    first: Int
+    after: ID
+    orderBy: CoursesOfActionOrdering
+    orderMode: OrderingMode
+    filters: FilterGroup
+    search: String
+  ): CourseOfActionConnection
+  parentAttackPatterns(
+    first: Int
+    after: ID
+    orderBy: AttackPatternsOrdering
+    orderMode: OrderingMode
+    filters: FilterGroup
+    search: String
+  ): AttackPatternConnection
+  subAttackPatterns(
+    first: Int
+    after: ID
+    orderBy: AttackPatternsOrdering
+    orderMode: OrderingMode
+    filters: FilterGroup
+    search: String
+  ): AttackPatternConnection
   isSubAttackPattern: Boolean
-  dataComponents: DataComponentConnection
+  dataComponents: DataComponentConnection # TODO paginate ? is this API used ?
   # Technical
   creators: [Creator!]
   toStix: String
@@ -2704,7 +2725,25 @@ input AttackPatternAddInput {
   update: Boolean
   file: Upload
 }
-
+type AttackPatternForMatrix {
+  attack_pattern_id: String!
+  name: String!
+  description: String
+  x_mitre_id: String
+  subAttackPatternsIds: [String!]
+  subAttackPatternsSearchText: String
+  killChainPhasesIds: [String!]
+}
+type AttackPatternsByKillChain {
+  kill_chain_id: String!
+  kill_chain_name: String!
+  phase_name: String!
+  x_opencti_order: Int!
+  attackPatterns: [AttackPatternForMatrix!]
+}
+type AttackPatternsMatrix {
+  attackPatternsOfPhases: [AttackPatternsByKillChain!]
+}
 ############## Campaigns
 enum CampaignsOrdering {
   name
@@ -12678,6 +12717,7 @@ type Query {
     search: String
     toStix: Boolean
   ): AttackPatternConnection @auth(for: [KNOWLEDGE])
+  attackPatternsMatrix: AttackPatternsMatrix @auth(for: [KNOWLEDGE])
   campaign(id: String): Campaign @auth(for: [KNOWLEDGE])
   campaigns(
     first: Int
