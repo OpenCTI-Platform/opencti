@@ -24,12 +24,11 @@ const useStyles = makeStyles<MuiTheme, { column: DataTableColumn }>((theme) => c
     alignItems: 'center',
     height: 40,
     '& .react-draggable-dragging': {
-      background: theme.palette.secondary.main,
+      backgroundColor: theme.palette.secondary.main,
     },
     '&:hover': {
       '& $draggable': {
-        background: theme.palette.secondary.main,
-        width: 2,
+        backgroundColor: theme.palette.secondary.main,
       },
     },
   },
@@ -48,12 +47,12 @@ const useStyles = makeStyles<MuiTheme, { column: DataTableColumn }>((theme) => c
     top: 0,
     right: 3,
     height: '100%',
-    width: 4,
+    width: 10,
+    paddingLeft: 4,
+    paddingRight: 4,
+    backgroundClip: 'content-box',
     borderRadius: 2,
     cursor: 'col-resize',
-    userSelect: 'none',
-    touchAction: 'none',
-    zIndex: 999,
   },
 }));
 
