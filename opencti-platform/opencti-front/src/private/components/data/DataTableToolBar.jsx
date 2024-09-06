@@ -1270,7 +1270,7 @@ class DataTableToolBar extends Component {
     const selectedElementsList = Object.values(this.props.selectedElements || {});
 
     const selectedTypes = R.uniq([...selectedElementsList.map((o) => o.entity_type), ...entityTypeFilterValues]
-      .filter((entity_type) => entity_type !== undefined && entity_type !== typesWithScore[0]));
+      .filter((entity_type) => entity_type !== undefined));
     return { entityTypeFilterValues, selectedElementsList, selectedTypes };
   }
 
@@ -1316,13 +1316,15 @@ class DataTableToolBar extends Component {
         && notScannableTypes.includes(entityTypeFilterValues[0]));
     // endregion
     // region enrich
-    const isManualEnrichSelect = !selectAll && selectedTypes.length === 1;
+    const excludeSCO = (entity_type) => entity_type !== 'Stix-Cyber-Observable';
+    const filteredSelectedTypes = selectedTypes.filter(excludeSCO);
+    const isManualEnrichSelect = !selectAll && filteredSelectedTypes.length === 1;
     const isAllEnrichSelect = selectAll
       && entityTypeFilterValues.length === 1
       && entityTypeFilterValues[0] !== 'Stix-Cyber-Observable'
       && entityTypeFilterValues[0] !== 'Stix-Domain-Object';
     const enrichDisable = notEnrichableTypes.includes(selectedTypes[0])
-      || (entityTypeFilterValues.length === 1
+      || (filteredSelectedTypes.length === 1
         && notEnrichableTypes.includes(entityTypeFilterValues[0]))
       || (!isManualEnrichSelect && !isAllEnrichSelect);
     // endregion
