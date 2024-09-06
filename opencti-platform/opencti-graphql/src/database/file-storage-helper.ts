@@ -82,7 +82,7 @@ export const ALL_MERGEABLE_FOLDERS = [IMPORT_STORAGE_PATH, EXPORT_STORAGE_PATH];
  * @param element
  */
 export const deleteAllObjectFiles = async (context: AuthContext, user: AuthUser, element: any) => {
-  logApp.info(`[FILE STORAGE] deleting all storage files for ${element.internal_id}`);
+  logApp.debug(`[FILE STORAGE] deleting all storage files for ${element.internal_id}`);
 
   let ids = [];
   if (element.entity_type === ENTITY_TYPE_SUPPORT_PACKAGE) {

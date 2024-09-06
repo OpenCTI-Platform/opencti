@@ -32,7 +32,7 @@ export const addIngestion = async (context: AuthContext, user: AuthUser, input: 
       id: element.id,
       type: 'TAXII',
       name: element.name,
-      is_running: element.ingestion_running,
+      is_running: element.ingestion_running ?? false,
       connector_user_id: input.user_id
     });
     await publishUserAction({
@@ -65,7 +65,7 @@ export const ingestionEditField = async (context: AuthContext, user: AuthUser, i
     id: element.id,
     type: 'TAXII',
     name: element.name,
-    is_running: element.ingestion_running,
+    is_running: element.ingestion_running ?? false,
     connector_user_id: element.user_id
   });
   await publishUserAction({

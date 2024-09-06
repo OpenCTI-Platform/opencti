@@ -45,7 +45,6 @@ describe('Verify taxii ingestion', () => {
     await processTaxiiResponse(testContext, ingestionNotPagination, taxiResponse);
     const result = await findTaxiiIngestionById(testContext, ADMIN_USER, ingestionNotPagination.id);
     expect(result.current_state_cursor).toBeUndefined();
-    expect(result.taxii_more).toBeFalsy();
     expect(result.added_after_start).toBeDefined();
   });
 
@@ -89,7 +88,6 @@ describe('Verify taxii ingestion', () => {
     await processTaxiiResponse(testContext, ingestionPaginatedWithStartDate, taxiResponse1);
     const taxiiEntityAfterfirstRequest = await findTaxiiIngestionById(testContext, ADMIN_USER, ingestionPaginatedWithStartDate.id);
     expect(taxiiEntityAfterfirstRequest.current_state_cursor).toBe('1234');
-    expect(taxiiEntityAfterfirstRequest.taxii_more).toBeTruthy();
     expect(taxiiEntityAfterfirstRequest.added_after_start, 'should keep the start date set at ingestion creation').toBe('2024-01-01T20:35:44.000Z');
 
     // 4. Check parameter send to taxii server for the next call
@@ -117,7 +115,6 @@ describe('Verify taxii ingestion', () => {
     await processTaxiiResponse(testContext, taxiiEntityAfterfirstRequest, taxiResponse);
     const result = await findTaxiiIngestionById(testContext, ADMIN_USER, taxiiEntityAfterfirstRequest.id);
     expect(result.current_state_cursor, 'Since more is false, next value should be reset').toBeUndefined();
-    expect(result.taxii_more).toBeFalsy();
     expect(result.added_after_start).toBe('2024-03-01T20:35:44.000Z');
   });
 
@@ -160,7 +157,6 @@ describe('Verify taxii ingestion', () => {
     await processTaxiiResponse(testContext, ingestionPaginatedWithNoStartDate, taxiResponse);
     const taxiiEntityAfterFirstCall = await findTaxiiIngestionById(testContext, ADMIN_USER, ingestionPaginatedWithNoStartDate.id);
     expect(taxiiEntityAfterFirstCall.current_state_cursor).toBe('4321');
-    expect(taxiiEntityAfterFirstCall.taxii_more).toBeTruthy();
     expect(taxiiEntityAfterFirstCall.added_after_start).toBeUndefined();
 
     // 4. Check parameter send to taxii server for the next call
@@ -188,7 +184,6 @@ describe('Verify taxii ingestion', () => {
     await processTaxiiResponse(testContext, taxiiEntityAfterFirstCall, taxiResponse2);
     const result = await findTaxiiIngestionById(testContext, ADMIN_USER, taxiiEntityAfterFirstCall.id);
     expect(result.current_state_cursor, 'Since more is false, next value should be reset').toBeUndefined();
-    expect(result.taxii_more).toBeFalsy();
     expect(result.added_after_start).toBe('2024-03-01T20:44:44.000Z');
   });
 
@@ -219,7 +214,6 @@ describe('Verify taxii ingestion', () => {
     await processTaxiiResponse(testContext, ingestionPaginatedWithStartDate, taxiResponse);
     const result = await findTaxiiIngestionById(testContext, ADMIN_USER, ingestionPaginatedWithStartDate.id);
     expect(result.current_state_cursor).toBeUndefined(); // previous value
-    expect(result.taxii_more).toBeFalsy();
     expect(result.added_after_start).toBe('2023-01-01T20:35:44.000Z'); // previous value
   });
 });

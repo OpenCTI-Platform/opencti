@@ -54,7 +54,7 @@ export const ingestionEditField = async (context: AuthContext, user: AuthUser, i
     id: element.id,
     type: 'RSS',
     name: element.name,
-    is_running: element.ingestion_running,
+    is_running: element.ingestion_running ?? false,
     connector_user_id: element.user_id
   });
   await publishUserAction({
