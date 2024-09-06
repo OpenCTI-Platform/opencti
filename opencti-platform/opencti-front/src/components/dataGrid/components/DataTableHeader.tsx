@@ -29,6 +29,7 @@ const useStyles = makeStyles<MuiTheme, { column: DataTableColumn }>((theme) => c
     '&:hover': {
       '& $draggable': {
         background: theme.palette.secondary.main,
+        width: 2,
       },
     },
   },
