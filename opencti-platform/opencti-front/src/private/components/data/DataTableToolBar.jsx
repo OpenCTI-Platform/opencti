@@ -1302,7 +1302,7 @@ class DataTableToolBar extends Component {
 
     // Some filter types are high level, we do not want to check them as "Different"
     // We might need to add some other types here before refactoring the toolbar
-    const typesAreDifferent = (selectedTypes.filter((type) => !['Stix-Domain-Object', 'stix-core-relationship'].includes(type))).length > 1;
+    const typesAreDifferent = (selectedTypes.filter((type) => !['Stix-Domain-Object', 'stix-core-relationship', 'Stix-Cyber-Observable'].includes(type))).length > 1;
     const preventMerge = selectedTypes.at(0) === 'Vocabulary'
       && Object.values(selectedElements).some(({ builtIn }) => Boolean(builtIn));
     // region update
