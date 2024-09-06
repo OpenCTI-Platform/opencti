@@ -95,6 +95,7 @@ export interface DataTableProps {
   storageKey: string
   initialValues: LocalStorage
   toolbarFilters?: FilterGroup
+  handleCopy?: () => void
   lineFragment?: GraphQLTaggedNode
   dataQueryArgs: any
   availableFilterKeys?: string[] | undefined;

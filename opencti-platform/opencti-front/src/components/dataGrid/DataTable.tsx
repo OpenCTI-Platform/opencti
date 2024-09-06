@@ -26,6 +26,7 @@ type OCTIDataTableProps = Pick<DataTableProps, 'dataColumns'
 | 'storageKey'
 | 'initialValues'
 | 'toolbarFilters'
+| 'handleCopy'
 | 'availableFilterKeys'
 | 'redirectionModeEnabled'
 | 'additionalFilterKeys'
@@ -72,6 +73,7 @@ const DataTable = (props: OCTIDataTableProps) => {
     exportContext,
     entityTypes,
     toolbarFilters,
+    handleCopy,
     variant = DataTableVariant.default,
     additionalHeaderButtons,
     currentView,
@@ -191,6 +193,7 @@ const DataTable = (props: OCTIDataTableProps) => {
             filters={toolbarFilters}
             handleClearSelectedElements={handleClearSelectedElements}
             taskScope={taskScope}
+            handleCopy={handleCopy}
           />
         </div>
       )}
