@@ -31,6 +31,7 @@ const useStyles = makeStyles<Theme, { cell?: DataTableColumn, navigable?: boolea
     width: 'fill-available',
     alignItems: 'center',
     gap: 3,
+    fontSize: '13px',
   },
   dummyContainer: {
     display: 'flex',
