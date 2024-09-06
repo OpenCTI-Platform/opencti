@@ -90,8 +90,11 @@ const computeValidUntil = (indicator: IndicatorAddInput, validFrom: Moment, life
   } else if (isNotEmptyField(indicator.valid_until)) {
     const validUntilDate = utcDate(indicator.valid_until as string);
     // Ensure valid_until is strictly greater than valid_from
-    if (validUntilDate <= validFrom) {
+    if (validUntilDate.isBefore(validFrom)) {
       throw ValidationError('The valid until date must be greater than the valid from date', 'valid_until');
+    } else if (validUntilDate.isSame(validFrom)) {
+      // When creating directly through API, we accept the same date and add an extra second to valid_until
+      validUntil = utcDate(indicator.valid_until).add(1, 'seconds');
     } else {
       validUntil = utcDate(indicator.valid_until);
     }
