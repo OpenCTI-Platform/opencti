@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, SyntheticEvent } from 'react';
 import Skeleton from '@mui/material/Skeleton';
 import Checkbox from '@mui/material/Checkbox';
 import IconButton from '@mui/material/IconButton';
@@ -142,7 +142,7 @@ const DataTableLine = ({
 
   const startsWithSelect = effectiveColumns.at(0)?.id === 'select';
 
-  const handleSelectLine = (event) => {
+  const handleSelectLine = (event: SyntheticEvent) => {
     event.preventDefault();
     event.stopPropagation();
     if (event.shiftKey) {
@@ -152,7 +152,7 @@ const DataTableLine = ({
     }
   };
 
-  const handleRowClick = (event) => {
+  const handleRowClick = (event: SyntheticEvent) => {
     if (disableRedirectOnRowClick) {
       handleSelectLine(event);
       return undefined;

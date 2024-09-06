@@ -58,6 +58,7 @@ const StixCyberObservables: FunctionComponent = () => {
     ...paginationOptions,
     filters: contextFilters,
   } as unknown as StixCyberObservablesLinesPaginationQuery$variables;
+
   const queryRef = useQueryLoading<StixCyberObservablesLinesPaginationQuery>(
     stixCyberObservablesLinesQuery,
     queryPaginationOptions,

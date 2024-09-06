@@ -152,6 +152,7 @@ export interface DataTableDisplayFiltersProps {
   additionalFilterKeys?: string[]
   availableRelationFilterTypes?: Record<string, string[]> | undefined
   availableFilterKeys?: string[] | undefined;
+  availableEntityTypes?: string[]
   paginationOptions: any
 }
 
