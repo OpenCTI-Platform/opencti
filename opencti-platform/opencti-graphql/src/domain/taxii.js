@@ -118,7 +118,7 @@ export const collectionQuery = async (context, user, collection, args) => {
     throw FunctionalError('Invalid version provided, only \'last\' supported', { version });
   }
   const filters = collection.filters ? JSON.parse(collection.filters) : undefined;
-  const options = await convertFiltersToQueryOptions(filters, { after: added_after });
+  const options = await convertFiltersToQueryOptions(filters, { after: added_after, after_exclude: true });
   options.after = next;
   options.bypassSizeLimit = true;
   let maxSize = MAX_TAXII_PAGINATION;
