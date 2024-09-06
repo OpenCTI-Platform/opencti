@@ -6,6 +6,7 @@ import {
   editorQuery,
   getOrganizationIdByName,
   getUserIdByEmail,
+  participantQuery,
   PLATFORM_ORGANIZATION,
   queryAsAdmin,
   securityQuery,
@@ -576,7 +577,12 @@ describe('Case Incident Response and organization sharing standard behavior with
     expect(caseIRCreateQueryResult?.data?.caseIncidentAdd.authorized_members).toEqual([]); // authorized members not activated
     caseIrId = caseIRCreateQueryResult?.data?.caseIncidentAdd.id;
   });
-  it('should not access Case Incident Response out of his organization', async () => {
+  it('should not access Case Incident Response if no organization', async () => {
+    const caseIRQueryResult = await participantQuery({ query: READ_QUERY, variables: { id: caseIrId } });
+    expect(caseIRQueryResult).not.toBeNull();
+    expect(caseIRQueryResult.data?.caseIncident).toBeNull();
+  });
+  it('should not access Case Incident Response from different organization', async () => {
     const caseIRQueryResult = await editorQuery({ query: READ_QUERY, variables: { id: caseIrId } });
     expect(caseIRQueryResult).not.toBeNull();
     expect(caseIRQueryResult.data?.caseIncident).toBeNull();
