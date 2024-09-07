@@ -26,7 +26,6 @@ import { truncate } from '../../../../utils/String';
 import useGranted, { KNOWLEDGE_KNUPDATE, SETTINGS_SETLABELS } from '../../../../utils/hooks/useGranted';
 import CommitMessage from '../form/CommitMessage';
 import Transition from '../../../../components/Transition';
-import ItemEntityType from '../../../../components/ItemEntityType';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -171,41 +170,31 @@ const StixCoreObjectOrCoreRelationshipLabelsView = (props) => {
       <div className={classes.objectLabel}>
         {map(
           (label) => (
-            <Security
-              needs={[KNOWLEDGE_KNUPDATE]}
-              placeholder={
-                <Tooltip title={label.value}>
-                  <ItemEntityType
-                    entityType={label.value}
-                    maxLength={25}
-                  />
-                </Tooltip>
-              }
-            >
-              <Tooltip title={label.value}>
-                <Chip
-                  key={label.id}
-                  variant="outlined"
-                  classes={{ root: classes.label }}
-                  label={truncate(label.value, 25)}
-                  style={{
-                    color: label.color,
-                    borderColor: label.color,
-                    backgroundColor: hexToRGB(label.color),
-                  }}
-                  onDelete={() => (enableReferences
-                    ? handleOpenCommitDelete(label)
-                    : handleRemoveLabel(label.id))
+            <Tooltip title={label.value}>
+              <Chip
+                key={label.id}
+                variant="outlined"
+                classes={{ root: classes.label }}
+                label={truncate(label.value, 25)}
+                style={{
+                  color: label.color,
+                  borderColor: label.color,
+                  backgroundColor: hexToRGB(label.color),
+                }}
+                onDelete={() => (enableReferences
+                  ? handleOpenCommitDelete(label)
+                  : handleRemoveLabel(label.id))
                   }
-                  deleteIcon={
+                deleteIcon={
+                  <Security needs={[KNOWLEDGE_KNUPDATE]} >
                     <CancelOutlined
                       className={classes.deleteIcon}
                       style={{ color: label.color }}
                     />
-                  }
-                />
-              </Tooltip>
-            </Security>
+                  </Security>
+                }
+              />
+            </Tooltip>
           ),
           (labels ?? []),
         )}
