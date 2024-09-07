@@ -276,7 +276,7 @@ export const usePaginationLocalStorage = <U>(
       } : {
         ...viewStorage,
         searchTerm: value,
-        sortBy: storedSortBy || '_score',
+        sortBy: '_score',
         orderAsc: false,
       };
       setValue(newValue);
