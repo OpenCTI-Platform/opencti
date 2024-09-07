@@ -2436,7 +2436,7 @@ class OpenCTIStix2:
                     if len(to_ids) > 0:
                         for to_id in to_ids:
                             self.import_sighting(item, from_id, to_id, update)
-                if (
+                elif (
                     self.opencti.get_attribute_in_extension("sighting_of_ref", item)
                     is not None
                 ):
@@ -2446,10 +2446,11 @@ class OpenCTIStix2:
                     if len(to_ids) > 0:
                         for to_id in to_ids:
                             self.import_sighting(item, from_id, to_id, update)
-                from_id = item["sighting_of_ref"]
-                if len(to_ids) > 0:
-                    for to_id in to_ids:
-                        self.import_sighting(item, from_id, to_id, update)
+                else:
+                    from_id = item["sighting_of_ref"]
+                    if len(to_ids) > 0:
+                        for to_id in to_ids:
+                            self.import_sighting(item, from_id, to_id, update)
                 # Import observed_data_refs
                 if "observed_data_refs" in item:
                     for observed_data_ref in item["observed_data_refs"]:
