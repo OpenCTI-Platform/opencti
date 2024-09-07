@@ -13,9 +13,9 @@ import { paginatedForPathWithEnrichment } from '../modules/internal/document/doc
 import { logApp } from '../config/conf';
 
 export const checkRetentionRule = async (context, input) => {
-  const { filters, max_retention: maxDays, scope } = input;
+  const { filters, max_retention: maxDays, scope, retention_unit: unit } = input;
   const jsonFilters = filters ? JSON.parse(filters) : null;
-  const before = utcDate().subtract(maxDays, 'days');
+  const before = utcDate().subtract(maxDays, unit ?? 'days');
   const queryOptions = await convertFiltersToQueryOptions(jsonFilters, { before });
   let result = [];
   if (scope === 'knowledge') {
