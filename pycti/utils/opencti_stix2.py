@@ -1314,6 +1314,38 @@ class OpenCTIStix2:
         }
 
         # Create the sighting
+
+        ### Get the FROM
+        if from_id in self.mapping_cache:
+            final_from_id = self.mapping_cache[from_id]["id"]
+        else:
+            stix_object_result = (
+                self.opencti.opencti_stix_object_or_stix_relationship.read(id=from_id)
+            )
+            if stix_object_result is not None:
+                final_from_id = stix_object_result["id"]
+            else:
+                self.opencti.app_logger.error(
+                    "From ref of the sighting not found, doing nothing..."
+                )
+                return None
+
+        ### Get the TO
+        final_to_id = None
+        if to_id:
+            if to_id in self.mapping_cache:
+                final_to_id = self.mapping_cache[to_id]["id"]
+            else:
+                stix_object_result = (
+                    self.opencti.opencti_stix_object_or_stix_relationship.read(id=to_id)
+                )
+                if stix_object_result is not None:
+                    final_to_id = stix_object_result["id"]
+                else:
+                    self.opencti.app_logger.error(
+                        "To ref of the sighting not found, doing nothing..."
+                    )
+                    return None
         if (
             "x_opencti_negative" not in stix_sighting
             and self.opencti.get_attribute_in_extension("negative", stix_sighting)
@@ -1327,8 +1359,8 @@ class OpenCTIStix2:
                 self.opencti.get_attribute_in_extension("workflow_id", stix_sighting)
             )
         stix_sighting_result = self.opencti.stix_sighting_relationship.create(
-            fromId=from_id,
-            toId=to_id,
+            fromId=final_from_id,
+            toId=final_to_id,
             stix_id=stix_sighting["id"] if "id" in stix_sighting else None,
             description=(
                 self.convert_markdown(stix_sighting["description"])
@@ -2404,7 +2436,7 @@ class OpenCTIStix2:
                     if len(to_ids) > 0:
                         for to_id in to_ids:
                             self.import_sighting(item, from_id, to_id, update)
-                elif (
+                if (
                     self.opencti.get_attribute_in_extension("sighting_of_ref", item)
                     is not None
                 ):
@@ -2414,11 +2446,10 @@ class OpenCTIStix2:
                     if len(to_ids) > 0:
                         for to_id in to_ids:
                             self.import_sighting(item, from_id, to_id, update)
-                else:
-                    from_id = item["sighting_of_ref"]
-                    if len(to_ids) > 0:
-                        for to_id in to_ids:
-                            self.import_sighting(item, from_id, to_id, update)
+                from_id = item["sighting_of_ref"]
+                if len(to_ids) > 0:
+                    for to_id in to_ids:
+                        self.import_sighting(item, from_id, to_id, update)
                 # Import observed_data_refs
                 if "observed_data_refs" in item:
                     for observed_data_ref in item["observed_data_refs"]:
