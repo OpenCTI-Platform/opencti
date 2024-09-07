@@ -257,6 +257,7 @@ const createBasicRolesAndCapabilities = async (context) => {
     description: 'Connector role that has the recommended capabilities',
     capabilities: [
       'KNOWLEDGE_KNUPDATE_KNDELETE',
+      'KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS',
       'KNOWLEDGE_KNUPLOAD',
       'KNOWLEDGE_KNASKIMPORT',
       'KNOWLEDGE_KNGETEXPORT_KNASKEXPORT',
