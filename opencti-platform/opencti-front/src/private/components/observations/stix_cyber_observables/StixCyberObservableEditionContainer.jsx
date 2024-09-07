@@ -13,7 +13,7 @@ import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings
 // Do not use it for new code.
 const useStyles = makeStyles((theme) => ({
   header: {
-    backgroundColor: theme.palette.background.nav,
+    backgroundColor: theme.palette.background.default,
     padding: '20px 20px 20px 60px',
   },
   closeButton: {
@@ -49,7 +49,7 @@ const StixCyberObservableEditionContainer = (props) => {
         >
           <Close fontSize="small" color="primary" />
         </IconButton>
-        <Typography variant="h6" classes={{ root: classes.title }}>
+        <Typography variant="subtitle2" classes={{ root: classes.title }}>
           {t_i18n('Update an observable')}
         </Typography>
         <SubscriptionAvatars context={editContext} />
