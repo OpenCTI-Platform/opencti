@@ -105,6 +105,20 @@ const WorkbenchFileCreator: FunctionComponent<WorkbenchFileCreatorProps> = ({
     if (!name.endsWith('.json')) {
       name += '.json';
     }
+
+    const handleCompleted = () => {
+      setSubmitting(false);
+      resetForm();
+      handleCloseCreate();
+      onCompleted?.();
+    };
+
+    const handleError = () => {
+      setSubmitting(false);
+      resetForm();
+      handleCloseCreate();
+    };
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const objects: any = [];
     if (entityId) {
@@ -129,15 +143,10 @@ const WorkbenchFileCreator: FunctionComponent<WorkbenchFileCreatorProps> = ({
           commitWorkbench({
             variables: { file, labels: finalLabels, entityId },
             onCompleted: () => {
-              setSubmitting(false);
-              resetForm();
-              handleCloseCreate();
-              onCompleted?.();
+              handleCompleted();
             },
             onError: () => {
-              setSubmitting(false);
-              resetForm();
-              handleCloseCreate();
+              handleError();
             },
           });
         });
@@ -151,15 +160,10 @@ const WorkbenchFileCreator: FunctionComponent<WorkbenchFileCreatorProps> = ({
       commitWorkbench({
         variables: { file, labels: finalLabels, entityId },
         onCompleted: () => {
-          setSubmitting(false);
-          resetForm();
-          handleCloseCreate();
-          onCompleted?.();
+          handleCompleted();
         },
         onError: () => {
-          setSubmitting(false);
-          resetForm();
-          handleCloseCreate();
+          handleError();
         },
       });
     }
