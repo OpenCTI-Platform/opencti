@@ -11,33 +11,43 @@ import { Strategy as SamlStrategy } from '@node-saml/passport-saml';
 import { custom as OpenIDCustom, Issuer as OpenIDIssuer, Strategy as OpenIDStrategy } from 'openid-client';
 import { OAuth2Strategy as GoogleStrategy } from 'passport-google-oauth';
 import validator from 'validator';
-import { HEADERS_AUTHENTICATORS, initAdmin, login, loginFromProvider } from '../domain/user';
+import { findById, HEADERS_AUTHENTICATORS, initAdmin, login, loginFromProvider, userDelete } from '../domain/user';
 import conf, { getPlatformHttpProxyAgent, logApp } from './conf';
 import { AuthenticationFailure, ConfigurationError, UnsupportedError } from './errors';
 import { isEmptyField, isNotEmptyField } from '../database/utils';
-import { DEFAULT_INVALID_CONF_VALUE } from '../utils/access';
+import { DEFAULT_INVALID_CONF_VALUE, SYSTEM_USER } from '../utils/access';
 import { enrichWithRemoteCredentials } from './credentials';
+import { OPENCTI_ADMIN_UUID } from '../schema/general';
 
 // Admin user initialization
 export const initializeAdminUser = async (context) => {
-  const adminEmail = conf.get('app:admin:email');
-  const adminPassword = conf.get('app:admin:password');
-  const adminToken = conf.get('app:admin:token');
-  if (isEmptyField(adminEmail) || isEmptyField(adminPassword) || isEmptyField(adminToken)
-    || adminPassword === DEFAULT_INVALID_CONF_VALUE || adminToken === DEFAULT_INVALID_CONF_VALUE
-  ) {
-    throw ConfigurationError('You need to configure the environment vars');
+  const isExternallyManaged = conf.get('app:admin:externally_managed') === true;
+  if (isExternallyManaged) {
+    logApp.info('[INIT] admin user initialization disabled by configuration');
+    const existingAdmin = await findById(context, SYSTEM_USER, OPENCTI_ADMIN_UUID);
+    if (existingAdmin) {
+      await userDelete(context, SYSTEM_USER, OPENCTI_ADMIN_UUID);
+    }
   } else {
-    // Check fields
-    if (!validator.isEmail(adminEmail)) {
-      throw ConfigurationError('Email must be a valid email address');
+    const adminEmail = conf.get('app:admin:email');
+    const adminPassword = conf.get('app:admin:password');
+    const adminToken = conf.get('app:admin:token');
+    if (isEmptyField(adminEmail) || isEmptyField(adminPassword) || isEmptyField(adminToken)
+        || adminPassword === DEFAULT_INVALID_CONF_VALUE || adminToken === DEFAULT_INVALID_CONF_VALUE
+    ) {
+      throw ConfigurationError('You need to configure the environment vars');
+    } else {
+      // Check fields
+      if (!validator.isEmail(adminEmail)) {
+        throw ConfigurationError('Email must be a valid email address');
+      }
+      if (!validator.isUUID(adminToken)) {
+        throw ConfigurationError('Token must be a valid UUID');
+      }
+      // Initialize the admin account
+      await initAdmin(context, adminEmail, adminPassword, adminToken);
+      logApp.info('[INIT] admin user initialized');
     }
-    if (!validator.isUUID(adminToken)) {
-      throw ConfigurationError('Token must be a valid UUID');
-    }
-    // Initialize the admin account
-    await initAdmin(context, adminEmail, adminPassword, adminToken);
-    logApp.info('[INIT] admin user initialized');
   }
 };
 
