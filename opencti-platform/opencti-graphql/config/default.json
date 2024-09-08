@@ -43,6 +43,7 @@
     },
     "graphql": {
       "armor_protection": {
+        "disabled": true,
         "max_depth": 20,
         "max_directives": 20,
         "max_tokens": 100000,
