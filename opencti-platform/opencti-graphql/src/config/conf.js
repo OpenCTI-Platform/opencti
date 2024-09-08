@@ -416,7 +416,7 @@ export const ENABLED_UI = booleanConf('app:enabled_ui', true);
 export const ENABLED_DEMO_MODE = booleanConf('demo_mode', false);
 export const PLAYGROUND_INTROSPECTION_DISABLED = DEV_MODE ? false : (!ENABLED_UI || booleanConf('app:graphql:playground:force_disabled_introspection', true));
 export const PLAYGROUND_ENABLED = ENABLED_UI && booleanConf('app:graphql:playground:enabled', true);
-export const GRAPHQL_ARMOR_ENABLED = booleanConf('app:graphql:armor_enabled', true);
+export const GRAPHQL_ARMOR_DISABLED = booleanConf('app:graphql:armor_protection:disabled', true);
 
 // Default activated managers
 export const ENABLED_TRACING = booleanConf('app:telemetry:tracing:enabled', false);
