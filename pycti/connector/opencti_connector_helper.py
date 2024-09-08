@@ -1424,6 +1424,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             message_callback,
         )
         self.listen_queue.start()
+        self.listen_queue.join()
 
     def listen_stream(
         self,
