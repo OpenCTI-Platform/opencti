@@ -1681,3 +1681,26 @@ class StixCoreObject:
         else:
             self.opencti.app_logger.error("Missing parameters: id")
             return None
+
+    """
+        Delete a Stix-Core-Object object
+
+        :param id: the Stix-Core-Object id
+        :return void
+    """
+
+    def delete(self, **kwargs):
+        id = kwargs.get("id", None)
+        if id is not None:
+            self.opencti.app_logger.info("Deleting stix_core_object", {"id": id})
+            query = """
+                mutation StixCoreObjectEdit($id: ID!) {
+                    stixCoreObjectEdit(id: $id) {
+                        delete
+                    }
+                }
+            """
+            self.opencti.query(query, {"id": id})
+        else:
+            self.opencti.app_logger.error("[stix_core_object] Missing parameters: id")
+            return None
