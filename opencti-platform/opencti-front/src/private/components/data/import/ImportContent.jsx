@@ -90,7 +90,6 @@ const styles = (theme) => ({
   createButton: {
     position: 'fixed',
     bottom: 30,
-    right: 230,
   },
 });
 
@@ -335,6 +334,7 @@ class ImportContentComponent extends Component {
       nsdt,
       connectorsImport,
       relay,
+      isNewImportScreensEnabled,
     } = this.props;
     const { edges: importFilesEdges } = importFiles;
     const { edges: pendingFilesEdges } = pendingFiles;
@@ -348,9 +348,9 @@ class ImportContentComponent extends Component {
     const invalidCsvMapper = this.state.selectedConnector?.name === 'ImportCsv'
       && this.state.selectedConnector?.configurations?.length === 0;
     return (
-      <div style={{ paddingRight: 200 }}>
+      <div style={{ paddingRight: isNewImportScreensEnabled ? 200 : 0 }}>
         <Breadcrumbs variant="list" elements={[{ label: t('Data') }, { label: t('Import'), current: true }]} />
-        <ImportMenu />
+        {isNewImportScreensEnabled && <ImportMenu/>}
         <Grid
           container={true}
           spacing={3}
@@ -705,6 +705,7 @@ class ImportContentComponent extends Component {
           color="primary"
           aria-label="Add"
           className={classes.createButton}
+          style={{ right: isNewImportScreensEnabled ? 230 : 30 }}
         >
           <Add />
         </Fab>
