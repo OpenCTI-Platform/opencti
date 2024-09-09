@@ -21,6 +21,7 @@ import { ForbiddenAccess } from '../../../config/errors';
 import { RELATION_OBJECT_MARKING } from '../../../schema/stixRefRelationship';
 import { buildRefRelationKey } from '../../../schema/general';
 
+export const DELETABLE_FILE_STATUSES = ['complete', 'timeout'];
 export const getIndexFromDate = async (context: AuthContext) => {
   const searchOptions = {
     first: 1,

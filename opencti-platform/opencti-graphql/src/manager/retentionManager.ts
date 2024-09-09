@@ -13,7 +13,7 @@ import { registerManager } from './managerModule';
 import type { AuthContext } from '../types/user';
 import type { FileEdge, RetentionRule } from '../generated/graphql';
 import { deleteFile } from '../database/file-storage';
-import { paginatedForPathWithEnrichment } from '../modules/internal/document/document-domain';
+import { DELETABLE_FILE_STATUSES, paginatedForPathWithEnrichment } from '../modules/internal/document/document-domain';
 
 const RETENTION_MANAGER_ENABLED = booleanConf('retention_manager:enabled', false);
 const RETENTION_MANAGER_START_ENABLED = booleanConf('retention_manager:enabled', true);
@@ -59,9 +59,9 @@ export const getElementsToDelete = async (context: AuthContext, scope: string, b
   } else {
     throw Error(`[Retention manager] Scope ${scope} not existing for Retention Rule.`);
   }
-  if (scope === 'file' || scope === 'workbench') { // don't delete files with ongoing works or incomplete status
-    const resultEdges = result.edges.filter((e: FileEdge) => e.node.uploadStatus === 'complete'
-      && (e.node.works ?? []).every((work) => work?.status === 'complete'));
+  if (scope === 'file' || scope === 'workbench') { // don't delete progress files or files with works in progress
+    const resultEdges = result.edges.filter((e: FileEdge) => DELETABLE_FILE_STATUSES.includes(e.node.uploadStatus)
+      && (e.node.works ?? []).every((work) => !work || DELETABLE_FILE_STATUSES.includes(work?.status)));
     result.edges = resultEdges;
   }
   return result;

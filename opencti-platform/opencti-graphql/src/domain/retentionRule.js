@@ -9,18 +9,22 @@ import { utcDate } from '../utils/format';
 import { RETENTION_MANAGER_USER } from '../utils/access';
 import { convertFiltersToQueryOptions } from '../utils/filtering/filtering-resolution';
 import { publishUserAction } from '../listener/UserActionListener';
-import { paginatedForPathWithEnrichment } from '../modules/internal/document/document-domain';
+import { DELETABLE_FILE_STATUSES, paginatedForPathWithEnrichment } from '../modules/internal/document/document-domain';
 import { logApp } from '../config/conf';
 
 export const checkRetentionRule = async (context, input) => {
   const { filters, max_retention: maxDays, scope, retention_unit: unit } = input;
-  const jsonFilters = filters ? JSON.parse(filters) : null;
   const before = utcDate().subtract(maxDays, unit ?? 'days');
-  const queryOptions = await convertFiltersToQueryOptions(jsonFilters, { before });
   let result = [];
+  // knowledge rule
   if (scope === 'knowledge') {
+    const jsonFilters = filters ? JSON.parse(filters) : null;
+    const queryOptions = await convertFiltersToQueryOptions(jsonFilters, { before });
     result = await elPaginate(context, RETENTION_MANAGER_USER, READ_DATA_INDICES_WITHOUT_INFERRED, queryOptions);
-  } else if (scope === 'file') {
+    return result.pageInfo.globalCount;
+  }
+  // file and workbench rules
+  if (scope === 'file') {
     result = await paginatedForPathWithEnrichment(
       context,
       RETENTION_MANAGER_USER,
@@ -39,7 +43,12 @@ export const checkRetentionRule = async (context, input) => {
   } else {
     logApp.error(`[Retention manager] Scope ${scope} not existing for Retention Rule.`);
   }
-  return result.pageInfo.globalCount;
+  if (scope === 'file' || scope === 'workbench') { // don't delete progress files or files with works in progress
+    const resultEdges = result.edges.filter((e) => DELETABLE_FILE_STATUSES.includes(e.node.uploadStatus)
+      && (e.node.works ?? []).every((work) => !work || DELETABLE_FILE_STATUSES.includes(work?.status)));
+    result.edges = resultEdges;
+  }
+  return result.edges.length;
 };
 
 // input { name, filters }

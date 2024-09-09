@@ -22277,6 +22277,7 @@ export type RetentionRuleEditMutationsFieldPatchArgs = {
 };
 
 export enum RetentionRuleOrdering {
+  Score = '_score',
   LastExecutionDate = 'last_execution_date',
   MaxRetention = 'max_retention',
   Name = 'name',

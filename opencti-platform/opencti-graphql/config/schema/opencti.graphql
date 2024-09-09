@@ -1067,6 +1067,7 @@ enum RetentionRuleOrdering {
   remaining_count
   last_execution_date
   max_retention
+  _score
 }
 enum RetentionRuleScope {
   knowledge
