@@ -82,6 +82,7 @@ const dataComponentsLinesFragment = graphql`
     ) @connection(key: "Pagination_dataComponents") {
       edges {
         node {
+          id
           ...DataComponentsLine_node
         }
       }

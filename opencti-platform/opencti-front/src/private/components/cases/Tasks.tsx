@@ -56,6 +56,7 @@ const tasksLinesFragment = graphql`
     ) @connection(key: "Pagination_tasks__tasks") {
       edges {
         node {
+          id
           ...TasksLine_node
         }
       }

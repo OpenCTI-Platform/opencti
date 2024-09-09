@@ -84,6 +84,7 @@ const externalReferencesLinesFragment = graphql`
     ) @connection(key: "Pagination_externalReferences") {
       edges {
         node {
+          id
           ...ExternalReferencesLine_node
         }
       }

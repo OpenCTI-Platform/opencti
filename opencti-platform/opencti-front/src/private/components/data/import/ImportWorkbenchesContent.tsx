@@ -80,6 +80,7 @@ const importWorkbenchLinesFragment = graphql`
     @connection(key: "Pagination_global_pendingFiles") {
       edges {
         node {
+          id
           ...ImportWorkbenchesContentFileLine_file
         }
       }

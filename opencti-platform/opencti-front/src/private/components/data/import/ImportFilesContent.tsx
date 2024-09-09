@@ -87,6 +87,7 @@ const importWorkbenchLinesFragment = graphql`
     @connection(key: "Pagination_global_importFiles") {
       edges {
         node {
+          id
           ...ImportFilesContentFileLine_file
         }
       }
