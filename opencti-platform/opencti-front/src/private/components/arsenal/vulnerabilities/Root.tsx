@@ -6,6 +6,7 @@ import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import useQueryLoading from 'src/utils/hooks/useQueryLoading';
+import useForceUpdate from '@components/common/bulk/useForceUpdate';
 import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreObjectContentRoot';
 import Vulnerability from './Vulnerability';
 import VulnerabilityKnowledge from './VulnerabilityKnowledge';
@@ -94,6 +95,8 @@ const RootVulnerability = ({ queryRef, vulnerabilityId }: RootVulnerabilityProps
     connectorsForExport,
     connectorsForImport,
   } = usePreloadedQuery<RootVulnerabilityQuery>(vulnerabilityQuery, queryRef);
+
+  const { forceUpdate } = useForceUpdate();
 
   const paddingRight = getPaddingRight(location.pathname, vulnerabilityId, '/dashboard/arsenal/vulnerabilities');
   const link = `/dashboard/arsenal/vulnerabilities/${vulnerabilityId}/knowledge`;
@@ -213,7 +216,11 @@ const RootVulnerability = ({ queryRef, vulnerabilityId }: RootVulnerabilityProps
               />
               <Route
                 path="/knowledge/*"
-                element={<VulnerabilityKnowledge vulnerability={vulnerability}/>}
+                element={
+                  <div key={forceUpdate}>
+                    <VulnerabilityKnowledge vulnerability={vulnerability}/>
+                  </div>
+                }
               />
               <Route
                 path="/content/*"
