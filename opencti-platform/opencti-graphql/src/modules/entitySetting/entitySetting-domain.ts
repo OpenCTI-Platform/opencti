@@ -92,10 +92,7 @@ export const entitySettingEditField = async (context: AuthContext, user: AuthUse
 };
 
 export const getOverviewLayoutCustomization = (entitySetting: BasicStoreEntityEntitySetting) => {
-  if (!isFeatureEnabled('OVERVIEW_LAYOUT_CUSTOMIZATION') || !entitySetting.overview_layout_customization?.[0]) {
-    return schemaOverviewLayoutCustomization.get(entitySetting.target_type);
-  }
-  return entitySetting.overview_layout_customization;
+  return entitySetting.overview_layout_customization?.[0] ? entitySetting.overview_layout_customization : schemaOverviewLayoutCustomization.get(entitySetting.target_type);
 };
 
 export const entitySettingsEditField = async (context: AuthContext, user: AuthUser, entitySettingIds: string[], input: EditInput[]) => {

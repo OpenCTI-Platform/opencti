@@ -71,8 +71,6 @@ interface SubTypeProps {
 
 const SubType: React.FC<SubTypeProps> = ({ data }) => {
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
-  const isOverviewLayoutCustomizationEnabled = isFeatureEnable('OVERVIEW_LAYOUT_CUSTOMIZATION');
   const classes = useStyles();
   const subType = useFragment<SubType_subType$key>(subTypeFragment, data);
 
@@ -155,11 +153,9 @@ const SubType: React.FC<SubTypeProps> = ({ data }) => {
             </Paper>
           </Grid>
         )}
-        { isOverviewLayoutCustomizationEnabled && (
-          <EntitySettingCustomOverview
-            entitySettingsData={subType.settings}
-          />
-        )}
+        <EntitySettingCustomOverview
+          entitySettingsData={subType.settings}
+        />
       </Grid>
     </div>
   );
