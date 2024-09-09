@@ -18,6 +18,7 @@ const useStyles = makeStyles({
   headersContainer: {
     display: 'flex',
     width: 'calc(var(--header-table-size) * 1px)',
+    paddingBottom: 12,
   },
   aligner: { flexGrow: 1 },
 });

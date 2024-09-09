@@ -39,7 +39,7 @@ const useStyles = makeStyles<Theme, { cell?: DataTableColumn, navigable?: boolea
   },
   row: ({ navigable }) => ({
     display: 'flex',
-    borderTop: `1px solid ${theme.palette.background.accent}`,
+    borderBottom: `1px solid ${theme.palette.background.accent}`,
     '&:hover': navigable ? {
       backgroundColor:
         theme.palette.mode === 'dark'
