@@ -94,7 +94,7 @@ const EmptyFilter: FunctionComponent<{ setHasRenderedRef: () => void }> = ({ set
   useEffect(() => {
     setHasRenderedRef();
   }, []);
-  return <div style={{ height: 48 }} />;
+  return null;
 };
 
 // availableEntityTypes

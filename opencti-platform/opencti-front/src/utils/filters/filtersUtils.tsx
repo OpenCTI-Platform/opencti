@@ -96,11 +96,13 @@ export const stixFilters = [
 // utilities
 
 export const isFilterGroupNotEmpty = (filterGroup?: FilterGroup | null) => {
-  return (
+  return !!(
     filterGroup
     && (filterGroup.filters?.length > 0 || filterGroup.filterGroups?.length > 0)
   );
 };
+
+export const isFilterGroupEmpty = (filterGroup?: FilterGroup | null) => !isFilterGroupNotEmpty(filterGroup);
 
 export const isFilterFormatCorrect = (stringFilters: string): boolean => {
   const filters = JSON.parse(stringFilters);
