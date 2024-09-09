@@ -81,6 +81,7 @@ const attackPatternsLinesFragment = graphql`
     ) @connection(key: "Pagination_attackPatterns") {
       edges {
         node {
+          id
           name
           ...AttackPatternsLine_node
         }

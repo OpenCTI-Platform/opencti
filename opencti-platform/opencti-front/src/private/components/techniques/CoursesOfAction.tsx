@@ -83,6 +83,7 @@ export const coursesOfActionLinesFragment = graphql`
     ) @connection(key: "Pagination_coursesOfAction") {
       edges {
         node {
+          id
           name
           ...CoursesOfActionLine_node
         }

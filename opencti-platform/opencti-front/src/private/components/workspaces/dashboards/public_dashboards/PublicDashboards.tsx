@@ -66,6 +66,7 @@ export const publicDashboardsFragment = graphql`
     ) @connection(key: "Pagination_publicDashboards") {
       edges {
         node {
+          id
           ...PublicDashboards_PublicDashboard
         }
       }
