@@ -1,8 +1,9 @@
 import * as React from 'react';
 import Button from '@mui/material/Button';
 import MenuItem from '@mui/material/MenuItem';
-import { Box, ButtonBaseProps, ClickAwayListener, Grow, MenuList, Paper, Popper, Typography } from '@mui/material';
+import { Box, ClickAwayListener, Grow, MenuList, Paper, Popper, Typography } from '@mui/material';
 import ChevronRight from '@mui/icons-material/ChevronRight';
+import { ButtonProps } from '@mui/material/Button/Button';
 
 // This function checks whether a point (x, y) is on the left or right side of a line formed by two points (px, py) and (qx, qy).
 // If the result is negative, the point is on the right side of the line. If positive, it's on the left side.
@@ -39,11 +40,12 @@ type Option = {
   label?: string; // if not present, value is used
   onClick?: () => void; // individual click handler
   selected?: boolean;
+  nestedOptions? : Option[];
 };
 
 type NestedMenuProps = {
   menuButtonChildren?: React.ReactNode;
-  menuButtonProps?: ButtonBaseProps
+  menuButtonProps?: ButtonProps;
   options: Array<Option>;
   menuLevels: number;
   onClick?: (option: Option) => void; // global click handler
@@ -67,7 +69,7 @@ const NestedMenuButton: React.FC<NestedMenuProps> = ({
   const mouseEntered = React.useRef<Record<string, boolean>>({});
   const mouseLeftCoordinates = React.useRef<Array<number>>([]);
   const buttonRef = React.useRef(null);
-  const mouseIdleTimer = React.useRef<NodeJS.Timeout | null>(null);
+  const mouseIdleTimer = React.useRef<number | null>(null);
 
   const handleOpen = (
     event: React.MouseEvent<HTMLElement> | React.KeyboardEvent<HTMLElement>,
@@ -164,11 +166,11 @@ const NestedMenuButton: React.FC<NestedMenuProps> = ({
       if (pointInTriangle(currentMouseCoordinates, virtualTriangleCoordinates)) {
         shouldComputeSubMenuOpenLogic = false;
         if (mouseIdleTimer.current) {
-          clearTimeout(mouseIdleTimer.current as number);
+          clearTimeout(mouseIdleTimer.current);
         }
 
         // if mouse is inside triangle and yet hasn't moved, we need to compute submenu logic after a delay
-        mouseIdleTimer.current = setTimeout(() => {
+        mouseIdleTimer.current = window.setTimeout(() => {
           computeSubMenuLogic();
         }, 50);
       } else {
@@ -178,7 +180,7 @@ const NestedMenuButton: React.FC<NestedMenuProps> = ({
 
     if (shouldComputeSubMenuOpenLogic) {
       if (mouseIdleTimer.current) {
-        clearTimeout(mouseIdleTimer.current as number);
+        clearTimeout(mouseIdleTimer.current);
       }
       computeSubMenuLogic();
     }
@@ -192,7 +194,7 @@ const NestedMenuButton: React.FC<NestedMenuProps> = ({
     mouseLeftCoordinates.current = [event.clientX, -event.clientY];
 
     if (mouseIdleTimer.current) {
-      clearInterval(mouseIdleTimer.current as number);
+      clearTimeout(mouseIdleTimer.current);
     }
     mouseEntered.current[getId(option, optIndex)] = false;
   };
@@ -239,7 +241,7 @@ const NestedMenuButton: React.FC<NestedMenuProps> = ({
         >
           {({ TransitionProps }) => (
             <Grow
-              {...TransitionProps}
+              {...(TransitionProps || {})}
               style={{
                 transformOrigin: 'left top',
               }}
@@ -255,7 +257,7 @@ const NestedMenuButton: React.FC<NestedMenuProps> = ({
                       <MenuItem
                         key={option.value}
                         selected={!!option.selected}
-                        aria-haspopup={!!option.nestedOptions ?? undefined}
+                        aria-haspopup={!!(option.nestedOptions ?? undefined)}
                         aria-expanded={
                             option.nestedOptions
                               ? anchors.elements.some(
@@ -295,81 +297,3 @@ const NestedMenuButton: React.FC<NestedMenuProps> = ({
 };
 
 export default NestedMenuButton;
-
-/*
-export default function NestedMenu() {
-  const handleClickOption = (option: Option) => {
-    console.log(`You clicked on ${option.value}`);
-  };
-
-  const options = [
-    {
-      value: 'Food',
-      menuLevel: 0,
-    },
-    {
-      value: 'Drinks',
-      menuLevel: 0,
-      nestedOptions: [
-        {
-          value: 'Non-Alcoholic',
-          menuLevel: 1,
-          nestedOptions: [
-            {
-              value: 'Soda',
-              menuLevel: 2,
-            },
-            {
-              value: 'Iced Tea',
-              menuLevel: 2,
-            },
-            {
-              value: 'Lemonade',
-              menuLevel: 2,
-            },
-            {
-              value: 'Mocktail',
-              menuLevel: 2,
-            },
-            {
-              value: 'Smoothie',
-              menuLevel: 2,
-            },
-            {
-              value: 'Herbal tea',
-              menuLevel: 2,
-            },
-          ],
-        },
-        {
-          value: 'Alcoholic',
-          menuLevel: 1,
-        },
-      ],
-    },
-
-    {
-      value: 'Desserts',
-      menuLevel: 0,
-      nestedOptions: [
-        {
-          value: 'Cakes',
-          menuLevel: 1,
-        },
-        {
-          value: 'Ice Cream',
-          menuLevel: 1,
-        },
-        {
-          value: 'Pastries',
-          menuLevel: 1,
-        },
-      ],
-    },
-  ];
-
-  return (
-    <NestedMenu options={options} menuLevels={3} onOptionClick={handleClickOption} />
-  );
-}
-*/

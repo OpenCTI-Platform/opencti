@@ -48,7 +48,7 @@ const StixCyberObservables: FunctionComponent = () => {
     openExports: false,
   };
 
-  const { viewStorage, paginationOptions, helpers: storageHelpers } = usePaginationLocalStorage(
+  const { viewStorage, paginationOptions, helpers: storageHelpers } = usePaginationLocalStorage<StixCyberObservablesLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY,
     initialValues,
   );

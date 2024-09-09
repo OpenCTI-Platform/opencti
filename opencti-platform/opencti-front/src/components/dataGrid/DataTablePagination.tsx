@@ -1,7 +1,7 @@
 import Typography from '@mui/material/Typography';
 import Tooltip from '@mui/material/Tooltip';
 import Box from '@mui/material/Box';
-import React, { type Dispatch, type SetStateAction, useCallback, useEffect, useState } from 'react';
+import React, { type Dispatch, type SetStateAction, useCallback, useEffect } from 'react';
 import { ArrowLeft, ArrowRight } from '@mui/icons-material';
 import { ButtonGroup } from '@mui/material';
 import Button from '@mui/material/Button';

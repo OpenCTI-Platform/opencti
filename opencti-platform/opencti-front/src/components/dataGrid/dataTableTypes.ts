@@ -60,7 +60,7 @@ export interface DataTableContextProps {
     numberOfSelectedElements: number
     onToggleEntity: (
       entity: any,
-      _?: React.SyntheticEvent,
+      _?: React.MouseEvent,
       forceRemove?: any[],
     ) => void
     handleClearSelectedElements: () => void
@@ -88,7 +88,7 @@ export interface DataTableContextProps {
   disableRedirectOnRowClick: DataTableProps['disableRedirectOnRowClick']
   onLineClick: DataTableProps['onLineClick']
   page: number
-  setPages: (number) => void
+  setPage:Dispatch<SetStateAction<number>>
 }
 
 export interface DataTableProps {
@@ -194,7 +194,7 @@ export interface DataTableLineProps {
   effectiveColumns: DataTableColumns
   storageHelpers: DataTableProps['storageHelpers']
   index: number
-  onToggleShiftEntity: (currentIndex: number, currentEntity: { id: string }, event?: React.SyntheticEvent) => void
+  onToggleShiftEntity: (currentIndex: number, currentEntity: { id: string }, event?: React.MouseEvent) => void
 }
 
 export interface DataTableCellProps {
