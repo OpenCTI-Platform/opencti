@@ -95,7 +95,7 @@ const DataTableHeader: FunctionComponent<DataTableHeaderProps> = ({
         }}
       >
         <Tooltip title={t_i18n(column.label)}>
-          <span style={{ fontSize: '13px' }}>{t_i18n(column.label).toUpperCase()}</span>
+          <span style={{ fontSize: '12px' }}>{t_i18n(column.label).toUpperCase()}</span>
         </Tooltip>
         {sortBy && (orderAsc ? <ArrowDropUp /> : <ArrowDropDown />)}
       </div>
