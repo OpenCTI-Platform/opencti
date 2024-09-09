@@ -40,20 +40,23 @@ import useXTM from '../../../../utils/hooks/useXTM';
 const useStyles = makeStyles((theme) => ({
   simulationResults: {
     display: 'flex',
-    position: 'absolute',
     alignItems: 'center',
-    top: 0,
-    right: 0,
+    gap: 10,
   },
   charts: {
-    display: 'grid',
-    gridAutoFlow: 'column',
-    gridAutoColumns: 40,
-    marginLeft: 10,
+    display: 'flex',
   },
   chartContainer: {
-    left: -28,
     position: 'relative',
+    overflow: 'hidden',
+    width: 40,
+    height: 40,
+    padding: 4,
+  },
+  chart: {
+    position: 'absolute',
+    top: -6,
+    left: -28,
   },
   iconOverlay: {
     fontSize: 18,
@@ -247,40 +250,46 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
             return (
               <div className={classes.charts}>
                 <div className={classes.chartContainer}>
-                  <Chart
-                    options={options}
-                    series={[prevention.unknown, prevention.success, prevention.failure]}
-                    type="donut"
-                    width={95}
-                    height={95}
-                  />
-                  <Tooltip title={`${t_i18n('Prevention')}`} placement="bottom">
-                    <ShieldOutlined className={classes.iconOverlay} />
-                  </Tooltip>
+                  <div className={classes.chart}>
+                    <Chart
+                      options={options}
+                      series={[prevention.unknown, prevention.success, prevention.failure]}
+                      type="donut"
+                      width={95}
+                      height={95}
+                    />
+                    <Tooltip title={`${t_i18n('Prevention')}`} placement="bottom">
+                      <ShieldOutlined className={classes.iconOverlay} />
+                    </Tooltip>
+                  </div>
                 </div>
                 <div className={classes.chartContainer}>
-                  <Chart
-                    options={options}
-                    series={[detection.unknown, detection.success, detection.failure]}
-                    type="donut"
-                    width={95}
-                    height={95}
-                  />
-                  <Tooltip title={`${t_i18n('Detection')}`} placement="bottom">
-                    <TrackChangesOutlined className={classes.iconOverlay} />
-                  </Tooltip>
+                  <div className={classes.chart}>
+                    <Chart
+                      options={options}
+                      series={[detection.unknown, detection.success, detection.failure]}
+                      type="donut"
+                      width={95}
+                      height={95}
+                    />
+                    <Tooltip title={`${t_i18n('Detection')}`} placement="bottom">
+                      <TrackChangesOutlined className={classes.iconOverlay} />
+                    </Tooltip>
+                  </div>
                 </div>
                 <div className={classes.chartContainer}>
-                  <Chart
-                    options={options}
-                    series={[human.unknown, human.success, human.failure]}
-                    type="donut"
-                    width={95}
-                    height={95}
-                  />
-                  <Tooltip title={`${t_i18n('Human response')}`} placement="bottom">
-                    <SensorOccupiedOutlined className={classes.iconOverlay} />
-                  </Tooltip>
+                  <div className={classes.chart}>
+                    <Chart
+                      options={options}
+                      series={[human.unknown, human.success, human.failure]}
+                      type="donut"
+                      width={95}
+                      height={95}
+                    />
+                    <Tooltip title={`${t_i18n('Human response')}`} placement="bottom">
+                      <SensorOccupiedOutlined className={classes.iconOverlay} />
+                    </Tooltip>
+                  </div>
                 </div>
               </div>
             );
@@ -451,7 +460,6 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
   return (
     <>
       {!oBasDisableDisplay && (
-      <div style={{ position: 'relative' }}>
         <div className={classes.simulationResults}>
           <Tooltip title={`${t_i18n('Check the posture in OpenBAS')}`}>
             <Button
@@ -470,7 +478,6 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
           </Tooltip>
           {renderCharts()}
         </div>
-      </div>
       )}
       <Drawer
         title={t_i18n('Generate a simulation scenario')}
