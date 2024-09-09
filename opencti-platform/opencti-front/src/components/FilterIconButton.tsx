@@ -60,7 +60,7 @@ const FilterIconButtonWithRepresentativesQuery: FunctionComponent<FilterIconButt
   );
   return (
     <>
-      {filtersRepresentativesQueryRef && (
+      {filtersRepresentativesQueryRef ? (
         <React.Suspense fallback={<span />}>
           <FilterIconButtonContainer
             handleRemoveFilter={handleRemoveFilter}
@@ -83,6 +83,8 @@ const FilterIconButtonWithRepresentativesQuery: FunctionComponent<FilterIconButt
             availableRelationshipTypes={availableRelationshipTypes}
           />
         </React.Suspense>
+      ) : (
+        <div style={{ height: 48 }}/>
       )}
     </>
   );
@@ -92,7 +94,7 @@ const EmptyFilter: FunctionComponent<{ setHasRenderedRef: () => void }> = ({ set
   useEffect(() => {
     setHasRenderedRef();
   }, []);
-  return null;
+  return <div style={{ height: 48 }} />;
 };
 
 // availableEntityTypes
@@ -120,10 +122,12 @@ const FilterIconButton: FunctionComponent<FilterIconButtonProps> = ({
   const setHasRenderedRef = () => {
     hasRenderedRef.current = true;
   };
-  const displayedFilters = filters ? {
-    ...filters,
-    filters:
-      filters.filters.filter((f) => !availableFilterKeys || availableFilterKeys?.some((k) => f.key === k)) } : undefined;
+  const displayedFilters = filters
+    ? {
+      ...filters,
+      filters:
+        filters.filters.filter((f) => !availableFilterKeys || availableFilterKeys?.some((k) => f.key === k)),
+    } : undefined;
   if (displayedFilters && isFilterGroupNotEmpty(displayedFilters)) { // to avoid running the FiltersRepresentatives query if filters are empty
     return (
       <FilterIconButtonWithRepresentativesQuery

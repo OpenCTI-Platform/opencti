@@ -87,6 +87,8 @@ export interface DataTableContextProps {
   disableSelectAll: DataTableProps['disableSelectAll']
   disableRedirectOnRowClick: DataTableProps['disableRedirectOnRowClick']
   onLineClick: DataTableProps['onLineClick']
+  page: number
+  setPages: (number) => void
 }
 
 export interface DataTableProps {

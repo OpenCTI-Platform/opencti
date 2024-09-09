@@ -29,6 +29,7 @@ import Security from '../../utils/Security';
 import { KNOWLEDGE_KNGETEXPORT } from '../../utils/hooks/useGranted';
 import { ExportContext } from '../../utils/ExportContextProvider';
 import Transition from '../Transition';
+import DataTablePagination from './DataTablePagination';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -51,6 +52,9 @@ const useStyles = makeStyles(() => ({
     display: 'flex',
     alignItems: 'center',
   },
+  paginationContainer: {
+    marginRight: 10,
+  },
 }));
 
 export const DataTableDisplayFilters = ({
@@ -63,7 +67,6 @@ export const DataTableDisplayFilters = ({
   const classes = useStyles();
   const { storageKey, initialValues, variant } = useDataTableContext();
   const { helpers, viewStorage: { filters } } = usePaginationLocalStorage(storageKey, initialValues, variant !== DataTableVariant.default);
-
   return (
     <div id="filter-container" className={classes.filterContainer}>
       <FilterIconButton
@@ -106,6 +109,8 @@ const DataTableFilters = ({
     redirectionModeEnabled,
     variant,
     createButton,
+    page,
+    setPage,
   } = useDataTableContext();
   const {
     helpers,
@@ -142,6 +147,15 @@ const DataTableFilters = ({
             />
           </div>
           <div className={classes.viewsAligner}>
+            {(variant === DataTableVariant.default) && (
+              <div className={classes.paginationContainer}>
+                <DataTablePagination
+                  page={page}
+                  setPage={setPage}
+                  numberOfElements={numberOfElements}
+                />
+              </div>
+            )}
             <ToggleButtonGroup
               size="small"
               color="secondary"

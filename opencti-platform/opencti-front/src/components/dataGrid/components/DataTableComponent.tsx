@@ -123,6 +123,8 @@ const DataTableComponent = ({
         disableSelectAll,
         disableRedirectOnRowClick,
         onLineClick,
+        page,
+        setPage,
       } as DataTableContextProps}
     >
       <div ref={dataTableHeaderRef}>
@@ -145,13 +147,6 @@ const DataTableComponent = ({
           flexDirection: 'column',
         }}
       >
-        {(variant === DataTableVariant.default) && (
-          <DataTablePagination
-            page={page}
-            setPage={setPage}
-            numberOfElements={numberOfElements}
-          />
-        )}
         <React.Suspense
           fallback={(
             <div style={{ ...temporaryColumnsSize, width: '100%' }}>
