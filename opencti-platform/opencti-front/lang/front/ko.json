@@ -407,6 +407,7 @@
   "Copy disabled: too many selected elements (maximum number of elements for a copy: ": "복사 불가: 선택된 요소가 너무 많습니다 (복사 가능한 최대 요소 수: ",
   "Copy link": "링크 복사",
   "Copy public link": "공개 링크 복사",
+  "Copy to clipboard": "클립보드에 복사",
   "Copy uri to clipboard for your csv client": "CSV 클라이언트를 위한 URI를 클립보드에 복사",
   "Copy uri to clipboard for your Taxii client": "Taxii 클라이언트를 위한 URI를 클립보드에 복사",
   "Copy/paste text content": "텍스트 내용 복사/붙여넣기",

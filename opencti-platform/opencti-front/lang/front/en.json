@@ -407,6 +407,7 @@
   "Copy disabled: too many selected elements (maximum number of elements for a copy: ": "Copy disabled: too many selected elements (maximum number of elements for a copy: ",
   "Copy link": "Copy link",
   "Copy public link": "Copy public link",
+  "Copy to clipboard": "Copy to clipboard",
   "Copy uri to clipboard for your csv client": "Copy uri to clipboard for your csv client",
   "Copy uri to clipboard for your Taxii client": "Copy uri to clipboard for your Taxii client",
   "Copy/paste text content": "Copy/paste text content",

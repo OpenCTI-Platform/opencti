@@ -407,6 +407,7 @@
   "Copy disabled: too many selected elements (maximum number of elements for a copy: ": "Kopieren deaktiviert: zu viele ausgewählte Elemente (maximale Anzahl von Elementen für eine Kopie:",
   "Copy link": "Link kopieren",
   "Copy public link": "Öffentlichen Link kopieren",
+  "Copy to clipboard": "In die Zwischenablage kopieren",
   "Copy uri to clipboard for your csv client": "Kopiere uri in die Zwischenablage für deinen csv Client",
   "Copy uri to clipboard for your Taxii client": "Kopiere uri in die Zwischenablage für deinen Taxii-Client",
   "Copy/paste text content": "Kopieren/Einfügen von Textinhalten",
