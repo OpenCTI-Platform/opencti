@@ -1,5 +1,5 @@
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
-import React, { forwardRef, useRef } from 'react';
+import React, { useRef } from 'react';
 import WidgetListCoreObjects from '../../../../components/dashboard/WidgetListCoreObjects';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import type { PublicWidgetContainerProps } from '../PublicWidgetContainerProps';
@@ -8,6 +8,7 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetLoader from '../../../../components/dashboard/WidgetLoader';
 import { PublicStixCoreObjectsListQuery } from './__generated__/PublicStixCoreObjectsListQuery.graphql';
+import { DataTableProps } from '../../../../components/dataGrid/dataTableTypes';
 
 const publicStixCoreObjectsListQuery = graphql`
   query PublicStixCoreObjectsListQuery(
@@ -204,12 +205,14 @@ const publicStixCoreObjectsListQuery = graphql`
 interface PublicStixCoreObjectsListComponentProps {
   queryRef: PreloadedQuery<PublicStixCoreObjectsListQuery>
   dateAttribute: string
+  rootRef: DataTableProps['rootRef']
 }
 
-const PublicStixCoreObjectsListComponent = forwardRef<HTMLDivElement, PublicStixCoreObjectsListComponentProps>(({
+const PublicStixCoreObjectsListComponent = ({
   queryRef,
   dateAttribute,
-}, ref) => {
+  rootRef,
+}: PublicStixCoreObjectsListComponentProps) => {
   const { publicStixCoreObjects } = usePreloadedQuery(
     publicStixCoreObjectsListQuery,
     queryRef,
@@ -221,12 +224,13 @@ const PublicStixCoreObjectsListComponent = forwardRef<HTMLDivElement, PublicStix
         data={[...publicStixCoreObjects.edges]}
         dateAttribute={dateAttribute}
         publicWidget
-        ref={ref}
+        rootRef={rootRef}
       />
     );
   }
   return <WidgetNoData />;
-});
+};
+
 PublicStixCoreObjectsListComponent.displayName = 'PublicStixCoreObjectsListComponent';
 
 const PublicStixCoreObjectsList = ({
@@ -250,7 +254,7 @@ const PublicStixCoreObjectsList = ({
 
   const dateAttribute = dataSelection[0].date_attribute ?? 'created_at';
 
-  const rootRef = useRef<HTMLDivElement | null>(null);
+  const rootRef = useRef<HTMLDivElement>(null);
 
   return (
     <WidgetContainer
@@ -263,7 +267,7 @@ const PublicStixCoreObjectsList = ({
           <PublicStixCoreObjectsListComponent
             queryRef={queryRef}
             dateAttribute={dateAttribute}
-            ref={rootRef}
+            rootRef={rootRef.current ?? undefined}
           />
         </React.Suspense>
       ) : (
