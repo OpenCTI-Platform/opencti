@@ -158,7 +158,8 @@ export const moveAllFilesFromEntityToAnother = async (context: AuthContext, user
         const sourceFileS3Id = `${sourcePath}/${sourceFileDocument.name}`;
         const targetFileS3Id = `${targetPath}/${sourceFileDocument.name}`;
         logApp.info(`[FILE STORAGE] Moving from ${sourceFileS3Id} to: ${targetFileS3Id}`);
-        const newFile = await copyFile(sourceFileS3Id, targetFileS3Id, sourceFileDocument, targetEntity.internal_id);
+        const copyProps = { sourceId: sourceFileS3Id, targetId: targetFileS3Id, sourceDocument: sourceFileDocument, targetEntityId: targetEntity.internal_id };
+        const newFile = await copyFile(context, user, copyProps);
         if (newFile) {
           const newFileForEntity = storeFileConverter(user, newFile);
           updatedXOpenctiFiles.push(newFileForEntity);
