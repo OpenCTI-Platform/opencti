@@ -1,5 +1,5 @@
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
-import React from 'react';
+import React, { forwardRef, useRef } from 'react';
 import WidgetListCoreObjects from '../../../../components/dashboard/WidgetListCoreObjects';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import type { PublicWidgetContainerProps } from '../PublicWidgetContainerProps';
@@ -206,10 +206,10 @@ interface PublicStixCoreObjectsListComponentProps {
   dateAttribute: string
 }
 
-const PublicStixCoreObjectsListComponent = ({
+const PublicStixCoreObjectsListComponent = forwardRef<HTMLDivElement, PublicStixCoreObjectsListComponentProps>(({
   queryRef,
   dateAttribute,
-}: PublicStixCoreObjectsListComponentProps) => {
+}, ref) => {
   const { publicStixCoreObjects } = usePreloadedQuery(
     publicStixCoreObjectsListQuery,
     queryRef,
@@ -221,11 +221,13 @@ const PublicStixCoreObjectsListComponent = ({
         data={[...publicStixCoreObjects.edges]}
         dateAttribute={dateAttribute}
         publicWidget
+        ref={ref}
       />
     );
   }
   return <WidgetNoData />;
-};
+});
+PublicStixCoreObjectsListComponent.displayName = 'PublicStixCoreObjectsListComponent';
 
 const PublicStixCoreObjectsList = ({
   uriKey,
@@ -248,16 +250,20 @@ const PublicStixCoreObjectsList = ({
 
   const dateAttribute = dataSelection[0].date_attribute ?? 'created_at';
 
+  const rootRef = useRef<HTMLDivElement | null>(null);
+
   return (
     <WidgetContainer
       title={parameters.title ?? title ?? t_i18n('Entities number')}
       variant="inLine"
+      ref={rootRef}
     >
       {queryRef ? (
         <React.Suspense fallback={<WidgetLoader />}>
           <PublicStixCoreObjectsListComponent
             queryRef={queryRef}
             dateAttribute={dateAttribute}
+            ref={rootRef}
           />
         </React.Suspense>
       ) : (
