@@ -494,7 +494,7 @@ const BulkRelationDialog : FunctionComponent<BulkRelationDialogProps> = ({
                       paddingTop: '2px',
                     },
                     '& .MuiInputBase-input': {
-                      whiteSpace: 'nowrap',
+                      whiteSpace: textAreaValue.length ? 'nowrap' : 'wrap',
                     },
                   }}
                   value={getTextAreaValue()}
