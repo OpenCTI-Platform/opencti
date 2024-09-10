@@ -1315,45 +1315,6 @@ class OpenCTIStix2:
 
         # Create the sighting
 
-        ### Get the FROM
-        if from_id in self.mapping_cache:
-            final_from_id = self.mapping_cache[from_id]["id"]
-        else:
-            stix_object_result = (
-                self.opencti.opencti_stix_object_or_stix_relationship.read(id=from_id)
-            )
-            if stix_object_result is not None:
-                final_from_id = stix_object_result["id"]
-                self.mapping_cache[from_id] = {
-                    "id": stix_object_result["id"],
-                    "entity_type": stix_object_result["entity_type"],
-                }
-            else:
-                self.opencti.app_logger.error(
-                    "From ref of the sighting not found, doing nothing..."
-                )
-                return None
-
-        ### Get the TO
-        final_to_id = None
-        if to_id:
-            if to_id in self.mapping_cache:
-                final_to_id = self.mapping_cache[to_id]["id"]
-            else:
-                stix_object_result = (
-                    self.opencti.opencti_stix_object_or_stix_relationship.read(id=to_id)
-                )
-                if stix_object_result is not None:
-                    final_to_id = stix_object_result["id"]
-                    self.mapping_cache[to_id] = {
-                        "id": stix_object_result["id"],
-                        "entity_type": stix_object_result["entity_type"],
-                    }
-                else:
-                    self.opencti.app_logger.error(
-                        "To ref of the sighting not found, doing nothing..."
-                    )
-                    return None
         if (
             "x_opencti_negative" not in stix_sighting
             and self.opencti.get_attribute_in_extension("negative", stix_sighting)
@@ -1367,8 +1328,8 @@ class OpenCTIStix2:
                 self.opencti.get_attribute_in_extension("workflow_id", stix_sighting)
             )
         stix_sighting_result = self.opencti.stix_sighting_relationship.create(
-            fromId=final_from_id,
-            toId=final_to_id,
+            fromId=from_id,
+            toId=to_id,
             stix_id=stix_sighting["id"] if "id" in stix_sighting else None,
             description=(
                 self.convert_markdown(stix_sighting["description"])
@@ -2433,39 +2394,36 @@ class OpenCTIStix2:
                 # Import relationship
                 self.import_relationship(item, update, types)
             elif item["type"] == "sighting":
-                # Resolve the to
+                # region Resolve the to
                 to_ids = []
-                if "where_sighted_refs" in item:
+                if "x_opencti_where_sighted_refs" in item:
+                    for where_sighted_ref in item["_opencti_where_sighted_refs"]:
+                        to_ids.append(where_sighted_ref)
+                elif "where_sighted_refs" in item:
                     for where_sighted_ref in item["where_sighted_refs"]:
                         to_ids.append(where_sighted_ref)
-                # Import sighting_of_ref
+                # endregion
+                # region Resolve the from
+                from_id = None
                 if "x_opencti_sighting_of_ref" in item:
                     from_id = item["x_opencti_sighting_of_ref"]
-                    if len(to_ids) > 0:
-                        for to_id in to_ids:
-                            self.import_sighting(item, from_id, to_id, update)
-                if (
-                    self.opencti.get_attribute_in_extension("sighting_of_ref", item)
-                    is not None
-                ):
-                    from_id = self.opencti.get_attribute_in_extension(
-                        "sighting_of_ref", item
-                    )
-                    if len(to_ids) > 0:
-                        for to_id in to_ids:
-                            self.import_sighting(item, from_id, to_id, update)
-                from_id = item["sighting_of_ref"]
+                elif "sighting_of_ref" in item:
+                    from_id = item["sighting_of_ref"]
+                # endregion
+                # region create the sightings
                 if len(to_ids) > 0:
-                    for to_id in to_ids:
-                        self.import_sighting(item, from_id, to_id, update)
-                # Import observed_data_refs
-                if "observed_data_refs" in item:
-                    for observed_data_ref in item["observed_data_refs"]:
-                        if len(to_ids) > 0:
+                    if from_id:
+                        for to_id in to_ids:
+                            self.import_sighting(item, from_id, to_id, update)
+                    # Import observed_data_refs
+                    if "observed_data_refs" in item:
+                        for observed_data_ref in item["observed_data_refs"]:
                             for to_id in to_ids:
                                 self.import_sighting(
                                     item, observed_data_ref, to_id, update
                                 )
+                # endregion
+
             elif item["type"] == "label":
                 stix_ids = self.opencti.get_attribute_in_extension("stix_ids", item)
                 self.opencti.label.create(
