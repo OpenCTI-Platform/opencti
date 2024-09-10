@@ -124,7 +124,7 @@ const DataTableLine = ({
   }
 
   const navigable = !disableNavigation && !onLineClick && !selectOnLineClick;
-  const clickable = navigable || selectOnLineClick || onLineClick;
+  const clickable = !!(navigable || selectOnLineClick || onLineClick);
 
   const classes = useStyles({ clickable });
 
@@ -136,6 +136,7 @@ const DataTableLine = ({
   } = useDataTableToggle(storageKey);
 
   const startsWithSelect = effectiveColumns.at(0)?.id === 'select';
+  const endWithNavigate = effectiveColumns.at(-1)?.id === 'navigate';
 
   const handleSelectLine = (event: React.MouseEvent) => {
     event.preventDefault();
@@ -152,8 +153,7 @@ const DataTableLine = ({
     event.stopPropagation();
     if (selectOnLineClick) {
       handleSelectLine(event);
-    }
-    if (onLineClick) {
+    } else if (onLineClick) {
       onLineClick(data);
     } else if (navigable) {
       navigate(link);
@@ -197,7 +197,7 @@ const DataTableLine = ({
           storageHelpers={storageHelpers}
         />
       ))}
-      {(actions || effectiveColumns.at(-1)?.id === 'navigate') && (
+      {(actions || endWithNavigate) && (
         <div
           key={`navigate_${data.id}`}
           className={classes.cellContainer}
@@ -207,7 +207,7 @@ const DataTableLine = ({
           }}
         >
           {actions && actions(data)}
-          {effectiveColumns.at(-1)?.id === 'navigate' && (
+          {endWithNavigate && (
             <IconButton onClick={() => navigate(link)}>
               <KeyboardArrowRightOutlined />
             </IconButton>

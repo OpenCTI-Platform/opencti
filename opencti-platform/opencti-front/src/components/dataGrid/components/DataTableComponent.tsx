@@ -59,7 +59,7 @@ const DataTableComponent = ({
         ...(currentColumn?.size ? { size: currentColumn?.size } : {}),
       });
     }),
-    // inject "navigate" action (chevron) if requested
+    // inject "navigate" action (chevron) if navigable and no specific actions defined
     ...((disableNavigation || actions) ? [] : [{ id: 'navigate', visible: true } as DataTableColumn]),
   ];
 

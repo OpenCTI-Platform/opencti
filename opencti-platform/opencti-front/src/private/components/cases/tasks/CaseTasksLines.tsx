@@ -27,7 +27,7 @@ import { Option } from '../../common/form/ReferenceField';
 import CaseTaskCreation from './CaseTaskCreation';
 import TaskPopover from './TaskPopover';
 import { caseSetTemplateQuery, CaseTaskFragment, generateConnectionId } from '../CaseUtils';
-import { CaseTasksLinesQuery, CaseTasksLinesQuery$data, CaseTasksLinesQuery$variables } from './__generated__/CaseTasksLinesQuery.graphql';
+import { CaseTasksLinesQuery, CaseTasksLinesQuery$variables } from './__generated__/CaseTasksLinesQuery.graphql';
 import DataTable from '../../../../components/dataGrid/DataTable';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import { isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';

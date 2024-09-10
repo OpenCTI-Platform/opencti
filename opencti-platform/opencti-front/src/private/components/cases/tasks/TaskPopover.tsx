@@ -75,9 +75,7 @@ const TaskPopover = ({
     setDisplayEdit(true);
     handleClose();
   };
-  const handleCloseEdit = (event: React.SyntheticEvent) => {
-    event.preventDefault();
-    event.stopPropagation();
+  const handleCloseEdit = () => {
     setDisplayEdit(false);
   };
   const {
