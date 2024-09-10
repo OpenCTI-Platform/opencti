@@ -2,8 +2,8 @@ import type { AuthContext, AuthUser } from '../../../types/user';
 import { createEntity } from '../../../database/middleware';
 import type { EntityOptions } from '../../../database/middleware-loader';
 import { internalLoadById, listEntitiesPaginated, storeLoadById } from '../../../database/middleware-loader';
-import { BUS_TOPICS, isFeatureEnabled } from '../../../config/conf';
-import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_DOMAIN_OBJECT, buildRefRelationKey } from '../../../schema/general';
+import { BUS_TOPICS } from '../../../config/conf';
+import { ABSTRACT_STIX_DOMAIN_OBJECT, buildRefRelationKey } from '../../../schema/general';
 import { notify } from '../../../database/redis';
 import { now } from '../../../utils/format';
 import { userAddIndividual } from '../../../domain/user';
@@ -12,12 +12,10 @@ import { upsertTemplateForCase } from '../case-domain';
 import type { BasicStoreEntityCaseIncident } from './case-incident-types';
 import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from './case-incident-types';
 import type { DomainFindById } from '../../../domain/domainTypes';
-import type { CaseIncidentAddInput, MemberAccessInput } from '../../../generated/graphql';
+import type { CaseIncidentAddInput } from '../../../generated/graphql';
 import { isStixId } from '../../../schema/schemaUtils';
 import { RELATION_OBJECT } from '../../../schema/stixRefRelationship';
 import { FilterMode } from '../../../generated/graphql';
-import { editAuthorizedMembers } from '../../../utils/authorizedMembers';
-import { UnsupportedError } from '../../../config/errors';
 
 export const findById: DomainFindById<BasicStoreEntityCaseIncident> = (context: AuthContext, user: AuthUser, caseIncidentId: string) => {
   return storeLoadById(context, user, caseIncidentId, ENTITY_TYPE_CONTAINER_CASE_INCIDENT);
@@ -60,24 +58,4 @@ export const caseIncidentContainsStixObjectOrStixRelationship = async (context: 
   };
   const caseIncidentFound = await findAll(context, user, args);
   return caseIncidentFound.edges.length > 0;
-};
-
-export const caseIncidentEditAuthorizedMembers = async (
-  context: AuthContext,
-  user: AuthUser,
-  entityId: string,
-  input: MemberAccessInput[] | undefined | null,
-) => {
-  if (!isFeatureEnabled('CONTAINERS_AUTHORIZED_MEMBERS')) {
-    throw UnsupportedError('This feature is disabled');
-  }
-  const args = {
-    entityId,
-    input,
-    requiredCapabilities: ['KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS'],
-    entityType: ENTITY_TYPE_CONTAINER_CASE_INCIDENT,
-    busTopicKey: ABSTRACT_STIX_CORE_OBJECT,
-  };
-  // @ts-expect-error TODO improve busTopicKey types to avoid this
-  return editAuthorizedMembers(context, user, args);
 };

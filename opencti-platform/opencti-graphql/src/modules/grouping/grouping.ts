@@ -3,6 +3,7 @@ import { NAME_FIELD, normalizeName } from '../../schema/identifier';
 import { ENTITY_TYPE_CONTAINER_GROUPING, type StixGrouping, type StoreEntityGrouping } from './grouping-types';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
 import { type ModuleDefinition, registerDefinition } from '../../schema/module';
+import { authorizedMembers } from '../../schema/attribute-definition';
 
 const GROUPING_DEFINITION: ModuleDefinition<StoreEntityGrouping, StixGrouping> = {
   type: {
@@ -34,6 +35,7 @@ const GROUPING_DEFINITION: ModuleDefinition<StoreEntityGrouping, StixGrouping> =
     { name: 'content', label: 'Content', type: 'string', format: 'short', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true, isFilterable: true },
     { name: 'content_mapping', label: 'Content mapping', format: 'text', type: 'string', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: false },
     { name: 'context', label: 'Context', type: 'string', format: 'vocabulary', vocabularyCategory: 'grouping_context_ov', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true, isFilterable: true },
+    { ...authorizedMembers, editDefault: true },
   ],
   relations: [],
   representative: (stix: StixGrouping) => {

@@ -62,6 +62,7 @@ const FormAuthorizedMembersDialog = ({
       },
     });
   };
+  const lockColor = (authorizedMembers && authorizedMembers.length > 0) ? 'warning' : 'primary';
   return (
     <>
       <EETooltip title={t_i18n('Manage access restriction')}>
@@ -73,7 +74,7 @@ const FormAuthorizedMembersDialog = ({
         >
           <LockPersonOutlined
             fontSize="small"
-            color={isEnterpriseEdition ? 'primary' : 'disabled'}
+            color={isEnterpriseEdition ? lockColor : 'disabled'}
           />
         </ToggleButton>
       </EETooltip>

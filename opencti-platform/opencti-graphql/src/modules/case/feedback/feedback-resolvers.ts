@@ -1,8 +1,6 @@
 import type { Resolvers } from '../../../generated/graphql';
 import { stixDomainObjectDelete } from '../../../domain/stixDomainObject';
 import { addFeedback, feedbackContainsStixObjectOrStixRelationship, feedbackEditAuthorizedMembers, findAll, findById } from './feedback-domain';
-import { getAuthorizedMembers } from '../../../utils/authorizedMembers';
-import { getUserAccessRight } from '../../../utils/access';
 
 const feedbackResolvers: Resolvers = {
   Query: {
@@ -11,10 +9,6 @@ const feedbackResolvers: Resolvers = {
     feedbackContainsStixObjectOrStixRelationship: (_, args, context) => {
       return feedbackContainsStixObjectOrStixRelationship(context, context.user, args.id, args.stixObjectOrStixRelationshipId);
     },
-  },
-  Feedback: {
-    authorized_members: (feedback, _, context) => getAuthorizedMembers(context, context.user, feedback),
-    currentUserAccessRight: (feedback, _, context) => getUserAccessRight(context.user, feedback),
   },
   FeedbacksOrdering: {
     creator: 'creator_id',

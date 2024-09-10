@@ -4,7 +4,7 @@ import { internalFindByIds, internalLoadById, listEntitiesPaginated, listEntitie
 import { findAll as relationFindAll } from './stixCoreRelationship';
 import { delEditContext, lockResource, notify, setEditContext, storeUpdateEvent } from '../database/redis';
 import { BUS_TOPICS, logApp } from '../config/conf';
-import { FunctionalError, LockTimeoutError, TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
+import { ForbiddenAccess, FunctionalError, LockTimeoutError, TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
 import { isStixCoreObject, stixCoreObjectOptions } from '../schema/stixCoreObject';
 import {
   ABSTRACT_STIX_CORE_OBJECT,
@@ -45,7 +45,7 @@ import { addFilter, findFiltersFromKey } from '../utils/filtering/filtering-util
 import { INSTANCE_REGARDING_OF } from '../utils/filtering/filtering-constants';
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../modules/grouping/grouping-types';
 import { getEntitiesMapFromCache } from '../database/cache';
-import { isUserCanAccessStoreElement, SYSTEM_USER } from '../utils/access';
+import { isUserCanAccessStoreElement, SYSTEM_USER, validateUserAccessOperation } from '../utils/access';
 import { uploadToStorage } from '../database/file-storage-helper';
 import { connectorsForAnalysis } from '../database/repository';
 
@@ -602,6 +602,10 @@ export const stixCoreObjectImportPush = async (context, user, id, file, args = {
   if (!previous) {
     throw UnsupportedError('Cant upload a file an none existing element', { id });
   }
+  // check entity access
+  if (!validateUserAccessOperation(user, previous, 'edit')) {
+    throw ForbiddenAccess();
+  }
   const participantIds = getInstanceIds(previous);
   try {
     // Lock the participants that will be merged
@@ -689,6 +693,10 @@ export const stixCoreObjectImportDelete = async (context, user, fileId) => {
   const previous = await storeLoadByIdWithRefs(context, user, entityId);
   if (!previous) {
     throw UnsupportedError('Cant delete a file of none existing element', { entityId });
+  }
+  // check entity access
+  if (!validateUserAccessOperation(user, previous, 'edit')) {
+    throw ForbiddenAccess();
   }
   let lock;
   const participantIds = getInstanceIds(previous);

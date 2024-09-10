@@ -29,6 +29,7 @@ import type { Theme } from '../../../../components/Theme';
 interface ContainerHeaderSharedProps {
   elementId: string;
   variant: string;
+  disabled?: boolean;
 }
 
 interface OrganizationForm {
@@ -106,6 +107,7 @@ const containerHeaderSharedGroupAddMutation = graphql`
 const StixCoreObjectSharing: FunctionComponent<ContainerHeaderSharedProps> = ({
   elementId,
   variant,
+  disabled = false,
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
@@ -170,6 +172,7 @@ const StixCoreObjectSharing: FunctionComponent<ContainerHeaderSharedProps> = ({
                 variant="outlined"
                 label={truncate(edge.name, 15)}
                 onDelete={() => removeOrganization(edge.id)}
+                disabled={disabled}
               />
             </Tooltip>
           ))}
@@ -179,10 +182,11 @@ const StixCoreObjectSharing: FunctionComponent<ContainerHeaderSharedProps> = ({
               onClick={isEnterpriseEdition ? handleOpenSharing : () => {}}
               size="small"
               style={{ marginRight: 3 }}
+              disabled={disabled}
             >
               <BankPlus
                 fontSize="small"
-                color={isEnterpriseEdition ? 'primary' : 'disabled'}
+                color={!disabled && isEnterpriseEdition ? 'primary' : 'disabled'}
               />
             </ToggleButton>
           </EETooltip>
@@ -239,8 +243,9 @@ const StixCoreObjectSharing: FunctionComponent<ContainerHeaderSharedProps> = ({
             onClick={isEnterpriseEdition ? handleOpenSharing : () => {}}
             style={{ float: 'left', margin: '-15px 0 0 -2px' }}
             size="large"
+            disabled={disabled}
           >
-            <BankPlus fontSize="small" color={isEnterpriseEdition ? 'primary' : 'disabled'} />
+            <BankPlus fontSize="small" color={!disabled && isEnterpriseEdition ? 'primary' : 'disabled'} />
           </IconButton>
         </EETooltip>
         <div className="clearfix" />
@@ -253,6 +258,7 @@ const StixCoreObjectSharing: FunctionComponent<ContainerHeaderSharedProps> = ({
               variant="outlined"
               label={truncate(edge.name, 15)}
               onDelete={() => removeOrganization(edge.id)}
+              disabled={disabled}
             />
           </Tooltip>
         ))}

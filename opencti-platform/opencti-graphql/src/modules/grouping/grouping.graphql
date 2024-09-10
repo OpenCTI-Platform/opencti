@@ -94,6 +94,8 @@ type Grouping implements BasicObject & StixObject & StixCoreObject & StixDomainO
     objectAssignee: [Assignee!]
     avatar: OpenCtiFile
     # Container
+    authorized_members: [MemberAccess!]
+    currentUserAccessRight: String
     objects(
         first: Int
         after: ID

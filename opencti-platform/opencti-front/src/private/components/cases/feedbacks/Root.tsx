@@ -29,6 +29,7 @@ import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings
 import useGranted, { KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE } from '../../../../utils/hooks/useGranted';
 import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 import FeedbackEdition from './FeedbackEdition';
+import { useGetCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
 
 const subscription = graphql`
   subscription RootFeedbackSubscription($id: ID!) {
@@ -79,23 +80,6 @@ const feedbackQuery = graphql`
   }
 `;
 
-// Mutation to edit authorized members of a feedback
-const feedbackAuthorizedMembersMutation = graphql`
-  mutation RootFeedbackAuthorizedMembersMutation(
-    $id: ID!
-    $input: [MemberAccessInput!]
-  ) {
-    feedbackEditAuthorizedMembers(id: $id, input: $input) {
-      authorized_members {
-        id
-        name
-        entity_type
-        access_right
-      }
-    }
-  }
-`;
-
 const RootFeedbackComponent = ({ queryRef, caseId }) => {
   const subConfig = useMemo<
   GraphQLSubscriptionConfig<RootFeedbackSubscription>
@@ -116,118 +100,112 @@ const RootFeedbackComponent = ({ queryRef, caseId }) => {
     connectorsForExport,
     connectorsForImport,
   } = usePreloadedQuery<RootFeedbackQuery>(feedbackQuery, queryRef);
-  const paddingRight = getPaddingRight(location.pathname, feedbackData?.id, '/dashboard/cases/feedbacks');
-  const canManage = feedbackData?.currentUserAccessRight === 'admin';
-  const canEdit = canManage || feedbackData.currentUserAccessRight === 'edit';
+  if (!feedbackData) {
+    return <ErrorNotFound />;
+  }
+  const paddingRight = getPaddingRight(location.pathname, feedbackData.id, '/dashboard/cases/feedbacks');
+  const { canEdit } = useGetCurrentUserAccessRight(feedbackData.currentUserAccessRight);
   return (
-    <>
-      {feedbackData ? (
-        <div style={{ paddingRight }}>
-          <Breadcrumbs variant="object" elements={[
-            { label: t_i18n('Cases') },
-            { label: t_i18n('Feedbacks'), link: '/dashboard/cases/feedbacks' },
-            { label: feedbackData.name, current: true },
-          ]}
+    <div style={{ paddingRight }}>
+      <Breadcrumbs variant="object" elements={[
+        { label: t_i18n('Cases') },
+        { label: t_i18n('Feedbacks'), link: '/dashboard/cases/feedbacks' },
+        { label: feedbackData.name, current: true },
+      ]}
+      />
+      <ContainerHeader
+        container={feedbackData}
+        PopoverComponent={<FeedbackPopover id={feedbackData.id} />}
+        EditComponent={<Security needs={[KNOWLEDGE_KNUPDATE]} hasAccess={canEdit}>
+          <FeedbackEdition feedbackId={feedbackData.id} />
+        </Security>}
+        enableSuggestions={false}
+        disableSharing={true}
+        enableQuickSubscription
+        redirectToContent={true}
+      />
+      <Box
+        sx={{
+          borderBottom: 1,
+          borderColor: 'divider',
+          marginBottom: 3,
+        }}
+      >
+        <Tabs
+          value={getCurrentTab(location.pathname, feedbackData.id, '/dashboard/incidents/feedbacks')}
+        >
+          <Tab
+            component={Link}
+            to={`/dashboard/cases/feedbacks/${feedbackData.id}`}
+            value={`/dashboard/cases/feedbacks/${feedbackData.id}`}
+            label={t_i18n('Overview')}
           />
-          <ContainerHeader
-            container={feedbackData}
-            PopoverComponent={<FeedbackPopover id={feedbackData.id} />}
-            EditComponent={<Security needs={[KNOWLEDGE_KNUPDATE]} hasAccess={canEdit}>
-              <FeedbackEdition feedbackId={feedbackData.id} />
-            </Security>}
-            enableSuggestions={false}
-            disableSharing={true}
-            enableQuickSubscription
-            enableManageAuthorizedMembers={canManage}
-            authorizedMembersMutation={feedbackAuthorizedMembersMutation}
-            redirectToContent={true}
+          <Tab
+            component={Link}
+            to={`/dashboard/cases/feedbacks/${feedbackData.id}/content`}
+            value={`/dashboard/cases/feedbacks/${feedbackData.id}/content`}
+            label={t_i18n('Content')}
           />
-          <Box
-            sx={{
-              borderBottom: 1,
-              borderColor: 'divider',
-              marginBottom: 3,
-            }}
-          >
-            <Tabs
-              value={getCurrentTab(location.pathname, feedbackData.id, '/dashboard/incidents/feedbacks')}
-            >
-              <Tab
-                component={Link}
-                to={`/dashboard/cases/feedbacks/${feedbackData.id}`}
-                value={`/dashboard/cases/feedbacks/${feedbackData.id}`}
-                label={t_i18n('Overview')}
-              />
-              <Tab
-                component={Link}
-                to={`/dashboard/cases/feedbacks/${feedbackData.id}/content`}
-                value={`/dashboard/cases/feedbacks/${feedbackData.id}/content`}
-                label={t_i18n('Content')}
-              />
-              <Tab
-                component={Link}
-                to={`/dashboard/cases/feedbacks/${feedbackData.id}/files`}
-                value={`/dashboard/cases/feedbacks/${feedbackData.id}/files`}
-                label={t_i18n('Data')}
-              />
-              <Tab
-                component={Link}
-                to={`/dashboard/cases/feedbacks/${feedbackData.id}/history`}
-                value={`/dashboard/cases/feedbacks/${feedbackData.id}/history`}
-                label={t_i18n('History')}
-              />
-            </Tabs>
-          </Box>
-          <Routes>
-            <Route
-              path="/"
-              element={
-                <Feedback
-                  feedbackData={feedbackData}
-                  enableReferences={enableReferences}
-                />}
+          <Tab
+            component={Link}
+            to={`/dashboard/cases/feedbacks/${feedbackData.id}/files`}
+            value={`/dashboard/cases/feedbacks/${feedbackData.id}/files`}
+            label={t_i18n('Data')}
+          />
+          <Tab
+            component={Link}
+            to={`/dashboard/cases/feedbacks/${feedbackData.id}/history`}
+            value={`/dashboard/cases/feedbacks/${feedbackData.id}/history`}
+            label={t_i18n('History')}
+          />
+        </Tabs>
+      </Box>
+      <Routes>
+        <Route
+          path="/"
+          element={
+            <Feedback
+              feedbackData={feedbackData}
+              enableReferences={enableReferences}
+            />}
+        />
+        <Route
+          path="/content/*"
+          element={
+            <StixCoreObjectContentRoot
+              stixCoreObject={feedbackData}
             />
-            <Route
-              path="/content/*"
-              element={
-                <StixCoreObjectContentRoot
-                  stixCoreObject={feedbackData}
-                />
               }
+        />
+        <Route
+          path="/files"
+          element={
+            <FileManager
+              id={caseId}
+              connectorsExport={connectorsForExport}
+              connectorsImport={connectorsForImport}
+              entity={feedbackData}
             />
-            <Route
-              path="/files"
-              element={
-                <FileManager
-                  id={caseId}
-                  connectorsExport={connectorsForExport}
-                  connectorsImport={connectorsForImport}
-                  entity={feedbackData}
-                />
               }
+        />
+        <Route
+          path="/history"
+          element={
+            <StixCoreObjectHistory
+              stixCoreObjectId={caseId}
             />
-            <Route
-              path="/history"
-              element={
-                <StixCoreObjectHistory
-                  stixCoreObjectId={caseId}
-                />
               }
+        />
+        <Route
+          path="/knowledge/relations/:relationId"
+          element={
+            <StixCoreRelationship
+              entityId={feedbackData.id}
             />
-            <Route
-              path="/knowledge/relations/:relationId"
-              element={
-                <StixCoreRelationship
-                  entityId={feedbackData.id}
-                />
               }
-            />
-          </Routes>
-        </div>
-      ) : (
-        <ErrorNotFound />
-      )}
-    </>
+        />
+      </Routes>
+    </div>
   );
 };
 

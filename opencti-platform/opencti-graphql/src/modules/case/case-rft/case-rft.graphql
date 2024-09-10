@@ -95,6 +95,8 @@ type CaseRft implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   objectParticipant: [Participant!]
   avatar: OpenCtiFile
   # Container
+  authorized_members: [MemberAccess!]
+  currentUserAccessRight: String
   objects(
     first: Int
     after: ID
@@ -147,8 +149,6 @@ type CaseRft implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   content: String
   content_mapping: String
   tasks: TaskConnection!
-  authorized_members: [MemberAccess!]
-  currentUserAccessRight: String
   # Request For Takedown
   takedown_types: [String!]
   severity: String

@@ -3,14 +3,25 @@ import { v4 as uuidv4 } from 'uuid';
 import { RELATION_CREATED_BY, RELATION_OBJECT } from '../schema/stixRefRelationship';
 import { listAllThings, timeSeriesEntities } from '../database/middleware';
 import { internalFindByIds, internalLoadById, listEntities, listEntitiesThroughRelationsPaginated, storeLoadById } from '../database/middleware-loader';
-import { ABSTRACT_BASIC_RELATIONSHIP, ABSTRACT_STIX_REF_RELATIONSHIP, ABSTRACT_STIX_RELATIONSHIP, buildRefRelationKey, ENTITY_TYPE_CONTAINER } from '../schema/general';
+import {
+  ABSTRACT_BASIC_RELATIONSHIP,
+  ABSTRACT_STIX_CORE_OBJECT,
+  ABSTRACT_STIX_REF_RELATIONSHIP,
+  ABSTRACT_STIX_RELATIONSHIP,
+  buildRefRelationKey,
+  ENTITY_TYPE_CONTAINER
+} from '../schema/general';
 import { isStixDomainObjectContainer } from '../schema/stixDomainObject';
 import { buildPagination, READ_ENTITIES_INDICES, READ_INDEX_STIX_DOMAIN_OBJECTS, READ_RELATIONSHIPS_INDICES } from '../database/utils';
 import { now } from '../utils/format';
 import { elCount, elFindByIds, ES_DEFAULT_PAGINATION, MAX_RELATED_CONTAINER_RESOLUTION } from '../database/engine';
 import { findById as findInvestigationById } from '../modules/workspace/workspace-domain';
 import { stixCoreObjectAddRelations } from './stixCoreObject';
+import { editAuthorizedMembers } from '../utils/authorizedMembers';
 import { addFilter } from '../utils/filtering/filtering-utils';
+import { FunctionalError, UnsupportedError } from '../config/errors';
+import { isFeatureEnabled } from '../config/conf';
+import { ENTITY_TYPE_CONTAINER_FEEDBACK } from '../modules/case/feedback/feedback-types';
 
 export const findById = async (context, user, containerId) => {
   return storeLoadById(context, user, containerId, ENTITY_TYPE_CONTAINER);
@@ -212,4 +223,22 @@ export const knowledgeAddFromInvestigation = async (context, user, { containerId
   const patched = await stixCoreObjectAddRelations(context, user, containerId, containerInput);
   // Reload on this is mandatory to get the rel_ from the element for accurate counting
   return internalLoadById(context, user, patched.internal_id, patched.entity_type);
+};
+
+export const containerEditAuthorizedMembers = async (context, user, entityId, input) => {
+  const args = {
+    entityId,
+    input,
+    requiredCapabilities: ['KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS'],
+    entityType: ENTITY_TYPE_CONTAINER,
+    busTopicKey: ABSTRACT_STIX_CORE_OBJECT,
+  };
+  const entity = await findById(context, user, entityId);
+  if (!entity) {
+    throw FunctionalError('Cant find element to update', { entityId });
+  }
+  if (entity.entity_type !== ENTITY_TYPE_CONTAINER_FEEDBACK && !isFeatureEnabled('CONTAINERS_AUTHORIZED_MEMBERS')) {
+    throw UnsupportedError('This feature is disabled');
+  }
+  return editAuthorizedMembers(context, user, args);
 };

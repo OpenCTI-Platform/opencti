@@ -29,6 +29,7 @@ import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings
 import useGranted, { KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE, KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 import GroupingEdition from './GroupingEdition';
+import { useGetCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
 
 const subscription = graphql`
   subscription RootGroupingSubscription($id: ID!) {
@@ -54,6 +55,7 @@ const groupingQuery = graphql`
       standard_id
       entity_type
       name
+      currentUserAccessRight
       ...Grouping_grouping
       ...GroupingDetails_grouping
       ...GroupingKnowledge_grouping
@@ -102,6 +104,7 @@ const RootGrouping = () => {
               const { grouping } = props;
               const isOverview = location.pathname === `/dashboard/analyses/groupings/${grouping.id}`;
               const paddingRight = getPaddingRight(location.pathname, grouping.id, '/dashboard/analyses/groupings', false);
+              const currentAccessRight = useGetCurrentUserAccessRight(grouping.currentUserAccessRight);
               return (
                 <div style={{ paddingRight }}>
                   <Breadcrumbs variant="object" elements={[
@@ -114,7 +117,7 @@ const RootGrouping = () => {
                     container={grouping}
                     PopoverComponent={<GroupingPopover />}
                     EditComponent={(
-                      <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                      <Security needs={[KNOWLEDGE_KNUPDATE]} hasAccess={currentAccessRight.canEdit}>
                         <GroupingEdition groupingId={grouping.id} />
                       </Security>
                     )}

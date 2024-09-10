@@ -30,6 +30,7 @@ import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings
 import useGranted, { KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE, KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 import CaseRfiEdition from './CaseRfiEdition';
+import { useGetCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
 
 const subscription = graphql`
   subscription RootCaseRfiCaseSubscription($id: ID!) {
@@ -51,6 +52,7 @@ const caseRfiQuery = graphql`
       id
       standard_id
       entity_type
+      currentUserAccessRight
       name
       x_opencti_graph_data
       ...CaseUtils_case
@@ -93,150 +95,146 @@ const RootCaseRfiComponent = ({ queryRef, caseId }) => {
     connectorsForExport,
     connectorsForImport,
   } = usePreloadedQuery<RootCaseRfiCaseQuery>(caseRfiQuery, queryRef);
-
-  const paddingRight = getPaddingRight(location.pathname, caseData?.id, '/dashboard/cases/rfis', false);
-
+  if (!caseData) {
+    return <ErrorNotFound />;
+  }
+  const paddingRight = getPaddingRight(location.pathname, caseData.id, '/dashboard/cases/rfis', false);
+  const currentAccessRight = useGetCurrentUserAccessRight(caseData.currentUserAccessRight);
   return (
-    <>
-      {caseData ? (
-        <div style={{ paddingRight }}>
-          <Breadcrumbs variant="object" elements={[
-            { label: t_i18n('Cases') },
-            { label: t_i18n('Requests for information'), link: '/dashboard/cases/rfis' },
-            { label: caseData.name, current: true },
-          ]}
+    <div style={{ paddingRight }}>
+      <Breadcrumbs variant="object" elements={[
+        { label: t_i18n('Cases') },
+        { label: t_i18n('Requests for information'), link: '/dashboard/cases/rfis' },
+        { label: caseData.name, current: true },
+      ]}
+      />
+      <ContainerHeader
+        container={caseData}
+        PopoverComponent={<CaseRfiPopover id={caseData.id} />}
+        EditComponent={<Security needs={[KNOWLEDGE_KNUPDATE]} hasAccess={currentAccessRight.canEdit}>
+          <CaseRfiEdition caseId={caseData.id} />
+        </Security>}
+        enableQuickSubscription={true}
+        enableAskAi={true}
+        redirectToContent={true}
+      />
+      <Box
+        sx={{
+          borderBottom: 1,
+          borderColor: 'divider',
+          marginBottom: 3,
+        }}
+      >
+        <Tabs
+          value={getCurrentTab(location.pathname, caseData.id, '/dashboard/cases/rfis')}
+        >
+          <Tab
+            component={Link}
+            to={`/dashboard/cases/rfis/${caseData.id}`}
+            value={`/dashboard/cases/rfis/${caseData.id}`}
+            label={t_i18n('Overview')}
           />
-          <ContainerHeader
-            container={caseData}
-            PopoverComponent={<CaseRfiPopover id={caseData.id} />}
-            EditComponent={<Security needs={[KNOWLEDGE_KNUPDATE]}>
-              <CaseRfiEdition caseId={caseData.id} />
-            </Security>}
-            enableQuickSubscription={true}
-            enableAskAi={true}
-            redirectToContent={true}
+          <Tab
+            component={Link}
+            to={`/dashboard/cases/rfis/${caseData.id}/knowledge/graph`}
+            value={`/dashboard/cases/rfis/${caseData.id}/knowledge`}
+            label={t_i18n('Knowledge')}
           />
-          <Box
-            sx={{
-              borderBottom: 1,
-              borderColor: 'divider',
-              marginBottom: 3,
-            }}
-          >
-            <Tabs
-              value={getCurrentTab(location.pathname, caseData.id, '/dashboard/cases/rfis')}
-            >
-              <Tab
-                component={Link}
-                to={`/dashboard/cases/rfis/${caseData.id}`}
-                value={`/dashboard/cases/rfis/${caseData.id}`}
-                label={t_i18n('Overview')}
-              />
-              <Tab
-                component={Link}
-                to={`/dashboard/cases/rfis/${caseData.id}/knowledge/graph`}
-                value={`/dashboard/cases/rfis/${caseData.id}/knowledge`}
-                label={t_i18n('Knowledge')}
-              />
-              <Tab
-                component={Link}
-                to={`/dashboard/cases/rfis/${caseData.id}/content`}
-                value={`/dashboard/cases/rfis/${caseData.id}/content`}
-                label={t_i18n('Content')}
-              />
-              <Tab
-                component={Link}
-                to={`/dashboard/cases/rfis/${caseData.id}/entities`}
-                value={`/dashboard/cases/rfis/${caseData.id}/entities`}
-                label={t_i18n('Entities')}
-              />
-              <Tab
-                component={Link}
-                to={`/dashboard/cases/rfis/${caseData.id}/observables`}
-                value={`/dashboard/cases/rfis/${caseData.id}/observables`}
-                label={t_i18n('Observables')}
-              />
-              <Tab
-                component={Link}
-                to={`/dashboard/cases/rfis/${caseData.id}/files`}
-                value={`/dashboard/cases/rfis/${caseData.id}/files`}
-                label={t_i18n('Data')}
-              />
-            </Tabs>
-          </Box>
-          <Routes>
-            <Route
-              path="/"
-              element={<CaseRfi caseRfiData={caseData} enableReferences={enableReferences} />}
+          <Tab
+            component={Link}
+            to={`/dashboard/cases/rfis/${caseData.id}/content`}
+            value={`/dashboard/cases/rfis/${caseData.id}/content`}
+            label={t_i18n('Content')}
+          />
+          <Tab
+            component={Link}
+            to={`/dashboard/cases/rfis/${caseData.id}/entities`}
+            value={`/dashboard/cases/rfis/${caseData.id}/entities`}
+            label={t_i18n('Entities')}
+          />
+          <Tab
+            component={Link}
+            to={`/dashboard/cases/rfis/${caseData.id}/observables`}
+            value={`/dashboard/cases/rfis/${caseData.id}/observables`}
+            label={t_i18n('Observables')}
+          />
+          <Tab
+            component={Link}
+            to={`/dashboard/cases/rfis/${caseData.id}/files`}
+            value={`/dashboard/cases/rfis/${caseData.id}/files`}
+            label={t_i18n('Data')}
+          />
+        </Tabs>
+      </Box>
+      <Routes>
+        <Route
+          path="/"
+          element={<CaseRfi caseRfiData={caseData} enableReferences={enableReferences} />}
+        />
+        <Route
+          path="/entities"
+          element={
+            <ContainerStixDomainObjects
+              container={caseData}
+              enableReferences={enableReferences}
             />
-            <Route
-              path="/entities"
-              element={
-                <ContainerStixDomainObjects
-                  container={caseData}
-                  enableReferences={enableReferences}
-                />
               }
+        />
+        <Route
+          path="/observables"
+          element={
+            <ContainerStixCyberObservables
+              container={caseData}
+              enableReferences={enableReferences}
             />
-            <Route
-              path="/observables"
-              element={
-                <ContainerStixCyberObservables
-                  container={caseData}
-                  enableReferences={enableReferences}
-                />
               }
-            />
-            <Route
-              path="/knowledge"
-              element={
-                <Navigate to={`/dashboard/cases/rfis/${caseId}/knowledge/graph`} replace={true} />
+        />
+        <Route
+          path="/knowledge"
+          element={
+            <Navigate to={`/dashboard/cases/rfis/${caseId}/knowledge/graph`} replace={true} />
               }
+        />
+        <Route
+          path="/content/*"
+          element={
+            <StixCoreObjectContentRoot
+              stixCoreObject={caseData}
+              isContainer={true}
             />
-            <Route
-              path="/content/*"
-              element={
-                <StixCoreObjectContentRoot
-                  stixCoreObject={caseData}
-                  isContainer={true}
-                />
               }
+        />
+        <Route
+          path="/knowledge/*"
+          element={
+            <CaseRfiKnowledge caseData={caseData}
+              enableReferences={enableReferences}
             />
-            <Route
-              path="/knowledge/*"
-              element={
-                <CaseRfiKnowledge caseData={caseData}
-                  enableReferences={enableReferences}
-                />
               }
+        />
+        <Route
+          path="/files"
+          element={
+            <StixCoreObjectFilesAndHistory
+              id={caseId}
+              connectorsExport={connectorsForExport}
+              connectorsImport={connectorsForImport}
+              entity={caseData}
+              withoutRelations={true}
+              bypassEntityId={true}
             />
-            <Route
-              path="/files"
-              element={
-                <StixCoreObjectFilesAndHistory
-                  id={caseId}
-                  connectorsExport={connectorsForExport}
-                  connectorsImport={connectorsForImport}
-                  entity={caseData}
-                  withoutRelations={true}
-                  bypassEntityId={true}
-                />
               }
+        />
+        <Route
+          path="/history"
+          element={
+            <StixCoreObjectHistory
+              stixCoreObjectId={caseId}
             />
-            <Route
-              path="/history"
-              element={
-                <StixCoreObjectHistory
-                  stixCoreObjectId={caseId}
-                />
               }
-            />
-          </Routes>
-        </div>
-      ) : (
-        <ErrorNotFound />
-      )}
-    </>
+        />
+      </Routes>
+    </div>
   );
 };
 

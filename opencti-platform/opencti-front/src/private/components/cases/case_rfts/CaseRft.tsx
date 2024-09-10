@@ -17,6 +17,7 @@ import CaseRftEdition from './CaseRftEdition';
 import { useFormatter } from '../../../../components/i18n';
 import useHelper from '../../../../utils/hooks/useHelper';
 import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
+import { useGetCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
 
 interface CaseRftProps {
   caseRftData: CaseUtils_case$key;
@@ -29,6 +30,7 @@ const CaseRft: React.FC<CaseRftProps> = ({ caseRftData, enableReferences }) => {
   const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const caseRft = useFragment(caseFragment, caseRftData);
   const overviewLayoutCustomization = useOverviewLayoutCustomization(caseRft.entity_type);
+  const { canEdit } = useGetCurrentUserAccessRight(caseRft.currentUserAccessRight);
 
   return (
     <>
@@ -132,7 +134,7 @@ const CaseRft: React.FC<CaseRftProps> = ({ caseRftData, enableReferences }) => {
         }
       </Grid>
       {!isFABReplaced && (
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+        <Security needs={[KNOWLEDGE_KNUPDATE]} hasAccess={canEdit}>
           <CaseRftEdition caseId={caseRft.id} />
         </Security>
       )}

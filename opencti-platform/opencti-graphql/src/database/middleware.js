@@ -117,7 +117,7 @@ import {
   STIX_REF_RELATIONSHIP_TYPES
 } from '../schema/stixRefRelationship';
 import { ENTITY_TYPE_SETTINGS, ENTITY_TYPE_STATUS, ENTITY_TYPE_USER } from '../schema/internalObject';
-import { isStixCoreObject } from '../schema/stixCoreObject';
+import { isStixCoreObject, isStixObject } from '../schema/stixCoreObject';
 import { isBasicRelationship } from '../schema/stixRelationship';
 import {
   dateForEndAttributes,
@@ -144,7 +144,7 @@ import {
 import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_LABEL } from '../schema/stixMetaObject';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import { ENTITY_HASHED_OBSERVABLE_ARTIFACT, ENTITY_HASHED_OBSERVABLE_STIX_FILE, isStixCyberObservable, isStixCyberObservableHashedObservable } from '../schema/stixCyberObservable';
-import conf, { BUS_TOPICS, extendedErrors, logApp } from '../config/conf';
+import conf, { BUS_TOPICS, extendedErrors, isFeatureEnabled, logApp } from '../config/conf';
 import { FROM_START_STR, mergeDeepRightAll, now, prepareDate, UNTIL_END_STR, utcDate } from '../utils/format';
 import { checkObservableSyntax } from '../utils/syntax';
 import { elUpdateRemovedFiles } from './file-search';
@@ -191,6 +191,7 @@ import { cleanMarkings, handleMarkingOperations } from '../utils/markingDefiniti
 import { generateCreateMessage, generateRestoreMessage, generateUpdateMessage } from './generate-message';
 import { confidence, creators, iAliasedIds, iAttributes, modified, updatedAt, xOpenctiStixIds } from '../schema/attribute-definition';
 import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
+import { ENTITY_TYPE_CONTAINER_FEEDBACK } from '../modules/case/feedback/feedback-types';
 import { FilterMode, FilterOperator } from '../generated/graphql';
 import { getMandatoryAttributesForSetting } from '../modules/entitySetting/entitySetting-attributeUtils';
 import {
@@ -1841,6 +1842,11 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
   // Check user access update
   let accessOperation = 'edit';
   if (updates.some((e) => e.key === 'authorized_members')) {
+    if (isStixObject(initial.entity_type)
+      && initial.entity_type !== ENTITY_TYPE_CONTAINER_FEEDBACK
+      && !isFeatureEnabled('CONTAINERS_AUTHORIZED_MEMBERS')) {
+      throw UnsupportedError('This feature is disabled');
+    }
     accessOperation = 'manage-access';
   }
   if (updates.some((e) => e.key === 'authorized_authorities')) {

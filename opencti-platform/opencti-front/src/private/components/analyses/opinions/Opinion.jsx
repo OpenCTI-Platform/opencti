@@ -32,6 +32,7 @@ const OpinionComponent = ({ opinion, enableReferences }) => {
           <ContainerHeader
             container={opinion}
             PopoverComponent={<OpinionPopover opinion={opinion} />}
+            disableAuthorizedMembers={true}
           />
         }
       >
@@ -39,6 +40,7 @@ const OpinionComponent = ({ opinion, enableReferences }) => {
           container={opinion}
           PopoverComponent={<OpinionPopover opinion={opinion} />}
           popoverSecurity={[KNOWLEDGE_KNPARTICIPATE]}
+          disableAuthorizedMembers={true}
         />
       </CollaborativeSecurity>
       <Grid
