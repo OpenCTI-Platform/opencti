@@ -330,6 +330,7 @@ class OpenCTIApiClient:
                 verify=self.ssl_verify,
                 cert=self.cert,
                 proxies=self.proxies,
+                timeout=300,
             )
         # If no
         else:
@@ -340,6 +341,7 @@ class OpenCTIApiClient:
                 verify=self.ssl_verify,
                 cert=self.cert,
                 proxies=self.proxies,
+                timeout=300,
             )
         # Build response
         if r.status_code == 200:
@@ -383,6 +385,7 @@ class OpenCTIApiClient:
             verify=self.ssl_verify,
             cert=self.cert,
             proxies=self.proxies,
+            timeout=300,
         )
         if binary:
             if serialize:

@@ -375,6 +375,8 @@ class ListenQueue(threading.Thread):
                 # Connect the broker
                 self.pika_credentials = pika.PlainCredentials(self.user, self.password)
                 self.pika_parameters = pika.ConnectionParameters(
+                    heartbeat=10,
+                    blocked_connection_timeout=10,
                     host=self.host,
                     port=self.port,
                     virtual_host=self.vhost,
@@ -466,6 +468,7 @@ class PingAlive(threading.Thread):
                         "Connector state has been remotely reset",
                         {"state": self.get_state()},
                     )
+
                 if self.in_error:
                     self.in_error = False
                     self.connector_logger.info("API Ping back to normal")
@@ -1714,6 +1717,8 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
                     self.connector_config["connection"]["pass"],
                 )
                 pika_parameters = pika.ConnectionParameters(
+                    heartbeat=10,
+                    blocked_connection_timeout=10,
                     host=self.connector_config["connection"]["host"],
                     port=self.connector_config["connection"]["port"],
                     virtual_host=self.connector_config["connection"]["vhost"],
