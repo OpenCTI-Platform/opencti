@@ -14,6 +14,7 @@ type BulkRelationDialogContainerProps = {
   defaultRelationshipType?: string;
   paginationKey: string;
   paginationOptions: PaginationOptions;
+  targetObjectTypes: string[];
 };
 
 const inlinedStyle = {
@@ -32,6 +33,7 @@ const BulkRelationDialogContainer = ({
   defaultRelationshipType,
   paginationKey,
   paginationOptions,
+  targetObjectTypes,
 }: BulkRelationDialogContainerProps) => {
   const { isFeatureEnable } = useHelper();
   const { t_i18n } = useFormatter();
@@ -60,6 +62,7 @@ const BulkRelationDialogContainer = ({
           stixDomainObjectType={stixDomainObjectType}
           defaultRelationshipType={defaultRelationshipType}
           isOpen={isDialogOpen}
+          targetObjectTypes={targetObjectTypes}
           onClose={handleCloseDialog}
           selectedEntities={selectedEntities}
         />

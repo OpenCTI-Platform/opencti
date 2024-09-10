@@ -831,6 +831,7 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
                       entityTypes={virtualEntityTypes}
                       additionalHeaderButtons={[(
                         <BulkRelationDialogContainer
+                          targetObjectTypes={[...targetStixDomainObjectTypes, ...targetStixCyberObservableTypes]}
                           paginationOptions={searchPaginationOptions}
                           paginationKey="Pagination_stixCoreObjects"
                           key="BulkRelationDialogContainer"
