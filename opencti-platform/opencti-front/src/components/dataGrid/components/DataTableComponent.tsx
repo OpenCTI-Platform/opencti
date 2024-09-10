@@ -64,7 +64,10 @@ const DataTableComponent = ({
 
   const [columns, setColumns] = useState<DataTableColumns>(columnsInitialState);
 
-  const clientWidth = document.getElementsByTagName('main')[0].clientWidth - 46;
+  // main tag only exists in the app, we fallback to root element for public dashboards
+  const mainElement = document.getElementsByTagName('main')[0];
+  const rootElement = document.getElementById('root');
+  const clientWidth = (mainElement ?? rootElement).clientWidth - 46;
 
   const temporaryColumnsSize: { [key: string]: number } = {
     '--header-select-size': SELECT_COLUMN_SIZE,
