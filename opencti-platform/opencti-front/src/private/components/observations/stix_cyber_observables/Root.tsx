@@ -104,6 +104,8 @@ const RootStixCyberObservable = ({ observableId, queryRef }: RootStixCyberObserv
           />
           <StixCyberObservableHeader
             stixCyberObservable={stixCyberObservable}
+            disableSharing={undefined}
+            isArtifact={undefined}
           />
           <Box
             sx={{
@@ -203,6 +205,7 @@ const RootStixCyberObservable = ({ observableId, queryRef }: RootStixCyberObserv
                   entityId={observableId}
                   entityLink={link}
                   noPadding={true}
+                  isTo={true}
                   stixCoreObjectTypes={[
                     'Region',
                     'Country',

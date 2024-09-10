@@ -231,6 +231,9 @@ const RootIndicator = ({ indicatorId, queryRef }: RootIndicatorProps) => {
                 <div key={forceUpdate}>
                   <IndicatorEntities
                     indicatorId={indicatorId}
+                    relationshipType={undefined}
+                    defaultStartTime={undefined}
+                    defaultStopTime={undefined}
                   />
                 </div>
               )}

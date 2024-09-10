@@ -243,6 +243,16 @@ const RootEvent = ({ eventId, queryRef }: RootEventProps) => {
                     entityLink={link}
                     noPadding={true}
                     isTo={true}
+                    stixCoreObjectTypes={[
+                      'Region',
+                      'Country',
+                      'City',
+                      'Position',
+                      'Sector',
+                      'Organization',
+                      'Individual',
+                      'System',
+                    ]}
                   />
                 )}
               />
