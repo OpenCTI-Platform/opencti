@@ -7,7 +7,6 @@ import StixDomainObjectKnowledge from '../../common/stix_domain_objects/StixDoma
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import StixDomainObjectAuthorKnowledge from '../../common/stix_domain_objects/StixDomainObjectAuthorKnowledge';
 import StixSightingRelationship from '../../events/stix_sighting_relationships/StixSightingRelationship';
-import withRouter from '../../../../utils/compat_router/withRouter';
 
 class IndividualKnowledgeComponent extends Component {
   render() {
@@ -223,4 +222,4 @@ const IndividualKnowledge = createFragmentContainer(
   },
 );
 
-export default withRouter(IndividualKnowledge);
+export default IndividualKnowledge;

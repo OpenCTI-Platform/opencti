@@ -1,19 +1,20 @@
 import React, { useMemo, Suspense } from 'react';
-import { Route, Routes, Link, Navigate, useParams, useLocation } from 'react-router-dom';
+import { Route, Routes, Link, Navigate, useLocation, useParams } from 'react-router-dom';
 import { graphql, useSubscription, usePreloadedQuery, PreloadedQuery } from 'react-relay';
+import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import useQueryLoading from 'src/utils/hooks/useQueryLoading';
-import { GraphQLSubscriptionConfig } from 'relay-runtime';
+import { RootAttackPatternQuery } from '@components/techniques/attack_patterns/__generated__/RootAttackPatternQuery.graphql';
+import { RootAttackPatternSubscription } from '@components/techniques/attack_patterns/__generated__/RootAttackPatternSubscription.graphql';
 import useForceUpdate from '@components/common/bulk/useForceUpdate';
 import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreObjectContentRoot';
-import StixCoreObjectSimulationResult from '../../common/stix_core_objects/StixCoreObjectSimulationResult';
-import Malware from './Malware';
-import MalwareKnowledge from './MalwareKnowledge';
+import AttackPattern from './AttackPattern';
+import AttackPatternKnowledge from './AttackPatternKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import FileManager from '../../common/files/FileManager';
-import MalwarePopover from './MalwarePopover';
+import AttackPatternPopover from './AttackPatternPopover';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
 import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
@@ -22,33 +23,28 @@ import ErrorNotFound from '../../../../components/ErrorNotFound';
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
-import { RootMalwareQuery } from './__generated__/RootMalwareQuery.graphql';
-import { RootMalwareSubscription } from './__generated__/RootMalwareSubscription.graphql';
-import useHelper from '../../../../utils/hooks/useHelper';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
-import MalwareEdition from './MalwareEdition';
-import EditEntityControlledDial from '../../../../components/EditEntityControlledDial';
+import AttackPatternEdition from './AttackPatternEdition';
 
 const subscription = graphql`
-  subscription RootMalwareSubscription($id: ID!) {
+  subscription RootAttackPatternSubscription($id: ID!) {
     stixDomainObject(id: $id) {
-      ... on Malware {
-        ...Malware_malware
-        ...MalwareEditionContainer_malware
+      ... on AttackPattern {
+        ...AttackPattern_attackPattern
+        ...AttackPatternEditionContainer_attackPattern
       }
       ...FileImportViewer_entity
       ...FileExportViewer_entity
       ...FileExternalReferencesViewer_entity
       ...WorkbenchFileViewer_entity
-      ...PictureManagementViewer_entity
     }
   }
 `;
 
-const malwareQuery = graphql`
-  query RootMalwareQuery($id: String!) {
-    malware(id: $id) {
+const attackPatternQuery = graphql`
+  query RootAttackPatternQuery($id: String!) {
+    attackPattern(id: $id) {
       id
       standard_id
       entity_type
@@ -59,13 +55,12 @@ const malwareQuery = graphql`
         label
         value
       }
-      ...Malware_malware
-      ...MalwareKnowledge_malware
+      ...AttackPattern_attackPattern
+      ...AttackPatternKnowledge_attackPattern
       ...FileImportViewer_entity
       ...FileExportViewer_entity
       ...FileExternalReferencesViewer_entity
       ...WorkbenchFileViewer_entity
-      ...PictureManagementViewer_entity
       ...StixCoreObjectContent_stixCoreObject
     }
     connectorsForImport {
@@ -77,37 +72,34 @@ const malwareQuery = graphql`
   }
 `;
 
-type RootMalwareProps = {
-  malwareId: string;
-  queryRef: PreloadedQuery<RootMalwareQuery>;
+type RootAttackPatternProps = {
+  attackPatternId: string;
+  queryRef: PreloadedQuery<RootAttackPatternQuery>;
 };
-
-const RootMalware = ({ queryRef, malwareId }: RootMalwareProps) => {
-  const subConfig = useMemo<GraphQLSubscriptionConfig<RootMalwareSubscription>>(() => ({
+const RootAttackPattern = ({ attackPatternId, queryRef }: RootAttackPatternProps) => {
+  const subConfig = useMemo<GraphQLSubscriptionConfig<RootAttackPatternSubscription>>(() => ({
     subscription,
-    variables: { id: malwareId },
-  }), [malwareId]);
+    variables: { id: attackPatternId },
+  }), [attackPatternId]);
 
   const location = useLocation();
   const { t_i18n } = useFormatter();
-  useSubscription<RootMalwareSubscription>(subConfig);
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
+  useSubscription<RootAttackPatternSubscription>(subConfig);
 
   const {
-    malware,
+    attackPattern,
     connectorsForExport,
     connectorsForImport,
-  } = usePreloadedQuery<RootMalwareQuery>(malwareQuery, queryRef);
+  } = usePreloadedQuery(attackPatternQuery, queryRef);
 
   const { forceUpdate } = useForceUpdate();
 
-  const isOverview = location.pathname === `/dashboard/arsenal/malwares/${malwareId}`;
-  const paddingRight = getPaddingRight(location.pathname, malwareId, '/dashboard/arsenal/malwares');
-  const link = `/dashboard/arsenal/malwares/${malwareId}/knowledge`;
+  const paddingRight = getPaddingRight(location.pathname, attackPatternId, '/dashboard/techniques/attack_patterns');
+  const link = `/dashboard/techniques/attack_patterns/${attackPatternId}/knowledge`;
+
   return (
     <>
-      {malware ? (
+      {attackPattern ? (
         <>
           <Routes>
             <Route
@@ -117,121 +109,104 @@ const RootMalware = ({ queryRef, malwareId }: RootMalwareProps) => {
                   stixCoreObjectLink={link}
                   availableSections={[
                     'victimology',
-                    'threats',
                     'threat_actors',
                     'intrusion_sets',
                     'campaigns',
                     'incidents',
-                    'variants',
                     'tools',
-                    'attack_patterns',
                     'vulnerabilities',
+                    'malwares',
                     'indicators',
                     'observables',
-                    'infrastructures',
-                    'sightings',
                   ]}
-                  stixCoreObjectsDistribution={malware.stixCoreObjectsDistribution}
+                  stixCoreObjectsDistribution={attackPattern.stixCoreObjectsDistribution}
                 />
               }
             />
           </Routes>
           <div style={{ paddingRight }}>
             <Breadcrumbs variant="object" elements={[
-              { label: t_i18n('Arsenal') },
-              { label: t_i18n('Malwares'), link: '/dashboard/arsenal/malwares' },
-              { label: malware.name, current: true },
+              { label: t_i18n('Techniques') },
+              { label: t_i18n('Attack patterns'), link: '/dashboard/techniques/attack_patterns' },
+              { label: attackPattern.name, current: true },
             ]}
             />
             <StixDomainObjectHeader
-              entityType="Malware"
-              stixDomainObject={malware}
-              PopoverComponent={<MalwarePopover />}
-              EditComponent={isFABReplaced && (
+              entityType="Attack-Pattern"
+              stixDomainObject={attackPattern}
+              PopoverComponent={<AttackPatternPopover />}
+              EditComponent={(
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                  <MalwareEdition
-                    malwareId={malware.id}
-                    controlledDial={EditEntityControlledDial}
-                  />
+                  <AttackPatternEdition attackPatternId={attackPattern.id} />
                 </Security>
               )}
-              enableQuickSubscription={true}
             />
             <Box
               sx={{
                 borderBottom: 1,
                 borderColor: 'divider',
                 marginBottom: 3,
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItem: 'center',
               }}
             >
               <Tabs
-                value={getCurrentTab(location.pathname, malware.id, '/dashboard/arsenal/malwares')}
+                value={getCurrentTab(location.pathname, attackPattern.id, '/dashboard/techniques/attack_patterns')}
               >
                 <Tab
                   component={Link}
-                  to={`/dashboard/arsenal/malwares/${malware.id}`}
-                  value={`/dashboard/arsenal/malwares/${malware.id}`}
+                  to={`/dashboard/techniques/attack_patterns/${attackPattern.id}`}
+                  value={`/dashboard/techniques/attack_patterns/${attackPattern.id}`}
                   label={t_i18n('Overview')}
                 />
                 <Tab
                   component={Link}
-                  to={`/dashboard/arsenal/malwares/${malware.id}/knowledge/overview`}
-                  value={`/dashboard/arsenal/malwares/${malware.id}/knowledge`}
+                  to={`/dashboard/techniques/attack_patterns/${attackPattern.id}/knowledge/overview`}
+                  value={`/dashboard/techniques/attack_patterns/${attackPattern.id}/knowledge`}
                   label={t_i18n('Knowledge')}
                 />
                 <Tab
                   component={Link}
-                  to={`/dashboard/arsenal/malwares/${malware.id}/content`}
-                  value={`/dashboard/arsenal/malwares/${malware.id}/content`}
+                  to={`/dashboard/techniques/attack_patterns/${attackPattern.id}/content`}
+                  value={`/dashboard/techniques/attack_patterns/${attackPattern.id}/content`}
                   label={t_i18n('Content')}
                 />
                 <Tab
                   component={Link}
-                  to={`/dashboard/arsenal/malwares/${malware.id}/analyses`}
-                  value={`/dashboard/arsenal/malwares/${malware.id}/analyses`}
+                  to={`/dashboard/techniques/attack_patterns/${attackPattern.id}/analyses`}
+                  value={`/dashboard/techniques/attack_patterns/${attackPattern.id}/analyses`}
                   label={t_i18n('Analyses')}
                 />
                 <Tab
                   component={Link}
-                  to={`/dashboard/arsenal/malwares/${malware.id}/files`}
-                  value={`/dashboard/arsenal/malwares/${malware.id}/files`}
+                  to={`/dashboard/techniques/attack_patterns/${attackPattern.id}/files`}
+                  value={`/dashboard/techniques/attack_patterns/${attackPattern.id}/files`}
                   label={t_i18n('Data')}
                 />
                 <Tab
                   component={Link}
-                  to={`/dashboard/arsenal/malwares/${malware.id}/history`}
-                  value={`/dashboard/arsenal/malwares/${malware.id}/history`}
+                  to={`/dashboard/techniques/attack_patterns/${attackPattern.id}/history`}
+                  value={`/dashboard/techniques/attack_patterns/${attackPattern.id}/history`}
                   label={t_i18n('History')}
                 />
               </Tabs>
-              {isOverview && (
-                <StixCoreObjectSimulationResult id={malware.id} type="threat" />
-              )}
             </Box>
             <Routes>
               <Route
                 path="/"
                 element={
-                  <Malware malwareData={malware} />
+                  <AttackPattern attackPatternData={attackPattern} />
                 }
               />
               <Route
                 path="/knowledge"
                 element={
-                  <Navigate
-                    replace={true}
-                    to={`/dashboard/arsenal/malwares/${malwareId}/knowledge/overview`}
-                  />
+                  <Navigate to={`/dashboard/techniques/attack_patterns/${attackPatternId}/knowledge/overview`} replace={true} />
                 }
               />
               <Route
                 path="/knowledge/*"
                 element={
                   <div key={forceUpdate}>
-                    <MalwareKnowledge malware={malware} />
+                    <AttackPatternKnowledge attackPattern={attackPattern} />
                   </div>
                 }
               />
@@ -239,35 +214,31 @@ const RootMalware = ({ queryRef, malwareId }: RootMalwareProps) => {
                 path="/content/*"
                 element={
                   <StixCoreObjectContentRoot
-                    stixCoreObject={malware}
+                    stixCoreObject={attackPattern}
                   />
                 }
               />
               <Route
                 path="/analyses"
                 element={
-                  <StixCoreObjectOrStixCoreRelationshipContainers
-                    stixDomainObjectOrStixCoreRelationship={malware}
-                  />
+                  <StixCoreObjectOrStixCoreRelationshipContainers stixDomainObjectOrStixCoreRelationship={attackPattern} />
                 }
               />
               <Route
                 path="/files"
                 element={
                   <FileManager
-                    id={malwareId}
+                    id={attackPatternId}
                     connectorsImport={connectorsForImport}
                     connectorsExport={connectorsForExport}
-                    entity={malware}
+                    entity={attackPattern}
                   />
                 }
               />
               <Route
                 path="/history"
                 element={
-                  <StixCoreObjectHistory
-                    stixCoreObjectId={malwareId}
-                  />
+                  <StixCoreObjectHistory stixCoreObjectId={attackPatternId} />
                 }
               />
             </Routes>
@@ -279,18 +250,17 @@ const RootMalware = ({ queryRef, malwareId }: RootMalwareProps) => {
     </>
   );
 };
-
 const Root = () => {
-  const { malwareId } = useParams() as { malwareId: string; };
-  const queryRef = useQueryLoading<RootMalwareQuery>(malwareQuery, {
-    id: malwareId,
+  const { attackPatternId } = useParams() as { attackPatternId: string; };
+  const queryRef = useQueryLoading<RootAttackPatternQuery>(attackPatternQuery, {
+    id: attackPatternId,
   });
 
   return (
     <>
       {queryRef && (
         <Suspense fallback={<Loader variant={LoaderVariant.container} />}>
-          <RootMalware queryRef={queryRef} malwareId={malwareId} />
+          <RootAttackPattern attackPatternId={attackPatternId} queryRef={queryRef} />
         </Suspense>
       )}
     </>

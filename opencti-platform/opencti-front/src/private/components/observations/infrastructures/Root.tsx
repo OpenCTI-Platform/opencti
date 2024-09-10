@@ -10,6 +10,7 @@ import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
+import useForceUpdate from '@components/common/bulk/useForceUpdate';
 import InfrastructureKnowledge from './InfrastructureKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import FileManager from '../../common/files/FileManager';
@@ -82,6 +83,7 @@ const RootInfrastructureComponent = ({ queryRef, infrastructureId }) => {
   useSubscription(subConfig);
   const data = usePreloadedQuery(infrastructureQuery, queryRef);
   const { infrastructure, connectorsForImport, connectorsForExport } = data;
+  const { forceUpdate } = useForceUpdate();
   const paddingRightValue = () => {
     if (location.pathname.includes(`/dashboard/observations/infrastructures/${infrastructure.id}/knowledge`)) return 200;
     if (location.pathname.includes(`/dashboard/observations/infrastructures/${infrastructure.id}/content`)) return 350;
@@ -104,13 +106,15 @@ const RootInfrastructureComponent = ({ queryRef, infrastructureId }) => {
             entityType="Infrastructure"
             stixDomainObject={infrastructure}
             PopoverComponent={InfrastructurePopover}
-            EditComponent={<Security needs={[KNOWLEDGE_KNUPDATE]}>
-              <InfrastructureEdition infrastructureId={infrastructure.id} />
-            </Security>}
+            EditComponent={
+              <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                <InfrastructureEdition infrastructureId={infrastructure.id} />
+              </Security>
+            }
             enableQuickSubscription={true}
           />
           <Box
-            sx={{ borderBottom: 1, borderColor: 'divider', marginBottom: 4 }}
+            sx={{ borderBottom: 1, borderColor: 'divider', marginBottom: 3 }}
           >
             <Tabs
               value={getCurrentTab(location.pathname, infrastructure.id, '/dashboard/observations/infrastructures')}
@@ -154,7 +158,6 @@ const RootInfrastructureComponent = ({ queryRef, infrastructureId }) => {
             </Tabs>
           </Box>
           <Routes>
-
             <Route
               path="/"
               element={<Infrastructure data={infrastructure}/>}
@@ -166,11 +169,15 @@ const RootInfrastructureComponent = ({ queryRef, infrastructureId }) => {
                   replace={true}
                   to={`/dashboard/observations/infrastructures/${infrastructureId}/knowledge/overview`}
                 />
-                  )}
+              )}
             />
             <Route
               path="/knowledge/*"
-              element={<InfrastructureKnowledge infrastructure={infrastructure}/>}
+              element={
+                <div key={forceUpdate}>
+                  <InfrastructureKnowledge infrastructure={infrastructure}/>
+                </div>
+              }
             />
             <Route
               path="/content/*"
@@ -178,7 +185,7 @@ const RootInfrastructureComponent = ({ queryRef, infrastructureId }) => {
                 <StixCoreObjectContentRoot
                   stixCoreObject={infrastructure}
                 />
-                  }
+              }
             />
             <Route
               path="/analyses/*"

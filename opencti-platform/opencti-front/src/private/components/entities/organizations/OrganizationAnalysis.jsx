@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { graphql, createFragmentContainer } from 'react-relay';
-import withRouter from '../../../../utils/compat_router/withRouter';
 import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
 
 class OrganizationAnalysisComponent extends Component {
@@ -47,4 +46,4 @@ const OrganizationAnalysis = createFragmentContainer(
   },
 );
 
-export default withRouter(OrganizationAnalysis);
+export default OrganizationAnalysis;

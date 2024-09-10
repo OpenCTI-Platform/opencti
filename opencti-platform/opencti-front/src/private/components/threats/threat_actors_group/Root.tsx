@@ -8,6 +8,7 @@ import useQueryLoading from 'src/utils/hooks/useQueryLoading';
 import { RootThreatActorGroupQuery } from '@components/threats/threat_actors_group/__generated__/RootThreatActorGroupQuery.graphql';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import { RootThreatActorsGroupSubscription } from '@components/threats/threat_actors_group/__generated__/RootThreatActorsGroupSubscription.graphql';
+import useForceUpdate from '@components/common/bulk/useForceUpdate';
 import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreObjectContentRoot';
 import StixCoreObjectSimulationResult from '../../common/stix_core_objects/StixCoreObjectSimulationResult';
 import ThreatActorGroup from './ThreatActorGroup';
@@ -97,6 +98,8 @@ const RootThreatActorGroup = ({ queryRef, threatActorGroupId }: RootThreatActorG
     connectorsForExport,
     connectorsForImport,
   } = usePreloadedQuery<RootThreatActorGroupQuery>(ThreatActorGroupQuery, queryRef);
+
+  const { forceUpdate } = useForceUpdate();
 
   const isOverview = location.pathname === `/dashboard/threats/threat_actors_group/${threatActorGroupId}`;
   const paddingRight = getPaddingRight(location.pathname, threatActorGroupId, '/dashboard/threats/threat_actors_group');
@@ -220,7 +223,11 @@ const RootThreatActorGroup = ({ queryRef, threatActorGroupId }: RootThreatActorG
               />
               <Route
                 path="/knowledge/*"
-                element={<ThreatActorGroupKnowledge threatActorGroup={threatActorGroup} />}
+                element={
+                  <div key={forceUpdate}>
+                    <ThreatActorGroupKnowledge threatActorGroup={threatActorGroup} />
+                  </div>
+                }
               />
               <Route
                 path="/content/*"

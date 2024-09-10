@@ -6,6 +6,7 @@ import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
+import useForceUpdate from '@components/common/bulk/useForceUpdate';
 import StixCoreObjectSimulationResult from '../../common/stix_core_objects/StixCoreObjectSimulationResult';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
@@ -108,6 +109,8 @@ const RootThreatActorIndividualComponent = ({
     ThreatActorIndividualQuery,
     queryRef,
   );
+
+  const { forceUpdate } = useForceUpdate();
 
   const isOverview = location.pathname === `/dashboard/threats/threat_actors_individual/${threatActorIndividualId}`;
   const paddingRight = getPaddingRight(location.pathname, threatActorIndividualId, '/dashboard/threats/threat_actors_individual');
@@ -235,7 +238,11 @@ const RootThreatActorIndividualComponent = ({
               />
               <Route
                 path="/knowledge/*"
-                element={<ThreatActorIndividualKnowledge threatActorIndividualData={threatActorIndividual} />}
+                element={
+                  <div key={forceUpdate}>
+                    <ThreatActorIndividualKnowledge threatActorIndividualData={threatActorIndividual} />
+                  </div>
+                }
               />
               <Route
                 path="/content/*"

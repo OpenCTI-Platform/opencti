@@ -1,71 +1,65 @@
 import React, { useMemo, Suspense } from 'react';
-import { Route, Routes, Link, Navigate, useParams, useLocation } from 'react-router-dom';
+import { Route, Routes, Link, Navigate, useLocation, useParams } from 'react-router-dom';
 import { graphql, useSubscription, usePreloadedQuery, PreloadedQuery } from 'react-relay';
+import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
+import { RootPositionQuery } from '@components/locations/positions/__generated__/RootPositionQuery.graphql';
 import useQueryLoading from 'src/utils/hooks/useQueryLoading';
-import { GraphQLSubscriptionConfig } from 'relay-runtime';
+import { RootPositionsSubscription } from '@components/locations/positions/__generated__/RootPositionsSubscription.graphql';
 import useForceUpdate from '@components/common/bulk/useForceUpdate';
 import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreObjectContentRoot';
-import StixCoreObjectSimulationResult from '../../common/stix_core_objects/StixCoreObjectSimulationResult';
-import Malware from './Malware';
-import MalwareKnowledge from './MalwareKnowledge';
+import Position from './Position';
+import PositionKnowledge from './PositionKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import FileManager from '../../common/files/FileManager';
-import MalwarePopover from './MalwarePopover';
+import PositionPopover from './PositionPopover';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
 import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
 import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
+import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
-import { RootMalwareQuery } from './__generated__/RootMalwareQuery.graphql';
-import { RootMalwareSubscription } from './__generated__/RootMalwareSubscription.graphql';
-import useHelper from '../../../../utils/hooks/useHelper';
+import PositionEdition from './PositionEdition';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
-import MalwareEdition from './MalwareEdition';
-import EditEntityControlledDial from '../../../../components/EditEntityControlledDial';
 
 const subscription = graphql`
-  subscription RootMalwareSubscription($id: ID!) {
+  subscription RootPositionsSubscription($id: ID!) {
     stixDomainObject(id: $id) {
-      ... on Malware {
-        ...Malware_malware
-        ...MalwareEditionContainer_malware
+      ... on Position {
+        ...Position_position
+        ...PositionEditionContainer_position
       }
       ...FileImportViewer_entity
       ...FileExportViewer_entity
       ...FileExternalReferencesViewer_entity
       ...WorkbenchFileViewer_entity
-      ...PictureManagementViewer_entity
     }
   }
 `;
 
-const malwareQuery = graphql`
-  query RootMalwareQuery($id: String!) {
-    malware(id: $id) {
+const positionQuery = graphql`
+  query RootPositionQuery($id: String!) {
+    position(id: $id) {
       id
-      standard_id
       entity_type
       name
-      aliases
-      x_opencti_graph_data
+      x_opencti_aliases
       stixCoreObjectsDistribution(field: "entity_type", operation: count) {
         label
         value
       }
-      ...Malware_malware
-      ...MalwareKnowledge_malware
+      ...Position_position
+      ...PositionKnowledge_position
       ...FileImportViewer_entity
       ...FileExportViewer_entity
       ...FileExternalReferencesViewer_entity
       ...WorkbenchFileViewer_entity
-      ...PictureManagementViewer_entity
       ...StixCoreObjectContent_stixCoreObject
     }
     connectorsForImport {
@@ -77,37 +71,35 @@ const malwareQuery = graphql`
   }
 `;
 
-type RootMalwareProps = {
-  malwareId: string;
-  queryRef: PreloadedQuery<RootMalwareQuery>;
+type RootPositionProps = {
+  positionId: string;
+  queryRef: PreloadedQuery<RootPositionQuery>;
 };
 
-const RootMalware = ({ queryRef, malwareId }: RootMalwareProps) => {
-  const subConfig = useMemo<GraphQLSubscriptionConfig<RootMalwareSubscription>>(() => ({
+const RootPosition = ({ positionId, queryRef }: RootPositionProps) => {
+  const subConfig = useMemo<GraphQLSubscriptionConfig<RootPositionsSubscription>>(() => ({
     subscription,
-    variables: { id: malwareId },
-  }), [malwareId]);
+    variables: { id: positionId },
+  }), [positionId]);
 
   const location = useLocation();
   const { t_i18n } = useFormatter();
-  useSubscription<RootMalwareSubscription>(subConfig);
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
+  useSubscription<RootPositionsSubscription>(subConfig);
 
   const {
-    malware,
+    position,
     connectorsForExport,
     connectorsForImport,
-  } = usePreloadedQuery<RootMalwareQuery>(malwareQuery, queryRef);
+  } = usePreloadedQuery<RootPositionQuery>(positionQuery, queryRef);
 
   const { forceUpdate } = useForceUpdate();
 
-  const isOverview = location.pathname === `/dashboard/arsenal/malwares/${malwareId}`;
-  const paddingRight = getPaddingRight(location.pathname, malwareId, '/dashboard/arsenal/malwares');
-  const link = `/dashboard/arsenal/malwares/${malwareId}/knowledge`;
+  const link = `/dashboard/locations/positions/${positionId}/knowledge`;
+  const paddingRight = getPaddingRight(location.pathname, positionId, '/dashboard/locations/positions');
+
   return (
     <>
-      {malware ? (
+      {position ? (
         <>
           <Routes>
             <Route
@@ -116,122 +108,117 @@ const RootMalware = ({ queryRef, malwareId }: RootMalwareProps) => {
                 <StixCoreObjectKnowledgeBar
                   stixCoreObjectLink={link}
                   availableSections={[
-                    'victimology',
-                    'threats',
+                    'organizations',
+                    'regions',
+                    'countries',
+                    'areas',
+                    'cities',
                     'threat_actors',
                     'intrusion_sets',
                     'campaigns',
                     'incidents',
-                    'variants',
-                    'tools',
+                    'malwares',
                     'attack_patterns',
-                    'vulnerabilities',
-                    'indicators',
+                    'tools',
                     'observables',
-                    'infrastructures',
-                    'sightings',
                   ]}
-                  stixCoreObjectsDistribution={malware.stixCoreObjectsDistribution}
+                  stixCoreObjectsDistribution={position.stixCoreObjectsDistribution}
                 />
               }
             />
           </Routes>
           <div style={{ paddingRight }}>
             <Breadcrumbs variant="object" elements={[
-              { label: t_i18n('Arsenal') },
-              { label: t_i18n('Malwares'), link: '/dashboard/arsenal/malwares' },
-              { label: malware.name, current: true },
+              { label: t_i18n('Locations') },
+              { label: t_i18n('Positions'), link: '/dashboard/locations/positions' },
+              { label: position.name, current: true },
             ]}
             />
             <StixDomainObjectHeader
-              entityType="Malware"
-              stixDomainObject={malware}
-              PopoverComponent={<MalwarePopover />}
-              EditComponent={isFABReplaced && (
+              entityType="Position"
+              disableSharing={true}
+              stixDomainObject={position}
+              PopoverComponent={<PositionPopover />}
+              EditComponent={(
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                  <MalwareEdition
-                    malwareId={malware.id}
-                    controlledDial={EditEntityControlledDial}
-                  />
+                  <PositionEdition positionId={position.id} />
                 </Security>
               )}
               enableQuickSubscription={true}
+              isOpenctiAlias={true}
             />
             <Box
               sx={{
                 borderBottom: 1,
                 borderColor: 'divider',
                 marginBottom: 3,
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItem: 'center',
               }}
             >
               <Tabs
-                value={getCurrentTab(location.pathname, malware.id, '/dashboard/arsenal/malwares')}
+                value={getCurrentTab(location.pathname, position.id, '/dashboard/locations/positions')}
               >
                 <Tab
                   component={Link}
-                  to={`/dashboard/arsenal/malwares/${malware.id}`}
-                  value={`/dashboard/arsenal/malwares/${malware.id}`}
+                  to={`/dashboard/locations/positions/${position.id}`}
+                  value={`/dashboard/locations/positions/${position.id}`}
                   label={t_i18n('Overview')}
                 />
                 <Tab
                   component={Link}
-                  to={`/dashboard/arsenal/malwares/${malware.id}/knowledge/overview`}
-                  value={`/dashboard/arsenal/malwares/${malware.id}/knowledge`}
+                  to={`/dashboard/locations/positions/${position.id}/knowledge/overview`}
+                  value={`/dashboard/locations/positions/${position.id}/knowledge`}
                   label={t_i18n('Knowledge')}
                 />
                 <Tab
                   component={Link}
-                  to={`/dashboard/arsenal/malwares/${malware.id}/content`}
-                  value={`/dashboard/arsenal/malwares/${malware.id}/content`}
+                  to={`/dashboard/locations/positions/${position.id}/content`}
+                  value={`/dashboard/locations/positions/${position.id}/content`}
                   label={t_i18n('Content')}
                 />
                 <Tab
                   component={Link}
-                  to={`/dashboard/arsenal/malwares/${malware.id}/analyses`}
-                  value={`/dashboard/arsenal/malwares/${malware.id}/analyses`}
+                  to={`/dashboard/locations/positions/${position.id}/analyses`}
+                  value={`/dashboard/locations/positions/${position.id}/analyses`}
                   label={t_i18n('Analyses')}
                 />
                 <Tab
                   component={Link}
-                  to={`/dashboard/arsenal/malwares/${malware.id}/files`}
-                  value={`/dashboard/arsenal/malwares/${malware.id}/files`}
+                  to={`/dashboard/locations/positions/${position.id}/sightings`}
+                  value={`/dashboard/locations/positions/${position.id}/sightings`}
+                  label={t_i18n('Sightings')}
+                />
+                <Tab
+                  component={Link}
+                  to={`/dashboard/locations/positions/${position.id}/files`}
+                  value={`/dashboard/locations/positions/${position.id}/files`}
                   label={t_i18n('Data')}
                 />
                 <Tab
                   component={Link}
-                  to={`/dashboard/arsenal/malwares/${malware.id}/history`}
-                  value={`/dashboard/arsenal/malwares/${malware.id}/history`}
+                  to={`/dashboard/locations/positions/${position.id}/history`}
+                  value={`/dashboard/locations/positions/${position.id}/history`}
                   label={t_i18n('History')}
                 />
               </Tabs>
-              {isOverview && (
-                <StixCoreObjectSimulationResult id={malware.id} type="threat" />
-              )}
             </Box>
             <Routes>
               <Route
                 path="/"
                 element={
-                  <Malware malwareData={malware} />
+                  <Position position={position} />
                 }
               />
               <Route
                 path="/knowledge"
                 element={
-                  <Navigate
-                    replace={true}
-                    to={`/dashboard/arsenal/malwares/${malwareId}/knowledge/overview`}
-                  />
+                  <Navigate to={`/dashboard/locations/positions/${positionId}/knowledge/overview`} replace={true} />
                 }
               />
               <Route
                 path="/knowledge/*"
                 element={
                   <div key={forceUpdate}>
-                    <MalwareKnowledge malware={malware} />
+                    <PositionKnowledge position={position} />
                   </div>
                 }
               />
@@ -239,15 +226,34 @@ const RootMalware = ({ queryRef, malwareId }: RootMalwareProps) => {
                 path="/content/*"
                 element={
                   <StixCoreObjectContentRoot
-                    stixCoreObject={malware}
+                    stixCoreObject={position}
                   />
                 }
               />
               <Route
                 path="/analyses"
                 element={
-                  <StixCoreObjectOrStixCoreRelationshipContainers
-                    stixDomainObjectOrStixCoreRelationship={malware}
+                  <StixCoreObjectOrStixCoreRelationshipContainers stixDomainObjectOrStixCoreRelationship={position} />
+                }
+              />
+              <Route
+                path="/sightings"
+                element={
+                  <EntityStixSightingRelationships
+                    entityId={position.id}
+                    entityLink={link}
+                    noPadding={true}
+                    isTo={true}
+                    stixCoreObjectTypes={[
+                      'Region',
+                      'Country',
+                      'City',
+                      'Position',
+                      'Sector',
+                      'Organization',
+                      'Individual',
+                      'System',
+                    ]}
                   />
                 }
               />
@@ -255,19 +261,17 @@ const RootMalware = ({ queryRef, malwareId }: RootMalwareProps) => {
                 path="/files"
                 element={
                   <FileManager
-                    id={malwareId}
+                    id={positionId}
                     connectorsImport={connectorsForImport}
                     connectorsExport={connectorsForExport}
-                    entity={malware}
+                    entity={position}
                   />
                 }
               />
               <Route
                 path="/history"
                 element={
-                  <StixCoreObjectHistory
-                    stixCoreObjectId={malwareId}
-                  />
+                  <StixCoreObjectHistory stixCoreObjectId={positionId} />
                 }
               />
             </Routes>
@@ -279,18 +283,17 @@ const RootMalware = ({ queryRef, malwareId }: RootMalwareProps) => {
     </>
   );
 };
-
 const Root = () => {
-  const { malwareId } = useParams() as { malwareId: string; };
-  const queryRef = useQueryLoading<RootMalwareQuery>(malwareQuery, {
-    id: malwareId,
+  const { positionId } = useParams() as { positionId: string; };
+  const queryRef = useQueryLoading<RootPositionQuery>(positionQuery, {
+    id: positionId,
   });
 
   return (
     <>
       {queryRef && (
         <Suspense fallback={<Loader variant={LoaderVariant.container} />}>
-          <RootMalware queryRef={queryRef} malwareId={malwareId} />
+          <RootPosition positionId={positionId} queryRef={queryRef} />
         </Suspense>
       )}
     </>

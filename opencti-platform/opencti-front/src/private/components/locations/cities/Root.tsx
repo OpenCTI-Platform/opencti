@@ -9,6 +9,7 @@ import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
+import useForceUpdate from '@components/common/bulk/useForceUpdate';
 import City from './City';
 import CityKnowledge from './CityKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
@@ -85,6 +86,7 @@ const RootCityComponent = ({ queryRef, cityId }) => {
   const location = useLocation();
   const { t_i18n } = useFormatter();
   const data = usePreloadedQuery(cityQuery, queryRef);
+  const { forceUpdate } = useForceUpdate();
   const { city, connectorsForImport, connectorsForExport } = data;
   const link = `/dashboard/locations/cities/${cityId}/knowledge`;
   const paddingRight = getPaddingRight(location.pathname, city?.id, '/dashboard/locations/cities');
@@ -205,7 +207,11 @@ const RootCityComponent = ({ queryRef, cityId }) => {
               />
               <Route
                 path="/knowledge/*"
-                element={<CityKnowledge cityData={city} />}
+                element={
+                  <div key={forceUpdate}>
+                    <CityKnowledge cityData={city} />
+                  </div>
+                }
               />
               <Route
                 path="/content/*"
