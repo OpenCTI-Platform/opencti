@@ -38,7 +38,7 @@ type OCTIDataTableProps = Pick<DataTableProps, 'dataColumns'
 | 'disableLineSelection'
 | 'disableToolBar'
 | 'disableSelectAll'
-| 'disableRedirectOnRowClick'
+| 'selectOnLineClick'
 | 'entityTypes'> & {
   lineFragment: GraphQLTaggedNode
   preloadedPaginationProps: UsePreloadedPaginationFragment<OperationType>,
@@ -51,6 +51,7 @@ type OCTIDataTableProps = Pick<DataTableProps, 'dataColumns'
   createButton?: ReactNode
   currentView?: string
   hideFilters?: boolean
+  hideSearch?: boolean
   taskScope?: string
 };
 
@@ -77,6 +78,7 @@ const DataTable = (props: OCTIDataTableProps) => {
     variant = DataTableVariant.default,
     additionalHeaderButtons,
     currentView,
+    hideSearch,
     hideFilters,
     taskScope,
   } = props;
@@ -146,11 +148,13 @@ const DataTable = (props: OCTIDataTableProps) => {
               ...(variant === DataTableVariant.default ? { marginTop: -10 } : { marginTop: 10, marginLeft: 10, marginRight: 10 }),
             }}
           >
-            <SearchInput
-              variant={'small'}
-              onSubmit={helpers.handleSearch}
-              keyword={searchTerm}
-            />
+            {!hideSearch && (
+              <SearchInput
+                variant={'small'}
+                onSubmit={helpers.handleSearch}
+                keyword={searchTerm}
+              />
+            )}
             {!hideFilters && (
               <DataTableFilters
                 availableFilterKeys={availableFilterKeys}

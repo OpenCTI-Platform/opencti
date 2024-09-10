@@ -14,7 +14,7 @@ import { getMainRepresentative } from '../../../utils/defaultRepresentatives';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
-const useStyles = makeStyles<Theme, { cell?: DataTableColumn, navigable?: boolean }>((theme) => createStyles({
+const useStyles = makeStyles<Theme, { cell?: DataTableColumn, clickable?: boolean }>((theme) => createStyles({
   cellContainer: ({ cell }) => ({
     display: 'flex',
     width: `calc(var(--col-${cell?.id}-size) * 1px)`,
@@ -37,10 +37,10 @@ const useStyles = makeStyles<Theme, { cell?: DataTableColumn, navigable?: boolea
     display: 'flex',
     gap: 8,
   },
-  row: ({ navigable }) => ({
+  row: ({ clickable }) => ({
     display: 'flex',
     borderBottom: `1px solid ${theme.palette.divider}`,
-    '&:hover': navigable ? {
+    '&:hover': clickable ? {
       backgroundColor:
         theme.palette.mode === 'dark'
           ? 'rgba(255, 255, 255, .1)'
@@ -113,7 +113,7 @@ const DataTableLine = ({
     actions,
     disableNavigation,
     onLineClick,
-    disableRedirectOnRowClick,
+    selectOnLineClick,
     variant,
   } = useDataTableContext();
   const data = useLineData(row);
@@ -123,15 +123,10 @@ const DataTableLine = ({
     link = `${link}/${redirectionMode}`;
   }
 
-  const navigable = !disableNavigation && !onLineClick;
-  const internalOnClick = () => {
-    if (onLineClick) {
-      onLineClick(data);
-    } else if (navigable) {
-      navigate(link);
-    }
-  };
-  const classes = useStyles({ navigable });
+  const navigable = !disableNavigation && !onLineClick && !selectOnLineClick;
+  const clickable = navigable || selectOnLineClick || onLineClick;
+
+  const classes = useStyles({ clickable });
 
   const {
     selectAll,
@@ -153,20 +148,26 @@ const DataTableLine = ({
   };
 
   const handleRowClick = (event: React.MouseEvent) => {
-    if (disableRedirectOnRowClick) {
+    event.preventDefault();
+    event.stopPropagation();
+    if (selectOnLineClick) {
       handleSelectLine(event);
-      return undefined;
     }
-    if (variant !== DataTableVariant.widget) internalOnClick();
-    return undefined;
+    if (onLineClick) {
+      onLineClick(data);
+    } else if (navigable) {
+      navigate(link);
+    }
   };
 
   return (
     <div
       key={row.id}
       className={classes.row}
-      onClick={handleRowClick}
-      style={{ cursor: (navigable || Boolean(onLineClick)) ? 'pointer' : 'unset' }}
+      // using onMouseDown to redirect before drag and drop happens when used in dashboard widgets
+      onMouseDown={variant === DataTableVariant.widget ? handleRowClick : undefined}
+      onClick={variant !== DataTableVariant.widget ? handleRowClick : undefined}
+      style={{ cursor: clickable ? 'pointer' : 'unset' }}
       data-testid={getMainRepresentative(data)}
     >
       {startsWithSelect && (
@@ -188,7 +189,7 @@ const DataTableLine = ({
           />
         </div>
       )}
-      {effectiveColumns.slice(startsWithSelect ? 1 : 0, actions || disableRedirectOnRowClick ? undefined : -1).map((column) => (
+      {effectiveColumns.slice(startsWithSelect ? 1 : 0, actions || selectOnLineClick ? undefined : -1).map((column) => (
         <DataTableCell
           key={column.id}
           cell={column}
@@ -213,9 +214,9 @@ const DataTableLine = ({
       >
         {actions && actions(data)}
         {effectiveColumns.at(-1)?.id === 'navigate' && (
-        <IconButton onClick={() => navigate(link)}>
-          <KeyboardArrowRightOutlined />
-        </IconButton>
+          <IconButton onClick={() => navigate(link)}>
+            <KeyboardArrowRightOutlined />
+          </IconButton>
         )}
       </div>
 

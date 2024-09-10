@@ -85,7 +85,7 @@ export interface DataTableContextProps {
   disableNavigation: DataTableProps['disableNavigation']
   disableToolBar: DataTableProps['disableToolBar']
   disableSelectAll: DataTableProps['disableSelectAll']
-  disableRedirectOnRowClick: DataTableProps['disableRedirectOnRowClick']
+  selectOnLineClick: DataTableProps['selectOnLineClick']
   onLineClick: DataTableProps['onLineClick']
   page: number
   setPage:Dispatch<SetStateAction<number>>
@@ -130,7 +130,7 @@ export interface DataTableProps {
   disableLineSelection?: boolean
   disableToolBar?: boolean
   disableSelectAll?: boolean
-  disableRedirectOnRowClick?: boolean
+  selectOnLineClick?: boolean
   onLineClick?: (line: any) => void
 }
 

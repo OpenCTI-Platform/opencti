@@ -17,6 +17,7 @@ import { CaseTasksLines_data$data } from '@components/cases/tasks/__generated__/
 import CaseTaskOverview from '@components/cases/tasks/CaseTaskOverview';
 import { Link } from 'react-router-dom';
 import { CaseTaskOverview_task$key } from '@components/cases/tasks/__generated__/CaseTaskOverview_task.graphql';
+import { CaseTasksLine_data$data } from '@components/cases/tasks/__generated__/CaseTasksLine_data.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
 import { handleErrorInForm } from '../../../../relay/environment';
@@ -24,8 +25,9 @@ import { UsePreloadedPaginationFragment } from '../../../../utils/hooks/usePrelo
 import CaseTemplateField from '../../common/form/CaseTemplateField';
 import { Option } from '../../common/form/ReferenceField';
 import CaseTaskCreation from './CaseTaskCreation';
+import TaskPopover from './TaskPopover';
 import { caseSetTemplateQuery, CaseTaskFragment, generateConnectionId } from '../CaseUtils';
-import { CaseTasksLinesQuery, CaseTasksLinesQuery$variables } from './__generated__/CaseTasksLinesQuery.graphql';
+import { CaseTasksLinesQuery, CaseTasksLinesQuery$data, CaseTasksLinesQuery$variables } from './__generated__/CaseTasksLinesQuery.graphql';
 import DataTable from '../../../../components/dataGrid/DataTable';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import { isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
@@ -178,7 +180,7 @@ const CaseTasksLines: FunctionComponent<CaseTasksLinesProps> = ({
   } as UsePreloadedPaginationFragment<CaseTasksLinesQuery>;
 
   const dataColumns: DataTableProps['dataColumns'] = {
-    name: { percentWidth: 35 },
+    name: { percentWidth: 30 },
     due_date: {
       label: 'Due Date',
       percentWidth: 15,
@@ -189,10 +191,10 @@ const CaseTasksLines: FunctionComponent<CaseTasksLinesProps> = ({
     },
     objectAssignee: { percentWidth: 20 },
     objectLabel: { percentWidth: 20 },
-    x_opencti_workflow_id: { percentWidth: 10 },
+    x_opencti_workflow_id: { percentWidth: 15 },
   };
 
-  const ref = useRef<HTMLDivElement>(null);
+  const ref = useRef<HTMLDivElement | null>(null);
   return (
     <div style={{ height: '100%' }}>
       <Typography
@@ -229,6 +231,7 @@ const CaseTasksLines: FunctionComponent<CaseTasksLinesProps> = ({
         <div style={{ height: 400 }} ref={ref}>
           {(queryRef && ref.current) && (
             <DataTable
+              variant={DataTableVariant.inline}
               dataColumns={dataColumns}
               resolvePath={(data: CaseTasksLines_data$data) => data.tasks?.edges?.map((n) => n?.node)}
               storageKey={LOCAL_STORAGE_KEY_CASE_TASKS}
@@ -236,9 +239,20 @@ const CaseTasksLines: FunctionComponent<CaseTasksLinesProps> = ({
               toolbarFilters={contextTaskFilters}
               preloadedPaginationProps={preloadedPaginationProps}
               lineFragment={CaseTaskFragment}
-              variant={DataTableVariant.inline}
               rootRef={ref.current}
-              onLineClick={(line: CaseTaskOverview_task$key & { name: string, id: string }) => setTask(line)}
+              disableNavigation
+              hideFilters
+              onLineClick={(line: CaseTaskOverview_task$key & { name: string, id: string }) => {
+                setTask(line);
+              }}
+              actions={(row: CaseTasksLine_data$data) => (
+                <TaskPopover
+                  id={row.id}
+                  objectId={caseId}
+                  paginationOptions={queryTaskPaginationOptions}
+                  variant="inLine"
+                />
+              )}
             />
           )}
         </div>
@@ -325,7 +339,7 @@ const CaseTasksLines: FunctionComponent<CaseTasksLinesProps> = ({
       {task && (
         <Drawer
           open={!!task}
-          title={task?.name}
+          title={task?.name ?? ''}
           onClose={() => setTask(undefined)}
           header={
             <IconButton

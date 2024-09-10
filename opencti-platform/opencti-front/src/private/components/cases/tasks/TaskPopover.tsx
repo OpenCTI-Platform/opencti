@@ -62,16 +62,22 @@ const TaskPopover = ({
     { id },
   );
   const handleOpen = (event: React.SyntheticEvent) => {
+    event.preventDefault();
+    event.stopPropagation();
     setAnchorEl(event.currentTarget);
   };
   const handleClose = () => {
     setAnchorEl(null);
   };
-  const handleOpenEdit = () => {
+  const handleOpenEdit = (event: React.SyntheticEvent) => {
+    event.preventDefault();
+    event.stopPropagation();
     setDisplayEdit(true);
     handleClose();
   };
-  const handleCloseEdit = () => {
+  const handleCloseEdit = (event: React.SyntheticEvent) => {
+    event.preventDefault();
+    event.stopPropagation();
     setDisplayEdit(false);
   };
   const {
