@@ -90,3 +90,13 @@ export const getPaddingRight = (locationPath: string, entityId: string, entityTy
   }
   return paddingRight;
 };
+
+export const throttle = (callback: (...a: unknown[]) => unknown, wait: number) => {
+  let timeoutId: number;
+  return (...args: unknown[]) => {
+    window.clearTimeout(timeoutId);
+    timeoutId = window.setTimeout(() => {
+      callback(...args);
+    }, wait);
+  };
+};

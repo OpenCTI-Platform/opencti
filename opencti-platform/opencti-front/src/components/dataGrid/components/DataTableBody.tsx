@@ -9,6 +9,7 @@ import { ColumnSizeVars, DataTableBodyProps, DataTableLineProps, DataTableVarian
 import DataTableLine, { DataTableLinesDummy } from './DataTableLine';
 import { SELECT_COLUMN_SIZE } from './DataTableHeader';
 import { useDataTableToggle } from '../dataTableHooks';
+import { throttle } from '../../../utils/utils';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -66,6 +67,9 @@ const DataTableBody = ({
 
   // TABLE HANDLING
   const [resize, setResize] = useState(false);
+  const resizeObserver = useRef(new ResizeObserver(throttle(() => {
+    setResize(true);
+  }, 200)));
   const [computeState, setComputeState] = useState<HTMLDivElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
 
@@ -202,20 +206,20 @@ const DataTableBody = ({
       }
     }, 200);
 
+    window.addEventListener('resize', handleResize);
+    window.addEventListener('storage', handleStorage);
+    if (rootRef) resizeObserver.current.observe(rootRef);
     let observer: MutationObserver | undefined;
-    if (hasFilterComponent) {
-      window.addEventListener('resize', handleResize);
-      window.addEventListener('storage', handleStorage);
+    const elementToObserve = document.getElementById('filter-container');
+    if (elementToObserve) {
       observer = new MutationObserver(() => setResize(true));
-      const elementToObserve = document.getElementById('filter-container');
-      if (elementToObserve) {
-        observer.observe(elementToObserve, { childList: true });
-      }
+      observer.observe(elementToObserve, { childList: true });
     }
 
     return () => {
       window.removeEventListener('resize', handleResize);
       window.removeEventListener('storage', handleStorage);
+      resizeObserver.current.disconnect();
       if (hasFilterComponent && observer) {
         observer.disconnect();
       }
