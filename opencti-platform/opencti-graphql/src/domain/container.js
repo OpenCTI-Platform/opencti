@@ -19,6 +19,9 @@ import { findById as findInvestigationById } from '../modules/workspace/workspac
 import { stixCoreObjectAddRelations } from './stixCoreObject';
 import { editAuthorizedMembers } from '../utils/authorizedMembers';
 import { addFilter } from '../utils/filtering/filtering-utils';
+import { FunctionalError, UnsupportedError } from '../config/errors';
+import { isFeatureEnabled } from '../config/conf';
+import { ENTITY_TYPE_CONTAINER_FEEDBACK } from '../modules/case/feedback/feedback-types';
 
 export const findById = async (context, user, containerId) => {
   return storeLoadById(context, user, containerId, ENTITY_TYPE_CONTAINER);
@@ -230,5 +233,12 @@ export const containerEditAuthorizedMembers = async (context, user, entityId, in
     entityType: ENTITY_TYPE_CONTAINER,
     busTopicKey: ABSTRACT_STIX_CORE_OBJECT,
   };
+  const entity = await findById(context, user, entityId);
+  if (!entity) {
+    throw FunctionalError('Cant find element to update', { entityId });
+  }
+  if (entity.entity_type !== ENTITY_TYPE_CONTAINER_FEEDBACK && !isFeatureEnabled('CONTAINERS_AUTHORIZED_MEMBERS')) {
+    throw UnsupportedError('This feature is disabled');
+  }
   return editAuthorizedMembers(context, user, args);
 };
