@@ -1315,9 +1315,45 @@ class OpenCTIStix2:
 
         # Create the sighting
 
-        final_from_id = from_id
-        final_to_id = to_id
+        ### Get the FROM
+        if from_id in self.mapping_cache:
+            final_from_id = self.mapping_cache[from_id]["id"]
+        else:
+            stix_object_result = (
+                self.opencti.opencti_stix_object_or_stix_relationship.read(id=from_id)
+            )
+            if stix_object_result is not None:
+                final_from_id = stix_object_result["id"]
+                self.mapping_cache[from_id] = {
+                    "id": stix_object_result["id"],
+                    "entity_type": stix_object_result["entity_type"],
+                }
+            else:
+                self.opencti.app_logger.error(
+                    "From ref of the sighting not found, doing nothing..."
+                )
+                return None
 
+        ### Get the TO
+        final_to_id = None
+        if to_id:
+            if to_id in self.mapping_cache:
+                final_to_id = self.mapping_cache[to_id]["id"]
+            else:
+                stix_object_result = (
+                    self.opencti.opencti_stix_object_or_stix_relationship.read(id=to_id)
+                )
+                if stix_object_result is not None:
+                    final_to_id = stix_object_result["id"]
+                    self.mapping_cache[to_id] = {
+                        "id": stix_object_result["id"],
+                        "entity_type": stix_object_result["entity_type"],
+                    }
+                else:
+                    self.opencti.app_logger.error(
+                        "To ref of the sighting not found, doing nothing..."
+                    )
+                    return None
         if (
             "x_opencti_negative" not in stix_sighting
             and self.opencti.get_attribute_in_extension("negative", stix_sighting)
