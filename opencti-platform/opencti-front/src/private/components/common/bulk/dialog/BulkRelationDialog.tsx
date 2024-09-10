@@ -261,7 +261,8 @@ const BulkRelationDialog : FunctionComponent<BulkRelationDialogProps> = ({
           const foundEntityType = entityList.filter((entityType) => entityType.toEntitytype === entityTypeList[0].entity_type);
           const newSelectedEntityType: RelationsToEntity = foundEntityType.length ? foundEntityType[0] : entityList[0];
           let selectedEntityType = foundItem?.selectedEntityType ?? newSelectedEntityType;
-          const isExisting = foundItem && foundItem.entityTypeList ? !!foundItem.entityTypeList.find((item) => item.entity_type === selectedEntityType) : true;
+          console.log('selectedEntityType : ', selectedEntityType);
+          const isExisting = foundItem && foundItem.entityTypeList ? !!foundItem.entityTypeList.find((item) => item.entity_type === selectedEntityType.toEntityType) : true;
           const isMatchingEntity = getRelationMatchStatus(newSelectedEntityType, entityTypeList);
           const foundSelectedItem = selectedEntities.find((item) => item.name === cur.searchTerm);
           if (!isFirstLoadDone) {
