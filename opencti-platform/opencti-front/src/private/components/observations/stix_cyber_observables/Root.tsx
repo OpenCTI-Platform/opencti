@@ -10,7 +10,6 @@ import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import { RootStixCyberObservableSubscription } from '@components/observations/stix_cyber_observables/__generated__/RootStixCyberObservableSubscription.graphql';
 import useForceUpdate from '@components/common/bulk/useForceUpdate';
 import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreObjectContentRoot';
-import { QueryRenderer, requestSubscription } from '../../../../relay/environment';
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import StixCyberObservable from './StixCyberObservable';
 import StixCyberObservableKnowledge from './StixCyberObservableKnowledge';
