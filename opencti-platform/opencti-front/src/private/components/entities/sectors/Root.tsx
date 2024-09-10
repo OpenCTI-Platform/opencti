@@ -247,6 +247,16 @@ const RootSector = ({ sectorId, queryRef }: RootSectorProps) => {
                     entityLink={link}
                     noPadding={true}
                     isTo={true}
+                    stixCoreObjectTypes={[
+                      'Region',
+                      'Country',
+                      'City',
+                      'Position',
+                      'Sector',
+                      'Organization',
+                      'Individual',
+                      'System',
+                    ]}
                   />
                 )}
               />

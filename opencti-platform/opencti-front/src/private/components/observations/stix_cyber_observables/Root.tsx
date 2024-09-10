@@ -202,7 +202,6 @@ const RootStixCyberObservable = ({ observableId, queryRef }: RootStixCyberObserv
                 <EntityStixSightingRelationships
                   entityId={observableId}
                   entityLink={link}
-                  noRightBar={true}
                   noPadding={true}
                   stixCoreObjectTypes={[
                     'Region',
@@ -249,6 +248,7 @@ const RootStixCyberObservable = ({ observableId, queryRef }: RootStixCyberObserv
               element={
                 <StixSightingRelationship
                   entityId={observableId}
+                  paddingRight
                 />
               }
             />

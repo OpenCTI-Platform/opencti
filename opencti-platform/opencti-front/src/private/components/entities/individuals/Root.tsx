@@ -106,7 +106,7 @@ const RootIndividual = ({ individualId, queryRef }: RootIndividualProps) => {
     );
   };
 
-  const handleChangeViewAs = (event) => {
+  const handleChangeViewAs = (event: React.ChangeEvent<{ value: string }>) => {
     setViewAs(event.target.value);
     saveView();
   };

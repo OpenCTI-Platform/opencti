@@ -103,7 +103,7 @@ const RootSystem = ({ systemId, queryRef }: RootSystemProps) => {
     );
   };
 
-  const handleChangeViewAs = (event) => {
+  const handleChangeViewAs = (event: React.ChangeEvent<{ value: string }>) => {
     setViewAs(event.target.value);
     saveView();
   };
@@ -279,6 +279,16 @@ const RootSystem = ({ systemId, queryRef }: RootSystemProps) => {
                     entityLink={link}
                     noPadding={true}
                     isTo={true}
+                    stixCoreObjectTypes={[
+                      'Region',
+                      'Country',
+                      'City',
+                      'Position',
+                      'Sector',
+                      'Organization',
+                      'Individual',
+                      'System',
+                    ]}
                   />
                 }
               />

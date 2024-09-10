@@ -91,9 +91,7 @@ const RootIndicator = ({ indicatorId, queryRef }: RootIndicatorProps) => {
   } = usePreloadedQuery<RootIndicatorQuery>(indicatorQuery, queryRef);
 
   const { forceUpdate } = useForceUpdate();
-
   const paddingRight = getPaddingRight(location.pathname, indicatorId, '/dashboard/observations/indicators', false);
-
   return (
     <>
       {indicator ? (
@@ -250,6 +248,7 @@ const RootIndicator = ({ indicatorId, queryRef }: RootIndicatorProps) => {
               element={(
                 <StixSightingRelationship
                   entityId={indicatorId}
+                  paddingRight
                 />
               )}
             />

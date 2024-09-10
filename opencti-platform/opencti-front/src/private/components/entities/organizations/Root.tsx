@@ -105,7 +105,7 @@ const RootOrganization = ({ organizationId, queryRef }: RootOrganizationProps) =
     );
   };
 
-  const handleChangeViewAs = (event) => {
+  const handleChangeViewAs = (event: React.ChangeEvent<{ value: string }>) => {
     setViewAs(event.target.value);
     saveView();
   };
@@ -287,6 +287,16 @@ const RootOrganization = ({ organizationId, queryRef }: RootOrganizationProps) =
                     entityLink={link}
                     noPadding={true}
                     isTo={true}
+                    stixCoreObjectTypes={[
+                      'Region',
+                      'Country',
+                      'City',
+                      'Position',
+                      'Sector',
+                      'Organization',
+                      'Individual',
+                      'System',
+                    ]}
                   />
                 }
               />

@@ -234,4 +234,4 @@ const SystemKnowledge = createFragmentContainer(SystemKnowledgeComponent, {
   `,
 });
 
-export default withRouter(SystemKnowledge);
+export default SystemKnowledge;
