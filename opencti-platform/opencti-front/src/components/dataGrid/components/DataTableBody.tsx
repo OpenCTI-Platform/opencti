@@ -48,6 +48,7 @@ const DataTableBody = ({
     variant,
     useDataTable,
     resolvePath,
+    actions,
   } = useDataTableContext();
 
   const { data: queryData, isLoading, loadMore, hasMore } = useDataTable(dataQueryArgs);
@@ -78,7 +79,7 @@ const DataTableBody = ({
   const startsWithSelect = columns.at(0)?.id === 'select';
   const endsWithNavigate = columns.at(-1)?.id === 'navigate';
 
-  let storedSize = SELECT_COLUMN_SIZE;
+  let storedSize = (endsWithNavigate || actions) ? SELECT_COLUMN_SIZE : 0;
   if (startsWithSelect) {
     storedSize += SELECT_COLUMN_SIZE;
   }

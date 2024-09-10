@@ -60,7 +60,7 @@ const DataTableComponent = ({
       });
     }),
     // inject "navigate" action (chevron) if requested
-    ...(disableNavigation ? [] : [{ id: 'navigate', visible: true } as DataTableColumn]),
+    ...((disableNavigation || actions) ? [] : [{ id: 'navigate', visible: true } as DataTableColumn]),
   ];
 
   const [columns, setColumns] = useState<DataTableColumns>(columnsInitialState);

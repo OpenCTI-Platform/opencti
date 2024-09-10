@@ -104,8 +104,8 @@ const Drawer = ({
     }
   }, [defaultOpen]);
 
-  const handleClose = () => {
-    onClose?.();
+  const handleClose = (event) => {
+    onClose?.(event);
     setOpen(false);
   };
 
@@ -155,6 +155,7 @@ const Drawer = ({
         sx={{ zIndex: 1202 }}
         classes={{ paper: classes.drawerPaper }}
         onClose={handleClose}
+        onClick={(e) => e.stopPropagation()}
         PaperProps={{
           ref: containerRef,
         }}

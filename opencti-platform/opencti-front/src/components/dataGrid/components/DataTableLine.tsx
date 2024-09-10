@@ -189,7 +189,7 @@ const DataTableLine = ({
           />
         </div>
       )}
-      {effectiveColumns.slice(startsWithSelect ? 1 : 0, actions || selectOnLineClick ? undefined : -1).map((column) => (
+      {effectiveColumns.slice(startsWithSelect ? 1 : 0, (actions || disableNavigation) ? undefined : -1).map((column) => (
         <DataTableCell
           key={column.id}
           cell={column}
@@ -197,29 +197,23 @@ const DataTableLine = ({
           storageHelpers={storageHelpers}
         />
       ))}
-
-      <div
-        key={`navigate_${data.id}`}
-        className={classes.cellContainer}
-        style={{
-          width: 'calc(var(--col-navigate-size) * 1px)',
-          overflow: 'initial',
-        }}
-        onClick={(e) => {
-          if (actions && navigable) {
-            e.preventDefault();
-            e.stopPropagation();
-          }
-        }}
-      >
-        {actions && actions(data)}
-        {effectiveColumns.at(-1)?.id === 'navigate' && (
-          <IconButton onClick={() => navigate(link)}>
-            <KeyboardArrowRightOutlined />
-          </IconButton>
-        )}
-      </div>
-
+      {(actions || effectiveColumns.at(-1)?.id === 'navigate') && (
+        <div
+          key={`navigate_${data.id}`}
+          className={classes.cellContainer}
+          style={{
+            width: 'calc(var(--col-navigate-size) * 1px)',
+            overflow: 'initial',
+          }}
+        >
+          {actions && actions(data)}
+          {effectiveColumns.at(-1)?.id === 'navigate' && (
+            <IconButton onClick={() => navigate(link)}>
+              <KeyboardArrowRightOutlined />
+            </IconButton>
+          )}
+        </div>
+      )}
     </div>
   );
 };
