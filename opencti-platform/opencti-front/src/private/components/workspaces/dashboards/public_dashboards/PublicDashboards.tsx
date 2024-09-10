@@ -1,7 +1,4 @@
 import React from 'react';
-import ToggleButton from '@mui/material/ToggleButton';
-import Tooltip from '@mui/material/Tooltip';
-import { ViewListOutlined } from '@mui/icons-material';
 import { graphql } from 'react-relay';
 import PublicDashboardLineActions from './PublicDashboardLineActions';
 import PublicDashboardCreation from './PublicDashboardCreation';
@@ -207,13 +204,6 @@ const PublicDashboards = () => {
           lineFragment={publicDashboardFragment}
           entityTypes={['PublicDashboard']}
           searchContextFinal={{ entityTypes: ['PublicDashboard'] }}
-          additionalHeaderButtons={[
-            <ToggleButton key="cards" value="lines" aria-label="lines">
-              <Tooltip title={t_i18n('Lines view')}>
-                <ViewListOutlined color="primary" fontSize="small"/>
-              </Tooltip>
-            </ToggleButton>,
-          ]}
           actions={(row) => (
             <PublicDashboardLineActions
               publicDashboard={row}

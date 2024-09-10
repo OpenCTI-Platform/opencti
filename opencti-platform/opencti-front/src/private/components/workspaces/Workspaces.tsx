@@ -2,9 +2,6 @@ import React, { FunctionComponent } from 'react';
 import useHelper from 'src/utils/hooks/useHelper';
 import { WorkspacesLinesPaginationQuery, WorkspacesLinesPaginationQuery$variables } from '@components/workspaces/__generated__/WorkspacesLinesPaginationQuery.graphql';
 import { WorkspaceLineDummy, workspaceLineFragment } from '@components/workspaces/WorkspaceLine';
-import ToggleButton from '@mui/material/ToggleButton';
-import Tooltip from '@mui/material/Tooltip';
-import { ViewListOutlined } from '@mui/icons-material';
 import { WorkspacesLines_data$data } from '@components/workspaces/__generated__/WorkspacesLines_data.graphql';
 import WorkspacePopover from '@components/workspaces/WorkspacePopover';
 import ListLines from '../../../components/list_lines/ListLines';
@@ -130,13 +127,6 @@ const Workspaces: FunctionComponent<WorkspacesProps> = ({
         lineFragment={workspaceLineFragment}
         entityTypes={['Workspace']}
         searchContextFinal={{ entityTypes: ['Workspace'] }}
-        additionalHeaderButtons={[
-          <ToggleButton key="cards" value="lines" aria-label="lines">
-            <Tooltip title={t_i18n('Lines view')}>
-              <ViewListOutlined color="primary" fontSize="small"/>
-            </Tooltip>
-          </ToggleButton>,
-        ]}
         createButton={isFeatureEnable('FAB_REPLACEMENT') && (
           <Security needs={[EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE]}>
             <WorkspaceCreation
