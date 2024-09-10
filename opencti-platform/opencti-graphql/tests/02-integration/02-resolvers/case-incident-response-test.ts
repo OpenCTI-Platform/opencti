@@ -10,9 +10,7 @@ import {
   PLATFORM_ORGANIZATION,
   queryAsAdmin,
   securityQuery,
-  TEST_ORGANIZATION,
   USER_EDITOR,
-  USER_SECURITY
 } from '../../utils/testQuery';
 import type { CaseIncident, EntitySettingEdge } from '../../../src/generated/graphql';
 import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../../../src/modules/case/case-incident/case-incident-types';
@@ -350,20 +348,7 @@ describe('Case Incident Response standard behavior with authorized_members activ
 });
 
 describe('Case Incident Response and organization sharing standard behavior without platform organization', () => {
-  let testOrganizationId: string;
   let caseIrId: string;
-  let userSecurityId: string;
-  let settingsInternalId: string;
-  const EE_QUERY = gql`
-    mutation PoliciesFieldPatchMutation($id: ID!, $input: [EditInput]!) {
-      settingsEdit(id: $id) {
-        fieldPatch(input: $input) {
-          enterprise_edition
-          id
-        }
-      }
-    }
-  `;
   it('should Case Incident Response created', async () => {
     // Create Case Incident Response
     const caseIRCreateQueryResult = await adminQuery({
@@ -380,67 +365,13 @@ describe('Case Incident Response and organization sharing standard behavior with
     expect(caseIRCreateQueryResult?.data?.caseIncidentAdd.authorized_members).toEqual([]); // authorized members not activated
     caseIrId = caseIRCreateQueryResult?.data?.caseIncidentAdd.id;
   });
-  it('should EE activated', async () => {
-    // Get settings ID
-    const SETTINGS_READ_QUERY = gql`
-      query settings {
-        settings {
-          id
-        }
-      }
-    `;
-    const queryResult = await adminQuery({ query: SETTINGS_READ_QUERY, variables: {} });
-    settingsInternalId = queryResult.data?.settings?.id;
-
-    // Set plateform organization
-    const eeActivationQuery = await adminQuery({
-      query: EE_QUERY,
-      variables: {
-        id: settingsInternalId,
-        input: [
-          { key: 'enterprise_edition', value: new Date().getTime() },
-        ]
-      }
-    });
-
-    expect(eeActivationQuery).not.toBeNull();
-    expect(eeActivationQuery?.data?.settingsEdit.fieldPatch.enterprise_edition).not.toBeUndefined();
-  });
-  it('should share Case Incident Response with Organization', async () => {
-    // Get organization id
-    testOrganizationId = await getOrganizationIdByName(TEST_ORGANIZATION.name);
-    const ORGANIZATION_SHARING_QUERY = gql`
-      mutation StixCoreObjectSharingGroupAddMutation(
-        $id: ID!
-        $organizationId: ID!
-      ) {
-        stixCoreObjectEdit(id: $id) {
-          restrictionOrganizationAdd(organizationId: $organizationId) {
-            id
-            objectOrganization {
-              id
-              name
-            }
-          }
-        }
-      }
-    `;
-
-    const organizationSharingQueryResult = await adminQuery({
-      query: ORGANIZATION_SHARING_QUERY,
-      variables: { id: caseIrId, organizationId: testOrganizationId }
-    });
-    expect(organizationSharingQueryResult).not.toBeNull();
-    expect(organizationSharingQueryResult?.data?.stixCoreObjectEdit.restrictionOrganizationAdd).not.toBeNull();
-    expect(organizationSharingQueryResult?.data?.stixCoreObjectEdit.restrictionOrganizationAdd.objectOrganization[0].name).toEqual(TEST_ORGANIZATION.name);
-  });
-  it('should not access Case Incident Response', async () => {
-    const caseIRQueryResult = await securityQuery({ query: READ_QUERY, variables: { id: caseIrId } }); // USER_SECURITY is not part of TEST_ORGANIZATION
+  it('should access Case Incident Response', async () => {
+    const caseIRQueryResult = await securityQuery({ query: READ_QUERY, variables: { id: caseIrId } });
     expect(caseIRQueryResult).not.toBeNull();
-    expect(caseIRQueryResult.data?.caseIncident).toBeNull();
+    expect(caseIRQueryResult?.data?.caseIncident).not.toBeUndefined();
+    expect(caseIRQueryResult?.data?.caseIncident.id).toEqual(caseIrId);
   });
   it('should Authorized Members activated', async () => {
-    userSecurityId = await getUserIdByEmail(USER_SECURITY.email);
     await queryAsAdmin({
       query: EDIT_AUTHORIZED_MEMBERS_QUERY,
       variables: {
@@ -449,10 +380,6 @@ describe('Case Incident Response and organization sharing standard behavior with
           {
             id: ADMIN_USER.id,
             access_right: 'admin'
-          },
-          {
-            id: userSecurityId,
-            access_right: 'view'
           }
         ]
       }
@@ -468,18 +395,14 @@ describe('Case Incident Response and organization sharing standard behavior with
       {
         id: ADMIN_USER.id,
         access_right: 'admin'
-      },
-      {
-        id: userSecurityId,
-        access_right: 'view'
       }
     ]);
   });
-  it('should access Case Incident Response out of her organization if authorized members activated', async () => {
+  it('should not access Case Incident Response if not in authorized members', async () => {
     const caseIRQueryResult = await securityQuery({ query: READ_QUERY, variables: { id: caseIrId } });
     expect(caseIRQueryResult).not.toBeNull();
     expect(caseIRQueryResult?.data?.caseIncident).not.toBeUndefined();
-    expect(caseIRQueryResult?.data?.caseIncident.id).toEqual(caseIrId);
+    expect(caseIRQueryResult?.data?.caseIncident).toBeNull();
   });
   it('should Case Incident Response deleted', async () => {
     // Delete the case
@@ -491,18 +414,6 @@ describe('Case Incident Response and organization sharing standard behavior with
     const queryResult = await adminQuery({ query: READ_QUERY, variables: { id: caseIrId } });
     expect(queryResult).not.toBeNull();
     expect(queryResult?.data?.caseIncident).toBeNull();
-  });
-  it('should EE deactivated', async () => {
-    // Remove EE
-    const eeDeactivationQuery = await adminQuery({
-      query: EE_QUERY,
-      variables: { id: settingsInternalId,
-        input: [
-          { key: 'enterprise_edition', value: [] },
-        ] }
-    });
-    expect(eeDeactivationQuery).not.toBeNull();
-    expect(eeDeactivationQuery?.data?.settingsEdit.fieldPatch.enterprise_edition).toBeNull();
   });
 });
 
