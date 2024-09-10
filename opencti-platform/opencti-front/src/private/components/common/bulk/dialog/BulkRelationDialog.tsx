@@ -245,7 +245,7 @@ const BulkRelationDialog : FunctionComponent<BulkRelationDialogProps> = ({
       return foundObservableType ?? entityList[0];
     }
     const selectedEntityType = targetObjectTypes[0];
-    const foundEntityType = entityList.find((item) => item.toEntitytype.includes(selectedEntityType));
+    const foundEntityType = entityList.find((item) => item.toEntitytype === selectedEntityType);
     return foundEntityType ?? entityList[0];
   };
 
