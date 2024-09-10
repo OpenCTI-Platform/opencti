@@ -91,6 +91,7 @@ const RootIndicator = ({ indicatorId, queryRef }: RootIndicatorProps) => {
   } = usePreloadedQuery<RootIndicatorQuery>(indicatorQuery, queryRef);
 
   const { forceUpdate } = useForceUpdate();
+  const link = `/dashboard/observations/indicators/${indicatorId}/knowledge`;
   const paddingRight = getPaddingRight(location.pathname, indicatorId, '/dashboard/observations/indicators', false);
   return (
     <>
@@ -99,7 +100,7 @@ const RootIndicator = ({ indicatorId, queryRef }: RootIndicatorProps) => {
           <Breadcrumbs variant="object" elements={[
             { label: t_i18n('Observations') },
             { label: t_i18n('Indicators'), link: '/dashboard/observations/indicators' },
-            { label: indicator.name, current: true },
+            { label: (indicator.name ?? indicator.pattern ?? ''), current: true },
           ]}
           />
           <StixDomainObjectHeader
@@ -193,7 +194,9 @@ const RootIndicator = ({ indicatorId, queryRef }: RootIndicatorProps) => {
               element={(
                 <EntityStixSightingRelationships
                   entityId={indicatorId}
+                  entityLink={link}
                   noPadding={true}
+                  isTo={true}
                   stixCoreObjectTypes={[
                     'Region',
                     'Country',
@@ -268,7 +271,6 @@ const Root = () => {
   const { indicatorId } = useParams() as { indicatorId: string; };
   const queryRef = useQueryLoading<RootIndicatorQuery>(indicatorQuery, {
     id: indicatorId,
-    relationship_type: 'indicates',
   });
 
   return (
