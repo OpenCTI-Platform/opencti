@@ -4,7 +4,6 @@ import makeStyles from '@mui/styles/makeStyles';
 import { useTheme } from '@mui/material';
 import { itemColor } from '../utils/Colors';
 import { useFormatter } from './i18n';
-import useSchema from '../utils/hooks/useSchema';
 import ThemeLight from './ThemeLight';
 import ThemeDark from './ThemeDark';
 import ItemIcon from './ItemIcon';
@@ -54,8 +53,7 @@ const ItemEntityType: FunctionComponent<ItemEntityTypeProps> = ({
   const { t_i18n } = useFormatter();
   const rootStyle = inList ? classes.chipInList : classes.chip;
 
-  const { isRelationship: checkIsRelationship } = useSchema();
-  const isRelationship = checkIsRelationship(entityType);
+  const isRelationship = t_i18n(`relationship_${entityType}`) !== `relationship_${entityType}`;
 
   const { palette: { mode } } = useTheme();
   const theme = mode === 'dark'
