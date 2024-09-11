@@ -80,7 +80,7 @@ const DataTableComponent = ({
   };
   columns.forEach((col) => {
     if (col.visible && col.percentWidth) {
-      const size = col.percentWidth * (clientWidth / 100);
+      const size = col.percentWidth * ((clientWidth - 2 * SELECT_COLUMN_SIZE) / 100) - 2; // 2 is spacing
       temporaryColumnsSize[`--header-${col.id}-size`] = size;
       temporaryColumnsSize[`--col-${col.id}-size`] = size;
     }

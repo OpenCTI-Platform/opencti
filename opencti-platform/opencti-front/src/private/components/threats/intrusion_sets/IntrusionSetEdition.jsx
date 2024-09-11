@@ -6,7 +6,7 @@ import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import IntrusionSetEditionContainer from './IntrusionSetEditionContainer';
 import { intrusionSetEditionOverviewFocus } from './IntrusionSetEditionOverview';
-import Loader from '../../../../components/Loader';
+import Loader, { LoaderVariant } from '../../../../components/Loader';
 import EditEntityControlledDial from '../../../../components/EditEntityControlledDial';
 
 export const intrusionSetEditionQuery = graphql`
@@ -44,7 +44,7 @@ class IntrusionSetEdition extends Component {
               />
             );
           }
-          return <Loader variant="inElement" />;
+          return <Loader variant="inline" />;
         }}
       />
     );

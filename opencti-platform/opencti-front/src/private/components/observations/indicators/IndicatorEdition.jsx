@@ -39,7 +39,7 @@ const IndicatorEdition = ({ indicatorId }) => {
             />
           );
         }
-        return <Loader variant="inElement" />;
+        return <Loader variant="inline" />;
       }}
     />
   );

@@ -59,7 +59,7 @@ export const DataTableLineDummy = () => {
         <Skeleton
           key={column.id}
           variant="text"
-          height={50}
+          height={35}
           style={{ width: `calc(var(--col-${column.id}-size) * 1px)` }}
         />
       ))}

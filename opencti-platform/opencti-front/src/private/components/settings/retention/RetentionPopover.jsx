@@ -147,7 +147,7 @@ class RetentionPopover extends Component {
                 />
               );
             }
-            return <Loader variant="inElement" />;
+            return null;
           }}
         />
         <Dialog

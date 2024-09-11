@@ -150,7 +150,7 @@ class RolePopover extends Component {
                 />
               );
             }
-            return <Loader variant="inElement" />;
+            return null;
           }}
         />
         <Dialog
