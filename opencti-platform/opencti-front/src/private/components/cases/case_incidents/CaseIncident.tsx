@@ -61,7 +61,7 @@ const CaseIncident: React.FC<CaseIncidentProps> = ({ caseIncidentData, enableRef
                 );
               case 'task':
                 return (
-                  <Grid key={key} item={true} xs={width}>
+                  <Grid key={key} item xs={width}>
                     <CaseTasksLines
                       caseId={caseIncident.id}
                       defaultMarkings={convertMarkings(caseIncident)}

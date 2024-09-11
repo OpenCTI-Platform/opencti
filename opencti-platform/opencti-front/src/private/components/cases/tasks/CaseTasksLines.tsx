@@ -39,7 +39,7 @@ import { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
 // Do not use it for new code.
 const useStyles = makeStyles<Theme>((theme) => ({
   paper: {
-    margin: 0,
+    margin: '-4px 0 0 0',
     padding: 0,
     borderRadius: 4,
   },

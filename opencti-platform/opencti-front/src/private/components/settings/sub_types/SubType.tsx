@@ -15,7 +15,6 @@ import EntitySettingAttributes from './entity_setting/EntitySettingAttributes';
 import CustomizationMenu from '../CustomizationMenu';
 import SearchInput from '../../../../components/SearchInput';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
-import useHelper from '../../../../utils/hooks/useHelper';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -71,8 +70,6 @@ interface SubTypeProps {
 
 const SubType: React.FC<SubTypeProps> = ({ data }) => {
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
-  const isOverviewLayoutCustomizationEnabled = isFeatureEnable('OVERVIEW_LAYOUT_CUSTOMIZATION');
   const classes = useStyles();
   const subType = useFragment<SubType_subType$key>(subTypeFragment, data);
 
@@ -155,11 +152,9 @@ const SubType: React.FC<SubTypeProps> = ({ data }) => {
             </Paper>
           </Grid>
         )}
-        { isOverviewLayoutCustomizationEnabled && (
-          <EntitySettingCustomOverview
-            entitySettingsData={subType.settings}
-          />
-        )}
+        <EntitySettingCustomOverview
+          entitySettingsData={subType.settings}
+        />
       </Grid>
     </div>
   );
