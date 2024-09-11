@@ -600,7 +600,7 @@ const StixCyberObservableCreation = ({
               if (foundEntityType) initialValues[foundEntityType.field] = inputValue;
             }
 
-            const isFieldInBulk = (name) => isFeatureEnable('BULK_ENTITIES') && name === bulkSelectedKey;
+            const isFieldInBulk = (name) => name === bulkSelectedKey;
 
             return (
               <Formik
@@ -949,7 +949,7 @@ const StixCyberObservableCreation = ({
   };
 
   const renderUnavailableBulkMessage = () => {
-    if (isFeatureEnable('BULK_ENTITIES') && isFromBulkRelation && !bulkConf) {
+    if (isFromBulkRelation && !bulkConf) {
       return (
         <Alert
           severity="info"

@@ -751,7 +751,7 @@ const StixDomainPanel = ({
   };
 
   const renderUnavailableBulkMessage = () => {
-    if (isFeatureEnable('BULK_ENTITIES') && isFromBulkRelation && !BULK_ENTITIES.includes(type)) {
+    if (isFromBulkRelation && !BULK_ENTITIES.includes(type)) {
       return (
         <Alert
           severity="info"
