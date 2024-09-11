@@ -12,8 +12,8 @@ import React from 'react';
 import { getSecondaryRepresentative, getMainRepresentative } from '../../utils/defaultRepresentatives';
 import MarkdownDisplay from '../MarkdownDisplay';
 import ItemIcon from '../ItemIcon';
-import { itemColor } from '../../utils/Colors';
 import { useFormatter } from '../i18n';
+import itemColor from '../ItemColor';
 
 interface WidgetTimelineProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
