@@ -97,11 +97,17 @@ class SyncLineLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
+                style={{ width: dataColumns.messages.width }}
+              >
+                <code>{node.queue_messages}</code>
+              </div>
+              <div
+                className={classes.bodyItem}
                 style={{ width: dataColumns.running.width }}
               >
                 <ItemBoolean
                   variant="inList"
-                  label={node.running ? t('Yes') : t('No')}
+                  label={node.running ? t('Active') : t('Inactive')}
                   status={node.running}
                 />
               </div>
@@ -146,6 +152,7 @@ const SyncLineFragment = createFragmentContainer(SyncLineLineComponent, {
       stream_id
       running
       current_state_date
+      queue_messages
       ssl_verify
     }
   `,
@@ -207,6 +214,17 @@ class SyncDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
+                style={{ width: dataColumns.messages.width }}
+              >
+                <Skeleton
+                  animation="wave"
+                  variant="rectangular"
+                  width="90%"
+                  height="100%"
+                />
+              </div>
+              <div
+                className={classes.bodyItem}
                 style={{ width: dataColumns.running.width }}
               >
                 <Skeleton
@@ -231,7 +249,7 @@ class SyncDummyComponent extends Component {
           }
         />
         <ListItemSecondaryAction classes={{ root: classes.itemIconDisabled }}>
-          <MoreVert />
+          <MoreVert/>
         </ListItemSecondaryAction>
       </ListItem>
     );

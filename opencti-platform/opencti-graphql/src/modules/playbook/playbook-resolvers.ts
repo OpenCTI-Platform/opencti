@@ -27,10 +27,11 @@ import {
   playbookAddLink,
   playbookDeleteNode,
   playbookDeleteLink,
-  playbookUpdatePositions
+  playbookUpdatePositions,
 } from './playbook-domain';
 import { playbookStepExecution } from '../../manager/playbookManager';
 import { getLastPlaybookExecutions } from '../../database/redis';
+import { getConnectorQueueSize } from '../../database/rabbitmq';
 
 const playbookResolvers: Resolvers = {
   Query: {
@@ -41,7 +42,8 @@ const playbookResolvers: Resolvers = {
     playbookComponents: () => availableComponents(),
   },
   Playbook: {
-    last_executions: async (current) => getLastPlaybookExecutions(current.id)
+    last_executions: async (current) => getLastPlaybookExecutions(current.id),
+    queue_messages: async (current, _, context) => getConnectorQueueSize(context, context.user, current.id)
   },
   PlaybookComponent: {
     configuration_schema: async (current) => {

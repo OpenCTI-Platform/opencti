@@ -27,6 +27,7 @@ type Playbook implements InternalObject & BasicObject {
     playbook_running: Boolean
     playbook_definition: String
     last_executions: [PlayBookExecution!]
+    queue_messages: Int!
 }
 
 type PlaybookComponentPort {

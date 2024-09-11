@@ -147,12 +147,19 @@ const PlaybookHeaderComponent = ({
           style={{ margin: '7px 0 0 5px' }}
         >
           <ToggleButton value="cards" aria-label="cards">
+            <div>
+              <Chip
+                classes={{ root: classes.chip }}
+                style={{ marginRight: 14 }}
+                label={`${playbook.queue_messages} messages to process`}
+              />
+            </div>
             <Tooltip title={t_i18n('Open last execution traces')}>
               <Badge
                 badgeContent={(playbook.last_executions ?? []).length}
                 color="secondary"
               >
-                <ManageHistoryOutlined color="primary" />
+                <ManageHistoryOutlined color="primary"/>
               </Badge>
             </Tooltip>
           </ToggleButton>
@@ -260,6 +267,7 @@ const PlaybookHeader = createRefetchContainer(
         name
         description
         playbook_running
+        queue_messages
         last_executions {
           id
           playbook_id

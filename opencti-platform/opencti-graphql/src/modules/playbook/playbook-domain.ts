@@ -27,6 +27,7 @@ import { ENTITY_TYPE_PLAYBOOK } from './playbook-types';
 import { PLAYBOOK_COMPONENTS } from './playbook-components';
 import { UnsupportedError } from '../../config/errors';
 import { validateFilterGroupForStixMatch } from '../../utils/filtering/filtering-stix/stix-filtering';
+import { registerConnectorQueues, unregisterConnector } from '../../database/rabbitmq';
 
 export const findById: DomainFindById<BasicStoreEntityPlaybook> = (context: AuthContext, user: AuthUser, playbookId: string) => {
   return storeLoadById(context, user, playbookId, ENTITY_TYPE_PLAYBOOK);
@@ -329,12 +330,15 @@ export const playbookAdd = async (context: AuthContext, user: AuthUser, input: P
   const playbook_definition = JSON.stringify({ nodes: [], links: [] });
   const playbook = { ...input, playbook_definition, playbook_running: false };
   const created = await createEntity(context, user, playbook, ENTITY_TYPE_PLAYBOOK);
+  const playbookId = created.internal_id;
+  await registerConnectorQueues(playbookId, `Playbook ${playbookId} queue`, 'internal', 'playbook');
   return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].ADDED_TOPIC, created, user);
 };
 
-export const playbookDelete = async (context: AuthContext, user: AuthUser, id: string) => {
-  const element = await deleteElementById(context, user, id, ENTITY_TYPE_PLAYBOOK);
-  return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].DELETE_TOPIC, element, user).then(() => id);
+export const playbookDelete = async (context: AuthContext, user: AuthUser, playbookId: string) => {
+  const element = await deleteElementById(context, user, playbookId, ENTITY_TYPE_PLAYBOOK);
+  await unregisterConnector(playbookId);
+  return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].DELETE_TOPIC, element, user).then(() => playbookId);
 };
 
 export const playbookEdit = async (context: AuthContext, user: AuthUser, id: string, input: EditInput[]) => {

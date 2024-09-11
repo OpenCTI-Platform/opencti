@@ -770,6 +770,7 @@ type Synchronizer {
   no_dependencies: Boolean!
   ssl_verify: Boolean
   synchronized: Boolean
+  queue_messages: Int!
 }
 
 type SynchronizerEdge {
@@ -10994,6 +10995,7 @@ type Playbook implements InternalObject & BasicObject {
   playbook_running: Boolean
   playbook_definition: String
   last_executions: [PlayBookExecution!]
+  queue_messages: Int!
 }
 
 type PlaybookComponentPort {

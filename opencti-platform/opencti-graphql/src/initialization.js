@@ -5,7 +5,7 @@ import { DISABLED_FEATURE_FLAGS, logApp, PLATFORM_VERSION } from './config/conf'
 import { elUpdateIndicesMappings, initializeSchema, searchEngineInit } from './database/engine';
 import { initializeAdminUser } from './config/providers';
 import { initializeBucket, storageInit } from './database/file-storage';
-import { initializeInternalQueues, rabbitMQIsAlive } from './database/rabbitmq';
+import { rabbitMQIsAlive } from './database/rabbitmq';
 import { initDefaultNotifiers } from './modules/notifier/notifier-domain';
 import { checkPythonAvailability } from './python/pythonBridge';
 import { lockResource, redisInit } from './database/redis';
@@ -99,7 +99,6 @@ const platformInit = async (withMarkings = true) => {
     const alreadyExists = await isExistingPlatform(context);
     if (!alreadyExists) {
       logApp.info('[INIT] New platform detected, initialization...');
-      await initializeInternalQueues();
       await initializeBucket();
       await initializeSchema();
       await initializeMigration(context);
@@ -109,7 +108,6 @@ const platformInit = async (withMarkings = true) => {
     } else {
       logApp.info('[INIT] Existing platform detected, initialization...');
       await refreshMappingsAndIndices();
-      await initializeInternalQueues();
       await isCompatiblePlatform(context);
       await initializeAdminUser(context);
       await applyMigration(context);

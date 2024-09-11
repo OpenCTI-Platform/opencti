@@ -3,7 +3,7 @@ import type { SdkStream } from '@smithy/types/dist-types/serde';
 import conf, { logApp } from '../../config/conf';
 import { executionContext } from '../../utils/access';
 import type { AuthContext, AuthUser } from '../../types/user';
-import { consumeQueue, pushToWorkerForSync, registerConnectorQueues } from '../../database/rabbitmq';
+import { consumeQueue, pushToWorkerForConnector, registerConnectorQueues } from '../../database/rabbitmq';
 import { downloadFile } from '../../database/file-storage';
 import { reportExpectation, updateExpectationsNumber, updateProcessedTime, updateReceivedTime } from '../../domain/work';
 import { bundleProcess } from '../../parser/csv-bundler';
@@ -82,7 +82,7 @@ const initImportCsvConnector = () => {
             } else {
               await updateExpectationsNumber(context, applicantUser, workId, bundle.objects.length);
               const content = Buffer.from(JSON.stringify(bundle), 'utf-8').toString('base64');
-              await pushToWorkerForSync({
+              await pushToWorkerForConnector(connector.internal_id, {
                 type: 'bundle',
                 update: true,
                 applicant_id: applicantId ?? OPENCTI_SYSTEM_UUID,

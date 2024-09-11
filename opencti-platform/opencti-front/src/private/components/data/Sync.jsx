@@ -56,9 +56,14 @@ const Sync = () => {
       width: '20%',
       isSortable: true,
     },
+    messages: {
+      label: 'Messages',
+      width: '10%',
+      isSortable: false,
+    },
     running: {
-      label: 'Running',
-      width: '20%',
+      label: 'Status',
+      width: '10%',
       isSortable: false,
     },
     current_state_date: {

@@ -11,7 +11,7 @@ import { STIX_EXT_OCTI } from '../types/stix-extensions';
 import { utcDate } from '../utils/format';
 import { listEntities, storeLoadById } from '../database/middleware-loader';
 import { isEmptyField, wait } from '../database/utils';
-import { pushToWorkerForSync } from '../database/rabbitmq';
+import { pushToWorkerForConnector } from '../database/rabbitmq';
 import { OPENCTI_SYSTEM_UUID } from '../schema/general';
 import { getHttpClient } from '../utils/http-client';
 import { createSyncHttpUri, httpBase } from '../domain/connector-utils';
@@ -138,13 +138,14 @@ const syncManagerInstance = (syncId) => {
               const enrichedEvent = JSON.stringify({ id: eventId, type: eventType, data: syncData, context: eventContext });
               const content = Buffer.from(enrichedEvent, 'utf-8').toString('base64');
               // Applicant_id should be a userId coming from synchronizer
-              await pushToWorkerForSync({
+              await pushToWorkerForConnector(sync.internal_id, {
                 type: 'event',
                 synchronized,
                 previous_standard,
                 update: true,
                 applicant_id: sync.user_id ?? OPENCTI_SYSTEM_UUID,
-                content });
+                content
+              });
               await saveCurrentState(context, 'event', sync, eventId);
             }
           } catch (e) {

@@ -49,6 +49,13 @@ const playbooksLinesFragment = graphql`
     filters: { type: "FilterGroup" }
   )
   @refetchable(queryName: "PlaybooksLinesRefetchQuery") {
+    rabbitMQMetrics {
+      consumers
+      queues {
+        name
+        messages
+      }
+    }
     playbooks(
       search: $search
       first: $count

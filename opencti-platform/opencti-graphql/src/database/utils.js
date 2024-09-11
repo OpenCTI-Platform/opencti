@@ -20,8 +20,6 @@ export const RABBIT_QUEUE_PREFIX = rabbitmqPrefix ? `${rabbitmqPrefix}_` : '';
 
 export const MAX_EVENT_LOOP_PROCESSING_TIME = 50;
 
-export const INTERNAL_SYNC_QUEUE = 'sync';
-export const INTERNAL_PLAYBOOK_QUEUE = 'playbook';
 export const EVENT_TYPE_CREATE = 'create';
 export const EVENT_TYPE_DELETE = 'delete';
 export const EVENT_TYPE_DEPENDENCIES = 'init-dependencies';

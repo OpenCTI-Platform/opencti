@@ -9,7 +9,7 @@ import { validateFilterGroupForStixMatch } from '../utils/filtering/filtering-st
 import { isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
 import { now } from '../utils/format';
 import { elLoadById } from '../database/engine';
-import { INTERNAL_SYNC_QUEUE, isEmptyField, READ_INDEX_HISTORY } from '../database/utils';
+import { isEmptyField, READ_INDEX_HISTORY } from '../database/utils';
 import { ABSTRACT_INTERNAL_OBJECT, CONNECTOR_INTERNAL_EXPORT_FILE, OPENCTI_NAMESPACE } from '../schema/general';
 import { isUserHasCapability, SETTINGS_SET_ACCESSES, SYSTEM_USER } from '../utils/access';
 import { delEditContext, notify, redisGetWork, setEditContext } from '../database/redis';
@@ -299,6 +299,8 @@ export const registerSync = async (context: AuthContext, user: AuthUser, syncDat
   await testSyncUtils(context, user, data);
   const { element, isCreation } = await createEntity(context, user, data, ENTITY_TYPE_SYNC, { complete: true });
   if (isCreation) {
+    const syncId = element.internal_id;
+    await registerConnectorQueues(syncId, `Sync ${syncId} queue`, 'internal', 'sync');
     await publishUserAction({
       user,
       event_type: 'mutation',
@@ -324,6 +326,7 @@ export const syncEditField = async (context: AuthContext, user: AuthUser, syncId
 };
 export const syncDelete = async (context: AuthContext, user: AuthUser, syncId: string) => {
   const deleted = await deleteElementById(context, user, syncId, ENTITY_TYPE_SYNC);
+  await unregisterConnector(syncId);
   await publishUserAction({
     user,
     event_type: 'mutation',
@@ -348,7 +351,6 @@ export const syncEditContext = async (context: AuthContext, user: AuthUser, sync
 
 // region testing
 export const deleteQueues = async (context: AuthContext, user: AuthUser) => {
-  try { await unregisterConnector(INTERNAL_SYNC_QUEUE); } catch (e) { /* nothing */ }
   const platformConnectors = await connectors(context, user);
   for (let index = 0; index < platformConnectors.length; index += 1) {
     const conn = platformConnectors[index];

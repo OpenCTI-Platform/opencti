@@ -729,6 +729,7 @@ type Synchronizer {
   no_dependencies: Boolean!
   ssl_verify: Boolean
   synchronized: Boolean
+  queue_messages: Int!
 }
 
 type SynchronizerEdge {

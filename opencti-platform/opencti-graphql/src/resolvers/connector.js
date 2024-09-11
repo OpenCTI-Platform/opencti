@@ -37,6 +37,7 @@ import { batchCreator } from '../domain/user';
 import { now } from '../utils/format';
 import { connector, connectors, connectorsForAnalysis, connectorsForImport, connectorsForNotification, connectorsForWorker } from '../database/repository';
 import { batchLoader } from '../database/middleware';
+import { getConnectorQueueSize } from '../database/rabbitmq';
 
 const creatorLoader = batchLoader(batchCreator);
 
@@ -67,6 +68,7 @@ const connectorResolvers = {
   },
   Synchronizer: {
     user: (sync, _, context) => creatorLoader.load(sync.user_id, context, context.user),
+    queue_messages: async (sync, _, context) => getConnectorQueueSize(context, context.user, sync.id)
   },
   Mutation: {
     deleteConnector: (_, { id }, context) => connectorDelete(context, context.user, id),

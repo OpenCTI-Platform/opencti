@@ -1,11 +1,12 @@
 import amqp from 'amqplib/callback_api';
 import util from 'util';
 import { SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION } from '@opentelemetry/semantic-conventions';
+import { LRUCache } from 'lru-cache';
 import conf, { booleanConf, configureCA, loadCert, logApp } from '../config/conf';
 import { DatabaseError } from '../config/errors';
 import { SYSTEM_USER } from '../utils/access';
 import { telemetry } from '../config/tracing';
-import { INTERNAL_PLAYBOOK_QUEUE, INTERNAL_SYNC_QUEUE, isEmptyField, RABBIT_QUEUE_PREFIX } from './utils';
+import { isEmptyField, RABBIT_QUEUE_PREFIX } from './utils';
 import { getHttpClient } from '../utils/http-client';
 
 export const CONNECTOR_EXCHANGE = `${RABBIT_QUEUE_PREFIX}amqp.connector.exchange`;
@@ -173,6 +174,17 @@ export const metrics = async (context, user) => {
   }, metricApi);
 };
 
+const metricsCache = new LRUCache({ ttl: 60000, max: 1 }); // 1 minute cache
+export const getConnectorQueueSize = async (context, user, connectorId) => {
+  let stats = metricsCache.get('cached_metrics');
+  if (!stats) {
+    stats = await metrics(context, user);
+    metricsCache.set('cached_metrics', stats);
+  }
+  return stats.queues.filter((queue) => queue.name.includes(connectorId))
+    .reduce((a, b) => a.messages + b.messages);
+};
+
 export const connectorConfig = (id) => ({
   connection: config(),
   push: `${RABBIT_QUEUE_PREFIX}push_${id}`,
@@ -220,11 +232,6 @@ export const registerConnectorQueues = async (id, name, type, scope) => {
   return connectorConfig(id);
 };
 
-export const initializeInternalQueues = async () => {
-  await registerConnectorQueues(INTERNAL_PLAYBOOK_QUEUE, 'Internal playbook manager', 'internal', 'playbook');
-  await registerConnectorQueues(INTERNAL_SYNC_QUEUE, 'Internal sync manager', 'internal', 'sync');
-};
-
 export const unregisterConnector = async (id) => {
   const listen = await amqpExecute(async (channel) => {
     const deleteQueue = util.promisify(channel.deleteQueue).bind(channel);
@@ -257,14 +264,6 @@ export const rabbitMQIsAlive = async () => {
       throw DatabaseError('RabbitMQ seems down', { cause: e });
     }
   );
-};
-
-export const pushToWorkerForSync = (message) => {
-  return send(WORKER_EXCHANGE, pushRouting(INTERNAL_SYNC_QUEUE), JSON.stringify(message));
-};
-
-export const pushToWorkerForPlaybook = (message) => {
-  return send(WORKER_EXCHANGE, pushRouting(INTERNAL_PLAYBOOK_QUEUE), JSON.stringify(message));
 };
 
 export const pushToWorkerForConnector = (connectorId, message) => {

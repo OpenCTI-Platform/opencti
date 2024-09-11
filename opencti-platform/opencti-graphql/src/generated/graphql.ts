@@ -18071,6 +18071,7 @@ export type Playbook = BasicObject & InternalObject & {
   parent_types: Array<Scalars['String']['output']>;
   playbook_definition?: Maybe<Scalars['String']['output']>;
   playbook_running?: Maybe<Scalars['Boolean']['output']>;
+  queue_messages: Scalars['Int']['output'];
   standard_id: Scalars['String']['output'];
 };
 
@@ -25496,6 +25497,7 @@ export type Synchronizer = {
   listen_deletion: Scalars['Boolean']['output'];
   name: Scalars['String']['output'];
   no_dependencies: Scalars['Boolean']['output'];
+  queue_messages: Scalars['Int']['output'];
   running: Scalars['Boolean']['output'];
   ssl_verify?: Maybe<Scalars['Boolean']['output']>;
   stream_id: Scalars['String']['output'];
@@ -36975,6 +36977,7 @@ export type PlaybookResolvers<ContextType = any, ParentType extends ResolversPar
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   playbook_definition?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   playbook_running?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  queue_messages?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
@@ -38979,6 +38982,7 @@ export type SynchronizerResolvers<ContextType = any, ParentType extends Resolver
   listen_deletion?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   no_dependencies?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  queue_messages?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   running?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   ssl_verify?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   stream_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;

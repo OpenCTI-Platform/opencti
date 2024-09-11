@@ -13,7 +13,6 @@ import { logApp, environment } from '../../src/config/conf';
 import cacheManager from '../../src/manager/cacheManager';
 import { initializeAdminUser } from '../../src/config/providers';
 import { initDefaultNotifiers } from '../../src/modules/notifier/notifier-domain';
-import { initializeInternalQueues } from '../../src/database/rabbitmq';
 import { executionContext } from '../../src/utils/access';
 import { initializeData } from '../../src/database/data-initialization';
 import { shutdownModules, startModules } from '../../src/managers';
@@ -33,8 +32,6 @@ const initializePlatform = async () => {
   const context = executionContext('platform_test_initialization');
   logApp.info(`[vitest-global-setup] initializing platform with env=${environment}`);
   const stopTime = new Date().getTime();
-
-  await initializeInternalQueues();
   await initializeBucket();
   await initializeSchema();
   await initializeData(context, true);
