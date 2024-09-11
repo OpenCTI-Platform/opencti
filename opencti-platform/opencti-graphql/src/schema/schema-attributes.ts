@@ -4,6 +4,7 @@ import { FunctionalError, UnsupportedError } from '../config/errors';
 import type { AttributeDefinition, AttrType, ComplexAttributeWithMappings, MappingDefinition } from './attribute-definition';
 import { shortStringFormats } from './attribute-definition';
 import { getParentTypes } from './schemaUtils';
+import { isFeatureEnabled } from '../config/conf';
 
 export const depsKeysRegister = {
   deps: [] as { src: string, types?: string[] }[],
@@ -78,7 +79,7 @@ export const schemaAttributesDefinition = {
     const directAttributes = this.attributes[entityType] ?? new Map<string, AttributeDefinition>();
     // Register given attribute
     const currentAttributes = Object.values(this.attributes);
-    attributes.forEach((attribute) => {
+    attributes.filter((a) => (!a.featureFlag || isFeatureEnabled(a.featureFlag))).forEach((attribute) => {
       // Check different attributes have different labels
       let attributesWithSameLabelAndDifferentName: AttributeDefinition[] = [];
       currentAttributes

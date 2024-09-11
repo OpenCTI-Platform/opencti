@@ -36,6 +36,7 @@ type BasicDefinition = {
   isFilterable: boolean // If attribute can be used as a filter key in the UI
   editDefault: boolean // TO CHECK ?????
   update?: boolean // If attribute can be updated (null = true)
+  featureFlag?: string // if attribute is on feature flag, null by default
 };
 
 export type MappingDefinition = AttributeDefinition & {
