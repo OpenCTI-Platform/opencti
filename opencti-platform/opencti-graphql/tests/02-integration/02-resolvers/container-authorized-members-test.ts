@@ -7,7 +7,6 @@ import {
   editorQuery,
   getOrganizationIdByName,
   getUserIdByEmail,
-  participantQuery,
   PLATFORM_ORGANIZATION,
   queryAsAdmin,
   securityQuery,
@@ -73,7 +72,22 @@ const EDIT_AUTHORIZED_MEMBERS_QUERY = gql`
   }
 `;
 
-/* describe('Case Incident Response standard behavior with authorized_members activation from entity', () => {
+const PLATFORM_ORGANIZATION_QUERY = gql`
+  mutation PoliciesFieldPatchMutation($id: ID!, $input: [EditInput]!) {
+    settingsEdit(id: $id) {
+      fieldPatch(input: $input) {
+        platform_organization {
+          id
+          name
+        }
+        enterprise_edition
+        id
+      }
+    }
+  }
+`;
+
+describe('Case Incident Response standard behavior with authorized_members activation from entity', () => {
   let caseIncident: CaseIncident;
   let userEditorId: string;
   // 1. On créé un case incident => on vérifie que l'editor y a accès, que les authorized members sont vide, que le user access right est admin
@@ -420,6 +434,9 @@ describe('Case Incident Response standard behavior with authorized_members activ
 
 describe('Case Incident Response and organization sharing standard behavior without platform organization', () => {
   let caseIrId: string;
+  let organizationId: string;
+  let settingsInternalId: string;
+  // 1. On créé un case incident et on le partage à une orga différente de l'orga de editor
   it('should Case Incident Response created', async () => {
     // Create Case Incident Response
     const caseIRCreateQueryResult = await adminQuery({
@@ -436,45 +453,78 @@ describe('Case Incident Response and organization sharing standard behavior with
     expect(caseIRCreateQueryResult?.data?.caseIncidentAdd.authorized_members).toEqual([]); // authorized members not activated
     caseIrId = caseIRCreateQueryResult?.data?.caseIncidentAdd.id;
   });
-  it('should access Case Incident Response', async () => {
+  it('should EE activated', async () => {
+    // Get settings ID
+    const SETTINGS_READ_QUERY = gql`
+      query settings {
+        settings {
+          id
+          platform_organization {
+            id
+            name
+          }
+        }
+      }
+    `;
+    const queryResult = await adminQuery({ query: SETTINGS_READ_QUERY, variables: {} });
+    settingsInternalId = queryResult.data?.settings?.id;
+
+    // Set plateform organization
+    const EEqueryResult = await adminQuery({
+      query: PLATFORM_ORGANIZATION_QUERY,
+      variables: {
+        id: settingsInternalId,
+        input: [
+          { key: 'enterprise_edition', value: new Date().getTime() },
+        ]
+      }
+    });
+    expect(EEqueryResult).not.toBeNull();
+    expect(EEqueryResult?.data?.settingsEdit.fieldPatch.enterprise_edition).not.toBeUndefined();
+  });
+  it('should share Case Incident Response with Organization', async () => {
+    // Get organization id
+    organizationId = await getOrganizationIdByName(PLATFORM_ORGANIZATION.name);
+    const ORGANIZATION_SHARING_QUERY = gql`
+      mutation StixCoreObjectSharingGroupAddMutation(
+        $id: ID!
+        $organizationId: ID!
+      ) {
+        stixCoreObjectEdit(id: $id) {
+          restrictionOrganizationAdd(organizationId: $organizationId) {
+            id
+            objectOrganization {
+              id
+              name
+            }
+          }
+        }
+      }
+    `;
+
+    const organizationSharingQueryResult = await adminQuery({
+      query: ORGANIZATION_SHARING_QUERY,
+      variables: { id: caseIrId, organizationId: PLATFORM_ORGANIZATION.id }
+    });
+    expect(organizationSharingQueryResult).not.toBeNull();
+    expect(organizationSharingQueryResult?.data?.stixCoreObjectEdit.restrictionOrganizationAdd).not.toBeNull();
+    expect(organizationSharingQueryResult?.data?.stixCoreObjectEdit.restrictionOrganizationAdd.objectOrganization[0].name).toEqual(PLATFORM_ORGANIZATION.name);
+  });
+  // 2. On vérifie qu'editor a bien accès au case incident
+  it('should Editor user from different organization access Case Incident Response', async () => {
+    const caseIRQueryResult = await editorQuery({ query: READ_QUERY, variables: { id: caseIrId } });
+    expect(caseIRQueryResult).not.toBeNull();
+    expect(caseIRQueryResult?.data?.caseIncident).not.toBeUndefined();
+    expect(caseIRQueryResult?.data?.caseIncident.id).toEqual(caseIrId);
+  });
+  // 3. On vérifie qu'un user faisant partie de l'orga a bien accès au case aussi
+  it('should Security user from shared organization access Case Incident Response', async () => {
     const caseIRQueryResult = await securityQuery({ query: READ_QUERY, variables: { id: caseIrId } });
     expect(caseIRQueryResult).not.toBeNull();
     expect(caseIRQueryResult?.data?.caseIncident).not.toBeUndefined();
     expect(caseIRQueryResult?.data?.caseIncident.id).toEqual(caseIrId);
   });
-  it('should Authorized Members activated', async () => {
-    await queryAsAdmin({
-      query: EDIT_AUTHORIZED_MEMBERS_QUERY,
-      variables: {
-        id: caseIrId,
-        input: [
-          {
-            id: ADMIN_USER.id,
-            access_right: 'admin'
-          }
-        ]
-      }
-    });
-    // Verify if authorized members have been edited
-    const caseIRUpdatedQueryResult = await adminQuery({
-      query: READ_QUERY,
-      variables: { id: caseIrId }
-    });
-    expect(caseIRUpdatedQueryResult).not.toBeNull();
-    expect(caseIRUpdatedQueryResult?.data?.caseIncident.authorized_members).not.toBeUndefined();
-    expect(caseIRUpdatedQueryResult?.data?.caseIncident.authorized_members).toEqual([
-      {
-        id: ADMIN_USER.id,
-        access_right: 'admin'
-      }
-    ]);
-  });
-  it('should not access Case Incident Response if not in authorized members', async () => {
-    const caseIRQueryResult = await securityQuery({ query: READ_QUERY, variables: { id: caseIrId } });
-    expect(caseIRQueryResult).not.toBeNull();
-    expect(caseIRQueryResult?.data?.caseIncident).not.toBeUndefined();
-    expect(caseIRQueryResult?.data?.caseIncident).toBeNull();
-  });
+  // 4. On delete le case avec l'admin
   it('should Case Incident Response deleted', async () => {
     // Delete the case
     await adminQuery({
@@ -486,7 +536,18 @@ describe('Case Incident Response and organization sharing standard behavior with
     expect(queryResult).not.toBeNull();
     expect(queryResult?.data?.caseIncident).toBeNull();
   });
-}); */
+  it('should EE deactivated', async () => {
+    const platformOrganization = await adminQuery({
+      query: PLATFORM_ORGANIZATION_QUERY,
+      variables: { id: settingsInternalId,
+        input: [
+          { key: 'enterprise_edition', value: [] },
+        ] }
+    });
+    expect(platformOrganization).not.toBeNull();
+    expect(platformOrganization?.data?.settingsEdit.fieldPatch.enterprise_edition).toBeNull();
+  });
+});
 
 describe('Case Incident Response and organization sharing standard behavior with platform organization', () => {
   let platformOrganizationId: string;
@@ -494,20 +555,6 @@ describe('Case Incident Response and organization sharing standard behavior with
   let caseIrId: string;
   let userEditorId: string;
   let settingsInternalId: string;
-  const PLATFORM_ORGANIZATION_QUERY = gql`
-    mutation PoliciesFieldPatchMutation($id: ID!, $input: [EditInput]!) {
-      settingsEdit(id: $id) {
-        fieldPatch(input: $input) {
-          platform_organization {
-            id
-            name
-          }
-          enterprise_edition
-          id
-        }
-      }
-    }
-  `;
   // 1. 'should plateform organization sharing and EE activated' => OK avec PlaformOrganization
   it('should plateform organization sharing and EE activated', async () => {
     // Get organization id
