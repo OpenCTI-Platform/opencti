@@ -48,9 +48,9 @@ export const buildFileDataForIndexing = (file: File) => {
   };
 };
 
-export const indexFileToDocument = async (context: AuthContext, user: AuthUser, file: any) => {
+export const indexFileToDocument = async (context: AuthContext, file: any) => {
   const data = buildFileDataForIndexing(file);
-  const internalFile = await storeLoadById(context, user, data.internal_id, ENTITY_TYPE_INTERNAL_FILE);
+  const internalFile = await storeLoadById(context, SYSTEM_USER, data.internal_id, ENTITY_TYPE_INTERNAL_FILE);
   if (internalFile) {
     // update existing internalFile (if file has been saved in another index)
     return elUpdate(internalFile._index, internalFile.internal_id, data);

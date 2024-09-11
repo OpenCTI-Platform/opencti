@@ -175,7 +175,7 @@ export const downloadFile = async (id) => {
  * @param {{sourceId: string, targetId: string, sourceDocument: BasicStoreEntityDocument, targetEntityId: string}} copyProps
  * @returns {Promise<null|File>} the document entity on success, null on errors.
  */
-export const copyFile = async (context, user, copyProps) => {
+export const copyFile = async (context, copyProps) => {
   const { sourceId, targetId, sourceDocument, targetEntityId } = copyProps;
   try {
     const input = {
@@ -198,7 +198,7 @@ export const copyFile = async (context, user, copyProps) => {
       metaData: targetMetadata,
       uploadStatus: 'complete',
     };
-    await indexFileToDocument(context, user, file);
+    await indexFileToDocument(context, file);
     logApp.info('[FILE STORAGE] Copy file to S3 in success', { document: file, sourceId, targetId });
     return file;
   } catch (err) {
@@ -494,7 +494,7 @@ export const upload = async (context, user, filePath, fileUpload, opts) => {
     metaData: { ...fullMetadata, messages: [], errors: [], file_markings },
     uploadStatus: 'complete',
   };
-  await indexFileToDocument(context, user, file);
+  await indexFileToDocument(context, file);
 
   const isFilePathForImportEnrichment = filePath.startsWith('import/') && !filePath.startsWith('import/pending');
   if (!noTriggerImport && isFilePathForImportEnrichment) {
