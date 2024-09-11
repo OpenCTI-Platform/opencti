@@ -238,6 +238,12 @@ const BulkRelationDialog : FunctionComponent<BulkRelationDialogProps> = ({
   }, [bulkEntityList]);
 
   const getDefaultEntityType = () => {
+    if (targetObjectTypes.length === 1 && targetObjectTypes.includes('Stix-Cyber-Observable')) {
+      const foundObservableType = entityList
+        .filter((obs) => obs.isObservable)
+        .sort((a, b) => (a.toEntitytype < b.toEntitytype ? -1 : 1))[0];
+      return foundObservableType ?? entityList[0];
+    }
     const selectedEntityType = targetObjectTypes[0];
     const foundEntityType = entityList.find((item) => item.toEntitytype === selectedEntityType);
     return foundEntityType ?? entityList[0];
@@ -373,7 +379,7 @@ const BulkRelationDialog : FunctionComponent<BulkRelationDialogProps> = ({
   const handleSubmit = async () => {
     setIsSubmitting(true);
     for (const bulkEntity of bulkEntityList) {
-      const foundEntityType = bulkEntity.entityTypeList?.find(({ entity_type }) => entity_type === bulkEntity.selectedEntityType.toEntitytype);
+      const foundEntityType = bulkEntity.entityTypeList && bulkEntity.entityTypeList.find((entity) => entity.entity_type === bulkEntity.selectedEntityType.toEntitytype);
       if (!foundEntityType) return;
       const finalValues = {
         relationship_type: selectedRelationType,
@@ -472,7 +478,7 @@ const BulkRelationDialog : FunctionComponent<BulkRelationDialogProps> = ({
               </Box>
               <Box id="relationArrow" sx={{ display: 'flex', justifyContent: 'center', padding: '0 20px', flexDirection: 'column', minWidth: '200px' }}>
                 <Select disabled={isSubmitting} onChange={handleChangeSelectedRelationType} value={selectedRelationType}>
-                  {relationListArray.map((relation) => (
+                  {relationListArray.sort((a, b) => (a < b ? -1 : 1)).map((relation) => (
                     <MenuItem key={relation} value={relation}>
                       {t_i18n(`relationship_${relation}`)}
                     </MenuItem>
@@ -500,7 +506,7 @@ const BulkRelationDialog : FunctionComponent<BulkRelationDialogProps> = ({
                   value={getTextAreaValue()}
                   onChange={handleChangeTextArea}
                   multiline
-                  minRows={10}
+                  minRows={textAreaValue.length > 10 ? textAreaValue.length + 1 : 10}
                   placeholder={t_i18n('Type or copy paste data in this area.')}
                   variant="outlined"
                 />

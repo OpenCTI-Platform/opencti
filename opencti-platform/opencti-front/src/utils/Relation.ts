@@ -74,6 +74,7 @@ export interface RelationsDataFromEntity {
 export interface RelationsToEntity {
   toEntitytype: string; // TODO rename to toDomainAndObserble or anything that says both of them.
   legitRelations: string[];
+  isObservable?: boolean;
 }
 
 /**
@@ -131,6 +132,7 @@ export const getRelationsFromOneEntityToAny = (
     entityList.push({
       toEntitytype: schema.scos[i].id,
       legitRelations: [DEFAULT_RELATION],
+      isObservable: true,
     });
   }
 

@@ -22,6 +22,9 @@ type UseEntityToggleType = {
   name?: string | null,
   observable_value?: string | null,
   entity_type?: string | null
+  representative?: {
+    main: string;
+  };
 };
 
 const useEntityToggle = <T extends UseEntityToggleType>(
