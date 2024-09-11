@@ -245,7 +245,7 @@ ContainerStixCyberObservablesComponentProps
               selectAll={selectAll}
               iconExtension={true}
               handleToggleExports={handleToggleExports}
-              exportContext={{ entity_type: 'Stix-Cyber-Observable' }}
+              exportContext={{ entity_id: container.id, entity_type: 'Stix-Cyber-Observable' }}
               keyword={searchTerm}
               openExports={openExports}
               filters={filters}
