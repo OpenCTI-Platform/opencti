@@ -19,8 +19,9 @@ import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import { resolveLink } from '../../../../utils/Entity';
 import ItemMarkings from '../../../../components/ItemMarkings';
-import { hexToRGB, itemColor } from '../../../../utils/Colors';
+import { hexToRGB } from '../../../../utils/Colors';
 import { DataColumns } from '../../../../components/list_lines';
+import itemColor from '../../../../components/ItemColor';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -98,6 +99,7 @@ ContainerStixCoreObjectsSuggestedMappingLineComponentProps
   const { t_i18n } = useFormatter();
   const mappedEntityData = useFragment(ContainerStixCoreObjectsSuggestedMappingFragment, node);
   const { matchedString, matchedEntity } = mappedEntityData;
+  const chipColor = itemColor(matchedEntity.entity_type);
   return (
     <ListItem
       classes={{ root: classes.item }}
@@ -119,9 +121,9 @@ ContainerStixCoreObjectsSuggestedMappingLineComponentProps
               <Chip
                 classes={{ root: classes.chipInList }}
                 style={{
-                  backgroundColor: hexToRGB(itemColor(matchedEntity.entity_type), 0.08),
-                  color: itemColor(matchedEntity.entity_type),
-                  border: `1px solid ${itemColor(matchedEntity.entity_type)}`,
+                  backgroundColor: hexToRGB(chipColor, 0.08),
+                  color: chipColor,
+                  border: `1px solid ${chipColor}`,
                 }}
                 label={t_i18n(`entity_${matchedEntity.entity_type}`)}
               />

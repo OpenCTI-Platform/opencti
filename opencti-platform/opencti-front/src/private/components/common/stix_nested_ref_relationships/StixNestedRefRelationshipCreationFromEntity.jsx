@@ -20,7 +20,6 @@ import { GlobeModel, HexagonOutline } from 'mdi-material-ui';
 import makeStyles from '@mui/styles/makeStyles';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
-import { itemColor } from '../../../../utils/Colors';
 import { dayStartDate, parse } from '../../../../utils/Time';
 import ItemIcon from '../../../../components/ItemIcon';
 import SelectField from '../../../../components/fields/SelectField';
@@ -35,6 +34,7 @@ import ListLines from '../../../../components/list_lines/ListLines';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
 import { emptyFilterGroup, removeIdFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
 import useEntityToggle from '../../../../utils/hooks/useEntityToggle';
+import itemColor from '../../../../components/ItemColor';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
