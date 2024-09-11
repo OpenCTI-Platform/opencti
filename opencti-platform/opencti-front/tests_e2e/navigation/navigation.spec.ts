@@ -6,6 +6,99 @@ import ReportDetailsPage from '../model/reportDetails.pageModel';
 import StixDomainObjectContentTabPage from '../model/StixDomainObjectContentTab.pageModel';
 import ContainerObservablesPage from '../model/containerObservables.pageModel';
 import StixCoreObjectDataTab from '../model/StixCoreObjectDataTab.pageModel';
+import GroupingsPage from '../model/grouping.pageModel';
+import GroupingDetailsPage from '../model/groupingDetails.pageModel';
+import MalwareAnalysesPage from '../model/MalwareAnalyses.pageModel';
+import MalwareAnalysesDetailsPage from '../model/MalwareAnalysesDetails.pageModel';
+import StixCoreObjectHistoryTab from '../model/StixCoreObjectHistoryTab.pageModel';
+
+/**
+ * Goal: validate that everything is opening wihtout errors in Analyses > Malware analyses.
+ * @param page
+ */
+const navigateMalwareAnalyses = async (page: Page) => {
+  const malwareAnalysesNameFromInitData = 'Spelevo EK analysis';
+  const malwareAnalysesPage = new MalwareAnalysesPage(page);
+  await malwareAnalysesPage.navigateFromMenu();
+
+  await expect(malwareAnalysesPage.getPage()).toBeVisible();
+  await expect(page.getByText(malwareAnalysesNameFromInitData)).toBeVisible();
+  await malwareAnalysesPage.getItemFromList(malwareAnalysesNameFromInitData).click();
+
+  const malwareAnalysesDetailsPage = new MalwareAnalysesDetailsPage(page);
+  await expect(malwareAnalysesDetailsPage.getPage()).toBeVisible();
+
+  // -- Knowledge
+  await malwareAnalysesDetailsPage.tabs.goToKnowledgeTab();
+  await expect(page.getByPlaceholder('Search these results...')).toBeVisible();
+  await page.getByLabel('relationships', { exact: true }).click();
+  await expect(page.getByRole('link', { name: 'related to Malware Spelevo EK' })).toBeVisible();
+  await page.getByLabel('entities', { exact: true }).click();
+  await expect(page.getByRole('link', { name: 'Malware Spelevo EK admin ryuk' })).toBeVisible();
+
+  // -- Content
+  await malwareAnalysesDetailsPage.tabs.goToContentTab();
+  const contentTab = new StixDomainObjectContentTabPage(page);
+  await expect(contentTab.getPage()).toBeVisible();
+
+  // -- Data
+  await malwareAnalysesDetailsPage.tabs.goToDataTab();
+  await expect(page.getByRole('heading', { name: 'Uploaded files' })).toBeVisible();
+
+  // -- History
+  await malwareAnalysesDetailsPage.tabs.goToHistoryTab();
+  const historyTab = new StixCoreObjectHistoryTab(page);
+  await expect(historyTab.getPage()).toBeVisible();
+};
+
+/**
+ * Goal: validate that everything is opening wihtout errors in Analyses > Grouping.
+ * @param page
+ */
+const navigateGroupings = async (page: Page) => {
+  const groupingsNameFromInitData = 'Navigation test grouping entity';
+
+  const groupingPage = new GroupingsPage(page);
+  await groupingPage.navigateFromMenu();
+  await expect(groupingPage.getPage()).toBeVisible();
+  await expect(page.getByText(groupingsNameFromInitData)).toBeVisible();
+  await groupingPage.getItemFromList(groupingsNameFromInitData).click();
+
+  const groupingsDetailsPage = new GroupingDetailsPage(page);
+  await expect(groupingsDetailsPage.getPage()).toBeVisible();
+
+  // -- Knowledge
+  await groupingsDetailsPage.tabs.goToKnowledgeTab();
+  await expect(page.getByTestId('groupings-knowledge')).toBeVisible();
+  await page.getByLabel('Correlation view').click();
+  await page.getByLabel('Tactics matrix view').click();
+  await page.getByLabel('Graph view').click();
+
+  // -- Content
+  await groupingsDetailsPage.tabs.goToContentTab();
+  const contentTab = new StixDomainObjectContentTabPage(page);
+  await expect(contentTab.getPage()).toBeVisible();
+  await contentTab.getContentMappingViewButton().click();
+  await expect(page.getByRole('button', { name: 'Clear mappings' })).toBeVisible();
+  await contentTab.getContentViewButton().click();
+  await expect(page.getByText('Description', { exact: true })).toBeVisible();
+  await expect(page.getByText('Mappable content')).toBeVisible();
+
+  // -- Entities
+  await groupingsDetailsPage.tabs.goToEntitiesTab();
+  await expect(page.getByText('Entity types')).toBeVisible();
+  await expect(page.getByText('Add entity')).toBeVisible();
+
+  // -- Artifact / Observables
+  await groupingsDetailsPage.tabs.goToObservablesTab();
+  const observablesTab = new ContainerObservablesPage(page);
+  await expect(observablesTab.getPage()).toBeVisible();
+
+  // -- Data
+  await groupingsDetailsPage.tabs.goToDataTab();
+  const dataTab = new StixCoreObjectDataTab(page);
+  await expect(dataTab.getPage()).toBeVisible();
+};
 
 /**
  * Goal: validate that everything is opening without errors
@@ -25,7 +118,7 @@ const navigateReports = async (page: Page) => {
   const reportNameFromInitData = 'E2E dashboard - Report - now';
 
   const reportPage = new ReportPage(page);
-  await reportPage.goto();
+  await reportPage.navigateFromMenu();
   await expect(reportPage.getPage()).toBeVisible();
   await expect(page.getByText(reportNameFromInitData)).toBeVisible();
   await reportPage.getItemFromList(reportNameFromInitData).click();
@@ -34,7 +127,7 @@ const navigateReports = async (page: Page) => {
   await expect(reportDetailsPage.getPage()).toBeVisible();
 
   // -- Knowledge
-  await reportDetailsPage.goToKnowledgeTab();
+  await reportDetailsPage.tabs.goToKnowledgeTab();
   await expect(page.getByTestId('report-knowledge')).toBeVisible();
   await page.getByLabel('TimeLine view').click();
   await page.getByLabel('Correlation view').click();
@@ -42,7 +135,7 @@ const navigateReports = async (page: Page) => {
   await page.getByLabel('Graph view').click();
 
   // -- Content
-  await reportDetailsPage.goToContentTab();
+  await reportDetailsPage.tabs.goToContentTab();
   const contentTab = new StixDomainObjectContentTabPage(page);
   await expect(contentTab.getPage()).toBeVisible();
   await contentTab.getContentMappingViewButton().click();
@@ -52,25 +145,23 @@ const navigateReports = async (page: Page) => {
   await expect(page.getByText('Mappable content')).toBeVisible();
 
   // -- Entities
-  await reportDetailsPage.goToEntitiesTab();
+  await reportDetailsPage.tabs.goToEntitiesTab();
   await expect(page.getByText('Entity types')).toBeVisible();
   await expect(page.getByText('Add entity')).toBeVisible();
 
   // -- Artifact / Observables
-  await reportDetailsPage.goToObservablesTab();
+  await reportDetailsPage.tabs.goToObservablesTab();
   const observablesTab = new ContainerObservablesPage(page);
   await expect(observablesTab.getPage()).toBeVisible();
 
   // -- Data
-  await reportDetailsPage.goToDataTab();
+  await reportDetailsPage.tabs.goToDataTab();
   const dataTab = new StixCoreObjectDataTab(page);
   await expect(dataTab.getPage()).toBeVisible();
 };
 
 const navigateAllMenu = async (page: Page) => {
-  await page.goto('/');
   const leftBarPage = new LeftBarPage(page);
-  await leftBarPage.open();
 
   // Checking Analyses menu
   await leftBarPage.clickOnMenu('Analyses', 'Reports');
@@ -208,6 +299,15 @@ const navigateAllMenu = async (page: Page) => {
 };
 
 test('Check navigation on all pages', { tag: ['@navigation'] }, async ({ page }) => {
+  await page.goto('/');
+  const leftBarPage = new LeftBarPage(page);
+  await leftBarPage.open();
+
+  // For faster debugging, each navigated can be commented.
+  // so they should be all independent and start from the left menu.
+
   await navigateAllMenu(page);
   await navigateReports(page);
+  await navigateGroupings(page);
+  await navigateMalwareAnalyses(page);
 });

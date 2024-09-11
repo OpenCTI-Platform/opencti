@@ -41,6 +41,7 @@ class StixCoreObjectHistory extends Component {
         container={true}
         spacing={3}
         classes={{ container: classes.gridContainer }}
+        data-testid='sco-history-content'
       >
         <Grid
           item

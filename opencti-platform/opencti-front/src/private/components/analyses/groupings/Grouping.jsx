@@ -31,7 +31,7 @@ const GroupingComponent = ({ grouping }) => {
   const { canEdit } = useGetCurrentUserAccessRight(grouping.currentUserAccessRight);
 
   return (
-    <div data-testid="grouping-details-page">
+    <div data-testid='grouping-details-page'>
       <Grid
         container={true}
         spacing={3}
