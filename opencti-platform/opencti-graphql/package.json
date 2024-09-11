@@ -84,7 +84,7 @@
     "bcryptjs": "2.4.3",
     "blocked-at": "1.2.0",
     "bluebird": "3.7.2",
-    "body-parser": "1.20.2",
+    "body-parser": "1.20.3",
     "canonicalize": "2.0.0",
     "compression": "1.7.4",
     "content-disposition": "0.5.4",
