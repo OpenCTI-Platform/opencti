@@ -87,6 +87,23 @@ const PLATFORM_ORGANIZATION_QUERY = gql`
   }
 `;
 
+const ORGANIZATION_SHARING_QUERY = gql`
+  mutation StixCoreObjectSharingGroupAddMutation(
+    $id: ID!
+    $organizationId: ID!
+  ) {
+    stixCoreObjectEdit(id: $id) {
+      restrictionOrganizationAdd(organizationId: $organizationId) {
+        id
+        objectOrganization {
+          id
+          name
+        }
+      }
+    }
+  }
+`;
+
 describe('Case Incident Response standard behavior with authorized_members activation from entity', () => {
   let caseIncident: CaseIncident;
   let userEditorId: string;
@@ -485,26 +502,9 @@ describe('Case Incident Response and organization sharing standard behavior with
   it('should share Case Incident Response with Organization', async () => {
     // Get organization id
     organizationId = await getOrganizationIdByName(PLATFORM_ORGANIZATION.name);
-    const ORGANIZATION_SHARING_QUERY = gql`
-      mutation StixCoreObjectSharingGroupAddMutation(
-        $id: ID!
-        $organizationId: ID!
-      ) {
-        stixCoreObjectEdit(id: $id) {
-          restrictionOrganizationAdd(organizationId: $organizationId) {
-            id
-            objectOrganization {
-              id
-              name
-            }
-          }
-        }
-      }
-    `;
-
     const organizationSharingQueryResult = await adminQuery({
       query: ORGANIZATION_SHARING_QUERY,
-      variables: { id: caseIrId, organizationId: PLATFORM_ORGANIZATION.id }
+      variables: { id: caseIrId, organizationId }
     });
     expect(organizationSharingQueryResult).not.toBeNull();
     expect(organizationSharingQueryResult?.data?.stixCoreObjectEdit.restrictionOrganizationAdd).not.toBeNull();
@@ -659,17 +659,12 @@ describe('Case Incident Response and organization sharing standard behavior with
     expect(caseIRQueryResult?.data?.caseIncident.id).toEqual(caseIrId);
   });
   // 6. On enlève les authorized members, et on vérifie que l'editor n'as plus accès au case
-  it('should Admin user removes Editor user from authorized members', async () => {
+  it('should Admin user deactivate authorized members', async () => {
     await queryAsAdmin({
       query: EDIT_AUTHORIZED_MEMBERS_QUERY,
       variables: {
         id: caseIrId,
-        input: [
-          {
-            id: ADMIN_USER.id,
-            access_right: 'admin'
-          }
-        ]
+        input: null
       }
     });
     // Verify Editor user has no more access to Case incident
@@ -681,23 +676,6 @@ describe('Case Incident Response and organization sharing standard behavior with
   it('should share Case Incident Response with Organization', async () => {
     // Get organization id
     testOrganizationId = await getOrganizationIdByName(TEST_ORGANIZATION.name);
-    const ORGANIZATION_SHARING_QUERY = gql`
-      mutation StixCoreObjectSharingGroupAddMutation(
-        $id: ID!
-        $organizationId: ID!
-      ) {
-        stixCoreObjectEdit(id: $id) {
-          restrictionOrganizationAdd(organizationId: $organizationId) {
-            id
-            objectOrganization {
-              id
-              name
-            }
-          }
-        }
-      }
-    `;
-
     const organizationSharingQueryResult = await adminQuery({
       query: ORGANIZATION_SHARING_QUERY,
       variables: { id: caseIrId, organizationId: testOrganizationId }
@@ -708,7 +686,6 @@ describe('Case Incident Response and organization sharing standard behavior with
 
     // Verify Editor user has access to Case incident
     const caseIRQueryResult = await editorQuery({ query: READ_QUERY, variables: { id: caseIrId } });
-    console.log(JSON.stringify(caseIRQueryResult));
     expect(caseIRQueryResult).not.toBeNull();
     expect(caseIRQueryResult?.data?.caseIncident).not.toBeUndefined();
     expect(caseIRQueryResult?.data?.caseIncident.id).toEqual(caseIrId);
