@@ -9,7 +9,6 @@ import CustomFileUploader from '@components/common/files/CustomFileUploader';
 import Drawer, { DrawerControlledDialProps, DrawerVariant } from '@components/common/drawer/Drawer';
 import ConfidenceField from '@components/common/form/ConfidenceField';
 import { useFormatter } from '../../../../components/i18n';
-import TextField from '../../../../components/TextField';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkdownField from '../../../../components/fields/MarkdownField';
@@ -82,7 +81,6 @@ export const CountryCreationForm: FunctionComponent<CountryFormProps> = ({
   onBulkModalClose,
   inputValue,
 }) => {
-  const { isFeatureEnable } = useHelper();
   const { t_i18n } = useFormatter();
   const [progressBarOpen, setProgressBarOpen] = useState(false);
 
@@ -175,38 +173,34 @@ export const CountryCreationForm: FunctionComponent<CountryFormProps> = ({
     >
       {({ submitForm, handleReset, isSubmitting, setFieldValue, values, resetForm }) => (
         <>
-          {isFeatureEnable('BULK_ENTITIES') && (
-            <>
-              <BulkTextModal
-                open={bulkModalOpen}
-                onClose={onBulkModalClose}
-                onValidate={async (val) => {
-                  await setFieldValue('name', val);
-                  if (splitMultilines(val).length > 1) {
-                    await setFieldValue('file', null);
-                  }
-                }}
-                formValue={values.name}
-              />
-              <ProgressBar
-                open={progressBarOpen}
-                value={(bulkCurrentCount / bulkCount) * 100}
-                label={`${bulkCurrentCount}/${bulkCount}`}
-                title={t_i18n('Create multiple entities')}
-                onClose={() => {
-                  setProgressBarOpen(false);
-                  resetForm();
-                  resetBulk();
-                  onCompleted?.();
-                }}
-              >
-                <BulkResult variablesToString={(v) => v.input.name} />
-              </ProgressBar>
-            </>
-          )}
+          <BulkTextModal
+            open={bulkModalOpen}
+            onClose={onBulkModalClose}
+            onValidate={async (val) => {
+              await setFieldValue('name', val);
+              if (splitMultilines(val).length > 1) {
+                await setFieldValue('file', null);
+              }
+            }}
+            formValue={values.name}
+          />
+          <ProgressBar
+            open={progressBarOpen}
+            value={(bulkCurrentCount / bulkCount) * 100}
+            label={`${bulkCurrentCount}/${bulkCount}`}
+            title={t_i18n('Create multiple entities')}
+            onClose={() => {
+              setProgressBarOpen(false);
+              resetForm();
+              resetBulk();
+              onCompleted?.();
+            }}
+          >
+            <BulkResult variablesToString={(v) => v.input.name} />
+          </ProgressBar>
           <Form style={{ margin: '20px 0 20px 0' }}>
             <Field
-              component={isFeatureEnable('BULK_ENTITIES') ? BulkTextField : TextField}
+              component={BulkTextField}
               variant="standard"
               name="name"
               label={t_i18n('Name')}
@@ -312,10 +306,7 @@ const CountryCreation = ({
     <Drawer
       title={t_i18n('Create a country')}
       variant={isFABReplaced ? undefined : DrawerVariant.create}
-      header={isFeatureEnable('BULK_ENTITIES')
-        ? <BulkTextModalButton onClick={() => setBulkOpen(true)} />
-        : <></>
-      }
+      header={<BulkTextModalButton onClick={() => setBulkOpen(true)} />}
       controlledDial={isFABReplaced ? CreateCountryControlledDial : undefined}
     >
       {({ onClose }) => (
