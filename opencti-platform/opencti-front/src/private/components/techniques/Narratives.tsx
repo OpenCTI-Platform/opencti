@@ -80,8 +80,10 @@ const Narratives: FunctionComponent = () => {
             keyword={searchTerm}
           />
           <div style={{
-            marginTop: -5,
-            marginRight: 35,
+            marginTop: 0,
+            marginRight: 0,
+            display: 'flex',
+            alignItems: 'center',
           }}
           >
             <ToggleButtonGroup
@@ -97,6 +99,11 @@ const Narratives: FunctionComponent = () => {
                 enableSubEntityLines={true}
               />
             </ToggleButtonGroup>
+            {isFABReplaced && (
+              <Security needs={[KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNPARTICIPATE]}>
+                <NarrativeCreation paginationOptions={queryPaginationOptions} />
+              </Security>
+            )}
           </div>
         </div>
         <div className="clearfix" />
