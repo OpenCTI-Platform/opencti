@@ -1,6 +1,7 @@
 import React from 'react';
 import useHelper from 'src/utils/hooks/useHelper';
 import { graphql } from 'react-relay';
+import Tooltip from '@mui/material/Tooltip';
 import { IndicatorsLinesPaginationQuery, IndicatorsLinesPaginationQuery$variables } from '@components/observations/__generated__/IndicatorsLinesPaginationQuery.graphql';
 import { IndicatorsLines_data$data } from '@components/observations/__generated__/IndicatorsLines_data.graphql';
 import IndicatorCreation from './indicators/IndicatorCreation';
@@ -160,7 +161,10 @@ const Indicators = () => {
       isSortable: isRuntimeSort ?? false,
     },
     objectLabel: {},
-    created: { percentWidth: 10 },
+    created: {
+      percentWidth: 10,
+      render: ({ created }, { fldt }) => <Tooltip title={fldt(created)}>{fldt(created)}</Tooltip>,
+    },
     valid_until: {
       label: 'Valid until',
       percentWidth: 10,
