@@ -27,10 +27,11 @@ import { resolveLink } from '../../utils/Entity';
 import StixCoreObjectLabels from './common/stix_core_objects/StixCoreObjectLabels';
 import StixCoreObjectsExports from './common/stix_core_objects/StixCoreObjectsExports';
 import useGranted, { KNOWLEDGE_KNGETEXPORT } from '../../utils/hooks/useGranted';
-import { hexToRGB, itemColor } from '../../utils/Colors';
+import { hexToRGB } from '../../utils/Colors';
 import ItemMarkings from '../../components/ItemMarkings';
 import { export_max_size } from '../../utils/utils';
 import Breadcrumbs from '../../components/Breadcrumbs';
+import itemColor from '../../components/ItemColor';
 
 const SEARCH$ = new Subject().pipe(debounce(() => timer(500)));
 
@@ -530,6 +531,7 @@ const SearchBulk = () => {
                 const inPlatform = entity.in_platform;
                 const link = inPlatform && `${resolveLink(entity.type)}/${entity.id}`;
                 const linkAnalyses = `${link}/analyses`;
+                const chipColor = itemColor(entity.type);
                 return (
                   <ListItem
                     key={entity.id}
@@ -554,11 +556,11 @@ const SearchBulk = () => {
                                 classes={{ root: classes.chipInList }}
                                 style={{
                                   backgroundColor: hexToRGB(
-                                    itemColor(entity.type),
+                                    chipColor,
                                     0.08,
                                   ),
-                                  color: itemColor(entity.type),
-                                  border: `1px solid ${itemColor(entity.type)}`,
+                                  color: chipColor,
+                                  border: `1px solid ${chipColor}`,
                                 }}
                                 label={t_i18n(`entity_${entity.type}`)}
                               />

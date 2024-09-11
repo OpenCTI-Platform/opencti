@@ -2,6 +2,7 @@ import { useTheme } from '@mui/material/styles';
 import { useFormatter } from '../../components/i18n';
 import { getMainRepresentative, isFieldForIdentifier } from '../defaultRepresentatives';
 import { itemColor } from '../Colors';
+import useAuth from './useAuth';
 
 // common type compatible with all distribution queries
 type DistributionNode = {
@@ -32,11 +33,13 @@ type Selection = {
 const useDistributionGraphData = () => {
   const { t_i18n } = useFormatter();
   const theme = useTheme();
+  const dark = theme.palette.mode === 'dark';
+  const { me: { monochrome_labels } } = useAuth();
 
   const getColorFromDistributionNode = (n: DistributionNode, selection: Selection) => {
     let color = isFieldForIdentifier(selection.attribute)
-      ? itemColor(n.entity?.entity_type)
-      : itemColor(n.label);
+      ? itemColor(n.entity?.entity_type ?? '', dark, undefined, monochrome_labels ?? false)
+      : itemColor(n.label, dark, undefined, monochrome_labels ?? false);
     if (n.entity?.color) {
       color = theme.palette.mode === 'light' && n.entity.color === '#ffffff'
         ? '#000000'

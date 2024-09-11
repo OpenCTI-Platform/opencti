@@ -12,8 +12,8 @@ import { useFormatter } from '../../../../components/i18n';
 import { horizontalBarsChartOptions } from '../../../../utils/Charts';
 import { simpleNumberFormat } from '../../../../utils/Number';
 import { getMainRepresentative, isFieldForIdentifier } from '../../../../utils/defaultRepresentatives';
-import { itemColor } from '../../../../utils/Colors';
 import { buildFiltersAndOptionsForWidgets } from '../../../../utils/filters/filtersUtils';
+import itemColor from '../../../../components/ItemColor';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.

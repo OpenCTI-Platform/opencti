@@ -42,6 +42,7 @@ import StixCoreObjectOrStixRelationshipLastContainers from '../../common/contain
 import StixSightingRelationshipLabelsView from './StixSightingRelationshipLabelsView';
 import Transition from '../../../../components/Transition';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
+import { UserContext } from '../../../../utils/hooks/useAuth';
 
 const styles = (theme) => ({
   container: {
@@ -211,8 +212,10 @@ class StixSightingRelationshipContainer extends Component {
       classes,
       stixSightingRelationship,
       paddingRight,
+      theme,
       isFABReplaced = false,
     } = this.props;
+    const dark = theme.palette.mode === 'dark';
     const { from } = stixSightingRelationship;
     const { to } = stixSightingRelationship;
     const fromRestricted = from === null;
@@ -244,215 +247,237 @@ class StixSightingRelationshipContainer extends Component {
             <Typography variant="h4" gutterBottom={true}>
               {t('Relationship')}
             </Typography>
-            <Paper
-              classes={{ root: classes.paperWithoutPadding }}
-              variant="outlined"
-              style={{ position: 'relative' }}
-              className={'paper-for-grid'}
-            >
-              <Link to={!fromRestricted ? `${linkFrom}/${from.id}` : '#'}>
-                <div
-                  className={classes.item}
-                  style={{
-                    border: `2px solid ${itemColor(
-                      !fromRestricted ? from.entity_type : 'Restricted',
-                    )}`,
-                    top: 20,
-                    left: 20,
-                  }}
-                >
-                  <div
-                    className={classes.itemHeader}
-                    style={{
-                      borderBottom: `1px solid ${itemColor(
-                        !fromRestricted ? from.entity_type : 'Restricted',
-                      )}`,
-                    }}
-                  >
-                    <div className={classes.icon}>
-                      <ItemIcon
-                        type={!fromRestricted ? from.entity_type : 'Restricted'}
-                        color={itemColor(
-                          !fromRestricted ? from.entity_type : 'Restricted',
-                        )}
-                        size="small"
-                      />
-                    </div>
-                    <div className={classes.type}>
-                      {/* eslint-disable-next-line no-nested-ternary */}
-                      {!fromRestricted
-                        ? from.relationship_type
-                          ? t('Relationship')
-                          : t(`entity_${from.entity_type}`)
-                        : t('Restricted')}
-                    </div>
-                  </div>
-                  <div className={classes.content}>
-                    <span className={classes.name}>
-                      {!fromRestricted
-                        ? truncate(
-                          from.name
-                          || from.observable_value
-                          || from.attribute_abstract
-                          || from.content
-                          || t(`relationship_${from.entity_type}`),
-                          50,
-                        )
-                        : t('Restricted')}
-                    </span>
-                  </div>
-                </div>
-              </Link>
-              <div className={classes.middle}>
-                <ArrowRightAlt fontSize="large" />
-                <br />
-                <Chip
+            <UserContext.Consumer>
+              {({ monochrome_labels }) => (
+                <Paper
+                  classes={{ root: classes.paperWithoutPadding }}
                   variant="outlined"
-                  classes={{ root: classes.chipInList }}
-                  color="primary"
-                  label={t('sighted in/at')}
-                />
-              </div>
-              <Link to={!toRestricted ? `${linkTo}/${to.id}` : '#'}>
-                <div
-                  className={classes.item}
-                  style={{
-                    border: `2px solid ${itemColor(
-                      !toRestricted ? to.entity_type : 'Restricted',
-                    )}`,
-                    top: 20,
-                    right: 20,
-                  }}
+                  style={{ position: 'relative' }}
+                  className={'paper-for-grid'}
                 >
-                  <div
-                    className={classes.itemHeader}
-                    style={{
-                      borderBottom: `1px solid ${itemColor(
-                        !toRestricted ? to.entity_type : 'Restricted',
-                      )}`,
-                    }}
-                  >
-                    <div className={classes.icon}>
-                      <ItemIcon
-                        type={!toRestricted ? to.entity_type : 'Unknown'}
-                        color={itemColor(
-                          !toRestricted ? to.entity_type : 'Restricted',
-                        )}
-                        size="small"
-                      />
-                    </div>
-                    <div className={classes.type}>
-                      {/* eslint-disable-next-line no-nested-ternary */}
-                      {!toRestricted
-                        ? to.relationship_type
-                          ? t('Relationship')
-                          : t(`entity_${to.entity_type}`)
-                        : 'Restricted'}
-                    </div>
-                  </div>
-                  <div className={classes.content}>
-                    <span className={classes.name}>
-                      {!toRestricted
-                        ? truncate(
-                          to.name
-                          || to.observable_value
-                          || to.attribute_abstract
-                          || to.content
-                          || t(`relationship_${to.entity_type}`),
-                          50,
-                        )
-                        : t('Restricted')}
-                    </span>
-                  </div>
-                </div>
-              </Link>
-              <Divider style={{ marginTop: 30 }} />
-              <div style={{ padding: 15 }}>
-                <Grid container={true} spacing={3}>
-                  <Grid item xs={6}>
-                    <Typography variant="h3" gutterBottom={true}>
-                      {t('Marking')}
-                    </Typography>
-                    <ItemMarkings
-                      markingDefinitions={
-                        stixSightingRelationship.objectMarking ?? []
-                      }
-                    />
-                    <Typography
-                      variant="h3"
-                      gutterBottom={true}
-                      style={{ marginTop: 20 }}
+                  <Link to={!fromRestricted ? `${linkFrom}/${from.id}` : '#'}>
+                    <div
+                      className={classes.item}
+                      style={{
+                        border: `2px solid ${itemColor(
+                          !fromRestricted ? from.entity_type : 'Restricted',
+                          dark,
+                          undefined,
+                          monochrome_labels,
+                        )}`,
+                        top: 20,
+                        left: 20,
+                      }}
                     >
-                      {t('First seen')}
-                    </Typography>
-                    {nsdt(stixSightingRelationship.first_seen)}
-                    <Typography
-                      variant="h3"
-                      gutterBottom={true}
-                      style={{ marginTop: 20 }}
-                    >
-                      {t('Last seen')}
-                    </Typography>
-                    {nsdt(stixSightingRelationship.last_seen)}
-                  </Grid>
-                  <Grid item xs={6}>
-                    <div>
-                      <StixSightingRelationshipSharing
-                        elementId={stixSightingRelationship.id}
-                      />
-                      <Typography
-                        variant="h3"
-                        gutterBottom={true}
-                        style={{ marginTop: 20 }}
-                      >
-                        {t('x_opencti_negative')}
-                      </Typography>
-                      <Chip
-                        classes={{
-                          root: stixSightingRelationship.x_opencti_negative
-                            ? classes.negative
-                            : classes.positive,
+                      <div
+                        className={classes.itemHeader}
+                        style={{
+                          borderBottom: `1px solid ${itemColor(
+                            !fromRestricted ? from.entity_type : 'Restricted',
+                            dark,
+                            undefined,
+                            monochrome_labels,
+                          )}`,
                         }}
-                        label={
-                          stixSightingRelationship.x_opencti_negative
-                            ? t('False positive')
-                            : t('True positive')
-                        }
-                      />
-                      <Typography
-                        variant="h3"
-                        gutterBottom={true}
-                        style={{ marginTop: 20 }}
                       >
-                        {t('Count')}
-                      </Typography>
-                      <span className={classes.number}>
-                        {n(stixSightingRelationship.attribute_count)}
-                      </span>
-                      <Typography
-                        variant="h3"
-                        gutterBottom={true}
-                        style={{ marginTop: 20 }}
-                      >
-                        {t('Description')}
-                      </Typography>
-                      <MarkdownDisplay
-                        content={
-                          stixSightingRelationship.x_opencti_inferences
-                          !== null ? (
-                            <i>{t('Inferred knowledge')}</i>
-                            ) : (
-                              stixSightingRelationship.description
+                        <div className={classes.icon}>
+                          <ItemIcon
+                            type={!fromRestricted ? from.entity_type : 'Restricted'}
+                            color={itemColor(
+                              !fromRestricted ? from.entity_type : 'Restricted',
+                              dark,
+                              undefined,
+                              monochrome_labels,
+                            )}
+                            size="small"
+                          />
+                        </div>
+                        <div className={classes.type}>
+                          {/* eslint-disable-next-line no-nested-ternary */}
+                          {!fromRestricted
+                            ? from.relationship_type
+                              ? t('Relationship')
+                              : t(`entity_${from.entity_type}`)
+                            : t('Restricted')}
+                        </div>
+                      </div>
+                      <div className={classes.content}>
+                        <span className={classes.name}>
+                          {!fromRestricted
+                            ? truncate(
+                              from.name
+                              || from.observable_value
+                              || from.attribute_abstract
+                              || from.content
+                              || t(`relationship_${from.entity_type}`),
+                              50,
                             )
-                        }
-                        remarkGfmPlugin={true}
-                        commonmark={true}
-                      />
+                            : t('Restricted')}
+                        </span>
+                      </div>
                     </div>
-                  </Grid>
-                </Grid>
-              </div>
-            </Paper>
+                  </Link>
+                  <div className={classes.middle}>
+                    <ArrowRightAlt fontSize="large" />
+                    <br />
+                    <Chip
+                      variant="outlined"
+                      classes={{ root: classes.chipInList }}
+                      color="primary"
+                      label={t('sighted in/at')}
+                    />
+                  </div>
+                  <Link to={!toRestricted ? `${linkTo}/${to.id}` : '#'}>
+                    <div
+                      className={classes.item}
+                      style={{
+                        border: `2px solid ${itemColor(
+                          !toRestricted ? to.entity_type : 'Restricted',
+                          dark,
+                          undefined,
+                          monochrome_labels,
+                        )}`,
+                        top: 20,
+                        right: 20,
+                      }}
+                    >
+                      <div
+                        className={classes.itemHeader}
+                        style={{
+                          borderBottom: `1px solid ${itemColor(
+                            !toRestricted ? to.entity_type : 'Restricted',
+                            dark,
+                            undefined,
+                            monochrome_labels,
+                          )}`,
+                        }}
+                      >
+                        <div className={classes.icon}>
+                          <ItemIcon
+                            type={!toRestricted ? to.entity_type : 'Unknown'}
+                            color={itemColor(
+                              !toRestricted ? to.entity_type : 'Restricted',
+                              dark,
+                              undefined,
+                              monochrome_labels,
+                            )}
+                            size="small"
+                          />
+                        </div>
+                        <div className={classes.type}>
+                          {/* eslint-disable-next-line no-nested-ternary */}
+                          {!toRestricted
+                            ? to.relationship_type
+                              ? t('Relationship')
+                              : t(`entity_${to.entity_type}`)
+                            : 'Restricted'}
+                        </div>
+                      </div>
+                      <div className={classes.content}>
+                        <span className={classes.name}>
+                          {!toRestricted
+                            ? truncate(
+                              to.name
+                              || to.observable_value
+                              || to.attribute_abstract
+                              || to.content
+                              || t(`relationship_${to.entity_type}`),
+                              50,
+                            )
+                            : t('Restricted')}
+                        </span>
+                      </div>
+                    </div>
+                  </Link>
+                  <Divider style={{ marginTop: 30 }} />
+                  <div style={{ padding: 15 }}>
+                    <Grid container={true} spacing={3}>
+                      <Grid item xs={6}>
+                        <Typography variant="h3" gutterBottom={true}>
+                          {t('Marking')}
+                        </Typography>
+                        <ItemMarkings
+                          markingDefinitions={
+                            stixSightingRelationship.objectMarking ?? []
+                          }
+                        />
+                        <Typography
+                          variant="h3"
+                          gutterBottom={true}
+                          style={{ marginTop: 20 }}
+                        >
+                          {t('First seen')}
+                        </Typography>
+                        {nsdt(stixSightingRelationship.first_seen)}
+                        <Typography
+                          variant="h3"
+                          gutterBottom={true}
+                          style={{ marginTop: 20 }}
+                        >
+                          {t('Last seen')}
+                        </Typography>
+                        {nsdt(stixSightingRelationship.last_seen)}
+                      </Grid>
+                      <Grid item xs={6}>
+                        <div>
+                          <StixSightingRelationshipSharing
+                            elementId={stixSightingRelationship.id}
+                          />
+                          <Typography
+                            variant="h3"
+                            gutterBottom={true}
+                            style={{ marginTop: 20 }}
+                          >
+                            {t('x_opencti_negative')}
+                          </Typography>
+                          <Chip
+                            classes={{
+                              root: stixSightingRelationship.x_opencti_negative
+                                ? classes.negative
+                                : classes.positive,
+                            }}
+                            label={
+                              stixSightingRelationship.x_opencti_negative
+                                ? t('False positive')
+                                : t('True positive')
+                            }
+                          />
+                          <Typography
+                            variant="h3"
+                            gutterBottom={true}
+                            style={{ marginTop: 20 }}
+                          >
+                            {t('Count')}
+                          </Typography>
+                          <span className={classes.number}>
+                            {n(stixSightingRelationship.attribute_count)}
+                          </span>
+                          <Typography
+                            variant="h3"
+                            gutterBottom={true}
+                            style={{ marginTop: 20 }}
+                          >
+                            {t('Description')}
+                          </Typography>
+                          <MarkdownDisplay
+                            content={
+                              stixSightingRelationship.x_opencti_inferences
+                              !== null ? (
+                                <i>{t('Inferred knowledge')}</i>
+                                ) : (
+                                  stixSightingRelationship.description
+                                )
+                            }
+                            remarkGfmPlugin={true}
+                            commonmark={true}
+                          />
+                        </div>
+                      </Grid>
+                    </Grid>
+                  </div>
+                </Paper>
+              )}
+            </UserContext.Consumer>
           </Grid>
           <Grid item xs={6}>
             <Typography variant="h4" gutterBottom={true}>

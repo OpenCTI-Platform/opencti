@@ -22,6 +22,7 @@ import { stixDomainObjectThreatKnowledgeStixRelationshipsQuery } from './StixDom
 import { truncate } from '../../../../utils/String';
 import { getSecondaryRepresentative, getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import { itemColor } from '../../../../utils/Colors';
+import { UserContext } from '../../../../utils/hooks/useAuth';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -52,6 +53,7 @@ class StixDomainObjectTimelineComponent extends Component {
       timeField,
       t,
     } = this.props;
+    const dark = theme.palette.mode === 'dark';
     const stixRelationships = pipe(
       map((n) => n.node),
       map((n) => (n.from && n.from.id === stixDomainObjectId
@@ -89,66 +91,76 @@ class StixDomainObjectTimelineComponent extends Component {
                             || stixRelationship.created_at,
                     )}
                   </TimelineOppositeContent>
-                  <TimelineSeparator>
-                    {link ? (
-                      <Link to={link}>
-                        <Tooltip
-                          title={
-                            !restricted
-                              ? getMainRepresentative(stixRelationship.targetEntity)
-                              : t('Restricted')
-                          }
-                        >
-                          <TimelineDot
-                            sx={{
-                              borderColor: !restricted
-                                ? itemColor(
-                                  stixRelationship.targetEntity.entity_type,
-                                )
-                                : theme.palette.primary.main,
-                            }}
-                            variant="outlined"
-                          >
-                            <ItemIcon
-                              type={
+                  <UserContext.Consumer>
+                    {({ monochrome_labels }) => (
+                      <TimelineSeparator>
+                        {link ? (
+                          <Link to={link}>
+                            <Tooltip
+                              title={
                                 !restricted
-                                  ? stixRelationship.targetEntity.entity_type
+                                  ? getMainRepresentative(stixRelationship.targetEntity)
                                   : t('Restricted')
                               }
-                            />
-                          </TimelineDot>
-                        </Tooltip>
-                      </Link>
-                    ) : (
-                      <Tooltip
-                        title={
-                          !restricted
-                            ? getMainRepresentative(stixRelationship.targetEntity)
-                            : t('Restricted')
-                        }
-                      >
-                        <TimelineDot
-                          sx={{
-                            borderColor: !restricted
-                              ? itemColor(
-                                stixRelationship.targetEntity.entity_type,
-                              )
-                              : theme.palette.primary.main,
-                          }}
-                          variant="outlined"
-                        >
-                          <ItemIcon
-                            type={
+                            >
+                              <TimelineDot
+                                sx={{
+                                  borderColor: !restricted
+                                    ? itemColor(
+                                      stixRelationship.targetEntity.entity_type,
+                                      dark,
+                                      undefined,
+                                      monochrome_labels,
+                                    )
+                                    : theme.palette.primary.main,
+                                }}
+                                variant="outlined"
+                              >
+                                <ItemIcon
+                                  type={
+                                    !restricted
+                                      ? stixRelationship.targetEntity.entity_type
+                                      : t('Restricted')
+                                  }
+                                />
+                              </TimelineDot>
+                            </Tooltip>
+                          </Link>
+                        ) : (
+                          <Tooltip
+                            title={
                               !restricted
-                                ? stixRelationship.targetEntity.entity_type
+                                ? getMainRepresentative(stixRelationship.targetEntity)
                                 : t('Restricted')
                             }
-                          />
-                        </TimelineDot>
-                      </Tooltip>
+                          >
+                            <TimelineDot
+                              sx={{
+                                borderColor: !restricted
+                                  ? itemColor(
+                                    stixRelationship.targetEntity.entity_type,
+                                    dark,
+                                    undefined,
+                                    monochrome_labels,
+                                  )
+                                  : theme.palette.primary.main,
+                              }}
+                              variant="outlined"
+                            >
+                              <ItemIcon
+                                type={
+                                  !restricted
+                                    ? stixRelationship.targetEntity.entity_type
+                                    : t('Restricted')
+                                }
+                              />
+                            </TimelineDot>
+                          </Tooltip>
+                        )}
+                        <TimelineConnector />
+                      </TimelineSeparator>
                     )}
-                    <TimelineConnector />
-                  </TimelineSeparator>
+                  </UserContext.Consumer>
                   <TimelineContent>
                     <Paper variant="outlined" className={classes.paper}>
                       <Typography variant="h2">

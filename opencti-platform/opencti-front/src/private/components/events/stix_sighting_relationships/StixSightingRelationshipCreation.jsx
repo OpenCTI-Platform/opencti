@@ -18,6 +18,7 @@ import ItemIcon from '../../../../components/ItemIcon';
 import { truncate } from '../../../../utils/String';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import StixSightingRelationshipCreationForm from './StixSightingRelationshipCreationForm';
+import { UserContext } from '../../../../utils/hooks/useAuth';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -389,6 +390,7 @@ class StixSightingRelationshipCreation extends Component {
 
   renderSelectSighting() {
     const { fsd, t, classes, fromObjects, toObjects, theme } = this.props;
+    const dark = theme.palette.mode === 'dark';
     const { existingSightings } = this.state;
     return (
       <div>
@@ -404,114 +406,145 @@ class StixSightingRelationshipCreation extends Component {
           <Typography variant="h6">{t('Select a sighting')}</Typography>
         </div>
         <div className={classes.container}>
-          {existingSightings.map((sighting) => (
-            <div
-              key={sighting.node.id}
-              className={classes.relation}
-              onClick={this.handleSelectSighting.bind(this, sighting.node)}
-            >
-              <div
-                className={classes.item}
-                style={{
-                  border: `2px solid ${itemColor(fromObjects[0].entity_type)}`,
-                  top: 10,
-                  left: 10,
-                }}
-              >
+          <UserContext.Consumer>
+            {({ monochrome_labels }) => {
+              existingSightings.map((sighting) => (
                 <div
-                  className={classes.itemHeader}
-                  style={{
-                    borderBottom: `1px solid ${itemColor(
-                      fromObjects[0].entity_type,
-                    )}`,
-                  }}
-                >
-                  <div className={classes.icon}>
-                    <ItemIcon
-                      type={fromObjects[0].entity_type}
-                      color={itemColor(fromObjects[0].entity_type)}
-                      size="small"
-                    />
-                  </div>
-                  <div className={classes.type}>
-                    {fromObjects[0].relationship_type
-                      ? t('Relationship')
-                      : t(`entity_${fromObjects[0].entity_type}`)}
-                  </div>
-                </div>
-                <div className={classes.content}>
-                  <span className={classes.name}>
-                    {fromObjects.length > 1 ? (
-                      <em>{t('Multiple entities selected')}</em>
-                    ) : (
-                      truncate(fromObjects[0].name, 20)
-                    )}
-                  </span>
-                </div>
-              </div>
-              <div className={classes.middle}>
-                <ArrowRightAlt fontSize="small" />
-                <br />
-                <Tooltip
-                  title={sighting.node.description}
-                  aria-label="Description"
-                  placement="top"
+                  key={sighting.node.id}
+                  className={classes.relation}
+                  onClick={this.handleSelectSighting.bind(this, sighting.node)}
                 >
                   <div
+                    className={classes.item}
                     style={{
-                      padding: '5px 8px 5px 8px',
-                      backgroundColor: theme.palette.background.accent,
-                      color: theme.palette.text.primary,
-                      fontSize: 12,
-                      display: 'inline-block',
+                      border: `2px solid ${itemColor(
+                        fromObjects[0].entity_type,
+                        dark,
+                        undefined,
+                        monochrome_labels,
+                      )}`,
+                      top: 10,
+                      left: 10,
                     }}
                   >
-                    {t('sig')}
+                    <div
+                      className={classes.itemHeader}
+                      style={{
+                        borderBottom: `1px solid ${itemColor(
+                          fromObjects[0].entity_type,
+                          dark,
+                          undefined,
+                          monochrome_labels,
+                        )}`,
+                      }}
+                    >
+                      <div className={classes.icon}>
+                        <ItemIcon
+                          type={fromObjects[0].entity_type}
+                          color={itemColor(
+                            fromObjects[0].entity_type,
+                            dark,
+                            undefined,
+                            monochrome_labels,
+                          )}
+                          size="small"
+                        />
+                      </div>
+                      <div className={classes.type}>
+                        {fromObjects[0].relationship_type
+                          ? t('Relationship')
+                          : t(`entity_${fromObjects[0].entity_type}`)}
+                      </div>
+                    </div>
+                    <div className={classes.content}>
+                      <span className={classes.name}>
+                        {fromObjects.length > 1 ? (
+                          <em>{t('Multiple entities selected')}</em>
+                        ) : (
+                          truncate(fromObjects[0].name, 20)
+                        )}
+                      </span>
+                    </div>
+                  </div>
+                  <div className={classes.middle}>
+                    <ArrowRightAlt fontSize="small" />
                     <br />
-                    {t('First obs.')} {fsd(sighting.node.first_seen)}
-                    <br />
-                    {t('Last obs.')} {fsd(sighting.node.last_seen)}
+                    <Tooltip
+                      title={sighting.node.description}
+                      aria-label="Description"
+                      placement="top"
+                    >
+                      <div
+                        style={{
+                          padding: '5px 8px 5px 8px',
+                          backgroundColor: theme.palette.background.accent,
+                          color: theme.palette.text.primary,
+                          fontSize: 12,
+                          display: 'inline-block',
+                        }}
+                      >
+                        {t('sig')}
+                        <br />
+                        {t('First obs.')} {fsd(sighting.node.first_seen)}
+                        <br />
+                        {t('Last obs.')} {fsd(sighting.node.last_seen)}
+                      </div>
+                    </Tooltip>
                   </div>
-                </Tooltip>
-              </div>
-              <div
-                className={classes.item}
-                style={{
-                  border: `2px solid ${itemColor(toObjects[0].entity_type)}`,
-                  top: 10,
-                  right: 10,
-                }}
-              >
-                <div
-                  className={classes.itemHeader}
-                  style={{
-                    borderBottom: `1px solid ${itemColor(
-                      toObjects[0].entity_type,
-                    )}`,
-                  }}
-                >
-                  <div className={classes.icon}>
-                    <ItemIcon
-                      type={toObjects[0].entity_type}
-                      color={itemColor(toObjects[0].entity_type)}
-                      size="small"
-                    />
+                  <div
+                    className={classes.item}
+                    style={{
+                      border: `2px solid ${itemColor(
+                        toObjects[0].entity_type,
+                        dark,
+                        undefined,
+                        monochrome_labels,
+                      )}`,
+                      top: 10,
+                      right: 10,
+                    }}
+                  >
+                    <div
+                      className={classes.itemHeader}
+                      style={{
+                        borderBottom: `1px solid ${itemColor(
+                          toObjects[0].entity_type,
+                          dark,
+                          undefined,
+                          monochrome_labels,
+                        )}`,
+                      }}
+                    >
+                      <div className={classes.icon}>
+                        <ItemIcon
+                          type={toObjects[0].entity_type}
+                          color={itemColor(
+                            toObjects[0].entity_type,
+                            dark,
+                            undefined,
+                            monochrome_labels,
+                          )}
+                          size="small"
+                        />
+                      </div>
+                      <div className={classes.type}>
+                        {toObjects[0].relationship_type
+                          ? t('Relationship')
+                          : t(`entity_${toObjects[0].entity_type}`)}
+                      </div>
+                    </div>
+                    <div className={classes.content}>
+                      <span className={classes.name}>
+                        {truncate(getMainRepresentative(toObjects[0]), 20)}
+                      </span>
+                    </div>
                   </div>
-                  <div className={classes.type}>
-                    {toObjects[0].relationship_type
-                      ? t('Relationship')
-                      : t(`entity_${toObjects[0].entity_type}`)}
-                  </div>
+                  <div className="clearfix" />
                 </div>
-                <div className={classes.content}>
-                  <span className={classes.name}>
-                    {truncate(getMainRepresentative(toObjects[0]), 20)}
-                  </span>
-                </div>
-              </div>
-              <div className="clearfix" />
-            </div>
-          ))}
+              ));
+            }
+            }
+          </UserContext.Consumer>
           <div
             className={classes.relationCreation}
             onClick={this.handleChangeStep.bind(this)}

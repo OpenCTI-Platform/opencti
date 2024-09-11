@@ -17,11 +17,11 @@ import CreatedByField from '../form/CreatedByField';
 import ObjectMarkingField from '../form/ObjectMarkingField';
 import { isNone, useFormatter } from '../../../../components/i18n';
 import { ExternalReferencesField } from '../form/ExternalReferencesField';
-import { itemColor } from '../../../../utils/Colors';
 import ItemIcon from '../../../../components/ItemIcon';
 import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
+import itemColor from '../../../../components/ItemColor';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
