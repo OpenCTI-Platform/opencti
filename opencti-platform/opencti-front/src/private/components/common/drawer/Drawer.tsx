@@ -1,4 +1,4 @@
-import React, { CSSProperties, useEffect, useState } from 'react';
+import React, { CSSProperties, useEffect, useState, forwardRef } from 'react';
 import DrawerMUI from '@mui/material/Drawer';
 import makeStyles from '@mui/styles/makeStyles';
 import IconButton from '@mui/material/IconButton';
@@ -77,11 +77,11 @@ interface DrawerProps {
   context?: readonly (GenericContext | null)[] | null;
   header?: React.ReactElement;
   controlledDial?: DrawerControlledDialType;
-  containerRef?: HTMLInputElement;
   containerStyle?: CSSProperties
 }
 
-const Drawer = ({
+// eslint-disable-next-line react/display-name
+const Drawer = forwardRef(({
   title,
   children,
   open: defaultOpen = false,
@@ -90,9 +90,8 @@ const Drawer = ({
   context,
   header,
   controlledDial,
-  containerRef,
   containerStyle,
-}: DrawerProps) => {
+}: DrawerProps, ref) => {
   const {
     bannerSettings: { bannerHeightNumber },
   } = useAuth();
@@ -156,9 +155,7 @@ const Drawer = ({
         classes={{ paper: classes.drawerPaper }}
         onClose={handleClose}
         onClick={(e) => e.stopPropagation()}
-        PaperProps={{
-          ref: containerRef,
-        }}
+        PaperProps={{ ref }}
       >
         <div className={classes.header}>
           <IconButton
@@ -177,6 +174,6 @@ const Drawer = ({
       </DrawerMUI>
     </>
   );
-};
+});
 
 export default Drawer;

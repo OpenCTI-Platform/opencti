@@ -1,5 +1,5 @@
 import { Button, IconButton, Tooltip, Typography } from '@mui/material';
-import React, { FunctionComponent, useRef, useState } from 'react';
+import React, { FunctionComponent, useState } from 'react';
 import { useLazyLoadQuery } from 'react-relay';
 import { Add } from '@mui/icons-material';
 import { useFormatter } from '../../../../components/i18n';
@@ -118,7 +118,7 @@ ContainerAddStixCoreObjectsInLineProps
     filters,
     numberOfElements,
   } = viewStorage;
-  const containerRef = useRef<HTMLInputElement>(null);
+  const [containerRef, setRef] = useState<HTMLInputElement>();
   const [selectedElements, setSelectedElements] = useState<scoEdge[]>(containerStixCoreObjects as scoEdge[]);
   const handleSelect = (node: { id: string }) => {
     setSelectedElements([
@@ -255,7 +255,7 @@ ContainerAddStixCoreObjectsInLineProps
       title={''} // Defined in custom header prop
       controlledDial={knowledgeGraph ? GraphControlledDial : Dial}
       header={<Header />}
-      containerRef={containerRef.current ?? undefined}
+      ref={setRef}
     >
       <ListLines
         helpers={helpers}
@@ -279,20 +279,22 @@ ContainerAddStixCoreObjectsInLineProps
         availableEntityTypes={targetStixCoreObjectTypes}
         entityTypes={targetStixCoreObjectTypes}
       >
-        <ContainerAddStixCoreObjectsLines
-          data={data}
-          containerId={containerId}
-          paginationOptions={linesPaginationOptions}
-          dataColumns={buildColumns()}
-          initialLoading={data === null}
-          knowledgeGraph={knowledgeGraph}
-          containerStixCoreObjects={selectedElements}
-          onAdd={handleSelect}
-          onDelete={handleDeselect}
-          setNumberOfElements={helpers.handleSetNumberOfElements}
-          containerRef={containerRef}
-          enableReferences={enableReferences}
-        />
+        {containerRef && (
+          <ContainerAddStixCoreObjectsLines
+            data={data}
+            containerId={containerId}
+            paginationOptions={linesPaginationOptions}
+            dataColumns={buildColumns()}
+            initialLoading={data === null}
+            knowledgeGraph={knowledgeGraph}
+            containerStixCoreObjects={selectedElements}
+            onAdd={handleSelect}
+            onDelete={handleDeselect}
+            setNumberOfElements={helpers.handleSetNumberOfElements}
+            containerRef={{ current: containerRef }}
+            enableReferences={enableReferences}
+          />
+        )}
       </ListLines>
     </Drawer>
   );
