@@ -17,7 +17,7 @@ import CaseTaskOverview from '@components/cases/tasks/CaseTaskOverview';
 import { Link } from 'react-router-dom';
 import { CaseTaskOverview_task$key } from '@components/cases/tasks/__generated__/CaseTaskOverview_task.graphql';
 import { CaseTasksLines_data$data } from '@components/cases/tasks/__generated__/CaseTasksLines_data.graphql';
-import { CaseTasksLine_data$data } from '@components/cases/tasks/__generated__/CaseTasksLine_data.graphql';
+import { CaseUtilsTasksLine_data$data } from '@components/cases/__generated__/CaseUtilsTasksLine_data.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
 import { handleErrorInForm } from '../../../../relay/environment';
@@ -245,7 +245,7 @@ const CaseTasksLines: FunctionComponent<CaseTasksLinesProps> = ({
               onLineClick={(line: CaseTaskOverview_task$key & { name: string, id: string }) => {
                 setTask(line);
               }}
-              actions={(row: CaseTasksLine_data$data) => (
+              actions={(row: CaseUtilsTasksLine_data$data) => (
                 <TaskPopover
                   id={row.id}
                   objectId={caseId}
