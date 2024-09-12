@@ -72,7 +72,9 @@ export const DataTableLineDummy = () => {
   );
 };
 
-export const DataTableLinesDummy = ({ number = 10 }: { number?: number }) => Array(number).fill(0).map((_, idx) => (<DataTableLineDummy key={idx} />));
+export const DataTableLinesDummy = ({ number = 10 }: { number?: number }) => {
+  return Array(Math.min(number, 25)).fill(0).map((_, idx) => (<DataTableLineDummy key={idx} />));
+};
 
 const DataTableCell = ({
   cell,
