@@ -238,6 +238,12 @@ const BulkRelationDialog : FunctionComponent<BulkRelationDialogProps> = ({
   }, [bulkEntityList]);
 
   const getDefaultEntityType = () => {
+    if (targetObjectTypes.length === 1 && targetObjectTypes.includes('Threat-Actor')) {
+      const foundThreatActor = entityList
+        .filter((item) => item.toEntitytype.includes('Threat-Actor'))
+        .sort((a, b) => (a.toEntitytype < b.toEntitytype ? -1 : 1))[0];
+      return foundThreatActor ?? entityList[0];
+    }
     if (targetObjectTypes.length === 1 && targetObjectTypes.includes('Stix-Cyber-Observable')) {
       const foundObservableType = entityList
         .filter((obs) => obs.isObservable)
@@ -245,7 +251,7 @@ const BulkRelationDialog : FunctionComponent<BulkRelationDialogProps> = ({
       return foundObservableType ?? entityList[0];
     }
     const selectedEntityType = targetObjectTypes[0];
-    const foundEntityType = entityList.find((item) => item.toEntitytype.includes(selectedEntityType));
+    const foundEntityType = entityList.find((item) => item.toEntitytype === selectedEntityType);
     return foundEntityType ?? entityList[0];
   };
 
