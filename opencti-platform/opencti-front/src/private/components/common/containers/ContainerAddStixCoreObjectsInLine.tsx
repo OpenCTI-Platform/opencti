@@ -118,7 +118,7 @@ ContainerAddStixCoreObjectsInLineProps
     filters,
     numberOfElements,
   } = viewStorage;
-  const containerRef = useRef(null);
+  const containerRef = useRef<HTMLInputElement>(null);
   const [selectedElements, setSelectedElements] = useState<scoEdge[]>(containerStixCoreObjects as scoEdge[]);
   const handleSelect = (node: { id: string }) => {
     setSelectedElements([
@@ -255,6 +255,7 @@ ContainerAddStixCoreObjectsInLineProps
       title={''} // Defined in custom header prop
       controlledDial={knowledgeGraph ? GraphControlledDial : Dial}
       header={<Header />}
+      containerRef={containerRef.current ?? undefined}
     >
       <ListLines
         helpers={helpers}

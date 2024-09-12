@@ -104,8 +104,8 @@ const Drawer = ({
     }
   }, [defaultOpen]);
 
-  const handleClose = (event) => {
-    onClose?.(event);
+  const handleClose = () => {
+    onClose?.();
     setOpen(false);
   };
 
