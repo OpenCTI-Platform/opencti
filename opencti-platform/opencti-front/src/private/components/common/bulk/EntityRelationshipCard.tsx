@@ -63,6 +63,9 @@ const EntityRelationshipCard : FunctionComponent<EntityRelationshipCardProps> = 
           color: theme.palette.text?.primary,
           textAlign: 'center',
           fontSize: 12,
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          padding: '0 8px',
         }}
         >
           {t_i18n(entityName)}

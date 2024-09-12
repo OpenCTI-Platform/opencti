@@ -213,7 +213,8 @@ const StixDomainPanel = ({
     queryData,
     stixDomainObjectTypes,
   );
-  const [type, setType] = useState(availableEntityTypes.at(0).value);
+  const selectedType = availableEntityTypes.find((item) => item.value === stixDomainObjectTypes) ?? availableEntityTypes.at(0);
+  const [type, setType] = useState(selectedType.value);
   const baseCreatedBy = defaultCreatedBy
     ? { value: defaultCreatedBy.id, label: defaultCreatedBy.name }
     : undefined;

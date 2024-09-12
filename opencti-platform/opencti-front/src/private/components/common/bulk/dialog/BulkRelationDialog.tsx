@@ -77,6 +77,7 @@ interface BulkRelationDialogProps {
   defaultRelationshipType?: string;
   paginationKey: string;
   paginationOptions: PaginationOptions;
+  targetObjectTypes: string[];
 }
 
 export interface BulkEntityTypeInfo {
@@ -170,6 +171,7 @@ const BulkRelationDialog : FunctionComponent<BulkRelationDialogProps> = ({
   defaultRelationshipType,
   paginationKey,
   paginationOptions,
+  targetObjectTypes,
 }) => {
   const { t_i18n } = useFormatter();
   const [textAreaValue, setTextAreaValue] = useState<string[]>([...selectedEntities.map((item) => item.name ?? '')]);
@@ -235,12 +237,25 @@ const BulkRelationDialog : FunctionComponent<BulkRelationDialogProps> = ({
     selectMissingEntities(bulkEntityList);
   }, [bulkEntityList]);
 
+  const getDefaultEntityType = () => {
+    if (targetObjectTypes.length === 1 && targetObjectTypes.includes('Stix-Cyber-Observable')) {
+      const foundObservableType = entityList
+        .filter((obs) => obs.isObservable)
+        .sort((a, b) => (a.toEntitytype < b.toEntitytype ? -1 : 1))[0];
+      return foundObservableType ?? entityList[0];
+    }
+    const selectedEntityType = targetObjectTypes[0];
+    const foundEntityType = entityList.find((item) => item.toEntitytype.includes(selectedEntityType));
+    return foundEntityType ?? entityList[0];
+  };
+
   useEffect(() => {
     const getBulkEntities = async () => {
       const rawLinesPromises: Promise<StixCoreResultsType>[] = entityToSearch.map((content) => querySearchEntityByText(content));
       const resultsAwait: StixCoreResultsType[] = await Promise.all(rawLinesPromises);
       const newBulkEntityList = resultsAwait.reduce((acc: BulkEntityTypeInfo[], cur: StixCoreResultsType, index: number) => {
         const foundItem = bulkEntityList.find((item) => item.searchTerm === cur.searchTerm);
+        const defaultEntityType = getDefaultEntityType();
         if (cur.stixCoreObjects.edges.length > 0) {
           const { edges } = cur.stixCoreObjects;
           const stixObject = edges[0].node;
@@ -251,7 +266,8 @@ const BulkRelationDialog : FunctionComponent<BulkRelationDialogProps> = ({
           }));
           const foundEntityType = entityList.filter((entityType) => entityType.toEntitytype === entityTypeList[0].entity_type);
           const newSelectedEntityType: RelationsToEntity = foundEntityType.length ? foundEntityType[0] : entityList[0];
-          let selectedEntityType = foundItem?.selectedEntityType ?? newSelectedEntityType;
+          let selectedEntityType: RelationsToEntity = (foundItem && foundItem.selectedEntityType) ?? newSelectedEntityType;
+          const isExisting = foundItem ? !!entityTypeList.find((item) => item.entity_type === selectedEntityType.toEntitytype) : true;
           const isMatchingEntity = getRelationMatchStatus(newSelectedEntityType, entityTypeList);
           const foundSelectedItem = selectedEntities.find((item) => item.name === cur.searchTerm);
           if (!isFirstLoadDone) {
@@ -263,7 +279,7 @@ const BulkRelationDialog : FunctionComponent<BulkRelationDialogProps> = ({
             representative: foundItem?.representative ?? stixObject.representative.main,
             entityTypeList,
             isMatchingEntity,
-            isExisting: true,
+            isExisting,
             selectedEntityType,
             index,
             searchTerm: cur.searchTerm,
@@ -272,7 +288,7 @@ const BulkRelationDialog : FunctionComponent<BulkRelationDialogProps> = ({
         return [...acc, {
           isExisting: false,
           representative: foundItem?.representative ?? cur.searchTerm,
-          selectedEntityType: foundItem?.selectedEntityType ?? entityList[0],
+          selectedEntityType: foundItem?.selectedEntityType ?? defaultEntityType,
           index,
           isMatchingEntity: false,
           searchTerm: cur.searchTerm,
@@ -363,7 +379,7 @@ const BulkRelationDialog : FunctionComponent<BulkRelationDialogProps> = ({
   const handleSubmit = async () => {
     setIsSubmitting(true);
     for (const bulkEntity of bulkEntityList) {
-      const foundEntityType = bulkEntity.entityTypeList?.find(({ entity_type }) => entity_type === bulkEntity.selectedEntityType.toEntitytype);
+      const foundEntityType = bulkEntity.entityTypeList && bulkEntity.entityTypeList.find((entity) => entity.entity_type === bulkEntity.selectedEntityType.toEntitytype);
       if (!foundEntityType) return;
       const finalValues = {
         relationship_type: selectedRelationType,
@@ -462,7 +478,7 @@ const BulkRelationDialog : FunctionComponent<BulkRelationDialogProps> = ({
               </Box>
               <Box id="relationArrow" sx={{ display: 'flex', justifyContent: 'center', padding: '0 20px', flexDirection: 'column', minWidth: '200px' }}>
                 <Select disabled={isSubmitting} onChange={handleChangeSelectedRelationType} value={selectedRelationType}>
-                  {relationListArray.map((relation) => (
+                  {relationListArray.sort((a, b) => (t_i18n(`relationship_${a}`) < t_i18n(`relationship_${b}`) ? -1 : 1)).map((relation) => (
                     <MenuItem key={relation} value={relation}>
                       {t_i18n(`relationship_${relation}`)}
                     </MenuItem>
@@ -483,11 +499,14 @@ const BulkRelationDialog : FunctionComponent<BulkRelationDialogProps> = ({
                     '.MuiInputBase-root': {
                       paddingTop: '2px',
                     },
+                    '& .MuiInputBase-input': {
+                      whiteSpace: textAreaValue.length ? 'nowrap' : 'wrap',
+                    },
                   }}
                   value={getTextAreaValue()}
                   onChange={handleChangeTextArea}
                   multiline
-                  minRows={10}
+                  minRows={textAreaValue.length > 10 ? textAreaValue.length + 1 : 10}
                   placeholder={t_i18n('Type or copy paste data in this area.')}
                   variant="outlined"
                 />

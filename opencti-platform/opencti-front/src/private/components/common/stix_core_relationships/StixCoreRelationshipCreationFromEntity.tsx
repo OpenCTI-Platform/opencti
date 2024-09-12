@@ -140,6 +140,9 @@ export const stixCoreRelationshipCreationFromEntityStixCoreObjectsLinesFragment 
           standard_id
           entity_type
           created_at
+          representative {
+            main
+          }
           createdBy {
             ... on Identity {
               name
@@ -729,7 +732,7 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
     const newTargetEntities: TargetEntity[] = Object.values(selectedElements).map((item) => ({
       id: item.id,
       entity_type: item.entity_type ?? '',
-      name: item.name ?? item.observable_value ?? '',
+      name: item.name ?? item.observable_value ?? item.representative?.main.toString() ?? '',
     }));
     setTargetEntities(newTargetEntities);
   }, [selectedElements]);
@@ -831,6 +834,7 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
                       entityTypes={virtualEntityTypes}
                       additionalHeaderButtons={[(
                         <BulkRelationDialogContainer
+                          targetObjectTypes={[...targetStixDomainObjectTypes, ...targetStixCyberObservableTypes]}
                           paginationOptions={searchPaginationOptions}
                           paginationKey="Pagination_stixCoreObjects"
                           key="BulkRelationDialogContainer"

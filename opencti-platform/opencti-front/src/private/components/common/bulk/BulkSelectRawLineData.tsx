@@ -75,7 +75,9 @@ const BulkSelectRawLineData : FunctionComponent<BulkSelectRawLineDataProps> = ({
         }];
       }
       return [...acc];
-    }, []).sort((a, b) => a.groupOrder - b.groupOrder);
+    }, [])
+      .sort((a, b) => (a.label < b.label ? -1 : 1))
+      .sort((a, b) => a.groupOrder - b.groupOrder);
   };
 
   const getAutocompleteValue = () => {
