@@ -478,7 +478,7 @@ const BulkRelationDialog : FunctionComponent<BulkRelationDialogProps> = ({
               </Box>
               <Box id="relationArrow" sx={{ display: 'flex', justifyContent: 'center', padding: '0 20px', flexDirection: 'column', minWidth: '200px' }}>
                 <Select disabled={isSubmitting} onChange={handleChangeSelectedRelationType} value={selectedRelationType}>
-                  {relationListArray.sort((a, b) => (a < b ? -1 : 1)).map((relation) => (
+                  {relationListArray.sort((a, b) => (t_i18n(`relationship_${a}`) < t_i18n(`relationship_${b}`) ? -1 : 1)).map((relation) => (
                     <MenuItem key={relation} value={relation}>
                       {t_i18n(`relationship_${relation}`)}
                     </MenuItem>
