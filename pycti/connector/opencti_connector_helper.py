@@ -671,8 +671,8 @@ class ConnectorInfo:
         self,
         run_and_terminate: bool = False,
         buffering: bool = False,
-        queue_threshold: float = 500,
-        queue_messages_size: float = 0,
+        queue_threshold: float = 500.0,
+        queue_messages_size: float = 0.0,
         next_run_datetime: datetime = None,
         last_run_datetime: datetime = None,
     ):
@@ -1191,7 +1191,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
                 connector_queue_details = connector_details["connector_queue_details"]
 
                 queue_messages_size_byte = connector_queue_details["messages_size"]
-                queue_threshold = self.connect_queue_threshold
+                queue_threshold = float(self.connect_queue_threshold)
 
                 # Convert queue_messages_size to Mo (decimal)
                 queue_messages_size_mo = queue_messages_size_byte / 1000000
@@ -1210,7 +1210,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
                 self.connector_info.queue_messages_size = queue_messages_size_mo
                 self.connector_info.queue_threshold = queue_threshold
 
-                if float(queue_messages_size_mo) < float(queue_threshold):
+                if queue_messages_size_mo < queue_threshold:
                     # Set buffering
                     self.connector_info.buffering = False
                     return False
