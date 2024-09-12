@@ -1328,7 +1328,7 @@ const mergeEntitiesRaw = async (context, user, targetEntity, sourceEntities, tar
   // Elastic update with partial instance to prevent data override
   if (impactedInputs.length > 0) {
     const updateAsInstance = partialInstanceWithInputs(targetEntity, impactedInputs);
-    await elUpdateElement(context, user, updateAsInstance, impactedInputs);
+    await elUpdateElement(context, user, targetEntity, updateAsInstance, updateAsInstance, impactedInputs);
     logApp.info(`[OPENCTI] Merging attributes success for ${targetEntity.internal_id}`, { update: updateAsInstance });
   }
 };
@@ -2088,7 +2088,7 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
     // Impacting information
     if (impactedInputs.length > 0) {
       const updateAsInstance = partialInstanceWithInputs(updatedInstance, impactedInputs);
-      await elUpdateElement(context, user, updateAsInstance, impactedInputs);
+      await elUpdateElement(context, user, initial, updatedInstance, updateAsInstance, impactedInputs);
     }
     if (relationsToDelete.length > 0) {
       await elDeleteElements(context, user, relationsToDelete);

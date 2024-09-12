@@ -3973,7 +3973,7 @@ const elUpdateConnectionsOfElement = async (documentId, documentBody) => {
 };
 
 const DRAFT_INPUT_TO_IGNORE = ['updated_at', 'modified', 'i_attributes'];
-export const elUpdateElement = async (context, user, instance, inputs = []) => {
+export const elUpdateElement = async (context, user, initial, updated, instance, inputs = []) => {
   const draftContext = inDraftContext(context, user);
   let instanceToUse = instance;
   let firstDraftCopy = false;
@@ -3988,6 +3988,7 @@ export const elUpdateElement = async (context, user, instance, inputs = []) => {
   let replaceId = instanceToUse.internal_id;
   if (draftContext) {
     if (firstDraftCopy) {
+      const firstPatchChange = jsonpatch.compare(initial, updated);
       const draftUpdates = inputs.filter((i) => !DRAFT_INPUT_TO_IGNORE.includes(i.key))
         .map((i) => ({ draft_update_operation: 'replace', draft_update_field: i.key, draft_update_values: instanceToUse[i.key] }));
       const draftChange = { draft_operation: 'update', draft_updates: draftUpdates };
@@ -3995,6 +3996,7 @@ export const elUpdateElement = async (context, user, instance, inputs = []) => {
       replaceId = instanceToUse._id;
       dataToReplace = R.dissoc('_id', dataToReplace);
     } else {
+      const patchChange = jsonpatch.compare(initial, updated);
       const fullInstance = await elLoadById(context, user, instanceToUse.internal_id);
       const isDraftCreation = fullInstance.draft_change && fullInstance.draft_change.draft_operation === 'create';
       if (!isDraftCreation) {
