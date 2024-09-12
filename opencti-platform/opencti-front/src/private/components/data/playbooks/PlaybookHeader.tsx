@@ -108,7 +108,7 @@ const PlaybookHeaderComponent = ({
   const [openLastExecutions, setOpenLastExecutions] = useState(false);
   const [openExecution, setOpenExecution] = useState<string | null>(null);
   const [rawData, setRawData] = useState<string | null | undefined>(null);
-  const { t_i18n, nsdt } = useFormatter();
+  const { t_i18n, nsdt, n } = useFormatter();
   return (
     <>
       <Typography
@@ -151,7 +151,7 @@ const PlaybookHeaderComponent = ({
               <Chip
                 classes={{ root: classes.chip }}
                 style={{ marginRight: 14 }}
-                label={`${playbook.queue_messages} messages to process`}
+                label={`${n(playbook.queue_messages)} ${t_i18n('messages in processing')}`}
               />
             </div>
             <Tooltip title={t_i18n('Open last execution traces')}>

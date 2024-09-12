@@ -68,7 +68,7 @@ const styles = (theme) => ({
 
 class SyncLineLineComponent extends Component {
   render() {
-    const { classes, node, dataColumns, paginationOptions, t, nsdt } = this.props;
+    const { classes, node, dataColumns, paginationOptions, t, nsdt, n } = this.props;
     return (
       <ListItem classes={{ root: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIcon }}>
@@ -99,7 +99,7 @@ class SyncLineLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.messages.width }}
               >
-                <code>{node.queue_messages}</code>
+                <code>{n(node.queue_messages)}</code>
               </div>
               <div
                 className={classes.bodyItem}

@@ -65,7 +65,7 @@ export const PlaybookLineComponent: FunctionComponent<PlaybookLineProps> = ({
   node,
 }) => {
   const classes = useStyles();
-  const { t_i18n } = useFormatter();
+  const { t_i18n, n } = useFormatter();
   const data = useFragment(playbookLineFragment, node);
   return (
     <ListItem
@@ -97,7 +97,7 @@ export const PlaybookLineComponent: FunctionComponent<PlaybookLineProps> = ({
               className={classes.bodyItem}
               style={{ width: dataColumns.messages.width }}
             >
-              {data.queue_messages}
+              {n(data.queue_messages)}
             </div>
             <div
               className={classes.bodyItem}
