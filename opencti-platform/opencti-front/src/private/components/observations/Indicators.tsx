@@ -15,6 +15,7 @@ import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 import DataTable from '../../../components/dataGrid/DataTable';
+import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
 
 const LOCAL_STORAGE_KEY = 'indicators-list';
 
@@ -151,7 +152,7 @@ const Indicators = () => {
     queryPaginationOptions,
   );
 
-  const dataColumns = {
+  const dataColumns: DataTableProps['dataColumns'] = {
     pattern_type: {},
     name: { percentWidth: 21 },
     createdBy: {
