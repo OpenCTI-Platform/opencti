@@ -174,15 +174,15 @@ export const metrics = async (context, user) => {
   }, metricApi);
 };
 
-const metricsCache = new LRUCache({ ttl: 60000, max: 1 }); // 1 minute cache
+const metricsCache = new LRUCache({ ttl: 15000, max: 1 }); // 15 seconds cache
 export const getConnectorQueueSize = async (context, user, connectorId) => {
   let stats = metricsCache.get('cached_metrics');
   if (!stats) {
     stats = await metrics(context, user);
     metricsCache.set('cached_metrics', stats);
   }
-  return stats.queues.filter((queue) => queue.name.includes(connectorId))
-    .reduce((a, b) => a.messages + b.messages);
+  const targetQueues = stats.queues.filter((queue) => queue.name.includes(connectorId));
+  return targetQueues.length > 0 ? targetQueues.reduce((a, b) => (a.messages ?? 0) + (b.messages ?? 0)) : 0;
 };
 
 export const connectorConfig = (id) => ({
