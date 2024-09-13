@@ -68,9 +68,12 @@ export const sendStixBundle = async (context, user, connectorId, bundle) => {
       throw UnsupportedError('Invalid connector');
     }
     const workName = `${connector.name} run @ ${now()}`;
-    const work = await createWork(context, user, connector, workName, connector.internal_id);
+    const work = await createWork(context, user, connector, workName, connector.internal_id, { receivedTime: now() });
     const content = Buffer.from(bundle, 'utf-8').toString('base64');
-    await updateExpectationsNumber(context, context.user, work.id, jsonBundle.objects.length);
+    if (jsonBundle.objects.length === 1) {
+      // Only add explicit expectation if the worker will not split anything
+      await updateExpectationsNumber(context, context.user, work.id, jsonBundle.objects.length);
+    }
     await pushToWorkerForConnector(connectorId, {
       type: 'bundle',
       applicant_id: user.internal_id,
