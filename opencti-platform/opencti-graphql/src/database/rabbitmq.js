@@ -232,6 +232,13 @@ export const registerConnectorQueues = async (id, name, type, scope) => {
   return connectorConfig(id);
 };
 
+// region RETRO COMPATIBILITY Register internal queues
+/** @deprecated [>=6.3 & <6.6]. Remove and add migration to remove the queues. */
+export const initializeInternalQueues = async () => {
+  await registerConnectorQueues('playbook', 'Internal playbook manager', 'internal', 'playbook');
+  await registerConnectorQueues('sync', 'Internal sync manager', 'internal', 'sync');
+};
+
 export const unregisterConnector = async (id) => {
   const listen = await amqpExecute(async (channel) => {
     const deleteQueue = util.promisify(channel.deleteQueue).bind(channel);
