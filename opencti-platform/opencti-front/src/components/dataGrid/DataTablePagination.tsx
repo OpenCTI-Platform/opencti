@@ -7,12 +7,12 @@ import { ButtonGroup } from '@mui/material';
 import Button from '@mui/material/Button';
 import { TableTuneIcon } from 'filigran-icon';
 import { useTheme } from '@mui/styles';
+import { Theme } from '@mui/material/styles/createTheme';
 import { useFormatter } from '../i18n';
 import { DataTableVariant, LocalStorageColumns } from './dataTableTypes';
 import { NumberOfElements, usePaginationLocalStorage } from '../../utils/hooks/useLocalStorage';
 import { useDataTableContext } from './dataTableUtils';
 import NestedMenuButton from '../nestedMenu/NestedMenuButton';
-import { Theme } from '../Theme';
 
 const DataTablePagination = ({
   page,

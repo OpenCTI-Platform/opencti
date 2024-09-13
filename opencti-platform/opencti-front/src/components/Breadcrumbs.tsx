@@ -3,8 +3,8 @@ import MUIBreadcrumbs from '@mui/material/Breadcrumbs';
 import { Link } from 'react-router-dom';
 import Typography from '@mui/material/Typography';
 import makeStyles from '@mui/styles/makeStyles';
+import { Theme } from '@mui/material/styles/createTheme';
 import { truncate } from '../utils/String';
-import { Theme } from './Theme';
 
 interface element {
   label: string;

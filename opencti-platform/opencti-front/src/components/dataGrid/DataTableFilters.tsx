@@ -18,6 +18,7 @@ import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import { useTheme } from '@mui/styles';
+import { Theme } from '@mui/material/styles/createTheme';
 import FilterIconButton from '../FilterIconButton';
 import { useFormatter } from '../i18n';
 import { DataTableDisplayFiltersProps, DataTableFiltersProps, DataTableVariant } from './dataTableTypes';
@@ -30,7 +31,6 @@ import { KNOWLEDGE_KNGETEXPORT } from '../../utils/hooks/useGranted';
 import { ExportContext } from '../../utils/ExportContextProvider';
 import Transition from '../Transition';
 import DataTablePagination from './DataTablePagination';
-import { Theme } from '../Theme';
 import { isFilterGroupNotEmpty } from '../../utils/filters/filtersUtils';
 
 export const DataTableDisplayFilters = ({
