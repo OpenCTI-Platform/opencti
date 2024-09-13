@@ -70,7 +70,7 @@ const DataTableHeaders: FunctionComponent<DataTableHeadersProps> = ({
         height: `calc(${theme.spacing(6)} + 1px)`,
         alignItems: 'stretch',
         borderBottom: `1px solid ${theme.palette.divider}`,
-        background: (Object.keys(selectedElements).length > 0 || selectAll) && !disableSelectAll ? theme.palette.background.accent : 'unset',
+        background: (Object.keys(selectedElements ?? {}).length > 0 || selectAll) && !disableSelectAll ? theme.palette.background.accent : 'unset',
       }}
     >
       {effectiveColumns.some(({ id }) => id === 'select') && (

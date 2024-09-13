@@ -42,11 +42,11 @@ const IndicatorObservablesComponent = ({ indicator }) => {
               isSortable: false,
             },
             observable_value: {
-              percentWidth: 60,
+              percentWidth: 55,
               isSortable: false,
             },
             created_at: {
-              percentWidth: 20,
+              percentWidth: 25,
               isSortable: false,
             },
           }}
