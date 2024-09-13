@@ -821,8 +821,11 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'CVSS3 - Severity',
     percentWidth: 15,
     isSortable: true,
-    render: ({ x_opencti_cvss_base_severity }) => (
-      <Tooltip title={x_opencti_cvss_base_severity}><>{x_opencti_cvss_base_severity}</></Tooltip>
+    render: ({ x_opencti_cvss_base_severity }, { t_i18n }) => (
+      <ItemSeverity
+        severity={x_opencti_cvss_base_severity}
+        label={x_opencti_cvss_base_severity || t_i18n('Unknown')}
+      />
     ),
   },
   x_opencti_organization_type: {

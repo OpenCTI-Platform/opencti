@@ -54,7 +54,7 @@ interface ItemSeverityProps {
 }
 
 const computeSeverityStyle = (severity: string | undefined | null) => {
-  switch (severity) {
+  switch (severity?.toLowerCase()) {
     case 'low':
       return inlineStyles.green;
     case 'medium':
