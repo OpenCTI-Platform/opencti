@@ -56,6 +56,7 @@ const playbookLineFragment = graphql`
     name
     description
     playbook_running
+    queue_messages
   }
 `;
 
@@ -64,7 +65,7 @@ export const PlaybookLineComponent: FunctionComponent<PlaybookLineProps> = ({
   node,
 }) => {
   const classes = useStyles();
-  const { t_i18n } = useFormatter();
+  const { t_i18n, n } = useFormatter();
   const data = useFragment(playbookLineFragment, node);
   return (
     <ListItem
@@ -94,11 +95,17 @@ export const PlaybookLineComponent: FunctionComponent<PlaybookLineProps> = ({
             </div>
             <div
               className={classes.bodyItem}
+              style={{ width: dataColumns.messages.width }}
+            >
+              {n(data.queue_messages)}
+            </div>
+            <div
+              className={classes.bodyItem}
               style={{ width: dataColumns.playbook_running.width }}
             >
               <ItemBoolean
                 variant="inList"
-                label={data.playbook_running ? t_i18n('Yes') : t_i18n('No')}
+                label={data.playbook_running ? t_i18n('Active') : t_i18n('Inactive')}
                 status={data.playbook_running}
               />
             </div>
@@ -106,7 +113,7 @@ export const PlaybookLineComponent: FunctionComponent<PlaybookLineProps> = ({
         }
       />
       <ListItemIcon classes={{ root: classes.goIcon }}>
-        <KeyboardArrowRightOutlined />
+        <KeyboardArrowRightOutlined/>
       </ListItemIcon>
     </ListItem>
   );
@@ -150,6 +157,17 @@ export const PlaybookLineDummy = ({
             </div>
             <div
               className={classes.bodyItem}
+              style={{ width: dataColumns.messages.width }}
+            >
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width="90%"
+                height="100%"
+              />
+            </div>
+            <div
+              className={classes.bodyItem}
               style={{ width: dataColumns.playbook_running.width }}
             >
               <Skeleton
@@ -163,7 +181,7 @@ export const PlaybookLineDummy = ({
         }
       />
       <ListItemIcon classes={{ root: classes.goIcon }}>
-        <KeyboardArrowRightOutlined color="disabled" />
+        <KeyboardArrowRightOutlined color="disabled"/>
       </ListItemIcon>
     </ListItem>
   );

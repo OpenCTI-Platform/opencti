@@ -84,7 +84,10 @@ const pushBundleToConnectorQueue = async (context: AuthContext, ingestion: Basic
   const work: any = await createWork(context, SYSTEM_USER, connector, workName, connector.internal_id, { receivedTime: now() });
   const stixBundle = JSON.stringify(bundle);
   const content = Buffer.from(stixBundle, 'utf-8').toString('base64');
-  await updateExpectationsNumber(context, SYSTEM_USER, work.id, bundle.objects.length);
+  if (bundle.objects.length === 1) {
+    // Only add explicit expectation if the worker will not split anything
+    await updateExpectationsNumber(context, SYSTEM_USER, work.id, bundle.objects.length);
+  }
   await pushToWorkerForConnector(connector.internal_id, {
     type: 'bundle',
     applicant_id: ingestion.user_id ?? OPENCTI_SYSTEM_UUID,

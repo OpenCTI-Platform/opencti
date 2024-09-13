@@ -63,16 +63,21 @@ const Playbooks: FunctionComponent = () => {
     const dataColumns = {
       name: {
         label: 'Name',
-        width: '35%',
+        width: '25%',
         isSortable: true,
       },
       description: {
         label: 'Description',
-        width: '40%',
+        width: '30%',
+        isSortable: false,
+      },
+      messages: {
+        label: 'Messages',
+        width: '20%',
         isSortable: false,
       },
       playbook_running: {
-        label: 'Running',
+        label: 'Status',
         width: '15%',
         isSortable: true,
       },

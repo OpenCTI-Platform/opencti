@@ -1,12 +1,13 @@
 import { filter, includes, map, pipe } from 'ramda';
-import { ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
+import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_SYNC } from '../schema/internalObject';
 import { connectorConfig } from './rabbitmq';
 import { sinceNowInMinutes } from '../utils/format';
 import { CONNECTOR_INTERNAL_ANALYSIS, CONNECTOR_INTERNAL_ENRICHMENT, CONNECTOR_INTERNAL_IMPORT_FILE, CONNECTOR_INTERNAL_NOTIFICATION } from '../schema/general';
-import { listEntities, storeLoadById } from './middleware-loader';
-import { INTERNAL_PLAYBOOK_QUEUE, INTERNAL_SYNC_QUEUE, isEmptyField } from './utils';
+import { listAllEntities, listEntities, storeLoadById } from './middleware-loader';
+import { isEmptyField } from './utils';
 import { BUILTIN_NOTIFIERS_CONNECTORS } from '../modules/notifier/notifier-statics';
 import { builtInConnector, builtInConnectorsRuntime } from '../connector/connector-domain';
+import { ENTITY_TYPE_PLAYBOOK } from '../modules/playbook/playbook-types';
 
 export const completeConnector = (connector) => {
   if (connector) {
@@ -38,22 +39,49 @@ export const connectors = async (context, user) => {
 };
 
 export const connectorsForWorker = async (context, user) => {
+  // Expose connectors
   const registeredConnectors = await connectors(context, user);
-  // Register internal queues
+  // region RETRO COMPATIBILITY Register internal queues
+  /** @deprecated [>=6.3 & <6.6]. Remove and add migration to remove the queues. */
   registeredConnectors.push({
-    id: INTERNAL_SYNC_QUEUE,
-    name: 'Internal sync manager',
+    id: 'sync',
+    name: '[DEPRECATED] Internal sync manager',
     connector_scope: [],
-    config: connectorConfig(INTERNAL_SYNC_QUEUE),
+    config: connectorConfig('sync'),
     active: true
   });
   registeredConnectors.push({
-    id: INTERNAL_PLAYBOOK_QUEUE,
-    name: 'Internal playbook manager',
+    id: 'playbook',
+    name: '[DEPRECATED] Internal playbook manager',
     connector_scope: [],
-    config: connectorConfig(INTERNAL_PLAYBOOK_QUEUE),
+    config: connectorConfig('playbook'),
     active: true
   });
+  // endregion
+  // Expose syncs
+  const syncs = await listAllEntities(context, user, [ENTITY_TYPE_SYNC], { connectionFormat: false });
+  for (let i = 0; i < syncs.length; i += 1) {
+    const sync = syncs[i];
+    registeredConnectors.push({
+      id: sync.internal_id,
+      name: `Sync ${sync.internal_id} queue`,
+      connector_scope: [],
+      config: connectorConfig(sync.internal_id),
+      active: true
+    });
+  }
+  // Expose playbooks
+  const playbooks = await listAllEntities(context, user, [ENTITY_TYPE_PLAYBOOK], { connectionFormat: false });
+  for (let i = 0; i < playbooks.length; i += 1) {
+    const playbook = playbooks[i];
+    registeredConnectors.push({
+      id: playbook.internal_id,
+      name: `Playbook ${playbook.internal_id} queue`,
+      connector_scope: [],
+      config: connectorConfig(playbook.internal_id),
+      active: true
+    });
+  }
   return registeredConnectors;
 };
 

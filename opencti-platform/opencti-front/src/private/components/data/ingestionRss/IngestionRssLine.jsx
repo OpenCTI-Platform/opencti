@@ -95,7 +95,7 @@ class IngestionRssLineLineComponent extends Component {
               >
                 <ItemBoolean
                   variant="inList"
-                  label={node.ingestion_running ? t('Yes') : t('No')}
+                  label={node.ingestion_running ? t('Active') : t('Inactive')}
                   status={!!node.ingestion_running}
                 />
               </div>

@@ -68,7 +68,7 @@ const styles = (theme) => ({
 
 class SyncLineLineComponent extends Component {
   render() {
-    const { classes, node, dataColumns, paginationOptions, t, nsdt } = this.props;
+    const { classes, node, dataColumns, paginationOptions, t, nsdt, n } = this.props;
     return (
       <ListItem classes={{ root: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIcon }}>
@@ -91,9 +91,9 @@ class SyncLineLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.uri.width }}
+                style={{ width: dataColumns.messages.width }}
               >
-                <code>{node.stream_id}</code>
+                {n(node.queue_messages)}
               </div>
               <div
                 className={classes.bodyItem}
@@ -101,7 +101,7 @@ class SyncLineLineComponent extends Component {
               >
                 <ItemBoolean
                   variant="inList"
-                  label={node.running ? t('Yes') : t('No')}
+                  label={node.running ? t('Active') : t('Inactive')}
                   status={node.running}
                 />
               </div>
@@ -146,6 +146,7 @@ const SyncLineFragment = createFragmentContainer(SyncLineLineComponent, {
       stream_id
       running
       current_state_date
+      queue_messages
       ssl_verify
     }
   `,
@@ -196,7 +197,7 @@ class SyncDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.stream_id.width }}
+                style={{ width: dataColumns.messages.width }}
               >
                 <Skeleton
                   animation="wave"
@@ -231,7 +232,7 @@ class SyncDummyComponent extends Component {
           }
         />
         <ListItemSecondaryAction classes={{ root: classes.itemIconDisabled }}>
-          <MoreVert />
+          <MoreVert/>
         </ListItemSecondaryAction>
       </ListItem>
     );
