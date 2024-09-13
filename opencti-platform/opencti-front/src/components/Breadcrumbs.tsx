@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import Typography from '@mui/material/Typography';
 import makeStyles from '@mui/styles/makeStyles';
 import { truncate } from '../utils/String';
+import { Theme } from './Theme';
 
 interface element {
   label: string;
@@ -18,9 +19,8 @@ interface BreadcrumbsProps {
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles<Theme>((theme) => ({
   breadcrumbsList: {
-    height: 30,
     marginBottom: theme.spacing(2),
   },
   breadcrumbsObject: {

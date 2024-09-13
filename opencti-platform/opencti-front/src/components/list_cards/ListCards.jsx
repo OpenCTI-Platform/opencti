@@ -21,13 +21,12 @@ import { KNOWLEDGE_KNGETEXPORT } from '../../utils/hooks/useGranted';
 import FilterIconButton from '../FilterIconButton';
 import { export_max_size } from '../../utils/utils';
 
-const styles = () => ({
+const styles = (theme) => ({
   parameters: {
     display: 'flex',
     alignItems: 'center',
-    gap: 10,
-    marginTop: -10,
-    paddingBottom: 10,
+    gap: theme.spacing(1),
+    marginBottom: theme.spacing(2),
     flexWrap: 'wrap',
   },
   cardsContainer: {
@@ -39,9 +38,6 @@ const styles = () => ({
   },
   filler: {
     flex: 'auto',
-  },
-  views: {
-    marginTop: -5,
   },
 });
 
@@ -142,9 +138,9 @@ class ListCards extends Component {
                   )}
                 </IconButton>
                 <div className={classes.filler} />
-                <div className={classes.views}>
+                <div style={{ display: 'flex' }}>
                   {numberOfElements && (
-                  <div style={{ float: 'left', padding: '7px 5px 0 0' }}>
+                  <div style={{ marginRight: '8px', alignSelf: 'center' }}>
                     <strong>{`${numberOfElements.number}${numberOfElements.symbol}`}</strong>{' '}
                     {t('entitie(s)')}
                   </div>
@@ -163,7 +159,6 @@ class ListCards extends Component {
                         handleChangeView(value);
                       }
                     }}
-                    style={{ margin: '0 0 0 5px' }}
                   >
                     {typeof handleChangeView === 'function' && (
                       <ToggleButton value="cards" aria-label="cards">
@@ -211,13 +206,13 @@ class ListCards extends Component {
                           </span>
                         </Tooltip>
                     )}
-                    {/*
-                      * Passing in createButton because cannot use hooks here.
-                      * More permanent solution once FAB_REPLACEMENT is completed.
-                      */}
-                    {createButton}
                   </ToggleButtonGroup>
                   )}
+                  {/*
+                  * Passing in createButton because cannot use hooks here.
+                  * More permanent solution once FAB_REPLACEMENT is completed.
+                  */}
+                  {createButton}
                 </div>
               </div>
               <FilterIconButton

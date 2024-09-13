@@ -45,15 +45,18 @@ const useStyles = makeStyles<MuiTheme, { column: DataTableColumn }>((theme) => c
   },
   draggable: {
     position: 'absolute',
-    top: 0,
+    top: '8px',
     right: 3,
-    height: '100%',
+    height: theme.spacing(4),
     width: 10,
     paddingLeft: 4,
     paddingRight: 4,
     backgroundClip: 'content-box',
     borderRadius: 2,
     cursor: 'col-resize',
+  },
+  icon: {
+    visibility: 'hidden',
   },
 }));
 
@@ -106,6 +109,7 @@ const DataTableHeader: FunctionComponent<DataTableHeaderProps> = ({
           <>
             <IconButton
               disableRipple
+              className={classes.icon}
               onClick={(e) => {
                 setActiveColumn(column);
                 setAnchorEl(e.currentTarget);

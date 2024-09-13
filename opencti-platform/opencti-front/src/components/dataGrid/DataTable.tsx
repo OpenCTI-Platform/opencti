@@ -145,7 +145,12 @@ const DataTable = (props: OCTIDataTableProps) => {
           <div
             style={{
               display: 'flex',
-              ...(variant === DataTableVariant.default ? { marginBottom: theme.spacing(1) } : { marginTop: 10, marginLeft: 10, marginRight: 10 }),
+              gap: theme.spacing(1),
+              marginBottom: theme.spacing(2),
+              // ...(variant !== DataTableVariant.default
+              //   // ? { margin: theme.spacing(1), marginLeft: 0 }
+              //   : {}
+              // ),
             }}
           >
             {!hideSearch && (
@@ -169,7 +174,7 @@ const DataTable = (props: OCTIDataTableProps) => {
               />
             )}
           </div>
-          {!hideFilters ? (
+          {!hideFilters && (
             <DataTableDisplayFilters
               availableFilterKeys={availableFilterKeys}
               availableRelationFilterTypes={availableRelationFilterTypes}
@@ -178,7 +183,7 @@ const DataTable = (props: OCTIDataTableProps) => {
               entityTypes={computedEntityTypes}
               paginationOptions={paginationOptions}
             />
-          ) : (<div style={{ minHeight: 10 }} />)}
+          )}
         </>
       )}
       dataTableToolBarComponent={(

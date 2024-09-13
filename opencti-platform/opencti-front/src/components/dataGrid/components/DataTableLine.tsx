@@ -18,7 +18,7 @@ const useStyles = makeStyles<Theme, { cell?: DataTableColumn, clickable?: boolea
   cellContainer: ({ cell }) => ({
     display: 'flex',
     width: `calc(var(--col-${cell?.id}-size) * 1px)`,
-    height: '50px',
+    height: theme.spacing(6),
     alignItems: 'center',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
@@ -188,13 +188,6 @@ const DataTableLine = ({
                 && !((data.id || 'id') in (deSelectedElements || {})))
               || (data.id || 'id') in (selectedElements || {})
             }
-            sx={{
-              marginRight: 1,
-              width: 24,
-              '&:hover': {
-                background: 'transparent',
-              },
-            }}
           />
         </div>
       )}

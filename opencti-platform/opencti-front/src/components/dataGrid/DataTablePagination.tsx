@@ -6,11 +6,13 @@ import { ArrowLeft, ArrowRight } from '@mui/icons-material';
 import { ButtonGroup } from '@mui/material';
 import Button from '@mui/material/Button';
 import { TableTuneIcon } from 'filigran-icon';
+import { useTheme } from '@mui/styles';
 import { useFormatter } from '../i18n';
 import { DataTableVariant, LocalStorageColumns } from './dataTableTypes';
 import { NumberOfElements, usePaginationLocalStorage } from '../../utils/hooks/useLocalStorage';
 import { useDataTableContext } from './dataTableUtils';
 import NestedMenuButton from '../nestedMenu/NestedMenuButton';
+import { Theme } from '../Theme';
 
 const DataTablePagination = ({
   page,
@@ -21,6 +23,7 @@ const DataTablePagination = ({
   setPage: Dispatch<SetStateAction<number>>,
   numberOfElements?: NumberOfElements,
 }) => {
+  const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
 
   const {
@@ -108,85 +111,79 @@ const DataTablePagination = ({
   return (
     <Box
       sx={{
+        display: 'flex',
         borderRadius: 1,
         border: 1,
         borderColor: 'divider',
+        marginRight: theme.spacing(1),
       }}
     >
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-        }}
+      <ButtonGroup
+        size="small"
+        variant="text"
+        color="pagination"
       >
-        <ButtonGroup
+        <Button
+          onClick={() => fetchMore('previous')}
           size="small"
-          variant="text"
-          color="pagination"
+          disabled={firstItem === 1}
+          style={{
+            paddingLeft: 0,
+            paddingRight: 0,
+            borderRight: 'none',
+            minWidth: 24,
+          }}
         >
-          <Button
-            onClick={() => fetchMore('previous')}
-            size="small"
-            disabled={firstItem === 1}
-            style={{
-              paddingLeft: 0,
-              paddingRight: 0,
-              borderRight: 'none',
-              minWidth: 24,
+          <ArrowLeft />
+        </Button>
+        <Tooltip
+          title={
+            <div>
+              <strong>{`${numberOfElements.original}`}</strong>{' '}
+              {t_i18n('entitie(s)')}
+            </div>
+            }
+        >
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              borderRight: '0 !important',
+              color: 'pagination.main',
             }}
           >
-            <ArrowLeft />
-          </Button>
-          <Tooltip
-            title={
-              <div>
-                <strong>{`${numberOfElements.original}`}</strong>{' '}
-                {t_i18n('entitie(s)')}
-              </div>
-            }
-          >
-            <Box
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                borderRight: '0 !important',
-                color: 'pagination.main',
-              }}
-            >
-              <Typography variant="body2" style={{ marginTop: 2 }}>
-                <span>{`${lastItem ? firstItem : 0} - ${lastItem} `}</span>
-                <span style={{ opacity: 0.6 }}>
-                  {`/ ${numberOfElements.number}${numberOfElements.symbol}`}
-                </span>
-              </Typography>
-            </Box>
-          </Tooltip>
-          <Button
-            onClick={() => fetchMore('forward')}
-            size="small"
-            disabled={lastItem === numberOfElements.original}
-            style={{ paddingLeft: 0, paddingRight: 0, minWidth: 24 }}
-          >
-            <ArrowRight />
-          </Button>
-        </ButtonGroup>
-        <NestedMenuButton
-          menuButtonProps={{
-            variant: 'outlined',
-            size: 'small',
-            color: 'pagination',
-            style: {
-              padding: 6,
-              minWidth: 36,
-              height: 34,
-              border: 'none',
-            },
-          }}
-          menuButtonChildren={<TableTuneIcon />}
-          options={nestedMenuOptions}
-          menuLevels={2}
-        />
-      </div>
+            <Typography variant="body2" style={{ marginTop: 2 }}>
+              <span>{`${lastItem ? firstItem : 0} - ${lastItem} `}</span>
+              <span style={{ opacity: 0.6 }}>
+                {`/ ${numberOfElements.number}${numberOfElements.symbol}`}
+              </span>
+            </Typography>
+          </Box>
+        </Tooltip>
+        <Button
+          onClick={() => fetchMore('forward')}
+          size="small"
+          disabled={lastItem === numberOfElements.original}
+          style={{ paddingLeft: 0, paddingRight: 0, minWidth: 24 }}
+        >
+          <ArrowRight />
+        </Button>
+      </ButtonGroup>
+      <NestedMenuButton
+        menuButtonProps={{
+          variant: 'outlined',
+          size: 'small',
+          color: 'pagination',
+          style: {
+            padding: 6,
+            minWidth: 36,
+            border: 'none',
+          },
+        }}
+        menuButtonChildren={<TableTuneIcon />}
+        options={nestedMenuOptions}
+        menuLevels={2}
+      />
     </Box>
   );
 };

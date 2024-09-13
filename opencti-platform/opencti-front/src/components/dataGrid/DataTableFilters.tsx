@@ -1,6 +1,5 @@
 import Filters from '@components/common/lists/Filters';
 import React, { useState } from 'react';
-import makeStyles from '@mui/styles/makeStyles';
 import Tooltip from '@mui/material/Tooltip';
 import { FileDownloadOutlined, SettingsOutlined } from '@mui/icons-material';
 import ToggleButton from '@mui/material/ToggleButton';
@@ -18,6 +17,7 @@ import MenuItem from '@mui/material/MenuItem';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
+import { useTheme } from '@mui/styles';
 import FilterIconButton from '../FilterIconButton';
 import { useFormatter } from '../i18n';
 import { DataTableDisplayFiltersProps, DataTableFiltersProps, DataTableVariant } from './dataTableTypes';
@@ -30,33 +30,8 @@ import { KNOWLEDGE_KNGETEXPORT } from '../../utils/hooks/useGranted';
 import { ExportContext } from '../../utils/ExportContextProvider';
 import Transition from '../Transition';
 import DataTablePagination from './DataTablePagination';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles((theme) => ({
-  filterContainer: {
-    minHeight: 10,
-    marginBottom: theme.spacing(2),
-  },
-  filterInliner: {
-    display: 'inline-flex',
-    justifyContent: 'space-between',
-    flex: 1,
-  },
-  filterHeaderContainer: {
-    display: 'inline-grid',
-    gridAutoFlow: 'column',
-    marginLeft: 10,
-    gap: 10,
-  },
-  viewsAligner: {
-    display: 'flex',
-    alignItems: 'center',
-  },
-  paginationContainer: {
-    marginRight: 10,
-  },
-}));
+import { Theme } from '../Theme';
+import { isFilterGroupNotEmpty } from '../../utils/filters/filtersUtils';
 
 export const DataTableDisplayFilters = ({
   availableFilterKeys,
@@ -65,12 +40,16 @@ export const DataTableDisplayFilters = ({
   availableEntityTypes,
   entityTypes,
 }: DataTableDisplayFiltersProps) => {
-  const classes = useStyles();
+  const theme = useTheme<Theme>();
   const { storageKey, initialValues, variant } = useDataTableContext();
   const { helpers, viewStorage: { filters } } = usePaginationLocalStorage(storageKey, initialValues, variant !== DataTableVariant.default);
 
+  if (!isFilterGroupNotEmpty(filters)) {
+    return null;
+  }
+
   return (
-    <div id="filter-container" className={classes.filterContainer}>
+    <div id="filter-container" style={{ minHeight: 10, marginBottom: theme.spacing(2) }}>
       <FilterIconButton
         helpers={helpers}
         availableFilterKeys={availableFilterKeys}
@@ -101,8 +80,8 @@ const DataTableFilters = ({
   currentView,
   additionalHeaderButtons,
 }: DataTableFiltersProps) => {
+  const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
-
   const [openSettings, setOpenSettings] = useState(false);
 
   const {
@@ -121,8 +100,6 @@ const DataTableFilters = ({
 
   const { selectedElements } = useEntityToggle(storageKey);
 
-  const classes = useStyles();
-
   const exportDisabled = !exportContext || (numberOfElements
     && ((Object.keys(selectedElements).length > export_max_size
         && numberOfElements.number > export_max_size)
@@ -132,8 +109,13 @@ const DataTableFilters = ({
   return (
     <ExportContext.Provider value={{ selectedIds: Object.keys(selectedElements) }}>
       {availableFilterKeys && availableFilterKeys.length > 0 && (
-        <div className={classes.filterInliner}>
-          <div className={classes.filterHeaderContainer}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', flex: 1 }}>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: theme.spacing(1),
+          }}
+          >
             <Filters
               helpers={helpers}
               searchContext={searchContextFinal}
@@ -148,15 +130,13 @@ const DataTableFilters = ({
               availableRelationFilterTypes={availableRelationFilterTypes}
             />
           </div>
-          <div className={classes.viewsAligner}>
+          <div style={{ display: 'flex' }}>
             {(variant === DataTableVariant.default) && (
-              <div className={classes.paginationContainer}>
-                <DataTablePagination
-                  page={page}
-                  setPage={setPage}
-                  numberOfElements={numberOfElements}
-                />
-              </div>
+              <DataTablePagination
+                page={page}
+                setPage={setPage}
+                numberOfElements={numberOfElements}
+              />
             )}
             <ToggleButtonGroup
               size="small"

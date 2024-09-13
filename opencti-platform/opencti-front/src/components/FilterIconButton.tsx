@@ -60,7 +60,7 @@ const FilterIconButtonWithRepresentativesQuery: FunctionComponent<FilterIconButt
   );
   return (
     <>
-      {filtersRepresentativesQueryRef ? (
+      {filtersRepresentativesQueryRef && (
         <React.Suspense fallback={<span />}>
           <FilterIconButtonContainer
             handleRemoveFilter={handleRemoveFilter}
@@ -83,8 +83,6 @@ const FilterIconButtonWithRepresentativesQuery: FunctionComponent<FilterIconButt
             availableRelationshipTypes={availableRelationshipTypes}
           />
         </React.Suspense>
-      ) : (
-        <div style={{ height: 48 }}/>
       )}
     </>
   );

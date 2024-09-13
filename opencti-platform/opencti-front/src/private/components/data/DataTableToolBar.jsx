@@ -129,6 +129,7 @@ const styles = (theme) => ({
   title: {
     flex: '1 1 100%',
     fontSize: '12px',
+    marginBottom: '1px',
   },
   chipValue: {
     margin: 0,
@@ -1400,7 +1401,7 @@ class DataTableToolBar extends Component {
           return (
             <>
               <Toolbar style={{ minHeight: 40, display: 'flex', justifyContent: 'space-between', height: '100%', paddingRight: 12, paddingLeft: 12 }} data-testid='opencti-toolbar'>
-                <div style={{ display: 'flex', alignItems: 'center' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                   <Typography
                     className={classes.title}
                     color="inherit"
