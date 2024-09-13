@@ -19,6 +19,7 @@ import { getMainRepresentative } from '../../utils/defaultRepresentatives';
 import ItemEntityType from '../ItemEntityType';
 import ItemOpenVocab from '../ItemOpenVocab';
 import ItemBoolean from '../ItemBoolean';
+import ItemSeverity from '../ItemSeverity';
 
 const MAGICAL_SIZE = 0.113;
 
@@ -655,9 +656,9 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     percentWidth: 10,
     isSortable: true,
     render: ({ severity }, { t_i18n }) => (
-      <ItemPriority
+      <ItemSeverity
         variant="inList"
-        priority={severity}
+        severity={severity}
         label={severity || t_i18n('Unknown')}
       />
     ),
