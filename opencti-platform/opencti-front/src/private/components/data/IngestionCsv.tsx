@@ -59,7 +59,7 @@ const IngestionCsv = () => {
         isSortable: true,
       },
       ingestion_running: {
-        label: 'Running',
+        label: 'Status',
         width: '20%',
         isSortable: false,
       },

@@ -49,14 +49,9 @@ const IngestionTaxii = () => {
       width: '25%',
       isSortable: true,
     },
-    version: {
-      label: 'Version',
-      width: '10%',
-      isSortable: true,
-    },
     ingestion_running: {
-      label: 'Running',
-      width: '10%',
+      label: 'Status',
+      width: '20%',
       isSortable: false,
     },
     last_execution_date: {

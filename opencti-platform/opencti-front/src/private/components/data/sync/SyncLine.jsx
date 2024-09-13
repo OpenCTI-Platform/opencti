@@ -91,15 +91,9 @@ class SyncLineLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.uri.width }}
-              >
-                <code>{node.stream_id}</code>
-              </div>
-              <div
-                className={classes.bodyItem}
                 style={{ width: dataColumns.messages.width }}
               >
-                <code>{n(node.queue_messages)}</code>
+                {n(node.queue_messages)}
               </div>
               <div
                 className={classes.bodyItem}
@@ -193,17 +187,6 @@ class SyncDummyComponent extends Component {
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.uri.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width="90%"
-                  height="100%"
-                />
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.stream_id.width }}
               >
                 <Skeleton
                   animation="wave"

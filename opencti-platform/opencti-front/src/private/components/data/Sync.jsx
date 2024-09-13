@@ -43,17 +43,12 @@ const Sync = () => {
   const dataColumns = {
     name: {
       label: 'Name',
-      width: '15%',
+      width: '25%',
       isSortable: true,
     },
     uri: {
       label: 'URL',
-      width: '20%',
-      isSortable: true,
-    },
-    stream_id: {
-      label: 'Stream ID',
-      width: '20%',
+      width: '30%',
       isSortable: true,
     },
     messages: {
@@ -63,11 +58,12 @@ const Sync = () => {
     },
     running: {
       label: 'Status',
-      width: '10%',
+      width: '15%',
       isSortable: false,
     },
     current_state_date: {
       label: 'Current state',
+      width: '20%',
       isSortable: true,
     },
   };

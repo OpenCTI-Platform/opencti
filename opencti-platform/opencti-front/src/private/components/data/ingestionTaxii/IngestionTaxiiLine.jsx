@@ -92,17 +92,11 @@ class IngestionTaxiiLineLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.version.width }}
-              >
-                {node.version}
-              </div>
-              <div
-                className={classes.bodyItem}
                 style={{ width: dataColumns.ingestion_running.width }}
               >
                 <ItemBoolean
                   variant="inList"
-                  label={node.ingestion_running ? t('Yes') : t('No')}
+                  label={node.ingestion_running ? t('Active') : t('Inactive')}
                   status={!!node.ingestion_running}
                 />
               </div>
@@ -205,17 +199,6 @@ class IngestionTaxiiDummyComponent extends Component {
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.uri.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width="90%"
-                  height="100%"
-                />
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.version.width }}
               >
                 <Skeleton
                   animation="wave"
