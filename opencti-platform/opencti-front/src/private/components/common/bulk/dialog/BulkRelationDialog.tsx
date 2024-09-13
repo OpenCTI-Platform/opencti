@@ -238,6 +238,12 @@ const BulkRelationDialog : FunctionComponent<BulkRelationDialogProps> = ({
   }, [bulkEntityList]);
 
   const getDefaultEntityType = () => {
+    if (targetObjectTypes.length === 1 && targetObjectTypes.includes('Threat-Actor')) {
+      const foundThreatActor = entityList
+        .filter((item) => item.toEntitytype.includes('Threat-Actor'))
+        .sort((a, b) => (a.toEntitytype < b.toEntitytype ? -1 : 1))[0];
+      return foundThreatActor ?? entityList[0];
+    }
     if (targetObjectTypes.length === 1 && targetObjectTypes.includes('Stix-Cyber-Observable')) {
       const foundObservableType = entityList
         .filter((obs) => obs.isObservable)
@@ -245,7 +251,7 @@ const BulkRelationDialog : FunctionComponent<BulkRelationDialogProps> = ({
       return foundObservableType ?? entityList[0];
     }
     const selectedEntityType = targetObjectTypes[0];
-    const foundEntityType = entityList.find((item) => item.toEntitytype.includes(selectedEntityType));
+    const foundEntityType = entityList.find((item) => item.toEntitytype === selectedEntityType);
     return foundEntityType ?? entityList[0];
   };
 
@@ -258,25 +264,33 @@ const BulkRelationDialog : FunctionComponent<BulkRelationDialogProps> = ({
         const defaultEntityType = getDefaultEntityType();
         if (cur.stixCoreObjects.edges.length > 0) {
           const { edges } = cur.stixCoreObjects;
-          const stixObject = edges[0].node;
+
+          const currentStixObject = foundItem
+            ? edges.find((item) => item.node.entity_type === foundItem.selectedEntityType.toEntitytype)?.node
+            : edges[0].node;
           const entityTypeList = edges.map(({ node }) => ({
             entity_type: node.entity_type,
             representative: node.representative.main,
             id: node.id,
           }));
+
           const foundEntityType = entityList.filter((entityType) => entityType.toEntitytype === entityTypeList[0].entity_type);
           const newSelectedEntityType: RelationsToEntity = foundEntityType.length ? foundEntityType[0] : entityList[0];
+
           let selectedEntityType: RelationsToEntity = (foundItem && foundItem.selectedEntityType) ?? newSelectedEntityType;
+
           const isExisting = foundItem ? !!entityTypeList.find((item) => item.entity_type === selectedEntityType.toEntitytype) : true;
-          const isMatchingEntity = getRelationMatchStatus(newSelectedEntityType, entityTypeList);
+          const isMatchingEntity = getRelationMatchStatus(selectedEntityType, entityTypeList);
+
           const foundSelectedItem = selectedEntities.find((item) => item.name === cur.searchTerm);
+
           if (!isFirstLoadDone) {
             const selectedEntityTypeFromSelectedEntity = entityList.find((item) => item.toEntitytype === foundSelectedItem?.entity_type);
             if (selectedEntityTypeFromSelectedEntity) selectedEntityType = selectedEntityTypeFromSelectedEntity;
             setIsFirstLoadDone(true);
           }
           return [...acc, {
-            representative: foundItem?.representative ?? stixObject.representative.main,
+            representative: currentStixObject?.representative.main ?? foundItem?.representative ?? cur.searchTerm,
             entityTypeList,
             isMatchingEntity,
             isExisting,

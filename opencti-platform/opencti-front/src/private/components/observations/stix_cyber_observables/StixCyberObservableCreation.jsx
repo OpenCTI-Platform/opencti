@@ -228,7 +228,7 @@ const BULK_OBSERVABLES = [
   { type: 'Tracking-Number', keys: ['value'] },
   { type: 'Url', keys: ['value'] },
   { type: 'User-Agent', keys: ['value'] },
-  { type: 'StixFile', keys: ['hashes_MD5', 'hashes_SHA-1', 'hashes_SHA-256', 'hashes_SHA-512'] },
+  { type: 'StixFile', keys: ['name', 'hashes_MD5', 'hashes_SHA-1', 'hashes_SHA-256', 'hashes_SHA-512'] },
   { type: 'Artifact', keys: ['hashes_MD5', 'hashes_SHA-1', 'hashes_SHA-256', 'hashes_SHA-512'] },
   { type: 'X509-Certificate', keys: ['hashes_MD5', 'hashes_SHA-1', 'hashes_SHA-256', 'hashes_SHA-512'] },
 ];
