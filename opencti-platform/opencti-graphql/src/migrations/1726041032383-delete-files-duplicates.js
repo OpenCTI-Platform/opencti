@@ -15,8 +15,12 @@ export const up = async (next) => {
   const internalObjectsIndexAlias = await elIndexGetAlias(READ_INDEX_INTERNAL_OBJECTS);
   if (internalObjectsIndexAlias && Object.keys(internalObjectsIndexAlias).length > 1) {
     logApp.info(`${message} > multiple indices found for internal objects, running migration`);
-    const allFiles = await listAllEntities(context, SYSTEM_USER, [ENTITY_TYPE_INTERNAL_FILE], { indices: [READ_INDEX_INTERNAL_OBJECTS] });
-    // TODO only fetch id, internal_id, lastModified, _index
+    const allFiles = await listAllEntities(
+      context,
+      SYSTEM_USER,
+      [ENTITY_TYPE_INTERNAL_FILE],
+      { indices: [READ_INDEX_INTERNAL_OBJECTS], baseData: true, baseFields: ['internal_id', '_index', 'lastModified'] }
+    );
     const filesGroupedById = Object.entries(groupBy((f) => f.internal_id, allFiles));
     const filesToDelete = [];
     filesGroupedById.forEach(([_, filesList]) => {
