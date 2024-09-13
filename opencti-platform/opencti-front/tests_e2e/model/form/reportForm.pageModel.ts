@@ -6,7 +6,7 @@ import TextFieldPageModel from '../field/TextField.pageModel';
 import FileFieldPageModel from '../field/FileField.pageModel';
 
 export default class ReportFormPage {
-  nameField = new TextFieldPageModel(this.page, 'Name', 'text');
+  nameField = new TextFieldPageModel(this.page, 'Name', 'text-no-label');
   contentField = new TextFieldPageModel(this.page, 'Content', 'rich-content');
   descriptionField = new TextFieldPageModel(this.page, 'Description', 'text-area');
 
