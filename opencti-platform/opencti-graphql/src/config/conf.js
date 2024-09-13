@@ -38,6 +38,7 @@ import { ENTITY_TYPE_EXCLUSION_LIST } from '../modules/exclusionList/exclusionLi
 import { ENTITY_TYPE_FINTEL_TEMPLATE } from '../modules/fintelTemplate/fintelTemplate-types';
 import { ENTITY_TYPE_DISSEMINATION_LIST } from '../modules/disseminationList/disseminationList-types';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
+import { createLogShippingTransport } from './log-shipping';
 
 // https://golang.org/src/crypto/x509/root_linux.go
 const LINUX_CERTFILES = [
@@ -102,6 +103,7 @@ nconf.file('default', resolveEnvFile('default'));
 const appLogLevel = nconf.get('app:app_logs:logs_level');
 const appLogFileTransport = booleanConf('app:app_logs:logs_files', true);
 const appLogConsoleTransport = booleanConf('app:app_logs:logs_console', true);
+const appLogShippingTransport = booleanConf('app:app_logs:logs_shipping', false);
 export const appLogLevelMaxDepthSize = nconf.get('app:app_logs:control:max_depth_size') ?? 5;
 export const appLogLevelMaxDepthKeys = nconf.get('app:app_logs:control:max_depth_keys') ?? 30;
 export const appLogLevelMaxArraySize = nconf.get('app:app_logs:control:max_array_size') ?? 50;
@@ -202,6 +204,10 @@ if (appLogFileTransport) {
 if (appLogConsoleTransport) {
   appLogTransports.push(new winston.transports.Console());
 }
+if (appLogShippingTransport) {
+  const conf = nconf.get('app:app_logs');
+  appLogTransports.push(createLogShippingTransport(conf));
+}
 
 const migrationLogger = winston.createLogger({
   level: 'debug',
@@ -218,6 +224,7 @@ const appLogger = winston.createLogger({
 // Setup audit log logApp
 const auditLogFileTransport = booleanConf('app:audit_logs:logs_files', true);
 const auditLogConsoleTransport = booleanConf('app:audit_logs:logs_console', true);
+const auditLogShippingTransport = booleanConf('app:audit_logs:logs_shipping', false);
 const auditLogTransports = [];
 if (auditLogFileTransport) {
   const dirname = nconf.get('app:audit_logs:logs_directory');
@@ -232,6 +239,10 @@ if (auditLogFileTransport) {
 }
 if (auditLogConsoleTransport) {
   auditLogTransports.push(new winston.transports.Console());
+}
+if (auditLogShippingTransport) {
+  const conf = nconf.get('app:audit_logs');
+  auditLogTransports.push(createLogShippingTransport(conf));
 }
 const auditLogger = winston.createLogger({
   level: 'info',
@@ -325,6 +336,20 @@ export const logTelemetry = {
     telemetryLogger.log('info', message);
   }
 };
+
+export function shutdownLoggers() {
+  const shutdownPromises = [appLogger, auditLogger, supportLogger].map(
+    (logger) => new Promise(
+      (resolve) => {
+        logger
+          .end()
+          .on('finish', resolve);
+      }
+    )
+  );
+
+  return Promise.all(shutdownPromises);
+}
 
 const BasePathConfig = nconf.get('app:base_path')?.trim() ?? '';
 const AppBasePath = BasePathConfig.endsWith('/') ? BasePathConfig.slice(0, -1) : BasePathConfig;
