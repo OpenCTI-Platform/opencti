@@ -16,6 +16,8 @@ import {
   RELATION_HOSTS,
   RELATION_IMPERSONATES,
   RELATION_KNOWN_AS,
+  RELATION_REPORTS_TO,
+  RELATION_SUPPORTS,
   RELATION_LOCATED_AT,
   RELATION_NATIONAL_OF,
   RELATION_OWNS,
@@ -269,6 +271,26 @@ const THREAT_ACTOR_INDIVIDUAL_DEFINITION: ModuleDefinition<StoreEntityThreatActo
     { name: RELATION_KNOWN_AS,
       targets: [
         { name: ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL, type: REL_EXTENDED },
+      ]
+    },
+    { name: RELATION_REPORTS_TO,
+      targets: [
+        { name: ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL, type: REL_EXTENDED },
+      ]
+    },
+    { name: RELATION_SUPPORTS,
+      targets: [
+        { name: ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL, type: REL_EXTENDED },
+      ]
+    },
+    { name: RELATION_REPORTS_TO,
+      targets: [
+        { name: ENTITY_TYPE_THREAT_ACTOR_GROUP, type: REL_EXTENDED },
+      ]
+    },
+    { name: RELATION_SUPPORTS,
+      targets: [
+        { name: ENTITY_TYPE_THREAT_ACTOR_GROUP, type: REL_EXTENDED },
       ]
     },
     {
