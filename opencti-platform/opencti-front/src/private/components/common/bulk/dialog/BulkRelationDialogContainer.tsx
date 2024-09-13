@@ -3,7 +3,6 @@ import Button from '@mui/material/Button';
 import BulkRelationDialog from '@components/common/bulk/dialog/BulkRelationDialog';
 import { PaginationOptions } from 'src/components/list_lines';
 import { useFormatter } from 'src/components/i18n';
-import useHelper from 'src/utils/hooks/useHelper';
 import { TargetEntity } from '@components/common/stix_core_relationships/StixCoreRelationshipCreationFromEntity';
 
 type BulkRelationDialogContainerProps = {
@@ -35,18 +34,13 @@ const BulkRelationDialogContainer = ({
   paginationOptions,
   targetObjectTypes,
 }: BulkRelationDialogContainerProps) => {
-  const { isFeatureEnable } = useHelper();
   const { t_i18n } = useFormatter();
-
-  const BULK_RELATIONS_FF = isFeatureEnable('4352_BULK_RELATIONS');
 
   const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
 
   const handleOpenDialog = () => setIsDialogOpen(true);
 
   const handleCloseDialog = () => setIsDialogOpen(false);
-
-  if (!BULK_RELATIONS_FF) return null;
 
   return (
     <>
