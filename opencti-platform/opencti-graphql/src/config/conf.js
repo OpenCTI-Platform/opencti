@@ -34,6 +34,7 @@ import { UnknownError, UnsupportedError } from './errors';
 import { ENTITY_TYPE_PUBLIC_DASHBOARD } from '../modules/publicDashboard/publicDashboard-types';
 import { AI_BUS } from '../modules/ai/ai-types';
 import { SUPPORT_BUS } from '../modules/support/support-types';
+import { createLogShippingTransport } from './log-shipping';
 
 // https://golang.org/src/crypto/x509/root_linux.go
 const LINUX_CERTFILES = [
@@ -96,6 +97,7 @@ nconf.file('default', resolveEnvFile('default'));
 const appLogLevel = nconf.get('app:app_logs:logs_level');
 const appLogFileTransport = booleanConf('app:app_logs:logs_files', true);
 const appLogConsoleTransport = booleanConf('app:app_logs:logs_console', true);
+const appLogShippingTransport = booleanConf('app:app_logs:logs_shipping', false);
 export const appLogExtendedErrors = booleanConf('app:app_logs:extended_error_message', false);
 export const extendedErrors = (metaExtension) => {
   if (appLogExtendedErrors) {
@@ -127,6 +129,10 @@ if (appLogFileTransport) {
 if (appLogConsoleTransport) {
   appLogTransports.push(new winston.transports.Console());
 }
+if (appLogShippingTransport) {
+  const conf = nconf.get('app:app_logs');
+  appLogTransports.push(createLogShippingTransport(conf));
+}
 
 const appLogger = winston.createLogger({
   level: appLogLevel,
@@ -137,6 +143,7 @@ const appLogger = winston.createLogger({
 // Setup audit log logApp
 const auditLogFileTransport = booleanConf('app:audit_logs:logs_files', true);
 const auditLogConsoleTransport = booleanConf('app:audit_logs:logs_console', true);
+const auditLogShippingTransport = booleanConf('app:audit_logs:logs_shipping', false);
 const auditLogTransports = [];
 if (auditLogFileTransport) {
   const dirname = nconf.get('app:audit_logs:logs_directory');
@@ -151,6 +158,10 @@ if (auditLogFileTransport) {
 }
 if (auditLogConsoleTransport) {
   auditLogTransports.push(new winston.transports.Console());
+}
+if (auditLogShippingTransport) {
+  const conf = nconf.get('app:audit_logs');
+  auditLogTransports.push(createLogShippingTransport(conf));
 }
 const auditLogger = winston.createLogger({
   level: 'info',
@@ -275,6 +286,20 @@ export const logTelemetry = {
     telemetryLogger.log('info', message);
   }
 };
+
+export function shutdownLoggers() {
+  const shutdownPromises = [appLogger, auditLogger, supportLogger].map(
+    (logger) => new Promise(
+      (resolve) => {
+        logger
+          .end()
+          .on('finish', resolve);
+      }
+    )
+  );
+
+  return Promise.all(shutdownPromises);
+}
 
 const BasePathConfig = nconf.get('app:base_path')?.trim() ?? '';
 const AppBasePath = BasePathConfig.endsWith('/') ? BasePathConfig.slice(0, -1) : BasePathConfig;
