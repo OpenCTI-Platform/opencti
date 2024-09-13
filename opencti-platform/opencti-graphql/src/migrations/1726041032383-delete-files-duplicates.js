@@ -21,12 +21,10 @@ export const up = async (next) => {
     const filesToDelete = [];
     filesGroupedById.forEach(([_, filesList]) => {
       if (filesList.length > 1) { // if a duplicate exists
-        const maximumLastModified = filesList.map((h) => h.lastModified).sort((a, b) => b.localeCompare(a))[0];
-        const olderFiles = filesList.filter((f) => f.lastModified !== maximumLastModified);
-        filesToDelete.push(...olderFiles);
+        const sortedFileList = filesList.sort((a, b) => new Date(b.lastModified) - new Date(a.lastModified));
+        filesToDelete.push(...sortedFileList.slice(1));
       }
     });
-    // keep uniq couples (id, index) of files to delete
     const finalFilesToDelete = filesToDelete.map((h) => ({ _index: h._index, internal_id: h.internal_id }));
     logApp.info(`Deleting ${finalFilesToDelete.length} files that have duplicates.`);
     // delete the files
