@@ -8,7 +8,6 @@
     "enabled_ui": true,
     "disabled_dev_features": [
       "FAB_REPLACEMENT",
-      "4352_BULK_RELATIONS",
       "NEW_IMPORT_SCREENS",
       "FILIGRAN_LOADER",
       "CONTAINERS_AUTHORIZED_MEMBERS",
