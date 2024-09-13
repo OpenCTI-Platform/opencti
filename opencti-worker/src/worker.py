@@ -253,22 +253,31 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
                         else None
                     )
                     stix2_splitter = OpenCTIStix2Splitter()
-                    bundles = stix2_splitter.split_bundle(content_json, False, event_version)
+                    expectations, bundles = (
+                        stix2_splitter.split_bundle_with_expectations(
+                            content_json, False, event_version
+                        )
+                    )
+                    # Add expectations to the work
+                    if work_id is not None:
+                        self.api.work.add_expectations(work_id, expectations)
                     # For each split bundle, send it to the same queue
                     for bundle in bundles:
                         text_bundle = json.dumps(bundle)
-                        data["content"] = base64.b64encode(text_bundle.encode("utf-8", "escape")).decode(
-                            "utf-8"
-                        )
+                        data["content"] = base64.b64encode(
+                            text_bundle.encode("utf-8", "escape")
+                        ).decode("utf-8")
                         push_channel.basic_publish(
                             exchange=self.connector["config"]["push_exchange"],
                             routing_key=self.connector["config"]["push_routing"],
                             body=json.dumps(data),
                             properties=pika.BasicProperties(
-                                delivery_mode=2, content_encoding="utf-8"  # make message persistent
+                                delivery_mode=2,
+                                content_encoding="utf-8",  # make message persistent
                             ),
                         )
                     push_channel.close()
+                    push_pika_connection.close()
 
             elif event_type == "event":
                 event = base64.b64decode(data["content"]).decode("utf-8")
