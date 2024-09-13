@@ -6,7 +6,7 @@ interface FieldOrEmptyProps<T> {
   children: React.ReactNode;
 }
 
-const FieldOrEmpty = <T = never>({ source, children }: FieldOrEmptyProps<T>) => {
+const FieldOrEmpty = <T = unknown>({ source, children }: FieldOrEmptyProps<T>) => {
   return <>{isNotEmptyField(source) ? children : '-'}</>; // render the children if source is defined
 };
 export default FieldOrEmpty;

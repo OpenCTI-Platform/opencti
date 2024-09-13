@@ -106,6 +106,7 @@ const styles = (theme) => ({
     alignItems: 'center',
   },
   headerItemText: {
+    marginRight: theme.spacing(1),
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',

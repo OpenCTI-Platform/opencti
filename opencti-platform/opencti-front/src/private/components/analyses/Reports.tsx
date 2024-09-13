@@ -182,7 +182,6 @@ const Reports: FunctionComponent = () => {
   const isRuntimeSort = isRuntimeFieldEnable() ?? false;
   const dataColumns: DataTableProps['dataColumns'] = {
     name: {
-      label: 'Title',
       percentWidth: 25,
       isSortable: true,
     },

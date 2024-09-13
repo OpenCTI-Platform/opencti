@@ -19,6 +19,7 @@ import { getMainRepresentative } from '../../utils/defaultRepresentatives';
 import ItemEntityType from '../ItemEntityType';
 import ItemOpenVocab from '../ItemOpenVocab';
 import ItemBoolean from '../ItemBoolean';
+import ItemSeverity from '../ItemSeverity';
 
 const MAGICAL_SIZE = 0.113;
 
@@ -55,7 +56,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
     float: 'left',
     width: 120,
     textTransform: 'uppercase',
-    borderRadius: '0',
+    borderRadius: 4,
   },
   chip: {
     fontSize: 13,
@@ -226,14 +227,14 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Original creation date',
     percentWidth: 15,
     isSortable: true,
-    render: ({ created }, { fd }) => fd(created),
+    render: ({ created }, helpers) => defaultRender(helpers.fd(created), helpers),
   },
   created_at: {
     id: 'created_at',
     label: 'Platform creation date',
     percentWidth: 15,
     isSortable: true,
-    render: ({ created_at }, { fd }) => fd(created_at),
+    render: ({ created_at }, helpers) => defaultRender(helpers.fd(created_at), helpers),
   },
   createdBy: {
     id: 'createdBy',
@@ -655,9 +656,9 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     percentWidth: 10,
     isSortable: true,
     render: ({ severity }, { t_i18n }) => (
-      <ItemPriority
+      <ItemSeverity
         variant="inList"
-        priority={severity}
+        severity={severity}
         label={severity || t_i18n('Unknown')}
       />
     ),
@@ -820,8 +821,11 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'CVSS3 - Severity',
     percentWidth: 15,
     isSortable: true,
-    render: ({ x_opencti_cvss_base_severity }) => (
-      <Tooltip title={x_opencti_cvss_base_severity}><>{x_opencti_cvss_base_severity}</></Tooltip>
+    render: ({ x_opencti_cvss_base_severity }, { t_i18n }) => (
+      <ItemSeverity
+        severity={x_opencti_cvss_base_severity}
+        label={x_opencti_cvss_base_severity || t_i18n('Unknown')}
+      />
     ),
   },
   x_opencti_organization_type: {
@@ -859,6 +863,42 @@ const defaultColumns: DataTableProps['dataColumns'] = {
         onClick={handleAddFilter}
       />
     ),
+  },
+  file_name: {
+    id: 'file_name',
+    label: 'File name',
+    percentWidth: 12,
+    isSortable: false,
+    render: (data, { column: { size } }) => {
+      const file = (data.importFiles?.edges && data.importFiles.edges.length > 0)
+        ? data.importFiles.edges[0]?.node
+        : { name: 'N/A', metaData: { mimetype: 'N/A' }, size: 0 };
+      return (<Tooltip title={file?.name}><>{truncate(file?.name, size * MAGICAL_SIZE)}</></Tooltip>);
+    },
+  },
+  file_mime_type: {
+    id: 'file_mime_type',
+    label: 'Mime/Type',
+    percentWidth: 8,
+    isSortable: false,
+    render: (data, { column: { size } }) => {
+      const file = (data.importFiles?.edges && data.importFiles.edges.length > 0)
+        ? data.importFiles.edges[0]?.node
+        : { name: 'N/A', metaData: { mimetype: 'N/A' }, size: 0 };
+      return (<Tooltip title={file?.metaData?.mimetype}><>{truncate(file?.metaData?.mimetype, size * MAGICAL_SIZE)}</></Tooltip>);
+    },
+  },
+  file_size: {
+    id: 'file_size',
+    label: 'File size',
+    percentWidth: 8,
+    isSortable: false,
+    render: (data, { b }) => {
+      const file = (data.importFiles?.edges && data.importFiles.edges.length > 0)
+        ? data.importFiles.edges[0]?.node
+        : { name: 'N/A', metaData: { mimetype: 'N/A' }, size: 0 };
+      return (<Tooltip title={file?.metaData?.mimetype}><>{b(file?.size)}</></Tooltip>);
+    },
   },
 };
 

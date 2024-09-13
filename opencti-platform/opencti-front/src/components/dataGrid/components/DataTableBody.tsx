@@ -9,6 +9,7 @@ import { ColumnSizeVars, DataTableBodyProps, DataTableLineProps, DataTableVarian
 import DataTableLine, { DataTableLinesDummy } from './DataTableLine';
 import { SELECT_COLUMN_SIZE } from './DataTableHeader';
 import { useDataTableToggle } from '../dataTableHooks';
+import { throttle } from '../../../utils/utils';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -47,6 +48,7 @@ const DataTableBody = ({
     variant,
     useDataTable,
     resolvePath,
+    actions,
   } = useDataTableContext();
 
   const { data: queryData, isLoading, loadMore, hasMore } = useDataTable(dataQueryArgs);
@@ -66,6 +68,9 @@ const DataTableBody = ({
 
   // TABLE HANDLING
   const [resize, setResize] = useState(false);
+  const resizeObserver = useRef(new ResizeObserver(throttle(() => {
+    setResize(true);
+  }, 200)));
   const [computeState, setComputeState] = useState<HTMLDivElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
 
@@ -74,7 +79,7 @@ const DataTableBody = ({
   const startsWithSelect = columns.at(0)?.id === 'select';
   const endsWithNavigate = columns.at(-1)?.id === 'navigate';
 
-  let storedSize = SELECT_COLUMN_SIZE;
+  let storedSize = (endsWithNavigate || actions) ? SELECT_COLUMN_SIZE : 0;
   if (startsWithSelect) {
     storedSize += SELECT_COLUMN_SIZE;
   }
@@ -142,7 +147,7 @@ const DataTableBody = ({
       colSizes['--table-height'] = rootRef.offsetHeight - 42; // SIZE OF CONTAINER - Nb Elements - Line Size
     } else {
       const rootSize = (document.getElementById('root')?.offsetHeight ?? 0) - settingsMessagesBannerHeight;
-      const filterRemoval = (hasFilterComponent && document.getElementById('filter-container')?.children.length) ? 260 : 220;
+      const filterRemoval = (hasFilterComponent && document.getElementById('filter-container')?.children.length) ? 230 : 200;
       const tabsRemoval = document.getElementById('tabs-container')?.children.length ? 50 : 0;
       colSizes['--table-height'] = rootSize - filterRemoval - tabsRemoval;
     }
@@ -202,20 +207,20 @@ const DataTableBody = ({
       }
     }, 200);
 
+    window.addEventListener('resize', handleResize);
+    window.addEventListener('storage', handleStorage);
+    if (rootRef) resizeObserver.current.observe(rootRef);
     let observer: MutationObserver | undefined;
-    if (hasFilterComponent) {
-      window.addEventListener('resize', handleResize);
-      window.addEventListener('storage', handleStorage);
+    const elementToObserve = document.getElementById('filter-container');
+    if (elementToObserve) {
       observer = new MutationObserver(() => setResize(true));
-      const elementToObserve = document.getElementById('filter-container');
-      if (elementToObserve) {
-        observer.observe(elementToObserve, { childList: true });
-      }
+      observer.observe(elementToObserve, { childList: true });
     }
 
     return () => {
       window.removeEventListener('resize', handleResize);
       window.removeEventListener('storage', handleStorage);
+      resizeObserver.current.disconnect();
       if (hasFilterComponent && observer) {
         observer.disconnect();
       }

@@ -54,7 +54,7 @@ class CampaignEdition extends Component {
               />
             );
           }
-          return <Loader variant="inElement" />;
+          return <Loader variant="inline" />;
         }}
       />
     );

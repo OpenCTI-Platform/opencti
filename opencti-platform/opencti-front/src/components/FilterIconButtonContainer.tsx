@@ -312,7 +312,7 @@ FilterIconButtonContainerProps
                   }
                   classes={{ root: classFilter, label: classes.chipLabel }}
                   variant={chipVariant}
-                  sx={chipSx}
+                  sx={{ ...chipSx, borderRadius: 1 }}
                   label={
                     <FilterValues
                       label={keyLabel}

@@ -1,20 +1,22 @@
-import React, { forwardRef, MutableRefObject } from 'react';
+import React from 'react';
 import { v4 as uuid } from 'uuid';
 import DataTableWithoutFragment from '../dataGrid/DataTableWithoutFragment';
-import { DataTableVariant } from '../dataGrid/dataTableTypes';
+import { DataTableProps, DataTableVariant } from '../dataGrid/dataTableTypes';
 
 interface WidgetListCoreObjectsProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data: any[]
   dateAttribute: string
   publicWidget?: boolean
+  rootRef: DataTableProps['rootRef']
 }
 
-const WidgetListCoreObjects = forwardRef<HTMLDivElement, WidgetListCoreObjectsProps>(({
+const WidgetListCoreObjects = ({
   data,
   dateAttribute,
   publicWidget = false,
-}, ref) => (
+  rootRef,
+}: WidgetListCoreObjectsProps) => (
   <DataTableWithoutFragment
     dataColumns={{
       entity_type: { percentWidth: 10 },
@@ -35,9 +37,9 @@ const WidgetListCoreObjects = forwardRef<HTMLDivElement, WidgetListCoreObjectsPr
     globalCount={data.length}
     variant={DataTableVariant.widget}
     disableNavigation={publicWidget}
-    rootRef={(ref as MutableRefObject<HTMLDivElement>)?.current}
+    rootRef={rootRef}
   />
-));
+);
 
 WidgetListCoreObjects.displayName = 'WidgetListCoreObjects';
 

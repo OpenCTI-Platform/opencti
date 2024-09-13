@@ -15,7 +15,7 @@ import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../..
 const useStyles = makeStyles(() => ({
   container: {
     margin: 0,
-    padding: '0 200px 0 0',
+    padding: '0 180px 0 0',
     maxWidth: '100%',
   },
 }));

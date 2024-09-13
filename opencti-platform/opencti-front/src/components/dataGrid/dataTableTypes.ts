@@ -60,7 +60,7 @@ export interface DataTableContextProps {
     numberOfSelectedElements: number
     onToggleEntity: (
       entity: any,
-      _?: React.SyntheticEvent,
+      _?: React.MouseEvent,
       forceRemove?: any[],
     ) => void
     handleClearSelectedElements: () => void
@@ -85,7 +85,10 @@ export interface DataTableContextProps {
   disableNavigation: DataTableProps['disableNavigation']
   disableToolBar: DataTableProps['disableToolBar']
   disableSelectAll: DataTableProps['disableSelectAll']
+  selectOnLineClick: DataTableProps['selectOnLineClick']
   onLineClick: DataTableProps['onLineClick']
+  page: number
+  setPage:Dispatch<SetStateAction<number>>
 }
 
 export interface DataTableProps {
@@ -94,6 +97,7 @@ export interface DataTableProps {
   storageKey: string
   initialValues: LocalStorage
   toolbarFilters?: FilterGroup
+  handleCopy?: () => void
   lineFragment?: GraphQLTaggedNode
   dataQueryArgs: any
   availableFilterKeys?: string[] | undefined;
@@ -126,6 +130,7 @@ export interface DataTableProps {
   disableLineSelection?: boolean
   disableToolBar?: boolean
   disableSelectAll?: boolean
+  selectOnLineClick?: boolean
   onLineClick?: (line: any) => void
 }
 
@@ -149,6 +154,7 @@ export interface DataTableDisplayFiltersProps {
   additionalFilterKeys?: string[]
   availableRelationFilterTypes?: Record<string, string[]> | undefined
   availableFilterKeys?: string[] | undefined;
+  availableEntityTypes?: string[]
   paginationOptions: any
 }
 
@@ -180,6 +186,7 @@ export interface DataTableHeaderProps {
   containerRef?: MutableRefObject<HTMLDivElement | null>
   sortBy: boolean
   orderAsc: boolean
+  isActive?: boolean
 }
 
 export interface DataTableLineProps {
@@ -188,7 +195,7 @@ export interface DataTableLineProps {
   effectiveColumns: DataTableColumns
   storageHelpers: DataTableProps['storageHelpers']
   index: number
-  onToggleShiftEntity: (currentIndex: number, currentEntity: { id: string }, event?: React.SyntheticEvent) => void
+  onToggleShiftEntity: (currentIndex: number, currentEntity: { id: string }, event?: React.MouseEvent) => void
 }
 
 export interface DataTableCellProps {

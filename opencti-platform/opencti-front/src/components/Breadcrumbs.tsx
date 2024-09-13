@@ -3,6 +3,7 @@ import MUIBreadcrumbs from '@mui/material/Breadcrumbs';
 import { Link } from 'react-router-dom';
 import Typography from '@mui/material/Typography';
 import makeStyles from '@mui/styles/makeStyles';
+import { Theme } from '@mui/material/styles/createTheme';
 import { truncate } from '../utils/String';
 
 interface element {
@@ -18,10 +19,9 @@ interface BreadcrumbsProps {
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles<Theme>((theme) => ({
   breadcrumbsList: {
-    marginTop: -5,
-    marginBottom: 25,
+    marginBottom: theme.spacing(2),
   },
   breadcrumbsObject: {
     marginTop: -5,

@@ -14,11 +14,11 @@ import { getMainRepresentative } from '../../../utils/defaultRepresentatives';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
-const useStyles = makeStyles<Theme, { cell?: DataTableColumn, navigable?: boolean }>((theme) => createStyles({
+const useStyles = makeStyles<Theme, { cell?: DataTableColumn, clickable?: boolean }>((theme) => createStyles({
   cellContainer: ({ cell }) => ({
     display: 'flex',
     width: `calc(var(--col-${cell?.id}-size) * 1px)`,
-    height: '50px',
+    height: theme.spacing(6),
     alignItems: 'center',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
@@ -31,15 +31,16 @@ const useStyles = makeStyles<Theme, { cell?: DataTableColumn, navigable?: boolea
     width: 'fill-available',
     alignItems: 'center',
     gap: 3,
+    fontSize: '13px',
   },
   dummyContainer: {
     display: 'flex',
     gap: 8,
   },
-  row: ({ navigable }) => ({
+  row: ({ clickable }) => ({
     display: 'flex',
-    borderTop: `1px solid ${theme.palette.background.accent}`,
-    '&:hover': navigable ? {
+    borderBottom: `1px solid ${theme.palette.divider}`,
+    '&:hover': clickable ? {
       backgroundColor:
         theme.palette.mode === 'dark'
           ? 'rgba(255, 255, 255, .1)'
@@ -58,7 +59,7 @@ export const DataTableLineDummy = () => {
         <Skeleton
           key={column.id}
           variant="text"
-          height={50}
+          height={35}
           style={{ width: `calc(var(--col-${column.id}-size) * 1px)` }}
         />
       ))}
@@ -71,7 +72,9 @@ export const DataTableLineDummy = () => {
   );
 };
 
-export const DataTableLinesDummy = ({ number = 10 }: { number?: number }) => Array(number).fill(0).map((_, idx) => (<DataTableLineDummy key={idx} />));
+export const DataTableLinesDummy = ({ number = 10 }: { number?: number }) => {
+  return Array(Math.min(number, 25)).fill(0).map((_, idx) => (<DataTableLineDummy key={idx} />));
+};
 
 const DataTableCell = ({
   cell,
@@ -112,6 +115,7 @@ const DataTableLine = ({
     actions,
     disableNavigation,
     onLineClick,
+    selectOnLineClick,
     variant,
   } = useDataTableContext();
   const data = useLineData(row);
@@ -121,15 +125,10 @@ const DataTableLine = ({
     link = `${link}/${redirectionMode}`;
   }
 
-  const navigable = !disableNavigation && !onLineClick;
-  const internalOnClick = () => {
-    if (onLineClick) {
-      onLineClick(data);
-    } else if (navigable) {
-      navigate(link);
-    }
-  };
-  const classes = useStyles({ navigable });
+  const navigable = !disableNavigation && !onLineClick && !selectOnLineClick;
+  const clickable = !!(navigable || selectOnLineClick || onLineClick);
+
+  const classes = useStyles({ clickable });
 
   const {
     selectAll,
@@ -139,13 +138,38 @@ const DataTableLine = ({
   } = useDataTableToggle(storageKey);
 
   const startsWithSelect = effectiveColumns.at(0)?.id === 'select';
+  const endWithNavigate = effectiveColumns.at(-1)?.id === 'navigate';
+
+  const handleSelectLine = (event: React.MouseEvent) => {
+    event.preventDefault();
+    event.stopPropagation();
+    if (event.shiftKey) {
+      onToggleShiftEntity(index, data, event);
+    } else {
+      onToggleEntity(data, event);
+    }
+  };
+
+  const handleRowClick = (event: React.MouseEvent) => {
+    event.preventDefault();
+    event.stopPropagation();
+    if (selectOnLineClick) {
+      handleSelectLine(event);
+    } else if (onLineClick) {
+      onLineClick(data);
+    } else if (navigable) {
+      navigate(link);
+    }
+  };
+
   return (
     <div
       key={row.id}
       className={classes.row}
-      onMouseDown={variant === DataTableVariant.widget ? internalOnClick : undefined}
-      onClick={variant !== DataTableVariant.widget ? internalOnClick : undefined}
-      style={{ cursor: (navigable || Boolean(onLineClick)) ? 'pointer' : 'unset' }}
+      // using onMouseDown to redirect before drag and drop happens when used in dashboard widgets
+      onMouseDown={variant === DataTableVariant.widget ? handleRowClick : undefined}
+      onClick={variant !== DataTableVariant.widget ? handleRowClick : undefined}
+      style={{ cursor: clickable ? 'pointer' : 'unset' }}
       data-testid={getMainRepresentative(data)}
     >
       {startsWithSelect && (
@@ -158,15 +182,7 @@ const DataTableLine = ({
         >
 
           <Checkbox
-            onClick={(event) => {
-              event.preventDefault();
-              event.stopPropagation();
-              if (event.shiftKey) {
-                onToggleShiftEntity(index, data, event);
-              } else {
-                onToggleEntity(data, event);
-              }
-            }}
+            onClick={handleSelectLine}
             checked={
               (selectAll
                 && !((data.id || 'id') in (deSelectedElements || {})))
@@ -175,7 +191,7 @@ const DataTableLine = ({
           />
         </div>
       )}
-      {effectiveColumns.slice(startsWithSelect ? 1 : 0, actions ? undefined : -1).map((column) => (
+      {effectiveColumns.slice(startsWithSelect ? 1 : 0, (actions || disableNavigation) ? undefined : -1).map((column) => (
         <DataTableCell
           key={column.id}
           cell={column}
@@ -183,27 +199,23 @@ const DataTableLine = ({
           storageHelpers={storageHelpers}
         />
       ))}
-      <div
-        key={`navigate_${data.id}`}
-        className={classes.cellContainer}
-        style={{
-          width: 'calc(var(--col-navigate-size) * 1px)',
-          overflow: 'initial',
-        }}
-        onClick={(e) => {
-          if (actions && navigable) {
-            e.preventDefault();
-            e.stopPropagation();
-          }
-        }}
-      >
-        {actions && actions(data)}
-        {effectiveColumns.at(-1)?.id === 'navigate' && (
-          <IconButton onClick={() => navigate(link)}>
-            <KeyboardArrowRightOutlined />
-          </IconButton>
-        )}
-      </div>
+      {(actions || endWithNavigate) && (
+        <div
+          key={`navigate_${data.id}`}
+          className={classes.cellContainer}
+          style={{
+            width: 'calc(var(--col-navigate-size) * 1px)',
+            overflow: 'initial',
+          }}
+        >
+          {actions && actions(data)}
+          {endWithNavigate && (
+            <IconButton onClick={() => navigate(link)}>
+              <KeyboardArrowRightOutlined />
+            </IconButton>
+          )}
+        </div>
+      )}
     </div>
   );
 };

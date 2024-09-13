@@ -129,6 +129,7 @@ const styles = (theme) => ({
   title: {
     flex: '1 1 100%',
     fontSize: '12px',
+    marginBottom: '1px',
   },
   chipValue: {
     margin: 0,
@@ -1302,7 +1303,7 @@ class DataTableToolBar extends Component {
 
     // Some filter types are high level, we do not want to check them as "Different"
     // We might need to add some other types here before refactoring the toolbar
-    const typesAreDifferent = (selectedTypes.filter((type) => !['Stix-Domain-Object', 'stix-core-relationship'].includes(type))).length > 1;
+    const typesAreDifferent = (selectedTypes.filter((type) => !['Stix-Domain-Object', 'stix-core-relationship', 'Stix-Cyber-Observable'].includes(type))).length > 1;
     const preventMerge = selectedTypes.at(0) === 'Vocabulary'
       && Object.values(selectedElements).some(({ builtIn }) => Boolean(builtIn));
     // region update
@@ -1316,7 +1317,7 @@ class DataTableToolBar extends Component {
         && notScannableTypes.includes(entityTypeFilterValues[0]));
     // endregion
     // region enrich
-    const isManualEnrichSelect = !selectAll && selectedTypes.length === 1;
+    const isManualEnrichSelect = !selectAll && (selectedTypes.filter((st) => !['Stix-Cyber-Observable'].includes(st))).length === 1;
     const isAllEnrichSelect = selectAll
       && entityTypeFilterValues.length === 1
       && entityTypeFilterValues[0] !== 'Stix-Cyber-Observable'
@@ -1399,8 +1400,8 @@ class DataTableToolBar extends Component {
           // endregion
           return (
             <>
-              <Toolbar style={{ minHeight: 40, marginTop: 2, display: 'flex', justifyContent: 'space-between', height: '100%' }} data-testid='opencti-toolbar'>
-                <div style={{ display: 'flex', alignItems: 'center' }}>
+              <Toolbar style={{ minHeight: 40, display: 'flex', justifyContent: 'space-between', height: '100%', paddingRight: 12, paddingLeft: 12 }} data-testid='opencti-toolbar'>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                   <Typography
                     className={classes.title}
                     color="inherit"

@@ -176,9 +176,9 @@ const Campaigns = () => {
                   <ViewModuleOutlined fontSize="small" color="primary" />
                 </Tooltip>
               </ToggleButton>),
-              (<ToggleButton key="cards" value="lines" aria-label="lines">
+              (<ToggleButton key="lines" value="lines" aria-label="lines">
                 <Tooltip title={t_i18n('Lines view')}>
-                  <ViewListOutlined color="primary" fontSize="small" />
+                  <ViewListOutlined color="secondary" fontSize="small" />
                 </Tooltip>
               </ToggleButton>),
             ]}

@@ -281,6 +281,7 @@ const Search = () => {
           lineFragment={searchLineFragment}
           preloadedPaginationProps={preloadedPaginationOptions}
           availableEntityTypes={['Stix-Core-Object']}
+          entityTypes={['Stix-Core-Object']}
         />
       )}
     </>

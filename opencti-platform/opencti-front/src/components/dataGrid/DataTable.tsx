@@ -26,6 +26,7 @@ type OCTIDataTableProps = Pick<DataTableProps, 'dataColumns'
 | 'storageKey'
 | 'initialValues'
 | 'toolbarFilters'
+| 'handleCopy'
 | 'availableFilterKeys'
 | 'redirectionModeEnabled'
 | 'additionalFilterKeys'
@@ -37,6 +38,7 @@ type OCTIDataTableProps = Pick<DataTableProps, 'dataColumns'
 | 'disableLineSelection'
 | 'disableToolBar'
 | 'disableSelectAll'
+| 'selectOnLineClick'
 | 'entityTypes'> & {
   lineFragment: GraphQLTaggedNode
   preloadedPaginationProps: UsePreloadedPaginationFragment<OperationType>,
@@ -49,6 +51,7 @@ type OCTIDataTableProps = Pick<DataTableProps, 'dataColumns'
   createButton?: ReactNode
   currentView?: string
   hideFilters?: boolean
+  hideSearch?: boolean
   taskScope?: string
 };
 
@@ -71,9 +74,11 @@ const DataTable = (props: OCTIDataTableProps) => {
     exportContext,
     entityTypes,
     toolbarFilters,
+    handleCopy,
     variant = DataTableVariant.default,
     additionalHeaderButtons,
     currentView,
+    hideSearch,
     hideFilters,
     taskScope,
   } = props;
@@ -140,14 +145,21 @@ const DataTable = (props: OCTIDataTableProps) => {
           <div
             style={{
               display: 'flex',
-              ...(variant === DataTableVariant.default ? { marginTop: -10 } : { marginTop: 10, marginLeft: 10, marginRight: 10 }),
+              gap: theme.spacing(1),
+              marginBottom: theme.spacing(2),
+              // ...(variant !== DataTableVariant.default
+              //   // ? { margin: theme.spacing(1), marginLeft: 0 }
+              //   : {}
+              // ),
             }}
           >
-            <SearchInput
-              variant={'small'}
-              onSubmit={helpers.handleSearch}
-              keyword={searchTerm}
-            />
+            {!hideSearch && (
+              <SearchInput
+                variant={'small'}
+                onSubmit={helpers.handleSearch}
+                keyword={searchTerm}
+              />
+            )}
             {!hideFilters && (
               <DataTableFilters
                 availableFilterKeys={availableFilterKeys}
@@ -162,15 +174,16 @@ const DataTable = (props: OCTIDataTableProps) => {
               />
             )}
           </div>
-          {!hideFilters ? (
+          {!hideFilters && (
             <DataTableDisplayFilters
               availableFilterKeys={availableFilterKeys}
               availableRelationFilterTypes={availableRelationFilterTypes}
+              availableEntityTypes={availableEntityTypes}
               additionalFilterKeys={additionalFilterKeys}
               entityTypes={computedEntityTypes}
               paginationOptions={paginationOptions}
             />
-          ) : (<div style={{ minHeight: 10 }} />)}
+          )}
         </>
       )}
       dataTableToolBarComponent={(
@@ -189,6 +202,7 @@ const DataTable = (props: OCTIDataTableProps) => {
             filters={toolbarFilters}
             handleClearSelectedElements={handleClearSelectedElements}
             taskScope={taskScope}
+            handleCopy={handleCopy}
           />
         </div>
       )}

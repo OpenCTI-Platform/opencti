@@ -96,7 +96,7 @@ export const stixFilters = [
 // utilities
 
 export const isFilterGroupNotEmpty = (filterGroup?: FilterGroup | null) => {
-  return (
+  return !!(
     filterGroup
     && (filterGroup.filters?.length > 0 || filterGroup.filterGroups?.length > 0)
   );

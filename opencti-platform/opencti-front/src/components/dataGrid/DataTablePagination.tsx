@@ -1,17 +1,18 @@
 import Typography from '@mui/material/Typography';
-import React, { type Dispatch, type SetStateAction, useCallback, useEffect, useState } from 'react';
+import Tooltip from '@mui/material/Tooltip';
+import Box from '@mui/material/Box';
+import React, { type Dispatch, type SetStateAction, useCallback, useEffect } from 'react';
 import { ArrowLeft, ArrowRight } from '@mui/icons-material';
-import Select from '@mui/material/Select';
-import MenuItem from '@mui/material/MenuItem';
 import { ButtonGroup } from '@mui/material';
 import Button from '@mui/material/Button';
-import { PopoverProps } from '@mui/material/Popover/Popover';
-import Menu from '@mui/material/Menu';
 import { TableTuneIcon } from 'filigran-icon';
+import { useTheme } from '@mui/styles';
+import { Theme } from '@mui/material/styles/createTheme';
 import { useFormatter } from '../i18n';
 import { DataTableVariant, LocalStorageColumns } from './dataTableTypes';
 import { NumberOfElements, usePaginationLocalStorage } from '../../utils/hooks/useLocalStorage';
 import { useDataTableContext } from './dataTableUtils';
+import NestedMenuButton from '../nestedMenu/NestedMenuButton';
 
 const DataTablePagination = ({
   page,
@@ -22,6 +23,7 @@ const DataTablePagination = ({
   setPage: Dispatch<SetStateAction<number>>,
   numberOfElements?: NumberOfElements,
 }) => {
+  const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
 
   const {
@@ -59,113 +61,130 @@ const DataTablePagination = ({
     }
   }, [page, pageSize]);
 
-  const [anchorEl, setAnchorEl] = useState<PopoverProps['anchorEl']>(null);
   const [_, setLocalStorageColumns] = useDataTableLocalStorage<LocalStorageColumns>(`${storageKey}_columns`, {}, true, true);
 
+  const resetTable = () => {
+    setLocalStorageColumns({});
+    resetColumns();
+    helpers.handleAddProperty('pageSize', '25');
+  };
+  const nestedMenuOptions = [
+    {
+      value: 'menu-reset',
+      label: t_i18n('Reset table'),
+      onClick: () => resetTable(),
+      menuLevel: 0,
+    },
+    {
+      value: 'menu-rows-per-page',
+      label: t_i18n('Rows per page'),
+      menuLevel: 0,
+      nestedOptions: [
+        {
+          value: '10',
+          onClick: () => helpers.handleAddProperty('pageSize', '10'),
+          selected: pageSize === '10',
+          menuLevel: 1,
+        },
+        {
+          value: '25',
+          onClick: () => helpers.handleAddProperty('pageSize', '25'),
+          selected: !pageSize || pageSize === '25',
+          menuLevel: 1,
+        },
+        {
+          value: '50',
+          onClick: () => helpers.handleAddProperty('pageSize', '50'),
+          selected: pageSize === '50',
+          menuLevel: 1,
+        },
+        {
+          value: '100',
+          onClick: () => helpers.handleAddProperty('pageSize', '100'),
+          selected: pageSize === '100',
+          menuLevel: 1,
+        },
+      ],
+    },
+  ];
+
   return (
-    <div
-      style={{
+    <Box
+      sx={{
         display: 'flex',
-        justifyContent: 'space-between',
-        marginBottom: 10,
+        borderRadius: 1,
+        border: 1,
+        borderColor: 'divider',
+        marginRight: theme.spacing(1),
       }}
     >
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-        }}
+      <ButtonGroup
+        size="small"
+        variant="text"
+        color="pagination"
       >
-        <Typography sx={{ marginRight: 1 }} variant={'body2'}>{t_i18n('Rows per page:')}</Typography>
-        <Select
-          value={pageSize ?? '25'}
+        <Button
+          onClick={() => fetchMore('previous')}
           size="small"
-          variant="standard"
-          sx={{ fontSize: 'small', marginRight: 1 }}
-          onChange={(event) => helpers.handleAddProperty('pageSize', event.target.value)}
+          disabled={firstItem === 1}
+          style={{
+            paddingLeft: 0,
+            paddingRight: 0,
+            borderRight: 'none',
+            minWidth: 24,
+          }}
         >
-          <MenuItem key="10" value="10">10</MenuItem>
-          <MenuItem key="25" value="25">25</MenuItem>
-          <MenuItem key="50" value="50">50</MenuItem>
-          <MenuItem key="100" value="100">100</MenuItem>
-        </Select>
-      </div>
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-        }}
-      >
-        <ButtonGroup
-          size="small"
-          variant="text"
-          color="pagination"
+          <ArrowLeft />
+        </Button>
+        <Tooltip
+          title={
+            <div>
+              <strong>{`${numberOfElements.original}`}</strong>{' '}
+              {t_i18n('entitie(s)')}
+            </div>
+            }
         >
-          <Button
-            onClick={() => fetchMore('previous')}
-            size="small"
-            disabled={firstItem === 1}
-            style={{
-              paddingLeft: 0,
-              paddingRight: 0,
-              borderRight: 'none',
-              minWidth: 24,
-            }}
-          >
-            <ArrowLeft />
-          </Button>
-          <Button
-            disabled
+          <Box
             sx={{
-              ':disabled': {
-                borderRight: '0 !important',
-                color: 'pagination.main',
-              },
+              display: 'flex',
+              alignItems: 'center',
+              borderRight: '0 !important',
+              color: 'pagination.main',
             }}
           >
-            <Typography variant="body2">
+            <Typography variant="body2" style={{ marginTop: 2 }}>
               <span>{`${lastItem ? firstItem : 0} - ${lastItem} `}</span>
               <span style={{ opacity: 0.6 }}>
                 {`/ ${numberOfElements.number}${numberOfElements.symbol}`}
               </span>
             </Typography>
-          </Button>
-          <Button
-            onClick={() => fetchMore('forward')}
-            size="small"
-            disabled={lastItem === numberOfElements.original}
-            style={{ paddingLeft: 0, paddingRight: 0, minWidth: 24 }}
-          >
-            <ArrowRight />
-          </Button>
-        </ButtonGroup>
+          </Box>
+        </Tooltip>
         <Button
-          variant="outlined"
+          onClick={() => fetchMore('forward')}
           size="small"
-          color="pagination"
-          style={{
-            marginLeft: 15,
-            padding: 4,
-            minWidth: 32,
-            height: 32,
-          }}
-          onClick={(e) => setAnchorEl(e.currentTarget)}
+          disabled={lastItem === numberOfElements.original}
+          style={{ paddingLeft: 0, paddingRight: 0, minWidth: 24 }}
         >
-          <TableTuneIcon />
+          <ArrowRight />
         </Button>
-      </div>
-      <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={() => setAnchorEl(null)}>
-        <MenuItem
-          onClick={() => {
-            setLocalStorageColumns({});
-            resetColumns();
-            setAnchorEl(null);
-          }}
-        >
-          {t_i18n('Reset table')}
-        </MenuItem>
-      </Menu>
-    </div>
+      </ButtonGroup>
+      <NestedMenuButton
+        menuButtonProps={{
+          variant: 'outlined',
+          size: 'small',
+          color: 'pagination',
+          style: {
+            padding: 6,
+            minWidth: 36,
+            border: 'none',
+          },
+        }}
+        menuButtonChildren={<TableTuneIcon />}
+        options={nestedMenuOptions}
+        menuLevels={2}
+      />
+    </Box>
   );
 };
 

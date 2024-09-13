@@ -64,7 +64,8 @@ const Loader: FunctionComponent<LoaderProps> = ({
 
   const { settings } = useContext(UserContext);
 
-  const hasFiligranLoader = theme && (isNotEmptyField(settings?.enterprise_edition) || !settings?.platform_whitemark);
+  // if you have EE and whitemark set, you can remove the loader
+  const hasFiligranLoader = theme && !(isNotEmptyField(settings?.enterprise_edition) && settings?.platform_whitemark);
 
   if (variant === 'inline') {
     return (

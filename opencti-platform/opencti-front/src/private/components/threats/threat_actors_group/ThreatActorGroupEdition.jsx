@@ -53,7 +53,7 @@ class ThreatActorGroupEdition extends Component {
               />
             );
           }
-          return <Loader variant="inElement" />;
+          return <Loader variant="inline" />;
         }}
       />
     );

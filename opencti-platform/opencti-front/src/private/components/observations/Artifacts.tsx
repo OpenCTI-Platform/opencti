@@ -3,7 +3,6 @@ import useHelper from 'src/utils/hooks/useHelper';
 import { graphql } from 'react-relay';
 import { ArtifactsLinesPaginationQuery, ArtifactsLinesPaginationQuery$variables } from '@components/observations/__generated__/ArtifactsLinesPaginationQuery.graphql';
 import { ArtifactsLines_data$data } from '@components/observations/__generated__/ArtifactsLines_data.graphql';
-import Tooltip from '@mui/material/Tooltip';
 import Security from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import useAuth from '../../../utils/hooks/useAuth';
@@ -16,7 +15,6 @@ import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import DataTable from '../../../components/dataGrid/DataTable';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
-import { truncate } from '../../../utils/String';
 import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
 
 const LOCAL_STORAGE_KEY = 'artifacts';
@@ -115,17 +113,6 @@ const artifactsLinesFragment = graphql`
     ) @connection(key: "Pagination_stixCyberObservables") {
       edges {
         node {
-          id
-          entity_type
-          observable_value
-          created_at
-          objectMarking {
-            id
-            definition_type
-            definition
-            x_opencti_order
-            x_opencti_color
-          }
           ...ArtifactsLine_node
         }
       }
@@ -172,43 +159,13 @@ const Artifacts: FunctionComponent = () => {
   const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   const dataColumns: DataTableProps['dataColumns'] = {
-    observable_value: { isSortable: isRuntimeSort },
-    file_name: {
-      label: 'File name',
-      percentWidth: 15,
-      isSortable: false,
-      render: (data, { column: { size } }) => {
-        const file = (data.importFiles?.edges && data.importFiles.edges.length > 0)
-          ? data.importFiles.edges[0]?.node
-          : { name: 'N/A', metaData: { mimetype: 'N/A' }, size: 0 };
-        return (<Tooltip title={file?.name}><>{truncate(file?.name, size * 0.113)}</></Tooltip>);
-      },
-    },
-    file_mime_type: {
-      label: 'Mime/Type',
-      percentWidth: 8,
-      isSortable: false,
-      render: (data, { column: { size } }) => {
-        const file = (data.importFiles?.edges && data.importFiles.edges.length > 0)
-          ? data.importFiles.edges[0]?.node
-          : { name: 'N/A', metaData: { mimetype: 'N/A' }, size: 0 };
-        return (<Tooltip title={file?.metaData?.mimetype}><>{truncate(file?.metaData?.mimetype, size * 0.113)}</></Tooltip>);
-      },
-    },
-    file_size: {
-      label: 'File size',
-      percentWidth: 7,
-      isSortable: false,
-      render: (data, { b }) => {
-        const file = (data.importFiles?.edges && data.importFiles.edges.length > 0)
-          ? data.importFiles.edges[0]?.node
-          : { name: 'N/A', metaData: { mimetype: 'N/A' }, size: 0 };
-        return (<Tooltip title={file?.metaData?.mimetype}><>{b(file?.size)}</></Tooltip>);
-      },
-    },
-    createdBy: { percentWidth: 10, isSortable: isRuntimeSort },
-    creator: { percentWidth: 10, isSortable: isRuntimeSort },
-    objectLabel: { percentWidth: 10 },
+    observable_value: { percentWidth: 13, isSortable: isRuntimeSort },
+    file_name: { percentWidth: 12 },
+    file_mime_type: { percentWidth: 8 },
+    file_size: { percentWidth: 8 },
+    createdBy: { percentWidth: 12, isSortable: isRuntimeSort },
+    creator: { percentWidth: 12, isSortable: isRuntimeSort },
+    objectLabel: { percentWidth: 15 },
     created_at: { percentWidth: 10 },
     objectMarking: { percentWidth: 10, isSortable: isRuntimeSort },
   };

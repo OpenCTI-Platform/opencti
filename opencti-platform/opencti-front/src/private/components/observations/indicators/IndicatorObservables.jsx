@@ -34,35 +34,37 @@ const IndicatorObservablesComponent = ({ indicator }) => {
         />
       </Security>
       <div className="clearfix" />
-      <DataTableWithoutFragment
-        dataColumns={{
-          entity_type: {
-            percentWidth: 20,
-            isSortable: false,
-          },
-          observable_value: {
-            percentWidth: 60,
-            isSortable: false,
-          },
-          created_at: {
-            percentWidth: 20,
-            isSortable: false,
-          },
-        }}
-        data={observables}
-        globalCount={observablesGlobalCount}
-        rootRef={ref}
-        storageKey={`indicator-observables-${indicator.id}`}
-        variant={DataTableVariant.inline}
-        disableNavigation
-        actions={(observable) => (
-          <IndicatorObservablePopover
-            indicatorId={indicator.id}
-            observableId={observable.id}
-            onDelete={() => onDelete(observable.id)}
-          />
-        )}
-      />
+      <div style={{ marginTop: -30 }}>
+        <DataTableWithoutFragment
+          dataColumns={{
+            entity_type: {
+              percentWidth: 20,
+              isSortable: false,
+            },
+            observable_value: {
+              percentWidth: 55,
+              isSortable: false,
+            },
+            created_at: {
+              percentWidth: 25,
+              isSortable: false,
+            },
+          }}
+          data={observables}
+          globalCount={observablesGlobalCount}
+          rootRef={ref}
+          storageKey={`indicator-observables-${indicator.id}`}
+          variant={DataTableVariant.inline}
+          disableNavigation
+          actions={(observable) => (
+            <IndicatorObservablePopover
+              indicatorId={indicator.id}
+              observableId={observable.id}
+              onDelete={() => onDelete(observable.id)}
+            />
+          )}
+        />
+      </div>
     </div>
   );
 };

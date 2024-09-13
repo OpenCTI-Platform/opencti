@@ -6,7 +6,6 @@ import { DataTableContext, defaultColumnsMap } from '../dataTableUtils';
 import { DataTableColumn, DataTableColumns, DataTableContextProps, DataTableProps, DataTableVariant, LocalStorageColumns } from '../dataTableTypes';
 import DataTableHeaders from './DataTableHeaders';
 import { SELECT_COLUMN_SIZE } from './DataTableHeader';
-import DataTablePagination from '../DataTablePagination';
 
 const DataTableComponent = ({
   dataColumns,
@@ -43,6 +42,7 @@ const DataTableComponent = ({
   disableLineSelection,
   disableToolBar,
   disableSelectAll,
+  selectOnLineClick,
   onLineClick,
 }: DataTableProps) => {
   const localStorageColumns = useDataTableLocalStorage<LocalStorageColumns>(`${storageKey}_columns`, {}, true)[0];
@@ -59,12 +59,16 @@ const DataTableComponent = ({
         ...(currentColumn?.size ? { size: currentColumn?.size } : {}),
       });
     }),
-    ...(actions ? [] : [{ id: 'navigate', visible: true } as DataTableColumn]),
+    // inject "navigate" action (chevron) if navigable and no specific actions defined
+    ...((disableNavigation || actions) ? [] : [{ id: 'navigate', visible: true } as DataTableColumn]),
   ];
 
   const [columns, setColumns] = useState<DataTableColumns>(columnsInitialState);
 
-  const clientWidth = document.getElementsByTagName('main')[0].clientWidth - 46;
+  // main tag only exists in the app, we fallback to root element for public dashboards
+  const mainElement = document.getElementsByTagName('main')[0];
+  const rootElement = document.getElementById('root');
+  const clientWidth = (mainElement ?? rootElement).clientWidth - 46;
 
   const temporaryColumnsSize: { [key: string]: number } = {
     '--header-select-size': SELECT_COLUMN_SIZE,
@@ -76,7 +80,7 @@ const DataTableComponent = ({
   };
   columns.forEach((col) => {
     if (col.visible && col.percentWidth) {
-      const size = col.percentWidth * (clientWidth / 100);
+      const size = col.percentWidth * ((clientWidth - 2 * SELECT_COLUMN_SIZE) / 100) - 2; // 2 is spacing
       temporaryColumnsSize[`--header-${col.id}-size`] = size;
       temporaryColumnsSize[`--col-${col.id}-size`] = size;
     }
@@ -84,7 +88,8 @@ const DataTableComponent = ({
 
   // QUERY PART
   const [page, setPage] = useState<number>(1);
-  const currentPageSize = pageSize ? Number.parseInt(pageSize, 10) : 25;
+  const defaultPageSize = variant === DataTableVariant.default ? 25 : Number.MAX_SAFE_INTEGER;
+  const currentPageSize = pageSize ? Number.parseInt(pageSize, 10) : defaultPageSize;
   const pageStart = useMemo(() => {
     return page ? (page - 1) * currentPageSize : 0;
   }, [page, currentPageSize]);
@@ -120,7 +125,10 @@ const DataTableComponent = ({
         disableNavigation,
         disableToolBar,
         disableSelectAll,
+        selectOnLineClick,
         onLineClick,
+        page,
+        setPage,
       } as DataTableContextProps}
     >
       <div ref={dataTableHeaderRef}>
@@ -137,19 +145,7 @@ const DataTableComponent = ({
           </div>
         ))}
       </div>
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-        }}
-      >
-        {(variant === DataTableVariant.default) && (
-          <DataTablePagination
-            page={page}
-            setPage={setPage}
-            numberOfElements={numberOfElements}
-          />
-        )}
+      <>
         <React.Suspense
           fallback={(
             <div style={{ ...temporaryColumnsSize, width: '100%' }}>
@@ -159,7 +155,7 @@ const DataTableComponent = ({
                 orderAsc={orderAsc}
                 dataTableToolBarComponent={dataTableToolBarComponent}
               />
-              {<DataTableLinesDummy number={currentPageSize} />}
+              {<DataTableLinesDummy number={Math.max(currentPageSize, 100)} />}
             </div>
           )}
         >
@@ -178,7 +174,7 @@ const DataTableComponent = ({
             dataTableHeaderRef={dataTableHeaderRef}
           />
         </React.Suspense>
-      </div>
+      </>
     </DataTableContext.Provider>
   );
 };

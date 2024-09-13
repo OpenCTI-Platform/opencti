@@ -62,12 +62,16 @@ const TaskPopover = ({
     { id },
   );
   const handleOpen = (event: React.SyntheticEvent) => {
+    event.preventDefault();
+    event.stopPropagation();
     setAnchorEl(event.currentTarget);
   };
   const handleClose = () => {
     setAnchorEl(null);
   };
-  const handleOpenEdit = () => {
+  const handleOpenEdit = (event: React.SyntheticEvent) => {
+    event.preventDefault();
+    event.stopPropagation();
     setDisplayEdit(true);
     handleClose();
   };
@@ -104,7 +108,7 @@ const TaskPopover = ({
     });
   };
   return (
-    <div className={classes.container}>
+    <div className={classes.container} onClick={(e) => e.stopPropagation()}>
       {variant === 'inLine' ? (
         <IconButton
           onClick={handleOpen}

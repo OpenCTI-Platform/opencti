@@ -15,7 +15,6 @@ import Slide from '@mui/material/Slide';
 import MoreVert from '@mui/icons-material/MoreVert';
 import inject18n from '../../../../components/i18n';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
-import Loader from '../../../../components/Loader';
 import RetentionEdition from './RetentionEdition';
 import { deleteNode } from '../../../../utils/store';
 
@@ -147,7 +146,7 @@ class RetentionPopover extends Component {
                 />
               );
             }
-            return <Loader variant="inElement" />;
+            return null;
           }}
         />
         <Dialog
