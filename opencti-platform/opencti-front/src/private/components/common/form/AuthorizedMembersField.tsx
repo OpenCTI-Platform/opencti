@@ -17,7 +17,6 @@ import SelectField from '../../../../components/fields/SelectField';
 import { useFormatter } from '../../../../components/i18n';
 import { AccessRight, ALL_MEMBERS_AUTHORIZED_CONFIG, AuthorizedMemberOption, Creator, CREATOR_AUTHORIZED_CONFIG } from '../../../../utils/authorizedMembers';
 import SwitchField from '../../../../components/fields/SwitchField';
-import useAuth from '../../../../utils/hooks/useAuth';
 
 /**
  * Returns true if the authorized member option is generic.
@@ -75,7 +74,6 @@ const AuthorizedMembersField = ({
   canDeactivate = false,
 }: AuthorizedMembersFieldProps) => {
   const { t_i18n } = useFormatter();
-  const { me } = useAuth();
   const { setFieldValue } = form;
   const { name, value } = field;
 
@@ -174,14 +172,6 @@ const AuthorizedMembersField = ({
           label: owner.name,
           type: owner.entity_type,
           value: owner.id,
-          accessRight: 'admin',
-        });
-      }
-      if (me.id !== owner?.id) {
-        values.push({
-          label: me.name,
-          type: 'User',
-          value: me.id,
           accessRight: 'admin',
         });
       }

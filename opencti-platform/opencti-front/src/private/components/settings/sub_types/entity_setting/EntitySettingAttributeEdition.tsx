@@ -121,14 +121,14 @@ const EntitySettingAttributeEdition = ({
         // due to the fact that this component managed all types of fields and this
         // query is used only for one particular case.
         const data = (await fetchQuery(entitySettingAttributeEditionMembersQuery, {
-          filters: {
+          filters: defaultAuthorizedMembers.length > 0 ? {
             mode: 'and',
             filters: [{
               key: 'ids',
               values: defaultAuthorizedMembers.map((m) => m.id),
             }],
             filterGroups: [],
-          },
+          } : undefined,
         }).toPromise()) as EntitySettingAttributeEditionMembersQuery$data;
         setMembersData(data);
       };
