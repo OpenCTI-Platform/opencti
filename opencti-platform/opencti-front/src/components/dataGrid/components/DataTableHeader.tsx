@@ -55,9 +55,6 @@ const useStyles = makeStyles<MuiTheme, { column: DataTableColumn }>((theme) => c
     borderRadius: 2,
     cursor: 'col-resize',
   },
-  icon: {
-    visibility: 'visible',
-  },
 }));
 
 const DataTableHeader: FunctionComponent<DataTableHeaderProps> = ({
@@ -109,7 +106,6 @@ const DataTableHeader: FunctionComponent<DataTableHeaderProps> = ({
           <>
             <IconButton
               disableRipple
-              className={classes.icon}
               onClick={(e) => {
                 setActiveColumn(column);
                 setAnchorEl(e.currentTarget);

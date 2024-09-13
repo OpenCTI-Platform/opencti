@@ -93,7 +93,7 @@ const inlineStylesLight = {
 
 const StyledBadge = styled(Badge)(() => ({
   '& .MuiBadge-badge': {
-    right: 9,
+    right: 8,
     top: 4,
   },
 }));
@@ -280,11 +280,11 @@ const ItemMarkings = ({ variant, markingDefinitions, limit, onClick }) => {
       }
       placement="bottom"
     >
-      <span>
-        <StyledBadge variant="dot" color="primary" sx={{ position: 'absolute' }}>
+      <div style={{ display: 'flex', alignItems: 'center' }}>
+        <StyledBadge variant="dot" color="primary">
           {R.take(limit, markings).map((markingDefinition) => renderChip(markingDefinition))}
         </StyledBadge>
-      </span>
+      </div>
     </EnrichedTooltip>
   );
 };
