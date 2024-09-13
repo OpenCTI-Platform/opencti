@@ -63,7 +63,7 @@ class ThreatActorIndividualLocationsComponent extends Component {
           />
         </Security>
         <div className="clearfix" />
-        <FieldOrEmpty source={threatActorIndividual.locations}>
+        <FieldOrEmpty source={threatActorIndividual.locations.edges}>
           <List style={{ marginTop: -10 }}>
             {threatActorIndividual.locations.edges.map((locationEdge) => {
               const { types } = locationEdge;

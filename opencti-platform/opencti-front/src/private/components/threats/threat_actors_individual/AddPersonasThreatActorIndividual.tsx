@@ -36,25 +36,14 @@ AddPersonaThreatActorIndividualProps
     },
   );
 
-  const getRelationships = () => {
-    const relations = [];
-    for (const { node } of threatActorIndividual.stixCoreRelationships?.edges ?? []) {
-      const { relationship_type } = node ?? {};
-      if (relationship_type === 'known-as') relations.push(node);
-    }
-    return relations;
-  };
-
   return (<div>
-    {(getRelationships().length > 0) && (
-      <IconButton
-        color='primary'
-        style={{ marginTop: '-11px' }}
-        onClick={handleOpen}
-      >
-        <Add fontSize="small" />
-      </IconButton>
-    )}
+    <IconButton
+      color='primary'
+      style={{ marginTop: '-11px' }}
+      onClick={handleOpen}
+    >
+      <Add fontSize="small" />
+    </IconButton>
     <Drawer
       open={open}
       onClose={handleClose}
