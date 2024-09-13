@@ -177,7 +177,7 @@ export const ES_MAX_PAGINATION = conf.get('elasticsearch:max_pagination_result')
 export const MAX_BULK_OPERATIONS = conf.get('elasticsearch:max_bulk_operations') || 5000;
 export const MAX_RUNTIME_RESOLUTION_SIZE = conf.get('elasticsearch:max_runtime_resolutions') || 5000;
 export const MAX_RELATED_CONTAINER_RESOLUTION = conf.get('elasticsearch:max_container_resolutions') || 1000;
-const ES_INDEX_PATTERN_SUFFIX = conf.get('elasticsearch:index_creation_pattern');
+export const ES_INDEX_PATTERN_SUFFIX = conf.get('elasticsearch:index_creation_pattern');
 const ES_MAX_RESULT_WINDOW = conf.get('elasticsearch:max_result_window') || 100000;
 const ES_INDEX_SHARD_NUMBER = conf.get('elasticsearch:number_of_shards');
 const ES_INDEX_REPLICA_NUMBER = conf.get('elasticsearch:number_of_replicas');
@@ -556,7 +556,11 @@ const buildUserMemberAccessFilter = (user, opts) => {
 
 export const elIndexExists = async (indexName) => {
   const existIndex = await engine.indices.exists({ index: indexName });
-  return oebp(existIndex) === true;
+  return existIndex === true || oebp(existIndex) === true || existIndex.body === true;
+};
+export const elIndexGetAlias = async (indexName) => {
+  const indexAlias = await engine.indices.getAlias({ index: indexName });
+  return oebp(indexAlias);
 };
 export const elPlatformIndices = async () => {
   const listIndices = await engine.cat.indices({ index: `${ES_INDEX_PREFIX}*`, format: 'JSON' });
