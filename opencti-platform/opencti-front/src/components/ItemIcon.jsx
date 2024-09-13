@@ -447,6 +447,8 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
     case 'located-at':
     case 'related-to':
     case 'mitigates':
+    case 'reports-to':
+    case 'supports':
     case 'known-as':
     case 'impersonates':
     case 'indicates':

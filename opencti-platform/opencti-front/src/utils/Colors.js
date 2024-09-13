@@ -360,6 +360,8 @@ export const itemColor = (type, dark = false, reversed = false) => {
     case 'subtechnique-of':
     case 'numberOfConnectedElement':
     case 'known-as':
+    case 'reports-to':
+    case 'supports':
       if (dark) {
         return '#616161';
       }
