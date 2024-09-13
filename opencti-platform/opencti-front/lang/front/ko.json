@@ -1656,7 +1656,7 @@
   "Merge entities": "엔터티 병합",
   "Merged entity": "병합된 엔터티",
   "Message": "메시지",
-  "messages in processing": "처리 중인 메시지",
+  "messages in queue": "대기열의 메시지",
   "Metric": "메트릭",
   "Metrics": "메트릭",
   "Mini map": "미니 맵",

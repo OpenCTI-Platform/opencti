@@ -1656,7 +1656,7 @@
   "Merge entities": "Fusionar entidades",
   "Merged entity": "Entidad fusionada",
   "Message": "Mensaje",
-  "messages in processing": "mensajes en tratamiento",
+  "messages in queue": "mensajes en cola",
   "Metric": "Métrico",
   "Metrics": "Métricas",
   "Mini map": "Mini mapa",

@@ -1656,7 +1656,7 @@
   "Merge entities": "归并实体",
   "Merged entity": "归并的实体",
   "Message": "消息",
-  "messages in processing": "处理中的信息",
+  "messages in queue": "队列中的消息",
   "Metric": "公制",
   "Metrics": "指标",
   "Mini map": "小地图",

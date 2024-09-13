@@ -151,7 +151,7 @@ const PlaybookHeaderComponent = ({
               <Chip
                 classes={{ root: classes.chip }}
                 style={{ marginRight: 14 }}
-                label={`${n(playbook.queue_messages)} ${t_i18n('messages in processing')}`}
+                label={`${n(playbook.queue_messages)} ${t_i18n('messages in queue')}`}
               />
             </div>
             <Tooltip title={t_i18n('Open last execution traces')}>
