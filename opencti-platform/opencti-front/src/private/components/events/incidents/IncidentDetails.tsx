@@ -161,6 +161,7 @@ const IncidentDetails: FunctionComponent<IncidentDetailsProps> = ({
               small={true}
               type="incident_severity_ov"
               value={incident.severity}
+              displayMode={'chip'}
             />
             <Typography
               variant="h3"

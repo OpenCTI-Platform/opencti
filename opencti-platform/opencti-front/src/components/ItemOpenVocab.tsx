@@ -70,7 +70,7 @@ const ItemOpenVocab: FunctionComponent<ItemOpenVocabProps> = ({
     let chip = (
       <Chip classes={{ root: classes.chip }} label={value || t_i18n('Unknown')} />
     );
-    if (type === 'case_severity_ov') {
+    if (type === 'case_severity_ov' || type === 'incident_severity_ov') {
       chip = <ItemSeverity label={value || t_i18n('Unknown')} severity={value} />;
     } else if (type === 'case_priority_ov') {
       chip = <ItemPriority label={value || t_i18n('Unknown')} priority={value} />;
