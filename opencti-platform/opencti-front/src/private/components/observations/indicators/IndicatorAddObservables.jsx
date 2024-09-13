@@ -28,10 +28,6 @@ const styles = (theme) => ({
     }),
     padding: 0,
   },
-  createButton: {
-    float: 'left',
-    marginTop: -15,
-  },
   title: {
     float: 'left',
   },
@@ -93,7 +89,6 @@ class IndicatorAddObservables extends Component {
           color="primary"
           aria-label="Add"
           onClick={this.handleOpen.bind(this)}
-          classes={{ root: classes.createButton }}
           size="large"
         >
           <Add fontSize="small" />

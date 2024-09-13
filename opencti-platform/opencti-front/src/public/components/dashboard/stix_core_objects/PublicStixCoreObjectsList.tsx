@@ -264,20 +264,21 @@ const PublicStixCoreObjectsList = ({
     <WidgetContainer
       title={parameters?.title ?? title ?? t_i18n('Entities number')}
       variant="inLine"
-      ref={rootRef}
     >
-      {queryRef ? (
-        <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-          <PublicStixCoreObjectsListComponent
-            queryRef={queryRef}
-            dateAttribute={dateAttribute}
-            rootRef={rootRef.current ?? undefined}
-            widgetId={id}
-          />
-        </React.Suspense>
-      ) : (
-        <Loader variant={LoaderVariant.inElement} />
-      )}
+      <div ref={rootRef} style={{ height: '100%' }}>
+        {queryRef ? (
+          <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+            <PublicStixCoreObjectsListComponent
+              queryRef={queryRef}
+              dateAttribute={dateAttribute}
+              rootRef={rootRef.current ?? undefined}
+              widgetId={id}
+            />
+          </React.Suspense>
+        ) : (
+          <Loader variant={LoaderVariant.inElement} />
+        )}
+      </div>
     </WidgetContainer>
   );
 };

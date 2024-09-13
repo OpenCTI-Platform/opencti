@@ -22,7 +22,7 @@ const navigateMalwareAnalyses = async (page: Page) => {
   await malwareAnalysesPage.navigateFromMenu();
 
   await expect(malwareAnalysesPage.getPage()).toBeVisible();
-  await expect(page.getByText(malwareAnalysesNameFromInitData)).toBeVisible();
+  await expect(malwareAnalysesPage.getItemFromList(malwareAnalysesNameFromInitData)).toBeVisible();
   await malwareAnalysesPage.getItemFromList(malwareAnalysesNameFromInitData).click();
 
   const malwareAnalysesDetailsPage = new MalwareAnalysesDetailsPage(page);

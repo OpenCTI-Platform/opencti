@@ -1,15 +1,14 @@
-import React, { useMemo } from 'react';
-import Skeleton from '@mui/material/Skeleton';
-import Checkbox from '@mui/material/Checkbox';
-import IconButton from '@mui/material/IconButton';
+import React, { CSSProperties } from 'react';
+import { Skeleton, Checkbox, IconButton, Box, SxProps } from '@mui/material';
 import { KeyboardArrowRightOutlined } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
-import { createStyles } from '@mui/styles';
+import { createStyles, useTheme } from '@mui/styles';
 import { useNavigate } from 'react-router-dom';
 import type { DataTableCellProps, DataTableLineProps } from '../dataTableTypes';
 import { DataTableColumn, DataTableVariant } from '../dataTableTypes';
 import type { Theme } from '../../Theme';
 import { getMainRepresentative } from '../../../utils/defaultRepresentatives';
+import { SELECT_COLUMN_SIZE } from './DataTableHeader';
 import { useDataTableContext } from './DataTableContext';
 
 // Deprecated - https://mui.com/system/styles/basics/
@@ -17,65 +16,50 @@ import { useDataTableContext } from './DataTableContext';
 const useStyles = makeStyles<Theme, { cell?: DataTableColumn, clickable?: boolean }>((theme) => createStyles({
   cellContainer: ({ cell }) => ({
     display: 'flex',
-    width: `calc(var(--col-${cell?.id}-size) * 1px)`,
+    width: `${cell?.percentWidth}%`,
     height: theme.spacing(6),
     alignItems: 'center',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     whiteSpace: 'nowrap',
-  }),
-  cellPadding: {
-    display: 'flex',
-    paddingLeft: theme.spacing(1),
-    paddingRight: theme.spacing(1),
-    width: 'fill-available',
-    alignItems: 'center',
-    gap: 3,
-    fontSize: '13px',
-  },
-  dummyContainer: {
-    height: theme.spacing(6),
-    alignItems: 'center',
-    display: 'flex',
-    gap: 8,
-  },
-  row: ({ clickable }) => ({
-    borderBottom: `1px solid ${theme.palette.divider}`,
-    display: 'flex',
-    '&:hover': clickable ? {
-      backgroundColor:
-        theme.palette.mode === 'dark'
-          ? 'rgba(255, 255, 255, .1)'
-          : 'rgba(0, 0, 0, .1)',
-    } : {},
+    flex: '0 0 auto',
   }),
 }));
 
-export const DataTableLineDummy = () => {
-  const classes = useStyles({});
-  const { effectiveColumns } = useDataTableContext();
+const DataTableLineDummy = () => {
+  const { columns } = useDataTableContext();
+  const columnStyle = (c: typeof columns[0]) => ({
+    paddingLeft: '4px',
+    paddingRight: '8px',
+    flex: '0 0 auto',
+    width: c.percentWidth ? `${c.percentWidth}%` : `${SELECT_COLUMN_SIZE}px`,
+  });
 
-  const lines = useMemo(() => (
-    <>
-      {effectiveColumns.map((column) => (
-        <Skeleton
-          key={column.id}
-          variant="text"
-          height={35}
-          style={{ width: `calc(var(--col-${column.id}-size) * 1px)` }}
-        />
-      ))}
-    </>
-  ), [effectiveColumns]);
   return (
-    <div className={classes.dummyContainer}>
-      {lines}
+    <div style={{ display: 'flex' }}>
+      {columns.map((column) => (
+        <div key={column.id} style={columnStyle(column)}>
+          <Skeleton variant="text" height={35} />
+        </div>
+      ))}
     </div>
   );
 };
 
 export const DataTableLinesDummy = ({ number = 10 }: { number?: number }) => {
-  return Array(Math.min(number, 25)).fill(0).map((_, idx) => (<DataTableLineDummy key={idx} />));
+  const { columns, actions } = useDataTableContext();
+  const startsWithSelect = columns.at(0)?.id === 'select';
+  const endsWithNavigate = columns.at(-1)?.id === 'navigate';
+
+  let offset = 0;
+  if (startsWithSelect) offset += SELECT_COLUMN_SIZE;
+  if (endsWithNavigate || actions) offset += SELECT_COLUMN_SIZE;
+
+  return (
+    <div style={{ paddingRight: offset }}>
+      {Array(Math.min(number, 25)).fill(0).map((_, idx) => (<DataTableLineDummy key={idx} />))}
+    </div>
+  );
 };
 
 const DataTableCell = ({
@@ -84,15 +68,21 @@ const DataTableCell = ({
 }: DataTableCellProps) => {
   const classes = useStyles({ cell });
   const { useDataCellHelpers } = useDataTableContext();
-
   const helpers = useDataCellHelpers(cell);
 
+  const cellStyle: CSSProperties = {
+    display: 'flex',
+    paddingLeft: '8px',
+    paddingRight: '8px',
+    width: '100%',
+    alignItems: 'center',
+    gap: '3px',
+    fontSize: '13px',
+  };
+
   return (
-    <div
-      key={`${cell.id}_${data.id}`}
-      className={classes.cellContainer}
-    >
-      <div className={classes.cellPadding}>
+    <div key={`${cell.id}_${data.id}`} className={classes.cellContainer}>
+      <div style={cellStyle}>
         {cell.render?.(data, helpers) ?? (<div>-</div>)}
       </div>
     </div>
@@ -101,13 +91,15 @@ const DataTableCell = ({
 
 const DataTableLine = ({
   row,
-  effectiveColumns,
   index,
   onToggleShiftEntity,
 }: DataTableLineProps) => {
   const navigate = useNavigate();
+  const theme = useTheme<Theme>();
+  const classes = useStyles({ });
 
   const {
+    columns,
     useLineData,
     useDataTableToggle,
     useComputeLink,
@@ -130,8 +122,6 @@ const DataTableLine = ({
   const navigable = !disableNavigation && !onLineClick && !selectOnLineClick;
   const clickable = !!(navigable || selectOnLineClick || onLineClick);
 
-  const classes = useStyles({ clickable });
-
   const {
     selectAll,
     deSelectedElements,
@@ -139,8 +129,8 @@ const DataTableLine = ({
     onToggleEntity,
   } = useDataTableToggle;
 
-  const startsWithSelect = effectiveColumns.at(0)?.id === 'select';
-  const endWithNavigate = effectiveColumns.at(-1)?.id === 'navigate';
+  const startsWithSelect = columns.at(0)?.id === 'select';
+  const endsWithNavigate = columns.at(-1)?.id === 'navigate';
 
   const handleSelectLine = (event: React.MouseEvent) => {
     if (event.shiftKey) {
@@ -173,33 +163,53 @@ const DataTableLine = ({
     }
   };
 
+  let offset = 0;
+  if (startsWithSelect) offset += SELECT_COLUMN_SIZE;
+  if (endsWithNavigate || actions) offset += SELECT_COLUMN_SIZE;
+
+  const linkStyle: CSSProperties = {
+    display: 'flex',
+    color: 'inherit',
+  };
+
+  const containerStyle: SxProps = {
+    cursor: clickable ? 'pointer' : 'unset',
+    paddingRight: `${offset}px`,
+    '& a > div': {
+      borderBottom: `1px solid ${theme.palette.divider}`,
+    },
+    '& a:hover > div': clickable ? {
+      backgroundColor:
+        theme.palette.mode === 'dark'
+          ? 'rgba(255, 255, 255, .1)'
+          : 'rgba(0, 0, 0, .1)',
+    } : {},
+  };
+
   return (
-    <div
+    <Box
       key={row.id}
-      className={classes.row}
-      style={{ cursor: clickable ? 'pointer' : 'unset' }}
+      sx={containerStyle}
       // We need both to handle accessibility and widget.
       onMouseDown={variant === DataTableVariant.widget ? handleNavigate : undefined}
       onClick={variant !== DataTableVariant.widget ? handleRowClick : undefined}
       data-testid={getMainRepresentative(data)}
     >
       <a
-        style={{ display: 'flex', color: 'inherit' }}
+        style={linkStyle}
         href={navigable ? link : undefined}
       >
         {startsWithSelect && (
           <div
             key={`select_${data.id}`}
             className={classes.cellContainer}
-            style={{
-              width: 'calc(var(--col-select-size) * 1px)',
-            }}
+            style={{ width: SELECT_COLUMN_SIZE }}
           >
             <Checkbox
               onClick={handleSelectLine}
               sx={{
                 marginRight: 1,
-                width: 24,
+                flex: '0 0 auto',
                 '&:hover': {
                   background: 'transparent',
                 },
@@ -212,32 +222,34 @@ const DataTableLine = ({
             />
           </div>
         )}
-        {effectiveColumns.slice(startsWithSelect ? 1 : 0, (actions || disableNavigation) ? undefined : -1).map((column) => (
+
+        {columns.slice(startsWithSelect ? 1 : 0, (actions || disableNavigation) ? undefined : -1).map((column) => (
           <DataTableCell
             key={column.id}
             cell={column}
             data={data}
           />
-        ))}</a>
-      {(actions || endWithNavigate) && (
-        <div
-          key={`navigate_${data.id}`}
-          className={classes.cellContainer}
-          style={{
-            width: 'calc(var(--col-navigate-size) * 1px)',
-            overflow: 'initial',
-          }}
-          onClick={(e) => e.stopPropagation()}
-        >
-          {actions && actions(data)}
-          {endWithNavigate && (
-            <IconButton onClick={() => navigate(link)}>
-              <KeyboardArrowRightOutlined />
-            </IconButton>
-          )}
-        </div>
-      )}
-    </div>
+        ))}
+
+        {(actions || endsWithNavigate) && (
+          <div
+            key={`navigate_${data.id}`}
+            className={classes.cellContainer}
+            style={{
+              width: SELECT_COLUMN_SIZE,
+              overflow: 'initial',
+            }}
+          >
+            {actions && actions(data)}
+            {endsWithNavigate && (
+              <IconButton onClick={() => navigate(link)}>
+                <KeyboardArrowRightOutlined />
+              </IconButton>
+            )}
+          </div>
+        )}
+      </a>
+    </Box>
   );
 };
 

@@ -10,7 +10,7 @@ import type { DataTableColumn } from './dataTableTypes';
 import { DataTableProps, DataTableVariant } from './dataTableTypes';
 import ItemMarkings from '../ItemMarkings';
 import ItemStatus from '../ItemStatus';
-import { emptyFilled, truncate } from '../../utils/String';
+import { emptyFilled } from '../../utils/String';
 import ItemPriority from '../ItemPriority';
 import { isNotEmptyField } from '../../utils/utils';
 import RatingField from '../fields/RatingField';
@@ -25,26 +25,12 @@ import ItemSeverity from '../ItemSeverity';
 import { APP_BASE_PATH } from '../../relay/environment';
 import ItemOperations from '../ItemOperations';
 
-export const MAGICAL_SIZE = 0.113;
-
 const chipStyle = {
   fontSize: '12px',
   lineHeight: '12px',
   height: '20px',
   marginRight: '7px',
   borderRadius: '10px',
-};
-
-/* eslint-disable @typescript-eslint/no-explicit-any */
-type TextInTooltip = (val?: string, helpers?: any) => ReactNode;
-export const textInTooltip: TextInTooltip = (val, helpers) => {
-  const value = val ?? '-';
-  const { column: { size } } = helpers;
-  return (
-    <Tooltip title={value}>
-      <div>{truncate(value, size * MAGICAL_SIZE, false)}</div>
-    </Tooltip>
-  );
 };
 
 // Deprecated - https://mui.com/system/styles/basics/
@@ -96,13 +82,21 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
-const defaultRender: DataTableColumn['render'] = (data, { column: { size } }, displayDraftChip = false) => {
-  return (<Tooltip title={data}>
-    <div>
-      {truncate(data, size * MAGICAL_SIZE)}
-      {displayDraftChip && (<DraftChip/>)}
-    </div>
-  </Tooltip>);
+const Truncate = ({ children }: { children: ReactNode }) => (
+  <div style={{ textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
+    {children}
+  </div>
+);
+
+export const defaultRender: NonNullable<DataTableColumn['render']> = (data, displayDraftChip = false) => {
+  return (
+    <Tooltip title={data}>
+      <div style={{ maxWidth: '100%' }}>
+        <Truncate>{data}</Truncate>
+        {displayDraftChip && (<DraftChip/>)}
+      </div>
+    </Tooltip>
+  );
 };
 
 const defaultColumns: DataTableProps['dataColumns'] = {
@@ -159,8 +153,8 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Abstract',
     percentWidth: 25,
     isSortable: true,
-    render: ({ attribute_abstract, content, draftVersion }, helpers) => {
-      return defaultRender(attribute_abstract || content, helpers, draftVersion);
+    render: ({ attribute_abstract, content, draftVersion }) => {
+      return defaultRender(attribute_abstract || content, draftVersion);
     },
   },
   attribute_count: {
@@ -168,16 +162,16 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Nb.',
     percentWidth: 4,
     isSortable: true,
-    render: ({ attribute_count }, helpers) => defaultRender(String(attribute_count), helpers),
+    render: ({ attribute_count }) => defaultRender(String(attribute_count)),
   },
   channel_types: {
     id: 'channel_types',
     label: 'Types',
     percentWidth: 20,
     isSortable: true,
-    render: ({ channel_types }, helpers) => {
+    render: ({ channel_types }) => {
       const value = channel_types ? channel_types.join(', ') : '-';
-      return defaultRender(value, helpers);
+      return defaultRender(value);
     },
   },
   color: {
@@ -185,7 +179,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Color',
     percentWidth: 25,
     isSortable: true,
-    render: ({ color }, { column: { size } }) => (
+    render: ({ color }) => (
       <Tooltip title={color}>
         <>
           <div
@@ -198,7 +192,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
               marginRight: 5,
             }}
           />
-          {truncate(color, size * MAGICAL_SIZE)}
+          <Truncate>{color}</Truncate>
         </>
       </Tooltip>
     ),
@@ -234,14 +228,14 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Original creation date',
     percentWidth: 15,
     isSortable: true,
-    render: ({ created }, helpers) => defaultRender(helpers.fd(created), helpers),
+    render: ({ created }, helpers) => defaultRender(helpers.fd(created)),
   },
   created_at: {
     id: 'created_at',
     label: 'Platform creation date',
     percentWidth: 15,
     isSortable: true,
-    render: ({ created_at }, helpers) => defaultRender(helpers.fd(created_at), helpers),
+    render: ({ created_at }, helpers) => defaultRender(helpers.fd(created_at)),
   },
   createdBy: {
     id: 'createdBy',
@@ -253,9 +247,9 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     id: 'creator',
     label: 'Creators',
     percentWidth: 12,
-    render: ({ creators }, helpers) => {
+    render: ({ creators }) => {
       const value = isNotEmptyField(creators) ? creators.map((c: { name: string }) => c.name).join(', ') : '-';
-      return defaultRender(value, helpers);
+      return defaultRender(value);
     },
   },
   entity_type: {
@@ -284,9 +278,9 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Types',
     percentWidth: 20,
     isSortable: true,
-    render: ({ event_types }, helpers) => {
+    render: ({ event_types }) => {
       const value = event_types ? event_types.join(', ') : '-';
-      return defaultRender(value, helpers);
+      return defaultRender(value);
     },
   },
   external_id: {
@@ -294,7 +288,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'External ID',
     percentWidth: 10,
     isSortable: true,
-    render: ({ external_id }, helpers) => defaultRender(external_id, helpers),
+    render: ({ external_id }) => defaultRender(external_id),
   },
   first_observed: {
     id: 'first_observed',
@@ -317,7 +311,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     isSortable: false,
     render: ({ from }, helpers) => {
       const value = from ? getMainRepresentative(from) : helpers.t_i18n('Restricted');
-      return defaultRender(value, helpers);
+      return defaultRender(value);
     },
   },
   incident_type: {
@@ -393,15 +387,11 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Kill chain phase',
     percentWidth: 15,
     isSortable: false,
-    render: ({ killChainPhases }, { column: { size } }) => {
+    render: ({ killChainPhases }) => {
       const formattedKillChainPhase = (killChainPhases && killChainPhases.length > 0)
         ? `[${killChainPhases[0].kill_chain_name}] ${killChainPhases[0].phase_name}`
         : '-';
-      return (
-        <Tooltip title={formattedKillChainPhase}>
-          <div>{truncate(formattedKillChainPhase, size * MAGICAL_SIZE)}</div>
-        </Tooltip>
-      );
+      return defaultRender(formattedKillChainPhase);
     },
   },
   kill_chain_name: {
@@ -409,7 +399,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Kill chain name',
     percentWidth: 40,
     isSortable: true,
-    render: ({ kill_chain_name }, helpers) => defaultRender(kill_chain_name, helpers),
+    render: ({ kill_chain_name }) => defaultRender(kill_chain_name),
   },
   last_observed: {
     id: 'last_observed',
@@ -430,9 +420,9 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Malware types',
     percentWidth: 15,
     isSortable: true,
-    render: ({ malware_types }, helpers) => {
+    render: ({ malware_types }) => {
       const value = malware_types ? malware_types.join(', ') : '-';
-      return defaultRender(value, helpers);
+      return defaultRender(value);
     },
   },
   modified: {
@@ -447,9 +437,9 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Name',
     percentWidth: 25,
     isSortable: true,
-    render: (data, helpers) => {
+    render: (data) => {
       const displayDraftChip = !!data.draftVersion;
-      return defaultRender(getMainRepresentative(data), helpers, displayDraftChip);
+      return defaultRender(getMainRepresentative(data), displayDraftChip);
     },
   },
   note_types: {
@@ -487,9 +477,9 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Assignees',
     percentWidth: 10,
     isSortable: false,
-    render: ({ objectAssignee }, helpers) => {
+    render: ({ objectAssignee }) => {
       const value = isNotEmptyField(objectAssignee) ? objectAssignee.map((c: { name: string }) => c.name).join(', ') : '-';
-      return defaultRender(value, helpers);
+      return defaultRender(value);
     },
   },
   objectLabel: {
@@ -527,7 +517,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     percentWidth: 20,
     isSortable: false,
     // Please check the String.jsx->renderObservableValue. It should have the same behavior and will replace it at the end.
-    render: (observable, helpers) => {
+    render: (observable) => {
       const theme = useTheme<Theme>();
       switch (observable.entity_type) {
         case 'IPv4-Addr':
@@ -546,16 +536,16 @@ const defaultColumns: DataTableProps['dataColumns'] = {
                     />
                   </Tooltip>
                   <div>
-                    {defaultRender(observable.observable_value, helpers, observable.draftVersion)}
+                    {defaultRender(observable.observable_value, observable.draftVersion)}
                   </div>
                 </div>
               );
             }
           }
-          return defaultRender(observable.observable_value, helpers, observable.draftVersion);
+          return defaultRender(observable.observable_value, observable.draftVersion);
         }
         default:
-          return defaultRender(observable.observable_value, helpers, observable.draftVersion);
+          return defaultRender(observable.observable_value, observable.draftVersion);
       }
     },
   },
@@ -576,7 +566,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Owner',
     percentWidth: 12,
     isSortable: true,
-    render: ({ owner }, h) => textInTooltip(owner.name, h),
+    render: ({ owner }) => defaultRender(owner.name),
   },
   pattern_type: {
     id: 'pattern_type',
@@ -590,7 +580,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Phase name',
     percentWidth: 35,
     isSortable: true,
-    render: ({ phase_name }, helpers) => defaultRender(phase_name, helpers),
+    render: ({ phase_name }) => defaultRender(phase_name),
   },
   primary_motivation: {
     id: 'primary_motivation',
@@ -622,7 +612,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Product',
     percentWidth: 15,
     isSortable: true,
-    render: ({ product }, helpers) => defaultRender(product, helpers),
+    render: ({ product }) => defaultRender(product),
   },
   published: {
     id: 'published',
@@ -706,16 +696,16 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Result name',
     percentWidth: 15,
     isSortable: true,
-    render: ({ result_name, draftVersion }, helpers) => defaultRender(result_name, helpers, draftVersion),
+    render: ({ result_name, draftVersion }) => defaultRender(result_name, draftVersion),
   },
   secondary_motivations: {
     id: 'secondary_motivations',
     label: 'Secondary motivations',
     percentWidth: 10,
     isSortable: false,
-    render: ({ secondary_motivations }, helpers) => {
+    render: ({ secondary_motivations }) => {
       const value = secondary_motivations ? secondary_motivations.join(', ') : '-';
-      return defaultRender(value, helpers);
+      return defaultRender(value);
     },
   },
   severity: {
@@ -748,7 +738,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Source name',
     percentWidth: 15,
     isSortable: true,
-    render: ({ source_name, draftVersion }, helpers) => defaultRender(source_name, helpers, draftVersion),
+    render: ({ source_name, draftVersion }) => defaultRender(source_name, draftVersion),
   },
   start_time: {
     id: 'start_time',
@@ -801,9 +791,9 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Types',
     percentWidth: 20,
     isSortable: true,
-    render: ({ threat_actor_types }, helpers) => {
+    render: ({ threat_actor_types }) => {
       const value = threat_actor_types ? threat_actor_types.join(', ') : '-';
-      return defaultRender(value, helpers);
+      return defaultRender(value);
     },
   },
   toName: {
@@ -813,7 +803,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     isSortable: false,
     render: ({ to }, helpers) => {
       const value = to ? getMainRepresentative(to) : helpers.t_i18n('Restricted');
-      return defaultRender(value, helpers);
+      return defaultRender(value);
     },
   },
   updated_at: {
@@ -828,23 +818,23 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'URL',
     percentWidth: 45,
     isSortable: true,
-    render: ({ url }, helpers) => defaultRender(url, helpers),
+    render: ({ url }) => defaultRender(url),
   },
   user_email: {
     id: 'user_email',
     label: 'Email',
     percentWidth: 50,
     isSortable: false,
-    render: ({ user_email }, helpers) => defaultRender(user_email, helpers),
+    render: ({ user_email }) => defaultRender(user_email),
   },
   value: {
     id: 'value',
     label: 'Value',
     percentWidth: 22,
     isSortable: false,
-    render: (node, helpers) => {
+    render: (node) => {
       const value = getMainRepresentative(node);
-      return defaultRender(value, helpers);
+      return defaultRender(value);
     },
   },
   x_mitre_id: {
@@ -882,7 +872,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Order',
     percentWidth: 10,
     isSortable: true,
-    render: ({ x_opencti_order }, helpers) => defaultRender(x_opencti_order.toString(), helpers),
+    render: ({ x_opencti_order }) => defaultRender(x_opencti_order.toString()),
   },
   x_opencti_negative: {
     id: 'x_opencti_negative',
@@ -960,12 +950,15 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'File name',
     percentWidth: 12,
     isSortable: false,
-    render: (data, { column: { size } }) => {
+    render: (data) => {
       const file = (data.importFiles?.edges && data.importFiles.edges.length > 0)
         ? data.importFiles.edges[0]?.node
         : { name: 'N/A', metaData: { mimetype: 'N/A' }, size: 0 };
-      return (<Tooltip title={file?.name}><>{truncate(file?.name, size * MAGICAL_SIZE)}</>
-      </Tooltip>);
+      return (
+        <Tooltip title='ntm'>
+          <Truncate>{file?.name}</Truncate>
+        </Tooltip>
+      );
     },
   },
   file_mime_type: {
@@ -973,12 +966,15 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Mime/Type',
     percentWidth: 8,
     isSortable: false,
-    render: (data, { column: { size } }) => {
+    render: (data) => {
       const file = (data.importFiles?.edges && data.importFiles.edges.length > 0)
         ? data.importFiles.edges[0]?.node
         : { name: 'N/A', metaData: { mimetype: 'N/A' }, size: 0 };
-      return (<Tooltip title={file?.metaData?.mimetype}><>{truncate(file?.metaData?.mimetype, size * MAGICAL_SIZE)}</>
-      </Tooltip>);
+      return (
+        <Tooltip title={file?.metaData?.mimetype}>
+          <Truncate>{file?.metaData.mimetype}</Truncate>
+        </Tooltip>
+      );
     },
   },
   file_size: {

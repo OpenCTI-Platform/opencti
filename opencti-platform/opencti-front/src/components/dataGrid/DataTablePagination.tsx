@@ -24,7 +24,6 @@ const DataTablePagination = ({
 
   const {
     resetColumns,
-    useDataTableColumnsLocalStorage,
     useDataTablePaginationLocalStorage: {
       viewStorage: {
         pageSize,
@@ -57,10 +56,7 @@ const DataTablePagination = ({
     }
   }, [page, pageSize]);
 
-  const [_, setLocalStorageColumns] = useDataTableColumnsLocalStorage;
-
   const resetTable = () => {
-    setLocalStorageColumns({});
     resetColumns();
     helpers.handleAddProperty('pageSize', '25');
   };
