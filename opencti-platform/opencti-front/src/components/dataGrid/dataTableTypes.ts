@@ -186,6 +186,7 @@ export interface DataTableHeaderProps {
   containerRef?: MutableRefObject<HTMLDivElement | null>
   sortBy: boolean
   orderAsc: boolean
+  isActive?: boolean
 }
 
 export interface DataTableLineProps {
