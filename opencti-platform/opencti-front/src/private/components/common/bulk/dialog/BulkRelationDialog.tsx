@@ -290,7 +290,7 @@ const BulkRelationDialog : FunctionComponent<BulkRelationDialogProps> = ({
             setIsFirstLoadDone(true);
           }
           return [...acc, {
-            representative: currentStixObject.representative.main,
+            representative: currentStixObject?.representative.main ?? foundItem?.representative ?? cur.searchTerm,
             entityTypeList,
             isMatchingEntity,
             isExisting,
