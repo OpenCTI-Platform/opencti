@@ -1,13 +1,13 @@
 import { Button, IconButton, Tooltip, Typography } from '@mui/material';
 import React, { FunctionComponent, useState } from 'react';
-import { useLazyLoadQuery, usePreloadedQuery } from 'react-relay';
+import { PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { Add } from '@mui/icons-material';
 import { useTheme } from '@mui/styles';
 import { useFormatter } from '../../../../components/i18n';
 import Drawer from '../drawer/Drawer';
 import StixDomainObjectCreation from '../stix_domain_objects/StixDomainObjectCreation';
 import ListLines from '../../../../components/list_lines/ListLines';
-import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
+import { PaginationLocalStorage, usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import { emptyFilterGroup } from '../../../../utils/filters/filtersUtils';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { removeEmptyFields } from '../../../../utils/utils';
@@ -18,6 +18,7 @@ import { ContainerStixCyberObservablesLinesQuery$variables } from './__generated
 import StixCyberObservableCreation from '../../observations/stix_cyber_observables/StixCyberObservableCreation';
 import type { Theme } from '../../../../components/Theme';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import { DataColumns } from '../../../../components/list_lines';
 
 interface ControlledDialProps {
   onOpen: () => void
@@ -63,22 +64,21 @@ type scoEdge = {
   }
 };
 
-interface ContainerAddStixCoreObjectsInLineProps {
-  containerId: string,
-  targetStixCoreObjectTypes: string[],
-  paginationOptions: ContainerStixDomainObjectsLinesQuery$variables | ContainerStixCyberObservablesLinesQuery$variables,
-  containerStixCoreObjects: unknown[],
-  onAdd?: (node: { id: string }) => void,
-  onDelete?: (node: { id: string }) => void,
-  confidence?: number,
-  defaultCreatedBy?: unknown,
-  defaultMarkingDefinitions?: unknown[],
-  selectedText?: string,
-  enableReferences?: boolean,
-  knowledgeGraph?: boolean,
+interface ContainerAddStixCreObjectsInLineLoaderProps {
+  queryRef: PreloadedQuery<ContainerAddStixCoreObjectsLinesQuery>
+  containerId: string
+  buildColumns: () => DataColumns
+  linesPaginationOptions: ContainerStixDomainObjectsLinesQuery$variables | ContainerStixCyberObservablesLinesQuery$variables
+  knowledgeGraph?: boolean
+  selectedElements: unknown[]
+  handleSelect: (o: { id: string }) => void
+  handleDeselect: (o: { id: string }) => void
+  helpers: PaginationLocalStorage['helpers']
+  containerRef: HTMLInputElement
+  enableReferences?: boolean
 }
 
-const ContainerAddStixCreObjectsInLineLoader = ({
+const ContainerAddStixCreObjectsInLineLoader: FunctionComponent<ContainerAddStixCreObjectsInLineLoaderProps> = ({
   queryRef,
   containerId,
   buildColumns,
@@ -108,11 +108,24 @@ const ContainerAddStixCreObjectsInLineLoader = ({
       enableReferences={enableReferences}
     />
   );
+};
+
+interface ContainerAddStixCoreObjectsInLineProps {
+  containerId: string,
+  targetStixCoreObjectTypes: string[],
+  paginationOptions: ContainerStixDomainObjectsLinesQuery$variables | ContainerStixCyberObservablesLinesQuery$variables,
+  containerStixCoreObjects: unknown[],
+  onAdd?: (node: { id: string }) => void,
+  onDelete?: (node: { id: string }) => void,
+  confidence?: number,
+  defaultCreatedBy?: unknown,
+  defaultMarkingDefinitions?: unknown[],
+  selectedText?: string,
+  enableReferences?: boolean | undefined,
+  knowledgeGraph?: boolean | undefined,
 }
 
-const ContainerAddStixCoreObjectsInLine: FunctionComponent<
-ContainerAddStixCoreObjectsInLineProps
-> = ({
+const ContainerAddStixCoreObjectsInLine: FunctionComponent<ContainerAddStixCoreObjectsInLineProps> = ({
   containerId,
   targetStixCoreObjectTypes,
   paginationOptions: linesPaginationOptions,
@@ -203,7 +216,7 @@ ContainerAddStixCoreObjectsInLineProps
     ...paginationOptionsNoCount,
     search: keyword,
   });
-  const queryRef = useQueryLoading(containerAddStixCoreObjectsLinesQuery, { count: 100, ...searchPaginationOptions });
+  const queryRef = useQueryLoading<ContainerAddStixCoreObjectsLinesQuery>(containerAddStixCoreObjectsLinesQuery, { count: 100, ...searchPaginationOptions });
 
   const Header = () => {
     const [openCreateEntity, setOpenCreateEntity] = useState<boolean>(false);
@@ -313,7 +326,7 @@ ContainerAddStixCoreObjectsInLineProps
         availableEntityTypes={targetStixCoreObjectTypes}
         entityTypes={targetStixCoreObjectTypes}
       >
-        {containerRef && (
+        {(containerRef && queryRef) && (
           <ContainerAddStixCreObjectsInLineLoader
             queryRef={queryRef}
             containerId={containerId}
