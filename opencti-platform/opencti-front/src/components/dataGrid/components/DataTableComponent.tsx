@@ -145,12 +145,7 @@ const DataTableComponent = ({
           </div>
         ))}
       </div>
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-        }}
-      >
+      <>
         <React.Suspense
           fallback={(
             <div style={{ ...temporaryColumnsSize, width: '100%' }}>
@@ -179,7 +174,7 @@ const DataTableComponent = ({
             dataTableHeaderRef={dataTableHeaderRef}
           />
         </React.Suspense>
-      </div>
+      </>
     </DataTableContext.Provider>
   );
 };

@@ -18,10 +18,10 @@ interface BreadcrumbsProps {
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles((theme) => ({
   breadcrumbsList: {
-    marginTop: -5,
-    marginBottom: 25,
+    height: 30,
+    marginBottom: theme.spacing(2),
   },
   breadcrumbsObject: {
     marginTop: -5,

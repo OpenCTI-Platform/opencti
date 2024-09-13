@@ -30,13 +30,13 @@ import { KNOWLEDGE_KNGETEXPORT } from '../../utils/hooks/useGranted';
 import { ExportContext } from '../../utils/ExportContextProvider';
 import Transition from '../Transition';
 import DataTablePagination from './DataTablePagination';
-import { isFilterGroupEmpty } from '../../utils/filters/filtersUtils';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles((theme) => ({
   filterContainer: {
     minHeight: 10,
+    marginBottom: theme.spacing(2),
   },
   filterInliner: {
     display: 'inline-flex',
@@ -68,11 +68,6 @@ export const DataTableDisplayFilters = ({
   const classes = useStyles();
   const { storageKey, initialValues, variant } = useDataTableContext();
   const { helpers, viewStorage: { filters } } = usePaginationLocalStorage(storageKey, initialValues, variant !== DataTableVariant.default);
-
-  // in default mode (with filters) we pre-fill the space so UI won't glitch
-  if (isFilterGroupEmpty(filters) && variant === DataTableVariant.default) {
-    return <div style={{ height: 48 }}/>;
-  }
 
   return (
     <div id="filter-container" className={classes.filterContainer}>

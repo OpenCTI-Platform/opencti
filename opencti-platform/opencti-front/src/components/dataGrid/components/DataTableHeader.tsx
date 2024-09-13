@@ -1,11 +1,10 @@
 import React, { FunctionComponent } from 'react';
-import { ArrowDropDown, ArrowDropUp } from '@mui/icons-material';
+import { ArrowDropDown, ArrowDropUp, MoreVert } from '@mui/icons-material';
 import IconButton from '@mui/material/IconButton';
 import SimpleDraggrable from 'react-draggable';
 import makeStyles from '@mui/styles/makeStyles';
 import { createStyles } from '@mui/styles';
 import { Theme as MuiTheme } from '@mui/material/styles/createTheme';
-import { UnfoldMoreIcon } from 'filigran-icon';
 import Tooltip from '@mui/material/Tooltip';
 import { useDataTableContext } from '../dataTableUtils';
 import { DataTableColumn, DataTableHeaderProps, DataTableVariant, LocalStorageColumns } from '../dataTableTypes';
@@ -20,28 +19,30 @@ const useStyles = makeStyles<MuiTheme, { column: DataTableColumn }>((theme) => c
     display: 'flex',
     width: ({ column }) => `calc(var(--header-${column?.id}-size) * 1px)`,
     fontWeight: 'bold',
-    justifyContent: 'center',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    height: 40,
     '& .react-draggable-dragging': {
-      backgroundColor: theme.palette.secondary.main,
+      backgroundColor: theme.palette.primary.main,
     },
     '&:hover': {
       '& $draggable': {
-        backgroundColor: theme.palette.secondary.main,
+        backgroundColor: theme.palette.primary.main,
+      },
+      '& $icon': {
+        visibility: 'visible',
       },
     },
   },
   headerAligner: {
-    paddingLeft: 8,
-    paddingRight: 8,
+    paddingLeft: theme.spacing(1),
+    paddingRight: theme.spacing(1),
     display: 'flex',
     alignItems: 'center',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
+    flexGrow: 1,
     cursor: ({ column: { isSortable } }) => (isSortable ? 'pointer' : 'unset'),
   },
-  aligner: { flexGrow: 1 },
   draggable: {
     position: 'absolute',
     top: 0,
@@ -54,11 +55,15 @@ const useStyles = makeStyles<MuiTheme, { column: DataTableColumn }>((theme) => c
     borderRadius: 2,
     cursor: 'col-resize',
   },
+  icon: {
+    visibility: 'visible',
+  },
 }));
 
 const DataTableHeader: FunctionComponent<DataTableHeaderProps> = ({
   column,
   setAnchorEl,
+  isActive,
   setActiveColumn,
   setLocalStorageColumns,
   containerRef,
@@ -104,9 +109,13 @@ const DataTableHeader: FunctionComponent<DataTableHeaderProps> = ({
           <>
             <IconButton
               disableRipple
+              className={classes.icon}
               onClick={(e) => {
                 setActiveColumn(column);
                 setAnchorEl(e.currentTarget);
+              }}
+              style={{
+                visibility: isActive ? 'visible' : undefined,
               }}
               sx={{
                 marginRight: 1,
@@ -117,7 +126,7 @@ const DataTableHeader: FunctionComponent<DataTableHeaderProps> = ({
                 },
               }}
             >
-              <UnfoldMoreIcon />
+              <MoreVert />
             </IconButton>
           </>
         )}

@@ -281,7 +281,7 @@ const ItemMarkings = ({ variant, markingDefinitions, limit, onClick }) => {
       placement="bottom"
     >
       <span>
-        <StyledBadge variant="dot" color="primary">
+        <StyledBadge variant="dot" color="primary" sx={{ position: 'absolute' }}>
           {R.take(limit, markings).map((markingDefinition) => renderChip(markingDefinition))}
         </StyledBadge>
       </span>

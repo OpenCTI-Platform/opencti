@@ -1,7 +1,8 @@
 import { Button, IconButton, Tooltip, Typography } from '@mui/material';
 import React, { FunctionComponent, useState } from 'react';
-import { useLazyLoadQuery } from 'react-relay';
+import { useLazyLoadQuery, usePreloadedQuery } from 'react-relay';
 import { Add } from '@mui/icons-material';
+import { useTheme } from '@mui/styles';
 import { useFormatter } from '../../../../components/i18n';
 import Drawer from '../drawer/Drawer';
 import StixDomainObjectCreation from '../stix_domain_objects/StixDomainObjectCreation';
@@ -15,6 +16,8 @@ import ContainerAddStixCoreObjectsLines, { containerAddStixCoreObjectsLinesQuery
 import { ContainerStixDomainObjectsLinesQuery$variables } from './__generated__/ContainerStixDomainObjectsLinesQuery.graphql';
 import { ContainerStixCyberObservablesLinesQuery$variables } from './__generated__/ContainerStixCyberObservablesLinesQuery.graphql';
 import StixCyberObservableCreation from '../../observations/stix_cyber_observables/StixCyberObservableCreation';
+import type { Theme } from '../../../../components/Theme';
+import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 
 interface ControlledDialProps {
   onOpen: () => void
@@ -22,11 +25,13 @@ interface ControlledDialProps {
 }
 
 const ControlledDial = ({ onOpen, title }: ControlledDialProps) => {
+  const theme = useTheme<Theme>();
   return (
     <Button
       variant="contained"
-      style={{ marginLeft: '3px' }}
+      style={{ marginLeft: theme.spacing(0.5) }}
       aria-label={title}
+      size={'small'}
       onClick={() => onOpen()}
     >
       {title}
@@ -71,6 +76,38 @@ interface ContainerAddStixCoreObjectsInLineProps {
   selectedText?: string,
   enableReferences?: boolean,
   knowledgeGraph?: boolean,
+}
+
+const ContainerAddStixCreObjectsInLineLoader = ({
+  queryRef,
+  containerId,
+  buildColumns,
+  linesPaginationOptions,
+  knowledgeGraph,
+  selectedElements,
+  handleSelect,
+  handleDeselect,
+  helpers,
+  containerRef,
+  enableReferences,
+}) => {
+  const data = usePreloadedQuery(containerAddStixCoreObjectsLinesQuery, queryRef);
+  return (
+    <ContainerAddStixCoreObjectsLines
+      data={data}
+      containerId={containerId}
+      paginationOptions={linesPaginationOptions}
+      dataColumns={buildColumns()}
+      initialLoading={data === null}
+      knowledgeGraph={knowledgeGraph}
+      containerStixCoreObjects={selectedElements}
+      onAdd={handleSelect}
+      onDelete={handleDeselect}
+      setNumberOfElements={helpers.handleSetNumberOfElements}
+      containerRef={{ current: containerRef }}
+      enableReferences={enableReferences}
+    />
+  );
 }
 
 const ContainerAddStixCoreObjectsInLine: FunctionComponent<
@@ -166,10 +203,7 @@ ContainerAddStixCoreObjectsInLineProps
     ...paginationOptionsNoCount,
     search: keyword,
   });
-  const data = useLazyLoadQuery<ContainerAddStixCoreObjectsLinesQuery>(
-    containerAddStixCoreObjectsLinesQuery,
-    { count: 100, ...searchPaginationOptions },
-  );
+  const queryRef = useQueryLoading(containerAddStixCoreObjectsLinesQuery, { count: 100, ...searchPaginationOptions });
 
   const Header = () => {
     const [openCreateEntity, setOpenCreateEntity] = useState<boolean>(false);
@@ -280,18 +314,17 @@ ContainerAddStixCoreObjectsInLineProps
         entityTypes={targetStixCoreObjectTypes}
       >
         {containerRef && (
-          <ContainerAddStixCoreObjectsLines
-            data={data}
+          <ContainerAddStixCreObjectsInLineLoader
+            queryRef={queryRef}
             containerId={containerId}
-            paginationOptions={linesPaginationOptions}
-            dataColumns={buildColumns()}
-            initialLoading={data === null}
+            buildColumns={buildColumns}
+            linesPaginationOptions={linesPaginationOptions}
             knowledgeGraph={knowledgeGraph}
-            containerStixCoreObjects={selectedElements}
-            onAdd={handleSelect}
-            onDelete={handleDeselect}
-            setNumberOfElements={helpers.handleSetNumberOfElements}
-            containerRef={{ current: containerRef }}
+            selectedElements={selectedElements}
+            handleSelect={handleSelect}
+            handleDeselect={handleDeselect}
+            helpers={helpers}
+            containerRef={containerRef}
             enableReferences={enableReferences}
           />
         )}

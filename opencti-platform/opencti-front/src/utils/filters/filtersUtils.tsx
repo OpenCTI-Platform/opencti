@@ -102,8 +102,6 @@ export const isFilterGroupNotEmpty = (filterGroup?: FilterGroup | null) => {
   );
 };
 
-export const isFilterGroupEmpty = (filterGroup?: FilterGroup | null) => !isFilterGroupNotEmpty(filterGroup);
-
 export const isFilterFormatCorrect = (stringFilters: string): boolean => {
   const filters = JSON.parse(stringFilters);
   return filters.mode && filters.filters && filters.filterGroups;

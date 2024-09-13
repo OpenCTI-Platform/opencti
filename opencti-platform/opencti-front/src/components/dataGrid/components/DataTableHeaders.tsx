@@ -14,14 +14,14 @@ import type { Theme } from '../../Theme';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
-const useStyles = makeStyles({
+const useStyles = makeStyles(() => ({
   headersContainer: {
     display: 'flex',
     width: 'calc(var(--header-table-size) * 1px)',
-    paddingBottom: 12,
+    height: 42,
+    alignItems: 'center',
   },
-  aligner: { flexGrow: 1 },
-});
+}));
 
 const DataTableHeaders: FunctionComponent<DataTableHeadersProps> = ({
   containerRef,
@@ -91,6 +91,13 @@ const DataTableHeaders: FunctionComponent<DataTableHeadersProps> = ({
             checked={selectAll}
             onChange={handleToggleSelectAll}
             disabled={!handleToggleSelectAll || disableSelectAll}
+            sx={{
+              marginRight: 1,
+              width: 24,
+              '&:hover': {
+                background: 'transparent',
+              },
+            }}
           />
         </div>
       )}
@@ -172,6 +179,7 @@ const DataTableHeaders: FunctionComponent<DataTableHeadersProps> = ({
                 key={column.id}
                 column={column}
                 setAnchorEl={setAnchorEl}
+                isActive={activeColumn?.id === column.id}
                 setActiveColumn={setActiveColumn}
                 setLocalStorageColumns={setLocalStorageColumns}
                 containerRef={containerRef}

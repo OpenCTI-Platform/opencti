@@ -188,6 +188,13 @@ const DataTableLine = ({
                 && !((data.id || 'id') in (deSelectedElements || {})))
               || (data.id || 'id') in (selectedElements || {})
             }
+            sx={{
+              marginRight: 1,
+              width: 24,
+              '&:hover': {
+                background: 'transparent',
+              },
+            }}
           />
         </div>
       )}

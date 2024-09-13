@@ -34,7 +34,7 @@ const CreateEntityControlledDial: FunctionComponent<CreateEntityControlledDialPr
       title={buttonValue}
       sx={style ?? {
         marginLeft: '10px',
-        padding: '7px 10px',
+        padding: '6.5px 10px',
       }}
     >
       <div style={{ display: 'flex' }}>
