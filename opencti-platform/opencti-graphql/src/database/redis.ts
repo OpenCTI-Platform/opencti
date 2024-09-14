@@ -211,14 +211,15 @@ const setInList = async (listId: string, keyId: string, expirationTime: number) 
     tx.zremrangebyscore(listId, '-inf', time - (expirationTime * 1000));
   });
 };
-const delKeyWithList = async (baseKeyId: string, listId: string) => {
-  const keyId = `{${listId}}:${baseKeyId}`; // Key of a list must be attached to the same redis slot
+const delKeyWithList = async (keyId: string, listId: string) => {
   const keyPromise = getClientBase().del(keyId);
   const listsPromise = getClientBase().zrem(listId, keyId);
   await Promise.all([keyPromise, listsPromise]);
 };
-const setKeyWithList = async (baseKeyId: string, listId: string, keyData: any, expirationTime: number) => {
-  const keyId = `{${listId}}:${baseKeyId}`; // Key of a list must be attached to the same redis slot
+const setKeyWithList = async (keyId: string, listId: string, keyData: any, expirationTime: number) => {
+  if (!keyId.startsWith('{')) {
+    throw UnsupportedError('Key in list must have prefix to set key in the same node', { key: keyId });
+  }
   const keyPromise = getClientBase().set(keyId, JSON.stringify(keyData), 'EX', expirationTime);
   const listsPromise = setInList(listId, keyId, expirationTime);
   await Promise.all([keyPromise, listsPromise]);
@@ -271,7 +272,7 @@ const keysFromList = async (listId: string, expirationTime?: number) => {
 // endregion
 
 // region session
-const PLATFORM_KEY_SESSIONS = 'platform_sessions';
+const PLATFORM_KEY_SESSIONS = 'platform_session';
 export const clearSessions = async () => {
   const instanceKeys = await getClientBase().zrange(PLATFORM_KEY_SESSIONS, 0, -1);
   if (instanceKeys && instanceKeys.length > 0) {
@@ -296,8 +297,7 @@ export const clearSessions = async () => {
   await getClientBase().del(PLATFORM_KEY_SESSIONS);
   return true;
 };
-export const getSession = async (baseKeyId: string) => {
-  const key = `{${PLATFORM_KEY_SESSIONS}}:${baseKeyId}`; // Key of a list must be attached to the same redis slot
+export const getSession = async (key: string) => {
   const sessionInformation = await redisTx(getClientBase(), async (tx) => {
     tx.get(key).ttl(key);
   });
@@ -308,8 +308,7 @@ export const getSession = async (baseKeyId: string) => {
   }
   return undefined;
 };
-export const getSessionTtl = (baseKeyId: string) => {
-  const key = `{${PLATFORM_KEY_SESSIONS}}:${baseKeyId}`; // Key of a list must be attached to the same redis slot
+export const getSessionTtl = (key: string) => {
   return getClientBase().ttl(key);
 };
 export const setSession = (key: string, value: any, expirationTime: number) => {
@@ -326,8 +325,7 @@ export const getSessionKeys = () => {
 export const getSessions = () => {
   return keysFromList(PLATFORM_KEY_SESSIONS);
 };
-export const extendSession = async (baseKeyId: string, extension: number) => {
-  const sessionId = `{${PLATFORM_KEY_SESSIONS}}:${baseKeyId}`; // Key of a list must be attached to the same redis slot
+export const extendSession = async (sessionId: string, extension: number) => {
   const sessionExtensionPromise = getClientBase().expire(sessionId, extension);
   const refreshListPromise = setInList(PLATFORM_KEY_SESSIONS, sessionId, extension);
   const [sessionExtension] = await Promise.all([sessionExtensionPromise, refreshListPromise]);
@@ -375,13 +373,13 @@ export const notify = async (topic: string, instance: any, user: AuthUser) => {
 const FIVE_MINUTES = 5 * 60;
 export const setEditContext = async (user: AuthUser, instanceId: string, input: EditContext) => {
   const data = R.assoc('name', user.user_email, input);
-  await setKeyWithList(`edit:${instanceId}:${user.id}`, `context:instance:${instanceId}`, data, FIVE_MINUTES);
+  await setKeyWithList(`{edit}:${instanceId}:${user.id}`, `context:instance:${instanceId}`, data, FIVE_MINUTES);
 };
 export const fetchEditContext = async (instanceId: string) => {
   return keysFromList(`context:instance:${instanceId}`, FIVE_MINUTES);
 };
 export const delEditContext = async (user: AuthUser, instanceId: string) => {
-  return delKeyWithList(`edit:${instanceId}:${user.id}`, `context:instance:${instanceId}`);
+  return delKeyWithList(`{edit}:${instanceId}:${user.id}`, `context:instance:${instanceId}`);
 };
 // endregion
 
@@ -859,7 +857,7 @@ export const redisUpdateActionExpectation = async (user: AuthUser, workId: strin
 const CLUSTER_LIST_KEY = 'platform_cluster';
 const CLUSTER_NODE_EXPIRE = 2 * 60; // 2 minutes
 export const registerClusterInstance = async (instanceId: string, instanceConfig: ClusterConfig) => {
-  return setKeyWithList(instanceId, CLUSTER_LIST_KEY, instanceConfig, CLUSTER_NODE_EXPIRE);
+  return setKeyWithList(`{cluster}:${instanceId}`, CLUSTER_LIST_KEY, instanceConfig, CLUSTER_NODE_EXPIRE);
 };
 export const getClusterInstances = async () => {
   return keysFromList(CLUSTER_LIST_KEY, CLUSTER_NODE_EXPIRE);
@@ -869,7 +867,7 @@ export const getClusterInstances = async () => {
 // playground handling
 export const redisPlaybookUpdate = async (envelop: ExecutionEnvelop) => {
   const clientBase = getClientBase();
-  const id = `playbook_execution_${envelop.playbook_execution_id}`;
+  const id = `{playbook_execution}:${envelop.playbook_execution_id}`;
   const follow = await clientBase.get(id);
   const objectFollow = follow ? JSON.parse(follow) : {};
   const toUpdate = mergeDeepRightAll(objectFollow, envelop);
