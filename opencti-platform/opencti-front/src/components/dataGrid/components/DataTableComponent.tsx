@@ -45,7 +45,7 @@ const DataTableComponent = ({
   selectOnLineClick,
   onLineClick,
 }: DataTableProps) => {
-  const localStorageColumns = useDataTableLocalStorage<LocalStorageColumns>(`${storageKey}_columns`, {}, true)[0];
+  const [localStorageColumns] = useDataTableLocalStorage<LocalStorageColumns>(`${storageKey}_columns`, {}, true);
   const toggleHelper = useDataTableToggle(storageKey);
 
   const columnsInitialState = [
@@ -96,6 +96,8 @@ const DataTableComponent = ({
 
   const dataTableHeaderRef = useRef<HTMLDivElement | null>(null);
 
+  const [reset, setReset] = useState(false);
+
   return (
     <DataTableContext.Provider
       value={{
@@ -105,7 +107,7 @@ const DataTableComponent = ({
         effectiveColumns: columns.filter(({ visible }) => visible).sort((a, b) => a.order - b.order),
         initialValues,
         setColumns,
-        resetColumns: () => setColumns(columnsInitialState),
+        resetColumns: () => setReset(true),
         resolvePath,
         redirectionModeEnabled,
         toolbarFilters,
@@ -172,6 +174,8 @@ const DataTableComponent = ({
             pageStart={pageStart}
             pageSize={currentPageSize}
             dataTableHeaderRef={dataTableHeaderRef}
+            reset={reset}
+            setReset={setReset}
           />
         </React.Suspense>
       </>

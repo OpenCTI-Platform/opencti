@@ -106,16 +106,18 @@ const DataTableFilters = ({
       || (Object.keys(selectedElements).length === 0
         && numberOfElements.number > export_max_size)));
 
+  const hasFilters = availableFilterKeys && availableFilterKeys.length > 0;
+
   return (
     <ExportContext.Provider value={{ selectedIds: Object.keys(selectedElements) }}>
-      {availableFilterKeys && availableFilterKeys.length > 0 && (
-        <div style={{ display: 'flex', justifyContent: 'space-between', flex: 1 }}>
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: theme.spacing(1),
-          }}
-          >
+      <div style={{ display: 'flex', justifyContent: 'space-between', flex: 1 }}>
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: theme.spacing(1),
+        }}
+        >
+          {hasFilters && (
             <Filters
               helpers={helpers}
               searchContext={searchContextFinal}
@@ -129,57 +131,57 @@ const DataTableFilters = ({
               availableRelationshipTypes={availableRelationshipTypes}
               availableRelationFilterTypes={availableRelationFilterTypes}
             />
-          </div>
-          <div style={{ display: 'flex' }}>
-            {(variant === DataTableVariant.default) && (
-              <DataTablePagination
-                page={page}
-                setPage={setPage}
-                numberOfElements={numberOfElements}
-              />
-            )}
-            <ToggleButtonGroup
-              size="small"
-              color="secondary"
-              value={currentView || 'lines'}
-              exclusive={true}
-              onChange={(_, value) => {
-                if (value && value === 'export') {
-                  helpers.handleToggleExports();
-                } else if (value && value === 'settings') {
-                  setOpenSettings(true);
-                } else if (value && value !== 'export-csv') {
-                  helpers.handleChangeView(value);
-                }
-              }}
-            >
-              {additionalHeaderButtons && [...additionalHeaderButtons]}
-              {redirectionModeEnabled && (
-                <ToggleButton
-                  size="small"
-                  value="settings"
-                  aria-label="settings"
-                >
-                  <Tooltip title={t_i18n('List settings')}>
-                    <SettingsOutlined fontSize="small" color="primary" />
-                  </Tooltip>
-                </ToggleButton>
-              )}
-              {!exportDisabled && (
-                <ToggleButton value="export" aria-label="export">
-                  <Tooltip title={t_i18n('Open export panel')}>
-                    <FileDownloadOutlined
-                      fontSize="small"
-                      color={openExports ? 'secondary' : 'primary'}
-                    />
-                  </Tooltip>
-                </ToggleButton>
-              )}
-            </ToggleButtonGroup>
-            {createButton}
-          </div>
+          )}
         </div>
-      )}
+        <div style={{ display: 'flex' }}>
+          {(variant === DataTableVariant.default) && (
+            <DataTablePagination
+              page={page}
+              setPage={setPage}
+              numberOfElements={numberOfElements}
+            />
+          )}
+          <ToggleButtonGroup
+            size="small"
+            color="secondary"
+            value={currentView || 'lines'}
+            exclusive={true}
+            onChange={(_, value) => {
+              if (value && value === 'export') {
+                helpers.handleToggleExports();
+              } else if (value && value === 'settings') {
+                setOpenSettings(true);
+              } else if (value && value !== 'export-csv') {
+                helpers.handleChangeView(value);
+              }
+            }}
+          >
+            {additionalHeaderButtons && [...additionalHeaderButtons]}
+            {redirectionModeEnabled && (
+              <ToggleButton
+                size="small"
+                value="settings"
+                aria-label="settings"
+              >
+                <Tooltip title={t_i18n('List settings')}>
+                  <SettingsOutlined fontSize="small" color="primary" />
+                </Tooltip>
+              </ToggleButton>
+            )}
+            {!exportDisabled && (
+              <ToggleButton value="export" aria-label="export">
+                <Tooltip title={t_i18n('Open export panel')}>
+                  <FileDownloadOutlined
+                    fontSize="small"
+                    color={openExports ? 'secondary' : 'primary'}
+                  />
+                </Tooltip>
+              </ToggleButton>
+            )}
+          </ToggleButtonGroup>
+          {createButton}
+        </div>
+      </div>
       {exportContext
         && exportContext.entity_type !== 'Stix-Core-Object'
         && exportContext.entity_type !== 'Stix-Cyber-Observable'
