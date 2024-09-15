@@ -1779,6 +1779,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         sequence = kwargs.get("sequence", 0)
         update = kwargs.get("update", False)
         entities_types = kwargs.get("entities_types", None)
+        retry = kwargs.get("retry", 0)
 
         if entities_types is None:
             entities_types = []
@@ -1819,7 +1820,10 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         except (UnroutableError, NackError):
             self.connector_logger.error("Unable to send bundle, retry...")
             self.metric.inc("error_count")
-            self._send_bundle(channel, bundle, **kwargs)
+            retry = retry + 1
+            if retry < 5:
+                kwargs.setdefault("retry", retry)
+                self._send_bundle(channel, bundle, **kwargs)
 
     def stix2_get_embedded_objects(self, item) -> Dict:
         """gets created and marking refs for a stix2 item
