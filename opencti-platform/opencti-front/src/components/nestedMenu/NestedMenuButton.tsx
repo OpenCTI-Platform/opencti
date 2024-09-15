@@ -238,6 +238,7 @@ const NestedMenuButton: React.FC<NestedMenuProps> = ({
           role={undefined}
           placement={index > 0 ? 'right-start' : 'bottom-start'}
           transition
+          style={{ zIndex: 9999 }}
         >
           {({ TransitionProps }) => (
             <Grow

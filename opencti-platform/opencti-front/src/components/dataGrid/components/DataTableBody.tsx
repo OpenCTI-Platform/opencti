@@ -39,6 +39,8 @@ const DataTableBody = ({
   dataQueryArgs,
   pageStart,
   pageSize,
+  setReset,
+  reset = false,
 }: DataTableBodyProps) => {
   const {
     rootRef,
@@ -101,12 +103,12 @@ const DataTableBody = ({
     /* eslint-disable @typescript-eslint/no-non-null-assertion */
     const clientWidth = currentRefContainer!.clientWidth - storedSize - 12; // Scrollbar size to prevent alignment issues
     for (let i = startsWithSelect ? 1 : 0; i < columns.length - (endsWithNavigate ? 1 : 0); i += 1) {
-      const column = { ...columns[i], ...localStorageColumns[columns[i].id] };
+      const column = reset ? columns[i] : { ...columns[i], ...localStorageColumns[columns[i].id] };
       const shouldCompute = (!column.size || resize || !localStorageColumns[columns[i].id]?.size) && (column.percentWidth && Boolean(computeState));
       let size = column.size ?? 200;
 
       // We must compute px size for columns
-      if (shouldCompute) {
+      if (shouldCompute || reset) {
         size = column.percentWidth * (clientWidth / 100);
         column.size = size;
       }
@@ -153,6 +155,7 @@ const DataTableBody = ({
     }
     /* eslint-enable @typescript-eslint/no-non-null-assertion */
 
+    setReset(false);
     return colSizes;
   }, [
     resize,
@@ -227,7 +230,7 @@ const DataTableBody = ({
     };
   }, []);
   const effectiveColumns = useMemo(() => columns
-    .map((col) => ({ ...col, size: localStorageColumns[col.id]?.size })), [columns, localStorageColumns]);
+    .map((col) => ({ ...col, size: localStorageColumns[col.id]?.size })), [columns, localStorageColumns, reset]);
 
   return (
     <div
