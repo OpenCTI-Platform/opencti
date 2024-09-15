@@ -594,7 +594,7 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
               </Grid>
               <Grid item xs={6}>
                 <Typography variant="h3" gutterBottom={true} style={{ float: 'left' }}>
-                  {orderedSessions.length < (user?.sessions?.total ?? 0) && (<>{t_i18n('Sessions')} - {orderedSessions.length} / {user?.sessions?.total}</>)}
+                  {orderedSessions.length < (user.sessions?.total ?? 0) && (<>{t_i18n('Sessions')} - {orderedSessions.length} / {user.sessions?.total}</>)}
                 </Typography>
                 <Security needs={[SETTINGS_SETACCESSES]}>
                   <Tooltip title={t_i18n('Kill all sessions')}>
