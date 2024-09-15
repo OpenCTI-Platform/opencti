@@ -1691,7 +1691,7 @@ type User implements BasicObject & InternalObject {
   objectAssignedOrganization(orderBy: OrganizationsOrdering, orderMode: OrderingMode): OrganizationConnection
   created_at: DateTime!
   updated_at: DateTime!
-  sessions: [SessionDetail]
+  sessions: UserSession
   default_time_field: String
   account_status: String!
   account_lock_after_date: DateTime

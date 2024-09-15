@@ -138,7 +138,7 @@ const SessionsListComponent = ({ relay, data, keyword }) => {
                 <ListItemText
                   primary={
                     <div className={classes.name}>
-                      {user.name} {orderedSessions.length < session.total && (<span>(last {orderedSessions.length} of {session.total} sessions)</span>)}
+                      {user.name} {orderedSessions.length < session.total && (<> - {orderedSessions.length} / {session.total} {t_i18n('sessions')}</>)}
                     </div>
                     }
                 />

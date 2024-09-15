@@ -82,7 +82,7 @@ const userResolvers = {
     participants: (_, args, context) => findParticipants(context, context.user, args),
     members: (_, args, context) => findAllMembers(context, context.user, args),
     systemMembers: () => findAllSystemMembers(),
-    sessions: () => findSessions(),
+    sessions: () => findSessions({ maxSessionsPerUser: 10 }),
     capabilities: (_, args, context) => findCapabilities(context, context.user, args),
     bookmarks: (_, args, context) => bookmarks(context, context.user, args),
   },
