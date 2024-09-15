@@ -147,6 +147,8 @@ export interface DataTableBodyProps {
   pageSize: number
   pageStart: number
   dataTableHeaderRef: RefObject<HTMLDivElement>
+  reset: boolean,
+  setReset: Dispatch<SetStateAction<boolean>>
 }
 
 export interface DataTableDisplayFiltersProps {

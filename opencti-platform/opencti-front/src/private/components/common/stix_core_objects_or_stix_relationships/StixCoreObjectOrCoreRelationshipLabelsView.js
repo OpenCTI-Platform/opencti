@@ -60,6 +60,7 @@ const StixCoreObjectOrCoreRelationshipLabelsView = (props) => {
   } = props;
 
   const isLabelManager = useGranted([SETTINGS_SETLABELS]);
+  const canUpdateKnowledge = useGranted([KNOWLEDGE_KNUPDATE]);
 
   const [openAdd, setOpenAdd] = useState(false);
   const [openCreate, setOpenCreate] = useState(false);
@@ -181,17 +182,14 @@ const StixCoreObjectOrCoreRelationshipLabelsView = (props) => {
                   borderColor: label.color,
                   backgroundColor: hexToRGB(label.color),
                 }}
-                onDelete={() => (enableReferences
+                onDelete={canUpdateKnowledge ? () => (enableReferences
                   ? handleOpenCommitDelete(label)
-                  : handleRemoveLabel(label.id))
-                  }
+                  : handleRemoveLabel(label.id)) : undefined}
                 deleteIcon={
-                  <Security needs={[KNOWLEDGE_KNUPDATE]} >
-                    <CancelOutlined
-                      className={classes.deleteIcon}
-                      style={{ color: label.color }}
-                    />
-                  </Security>
+                  <CancelOutlined
+                    className={classes.deleteIcon}
+                    style={{ color: label.color }}
+                  />
                 }
               />
             </Tooltip>

@@ -128,8 +128,7 @@ const DataTablePagination = ({
           size="small"
           disabled={firstItem === 1}
           style={{
-            paddingLeft: 0,
-            paddingRight: 0,
+            padding: 0,
             borderRight: 'none',
             minWidth: 24,
           }}
@@ -152,7 +151,7 @@ const DataTablePagination = ({
               color: 'pagination.main',
             }}
           >
-            <Typography variant="body2" style={{ marginTop: 2 }}>
+            <Typography variant="body2">
               <span>{`${lastItem ? firstItem : 0} - ${lastItem} `}</span>
               <span style={{ opacity: 0.6 }}>
                 {`/ ${numberOfElements.number}${numberOfElements.symbol}`}

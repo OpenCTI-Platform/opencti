@@ -65,7 +65,6 @@ const DataTableHeader: FunctionComponent<DataTableHeaderProps> = ({
   setAnchorEl,
   isActive,
   setActiveColumn,
-  setLocalStorageColumns,
   containerRef,
   sortBy,
   orderAsc,
@@ -74,12 +73,16 @@ const DataTableHeader: FunctionComponent<DataTableHeaderProps> = ({
 
   const {
     columns,
-    setColumns,
+    actions,
     availableFilterKeys,
     onSort,
     variant,
     formatter: { t_i18n },
+    useDataTableLocalStorage,
+    storageKey,
   } = useDataTableContext();
+
+  const [_, setLocalStorageColumns] = useDataTableLocalStorage<LocalStorageColumns>(`${storageKey}_columns`, {}, true);
 
   return (
     <div
@@ -136,11 +139,6 @@ const DataTableHeader: FunctionComponent<DataTableHeaderProps> = ({
             position={{ x: 3, y: 0 }}
             axis="x"
             onStop={(e, { lastX }) => {
-              const eventTarget = (e?.target as HTMLDivElement);
-              const currentClasses = classes.headerContainer.split(' ');
-              if (!containerRef || !(currentClasses.some((c) => eventTarget?.classList.contains(c)) || eventTarget?.classList.contains('react-draggable-dragging'))) {
-                return;
-              }
               const newSize = (column?.size ?? 0) + lastX;
 
               const effectiveColumns = columns.filter(({ id }) => !['select', 'navigate'].includes(id));
@@ -153,25 +151,22 @@ const DataTableHeader: FunctionComponent<DataTableHeaderProps> = ({
               currentCol.size = newSize;
 
               const startsWithSelect = columns.at(0)?.id === 'select';
-              const endsWithNavigate = columns.at(-1)?.id === 'navigate';
-              let storedSize = SELECT_COLUMN_SIZE;
+              const endsWithTechnical = columns.at(-1)?.id === 'navigate' || actions;
+              let storedSize = endsWithTechnical ? SELECT_COLUMN_SIZE : 0;
               if (startsWithSelect) {
                 storedSize += SELECT_COLUMN_SIZE;
               }
 
-              const clientWidth = (containerRef.current?.clientWidth ?? 0) - storedSize - 10; // Scrollbar size to prevent alignment issues
+              const clientWidth = (containerRef?.current?.clientWidth ?? 0) - storedSize - 12; // Scrollbar size to prevent alignment issues
 
               const otherColumn = effectiveColumns[otherColIndex];
               const clientDiff = clientWidth - effectiveColumns.reduce((acc, col) => acc + (col.size ?? 0), 0);
 
               if (clientDiff > 0) {
-                const percentWidth = (100 * currentCol.size) / currentSize;
                 if (otherColumn) {
                   const otherColumnNewSize = (otherColumn.size ?? 0) - lastX - currentSize + clientWidth;
                   otherColumn.size = otherColumnNewSize;
-                  otherColumn.percentWidth = (otherColumnNewSize * 100) / clientWidth;
                 }
-                currentCol.percentWidth = percentWidth;
               }
 
               setLocalStorageColumns((curr: LocalStorageColumns) => ({
@@ -179,11 +174,6 @@ const DataTableHeader: FunctionComponent<DataTableHeaderProps> = ({
                 [column.id]: { ...curr[column.id], size: newSize },
                 [otherColumn.id]: { ...curr[otherColumn.id], ...otherColumn },
               }));
-              const newColumns = [
-                ...(startsWithSelect ? [columns.at(0) as DataTableColumn] : []),
-                ...effectiveColumns,
-                ...(endsWithNavigate ? [columns.at(-1) as DataTableColumn] : [])];
-              setColumns(newColumns);
             }}
           >
             <div
