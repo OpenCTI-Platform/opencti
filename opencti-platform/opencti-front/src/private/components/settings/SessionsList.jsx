@@ -152,7 +152,7 @@ class SessionsListComponent extends Component {
                   <ListItemText
                     primary={
                       <div className={classes.name}>
-                        {user.name} {orderedSessions.length < session.total && (<span>(last {orderedSessions.length} of {session.total} sessions)</span>)}
+                        {user.name} {orderedSessions.length < session.total && (<> - {orderedSessions.length} / {session.total} {t('sessions')}</>)}
                       </div>
                     }
                   />
