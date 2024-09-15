@@ -78,7 +78,7 @@ const userResolvers = {
     assignees: (_, args, context) => findAssignees(context, context.user, args),
     participants: (_, args, context) => findParticipants(context, context.user, args),
     members: (_, args, context) => findAllMembers(context, context.user, args),
-    sessions: () => findSessions(),
+    sessions: () => findSessions({ maxSessionsPerUser: 10 }),
     capabilities: (_, args, context) => findCapabilities(context, context.user, args),
     bookmarks: (_, args, context) => bookmarks(context, context.user, args),
   },

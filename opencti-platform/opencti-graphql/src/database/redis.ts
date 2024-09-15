@@ -35,7 +35,7 @@ import { generateCreateMessage, generateDeleteMessage, generateMergeMessage, gen
 import { INPUT_OBJECTS } from '../schema/general';
 import { enrichWithRemoteCredentials } from '../config/credentials';
 
-const MAX_MULTI_REDIS_OPERATIONS = 50;
+const MAX_MULTI_REDIS_OPERATIONS = 100;
 const USE_SSL = booleanConf('redis:use_ssl', false);
 const REDIS_CA = conf.get('redis:ca').map((path: string) => loadCert(path));
 export const REDIS_STREAM_NAME = `${REDIS_PREFIX}stream.opencti`;

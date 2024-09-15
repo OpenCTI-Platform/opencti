@@ -44,7 +44,7 @@ const createSessionMiddleware = () => {
   };
 };
 
-export const findSessions = async (maxInactivityDurationInMin = 1) => {
+export const findSessions = async ({ maxInactivityDurationInMin = 1, maxSessionsPerUser = undefined } = {}) => {
   const { store } = applicationSession;
   const fetchedSessions = await new Promise((accept, reject) => {
     store.all((err, result) => {
@@ -71,7 +71,7 @@ export const findSessions = async (maxInactivityDurationInMin = 1) => {
     if (preparedSessions[currentUserId]) {
       preparedSessions[currentUserId].total += 1;
       preparedSessions[currentUserId].isActiveUser = preparedSessions[currentUserId].isActiveUser || isActiveSession;
-      if (preparedSessions[currentUserId].sessions.length < 10) {
+      if (maxSessionsPerUser === undefined || preparedSessions[currentUserId].sessions.length < maxSessionsPerUser) {
         preparedSessions[currentUserId].sessions.push(data);
       }
     } else {
@@ -95,15 +95,15 @@ export const findSessions = async (maxInactivityDurationInMin = 1) => {
 
 // return the list of users ids that have a session activ in the last maxInactivityDuration min
 export const usersWithActiveSessionCount = async (maxInactivityDurationInMin = 1) => {
-  const sessions = await findSessions(maxInactivityDurationInMin);
+  const sessions = await findSessions({ maxInactivityDurationInMin, maxSessionsPerUser: 0 }); // No need for session detail
   return sessions.filter((s) => s.isActiveUser).length;
 };
 
 export const findUserSessions = async (userId) => {
-  const sessions = await findSessions();
+  const sessions = await findSessions({ maxSessionsPerUser: 10 });
   const userSessions = sessions.filter((s) => s.user_id === userId);
   if (userSessions.length > 0) {
-    return R.head(userSessions).sessions;
+    return R.head(userSessions);
   }
   return [];
 };
@@ -138,8 +138,6 @@ export const markSessionForRefresh = async (id) => {
     const newSession = { ...currentSession, session_refresh: true };
     const sessId = id.includes(store.prefix) ? id.split(store.prefix)[1] : id;
     store.set(sessId, newSession); // this will ensure the session is updated in the cache
-    // TODO check what to do with currentSession.expiration
-    // await setSession(id, newSession, currentSession.expiration);
   }
   return undefined;
 };

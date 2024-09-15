@@ -1486,7 +1486,7 @@ type User implements BasicObject & InternalObject {
   ): OrganizationConnection @auth(for: [SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN])
   created_at: DateTime!
   updated_at: DateTime!
-  sessions: [SessionDetail] @auth(for: [SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN])
+  sessions: UserSession @auth(for: [SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN])
   default_time_field: String
   account_status: String! @auth(for: [SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN])
   account_lock_after_date: DateTime @auth(for: [SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN])
