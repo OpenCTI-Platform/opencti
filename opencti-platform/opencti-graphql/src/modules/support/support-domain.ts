@@ -18,7 +18,7 @@ import { downloadFile, loadedFilesListing, streamConverter } from '../../databas
 import type { EditInput, QuerySupportPackagesArgs, SupportPackageAddInput, SupportPackageForceZipInput } from '../../generated/graphql';
 import { EditOperation, PackageStatus } from '../../generated/graphql';
 import { updateAttribute } from '../../database/middleware';
-import { fileToReadStream, SUPPORT_STORAGE_PATH, uploadToStorage } from '../../database/file-storage-helper';
+import { fileToReadStream, uploadToStorage } from '../../database/file-storage-helper';
 import { wait } from '../../database/utils';
 import {
   notify,
@@ -31,6 +31,7 @@ import {
 } from '../../database/redis';
 import { FilesystemError } from '../../config/errors';
 import { getSettings } from '../../domain/settings';
+import { SUPPORT_STORAGE_PATH } from '../internal/document/document-domain';
 
 const ZIP_TIMEOUT_MS = 15000; // Max time to archive all files
 const ZIP_MIME_TYPE = 'application/zip';

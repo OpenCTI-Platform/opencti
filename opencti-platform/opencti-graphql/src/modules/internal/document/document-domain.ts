@@ -13,13 +13,17 @@ import type { BasicStoreCommon, BasicStoreObject } from '../../../types/store';
 import { type File, FilterMode, FilterOperator, OrderingMode } from '../../../generated/graphql';
 import { loadExportWorksAsProgressFiles } from '../../../domain/work';
 import { elSearchFiles } from '../../../database/file-search';
-import { SYSTEM_USER } from '../../../utils/access';
+import { isUserHasCapability, SETTINGS_SUPPORT, SYSTEM_USER } from '../../../utils/access';
 import { FROM_START_STR } from '../../../utils/format';
 import { buildContextDataForFile, publishUserAction } from '../../../listener/UserActionListener';
 import type { UserAction } from '../../../listener/UserActionListener';
 import { ForbiddenAccess } from '../../../config/errors';
 import { RELATION_OBJECT_MARKING } from '../../../schema/stixRefRelationship';
 import { buildRefRelationKey } from '../../../schema/general';
+
+export const SUPPORT_STORAGE_PATH = 'support';
+export const IMPORT_STORAGE_PATH = 'import';
+export const EXPORT_STORAGE_PATH = 'export';
 
 export const DELETABLE_FILE_STATUSES = ['complete', 'timeout'];
 export const getIndexFromDate = async (context: AuthContext) => {
@@ -151,6 +155,20 @@ export const allFilesMimeTypeDistribution = async (context: AuthContext, user: A
 };
 
 export const checkFileAccess = async (context: AuthContext, user: AuthUser, scope: string, { entity_id, filename, id }: { entity_id?: string, filename: string, id: string }) => {
+  // Checks for support/* files
+  if (id && (id.startsWith(SUPPORT_STORAGE_PATH) && !isUserHasCapability(user, SETTINGS_SUPPORT))) {
+    await publishUserAction({
+      user,
+      event_type: 'file',
+      event_scope: scope,
+      event_access: 'extended',
+      status: 'error',
+      context_data: filename
+    } as UserAction);
+    throw ForbiddenAccess('Access to this file is restricted', { id: entity_id, file: id });
+  }
+
+  // Checks for other files: import/*, export/*
   if (isEmptyField(entity_id)) {
     return true;
   }

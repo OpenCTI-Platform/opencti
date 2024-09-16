@@ -5,7 +5,7 @@ import { copyFile, deleteFile, deleteFiles, loadedFilesListing, storeFileConvert
 import type { AuthContext, AuthUser } from '../types/user';
 import type { BasicStoreBase, BasicStoreEntity } from '../types/store';
 import { logApp } from '../config/conf';
-import { allFilesForPaths } from '../modules/internal/document/document-domain';
+import { allFilesForPaths, EXPORT_STORAGE_PATH, IMPORT_STORAGE_PATH, SUPPORT_STORAGE_PATH } from '../modules/internal/document/document-domain';
 import { deleteWorkForSource } from '../domain/work';
 import { ENTITY_TYPE_SUPPORT_PACKAGE } from '../modules/support/support-types';
 
@@ -68,10 +68,6 @@ export const fileToReadStream = (localFilePath: string, localFileName: string, s
   const buffer = fs.readFileSync(fullPathFile);
   return { createReadStream: () => Readable.from(buffer), filename: s3FileName, mimetype: mimeType };
 };
-
-export const SUPPORT_STORAGE_PATH = 'support';
-export const IMPORT_STORAGE_PATH = 'import';
-export const EXPORT_STORAGE_PATH = 'export';
 
 export const ALL_ROOT_FOLDERS = [SUPPORT_STORAGE_PATH, IMPORT_STORAGE_PATH, EXPORT_STORAGE_PATH];
 export const ALL_MERGEABLE_FOLDERS = [IMPORT_STORAGE_PATH, EXPORT_STORAGE_PATH];
