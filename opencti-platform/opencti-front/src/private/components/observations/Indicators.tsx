@@ -164,7 +164,7 @@ const Indicators = () => {
     objectLabel: {},
     created: {
       percentWidth: 10,
-      render: ({ created }, { fldt }) => <Tooltip title={fldt(created)}>{fldt(created)}</Tooltip>,
+      render: ({ created }, { nsdt }) => <Tooltip title={nsdt(created)}>{nsdt(created)}</Tooltip>,
     },
     valid_until: {
       label: 'Valid until',
