@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { fileToReadStream, SUPPORT_STORAGE_PATH, uploadToStorage } from '../../../src/database/file-storage-helper';
+import { fileToReadStream, uploadToStorage } from '../../../src/database/file-storage-helper';
 import type { AuthContext } from '../../../src/types/user';
 import { ADMIN_USER } from '../../utils/testQuery';
 import { MARKING_TLP_CLEAR } from '../../../src/schema/identifier';
-import { findById as findDocumentById } from '../../../src/modules/internal/document/document-domain';
+import { findById as findDocumentById, SUPPORT_STORAGE_PATH } from '../../../src/modules/internal/document/document-domain';
 
 const adminContext: AuthContext = { user: ADMIN_USER, tracing: undefined, source: 'file-storage-helper-test', otp_mandatory: false };
 
