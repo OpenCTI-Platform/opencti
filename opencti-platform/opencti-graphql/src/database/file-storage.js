@@ -170,13 +170,13 @@ export const downloadFile = async (id) => {
 /**
  * - Copy file from a place to another in S3
  * - Store file in documents
- * @param sourceId
- * @param targetId
- * @param sourceDocument
- * @param targetEntityId
- * @returns {Promise<null|void>} the document entity on success, null on errors.
+ * @param context
+ * @param user
+ * @param {{sourceId: string, targetId: string, sourceDocument: BasicStoreEntityDocument, targetEntityId: string}} copyProps
+ * @returns {Promise<null|File>} the document entity on success, null on errors.
  */
-export const copyFile = async (sourceId, targetId, sourceDocument, targetEntityId) => {
+export const copyFile = async (context, copyProps) => {
+  const { sourceId, targetId, sourceDocument, targetEntityId } = copyProps;
   try {
     const input = {
       Bucket: bucketName,
@@ -198,7 +198,7 @@ export const copyFile = async (sourceId, targetId, sourceDocument, targetEntityI
       metaData: targetMetadata,
       uploadStatus: 'complete',
     };
-    await indexFileToDocument(file);
+    await indexFileToDocument(context, file);
     logApp.info('[FILE STORAGE] Copy file to S3 in success', { document: file, sourceId, targetId });
     return file;
   } catch (err) {
@@ -494,7 +494,7 @@ export const upload = async (context, user, filePath, fileUpload, opts) => {
     metaData: { ...fullMetadata, messages: [], errors: [], file_markings },
     uploadStatus: 'complete',
   };
-  await indexFileToDocument(file);
+  await indexFileToDocument(context, file);
 
   const isFilePathForImportEnrichment = filePath.startsWith('import/') && !filePath.startsWith('import/pending');
   if (!noTriggerImport && isFilePathForImportEnrichment) {

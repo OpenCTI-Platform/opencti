@@ -13,26 +13,24 @@ import {
   elIndex,
   elIndexElements,
   elIndexExists,
+  elIndexGetAlias,
   elLoadById,
   elPaginate,
   elRebuildRelation,
+  ES_INDEX_PATTERN_SUFFIX,
   ES_MAX_PAGINATION,
   searchEngineInit
 } from '../../../src/database/engine';
 import {
+  DEPRECATED_INDICES,
   ES_INDEX_PREFIX,
+  INDEX_INTERNAL_OBJECTS,
   READ_DATA_INDICES,
   READ_ENTITIES_INDICES,
   READ_INDEX_INTERNAL_OBJECTS,
-  READ_INDEX_INTERNAL_RELATIONSHIPS,
-  READ_INDEX_STIX_CORE_RELATIONSHIPS,
-  READ_INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS,
-  READ_INDEX_STIX_CYBER_OBSERVABLES,
   READ_INDEX_STIX_DOMAIN_OBJECTS,
-  READ_INDEX_STIX_META_OBJECTS,
-  READ_INDEX_STIX_META_RELATIONSHIPS,
-  READ_INDEX_STIX_SIGHTING_RELATIONSHIPS,
-  READ_RELATIONSHIPS_INDICES
+  READ_RELATIONSHIPS_INDICES,
+  WRITE_PLATFORM_INDICES
 } from '../../../src/database/utils';
 import { utcDate } from '../../../src/utils/format';
 import { ADMIN_USER, buildStandardUser, testContext, TESTING_GROUPS, TESTING_ROLES, TESTING_USERS } from '../../utils/testQuery';
@@ -50,17 +48,27 @@ const elWhiteUser = async () => {
 };
 
 describe('Elasticsearch configuration test', () => {
-  it('should configuration correct', () => {
+  it('should configuration correct', async () => {
     expect(searchEngineInit()).resolves.toBeTruthy();
-    expect(elIndexExists(READ_INDEX_INTERNAL_OBJECTS)).toBeTruthy();
-    expect(elIndexExists(READ_INDEX_STIX_SIGHTING_RELATIONSHIPS)).toBeTruthy();
-    expect(elIndexExists(READ_INDEX_STIX_CORE_RELATIONSHIPS)).toBeTruthy();
-    expect(elIndexExists(READ_INDEX_STIX_DOMAIN_OBJECTS)).toBeTruthy();
-    expect(elIndexExists(READ_INDEX_STIX_META_OBJECTS)).toBeTruthy();
-    expect(elIndexExists(READ_INDEX_STIX_META_RELATIONSHIPS)).toBeTruthy();
-    expect(elIndexExists(READ_INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS)).toBeTruthy();
-    expect(elIndexExists(READ_INDEX_INTERNAL_RELATIONSHIPS)).toBeTruthy();
-    expect(elIndexExists(READ_INDEX_STIX_CYBER_OBSERVABLES)).toBeTruthy();
+    // check all WRITE_PLATFORM_INDICES creation
+    for (let i = 0; i < WRITE_PLATFORM_INDICES.length; i += 1) {
+      const indexName = WRITE_PLATFORM_INDICES[i];
+      const indexExists = await elIndexExists(indexName);
+      expect(indexExists).toBeTruthy();
+    }
+    for (let i = 0; i < DEPRECATED_INDICES.length; i += 1) {
+      const indexName = DEPRECATED_INDICES[i];
+      expect(await elIndexExists(indexName)).toBeFalsy();
+    }
+  });
+  it('should get internal object index with alias', async () => {
+    const internalObjectsIndexAlias = await elIndexGetAlias(READ_INDEX_INTERNAL_OBJECTS);
+    // internalObjectsIndexAlias = {"test_internal_objects-000001":{"aliases":{"test_internal_objects":{}}}}
+    const numberOfIndices = Object.keys(internalObjectsIndexAlias).length;
+    expect(internalObjectsIndexAlias).toBeDefined();
+    expect(numberOfIndices).toEqual(1);
+    expect(Object.entries(internalObjectsIndexAlias)[0][0]).toEqual(`${INDEX_INTERNAL_OBJECTS}${ES_INDEX_PATTERN_SUFFIX}`);
+    expect(Object.entries(internalObjectsIndexAlias)[0][1].aliases).toEqual({ [INDEX_INTERNAL_OBJECTS]: {} });
   });
 });
 
