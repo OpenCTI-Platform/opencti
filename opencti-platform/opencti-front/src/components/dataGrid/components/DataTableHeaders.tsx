@@ -175,7 +175,7 @@ const DataTableHeaders: FunctionComponent<DataTableHeadersProps> = ({
                 orderAsc={!!orderAsc}
               />
             ))}
-          <span style={{ width: 42 }} />
+          <span style={{ width: 'calc( 42px + 12px )' }} />
         </>
       )}
     </div>

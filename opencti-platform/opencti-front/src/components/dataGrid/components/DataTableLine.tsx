@@ -23,7 +23,6 @@ const useStyles = makeStyles<Theme, { cell?: DataTableColumn, clickable?: boolea
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     whiteSpace: 'nowrap',
-    borderBottom: `1px solid ${theme.palette.divider}`,
   }),
   cellPadding: {
     display: 'flex',
@@ -41,6 +40,7 @@ const useStyles = makeStyles<Theme, { cell?: DataTableColumn, clickable?: boolea
     gap: 8,
   },
   row: ({ clickable }) => ({
+    borderBottom: `1px solid ${theme.palette.divider}`,
     display: 'flex',
     '&:hover': clickable ? {
       backgroundColor:

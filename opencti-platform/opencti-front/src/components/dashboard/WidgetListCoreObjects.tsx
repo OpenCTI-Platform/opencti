@@ -9,6 +9,7 @@ interface WidgetListCoreObjectsProps {
   publicWidget?: boolean
   rootRef: DataTableProps['rootRef']
   widgetId: string
+  pageSize: number
 }
 
 const WidgetListCoreObjects = ({
@@ -17,6 +18,7 @@ const WidgetListCoreObjects = ({
   publicWidget = false,
   rootRef,
   widgetId,
+  pageSize,
 }: WidgetListCoreObjectsProps) => (
   <DataTableWithoutFragment
     dataColumns={{
@@ -37,6 +39,7 @@ const WidgetListCoreObjects = ({
     data={data.map(({ node }) => node)}
     globalCount={data.length}
     variant={DataTableVariant.widget}
+    pageSize={pageSize}
     disableNavigation={publicWidget}
     rootRef={rootRef}
   />
