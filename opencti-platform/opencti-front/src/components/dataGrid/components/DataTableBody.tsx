@@ -21,7 +21,7 @@ const useStyles = makeStyles<MuiTheme, { columnSizeVars: ColumnSizeVars }>(() =>
   }),
   linesContainer: {
     height: 'calc(var(--table-height, 100%) * 1px - 50px)',
-    width: 'calc(var(--col-table-size, 100%) * 1px + 10px)', // 10px is approx. the scrollbar size to prevent alignment issues
+    width: 'calc(var(--col-table-size, 100%) * 1px)', // 10px is approx. the scrollbar size to prevent alignment issues
     overflowY: 'auto',
     overflowX: 'hidden',
   },
@@ -102,7 +102,7 @@ const DataTableBody = ({
     }
     // From there, currentRefContainer is not null
     /* eslint-disable @typescript-eslint/no-non-null-assertion */
-    const clientWidth = currentRefContainer!.clientWidth - storedSize - 12; // Scrollbar size to prevent alignment issues
+    const clientWidth = currentRefContainer!.clientWidth - storedSize; // Scrollbar size to prevent alignment issues
     for (let i = startsWithSelect ? 1 : 0; i < columns.length - (endsWithNavigate ? 1 : 0); i += 1) {
       const column = reset ? columns[i] : { ...columns[i], ...localStorageColumns[columns[i].id] };
       const shouldCompute = (!column.size || resize || !localStorageColumns[columns[i].id]?.size) && (column.percentWidth && Boolean(computeState));

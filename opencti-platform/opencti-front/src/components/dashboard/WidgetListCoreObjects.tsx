@@ -39,7 +39,7 @@ const WidgetListCoreObjects = ({
     data={data.map(({ node }) => node)}
     globalCount={data.length}
     variant={DataTableVariant.widget}
-    pageSize={pageSize}
+    pageSize={pageSize.toString()}
     disableNavigation={publicWidget}
     rootRef={rootRef}
   />

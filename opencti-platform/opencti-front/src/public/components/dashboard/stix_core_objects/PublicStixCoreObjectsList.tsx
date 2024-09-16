@@ -228,6 +228,7 @@ const PublicStixCoreObjectsListComponent = ({
         publicWidget
         rootRef={rootRef}
         widgetId={widgetId}
+        pageSize={100}
       />
     );
   }
