@@ -42,6 +42,7 @@ interface AuthorizedMembersFieldProps
   showAllMembersLine?: boolean;
   showCreatorLine?: boolean;
   canDeactivate?: boolean;
+  addMeUserWithAdminRights?: boolean;
 }
 
 // Type of data for internal form, not exposed to others.
@@ -73,11 +74,12 @@ const AuthorizedMembersField = ({
   showAllMembersLine = false,
   showCreatorLine = false,
   canDeactivate = false,
+  addMeUserWithAdminRights = false,
 }: AuthorizedMembersFieldProps) => {
   const { t_i18n } = useFormatter();
-  const { me } = useAuth();
   const { setFieldValue } = form;
   const { name, value } = field;
+  const { me } = useAuth();
 
   // Value in sync with internal Formik field 'applyAccesses'.
   // Require to use a state in addition to the Formik field because
@@ -177,7 +179,7 @@ const AuthorizedMembersField = ({
           accessRight: 'admin',
         });
       }
-      if (me.id !== owner?.id) {
+      if (addMeUserWithAdminRights && me.id !== owner?.id) {
         values.push({
           label: me.name,
           type: 'User',

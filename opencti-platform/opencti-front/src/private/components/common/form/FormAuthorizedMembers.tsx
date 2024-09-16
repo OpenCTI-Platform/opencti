@@ -70,6 +70,7 @@ const FormAuthorizedMembers = ({
                   owner={owner}
                   showAllMembersLine={showAllMembersLine}
                   canDeactivate={canDeactivate}
+                  addMeUserWithAdminRights
                 />
               )}
             </Form>
