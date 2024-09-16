@@ -157,14 +157,6 @@ export const allFilesMimeTypeDistribution = async (context: AuthContext, user: A
 export const checkFileAccess = async (context: AuthContext, user: AuthUser, scope: string, { entity_id, filename, id }: { entity_id?: string, filename: string, id: string }) => {
   // Checks for support/* files
   if (id && (id.startsWith(SUPPORT_STORAGE_PATH) && !isUserHasCapability(user, SETTINGS_SUPPORT))) {
-    await publishUserAction({
-      user,
-      event_type: 'file',
-      event_scope: scope,
-      event_access: 'extended',
-      status: 'error',
-      context_data: filename
-    } as UserAction);
     throw ForbiddenAccess('Access to this file is restricted', { id: entity_id, file: id });
   }
 
