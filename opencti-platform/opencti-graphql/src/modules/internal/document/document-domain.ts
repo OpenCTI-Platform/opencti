@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import moment from 'moment';
 import { generateFileIndexId } from '../../../schema/identifier';
 import { ENTITY_TYPE_INTERNAL_FILE } from '../../../schema/internalObject';
-import { elAggregationCount, elCount, elDeleteInstances, elIndex, elUpdate } from '../../../database/engine';
+import { elAggregationCount, elCount, elDeleteInstances, elIndex } from '../../../database/engine';
 import { INDEX_INTERNAL_OBJECTS, isEmptyField, isNotEmptyField, READ_INDEX_INTERNAL_OBJECTS } from '../../../database/utils';
 import { type EntityOptions, type FilterGroupWithNested, internalLoadById, listAllEntities, listEntitiesPaginated, storeLoadById } from '../../../database/middleware-loader';
 import type { AuthContext, AuthUser } from '../../../types/user';
@@ -57,7 +57,7 @@ export const indexFileToDocument = async (context: AuthContext, file: any) => {
   const internalFile = await storeLoadById(context, SYSTEM_USER, data.internal_id, ENTITY_TYPE_INTERNAL_FILE);
   if (internalFile) {
     // update existing internalFile (if file has been saved in another index)
-    return elUpdate(internalFile._index, internalFile.internal_id, data);
+    return elIndex(internalFile._index, data);
   }
   return elIndex(INDEX_INTERNAL_OBJECTS, data);
 };
