@@ -17,6 +17,7 @@ import SelectField from '../../../../components/fields/SelectField';
 import { useFormatter } from '../../../../components/i18n';
 import { AccessRight, ALL_MEMBERS_AUTHORIZED_CONFIG, AuthorizedMemberOption, Creator, CREATOR_AUTHORIZED_CONFIG } from '../../../../utils/authorizedMembers';
 import SwitchField from '../../../../components/fields/SwitchField';
+import useAuth from '../../../../utils/hooks/useAuth';
 
 /**
  * Returns true if the authorized member option is generic.
@@ -41,6 +42,7 @@ interface AuthorizedMembersFieldProps
   showAllMembersLine?: boolean;
   showCreatorLine?: boolean;
   canDeactivate?: boolean;
+  addMeUserWithAdminRights?: boolean;
 }
 
 // Type of data for internal form, not exposed to others.
@@ -72,10 +74,12 @@ const AuthorizedMembersField = ({
   showAllMembersLine = false,
   showCreatorLine = false,
   canDeactivate = false,
+  addMeUserWithAdminRights = false,
 }: AuthorizedMembersFieldProps) => {
   const { t_i18n } = useFormatter();
   const { setFieldValue } = form;
   const { name, value } = field;
+  const { me } = useAuth();
 
   // Value in sync with internal Formik field 'applyAccesses'.
   // Require to use a state in addition to the Formik field because
@@ -172,6 +176,14 @@ const AuthorizedMembersField = ({
           label: owner.name,
           type: owner.entity_type,
           value: owner.id,
+          accessRight: 'admin',
+        });
+      }
+      if (addMeUserWithAdminRights && me.id !== owner?.id) {
+        values.push({
+          label: me.name,
+          type: 'User',
+          value: me.id,
           accessRight: 'admin',
         });
       }
