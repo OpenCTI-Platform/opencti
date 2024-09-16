@@ -58,6 +58,7 @@ const ItemStatus = (props) => {
           color: status.template.color,
           borderColor: status.template.color,
           backgroundColor: hexToRGB(status.template.color),
+          cursor: onClick ? 'pointer' : 'default',
         }}
       />
     );
