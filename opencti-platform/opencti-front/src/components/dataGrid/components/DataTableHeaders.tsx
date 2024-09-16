@@ -67,7 +67,7 @@ const DataTableHeaders: FunctionComponent<DataTableHeadersProps> = ({
       style={{
         display: 'flex',
         width: 'calc(var(--header-table-size) * 1px)',
-        height: `calc(${theme.spacing(6)} + 1px)`,
+        height: theme.spacing(6),
         alignItems: 'stretch',
         borderBottom: `1px solid ${theme.palette.divider}`,
         background: (Object.keys(selectedElements ?? {}).length > 0 || selectAll) && !disableSelectAll ? theme.palette.background.accent : 'unset',
@@ -175,6 +175,7 @@ const DataTableHeaders: FunctionComponent<DataTableHeadersProps> = ({
                 orderAsc={!!orderAsc}
               />
             ))}
+          <span style={{ width: 42 }} />
         </>
       )}
     </div>

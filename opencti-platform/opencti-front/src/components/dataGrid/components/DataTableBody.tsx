@@ -41,6 +41,7 @@ const DataTableBody = ({
   pageSize,
   setReset,
   reset = false,
+  hideHeaders = false,
 }: DataTableBodyProps) => {
   const {
     rootRef,
@@ -132,13 +133,20 @@ const DataTableBody = ({
     }
     const columnsSize = Object.values(localColumns).reduce((acc, { size }) => acc + size, 0);
     const tableSize = columnsSize + storedSize;
+
+    // Dirty fix for tables with mismatch size
+    // Will be remove when rework by Landry
+    if (tableSize < clientWidth) {
+      setResize(true);
+    }
+
     if (columnsSize > clientWidth) {
       currentRefContainer!.style.overflowX = 'auto';
       currentRefContainer!.style.overflowY = 'hidden';
     } else {
       currentRefContainer!.style.overflow = 'hidden';
     }
-    colSizes['--header-table-size'] = tableSize; // 50 is almost the scrollbar size
+    colSizes['--header-table-size'] = tableSize;
     colSizes['--col-table-size'] = tableSize;
     if (variant === DataTableVariant.widget) {
       if (!rootRef) {
@@ -238,7 +246,7 @@ const DataTableBody = ({
       className={classes.tableContainer}
       style={{ ...columnSizeVars }}
     >
-      {variant !== DataTableVariant.widget && (
+      {(variant !== DataTableVariant.widget && !hideHeaders) && (
         <DataTableHeaders
           containerRef={containerRef}
           effectiveColumns={effectiveColumns}

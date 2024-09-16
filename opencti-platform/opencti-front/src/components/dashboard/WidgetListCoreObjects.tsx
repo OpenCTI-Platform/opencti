@@ -1,5 +1,4 @@
 import React from 'react';
-import { v4 as uuid } from 'uuid';
 import DataTableWithoutFragment from '../dataGrid/DataTableWithoutFragment';
 import { DataTableProps, DataTableVariant } from '../dataGrid/dataTableTypes';
 
@@ -9,6 +8,7 @@ interface WidgetListCoreObjectsProps {
   dateAttribute: string
   publicWidget?: boolean
   rootRef: DataTableProps['rootRef']
+  widgetId: string
 }
 
 const WidgetListCoreObjects = ({
@@ -16,6 +16,7 @@ const WidgetListCoreObjects = ({
   dateAttribute,
   publicWidget = false,
   rootRef,
+  widgetId,
 }: WidgetListCoreObjectsProps) => (
   <DataTableWithoutFragment
     dataColumns={{
@@ -32,7 +33,7 @@ const WidgetListCoreObjects = ({
       x_opencti_workflow_id: { percentWidth: 15 },
       objectMarking: { percentWidth: 15 },
     }}
-    storageKey={uuid()}
+    storageKey={widgetId}
     data={data.map(({ node }) => node)}
     globalCount={data.length}
     variant={DataTableVariant.widget}

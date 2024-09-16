@@ -27,7 +27,7 @@ const DataTableComponent = ({
   storageHelpers,
   filtersComponent,
   redirectionMode,
-  numberOfElements,
+  hideHeaders,
   onAddFilter,
   onSort,
   sortBy,
@@ -88,7 +88,7 @@ const DataTableComponent = ({
 
   // QUERY PART
   const [page, setPage] = useState<number>(1);
-  const defaultPageSize = variant === DataTableVariant.default ? 25 : Number.MAX_SAFE_INTEGER;
+  const defaultPageSize = variant === DataTableVariant.default ? 25 : 5000;
   const currentPageSize = pageSize ? Number.parseInt(pageSize, 10) : defaultPageSize;
   const pageStart = useMemo(() => {
     return page ? (page - 1) * currentPageSize : 0;
@@ -134,18 +134,7 @@ const DataTableComponent = ({
       } as DataTableContextProps}
     >
       <div ref={dataTableHeaderRef}>
-        {filtersComponent ?? (variant === DataTableVariant.inline && (
-          <div
-            style={{
-              width: '100%',
-              textAlign: 'right',
-              marginBottom: 10,
-            }}
-          >
-            <strong>{`${numberOfElements?.number}${numberOfElements?.symbol}`}</strong>{' '}
-            {formatter.t_i18n('entitie(s)')}
-          </div>
-        ))}
+        {filtersComponent}
       </div>
       <>
         <React.Suspense
@@ -176,6 +165,7 @@ const DataTableComponent = ({
             dataTableHeaderRef={dataTableHeaderRef}
             reset={reset}
             setReset={setReset}
+            hideHeaders={hideHeaders}
           />
         </React.Suspense>
       </>
