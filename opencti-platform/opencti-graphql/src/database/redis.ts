@@ -1,6 +1,6 @@
 import { SEMATTRS_DB_NAME } from '@opentelemetry/semantic-conventions';
 import Redis, { Cluster, type RedisOptions, type SentinelAddress } from 'ioredis';
-import Redlock from 'redlock';
+import { Redlock } from '@sesamecare-oss/redlock';
 import * as jsonpatch from 'fast-json-patch';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import * as R from 'ramda';
