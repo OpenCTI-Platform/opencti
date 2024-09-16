@@ -250,6 +250,7 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
             endDate={endDate}
             dataSelection={widget.dataSelection}
             parameters={widget.parameters}
+            widgetId={widget.id}
             variant="inLine"
           />
         );

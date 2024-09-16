@@ -209,6 +209,7 @@ const StixCoreObjectsList = ({
   startDate,
   endDate,
   dataSelection,
+  widgetId,
   parameters = {},
 }) => {
   const { t_i18n } = useFormatter();
@@ -249,6 +250,7 @@ const StixCoreObjectsList = ({
                 data={data}
                 dateAttribute={dateAttribute}
                 rootRef={rootRef.current ?? undefined}
+                widgetId={widgetId}
               />
             );
           }

@@ -237,8 +237,7 @@ class ListLinesContent extends Component {
       ? dataList.length + this.state.loadingRowCount
       : dataList.length;
     const rowCount = initialLoading ? nbOfRowsToLoad : countWithLoading;
-    const container = document.getElementById('root');
-    let scrollElement = container ?? window;
+    let scrollElement = window;
     if (propHeight && this.containerRef && this.containerRef.current) {
       scrollElement = this.containerRef.current;
     } else if (propContainerRef && propContainerRef.current) {

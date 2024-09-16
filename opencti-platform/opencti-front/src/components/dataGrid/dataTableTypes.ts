@@ -132,6 +132,7 @@ export interface DataTableProps {
   disableSelectAll?: boolean
   selectOnLineClick?: boolean
   onLineClick?: (line: any) => void
+  hideHeaders?: boolean
 }
 
 export interface DataTableBodyProps {
@@ -149,6 +150,7 @@ export interface DataTableBodyProps {
   dataTableHeaderRef: RefObject<HTMLDivElement>
   reset: boolean,
   setReset: Dispatch<SetStateAction<boolean>>
+  hideHeaders: DataTableProps['hideHeaders']
 }
 
 export interface DataTableDisplayFiltersProps {

@@ -225,6 +225,7 @@ const PublicStixCoreObjectsListComponent = ({
         dateAttribute={dateAttribute}
         publicWidget
         rootRef={rootRef}
+        widgetId={''}
       />
     );
   }
