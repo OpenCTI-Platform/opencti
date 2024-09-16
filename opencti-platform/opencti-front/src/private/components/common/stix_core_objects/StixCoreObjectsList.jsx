@@ -251,6 +251,7 @@ const StixCoreObjectsList = ({
                 dateAttribute={dateAttribute}
                 rootRef={rootRef.current ?? undefined}
                 widgetId={widgetId}
+                pageSize={selection.number ?? 10}
               />
             );
           }

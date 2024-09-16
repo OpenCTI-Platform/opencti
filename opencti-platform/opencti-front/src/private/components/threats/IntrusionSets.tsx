@@ -136,7 +136,7 @@ const IntrusionSets = () => {
       resource_level: {},
       primary_motivation: {},
       secondary_motivations: {},
-      creator: {},
+      creator: { percentWidth: 15 },
       modified: {},
       objectMarking: { percentWidth: 10 },
       objectLabel: {},

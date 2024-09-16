@@ -206,12 +206,14 @@ interface PublicStixCoreObjectsListComponentProps {
   queryRef: PreloadedQuery<PublicStixCoreObjectsListQuery>
   dateAttribute: string
   rootRef: DataTableProps['rootRef']
+  widgetId: string
 }
 
 const PublicStixCoreObjectsListComponent = ({
   queryRef,
   dateAttribute,
   rootRef,
+  widgetId,
 }: PublicStixCoreObjectsListComponentProps) => {
   const { publicStixCoreObjects } = usePreloadedQuery(
     publicStixCoreObjectsListQuery,
@@ -225,7 +227,8 @@ const PublicStixCoreObjectsListComponent = ({
         dateAttribute={dateAttribute}
         publicWidget
         rootRef={rootRef}
-        widgetId={''}
+        widgetId={widgetId}
+        pageSize={100}
       />
     );
   }
@@ -269,6 +272,7 @@ const PublicStixCoreObjectsList = ({
             queryRef={queryRef}
             dateAttribute={dateAttribute}
             rootRef={rootRef.current ?? undefined}
+            widgetId={id}
           />
         </React.Suspense>
       ) : (

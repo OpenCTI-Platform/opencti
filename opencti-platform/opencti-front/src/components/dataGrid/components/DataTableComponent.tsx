@@ -88,7 +88,7 @@ const DataTableComponent = ({
 
   // QUERY PART
   const [page, setPage] = useState<number>(1);
-  const defaultPageSize = variant === DataTableVariant.default ? 25 : 5000;
+  const defaultPageSize = variant === DataTableVariant.default ? 25 : 100;
   const currentPageSize = pageSize ? Number.parseInt(pageSize, 10) : defaultPageSize;
   const pageStart = useMemo(() => {
     return page ? (page - 1) * currentPageSize : 0;

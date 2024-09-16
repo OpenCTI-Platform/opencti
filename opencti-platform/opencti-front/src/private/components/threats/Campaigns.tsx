@@ -136,7 +136,7 @@ const Campaigns = () => {
       name: {
         percentWidth: 15,
       },
-      creator: {},
+      creator: { percentWidth: 14 },
       created: {
         percentWidth: 10,
       },
