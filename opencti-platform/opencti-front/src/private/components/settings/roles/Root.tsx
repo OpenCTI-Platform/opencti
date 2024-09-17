@@ -3,6 +3,7 @@
 import React, { FunctionComponent } from 'react';
 import { Route, Routes, useParams } from 'react-router-dom';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
+import AccessesMenu from '@components/settings/AccessesMenu';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
@@ -12,6 +13,8 @@ import { RootRoleQuery } from './__generated__/RootRoleQuery.graphql';
 import { GroupsSearchQuery } from '../__generated__/GroupsSearchQuery.graphql';
 import { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
+import { useFormatter } from '../../../../components/i18n';
+import Breadcrumbs from '../../../../components/Breadcrumbs';
 
 const roleQuery = graphql`
     query RootRoleQuery($id: String!) {
@@ -31,6 +34,7 @@ interface RootRoleComponentProps {
 const RootRoleComponent: FunctionComponent<RootRoleComponentProps> = ({ queryRef }) => {
   const data = usePreloadedQuery(roleQuery, queryRef);
   const { role } = data;
+  const { t_i18n } = useFormatter();
   const groupsQueryRef = useQueryLoading<GroupsSearchQuery>(
     groupsSearchQuery,
     {
@@ -43,23 +47,33 @@ const RootRoleComponent: FunctionComponent<RootRoleComponentProps> = ({ queryRef
   return (
     <Security needs={[SETTINGS_SETACCESSES]}>
       {role ? (
-        <>
-          {groupsQueryRef ? (
-            <React.Suspense fallback={<Loader variant={LoaderVariant.inElement}/>}>
-              <Routes>
-                <Route
-                  path="/"
-                  element={ (
-                    <Role roleData={role} groupsQueryRef={groupsQueryRef} />
-                  )}
-                />
-              </Routes>
-            </React.Suspense>
-          ) : (
-            <Loader variant={LoaderVariant.inElement} />
-          )
-          }
-        </>
+        <div style={{ paddingRight: 200 }}>
+          <AccessesMenu/>
+          <Breadcrumbs variant="object" elements={[
+            { label: t_i18n('Settings') },
+            { label: t_i18n('Security') },
+            { label: t_i18n('Roles'), link: '/dashboard/settings/accesses/roles' },
+            { label: data.name || data.user_email, current: true },
+          ]}
+          />
+          <>
+            {groupsQueryRef ? (
+              <React.Suspense fallback={<Loader variant={LoaderVariant.inElement}/>}>
+                <Routes>
+                  <Route
+                    path="/"
+                    element={(
+                      <Role roleData={role} groupsQueryRef={groupsQueryRef}/>
+                                  )}
+                  />
+                </Routes>
+              </React.Suspense>
+            ) : (
+              <Loader variant={LoaderVariant.inElement}/>
+            )
+                  }
+          </>
+        </div>
       ) : (
         <ErrorNotFound />
       )}
