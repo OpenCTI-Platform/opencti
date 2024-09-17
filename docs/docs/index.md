@@ -65,7 +65,7 @@ OpenCTI is an open source platform allowing organizations to manage their cyber 
 
     ---
 
-    Discover tutorials, best practices and deep dives on OpenBAS features on our Filigran blog.
+    Discover tutorials, best practices and deep dives on OpenCTI features on our Filigran blog.
 
     [:octicons-arrow-right-24:{ .middle } Read now](https://blog.filigran.io)
 </div>
