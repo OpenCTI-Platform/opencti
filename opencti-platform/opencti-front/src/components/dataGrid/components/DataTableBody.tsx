@@ -275,7 +275,7 @@ const DataTableBody = ({
                 />
               );
             })}
-            {isLoading && <DataTableLinesDummy number={pageSize} />}
+            {isLoading && <DataTableLinesDummy number={Math.max(pageSize, 25)} />}
           </>
         )}
       </div>
