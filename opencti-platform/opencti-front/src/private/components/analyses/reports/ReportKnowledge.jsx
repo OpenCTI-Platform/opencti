@@ -283,10 +283,7 @@ class ReportKnowledgeComponent extends Component {
                     );
                   }
                   return (
-                    <Loader
-                      variant={LoaderVariant.inElement}
-                      withTopMargin={false}
-                    />
+                    <Loader />
                   );
                 }}
               />
