@@ -8580,10 +8580,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"convert@npm:5.3.0":
-  version: 5.3.0
-  resolution: "convert@npm:5.3.0"
-  checksum: 10/2a0860d3e4c766bb5c44a9f957ea68f1f2b982c48ab6becd58ddfcc174c6825e863df51e0739fd9b1f6723e3d5c61559f5710d7c6c403c5df7ee06e03d7c4d84
+"convert@npm:5.4.0":
+  version: 5.4.0
+  resolution: "convert@npm:5.4.0"
+  checksum: 10/43a650bb5bf2f9a3bfe6c9bc25da9b3fbd746217a3f77e04b3f1796e3576f56c813095e9e2e2c3e8b8730934c17070d878cb47022857ec8e5d69d1db4dcd338b
   languageName: node
   linkType: hard
 
@@ -15801,7 +15801,7 @@ __metadata:
     ckeditor5-custom-build: "npm:0.0.1"
     classnames: "npm:2.5.1"
     compression: "npm:1.7.4"
-    convert: "npm:5.3.0"
+    convert: "npm:5.4.0"
     cross-env: "npm:7.0.3"
     d3-hierarchy: "npm:3.1.2"
     d3-timer: "npm:3.0.1"
