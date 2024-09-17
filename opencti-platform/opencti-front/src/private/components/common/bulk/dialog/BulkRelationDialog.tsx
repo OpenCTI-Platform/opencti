@@ -351,7 +351,10 @@ const BulkRelationDialog : FunctionComponent<BulkRelationDialogProps> = ({
       bulkEntityListToEdit[entityIndex].representative = foundEntityType.representative;
       bulkEntityListToEdit[entityIndex].isExisting = true;
     }
-    if (!foundEntityType) bulkEntityListToEdit[entityIndex].isExisting = false;
+    if (!foundEntityType) {
+      bulkEntityListToEdit[entityIndex].isExisting = false;
+      bulkEntityListToEdit[entityIndex].representative = bulkEntityListToEdit[entityIndex].searchTerm;
+    }
     bulkEntityListToEdit[entityIndex].selectedEntityType = value;
     bulkEntityListToEdit[entityIndex].isMatchingEntity = getRelationMatchStatus(value, entityTypeList ?? []);
     setBulkEntityList([...bulkEntityListToEdit]);
