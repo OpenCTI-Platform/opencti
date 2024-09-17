@@ -139,10 +139,10 @@ const RootVulnerability = ({ queryRef, vulnerabilityId }: RootVulnerabilityProps
             <StixDomainObjectHeader
               entityType="Vulnerability"
               stixDomainObject={vulnerability}
-              PopoverComponent={<VulnerabilityPopover />}
+              PopoverComponent={<VulnerabilityPopover id={vulnerabilityId} />}
               EditComponent={isFABReplaced && (
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                  <VulnerabilityEdition vulnerabilityId={vulnerability.id} />
+                  <VulnerabilityEdition vulnerabilityId={vulnerabilityId} />
                 </Security>
               )}
               enableQuickSubscription={true}

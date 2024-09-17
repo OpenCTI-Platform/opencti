@@ -31,6 +31,7 @@ import useGranted, { KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE, KNOWLEDGE_KNUPDATE } 
 import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 import CaseRfiEdition from './CaseRfiEdition';
 import { useGetCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 const subscription = graphql`
   subscription RootCaseRfiCaseSubscription($id: ID!) {
@@ -86,6 +87,8 @@ const RootCaseRfiComponent = ({ queryRef, caseId }) => {
     [caseId],
   );
   const location = useLocation();
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const enableReferences = useIsEnforceReference('Case-Rfi') && !useGranted([KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE]);
   const { t_i18n } = useFormatter();
   useSubscription(subConfig);
@@ -111,9 +114,11 @@ const RootCaseRfiComponent = ({ queryRef, caseId }) => {
       <ContainerHeader
         container={caseData}
         PopoverComponent={<CaseRfiPopover id={caseData.id} />}
-        EditComponent={<Security needs={[KNOWLEDGE_KNUPDATE]} hasAccess={currentAccessRight.canEdit}>
+        EditComponent={isFABReplaced && (
+        <Security needs={[KNOWLEDGE_KNUPDATE]} hasAccess={currentAccessRight.canEdit}>
           <CaseRfiEdition caseId={caseData.id} />
-        </Security>}
+        </Security>
+        )}
         enableQuickSubscription={true}
         enableAskAi={true}
         redirectToContent={true}

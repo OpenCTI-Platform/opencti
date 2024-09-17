@@ -28,6 +28,7 @@ import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import IndicatorEdition from './IndicatorEdition';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 const subscription = graphql`
   subscription RootIndicatorSubscription($id: ID!) {
@@ -81,6 +82,8 @@ const RootIndicator = ({ indicatorId, queryRef }: RootIndicatorProps) => {
   }), [indicatorId]);
 
   const location = useLocation();
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const { t_i18n } = useFormatter();
   useSubscription<RootIndicatorSubscription>(subConfig);
 
@@ -107,11 +110,11 @@ const RootIndicator = ({ indicatorId, queryRef }: RootIndicatorProps) => {
             entityType="Indicator"
             stixDomainObject={indicator}
             PopoverComponent={<IndicatorPopover/>}
-            EditComponent={
+            EditComponent={isFABReplaced && (
               <Security needs={[KNOWLEDGE_KNUPDATE]}>
                 <IndicatorEdition indicatorId={indicator.id} />
               </Security>
-            }
+            )}
             noAliases={true}
           />
           <Box

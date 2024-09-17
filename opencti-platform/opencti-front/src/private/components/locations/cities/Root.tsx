@@ -30,6 +30,7 @@ import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 import CityEdition from './CityEdition';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 const subscription = graphql`
   subscription RootCitiesSubscription($id: ID!) {
@@ -84,6 +85,8 @@ const RootCityComponent = ({ queryRef, cityId }) => {
   );
   useSubscription(subConfig);
   const location = useLocation();
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const { t_i18n } = useFormatter();
   const data = usePreloadedQuery(cityQuery, queryRef);
   const { forceUpdate } = useForceUpdate();
@@ -132,7 +135,7 @@ const RootCityComponent = ({ queryRef, cityId }) => {
               disableSharing={true}
               stixDomainObject={city}
               PopoverComponent={<CityPopover id={city.id} />}
-              EditComponent={(
+              EditComponent={isFABReplaced && (
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <CityEdition cityId={city.id} />
                 </Security>

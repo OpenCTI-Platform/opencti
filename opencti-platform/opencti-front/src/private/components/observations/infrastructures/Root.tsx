@@ -29,6 +29,7 @@ import { getCurrentTab } from '../../../../utils/utils';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import InfrastructureEdition from './InfrastructureEdition';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 const subscription = graphql`
   subscription RootInfrastructureSubscription($id: ID!) {
@@ -79,6 +80,8 @@ const RootInfrastructureComponent = ({ queryRef, infrastructureId }) => {
     [infrastructureId],
   );
   const location = useLocation();
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const { t_i18n } = useFormatter();
   useSubscription(subConfig);
   const data = usePreloadedQuery(infrastructureQuery, queryRef);
@@ -106,11 +109,11 @@ const RootInfrastructureComponent = ({ queryRef, infrastructureId }) => {
             entityType="Infrastructure"
             stixDomainObject={infrastructure}
             PopoverComponent={InfrastructurePopover}
-            EditComponent={
+            EditComponent={isFABReplaced && (
               <Security needs={[KNOWLEDGE_KNUPDATE]}>
                 <InfrastructureEdition infrastructureId={infrastructure.id} />
               </Security>
-            }
+            )}
             enableQuickSubscription={true}
           />
           <Box

@@ -29,6 +29,7 @@ import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import OrganizationEdition from './OrganizationEdition';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 const subscription = graphql`
   subscription RootOrganizationSubscription($id: ID!) {
@@ -86,6 +87,8 @@ const RootOrganization = ({ organizationId, queryRef }: RootOrganizationProps) =
     variables: { id: organizationId },
   }), [organizationId]);
   const location = useLocation();
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const navigate = useNavigate();
   const LOCAL_STORAGE_KEY = `organization-${organizationId}`;
   const params = buildViewParamsFromUrlAndStorage(
@@ -169,7 +172,7 @@ const RootOrganization = ({ organizationId, queryRef }: RootOrganizationProps) =
               isOpenctiAlias={true}
               enableQuickSubscription={true}
               PopoverComponent={<OrganizationPopover />}
-              EditComponent={(
+              EditComponent={isFABReplaced && (
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <OrganizationEdition organizationId={organization.id} />
                 </Security>

@@ -26,6 +26,7 @@ import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import AttackPatternEdition from './AttackPatternEdition';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 const subscription = graphql`
   subscription RootAttackPatternSubscription($id: ID!) {
@@ -83,6 +84,8 @@ const RootAttackPattern = ({ attackPatternId, queryRef }: RootAttackPatternProps
   }), [attackPatternId]);
 
   const location = useLocation();
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const { t_i18n } = useFormatter();
   useSubscription<RootAttackPatternSubscription>(subConfig);
 
@@ -135,7 +138,7 @@ const RootAttackPattern = ({ attackPatternId, queryRef }: RootAttackPatternProps
               entityType="Attack-Pattern"
               stixDomainObject={attackPattern}
               PopoverComponent={<AttackPatternPopover />}
-              EditComponent={(
+              EditComponent={isFABReplaced && (
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <AttackPatternEdition attackPatternId={attackPattern.id} />
                 </Security>

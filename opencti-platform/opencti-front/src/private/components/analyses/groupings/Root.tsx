@@ -30,6 +30,7 @@ import useGranted, { KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE, KNOWLEDGE_KNUPDATE } 
 import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 import GroupingEdition from './GroupingEdition';
 import { useGetCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 const subscription = graphql`
   subscription RootGroupingSubscription($id: ID!) {
@@ -89,6 +90,8 @@ const RootGrouping = () => {
     [groupingId],
   );
   const location = useLocation();
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const enableReferences = useIsEnforceReference('Grouping') && !useGranted([KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE]);
   const { t_i18n } = useFormatter();
   useSubscription(subConfig);
@@ -115,8 +118,10 @@ const RootGrouping = () => {
                   />
                   <ContainerHeader
                     container={grouping}
-                    PopoverComponent={<GroupingPopover />}
-                    EditComponent={(
+                    PopoverComponent={
+                      <GroupingPopover id={groupingId} />
+                    }
+                    EditComponent={isFABReplaced && (
                       <Security needs={[KNOWLEDGE_KNUPDATE]} hasAccess={currentAccessRight.canEdit}>
                         <GroupingEdition groupingId={grouping.id} />
                       </Security>

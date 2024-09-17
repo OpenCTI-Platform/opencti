@@ -30,6 +30,7 @@ import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 import AdministrativeAreaEdition from './AdministrativeAreaEdition';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 const subscription = graphql`
   subscription RootAdministrativeAreasSubscription($id: ID!) {
@@ -86,6 +87,8 @@ const RootAdministrativeAreaComponent = ({ queryRef, administrativeAreaId }) => 
   );
   useSubscription(subConfig);
   const location = useLocation();
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const { t_i18n } = useFormatter();
   const data = usePreloadedQuery(administrativeAreaQuery, queryRef);
   const { forceUpdate } = useForceUpdate();
@@ -136,7 +139,7 @@ const RootAdministrativeAreaComponent = ({ queryRef, administrativeAreaId }) => 
               PopoverComponent={
                 <AdministrativeAreaPopover id={administrativeArea.id} />
             }
-              EditComponent={(
+              EditComponent={isFABReplaced && (
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <AdministrativeAreaEdition
                     administrativeAreaId={administrativeArea.id}

@@ -27,6 +27,7 @@ import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 import Security from '../../../../utils/Security';
 import DataComponentEdition from './DataComponentEdition';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 const subscription = graphql`
   subscription RootDataComponentSubscription($id: ID!) {
@@ -81,6 +82,8 @@ const RootDataComponent = () => {
   );
   useSubscription(subConfig);
   const location = useLocation();
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const { t_i18n } = useFormatter();
   return (
     <>
@@ -106,7 +109,7 @@ const RootDataComponent = () => {
                     PopoverComponent={
                       <DataComponentPopover dataComponentId={dataComponentId}/>
                     }
-                    EditComponent={(
+                    EditComponent={isFABReplaced && (
                       <Security needs={[KNOWLEDGE_KNUPDATE]}>
                         <DataComponentEdition dataComponentId={dataComponent.id} />
                       </Security>

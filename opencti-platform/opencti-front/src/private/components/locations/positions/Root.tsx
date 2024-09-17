@@ -27,6 +27,7 @@ import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 import PositionEdition from './PositionEdition';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 const subscription = graphql`
   subscription RootPositionsSubscription($id: ID!) {
@@ -83,6 +84,8 @@ const RootPosition = ({ positionId, queryRef }: RootPositionProps) => {
   }), [positionId]);
 
   const location = useLocation();
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const { t_i18n } = useFormatter();
   useSubscription<RootPositionsSubscription>(subConfig);
 
@@ -139,7 +142,7 @@ const RootPosition = ({ positionId, queryRef }: RootPositionProps) => {
               disableSharing={true}
               stixDomainObject={position}
               PopoverComponent={<PositionPopover />}
-              EditComponent={(
+              EditComponent={isFABReplaced && (
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <PositionEdition positionId={position.id} />
                 </Security>
