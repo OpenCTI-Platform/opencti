@@ -64,7 +64,7 @@ const RootSettingsOrganizationComponent: FunctionComponent<RootSettingsOrganizat
             { label: t_i18n('Settings') },
             { label: t_i18n('Security') },
             { label: t_i18n('Organizations'), link: '/dashboard/settings/accesses/organizations' },
-            { label: data.name || data.user_email, current: true },
+            { label: organization.name, current: true },
           ]}
           />
           <Routes>

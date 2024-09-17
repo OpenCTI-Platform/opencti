@@ -69,7 +69,7 @@ const RootGroupComponent: FunctionComponent<RootGroupComponentProps> = ({ queryR
             { label: t_i18n('Settings') },
             { label: t_i18n('Security') },
             { label: t_i18n('Groups'), link: '/dashboard/settings/accesses/groups' },
-            { label: data.name || data.user_email, current: true },
+            { label: group.name, current: true },
           ]}
           />
           <Routes>

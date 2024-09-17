@@ -53,7 +53,7 @@ const RootRoleComponent: FunctionComponent<RootRoleComponentProps> = ({ queryRef
             { label: t_i18n('Settings') },
             { label: t_i18n('Security') },
             { label: t_i18n('Roles'), link: '/dashboard/settings/accesses/roles' },
-            { label: data.name || data.user_email, current: true },
+            { label: role.name, current: true },
           ]}
           />
           <>
