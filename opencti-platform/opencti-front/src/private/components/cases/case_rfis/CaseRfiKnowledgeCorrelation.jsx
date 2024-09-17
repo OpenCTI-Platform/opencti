@@ -30,6 +30,8 @@ import { caseRfiMutationFieldPatch } from './CaseRfiEditionOverview';
 import { UserContext } from '../../../../utils/hooks/useAuth';
 import CaseRfiKnowledgeGraphBar from './CaseRfiKnowledgeGraphBar';
 import EntitiesDetailsRightsBar from '../../../../utils/graph/EntitiesDetailsRightBar';
+import { isNotEmptyField } from '../../../../utils/utils';
+import { getMainRepresentative, getSecondaryRepresentative } from '../../../../utils/defaultRepresentatives';
 
 const PARAMETERS$ = new Subject().pipe(debounce(() => timer(2000)));
 const POSITIONS$ = new Subject().pipe(debounce(() => timer(2000)));
@@ -810,25 +812,20 @@ class CaseRfiKnowledgeCorrelationComponent extends Component {
   }
 
   handleSearch(keyword) {
-    const filterAdjust = {
-      selectedTimeRangeInterval: this.state.selectedTimeRangeInterval,
-      markedBy: this.state.markedBy,
-      createdBy: this.state.createdBy,
-      stixCoreObjectsTypes: this.state.stixCoreObjectsTypes,
-      keyword,
-    };
-    this.setState(
-      {
-        selectedTimeRangeInterval: filterAdjust.selectedTimeRangeInterval,
-        graphData: buildCorrelationData(
-          this.graphObjects,
-          decodeGraphData(this.props.grouping.x_opencti_graph_data),
-          this.props.t,
-          filterAdjust,
-        ),
-      },
-      () => this.saveParameters(false),
-    );
+    this.selectedLinks.clear();
+    this.selectedNodes.clear();
+    if (isNotEmptyField(keyword)) {
+      const filterByKeyword = (n) => keyword === ''
+          || (getMainRepresentative(n) || '').toLowerCase().indexOf(keyword.toLowerCase())
+          !== -1
+          || (getSecondaryRepresentative(n) || '')
+            .toLowerCase()
+            .indexOf(keyword.toLowerCase()) !== -1
+          || (n.entity_type || '').toLowerCase().indexOf(keyword.toLowerCase())
+          !== -1;
+      this.state.graphData.nodes.map((n) => filterByKeyword(n) && this.selectedNodes.add(n));
+      this.setState({ numberOfSelectedNodes: this.selectedNodes.size });
+    }
   }
 
   render() {
