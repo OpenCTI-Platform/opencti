@@ -7,7 +7,7 @@ import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetHorizontalBars from '../../../../components/dashboard/WidgetHorizontalBars';
 import useDistributionGraphData from '../../../../utils/hooks/useDistributionGraphData';
-import Loader from '../../../../components/Loader';
+import Loader, { LoaderVariant } from '../../../../components/Loader';
 
 export const stixRelationshipsHorizontalBarsDistributionQuery = graphql`
   query StixRelationshipsHorizontalBarsDistributionQuery(
@@ -168,7 +168,7 @@ const StixRelationshipsHorizontalBars = ({
           if (props) {
             return <WidgetNoData />;
           }
-          return <Loader variant="inElement" />;
+          return <Loader variant={LoaderVariant.inElement} />;
         }}
       />
     );
