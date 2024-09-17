@@ -13,7 +13,7 @@ import {
   TEST_ORGANIZATION,
   USER_EDITOR
 } from '../../utils/testQuery';
-import { queryAsUserIsExpectedForbidden } from '../../utils/testQueryHelper';
+import { queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden } from '../../utils/testQueryHelper';
 import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../../../src/modules/case/case-incident/case-incident-types';
 
 const CREATE_QUERY = gql`
@@ -450,7 +450,7 @@ describe('Case Incident Response and organization sharing standard behavior with
     settingsInternalId = queryResult.data?.settings?.id;
 
     // Set EE
-    const EEqueryResult = await adminQuery({
+    const EEqueryResult = await queryAsAdminWithSuccess({
       query: PLATFORM_ORGANIZATION_QUERY,
       variables: {
         id: settingsInternalId,
@@ -459,7 +459,6 @@ describe('Case Incident Response and organization sharing standard behavior with
         ]
       }
     });
-    expect(EEqueryResult).not.toBeNull();
     expect(EEqueryResult?.data?.settingsEdit.fieldPatch.enterprise_edition).not.toBeUndefined();
   });
   it('should share Case Incident Response with Organization', async () => {
@@ -497,15 +496,13 @@ describe('Case Incident Response and organization sharing standard behavior with
     expect(queryResult?.data?.caseIncident).toBeNull();
   });
   it('should EE deactivated', async () => {
-    const platformOrganization = await adminQuery({
+    const EEDeactivationQuery = await queryAsAdminWithSuccess({
       query: PLATFORM_ORGANIZATION_QUERY,
-      variables: { id: settingsInternalId,
-        input: [
-          { key: 'enterprise_edition', value: [] },
-        ] }
+      variables: {
+        id: settingsInternalId,
+        input: [{ key: 'enterprise_edition', value: [] }] },
     });
-    expect(platformOrganization).not.toBeNull();
-    expect(platformOrganization?.data?.settingsEdit.fieldPatch.enterprise_edition).toBeNull();
+    expect(EEDeactivationQuery?.data?.settingsEdit.fieldPatch.enterprise_edition).toBeNull();
   });
 });
 
@@ -535,7 +532,7 @@ describe('Case Incident Response and organization sharing standard behavior with
     settingsInternalId = queryResult.data?.settings?.id;
 
     // Set plateform organization
-    const platformOrganization = await adminQuery({
+    const platformOrganization = await queryAsAdminWithSuccess({
       query: PLATFORM_ORGANIZATION_QUERY,
       variables: {
         id: settingsInternalId,
@@ -545,8 +542,6 @@ describe('Case Incident Response and organization sharing standard behavior with
         ]
       }
     });
-
-    expect(platformOrganization).not.toBeNull();
     expect(platformOrganization?.data?.settingsEdit.fieldPatch.platform_organization).not.toBeUndefined();
     expect(platformOrganization?.data?.settingsEdit.fieldPatch.enterprise_edition).not.toBeUndefined();
     expect(platformOrganization?.data?.settingsEdit.fieldPatch.platform_organization.name).toEqual(PLATFORM_ORGANIZATION.name);
@@ -571,7 +566,7 @@ describe('Case Incident Response and organization sharing standard behavior with
     expect(caseIRQueryResult).not.toBeNull();
     expect(caseIRQueryResult.data?.caseIncident).toBeNull();
   });
-  it('should Admin user Authorized Members activated', async () => {
+  it('should Admin user activate Authorized Members', async () => {
     userEditorId = await getUserIdByEmail(USER_EDITOR.email);
     const caseIRUpdatedQueryResult = await queryAsAdmin({
       query: EDIT_AUTHORIZED_MEMBERS_QUERY,
@@ -641,15 +636,16 @@ describe('Case Incident Response and organization sharing standard behavior with
   });
   it('should plateform organization sharing and EE deactivated', async () => {
     // Remove plateform organization
-    const platformOrganization = await adminQuery({
+    const platformOrganization = await queryAsAdminWithSuccess({
       query: PLATFORM_ORGANIZATION_QUERY,
-      variables: { id: settingsInternalId,
+      variables: {
+        id: settingsInternalId,
         input: [
           { key: 'platform_organization', value: [] },
-          { key: 'enterprise_edition', value: [] }, // check null a la place de [}
-        ] }
+          { key: 'enterprise_edition', value: [] },
+        ]
+      }
     });
-    expect(platformOrganization).not.toBeNull();
     expect(platformOrganization?.data?.settingsEdit.fieldPatch.platform_organization).toBeNull();
   });
   it('should Case Incident Response deleted', async () => {
