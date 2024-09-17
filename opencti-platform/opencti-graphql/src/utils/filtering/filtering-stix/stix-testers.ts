@@ -35,7 +35,8 @@ import {
   EPSS_PERCENTILE_FILTER,
   EPSS_SCORE_FILTER,
   CVSS_BASE_SCORE_FILTER,
-  CVSS_BASE_SEVERITY_FILTER
+  CVSS_BASE_SEVERITY_FILTER,
+  REPORT_TYPES_FILTER
 } from '../filtering-constants';
 import type { Filter } from '../../../generated/graphql';
 import { STIX_RESOLUTION_MAP_PATHS } from '../filtering-resolution';
@@ -358,6 +359,11 @@ export const testCvssSeverity = (stix: any, filter: Filter) => {
   return testStringFilter(filter, value);
 };
 
+export const testReportTypes = (stix: any, filter: Filter) => {
+  const stixValue: string[] = stix.report_types ?? stix.extensions?.[STIX_EXT_OCTI].report_types ?? [];
+  return testStringFilter(filter, stixValue);
+};
+
 /**
  * TODO: This mapping could be given by the schema, like we do with stix converters
  */
@@ -386,6 +392,7 @@ export const FILTER_KEY_TESTERS_MAP: Record<string, TesterFunction> = {
   [EPSS_SCORE_FILTER]: testEpssScore,
   [CVSS_BASE_SCORE_FILTER]: testCvssScore,
   [CVSS_BASE_SEVERITY_FILTER]: testCvssSeverity,
+  [REPORT_TYPES_FILTER]: testReportTypes,
 
   // special keys (more complex behavior)
   [CONNECTED_TO_INSTANCE_FILTER]: testConnectedTo, // instance trigger, direct events
