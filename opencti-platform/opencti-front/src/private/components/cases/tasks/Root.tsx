@@ -28,6 +28,7 @@ import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings
 import useGranted, { KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE } from '../../../../utils/hooks/useGranted';
 import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 import TaskEdition from './TaskEdition';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 const subscription = graphql`
   subscription RootTaskSubscription($id: ID!) {
@@ -75,6 +76,8 @@ const RootTaskComponent = ({ queryRef, taskId }) => {
     [taskId],
   );
   const location = useLocation();
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const enableReferences = useIsEnforceReference('Task') && !useGranted([KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE]);
   const { t_i18n } = useFormatter();
   useSubscription(subConfig);
@@ -97,9 +100,11 @@ const RootTaskComponent = ({ queryRef, taskId }) => {
           <ContainerHeader
             container={data}
             PopoverComponent={<TasksPopover id={data.id} />}
-            EditComponent={<Security needs={[KNOWLEDGE_KNUPDATE]}>
-              <TaskEdition caseId={data.id} />
-            </Security>}
+            EditComponent={isFABReplaced && (
+              <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                <TaskEdition caseId={data.id} />
+              </Security>
+            )}
             enableSuggestions={false}
             redirectToContent={true}
             disableAuthorizedMembers={true}

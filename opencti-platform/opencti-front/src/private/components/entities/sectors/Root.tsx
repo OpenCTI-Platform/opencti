@@ -27,6 +27,7 @@ import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import SectorEdition from './SectorEdition';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 const subscription = graphql`
   subscription RootSectorSubscription($id: ID!) {
@@ -85,6 +86,8 @@ const RootSector = ({ sectorId, queryRef }: RootSectorProps) => {
   }), [sectorId]);
 
   const location = useLocation();
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const { t_i18n } = useFormatter();
   useSubscription<RootSectorSubscription>(subConfig);
 
@@ -139,7 +142,7 @@ const RootSector = ({ sectorId, queryRef }: RootSectorProps) => {
               isOpenctiAlias={true}
               enableQuickSubscription={true}
               PopoverComponent={<SectorPopover />}
-              EditComponent={(
+              EditComponent={isFABReplaced && (
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <SectorEdition sectorId={sector.id} />
                 </Security>

@@ -22,7 +22,7 @@ const useStyles = makeStyles(() => ({
 interface ExternalReferenceHeaderComponentProps {
   externalReference: ExternalReferenceHeader_externalReference$data;
   PopoverComponent: ReactElement<{ id: string }>;
-  EditComponent?: React.JSX.Element;
+  EditComponent?: React.JSX.Element | boolean;
 }
 
 const ExternalReferenceHeaderComponent: FunctionComponent<ExternalReferenceHeaderComponentProps> = ({ externalReference, PopoverComponent, EditComponent }) => {

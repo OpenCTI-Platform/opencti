@@ -49,9 +49,9 @@ ExternalReferenceComponentProps
       <ExternalReferenceHeader
         externalReference={externalReference}
         PopoverComponent={
-          <ExternalReferencePopover id={''} handleRemove={undefined} />
+          <ExternalReferencePopover id={externalReference.id} handleRemove={undefined} />
         }
-        EditComponent={(
+        EditComponent={isFABReplaced && (
           <Security needs={[KNOWLEDGE_KNUPDATE]}>
             <ExternalReferenceEdition externalReferenceId={externalReference.id} />
           </Security>
@@ -62,42 +62,41 @@ ExternalReferenceComponentProps
         spacing={3}
         classes={{ container: classes.gridContainer }}
       >
-        {
-          overviewLayoutCustomization.map(({ key, width }) => {
-            switch (key) {
-              case 'basicInformation':
-                return (
-                  <Grid key={key} item xs={width}>
-                    <ExternalReferenceOverview externalReference={externalReference} />
-                  </Grid>
-                );
-              case 'details':
-                return (
-                  <Grid key={key} item xs={width}>
-                    <ExternalReferenceDetails externalReference={externalReference} />
-                  </Grid>
-                );
-              case 'linkedObjects':
-                return (
-                  <Grid key={key} item xs={width}>
-                    <ExternalReferenceStixCoreObjects
-                      externalReference={externalReference}
-                    />
-                  </Grid>
-                );
-              case 'uploadedFiles':
-                return (
-                  <Grid key={key} item xs={width}>
-                    <ExternalReferenceFileImportViewer
-                      externalReference={externalReference}
-                      connectorsImport={connectorsImport}
-                    />
-                  </Grid>
-                );
-              default:
-                return null;
-            }
-          })
+        {overviewLayoutCustomization.map(({ key, width }) => {
+          switch (key) {
+            case 'basicInformation':
+              return (
+                <Grid key={key} item xs={width}>
+                  <ExternalReferenceOverview externalReference={externalReference} />
+                </Grid>
+              );
+            case 'details':
+              return (
+                <Grid key={key} item xs={width}>
+                  <ExternalReferenceDetails externalReference={externalReference} />
+                </Grid>
+              );
+            case 'linkedObjects':
+              return (
+                <Grid key={key} item xs={width}>
+                  <ExternalReferenceStixCoreObjects
+                    externalReference={externalReference}
+                  />
+                </Grid>
+              );
+            case 'uploadedFiles':
+              return (
+                <Grid key={key} item xs={width}>
+                  <ExternalReferenceFileImportViewer
+                    externalReference={externalReference}
+                    connectorsImport={connectorsImport}
+                  />
+                </Grid>
+              );
+            default:
+              return null;
+          }
+        })
         }
       </Grid>
       {!isFABReplaced && (

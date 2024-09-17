@@ -29,6 +29,7 @@ import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import SystemEdition from './SystemEdition';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 const subscription = graphql`
   subscription RootSystemsSubscription($id: ID!) {
@@ -84,6 +85,8 @@ const RootSystem = ({ systemId, queryRef }: RootSystemProps) => {
     variables: { id: systemId },
   }), [systemId]);
   const location = useLocation();
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const navigate = useNavigate();
   const LOCAL_STORAGE_KEY = `system-${systemId}`;
   const params = buildViewParamsFromUrlAndStorage(
@@ -162,7 +165,7 @@ const RootSystem = ({ systemId, queryRef }: RootSystemProps) => {
               isOpenctiAlias={true}
               enableQuickSubscription={true}
               PopoverComponent={<SystemPopover />}
-              EditComponent={(
+              EditComponent={isFABReplaced && (
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <SystemEdition systemId={system.id} />
                 </Security>

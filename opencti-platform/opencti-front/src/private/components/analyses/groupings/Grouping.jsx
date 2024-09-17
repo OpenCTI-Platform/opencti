@@ -141,6 +141,7 @@ export default createFragmentContainer(GroupingComponent, {
         }
       }
       workflowEnabled
+      currentUserAccessRight
       ...GroupingDetails_grouping
       ...ContainerHeader_container
     }

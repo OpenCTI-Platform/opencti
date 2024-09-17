@@ -27,6 +27,7 @@ import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import DataSourceEdition from './DataSourceEdition';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 const subscription = graphql`
   subscription RootDataSourcesSubscription($id: ID!) {
@@ -79,6 +80,8 @@ const RootDataSourceComponent = ({ queryRef, dataSourceId }) => {
   );
   useSubscription(subConfig);
   const location = useLocation();
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const { t_i18n } = useFormatter();
   const data = usePreloadedQuery(dataSourceQuery, queryRef);
   const { dataSource, connectorsForImport, connectorsForExport, settings } = data;
@@ -98,7 +101,7 @@ const RootDataSourceComponent = ({ queryRef, dataSourceId }) => {
             noAliases={true}
             stixDomainObject={dataSource}
             PopoverComponent={<DataSourcePopover id={dataSource.id}/>}
-            EditComponent={(
+            EditComponent={isFABReplaced && (
               <Security needs={[KNOWLEDGE_KNUPDATE]}>
                 <DataSourceEdition dataSourceId={dataSource.id} />
               </Security>

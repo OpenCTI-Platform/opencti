@@ -30,6 +30,7 @@ import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { getCurrentTab } from '../../../../utils/utils';
 import IncidentEdition from './IncidentEdition';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 const subscription = graphql`
   subscription RootIncidentSubscription($id: ID!) {
@@ -86,6 +87,8 @@ const RootIncidentComponent = ({ queryRef }) => {
     [incidentId],
   );
   const location = useLocation();
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const { t_i18n } = useFormatter();
   useSubscription(subConfig);
   const data = usePreloadedQuery(incidentQuery, queryRef);
@@ -138,7 +141,7 @@ const RootIncidentComponent = ({ queryRef }) => {
               entityType="Incident"
               stixDomainObject={incident}
               PopoverComponent={IncidentPopover}
-              EditComponent={(
+              EditComponent={isFABReplaced && (
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <IncidentEdition incidentId={incident.id} />
                 </Security>

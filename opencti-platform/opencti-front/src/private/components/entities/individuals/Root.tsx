@@ -29,6 +29,7 @@ import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 import IndividualEdition from './IndividualEdition';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 const subscription = graphql`
   subscription RootIndividualsSubscription($id: ID!) {
@@ -87,6 +88,9 @@ const RootIndividual = ({ individualId, queryRef }: RootIndividualProps) => {
     variables: { id: individualId },
   }), [individualId]);
   const location = useLocation();
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
+
   const navigate = useNavigate();
   const LOCAL_STORAGE_KEY = `individual-${individualId}`;
   const params = buildViewParamsFromUrlAndStorage(
@@ -169,7 +173,7 @@ const RootIndividual = ({ individualId, queryRef }: RootIndividualProps) => {
               isOpenctiAlias={true}
               enableQuickSubscription={true}
               PopoverComponent={<IndividualPopover />}
-              EditComponent={!individual.isUser && (
+              EditComponent={!individual.isUser && isFABReplaced && (
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <IndividualEdition individualId={individual.id} />
                 </Security>

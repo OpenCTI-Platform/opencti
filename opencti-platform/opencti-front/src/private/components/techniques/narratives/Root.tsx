@@ -26,6 +26,7 @@ import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import NarrativeEdition from './NarrativeEdition';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 const subscription = graphql`
   subscription RootNarrativeSubscription($id: ID!) {
@@ -83,6 +84,8 @@ const RootNarrative = ({ narrativeId, queryRef }: RootNarrativeProps) => {
   }), [narrativeId]);
 
   const location = useLocation();
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const { t_i18n } = useFormatter();
   useSubscription<RootNarrativeSubscription>(subConfig);
 
@@ -131,7 +134,7 @@ const RootNarrative = ({ narrativeId, queryRef }: RootNarrativeProps) => {
               entityType="Narrative"
               stixDomainObject={narrative}
               PopoverComponent={<NarrativePopover />}
-              EditComponent={(
+              EditComponent={isFABReplaced && (
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <NarrativeEdition narrativeId={narrative.id} />
                 </Security>

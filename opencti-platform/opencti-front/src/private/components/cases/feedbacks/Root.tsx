@@ -30,6 +30,7 @@ import useGranted, { KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE } from '../../../../ut
 import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 import FeedbackEdition from './FeedbackEdition';
 import { useGetCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 const subscription = graphql`
   subscription RootFeedbackSubscription($id: ID!) {
@@ -91,6 +92,8 @@ const RootFeedbackComponent = ({ queryRef, caseId }) => {
     [caseId],
   );
   const location = useLocation();
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const enableReferences = useIsEnforceReference('Feedback') && !useGranted([KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE]);
   const { t_i18n } = useFormatter();
   useSubscription(subConfig);
@@ -116,9 +119,11 @@ const RootFeedbackComponent = ({ queryRef, caseId }) => {
       <ContainerHeader
         container={feedbackData}
         PopoverComponent={<FeedbackPopover id={feedbackData.id} />}
-        EditComponent={<Security needs={[KNOWLEDGE_KNUPDATE]} hasAccess={canEdit}>
+        EditComponent={isFABReplaced && (
+        <Security needs={[KNOWLEDGE_KNUPDATE]} hasAccess={canEdit}>
           <FeedbackEdition feedbackId={feedbackData.id} />
-        </Security>}
+        </Security>
+        )}
         enableSuggestions={false}
         disableSharing={true}
         enableQuickSubscription
