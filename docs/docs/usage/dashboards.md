@@ -2,6 +2,30 @@
 
 OpenCTI provides an adaptable and entirely customizable dashboard functionality. The flexibility of OpenCTI's dashboard ensures a tailored and insightful visualization of data, fostering a comprehensive understanding of the platform's knowledge, relationships, and activities.
 
+## List of custom dashboards page
+
+From the left menu, you can choose the custom dashboards option to see all the custom dashboards you have created, as well as those you have access to (for example, 'can view,' 'can edit,' or 'can manage').
+
+![List of custom dashboards](assets/list_custom_dashboards.png)
+
+**Actions panel**
+
+You can realise actions on a dashboard  using the button located at the end of each line::
+
+- view associated public dashboards
+- update
+- delete
+- duplicate
+- export
+
+
+**Massive operations delete**
+
+You can do mass deletion operations using the checkbox:
+
+- Selecting one by one the custom dashboard to delete
+- Selecting All the custom dashboards displayed on the page to delete
+
 
 ## Dashboard overview
 
@@ -48,7 +72,7 @@ To export a dashboard configuration from the custom dashboards list:
 1. Click on the burger menu button at the end of the dashboard line.
 2. Select `Export`.
 
-![Export dashboard option](assets/export-dashboard-option.png)
+![Export dashboard option](assets/custom_dashboard_export.png)
 
 To export a widget, the same mechanism is used, but from the burger menu button in the upper right-hand corner of the widget.
 
@@ -97,15 +121,17 @@ The widget configuration will be saved as a JSON file, with the title formatted 
 
 Dashboards can be imported from the custom dashboards list:
 
-1. Hover over the Add button (+) in the right bottom corner.
-2. Click on the `Import dashboard` button (cloud with an upward arrow).
-3. Select your file.
+1. Click on the `Import dashboard` button in the right top corner
+2. Select your file.
 
-![Import dashboard option](assets/import-dashboard-option.png)
+![Import dashboard option](assets/import_dashboard.png)
 
-To import a widget, the same mechanism is used, but from a dashboard view.
+To import a widget from a dashboard view,
+1- Hover over the Add button (+) in the right bottom corner.
+2- Click on the Import a widget button (cloud with an upward arrow).
+3- Select your file.
 
-![Import widget option](assets/import-widget-option.png)
+![Import widget option](assets/import_widget.png)
 
 !!! warning "Configuration compatibility"
 
@@ -118,7 +144,7 @@ Dashboards can be duplicated from either the custom dashboards list or the dashb
 
 To duplicate a dashboard from the custom dashboards list:
 
-1. Click on the burger menu button at the end of the dashboard line.
+1. Click on the button at the end of the dashboard line.
 2. Select `Duplicate`.
 
 To duplicate a widget, the same mechanism is used, but from the burger menu button in the upper right-hand corner of the widget.
@@ -128,11 +154,11 @@ To duplicate a dashboard from the dashboard view:
 1. Navigate to the desired dashboard.
 2. Click on the `Duplicate the dashboard` button (two stacked sheets) located in the top-right corner of the dashboard.
 
-![Duplicate dashboard button](assets/duplicate-dashboard-button.png)
+![Duplicate dashboard button](assets/duplicate_dashboard_button.png)
 
 Upon successful duplication, a confirmation message is displayed for a short duration, accompanied by a link for easy access to the new dashboard view. Nevertheless, the new dashboard can still be found in the dashboards list.
 
-![duplicate-dashboard-success-message](assets/duplicate-dashboard-success-message.png)
+![duplicate-dashboard-success-message](assets/duplicate_custom.png)
 
 !!! note "Dashboard access"
 

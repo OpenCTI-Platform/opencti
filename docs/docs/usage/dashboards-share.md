@@ -1,4 +1,4 @@
-# Share custom dashboards
+# Public dashboards
 
 OpenCTI provides a simple way to share a visualisation of a custom dashboard to anyone,
 even for people that are outside of the platform. We call those visualisations: public dashboards.
@@ -13,10 +13,44 @@ the same name of the one to update.
 
 > To be able to share custom dashboards you need to have the [Manage data sharing & ingestion](../administration/users.md) capability.
 
+## List of public dashboards page
+
+From the left menu, you can choose the public dashboard option to see all the public dashboards you have created, as well as those you have access to (for example, 'can view,' 'can edit,' or 'can manage').
+
+![List of public dashboards](assets/list_public_dashboards.png)
+
+**Actions panel**
+
+You can realise actions on a public dashboard using the button located at the end of each line::
+
+- got to the original dashboard
+- disable the public link
+- copy the public link
+- delete
+
+**Massive operations delete**
+
+You can do mass deletion operations using the checkbox:
+
+- **Select each** public dashboard individually to delete
+- **Select all** public dashboards displayed on the page to delete
+
+![Select all](assets/select_all_public.png)
+
+
 ## Create a public dashboard
 
-On the top-right of your custom dashboard page you will find a button that will open a panel to
-manage the public dashboards associated to this custom dashboard.
+You can create a public dashboard either from the list of public dashboards or from the original custom dashboard.
+
+- In your list of custom dashboard page, you'll find a button that opens a panel to create the public dashboard associated with this custom dashboard.
+
+![Create a public dashboard button](assets/create_public_dashboard.png)
+
+- On the top right of the public dashboard list page, you'll find a button "Create public dashboard"
+
+![Share dashboard button](assets/create_public_dashboard_from_public_list.png)
+
+- On the top right of your custom dashboard page, you'll find a button that will opens this same panel.
 
 ![Share dashboard button](assets/share-dashboard-button.png)
 
@@ -24,11 +58,16 @@ In this panel you will find two parts:
 - At the top you have a form allowing you to create public dashboards,
 - And below, the list of the public dashboards you have created.
 
-![Share dashboard panel](assets/share-dashboard-panel.png)
+![Share dashboard panel](assets/share-public-dashboard-panel.png)
 
 ### Form to create a new public dashboard
 
-First you need to specify a name for your public dashboard. This name will be displayed
+If you created the public dashboard from the list of public dashboards, you must first select the associated custom dashboard.
+
+![Select custom dashboard name](assets/select-custom-dashboard.png)
+
+
+You need to specify a name for your public dashboard. This name will be displayed
 on the dashboard page. The name is also used to generate an ID for your public dashboard
 that will be used in the URL to access the dashboard.
 
@@ -58,7 +97,7 @@ access on the platform **and the maximum sharable marking definitions** defined 
 
 ![Share dashboard markings](assets/share-dashboard-markings.png)
 
-## List of the public dashboards
+### List of the public dashboards in panel
 
 When you have created a public dashboard, it will appear in the list below the form.
 
