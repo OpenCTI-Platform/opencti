@@ -57,33 +57,17 @@ OpenCTI is an open source platform allowing organizations to manage their cyber 
     If you still have questions or you find something which is not sufficiently explained, join the [Filigran Community on Slack](https://community.filigran.io).
 
 
-## Latest blog posts
-
-All tutorials are published directly on the [Medium blog](https://blog.filigran.io), this section provides a comprehensive list of the most important ones.
+## Blog posts
 
 <div class="grid cards" markdown>
 
--   __Introducing decay rules implementation for Indicators in OpenCTI__<br />
-    <sub><sup>Mar 25, 2024</sup></sub>
+-   :material-newspaper-variant-outline:{ .lg .middle } __Resources and content__
 
-    Cyber Threat Intelligence is made to be used. To be useful, it must be relevant and on time. It is why managing the lifecycle of Indicators of Compromise...
+    ---
 
-    **[:octicons-link-external-24:{ .middle } Read](https://blog.filigran.io/introducing-decay-rules-implementation-for-indicators-in-opencti-472f6e8449fb)**
+    Discover tutorials, best practices and deep dives on OpenBAS features on our Filigran blog.
 
-  -   __Introducing advanced filtering possibilities in OpenCTI__<br />
-      <sub><sup>Feb 5, 2024</sup></sub>
-
-      CTI databases are usually vast and made of complex, inter-dependent objects ingested from various sources. In this challenging context, cyber analysts need...
-
-      **[:octicons-link-external-24:{ .middle } Read](https://blog.filigran.io/introducing-advanced-filtering-possibilities-in-opencti-552147565faf)**
-
--   __Breaking change: evolution of the way Connector, Streams and Feeds import data in OpenCTI__<br />
-    <sub><sup>Jan 29, 2024</sup></sub>
-
-    How Connectors, Feeds and Streams use Confidence level currently...
-
-    **[:octicons-link-external-24:{ .middle } Read](https://blog.filigran.io/breaking-change-evolution-of-the-way-connector-streams-and-feeds-import-data-in-opencti-d10d7eb4407e)**
-    
+    [:octicons-arrow-right-24:{ .middle } Read now](https://blog.filigran.io)
 </div>
 
 ## Additional resources
