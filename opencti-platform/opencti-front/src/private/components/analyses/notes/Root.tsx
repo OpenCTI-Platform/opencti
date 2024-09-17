@@ -5,6 +5,7 @@ import { graphql, useSubscription } from 'react-relay';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
+import { RootNoteQuery$data } from '@components/analyses/notes/__generated__/RootNoteQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
@@ -79,7 +80,7 @@ const RootNote = () => {
       <QueryRenderer
         query={noteQuery}
         variables={{ id: noteId }}
-        render={({ props }) => {
+        render={({ props }: { props: RootNoteQuery$data }) => {
           if (props) {
             if (props.note) {
               const { note } = props;

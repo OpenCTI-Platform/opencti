@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import { graphql, useSubscription } from 'react-relay';
+import { RootExternalReferenceQuery$data } from '@components/analyses/external_references/__generated__/RootExternalReferenceQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
 import ExternalReference from './ExternalReference';
@@ -46,7 +47,7 @@ const RootExternalReference = () => {
       <QueryRenderer
         query={externalReferenceQuery}
         variables={{ id: externalReferenceId }}
-        render={({ props }) => {
+        render={({ props }: { props: RootExternalReferenceQuery$data }) => {
           if (props) {
             if (props.externalReference && props.connectorsForImport) {
               return (
