@@ -13,7 +13,6 @@ const GroupingEditionContainer = (props) => {
 
   const { handleClose, grouping, open, controlledDial } = props;
   const { editContext } = grouping;
-  console.log(open);
   return (
     <Drawer
       title={t_i18n('Update a grouping')}
