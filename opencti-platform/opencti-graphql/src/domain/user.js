@@ -697,8 +697,8 @@ export const userEditField = async (context, user, userId, rawInputs) => {
       inputs.push({ key: 'account_status', value: [ACCOUNT_STATUS_EXPIRED] });
       await killUserSessions(userId);
     }
-    if (input.key === 'user_confidence_level') {
-      // user's effective level might have changed, we need to refresh session info
+    if (input.key === 'user_confidence_level' || input.key === 'workspace_context') {
+      // user's effective level or workspace context might have changed, we need to refresh session info
       await userSessionRefresh(userId);
     }
     inputs.push(input);
@@ -797,6 +797,7 @@ const ME_USER_MODIFIABLE_ATTRIBUTES = [
   'submenu_auto_collapse',
   'monochrome_labels',
   'password',
+  'workspace_context',
 ];
 export const meEditField = async (context, user, userId, inputs, password = null) => {
   const input = R.head(inputs);
@@ -1262,6 +1263,7 @@ const buildSessionUser = (origin, impersonate, provider, settings) => {
     no_creators: user.no_creators,
     restrict_delete: user.restrict_delete,
     personal_notifiers: user.personal_notifiers,
+    workspace_context: user.workspace_context,
     ...user.provider_metadata
   };
 };

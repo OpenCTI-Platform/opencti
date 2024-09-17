@@ -15,6 +15,7 @@ import {
   cursorToOffset,
   ES_INDEX_PREFIX,
   INDEX_DELETED_OBJECTS,
+  INDEX_DRAFT,
   INDEX_INTERNAL_OBJECTS,
   inferIndexFromConceptType,
   isEmptyField,
@@ -25,6 +26,7 @@ import {
   pascalize,
   READ_DATA_INDICES,
   READ_ENTITIES_INDICES,
+  READ_INDEX_DRAFT,
   READ_INDEX_INFERRED_ENTITIES,
   READ_INDEX_INFERRED_RELATIONSHIPS,
   READ_INDEX_INTERNAL_OBJECTS,
@@ -89,7 +91,7 @@ import {
 import { isBasicObject, isStixCoreObject, isStixObject } from '../schema/stixCoreObject';
 import { isBasicRelationship, isStixRelationship } from '../schema/stixRelationship';
 import { isStixCoreRelationship, RELATION_INDICATES, RELATION_PUBLISHES, STIX_CORE_RELATIONSHIPS } from '../schema/stixCoreRelationship';
-import { INTERNAL_FROM_FIELD, INTERNAL_TO_FIELD } from '../schema/identifier';
+import { generateInternalId, INTERNAL_FROM_FIELD, INTERNAL_TO_FIELD } from '../schema/identifier';
 import {
   BYPASS,
   computeUserMemberAccessIds,
@@ -165,6 +167,7 @@ import { ENTITY_TYPE_DELETE_OPERATION } from '../modules/deleteOperation/deleteO
 import { buildEntityData } from './data-builder';
 import { controlUserConfidenceAgainstElement } from '../utils/confidence-level';
 import { enrichWithRemoteCredentials } from '../config/credentials';
+import { inDraftContext } from '../utils/draftContext';
 
 const ELK_ENGINE = 'elk';
 const OPENSEARCH_ENGINE = 'opensearch';
@@ -2621,6 +2624,11 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
   };
 };
 
+const getIndicesToQuery = (index, user) => {
+  const draftContext = inDraftContext(user);
+  return index + (!draftContext ? '' : (`,${READ_INDEX_DRAFT}`));
+};
+
 const elQueryBodyBuilder = async (context, user, options) => {
   // eslint-disable-next-line no-use-before-define
   const { ids = [], after, orderBy = null, orderMode = 'asc', noSize = false, noSort = false, intervalInclude = false } = options;
@@ -2713,11 +2721,39 @@ const elQueryBodyBuilder = async (context, user, options) => {
   } else { // If not ordering criteria, order by standard_id
     ordering.push({ 'standard_id.keyword': 'asc' });
   }
+  // Handle draft
+  const draftContext = inDraftContext(user);
+  const draftMust = [];
+  if (draftContext) {
+    const mustLive = {
+      bool: {
+        must_not: [
+          { term: { _index: READ_INDEX_DRAFT } },
+          { match: { draft_ids: draftContext } }
+        ]
+      }
+    };
+    const mustDraft = {
+      bool: {
+        must: [
+          { term: { _index: READ_INDEX_DRAFT } },
+          { match: { draft_ids: draftContext } }
+        ]
+      }
+    };
+    const draftBool = {
+      bool: {
+        should: [mustLive, mustDraft],
+        minimum_should_match: 1,
+      },
+    };
+    draftMust.push(draftBool);
+  }
   // Build query
   const body = {
     query: {
       bool: {
-        must: [...accessMust, ...mustFilters],
+        must: [...accessMust, ...mustFilters, ...draftMust],
         must_not: accessMustNot,
       },
     },
@@ -2749,7 +2785,7 @@ export const elRawCount = async (query) => {
 };
 export const elCount = async (context, user, indexName, options = {}) => {
   const body = await elQueryBodyBuilder(context, user, { ...options, noSize: true, noSort: true });
-  const query = { index: indexName, body };
+  const query = { index: getIndicesToQuery(indexName, user), body };
   logApp.debug('[SEARCH] elCount', { query });
   return elRawCount(query);
 };
@@ -2796,7 +2832,7 @@ export const elHistogramCount = async (context, user, indexName, options = {}) =
     },
   };
   const query = {
-    index: indexName,
+    index: getIndicesToQuery(indexName, user),
     _source_excludes: '*', // Dont need to get anything
     body,
   };
@@ -2829,7 +2865,7 @@ export const elAggregationCount = async (context, user, indexName, options = {})
     },
   };
   const query = {
-    index: indexName,
+    index: getIndicesToQuery(indexName, user),
     body,
   };
   logApp.debug('[SEARCH] aggregationCount', { query });
@@ -2943,7 +2979,7 @@ export const elAggregationRelationsCount = async (context, user, indexName, opti
       },
     };
   }
-  const query = { index: indexName, body };
+  const query = { index: getIndicesToQuery(indexName, user), body };
   logApp.debug('[SEARCH] aggregationRelationsCount', { query });
   const isIdFields = field?.endsWith('internal_id');
   return elRawSearch(context, user, types, query)
@@ -2994,7 +3030,7 @@ export const elAggregationNestedTermsWithFilter = async (context, user, indexNam
     }
   };
   const query = {
-    index: indexName,
+    index: getIndicesToQuery(indexName, user),
     body,
   };
   logApp.debug('[SEARCH] elAggregationNestedTermsWithFilter', { query });
@@ -3037,7 +3073,7 @@ export const elAggregationsList = async (context, user, indexName, aggregations,
     }
   }
   const query = {
-    index: indexName,
+    index: getIndicesToQuery(indexName, user),
     track_total_hits: true,
     _source: false,
     body,
@@ -3074,7 +3110,7 @@ export const elPaginate = async (context, user, indexName, options = {}) => {
     body.size = ES_MAX_PAGINATION;
   }
   const query = {
-    index: indexName,
+    index: getIndicesToQuery(indexName, user),
     track_total_hits: true,
     _source: baseData ? baseFields : true,
     body,
@@ -3404,7 +3440,7 @@ const computeDeleteElementsImpacts = async (cleanupRelations, toBeRemovedIds, re
   return elementsImpact;
 };
 
-export const elReindexElements = async (context, user, ids, sourceIndex, destIndex) => {
+export const elReindexElements = async (context, user, ids, sourceIndex, destIndex, customScript = '') => {
   const reindexParams = {
     body: {
       source: {
@@ -3419,12 +3455,26 @@ export const elReindexElements = async (context, user, ids, sourceIndex, destInd
         index: destIndex
       },
       script: { // remove old fields that are not mapped anymore but can be present in DB
-        source: "ctx._source.remove('fromType'); ctx._source.remove('toType'); ctx._source.remove('spec_version'); ctx._source.remove('representative'); ctx._source.remove('rel_has-reference');"
+        source: `ctx._source.remove('fromType'); ctx._source.remove('toType'); ctx._source.remove('spec_version'); ctx._source.remove('representative'); ctx._source.remove('rel_has-reference'); ${customScript}`
       },
     }
   };
   return engine.reindex(reindexParams).catch((err) => {
     throw DatabaseError(`Reindexing fail from ${sourceIndex} to ${destIndex}`, { cause: err, body: reindexParams.body });
+  });
+};
+
+export const elDeleteDraftElements = async (context, user, draftId) => {
+  return elRawDeleteByQuery({
+    index: READ_INDEX_DRAFT,
+    refresh: true,
+    body: {
+      query: {
+        term: { 'draft_ids.keyword': draftId },
+      }
+    },
+  }).catch((err) => {
+    throw DatabaseError('Error deleting draft elements', { cause: err });
   });
 };
 
@@ -3595,15 +3645,86 @@ const prepareIndexing = async (elements) => {
   }
   return preparedElements;
 };
+// Creates a copy of a live element in the draft index with the current draft context
+const copyLiveElementToDraft = async (context, user, element) => {
+  const draftContext = inDraftContext(user);
+  if (!draftContext || element._index.includes(INDEX_DRAFT)) return element;
+
+  const updatedElement = structuredClone(element);
+  const newId = generateInternalId();
+  const setDraftData = `ctx._id="${newId}";ctx._source.draft_change = [:];ctx._source.draft_ids=['${draftContext}'];`;
+  await elReindexElements(context, user, [element.id], element._index, INDEX_DRAFT, setDraftData);
+  updatedElement._id = newId;
+  updatedElement._index = INDEX_DRAFT;
+
+  // Add draftId to live element draftsIds
+  const addDraftIdScript = {
+    script: {
+      source: `
+        if (ctx._source.containsKey('draft_ids')) 
+          {ctx._source['draft_ids'].add('${draftContext}');} 
+        else 
+          {ctx._source.draft_ids = ['${draftContext}']}
+      `
+    }
+  };
+  await elUpdate(element._index, element.id, addDraftIdScript);
+
+  return updatedElement;
+};
+// Gets the version of the element in current draft context if it exists
+// If it doesn't exist, creates a copy of live element to draft context then returns it
+const getElementDraftVersion = async (context, user, element) => {
+  if (element._index.includes(INDEX_DRAFT)) return element;
+
+  const loadedElement = await elLoadById(context, user, element.internal_id);
+  if (loadedElement && loadedElement._index.includes(INDEX_DRAFT)) return loadedElement;
+
+  return await copyLiveElementToDraft(context, user, element);
+};
+
 export const elIndexElements = async (context, user, indexingType, elements) => {
+  // If we are in a draft, relations from and to need to be elements that are also in draft.
+  const draftContext = inDraftContext(user);
+  if (draftContext) {
+    if (elements.some((e) => isInternalObject(e.entity_type) || isInternalRelationship(e.entity_type))) throw new Error('Cannot index internal element in draft context');
+    for (let i = 0; i < elements.length; i += 1) {
+      const element = elements[i];
+      if (element.base_type === BASE_TYPE_RELATION) {
+        const { from, to } = element;
+        if (!elements.some((e) => e.internal_id === from.internal_id)) {
+          const draftFrom = await getElementDraftVersion(context, user, from);
+          element.from = draftFrom;
+          element.fromId = draftFrom.id;
+        } else {
+          element.from._index = INDEX_DRAFT;
+        }
+        if (!elements.some((e) => e.internal_id === to.internal_id)) {
+          const draftTo = await getElementDraftVersion(context, user, to);
+          element.to = draftTo;
+          element.toId = draftTo.id;
+        } else {
+          element.to._index = INDEX_DRAFT;
+        }
+      }
+    }
+  }
+
   const elIndexElementsFn = async () => {
     // 00. Relations must be transformed before indexing.
     const transformedElements = await prepareIndexing(elements);
     // 01. Bulk the indexing of row elements
-    const body = transformedElements.flatMap((doc) => [
-      { index: { _index: doc._index, _id: doc.internal_id, retry_on_conflict: ES_RETRY_ON_CONFLICT } },
-      R.pipe(R.dissoc('_index'))(doc),
-    ]);
+    const body = transformedElements.flatMap((doc) => {
+      const elementDoc = doc;
+      if (draftContext) {
+        elementDoc._index = INDEX_DRAFT;
+        elementDoc.draft_ids = [draftContext];
+      }
+      return [
+        { index: { _index: doc._index, _id: doc.internal_id, retry_on_conflict: ES_RETRY_ON_CONFLICT } },
+        R.pipe(R.dissoc('_index'))(doc),
+      ];
+    });
     if (body.length > 0) {
       meterManager.directBulk(body.length, { type: indexingType });
       await elBulk({ refresh: true, timeout: BULK_TIMEOUT, body });
@@ -3670,7 +3791,7 @@ export const elIndexElements = async (context, user, indexingType, elements) => 
       return { ...entity, id: entityId, data: { script: { source, params } } };
     });
     const bodyUpdate = elementsToUpdate.flatMap((doc) => [
-      { update: { _index: doc._index, _id: doc.id, retry_on_conflict: ES_RETRY_ON_CONFLICT } },
+      { update: { _index: doc._index, _id: doc._id ?? doc.id, retry_on_conflict: ES_RETRY_ON_CONFLICT } },
       R.dissoc('_index', doc.data),
     ]);
     if (bodyUpdate.length > 0) {

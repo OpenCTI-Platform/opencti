@@ -1608,6 +1608,7 @@ type MeUser implements BasicObject & InternalObject {
   submenu_show_icons: Boolean
   submenu_auto_collapse: Boolean
   monochrome_labels: Boolean
+  workspace_context: String
 }
 
 type SessionDetail {
@@ -7849,6 +7850,9 @@ type Query {
   deleteOperations(first: Int, after: ID, orderBy: DeleteOperationOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): DeleteOperationConnection
   supportPackage(id: String!): SupportPackage
   supportPackages(first: Int, after: ID, orderBy: SupportPackageOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): SupportPackageConnection
+  draftWorkspace(id: String!): DraftWorkspace
+  draftWorkspaces(first: Int, after: ID, orderBy: DraftWorkspacesOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): DraftWorkspaceConnection
+  draftWorkspaceEntities(types: [String], first: Int, after: ID, orderBy: StixDomainObjectsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): StixCoreObjectConnection
 }
 
 type Subscription {
@@ -8660,6 +8664,8 @@ type Mutation {
   supportPackageAdd(input: SupportPackageAddInput!): SupportPackage
   supportPackageForceZip(input: SupportPackageForceZipInput!): SupportPackage
   supportPackageDelete(id: ID!): ID
+  draftWorkspaceAdd(input: DraftWorkspaceAddInput!): DraftWorkspace
+  draftWorkspaceDelete(id: ID!): ID
 }
 
 type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
@@ -11922,4 +11928,30 @@ input SupportPackageAddInput {
 
 input SupportPackageForceZipInput {
   id: String!
+}
+
+type DraftWorkspace implements InternalObject & BasicObject {
+  id: ID!
+  entity_type: String!
+  standard_id: String!
+  parent_types: [String!]!
+  name: String!
+}
+
+enum DraftWorkspacesOrdering {
+  name
+}
+
+type DraftWorkspaceConnection {
+  pageInfo: PageInfo!
+  edges: [DraftWorkspaceEdge!]!
+}
+
+type DraftWorkspaceEdge {
+  cursor: String!
+  node: DraftWorkspace!
+}
+
+input DraftWorkspaceAddInput {
+  name: String!
 }

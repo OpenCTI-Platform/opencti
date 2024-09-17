@@ -49,6 +49,7 @@ interface AuthUser extends BasicStoreIdentifier {
   no_creators: boolean | null
   user_confidence_level: ConfidenceLevel | null
   personal_notifiers?: Array<string>
+  workspace_context?: string | undefined
 }
 
 interface AuthContext {

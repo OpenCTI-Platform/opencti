@@ -65,6 +65,8 @@ export const INDEX_INFERRED_ENTITIES = `${ES_INDEX_PREFIX}_inferred_entities`;
 export const READ_INDEX_INFERRED_ENTITIES = `${INDEX_INFERRED_ENTITIES}*`;
 export const INDEX_INFERRED_RELATIONSHIPS = `${ES_INDEX_PREFIX}_inferred_relationships`;
 export const READ_INDEX_INFERRED_RELATIONSHIPS = `${INDEX_INFERRED_RELATIONSHIPS}*`;
+export const INDEX_DRAFT = `${ES_INDEX_PREFIX}_draft_objects`;
+export const READ_INDEX_DRAFT = `${INDEX_DRAFT}*`;
 export const isInferredIndex = (index) => index.startsWith(INDEX_INFERRED_ENTITIES) || index.startsWith(INDEX_INFERRED_RELATIONSHIPS);
 
 // indices that we only use as read only, not created anymore on new platforms
@@ -83,6 +85,7 @@ export const WRITE_PLATFORM_INDICES = [
   INDEX_STIX_CORE_RELATIONSHIPS,
   INDEX_INFERRED_ENTITIES,
   INDEX_INFERRED_RELATIONSHIPS,
+  INDEX_DRAFT,
   INDEX_STIX_SIGHTING_RELATIONSHIPS,
   INDEX_STIX_META_RELATIONSHIPS,
 ];

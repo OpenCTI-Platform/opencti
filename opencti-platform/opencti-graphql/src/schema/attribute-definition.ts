@@ -95,6 +95,19 @@ export const id: AttributeDefinition = {
   entityTypes: [ABSTRACT_BASIC_OBJECT, ABSTRACT_BASIC_RELATIONSHIP]
 };
 
+export const draftIds: AttributeDefinition = {
+  name: 'draft_ids',
+  label: 'Draft ids',
+  type: 'string',
+  format: 'id',
+  update: false,
+  mandatoryType: 'no',
+  multiple: true,
+  editDefault: false,
+  upsert: false,
+  isFilterable: false,
+  entityTypes: [ABSTRACT_BASIC_OBJECT, ABSTRACT_BASIC_RELATIONSHIP]
+};
 export const iAttributes: AttributeDefinition = {
   name: 'i_attributes',
   label: 'Attributes',

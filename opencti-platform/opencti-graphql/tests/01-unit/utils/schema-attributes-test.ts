@@ -4,17 +4,18 @@ import { schemaAttributesDefinition } from '../../../src/schema/schema-attribute
 describe('Schema utilities', () => {
   let mapping;
   it('getAttributeMappingFromPath gives access to internal attribute definitions', () => {
-    mapping = schemaAttributesDefinition.getAttributeMappingFromPath('name');
+    mapping = schemaAttributesDefinition.getAttributeMappingFromPath('standard_id');
     expect(mapping).toEqual({
-      editDefault: false,
-      format: 'short',
-      isFilterable: true,
-      label: 'Name',
-      mandatoryType: 'external',
-      multiple: false,
-      name: 'name',
+      name: 'standard_id',
+      label: 'Standard id',
       type: 'string',
+      format: 'short',
+      update: false,
+      mandatoryType: 'internal',
+      editDefault: false,
+      multiple: false,
       upsert: false,
+      isFilterable: false,
     });
     mapping = schemaAttributesDefinition.getAttributeMappingFromPath('group_confidence_level.overrides.entity_type');
     expect(mapping).toEqual({

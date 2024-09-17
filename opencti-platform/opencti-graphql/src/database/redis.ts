@@ -26,6 +26,7 @@ import type { ExecutionEnvelop } from '../manager/playbookManager';
 import { generateCreateMessage, generateDeleteMessage, generateMergeMessage, generateRestoreMessage } from './generate-message';
 import { INPUT_OBJECTS } from '../schema/general';
 import { enrichWithRemoteCredentials } from '../config/credentials';
+import { inDraftContext } from '../utils/draftContext';
 
 const USE_SSL = booleanConf('redis:use_ssl', false);
 const REDIS_CA = conf.get('redis:ca').map((path: string) => loadCert(path));
@@ -452,7 +453,8 @@ const mapJSToStream = (event: any) => {
   return cmdArgs;
 };
 const pushToStream = async (context: AuthContext, user: AuthUser, client: Cluster | Redis, event: BaseEvent, opts: EventOpts = {}) => {
-  if (isStreamPublishable(opts)) {
+  const draftContext = inDraftContext(user);
+  if (!draftContext && isStreamPublishable(opts)) {
     const pushToStreamFn = async () => {
       if (streamTrimming) {
         await client.call('XADD', REDIS_STREAM_NAME, 'MAXLEN', '~', streamTrimming, '*', ...mapJSToStream(event));
