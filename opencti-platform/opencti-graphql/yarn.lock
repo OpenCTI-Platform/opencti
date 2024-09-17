@@ -3057,9 +3057,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@opensearch-project/opensearch@npm:2.11.0":
-  version: 2.11.0
-  resolution: "@opensearch-project/opensearch@npm:2.11.0"
+"@opensearch-project/opensearch@npm:2.12.0":
+  version: 2.12.0
+  resolution: "@opensearch-project/opensearch@npm:2.12.0"
   dependencies:
     aws4: "npm:^1.11.0"
     debug: "npm:^4.3.1"
@@ -3067,7 +3067,7 @@ __metadata:
     json11: "npm:^1.1.2"
     ms: "npm:^2.1.3"
     secure-json-parse: "npm:^2.4.0"
-  checksum: 10/ce7d19f0aa68fe846ec8186cdcc3547eecc34fa429f8d43211b8af3edb76cf3797b10f9e3568375312bd8aeeedde7176fff9fa0f6f611a532cda0fd7a0f26a9a
+  checksum: 10/2f73dd051ff161af9f3c27d07ec7b071b4d34c1cbae0df4e98d1a40041b0c264b3dc290506b7005a77037d6ba073f08f69aa0ba96b1f259a2646f5d5c951712b
   languageName: node
   linkType: hard
 
@@ -10845,7 +10845,7 @@ __metadata:
     "@luckycatfactory/esbuild-graphql-loader": "npm:3.8.1"
     "@mistralai/mistralai": "npm:0.5.0"
     "@node-saml/passport-saml": "npm:4.0.4"
-    "@opensearch-project/opensearch": "npm:2.11.0"
+    "@opensearch-project/opensearch": "npm:2.12.0"
     "@opentelemetry/api": "npm:1.9.0"
     "@opentelemetry/api-metrics": "npm:0.33.0"
     "@opentelemetry/core": "npm:1.25.1"
