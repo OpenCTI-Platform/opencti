@@ -142,12 +142,12 @@ const Campaigns = () => {
       },
       modified: {},
       createdBy: {},
-      objectMarking: { percentWidth: 10 },
       objectLabel: {},
       x_opencti_workflow_id: {
         label: 'Processing status',
         percentWidth: 10,
       },
+      objectMarking: { percentWidth: 10 },
     };
 
     const preloadedPaginationProps = {
