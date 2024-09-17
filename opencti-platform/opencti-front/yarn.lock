@@ -4937,6 +4937,32 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@radix-ui/react-tabs@npm:1.1.0":
+  version: 1.1.0
+  resolution: "@radix-ui/react-tabs@npm:1.1.0"
+  dependencies:
+    "@radix-ui/primitive": "npm:1.1.0"
+    "@radix-ui/react-context": "npm:1.1.0"
+    "@radix-ui/react-direction": "npm:1.1.0"
+    "@radix-ui/react-id": "npm:1.1.0"
+    "@radix-ui/react-presence": "npm:1.1.0"
+    "@radix-ui/react-primitive": "npm:2.0.0"
+    "@radix-ui/react-roving-focus": "npm:1.1.0"
+    "@radix-ui/react-use-controllable-state": "npm:1.1.0"
+  peerDependencies:
+    "@types/react": "*"
+    "@types/react-dom": "*"
+    react: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
+    react-dom: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
+  peerDependenciesMeta:
+    "@types/react":
+      optional: true
+    "@types/react-dom":
+      optional: true
+  checksum: 10/5f4e7987c31adfb908862e247163ff035700d32f79e75fc05665eb3e0626ab68be58314ca6ce45ffda90ff2771b76ba4972f4e15222cca73defcb5db6a5d6c38
+  languageName: node
+  linkType: hard
+
 "@radix-ui/react-toast@npm:1.2.1":
   version: 1.2.1
   resolution: "@radix-ui/react-toast@npm:1.2.1"
@@ -7168,6 +7194,13 @@ __metadata:
     get-intrinsic: "npm:^1.2.4"
     is-string: "npm:^1.0.7"
   checksum: 10/290b206c9451f181fb2b1f79a3bf1c0b66bb259791290ffbada760c79b284eef6f5ae2aeb4bcff450ebc9690edd25732c4c73a3c2b340fcc0f4563aed83bf488
+  languageName: node
+  linkType: hard
+
+"array-move@npm:^3.0.1":
+  version: 3.0.1
+  resolution: "array-move@npm:3.0.1"
+  checksum: 10/4b550fe07f89750e5830be6e0b0165e5900a8d087ac51c4f7bf8cac6f87b4e96dfda05629cb962cdc33f64a3b0be49ee783595d74ccd2278e5a588fc436481d0
   languageName: node
   linkType: hard
 
@@ -11113,9 +11146,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"filigran-ui@npm:0.13.0":
-  version: 0.13.0
-  resolution: "filigran-ui@npm:0.13.0"
+"filigran-ui@npm:0.18.1":
+  version: 0.18.1
+  resolution: "filigran-ui@npm:0.18.1"
   dependencies:
     "@dnd-kit/core": "npm:6.1.0"
     "@dnd-kit/modifiers": "npm:7.0.0"
@@ -11131,12 +11164,14 @@ __metadata:
     "@radix-ui/react-select": "npm:2.1.1"
     "@radix-ui/react-separator": "npm:1.1.0"
     "@radix-ui/react-slot": "npm:1.1.0"
+    "@radix-ui/react-tabs": "npm:1.1.0"
     "@radix-ui/react-toast": "npm:1.2.1"
     "@tanstack/react-table": "npm:8.19.2"
     class-variance-authority: "npm:0.7.0"
     clsx: "npm:2.1.1"
     cmdk: "npm:1.0.0"
     lucide-react: "npm:0.399.0"
+    react-easy-sort: "npm:1.6.0"
     react-hook-form: "npm:7.52.0"
     tailwind-merge: "npm:2.3.0"
     tailwindcss-animate: "npm:1.0.7"
@@ -11144,7 +11179,7 @@ __metadata:
   peerDependencies:
     react: 18.2.0
     react-dom: 18.2.0
-  checksum: 10/1c9fd41808fe3998006a9de62400e0751bd8fce703f28c74078482b05e2c1e7dcd0059599b27ad37b9d1a85021c76970316103fa35d2f3fabb8bd166308d30a4
+  checksum: 10/8bf1bfccbfcef64f88860104d9e76825c04463067c7038698d6b30d00030c3b1af5492549fa3caca33398705f16deea26fe7ed94436300a505a6486ec6947b2f
   languageName: node
   linkType: hard
 
@@ -15821,7 +15856,7 @@ __metadata:
     express: "npm:4.20.0"
     extract-files: "npm:13.0.0"
     filigran-icon: "npm:0.7.0"
-    filigran-ui: "npm:0.13.0"
+    filigran-ui: "npm:0.18.1"
     formik: "npm:2.4.6"
     formik-mui: "npm:5.0.0-alpha.0"
     formik-mui-lab: "npm:1.0.0"
@@ -17152,6 +17187,19 @@ __metadata:
     react: ">= 16.3.0"
     react-dom: ">= 16.3.0"
   checksum: 10/51b9ac7f913797fc1cebc30ae383f346883033c45eb91e9b0b92e9ebd224bb1545b4ae2391825b649b798cc711a38351a5f41be24d949c64c6703ebc24eba661
+  languageName: node
+  linkType: hard
+
+"react-easy-sort@npm:1.6.0":
+  version: 1.6.0
+  resolution: "react-easy-sort@npm:1.6.0"
+  dependencies:
+    array-move: "npm:^3.0.1"
+    tslib: "npm:2.0.1"
+  peerDependencies:
+    react: ">=16.4.0"
+    react-dom: ">=16.4.0"
+  checksum: 10/bf1adea63bd1c2c69df71b2cfa35334f761f1c40e56222cda9fc7ded0a65b598f7cd323413efbea0404d6580321ee5dc6759757b20612617f8b3168e8637d382
   languageName: node
   linkType: hard
 
@@ -19887,6 +19935,13 @@ __metadata:
     minimist: "npm:^1.2.6"
     strip-bom: "npm:^3.0.0"
   checksum: 10/2041beaedc6c271fc3bedd12e0da0cc553e65d030d4ff26044b771fac5752d0460944c0b5e680f670c2868c95c664a256cec960ae528888db6ded83524e33a14
+  languageName: node
+  linkType: hard
+
+"tslib@npm:2.0.1":
+  version: 2.0.1
+  resolution: "tslib@npm:2.0.1"
+  checksum: 10/609a4124f259551e173f2615eca023cc40e5748331e4a4a4f8e75d39567491d73936d847f11463965018b0dc78200b8494341426a038338e633d452afd44aec8
   languageName: node
   linkType: hard
 
