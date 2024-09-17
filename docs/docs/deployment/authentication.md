@@ -53,7 +53,7 @@ This strategy can be used to authenticate your user with your company LDAP and i
         // "account_attribute": "givenName",
         // "firstname_attribute": "cn",
         // "lastname_attribute": "cn",
-        "account_attrgroup_search_filteribute": "givenName",
+        "account_attribute": "givenName",
         "allow_self_signed": true
     }
 }
@@ -72,7 +72,7 @@ If you would like to use LDAP groups to automatically associate LDAP groups and 
             "groups_mapping": ["LDAP_Group_1:OpenCTI_Group_1", "LDAP_Group_2:OpenCTI_Group_2", ...]
         },
         "organizations_management": { // To map LDAP Groups to OpenCTI Organizations
-            "organizations_path": "cn",
+            "organizations_path": ["cn"],
             "organizations_mapping": ["LDAP_Group_1:OpenCTI_Organization_1", "LDAP_Group_2:OpenCTI_Organization_2", ...]
         }
     }
