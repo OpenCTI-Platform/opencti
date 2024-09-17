@@ -133,21 +133,17 @@ const Campaigns = () => {
 
   const renderList = () => {
     const dataColumns = {
-      name: {
-        percentWidth: 15,
-      },
-      creator: { percentWidth: 14 },
-      created: {
-        percentWidth: 10,
-      },
-      modified: {},
-      createdBy: {},
-      objectMarking: { percentWidth: 10 },
-      objectLabel: {},
+      name: { percentWidth: 15 },
+      creator: { percentWidth: 13 },
+      created: { percentWidth: 10 },
+      modified: {}, // 15
+      createdBy: {}, // 12
+      objectLabel: {}, // 15
       x_opencti_workflow_id: {
         label: 'Processing status',
         percentWidth: 10,
       },
+      objectMarking: { percentWidth: 10 },
     };
 
     const preloadedPaginationProps = {

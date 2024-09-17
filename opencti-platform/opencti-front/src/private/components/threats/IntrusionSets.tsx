@@ -137,9 +137,9 @@ const IntrusionSets = () => {
       primary_motivation: {},
       secondary_motivations: {},
       creator: { percentWidth: 15 },
+      objectLabel: {},
       modified: {},
       objectMarking: { percentWidth: 10 },
-      objectLabel: {},
     };
 
     const preloadedPaginationProps = {

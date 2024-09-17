@@ -150,9 +150,6 @@ const PublicDashboards = () => {
       isSortable: false,
       render: ({ dashboard }, h) => textInTooltip(dashboard.name, h),
     },
-    allowed_markings: {
-      id: 'allowed_markings',
-    },
     enabled: {
       id: 'enabled',
       percentWidth: 15,
@@ -171,6 +168,9 @@ const PublicDashboards = () => {
       label: 'Shared by',
       isSortable: true,
       render: ({ owner }, h) => textInTooltip(owner.name, h),
+    },
+    allowed_markings: {
+      id: 'allowed_markings',
     },
   };
 

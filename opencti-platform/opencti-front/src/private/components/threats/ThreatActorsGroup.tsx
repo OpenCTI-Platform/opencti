@@ -141,9 +141,9 @@ const ThreatActorsGroup = () => {
       sophistication: {},
       resource_level: {},
       creator: {},
+      objectLabel: {},
       modified: {},
       objectMarking: { percentWidth: 10 },
-      objectLabel: {},
     };
 
     const preloadedPaginationProps = {

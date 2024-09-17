@@ -146,7 +146,7 @@ const DataTableComponent = ({
                 orderAsc={orderAsc}
                 dataTableToolBarComponent={dataTableToolBarComponent}
               />
-              {<DataTableLinesDummy number={Math.max(currentPageSize, 100)} />}
+              {<DataTableLinesDummy number={Math.max(currentPageSize, 25)} />}
             </div>
           )}
         >
