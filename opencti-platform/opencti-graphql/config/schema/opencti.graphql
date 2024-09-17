@@ -1543,6 +1543,7 @@ type MeUser implements BasicObject & InternalObject {
   submenu_auto_collapse: Boolean
   monochrome_labels: Boolean
   can_manage_sensitive_config: Boolean
+  draft_context: String
 }
 type SessionDetail {
   id: ID!

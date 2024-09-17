@@ -203,6 +203,7 @@ import {
 import { buildEntityData, buildInnerRelation, buildRelationData } from './data-builder';
 import { deleteAllObjectFiles, moveAllFilesFromEntityToAnother, uploadToStorage } from './file-storage-helper';
 import { storeFileConverter } from './file-storage';
+import { getDraftContext } from '../utils/draftContext';
 
 // region global variables
 const MAX_BATCH_SIZE = 300;
@@ -889,6 +890,7 @@ const partialInstanceWithInputs = (instance, inputs) => {
   const inputData = updatedInputsToData(instance, inputs);
   return {
     _index: instance._index,
+    _id: instance._id,
     internal_id: instance.internal_id,
     entity_type: instance.entity_type,
     ...inputData,
@@ -1362,7 +1364,7 @@ const mergeEntitiesRaw = async (context, user, targetEntity, sourceEntities, tar
   // Elastic update with partial instance to prevent data override
   if (impactedInputs.length > 0) {
     const updateAsInstance = partialInstanceWithInputs(targetEntity, impactedInputs);
-    await elUpdateElement(updateAsInstance);
+    await elUpdateElement(context, user, updateAsInstance);
     logApp.info(`[OPENCTI] Merging attributes success for ${targetEntity.internal_id}`, { update: updateAsInstance });
   }
 };
@@ -1438,7 +1440,7 @@ export const mergeEntities = async (context, user, targetEntityId, sourceEntityI
   let lock;
   try {
     // Lock the participants that will be merged
-    lock = await lockResource(participantIds);
+    lock = await lockResource(participantIds, { draftId: getDraftContext(context, user) });
     // Entities must be fully loaded with admin user to resolve/move all dependencies
     const initialInstance = await storeLoadByIdWithRefs(context, user, targetEntityId);
     const target = { ...initialInstance };
@@ -1949,7 +1951,7 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
   const participantIds = R.uniq(locksIds.filter((e) => !locks.includes(e)));
   try {
     // Try to get the lock in redis
-    lock = await lockResource(participantIds);
+    lock = await lockResource(participantIds, { draftId: getDraftContext(context, user) });
     // region handle attributes
     // Only for StixCyberObservable
     const lookingEntities = [];
@@ -2133,7 +2135,7 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
     // Impacting information
     if (impactedInputs.length > 0) {
       const updateAsInstance = partialInstanceWithInputs(updatedInstance, impactedInputs);
-      await elUpdateElement(updateAsInstance);
+      await elUpdateElement(context, user, updateAsInstance);
     }
     if (relationsToDelete.length > 0) {
       await elDeleteElements(context, user, relationsToDelete);
@@ -2767,7 +2769,7 @@ export const createRelationRaw = async (context, user, rawInput, opts = {}) => {
   const participantIds = inputIds.filter((e) => !locks.includes(e));
   try {
     // Try to get the lock in redis
-    lock = await lockResource(participantIds);
+    lock = await lockResource(participantIds, { draftId: getDraftContext(context, user) });
     // region check existing relationship
     const existingRelationships = await getExistingRelations(context, user, resolvedInput, opts);
     let existingRelationship = null;
@@ -2942,7 +2944,7 @@ const createEntityRaw = async (context, user, rawInput, type, opts = {}) => {
   let lock;
   try {
     // Try to get the lock in redis
-    lock = await lockResource(participantIds);
+    lock = await lockResource(participantIds, { draftId: getDraftContext(context, user) });
     // Generate the internal id if needed
     const standardId = resolvedInput.standard_id || generateStandardId(type, resolvedInput);
     // Check if the entity exists, must be done with SYSTEM USER to really find it.
@@ -3158,7 +3160,7 @@ export const internalDeleteElementById = async (context, user, id, opts = {}) =>
   const participantIds = [element.internal_id];
   try {
     // Try to get the lock in redis
-    lock = await lockResource(participantIds);
+    lock = await lockResource(participantIds, { draftId: getDraftContext(context, user) });
     if (isStixRefRelationship(element.entity_type)) {
       const referencesPromises = opts.references ? internalFindByIds(context, user, opts.references, { type: ENTITY_TYPE_EXTERNAL_REFERENCE }) : Promise.resolve([]);
       const references = await Promise.all(referencesPromises);

@@ -11,7 +11,7 @@ import { WebSocketServer } from 'ws';
 import { useServer } from 'graphql-ws/lib/use/ws';
 import { ApolloServerPluginDrainHttpServer } from '@apollo/server/plugin/drainHttpServer';
 import passport from 'passport/lib';
-import conf, { basePath, booleanConf, loadCert, logApp, PORT } from '../config/conf';
+import conf, { basePath, booleanConf, isFeatureEnabled, loadCert, logApp, PORT } from '../config/conf';
 import createApp from './httpPlatform';
 import createApolloServer from '../graphql/graphql';
 import { isStrategyActivated, STRATEGY_CERT } from '../config/providers';
@@ -124,6 +124,9 @@ const createHttpServer = async () => {
         executeContext.synchronizedUpsert = req.headers['synchronized-upsert'] === 'true'; // If full sync needs to be done
         try {
           const user = await authenticateUserFromRequest(executeContext, req, res);
+          if (isFeatureEnabled('DRAFT_WORKSPACE') && !executeContext.draft_context) {
+            executeContext.draft_context = user.draft_context;
+          }
           if (user) {
             executeContext.user = userWithOrigin(req, user);
           }
