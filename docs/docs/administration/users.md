@@ -24,6 +24,7 @@ Roles are used in the platform to grant the given groups with some **capabilitie
 | &nbsp;&nbsp;&nbsp;&nbsp;`Delete knowledge`              | Delete entities and relationships.                                                      |
 | &nbsp;&nbsp;&nbsp;&nbsp;`Manage authorized members`     | Restrict the access to an entity to a user, group or organization.                      |
 | &nbsp;&nbsp;&nbsp;&nbsp;`Bypass enforced reference`     | If external references enforced in a type of entity, be able to bypass the enforcement. |
+| &nbsp;&nbsp;&nbsp;&nbsp;`Bypass mandatory fields`       | Bypass any custom fields marked as mandatory in entity customization                    |
 | &nbsp;&nbsp;`Upload knowledge files`                    | Upload files in the `Data` and `Content` section of entities.                           |
 | &nbsp;&nbsp;`Import knowledge`                          | Trigger the ingestion of an uploaded file.                                              |
 | &nbsp;&nbsp;`Download knowledge export`                 | Download the exports generated in the entities (in the `Data` section).                 |
