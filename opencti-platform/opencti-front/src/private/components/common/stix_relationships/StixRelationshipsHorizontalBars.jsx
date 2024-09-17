@@ -5,9 +5,9 @@ import { useFormatter } from '../../../../components/i18n';
 import { buildFiltersAndOptionsForWidgets } from '../../../../utils/filters/filtersUtils';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
-import WidgetLoader from '../../../../components/dashboard/WidgetLoader';
 import WidgetHorizontalBars from '../../../../components/dashboard/WidgetHorizontalBars';
 import useDistributionGraphData from '../../../../utils/hooks/useDistributionGraphData';
+import Loader from '../../../../components/Loader';
 
 export const stixRelationshipsHorizontalBarsDistributionQuery = graphql`
   query StixRelationshipsHorizontalBarsDistributionQuery(
@@ -168,7 +168,7 @@ const StixRelationshipsHorizontalBars = ({
           if (props) {
             return <WidgetNoData />;
           }
-          return <WidgetLoader />;
+          return <Loader variant="inElement" />;
         }}
       />
     );
