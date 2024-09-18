@@ -160,7 +160,11 @@ const DataTableLine = ({
     } else if (onLineClick) {
       onLineClick(data);
     } else if (navigable) {
-      navigate(link);
+      if (event.ctrlKey) {
+        window.open(link, '_blank');
+      } else {
+        navigate(link);
+      }
     }
   };
 
@@ -209,6 +213,7 @@ const DataTableLine = ({
             width: 'calc(var(--col-navigate-size) * 1px)',
             overflow: 'initial',
           }}
+          onClick={(e) => e.stopPropagation()}
         >
           {actions && actions(data)}
           {endWithNavigate && (
