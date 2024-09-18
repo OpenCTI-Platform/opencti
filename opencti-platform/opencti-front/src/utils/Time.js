@@ -73,7 +73,7 @@ export const yearsAgo = (number) => moment(dayStartDate()).subtract(number, 'yea
 
 export const yearFormat = (data) => (data && data !== '-' ? parse(data).format(yearDateFormat) : '');
 
-export const dateFormat = (data, specificFormat = null) => {
+export const dateFormat = (data, specificFormat = '') => {
   if (isNone(data)) {
     return null;
   }
