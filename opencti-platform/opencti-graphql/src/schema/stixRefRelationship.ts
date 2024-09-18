@@ -51,6 +51,7 @@ import {
   ENTITY_WINDOWS_REGISTRY_VALUE_TYPE
 } from './stixCyberObservable';
 import { ATTRIBUTE_SAMPLE } from '../modules/malwareAnalysis/malwareAnalysis-types';
+import { logApp } from '../config/conf';
 
 export const ABSTRACT_STIX_NESTED_REF_RELATIONSHIP = 'stix-nested-ref-relationship'; // Only for front usage
 
@@ -727,13 +728,14 @@ export const objectOrganization: RefAttribute = {
   multiple: true,
   upsert: true,
   isRefExistingForTypes(this, fromType, toType) {
-    return !(fromType === ENTITY_TYPE_EVENT || isStixDomainObjectIdentity(fromType)
+    logApp.info(`ANGIE isRefExistingForTypes this.type:${this.type}, fromType:${fromType}, toType:${toType} `);
+    return !(fromType === ENTITY_TYPE_EVENT /* || isStixDomainObjectIdentity(fromType) */
         || isStixDomainObjectLocation(fromType))
       && this.toTypes.includes(toType);
   },
   datable: false,
   isFilterable: true,
-  toTypes: [ENTITY_TYPE_IDENTITY_ORGANIZATION],
+  toTypes: [ENTITY_TYPE_IDENTITY_ORGANIZATION], // ANGIE
 };
 
 export const objectAssignee: RefAttribute = {

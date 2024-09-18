@@ -401,7 +401,8 @@ const executeRuleElementRescan = async (context, user, actionContext, element) =
     }
   }
 };
-const executeShare = async (context, user, actionContext, element) => {
+export const executeShare = async (context, user, actionContext, element) => {
+  logApp.info('ANGIE executeShare', { actionContext, element });
   const { values } = actionContext;
   for (let indexCreate = 0; indexCreate < values.length; indexCreate += 1) {
     const target = values[indexCreate];

@@ -76,7 +76,7 @@ import {
   RELATION_USES,
   RELATION_VARIANT_OF
 } from '../schema/stixCoreRelationship';
-import { isStixRefRelationship } from '../schema/stixRefRelationship';
+import { isStixRefRelationship, RELATION_GRANTED_TO } from '../schema/stixRefRelationship';
 import { ABSTRACT_STIX_CYBER_OBSERVABLE, ENTITY_TYPE_THREAT_ACTOR } from '../schema/general';
 import { ENTITY_TYPE_EVENT } from '../modules/event/event-types';
 import { ENTITY_TYPE_NARRATIVE } from '../modules/narrative/narrative-types';
@@ -89,6 +89,7 @@ import { FunctionalError, UnsupportedError } from '../config/errors';
 import { ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL } from '../modules/threatActorIndividual/threatActorIndividual-types';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
 import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
+import { logApp } from '../config/conf';
 
 const MAX_TRANSIENT_STIX_IDS = 200;
 export const STIX_SPEC_VERSION = '2.1';
@@ -267,7 +268,8 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
     { name: RELATION_PART_OF, type: REL_NEW }
   ],
   [`${ENTITY_TYPE_IDENTITY_INDIVIDUAL}_${ENTITY_TYPE_IDENTITY_ORGANIZATION}`]: [
-    { name: RELATION_PART_OF, type: REL_NEW }
+    { name: RELATION_PART_OF, type: REL_NEW },
+    { name: RELATION_GRANTED_TO, type: REL_BUILT_IN }
   ],
   [`${ENTITY_TYPE_IDENTITY_INDIVIDUAL}_${ENTITY_TYPE_LOCATION_POSITION}`]: [
     { name: RELATION_LOCATED_AT, type: REL_BUILT_IN }
@@ -307,10 +309,14 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
   [`${ENTITY_TYPE_IDENTITY_SECTOR}_${ENTITY_TYPE_LOCATION_REGION}`]: [
     { name: RELATION_LOCATED_AT, type: REL_BUILT_IN }
   ],
+  [`${ENTITY_TYPE_IDENTITY_SECTOR}_${ENTITY_TYPE_IDENTITY_ORGANIZATION}`]: [
+    { name: RELATION_GRANTED_TO, type: REL_BUILT_IN }
+  ],
   // endregion
   // region SYSTEM
   [`${ENTITY_TYPE_IDENTITY_SYSTEM}_${ENTITY_TYPE_IDENTITY_ORGANIZATION}`]: [
-    { name: RELATION_BELONGS_TO, type: REL_EXTENDED }
+    { name: RELATION_BELONGS_TO, type: REL_EXTENDED },
+    { name: RELATION_GRANTED_TO, type: REL_BUILT_IN }
   ],
   [`${ENTITY_TYPE_IDENTITY_SYSTEM}_${ENTITY_TYPE_LOCATION_POSITION}`]: [
     { name: RELATION_LOCATED_AT, type: REL_BUILT_IN }
@@ -1171,7 +1177,12 @@ export const isRelationBuiltin = (instance: StoreRelation): boolean => {
 };
 
 export const checkRelationshipRef = (fromType: string, toType: string, relationshipType: string) => {
-  const relationRefs = schemaRelationsRefDefinition.getRelationsRef(fromType).filter((rel) => rel.databaseName === relationshipType);
+  logApp.info(`ANGIE checkRelationshipRef - from:${fromType}, to:${toType}, relationshipType:${relationshipType}`);
+  const relationRefs = schemaRelationsRefDefinition.getRelationsRef(fromType).filter((rel) => {
+    logApp.info(`ANGIE checkRelationshipRef - ${rel.databaseName} ?? ${relationshipType}`);
+    return rel.databaseName === relationshipType;
+  });
+  logApp.info(`ANGIE checkRelationshipRef - relationRefs.length:${relationRefs.length}`);
   if (relationRefs.length === 0) {
     throw FunctionalError('The relationship is not allowed', { type: relationshipType, from: fromType, to: toType });
   }
@@ -1179,6 +1190,7 @@ export const checkRelationshipRef = (fromType: string, toType: string, relations
     throw FunctionalError('Invalid relationship schema', { type: relationshipType, from: fromType, to: toType, data: relationRefs });
   }
 
+  logApp.info(`ANGIE relationRefs[0]=${relationRefs[0].toTypes}`);
   if (!relationRefs[0].isRefExistingForTypes(fromType, toType)) {
     throw FunctionalError('The relationship is not allowed', { type: relationshipType, from: fromType, to: toType });
   }

@@ -67,7 +67,7 @@ schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_CONTAINER_GROUPING
 schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_VULNERABILITY, [objectOrganization]);
 
 schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_IDENTITY_SYSTEM, [objectOrganization]);
-schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_IDENTITY_SECTOR, []);
+schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_IDENTITY_SECTOR, [objectOrganization]);
 schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_IDENTITY_INDIVIDUAL, [objectOrganization]);
 
 schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_LOCATION_REGION, []);
