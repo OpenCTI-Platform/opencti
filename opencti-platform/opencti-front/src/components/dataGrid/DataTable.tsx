@@ -203,6 +203,7 @@ const DataTable = (props: OCTIDataTableProps) => {
             handleClearSelectedElements={handleClearSelectedElements}
             taskScope={taskScope}
             handleCopy={handleCopy}
+            type={entityTypes && entityTypes.length === 1 ? entityTypes[0] : exportContext?.entity_type}
           />
         </div>
       )}

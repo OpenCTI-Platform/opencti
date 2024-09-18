@@ -720,6 +720,7 @@ class DataTableToolBar extends Component {
     const { t } = this.props;
     const { actionsInputs } = this.state;
     const disabled = R.isNil(actionsInputs[i]?.type) || R.isEmpty(actionsInputs[i]?.type);
+    const entityTypesWithoutStatus = ['Stix-Core-Object', 'Stix-Domain-Object', 'Stix-Cyber-Observable', 'Artifact', 'ExternalReference'];
     let options = [];
     if (actionsInputs[i]?.type === 'ADD') {
       options = [
@@ -739,7 +740,7 @@ class DataTableToolBar extends Component {
       if (typesHaveScore) {
         options.push({ label: t('Score'), value: 'x_opencti_score' });
       }
-      if (this.props.type) {
+      if (this.props.type && !entityTypesWithoutStatus.includes(this.props.type)) {
         options.push({ label: t('Status'), value: 'x_opencti_workflow_id' });
       }
     } else if (actionsInputs[i]?.type === 'REMOVE') {
