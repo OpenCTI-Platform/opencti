@@ -78,6 +78,15 @@ export const testIndicatorTypes = (stix: any, filter: Filter) => {
 };
 
 /**
+ * REPORTS
+ * - report types is report_types in stix
+ */
+export const testReportTypes = (stix: any, filter: Filter) => {
+  const stixValue: string[] = stix.report_types ?? [];
+  return testStringFilter(filter, stixValue);
+};
+
+/**
  * WORKFLOWS
  * - x_opencti_workflow_id is workflow_id in stix (in extension)
  */
@@ -359,11 +368,6 @@ export const testCvssSeverity = (stix: any, filter: Filter) => {
   return testStringFilter(filter, value);
 };
 
-export const testReportTypes = (stix: any, filter: Filter) => {
-  const stixValue: string[] = stix.report_types ?? stix.extensions?.[STIX_EXT_OCTI].report_types ?? [];
-  return testStringFilter(filter, stixValue);
-};
-
 /**
  * TODO: This mapping could be given by the schema, like we do with stix converters
  */
@@ -376,6 +380,7 @@ export const FILTER_KEY_TESTERS_MAP: Record<string, TesterFunction> = {
   [CREATOR_FILTER]: testCreator,
   [DETECTION_FILTER]: testDetection,
   [INDICATOR_FILTER]: testIndicatorTypes,
+  [REPORT_TYPES_FILTER]: testReportTypes,
   [LABEL_FILTER]: testLabel,
   [MAIN_OBSERVABLE_TYPE_FILTER]: testMainObservableType,
   [MARKING_FILTER]: testMarkingFilter,
@@ -392,7 +397,6 @@ export const FILTER_KEY_TESTERS_MAP: Record<string, TesterFunction> = {
   [EPSS_SCORE_FILTER]: testEpssScore,
   [CVSS_BASE_SCORE_FILTER]: testCvssScore,
   [CVSS_BASE_SEVERITY_FILTER]: testCvssSeverity,
-  [REPORT_TYPES_FILTER]: testReportTypes,
 
   // special keys (more complex behavior)
   [CONNECTED_TO_INSTANCE_FILTER]: testConnectedTo, // instance trigger, direct events
