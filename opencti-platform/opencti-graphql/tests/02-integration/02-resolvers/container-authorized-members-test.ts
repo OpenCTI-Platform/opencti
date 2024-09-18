@@ -8,12 +8,11 @@ import {
   getOrganizationIdByName,
   getUserIdByEmail,
   PLATFORM_ORGANIZATION,
-  queryAsAdmin,
   securityQuery,
   TEST_ORGANIZATION,
   USER_EDITOR
 } from '../../utils/testQuery';
-import { queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden } from '../../utils/testQueryHelper';
+import { adminQueryWithSuccess, queryAsUserIsExpectedForbidden } from '../../utils/testQueryHelper';
 import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../../../src/modules/case/case-incident/case-incident-types';
 
 const CREATE_QUERY = gql`
@@ -122,7 +121,7 @@ describe('Case Incident Response standard behavior with authorized_members activ
   let userEditorId: string;
   it('should Case Incident Response created', async () => {
     // Create Case Incident Response
-    const caseIncidentResponseCreateQueryResult = await queryAsAdmin({
+    const caseIncidentResponseCreateQueryResult = await adminQuery({
       query: CREATE_QUERY,
       variables: {
         input: {
@@ -162,7 +161,7 @@ describe('Case Incident Response standard behavior with authorized_members activ
   });
   it('should Admin user edit authorized members', async () => {
     // Activate Authorized members
-    const caseIncidentResponseUpdatedQueryResult = await queryAsAdmin({
+    const caseIncidentResponseUpdatedQueryResult = await adminQuery({
       query: EDIT_AUTHORIZED_MEMBERS_QUERY,
       variables: {
         id: caseIncident?.id,
@@ -191,7 +190,7 @@ describe('Case Incident Response standard behavior with authorized_members activ
   });
   it('should Admin user edit authorized members: Editor has view access right', async () => {
     // Add Editor user in authorized members
-    const caseIncidentResponseUpdatedQueryResult = await queryAsAdmin({
+    const caseIncidentResponseUpdatedQueryResult = await adminQuery({
       query: EDIT_AUTHORIZED_MEMBERS_QUERY,
       variables: {
         id: caseIncident.id,
@@ -236,7 +235,7 @@ describe('Case Incident Response standard behavior with authorized_members activ
     });
   });
   it('should Admin user edit authorized members: Editor has edit access right', async () => {
-    const caseIncidentResponseUpdatedQueryResult = await queryAsAdmin({
+    const caseIncidentResponseUpdatedQueryResult = await adminQuery({
       query: EDIT_AUTHORIZED_MEMBERS_QUERY,
       variables: {
         id: caseIncident.id,
@@ -277,7 +276,7 @@ describe('Case Incident Response standard behavior with authorized_members activ
     });
   });
   it('should Admin user edit authorized members: Editor has admin access right', async () => {
-    const caseIncidentResponseUpdatedQueryResult = await queryAsAdmin({
+    const caseIncidentResponseUpdatedQueryResult = await adminQuery({
       query: EDIT_AUTHORIZED_MEMBERS_QUERY,
       variables: {
         id: caseIncident.id,
@@ -314,7 +313,7 @@ describe('Case Incident Response standard behavior with authorized_members activ
       variables: { id: caseIncident.id },
     });
     // Verify is no longer found
-    const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: caseIncident.id } });
+    const queryResult = await adminQuery({ query: READ_QUERY, variables: { id: caseIncident.id } });
     expect(queryResult).not.toBeNull();
     expect(queryResult?.data?.caseIncident).toBeNull();
   });
@@ -450,7 +449,7 @@ describe('Case Incident Response and organization sharing standard behavior with
     settingsInternalId = queryResult.data?.settings?.id;
 
     // Set EE
-    const EEqueryResult = await queryAsAdminWithSuccess({
+    const EEqueryResult = await adminQueryWithSuccess({
       query: PLATFORM_ORGANIZATION_QUERY,
       variables: {
         id: settingsInternalId,
@@ -496,7 +495,7 @@ describe('Case Incident Response and organization sharing standard behavior with
     expect(queryResult?.data?.caseIncident).toBeNull();
   });
   it('should EE deactivated', async () => {
-    const EEDeactivationQuery = await queryAsAdminWithSuccess({
+    const EEDeactivationQuery = await adminQueryWithSuccess({
       query: PLATFORM_ORGANIZATION_QUERY,
       variables: {
         id: settingsInternalId,
@@ -532,7 +531,7 @@ describe('Case Incident Response and organization sharing standard behavior with
     settingsInternalId = queryResult.data?.settings?.id;
 
     // Set plateform organization
-    const platformOrganization = await queryAsAdminWithSuccess({
+    const platformOrganization = await adminQueryWithSuccess({
       query: PLATFORM_ORGANIZATION_QUERY,
       variables: {
         id: settingsInternalId,
@@ -568,7 +567,7 @@ describe('Case Incident Response and organization sharing standard behavior with
   });
   it('should Admin user activate Authorized Members', async () => {
     userEditorId = await getUserIdByEmail(USER_EDITOR.email);
-    const caseIRUpdatedQueryResult = await queryAsAdmin({
+    const caseIRUpdatedQueryResult = await adminQuery({
       query: EDIT_AUTHORIZED_MEMBERS_QUERY,
       variables: {
         id: caseIrId,
@@ -605,7 +604,7 @@ describe('Case Incident Response and organization sharing standard behavior with
     expect(caseIRQueryResult?.data?.caseIncident.currentUserAccessRight).toEqual('view');
   });
   it('should Admin user deactivate authorized members', async () => {
-    await queryAsAdmin({
+    await adminQuery({
       query: EDIT_AUTHORIZED_MEMBERS_QUERY,
       variables: {
         id: caseIrId,
@@ -636,7 +635,7 @@ describe('Case Incident Response and organization sharing standard behavior with
   });
   it('should plateform organization sharing and EE deactivated', async () => {
     // Remove plateform organization
-    const platformOrganization = await queryAsAdminWithSuccess({
+    const platformOrganization = await adminQueryWithSuccess({
       query: PLATFORM_ORGANIZATION_QUERY,
       variables: {
         id: settingsInternalId,
