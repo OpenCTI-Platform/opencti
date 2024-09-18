@@ -6,6 +6,7 @@ import { ApexOptions } from 'apexcharts';
 import { horizontalBarsChartOptions } from '../../utils/Charts';
 import { simpleNumberFormat } from '../../utils/Number';
 import type { Theme } from '../Theme';
+import { dateFormat, timestamp } from '../../utils/Time';
 
 interface WidgetHorizontalBarsProps {
   series: ApexAxisChartSeries
@@ -36,13 +37,27 @@ const WidgetHorizontalBars = ({
   const theme = useTheme<Theme>();
   const navigate = useNavigate();
 
+  const getFormattedValue = (value: any) => {
+    if (typeof value === 'number') {
+      simpleNumberFormat(value);
+    }
+    const timestampInMs = parseInt(value, 10);
+
+    if (!Number.isNaN(timestampInMs)) {
+      const convertedDate = timestamp(timestampInMs);
+      const date = dateFormat(convertedDate, 'DD-MM-YYYY');
+      if (date) return date;
+    }
+    return value;
+  };
+
   return (
     <Chart
       options={horizontalBarsChartOptions(
         theme,
         true,
         simpleNumberFormat,
-        simpleNumberFormat,
+        getFormattedValue,
         distributed,
         navigate,
         redirectionUtils,

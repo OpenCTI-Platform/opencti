@@ -1,7 +1,6 @@
 import * as C from '@mui/material/colors';
 import { resolveLink } from './Entity';
 import { truncate } from './String';
-import { dateFormat, timestamp } from './Time';
 
 const colors = (temp) => [
   C.red[temp],
@@ -526,17 +525,7 @@ export const horizontalBarsChartOptions = (
     show: stackType !== '100%',
     labels: {
       show: stackType !== '100%',
-      formatter: (value) => {
-        if (yFormatter && typeof value === 'number') {
-          return yFormatter(value);
-        }
-        if (typeof value === 'string' && value.length === 15) {
-          const timestampInMs = parseInt(value, 10);
-          const convertedDate = timestamp(timestampInMs);
-          return dateFormat(convertedDate, 'DD-MM-YYYY');
-        }
-        return value;
-      },
+      formatter: (value) => (yFormatter ? yFormatter(value) : value),
       style: {
         fontFamily: '"IBM Plex Sans", sans-serif',
       },
