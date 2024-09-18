@@ -45,7 +45,7 @@ const WidgetHorizontalBars = ({
 
     if (!Number.isNaN(timestampInMs)) {
       const convertedDate = timestamp(timestampInMs);
-      const date = dateFormat(convertedDate, 'DD-MM-YYYY');
+      const date = dateFormat(convertedDate, 'YYYY-MM-DD');
       if (date) return date;
     }
     return value;
