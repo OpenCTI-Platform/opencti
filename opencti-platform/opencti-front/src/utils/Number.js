@@ -20,7 +20,7 @@ export const numberFormat = (number, digits = 2) => {
     }
   }
   return {
-    number: Number.parseInt((number / si[i].value).toFixed(digits).replace(rx, '$1'), 10),
+    number: Number.parseFloat((number / si[i].value).toFixed(digits).replace(rx, '$1')),
     symbol: si[i].symbol,
     original: number,
   };
