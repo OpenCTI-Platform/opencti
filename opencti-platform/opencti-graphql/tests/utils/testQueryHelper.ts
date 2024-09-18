@@ -1,7 +1,7 @@
 import { expect } from 'vitest';
 import { print } from 'graphql/index';
 import type { AxiosInstance } from 'axios';
-import { createUnauthenticatedClient, executeInternalQuery, queryAsAdmin } from './testQuery';
+import { adminQuery, createUnauthenticatedClient, executeInternalQuery, queryAsAdmin } from './testQuery';
 import { downloadFile, streamConverter } from '../../src/database/file-storage';
 import { logApp } from '../../src/config/conf';
 import { AUTH_REQUIRED, FORBIDDEN_ACCESS } from '../../src/config/errors';
@@ -16,6 +16,16 @@ import { AUTH_REQUIRED, FORBIDDEN_ACCESS } from '../../src/config/errors';
  */
 export const queryAsAdminWithSuccess = async (request: { query: any, variables: any }) => {
   const requestResult = await queryAsAdmin({
+    query: request.query,
+    variables: request.variables,
+  });
+  expect(requestResult, `Something is wrong with this query: ${request.query}`).toBeDefined();
+  expect(requestResult.errors, `This errors should not be there: ${requestResult.errors}`).toBeUndefined();
+  return requestResult;
+};
+
+export const adminQueryWithSuccess = async (request: { query: any, variables: any }) => {
+  const requestResult = await adminQuery({
     query: request.query,
     variables: request.variables,
   });
