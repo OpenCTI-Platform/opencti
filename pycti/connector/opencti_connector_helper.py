@@ -1718,7 +1718,6 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
                 )
                 pika_parameters = pika.ConnectionParameters(
                     heartbeat=10,
-                    blocked_connection_timeout=10,
                     host=self.connector_config["connection"]["host"],
                     port=self.connector_config["connection"]["port"],
                     virtual_host=self.connector_config["connection"]["vhost"],
