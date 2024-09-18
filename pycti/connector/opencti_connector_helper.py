@@ -376,7 +376,7 @@ class ListenQueue(threading.Thread):
                 self.pika_credentials = pika.PlainCredentials(self.user, self.password)
                 self.pika_parameters = pika.ConnectionParameters(
                     heartbeat=10,
-                    blocked_connection_timeout=10,
+                    blocked_connection_timeout=30,
                     host=self.host,
                     port=self.port,
                     virtual_host=self.vhost,
