@@ -48,7 +48,6 @@ const RootDashboard = () => {
     <div
       data-testid="dashboard-details-page"
       style={{
-        height: 'calc( 100vh - 50px )',
         overflow: 'auto',
         marginRight: -20,
         paddingRight: 20,
