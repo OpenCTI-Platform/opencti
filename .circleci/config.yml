@@ -457,6 +457,93 @@ jobs:
           only_on_fail: true
           webhook_url: $MS_TEAMS_WEBHOOK_URL
 
+  docker_build_platform_prerelease:
+    working_directory: ~/opencti_docker
+    machine:
+      image: ubuntu-2004:202111-02
+      resource_class: large
+    environment:
+      DOCKER_BUILDKIT: 1
+      BUILDX_PLATFORMS: linux/amd64,linux/arm64
+    steps:
+      - attach_workspace:
+          at: ~/
+      - run: sudo apt-get update -qq && sudo apt install curl
+      - run:
+          name: Replace pycti requirement of stable version with latest prerelease branch code
+          command: find . -name requirements.txt -exec sed "s|^pycti==.*$|pycti @ git+https://github.com/OpenCTI-Platform/client-python@$PRE_RELEASE_VERSION|" -i {} \;
+      - run:
+          name: Install buildx
+          command: |
+            BUILDX_BINARY_URL="https://github.com/docker/buildx/releases/download/v0.8.2/buildx-v0.8.2.linux-amd64"
+            curl --output docker-buildx \
+              --silent --show-error --location --fail --retry 3 \
+              "$BUILDX_BINARY_URL"
+            mkdir -p ~/.docker/cli-plugins
+            mv docker-buildx ~/.docker/cli-plugins/
+            chmod a+x ~/.docker/cli-plugins/docker-buildx
+            docker buildx install
+            # Run binfmt
+            docker run --rm --privileged tonistiigi/binfmt:latest --install "$BUILDX_PLATFORMS"
+            docker buildx create --name mybuilder --use
+      - run:
+          name: Login
+          command: echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+      - run:
+          working_directory: ~/opencti_docker/opencti-platform
+          name: Build Docker image opencti/platform
+          command: docker buildx build --platform $BUILDX_PLATFORMS -f Dockerfile_circleci -t opencti/platform:prerelease --push .
+          no_output_timeout: 30m
+      - slack/notify:
+          event: fail
+          template: basic_fail_1
+      - ms-teams/report:
+          only_on_fail: true
+          webhook_url: $MS_TEAMS_WEBHOOK_URL
+
+  docker_build_worker_prerelease:
+    working_directory: ~/opencti_docker
+    machine:
+      image: ubuntu-2004:202111-02
+      resource_class: large
+    environment:
+      DOCKER_BUILDKIT: 1
+      BUILDX_PLATFORMS: linux/amd64,linux/arm64
+    steps:
+      - attach_workspace:
+          at: ~/
+      - run: sudo apt-get update -qq && sudo apt install curl
+      - run:
+          name: Replace pycti requirement of stable version with latest release branch code
+          command: find . -name requirements.txt -exec sed "s|^pycti==.*$|pycti @ git+https://github.com/OpenCTI-Platform/client-python@$PRE_RELEASE_VERSION|" -i {} \;
+      - run:
+          name: Install buildx
+          command: |
+            BUILDX_BINARY_URL="https://github.com/docker/buildx/releases/download/v0.8.2/buildx-v0.8.2.linux-amd64"
+            curl --output docker-buildx \
+              --silent --show-error --location --fail --retry 3 \
+              "$BUILDX_BINARY_URL"
+            mkdir -p ~/.docker/cli-plugins
+            mv docker-buildx ~/.docker/cli-plugins/
+            chmod a+x ~/.docker/cli-plugins/docker-buildx
+            docker buildx install
+            # Run binfmt
+            docker run --rm --privileged tonistiigi/binfmt:latest --install "$BUILDX_PLATFORMS"
+            docker buildx create --name mybuilder --use
+      - run:
+          name: Login
+          command: echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+      - run:
+          working_directory: ~/opencti_docker/opencti-worker
+          name: Build Docker image opencti/worker
+          command: docker buildx build --platform $BUILDX_PLATFORMS -t opencti/worker:prerelease --push .
+      - slack/notify:
+          event: fail
+          template: basic_fail_1
+      - ms-teams/report:
+          only_on_fail: true
+          webhook_url: $MS_TEAMS_WEBHOOK_URL
+
   docker_build_platform_fips_rolling:
     working_directory: ~/opencti_docker
     machine:
@@ -546,6 +633,14 @@ jobs:
       - kubernetes/install-kubectl
       - run: kubectl --server=https://api.staging.eu-west.filigran.io --token=$K8S_TOKEN -n customer-testing rollout restart deployment -l app=opencti
 
+  deploy_prerelease:
+    docker:
+      - image: cimg/base:stable
+    steps:
+      - checkout
+      - kubernetes/install-kubectl
+      - run: kubectl --server=https://api.staging.eu-west.filigran.io --token=$K8S_TOKEN_PRE_RELEASE -n customer-prerelease rollout restart deployment -l app=opencti
+
   notify_rolling:
     docker:
       - image: "cimg/base:stable"
@@ -595,6 +690,13 @@ workflows:
             branches:
               only:
                 - master
+      - package_prerelease:
+          requires:
+            - build_platform
+          filters:
+            branches:
+              only:
+                - $PRE_RELEASE_VERSION
       - tag_package_rolling:
           requires:
             - build_platform
@@ -632,6 +734,20 @@ workflows:
             branches:
               only:
                 - master
+      - docker_build_platform_prerelease:
+          requires:
+            - build_frontend
+          filters:
+            branches:
+              only:
+                - $PRE_RELEASE_VERSION
+      - docker_build_worker_prerelease:
+          requires:
+            - build_frontend
+          filters:
+            branches:
+              only:
+                - $PRE_RELEASE_VERSION
       - docker_build_platform_fips_rolling:
           requires:
             - build_frontend
@@ -681,10 +797,15 @@ workflows:
       - deploy_testing:
           requires:
             - docker_build_platform_rolling
-            - docker_build_worker_rolling              
+            - docker_build_worker_rolling
+      - deploy_prerelease:
+          requires:
+            - docker_build_platform_prerelease
+            - docker_build_worker_prerelease
       - notify_rolling:
           requires:
             - deploy_testing
+            - deploy_prerelease
             - docker_build_platform_fips_rolling
             - docker_build_worker_fips_rolling              
             - package_rolling

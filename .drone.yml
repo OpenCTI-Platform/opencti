@@ -147,6 +147,7 @@ steps:
     when:
       branch:
         - master
+        - release/*
       event:
         exclude:
           - pull_request
