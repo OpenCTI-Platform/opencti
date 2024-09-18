@@ -15920,7 +15920,7 @@ __metadata:
     unified: "npm:11.0.4"
     use-analytics: "npm:1.1.0"
     uuid: "npm:10.0.0"
-    vite: "npm:5.2.8"
+    vite: "npm:5.2.14"
     vite-plugin-relay: "npm:2.1.0"
     vite-plugin-static-copy: "npm:1.0.2"
     vitest: "npm:2.0.5"
@@ -20744,9 +20744,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vite@npm:5.2.8":
-  version: 5.2.8
-  resolution: "vite@npm:5.2.8"
+"vite@npm:5.2.14":
+  version: 5.2.14
+  resolution: "vite@npm:5.2.14"
   dependencies:
     esbuild: "npm:^0.20.1"
     fsevents: "npm:~2.3.3"
@@ -20780,7 +20780,7 @@ __metadata:
       optional: true
   bin:
     vite: bin/vite.js
-  checksum: 10/caa40343c2c4e6d8e257fccb4c3029f62909c319a86063ce727ed550925c0a834460b0d1ca20c4d6c915f35302aa1052f6ec5193099a47ce21d74b9b817e69e1
+  checksum: 10/a0e29673c9da6d42c03aeebfee56e164132d26f4777de76562f6588d6c6d28495d3a9885da7ad912b6f34d26ba4cabd5b2d17d06600aeb11f681d4cb7bc30e56
   languageName: node
   linkType: hard
 
