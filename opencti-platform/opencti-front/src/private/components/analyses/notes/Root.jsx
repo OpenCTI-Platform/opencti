@@ -69,11 +69,9 @@ const RootNote = () => {
     }),
     [noteId],
   );
-
   const location = useLocation();
   const { t_i18n } = useFormatter();
   useSubscription(subConfig);
-
   return (
     <>
       <QueryRenderer
@@ -95,17 +93,17 @@ const RootNote = () => {
                     needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}
                     placeholder={
                       <ContainerHeader
-                        container={note}
+                        container={props.note}
                         PopoverComponent={<NotePopover note={note}/>}
                         EditComponent={
                           <CollaborativeSecurity data={note} needs={[KNOWLEDGE_KNUPDATE]}>
                             <NoteEdition noteId={note.id}/>
                           </CollaborativeSecurity>
-                                                }
-                        redirectToContent={true}
+                        }
+                        redirectToContent={false}
                         disableAuthorizedMembers={true}
                       />
-                                        }
+                    }
                   >
                     <ContainerHeader
                       container={note}
@@ -114,7 +112,7 @@ const RootNote = () => {
                         <CollaborativeSecurity data={note} needs={[KNOWLEDGE_KNUPDATE]}>
                           <NoteEdition noteId={note.id}/>
                         </CollaborativeSecurity>
-                                            }
+                      }
                       redirectToContent={false}
                       disableAuthorizedMembers={true}
                     />
@@ -155,7 +153,7 @@ const RootNote = () => {
                           connectorsImport={props.connectorsForImport}
                           entity={note}
                         />
-                                            }
+                      }
                     />
                     <Route
                       path="/history"
