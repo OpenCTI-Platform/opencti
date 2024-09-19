@@ -391,12 +391,14 @@ const PLAYBOOK_CONNECTOR_COMPONENT: PlaybookComponent<ConnectorConfiguration> = 
 interface ContainerWrapperConfiguration {
   container_type: string
   all: boolean
+  newContainer: boolean
 }
 const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT_SCHEMA: JSONSchemaType<ContainerWrapperConfiguration> = {
   type: 'object',
   properties: {
     container_type: { type: 'string', $ref: 'Container type', default: '', oneOf: [] },
-    all: { type: 'boolean', $ref: 'Wrap all elements included in the bundle', default: false }
+    all: { type: 'boolean', $ref: 'Wrap all elements included in the bundle', default: false },
+    newContainer: { type: 'boolean', $ref: 'Create a new container at each run', default: false }
   },
   required: ['container_type'],
 };
@@ -428,15 +430,22 @@ const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT: PlaybookComponent<ContainerWrapperCo
     return R.mergeDeepRight<JSONSchemaType<ContainerWrapperConfiguration>, any>(PLAYBOOK_CONTAINER_WRAPPER_COMPONENT_SCHEMA, schemaElement);
   },
   executor: async ({ dataInstanceId, playbookNode, bundle }) => {
-    const { container_type, all } = playbookNode.configuration;
+    const { container_type, all, newContainer } = playbookNode.configuration;
     if (!PLAYBOOK_CONTAINER_WRAPPER_COMPONENT_AVAILABLE_CONTAINERS.includes(container_type)) {
       throw FunctionalError('this container type is incompatible with the Container Wrapper playbook component', { container_type });
     }
     if (container_type) {
       const baseData = extractBundleBaseElement(dataInstanceId, bundle);
-      const created = baseData.extensions[STIX_EXT_OCTI].created_at;
+      const created = newContainer ? now() : baseData.extensions[STIX_EXT_OCTI].created_at;
+      const representative = extractStixRepresentative(baseData);
+      let name = `Generated container wrapper from playbook at ${created}`;
+      if (representative && newContainer) {
+        name = `${representative} - ${created}`;
+      } else if (representative) {
+        name = representative;
+      }
       const containerData: Record<string, unknown> = {
-        name: extractStixRepresentative(baseData) ?? `Generated container wrapper from playbook at ${created}`,
+        name,
         created,
       };
       if (container_type === ENTITY_TYPE_CONTAINER_REPORT) {
