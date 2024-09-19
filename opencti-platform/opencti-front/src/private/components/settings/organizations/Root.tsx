@@ -5,7 +5,8 @@ import React, { FunctionComponent, useMemo } from 'react';
 import { Route, Routes, useParams } from 'react-router-dom';
 import { graphql, PreloadedQuery, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
-import { VIRTUAL_ORGANIZATION_ADMIN, SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
+import AccessesMenu from '@components/settings/AccessesMenu';
+import { SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
@@ -13,6 +14,8 @@ import { RootSettingsOrganizationQuery } from './__generated__/RootSettingsOrgan
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import SettingsOrganization from './SettingsOrganization';
 import { RootSettingsOrganizationSubscription } from './__generated__/RootSettingsOrganizationSubscription.graphql';
+import Breadcrumbs from '../../../../components/Breadcrumbs';
+import { useFormatter } from '../../../../components/i18n';
 
 const subscription = graphql`
   subscription RootSettingsOrganizationSubscription($id: ID!) {
@@ -50,17 +53,29 @@ const RootSettingsOrganizationComponent: FunctionComponent<RootSettingsOrganizat
   useSubscription(subConfig);
   const data = usePreloadedQuery(organizationQuery, queryRef);
   const { organization } = data;
+  const { t_i18n } = useFormatter();
+
   return (
     <Security needs={[SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN]}>
       {organization ? (
-        <Routes>
-          <Route
-            path="/"
-            element={
-              <SettingsOrganization organizationData={organization} />
-            }
+        <div style={{ paddingRight: 200 }}>
+          <AccessesMenu/>
+          <Breadcrumbs variant="object" elements={[
+            { label: t_i18n('Settings') },
+            { label: t_i18n('Security') },
+            { label: t_i18n('Organizations'), link: '/dashboard/settings/accesses/organizations' },
+            { label: organization.name, current: true },
+          ]}
           />
-        </Routes>
+          <Routes>
+            <Route
+              path="/"
+              element={
+                <SettingsOrganization organizationData={organization}/>
+            }
+            />
+          </Routes>
+        </div>
       ) : (
         <ErrorNotFound />
       )}
