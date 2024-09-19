@@ -13467,6 +13467,7 @@ export type MutationAiContainerGenerateReportArgs = {
   containerId: Scalars['String']['input'];
   format?: InputMaybe<Format>;
   id: Scalars['ID']['input'];
+  language: Scalars['String']['input'];
   paragraphs?: InputMaybe<Scalars['Int']['input']>;
   tone?: InputMaybe<Tone>;
 };
@@ -35818,7 +35819,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   administrativeAreaRelationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<MutationAdministrativeAreaRelationAddArgs, 'id' | 'input'>>;
   administrativeAreaRelationDelete?: Resolver<Maybe<ResolversTypes['AdministrativeArea']>, ParentType, ContextType, RequireFields<MutationAdministrativeAreaRelationDeleteArgs, 'id' | 'relationship_type' | 'toId'>>;
   aiChangeTone?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<MutationAiChangeToneArgs, 'content' | 'id'>>;
-  aiContainerGenerateReport?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<MutationAiContainerGenerateReportArgs, 'containerId' | 'id'>>;
+  aiContainerGenerateReport?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<MutationAiContainerGenerateReportArgs, 'containerId' | 'id' | 'language'>>;
   aiConvertFilesToStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<MutationAiConvertFilesToStixArgs, 'elementId' | 'id'>>;
   aiConvertIndicator?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<MutationAiConvertIndicatorArgs, 'format' | 'id' | 'indicatorId'>>;
   aiExplain?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<MutationAiExplainArgs, 'content' | 'id'>>;

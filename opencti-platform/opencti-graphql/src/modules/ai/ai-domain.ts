@@ -166,7 +166,7 @@ export const explain = async (context: AuthContext, user: AuthUser, id: string, 
 
 export const generateContainerReport = async (context: AuthContext, user: AuthUser, args: MutationAiContainerGenerateReportArgs) => {
   await checkEnterpriseEdition(context);
-  const { id, containerId, paragraphs = 10, tone = 'technical', format = 'HTML' } = args;
+  const { id, containerId, paragraphs = 10, tone = 'technical', format = 'HTML', language = 'en-us' } = args;
   const paragraphsNumber = !paragraphs || paragraphs > 20 ? 20 : paragraphs;
   const container = await storeLoadById(context, user, containerId, ENTITY_TYPE_CONTAINER) as BasicStoreEntity;
   const elements = await listAllToEntitiesThroughRelations(context, user, containerId, RELATION_OBJECT, [ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CORE_RELATIONSHIP]);
@@ -234,6 +234,7 @@ export const generateContainerReport = async (context: AuthContext, user: AuthUs
     
     # Formatting
     - The report should be in ${format?.toUpperCase() ?? 'TEXT'} format.
+    - The report should be in ${language} language.
     - For all found technical indicators of compromise and or observables, you must generate a table with all of them at the end of the report, including file hashes, IP addresses, domain names, etc.
     
     # Facts
