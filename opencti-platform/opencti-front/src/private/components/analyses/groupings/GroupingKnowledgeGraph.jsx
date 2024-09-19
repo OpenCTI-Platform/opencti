@@ -1542,6 +1542,11 @@ const GroupingKnowledgeGraph = createFragmentContainer(
               }
               ... on StixFile {
                 observableName: name
+                x_opencti_additional_names
+                hashes {
+                  algorithm
+                  hash
+                }
               }
               ... on Label {
                 value
