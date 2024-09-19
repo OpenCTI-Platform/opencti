@@ -690,13 +690,6 @@ workflows:
             branches:
               only:
                 - master
-      - package_prerelease:
-          requires:
-            - build_platform
-          filters:
-            branches:
-              only:
-                - $PRE_RELEASE_VERSION
       - tag_package_rolling:
           requires:
             - build_platform
