@@ -20,6 +20,7 @@ import CustomizationMenu from '../CustomizationMenu';
 import { DecayRule_decayRule$key } from './__generated__/DecayRule_decayRule.graphql';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
+import Breadcrumbs from '../../../../components/Breadcrumbs';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -108,6 +109,11 @@ const DecayRuleComponent = ({ queryRef }: DecayRuleComponentProps) => {
 
   return (
     <div className={classes.container}>
+      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Customization') }, {
+        label: t_i18n('Decay rules'),
+        link: '/dashboard/settings/customization/decay',
+      }, { label: decayRule.name, current: true }]}
+      />
       <CustomizationMenu />
       {!decayRule.built_in && (
         <DecayRuleEdition decayRule={decayRule} />
