@@ -31,7 +31,7 @@ const HistoryDefinition: AttributeDefinition[] = [
   { name: 'event_type', label: 'Event type', type: 'string', format: 'enum', values: ['authentication', 'read', 'mutation', 'file', 'command'], editDefault: false, mandatoryType: 'internal', multiple: false, upsert: false, isFilterable: true },
   { name: 'event_status', label: 'Event status', type: 'string', format: 'enum', values: ['error', 'success'], editDefault: false, mandatoryType: 'internal', multiple: false, upsert: false, isFilterable: false },
   { name: 'event_access', label: 'Event access', type: 'string', format: 'enum', values: ['extended', 'administration'], editDefault: false, mandatoryType: 'internal', multiple: false, upsert: false, isFilterable: false },
-  { name: 'event_scope', label: 'Event scope', type: 'string', format: 'enum', values: ['create', 'update', 'delete', 'read', 'search', 'enrich', 'download', 'import', 'export', 'login', 'logout'], editDefault: false, mandatoryType: 'internal', multiple: false, upsert: false, isFilterable: true },
+  { name: 'event_scope', label: 'Event scope', type: 'string', format: 'enum', values: ['create', 'update', 'delete', 'read', 'search', 'enrich', 'download', 'import', 'export', 'login', 'logout', 'unauthorized'], editDefault: false, mandatoryType: 'internal', multiple: false, upsert: false, isFilterable: true },
   {
     name: 'user_id',
     label: 'User ID',
