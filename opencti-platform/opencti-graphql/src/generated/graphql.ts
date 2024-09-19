@@ -18406,8 +18406,8 @@ export type PositionEditMutationsRelationDeleteArgs = {
 };
 
 export type PositionInput = {
-  x: Scalars['Int']['input'];
-  y: Scalars['Int']['input'];
+  x: Scalars['Float']['input'];
+  y: Scalars['Float']['input'];
 };
 
 export enum PositionsOrdering {

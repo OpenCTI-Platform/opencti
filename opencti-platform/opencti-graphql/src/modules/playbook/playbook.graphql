@@ -86,8 +86,8 @@ input PlaybookAddInput {
 }
 
 input PositionInput {
-    x: Int!
-    y: Int!
+    x: Float!
+    y: Float!
 }
 
 input PlaybookAddNodeInput {
