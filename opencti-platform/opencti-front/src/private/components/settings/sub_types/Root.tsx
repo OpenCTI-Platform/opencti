@@ -5,6 +5,8 @@ import { RootSubTypeQuery } from '@components/settings/sub_types/__generated__/R
 import Loader from '../../../../components/Loader';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import SubType from './SubType';
+import Breadcrumbs from '../../../../components/Breadcrumbs';
+import { useFormatter } from '../../../../components/i18n';
 
 export const subTypeQuery = graphql`
   query RootSubTypeQuery($id: String!) {
@@ -16,14 +18,25 @@ export const subTypeQuery = graphql`
 
 const RootSubType = () => {
   const { subTypeId } = useParams() as { subTypeId: string };
-
+  const { t_i18n } = useFormatter();
   const data = useLazyLoadQuery<RootSubTypeQuery>(subTypeQuery, { id: subTypeId });
 
   return (
     <Suspense fallback={<Loader />}>
       {
-        data.subType ? <SubType data={data.subType} /> : <ErrorNotFound />
-      }
+        data.subType ? (
+          <>
+            <Breadcrumbs variant="list" elements={[
+              { label: t_i18n('Settings') },
+              { label: t_i18n('Customization') },
+              { label: t_i18n('Entity types'), link: '/dashboard/settings/customization/entity_types' },
+            ]}
+            />
+            <SubType data={data.subType}/>
+          </>
+        ) : (
+          <ErrorNotFound/>
+        )}
     </Suspense>
   );
 };

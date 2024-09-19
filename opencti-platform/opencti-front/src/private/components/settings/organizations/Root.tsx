@@ -58,7 +58,7 @@ const RootSettingsOrganizationComponent: FunctionComponent<RootSettingsOrganizat
   return (
     <Security needs={[SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN]}>
       {organization ? (
-        <div style={{ paddingRight: 200 }}>
+        <>
           <AccessesMenu/>
           <Breadcrumbs variant="object" elements={[
             { label: t_i18n('Settings') },
@@ -75,7 +75,7 @@ const RootSettingsOrganizationComponent: FunctionComponent<RootSettingsOrganizat
             }
             />
           </Routes>
-        </div>
+        </>
       ) : (
         <ErrorNotFound />
       )}

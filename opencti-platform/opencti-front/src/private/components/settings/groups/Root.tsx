@@ -63,7 +63,7 @@ const RootGroupComponent: FunctionComponent<RootGroupComponentProps> = ({ queryR
   return (
     <Security needs={[SETTINGS_SETACCESSES]}>
       {group ? (
-        <div style={{ paddingRight: 200 }}>
+        <>
           <AccessesMenu/>
           <Breadcrumbs variant="object" elements={[
             { label: t_i18n('Settings') },
@@ -80,7 +80,7 @@ const RootGroupComponent: FunctionComponent<RootGroupComponentProps> = ({ queryR
             }
             />
           </Routes>
-        </div>
+        </>
       ) : (
         <ErrorNotFound />
       )}
