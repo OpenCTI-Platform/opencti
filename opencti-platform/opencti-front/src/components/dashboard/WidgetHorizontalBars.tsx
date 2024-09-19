@@ -37,17 +37,15 @@ const WidgetHorizontalBars = ({
   const theme = useTheme<Theme>();
   const navigate = useNavigate();
 
-  const getFormattedValue = (value: string | number | null) => {
+  const getFormattedValue = (value: string | number) => {
     if (typeof value === 'number') {
       return simpleNumberFormat(value);
     }
-    if (typeof value === 'string') {
-      const newTimestamp = parseInt(value, 10);
-      if (!Number.isNaN(newTimestamp)) {
-        const convertedDate = timestamp(newTimestamp);
-        const date = dateFormat(convertedDate, 'YYYY-MM-DD');
-        if (date) return date;
-      }
+    const newTimestamp = parseInt(value, 10);
+    if (!Number.isNaN(newTimestamp)) {
+      const convertedDate = timestamp(newTimestamp);
+      const date = dateFormat(convertedDate, 'YYYY-MM-DD' as string);
+      if (date) return date;
     }
     return value;
   };
