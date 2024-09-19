@@ -21,7 +21,6 @@ export interface FilterIconButtonProps {
   redirection?: boolean;
   helpers?: handleFilterHelpers;
   availableRelationFilterTypes?: Record<string, string[]>;
-  required?: boolean;
   entityTypes?: string[];
   filtersRestrictions?: FiltersRestrictions;
   searchContext?: FilterSearchContext;

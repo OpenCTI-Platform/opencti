@@ -227,8 +227,8 @@ const ExternalReferenceCreation: FunctionComponent<ExternalReferenceCreationProp
               file: '',
             }}
             validationSchema={externalReferenceValidation(t_i18n)}
-            validateOnChange={false} // Validation will occur on submission, required fields all have *'s
-            validateOnBlur={false} // Validation will occur on submission, required fields all have *'s
+            validateOnChange={true}
+            validateOnBlur={true}
             onSubmit={onSubmit}
             onReset={() => {
               onResetClassic();
@@ -329,8 +329,8 @@ const ExternalReferenceCreation: FunctionComponent<ExternalReferenceCreationProp
               file: '',
             }}
             validationSchema={externalReferenceValidation(t_i18n)}
-            validateOnChange={false} // Validation will occur on submission, required fields all have *'s
-            validateOnBlur={false} // Validation will occur on submission, required fields all have *'s
+            validateOnChange={true}
+            validateOnBlur={true}
             onReset={onResetContextual}
           >
             {({ submitForm, handleReset, isSubmitting, setFieldValue }) => (

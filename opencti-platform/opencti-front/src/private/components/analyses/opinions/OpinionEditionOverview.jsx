@@ -119,6 +119,7 @@ const OpinionEditionOverviewComponent = (props) => {
     x_opencti_workflow_id: convertStatus(t_i18n, opinion),
     confidence: opinion.confidence,
     explanation: opinion.explanation,
+    opinion: opinion.opinion,
   };
 
   return (
