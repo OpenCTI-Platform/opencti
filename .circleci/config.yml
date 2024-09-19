@@ -733,14 +733,14 @@ workflows:
           filters:
             branches:
               only:
-                - $PRE_RELEASE_VERSION
+                - /release\/.*/
       - docker_build_worker_prerelease:
           requires:
             - build_frontend
           filters:
             branches:
               only:
-                - $PRE_RELEASE_VERSION
+                - /release\/.*/
       - docker_build_platform_fips_rolling:
           requires:
             - build_frontend
