@@ -728,14 +728,14 @@ export const objectOrganization: RefAttribute = {
   multiple: true,
   upsert: true,
   isRefExistingForTypes(this, fromType, toType) {
-    logApp.info(`ANGIE isRefExistingForTypes this.type:${this.type}, fromType:${fromType}, toType:${toType} `);
+    // TODO understand the impact of this
     return !(fromType === ENTITY_TYPE_EVENT /* || isStixDomainObjectIdentity(fromType) */
         || isStixDomainObjectLocation(fromType))
       && this.toTypes.includes(toType);
   },
   datable: false,
   isFilterable: true,
-  toTypes: [ENTITY_TYPE_IDENTITY_ORGANIZATION], // ANGIE
+  toTypes: [ENTITY_TYPE_IDENTITY_ORGANIZATION],
 };
 
 export const objectAssignee: RefAttribute = {

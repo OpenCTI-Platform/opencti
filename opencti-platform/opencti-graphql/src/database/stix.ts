@@ -1177,20 +1177,15 @@ export const isRelationBuiltin = (instance: StoreRelation): boolean => {
 };
 
 export const checkRelationshipRef = (fromType: string, toType: string, relationshipType: string) => {
-  logApp.info(`ANGIE checkRelationshipRef - from:${fromType}, to:${toType}, relationshipType:${relationshipType}`);
   const relationRefs = schemaRelationsRefDefinition.getRelationsRef(fromType).filter((rel) => {
-    logApp.info(`ANGIE checkRelationshipRef - ${rel.databaseName} ?? ${relationshipType}`);
     return rel.databaseName === relationshipType;
   });
-  logApp.info(`ANGIE checkRelationshipRef - relationRefs.length:${relationRefs.length}`);
   if (relationRefs.length === 0) {
     throw FunctionalError('The relationship is not allowed', { type: relationshipType, from: fromType, to: toType });
   }
   if (relationRefs.length > 1) {
     throw FunctionalError('Invalid relationship schema', { type: relationshipType, from: fromType, to: toType, data: relationRefs });
   }
-
-  logApp.info(`ANGIE relationRefs[0]=${relationRefs[0].toTypes}`);
   if (!relationRefs[0].isRefExistingForTypes(fromType, toType)) {
     throw FunctionalError('The relationship is not allowed', { type: relationshipType, from: fromType, to: toType });
   }

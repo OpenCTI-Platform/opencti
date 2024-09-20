@@ -16,7 +16,7 @@ import {
 import { adminQueryWithSuccess, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
 import { findById } from '../../../src/domain/report';
 import { execChildPython } from '../../../src/python/pythonBridge';
-import { wait } from '../../../src/database/utils';
+import { taskHandler } from '../../../src/manager/taskManager';
 
 const READ_QUERY = gql`
   query caseIncident($id: String!) {
@@ -141,8 +141,8 @@ describe('Organization sharing standard behavior for container', () => {
     expect(organizationSharingQueryResult?.data?.stixCoreObjectEdit.restrictionOrganizationAdd).not.toBeNull();
     expect(organizationSharingQueryResult?.data?.stixCoreObjectEdit.restrictionOrganizationAdd.objectOrganization[0].name).toEqual(TEST_ORGANIZATION.name);
 
-    // Wait for background task magic to happens
-    await wait(5000);
+    // Need background task magic to happens for sharing
+    await taskHandler();
   });
   it('should Editor user access all objects', async () => {
     const REPORT_STIX_DOMAIN_ENTITIES = gql`
