@@ -2,7 +2,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import type { BasicStoreEntity } from '../../../src/types/store';
 import { addIndicator, promoteIndicatorToObservables } from '../../../src/modules/indicator/indicator-domain';
 import { addStixCyberObservable, promoteObservableToIndicator, stixCyberObservableDelete } from '../../../src/domain/stixCyberObservable';
-import { executePromoteIndicatorToObservables, executePromoteObservableToIndicator, executeReplace, executeShare } from '../../../src/manager/taskManager';
+import { executePromoteIndicatorToObservables, executePromoteObservableToIndicator, executeReplace } from '../../../src/manager/taskManager';
 import type { AuthContext } from '../../../src/types/user';
 import { ADMIN_USER, TEST_ORGANIZATION, testContext } from '../../utils/testQuery';
 import { MARKING_TLP_AMBER, MARKING_TLP_CLEAR } from '../../../src/schema/identifier';
