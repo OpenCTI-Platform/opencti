@@ -26,12 +26,13 @@ import {
 } from '../../schema/internalObject';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-types';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
+import { EVENT_ACCESS_VALUES, EVENT_SCOPE_VALUES, EVENT_STATUS_VALUES, EVENT_TYPE_VALUES } from '../../manager/activityListener';
 
 const HistoryDefinition: AttributeDefinition[] = [
-  { name: 'event_type', label: 'Event type', type: 'string', format: 'enum', values: ['authentication', 'read', 'mutation', 'file', 'command'], editDefault: false, mandatoryType: 'internal', multiple: false, upsert: false, isFilterable: true },
-  { name: 'event_status', label: 'Event status', type: 'string', format: 'enum', values: ['error', 'success'], editDefault: false, mandatoryType: 'internal', multiple: false, upsert: false, isFilterable: false },
-  { name: 'event_access', label: 'Event access', type: 'string', format: 'enum', values: ['extended', 'administration'], editDefault: false, mandatoryType: 'internal', multiple: false, upsert: false, isFilterable: false },
-  { name: 'event_scope', label: 'Event scope', type: 'string', format: 'enum', values: ['create', 'update', 'delete', 'read', 'search', 'enrich', 'download', 'import', 'export', 'login', 'logout'], editDefault: false, mandatoryType: 'internal', multiple: false, upsert: false, isFilterable: true },
+  { name: 'event_type', label: 'Event type', type: 'string', format: 'enum', values: EVENT_TYPE_VALUES, editDefault: false, mandatoryType: 'internal', multiple: false, upsert: false, isFilterable: true },
+  { name: 'event_status', label: 'Event status', type: 'string', format: 'enum', values: EVENT_STATUS_VALUES, editDefault: false, mandatoryType: 'internal', multiple: false, upsert: false, isFilterable: false },
+  { name: 'event_access', label: 'Event access', type: 'string', format: 'enum', values: EVENT_ACCESS_VALUES, editDefault: false, mandatoryType: 'internal', multiple: false, upsert: false, isFilterable: false },
+  { name: 'event_scope', label: 'Event scope', type: 'string', format: 'enum', values: EVENT_SCOPE_VALUES, editDefault: false, mandatoryType: 'internal', multiple: false, upsert: false, isFilterable: true },
   {
     name: 'user_id',
     label: 'User ID',
@@ -446,7 +447,7 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
     { name: 'timestamp', label: 'Timestamp', type: 'date', editDefault: false, mandatoryType: 'no', multiple: false, upsert: false, isFilterable: true },
     { name: 'updated_at', label: 'Updated at', type: 'date', editDefault: false, mandatoryType: 'no', multiple: false, upsert: false, isFilterable: true },
     { name: 'event_source_id', label: 'Event source', type: 'string', format: 'short', editDefault: false, mandatoryType: 'external', multiple: false, upsert: false, isFilterable: false },
-    { name: 'event_type', label: 'Event type', type: 'string', format: 'enum', values: ['authentication', 'read', 'mutation', 'file', 'command'], editDefault: false, mandatoryType: 'external', multiple: false, upsert: false, isFilterable: true },
+    { name: 'event_type', label: 'Event type', type: 'string', format: 'enum', values: EVENT_TYPE_VALUES, editDefault: false, mandatoryType: 'external', multiple: false, upsert: false, isFilterable: true },
     { name: 'user_id', label: 'User ID', type: 'string', format: 'id', entityTypes: [ENTITY_TYPE_USER], editDefault: false, mandatoryType: 'no', multiple: false, upsert: false, isFilterable: false },
     { name: 'connector_id', label: 'Connector ID', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: false, upsert: false, isFilterable: true },
     { name: 'status', label: 'Status', type: 'string', format: 'short', editDefault: false, mandatoryType: 'external', multiple: false, upsert: false, isFilterable: true },
