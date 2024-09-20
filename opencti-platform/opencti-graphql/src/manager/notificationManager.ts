@@ -34,12 +34,17 @@ import { isStixMatchFilterGroup } from '../utils/filtering/filtering-stix/stix-f
 import { replaceFilterKey } from '../utils/filtering/filtering-utils';
 import { CONNECTED_TO_INSTANCE_FILTER, CONNECTED_TO_INSTANCE_SIDE_EVENTS_FILTER } from '../utils/filtering/filtering-constants';
 import type { FilterGroup } from '../generated/graphql';
+import { DigestPeriod, TriggerEventType, TriggerType } from '../generated/graphql';
 
 const NOTIFICATION_LIVE_KEY = conf.get('notification_manager:lock_live_key');
 const NOTIFICATION_DIGEST_KEY = conf.get('notification_manager:lock_digest_key');
 export const EVENT_NOTIFICATION_VERSION = '1';
 const CRON_SCHEDULE_TIME = 60000; // 1 minute
 const STREAM_SCHEDULE_TIME = 10000;
+export const TRIGGER_EVENT_TYPES_VALUES = Object.values(TriggerEventType);
+export const TRIGGER_TYPE_VALUES = Object.values(TriggerType);
+export const DIGEST_PERIOD_VALUES = Object.values(DigestPeriod);
+export const TRIGGER_SCOPE_VALUES = ['knowledge', 'activity'];
 
 export interface ResolvedTrigger {
   users: Array<AuthUser>
@@ -155,7 +160,7 @@ const generateAssigneeTrigger = (user: AuthUser) => {
     name: 'Default Trigger for Assignee/Participant',
     trigger_type: 'live',
     trigger_scope: 'knowledge',
-    event_types: ['create', 'update', 'delete'],
+    event_types: TRIGGER_EVENT_TYPES_VALUES,
     notifiers: user.personal_notifiers,
     filters: JSON.stringify(filters),
     instance_trigger: false,
@@ -526,7 +531,7 @@ export const generateDefaultTrigger = (notifiers: string[], type: string) => {
     name: `Default Trigger for ${type}`,
     trigger_type: 'live',
     trigger_scope: 'knowledge',
-    event_types: ['create', 'update', 'delete'],
+    event_types: TRIGGER_EVENT_TYPES_VALUES,
     notifiers,
     filters: '',
     instance_trigger: false,
