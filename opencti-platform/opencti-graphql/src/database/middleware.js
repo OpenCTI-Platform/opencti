@@ -446,6 +446,36 @@ export const stixLoadByFilters = async (context, user, types, args) => {
 };
 // endregion
 
+const isValidDate = (stringDate) => {
+  return Date.parse(stringDate);
+};
+
+const defaultValue = (entityValue) => {
+  if (Array.isArray((entityValue))) return [];
+  if (isValidDate(entityValue)) return entityValue;
+  const type = typeof entityValue;
+  switch (type) {
+    case 'string': return 'Restricted';
+    case 'object': return null;
+    default: return undefined;
+  }
+};
+export const buildRestrictedEntity = (resolvedEntity) => {
+  const restrictedEntity = structuredClone(resolvedEntity);
+  for (let i = 0; i < Object.keys(restrictedEntity).length; i += 1) {
+    const item = Object.keys(restrictedEntity)[i];
+    restrictedEntity[item] = restrictedEntity[item] ? defaultValue(restrictedEntity[item]) : restrictedEntity[item];
+  }
+  return {
+    ...restrictedEntity,
+    id: resolvedEntity.internal_id,
+    name: 'Restricted',
+    entity_type: resolvedEntity.entity_type,
+    parent_types: resolvedEntity.parent_types,
+    representative: { main: 'Restricted', secondary: 'Restricted' }
+  };
+};
+
 // region Graphics
 const convertAggregateDistributions = async (context, user, limit, orderingFunction, distribution) => {
   const data = R.take(limit, R.sortWith([orderingFunction(R.prop('value'))])(distribution));
@@ -473,12 +503,7 @@ const convertAggregateDistributions = async (context, user, limit, orderingFunct
       }
       return {
         ...n,
-        entity: {
-          id: element.id,
-          entity_type: element.entity_type,
-          parent_types: element.parent_types,
-          representative: { main: 'Restricted', secondary: 'Restricted' }
-        }
+        entity: buildRestrictedEntity(element)
       };
     });
 };
