@@ -139,6 +139,7 @@ const SettingsMessages = ({
       <Paper
         ref={ref}
         classes={{ root: classes.paper }}
+        className={'paper-for-grid'}
         variant="outlined"
         style={{ marginTop: 0 }}
       >
