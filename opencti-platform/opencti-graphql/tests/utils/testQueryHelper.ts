@@ -1,18 +1,7 @@
 import { expect } from 'vitest';
 import { print } from 'graphql/index';
 import type { AxiosInstance } from 'axios';
-import {
-  ADMIN_USER,
-  adminQuery,
-  createUnauthenticatedClient,
-  executeInternalQuery,
-  getOrganizationIdByName,
-  Organization,
-  PLATFORM_ORGANIZATION,
-  queryAsAdmin,
-  TEST_ORGANIZATION,
-  testContext
-} from './testQuery';
+import { ADMIN_USER, adminQuery, createUnauthenticatedClient, executeInternalQuery, getOrganizationIdByName, Organization, queryAsAdmin, testContext } from './testQuery';
 import { downloadFile, streamConverter } from '../../src/database/file-storage';
 import { logApp } from '../../src/config/conf';
 import { AUTH_REQUIRED, FORBIDDEN_ACCESS } from '../../src/config/errors';
@@ -108,18 +97,16 @@ export const requestFileFromStorageAsAdmin = async (storageId: string) => {
 export const enableEEAndSetOrganization = async (organization: Organization) => {
   const platformOrganizationId = await getOrganizationIdByName(organization.name);
   const platformSettings: any = await getSettings(testContext);
-  console.log('platformSettings:', platformSettings);
 
   const input = [
     { key: 'enterprise_edition', value: [new Date().getTime()] },
     { key: 'platform_organization', value: [platformOrganizationId] }
   ];
   const settingsResult = await settingsEditField(testContext, ADMIN_USER, platformSettings.id, input);
-  console.log('settingsResult:', settingsResult);
 
   expect(settingsResult.platform_organization).not.toBeUndefined();
   expect(settingsResult.enterprise_edition).not.toBeUndefined();
-  expect(settingsResult.platform_organization.id).toEqual(platformOrganizationId);
+  expect(settingsResult.platform_organization).toEqual(platformOrganizationId);
 };
 
 /**
@@ -132,5 +119,8 @@ export const enableCEAndUnSetOrganization = async () => {
     { key: 'enterprise_edition', value: [] },
     { key: 'platform_organization', value: [] }
   ];
-  const result = await settingsEditField(testContext, ADMIN_USER, platformSettings.id, input);
+  const settingsResult = await settingsEditField(testContext, ADMIN_USER, platformSettings.id, input);
+
+  expect(settingsResult.platform_organization).toBeUndefined();
+  expect(settingsResult.enterprise_edition).toBeUndefined();
 };

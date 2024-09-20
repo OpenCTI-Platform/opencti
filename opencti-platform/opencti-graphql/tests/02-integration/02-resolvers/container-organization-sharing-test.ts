@@ -39,21 +39,6 @@ const DELETE_QUERY = gql`
   }
 `;
 
-const PLATFORM_ORGANIZATION_QUERY = gql`
-  mutation PoliciesFieldPatchMutation($id: ID!, $input: [EditInput]!) {
-    settingsEdit(id: $id) {
-      fieldPatch(input: $input) {
-        platform_organization {
-          id
-          name
-        }
-        enterprise_edition
-        id
-      }
-    }
-  }
-`;
-
 const ORGANIZATION_SHARING_QUERY = gql`
   mutation StixCoreObjectSharingGroupAddMutation(
     $id: ID!
@@ -140,7 +125,7 @@ describe('Organization sharing standard behavior for container', () => {
     });
     expect(queryResult.data.report.objects.edges.length).toEqual(10);
   });
-  it.skip('should delete Report', async () => {
+  it('should delete Report', async () => {
     // Delete the case
     await adminQuery({
       query: DELETE_QUERY,
@@ -150,7 +135,7 @@ describe('Organization sharing standard behavior for container', () => {
     const queryResult = await adminQueryWithSuccess({ query: READ_QUERY, variables: { id: reportInternalId } });
     expect(queryResult?.data?.caseIncident).toBeNull();
   });
-  it.skip('should plateform organization sharing and EE deactivated', async () => {
+  it('should plateform organization sharing and EE deactivated', async () => {
     await enableCEAndUnSetOrganization();
   });
 });
