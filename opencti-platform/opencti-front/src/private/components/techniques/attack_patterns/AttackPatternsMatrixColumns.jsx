@@ -300,9 +300,11 @@ class AttackPatternsMatrixColumnsComponent extends Component {
         R.values,
       )(selectedPatterns),
     );
-    const killChains = R.sortBy(R.prop('name'), R.uniq(data.attackPatternsMatrix.attackPatternsOfPhases.map((a) => a.kill_chain_name)));
+    const killChains = R.uniq(data.attackPatternsMatrix.attackPatternsOfPhases.map((a) => a.kill_chain_name))
+      .sort((a, b) => a.localeCompare(b));
     const attackPatternsOfPhases = data.attackPatternsMatrix.attackPatternsOfPhases
       .filter((a) => a.kill_chain_name === this.state.currentKillChain)
+      .sort((a, b) => a.x_opencti_order - b.x_opencti_order)
       .map((a) => {
         return {
           ...a,
