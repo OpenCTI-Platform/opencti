@@ -13467,7 +13467,7 @@ export type MutationAiContainerGenerateReportArgs = {
   containerId: Scalars['String']['input'];
   format?: InputMaybe<Format>;
   id: Scalars['ID']['input'];
-  language: Scalars['String']['input'];
+  language?: InputMaybe<Scalars['String']['input']>;
   paragraphs?: InputMaybe<Scalars['Int']['input']>;
   tone?: InputMaybe<Tone>;
 };
@@ -13533,7 +13533,7 @@ export type MutationAiSummarizeFilesArgs = {
   fileIds?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   format?: InputMaybe<Format>;
   id: Scalars['ID']['input'];
-  language: Scalars['String']['input'];
+  language?: InputMaybe<Scalars['String']['input']>;
   paragraphs?: InputMaybe<Scalars['Int']['input']>;
   tone?: InputMaybe<Tone>;
 };
@@ -35820,7 +35820,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   administrativeAreaRelationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<MutationAdministrativeAreaRelationAddArgs, 'id' | 'input'>>;
   administrativeAreaRelationDelete?: Resolver<Maybe<ResolversTypes['AdministrativeArea']>, ParentType, ContextType, RequireFields<MutationAdministrativeAreaRelationDeleteArgs, 'id' | 'relationship_type' | 'toId'>>;
   aiChangeTone?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<MutationAiChangeToneArgs, 'content' | 'id'>>;
-  aiContainerGenerateReport?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<MutationAiContainerGenerateReportArgs, 'containerId' | 'id' | 'language'>>;
+  aiContainerGenerateReport?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<MutationAiContainerGenerateReportArgs, 'containerId' | 'id'>>;
   aiConvertFilesToStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<MutationAiConvertFilesToStixArgs, 'elementId' | 'id'>>;
   aiConvertIndicator?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<MutationAiConvertIndicatorArgs, 'format' | 'id' | 'indicatorId'>>;
   aiExplain?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<MutationAiExplainArgs, 'content' | 'id'>>;
@@ -35829,7 +35829,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   aiMakeLonger?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<MutationAiMakeLongerArgs, 'content' | 'id'>>;
   aiMakeShorter?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<MutationAiMakeShorterArgs, 'content' | 'id'>>;
   aiSummarize?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<MutationAiSummarizeArgs, 'content' | 'id'>>;
-  aiSummarizeFiles?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<MutationAiSummarizeFilesArgs, 'elementId' | 'id' | 'language'>>;
+  aiSummarizeFiles?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<MutationAiSummarizeFilesArgs, 'elementId' | 'id'>>;
   aiThreatGenerateReport?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<MutationAiThreatGenerateReportArgs, 'id' | 'threatId'>>;
   aiVictimGenerateReport?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<MutationAiVictimGenerateReportArgs, 'id' | 'victimId'>>;
   artifactImport?: Resolver<Maybe<ResolversTypes['Artifact']>, ParentType, ContextType, RequireFields<MutationArtifactImportArgs, 'file'>>;
