@@ -400,8 +400,8 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({ inst
                 onChange={(event) => setLanguage(event.target.value)}
                 fullWidth={true}
               >
-                {availableLanguage.map(lang => (
-                  <MenuItem value={lang.value}>{t_i18n(lang.label)}</MenuItem>
+                {availableLanguage.map((lang) => (
+                  <MenuItem key={uuid()} value={lang.value}>{t_i18n(lang.label)}</MenuItem>
                 ))}
               </Select>
             </FormControl>
