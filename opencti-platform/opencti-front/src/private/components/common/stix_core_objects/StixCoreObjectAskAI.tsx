@@ -109,12 +109,12 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({ inst
   const isEnterpriseEdition = useEnterpriseEdition();
   const { enabled, configured } = useAI();
   const isKnowledgeUploader = useGranted([KNOWLEDGE_KNUPLOAD]);
-
-  const { me } = useContext(UserContext);
-  const settingsLanguage = 'auto'; // TODO : find platform settings
-  const platformLanguage = settingsLanguage !== 'auto' ? settingsLanguage : locale;
-  const [language, setLanguage] = useState(me?.language || platformLanguage);
-
+  // get default language for Ai generation by priority : 1. user language, 2. platform language, 3. browser language
+  const { me, settings } = useContext(UserContext);
+  const userLanguage = me?.language && me.language !== 'auto' ? me.language : null;
+  const platformLanguage = settings?.platform_language && settings.platform_language !== 'auto' ? settings.platform_language : null;
+  const defaultLanguage = userLanguage || platformLanguage || locale;
+  const [language, setLanguage] = useState(defaultLanguage);
   const [action, setAction] = useState<'container-report' | 'summarize-files' | 'convert-files' | null>(null);
   const [content, setContent] = useState('');
   const [acceptedResult, setAcceptedResult] = useState<string | null>(null);
