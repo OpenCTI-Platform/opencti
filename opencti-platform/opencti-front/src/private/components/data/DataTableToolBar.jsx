@@ -194,6 +194,7 @@ const notUpdatableTypes = ['Label', 'Vocabulary', 'Case-Template', 'Task', 'Dele
 const notScannableTypes = ['Label', 'Vocabulary', 'Case-Template', 'Task', 'DeleteOperation', 'InternalFile', 'PublicDashboard', 'Workspace'];
 const notEnrichableTypes = ['Label', 'Vocabulary', 'Case-Template', 'Task', 'DeleteOperation', 'InternalFile', 'PublicDashboard', 'Workspace'];
 const typesWithScore = ['Stix-Cyber-Observable', 'Indicator'];
+const typesWithoutStatus = ['Stix-Core-Object', 'Stix-Domain-Object', 'Stix-Cyber-Observable', 'Artifact', 'ExternalReference'];
 const notShareableTypes = ['Label', 'Vocabulary', 'Case-Template', 'DeleteOperation', 'InternalFile', 'PublicDashboard', 'Workspace'];
 
 const Transition = React.forwardRef((props, ref) => (
@@ -716,10 +717,14 @@ class DataTableToolBar extends Component {
     }
   }
 
-  renderFieldOptions(i, typesHaveScore) {
+  renderFieldOptions(i, selectedTypes, entityTypeFilterValues) {
     const { t } = this.props;
     const { actionsInputs } = this.state;
     const disabled = R.isNil(actionsInputs[i]?.type) || R.isEmpty(actionsInputs[i]?.type);
+    const typesHaveScore = selectedTypes.every((selectedType) => typesWithScore.includes(selectedType))
+      && entityTypeFilterValues.every((filterType) => typesWithScore.includes(filterType));
+    const typesHaveStatus = selectedTypes.length === 1 // the proposed statuses values depends on the entity type, so we should have only one type selected
+      && !typesWithoutStatus.includes(selectedTypes[0]);
     let options = [];
     if (actionsInputs[i]?.type === 'ADD') {
       options = [
@@ -739,7 +744,7 @@ class DataTableToolBar extends Component {
       if (typesHaveScore) {
         options.push({ label: t('Score'), value: 'x_opencti_score' });
       }
-      if (this.props.type) {
+      if (typesHaveStatus) {
         options.push({ label: t('Status'), value: 'x_opencti_workflow_id' });
       }
     } else if (actionsInputs[i]?.type === 'REMOVE') {
@@ -932,9 +937,15 @@ class DataTableToolBar extends Component {
       });
   }
 
-  searchStatuses(i, event, newValue) {
+  searchStatuses(i, selectedTypes, event, newValue) {
     if (!event) return;
     const { actionsInputs } = this.state;
+    let selectedType;
+    if (selectedTypes.length === 1) {
+      [selectedType] = selectedTypes;
+    } else {
+      throw Error('It is not possible to bulk edit statuses if more than one entity type is selected.');
+    }
     actionsInputs[i] = R.assoc(
       'inputValue',
       newValue && newValue.length > 0 ? newValue : '',
@@ -946,7 +957,7 @@ class DataTableToolBar extends Component {
       filters: {
         mode: 'and',
         filterGroups: [],
-        filters: [{ key: 'type', values: [this.props.type] }],
+        filters: [{ key: 'type', values: [selectedType] }],
       },
       orderBy: 'order',
       orderMode: 'asc',
@@ -967,7 +978,7 @@ class DataTableToolBar extends Component {
       });
   }
 
-  renderValuesOptions(i) {
+  renderValuesOptions(i, selectedTypes) {
     const { t, classes } = this.props;
     const { actionsInputs } = this.state;
     const disabled = R.isNil(actionsInputs[i]?.field) || R.isEmpty(actionsInputs[i]?.field);
@@ -1163,13 +1174,13 @@ class DataTableToolBar extends Component {
                 variant="standard"
                 label={t('Values')}
                 fullWidth={true}
-                onFocus={this.searchStatuses.bind(this, i)}
+                onFocus={this.searchStatuses.bind(this, i, selectedTypes)}
                 style={{ marginTop: 3 }}
               />
             )}
             noOptionsText={t('No available options')}
             options={this.state.statuses}
-            onInputChange={this.searchStatuses.bind(this, i)}
+            onInputChange={this.searchStatuses.bind(this, i, selectedTypes)}
             inputValue={actionsInputs[i]?.inputValue || ''}
             onChange={this.handleChangeActionInputValues.bind(this, i)}
             renderOption={(props, option) => (
@@ -1359,8 +1370,6 @@ class DataTableToolBar extends Component {
         newAliases = names.concat(aliases).filter((o) => o && o.length > 0);
       }
     }
-    const typesHaveScore = selectedTypes.every((selectedType) => typesWithScore.includes(selectedType))
-      && entityTypeFilterValues.every((filterType) => typesWithScore.includes(filterType));
 
     let deleteCapability = KNOWLEDGE_KNUPDATE_KNDELETE;
     if (taskScope === 'DASHBOARD') deleteCapability = EXPLORE_EXUPDATE_EXDELETE;
@@ -1897,11 +1906,11 @@ class DataTableToolBar extends Component {
                           <Grid item xs={3}>
                             <FormControl className={classes.formControl}>
                               <InputLabel>{t('Field')}</InputLabel>
-                              {this.renderFieldOptions(i, typesHaveScore)}
+                              {this.renderFieldOptions(i, selectedTypes, entityTypeFilterValues)}
                             </FormControl>
                           </Grid>
                           <Grid item xs={6}>
-                            {this.renderValuesOptions(i)}
+                            {this.renderValuesOptions(i, selectedTypes)}
                           </Grid>
                         </Grid>
                       </div>
