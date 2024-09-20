@@ -249,7 +249,7 @@ export const generateContainerReport = async (context: AuthContext, user: AuthUs
 
 export const summarizeFiles = async (context: AuthContext, user: AuthUser, args: MutationAiSummarizeFilesArgs) => {
   await checkEnterpriseEdition(context);
-  const { id, elementId, paragraphs = 10, fileIds, tone = 'technical', format = 'HTML' } = args;
+  const { id, elementId, paragraphs = 10, fileIds, tone = 'technical', format = 'HTML', language = 'en-us' } = args;
   const paragraphsNumber = !paragraphs || paragraphs > 20 ? 20 : paragraphs;
   const stixCoreObject = await storeLoadById(context, user, elementId, ABSTRACT_STIX_CORE_OBJECT) as BasicStoreEntity;
   let finalFilesIds = fileIds;
@@ -282,6 +282,7 @@ export const summarizeFiles = async (context: AuthContext, user: AuthUser, args:
   - The summary should have ${paragraphsNumber} of approximately 5 lines each.
   - Ensure that all words are accurately spelled and that the grammar is correct. 
   - Your response should in the given format which is ${format}, be sure to respect this format.
+  - Your response should be in ${language} language.
   
   # Content
   ${filesContent.join('')}

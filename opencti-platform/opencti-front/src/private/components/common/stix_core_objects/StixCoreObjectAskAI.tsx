@@ -74,8 +74,8 @@ const stixCoreObjectAskAIContainerReportMutation = graphql`
 `;
 
 const stixCoreObjectAskAISummarizeFilesMutation = graphql`
-  mutation StixCoreObjectAskAISummarizeFilesMutation($id: ID!, $elementId: String!, $paragraphs: Int, $tone: Tone, $format: Format, $fileIds: [String]) {
-    aiSummarizeFiles(id: $id, elementId: $elementId, paragraphs: $paragraphs, tone: $tone, format: $format, fileIds: $fileIds)
+  mutation StixCoreObjectAskAISummarizeFilesMutation($id: ID!, $elementId: String!, $paragraphs: Int, $tone: Tone, $format: Format, $fileIds: [String], $language: String!) {
+    aiSummarizeFiles(id: $id, elementId: $elementId, paragraphs: $paragraphs, tone: $tone, format: $format, language: $language, fileIds: $fileIds)
   }
 `;
 
@@ -87,7 +87,7 @@ const stixCoreObjectAskAIConvertFilesToStixMutation = graphql`
 
 const actionsOptions = {
   'container-report': ['format', 'paragraphs', 'tone', 'language'],
-  'summarize-files': ['format', 'paragraphs', 'tone', 'files'],
+  'summarize-files': ['format', 'paragraphs', 'tone', 'files', 'language'],
   'convert-files': ['format', 'files'],
 };
 
@@ -190,6 +190,7 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({ inst
             paragraphs,
             tone,
             format,
+            language,
             fileIds: files.map((n) => n.value),
           },
           onCompleted: (response: StixCoreObjectAskAISummarizeFilesMutation$data) => {
