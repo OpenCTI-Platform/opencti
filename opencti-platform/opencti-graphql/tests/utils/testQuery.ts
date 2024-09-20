@@ -275,7 +275,7 @@ export const PLATFORM_ADMIN_GROUP: Group = {
 TESTING_GROUPS.push(PLATFORM_ADMIN_GROUP);
 
 // Organization
-interface Organization {
+export interface Organization {
   name: string,
   id: string
 }

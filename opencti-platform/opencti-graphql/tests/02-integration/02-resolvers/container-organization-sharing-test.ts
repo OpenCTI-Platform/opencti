@@ -13,7 +13,7 @@ import {
   testContext,
   USER_EDITOR,
 } from '../../utils/testQuery';
-import { adminQueryWithSuccess, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
+import { adminQueryWithSuccess, enableCEAndUnSetOrganization, enableEEAndSetOrganization, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
 import { findById } from '../../../src/domain/report';
 import { execChildPython } from '../../../src/python/pythonBridge';
 import { taskHandler } from '../../../src/manager/taskManager';
@@ -91,45 +91,12 @@ describe('Database provision', () => {
 describe('Organization sharing standard behavior for container', () => {
   let reportInternalId: string;
   let organizationId: string;
-  let settingsInternalId: string;
-  let platformOrganizationId: string;
   it('should load Report', async () => {
     const report = await findById(testContext, ADMIN_USER, 'report--57162a65-2a58-560b-9a65-47c3f040f3d4'); // Report is in DATA-TEST-STIX_v2.json
     reportInternalId = report.internal_id;
   });
-  it('should plateform organization sharing and EE activated', async () => { // TODO extract set/unset EE and orga platfor in testQueryHelpers
-    // Get organization id
-    platformOrganizationId = await getOrganizationIdByName(PLATFORM_ORGANIZATION.name);
-
-    // Get settings ID
-    const SETTINGS_READ_QUERY = gql`
-      query settings {
-        settings {
-          id
-          platform_organization {
-            id
-            name
-          }
-        }
-      }
-    `;
-    const queryResult = await adminQuery({ query: SETTINGS_READ_QUERY, variables: {} });
-    settingsInternalId = queryResult.data?.settings?.id;
-
-    // Set plateform organization
-    const platformOrganization = await adminQueryWithSuccess({
-      query: PLATFORM_ORGANIZATION_QUERY,
-      variables: {
-        id: settingsInternalId,
-        input: [
-          { key: 'platform_organization', value: platformOrganizationId },
-          { key: 'enterprise_edition', value: new Date().getTime() },
-        ]
-      }
-    });
-    expect(platformOrganization?.data?.settingsEdit.fieldPatch.platform_organization).not.toBeUndefined();
-    expect(platformOrganization?.data?.settingsEdit.fieldPatch.enterprise_edition).not.toBeUndefined();
-    expect(platformOrganization?.data?.settingsEdit.fieldPatch.platform_organization.name).toEqual(PLATFORM_ORGANIZATION.name);
+  it('should platform organization sharing and EE activated', async () => {
+    await enableEEAndSetOrganization(PLATFORM_ORGANIZATION);
   });
   it('should share Report with Organization', async () => {
     // Get organization id
@@ -184,17 +151,6 @@ describe('Organization sharing standard behavior for container', () => {
     expect(queryResult?.data?.caseIncident).toBeNull();
   });
   it.skip('should plateform organization sharing and EE deactivated', async () => {
-    // Remove plateform organization
-    const platformOrganization = await adminQueryWithSuccess({
-      query: PLATFORM_ORGANIZATION_QUERY,
-      variables: {
-        id: settingsInternalId,
-        input: [
-          { key: 'platform_organization', value: [] },
-          { key: 'enterprise_edition', value: [] },
-        ]
-      }
-    });
-    expect(platformOrganization?.data?.settingsEdit.fieldPatch.platform_organization).toBeNull();
+    await enableCEAndUnSetOrganization();
   });
 });

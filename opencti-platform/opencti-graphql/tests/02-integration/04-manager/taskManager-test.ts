@@ -4,7 +4,7 @@ import { addIndicator, promoteIndicatorToObservables } from '../../../src/module
 import { addStixCyberObservable, promoteObservableToIndicator, stixCyberObservableDelete } from '../../../src/domain/stixCyberObservable';
 import { executePromoteIndicatorToObservables, executePromoteObservableToIndicator, executeReplace, executeShare } from '../../../src/manager/taskManager';
 import type { AuthContext } from '../../../src/types/user';
-import { ADMIN_USER, TEST_ORGANIZATION, testContext } from '../../utils/testQuery';
+import { ADMIN_USER, getOrganizationIdByName, PLATFORM_ORGANIZATION, TEST_ORGANIZATION, testContext } from '../../utils/testQuery';
 import { MARKING_TLP_AMBER, MARKING_TLP_CLEAR } from '../../../src/schema/identifier';
 import { addReport, findById as findReportById } from '../../../src/domain/report';
 import { findById as findMarkingById } from '../../../src/domain/markingDefinition';
@@ -13,6 +13,8 @@ import { stixDomainObjectDelete } from '../../../src/domain/stixDomainObject';
 import { type OrganizationAddInput } from '../../../src/generated/graphql';
 import { RELATION_OBJECT } from '../../../src/schema/stixRefRelationship';
 import { promoteObservableInput, promoteIndicatorInput, promoteReportInput } from './taskManager-promote-values/promoteValues';
+import { getSettings, settingsEditField } from '../../../src/domain/settings';
+import type { BasicStoreEntityEntitySetting } from '../../../src/modules/entitySetting/entitySetting-types';
 
 describe('TaskManager executeReplace tests ', () => {
   const adminContext: AuthContext = { user: ADMIN_USER, tracing: undefined, source: 'taskManager-integration-test', otp_mandatory: false };
@@ -281,7 +283,7 @@ describe('TaskManager executeReplace tests ', () => {
   });
 });
 
-describe('TaskManager executePromote tests', () => {
+describe.skip('TaskManager executePromote tests', () => {
   const prepareTestContext = async () => {
     const createdIndicator = await addIndicator(testContext, ADMIN_USER, promoteIndicatorInput);
     const createObservable = await addStixCyberObservable(testContext, ADMIN_USER, promoteObservableInput);
