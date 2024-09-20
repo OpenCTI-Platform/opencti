@@ -31,6 +31,7 @@ const toolbarOptions = {
       columnDelimiter: ',',
       headerCategory: 'category',
       headerValue: 'value',
+      // eslint-disable-next-line @typescript-eslint/no-shadow
       dateFormatter(timestamp) {
         return new Date(timestamp).toDateString();
       },
@@ -524,7 +525,7 @@ export const horizontalBarsChartOptions = (
     show: stackType !== '100%',
     labels: {
       show: stackType !== '100%',
-      formatter: (value) => (yFormatter && typeof value === 'number' ? yFormatter(value) : value),
+      formatter: (value) => (yFormatter ? yFormatter(value) : value),
       style: {
         fontFamily: '"IBM Plex Sans", sans-serif',
       },
