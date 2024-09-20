@@ -89,7 +89,6 @@ import { FunctionalError, UnsupportedError } from '../config/errors';
 import { ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL } from '../modules/threatActorIndividual/threatActorIndividual-types';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
 import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
-import { logApp } from '../config/conf';
 
 const MAX_TRANSIENT_STIX_IDS = 200;
 export const STIX_SPEC_VERSION = '2.1';

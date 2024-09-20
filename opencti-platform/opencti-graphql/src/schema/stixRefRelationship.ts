@@ -23,7 +23,6 @@ import {
   ENTITY_TYPE_IDENTITY_SYSTEM,
   ENTITY_TYPE_LOCATION_COUNTRY,
   isStixDomainObjectContainer,
-  isStixDomainObjectIdentity,
   isStixDomainObjectLocation
 } from './stixDomainObject';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_KILL_CHAIN_PHASE, ENTITY_TYPE_LABEL, ENTITY_TYPE_MARKING_DEFINITION } from './stixMetaObject';
@@ -51,7 +50,6 @@ import {
   ENTITY_WINDOWS_REGISTRY_VALUE_TYPE
 } from './stixCyberObservable';
 import { ATTRIBUTE_SAMPLE } from '../modules/malwareAnalysis/malwareAnalysis-types';
-import { logApp } from '../config/conf';
 
 export const ABSTRACT_STIX_NESTED_REF_RELATIONSHIP = 'stix-nested-ref-relationship'; // Only for front usage
 
