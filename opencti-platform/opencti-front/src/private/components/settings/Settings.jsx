@@ -432,8 +432,11 @@ const Settings = () => {
                         {t_i18n('Disable Enterprise Edition')}
                       </Button>
                     )}
-                    <div className="clearfix" />
-                    <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
+                    <Paper
+                      classes={{ root: classes.paper }}
+                      className={'paper-for-grid'}
+                      variant="outlined"
+                    >
                       <Formik
                         onSubmit={() => {}}
                         enableReinitialize={true}
