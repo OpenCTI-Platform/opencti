@@ -440,8 +440,8 @@ export const userFilterStoreElements = async (context: AuthContext, user: AuthUs
         // If element is shared, user must have a matching sharing organization
         return elementOrganizations.some((r) => userOrganizations.includes(r));
       }
-      // If no platform organization is set, user can access empty sharing and dedicated sharing
-      return elementOrganizations.length === 0 || elementOrganizations.some((r) => userOrganizations.includes(r));
+      // If no platform organization is set, user can
+      return true;
     });
   };
   return telemetry(context, user, 'FILTERING store filter', {
@@ -491,8 +491,8 @@ export const isUserCanAccessStixElement = async (context: AuthContext, user: Aut
     // If element is shared, user must have a matching sharing organization
     return elementOrganizations.some((r) => userOrganizations.includes(r));
   }
-  // If no platform organization is set, user can access empty sharing and dedicated sharing
-  return elementOrganizations.length === 0 || elementOrganizations.some((r) => userOrganizations.includes(r));
+  // If no platform organization is set, user can access
+  return true;
 };
 
 // region member access

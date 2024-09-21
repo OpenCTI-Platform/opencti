@@ -1392,7 +1392,7 @@ describe('Notification manager behaviors test', async () => {
 
     // O is a green organization, trigger on O and another organization
     result = await buildTargetEvents(context, users, streamEventShareMalwareWithGreenOrganization, triggerOrganizationsAllEvents, true);
-    expect(result.length).toEqual(1);
+    expect(result.length).toEqual(2);
     expect(result[0].type).toEqual(EVENT_TYPE_UPDATE);
     expect(result[0].message).toEqual('[identity] greenOrganization_name added in [malware] malware_name');
 
