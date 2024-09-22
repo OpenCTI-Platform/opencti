@@ -73,7 +73,7 @@ StixSightingRelationshipProps
           if (result.props && result.props.stixSightingRelationship) {
             return (<>
               <SightingHeader>
-                <Breadcrumbs variant="object" elements={[
+                <Breadcrumbs elements={[
                   { label: t_i18n('Events') },
                   { label: t_i18n('Sightings'), link: '/dashboard/events/sightings' },
                   { label: t_i18n('Sighting'), current: true },

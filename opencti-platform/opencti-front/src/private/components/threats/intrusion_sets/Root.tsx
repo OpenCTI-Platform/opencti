@@ -140,7 +140,7 @@ const RootIntrusionSet = ({ intrusionSetId, queryRef }: RootIntrusionSetProps) =
             />
           </Routes>
           <div style={{ paddingRight }} data-testid="intrusionSet-details-page">
-            <Breadcrumbs variant="object" elements={[
+            <Breadcrumbs elements={[
               { label: t_i18n('Threats') },
               { label: t_i18n('Intrusion sets'), link: '/dashboard/threats/intrusion_sets' },
               { label: intrusionSet.name, current: true },

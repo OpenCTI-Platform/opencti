@@ -77,7 +77,7 @@ const SettingsOrganizations = () => {
   };
   return (
     <div className={classes.container}>
-      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Security') }, { label: t_i18n('Organizations'), current: true }]} />
+      <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Security') }, { label: t_i18n('Organizations'), current: true }]} />
       <AccessesMenu />
       <ListLines
         sortBy={viewStorage.sortBy}

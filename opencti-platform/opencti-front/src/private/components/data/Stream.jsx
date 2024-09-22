@@ -127,7 +127,7 @@ class Stream extends Component {
     };
     return (
       <div className={classes.container}>
-        <Breadcrumbs variant="list" elements={[{ label: t('Data') }, { label: t('Data sharing') }, { label: t('Live streams'), current: true }]} />
+        <Breadcrumbs elements={[{ label: t('Data') }, { label: t('Data sharing') }, { label: t('Live streams'), current: true }]} />
         <SharingMenu/>
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}
         <Security needs={[TAXIIAPI_SETCOLLECTIONS]}>

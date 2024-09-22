@@ -123,7 +123,7 @@ const Playbooks: FunctionComponent = () => {
   };
   return (
     <div className={classes.container}>
-      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Data') }, { label: t_i18n('Processing') }, { label: t_i18n('Automation'), current: true }]} />
+      <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Processing') }, { label: t_i18n('Automation'), current: true }]} />
       <ProcessingMenu />
       {isEnterpriseEdition ? (
         <>

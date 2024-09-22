@@ -125,7 +125,7 @@ const SupportPackages = () => {
   return (
     <Security needs={[SETTINGS_SUPPORT]} placeholder={<>{t_i18n('You do not have any access to the knowledge of this OpenCTI instance.')}</>}>
       <div>
-        <Breadcrumbs variant="list"
+        <Breadcrumbs
           elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Support packages'), current: true }]}
         />
         <Grid container={true} spacing={4}>

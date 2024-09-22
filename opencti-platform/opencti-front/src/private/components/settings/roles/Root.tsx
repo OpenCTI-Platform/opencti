@@ -49,7 +49,7 @@ const RootRoleComponent: FunctionComponent<RootRoleComponentProps> = ({ queryRef
       {role ? (
         <>
           <AccessesMenu/>
-          <Breadcrumbs variant="object" elements={[
+          <Breadcrumbs elements={[
             { label: t_i18n('Settings') },
             { label: t_i18n('Security') },
             { label: t_i18n('Roles'), link: '/dashboard/settings/accesses/roles' },

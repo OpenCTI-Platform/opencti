@@ -2,7 +2,7 @@ import React, { FunctionComponent } from 'react';
 import MUIBreadcrumbs from '@mui/material/Breadcrumbs';
 import { Link } from 'react-router-dom';
 import Typography from '@mui/material/Typography';
-import makeStyles from '@mui/styles/makeStyles';
+import { useTheme } from '@mui/styles';
 import { truncate } from '../utils/String';
 import type { Theme } from './Theme';
 
@@ -13,35 +13,13 @@ interface element {
 }
 
 interface BreadcrumbsProps {
-  variant: 'standard' | 'list' | 'object',
   elements: element[],
 }
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  breadcrumbsList: {
-    marginBottom: theme.spacing(2),
-  },
-  breadcrumbsObject: {
-    marginTop: -5,
-    marginBottom: 15,
-  },
-  breadcrumbsStandard: {
-    marginTop: -5,
-  },
-}));
-
-const Breadcrumbs: FunctionComponent<BreadcrumbsProps> = ({ elements, variant }) => {
-  const classes = useStyles();
-  let className = classes.breadcrumbsStandard;
-  if (variant === 'list') {
-    className = classes.breadcrumbsList;
-  } else if (variant === 'object') {
-    className = classes.breadcrumbsObject;
-  }
+const Breadcrumbs: FunctionComponent<BreadcrumbsProps> = ({ elements }) => {
+  const theme = useTheme<Theme>();
   return (
-    <MUIBreadcrumbs classes={{ root: className }}>
+    <MUIBreadcrumbs style={{ marginBottom: theme.spacing(2) }}>
       {elements.map((element) => {
         if (element.current) {
           return (

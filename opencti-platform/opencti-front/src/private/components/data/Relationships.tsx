@@ -299,7 +299,7 @@ const Relationships = () => {
 
   return (
     <>
-      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Data') }, { label: t_i18n('Relationships'), current: true }]} />
+      <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Relationships'), current: true }]} />
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}

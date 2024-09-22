@@ -153,7 +153,7 @@ const RootSystem = ({ systemId, queryRef }: RootSystemProps) => {
             />
           </Routes>
           <div style={{ paddingRight }}>
-            <Breadcrumbs variant="object" elements={[
+            <Breadcrumbs elements={[
               { label: t_i18n('Entities') },
               { label: t_i18n('Systems'), link: '/dashboard/entities/systems' },
               { label: system.name, current: true },

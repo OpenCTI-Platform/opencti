@@ -179,7 +179,7 @@ const ObservedDatas: FunctionComponent = () => {
 
   return (
     <>
-      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Events') }, { label: t_i18n('Observed datas'), current: true }]} />
+      <Breadcrumbs elements={[{ label: t_i18n('Events') }, { label: t_i18n('Observed datas'), current: true }]} />
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}

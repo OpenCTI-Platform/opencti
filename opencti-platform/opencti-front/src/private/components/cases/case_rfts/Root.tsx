@@ -104,7 +104,7 @@ const RootCaseRftComponent = ({ queryRef, caseId }) => {
   const currentAccessRight = useGetCurrentUserAccessRight(caseData.currentUserAccessRight);
   return (
     <div style={{ paddingRight }}>
-      <Breadcrumbs variant="object" elements={[
+      <Breadcrumbs elements={[
         { label: t_i18n('Cases') },
         { label: t_i18n('Requests for takedown'), link: '/dashboard/cases/rfts' },
         { label: caseData.name, current: true },

@@ -201,7 +201,7 @@ const Notes: FunctionComponent = () => {
 
   return (
     <>
-      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Analyses') }, { label: t_i18n('Notes'), current: true }]} />
+      <Breadcrumbs elements={[{ label: t_i18n('Analyses') }, { label: t_i18n('Notes'), current: true }]} />
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}

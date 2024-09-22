@@ -110,7 +110,7 @@ const RootGrouping = () => {
               const currentAccessRight = useGetCurrentUserAccessRight(grouping.currentUserAccessRight);
               return (
                 <div style={{ paddingRight }}>
-                  <Breadcrumbs variant="object" elements={[
+                  <Breadcrumbs elements={[
                     { label: t_i18n('Analyses') },
                     { label: t_i18n('Groupings'), link: '/dashboard/analyses/groupings' },
                     { label: grouping.name, current: true },

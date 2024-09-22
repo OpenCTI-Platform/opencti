@@ -148,7 +148,7 @@ const CoursesOfAction = () => {
 
   return (
     <>
-      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Techniques') }, { label: t_i18n('Courses of action'), current: true }]} />
+      <Breadcrumbs elements={[{ label: t_i18n('Techniques') }, { label: t_i18n('Courses of action'), current: true }]} />
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}

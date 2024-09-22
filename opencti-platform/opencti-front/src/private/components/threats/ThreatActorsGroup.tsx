@@ -191,7 +191,7 @@ const ThreatActorsGroup = () => {
 
   return (
     <>
-      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Threats') }, { label: t_i18n('Threat actors (group)'), current: true }]} />
+      <Breadcrumbs elements={[{ label: t_i18n('Threats') }, { label: t_i18n('Threat actors (group)'), current: true }]} />
       {viewStorage.view !== 'lines' ? renderCards() : renderList()}
       {!isFABReplaced && (
         <Security needs={[KNOWLEDGE_KNUPDATE]}>

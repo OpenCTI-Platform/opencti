@@ -161,7 +161,7 @@ const Trash: React.FC = () => {
   };
   return (
     <ExportContextProvider>
-      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Trash'), current: true }]} />
+      <Breadcrumbs elements={[{ label: t_i18n('Trash'), current: true }]} />
       {renderLines()}
     </ExportContextProvider>
   );

@@ -131,7 +131,7 @@ const RootTool = ({ queryRef, toolId }: RootToolProps) => {
             />
           </Routes>
           <div style={{ paddingRight }}>
-            <Breadcrumbs variant="object" elements={[
+            <Breadcrumbs elements={[
               { label: t_i18n('Arsenal') },
               { label: t_i18n('Tools'), link: '/dashboard/arsenal/tools' },
               { label: tool.name, current: true },

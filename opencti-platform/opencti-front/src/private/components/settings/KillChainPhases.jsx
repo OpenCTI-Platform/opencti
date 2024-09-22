@@ -145,7 +145,7 @@ const KillChainPhases = () => {
   return (
     <div style={{ marginRight: 200 }}>
       <LabelsVocabulariesMenu />
-      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Taxonomies') }, { label: t_i18n('Kill chain phases'), current: true }]} />
+      <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Taxonomies') }, { label: t_i18n('Kill chain phases'), current: true }]} />
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}

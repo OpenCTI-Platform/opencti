@@ -21,7 +21,7 @@ class Connectors extends Component {
     const { t, classes } = this.props;
     return (
       <div className={classes.container}>
-        <Breadcrumbs variant="list" elements={[{ label: t('Data') }, { label: t('Ingestion') }, { label: t('Connectors'), current: true }]} />
+        <Breadcrumbs elements={[{ label: t('Data') }, { label: t('Ingestion') }, { label: t('Connectors'), current: true }]} />
         <IngestionMenu/>
         <QueryRenderer
           query={workersStatusQuery}

@@ -125,7 +125,7 @@ const Tasks = () => {
 
   return (
     <>
-      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Cases') }, { label: t_i18n('Tasks'), current: true }]} />
+      <Breadcrumbs elements={[{ label: t_i18n('Cases') }, { label: t_i18n('Tasks'), current: true }]} />
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}

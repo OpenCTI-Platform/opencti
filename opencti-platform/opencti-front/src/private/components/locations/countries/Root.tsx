@@ -126,7 +126,7 @@ const RootCountryComponent = ({ queryRef, countryId }) => {
             />
           </Routes>
           <div style={{ paddingRight }}>
-            <Breadcrumbs variant="object" elements={[
+            <Breadcrumbs elements={[
               { label: t_i18n('Locations') },
               { label: t_i18n('Countries'), link: '/dashboard/locations/countries' },
               { label: country.name, current: true },

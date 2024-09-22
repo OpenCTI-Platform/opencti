@@ -144,7 +144,7 @@ const Tools = () => {
 
   return (
     <>
-      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Arsenal') }, { label: t_i18n('Tools'), current: true }]} />
+      <Breadcrumbs elements={[{ label: t_i18n('Arsenal') }, { label: t_i18n('Tools'), current: true }]} />
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}

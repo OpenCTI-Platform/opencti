@@ -344,7 +344,7 @@ class ImportContentComponent extends Component {
       && this.state.selectedConnector?.configurations?.length === 0;
     return (
       <div style={{ paddingRight: isNewImportScreensEnabled ? 200 : 0 }}>
-        <Breadcrumbs variant="list" elements={[{ label: t('Data') }, { label: t('Import'), current: true }]} />
+        <Breadcrumbs elements={[{ label: t('Data') }, { label: t('Import'), current: true }]} />
         {isNewImportScreensEnabled && <ImportMenu/>}
         <Grid
           container={true}

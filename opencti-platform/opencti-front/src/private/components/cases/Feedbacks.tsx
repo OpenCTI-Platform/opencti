@@ -178,7 +178,7 @@ const Feedbacks: FunctionComponent<FeedbacksProps> = () => {
 
   return (
     <>
-      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Cases') }, { label: t_i18n('Feedbacks'), current: true }]}/>
+      <Breadcrumbs elements={[{ label: t_i18n('Cases') }, { label: t_i18n('Feedbacks'), current: true }]}/>
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}

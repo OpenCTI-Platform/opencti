@@ -125,7 +125,7 @@ const Organizations = () => {
 
   return (
     <>
-      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Entities') }, { label: t_i18n('Organizations'), current: true }]} />
+      <Breadcrumbs elements={[{ label: t_i18n('Entities') }, { label: t_i18n('Organizations'), current: true }]} />
       {renderLines()}
       {!isFABReplaced
         && <Security needs={[KNOWLEDGE_KNUPDATE]}>

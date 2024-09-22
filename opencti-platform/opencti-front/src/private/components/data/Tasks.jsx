@@ -60,7 +60,7 @@ const Tasks = () => {
     <div className={classes.container}
       data-testid='processing-tasks-page'
     >
-      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Data') }, { label: t_i18n('Processing') }, { label: t_i18n('Tasks'), current: true }]} />
+      <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Processing') }, { label: t_i18n('Tasks'), current: true }]} />
       <ProcessingMenu />
       <Typography variant="h4" gutterBottom={true}>
         {t_i18n('In progress tasks')}

@@ -109,7 +109,7 @@ const RootReport = () => {
               const currentAccessRight = useGetCurrentUserAccessRight(report.currentUserAccessRight);
               return (
                 <div style={{ paddingRight }} data-testid="report-details-page">
-                  <Breadcrumbs variant="object" elements={[
+                  <Breadcrumbs elements={[
                     { label: t_i18n('Analyses') },
                     { label: t_i18n('Reports'), link: '/dashboard/analyses/reports' },
                     { label: report.name, current: true },

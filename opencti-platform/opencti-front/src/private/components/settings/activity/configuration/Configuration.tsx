@@ -132,7 +132,7 @@ ConfigurationComponentProps
     >
       <div className={classes.container}>
         <ActivityMenu />
-        <Breadcrumbs variant="object" elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Activity') }, { label: t_i18n('Configuration'), current: true }]} />
+        <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Activity') }, { label: t_i18n('Configuration'), current: true }]} />
         <Grid container={true} spacing={3}>
           <Grid item xs={12}>
             <Typography variant="h4" gutterBottom={true}>

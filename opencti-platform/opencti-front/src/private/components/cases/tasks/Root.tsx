@@ -91,7 +91,7 @@ const RootTaskComponent = ({ queryRef, taskId }) => {
     <>
       {data ? (
         <div style={{ paddingRight }}>
-          <Breadcrumbs variant="object" elements={[
+          <Breadcrumbs elements={[
             { label: t_i18n('Cases') },
             { label: t_i18n('Tasks'), link: '/dashboard/cases/tasks' },
             { label: data.name, current: true },

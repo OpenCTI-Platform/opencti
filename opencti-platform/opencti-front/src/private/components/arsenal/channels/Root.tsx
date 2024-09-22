@@ -130,7 +130,7 @@ const RootChannel = ({ queryRef, channelId }: RootChannelProps) => {
             />
           </Routes>
           <div style={{ paddingRight }}>
-            <Breadcrumbs variant="object" elements={[
+            <Breadcrumbs elements={[
               { label: t_i18n('Arsenal') },
               { label: t_i18n('Channels'), link: '/dashboard/arsenal/channels' },
               { label: channel.name, current: true },

@@ -97,7 +97,7 @@ const RootDataComponent = () => {
               const paddingRight = getPaddingRight(location.pathname, dataComponent.id, '/dashboard/techniques/data_components', false);
               return (
                 <div style={{ paddingRight }}>
-                  <Breadcrumbs variant="object" elements={[
+                  <Breadcrumbs elements={[
                     { label: t_i18n('Techniques') },
                     { label: t_i18n('Data components'), link: '/dashboard/techniques/data_components' },
                     { label: dataComponent.name, current: true },

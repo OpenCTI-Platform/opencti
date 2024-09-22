@@ -26,7 +26,7 @@ const RootSubType = () => {
       {
         data.subType ? (
           <>
-            <Breadcrumbs variant="list" elements={[
+            <Breadcrumbs elements={[
               { label: t_i18n('Settings') },
               { label: t_i18n('Customization') },
               { label: t_i18n('Entity types'), link: '/dashboard/settings/customization/entity_types' },

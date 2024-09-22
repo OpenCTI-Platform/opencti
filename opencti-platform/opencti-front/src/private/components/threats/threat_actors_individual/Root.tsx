@@ -150,7 +150,7 @@ const RootThreatActorIndividualComponent = ({
             />
           </Routes>
           <div style={{ paddingRight }}>
-            <Breadcrumbs variant="object" elements={[
+            <Breadcrumbs elements={[
               { label: t_i18n('Threats') },
               { label: t_i18n('Threat actors (individual)'), link: '/dashboard/threats/threat_actors_individual' },
               { label: threatActorIndividual.name, current: true },

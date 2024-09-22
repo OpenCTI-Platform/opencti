@@ -118,7 +118,7 @@ const Taxii = () => {
     }}
       aria-label="TaxiiCollections"
     >
-      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Data') }, { label: t_i18n('Data sharing') }, { label: t_i18n('TAXII collections'), current: true }]} />
+      <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Data sharing') }, { label: t_i18n('TAXII collections'), current: true }]} />
       <SharingMenu/>
       {taxiiState.view === 'lines' ? renderLines(paginationOptions) : null}
       <Security needs={[TAXIIAPI_SETCOLLECTIONS]}>

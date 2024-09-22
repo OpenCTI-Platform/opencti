@@ -194,7 +194,7 @@ const ThreatActorsIndividual = () => {
 
   return (
     <>
-      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Threats') }, { label: t_i18n('Threat actors (individual)'), current: true }]} />
+      <Breadcrumbs elements={[{ label: t_i18n('Threats') }, { label: t_i18n('Threat actors (individual)'), current: true }]} />
       {viewStorage.view !== 'lines' ? renderCards() : renderList()}
       {!isFABReplaced && (
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
