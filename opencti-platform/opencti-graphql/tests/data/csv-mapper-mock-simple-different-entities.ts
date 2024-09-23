@@ -49,3 +49,55 @@ export const csvMapperMockSimpleDifferentEntities: Partial<CsvMapperParsed> = {
     }
   ]
 };
+
+
+export const csvMapperMockWithDynamicColumn: Partial<CsvMapperParsed> = {
+  id: 'mapper-mock-simple-different-entities',
+  has_header: true,
+  separator: ';',
+  has_entity_dynamic_mapping: true,
+  representations: [
+    {
+      id: 'representation01',
+      type: CsvMapperRepresentationType.Entity,
+      dynamic_mapping_name: 'MaVille',
+      target: {
+        entity_type: ENTITY_TYPE_THREAT_ACTOR_GROUP,
+        column_based: {
+          column_reference: 'B',
+          operator: Operator.Eq,
+          value: 'threat-actor'
+        }
+      },
+      attributes: [
+        {
+          key: 'name',
+          column: {
+            column_name: 'A',
+          },
+        },
+      ]
+    },
+    {
+      id: 'representation02',
+      type: CsvMapperRepresentationType.Entity,
+      dynamic_mapping_name: 'MonOrga',
+      target: {
+        entity_type: ENTITY_TYPE_IDENTITY_ORGANIZATION,
+        column_based: {
+          column_reference: 'B',
+          operator: Operator.Neq,
+          value: 'threat-actor'
+        }
+      },
+      attributes: [
+        {
+          key: 'name',
+          column: {
+            column_name: 'A',
+          },
+        },
+      ]
+    }
+  ]
+};
