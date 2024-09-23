@@ -9792,6 +9792,7 @@ export type Indicator = BasicObject & StixCoreObject & StixDomainObject & StixOb
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_main_observable_type?: Maybe<Scalars['String']['output']>;
+  x_opencti_observables_values?: Maybe<Array<Maybe<ObservablesValues>>>;
   x_opencti_score?: Maybe<Scalars['Int']['output']>;
   x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']['output']>>>;
 };
@@ -16465,6 +16466,12 @@ export type ObjectTotals = {
   channels?: Maybe<Scalars['String']['output']>;
   consumers?: Maybe<Scalars['String']['output']>;
   queues?: Maybe<Scalars['String']['output']>;
+};
+
+export type ObservablesValues = {
+  __typename?: 'ObservablesValues';
+  type?: Maybe<Scalars['String']['output']>;
+  value?: Maybe<Scalars['String']['output']>;
 };
 
 export type ObservedData = BasicObject & Container & StixCoreObject & StixDomainObject & StixObject & {
@@ -30407,6 +30414,7 @@ export type ResolversTypes = ResolversObject<{
   NotifierTestInput: NotifierTestInput;
   Number: ResolverTypeWrapper<Number>;
   ObjectTotals: ResolverTypeWrapper<ObjectTotals>;
+  ObservablesValues: ResolverTypeWrapper<ObservablesValues>;
   ObservedData: ResolverTypeWrapper<Omit<ObservedData, 'authorized_members' | 'avatar' | 'cases' | 'connectors' | 'containers' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'objects' | 'observedData' | 'opinions' | 'pendingFiles' | 'relatedContainers' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { authorized_members?: Maybe<Array<ResolversTypes['MemberAccess']>>, avatar?: Maybe<ResolversTypes['OpenCtiFile']>, cases?: Maybe<ResolversTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversTypes['Connector']>>>, containers?: Maybe<ResolversTypes['ContainerConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, jobs?: Maybe<Array<Maybe<ResolversTypes['Work']>>>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversTypes['Label']>>, objectMarking?: Maybe<Array<ResolversTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversTypes['Organization']>>, objects?: Maybe<ResolversTypes['StixObjectOrStixRelationshipRefConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, relatedContainers?: Maybe<ResolversTypes['ContainerConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversTypes['Inference']>>> }>;
   ObservedDataAddInput: ObservedDataAddInput;
   ObservedDataConnection: ResolverTypeWrapper<Omit<ObservedDataConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['ObservedDataEdge']>>> }>;
@@ -31169,6 +31177,7 @@ export type ResolversParentTypes = ResolversObject<{
   NotifierTestInput: NotifierTestInput;
   Number: Number;
   ObjectTotals: ObjectTotals;
+  ObservablesValues: ObservablesValues;
   ObservedData: Omit<ObservedData, 'authorized_members' | 'avatar' | 'cases' | 'connectors' | 'containers' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'objects' | 'observedData' | 'opinions' | 'pendingFiles' | 'relatedContainers' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { authorized_members?: Maybe<Array<ResolversParentTypes['MemberAccess']>>, avatar?: Maybe<ResolversParentTypes['OpenCtiFile']>, cases?: Maybe<ResolversParentTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversParentTypes['Connector']>>>, containers?: Maybe<ResolversParentTypes['ContainerConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, jobs?: Maybe<Array<Maybe<ResolversParentTypes['Work']>>>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversParentTypes['Label']>>, objectMarking?: Maybe<Array<ResolversParentTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversParentTypes['Organization']>>, objects?: Maybe<ResolversParentTypes['StixObjectOrStixRelationshipRefConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, relatedContainers?: Maybe<ResolversParentTypes['ContainerConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversParentTypes['Inference']>>> };
   ObservedDataAddInput: ObservedDataAddInput;
   ObservedDataConnection: Omit<ObservedDataConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['ObservedDataEdge']>>> };
@@ -34652,6 +34661,7 @@ export type IndicatorResolvers<ContextType = any, ParentType extends ResolversPa
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_main_observable_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  x_opencti_observables_values?: Resolver<Maybe<Array<Maybe<ResolversTypes['ObservablesValues']>>>, ParentType, ContextType>;
   x_opencti_score?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -36500,6 +36510,12 @@ export type ObjectTotalsResolvers<ContextType = any, ParentType extends Resolver
   channels?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   consumers?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   queues?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type ObservablesValuesResolvers<ContextType = any, ParentType extends ResolversParentTypes['ObservablesValues'] = ResolversParentTypes['ObservablesValues']> = ResolversObject<{
+  type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -40632,6 +40648,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   NotifierParameter?: NotifierParameterResolvers<ContextType>;
   Number?: NumberResolvers<ContextType>;
   ObjectTotals?: ObjectTotalsResolvers<ContextType>;
+  ObservablesValues?: ObservablesValuesResolvers<ContextType>;
   ObservedData?: ObservedDataResolvers<ContextType>;
   ObservedDataConnection?: ObservedDataConnectionResolvers<ContextType>;
   ObservedDataEdge?: ObservedDataEdgeResolvers<ContextType>;
