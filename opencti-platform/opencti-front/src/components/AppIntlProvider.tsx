@@ -59,6 +59,12 @@ export const availableLanguage: { value : PlatformLang, label: string }[] = [
   { value: 'ko-kr', label: '한국어' },
 ];
 
+// list of available languages for Ai text generation (minimal support : platform languages)
+export const aiLanguage: { value: string, label: string }[] = [
+  ...availableLanguage,
+  // add other languages supported by Ai
+];
+
 interface AppIntlProviderProps {
   settings: AppIntlProvider_settings$data | { platform_language: string },
   children: ReactNode,
