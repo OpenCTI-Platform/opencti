@@ -453,7 +453,8 @@ const isValidDate = (stringDate) => {
   return dateInstance.toISOString() === stringDate;
 };
 
-const defaultValue = (entityValue) => {
+// used to get a "restricted" value of a current attribute value depending on the value type
+const restrictValue = (entityValue) => {
   if (Array.isArray((entityValue))) return [];
   if (isValidDate(entityValue)) return FROM_START_STR;
   const type = typeof entityValue;
@@ -463,11 +464,14 @@ const defaultValue = (entityValue) => {
     default: return undefined;
   }
 };
+
+// restricted entities need to be able to be queried through the API
+// we need to keep all of the entity attributes, but restrict their values
 export const buildRestrictedEntity = (resolvedEntity) => {
   const restrictedEntity = structuredClone(resolvedEntity);
   for (let i = 0; i < Object.keys(restrictedEntity).length; i += 1) {
     const item = Object.keys(restrictedEntity)[i];
-    restrictedEntity[item] = restrictedEntity[item] ? defaultValue(restrictedEntity[item]) : restrictedEntity[item];
+    restrictedEntity[item] = restrictedEntity[item] ? restrictValue(restrictedEntity[item]) : restrictedEntity[item];
   }
   return {
     ...restrictedEntity,
