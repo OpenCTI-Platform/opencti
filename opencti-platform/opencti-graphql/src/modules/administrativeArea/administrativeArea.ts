@@ -2,7 +2,7 @@ import convertAdministrativeAreaToStix from './administrativeArea-converter';
 import { NAME_FIELD, normalizeName } from '../../schema/identifier';
 import { ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA, type StoreEntityAdministrativeArea } from './administrativeArea-types';
 import { REL_BUILT_IN } from '../../database/stix';
-import { RELATION_LOCATED_AT } from '../../schema/stixCoreRelationship';
+import { RELATION_DERIVED_FROM, RELATION_LOCATED_AT } from '../../schema/stixCoreRelationship';
 import { ENTITY_TYPE_LOCATION_COUNTRY, ENTITY_TYPE_LOCATION_REGION } from '../../schema/stixDomainObject';
 import { ENTITY_TYPE_LOCATION } from '../../schema/general';
 import type { StixLocation } from '../../types/stix-sdo';
@@ -42,6 +42,12 @@ const ADMINISTRATIVE_AREA_DEFINITION: ModuleDefinition<StoreEntityAdministrative
         { name: ENTITY_TYPE_LOCATION_REGION, type: REL_BUILT_IN },
       ]
     },
+    {
+      name: RELATION_DERIVED_FROM,
+      targets: [
+        { name: ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA, type: REL_BUILT_IN }
+      ]
+    }
   ],
   representative(instance: StixLocation): string {
     return instance.name;

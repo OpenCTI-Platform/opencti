@@ -1,6 +1,15 @@
 import convertChannelToStix from './channel-converter';
 import { NAME_FIELD, normalizeName } from '../../schema/identifier';
-import { RELATION_AMPLIFIES, RELATION_BELONGS_TO, RELATION_DELIVERS, RELATION_DROPS, RELATION_PUBLISHES, RELATION_TARGETS, RELATION_USES } from '../../schema/stixCoreRelationship';
+import {
+  RELATION_AMPLIFIES,
+  RELATION_BELONGS_TO,
+  RELATION_DELIVERS,
+  RELATION_DERIVED_FROM,
+  RELATION_DROPS,
+  RELATION_PUBLISHES,
+  RELATION_TARGETS,
+  RELATION_USES
+} from '../../schema/stixCoreRelationship';
 import {
   ENTITY_TYPE_ATTACK_PATTERN,
   ENTITY_TYPE_IDENTITY_INDIVIDUAL,
@@ -126,6 +135,12 @@ export const CHANNEL_DEFINITION: ModuleDefinition<StoreEntityChannel, StixChanne
       name: RELATION_DROPS,
       targets: [
         { name: ENTITY_TYPE_MALWARE, type: REL_EXTENDED },
+      ]
+    },
+    {
+      name: RELATION_DERIVED_FROM,
+      targets: [
+        { name: ENTITY_TYPE_CHANNEL, type: REL_BUILT_IN },
       ]
     }
   ],

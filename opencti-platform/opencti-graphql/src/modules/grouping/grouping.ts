@@ -4,6 +4,8 @@ import { ENTITY_TYPE_CONTAINER_GROUPING, type StixGrouping, type StoreEntityGrou
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
 import { type ModuleDefinition, registerDefinition } from '../../schema/module';
 import { authorizedMembers } from '../../schema/attribute-definition';
+import { RELATION_DERIVED_FROM } from '../../schema/stixCoreRelationship';
+import { REL_BUILT_IN } from '../../database/stix';
 
 const GROUPING_DEFINITION: ModuleDefinition<StoreEntityGrouping, StixGrouping> = {
   type: {
@@ -37,7 +39,14 @@ const GROUPING_DEFINITION: ModuleDefinition<StoreEntityGrouping, StixGrouping> =
     { name: 'context', label: 'Context', type: 'string', format: 'vocabulary', vocabularyCategory: 'grouping_context_ov', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true, isFilterable: true },
     { ...authorizedMembers, editDefault: true, featureFlag: 'CONTAINERS_AUTHORIZED_MEMBERS' },
   ],
-  relations: [],
+  relations: [
+    {
+      name: RELATION_DERIVED_FROM,
+      targets: [
+        { name: ENTITY_TYPE_CONTAINER_GROUPING, type: REL_BUILT_IN },
+      ]
+    }
+  ],
   representative: (stix: StixGrouping) => {
     return stix.name;
   },
