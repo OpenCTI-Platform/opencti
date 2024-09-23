@@ -751,9 +751,15 @@ describe('Relations distribution', () => {
     expect(distribution[0].entity.representative).toEqual({ main: 'Restricted', secondary: 'Restricted' });
     expect(distribution[1].entity.representative).toEqual({ main: 'Restricted', secondary: 'Restricted' });
     expect(distribution[2].entity.representative).toEqual({ main: 'Restricted', secondary: 'Restricted' });
-    expect(distribution[0].entity.name).toBeUndefined();
-    expect(distribution[1].entity.name).toBeUndefined();
-    expect(distribution[2].entity.name).toBeUndefined();
+    expect(distribution[0].entity.name).toEqual('Restricted');
+    expect(distribution[1].entity.name).toEqual('Restricted');
+    expect(distribution[2].entity.name).toEqual('Restricted');
+    expect(distribution[0].entity.standard_id).toBeDefined();
+    expect(distribution[1].entity.standard_id).toBeDefined();
+    expect(distribution[2].entity.standard_id).toBeDefined();
+    expect(distribution[0].entity.created_at).toBeDefined();
+    expect(distribution[1].entity.created_at).toBeDefined();
+    expect(distribution[2].entity.created_at).toBeDefined();
   });
 });
 
