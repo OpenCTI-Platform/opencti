@@ -109,11 +109,12 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({ inst
   const isEnterpriseEdition = useEnterpriseEdition();
   const { enabled, configured } = useAI();
   const isKnowledgeUploader = useGranted([KNOWLEDGE_KNUPLOAD]);
-  // get default language for Ai generation by priority : 1. user language, 2. platform language, 3. browser language
+  // get default language for Ai generation by priority : 1. user language, 2. platform language, 3. browser language, 4. English
   const { me, settings } = useContext(UserContext);
   const userLanguage = me?.language && me.language !== 'auto' ? me.language : null;
   const platformLanguage = settings?.platform_language && settings.platform_language !== 'auto' ? settings.platform_language : null;
-  const defaultLanguage = userLanguage || platformLanguage || locale;
+  const localeLanguage = availableLanguage.find((lang) => lang.value == locale) ? locale : null;
+  const defaultLanguage = userLanguage || platformLanguage || localeLanguage || 'en-us';
   const [language, setLanguage] = useState(defaultLanguage);
   const [action, setAction] = useState<'container-report' | 'summarize-files' | 'convert-files' | null>(null);
   const [content, setContent] = useState('');
@@ -401,7 +402,7 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({ inst
                 fullWidth={true}
               >
                 {availableLanguage.map((lang) => (
-                  <MenuItem key={uuid()} value={lang.value}>{t_i18n(lang.label)}</MenuItem>
+                  <MenuItem key={lang.value} value={lang.value}>{t_i18n(lang.label)}</MenuItem>
                 ))}
               </Select>
             </FormControl>
