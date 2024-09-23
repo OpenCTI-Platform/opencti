@@ -62,6 +62,9 @@ class TestLocalSynchronizer:
             logging.info("%s", f"Processing event {msg.id}")
             self.count_number += 1
             data = json.loads(msg.data)
+            type = data["data"]["type"]
+            if type == "internal-relationship":
+                return
             if msg.event == "create":
                 bundle = {
                     "type": "bundle",
