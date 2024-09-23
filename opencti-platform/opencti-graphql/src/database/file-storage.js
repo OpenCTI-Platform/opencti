@@ -151,6 +151,7 @@ export const deleteFiles = async (context, user, ids) => {
  * @returns {Promise<*|null>} null when error occurs on download.
  */
 export const downloadFile = async (id) => {
+  logApp.info(`ANGIE downloadFile ${id}`);
   try {
     const object = await s3Client.send(new s3.GetObjectCommand({
       Bucket: bucketName,
@@ -396,6 +397,7 @@ export const loadedFilesListing = async (context, user, directory, opts = {}) =>
 };
 
 export const uploadJobImport = async (context, user, fileId, fileMime, entityId, opts = {}) => {
+  logApp.info('ANGIE uploadJobImport');
   const { manual = false, connectorId = null, configuration = null, bypassValidation = false } = opts;
   let connectors = await connectorsForImport(context, user, fileMime, true, !manual);
   if (connectorId) {
