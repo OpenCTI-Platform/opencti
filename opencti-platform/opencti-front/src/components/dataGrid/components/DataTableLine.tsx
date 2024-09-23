@@ -143,8 +143,6 @@ const DataTableLine = ({
   const endWithNavigate = effectiveColumns.at(-1)?.id === 'navigate';
 
   const handleSelectLine = (event: React.MouseEvent) => {
-    event.preventDefault();
-    event.stopPropagation();
     if (event.shiftKey) {
       onToggleShiftEntity(index, data, event);
     } else {
@@ -152,31 +150,37 @@ const DataTableLine = ({
     }
   };
 
+  const handleNavigate = (event: React.MouseEvent) => {
+    if (event.ctrlKey) {
+      window.open(link, '_blank');
+    } else {
+      navigate(link);
+    }
+  };
+
   const handleRowClick = (event: React.MouseEvent) => {
     event.preventDefault();
     event.stopPropagation();
+
     if (selectOnLineClick) {
       handleSelectLine(event);
     } else if (onLineClick) {
       onLineClick(data);
-    } else if (navigable) {
-      if (event.ctrlKey) {
-        window.open(link, '_blank');
-      } else {
-        navigate(link);
-      }
+    } else {
+      handleNavigate(event);
     }
   };
 
   return (
-    <div
+    <a
       key={row.id}
       className={classes.row}
-      // using onMouseDown to redirect before drag and drop happens when used in dashboard widgets
-      onMouseDown={variant === DataTableVariant.widget ? handleRowClick : undefined}
+      // We need both to handle accessibility and widget.
+      onMouseDown={variant === DataTableVariant.widget ? handleNavigate : undefined}
       onClick={variant !== DataTableVariant.widget ? handleRowClick : undefined}
-      style={{ cursor: clickable ? 'pointer' : 'unset' }}
+      style={{ cursor: clickable ? 'pointer' : 'unset', color: 'inherit' }}
       data-testid={getMainRepresentative(data)}
+      href={navigable ? link : undefined}
     >
       {startsWithSelect && (
         <div
@@ -223,7 +227,7 @@ const DataTableLine = ({
           )}
         </div>
       )}
-    </div>
+    </a>
   );
 };
 
