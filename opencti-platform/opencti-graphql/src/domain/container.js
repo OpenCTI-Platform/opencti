@@ -22,6 +22,8 @@ import { addFilter } from '../utils/filtering/filtering-utils';
 import { FunctionalError, UnsupportedError } from '../config/errors';
 import { isFeatureEnabled } from '../config/conf';
 import { ENTITY_TYPE_CONTAINER_FEEDBACK } from '../modules/case/feedback/feedback-types';
+import { paginatedForPathWithEnrichment } from '../modules/internal/document/document-domain';
+import { isEnterpriseEdition } from '../utils/ee';
 
 export const findById = async (context, user, containerId) => {
   return storeLoadById(context, user, containerId, ENTITY_TYPE_CONTAINER);
@@ -241,4 +243,15 @@ export const containerEditAuthorizedMembers = async (context, user, entityId, in
     throw UnsupportedError('This feature is disabled');
   }
   return editAuthorizedMembers(context, user, args);
+};
+
+export const getContentsFromTemplate = async (context, user, container, args) => {
+  const isEE = await isEnterpriseEdition(context);
+  const isContentFromTemplateEnabled = isFeatureEnabled('CONTENT_FROM_TEMPLATE');
+  if (!isEE || !isContentFromTemplateEnabled) {
+    return null;
+  }
+  const { first, prefixMimeType } = args;
+  const opts = { first, prefixMimeTypes: prefixMimeType ? [prefixMimeType] : null, entity_id: container.id, entity_type: container.entity_type };
+  return paginatedForPathWithEnrichment(context, context.user, `fromTemplate/${container.entity_type}/${container.id}`, container.id, opts);
 };

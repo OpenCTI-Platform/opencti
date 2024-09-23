@@ -8,7 +8,7 @@ import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetLoader from '../../../../components/dashboard/WidgetLoader';
 import { PublicStixCoreObjectsDonutQuery } from './__generated__/PublicStixCoreObjectsDonutQuery.graphql';
 import WidgetDonut from '../../../../components/dashboard/WidgetDonut';
-import type { PublicManifestWidget } from '../PublicManifest';
+import type { Widget } from '../../../../utils/widget/widget';
 
 const publicStixCoreObjectsDonutQuery = graphql`
   query PublicStixCoreObjectsDonutQuery(
@@ -70,7 +70,7 @@ const publicStixCoreObjectsDonutQuery = graphql`
 `;
 
 interface PublicStixCoreObjectsDonutComponentProps {
-  dataSelection: PublicManifestWidget['dataSelection']
+  dataSelection: Widget['dataSelection']
   queryRef: PreloadedQuery<PublicStixCoreObjectsDonutQuery>
 }
 
