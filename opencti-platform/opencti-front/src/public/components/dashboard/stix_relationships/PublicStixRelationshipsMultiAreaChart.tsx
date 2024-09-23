@@ -1,6 +1,5 @@
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import React from 'react';
-import type { PublicManifestWidget } from '../PublicManifest';
 import { useFormatter } from '../../../../components/i18n';
 import WidgetMultiAreas from '../../../../components/dashboard/WidgetMultiAreas';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
@@ -10,6 +9,7 @@ import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetLoader from '../../../../components/dashboard/WidgetLoader';
 import { PublicStixRelationshipsMultiAreaChartQuery } from './__generated__/PublicStixRelationshipsMultiAreaChartQuery.graphql';
 import { monthsAgo, now } from '../../../../utils/Time';
+import type { Widget } from '../../../../utils/widget/widget';
 
 const publicStixRelationshipsMultiAreaChartQuery = graphql`
   query PublicStixRelationshipsMultiAreaChartQuery(
@@ -33,8 +33,8 @@ const publicStixRelationshipsMultiAreaChartQuery = graphql`
 `;
 
 interface PublicStixRelationshipsMultiAreaChartComponentProps {
-  parameters: PublicManifestWidget['parameters']
-  dataSelection: PublicManifestWidget['dataSelection']
+  parameters: Widget['parameters']
+  dataSelection: Widget['dataSelection']
   queryRef: PreloadedQuery<PublicStixRelationshipsMultiAreaChartQuery>
 }
 

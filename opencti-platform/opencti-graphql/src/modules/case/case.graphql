@@ -138,6 +138,15 @@ interface Case implements BasicObject & StixObject & StixCoreObject & StixDomain
     filters: FilterGroup
   ): FileConnection
   exportFiles(first: Int): FileConnection
+  contentsFromTemplate(
+    first: Int
+    prefixMimeType: String
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+    filters: FilterGroup
+  ): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]

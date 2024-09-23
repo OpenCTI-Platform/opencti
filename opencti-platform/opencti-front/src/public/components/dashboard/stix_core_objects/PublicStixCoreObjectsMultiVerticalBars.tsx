@@ -8,8 +8,8 @@ import WidgetLoader from '../../../../components/dashboard/WidgetLoader';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetVerticalBars from '../../../../components/dashboard/WidgetVerticalBars';
 import { PublicStixCoreObjectsMultiVerticalBarsQuery } from './__generated__/PublicStixCoreObjectsMultiVerticalBarsQuery.graphql';
-import type { PublicManifestWidget } from '../PublicManifest';
 import { monthsAgo, now } from '../../../../utils/Time';
+import type { Widget } from '../../../../utils/widget/widget';
 
 const publicStixCoreObjectsMultiVerticalBarsQuery = graphql`
   query PublicStixCoreObjectsMultiVerticalBarsQuery(
@@ -33,8 +33,8 @@ const publicStixCoreObjectsMultiVerticalBarsQuery = graphql`
 `;
 
 interface PublicStixCoreObjectsMultiVerticalBarsComponentProps {
-  parameters: PublicManifestWidget['parameters']
-  dataSelection: PublicManifestWidget['dataSelection']
+  parameters: Widget['parameters']
+  dataSelection: Widget['dataSelection']
   queryRef: PreloadedQuery<PublicStixCoreObjectsMultiVerticalBarsQuery>
 }
 

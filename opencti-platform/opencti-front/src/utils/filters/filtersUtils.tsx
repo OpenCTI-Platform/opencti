@@ -7,7 +7,7 @@ import type { FilterGroup as GqlFilterGroup } from './__generated__/useSearchEnt
 import useAuth, { FilterDefinition } from '../hooks/useAuth';
 import { capitalizeFirstLetter } from '../String';
 import { FilterRepresentative } from '../../components/filters/FiltersModel';
-import { generateUniqueItemsArray } from '../utils';
+import { generateUniqueItemsArray, isEmptyField } from '../utils';
 import { Filter, FilterGroup, FilterValue, handleFilterHelpers } from './filtersHelpers-types';
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -182,6 +182,27 @@ export const findFilterIndexFromKey = (
   return null;
 };
 
+// create a new filter: filters AND new filter built with (key, value, operator, mode)
+export const addFilter = (
+  filters: FilterGroup | undefined,
+  key: string,
+  value: string | string[],
+  operator = 'eq',
+  mode = 'or',
+): FilterGroup | undefined => {
+  const filterFromParameters = {
+    key,
+    values: Array.isArray(value) ? value : [value],
+    operator,
+    mode,
+  };
+  return {
+    mode: 'and',
+    filters: [filterFromParameters],
+    filterGroups: filters ? [filters] : [],
+  };
+};
+
 // remove filter with key=entity_type and values contains 'all'
 // because in this case we want everything, so no need for filters
 export const removeEntityTypeAllFromFilterGroup = (inputFilters?: FilterGroup) => {
@@ -235,11 +256,11 @@ export const buildFiltersAndOptionsForWidgets = (
 ) => {
   const { removeTypeAll = false, startDate = null, endDate = null, dateAttribute = 'created_at' } = opts;
   let filters = inputFilters;
-  // 02. remove 'all' in filter with key=entity_type
+  // remove 'all' in filter with key=entity_type
   if (removeTypeAll) {
     filters = removeEntityTypeAllFromFilterGroup(filters);
   }
-  // 03. handle startDate and endDate options
+  // handle startDate and endDate options
   const dateFiltersContent = [];
   if (startDate) {
     dateFiltersContent.push({
@@ -267,6 +288,39 @@ export const buildFiltersAndOptionsForWidgets = (
   return {
     filters,
   };
+};
+
+export const useBuildFiltersForTemplateWidgets = () => {
+  // fetch not allowed markings for content widgets
+  const { me } = useAuth();
+  const allowedMarkings = me.allowed_marking ?? [];
+  const maxShareableMarkings = me.max_shareable_marking ?? [];
+
+  const buildFiltersForTemplateWidgets = (
+    containerId: string,
+    inputFilters: FilterGroup | undefined,
+    maxContentMarkingsIds: string[],
+  ) => {
+    let filters = inputFilters;
+    // 01. replace CONTAINER_ID
+    if (inputFilters) {
+      const filtersWithId = JSON.stringify(inputFilters).replace('CONTAINER_ID', containerId);
+      filters = JSON.parse(filtersWithId);
+    }
+    // 02. restrict markings
+    const maxContentMarkings = allowedMarkings.filter((m) => maxContentMarkingsIds.includes(m.id));
+    const notAllowedMarkingIds = allowedMarkings
+      .filter((def) => {
+        const maxMarkingsOfType = [...maxShareableMarkings, ...maxContentMarkings].filter((marking) => marking.definition_type === def.definition_type);
+        return isEmptyField(maxMarkingsOfType) || maxMarkingsOfType.some((maxMarking) => maxMarking.x_opencti_order < def.x_opencti_order);
+      })
+      .map((m) => m.id);
+    if (notAllowedMarkingIds.length > 0) {
+      filters = addFilter(filters, 'objectMarking', notAllowedMarkingIds, 'not_eq', 'and');
+    }
+    return filters;
+  };
+  return { buildFiltersForTemplateWidgets };
 };
 
 // return the i18n label corresponding to a value
@@ -458,37 +512,6 @@ export const deserializeDashboardManifestForFrontend = (
   return {
     ...manifest,
     widgets: newWidgets,
-  };
-};
-
-//----------------------------------------------------------------------------------------------------------------------
-
-// create a new filter: filters AND new filter built with (key, value, operator, mode)
-export const addFilter = (
-  filters: FilterGroup | undefined,
-  key: string,
-  value: string | string[],
-  operator = 'eq',
-  mode = 'or',
-): FilterGroup | undefined => {
-  const filterFromParameters = {
-    id: uuid(),
-    key,
-    values: Array.isArray(value) ? value : [value],
-    operator,
-    mode,
-  };
-  if (!filters) { // Add on nothing = create a new filter
-    return {
-      mode,
-      filters: [filterFromParameters],
-      filterGroups: [],
-    };
-  }
-  return {
-    mode: 'and',
-    filters: [filterFromParameters],
-    filterGroups: [filters],
   };
 };
 

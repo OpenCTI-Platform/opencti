@@ -603,7 +603,7 @@ export const stixCoreAnalysis = async (context, user, entityId, contentSource, c
 export const stixCoreObjectImportPush = async (context, user, id, file, args = {}) => {
   if (getDraftContext(context, user)) throw new Error('Cannot import in draft');
   let lock;
-  const { noTriggerImport, version: fileVersion, fileMarkings: file_markings, importContextEntities } = args;
+  const { noTriggerImport, version: fileVersion, fileMarkings: file_markings, importContextEntities, fromTemplate = false } = args;
   const previous = await storeLoadByIdWithRefs(context, user, id);
   if (!previous) {
     throw UnsupportedError('Cant upload a file an none existing element', { id });
@@ -620,7 +620,9 @@ export const stixCoreObjectImportPush = async (context, user, id, file, args = {
     const { filename } = await file;
     const entitySetting = await getEntitySettingFromCache(context, previous.entity_type);
     const isAutoExternal = !entitySetting ? false : entitySetting.platform_entity_files_ref;
-    const filePath = `import/${previous.entity_type}/${internalId}`;
+    const filePath = fromTemplate
+      ? `fromTemplate/${previous.entity_type}/${internalId}`
+      : `import/${previous.entity_type}/${internalId}`;
     // 01. Upload the file
     const meta = { version: fileVersion?.toISOString() };
     if (isAutoExternal) {
