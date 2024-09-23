@@ -20,7 +20,7 @@ import {
 } from '../../schema/general';
 import { elCount } from '../../database/engine';
 import { isEmptyField, READ_INDEX_STIX_DOMAIN_OBJECTS } from '../../database/utils';
-import { cleanupIndicatorPattern, extractValidObservablesFromIndicatorPattern } from '../../utils/syntax';
+import { cleanupIndicatorPattern, extractObservablesFromIndicatorPattern, extractValidObservablesFromIndicatorPattern } from '../../utils/syntax';
 import { computeValidPeriod } from './indicator-utils';
 import { addFilter } from '../../utils/filtering/filtering-utils';
 import type { AuthContext, AuthUser } from '../../types/user';
@@ -210,6 +210,8 @@ export const promoteIndicatorToObservables = async (context: AuthContext, user: 
   return createObservablesFromIndicator(context, user, input, indicator);
 };
 
+export const getObservableValuesFromPattern = (pattern: string) => extractObservablesFromIndicatorPattern(pattern);
+
 export const addIndicator = async (context: AuthContext, user: AuthUser, indicator: IndicatorAddInput) => {
   let observableType: string = isEmptyField(indicator.x_opencti_main_observable_type) ? 'Unknown' : indicator.x_opencti_main_observable_type as string;
   if (observableType === 'File') {
@@ -231,6 +233,7 @@ export const addIndicator = async (context: AuthContext, user: AuthUser, indicat
   // find default decay rule (even if decay is not activated, it is used to compute default validFrom and validUntil)
   const decayRule = await findDecayRuleForIndicator(context, observableType);
   const { validFrom, validUntil, revoked, validPeriod } = await computeValidPeriod(indicator, decayRule.decay_lifetime);
+  const extractedObservableValues = getObservableValuesFromPattern(formattedPattern);
   const indicatorToCreate = R.pipe(
     R.dissoc('createObservables'),
     R.dissoc('basedOn'),
@@ -241,6 +244,7 @@ export const addIndicator = async (context: AuthContext, user: AuthUser, indicat
     R.assoc('valid_from', validFrom.toISOString()),
     R.assoc('valid_until', validUntil.toISOString()),
     R.assoc('revoked', revoked),
+    R.assoc('x_opencti_observables_values', extractedObservableValues)
   )(indicator);
   let finalIndicatorToCreate;
   if (isDecayActivated && !revoked) {
@@ -304,6 +308,18 @@ export const indicatorEditField = async (context: AuthContext, user: AuthUser, i
   const indicator = await findById(context, user, id);
   if (!indicator) {
     throw FunctionalError('Cannot edit the field, Indicator cannot be found.');
+  }
+
+  const foundPattern = finalInput.find((item) => item.key === 'pattern');
+  if (!indicator.x_opencti_observables_values || foundPattern) {
+    const patternType = indicator.pattern_type.toLowerCase();
+    const formattedPattern = cleanupIndicatorPattern(patternType, foundPattern?.value ? foundPattern?.value[0] : indicator.pattern);
+    const check = await checkIndicatorSyntax(context, user, patternType, formattedPattern);
+    if (check === false) {
+      throw FunctionalError(`Indicator of type ${indicator.pattern_type} is not correctly formatted.`);
+    }
+    const extractedObservableValues = getObservableValuesFromPattern(formattedPattern);
+    finalInput.push({ key: 'x_opencti_observables_values', value: [...extractedObservableValues] });
   }
   // validation check because according to STIX 2.1 specification the valid_until must be greater than the valid_from
   let { valid_from, valid_until } = indicator;
