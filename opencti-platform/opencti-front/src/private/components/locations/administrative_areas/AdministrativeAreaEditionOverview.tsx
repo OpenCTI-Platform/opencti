@@ -212,7 +212,7 @@ AdministrativeAreaEditionOverviewProps
           editor.fieldPatch({
             variables: {
               id: administrativeArea.id,
-              input: [{ key: name, value: [finalValue ?? ''] }],
+              input: [{ key: name, value: [finalValue ?? null] }],
             },
           });
         })
@@ -286,10 +286,11 @@ AdministrativeAreaEditionOverviewProps
             variant="standard"
             style={{ marginTop: 20 }}
             name="latitude"
+            type="number"
             label={t_i18n('Latitude')}
             fullWidth={true}
             onFocus={editor.changeFocus}
-            onSubmit={handleSubmitField}
+            onSubmit={(name, value) => handleSubmitField(name, (value === '' ? null : value))}
             helperText={
               <SubscriptionFocus context={context} fieldName="latitude" />
             }
@@ -299,10 +300,11 @@ AdministrativeAreaEditionOverviewProps
             variant="standard"
             style={{ marginTop: 20 }}
             name="longitude"
+            type="number"
             label={t_i18n('Longitude')}
             fullWidth={true}
             onFocus={editor.changeFocus}
-            onSubmit={handleSubmitField}
+            onSubmit={(name, value) => handleSubmitField(name, (value === '' ? null : value))}
             helperText={
               <SubscriptionFocus context={context} fieldName="longitude" />
             }
