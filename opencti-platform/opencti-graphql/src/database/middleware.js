@@ -447,12 +447,15 @@ export const stixLoadByFilters = async (context, user, types, args) => {
 // endregion
 
 const isValidDate = (stringDate) => {
-  return Date.parse(stringDate);
+  const dateParsed = Date.parse(stringDate);
+  if (!dateParsed) return false;
+  const dateInstance = new Date(dateParsed);
+  return dateInstance && dateInstance.toISOString() === stringDate;
 };
 
 const defaultValue = (entityValue) => {
   if (Array.isArray((entityValue))) return [];
-  if (isValidDate(entityValue)) return entityValue;
+  if (isValidDate(entityValue)) return FROM_START_STR;
   const type = typeof entityValue;
   switch (type) {
     case 'string': return 'Restricted';
