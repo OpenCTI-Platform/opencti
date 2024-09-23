@@ -283,6 +283,7 @@ const Search = () => {
           exportContext={{ entity_type: 'Stix-Core-Object' }}
           availableEntityTypes={['Stix-Core-Object']}
           entityTypes={['Stix-Core-Object']}
+          hideSearch={true}
         />
       )}
     </>

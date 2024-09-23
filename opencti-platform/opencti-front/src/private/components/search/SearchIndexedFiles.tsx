@@ -153,10 +153,8 @@ const SearchIndexedFilesComponent = () => {
           orderAsc={orderAsc}
           dataColumns={dataColumns}
           handleSort={storageHelpers.handleSort}
-          handleSearch={handleSearch}
           handleAddFilter={storageHelpers.handleAddFilter}
           handleRemoveFilter={storageHelpers.handleRemoveFilter}
-          keyword={searchTerm}
           disableCards={true}
           secondaryAction={true}
           paginationOptions={paginationOptions}
