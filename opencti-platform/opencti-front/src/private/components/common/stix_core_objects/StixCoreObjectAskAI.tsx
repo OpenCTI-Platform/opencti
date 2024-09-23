@@ -161,6 +161,7 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({ inst
     const id = uuid();
     setBusId(id);
     handleOpenAskAI();
+    const promptLanguage = aiLanguage.find((lang) => lang.value === language)?.englishName;
     switch (action) {
       case 'container-report':
         commitMutationContainerReport({
@@ -170,7 +171,7 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({ inst
             paragraphs,
             tone,
             format,
-            language,
+            language: promptLanguage,
           },
           onCompleted: (response: StixCoreObjectAskAIContainerReportMutation$data) => {
             setContent(response?.aiContainerGenerateReport ?? '');
@@ -190,7 +191,7 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({ inst
             paragraphs,
             tone,
             format,
-            language,
+            language: promptLanguage,
             fileIds: files.map((n) => n.value),
           },
           onCompleted: (response: StixCoreObjectAskAISummarizeFilesMutation$data) => {

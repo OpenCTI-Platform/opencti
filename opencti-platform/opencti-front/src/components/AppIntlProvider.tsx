@@ -60,9 +60,14 @@ export const availableLanguage: { value : PlatformLang, label: string }[] = [
 ];
 
 // list of available languages for Ai text generation (minimal support : platform languages)
-export const aiLanguage: { value: string, label: string }[] = [
-  ...availableLanguage,
-  // add other languages supported by Ai
+export const aiLanguage: { value: string, label: string, englishName: string }[] = [
+  { value: 'en-us', label: 'English', englishName: 'English' },
+  { value: 'fr-fr', label: 'Français', englishName: 'French' },
+  { value: 'es-es', label: 'Español', englishName: 'Spanish' },
+  { value: 'ja-jp', label: '日本語', englishName: 'Japanese' },
+  { value: 'zh-cn', label: '简化字', englishName: 'Chinese' },
+  { value: 'de-de', label: 'Deutsch', englishName: 'German' },
+  { value: 'ko-kr', label: '한국어', englishName: 'Korean' },
 ];
 
 interface AppIntlProviderProps {
