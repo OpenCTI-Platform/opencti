@@ -93,6 +93,7 @@ class StixCoreObjectContentFiles extends Component {
     this.state = {
       deleting: null,
       displayCreate: false,
+      displayCreateOutcomeTemplate: false,
     };
   }
 
@@ -100,8 +101,16 @@ class StixCoreObjectContentFiles extends Component {
     this.setState({ displayCreate: true });
   }
 
+  handleOpenCreateOutcomeTemplate() {
+    this.setState({ displayCreateOutcomeTemplate: true });
+  }
+
   handleCloseCreate() {
     this.setState({ displayCreate: false });
+  }
+
+  handleCloseCreateOutcomeTemplate() {
+    this.setState({ displayCreateOutcomeTemplate: false });
   }
 
   renderNoFiles() {
@@ -131,6 +140,10 @@ class StixCoreObjectContentFiles extends Component {
 
   onReset() {
     this.handleCloseCreate();
+  }
+
+  onResetOutcomeTemplate() {
+    this.handleCloseCreateOutcomeTemplate();
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
@@ -172,6 +185,39 @@ class StixCoreObjectContentFiles extends Component {
     });
   }
 
+  onSubmitOutcomeTemplate(values, { setSubmitting, resetForm }) {
+    const { t, stixCoreObjectId } = this.props;
+    // eslint-disable-next-line prefer-const
+    let { name, type } = values;
+    if (
+      type === 'text/html'
+      && !name.endsWith('.html')
+    ) {
+      name += '.html';
+    }
+    const blob = new Blob([t('Write something awesome...')], {
+      type,
+    });
+    const file = new File([blob], name, {
+      type,
+    });
+
+    const fileMarkings = values.fileMarkings.map(({ value }) => value);
+    const maxMarkings = values.max_markings.map(({ value }) => value); // TODO
+
+    commitMutation({
+      mutation: stixCoreObjectContentFilesUploadStixCoreObjectMutation,
+      variables: { file, id: stixCoreObjectId, fileMarkings },
+      setSubmitting,
+      onCompleted: (result) => {
+        setSubmitting(false);
+        resetForm();
+        this.handleCloseCreateOutcomeTemplate();
+        this.props.onFileChange(result.stixCoreObjectEdit.importPush.id);
+      },
+    });
+  }
+
   // eslint-disable-next-line class-methods-use-this
   renderIcon(mimeType) {
     switch (mimeType) {
@@ -205,7 +251,7 @@ class StixCoreObjectContentFiles extends Component {
       exportFiles,
       handleSelectExportFile,
     } = this.props;
-    const { deleting, displayCreate } = this.state;
+    const { deleting, displayCreate, displayCreateOutcomeTemplate } = this.state;
     const filesList = [...files, ...exportFiles.map((n) => ({ ...n, perspective: 'export' }))].sort((a, b) => b.name.localeCompare(a.name));
     return (
       <Drawer
@@ -299,6 +345,21 @@ class StixCoreObjectContentFiles extends Component {
             );
           })}
         </List>
+        <div>
+          <Typography variant="body2" style={{ margin: '5px 0 0 15px', float: 'left' }}>{t('Outcomes templates')}</Typography>
+          <div style={{ float: 'right', display: 'flex', margin: '-4px 15px 0 0' }}>
+            <Tooltip title={t('Create an outcome based on a template')}>
+              <IconButton
+                onClick={this.handleOpenCreateOutcomeTemplate.bind(this)}
+                color="primary"
+                size="small"
+                aria-label={t('Create an outcome based on a template')}
+              >
+                <AddOutlined />
+              </IconButton>
+            </Tooltip>
+          </div>
+        </div>
         <Formik
           enableReinitialize={true}
           initialValues={{ name: '', type: 'text/html', fileMarkings: [] }}
@@ -341,6 +402,73 @@ class StixCoreObjectContentFiles extends Component {
                     style={fieldSpacingContainerStyle}
                     onChange={() => {}}
                     setFieldValue={setFieldValue}
+                  />
+                </DialogContent>
+                <DialogActions>
+                  <Button onClick={handleReset} disabled={isSubmitting}>
+                    {t('Cancel')}
+                  </Button>
+                  <Button
+                    color="secondary"
+                    onClick={submitForm}
+                    disabled={isSubmitting}
+                  >
+                    {t('Create')}
+                  </Button>
+                </DialogActions>
+              </Dialog>
+            </Form>
+          )}
+        </Formik>
+        <Formik
+          enableReinitialize={true}
+          initialValues={{ name: '', type: 'text/html', fileMarkings: [] }}
+          validationSchema={fileValidation(t)}
+          onSubmit={this.onSubmitOutcomeTemplate.bind(this)}
+          onReset={this.onResetOutcomeTemplate.bind(this)}
+        >
+          {({ submitForm, handleReset, isSubmitting, setFieldValue }) => (
+            <Form>
+              <Dialog
+                PaperProps={{ elevation: 1 }}
+                open={displayCreateOutcomeTemplate}
+                onClose={this.handleCloseCreateOutcomeTemplate.bind(this)}
+                fullWidth={true}
+              >
+                <DialogTitle>{t('Create an outcome based on a template')}</DialogTitle>
+                <DialogContent>
+                  <Field
+                    component={TextField}
+                    variant="standard"
+                    name="name"
+                    label={t('Name')}
+                    fullWidth={true}
+                  />
+                  <Field
+                    component={SelectField}
+                    variant="standard"
+                    name="type"
+                    label={t('Type')}
+                    fullWidth={true}
+                    containerstyle={fieldSpacingContainerStyle}
+                  >
+                    <MenuItem value="text/html">{t('HTML')}</MenuItem>
+                  </Field>
+                  <ObjectMarkingField
+                    label={t('File marking definition levels')}
+                    name="fileMarkings"
+                    style={fieldSpacingContainerStyle}
+                    onChange={() => {}}
+                    setFieldValue={setFieldValue}
+                  />
+                  <ObjectMarkingField
+                    name='max_markings'
+                    label={t('Max content level markings')}
+                    helpertext={t('To prevent people seeing all the data, select a marking definition to restrict the data included in the outcome file.')}
+                    style={fieldSpacingContainerStyle}
+                    onChange={() => {}}
+                    setFieldValue={setFieldValue}
+                    limitToMaxSharing
                   />
                 </DialogContent>
                 <DialogActions>
