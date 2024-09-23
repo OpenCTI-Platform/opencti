@@ -141,7 +141,10 @@ interface FeedAddInput {
 }
 
 interface FeedCreationFormProps {
-  paginationOptions: PaginationOptions
+  paginationOptions: PaginationOptions;
+  open: boolean;
+  isDuplicated: boolean;
+  onDrawerClose: () => void;
 }
 
 const feedCreationValidation = (t_i18n: (s: string) => string) => Yup.object().shape({
@@ -154,7 +157,7 @@ const feedCreationValidation = (t_i18n: (s: string) => string) => Yup.object().s
 });
 
 const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
-  const { paginationOptions } = props;
+  const { onDrawerClose, open, paginationOptions, isDuplicated } = props;
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
@@ -173,6 +176,9 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
     setSelectedTypes([]);
     helpers.handleClearAllFilters();
     setFeedAttributes({ 0: {} });
+    if (!isDuplicated) {
+      onDrawerClose();
+    }
   };
 
   const handleSelectTypes = (types: string[]) => {
@@ -303,11 +309,12 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
     );
     setFeedAttributes(R.assoc(i, newFeedAttribute, feedAttributes));
   };
-
+  console.log('OPEN', open);
   return (
     <Drawer
-      title={t_i18n('Create a feed')}
-      variant={DrawerVariant.createWithPanel}
+      title={isDuplicated ? (t_i18n('Duplicate a feed')) : (t_i18n('Create a feed'))}
+      variant={isDuplicated ? undefined : DrawerVariant.createWithPanel}
+      open={open}
       onClose={handleClose}
     >
       {({ onClose }) => (
