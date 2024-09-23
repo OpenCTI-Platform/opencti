@@ -20,7 +20,7 @@ import {
   SearchIndexedFilesLinesPaginationQuery$variables,
 } from '@components/search/__generated__/SearchIndexedFilesLinesPaginationQuery.graphql';
 import { SearchIndexedFileLine_node$data } from '@components/search/__generated__/SearchIndexedFileLine_node.graphql';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import EnterpriseEdition from '@components/common/entreprise_edition/EnterpriseEdition';
 import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
@@ -34,7 +34,7 @@ import { useFormatter } from '../../../components/i18n';
 import ItemEntityType from '../../../components/ItemEntityType';
 import ItemMarkings from '../../../components/ItemMarkings';
 import useAuth from '../../../utils/hooks/useAuth';
-import { decodeSearchKeyword, handleSearchByKeyword } from '../../../utils/SearchUtils';
+import { decodeSearchKeyword } from '../../../utils/SearchUtils';
 import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
 import useManagerConfiguration from '../../../utils/hooks/useManagerConfiguration';
 import Security from '../../../utils/Security';
@@ -43,7 +43,6 @@ import { SETTINGS_FILEINDEXING } from '../../../utils/hooks/useGranted';
 const LOCAL_STORAGE_KEY = 'view-files';
 const SearchIndexedFilesComponent = () => {
   const { fd, t_i18n } = useFormatter();
-  const navigate = useNavigate();
   const {
     platformModuleHelpers: { isFileIndexManagerEnable },
   } = useAuth();
@@ -74,10 +73,6 @@ const SearchIndexedFilesComponent = () => {
     searchIndexedFilesLinesQuery,
     { ...paginationOptions, search: searchTerm },
   );
-
-  const handleSearch = (searchKeyword: string) => {
-    handleSearchByKeyword(searchKeyword, 'files', navigate);
-  };
 
   const fileSearchEnabled = isFileIndexManagerEnable();
 
@@ -153,10 +148,8 @@ const SearchIndexedFilesComponent = () => {
           orderAsc={orderAsc}
           dataColumns={dataColumns}
           handleSort={storageHelpers.handleSort}
-          handleSearch={handleSearch}
           handleAddFilter={storageHelpers.handleAddFilter}
           handleRemoveFilter={storageHelpers.handleRemoveFilter}
-          keyword={searchTerm}
           disableCards={true}
           secondaryAction={true}
           paginationOptions={paginationOptions}
