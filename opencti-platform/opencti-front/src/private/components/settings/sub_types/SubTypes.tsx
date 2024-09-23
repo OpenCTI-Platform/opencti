@@ -74,7 +74,7 @@ const SubTypes = () => {
   return (
     <div className={classes.container}>
       <CustomizationMenu />
-      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Customization') }, { label: t_i18n('Entity types'), current: true }]} />
+      <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Customization') }, { label: t_i18n('Entity types'), current: true }]} />
       <ListLines
         handleSearch={helpers.handleSearch}
         keyword={searchTerm}

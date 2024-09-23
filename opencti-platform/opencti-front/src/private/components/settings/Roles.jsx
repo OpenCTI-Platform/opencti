@@ -115,7 +115,7 @@ class Roles extends Component {
     };
     return (
       <div className={classes.container} data-testid='roles-settings-page'>
-        <Breadcrumbs variant="list" elements={[{ label: t('Settings') }, { label: t('Security') }, { label: t('Roles'), current: true }]} />
+        <Breadcrumbs elements={[{ label: t('Settings') }, { label: t('Security') }, { label: t('Roles'), current: true }]} />
         <AccessesMenu />
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}
         <RoleCreation paginationOptions={paginationOptions} />

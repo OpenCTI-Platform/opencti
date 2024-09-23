@@ -83,7 +83,7 @@ const RootNote = () => {
               const { note } = props;
               return (
                 <>
-                  <Breadcrumbs variant="object" elements={[
+                  <Breadcrumbs elements={[
                     { label: t_i18n('Analyses') },
                     { label: t_i18n('Notes'), link: '/dashboard/analyses/notes' },
                   ]}

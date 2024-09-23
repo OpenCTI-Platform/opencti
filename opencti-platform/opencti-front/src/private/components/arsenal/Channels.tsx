@@ -153,7 +153,7 @@ const Channels = () => {
 
   return (
     <>
-      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Arsenal') }, { label: t_i18n('Channels'), current: true }]} />
+      <Breadcrumbs elements={[{ label: t_i18n('Arsenal') }, { label: t_i18n('Channels'), current: true }]} />
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}

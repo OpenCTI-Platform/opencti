@@ -82,7 +82,7 @@ const IngestionTaxii = () => {
   }
   return (
     <div className={classes.container}>
-      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Data') }, { label: t_i18n('Ingestion') }, { label: t_i18n('TAXII feeds'), current: true }]} />
+      <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Ingestion') }, { label: t_i18n('TAXII feeds'), current: true }]} />
       <IngestionMenu/>
       <ListLines
         helpers={storageHelpers}

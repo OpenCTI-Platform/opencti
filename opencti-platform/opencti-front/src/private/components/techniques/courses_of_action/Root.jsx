@@ -98,7 +98,7 @@ class RootCourseOfAction extends Component {
                 const paddingRight = getPaddingRight(location.pathname, courseOfAction.id, '/dashboard/techniques/courses_of_action', false);
                 return (
                   <div style={{ paddingRight }}>
-                    <Breadcrumbs variant="object" elements={[
+                    <Breadcrumbs elements={[
                       { label: t('Techniques') },
                       { label: t('Courses of action'), link: '/dashboard/techniques/courses_of_action' },
                       { label: courseOfAction.name, current: true },

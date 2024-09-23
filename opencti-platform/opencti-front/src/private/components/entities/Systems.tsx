@@ -118,7 +118,7 @@ const Systems = () => {
 
   return (
     <>
-      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Entities') }, { label: t_i18n('Systems'), current: true }]} />
+      <Breadcrumbs elements={[{ label: t_i18n('Entities') }, { label: t_i18n('Systems'), current: true }]} />
       {renderLines()}
       {!isFABReplaced
         && <Security needs={[KNOWLEDGE_KNUPDATE]}>

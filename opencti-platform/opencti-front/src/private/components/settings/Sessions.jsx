@@ -57,7 +57,7 @@ class Sessions extends Component {
     return (
       <div className={classes.container}>
         <AccessesMenu />
-        <Breadcrumbs variant="list" elements={[{ label: t('Settings') }, { label: t('Security') }, { label: t('Sessions'), current: true }]} />
+        <Breadcrumbs elements={[{ label: t('Settings') }, { label: t('Security') }, { label: t('Sessions'), current: true }]} />
         <div className={classes.parameters}>
           <div style={{ float: 'left', marginRight: 20 }}>
             <SearchInput

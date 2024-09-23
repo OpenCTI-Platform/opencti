@@ -233,7 +233,6 @@ const Workspaces: FunctionComponent<WorkspacesProps> = ({
   return (
     <>
       <Breadcrumbs
-        variant="list"
         elements={type === 'dashboard'
           ? [{ label: t_i18n('Dashboards') }, { label: t_i18n('Custom dashboards'), current: true }]
           : [{ label: t_i18n('Investigations'), current: true }]

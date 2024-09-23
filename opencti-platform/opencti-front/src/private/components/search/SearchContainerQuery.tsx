@@ -6,12 +6,14 @@ import { Link, useLocation, useParams } from 'react-router-dom';
 import EEChip from '@components/common/entreprise_edition/EEChip';
 import { graphql, PreloadedQuery, usePreloadedQuery, useQueryLoader } from 'react-relay';
 import Badge from '@mui/material/Badge';
+import { useTheme } from '@mui/styles';
 import ExportContextProvider from '../../../utils/ExportContextProvider';
 import { useFormatter } from '../../../components/i18n';
 import { decodeSearchKeyword } from '../../../utils/SearchUtils';
 import useAuth from '../../../utils/hooks/useAuth';
 import { SearchContainerQueryFilesCountQuery } from './__generated__/SearchContainerQueryFilesCountQuery.graphql';
 import Breadcrumbs from '../../../components/Breadcrumbs';
+import type { Theme } from '../../../components/Theme';
 
 const searchContainerQueryFilesCountQuery = graphql`
   query SearchContainerQueryFilesCountQuery($search: String) {
@@ -26,6 +28,7 @@ interface SearchRootComponentProps {
 
 const SearchContainer: FunctionComponent<SearchRootComponentProps> = ({ children, filesCount = 0 }) => {
   const { t_i18n } = useFormatter();
+  const theme = useTheme<Theme>();
   const { keyword } = useParams() as { keyword: string };
   const location = useLocation();
   let searchType = 'knowledge';
@@ -34,12 +37,13 @@ const SearchContainer: FunctionComponent<SearchRootComponentProps> = ({ children
   }
   return (
     <ExportContextProvider>
-      <Breadcrumbs variant="standard" elements={[{ label: t_i18n('Search') }, { label: t_i18n('Advanced search'), current: true }]} />
+      <Breadcrumbs elements={[{ label: t_i18n('Search') }, { label: t_i18n('Advanced search'), current: true }]} />
       <Box
         sx={{
           borderBottom: 1,
           borderColor: 'divider',
           marginBottom: 3,
+          marginTop: theme.spacing(-1),
         }}
       >
         <Tabs id="tabs-container" value={searchType}>

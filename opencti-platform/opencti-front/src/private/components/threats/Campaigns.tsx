@@ -191,7 +191,7 @@ const Campaigns = () => {
 
   return (
     <>
-      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Threats') }, { label: t_i18n('Campaigns'), current: true }]} />
+      <Breadcrumbs elements={[{ label: t_i18n('Threats') }, { label: t_i18n('Campaigns'), current: true }]} />
       {viewStorage.view !== 'lines' ? renderCards() : renderList()}
       {!isFABReplaced && (
         <Security needs={[KNOWLEDGE_KNUPDATE]}>

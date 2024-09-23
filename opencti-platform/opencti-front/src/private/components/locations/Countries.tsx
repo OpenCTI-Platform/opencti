@@ -111,7 +111,7 @@ const Countries: FunctionComponent = () => {
   };
   return (
     <>
-      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Locations') }, { label: t_i18n('Countries'), current: true }]} />
+      <Breadcrumbs elements={[{ label: t_i18n('Locations') }, { label: t_i18n('Countries'), current: true }]} />
       {renderLines()}
       {!FABReplaced
         && <Security needs={[KNOWLEDGE_KNUPDATE]}>

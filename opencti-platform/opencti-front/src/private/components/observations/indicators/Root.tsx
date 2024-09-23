@@ -100,7 +100,7 @@ const RootIndicator = ({ indicatorId, queryRef }: RootIndicatorProps) => {
     <>
       {indicator ? (
         <div style={{ paddingRight }}>
-          <Breadcrumbs variant="object" elements={[
+          <Breadcrumbs elements={[
             { label: t_i18n('Observations') },
             { label: t_i18n('Indicators'), link: '/dashboard/observations/indicators' },
             { label: (indicator.name ?? indicator.pattern ?? ''), current: true },

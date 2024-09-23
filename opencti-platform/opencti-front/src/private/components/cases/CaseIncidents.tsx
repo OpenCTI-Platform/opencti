@@ -190,7 +190,7 @@ const CaseIncidents: FunctionComponent<CaseIncidentsProps> = () => {
 
   return (
     <>
-      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Cases') }, { label: t_i18n('Incident responses'), current: true }]} />
+      <Breadcrumbs elements={[{ label: t_i18n('Cases') }, { label: t_i18n('Incident responses'), current: true }]} />
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}

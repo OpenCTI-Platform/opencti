@@ -219,7 +219,7 @@ const Audit = () => {
   return (
     <div className={classes.container}>
       <ActivityMenu/>
-      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Activity') }, {
+      <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Activity') }, {
         label: t_i18n('Events'),
         current: true,
       }]}

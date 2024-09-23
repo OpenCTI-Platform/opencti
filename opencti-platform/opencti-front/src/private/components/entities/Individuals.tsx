@@ -117,7 +117,7 @@ const Individuals = () => {
 
   return (
     <>
-      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Entities') }, { label: t_i18n('Individuals'), current: true }]} />
+      <Breadcrumbs elements={[{ label: t_i18n('Entities') }, { label: t_i18n('Individuals'), current: true }]} />
       {renderLines()}
       {!isFABReplaced
         && <Security needs={[KNOWLEDGE_KNUPDATE]}>

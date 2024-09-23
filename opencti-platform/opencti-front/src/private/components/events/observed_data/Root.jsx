@@ -114,7 +114,7 @@ class RootObservedData extends Component {
               }
               return (
                 <div style={{ paddingRight }}>
-                  <Breadcrumbs variant="object" elements={[
+                  <Breadcrumbs elements={[
                     { label: t('Events') },
                     { label: t('Observed datas'), link: '/dashboard/events/observed_data' },
                     { label: observedData.name, current: true },

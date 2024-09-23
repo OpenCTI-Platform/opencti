@@ -106,7 +106,7 @@ const Users = () => {
 
   return (
     <div className={classes.container} data-testid="users-settings-page">
-      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Security') }, { label: t_i18n('Users'), current: true }]} />
+      <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Security') }, { label: t_i18n('Users'), current: true }]} />
       <AccessesMenu />
       {isSetAccess || isEnterpriseEdition ? (
         renderLines()

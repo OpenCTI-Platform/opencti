@@ -61,7 +61,6 @@ const styles = (theme) => ({
     display: 'flex',
     alignItems: 'center',
     gap: 10,
-    marginTop: -10,
     paddingBottom: 10,
     flexWrap: 'wrap',
   },

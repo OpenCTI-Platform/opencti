@@ -105,7 +105,7 @@ const CaseTemplates = () => {
   return (
     <div className={classes.container}>
       <LabelsVocabulariesMenu />
-      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Taxonomies') }, { label: t_i18n('Case templates'), current: true }]} />
+      <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Taxonomies') }, { label: t_i18n('Case templates'), current: true }]} />
       {renderLines()}
       <CaseTemplateCreation
         paginationOptions={paginationOptions}

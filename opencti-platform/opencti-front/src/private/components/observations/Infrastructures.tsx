@@ -162,7 +162,7 @@ const Infrastructures = () => {
 
   return (
     <ExportContextProvider>
-      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Observations') }, { label: t_i18n('Infrastructures'), current: true }]} />
+      <Breadcrumbs elements={[{ label: t_i18n('Observations') }, { label: t_i18n('Infrastructures'), current: true }]} />
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}

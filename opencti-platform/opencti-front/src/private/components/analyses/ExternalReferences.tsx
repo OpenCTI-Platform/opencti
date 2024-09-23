@@ -150,7 +150,7 @@ const ExternalReferences: FunctionComponent<ExternalReferencesProps> = () => {
   } as UsePreloadedPaginationFragment<ExternalReferencesLinesPaginationQuery>;
   return (
     <>
-      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Analyses') }, { label: t_i18n('External references'), current: true }]} />
+      <Breadcrumbs elements={[{ label: t_i18n('Analyses') }, { label: t_i18n('External references'), current: true }]} />
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}

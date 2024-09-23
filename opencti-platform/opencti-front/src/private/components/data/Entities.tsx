@@ -71,7 +71,7 @@ const Entities = () => {
 
   return (
     <div data-testid='data-entities-page'>
-      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Data') }, { label: t_i18n('Entities'), current: true }]} />
+      <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Entities'), current: true }]} />
       {queryRef && (
         <DataTable
           storageKey={LOCAL_STORAGE_KEY}

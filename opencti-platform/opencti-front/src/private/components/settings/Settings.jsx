@@ -33,7 +33,7 @@ import Breadcrumbs from '../../../components/Breadcrumbs';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles((theme) => ({
   container: {
     margin: '0 0 60px 0',
   },
@@ -44,7 +44,7 @@ const useStyles = makeStyles(() => ({
   },
   button: {
     float: 'right',
-    marginTop: -30,
+    marginTop: theme.spacing(-5),
   },
 }));
 
@@ -295,7 +295,7 @@ const Settings = () => {
             );
             return (
               <>
-                <Breadcrumbs variant="object" elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Parameters'), current: true }]} />
+                <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Parameters'), current: true }]} />
                 <Grid container={true} spacing={3}>
                   <Grid item xs={6}>
                     <Typography variant="h4" gutterBottom={true}>

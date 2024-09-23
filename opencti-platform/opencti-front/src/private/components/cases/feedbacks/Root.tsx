@@ -110,7 +110,7 @@ const RootFeedbackComponent = ({ queryRef, caseId }) => {
   const { canEdit } = useGetCurrentUserAccessRight(feedbackData.currentUserAccessRight);
   return (
     <div style={{ paddingRight }}>
-      <Breadcrumbs variant="object" elements={[
+      <Breadcrumbs elements={[
         { label: t_i18n('Cases') },
         { label: t_i18n('Feedbacks'), link: '/dashboard/cases/feedbacks' },
         { label: feedbackData.name, current: true },

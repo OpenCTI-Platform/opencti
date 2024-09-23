@@ -187,7 +187,7 @@ const IntrusionSets = () => {
 
   return (
     <>
-      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Threats') }, { label: t_i18n('Intrusion sets'), current: true }]} />
+      <Breadcrumbs elements={[{ label: t_i18n('Threats') }, { label: t_i18n('Intrusion sets'), current: true }]} />
       {viewStorage.view !== 'lines' ? renderCards() : renderList()}
       {!isFABReplaced && (
         <Security needs={[KNOWLEDGE_KNUPDATE]}>

@@ -211,7 +211,7 @@ const Narratives: FunctionComponent = () => {
   };
   return (
     <ExportContextProvider>
-      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Techniques') }, { label: t_i18n('Narratives'), current: true }]} />
+      <Breadcrumbs elements={[{ label: t_i18n('Techniques') }, { label: t_i18n('Narratives'), current: true }]} />
       {view === 'lines' ? renderLines() : ''}
       {view === 'subEntityLines' ? renderSubEntityLines() : ''}
       {!isFABReplaced && (

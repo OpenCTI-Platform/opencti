@@ -217,7 +217,7 @@ const Alerting: FunctionComponent = () => {
   return (
     <div className={classes.container}>
       <ActivityMenu/>
-      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Activity') }, { label: t_i18n('Alerting'), current: true }]} />
+      <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Activity') }, { label: t_i18n('Alerting'), current: true }]} />
       {renderLines()}
       <AlertCreation paginationOptions={paginationOptions}/>
     </div>

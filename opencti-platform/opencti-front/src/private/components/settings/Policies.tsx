@@ -165,7 +165,7 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
   return (
     <div className={classes.container}>
       <AccessesMenu />
-      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Security') }, { label: t_i18n('Policies'), current: true }]} />
+      <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Security') }, { label: t_i18n('Policies'), current: true }]} />
       <Grid container={true} spacing={3}>
         <Grid item xs={12}>
           <Formik

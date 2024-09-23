@@ -134,7 +134,7 @@ const RootCampaign = ({ campaignId, queryRef }: RootCampaignProps) => {
             />
           </Routes>
           <div style={{ paddingRight }}>
-            <Breadcrumbs variant="object" elements={[
+            <Breadcrumbs elements={[
               { label: t_i18n('Threats') },
               { label: t_i18n('Campaigns'), link: '/dashboard/threats/campaigns' },
               { label: campaign.name, current: true },

@@ -124,7 +124,7 @@ const RootNarrative = ({ narrativeId, queryRef }: RootNarrativeProps) => {
             />
           </Routes>
           <div style={{ paddingRight }} >
-            <Breadcrumbs variant="object" elements={[
+            <Breadcrumbs elements={[
               { label: t_i18n('Techniques') },
               { label: t_i18n('Narratives'), link: '/dashboard/techniques/narratives' },
               { label: narrative.name, current: true },
