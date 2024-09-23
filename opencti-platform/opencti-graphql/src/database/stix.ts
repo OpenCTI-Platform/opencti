@@ -246,6 +246,11 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
     { name: RELATION_DERIVED_FROM, type: REL_BUILT_IN }
   ],
   // endregion
+  // region CHANNEL
+  [`${ENTITY_TYPE_CHANNEL}_${ENTITY_TYPE_CHANNEL}`]: [
+    { name: RELATION_DERIVED_FROM, type: REL_BUILT_IN }
+  ],
+  // endregion
   // region COURSE_OF_ACTION
   [`${ENTITY_TYPE_COURSE_OF_ACTION}_${ENTITY_TYPE_ATTACK_PATTERN}`]: [
     { name: RELATION_MITIGATES, type: REL_BUILT_IN }
@@ -266,6 +271,11 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
     { name: RELATION_REMEDIATES, type: REL_BUILT_IN },
   ],
   [`${ENTITY_TYPE_COURSE_OF_ACTION}_${ENTITY_TYPE_COURSE_OF_ACTION}`]: [
+    { name: RELATION_DERIVED_FROM, type: REL_BUILT_IN }
+  ],
+  // endregion
+  // region EVENT
+  [`${ENTITY_TYPE_EVENT}_${ENTITY_TYPE_EVENT}`]: [
     { name: RELATION_DERIVED_FROM, type: REL_BUILT_IN }
   ],
   // endregion
@@ -644,6 +654,11 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
     { name: RELATION_DERIVED_FROM, type: REL_BUILT_IN }
   ],
   // endregion
+  // region LOCATION_AREA
+  [`${ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA}_${ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA}`]: [
+    { name: RELATION_DERIVED_FROM, type: REL_BUILT_IN }
+  ],
+  // endregion
   // region MALWARE
   [`${ENTITY_TYPE_MALWARE}_${ENTITY_DOMAIN_NAME}`]: [
     { name: RELATION_COMMUNICATES_WITH, type: REL_BUILT_IN }
@@ -733,6 +748,16 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
   ],
   [`${ENTITY_TYPE_MALWARE}_${ENTITY_URL}`]: [
     { name: RELATION_COMMUNICATES_WITH, type: REL_BUILT_IN }
+  ],
+  // endregion
+  // region NARRATIVE
+  [`${ENTITY_TYPE_NARRATIVE}_${ENTITY_TYPE_NARRATIVE}`]: [
+    { name: RELATION_DERIVED_FROM, type: REL_BUILT_IN }
+  ],
+  // endregion
+  // region ORGANIZATION
+  [`${ENTITY_TYPE_IDENTITY_ORGANIZATION}_${ENTITY_TYPE_IDENTITY_ORGANIZATION}`]: [
+    { name: RELATION_DERIVED_FROM, type: REL_BUILT_IN }
   ],
   // endregion
   // region THREAT_ACTOR
@@ -954,6 +979,11 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
   [`${ENTITY_TYPE_TOOL}_${ENTITY_TYPE_TOOL}`]: [
     { name: RELATION_DERIVED_FROM, type: REL_BUILT_IN }
   ],
+  // region VULNERABILITY
+  [`${ENTITY_TYPE_VULNERABILITY}_${ENTITY_TYPE_VULNERABILITY}`]: [
+    { name: RELATION_DERIVED_FROM, type: REL_BUILT_IN }
+  ],
+  // endregion
   // endregion
   // Observables
   // region HOSTNAME

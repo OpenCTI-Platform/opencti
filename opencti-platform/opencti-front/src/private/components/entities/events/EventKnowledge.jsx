@@ -66,7 +66,7 @@ class EventKnowledgeComponent extends Component {
             element={
               <EntityStixCoreRelationships
                 entityId={event.id}
-                relationshipTypes={['related-to']}
+                relationshipTypes={['related-to', 'derived-from']}
                 entityLink={link}
                 allDirections={true}
               />
