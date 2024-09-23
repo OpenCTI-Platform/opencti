@@ -468,7 +468,7 @@ const restrictValue = (entityValue) => {
 // restricted entities need to be able to be queried through the API
 // we need to keep all of the entity attributes, but restrict their values
 export const buildRestrictedEntity = (resolvedEntity) => {
-  // we first created a deep copy of the resolved entity
+  // we first create a deep copy of the resolved entity
   const restrictedEntity = structuredClone(resolvedEntity);
   // for every attribute of the entity, we restrict it's value: we obfuscate the real value with a fake default value
   for (let i = 0; i < Object.keys(restrictedEntity).length; i += 1) {
