@@ -450,7 +450,7 @@ const isValidDate = (stringDate) => {
   const dateParsed = Date.parse(stringDate);
   if (!dateParsed) return false;
   const dateInstance = new Date(dateParsed);
-  return dateInstance && dateInstance.toISOString() === stringDate;
+  return dateInstance.toISOString() === stringDate;
 };
 
 const defaultValue = (entityValue) => {
