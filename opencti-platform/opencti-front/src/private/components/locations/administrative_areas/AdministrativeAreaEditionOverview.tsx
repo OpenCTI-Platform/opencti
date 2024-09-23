@@ -200,7 +200,7 @@ AdministrativeAreaEditionOverviewProps
       },
     });
   };
-  const handleSubmitField = (name: string, value: Option | string) => {
+  const handleSubmitField = (name: string, value: Option | string | null) => {
     if (!enableReferences) {
       let finalValue: string = value as string;
       if (name === 'x_opencti_workflow_id') {
@@ -290,7 +290,7 @@ AdministrativeAreaEditionOverviewProps
             label={t_i18n('Latitude')}
             fullWidth={true}
             onFocus={editor.changeFocus}
-            onSubmit={(name, value) => handleSubmitField(name, (value === '' ? null : value))}
+            onSubmit={(name: string, value: string) => handleSubmitField(name, (value === '' ? null : value))}
             helperText={
               <SubscriptionFocus context={context} fieldName="latitude" />
             }
@@ -304,7 +304,7 @@ AdministrativeAreaEditionOverviewProps
             label={t_i18n('Longitude')}
             fullWidth={true}
             onFocus={editor.changeFocus}
-            onSubmit={(name, value) => handleSubmitField(name, (value === '' ? null : value))}
+            onSubmit={(name: string, value: string) => handleSubmitField(name, (value === '' ? null : value))}
             helperText={
               <SubscriptionFocus context={context} fieldName="longitude" />
             }
