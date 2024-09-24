@@ -49,7 +49,7 @@ const OpinionEdition = ({ opinionId }) => {
               </CollaborativeSecurity>
             );
           }
-          return <Loader variant={LoaderVariant.inElement} />;
+          return <Loader variant={LoaderVariant.inline} />;
         }}
       />
     </div>

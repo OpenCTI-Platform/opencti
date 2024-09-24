@@ -29,10 +29,11 @@ import useAuth from '../../../../utils/hooks/useAuth';
 import useGranted, { BYPASS, SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
+import type { Theme } from '../../../../components/Theme';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
-const useStyles = makeStyles({
+const useStyles = makeStyles<Theme>((theme) => ({
   container: {
     margin: 0,
     padding: '0 200px 0 0',
@@ -41,14 +42,14 @@ const useStyles = makeStyles({
     marginBottom: 20,
   },
   paper: {
-    margin: '10px 0 0 0',
+    marginTop: theme.spacing(1),
     padding: '15px',
     borderRadius: 4,
   },
   title: {
     float: 'left',
   },
-});
+}));
 const settingsOrganizationFragment = graphql`
   fragment SettingsOrganization_organization on Organization {
     id

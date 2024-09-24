@@ -21,7 +21,6 @@ const inlinedStyle = {
     display: 'flex',
     float: 'right',
     alignItems: 'center',
-    margin: '0 10px',
   },
 };
 const BulkRelationDialogContainer = ({

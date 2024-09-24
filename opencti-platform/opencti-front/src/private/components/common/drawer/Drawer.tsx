@@ -42,7 +42,8 @@ const useStyles = makeStyles<Theme, { bannerHeightNumber: number }>((theme) => c
     alignItems: 'center',
   },
   container: {
-    padding: '10px 20px 20px 20px',
+    padding: theme.spacing(1),
+    height: '100%',
   },
   mainButton: ({ bannerHeightNumber }) => ({
     position: 'fixed',

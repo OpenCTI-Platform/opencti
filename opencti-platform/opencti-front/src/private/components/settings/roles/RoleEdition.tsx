@@ -53,7 +53,7 @@ const RoleEdition: FunctionComponent<RoleEditionProps> = ({
         {currentTab === 0 && <RoleEditionOverview role={role} context={editContext} />}
         {currentTab === 1 && queryRef && (
           <React.Suspense
-            fallback={<Loader variant={LoaderVariant.inElement} />}
+            fallback={<Loader variant={LoaderVariant.inline} />}
           >
             <RoleEditionCapabilities role={role} queryRef={queryRef} />
           </React.Suspense>

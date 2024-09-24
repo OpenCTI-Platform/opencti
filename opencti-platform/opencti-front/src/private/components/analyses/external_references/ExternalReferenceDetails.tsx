@@ -16,12 +16,13 @@ import { ExternalReferenceDetails_externalReference$data } from './__generated__
 import { useFormatter } from '../../../../components/i18n';
 import ItemCreators from '../../../../components/ItemCreators';
 import Transition from '../../../../components/Transition';
+import type { Theme } from '../../../../components/Theme';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles<Theme>((theme) => ({
   paper: {
-    margin: '10px 0 0 0',
+    marginTop: theme.spacing(1),
     padding: '15px',
     borderRadius: 4,
   },

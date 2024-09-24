@@ -38,18 +38,19 @@ import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
 import ItemBoolean from '../../../components/ItemBoolean';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
+import type { Theme } from '../../../components/Theme';
 import useSensitiveModifications from '../../../utils/hooks/useSensitiveModifications';
 import Transition from '../../../components/Transition';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles<Theme>((theme) => ({
   container: {
     margin: 0,
     padding: '0 200px 50px 0',
   },
   paper: {
-    margin: '10px 0 0 0',
+    marginTop: theme.spacing(1),
     padding: 20,
     borderRadius: 4,
   },

@@ -17,9 +17,9 @@ import CoursesOfActionAttackPatterns from './CourseOfActionAttackPatterns';
 import inject18n from '../../../../components/i18n';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 
-const styles = () => ({
+const styles = (theme) => ({
   paper: {
-    margin: '10px 0 0 0',
+    marginTop: theme.spacing(1),
     padding: '15px',
     borderRadius: 4,
   },
