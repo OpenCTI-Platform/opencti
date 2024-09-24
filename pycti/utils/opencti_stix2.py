@@ -2280,6 +2280,12 @@ class OpenCTIStix2:
         do_list = lister.get(
             entity_type, lambda **kwargs: self.unknown_type({"type": entity_type})
         )
+
+        if getAll and (orderBy is None or orderBy == "_score"):
+            orderBy = "created_at"
+            if orderMode is None:
+                orderMode = "desc"
+
         # noinspection PyTypeChecker
         return do_list(
             search=search,
