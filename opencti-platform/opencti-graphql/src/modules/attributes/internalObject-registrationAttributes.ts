@@ -16,7 +16,6 @@ import {
   ENTITY_TYPE_RULE,
   ENTITY_TYPE_RULE_MANAGER,
   ENTITY_TYPE_SETTINGS,
-  ENTITY_TYPE_SETTINGS_MESSAGES,
   ENTITY_TYPE_STATUS,
   ENTITY_TYPE_STATUS_TEMPLATE,
   ENTITY_TYPE_STREAM_COLLECTION,
@@ -161,12 +160,6 @@ export const settingsMessages = {
 };
 
 const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
-  [ENTITY_TYPE_SETTINGS_MESSAGES]: [
-    { name: 'message', label: 'Message', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: false, upsert: false, isFilterable: false },
-    { name: 'activated', label: 'Activated', type: 'boolean', mandatoryType: 'external', editDefault: false, multiple: false, upsert: false, isFilterable: false },
-    { name: 'dismissible', label: 'Dismissible', type: 'boolean', mandatoryType: 'external', editDefault: false, multiple: false, upsert: false, isFilterable: false },
-    { name: 'color', label: 'Color', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: true, multiple: false, upsert: false, isFilterable: false },
-  ],
   [ENTITY_TYPE_SETTINGS]: [
     { name: 'platform_title', label: 'Platform title', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'platform_organization', label: 'Platform organization', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
