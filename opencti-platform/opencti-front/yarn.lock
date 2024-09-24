@@ -15636,7 +15636,7 @@ __metadata:
     moment: "npm:2.30.1"
     moment-timezone: "npm:0.5.45"
     monocart-reporter: "npm:2.4.5"
-    pdfmake: "npm:0.2.10"
+    pdfmake: "npm:0.2.13"
     prop-types: "npm:15.8.1"
     qrcode: "npm:1.5.3"
     ramda: "npm:0.30.1"
@@ -15979,15 +15979,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pdfmake@npm:0.2.10":
-  version: 0.2.10
-  resolution: "pdfmake@npm:0.2.10"
+"pdfmake@npm:0.2.13":
+  version: 0.2.13
+  resolution: "pdfmake@npm:0.2.13"
   dependencies:
     "@foliojs-fork/linebreak": "npm:^1.1.1"
     "@foliojs-fork/pdfkit": "npm:^0.14.0"
     iconv-lite: "npm:^0.6.3"
     xmldoc: "npm:^1.1.2"
-  checksum: 10/691525cf68ff7899c5140c007520ee80463ad04e74f46179d19be40b6b0dc2d48a91ec56975cf33af0a03f9de28808d56bc8948221e480fc1c99540a74eb4a2a
+  checksum: 10/7d59e962f2be86763a6211deb9f4d938e5a4acdadbaac38054cbb52390a3aff8bbb06d15af133d8a6919e947a2029bc7abf079087c04c98bf25e77a253a1187f
   languageName: node
   linkType: hard
 
