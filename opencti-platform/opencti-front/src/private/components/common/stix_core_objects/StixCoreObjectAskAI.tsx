@@ -109,12 +109,14 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({ inst
   const isEnterpriseEdition = useEnterpriseEdition();
   const { enabled, configured } = useAI();
   const isKnowledgeUploader = useGranted([KNOWLEDGE_KNUPLOAD]);
-  // get default language for Ai generation by priority : 1. user language, 2. platform language, 3. browser language
+  // get default language (in English, not in Iso-code) for Ai generation by priority : 1. user language, 2. platform language, 3. browser language
   const { me, settings } = useContext(UserContext);
   const userLanguage = me?.language && me.language !== 'auto' ? me.language : null;
   const platformLanguage = settings?.platform_language && settings.platform_language !== 'auto' ? settings.platform_language : null;
-  const defaultLanguage = userLanguage || platformLanguage || locale;
-  const [language, setLanguage] = useState(defaultLanguage);
+  const defaultLanguageValue = userLanguage || platformLanguage || locale;
+  const defaultLanguage = aiLanguage.find((lang) => lang.value === defaultLanguageValue);
+  const defaultLanguageName = defaultLanguage ? defaultLanguage.name : 'English';
+  const [language, setLanguage] = useState(defaultLanguageName);
   const [action, setAction] = useState<'container-report' | 'summarize-files' | 'convert-files' | null>(null);
   const [content, setContent] = useState('');
   const [acceptedResult, setAcceptedResult] = useState<string | null>(null);
@@ -161,7 +163,6 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({ inst
     const id = uuid();
     setBusId(id);
     handleOpenAskAI();
-    const promptLanguage = aiLanguage.find((lang) => lang.value === language)?.englishName;
     switch (action) {
       case 'container-report':
         commitMutationContainerReport({
@@ -171,7 +172,7 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({ inst
             paragraphs,
             tone,
             format,
-            language: promptLanguage,
+            language,
           },
           onCompleted: (response: StixCoreObjectAskAIContainerReportMutation$data) => {
             setContent(response?.aiContainerGenerateReport ?? '');
@@ -191,7 +192,7 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({ inst
             paragraphs,
             tone,
             format,
-            language: promptLanguage,
+            language,
             fileIds: files.map((n) => n.value),
           },
           onCompleted: (response: StixCoreObjectAskAISummarizeFilesMutation$data) => {
@@ -402,7 +403,7 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({ inst
                 fullWidth={true}
               >
                 {aiLanguage.map((lang) => (
-                  <MenuItem key={lang.value} value={lang.value}>{t_i18n(lang.label)}</MenuItem>
+                  <MenuItem key={lang.value} value={lang.name}>{t_i18n(lang.name)}</MenuItem>
                 ))}
               </Select>
             </FormControl>
