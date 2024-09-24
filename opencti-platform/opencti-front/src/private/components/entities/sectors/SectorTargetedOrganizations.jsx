@@ -19,7 +19,7 @@ import ItemMarkings from '../../../../components/ItemMarkings';
 const styles = (theme) => ({
   paper: {
     height: '100%',
-    margin: '10px 0 0 0',
+    marginTop: theme.spacing(1),
     padding: 0,
     borderRadius: 4,
   },

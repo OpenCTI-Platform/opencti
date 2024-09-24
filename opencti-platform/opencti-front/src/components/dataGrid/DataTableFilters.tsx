@@ -108,6 +108,8 @@ const DataTableFilters = ({
 
   const hasFilters = availableFilterKeys && availableFilterKeys.length > 0;
 
+  const hasToggleGroup = additionalHeaderButtons || redirectionModeEnabled || !exportDisabled;
+
   return (
     <ExportContext.Provider value={{ selectedIds: Object.keys(selectedElements) }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', flex: 1 }}>
@@ -146,6 +148,7 @@ const DataTableFilters = ({
             color="secondary"
             value={currentView || 'lines'}
             exclusive={true}
+            style={hasToggleGroup ? { marginLeft: theme.spacing(1) } : undefined}
             onChange={(_, value) => {
               if (value && value === 'export') {
                 helpers.handleToggleExports();

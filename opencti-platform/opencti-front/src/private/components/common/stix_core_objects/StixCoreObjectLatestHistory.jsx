@@ -14,9 +14,9 @@ import { QueryRenderer } from '../../../../relay/environment';
 import StixCoreObjectHistoryLines, { stixCoreObjectHistoryLinesQuery } from './StixCoreObjectHistoryLines';
 import inject18n from '../../../../components/i18n';
 
-const styles = () => ({
+const styles = (theme) => ({
   paperHistory: {
-    margin: '10px 0 0 0',
+    marginTop: theme.spacing(1),
     padding: 0,
     borderRadius: 4,
   },
