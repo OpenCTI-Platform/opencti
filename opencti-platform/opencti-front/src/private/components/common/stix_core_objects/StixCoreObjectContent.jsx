@@ -35,11 +35,11 @@ import withRouter from '../../../../utils/compat_router/withRouter';
 
 pdfjs.GlobalWorkerOptions.workerSrc = `${APP_BASE_PATH}/static/ext/pdf.worker.mjs`;
 
-const styles = () => ({
+const styles = (theme) => ({
   container: {
     width: '100%',
     height: '100%',
-    margin: '10px 0 0 0',
+    marginTop: theme.spacing(1),
   },
   documentContainer: {
     margin: '5px 0 0 0',
