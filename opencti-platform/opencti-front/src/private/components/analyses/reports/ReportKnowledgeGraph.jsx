@@ -906,15 +906,15 @@ class ReportKnowledgeGraphComponent extends Component {
 
   handleSelectRelationshipsByAdjacentNode(type) {
     const selectedNodes = Array.from(this.selectedNodes);
-    const selectedNodesIds = R.map((n) => n.id, selectedNodes);
+    const selectedNodesIds = selectedNodes.map((n) => n.id);
     this.selectedLinks = new Set(
-      Array.from(this.selectedLinks).filter((link) => !R.includes(link.source_id, selectedNodesIds) && !R.includes(link.target_id, selectedNodesIds)),
+      Array.from(this.selectedLinks).filter((link) => !selectedNodesIds.includes(link.source_id) && !selectedNodesIds.includes(link.target_id)),
     );
 
-    const relationshipsToSelect = R.filter(
+    const relationshipsToSelect = this.state.graphData.links.filter(
       (link) => {
-        const isSourceSelected = R.includes(link.source_id, selectedNodesIds);
-        const isTargetSelected = R.includes(link.target_id, selectedNodesIds);
+        const isSourceSelected = selectedNodesIds.includes(link.source_id);
+        const isTargetSelected = selectedNodesIds.includes(link.target_id);
 
         if (type === 'children') {
           return isSourceSelected;
