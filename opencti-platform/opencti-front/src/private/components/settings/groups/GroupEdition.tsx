@@ -21,7 +21,7 @@ const GroupEdition: FunctionComponent<GroupEditionProps> = ({
   return (
     <div>
       {groupQueryRef && (
-        <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+        <React.Suspense fallback={<Loader variant={LoaderVariant.inline} />}>
           <GroupEditionContainer
             groupQueryRef={groupQueryRef}
             handleClose={handleClose}

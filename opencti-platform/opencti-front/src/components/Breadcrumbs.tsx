@@ -1,5 +1,4 @@
 import React, { FunctionComponent } from 'react';
-import MUIBreadcrumbs from '@mui/material/Breadcrumbs';
 import { Link } from 'react-router-dom';
 import Typography from '@mui/material/Typography';
 import { useTheme } from '@mui/styles';
@@ -20,9 +19,14 @@ interface BreadcrumbsProps {
 
 const Breadcrumbs: FunctionComponent<BreadcrumbsProps> = ({ elements, isSensitive = false }) => {
   const theme = useTheme<Theme>();
+
+  const SplitDiv = ({ show = true }) => (
+    <div style={{ display: show ? 'none' : 'unset', marginLeft: theme.spacing(1), marginRight: theme.spacing(1) }}>/</div>
+  );
+
   return (
-    <MUIBreadcrumbs style={{ marginBottom: theme.spacing(2) }}>
-      {elements.map((element) => {
+    <div data-testid="navigation" style={{ marginBottom: theme.spacing(2), display: 'flex' }}>
+      {elements.map((element, index) => {
         if (element.current) {
           return (
             <span key={element.label} style={{ display: 'flex', alignItems: 'center' }}>
@@ -35,14 +39,20 @@ const Breadcrumbs: FunctionComponent<BreadcrumbsProps> = ({ elements, isSensitiv
         }
         if (!element.link) {
           return (
-            <Typography key={element.label} color="inherit">{truncate(element.label, 30, false)}</Typography>
+            <>
+              <Typography key={element.label} color="common.lightGrey">{truncate(element.label, 30, false)}</Typography>
+              <SplitDiv show={index === elements.length - 1} />
+            </>
           );
         }
         return (
-          <Link key={element.label} to={element.link}>{truncate(element.label, 30, false)}</Link>
+          <>
+            <Link key={element.label} to={element.link}>{truncate(element.label, 30, false)}</Link>
+            <SplitDiv show={index === elements.length - 1} />
+          </>
         );
       })}
-    </MUIBreadcrumbs>
+    </div>
   );
 };
 

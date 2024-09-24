@@ -25,7 +25,7 @@ const CaseRftEdition: FunctionComponent<{ caseId: string }> = ({ caseId }) => {
     <>
       {queryRef && (
         <React.Suspense
-          fallback={<Loader variant={LoaderVariant.inElement} />}
+          fallback={<Loader variant={LoaderVariant.inline} />}
         >
           <CaseRftEditionContainer
             queryRef={queryRef}

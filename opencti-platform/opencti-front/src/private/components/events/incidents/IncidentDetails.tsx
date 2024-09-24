@@ -16,7 +16,7 @@ import ItemOpenVocab from '../../../../components/ItemOpenVocab';
 // Do not use it for new code.
 const useStyles = makeStyles<Theme>((theme) => ({
   paper: {
-    margin: '10px 0 0 0',
+    marginTop: theme.spacing(1),
     padding: '15px',
     borderRadius: 4,
   },
@@ -198,7 +198,7 @@ const IncidentDetails: FunctionComponent<IncidentDetailsProps> = ({
               dataSelection={entitiesDataSelection}
               parameters={{ title: t_i18n('Entities distribution') }}
               variant="inEntity"
-              height={300}
+              height={250}
             />
           </Grid>
           <Grid item xs={6}>
@@ -206,7 +206,7 @@ const IncidentDetails: FunctionComponent<IncidentDetailsProps> = ({
               dataSelection={observablesDataSelection}
               parameters={{ title: t_i18n('Observables distribution') }}
               variant="inEntity"
-              height={300}
+              height={250}
             />
           </Grid>
         </Grid>

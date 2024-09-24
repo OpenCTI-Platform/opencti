@@ -40,7 +40,7 @@ const useStyles = makeStyles(() => ({
     margin: '0 0 60px 0',
   },
   paper: {
-    margin: '10px 0 0 0',
+    marginTop: theme.spacing(1),
     padding: 20,
     borderRadius: 4,
   },
