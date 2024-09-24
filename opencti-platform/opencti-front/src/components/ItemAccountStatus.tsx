@@ -3,8 +3,7 @@ import Chip from '@mui/material/Chip';
 import makeStyles from '@mui/styles/makeStyles';
 import { useTheme } from '@mui/material';
 import useAuth from '../utils/hooks/useAuth';
-import ThemeDark from './ThemeDark';
-import ThemeLight from './ThemeLight';
+import type { Theme } from './Theme';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -77,10 +76,7 @@ const ItemAccountStatus: FunctionComponent<ItemAccountStatusProps> = ({
   variant,
 }) => {
   const { me: { monochrome_labels } } = useAuth();
-  const { palette: { mode } } = useTheme();
-  const theme = mode === 'dark'
-    ? ThemeDark()
-    : ThemeLight();
+  const theme = useTheme<Theme>();
   const classes = useStyles();
   const style = classes.chip;
   const classStyle = computeAccountStatusStyle(account_status);
