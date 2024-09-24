@@ -5250,10 +5250,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"antlr4@npm:4.13.1":
-  version: 4.13.1
-  resolution: "antlr4@npm:4.13.1"
-  checksum: 10/b17ee045cf30c7cec563f3ce81dc8bffd2c17b546646cd76e7b5f4cc4b676a1960c1a8a9aea53769947b0c6de70ed2aea73431e76c3840ab3b69cf3de5f1fc89
+"antlr4@npm:4.13.2":
+  version: 4.13.2
+  resolution: "antlr4@npm:4.13.2"
+  checksum: 10/23ab4742ec937adaaf20d13228c8cca58638e1aafeb28919bdeb4860776a403d0c7eb85a3f07fadc27fc03f773eed6bcc82bd8369b9d0e258e6502ba514cf87e
   languageName: node
   linkType: hard
 
@@ -10831,7 +10831,7 @@ __metadata:
     "@vitest/coverage-v8": "npm:2.0.5"
     ajv: "npm:8.17.1"
     amqplib: "npm:0.10.4"
-    antlr4: "npm:4.13.1"
+    antlr4: "npm:4.13.2"
     apollo-server-errors: "npm:3.3.1"
     archiver: "npm:7.0.1"
     archiver-zip-encrypted: "npm:2.0.0"
