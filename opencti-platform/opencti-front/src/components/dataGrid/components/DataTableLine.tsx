@@ -199,26 +199,26 @@ const DataTableLine = ({
             <Checkbox
               onClick={handleSelectLine}
               sx={{
-                marginRight: 1,
-                width: 24,
-                '&:hover': {
-                  background: 'transparent',
-                },
-              }}
-              checked={
-                (selectAll
-                  && !((data.id || 'id') in (deSelectedElements || {})))
-                || (data.id || 'id') in (selectedElements || {})
-              }
-            />
-          </div>
-        )}
-        {effectiveColumns.slice(startsWithSelect ? 1 : 0, (actions || disableNavigation) ? undefined : -1).map((column) => (
-          <DataTableCell
-            key={column.id}
-            cell={column}
-            data={data}
-            storageHelpers={storageHelpers}
+              marginRight: 1,
+              width: 24,
+              '&:hover': {
+                background: 'transparent',
+              },
+            }}
+            checked={
+              (selectAll
+                && !((data.id || 'id') in (deSelectedElements || {})))
+              || (data.id || 'id') in (selectedElements || {})
+            }
+          />
+        </div>
+      )}
+      {effectiveColumns.slice(startsWithSelect ? 1 : 0, (actions || disableNavigation) ? undefined : -1).map((column) => (
+        <DataTableCell
+          key={column.id}
+          cell={column}
+          data={data}
+          storageHelpers={storageHelpers}
           />
         ))}</a>
       {(actions || endWithNavigate) && (
