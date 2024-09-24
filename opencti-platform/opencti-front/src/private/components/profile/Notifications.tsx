@@ -160,7 +160,7 @@ const Notifications: FunctionComponent = () => {
   };
   return (
     <>
-      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Notifications'), current: true }]} />
+      <Breadcrumbs elements={[{ label: t_i18n('Notifications'), current: true }]} />
       {renderLines()}
     </>
   );

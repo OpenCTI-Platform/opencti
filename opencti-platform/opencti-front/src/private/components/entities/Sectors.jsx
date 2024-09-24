@@ -50,7 +50,7 @@ class Sectors extends Component {
     const { t } = this.props;
     return (
       <>
-        <Breadcrumbs variant="list" elements={[{ label: t('Entities') }, { label: t('Sectors'), current: true }]} />
+        <Breadcrumbs elements={[{ label: t('Entities') }, { label: t('Sectors'), current: true }]} />
         <div style={{ marginTop: -10 }}>
           <SearchInput
             variant="small"

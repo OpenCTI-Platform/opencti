@@ -51,7 +51,7 @@ const RootExternalReference = () => {
             if (props.externalReference && props.connectorsForImport) {
               return (
                 <>
-                  <Breadcrumbs variant="object" elements={[
+                  <Breadcrumbs elements={[
                     { label: t_i18n('Analyses') },
                     { label: t_i18n('External references'), link: '/dashboard/analyses/external_references' },
                   ]}

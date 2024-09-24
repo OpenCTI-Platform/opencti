@@ -355,7 +355,7 @@ const StixSightingRelationships = () => {
 
   return (
     <>
-      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Events') }, { label: t_i18n('Sightings'), current: true }]} />
+      <Breadcrumbs elements={[{ label: t_i18n('Events') }, { label: t_i18n('Sightings'), current: true }]} />
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}

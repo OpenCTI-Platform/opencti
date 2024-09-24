@@ -75,7 +75,7 @@ const CsvMappers = () => {
           schemaAttributesQueryRef={queryRefSchemaAttributes}
         >
           <div className={classes.container}>
-            <Breadcrumbs variant="list" elements={[{ label: t_i18n('Data') }, { label: t_i18n('Processing') }, { label: t_i18n('CSV mappers'), current: true }]} />
+            <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Processing') }, { label: t_i18n('CSV mappers'), current: true }]} />
             <ProcessingMenu />
             <ListLines
               helpers={helpers}

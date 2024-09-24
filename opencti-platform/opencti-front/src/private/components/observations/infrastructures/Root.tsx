@@ -99,7 +99,7 @@ const RootInfrastructureComponent = ({ queryRef, infrastructureId }) => {
         <div
           style={{ paddingRight: paddingRightValue() }}
         >
-          <Breadcrumbs variant="object" elements={[
+          <Breadcrumbs elements={[
             { label: t_i18n('Observations') },
             { label: t_i18n('Infrastructures'), link: '/dashboard/observations/infrastructures' },
             { label: infrastructure.name, current: true },

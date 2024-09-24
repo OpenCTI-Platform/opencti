@@ -193,7 +193,7 @@ const CaseRfts: FunctionComponent<CaseRftsProps> = () => {
 
   return (
     <>
-      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Cases') }, { label: t_i18n('Requests for takedown'), current: true }]} />
+      <Breadcrumbs elements={[{ label: t_i18n('Cases') }, { label: t_i18n('Requests for takedown'), current: true }]} />
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}

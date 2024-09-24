@@ -86,7 +86,7 @@ const Retention = () => {
   return (
     <div className={classes.container}>
       <CustomizationMenu />
-      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Customization') }, { label: t_i18n('Retention'), current: true }]} />
+      <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Customization') }, { label: t_i18n('Retention'), current: true }]} />
       <ListLines
         dataColumns={dataColumns}
         handleSearch={storageHelpers.handleSearch}

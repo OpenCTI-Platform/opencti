@@ -90,7 +90,7 @@ const RootDataSourceComponent = ({ queryRef, dataSourceId }) => {
     <>
       {dataSource ? (
         <div style={{ paddingRight }}>
-          <Breadcrumbs variant="object" elements={[
+          <Breadcrumbs elements={[
             { label: t_i18n('Techniques') },
             { label: t_i18n('Data sources'), link: '/dashboard/techniques/data_sources' },
             { label: dataSource.name, current: true },

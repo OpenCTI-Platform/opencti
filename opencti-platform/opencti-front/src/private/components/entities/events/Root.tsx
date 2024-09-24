@@ -127,7 +127,7 @@ const RootEvent = ({ eventId, queryRef }: RootEventProps) => {
             />
           </Routes>
           <div style={{ paddingRight }}>
-            <Breadcrumbs variant="object" elements={[
+            <Breadcrumbs elements={[
               { label: t_i18n('Entities') },
               { label: t_i18n('Events'), link: '/dashboard/entities/events' },
               { label: event.name, current: true },

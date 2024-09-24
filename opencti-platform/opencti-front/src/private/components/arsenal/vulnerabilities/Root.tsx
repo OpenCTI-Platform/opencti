@@ -130,7 +130,7 @@ const RootVulnerability = ({ queryRef, vulnerabilityId }: RootVulnerabilityProps
             />
           </Routes>
           <div style={{ paddingRight }}>
-            <Breadcrumbs variant="object" elements={[
+            <Breadcrumbs elements={[
               { label: t_i18n('Arsenal') },
               { label: t_i18n('Vulnerabilities'), link: '/dashboard/arsenal/vulnerabilities' },
               { label: vulnerability.name, current: true },

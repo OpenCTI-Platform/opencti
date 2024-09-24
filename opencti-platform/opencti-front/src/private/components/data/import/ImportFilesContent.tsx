@@ -195,7 +195,7 @@ const ImportFilesContent = () => {
 
   return (
     <div style={{ height: '100%', paddingRight: 200 }} className="break">
-      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Data') }, { label: t_i18n('Uploaded Files'), current: true }]} />
+      <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Uploaded Files'), current: true }]} />
       <ImportMenu />
       <Dialog
         PaperProps={{ elevation: 1 }}

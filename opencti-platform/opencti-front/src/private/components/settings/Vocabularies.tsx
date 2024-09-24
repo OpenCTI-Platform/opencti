@@ -180,7 +180,7 @@ const Vocabularies = () => {
   return (
     <div className={classes.container}>
       <LabelsVocabulariesMenu />
-      <Breadcrumbs variant="list" elements={[
+      <Breadcrumbs elements={[
         { label: t_i18n('Settings') },
         { label: t_i18n('Taxonomies') },
         { label: t_i18n('Vocabularies'), link: '/dashboard/settings/vocabularies/fields' },

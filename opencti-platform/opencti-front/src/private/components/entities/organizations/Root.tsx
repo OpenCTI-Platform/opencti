@@ -159,7 +159,7 @@ const RootOrganization = ({ organizationId, queryRef }: RootOrganizationProps) =
             />
           </Routes>
           <div style={{ paddingRight }}>
-            <Breadcrumbs variant="object" elements={[
+            <Breadcrumbs elements={[
               { label: t_i18n('Entities') },
               { label: t_i18n('Organizations'), link: '/dashboard/entities/organizations' },
               { label: organization.name, current: true },

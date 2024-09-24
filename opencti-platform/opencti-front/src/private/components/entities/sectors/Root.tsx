@@ -129,7 +129,7 @@ const RootSector = ({ sectorId, queryRef }: RootSectorProps) => {
             />
           </Routes>
           <div style={{ paddingRight }}>
-            <Breadcrumbs variant="object" elements={[
+            <Breadcrumbs elements={[
               { label: t_i18n('Entities') },
               { label: t_i18n('Sectors'), link: '/dashboard/entities/sectors' },
               { label: sector.name, current: true },

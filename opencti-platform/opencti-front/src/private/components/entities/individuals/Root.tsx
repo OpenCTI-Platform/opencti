@@ -161,7 +161,7 @@ const RootIndividual = ({ individualId, queryRef }: RootIndividualProps) => {
             />
           </Routes>
           <div style={{ paddingRight }}>
-            <Breadcrumbs variant="object" elements={[
+            <Breadcrumbs elements={[
               { label: t_i18n('Entities') },
               { label: t_i18n('Individuals'), link: '/dashboard/entities/individuals' },
               { label: individual.name, current: true },

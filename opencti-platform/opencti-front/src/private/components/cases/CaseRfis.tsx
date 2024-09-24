@@ -186,7 +186,7 @@ const CaseRfis: FunctionComponent<CaseRfisProps> = () => {
 
   return (
     <>
-      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Cases') }, { label: t_i18n('Requests for information'), current: true }]} />
+      <Breadcrumbs elements={[{ label: t_i18n('Cases') }, { label: t_i18n('Requests for information'), current: true }]} />
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}

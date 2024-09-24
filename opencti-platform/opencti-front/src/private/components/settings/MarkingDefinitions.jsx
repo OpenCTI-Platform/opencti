@@ -119,7 +119,7 @@ class MarkingDefinitions extends Component {
     };
     return (
       <div className={classes.container}>
-        <Breadcrumbs variant="list" elements={[{ label: t('Settings') }, { label: t('Security') }, { label: t('Marking definitions'), current: true }]} />
+        <Breadcrumbs elements={[{ label: t('Settings') }, { label: t('Security') }, { label: t('Marking definitions'), current: true }]} />
         <AccessesMenu />
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}
         <MarkingDefinitionCreation paginationOptions={paginationOptions} />

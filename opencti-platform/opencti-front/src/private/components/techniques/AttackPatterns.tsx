@@ -146,7 +146,7 @@ const AttackPatterns = () => {
 
   return (
     <>
-      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Techniques') }, { label: t_i18n('Attack patterns'), current: true }]} />
+      <Breadcrumbs elements={[{ label: t_i18n('Techniques') }, { label: t_i18n('Attack patterns'), current: true }]} />
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}

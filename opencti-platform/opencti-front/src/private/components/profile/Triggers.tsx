@@ -112,7 +112,7 @@ const Triggers: FunctionComponent = () => {
 
   return (
     <>
-      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Triggers'), current: true }]} />
+      <Breadcrumbs elements={[{ label: t_i18n('Triggers'), current: true }]} />
       {renderLines()}
       <TriggerCreation paginationOptions={paginationOptions} />
     </>

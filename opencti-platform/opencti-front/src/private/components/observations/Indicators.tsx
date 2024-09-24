@@ -187,7 +187,7 @@ const Indicators = () => {
 
   return (
     <>
-      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Observations') }, { label: t_i18n('Indicators'), current: true }]} />
+      <Breadcrumbs elements={[{ label: t_i18n('Observations') }, { label: t_i18n('Indicators'), current: true }]} />
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}

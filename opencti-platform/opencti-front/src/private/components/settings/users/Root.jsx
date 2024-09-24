@@ -101,7 +101,7 @@ const RootUserComponent = ({ queryRef, userId, refetch }) => {
       {data ? (
         <div style={{ paddingRight: 200 }}>
           <AccessesMenu />
-          <Breadcrumbs variant="object" elements={[
+          <Breadcrumbs elements={[
             { label: t_i18n('Settings') },
             { label: t_i18n('Security') },
             { label: t_i18n('Users'), link: '/dashboard/settings/accesses/users' },

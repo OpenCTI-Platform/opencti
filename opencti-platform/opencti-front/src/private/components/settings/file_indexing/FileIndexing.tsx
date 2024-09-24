@@ -90,7 +90,7 @@ const FileIndexingComponent: FunctionComponent<FileIndexingComponentProps> = ({
   }, []);
   return (
     <>
-      <Breadcrumbs variant="object" elements={[{ label: t_i18n('Settings') }, { label: t_i18n('File indexing'), current: true }]} />
+      <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('File indexing'), current: true }]} />
       {!isEnterpriseEdition ? (
         <EnterpriseEdition feature="File indexing" />
       ) : (

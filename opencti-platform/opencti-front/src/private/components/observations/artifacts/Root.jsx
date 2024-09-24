@@ -99,7 +99,7 @@ class RootArtifact extends Component {
                 const paddingRight = getPaddingRight(location.pathname, stixCyberObservable.id, '/dashboard/observations/artifacts', false);
                 return (
                   <div style={{ paddingRight }}>
-                    <Breadcrumbs variant="object" elements={[
+                    <Breadcrumbs elements={[
                       { label: t('Observations') },
                       { label: t('Artifacts'), link: '/dashboard/observations/artifacts' },
                       { label: stixCyberObservable.observable_value, current: true },

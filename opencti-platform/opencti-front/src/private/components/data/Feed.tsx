@@ -117,7 +117,7 @@ const Feed = () => {
       padding: '0 200px 50px 0',
     }}
     >
-      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Data') }, { label: t_i18n('Data sharing') }, { label: t_i18n('CSV feeds'), current: true }]} />
+      <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Data sharing') }, { label: t_i18n('CSV feeds'), current: true }]} />
       <SharingMenu/>
       {feedState.view === 'lines' ? renderLines(paginationOptions) : ''}
       <Security needs={[TAXIIAPI_SETCOLLECTIONS]}>

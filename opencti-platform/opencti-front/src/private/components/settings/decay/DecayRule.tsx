@@ -109,7 +109,7 @@ const DecayRuleComponent = ({ queryRef }: DecayRuleComponentProps) => {
 
   return (
     <div className={classes.container}>
-      <Breadcrumbs variant="list" elements={[
+      <Breadcrumbs elements={[
         { label: t_i18n('Settings') },
         { label: t_i18n('Customization') },
         { label: t_i18n('Decay rules'), link: '/dashboard/settings/customization/decay' },

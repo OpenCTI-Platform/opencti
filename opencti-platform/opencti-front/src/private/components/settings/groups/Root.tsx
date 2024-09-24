@@ -65,7 +65,7 @@ const RootGroupComponent: FunctionComponent<RootGroupComponentProps> = ({ queryR
       {group ? (
         <>
           <AccessesMenu/>
-          <Breadcrumbs variant="object" elements={[
+          <Breadcrumbs elements={[
             { label: t_i18n('Settings') },
             { label: t_i18n('Security') },
             { label: t_i18n('Groups'), link: '/dashboard/settings/accesses/groups' },

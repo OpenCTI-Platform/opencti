@@ -1,5 +1,5 @@
 import * as R from 'ramda';
-import { createEntity, createRelationRaw, deleteElementById, distributionEntities, storeLoadByIdWithRefs, timeSeriesEntities } from '../database/middleware';
+import { buildRestrictedEntity, createEntity, createRelationRaw, deleteElementById, distributionEntities, storeLoadByIdWithRefs, timeSeriesEntities } from '../database/middleware';
 import { internalFindByIds, internalLoadById, listEntitiesPaginated, listEntitiesThroughRelationsPaginated, storeLoadById } from '../database/middleware-loader';
 import { findAll as relationFindAll } from './stixCoreRelationship';
 import { delEditContext, lockResource, notify, setEditContext, storeUpdateEvent } from '../database/redis';
@@ -98,7 +98,7 @@ export const batchInternalRels = async (context, user, elements, opts = {}) => {
           return resolve;
         }
         // If access is not possible, return a restricted entity
-        return { id: resolve.internal_id, name: 'Restricted', entity_type: resolve.entity_type };
+        return buildRestrictedEntity(resolve);
       }));
       // Return sorted elements if needed
       if (opts.sortBy) {
@@ -117,7 +117,7 @@ export const batchInternalRels = async (context, user, elements, opts = {}) => {
         return resolve;
       }
       // If access is not possible, return a restricted entity
-      return { id: resolve.internal_id, name: 'Restricted', entity_type: resolve.entity_type };
+      return buildRestrictedEntity(resolve);
     }
     return undefined;
   }));
