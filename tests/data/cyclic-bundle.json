@@ -3,16 +3,16 @@
   "id": "bundle--8c939929-688f-4a72-badb-3dd1bd6af0fa",
   "objects": [
     {
-      "id": "identity--7b82b010-b1c0-4dae-981f-7756374a17df",
-      "type": "identity",
+      "id": "marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27",
+      "type": "marking-definition",
       "spec_version": "2.1",
-      "name": "ANSSI",
-      "identity_class": "organization",
-      "labels": ["identity"],
-      "created": "2020-02-23T23:40:53.575Z",
-      "modified": "2020-02-27T08:45:39.351Z",
-      "x_opencti_organization_type": "CSIRT",
-      "created_by_ref": "identity--7b82b010-b1c0-4dae-981f-7756374a17df"
+      "definition_type": "TLP",
+      "definition": {
+        "TLP": "TLP:TEST"
+      },
+      "created": "2020-02-25T09:02:29.040Z",
+      "modified": "2020-02-25T09:02:29.040Z",
+      "created_by_ref": "marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27"
     },
     {
       "id": "marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27",
@@ -25,6 +25,41 @@
       "created": "2020-02-25T09:02:29.040Z",
       "modified": "2020-02-25T09:02:29.040Z",
       "created_by_ref": "marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27"
+    },
+    {
+      "id": "x-mitre-asset--0804f037-a3b9-4715-98e1-9f73d19d6945",
+      "type": "x-mitre-asset",
+      "name": "Virtual Private Network (VPN) Server"
+    },
+    {
+      "id": "malware--faa5b705-cf44-4e50-8472-29e5fec43c3c",
+      "type": "malware",
+      "spec_version": "2.1",
+      "name": "Paradise Ransomware",
+      "labels": ["malware"],
+      "description": "MalwareHunterTeam discovered a new Paradise Ransomware variant that uses the extension _V.0.0.0.1{paradise@all-ransomware.info}.prt and drops a ransom note named PARADISE_README_paradise@all-ransomware.info.txt.",
+      "created": "2019-09-30T16:38:26.000Z",
+      "modified": "2020-01-14T14:01:48.288Z",
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "mitre-attack",
+          "phase_name": "persistence",
+          "x_opencti_order": 20
+        }
+      ]
+    },
+    {
+      "id": "relationship--10e8c71d-a1b4-4e35-bca8-2e4a3785ea04",
+      "type": "relationship",
+      "spec_version": "2.1",
+      "relationship_type": "part-of",
+      "description": "Sector Information Technologies Consulting is a subsector of Consulting",
+      "source_ref": "x-mitre-asset--0804f037-a3b9-4715-98e1-9f73d19d6945",
+      "target_ref": "identity--5556c4ab-3e5e-4d56-8410-60b29cecbeb6",
+      "created": "2020-02-23T23:40:53.582Z",
+      "modified": "2020-02-23T23:40:53.582Z",
+      "start_time": "1900-05-01T00:00:00.000Z",
+      "stop_time": "1900-05-01T00:00:00.000Z"
     },
     {
       "id": "report--a445d22a-db0c-4b5d-9ec8-e9ad0b6dbdd7",
@@ -43,8 +78,84 @@
       "object_marking_refs": ["marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27"],
       "object_refs": [
         "observed-data--7d258c31-9a26-4543-aecb-2abc5ed366be",
+        "report--a445d22a-db0c-4b5d-9ec8-e9ad0b6dbdd7",
+        "report--a445d22a-db0c-4b5d-9ec8-e9ad0b6dbdd8"
+      ],
+      "external_references": [
+        {
+          "source_name": "mitre-attack",
+          "external_id": "enterprise-attack",
+          "url": "https://attack.mitre.org/matrices/enterprise"
+        },
+        {
+          "source_name": "mitre-attack",
+          "external_id": "enterprise-attack",
+          "url": "https://attack.mitre.org/matrices/enterprise"
+        },
+        {
+          "source_name": "mitre-attack",
+          "external_id": "enterprise-attack",
+          "url": "https://attack.mitre.org/matrices/enterprise"
+        }
+      ]
+    },
+    {
+      "id": "report--a445d22a-db0c-4b5d-9ec8-e9ad0b6dbdd8",
+      "type": "report",
+      "spec_version": "2.1",
+      "name": "A cyclic report",
+      "labels": ["report"],
+      "description": "Report for testing purposes (random data).",
+      "published": "2020-03-01T14:02:48.111Z",
+      "created": "2020-03-01T14:02:55.327Z",
+      "modified": "2020-03-01T14:09:48.078Z",
+      "report_types": ["threat-report"],
+      "x_opencti_report_status": 2,
+      "confidence": 3,
+      "created_by_ref": "identity--7b82b010-b1c0-4dae-981f-7756374a17df",
+      "object_marking_refs": ["marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27"],
+      "object_refs": [
+        "report--a445d22a-db0c-4b5d-9ec8-e9ad0b6dbdd7",
+        "report--a445d22a-db0c-4b5d-9ec8-e9ad0b6dbdd9"
+      ],
+      "external_references": [
+        {
+          "source_name": "mitre-attack",
+          "external_id": "enterprise-attack",
+          "url": "https://attack.mitre.org/matrices/enterprise"
+        }
+      ]
+    },
+    {
+      "id": "report--a445d22a-db0c-4b5d-9ec8-e9ad0b6dbdd9",
+      "type": "report",
+      "spec_version": "2.1",
+      "name": "A cyclic report",
+      "labels": ["report"],
+      "description": "Report for testing purposes (random data).",
+      "published": "2020-03-01T14:02:48.111Z",
+      "created": "2020-03-01T14:02:55.327Z",
+      "modified": "2020-03-01T14:09:48.078Z",
+      "report_types": ["threat-report"],
+      "x_opencti_report_status": 2,
+      "confidence": 3,
+      "created_by_ref": "identity--7b82b010-b1c0-4dae-981f-7756374a17df",
+      "object_marking_refs": ["marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27"],
+      "object_refs": [
         "report--a445d22a-db0c-4b5d-9ec8-e9ad0b6dbdd7"
       ]
+    },
+    {
+      "id": "identity--7b82b010-b1c0-4dae-981f-7756374a17df",
+      "type": "identity",
+      "spec_version": "2.1",
+      "name": "ANSSI",
+      "identity_class": "organization",
+      "labels": ["identity"],
+      "created": "2020-02-23T23:40:53.575Z",
+      "modified": "2020-02-27T08:45:39.351Z",
+      "x_opencti_organization_type": "CSIRT",
+      "created_by_ref": "identity--7b82b010-b1c0-4dae-981f-7756374a17df"
     }
   ]
 }

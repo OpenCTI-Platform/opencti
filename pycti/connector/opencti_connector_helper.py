@@ -1556,6 +1556,8 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         :type entities_types: list, optional
         :param update: whether to updated data in the database, defaults to False
         :type update: bool, optional
+        :param bypass_split: use to prevent splitting of the bundle. This option has been removed since 6.3 and is no longer used.
+        :type bypass_split: bool, optional
         :raises ValueError: if the bundle is empty
         :return: list of bundles
         :rtype: list
@@ -1564,11 +1566,11 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         entities_types = kwargs.get("entities_types", None)
         update = kwargs.get("update", False)
         event_version = kwargs.get("event_version", None)
-        bypass_split = kwargs.get("bypass_split", False)
         bypass_validation = kwargs.get("bypass_validation", False)
         entity_id = kwargs.get("entity_id", None)
         file_name = kwargs.get("file_name", None)
         bundle_send_to_queue = kwargs.get("send_to_queue", self.bundle_send_to_queue)
+        cleanup_inconsistent_bundle = kwargs.get("cleanup_inconsistent_bundle", False)
         bundle_send_to_directory = kwargs.get(
             "send_to_directory", self.bundle_send_to_directory
         )
@@ -1690,17 +1692,16 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             final_write_file = os.path.join(bundle_send_to_directory_path, bundle_file)
             os.rename(write_file, final_write_file)
 
-        if bypass_split:
-            bundles = [bundle]
-            expectations_number = len(json.loads(bundle)["objects"])
-        else:
-            stix2_splitter = OpenCTIStix2Splitter()
-            (
-                expectations_number,
-                bundles,
-            ) = stix2_splitter.split_bundle_with_expectations(
-                bundle, True, event_version
-            )
+        stix2_splitter = OpenCTIStix2Splitter()
+        (
+            expectations_number,
+            bundles,
+        ) = stix2_splitter.split_bundle_with_expectations(
+            bundle=bundle,
+            use_json=True,
+            event_version=event_version,
+            cleanup_inconsistent_bundle=cleanup_inconsistent_bundle,
+        )
 
         if len(bundles) == 0:
             self.metric.inc("error_count")

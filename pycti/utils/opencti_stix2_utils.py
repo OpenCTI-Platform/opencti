@@ -2,6 +2,51 @@ from typing import Any, Dict
 
 from stix2 import EqualityComparisonExpression, ObjectPath, ObservationExpression
 
+SUPPORTED_STIX_ENTITY_OBJECTS = [
+    "attack-pattern",
+    "campaign",
+    "case-incident",
+    "x-opencti-case-incident",
+    "case-rfi",
+    "x-opencti-case-rfi",
+    "case-rft",
+    "x-opencti-case-rft",
+    "channel",
+    "course-of-action",
+    "data-component",
+    "x-mitre-data-component",
+    "data-source",
+    "x-mitre-data-source",
+    "event",
+    "external-reference",
+    "feedback",
+    "x-opencti-feedback",
+    "grouping",
+    "identity",
+    "incident",
+    "indicator",
+    "infrastructure",
+    "intrusion-set",
+    "kill-chain-phase",
+    "label",
+    "language",
+    "location",
+    "malware",
+    "malware-analysis",
+    "marking-definition",
+    "narrative",
+    "note",
+    "observed-data",
+    "opinion",
+    "report",
+    "task",
+    "x-opencti-task",
+    "threat-actor",
+    "tool",
+    "vocabulary",
+    "vulnerability",
+]
+
 STIX_CYBER_OBSERVABLE_MAPPING = {
     "autonomous-system": "Autonomous-System",
     "directory": "Directory",
@@ -34,6 +79,8 @@ STIX_CYBER_OBSERVABLE_MAPPING = {
     "tracking-number": "Tracking-Number",
     "payment-card": "Payment-Card",
     "media-content": "Media-Content",
+    "simple-observable": "Simple-Observable",
+    "persona": "Persona",
 }
 
 PATTERN_MAPPING = {
