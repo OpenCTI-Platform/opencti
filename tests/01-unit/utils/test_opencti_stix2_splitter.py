@@ -1,3 +1,4 @@
+import json
 import uuid
 
 from stix2 import Report
@@ -10,7 +11,83 @@ def test_split_bundle():
     with open("./tests/data/enterprise-attack.json") as file:
         content = file.read()
     expectations, bundles = stix_splitter.split_bundle_with_expectations(content)
-    assert expectations == 7029
+    assert expectations == 7016
+
+
+def test_split_test_bundle():
+    stix_splitter = OpenCTIStix2Splitter()
+    with open("./tests/data/DATA-TEST-STIX2_v2.json") as file:
+        content = file.read()
+    expectations, bundles = stix_splitter.split_bundle_with_expectations(content)
+    assert expectations == 59
+    base_bundles = json.loads(content)["objects"]
+    for base in base_bundles:
+        found = None
+        for bundle in bundles:
+            json_bundle = json.loads(bundle)
+            object_json = json_bundle["objects"][0]
+            if object_json["id"] == base["id"]:
+                found = object_json
+                break
+        assert found is not None, "Every object of the bundle must be available"
+        del found["nb_deps"]
+        assert json.dumps(base) == json.dumps(
+            found
+        ), "Splitter must not have change the content"
+
+
+def test_split_mono_entity_bundle():
+    stix_splitter = OpenCTIStix2Splitter()
+    with open("./tests/data/mono-bundle-entity.json") as file:
+        content = file.read()
+    expectations, bundles = stix_splitter.split_bundle_with_expectations(content)
+    assert expectations == 1
+    json_bundle = json.loads(bundles[0])["objects"][0]
+    assert json_bundle["created_by_ref"] == "identity--not-available"
+    # Split with cleanup_inconsistent_bundle
+    stix_splitter = OpenCTIStix2Splitter()
+    expectations, bundles = stix_splitter.split_bundle_with_expectations(
+        bundle=content, cleanup_inconsistent_bundle=True
+    )
+    assert expectations == 1
+    json_bundle = json.loads(bundles[0])["objects"][0]
+    assert json_bundle["created_by_ref"] is None
+
+
+def test_split_mono_relationship_bundle():
+    stix_splitter = OpenCTIStix2Splitter()
+    with open("./tests/data/mono-bundle-relationship.json") as file:
+        content = file.read()
+    expectations, bundles = stix_splitter.split_bundle_with_expectations(content)
+    assert expectations == 1
+    # Split with cleanup_inconsistent_bundle
+    stix_splitter = OpenCTIStix2Splitter()
+    expectations, bundles = stix_splitter.split_bundle_with_expectations(
+        bundle=content, cleanup_inconsistent_bundle=True
+    )
+    assert expectations == 0
+
+
+def test_split_capec_bundle():
+    stix_splitter = OpenCTIStix2Splitter()
+    with open("./tests/data/mitre_att_capec.json") as file:
+        content = file.read()
+    expectations, bundles = stix_splitter.split_bundle_with_expectations(content)
+    assert expectations == 2610
+
+
+def test_split_missing_refs_bundle():
+    stix_splitter = OpenCTIStix2Splitter()
+    with open("./tests/data/missing_refs.json") as file:
+        content = file.read()
+    expectations, bundles = stix_splitter.split_bundle_with_expectations(content)
+    assert expectations == 4
+    # Split with cleanup_inconsistent_bundle
+    stix_splitter = OpenCTIStix2Splitter()
+    expectations, bundles = stix_splitter.split_bundle_with_expectations(
+        bundle=content, cleanup_inconsistent_bundle=True
+    )
+    assert expectations == 3
 
 
 def test_split_cyclic_bundle():
@@ -18,7 +95,20 @@ def test_split_cyclic_bundle():
     with open("./tests/data/cyclic-bundle.json") as file:
         content = file.read()
     expectations, bundles = stix_splitter.split_bundle_with_expectations(content)
-    assert expectations == 3
+    assert expectations == 6
+    for bundle in bundles:
+        json_bundle = json.loads(bundle)
+        object_json = json_bundle["objects"][0]
+        if object_json["id"] == "report--a445d22a-db0c-4b5d-9ec8-e9ad0b6dbdd7":
+            assert (
+                len(object_json["external_references"]) == 1
+            )  # References are duplicated
+            assert len(object_json["object_refs"]) == 2  # Cleaned cyclic refs
+            assert len(object_json["object_marking_refs"]) == 1
+            assert (
+                object_json["object_marking_refs"][0]
+                == "marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27"
+            )
 
 
 def test_create_bundle():
