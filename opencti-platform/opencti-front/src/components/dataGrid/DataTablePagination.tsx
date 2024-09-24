@@ -6,8 +6,6 @@ import { ArrowLeft, ArrowRight } from '@mui/icons-material';
 import { ButtonGroup } from '@mui/material';
 import Button from '@mui/material/Button';
 import { TableTuneIcon } from 'filigran-icon';
-import { useTheme } from '@mui/styles';
-import { Theme } from '@mui/material/styles/createTheme';
 import { useFormatter } from '../i18n';
 import { DataTableVariant, LocalStorageColumns } from './dataTableTypes';
 import { NumberOfElements, usePaginationLocalStorage } from '../../utils/hooks/useLocalStorage';
@@ -23,7 +21,6 @@ const DataTablePagination = ({
   setPage: Dispatch<SetStateAction<number>>,
   numberOfElements?: NumberOfElements,
 }) => {
-  const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
 
   const {
@@ -115,7 +112,6 @@ const DataTablePagination = ({
         borderRadius: 1,
         border: 1,
         borderColor: 'divider',
-        marginRight: theme.spacing(1),
       }}
     >
       <ButtonGroup

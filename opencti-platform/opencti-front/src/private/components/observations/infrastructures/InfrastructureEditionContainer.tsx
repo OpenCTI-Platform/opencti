@@ -61,7 +61,7 @@ const InfrastructureEditionContainer: FunctionComponent<InfrastructureEditionCon
     );
   }
 
-  return <Loader variant={LoaderVariant.inElement} />;
+  return <Loader variant={LoaderVariant.inline} />;
 };
 
 export default InfrastructureEditionContainer;

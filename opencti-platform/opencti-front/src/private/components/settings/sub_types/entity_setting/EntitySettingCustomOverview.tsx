@@ -75,7 +75,7 @@ const EntitySettingCustomOverview: React.FC<EntitySettingCustomOverviewProps> = 
           variant="outlined"
           className={'paper-for-grid'}
           style={{
-            margin: '10px 0 0 0',
+            marginTop: theme.spacing(1),
             padding: '15px',
             borderRadius: 4,
             position: 'relative',
@@ -94,7 +94,7 @@ const EntitySettingCustomOverview: React.FC<EntitySettingCustomOverviewProps> = 
           variant="outlined"
           className={'paper-for-grid'}
           style={{
-            margin: '10px 0 0 0',
+            marginTop: theme.spacing(1),
             padding: '15px',
             borderRadius: 4,
             position: 'relative',

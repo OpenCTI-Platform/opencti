@@ -11,7 +11,7 @@ const styles = (theme) => ({
   paper: {
     minHeight: 280,
     height: '100%',
-    margin: '10px 0 0 0',
+    marginTop: theme.spacing(1),
     borderRadius: 4,
   },
   avatar: {

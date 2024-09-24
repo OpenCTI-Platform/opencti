@@ -39,7 +39,7 @@ const TriggerEditionContainer: FunctionComponent<TriggerEditionContainerProps> =
     );
   }
 
-  return <Loader variant={LoaderVariant.inElement} />;
+  return <Loader variant={LoaderVariant.inline} />;
 };
 
 export default TriggerEditionContainer;

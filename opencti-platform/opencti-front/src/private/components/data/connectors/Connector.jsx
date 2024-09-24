@@ -59,7 +59,7 @@ const useStyles = makeStyles((theme) => ({
     marginTop: '-13px',
   },
   paper: {
-    margin: '10px 0 0 0',
+    marginTop: theme.spacing(1),
     padding: '15px',
     borderRadius: 4,
   },

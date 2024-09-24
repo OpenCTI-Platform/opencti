@@ -15,12 +15,12 @@ import { EXPLORE_EXUPDATE } from '../../../../utils/hooks/useGranted';
 import Loader from '../../../../components/Loader';
 import { hexToRGB, itemColor } from '../../../../utils/Colors';
 
-const styles = () => ({
+const styles = (theme) => ({
   paper: {
     minHeight: 300,
     maxHeight: 300,
     height: 300,
-    margin: '10px 0 0 0',
+    marginTop: theme.spacing(1),
     padding: 0,
     borderRadius: 4,
     overflow: 'hidden',
