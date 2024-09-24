@@ -160,7 +160,7 @@ const DataTableLine = ({
     } else if (onLineClick) {
       onLineClick(data);
     } else if (navigable) {
-      if (event.ctrlKey) {
+      if (event.ctrlKey || event.button === 1) {
         window.open(link, '_blank');
       } else {
         navigate(link);
