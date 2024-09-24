@@ -55,7 +55,7 @@ const endDate = now();
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles<Theme>((theme) => ({
   floatingButton: {
     float: 'left',
     margin: '-8px 0 0 5px',
@@ -64,7 +64,7 @@ const useStyles = makeStyles(() => ({
     marginBottom: 50,
   },
   paper: {
-    margin: '10px 0 0 0',
+    marginTop: theme.spacing(1),
     padding: '15px',
     borderRadius: 4,
   },

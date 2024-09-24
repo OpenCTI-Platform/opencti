@@ -109,18 +109,18 @@ const styles = (theme) => ({
     color: theme.palette.text.primary,
   },
   paper: {
-    margin: '10px 0 0 0',
+    marginTop: theme.spacing(1),
     padding: '15px',
     borderRadius: 4,
   },
   paperWithoutPadding: {
-    margin: '10px 0 0 0',
+    marginTop: theme.spacing(1),
     padding: 0,
     borderRadius: 4,
   },
   paperReports: {
     minHeight: '100%',
-    margin: '10px 0 0 0',
+    marginTop: theme.spacing(1),
     padding: '25px 15px 15px 15px',
     borderRadius: 4,
   },

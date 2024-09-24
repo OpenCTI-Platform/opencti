@@ -31,7 +31,7 @@ const ThreatActorIndividualEdition = ({
   return (
     <>
       {queryRef && (
-        <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+        <React.Suspense fallback={<Loader variant={LoaderVariant.inline} />}>
           <ThreatActorIndividualEditionContainer
             queryRef={queryRef}
             handleClose={handleClose}

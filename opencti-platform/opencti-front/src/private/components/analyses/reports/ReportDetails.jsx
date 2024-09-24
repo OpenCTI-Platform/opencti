@@ -24,8 +24,8 @@ import { emptyFilterGroup } from '../../../../utils/filters/filtersUtils';
 
 const styles = (theme) => ({
   paper: {
-    margin: '10px 0 0 0',
-    padding: '15px',
+    marginTop: theme.spacing(1),
+    padding: theme.spacing(2),
     borderRadius: 4,
     position: 'relative',
   },

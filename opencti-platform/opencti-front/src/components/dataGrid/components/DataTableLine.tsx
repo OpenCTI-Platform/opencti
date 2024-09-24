@@ -26,8 +26,8 @@ const useStyles = makeStyles<Theme, { cell?: DataTableColumn, clickable?: boolea
   }),
   cellPadding: {
     display: 'flex',
-    paddingLeft: 10,
-    paddingRight: 10,
+    paddingLeft: theme.spacing(1),
+    paddingRight: theme.spacing(1),
     width: 'fill-available',
     alignItems: 'center',
     gap: 3,
@@ -189,6 +189,13 @@ const DataTableLine = ({
 
           <Checkbox
             onClick={handleSelectLine}
+            sx={{
+              marginRight: 1,
+              width: 24,
+              '&:hover': {
+                background: 'transparent',
+              },
+            }}
             checked={
               (selectAll
                 && !((data.id || 'id') in (deSelectedElements || {})))

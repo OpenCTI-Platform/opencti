@@ -6,9 +6,9 @@ import Paper from '@mui/material/Paper';
 import inject18n from '../../../../components/i18n';
 import LocationMiniMapTargets from '../location/LocationMiniMapTargets';
 
-const styles = () => ({
+const styles = (theme) => ({
   paper: {
-    margin: '10px 0 0 0',
+    marginTop: theme.spacing(1),
     padding: 0,
     borderRadius: 4,
     height: 'calc(100vh - 280px)',

@@ -13,7 +13,7 @@ import { resolveLink } from '../../../../utils/Entity';
 import { isEmptyField } from '../../../../utils/utils';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 
-const styles = () => ({
+const styles = (theme) => ({
   container: {
     position: 'relative',
   },
@@ -22,7 +22,7 @@ const styles = () => ({
     position: 'relative',
     height: 500,
     minHeight: 500,
-    margin: '10px 0 0 0',
+    marginTop: theme.spacing(1),
     padding: '15px',
     borderRadius: 4,
     textAlign: 'center',

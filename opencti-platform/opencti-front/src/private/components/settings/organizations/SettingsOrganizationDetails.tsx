@@ -14,7 +14,7 @@ import { SettingsOrganization_organization$data } from './__generated__/Settings
 // Do not use it for new code.
 const useStyles = makeStyles<Theme>((theme) => ({
   paper: {
-    margin: '10px 0 0 0',
+    marginTop: theme.spacing(1),
     padding: '15px',
     borderRadius: 4,
   },
