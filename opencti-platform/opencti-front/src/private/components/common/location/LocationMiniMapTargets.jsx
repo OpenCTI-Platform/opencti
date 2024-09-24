@@ -12,10 +12,10 @@ import { fileUri } from '../../../../relay/environment';
 import CityOrange from '../../../../static/images/leaflet/city_orange.png';
 import { usePublicSettings } from '../../../../public/PublicSettingsProvider';
 
-const styles = () => ({
+const styles = (theme) => ({
   paper: {
     height: '100%',
-    margin: '10px 0 0 0',
+    marginTop: theme.spacing(1),
     padding: 0,
     borderRadius: 8,
   },

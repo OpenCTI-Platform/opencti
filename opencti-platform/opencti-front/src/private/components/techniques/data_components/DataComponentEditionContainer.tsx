@@ -60,7 +60,7 @@ const DataComponentEditionContainer: FunctionComponent<DataComponentEditionConta
     );
   }
 
-  return <Loader variant={LoaderVariant.inElement} />;
+  return <Loader variant={LoaderVariant.inline} />;
 };
 
 export default DataComponentEditionContainer;

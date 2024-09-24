@@ -11,12 +11,13 @@ import ItemOpenVocab from '../../../../components/ItemOpenVocab';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import type { Theme } from '../../../../components/Theme';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles<Theme>((theme) => ({
   paper: {
-    margin: '10px 0 0 0',
+    marginTop: theme.spacing(1),
     padding: '15px',
     borderRadius: 6,
   },

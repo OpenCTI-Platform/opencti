@@ -14,10 +14,10 @@ import inject18n from '../../../../components/i18n';
 import { donutChartOptions } from '../../../../utils/Charts';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 
-const styles = () => ({
+const styles = (theme) => ({
   paper: {
     height: '100%',
-    margin: '10px 0 0 0',
+    marginTop: theme.spacing(1),
     borderRadius: 4,
   },
   updateButton: {

@@ -26,8 +26,8 @@ const useStyles = makeStyles<Theme, { cell?: DataTableColumn, clickable?: boolea
   }),
   cellPadding: {
     display: 'flex',
-    paddingLeft: 10,
-    paddingRight: 10,
+    paddingLeft: theme.spacing(1),
+    paddingRight: theme.spacing(1),
     width: 'fill-available',
     alignItems: 'center',
     gap: 3,
@@ -196,23 +196,29 @@ const DataTableLine = ({
 
             <Checkbox
               onClick={handleSelectLine}
-              checked={
-                (selectAll
-                  && !((data.id || 'id') in (deSelectedElements || {})))
-                || (data.id || 'id') in (selectedElements || {})
-              }
-            />
-          </div>
-        )}
-        {effectiveColumns.slice(startsWithSelect ? 1 : 0, (actions || disableNavigation) ? undefined : -1).map((column) => (
-          <DataTableCell
-            key={column.id}
-            cell={column}
-            data={data}
-            storageHelpers={storageHelpers}
+              sx={{
+              marginRight: 1,
+              width: 24,
+              '&:hover': {
+                background: 'transparent',
+              },
+            }}
+            checked={
+              (selectAll
+                && !((data.id || 'id') in (deSelectedElements || {})))
+              || (data.id || 'id') in (selectedElements || {})
+            }
           />
-        ))}
-      </a>
+        </div>
+      )}
+      {effectiveColumns.slice(startsWithSelect ? 1 : 0, (actions || disableNavigation) ? undefined : -1).map((column) => (
+        <DataTableCell
+          key={column.id}
+          cell={column}
+          data={data}
+          storageHelpers={storageHelpers}
+        />
+      ))}</a>
       {(actions || endWithNavigate) && (
         <div
           key={`navigate_${data.id}`}

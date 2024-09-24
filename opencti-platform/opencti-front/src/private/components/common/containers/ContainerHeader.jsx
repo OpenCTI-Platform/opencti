@@ -21,8 +21,7 @@ import Button from '@mui/material/Button';
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import CircularProgress from '@mui/material/CircularProgress';
-import { makeStyles } from '@mui/styles';
-import Box from '@mui/material/Box';
+import { makeStyles, useTheme } from '@mui/styles';
 import { stixCoreObjectQuickSubscriptionContentQuery } from '../stix_core_objects/stixCoreObjectTriggersUtils';
 import StixCoreObjectAskAI from '../stix_core_objects/StixCoreObjectAskAI';
 import { useSettingsMessagesBannerHeight } from '../../settings/settings_messages/SettingsMessagesBanner';
@@ -47,33 +46,14 @@ import { authorizedMembersToOptions, useGetCurrentUserAccessRight } from '../../
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
-const useStyles = makeStyles({
-  containerDefault: {
-    marginTop: 0,
-  },
-  title: {
-    float: 'left',
-  },
-  popover: {
-    float: 'left',
-    marginTop: '-13px',
-  },
+const useStyles = makeStyles((theme) => ({
   modes: {
-    margin: '-6px 20px 0 20px',
-    float: 'right',
-  },
-  actions: {
-    margin: '-6px 0 0 0',
-    float: 'right',
+    margin: `0 ${theme.spacing(2)}`,
   },
   actionButtons: {
     display: 'flex',
   },
-  export: {
-    margin: '-6px 0 0 0',
-    float: 'right',
-  },
-});
+}));
 
 export const containerHeaderObjectsQuery = graphql`
   query ContainerHeaderObjectsQuery($id: String!) {
@@ -481,6 +461,7 @@ const ContainerHeader = (props) => {
     redirectToContent,
   } = props;
   const classes = useStyles();
+  const theme = useTheme();
   const { t_i18n, fd } = useFormatter();
   const { isFeatureEnable } = useHelper();
   const userIsKnowledgeEditor = useGranted([KNOWLEDGE_KNUPDATE]);
@@ -740,13 +721,18 @@ const ContainerHeader = (props) => {
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
   // containerDefault style
   let containerStyle = {
-    marginTop: 0,
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: theme.spacing(1),
   };
-  if (knowledge || currentMode === 'graph' || currentMode === 'correlation') {
+  const overrideContainerStyle = knowledge || currentMode === 'graph' || currentMode === 'correlation';
+  if (overrideContainerStyle) {
     // container knowledge / graph style
     containerStyle = {
       position: 'absolute',
-      top: 158 + settingsMessagesBannerHeight,
+      display: 'flex',
+      top: 166 + settingsMessagesBannerHeight,
       right: 24,
     };
   }
@@ -778,7 +764,9 @@ const ContainerHeader = (props) => {
   const enableManageAuthorizedMembers = currentAccessRight.canManage && isAuthorizedMembersEnabled;
   const triggerData = useLazyLoadQuery(stixCoreObjectQuickSubscriptionContentQuery, { first: 20, ...triggersPaginationOptions });
   return (
-    <Box sx={containerStyle}>
+    <div
+      style={containerStyle}
+    >
       <React.Suspense fallback={<span />}>
         {!knowledge && (
           <Tooltip
@@ -792,8 +780,10 @@ const ContainerHeader = (props) => {
           >
             <Typography
               variant="h1"
-              gutterBottom={true}
-              classes={{ root: classes.title }}
+              sx={{
+                margin: 0,
+                lineHeight: 'unset',
+              }}
             >
               {truncate(
                 container.name
@@ -809,7 +799,7 @@ const ContainerHeader = (props) => {
           </Tooltip>
         )}
         {knowledge && (
-          <div className={classes.export}>
+          <div>
             <ExportButtons
               domElementId="container"
               name={t_i18n('Report representation')}
@@ -884,7 +874,7 @@ const ContainerHeader = (props) => {
             </ToggleButtonGroup>
           </div>
         )}
-        <div className={classes.actions}>
+        <div>
           <div className={classes.actionButtons}>
             {enableQuickSubscription && (
               <StixCoreObjectSubscribers triggerData={triggerData} />
@@ -1094,9 +1084,8 @@ const ContainerHeader = (props) => {
             {EditComponent}
           </div>
         </div>
-        <div className="clearfix" />
       </React.Suspense>
-    </Box>
+    </div>
   );
 };
 
