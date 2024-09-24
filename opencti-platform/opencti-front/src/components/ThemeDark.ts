@@ -290,9 +290,11 @@ const ThemeDark = (
         root: {
           '&.Mui-selected': {
             boxShadow: `2px 0 ${primary || THEME_DARK_DEFAULT_PRIMARY} inset`,
+            backgroundColor: `${hexToRGB(primary || THEME_DARK_DEFAULT_PRIMARY, 0.24)}`,
           },
           '&.Mui-selected:hover': {
             boxShadow: `2px 0 ${primary || THEME_DARK_DEFAULT_PRIMARY} inset`,
+            backgroundColor: `${hexToRGB(primary || THEME_DARK_DEFAULT_PRIMARY, 0.32)}`,
           },
         },
       },
