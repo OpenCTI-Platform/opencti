@@ -5,7 +5,6 @@ import { ENTITY_TYPE_PUBLIC_DASHBOARD } from '../modules/publicDashboard/publicD
 import { ENTITY_TYPE_DELETE_OPERATION } from '../modules/deleteOperation/deleteOperation-types';
 
 export const ENTITY_TYPE_SETTINGS = 'Settings';
-export const ENTITY_TYPE_SETTINGS_MESSAGES = 'SettingsMessages';
 export const ENTITY_TYPE_MIGRATION_STATUS = 'MigrationStatus';
 export const ENTITY_TYPE_MIGRATION_REFERENCE = 'MigrationReference';
 export const ENTITY_TYPE_RULE_MANAGER = 'RuleManager';
@@ -32,7 +31,6 @@ export const ENTITY_TYPE_STATUS_TEMPLATE = 'StatusTemplate';
 export const ENTITY_TYPE_STATUS = 'Status';
 const DATED_INTERNAL_OBJECTS = [
   ENTITY_TYPE_SETTINGS,
-  ENTITY_TYPE_SETTINGS_MESSAGES,
   ENTITY_TYPE_GROUP,
   ENTITY_TYPE_USER,
   ENTITY_TYPE_ROLE,
@@ -45,7 +43,6 @@ const DATED_INTERNAL_OBJECTS = [
 ];
 const INTERNAL_OBJECTS = [
   ENTITY_TYPE_SETTINGS,
-  ENTITY_TYPE_SETTINGS_MESSAGES,
   ENTITY_TYPE_TAXII_COLLECTION,
   ENTITY_TYPE_FEED,
   ENTITY_TYPE_STREAM_COLLECTION,
