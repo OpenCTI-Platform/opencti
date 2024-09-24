@@ -25,7 +25,10 @@ import { GroupsSearchQuery } from '../__generated__/GroupsSearchQuery.graphql';
 import ItemIcon from '../../../../components/ItemIcon';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import type { Theme } from '../../../../components/Theme';
+<<<<<<< HEAD
 import useSensitiveModifications from '../../../../utils/hooks/useSensitiveModifications';
+=======
+>>>>>>> 5a18134ad ([frontend] Multiple alignment issues)
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.

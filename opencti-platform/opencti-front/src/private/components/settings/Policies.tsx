@@ -39,8 +39,11 @@ import ItemBoolean from '../../../components/ItemBoolean';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
 import type { Theme } from '../../../components/Theme';
+<<<<<<< HEAD
 import useSensitiveModifications from '../../../utils/hooks/useSensitiveModifications';
 import Transition from '../../../components/Transition';
+=======
+>>>>>>> 5a18134ad ([frontend] Multiple alignment issues)
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.

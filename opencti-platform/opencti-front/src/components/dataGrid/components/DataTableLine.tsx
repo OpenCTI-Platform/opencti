@@ -197,6 +197,7 @@ const DataTableLine = ({
             <Checkbox
               onClick={handleSelectLine}
               sx={{
+<<<<<<< HEAD
                 marginRight: 1,
                 width: 24,
                 '&:hover': {
@@ -219,6 +220,30 @@ const DataTableLine = ({
             storageHelpers={storageHelpers}
           />
         ))}</a>
+=======
+              marginRight: 1,
+              width: 24,
+              '&:hover': {
+                background: 'transparent',
+              },
+            }}
+            checked={
+              (selectAll
+                && !((data.id || 'id') in (deSelectedElements || {})))
+              || (data.id || 'id') in (selectedElements || {})
+            }
+          />
+        </div>
+      )}
+      {effectiveColumns.slice(startsWithSelect ? 1 : 0, (actions || disableNavigation) ? undefined : -1).map((column) => (
+        <DataTableCell
+          key={column.id}
+          cell={column}
+          data={data}
+          storageHelpers={storageHelpers}
+        />
+      ))}</a>
+>>>>>>> 5a18134ad ([frontend] Multiple alignment issues)
       {(actions || endWithNavigate) && (
         <div
           key={`navigate_${data.id}`}

@@ -29,6 +29,7 @@ const Breadcrumbs: FunctionComponent<BreadcrumbsProps> = ({ elements, isSensitiv
       {elements.map((element, index) => {
         if (element.current) {
           return (
+<<<<<<< HEAD
             <span key={element.label} style={{ display: 'flex', alignItems: 'center' }}>
               <Typography
                 color="text.primary"
@@ -38,6 +39,12 @@ const Breadcrumbs: FunctionComponent<BreadcrumbsProps> = ({ elements, isSensitiv
               <SplitDiv show={index === elements.length - 1} />
               {isSensitive && <DangerZoneChip />}
             </span>
+=======
+            <>
+              <Typography key={element.label} color="text.primary">{truncate(element.label, 30, false)}</Typography>
+              <SplitDiv show={index === elements.length - 1} />
+            </>
+>>>>>>> 5a18134ad ([frontend] Multiple alignment issues)
           );
         }
         if (!element.link) {
