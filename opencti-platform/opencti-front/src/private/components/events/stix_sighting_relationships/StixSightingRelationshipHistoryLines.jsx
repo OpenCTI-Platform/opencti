@@ -7,9 +7,9 @@ import Paper from '@mui/material/Paper';
 import inject18n from '../../../../components/i18n';
 import StixSightingRelationshipHistoryLine from './StixSightingRelationshipHistoryLine';
 
-const styles = () => ({
+const styles = (theme) => ({
   paperHistory: {
-    margin: '10px 0 0 0',
+    marginTop: theme.spacing(1),
     padding: 15,
     borderRadius: 4,
   },

@@ -345,7 +345,7 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
           />
           {
             queryRef && (
-              <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+              <React.Suspense fallback={<Loader variant={LoaderVariant.inline} />}>
                 <Box sx={{ width: '100%', marginTop: 5 }}>
                   <Alert
                     severity="info"

@@ -112,7 +112,7 @@ const StixCyberObservableEdition: FunctionComponent<StixCyberObservableEditionPr
                 />
               );
             }
-            return <Loader variant={LoaderVariant.inElement} />;
+            return <Loader variant={LoaderVariant.inline} />;
           }}
         />
       </Drawer>
@@ -151,7 +151,7 @@ const StixCyberObservableEdition: FunctionComponent<StixCyberObservableEditionPr
                 />
               );
             }
-            return <Loader variant={LoaderVariant.inElement} />;
+            return <Loader variant={LoaderVariant.inline} />;
           }}
         />
       ) : (

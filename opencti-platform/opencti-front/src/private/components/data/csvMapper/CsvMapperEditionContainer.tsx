@@ -70,7 +70,7 @@ const CsvMapperEditionContainer: FunctionComponent<CsvMapperEditionProps> = ({
   );
 
   if (!csvMapper) {
-    return <Loader variant={LoaderVariant.inElement}/>;
+    return <Loader variant={LoaderVariant.inline}/>;
   }
 
   return (

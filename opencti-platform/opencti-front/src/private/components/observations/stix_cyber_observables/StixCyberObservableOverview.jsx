@@ -40,7 +40,7 @@ Transition.displayName = 'TransitionSlide';
 
 const styles = (theme) => ({
   paper: {
-    margin: '10px 0 0 0',
+    marginTop: theme.spacing(1),
     padding: '15px',
     borderRadius: 4,
   },

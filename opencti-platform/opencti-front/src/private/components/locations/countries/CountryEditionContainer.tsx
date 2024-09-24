@@ -58,7 +58,7 @@ const CountryEditionContainer: FunctionComponent<CountryEditionContainerProps> =
       </Drawer>
     );
   }
-  return <Loader variant={LoaderVariant.inElement} />;
+  return <Loader variant={LoaderVariant.inline} />;
 };
 
 export default CountryEditionContainer;

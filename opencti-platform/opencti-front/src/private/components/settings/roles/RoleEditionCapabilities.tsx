@@ -146,7 +146,7 @@ const RoleEditionCapabilitiesComponent: FunctionComponent<RoleEditionCapabilitie
       </List>
     );
   }
-  return <Loader variant={LoaderVariant.inElement} />;
+  return <Loader variant={LoaderVariant.inline} />;
 };
 
 const RoleEditionCapabilities = createFragmentContainer(
