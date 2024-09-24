@@ -12,8 +12,7 @@ import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import useAuth from '../../../../utils/hooks/useAuth';
-import ThemeDark from '../../../../components/ThemeDark';
-import ThemeLight from '../../../../components/ThemeLight';
+import type { Theme } from '../../../../components/Theme';
 
 interface OrganizationDetailsComponentProps {
   organization: OrganizationDetails_organization$data;
@@ -21,10 +20,7 @@ interface OrganizationDetailsComponentProps {
 
 const OrganizationDetailsComponent: FunctionComponent<OrganizationDetailsComponentProps> = ({ organization }) => {
   const { me: { monochrome_labels } } = useAuth();
-  const { palette: { mode } } = useTheme();
-  const theme = mode === 'dark'
-    ? ThemeDark()
-    : ThemeLight();
+  const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   return (
     <div style={{ height: '100%' }}>
@@ -35,9 +31,9 @@ const OrganizationDetailsComponent: FunctionComponent<OrganizationDetailsCompone
         className={'paper-for-grid'}
         variant="outlined"
         style={{
-          margin: '10px 0 0 0',
-          padding: '15px',
-          borderRadius: 6,
+          marginTop: theme.spacing(1),
+          padding: theme.spacing(2),
+          borderRadius: 4,
         }}
       >
         <Grid container={true} spacing={3}>

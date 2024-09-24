@@ -7,8 +7,6 @@ import { useTheme } from '@mui/material';
 import inject18n from './i18n';
 import { hexToRGB } from '../utils/Colors';
 import useAuth from '../utils/hooks/useAuth';
-import ThemeDark from './ThemeDark';
-import ThemeLight from './ThemeLight';
 
 const styles = () => ({
   chip: {
@@ -41,10 +39,7 @@ const styles = () => ({
 
 const ItemStatus = (props) => {
   const { me: { monochrome_labels } } = useAuth();
-  const { palette: { mode } } = useTheme();
-  const theme = mode === 'dark'
-    ? ThemeDark()
-    : ThemeLight();
+  const theme = useTheme();
   const { classes, t, status, variant, disabled, onClick } = props;
   let style = classes.chip;
   if (variant === 'inList') {

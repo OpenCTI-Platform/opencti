@@ -66,12 +66,11 @@ const ItemLikelihood = ({ likelihood, classes, variant, t, theme }) => {
       />
     );
   }
-  let chipStyle;
+  let chipStyle = inlineStyles.white;
   if (likelihood <= 20) chipStyle = inlineStyles.red;
   else if (likelihood <= 50) chipStyle = inlineStyles.orange;
   else if (likelihood <= 75) chipStyle = inlineStyles.blue;
   else if (likelihood <= 100) chipStyle = inlineStyles.green;
-  else chipStyle = inlineStyles.white;
   return (
     <Chip
       classes={{ root: style }}

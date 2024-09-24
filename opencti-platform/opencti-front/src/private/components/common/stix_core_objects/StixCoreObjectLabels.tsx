@@ -1,11 +1,10 @@
 import { Chip, Tooltip, useTheme } from '@mui/material';
 import React from 'react';
-import ThemeDark from '../../../../components/ThemeDark';
-import ThemeLight from '../../../../components/ThemeLight';
 import { truncate } from '../../../../utils/String';
 import { useFormatter } from '../../../../components/i18n';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { hexToRGB } from '../../../../utils/Colors';
+import type { Theme } from '../../../../components/Theme';
 
 type Label = {
   id: string,
@@ -35,9 +34,7 @@ const StixCoreObjectLabels: React.FC<StixCoreObjectLabelsProps> = ({
   const { t_i18n } = useFormatter();
   const { me: { monochrome_labels } } = useAuth();
   const { palette: { mode } } = useTheme();
-  const theme = mode === 'dark'
-    ? ThemeDark()
-    : ThemeLight();
+  const theme = useTheme<Theme>();
   const normalBackground = mode === 'dark' ? 'transparent' : '#ffffff';
   const hasLabels = !revoked && labels && labels.length > 0;
   let style = {};

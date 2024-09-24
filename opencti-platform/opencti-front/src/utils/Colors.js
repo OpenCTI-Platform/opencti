@@ -39,6 +39,7 @@ export const stringToColour = (str, reversed = false) => {
  * @param {boolean} reversed
  * @param {boolean} monochrome_labels
  * @returns
+ * @deprecated
  */
 export const itemColor = (type, dark = false, reversed = false, monochrome_labels = false) => {
   if (monochrome_labels) {

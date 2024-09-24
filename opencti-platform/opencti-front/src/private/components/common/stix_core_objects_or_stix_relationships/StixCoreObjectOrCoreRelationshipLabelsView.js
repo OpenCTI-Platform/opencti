@@ -27,8 +27,6 @@ import useGranted, { KNOWLEDGE_KNUPDATE, SETTINGS_SETLABELS } from '../../../../
 import CommitMessage from '../form/CommitMessage';
 import Transition from '../../../../components/Transition';
 import useAuth from '../../../../utils/hooks/useAuth';
-import ThemeDark from '../../../../components/ThemeDark';
-import ThemeLight from '../../../../components/ThemeLight';
 import { hexToRGB } from '../../../../utils/Colors';
 
 // Deprecated - https://mui.com/system/styles/basics/
@@ -54,10 +52,7 @@ const useStyles = makeStyles(() => ({
 
 const StixCoreObjectOrCoreRelationshipLabelsView = (props) => {
   const { me: { monochrome_labels } } = useAuth();
-  const { palette: { mode } } = useTheme();
-  const theme = mode === 'dark'
-    ? ThemeDark()
-    : ThemeLight();
+  const theme = useTheme();
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const {

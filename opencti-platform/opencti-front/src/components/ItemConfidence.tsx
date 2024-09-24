@@ -6,8 +6,7 @@ import { useTheme } from '@mui/material';
 import { useLevel } from '../utils/hooks/useScale';
 import { hexToRGB } from '../utils/Colors';
 import useAuth from '../utils/hooks/useAuth';
-import ThemeDark from './ThemeDark';
-import ThemeLight from './ThemeLight';
+import type { Theme } from './Theme';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -40,37 +39,23 @@ interface ItemConfidenceProps {
 
 const ItemConfidence: FunctionComponent<ItemConfidenceProps> = ({ confidence, variant, entityType }) => {
   const { me: { monochrome_labels } } = useAuth();
-  const { palette: { mode } } = useTheme();
-  const theme = mode === 'dark'
-    ? ThemeDark()
-    : ThemeLight();
+  const theme = useTheme<Theme>();
   const classes = useStyles();
   const { level: confidenceLevel } = useLevel(entityType, 'confidence', confidence);
   const style = variant === 'inList' ? classes.chipInList : classes.chip;
   return (
     <Tooltip title={confidenceLevel.label}>
-      {monochrome_labels
-        ? (
-          <Chip
-            classes={{ root: style, label: classes.label }}
-            style={{
-              color: theme.palette.chip.main,
-              backgroundColor: theme.palette.background.accent,
-            }}
-            label={confidenceLevel.label}
-          />
-        ) : (
-          <Chip
-            classes={{ root: style, label: classes.label }}
-            style={{
-              color: theme.palette.chip.main,
-              borderColor: confidenceLevel.color,
-              backgroundColor: hexToRGB(confidenceLevel.color),
-            }}
-            label={confidenceLevel.label}
-          />
-        )
-      }
+      <Chip
+        classes={{ root: style, label: classes.label }}
+        style={{
+          color: theme.palette.chip.main,
+          borderColor: monochrome_labels ? undefined : confidenceLevel.color,
+          backgroundColor: monochrome_labels
+            ? theme.palette.background.accent
+            : hexToRGB(confidenceLevel.color),
+        }}
+        label={confidenceLevel.label}
+      />
     </Tooltip>
   );
 };
