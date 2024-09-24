@@ -35,7 +35,7 @@ export const queryMistralAi = async (busId: string | null, question: string, use
     throw UnsupportedError('Incorrect AI configuration', { enabled: AI_ENABLED, type: AI_TYPE, endpoint: AI_ENDPOINT, model: AI_MODEL });
   }
   try {
-    logApp.info('[AI] Querying MistralAI with prompt', { question });
+    logApp.info('[AI] Querying MistralAI with prompt');
     const response = (client as MistralClient)?.chatStream({
       model: AI_MODEL,
       messages: [{ role: 'user', content: question }],
@@ -69,7 +69,7 @@ export const queryChatGpt = async (busId: string | null, question: string, user:
     throw UnsupportedError('Incorrect AI configuration', { enabled: AI_ENABLED, type: AI_TYPE, endpoint: AI_ENDPOINT, model: AI_MODEL });
   }
   try {
-    logApp.info('[AI] Querying OpenAI with prompt', { question });
+    logApp.info('[AI] Querying OpenAI with prompt');
     const response = await (client as OpenAI)?.chat.completions.create({
       model: AI_MODEL,
       messages: [{ role: 'user', content: question }],

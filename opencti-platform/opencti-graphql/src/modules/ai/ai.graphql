@@ -24,10 +24,10 @@ type AIBus {
 
 type Mutation {
     # Based on knowledge
-    aiContainerGenerateReport(id: ID!, containerId: String!, paragraphs: Int, tone: Tone, format: Format): String @auth(for: [KNOWLEDGE_KNUPDATE])
+    aiContainerGenerateReport(id: ID!, containerId: String!, paragraphs: Int, tone: Tone, format: Format, language: String): String @auth(for: [KNOWLEDGE_KNUPDATE])
     aiThreatGenerateReport(id: ID!, threatId: String!, paragraphs: Int, tone: Tone, format: Format): String @auth(for: [KNOWLEDGE_KNUPDATE])
     aiVictimGenerateReport(id: ID!, victimId: String!, paragraphs: Int, tone: Tone, format: Format): String @auth(for: [KNOWLEDGE_KNUPDATE])
-    aiSummarizeFiles(id: ID!, elementId: String!, paragraphs: Int, tone: Tone, format: Format, fileIds: [String]): String @auth(for: [KNOWLEDGE_KNUPDATE])
+    aiSummarizeFiles(id: ID!, elementId: String!, paragraphs: Int, tone: Tone, format: Format, language: String, fileIds: [String]): String @auth(for: [KNOWLEDGE_KNUPDATE])
     aiConvertFilesToStix(id: ID!, elementId: String!, fileIds: [String]): String @auth(for: [KNOWLEDGE_KNUPDATE])
 
     # Indicators
