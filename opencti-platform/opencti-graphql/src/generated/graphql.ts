@@ -13467,6 +13467,7 @@ export type MutationAiContainerGenerateReportArgs = {
   containerId: Scalars['String']['input'];
   format?: InputMaybe<Format>;
   id: Scalars['ID']['input'];
+  language?: InputMaybe<Scalars['String']['input']>;
   paragraphs?: InputMaybe<Scalars['Int']['input']>;
   tone?: InputMaybe<Tone>;
 };
@@ -13532,6 +13533,7 @@ export type MutationAiSummarizeFilesArgs = {
   fileIds?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   format?: InputMaybe<Format>;
   id: Scalars['ID']['input'];
+  language?: InputMaybe<Scalars['String']['input']>;
   paragraphs?: InputMaybe<Scalars['Int']['input']>;
   tone?: InputMaybe<Tone>;
 };
