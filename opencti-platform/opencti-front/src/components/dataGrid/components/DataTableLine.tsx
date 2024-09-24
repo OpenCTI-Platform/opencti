@@ -194,9 +194,9 @@ const DataTableLine = ({
             }}
           >
 
-            <Checkbox
-              onClick={handleSelectLine}
-              sx={{
+          <Checkbox
+            onClick={handleSelectLine}
+            sx={{
                 marginRight: 1,
                 width: 24,
                 '&:hover': {
