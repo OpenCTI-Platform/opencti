@@ -39,6 +39,7 @@ const rootSettingsFragment = graphql`
         }
       }
     }
+    platform_language
     platform_map_tile_server_dark
     platform_map_tile_server_light
     platform_openbas_url
