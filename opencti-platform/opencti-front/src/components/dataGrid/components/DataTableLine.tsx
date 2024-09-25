@@ -172,43 +172,47 @@ const DataTableLine = ({
   };
 
   return (
-    <a
+    <div
       key={row.id}
       className={classes.row}
+      style={{ cursor: clickable ? 'pointer' : 'unset' }}
       // We need both to handle accessibility and widget.
       onMouseDown={variant === DataTableVariant.widget ? handleNavigate : undefined}
       onClick={variant !== DataTableVariant.widget ? handleRowClick : undefined}
-      style={{ cursor: clickable ? 'pointer' : 'unset', color: 'inherit' }}
       data-testid={getMainRepresentative(data)}
-      href={navigable ? link : undefined}
     >
-      {startsWithSelect && (
-        <div
-          key={`select_${data.id}`}
-          className={classes.cellContainer}
-          style={{
-            width: 'calc(var(--col-select-size) * 1px)',
-          }}
-        >
+      <a
+        style={{ display: 'flex', color: 'inherit' }}
+        href={navigable ? link : undefined}
+      >
+        {startsWithSelect && (
+          <div
+            key={`select_${data.id}`}
+            className={classes.cellContainer}
+            style={{
+              width: 'calc(var(--col-select-size) * 1px)',
+            }}
+          >
 
-          <Checkbox
-            onClick={handleSelectLine}
-            checked={
-              (selectAll
-                && !((data.id || 'id') in (deSelectedElements || {})))
-              || (data.id || 'id') in (selectedElements || {})
-            }
+            <Checkbox
+              onClick={handleSelectLine}
+              checked={
+                (selectAll
+                  && !((data.id || 'id') in (deSelectedElements || {})))
+                || (data.id || 'id') in (selectedElements || {})
+              }
+            />
+          </div>
+        )}
+        {effectiveColumns.slice(startsWithSelect ? 1 : 0, (actions || disableNavigation) ? undefined : -1).map((column) => (
+          <DataTableCell
+            key={column.id}
+            cell={column}
+            data={data}
+            storageHelpers={storageHelpers}
           />
-        </div>
-      )}
-      {effectiveColumns.slice(startsWithSelect ? 1 : 0, (actions || disableNavigation) ? undefined : -1).map((column) => (
-        <DataTableCell
-          key={column.id}
-          cell={column}
-          data={data}
-          storageHelpers={storageHelpers}
-        />
-      ))}
+        ))}
+      </a>
       {(actions || endWithNavigate) && (
         <div
           key={`navigate_${data.id}`}
@@ -217,7 +221,18 @@ const DataTableLine = ({
             width: 'calc(var(--col-navigate-size) * 1px)',
             overflow: 'initial',
           }}
-          onClick={(e) => e.stopPropagation()}
+          onMouseDown={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+          }}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+          }}
+          onMouseUp={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+          }}
         >
           {actions && actions(data)}
           {endWithNavigate && (
@@ -227,7 +242,7 @@ const DataTableLine = ({
           )}
         </div>
       )}
-    </a>
+    </div>
   );
 };
 
