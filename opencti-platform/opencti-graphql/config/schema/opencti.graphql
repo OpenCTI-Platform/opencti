@@ -1542,6 +1542,7 @@ type MeUser implements BasicObject & InternalObject {
   submenu_show_icons: Boolean
   submenu_auto_collapse: Boolean
   monochrome_labels: Boolean
+  is_sensitive_changes_allow: Boolean
 }
 type SessionDetail {
   id: ID!
@@ -1624,6 +1625,7 @@ type Role implements BasicObject & InternalObject {
   updated_at: DateTime!
   capabilities: [Capability]
   editContext: [EditUserContext!]
+  is_sensitive_changes_allow: Boolean
 }
 input RoleAddInput {
   name: String! @constraint(minLength: 2, format: "not-blank")

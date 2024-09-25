@@ -5,6 +5,8 @@ import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE } from '../
 import { RELATION_HAS_CAPABILITY } from '../schema/internalRelationship';
 import { generateStandardId } from '../schema/identifier';
 import { publishUserAction } from '../listener/UserActionListener';
+import {isFeatureEnabled} from '../config/conf';
+import {PROTECT_SENSITIVE_CHANGES_FF} from './user';
 
 export const addCapability = async (context, user, capability) => {
   return createEntity(context, user, capability, ENTITY_TYPE_CAPABILITY);
@@ -16,7 +18,19 @@ export const addRole = async (context, user, role) => {
     assoc('description', role.description ? role.description : ''),
     dissoc('capabilities'),
   )(role);
-  const { element, isCreation } = await createEntity(context, user, roleToCreate, ENTITY_TYPE_ROLE, { complete: true });
+
+  let completeRoleToCreate;
+  if(isFeatureEnabled((PROTECT_SENSITIVE_CHANGES_FF))){
+    completeRoleToCreate = {
+      ...roleToCreate,
+      is_sensitive_changes_allow: true
+    }
+  } else {
+    completeRoleToCreate = {
+      ...roleToCreate
+    }
+  }
+  const { element, isCreation } = await createEntity(context, user, completeRoleToCreate, ENTITY_TYPE_ROLE, { complete: true });
   const relationPromises = capabilities.map(async (capabilityName) => {
     const generateToId = generateStandardId(ENTITY_TYPE_CAPABILITY, { name: capabilityName });
     return createRelation(context, user, { fromId: element.id, toId: generateToId, relationship_type: RELATION_HAS_CAPABILITY });

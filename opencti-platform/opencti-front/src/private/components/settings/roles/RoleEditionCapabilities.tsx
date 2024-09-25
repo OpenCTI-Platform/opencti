@@ -15,6 +15,8 @@ import { RoleEditionCapabilitiesLinesSearchQuery } from './__generated__/RoleEdi
 import { RoleEditionCapabilities_role$data } from './__generated__/RoleEditionCapabilities_role.graphql';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { SETTINGS } from '../../../../utils/hooks/useGranted';
+import useHelper from '../../../../utils/hooks/useHelper';
+import useSensitiveModifications from '../../../../utils/hooks/useSensitiveModifications';
 
 const roleEditionAddCapability = graphql`
   mutation RoleEditionCapabilitiesAddCapabilityMutation(
@@ -101,9 +103,30 @@ const RoleEditionCapabilitiesComponent: FunctionComponent<RoleEditionCapabilitie
     }
   };
 
+  const {ffenabled, isSensitiveModifAllowed} = useSensitiveModifications();
+
   if (capabilities && capabilities.edges) {
     return (
       <List dense={true}>
+        {ffenabled && (
+        <ListItem
+            key='sensitive'
+            divider={true}
+            style={{paddingLeft: 0}}
+        >
+          <ListItemIcon style={{ minWidth: 32 }}>
+            <LocalPoliceOutlined fontSize="small" />
+          </ListItemIcon>
+          <ListItemText primary={t_i18n('Allow modification of sensitive configuration')} />
+          <ListItemSecondaryAction>
+            <Checkbox
+                onChange={(event) => handleToggle('1234', event)}
+                checked={isSensitiveModifAllowed}
+                disabled={false}
+            />
+          </ListItemSecondaryAction>
+        </ListItem>
+        )}
         {capabilities.edges.map((edge) => {
           const capability = edge?.node;
           if (capability) {

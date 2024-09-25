@@ -4,6 +4,7 @@ import type { ConfidenceLevel } from '../generated/graphql';
 
 interface UserRole extends BasicStoreIdentifier {
   name: string;
+  patate: boolean;
 }
 
 interface UserCapability {

@@ -9,7 +9,7 @@ import {
   ACCOUNT_STATUSES,
   BUS_TOPICS,
   DEFAULT_ACCOUNT_STATUS,
-  ENABLED_DEMO_MODE,
+  ENABLED_DEMO_MODE, isFeatureEnabled,
   logApp,
   OPENCTI_SESSION,
   PLATFORM_VERSION,
@@ -1281,6 +1281,13 @@ const getStackTrace = () => {
   Error.captureStackTrace(obj, getStackTrace);
   return obj.stack;
 };
+
+
+export const PROTECT_SENSITIVE_CHANGES_FF='PROTECT_SENSITIVE_CHANGES';
+const isSensitiveChangesAllowed = async (context) => {
+  return true;
+};
+
 export const buildCompleteUser = async (context, client) => {
   if (!client) {
     return undefined;
@@ -1331,8 +1338,14 @@ export const buildCompleteUser = async (context, client) => {
   const no_creators = groups.filter((g) => g.no_creators).length === groups.length;
   const restrict_delete = !isByPass && groups.filter((g) => g.restrict_delete).length === groups.length;
 
+  let ff = null;
+  if(isFeatureEnabled(PROTECT_SENSITIVE_CHANGES_FF)){
+    ff = {is_sensitive_changes_allow: isSensitiveChangesAllowed(context)}
+  }
+
   return {
     ...client,
+    ...ff,
     roles,
     capabilities,
     default_hidden_types,
@@ -1350,6 +1363,8 @@ export const buildCompleteUser = async (context, client) => {
     no_creators,
     restrict_delete,
   };
+
+
 };
 
 export const resolveUserByIdFromCache = async (context, id) => {
