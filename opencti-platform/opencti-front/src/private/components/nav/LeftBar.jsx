@@ -146,7 +146,7 @@ const useStyles = makeStyles((theme) => createStyles({
   },
   menuItemText: {
     padding: '1px 0 0 15px',
-    fontWeight: 500,
+    fontWeight: 600,
     fontSize: 14,
   },
   menuSubItemText: {
@@ -361,9 +361,13 @@ const LeftBar = () => {
                   dense={true}
                   classes={{ root: classes.menuSubItem }}
                 >
-                  {submenu_show_icons && entry.icon && <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
-                    {entry.icon}
-                  </ListItemIcon>}
+                  {(submenu_show_icons && entry.icon) ? (
+                    <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
+                      {entry.icon}
+                    </ListItemIcon>
+                  ) : (
+                    <div style={{ width: 20 }} />
+                  )}
                   <ListItemText
                     classes={{ primary: classes.menuSubItemText }}
                     primary={t_i18n(entry.label)}
@@ -791,15 +795,15 @@ const LeftBar = () => {
                   onMouseLeave={() => !navOpen && handleSelectedMenuClose()}
                 >
                   <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
-                    <InsertChartOutlinedOutlined/>
+                    <InsertChartOutlinedOutlined />
                   </ListItemIcon>
                   {navOpen && (
-                  <ListItemText
-                    classes={{ primary: classes.menuItemText }}
-                    primary={t_i18n('Dashboards')}
-                  />
+                    <ListItemText
+                      classes={{ primary: classes.menuItemText }}
+                      primary={t_i18n('Dashboards')}
+                    />
                   )}
-                  {navOpen && (selectedMenu.includes('dashboards') ? <ExpandLessOutlined/> : <ExpandMoreOutlined/>)}
+                  {navOpen && (selectedMenu.includes('dashboards') ? <ExpandLessOutlined /> : <ExpandMoreOutlined />)}
                 </MenuItem>
                 {generateSubMenu(
                   'dashboards',
