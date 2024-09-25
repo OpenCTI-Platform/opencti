@@ -46,6 +46,16 @@ const feedEditionQuery = graphql`
   }
 `;
 
+const feedDuplicateQuery = graphql`
+  query FeedPopoverDuplicateQuery($id: String!) {
+    feed(id: $id) {
+      id
+      name
+      ...FeedCreation
+    }
+  }
+`;
+
 class FeedPopover extends Component {
   constructor(props) {
     super(props);
@@ -150,6 +160,7 @@ class FeedPopover extends Component {
           variables={{ id: feedId }}
           render={({ props }) => {
             if (props) {
+              console.log('PROPS', props);
               return (
                 <>
                   <FeedEdition
@@ -157,14 +168,26 @@ class FeedPopover extends Component {
                     handleClose={this.handleCloseUpdate.bind(this)}
                     open={this.state.displayUpdate}
                   />
-                  <FeedCreation
-                    feed={props.feed}
-                    onDrawerClose={this.handleCloseDuplicate.bind(this)}
-                    open={this.state.displayDuplicate}
-                    paginationOptions={this.props.paginationOptions}
-                    isDuplicated={true}
-                  />
                 </>
+              );
+            }
+            return <div/>;
+          }}
+        />
+        <QueryRenderer
+          query={feedDuplicateQuery}
+          variables={{ id: feedId }}
+          render={({ props }) => {
+            if (props) {
+              console.log('PROPS', props);
+              return (
+                <FeedCreation
+                  feed={props.feed}
+                  onDrawerClose={this.handleCloseDuplicate.bind(this)}
+                  open={this.state.displayDuplicate}
+                  paginationOptions={this.props.paginationOptions}
+                  isDuplicated={true}
+                />
               );
             }
             return <div />;

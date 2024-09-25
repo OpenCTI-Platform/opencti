@@ -4,7 +4,7 @@ import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import { AddOutlined, CancelOutlined } from '@mui/icons-material';
 import * as Yup from 'yup';
-import { graphql } from 'react-relay';
+import { createFragmentContainer, graphql } from 'react-relay';
 import { ConnectionHandler } from 'relay-runtime';
 import * as R from 'ramda';
 import MenuItem from '@mui/material/MenuItem';
@@ -28,7 +28,7 @@ import { FeedAttributeMappingInput } from '@components/data/feeds/__generated__/
 import { StixCyberObservablesLinesAttributesQuery$data } from '@components/observations/stix_cyber_observables/__generated__/StixCyberObservablesLinesAttributesQuery.graphql';
 import { Option } from '@components/common/form/ReferenceField';
 import ObjectMembersField from '../../common/form/ObjectMembersField';
-import { useFormatter } from '../../../../components/i18n';
+import inject18n, { useFormatter } from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import SelectField from '../../../../components/fields/SelectField';
@@ -145,6 +145,7 @@ interface FeedCreationFormProps {
   open: boolean;
   isDuplicated: boolean;
   onDrawerClose: () => void;
+  feed?: FeedAddInput;
 }
 
 const feedCreationValidation = (t_i18n: (s: string) => string) => Yup.object().shape({
@@ -157,7 +158,7 @@ const feedCreationValidation = (t_i18n: (s: string) => string) => Yup.object().s
 });
 
 const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
-  const { onDrawerClose, open, paginationOptions, isDuplicated } = props;
+  const { onDrawerClose, open, paginationOptions, isDuplicated, feed } = props;
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
@@ -165,6 +166,7 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
 
   const completeFilterKeysMap: Map<string, Map<string, FilterDefinition>> = useFetchFilterKeysSchema();
   const availableFilterKeys = useAvailableFilterKeysForEntityTypes(selectedTypes).filter((k) => k !== 'entity_type');
+  console.log('FEED', feed);
 
   // TODO: typing this state properly implies deep refactoring
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -202,7 +204,9 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
     setFeedAttributes({ ...updatedFeedAttributes });
   };
   const [commit] = useApiMutation(feedCreationMutation);
+
   const onSubmit: FormikConfig<FeedAddInput>['onSubmit'] = (values, { setSubmitting, resetForm }) => {
+    console.log('VALUES', values);
     const finalFeedAttributes = R.values(feedAttributes).map((n) => ({
       attribute: n.attribute,
       mappings: R.values(n.mappings),
@@ -309,7 +313,32 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
     );
     setFeedAttributes(R.assoc(i, newFeedAttribute, feedAttributes));
   };
-  console.log('OPEN', open);
+  const initialValues: FeedAddInput = isDuplicated && feed ? {
+    name: feed.name,
+    description: feed.description,
+    separator: feed.separator,
+    filters: feed.filters,
+    rolling_time: feed.rolling_time,
+    include_header: feed.include_header,
+    feed_types: feed.feed_types,
+    authorized_members: feed.authorized_members,
+    feed_attributes: feed.feed_attributes,
+    feed_date_attribute: feed.feed_date_attribute,
+    feed_public: feed.feed_public,
+  } : {
+    name: '',
+    description: '',
+    separator: ';',
+    filters: '',
+    rolling_time: 60,
+    include_header: true,
+    feed_types: [],
+    authorized_members: [],
+    feed_attributes: [],
+    feed_date_attribute: 'created_at',
+    feed_public: false,
+  };
+
   return (
     <Drawer
       title={isDuplicated ? (t_i18n('Duplicate a feed')) : (t_i18n('Create a feed'))}
@@ -337,21 +366,10 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
                 [R.ascend(R.prop('label'))],
                 result,
               );
+              console.log('ENTITYTYPES', entitiesTypes);
               return (
                 <Formik<FeedAddInput>
-                  initialValues={{
-                    name: '',
-                    description: '',
-                    separator: ';',
-                    filters: '',
-                    rolling_time: 60,
-                    include_header: true,
-                    feed_types: [],
-                    authorized_members: [],
-                    feed_attributes: [],
-                    feed_date_attribute: 'created_at',
-                    feed_public: false,
-                  }}
+                  initialValues={initialValues}
                   validationSchema={feedCreationValidation(t_i18n)}
                   onSubmit={onSubmit}
                   onReset={onClose}
@@ -559,6 +577,7 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
                                                 ),
                                               );
                                             }
+                                            console.log('feedAttributes', feedAttributes);
                                             return (
                                               <Select
                                                 style={{ width: 150 }}
@@ -633,5 +652,30 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
     </Drawer>
   );
 };
-
-export default FeedCreation;
+const FeedCreationFragment = createFragmentContainer(FeedCreation, {
+  feed: graphql`
+    fragment FeedCreation on Feed {
+      id
+      name
+      description
+      filters
+      rolling_time
+      include_header
+      feed_types
+      feed_date_attribute
+      separator
+      feed_attributes {
+        attribute
+        mappings {
+          type
+          attribute
+        }
+      }
+      feed_public
+      authorized_members {
+        id
+        name
+      }
+    }`,
+});
+export default R.compose(inject18n)(FeedCreationFragment);
