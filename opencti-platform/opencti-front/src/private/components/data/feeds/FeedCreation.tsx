@@ -161,7 +161,7 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
   const { onDrawerClose, open, paginationOptions, isDuplicated, feed } = props;
   const classes = useStyles();
   const { t_i18n } = useFormatter();
-  const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
+  const [selectedTypes, setSelectedTypes] = useState<string[]>(isDuplicated && feed ? feed.feed_types : []);
   const [filters, helpers] = useFiltersState(emptyFilterGroup);
 
   const completeFilterKeysMap: Map<string, Map<string, FilterDefinition>> = useFetchFilterKeysSchema();
@@ -170,8 +170,14 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
 
   // TODO: typing this state properly implies deep refactoring
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [feedAttributes, setFeedAttributes] = useState<{ [key: string]: any }>({ 0: {} });
+  const feedAttributesInitialState = feed && feed.feed_attributes
+    ? feed.feed_attributes.map((n) => ({
+      ...n,
+      mappings: R.indexBy(R.prop('type'), n.mappings),
+    }))
+    : []; // Si `feed_attributes` est null ou undefined, initialisez avec un tableau vide
 
+  const [feedAttributes, setFeedAttributes] = useState(feedAttributesInitialState);
   const { ignoredAttributesInFeeds } = useAttributes();
 
   const handleClose = () => {
@@ -253,7 +259,7 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
       },
     });
   };
-
+  console.log('selectedTypes', selectedTypes);
   const areAttributesValid = () => {
     if (
       selectedTypes.length === 0
