@@ -705,6 +705,44 @@ class ReportKnowledgeGraphBar extends Component {
                       </IconButton>
                     </span>
                   </Tooltip>
+                  <Tooltip
+                    title={
+                      (() => {
+                        switch (this.state.selectRelationshipByType) {
+                          case 'children':
+                            return t('Select Child Relationships of Selected Nodes (From)');
+                          case 'parent':
+                            return t('Select Parent Relationships of Selected Nodes (To)');
+                          case 'deselect':
+                            return t('Deselect Relationships of Selected Nodes');
+                          default:
+                            return t('Select Relationships of Selected Nodes');
+                        }
+                      })()
+                    }
+                  >
+                    <span>
+                      <IconButton
+                        color="primary"
+                        onClick={this.handleSelectRelationships.bind(this)}
+                        disabled={numberOfSelectedNodes === 0}
+                        size="large"
+                      >
+                        {(() => {
+                          switch (this.state.selectRelationshipByType) {
+                            case 'children':
+                              return <SwipeDown />;
+                            case 'parent':
+                              return <SwipeUp />;
+                            case 'deselect':
+                              return <TouchApp />;
+                            default:
+                              return <SwipeVertical />;
+                          }
+                        })()}
+                      </IconButton>
+                    </span>
+                  </Tooltip>
                   <Divider className={classes.divider} orientation="vertical" />
                   <Tooltip title={t('Display time range selector')}>
                     <span>
@@ -945,44 +983,6 @@ class ReportKnowledgeGraphBar extends Component {
                           size="large"
                         >
                           <EditOutlined />
-                        </IconButton>
-                      </span>
-                    </Tooltip>
-                    <Tooltip
-                      title={
-                        (() => {
-                          switch (this.state.selectRelationshipByType) {
-                            case 'children':
-                              return t('Select Child Relationships of Selected Nodes (From)');
-                            case 'parent':
-                              return t('Select Parent Relationships of Selected Nodes (To)');
-                            case 'deselect':
-                              return t('Deselect Relationships of Selected Nodes');
-                            default:
-                              return t('Select Relationships of Selected Nodes');
-                          }
-                        })()
-                      }
-                    >
-                      <span>
-                        <IconButton
-                          color="primary"
-                          onClick={this.handleSelectRelationships.bind(this)}
-                          disabled={numberOfSelectedNodes === 0}
-                          size="large"
-                        >
-                          {(() => {
-                            switch (this.state.selectRelationshipByType) {
-                              case 'children':
-                                return <SwipeDown />;
-                              case 'parent':
-                                return <SwipeUp />;
-                              case 'deselect':
-                                return <TouchApp />;
-                              default:
-                                return <SwipeVertical />;
-                            }
-                          })()}
                         </IconButton>
                       </span>
                     </Tooltip>
