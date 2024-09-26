@@ -35,7 +35,8 @@ import {
   EPSS_PERCENTILE_FILTER,
   EPSS_SCORE_FILTER,
   CVSS_BASE_SCORE_FILTER,
-  CVSS_BASE_SEVERITY_FILTER
+  CVSS_BASE_SEVERITY_FILTER,
+  REPORT_TYPES_FILTER
 } from '../filtering-constants';
 import type { Filter } from '../../../generated/graphql';
 import { STIX_RESOLUTION_MAP_PATHS } from '../filtering-resolution';
@@ -74,6 +75,15 @@ export const testEntityType = (stix: any, filter: Filter) => {
 export const testIndicatorTypes = (stix: any, filter: Filter) => {
   const stixValues: string[] = stix.indicator_types ?? [];
   return testStringFilter(filter, stixValues);
+};
+
+/**
+ * REPORTS
+ * - report types is report_types in stix
+ */
+export const testReportTypes = (stix: any, filter: Filter) => {
+  const stixValue: string[] = stix.report_types ?? [];
+  return testStringFilter(filter, stixValue);
 };
 
 /**
@@ -370,6 +380,7 @@ export const FILTER_KEY_TESTERS_MAP: Record<string, TesterFunction> = {
   [CREATOR_FILTER]: testCreator,
   [DETECTION_FILTER]: testDetection,
   [INDICATOR_FILTER]: testIndicatorTypes,
+  [REPORT_TYPES_FILTER]: testReportTypes,
   [LABEL_FILTER]: testLabel,
   [MAIN_OBSERVABLE_TYPE_FILTER]: testMainObservableType,
   [MARKING_FILTER]: testMarkingFilter,

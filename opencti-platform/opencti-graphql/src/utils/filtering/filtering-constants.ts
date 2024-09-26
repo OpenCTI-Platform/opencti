@@ -49,6 +49,7 @@ export const EPSS_PERCENTILE_FILTER = 'x_opencti_epss_percentile';
 export const EPSS_SCORE_FILTER = 'x_opencti_epss_score';
 export const CVSS_BASE_SCORE_FILTER = 'x_opencti_cvss_base_score';
 export const CVSS_BASE_SEVERITY_FILTER = 'x_opencti_cvss_base_severity';
+export const REPORT_TYPES_FILTER = 'report_types';
 // special cases
 export const IDS_FILTER = 'ids';
 export const SIGHTED_BY_FILTER = 'sightedBy';
