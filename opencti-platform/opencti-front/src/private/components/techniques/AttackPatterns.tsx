@@ -159,14 +159,14 @@ const AttackPatterns = () => {
           exportContext={{ entity_type: 'Attack-Pattern' }}
           createButton={isFABReplaced && (
             <Security needs={[KNOWLEDGE_KNUPDATE]}>
-              <AttackPatternCreation paginationOptions={paginationOptions} />
+              <AttackPatternCreation paginationOptions={queryPaginationOptions} />
             </Security>
           )}
         />
       )}
       {!isFABReplaced && (
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <AttackPatternCreation paginationOptions={paginationOptions} />
+          <AttackPatternCreation paginationOptions={queryPaginationOptions} />
         </Security>
       )}
     </>
