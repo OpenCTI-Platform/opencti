@@ -161,7 +161,7 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
   const { onDrawerClose, open, paginationOptions, isDuplicated, feed } = props;
   const classes = useStyles();
   const { t_i18n } = useFormatter();
-  const [selectedTypes, setSelectedTypes] = useState(feed?.feed_types);
+  const [selectedTypes, setSelectedTypes] = useState(feed?.feed_types ?? []);
   const [filters, helpers] = useFiltersState(emptyFilterGroup);
 
   const completeFilterKeysMap: Map<string, Map<string, FilterDefinition>> = useFetchFilterKeysSchema();
