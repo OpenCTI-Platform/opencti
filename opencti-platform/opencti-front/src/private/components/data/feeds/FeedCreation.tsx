@@ -38,6 +38,7 @@ import { stixCyberObservablesLinesAttributesQuery } from '../../observations/sti
 import Filters from '../../common/lists/Filters';
 import {
   cleanFilters,
+  deserializeFilterGroupForFrontend,
   emptyFilterGroup,
   serializeFilterGroupForBackend,
   useAvailableFilterKeysForEntityTypes,
@@ -162,7 +163,7 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const [selectedTypes, setSelectedTypes] = useState(feed?.feed_types ?? []);
-  const [filters, helpers] = useFiltersState(emptyFilterGroup);
+  const [filters, helpers] = useFiltersState(deserializeFilterGroupForFrontend(feed?.filters) ?? emptyFilterGroup);
 
   const completeFilterKeysMap: Map<string, Map<string, FilterDefinition>> = useFetchFilterKeysSchema();
   const availableFilterKeys = useAvailableFilterKeysForEntityTypes(selectedTypes).filter((k) => k !== 'entity_type');
@@ -172,17 +173,15 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
       ...n,
       mappings: R.indexBy(R.prop('type'), n.mappings),
     }))
-    : [];
+    : { 0: {} };
+
   // TODO: typing this state properly implies deep refactoring
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [feedAttributes, setFeedAttributes] = useState<{ [key: string]: any }>({ 0: {} });
+  const [feedAttributes, setFeedAttributes] = useState<{ [key: string]: any }>(feedAttributesInitialState);
   const { ignoredAttributesInFeeds } = useAttributes();
 
-  const handleClose = () => {
-    setSelectedTypes([]);
-    helpers.handleClearAllFilters();
-    setFeedAttributes(feedAttributesInitialState);
-    if (!isDuplicated) {
+  const onHandleClose = () => {
+    if (isDuplicated) {
       onDrawerClose();
     }
   };
@@ -341,13 +340,12 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
     feed_date_attribute: 'created_at',
     feed_public: false,
   };
-
   return (
     <Drawer
       title={isDuplicated ? (t_i18n('Duplicate a feed')) : (t_i18n('Create a feed'))}
       variant={isDuplicated ? undefined : DrawerVariant.createWithPanel}
       open={open}
-      onClose={handleClose}
+      onClose={onHandleClose}
     >
       {({ onClose }) => (
         <QueryRenderer
@@ -580,12 +578,18 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
                                                 ),
                                               );
                                             }
-
                                             return (
                                               <Select
                                                 style={{ width: 150 }}
-                                                value={feedAttributes[i]?.mappings?.[selectedType]?.attribute || ''}
-                                                onChange={(event) => handleChangeAttributeMapping(i, selectedType, event.target.value) }
+                                                value={feedAttributes[i]?.mappings
+                                                    && feedAttributes[i]?.mappings?.[
+                                                      selectedType
+                                                    ]?.attribute}
+                                                onChange={(event) => handleChangeAttributeMapping(
+                                                  i,
+                                                  selectedType,
+                                                  event.target.value,
+                                                )}
                                               >
                                                 {attributes.map(
                                                   (attribute) => (
