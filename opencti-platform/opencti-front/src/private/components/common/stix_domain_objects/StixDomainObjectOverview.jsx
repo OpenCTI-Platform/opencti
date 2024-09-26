@@ -42,6 +42,7 @@ import ObjectAssigneeField from '@components/common/form/ObjectAssigneeField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { convertAssignees, convertParticipants } from '../../../../utils/edition';
 import ObjectParticipantField from '@components/common/form/ObjectParticipantField';
+import { graphql } from 'react-relay';
 
 const styles = (theme) => ({
   paper: {
@@ -69,6 +70,24 @@ const styles = (theme) => ({
   },
 });
 
+const stixDomainObjectMutationRelationsAdd = graphql`
+  mutation StixDomainObjectOverviewRelationsAddMutation(
+    $id: ID!
+    $input: StixRefRelationshipsAddInput!
+  ) {
+    stixDomainObjectEdit(id: $id) {
+      relationsAdd(
+        input: $input
+      ) {
+        objectAssignee {
+          id
+          name
+        }
+      }
+    }
+  }
+`;
+
 class StixDomainObjectOverview extends Component {
   constructor(props) {
     super(props);
@@ -91,16 +110,42 @@ class StixDomainObjectOverview extends Component {
     this.setState({ openAddParticipant: !this.state.openAddParticipant });
   }
 
-  onSubmitAssignees(values) {
-    console.log(values);
-    // TODO : Mutation
-    this.handleToggleAddAssignee();
+  onSubmitAssignees(values, { setSubmitting }) {
+    const { stixDomainObject } = this.props;
+    const valuesIds = values.objectAssignee.map((assignee) => assignee.value);
+    commitMutation({
+      mutation: stixDomainObjectMutation,
+      variables: {
+        id: stixDomainObject.id,
+        input: {
+          key: 'objectAssignee',
+          value: valuesIds,
+        }
+      },
+      onCompleted: () => {
+        setSubmitting(false);
+        this.handleToggleAddAssignee();
+      }
+    });
   }
 
-  onSubmitParticipant(values) {
-    console.log(values);
-    // TODO : Mutation
-    this.handleToggleAddParticipant();
+  onSubmitParticipant(values, { setSubmitting }) {
+    const { stixDomainObject } = this.props;
+    const valuesIds = values.objectParticipant.map((participant) => participant.value);
+    commitMutation({
+      mutation: stixDomainObjectMutation,
+      variables: {
+        id: stixDomainObject.id,
+        input: {
+          key: 'objectParticipant',
+          value: valuesIds,
+        }
+      },
+      onCompleted: () => {
+        setSubmitting(false);
+        this.handleToggleAddParticipant();
+      }
+    });
   }
 
   deleteStixId(stixId) {
@@ -122,6 +167,11 @@ class StixDomainObjectOverview extends Component {
       onCompleted: () => MESSAGING$.notifySuccess(this.props.t('The STIX ID has been removed')),
     });
   }
+
+  initialValues = {
+    objectAssignee: convertAssignees(this.props.stixDomainObject),
+    objectParticipant: convertParticipants(this.props.stixDomainObject),
+  };
 
   render() {
     const {
@@ -145,11 +195,6 @@ class StixDomainObjectOverview extends Component {
     const reliability = isReliabilityOfSource
       ? stixDomainObject.createdBy?.x_opencti_reliability
       : stixDomainObject.x_opencti_reliability;
-
-    const initialValues = {
-      objectAssignee: convertAssignees(stixDomainObject),
-      objectParticipant: convertParticipants(stixDomainObject),
-    };
 
     return (
       <>
@@ -285,7 +330,7 @@ class StixDomainObjectOverview extends Component {
                       <Add fontSize="small" />
                     </IconButton>
                   </Typography>
-                  <ItemAssignees assignees={stixDomainObject.objectAssignee ?? []} />
+                  <ItemAssignees assignees={stixDomainObject.objectAssignee ?? []} stixDomainObjectId={stixDomainObject.id} />
                 </div>
               )}
               {displayParticipants && (
@@ -305,7 +350,7 @@ class StixDomainObjectOverview extends Component {
                       <Add fontSize="small" />
                     </IconButton>
                   </Typography>
-                  <ItemParticipants participants={stixDomainObject.objectParticipant ?? []}/>
+                  <ItemParticipants participants={stixDomainObject.objectParticipant ?? []} stixDomainObjectId={stixDomainObject.id} />
                 </div>
               )}
               <Typography
@@ -424,7 +469,7 @@ class StixDomainObjectOverview extends Component {
           </DialogActions>
         </Dialog>
         <Formik
-          initialValues={initialValues}
+          initialValues={this.initialValues}
           onSubmit={this.onSubmitAssignees.bind(this)}
           onReset={this.handleToggleAddAssignee.bind(this)}
         >
@@ -460,7 +505,7 @@ class StixDomainObjectOverview extends Component {
           )}
         </Formik>
         <Formik
-          initialValues={initialValues}
+          initialValues={this.initialValues}
           onSubmit={this.onSubmitParticipant.bind(this)}
           onReset={this.handleToggleAddParticipant.bind(this)}
         >
