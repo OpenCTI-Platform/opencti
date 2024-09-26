@@ -145,7 +145,7 @@ interface FeedCreationFormProps {
   open: boolean;
   isDuplicated: boolean;
   onDrawerClose: () => void;
-  feed?: FeedAddInput;
+  feed: FeedAddInput | undefined;
 }
 
 const feedCreationValidation = (t_i18n: (s: string) => string) => Yup.object().shape({
@@ -175,7 +175,7 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
       ...n,
       mappings: R.indexBy(R.prop('type'), n.mappings),
     }))
-    : []; // Si `feed_attributes` est null ou undefined, initialisez avec un tableau vide
+    : [];
 
   const [feedAttributes, setFeedAttributes] = useState(feedAttributesInitialState);
   const { ignoredAttributesInFeeds } = useAttributes();
@@ -183,7 +183,7 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
   const handleClose = () => {
     setSelectedTypes([]);
     helpers.handleClearAllFilters();
-    setFeedAttributes({ 0: {} });
+    setFeedAttributes(feedAttributesInitialState);
     if (!isDuplicated) {
       onDrawerClose();
     }
