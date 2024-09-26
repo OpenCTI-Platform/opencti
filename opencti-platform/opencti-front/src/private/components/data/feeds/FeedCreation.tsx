@@ -166,10 +166,7 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
 
   const completeFilterKeysMap: Map<string, Map<string, FilterDefinition>> = useFetchFilterKeysSchema();
   const availableFilterKeys = useAvailableFilterKeysForEntityTypes(selectedTypes).filter((k) => k !== 'entity_type');
-  console.log('FEED', feed);
 
-  // TODO: typing this state properly implies deep refactoring
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const feedAttributesInitialState = feed && feed.feed_attributes
     ? feed.feed_attributes.map((n) => ({
       ...n,
@@ -177,7 +174,9 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
     }))
     : [];
 
-  const [feedAttributes, setFeedAttributes] = useState(feedAttributesInitialState);
+  // TODO: typing this state properly implies deep refactoring
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [feedAttributes, setFeedAttributes] = useState<{ [key: string]: any }>({ 0: {} });
   const { ignoredAttributesInFeeds } = useAttributes();
 
   const handleClose = () => {
@@ -212,7 +211,6 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
   const [commit] = useApiMutation(feedCreationMutation);
 
   const onSubmit: FormikConfig<FeedAddInput>['onSubmit'] = (values, { setSubmitting, resetForm }) => {
-    console.log('VALUES', values);
     const finalFeedAttributes = R.values(feedAttributes).map((n) => ({
       attribute: n.attribute,
       mappings: R.values(n.mappings),
@@ -259,7 +257,7 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
       },
     });
   };
-  console.log('selectedTypes', selectedTypes);
+
   const areAttributesValid = () => {
     if (
       selectedTypes.length === 0
@@ -372,7 +370,7 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
                 [R.ascend(R.prop('label'))],
                 result,
               );
-              console.log('ENTITYTYPES', entitiesTypes);
+
               return (
                 <Formik<FeedAddInput>
                   initialValues={initialValues}
@@ -583,7 +581,7 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
                                                 ),
                                               );
                                             }
-                                            console.log('feedAttributes', feedAttributes);
+
                                             return (
                                               <Select
                                                 style={{ width: 150 }}

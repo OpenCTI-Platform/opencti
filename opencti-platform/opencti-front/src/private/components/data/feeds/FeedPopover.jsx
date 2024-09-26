@@ -160,7 +160,6 @@ class FeedPopover extends Component {
           variables={{ id: feedId }}
           render={({ props }) => {
             if (props) {
-              console.log('PROPS', props);
               return (
                 <>
                   <FeedEdition
@@ -179,7 +178,6 @@ class FeedPopover extends Component {
           variables={{ id: feedId }}
           render={({ props }) => {
             if (props) {
-              console.log('PROPS', props);
               return (
                 <FeedCreation
                   feed={props.feed}
