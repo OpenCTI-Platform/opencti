@@ -944,8 +944,7 @@ describe('User has no settings capability and is organization admin query behavi
       variables: { id: userInternalId },
     });
     // Verify is no longer found
-    const queryResult = await adminQuery({ query: READ_QUERY, variables: { id: userInternalId } });
-    expect(queryResult).not.toBeNull();
+    const queryResult = await adminQueryWithSuccess({ query: READ_QUERY, variables: { id: userInternalId } });
     expect(queryResult.data.user).toBeNull();
   });
 });
