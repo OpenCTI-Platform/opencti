@@ -132,6 +132,7 @@ const RoleEditionCapabilitiesComponent: FunctionComponent<RoleEditionCapabilitie
           },
         },
       });
+      // And invalid me ?? or invalidSession
   };
 
   const {ffenabled, isSensitiveModifAllowed} = useSensitiveModifications();

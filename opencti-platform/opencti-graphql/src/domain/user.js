@@ -944,11 +944,6 @@ export const userDelete = async (context, user, userId) => {
 };
 
 export const userAddRelation = async (context, user, userId, input) => {
-  logApp.info('ANGIE - input:', input);
-  if(isFeatureEnabled(PROTECT_SENSITIVE_CHANGES_FF)) {
-    logApp.info('ANGIE - input:', input);
-  }
-
   const userData = await storeLoadById(context, user, userId, ENTITY_TYPE_USER);
   if (!userData) {
     throw FunctionalError(`Cannot add the relation, ${ENTITY_TYPE_USER} cannot be found.`);
@@ -979,11 +974,6 @@ export const userAddRelation = async (context, user, userId, input) => {
 };
 
 export const userDeleteRelation = async (context, user, targetUser, toId, relationshipType) => {
-  logApp.info('ANGIE - userDeleteRelation input:', input);
-  if(isFeatureEnabled(PROTECT_SENSITIVE_CHANGES_FF)) {
-    logApp.info('ANGIE - userDeleteRelation input:', input);
-  }
-
   if (!isInternalRelationship(relationshipType)) {
     throw FunctionalError(`Only ${ABSTRACT_INTERNAL_RELATIONSHIP} can be deleted through this method.`);
   }
@@ -1294,21 +1284,18 @@ const getStackTrace = () => {
 
 
 export const PROTECT_SENSITIVE_CHANGES_FF='PROTECT_SENSITIVE_CHANGES';
-export const isSensitiveChangesAllowed = (roles) => {
-
+export const isSensitiveChangesAllowed = (userId, roles) => {
+  if(userId === OPENCTI_ADMIN_UUID) {
+    return true;
+  }
   let hasExplicitAllowSensitiveChangeFalse = 0;
-  console.log(`ANGIE - roles.length:${roles.length}`);
   for (let i = 0; i <roles.length ; i++) {
-    console.log('ANGIE - roles[i]:', roles[i]);
-    console.log(`ANGIE - roles[i], !== undefined:${roles[i].is_sensitive_changes_allow!== undefined}`);
-    console.log(`ANGIE - roles[i], is_sensitive_changes_allow === false:${roles[i].is_sensitive_changes_allow === false}`);
     if(roles[i].is_sensitive_changes_allow !== undefined){
       if(roles[i].is_sensitive_changes_allow === false){
         hasExplicitAllowSensitiveChangeFalse++;
       }
     }
   }
-  console.log(`ANGIE - isSensitiveChangesAllowed isSensitiveChangesAllowed:${hasExplicitAllowSensitiveChangeFalse !== roles.length}`);
   return hasExplicitAllowSensitiveChangeFalse !== roles.length ;
 };
 
@@ -1364,7 +1351,7 @@ export const buildCompleteUser = async (context, client) => {
 
   let ff = null;
   if(isFeatureEnabled(PROTECT_SENSITIVE_CHANGES_FF)){
-    ff = {is_sensitive_changes_allow: isSensitiveChangesAllowed(roles)}
+    ff = {is_sensitive_changes_allow: isSensitiveChangesAllowed(client.id, roles)}
   }
 
   return {
