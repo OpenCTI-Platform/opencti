@@ -2473,7 +2473,7 @@ interface StixDomainObject {
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: [Assignee!]
-  objectParticipant: [Participant]
+  objectParticipant: [Participant!]
   avatar: OpenCtiFile
   # Technical
   creators: [Creator!]
@@ -2865,8 +2865,8 @@ type Campaign implements BasicObject & StixObject & StixCoreObject & StixDomainO
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: [Assignee!]
-  avatar: OpenCtiFile
   objectParticipant: [Participant!]
+  avatar: OpenCtiFile
   # Campaign
   name: String!
   description: String
@@ -3095,7 +3095,6 @@ type NoteEdge {
   node: Note!
 }
 type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObject & Container {
-  objectParticipant: [Participant!]
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
@@ -3189,6 +3188,7 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
   avatar: OpenCtiFile
   # Container
   authorized_members: [MemberAccess!]
@@ -3315,7 +3315,6 @@ type ObservedDataEdge {
   node: ObservedData!
 }
 type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDomainObject & Container {
-  objectParticipant: [Participant!]
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
@@ -3409,6 +3408,7 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
   avatar: OpenCtiFile
   # Container
   authorized_members: [MemberAccess!]

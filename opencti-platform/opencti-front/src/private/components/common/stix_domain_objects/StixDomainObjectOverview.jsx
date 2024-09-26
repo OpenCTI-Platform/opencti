@@ -18,6 +18,9 @@ import IconButton from '@mui/material/IconButton';
 import { Add, BrushOutlined, Delete } from '@mui/icons-material';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
+import { Formik } from 'formik';
+import ObjectAssigneeField from '../form/ObjectAssigneeField';
+import ObjectParticipantField from '../form/ObjectParticipantField';
 import StixCoreObjectOpinions from '../../analyses/opinions/StixCoreObjectOpinions';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import ItemPatternType from '../../../../components/ItemPatternType';
@@ -37,12 +40,8 @@ import ItemAssignees from '../../../../components/ItemAssignees';
 import ItemOpenVocab from '../../../../components/ItemOpenVocab';
 import ItemParticipants from '../../../../components/ItemParticipants';
 import Transition from '../../../../components/Transition';
-import { Formik } from 'formik';
-import ObjectAssigneeField from '@components/common/form/ObjectAssigneeField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { convertAssignees, convertParticipants } from '../../../../utils/edition';
-import ObjectParticipantField from '@components/common/form/ObjectParticipantField';
-import { graphql } from 'react-relay';
 
 const styles = (theme) => ({
   paper: {
@@ -69,24 +68,6 @@ const styles = (theme) => ({
     lineHeight: '18px',
   },
 });
-
-const stixDomainObjectMutationRelationsAdd = graphql`
-  mutation StixDomainObjectOverviewRelationsAddMutation(
-    $id: ID!
-    $input: StixRefRelationshipsAddInput!
-  ) {
-    stixDomainObjectEdit(id: $id) {
-      relationsAdd(
-        input: $input
-      ) {
-        objectAssignee {
-          id
-          name
-        }
-      }
-    }
-  }
-`;
 
 class StixDomainObjectOverview extends Component {
   constructor(props) {
@@ -120,12 +101,12 @@ class StixDomainObjectOverview extends Component {
         input: {
           key: 'objectAssignee',
           value: valuesIds,
-        }
+        },
       },
       onCompleted: () => {
         setSubmitting(false);
         this.handleToggleAddAssignee();
-      }
+      },
     });
   }
 
@@ -139,12 +120,12 @@ class StixDomainObjectOverview extends Component {
         input: {
           key: 'objectParticipant',
           value: valuesIds,
-        }
+        },
       },
       onCompleted: () => {
         setSubmitting(false);
         this.handleToggleAddParticipant();
-      }
+      },
     });
   }
 
