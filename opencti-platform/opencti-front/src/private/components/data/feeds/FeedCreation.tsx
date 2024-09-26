@@ -161,7 +161,7 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
   const { onDrawerClose, open, paginationOptions, isDuplicated, feed } = props;
   const classes = useStyles();
   const { t_i18n } = useFormatter();
-  const [selectedTypes, setSelectedTypes] = useState<string[]>(isDuplicated && feed ? feed.feed_types : []);
+  const [selectedTypes, setSelectedTypes] = useState(feed?.feed_types);
   const [filters, helpers] = useFiltersState(emptyFilterGroup);
 
   const completeFilterKeysMap: Map<string, Map<string, FilterDefinition>> = useFetchFilterKeysSchema();
@@ -173,7 +173,6 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
       mappings: R.indexBy(R.prop('type'), n.mappings),
     }))
     : [];
-
   // TODO: typing this state properly implies deep refactoring
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [feedAttributes, setFeedAttributes] = useState<{ [key: string]: any }>({ 0: {} });
@@ -634,7 +633,7 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
                         >
                           {t_i18n('Cancel')}
                         </Button>
-                        {isDuplicated && feed ? (
+                        {isDuplicated ? (
                           <Button
                             variant="contained"
                             color="secondary"
