@@ -124,6 +124,7 @@ const createHttpServer = async () => {
         executeContext.synchronizedUpsert = req.headers['synchronized-upsert'] === 'true'; // If full sync needs to be done
         try {
           const user = await authenticateUserFromRequest(executeContext, req, res);
+          if (!executeContext.workspace_context) executeContext.workspace_context = user.workspace_context;
           if (user) {
             executeContext.user = userWithOrigin(req, user);
           }

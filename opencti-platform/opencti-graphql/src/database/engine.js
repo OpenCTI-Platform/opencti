@@ -1175,6 +1175,7 @@ const elDataConverter = (esHit, withoutRels = false) => {
   const elementData = esHit._source;
   const data = {
     _index: esHit._index,
+    _id: esHit._id,
     id: elementData.internal_id,
     sort: esHit.sort,
     ...elRebuildRelation(elementData),
@@ -1320,7 +1321,8 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
   if (processIds.length === 0) {
     return toMap ? {} : [];
   }
-  const computedIndices = computeQueryIndices(indices, types);
+  const typInferredIndices = computeQueryIndices(indices, types);
+  const computedIndices = getIndicesToQuery(context, user, typInferredIndices);
   const hits = [];
   const groupIds = R.splitEvery(MAX_TERMS_SPLIT, idsArray);
   for (let index = 0; index < groupIds.length; index += 1) {
@@ -1356,11 +1358,39 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
     // If an admin ask for a specific element, there is no need to ask him to explicitly extends his visibility to doing it.
     const markingRestrictions = await buildDataRestrictions(context, user, restrictionOptions);
     mustTerms.push(...markingRestrictions.must);
+    // Handle draft
+    const draftContext = inDraftContext(context, user);
+    const draftMust = [];
+    if (draftContext) {
+      const mustLive = {
+        bool: {
+          must_not: [
+            { term: { _index: READ_INDEX_DRAFT } },
+            { match: { draft_ids: draftContext } }
+          ]
+        }
+      };
+      const mustDraft = {
+        bool: {
+          must: [
+            { term: { _index: READ_INDEX_DRAFT } },
+            { match: { draft_ids: draftContext } }
+          ]
+        }
+      };
+      const draftBool = {
+        bool: {
+          should: [mustLive, mustDraft],
+          minimum_should_match: 1,
+        },
+      };
+      draftMust.push(draftBool);
+    }
     const body = {
       sort: [{ [orderBy]: orderMode }],
       query: {
         bool: {
-          must: mustTerms,
+          must: [...mustTerms, ...draftMust],
           must_not: markingRestrictions.must_not,
         },
       },
@@ -2624,8 +2654,8 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
   };
 };
 
-const getIndicesToQuery = (index, user) => {
-  const draftContext = inDraftContext(user);
+const getIndicesToQuery = (context, user, index) => {
+  const draftContext = inDraftContext(context, user);
   return index + (!draftContext ? '' : (`,${READ_INDEX_DRAFT}`));
 };
 
@@ -2722,7 +2752,7 @@ const elQueryBodyBuilder = async (context, user, options) => {
     ordering.push({ 'standard_id.keyword': 'asc' });
   }
   // Handle draft
-  const draftContext = inDraftContext(user);
+  const draftContext = inDraftContext(context, user);
   const draftMust = [];
   if (draftContext) {
     const mustLive = {
@@ -2785,7 +2815,7 @@ export const elRawCount = async (query) => {
 };
 export const elCount = async (context, user, indexName, options = {}) => {
   const body = await elQueryBodyBuilder(context, user, { ...options, noSize: true, noSort: true });
-  const query = { index: getIndicesToQuery(indexName, user), body };
+  const query = { index: getIndicesToQuery(context, user, indexName), body };
   logApp.debug('[SEARCH] elCount', { query });
   return elRawCount(query);
 };
@@ -2832,7 +2862,7 @@ export const elHistogramCount = async (context, user, indexName, options = {}) =
     },
   };
   const query = {
-    index: getIndicesToQuery(indexName, user),
+    index: getIndicesToQuery(context, user, indexName),
     _source_excludes: '*', // Dont need to get anything
     body,
   };
@@ -2865,7 +2895,7 @@ export const elAggregationCount = async (context, user, indexName, options = {})
     },
   };
   const query = {
-    index: getIndicesToQuery(indexName, user),
+    index: getIndicesToQuery(context, user, indexName),
     body,
   };
   logApp.debug('[SEARCH] aggregationCount', { query });
@@ -2979,7 +3009,7 @@ export const elAggregationRelationsCount = async (context, user, indexName, opti
       },
     };
   }
-  const query = { index: getIndicesToQuery(indexName, user), body };
+  const query = { index: getIndicesToQuery(context, user, indexName), body };
   logApp.debug('[SEARCH] aggregationRelationsCount', { query });
   const isIdFields = field?.endsWith('internal_id');
   return elRawSearch(context, user, types, query)
@@ -3030,7 +3060,7 @@ export const elAggregationNestedTermsWithFilter = async (context, user, indexNam
     }
   };
   const query = {
-    index: getIndicesToQuery(indexName, user),
+    index: getIndicesToQuery(context, user, indexName),
     body,
   };
   logApp.debug('[SEARCH] elAggregationNestedTermsWithFilter', { query });
@@ -3073,7 +3103,7 @@ export const elAggregationsList = async (context, user, indexName, aggregations,
     }
   }
   const query = {
-    index: getIndicesToQuery(indexName, user),
+    index: getIndicesToQuery(context, user, indexName),
     track_total_hits: true,
     _source: false,
     body,
@@ -3110,7 +3140,7 @@ export const elPaginate = async (context, user, indexName, options = {}) => {
     body.size = ES_MAX_PAGINATION;
   }
   const query = {
-    index: getIndicesToQuery(indexName, user),
+    index: getIndicesToQuery(context, user, indexName),
     track_total_hits: true,
     _source: baseData ? baseFields : true,
     body,
@@ -3647,12 +3677,12 @@ const prepareIndexing = async (elements) => {
 };
 // Creates a copy of a live element in the draft index with the current draft context
 const copyLiveElementToDraft = async (context, user, element) => {
-  const draftContext = inDraftContext(user);
+  const draftContext = inDraftContext(context, user);
   if (!draftContext || element._index.includes(INDEX_DRAFT)) return element;
 
   const updatedElement = structuredClone(element);
   const newId = generateInternalId();
-  const setDraftData = `ctx._id="${newId}";ctx._source.draft_change = [:];ctx._source.draft_ids=['${draftContext}'];`;
+  const setDraftData = `ctx._id="${newId}";ctx._source.draft_ids=['${draftContext}'];`;
   await elReindexElements(context, user, [element.id], element._index, INDEX_DRAFT, setDraftData);
   updatedElement._id = newId;
   updatedElement._index = INDEX_DRAFT;
@@ -3685,7 +3715,7 @@ const getElementDraftVersion = async (context, user, element) => {
 
 export const elIndexElements = async (context, user, indexingType, elements) => {
   // If we are in a draft, relations from and to need to be elements that are also in draft.
-  const draftContext = inDraftContext(user);
+  const draftContext = inDraftContext(context, user);
   if (draftContext) {
     if (elements.some((e) => isInternalObject(e.entity_type) || isInternalRelationship(e.entity_type))) throw new Error('Cannot index internal element in draft context');
     for (let i = 0; i < elements.length; i += 1) {
@@ -3714,11 +3744,11 @@ export const elIndexElements = async (context, user, indexingType, elements) => 
     // 00. Relations must be transformed before indexing.
     const transformedElements = await prepareIndexing(elements);
     // 01. Bulk the indexing of row elements
-    const body = transformedElements.flatMap((doc) => {
-      const elementDoc = doc;
+    const body = transformedElements.flatMap((elementDoc) => {
+      const doc = elementDoc;
       if (draftContext) {
-        elementDoc._index = INDEX_DRAFT;
-        elementDoc.draft_ids = [draftContext];
+        doc._index = INDEX_DRAFT;
+        doc.draft_ids = [draftContext];
       }
       return [
         { index: { _index: doc._index, _id: doc.internal_id, retry_on_conflict: ES_RETRY_ON_CONFLICT } },

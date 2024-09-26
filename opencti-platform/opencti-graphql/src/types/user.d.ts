@@ -57,4 +57,5 @@ interface AuthContext {
   source: string
   tracing: TracingContext
   user: AuthUser | undefined
+  workspace_context?: string | undefined
 }

@@ -453,7 +453,7 @@ const mapJSToStream = (event: any) => {
   return cmdArgs;
 };
 const pushToStream = async (context: AuthContext, user: AuthUser, client: Cluster | Redis, event: BaseEvent, opts: EventOpts = {}) => {
-  const draftContext = inDraftContext(user);
+  const draftContext = inDraftContext(context, user);
   if (!draftContext && isStreamPublishable(opts)) {
     const pushToStreamFn = async () => {
       if (streamTrimming) {

@@ -1,5 +1,5 @@
-import type { AuthUser } from '../types/user';
+import type { AuthContext, AuthUser } from '../types/user';
 
-export const inDraftContext = (user: AuthUser) => {
-  return user.workspace_context;
+export const inDraftContext = (context: AuthContext, user: AuthUser) => {
+  return context?.workspace_context ?? user?.workspace_context;
 };
