@@ -15,7 +15,7 @@ import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import IconButton from '@mui/material/IconButton';
-import { BrushOutlined, Delete } from '@mui/icons-material';
+import { Add, BrushOutlined, Delete } from '@mui/icons-material';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import StixCoreObjectOpinions from '../../analyses/opinions/StixCoreObjectOpinions';
@@ -37,6 +37,11 @@ import ItemAssignees from '../../../../components/ItemAssignees';
 import ItemOpenVocab from '../../../../components/ItemOpenVocab';
 import ItemParticipants from '../../../../components/ItemParticipants';
 import Transition from '../../../../components/Transition';
+import { Formik } from 'formik';
+import ObjectAssigneeField from '@components/common/form/ObjectAssigneeField';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { convertAssignees, convertParticipants } from '../../../../utils/edition';
+import ObjectParticipantField from '@components/common/form/ObjectParticipantField';
 
 const styles = (theme) => ({
   paper: {
@@ -69,11 +74,33 @@ class StixDomainObjectOverview extends Component {
     super(props);
     this.state = {
       openStixIds: false,
+      openAddAssignee: false,
+      openAddParticipant: false,
     };
   }
 
   handleToggleOpenStixIds() {
     this.setState({ openStixIds: !this.state.openStixIds });
+  }
+
+  handleToggleAddAssignee() {
+    this.setState({ openAddAssignee: !this.state.openAddAssignee });
+  }
+
+  handleToggleAddParticipant() {
+    this.setState({ openAddParticipant: !this.state.openAddParticipant });
+  }
+
+  onSubmitAssignees(values) {
+    console.log(values);
+    // TODO : Mutation
+    this.handleToggleAddAssignee();
+  }
+
+  onSubmitParticipant(values) {
+    console.log(values);
+    // TODO : Mutation
+    this.handleToggleAddParticipant();
   }
 
   deleteStixId(stixId) {
@@ -118,6 +145,12 @@ class StixDomainObjectOverview extends Component {
     const reliability = isReliabilityOfSource
       ? stixDomainObject.createdBy?.x_opencti_reliability
       : stixDomainObject.x_opencti_reliability;
+
+    const initialValues = {
+      objectAssignee: convertAssignees(stixDomainObject),
+      objectParticipant: convertParticipants(stixDomainObject),
+    };
+
     return (
       <>
         <Typography variant="h4">
@@ -243,8 +276,16 @@ class StixDomainObjectOverview extends Component {
                     style={{ marginTop: 20 }}
                   >
                     {t('Assignees')}
+                    <IconButton
+                      color="primary"
+                      aria-label={t('Add new assignees')}
+                      title={t('Add new assignees')}
+                      onClick={this.handleToggleAddAssignee.bind(this)}
+                    >
+                      <Add fontSize="small" />
+                    </IconButton>
                   </Typography>
-                  <ItemAssignees assignees={stixDomainObject.objectAssignee ?? []}/>
+                  <ItemAssignees assignees={stixDomainObject.objectAssignee ?? []} />
                 </div>
               )}
               {displayParticipants && (
@@ -255,6 +296,14 @@ class StixDomainObjectOverview extends Component {
                     style={{ marginTop: 20 }}
                   >
                     {t('Participants')}
+                    <IconButton
+                      color="primary"
+                      aria-label={t('Add new participant')}
+                      title={t('Add new participant')}
+                      onClick={this.handleToggleAddParticipant.bind(this)}
+                    >
+                      <Add fontSize="small" />
+                    </IconButton>
                   </Typography>
                   <ItemParticipants participants={stixDomainObject.objectParticipant ?? []}/>
                 </div>
@@ -374,6 +423,78 @@ class StixDomainObjectOverview extends Component {
             </Button>
           </DialogActions>
         </Dialog>
+        <Formik
+          initialValues={initialValues}
+          onSubmit={this.onSubmitAssignees.bind(this)}
+          onReset={this.handleToggleAddAssignee.bind(this)}
+        >
+          {({ submitForm }) => (
+            <Dialog
+              PaperProps={{ elevation: 1 }}
+              open={this.state.openAddAssignee}
+              TransitionComponent={Transition}
+              onClose={this.handleToggleAddAssignee.bind(this)}
+              fullWidth={true}
+            >
+              <DialogTitle>{t('Add new Assignees')}</DialogTitle>
+              <DialogContent>
+                <ObjectAssigneeField
+                  name="objectAssignee"
+                  style={fieldSpacingContainerStyle}
+                />
+              </DialogContent>
+              <DialogActions>
+                <Button
+                  onClick={this.handleToggleAddAssignee.bind(this)}
+                >
+                  {t('Close')}
+                </Button>
+                <Button
+                  onClick={submitForm}
+                  color="secondary"
+                >
+                  {t('Add')}
+                </Button>
+              </DialogActions>
+            </Dialog>
+          )}
+        </Formik>
+        <Formik
+          initialValues={initialValues}
+          onSubmit={this.onSubmitParticipant.bind(this)}
+          onReset={this.handleToggleAddParticipant.bind(this)}
+        >
+          {({ submitForm }) => (
+            <Dialog
+              PaperProps={{ elevation: 1 }}
+              open={this.state.openAddParticipant}
+              TransitionComponent={Transition}
+              onClose={this.handleToggleAddParticipant.bind(this)}
+              fullWidth={true}
+            >
+              <DialogTitle>{t('Add new Participant')}</DialogTitle>
+              <DialogContent>
+                <ObjectParticipantField
+                  name="objectParticipant"
+                  style={fieldSpacingContainerStyle}
+                />
+              </DialogContent>
+              <DialogActions>
+                <Button
+                  onClick={this.handleToggleAddParticipant.bind(this)}
+                >
+                  {t('Close')}
+                </Button>
+                <Button
+                  onClick={submitForm}
+                  color="secondary"
+                >
+                  {t('Add')}
+                </Button>
+              </DialogActions>
+            </Dialog>
+          )}
+        </Formik>
       </>
     );
   }
