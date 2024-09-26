@@ -47,6 +47,21 @@ const roleEditionRemoveCapability = graphql`
   }
 `;
 
+const roleEditionPatchAllowSensitiveConf = graphql`
+  mutation RoleEditionCapabilitiesPatchAllowSensitiveChangesMutation(
+    $id: ID!
+    $input: [EditInput]!
+  ) {
+    roleEdit(id: $id) {
+      fieldPatch(input: $input) {
+        is_sensitive_changes_allow
+      }
+    }
+  }
+`;
+
+
+
 export const roleEditionCapabilitiesLinesSearch = graphql`
   query RoleEditionCapabilitiesLinesSearchQuery {
     capabilities(first: 500) {
@@ -77,6 +92,7 @@ const RoleEditionCapabilitiesComponent: FunctionComponent<RoleEditionCapabilitie
   })) as { name: string }[];
   const [commitAddCapability] = useApiMutation(roleEditionAddCapability);
   const [commitRemoveCapability] = useApiMutation(roleEditionRemoveCapability);
+  const [commitPatchAllowSensitiveConf] = useApiMutation(roleEditionPatchAllowSensitiveConf);
   const handleToggle = (
     capabilityId: string,
     event: React.ChangeEvent<HTMLInputElement>,
@@ -103,6 +119,21 @@ const RoleEditionCapabilitiesComponent: FunctionComponent<RoleEditionCapabilitie
     }
   };
 
+  const handleSensitiveToggle = (
+      event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const roleId = role.id;
+      commitPatchAllowSensitiveConf({
+        variables: {
+          id: roleId,
+          input: {
+            key:'is_sensitive_changes_allow',
+            value: event.target.checked,
+          },
+        },
+      });
+  };
+
   const {ffenabled, isSensitiveModifAllowed} = useSensitiveModifications();
 
   if (capabilities && capabilities.edges) {
@@ -120,9 +151,9 @@ const RoleEditionCapabilitiesComponent: FunctionComponent<RoleEditionCapabilitie
           <ListItemText primary={t_i18n('Allow modification of sensitive configuration')} />
           <ListItemSecondaryAction>
             <Checkbox
-                onChange={(event) => handleToggle('1234', event)}
-                checked={isSensitiveModifAllowed}
-                disabled={false}
+              onChange={(event) => handleSensitiveToggle(event)}
+              checked={isSensitiveModifAllowed}
+              disabled={false}
             />
           </ListItemSecondaryAction>
         </ListItem>

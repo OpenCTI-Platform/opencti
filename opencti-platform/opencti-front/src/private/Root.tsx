@@ -141,6 +141,7 @@ const meUserFragment = graphql`
       id
       name
     }
+    is_sensitive_changes_allow
   }
 `;
 
