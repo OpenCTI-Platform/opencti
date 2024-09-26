@@ -1,5 +1,12 @@
 import React, { FunctionComponent } from 'react';
-import Button from '@mui/material/Button';
+import Chip from '@mui/material/Chip';
+import { truncate } from '../utils/String';
+import { hexToRGB } from '../utils/Colors';
+import { CancelOutlined } from '@mui/icons-material';
+import useGranted, { KNOWLEDGE_KNUPDATE } from '../utils/hooks/useGranted';
+import { useTheme } from '@mui/styles';
+import type { Theme } from './Theme';
+import FieldOrEmpty from './FieldOrEmpty';
 
 type Node = {
   readonly entity_type: string;
@@ -12,22 +19,35 @@ type Props = {
 };
 
 const ItemAssignees: FunctionComponent<Props> = ({ assignees }) => {
+  const theme = useTheme<Theme>();
+  const canUpdateKnowledge = useGranted([KNOWLEDGE_KNUPDATE]);
+  const handleRemoveAssignee = (assigneeId: string) => {
+    console.log(assigneeId);
+    // TODO : Mutation
+  };
   return (
-    <div>
-      {assignees.length > 0
-        ? assignees.map((assignee) => (
-          <Button
-            key={assignee.id}
-            variant="outlined"
-            color="primary"
-            size="small"
-            style={{ margin: '0 7px 7px 0', cursor: 'default' }}
-          >
-            {assignee.name}
-          </Button>
-        ))
-        : '-'}
-    </div>
+    <FieldOrEmpty source={assignees}>
+      {assignees.map((assignee) => (
+        <Chip
+          key={assignee.id}
+          variant="outlined"
+          label={truncate(assignee.name, 25)}
+          style={{
+            color: theme.palette.primary.main,
+            borderColor: theme.palette.primary.main,
+            backgroundColor: hexToRGB(theme.palette.primary.main),
+            margin: '0 7px 7px 0',
+            borderRadius: theme.borderRadius,
+          }}
+          onDelete={canUpdateKnowledge ? () => (handleRemoveAssignee(assignee.id)) : undefined}
+          deleteIcon={
+            <CancelOutlined
+              style={{ color: theme.palette.primary.main }}
+            />
+          }
+        />
+      ))}
+    </FieldOrEmpty>
   );
 };
 

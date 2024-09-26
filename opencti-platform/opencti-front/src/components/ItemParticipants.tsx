@@ -1,6 +1,12 @@
 import React, { FunctionComponent } from 'react';
-import Button from '@mui/material/Button';
 import FieldOrEmpty from './FieldOrEmpty';
+import { useTheme } from '@mui/styles';
+import type { Theme } from './Theme';
+import useGranted, { KNOWLEDGE_KNUPDATE } from '../utils/hooks/useGranted';
+import { truncate } from '../utils/String';
+import { hexToRGB } from '../utils/Colors';
+import { CancelOutlined } from '@mui/icons-material';
+import Chip from '@mui/material/Chip';
 
 interface ItemParticipantsProps {
   participants: {
@@ -11,18 +17,33 @@ interface ItemParticipantsProps {
 }
 
 const ItemParticipants: FunctionComponent<ItemParticipantsProps> = ({ participants }) => {
+  const theme = useTheme<Theme>();
+  const canUpdateKnowledge = useGranted([KNOWLEDGE_KNUPDATE]);
+  const handleRemoveParticipant = (participantId: string) => {
+    console.log(participantId);
+    // TODO : Mutation
+  };
   return (
     <FieldOrEmpty source={participants}>
       {participants.map((participant) => (
-        <Button
+        <Chip
           key={participant.id}
           variant="outlined"
-          color="primary"
-          size="small"
-          style={{ margin: '0 7px 7px 0', cursor: 'default' }}
-        >
-          {participant.name}
-        </Button>
+          label={truncate(participant.name, 25)}
+          style={{
+            color: theme.palette.primary.main,
+            borderColor: theme.palette.primary.main,
+            backgroundColor: hexToRGB(theme.palette.primary.main),
+            margin: '0 7px 7px 0',
+            borderRadius: theme.borderRadius,
+          }}
+          onDelete={canUpdateKnowledge ? () => (handleRemoveParticipant(participant.id)) : undefined}
+          deleteIcon={
+            <CancelOutlined
+              style={{ color: theme.palette.primary.main }}
+            />
+          }
+        />
       ))}
     </FieldOrEmpty>
   );
