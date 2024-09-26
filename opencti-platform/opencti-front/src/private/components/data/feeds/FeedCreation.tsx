@@ -636,15 +636,27 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
                         >
                           {t_i18n('Cancel')}
                         </Button>
-                        <Button
-                          variant="contained"
-                          color="secondary"
-                          onClick={submitForm}
-                          disabled={isSubmitting || !areAttributesValid()}
-                          classes={{ root: classes.button }}
-                        >
-                          {t_i18n('Create')}
-                        </Button>
+                        {isDuplicated && feed ? (
+                          <Button
+                            variant="contained"
+                            color="secondary"
+                            onClick={submitForm}
+                            disabled={isSubmitting || !areAttributesValid()}
+                            classes={{ root: classes.button }}
+                          >
+                            {t_i18n('Duplicate')}
+                          </Button>
+                        ) : (
+                          <Button
+                            variant="contained"
+                            color="secondary"
+                            onClick={submitForm}
+                            disabled={isSubmitting || !areAttributesValid()}
+                            classes={{ root: classes.button }}
+                          >
+                            {t_i18n('Create')}
+                          </Button>
+                        )}
                       </div>
                     </Form>
                   )}
