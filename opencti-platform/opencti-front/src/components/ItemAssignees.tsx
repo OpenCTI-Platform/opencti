@@ -7,6 +7,8 @@ import useGranted, { KNOWLEDGE_KNUPDATE } from '../utils/hooks/useGranted';
 import { useTheme } from '@mui/styles';
 import type { Theme } from './Theme';
 import FieldOrEmpty from './FieldOrEmpty';
+import { commitMutation, defaultCommitMutation } from '../relay/environment';
+import { stixDomainObjectMutation } from '@components/common/stix_domain_objects/StixDomainObjectHeader';
 
 type Node = {
   readonly entity_type: string;
@@ -16,14 +18,26 @@ type Node = {
 
 type Props = {
   assignees: ReadonlyArray<Node>;
+  stixDomainObjectId: string;
 };
 
-const ItemAssignees: FunctionComponent<Props> = ({ assignees }) => {
+const ItemAssignees: FunctionComponent<Props> = ({ assignees, stixDomainObjectId }) => {
   const theme = useTheme<Theme>();
   const canUpdateKnowledge = useGranted([KNOWLEDGE_KNUPDATE]);
-  const handleRemoveAssignee = (assigneeId: string) => {
-    console.log(assigneeId);
-    // TODO : Mutation
+  const handleRemoveAssignee = (removedId: string) => {
+    const values = assignees.filter((assignee) => assignee.id !== removedId);
+    const valuesIds = values.map((value) => value.id);
+    commitMutation({
+      mutation: stixDomainObjectMutation,
+      variables: {
+        id: stixDomainObjectId,
+        input: {
+          key: 'objectAssignee',
+          value: valuesIds,
+        }
+      },
+      ...defaultCommitMutation,
+    });
   };
   return (
     <FieldOrEmpty source={assignees}>

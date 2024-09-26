@@ -7,6 +7,8 @@ import { truncate } from '../utils/String';
 import { hexToRGB } from '../utils/Colors';
 import { CancelOutlined } from '@mui/icons-material';
 import Chip from '@mui/material/Chip';
+import { commitMutation, defaultCommitMutation } from '../relay/environment';
+import { stixDomainObjectMutation } from '@components/common/stix_domain_objects/StixDomainObjectHeader';
 
 interface ItemParticipantsProps {
   participants: {
@@ -14,14 +16,26 @@ interface ItemParticipantsProps {
     readonly id: string
     readonly name: string
   }[];
+  stixDomainObjectId: string;
 }
 
-const ItemParticipants: FunctionComponent<ItemParticipantsProps> = ({ participants }) => {
+const ItemParticipants: FunctionComponent<ItemParticipantsProps> = ({ participants, stixDomainObjectId }) => {
   const theme = useTheme<Theme>();
   const canUpdateKnowledge = useGranted([KNOWLEDGE_KNUPDATE]);
-  const handleRemoveParticipant = (participantId: string) => {
-    console.log(participantId);
-    // TODO : Mutation
+  const handleRemoveParticipant = (removedId: string) => {
+    const values = participants.filter((participant) => participant.id !== removedId);
+    const valuesIds = values.map((value) => value.id);
+    commitMutation({
+      mutation: stixDomainObjectMutation,
+      variables: {
+        id: stixDomainObjectId,
+        input: {
+          key: 'objectParticipant',
+          value: valuesIds,
+        }
+      },
+      ...defaultCommitMutation,
+    });
   };
   return (
     <FieldOrEmpty source={participants}>
