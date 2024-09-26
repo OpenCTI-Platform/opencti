@@ -1,14 +1,14 @@
 import React, { FunctionComponent } from 'react';
-import FieldOrEmpty from './FieldOrEmpty';
 import { useTheme } from '@mui/styles';
+import { CancelOutlined } from '@mui/icons-material';
+import Chip from '@mui/material/Chip';
+import { stixDomainObjectMutation } from '@components/common/stix_domain_objects/StixDomainObjectHeader';
+import FieldOrEmpty from './FieldOrEmpty';
 import type { Theme } from './Theme';
 import useGranted, { KNOWLEDGE_KNUPDATE } from '../utils/hooks/useGranted';
 import { truncate } from '../utils/String';
 import { hexToRGB } from '../utils/Colors';
-import { CancelOutlined } from '@mui/icons-material';
-import Chip from '@mui/material/Chip';
 import { commitMutation, defaultCommitMutation } from '../relay/environment';
-import { stixDomainObjectMutation } from '@components/common/stix_domain_objects/StixDomainObjectHeader';
 
 interface ItemParticipantsProps {
   participants: {
@@ -32,7 +32,7 @@ const ItemParticipants: FunctionComponent<ItemParticipantsProps> = ({ participan
         input: {
           key: 'objectParticipant',
           value: valuesIds,
-        }
+        },
       },
       ...defaultCommitMutation,
     });

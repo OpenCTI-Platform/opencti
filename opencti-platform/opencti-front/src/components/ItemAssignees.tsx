@@ -1,14 +1,14 @@
 import React, { FunctionComponent } from 'react';
 import Chip from '@mui/material/Chip';
+import { CancelOutlined } from '@mui/icons-material';
+import { useTheme } from '@mui/styles';
+import { stixDomainObjectMutation } from '@components/common/stix_domain_objects/StixDomainObjectHeader';
 import { truncate } from '../utils/String';
 import { hexToRGB } from '../utils/Colors';
-import { CancelOutlined } from '@mui/icons-material';
 import useGranted, { KNOWLEDGE_KNUPDATE } from '../utils/hooks/useGranted';
-import { useTheme } from '@mui/styles';
 import type { Theme } from './Theme';
 import FieldOrEmpty from './FieldOrEmpty';
 import { commitMutation, defaultCommitMutation } from '../relay/environment';
-import { stixDomainObjectMutation } from '@components/common/stix_domain_objects/StixDomainObjectHeader';
 
 type Node = {
   readonly entity_type: string;
@@ -34,7 +34,7 @@ const ItemAssignees: FunctionComponent<Props> = ({ assignees, stixDomainObjectId
         input: {
           key: 'objectAssignee',
           value: valuesIds,
-        }
+        },
       },
       ...defaultCommitMutation,
     });
