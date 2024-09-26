@@ -15,7 +15,6 @@ import { RoleEditionCapabilitiesLinesSearchQuery } from './__generated__/RoleEdi
 import { RoleEditionCapabilities_role$data } from './__generated__/RoleEditionCapabilities_role.graphql';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { SETTINGS } from '../../../../utils/hooks/useGranted';
-import useHelper from '../../../../utils/hooks/useHelper';
 import useSensitiveModifications from '../../../../utils/hooks/useSensitiveModifications';
 
 const roleEditionAddCapability = graphql`
