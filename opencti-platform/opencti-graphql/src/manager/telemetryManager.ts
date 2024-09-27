@@ -1,6 +1,4 @@
 import { Resource } from '@opentelemetry/resources';
-import { SEMRESATTRS_SERVICE_NAME, SEMRESATTRS_SERVICE_VERSION } from '@opentelemetry/semantic-conventions';
-import { SEMRESATTRS_SERVICE_INSTANCE_ID } from '@opentelemetry/semantic-conventions/build/src/resource/SemanticResourceAttributes';
 import { ConsoleMetricExporter, InstrumentType, MeterProvider } from '@opentelemetry/sdk-metrics';
 import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-http';
 import { AggregationTemporality } from '@opentelemetry/sdk-metrics/build/src/export/AggregationTemporality';
@@ -10,7 +8,7 @@ import { isNotEmptyField } from '../database/utils';
 import type { Settings } from '../generated/graphql';
 import { getClusterInformation, getSettings } from '../domain/settings';
 import { usersWithActiveSession } from '../database/session';
-import { TELEMETRY_SERVICE_NAME, TelemetryMeterManager } from '../telemetry/TelemetryMeterManager';
+import { TELEMETRY_SERVICE_NAME as CURRENT_SERVICE_NAME, TelemetryMeterManager } from '../telemetry/TelemetryMeterManager';
 import type { HandlerInput, ManagerDefinition } from './managerModule';
 import { registerManager } from './managerModule';
 import { MetricFileExporter } from '../telemetry/MetricFileExporter';
@@ -20,6 +18,7 @@ import { BatchExportingMetricReader } from '../telemetry/BatchExportingMetricRea
 import type { BasicStoreSettings } from '../types/settings';
 import { getHttpClient } from '../utils/http-client';
 import type { BasicStoreEntityConnector } from '../types/connector';
+import { TELEMETRY_SERVICE_NAME, TELEMETRY_SERVICE_INSTANCE_CREATION, TELEMETRY_SERVICE_INSTANCE_ID, TELEMETRY_SERVICE_VERSION } from '../utils/telemetry-attributes';
 
 const TELEMETRY_MANAGER_KEY = conf.get('telemetry_manager:lock_key');
 const TELEMETRY_CONSOLE_DEBUG = conf.get('telemetry_manager:console_debug') ?? false;
@@ -94,10 +93,10 @@ const telemetryInitializer = async (): Promise<HandlerInput> => {
   const settings = await getSettings(context) as Settings;
   const platformId = settings.id;
   const filigranResource = new Resource({
-    [SEMRESATTRS_SERVICE_NAME]: TELEMETRY_SERVICE_NAME,
-    [SEMRESATTRS_SERVICE_VERSION]: PLATFORM_VERSION,
-    [SEMRESATTRS_SERVICE_INSTANCE_ID]: platformId,
-    'service.instance.creation': settings.created_at
+    [TELEMETRY_SERVICE_NAME]: CURRENT_SERVICE_NAME,
+    [TELEMETRY_SERVICE_VERSION]: PLATFORM_VERSION,
+    [TELEMETRY_SERVICE_INSTANCE_ID]: platformId,
+    [TELEMETRY_SERVICE_INSTANCE_CREATION]: settings.created_at
   });
   const resource = Resource.default().merge(filigranResource);
   const filigranMeterProvider = new MeterProvider(({ resource, readers: filigranMetricReaders }));

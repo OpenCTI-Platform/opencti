@@ -1,5 +1,4 @@
 import * as R from 'ramda';
-import { SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION } from '@opentelemetry/semantic-conventions';
 import { UnsupportedError, ValidationError } from '../../config/errors';
 import type { BasicStoreEntityEntitySetting, Scale } from './entitySetting-types';
 import type { AuthContext, AuthUser } from '../../types/user';
@@ -11,6 +10,7 @@ import { telemetry } from '../../config/tracing';
 import { INPUT_MARKINGS } from '../../schema/general';
 import type { EditInput } from '../../generated/graphql';
 import { EditOperation } from '../../generated/graphql';
+import { TELEMETRY_DB_NAME, TELEMETRY_DB_OPERATION } from '../../utils/telemetry-attributes';
 
 const keyAvailableSetting = R.uniq(Object.values(availableSettings).flat());
 
@@ -118,8 +118,8 @@ export const validateEntitySettingCreation = async (context: AuthContext, user: 
   };
 
   return telemetry(context, user, 'ENTITY SETTING CREATION VALIDATION', {
-    [SEMATTRS_DB_NAME]: 'entity-setting',
-    [SEMATTRS_DB_OPERATION]: 'validation_update',
+    [TELEMETRY_DB_NAME]: 'entity-setting',
+    [TELEMETRY_DB_OPERATION]: 'validation_update',
   }, validateEntitySettingUpdateFn);
 };
 
@@ -135,7 +135,7 @@ export const validateEntitySettingUpdate = async (context: AuthContext, user: Au
   };
 
   return telemetry(context, user, 'ENTITY SETTING UPDATE VALIDATION', {
-    [SEMATTRS_DB_NAME]: 'entity-setting',
-    [SEMATTRS_DB_OPERATION]: 'validation_update',
+    [TELEMETRY_DB_NAME]: 'entity-setting',
+    [TELEMETRY_DB_OPERATION]: 'validation_update',
   }, validateEntitySettingUpdateFn);
 };

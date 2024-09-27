@@ -1,4 +1,3 @@
-import { SEMATTRS_ENDUSER_ID } from '@opentelemetry/semantic-conventions';
 import { MeterProvider, MetricReader, PeriodicExportingMetricReader } from '@opentelemetry/sdk-metrics';
 import { ValueType } from '@opentelemetry/api-metrics';
 import type { Counter } from '@opentelemetry/api-metrics/build/src/types/Metric';
@@ -12,6 +11,7 @@ import type { Gauge } from '@opentelemetry/api/build/src/metrics/Metric';
 import type { AuthContext, AuthUser } from '../types/user';
 import { ENABLED_METRICS, ENABLED_TRACING } from './conf';
 import { isNotEmptyField } from '../database/utils';
+import { TELEMETRY_ENDUSER_ID } from '../utils/telemetry-attributes';
 
 class MeterManager {
   meterProvider: MeterProvider;
@@ -114,7 +114,7 @@ export const telemetry = (context: AuthContext, user: AuthUser, spanName: string
   const tracingSpan = tracer.startSpan(spanName, {
     attributes: {
       'enduser.type': context.source,
-      [SEMATTRS_ENDUSER_ID]: user.id,
+      [TELEMETRY_ENDUSER_ID]: user.id,
       ...attrs
     },
     kind: 2 }, ctx);

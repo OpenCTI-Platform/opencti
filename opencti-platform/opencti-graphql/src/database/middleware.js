@@ -3,7 +3,6 @@ import * as R from 'ramda';
 import DataLoader from 'dataloader';
 import { Promise } from 'bluebird';
 import { compareUnsorted } from 'js-deep-equals';
-import { SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION } from '@opentelemetry/semantic-conventions';
 import * as jsonpatch from 'fast-json-patch';
 import {
   ALREADY_DELETED_ERROR,
@@ -203,6 +202,7 @@ import {
 import { buildEntityData, buildInnerRelation, buildRelationData } from './data-builder';
 import { deleteAllObjectFiles, moveAllFilesFromEntityToAnother, uploadToStorage } from './file-storage-helper';
 import { storeFileConverter } from './file-storage';
+import { TELEMETRY_DB_NAME, TELEMETRY_DB_OPERATION } from '../utils/telemetry-attributes';
 
 // region global variables
 const MAX_BATCH_SIZE = 300;
@@ -815,8 +815,8 @@ const inputResolveRefs = async (context, user, input, type, entitySetting) => {
     return inputResolved;
   };
   return telemetry(context, user, `INPUTS RESOLVE ${type}`, {
-    [SEMATTRS_DB_NAME]: 'middleware',
-    [SEMATTRS_DB_OPERATION]: 'resolver',
+    [TELEMETRY_DB_NAME]: 'middleware',
+    [TELEMETRY_DB_OPERATION]: 'resolver',
   }, inputResolveRefsFn);
 };
 const isRelationTargetGrants = (elementGrants, relation, type) => {

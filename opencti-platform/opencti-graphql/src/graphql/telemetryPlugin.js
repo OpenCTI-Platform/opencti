@@ -1,8 +1,8 @@
 import { head, includes } from 'ramda';
-import { SEMATTRS_DB_OPERATION, SEMATTRS_ENDUSER_ID, SEMATTRS_MESSAGING_MESSAGE_PAYLOAD_COMPRESSED_SIZE_BYTES } from '@opentelemetry/semantic-conventions';
 import { meterManager } from '../config/tracing';
 import { AUTH_FAILURE, AUTH_REQUIRED, FORBIDDEN_ACCESS } from '../config/errors';
 import { isEmptyField } from '../database/utils';
+import { TELEMETRY_DB_OPERATION, TELEMETRY_ENDUSER_ID, TELEMETRY_MESSAGING_MESSAGE_PAYLOAD_COMPRESSED_SIZE_BYTES } from '../utils/telemetry-attributes';
 
 const getRequestError = (context) => {
   const isSuccess = isEmptyField(context.errors) || context.errors.length === 0;
@@ -32,8 +32,8 @@ export default {
         tracingSpan = context.tracing.getTracer().startSpan(`${operationType} ${resolveContext.operationName}`, {
           attributes: {
             'enduser.type': context.source,
-            [SEMATTRS_DB_OPERATION]: operationType,
-            [SEMATTRS_ENDUSER_ID]: endUserId,
+            [TELEMETRY_DB_OPERATION]: operationType,
+            [TELEMETRY_ENDUSER_ID]: endUserId,
           },
           kind: 1,
         });
@@ -44,7 +44,7 @@ export default {
         const payloadSize = Buffer.byteLength(JSON.stringify(sendContext.request.variables || {}));
         // Tracing span can be null for invalid operations
         if (tracingSpan) {
-          tracingSpan.setAttribute(SEMATTRS_MESSAGING_MESSAGE_PAYLOAD_COMPRESSED_SIZE_BYTES, payloadSize);
+          tracingSpan.setAttribute(TELEMETRY_MESSAGING_MESSAGE_PAYLOAD_COMPRESSED_SIZE_BYTES, payloadSize);
         }
         if (requestError) {
           const operation = sendContext.request.query.startsWith('mutation') ? 'mutation' : 'query';

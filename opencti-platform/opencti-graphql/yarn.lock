@@ -10841,7 +10841,6 @@ __metadata:
     "@opentelemetry/sdk-node": "npm:0.53.0"
     "@opentelemetry/sdk-trace-base": "npm:1.26.0"
     "@opentelemetry/sdk-trace-node": "npm:1.26.0"
-    "@opentelemetry/semantic-conventions": "npm:1.27.0"
     "@rollup/plugin-graphql": "npm:2.0.4"
     "@types/archiver": "npm:6.0.2"
     "@types/bcryptjs": "npm:2.4.6"

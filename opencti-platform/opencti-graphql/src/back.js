@@ -13,17 +13,17 @@ import './manager/index';
 // import tracing
 import './config/tracing';
 // endregion
-import { SEMRESATTRS_SERVICE_NAME } from '@opentelemetry/semantic-conventions';
 import { platformStart } from './boot';
 import { ENABLED_EVENT_LOOP_MONITORING, ENABLED_TRACING, logApp } from './config/conf';
 import { isNotEmptyField } from './database/utils';
+import { TELEMETRY_SERVICE_NAME } from './utils/telemetry-attributes';
 
 // -- Apply telemetry
 // ------- Tracing
 if (ENABLED_TRACING) {
   const provider = new NodeTracerProvider({
     resource: Resource.default().merge(new Resource({
-      [SEMRESATTRS_SERVICE_NAME]: 'opencti-platform',
+      [TELEMETRY_SERVICE_NAME]: 'opencti-platform',
     })),
   });
   // OTLP - JAEGER ...

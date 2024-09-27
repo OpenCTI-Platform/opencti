@@ -1,5 +1,4 @@
 import { PythonShell } from 'python-shell';
-import { SEMATTRS_DB_NAME } from '@opentelemetry/semantic-conventions';
 import * as nodecallspython from 'node-calls-python';
 import nconf from 'nconf';
 import { DEV_MODE, logApp } from '../config/conf';
@@ -7,6 +6,7 @@ import { UnknownError, UnsupportedError } from '../config/errors';
 import { telemetry } from '../config/tracing';
 import { cleanupIndicatorPattern, STIX_PATTERN_TYPE } from '../utils/syntax';
 import { isEmptyField } from '../database/utils';
+import { TELEMETRY_DB_NAME } from '../utils/telemetry-attributes';
 
 const PYTHON_EXECUTOR = nconf.get('app:python_execution') ?? 'native';
 const USE_NATIVE_EXEC = PYTHON_EXECUTOR === 'native';
@@ -70,7 +70,7 @@ export const execChildPython = async (context, user, scriptPath, scriptName, arg
     });
   };
   return telemetry(context, user, `PYTHON ${scriptName}`, {
-    [SEMATTRS_DB_NAME]: 'python_testing_engine',
+    [TELEMETRY_DB_NAME]: 'python_testing_engine',
   }, execPythonTestingProcessFn);
 };
 const createChildStixPattern = async (context, user, observableType, observableValue) => {
@@ -119,7 +119,7 @@ const execNativePython = async (context, user, script, ...args) => {
     throw UnknownError('[BRIDGE] execNativePython error', result);
   };
   return telemetry(context, user, `PYTHON ${script.fn}`, {
-    [SEMATTRS_DB_NAME]: 'python_runtime_engine',
+    [TELEMETRY_DB_NAME]: 'python_runtime_engine',
   }, execNativePythonFn);
 };
 const createNativeStixPattern = async (context, user, observableType, observableValue) => {

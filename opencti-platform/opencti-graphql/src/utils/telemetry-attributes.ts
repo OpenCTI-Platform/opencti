@@ -1,0 +1,9 @@
+export const TELEMETRY_SERVICE_NAME = 'service.name';
+export const TELEMETRY_SERVICE_VERSION = 'service.version';
+export const TELEMETRY_SERVICE_INSTANCE_ID = 'service.instance.id';
+export const TELEMETRY_SERVICE_INSTANCE_CREATION = 'service.instance.creation';
+export const TELEMETRY_ENDUSER_ID = 'enduser.id';
+export const TELEMETRY_DB_NAME = 'db.name';
+export const TELEMETRY_DB_OPERATION = 'db.operation';
+export const TELEMETRY_DB_STATEMENT = 'db.statement';
+export const TELEMETRY_MESSAGING_MESSAGE_PAYLOAD_COMPRESSED_SIZE_BYTES = 'messaging.message_payload_compressed_size_bytes';

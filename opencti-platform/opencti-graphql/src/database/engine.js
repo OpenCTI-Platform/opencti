@@ -8,7 +8,6 @@ import { AwsSigv4Signer } from '@opensearch-project/opensearch/aws';
 import { Promise as BluePromise } from 'bluebird';
 import * as R from 'ramda';
 import semver from 'semver';
-import { SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION, SEMATTRS_DB_STATEMENT } from '@opentelemetry/semantic-conventions';
 import * as jsonpatch from 'fast-json-patch';
 import {
   buildPagination,
@@ -165,6 +164,7 @@ import { ENTITY_TYPE_DELETE_OPERATION } from '../modules/deleteOperation/deleteO
 import { buildEntityData } from './data-builder';
 import { controlUserConfidenceAgainstElement } from '../utils/confidence-level';
 import { enrichWithRemoteCredentials } from '../config/credentials';
+import { TELEMETRY_DB_NAME, TELEMETRY_DB_OPERATION, TELEMETRY_DB_STATEMENT } from '../utils/telemetry-attributes';
 import { isStixCyberObservable } from '../schema/stixCyberObservable';
 
 const ELK_ENGINE = 'elk';
@@ -352,9 +352,9 @@ export const elRawSearch = (context, user, types, query) => {
     return parsedSearch;
   });
   return telemetry(context, user, `SELECT ${Array.isArray(types) ? types.join(', ') : (types || 'None')}`, {
-    [SEMATTRS_DB_NAME]: 'search_engine',
-    [SEMATTRS_DB_OPERATION]: 'read',
-    [SEMATTRS_DB_STATEMENT]: JSON.stringify(query),
+    [TELEMETRY_DB_NAME]: 'search_engine',
+    [TELEMETRY_DB_OPERATION]: 'read',
+    [TELEMETRY_DB_STATEMENT]: JSON.stringify(query),
   }, elRawSearchFn);
 };
 export const elRawDeleteByQuery = (query) => engine.deleteByQuery(query).then((r) => oebp(r));
@@ -3879,8 +3879,8 @@ export const elIndexElements = async (context, user, indexingType, elements) => 
     return transformedElements.length;
   };
   return telemetry(context, user, `INSERT ${indexingType}`, {
-    [SEMATTRS_DB_NAME]: 'search_engine',
-    [SEMATTRS_DB_OPERATION]: 'insert',
+    [TELEMETRY_DB_NAME]: 'search_engine',
+    [TELEMETRY_DB_OPERATION]: 'insert',
   }, elIndexElementsFn);
 };
 

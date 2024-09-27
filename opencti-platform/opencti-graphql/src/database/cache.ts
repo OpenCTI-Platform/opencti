@@ -1,4 +1,3 @@
-import { SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION } from '@opentelemetry/semantic-conventions';
 import type { BasicStoreIdentifier, StoreEntity, StoreRelation } from '../types/store';
 import { logApp } from '../config/conf';
 import { UnsupportedError } from '../config/errors';
@@ -12,6 +11,7 @@ import { convertStoreToStix } from './stix-converter';
 import { ENTITY_TYPE_PLAYBOOK } from '../modules/playbook/playbook-types';
 import { type BasicStoreEntityPublicDashboard, ENTITY_TYPE_PUBLIC_DASHBOARD } from '../modules/publicDashboard/publicDashboard-types';
 import { wait } from './utils';
+import { TELEMETRY_DB_NAME, TELEMETRY_DB_OPERATION } from '../utils/telemetry-attributes';
 
 const STORE_ENTITIES_LINKS: Record<string, string[]> = {
   // Filters must be reset depending on stream and triggers modifications
@@ -101,8 +101,8 @@ const getEntitiesFromCache = async <T extends BasicStoreIdentifier | StixObject>
     return fromCache.values ?? (type === ENTITY_TYPE_RESOLVED_FILTERS ? new Map() : []);
   };
   return telemetry(context, user, `CACHE ${type}`, {
-    [SEMATTRS_DB_NAME]: 'cache_engine',
-    [SEMATTRS_DB_OPERATION]: 'select',
+    [TELEMETRY_DB_NAME]: 'cache_engine',
+    [TELEMETRY_DB_OPERATION]: 'select',
   }, getEntitiesFromCacheFn);
 };
 

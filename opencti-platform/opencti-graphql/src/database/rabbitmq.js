@@ -1,6 +1,5 @@
 import amqp from 'amqplib/callback_api';
 import util from 'util';
-import { SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION } from '@opentelemetry/semantic-conventions';
 import { LRUCache } from 'lru-cache';
 import conf, { booleanConf, configureCA, loadCert, logApp } from '../config/conf';
 import { DatabaseError } from '../config/errors';
@@ -8,6 +7,7 @@ import { SYSTEM_USER } from '../utils/access';
 import { telemetry } from '../config/tracing';
 import { isEmptyField, RABBIT_QUEUE_PREFIX } from './utils';
 import { getHttpClient } from '../utils/http-client';
+import { TELEMETRY_DB_NAME, TELEMETRY_DB_OPERATION } from '../utils/telemetry-attributes';
 import { listEntities } from './middleware-loader';
 import { ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
 
@@ -171,8 +171,8 @@ export const metrics = async (context, user) => {
     return { overview, consumers, queues: platformQueues };
   };
   return telemetry(context, user, 'QUEUE metrics', {
-    [SEMATTRS_DB_NAME]: 'messaging_engine',
-    [SEMATTRS_DB_OPERATION]: 'metrics',
+    [TELEMETRY_DB_NAME]: 'messaging_engine',
+    [TELEMETRY_DB_OPERATION]: 'metrics',
   }, metricApi);
 };
 
