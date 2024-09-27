@@ -1,4 +1,3 @@
-import { SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION } from '@opentelemetry/semantic-conventions';
 import * as R from 'ramda';
 import { ENTITY_TYPE_STATUS, ENTITY_TYPE_STATUS_TEMPLATE } from '../schema/internalObject';
 import { createEntity, deleteElementById, internalDeleteElementById, updateAttribute } from '../database/middleware';
@@ -27,6 +26,7 @@ import { elCount } from '../database/engine';
 import { publishUserAction } from '../listener/UserActionListener';
 import { validateSetting } from '../modules/entitySetting/entitySetting-validators';
 import { telemetry } from '../config/tracing';
+import { TELEMETRY_DB_NAME, TELEMETRY_DB_OPERATION } from '../utils/telemetry-attributes';
 
 export const findTemplateById = (context: AuthContext, user: AuthUser, statusTemplateId: string): StatusTemplate => {
   return storeLoadById(context, user, statusTemplateId, ENTITY_TYPE_STATUS_TEMPLATE) as unknown as StatusTemplate;
@@ -60,8 +60,8 @@ export const getTypeStatuses = async (context: AuthContext, user: AuthUser, type
     return findAll(context, user, args);
   };
   return telemetry(context, user, 'QUERY type statuses', {
-    [SEMATTRS_DB_NAME]: 'statuses_domain',
-    [SEMATTRS_DB_OPERATION]: 'read',
+    [TELEMETRY_DB_NAME]: 'statuses_domain',
+    [TELEMETRY_DB_OPERATION]: 'read',
   }, getTypeStatusesFn);
 };
 export const batchStatusesByType = async (context: AuthContext, user: AuthUser, types: string[]) => {
@@ -81,8 +81,8 @@ export const batchStatusesByType = async (context: AuthContext, user: AuthUser, 
     return types.map((type) => statusesGrouped[type] || []);
   };
   return telemetry(context, user, 'BATCH type statuses', {
-    [SEMATTRS_DB_NAME]: 'statuses_domain',
-    [SEMATTRS_DB_OPERATION]: 'read',
+    [TELEMETRY_DB_NAME]: 'statuses_domain',
+    [TELEMETRY_DB_OPERATION]: 'read',
   }, batchStatusesByTypeFn);
 };
 export const createStatusTemplate = async (context: AuthContext, user: AuthUser, input: StatusTemplateAddInput) => {

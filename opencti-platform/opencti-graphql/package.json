@@ -72,7 +72,6 @@
     "@opentelemetry/sdk-node": "0.53.0",
     "@opentelemetry/sdk-trace-base": "1.26.0",
     "@opentelemetry/sdk-trace-node": "1.26.0",
-    "@opentelemetry/semantic-conventions": "1.27.0",
     "ajv": "8.17.1",
     "amqplib": "0.10.4",
     "antlr4": "4.13.2",

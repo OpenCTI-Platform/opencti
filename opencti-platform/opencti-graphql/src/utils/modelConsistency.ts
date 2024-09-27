@@ -1,4 +1,3 @@
-import { SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION } from '@opentelemetry/semantic-conventions';
 import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 import { checkRelationshipRef, checkStixCoreRelationshipMapping } from '../database/stix';
 import { FunctionalError } from '../config/errors';
@@ -6,6 +5,7 @@ import type { BasicObject } from '../generated/graphql';
 import { telemetry } from '../config/tracing';
 import type { AuthContext, AuthUser } from '../types/user';
 import { isStixRefRelationship } from '../schema/stixRefRelationship';
+import { TELEMETRY_DB_NAME, TELEMETRY_DB_OPERATION } from './telemetry-attributes';
 
 type ConsistencyObject = Pick<BasicObject, 'entity_type'>;
 
@@ -34,8 +34,8 @@ export const checkRelationConsistency = async (
     });
   };
   return telemetry(context, user, 'CONSISTENCY relation', {
-    [SEMATTRS_DB_NAME]: 'search_engine',
-    [SEMATTRS_DB_OPERATION]: 'read',
+    [TELEMETRY_DB_NAME]: 'search_engine',
+    [TELEMETRY_DB_OPERATION]: 'read',
   }, checkRelationConsistencyFn);
 };
 export const isRelationConsistent = async (

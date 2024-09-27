@@ -1,6 +1,5 @@
 import * as R from 'ramda';
 import Ajv from 'ajv';
-import { SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION } from '@opentelemetry/semantic-conventions';
 import { schemaAttributesDefinition } from './schema-attributes';
 import { UnsupportedError, ValidationError } from '../config/errors';
 import type { AttributeConfiguration, BasicStoreEntityEntitySetting } from '../modules/entitySetting/entitySetting-types';
@@ -17,6 +16,7 @@ import { utcDate } from '../utils/format';
 import { schemaRelationsRefDefinition } from './schema-relationsRef';
 import { extendedErrors } from '../config/conf';
 import { isUserHasCapability, KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS, KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE } from '../utils/access';
+import { TELEMETRY_DB_NAME, TELEMETRY_DB_OPERATION } from '../utils/telemetry-attributes';
 
 const ajv = new Ajv();
 
@@ -99,8 +99,8 @@ const validateFormatSchemaAttributes = async (context: AuthContext, user: AuthUs
     });
   };
   return telemetry(context, user, 'SCHEMA ATTRIBUTES VALIDATION', {
-    [SEMATTRS_DB_NAME]: 'validation',
-    [SEMATTRS_DB_OPERATION]: 'schema_attributes',
+    [TELEMETRY_DB_NAME]: 'validation',
+    [TELEMETRY_DB_OPERATION]: 'schema_attributes',
   }, validateFormatSchemaAttributesFn);
 };
 
@@ -147,8 +147,8 @@ const validateMandatoryAttributesOnCreation = async (
     validateMandatoryAttributes(user, input, entitySetting, true, inputValidValue);
   };
   return telemetry(context, user, 'MANDATORY CREATION VALIDATION', {
-    [SEMATTRS_DB_NAME]: 'validation',
-    [SEMATTRS_DB_OPERATION]: 'mandatory',
+    [TELEMETRY_DB_NAME]: 'validation',
+    [TELEMETRY_DB_OPERATION]: 'mandatory',
   }, validateMandatoryAttributesOnCreationFn);
 };
 const validateMandatoryAttributesOnUpdate = async (
@@ -165,8 +165,8 @@ const validateMandatoryAttributesOnUpdate = async (
     validateMandatoryAttributes(user, input, entitySetting, false, inputValidValue);
   };
   return telemetry(context, user, 'MANDATORY UPDATE VALIDATION', {
-    [SEMATTRS_DB_NAME]: 'validation',
-    [SEMATTRS_DB_OPERATION]: 'mandatory',
+    [TELEMETRY_DB_NAME]: 'validation',
+    [TELEMETRY_DB_OPERATION]: 'mandatory',
   }, validateMandatoryAttributesOnUpdateFn);
 };
 
@@ -193,8 +193,8 @@ export const validateInputCreation = async (
     }
   };
   return telemetry(context, user, 'CREATION VALIDATION', {
-    [SEMATTRS_DB_NAME]: 'validation',
-    [SEMATTRS_DB_OPERATION]: 'creation',
+    [TELEMETRY_DB_NAME]: 'validation',
+    [TELEMETRY_DB_OPERATION]: 'creation',
   }, validateInputCreationFn);
 };
 
@@ -243,7 +243,7 @@ export const validateInputUpdate = async (
     }
   };
   return telemetry(context, user, 'UPDATE VALIDATION', {
-    [SEMATTRS_DB_NAME]: 'validation',
-    [SEMATTRS_DB_OPERATION]: 'update',
+    [TELEMETRY_DB_NAME]: 'validation',
+    [TELEMETRY_DB_OPERATION]: 'update',
   }, validateInputUpdateFn);
 };

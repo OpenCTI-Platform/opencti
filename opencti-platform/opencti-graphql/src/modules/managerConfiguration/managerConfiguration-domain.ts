@@ -1,4 +1,3 @@
-import { SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION } from '@opentelemetry/semantic-conventions';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { listAllEntities, storeLoadById } from '../../database/middleware-loader';
 import { createEntity, loadEntity, patchAttribute, updateAttribute } from '../../database/middleware';
@@ -10,6 +9,7 @@ import type { EditInput, FilterGroup } from '../../generated/graphql';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { notify } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
+import { TELEMETRY_DB_NAME, TELEMETRY_DB_OPERATION } from '../../utils/telemetry-attributes';
 
 export const findById = async (context: AuthContext, user: AuthUser, id: string): Promise<BasicStoreEntityManagerConfiguration> => {
   return storeLoadById(context, user, id, ENTITY_TYPE_MANAGER_CONFIGURATION);
@@ -28,8 +28,8 @@ export const findByManagerId = async (context: AuthContext, user: AuthUser, mana
     });
   };
   return telemetry(context, user, 'QUERY managerConfiguration', {
-    [SEMATTRS_DB_NAME]: 'managerConfiguration_domain',
-    [SEMATTRS_DB_OPERATION]: 'read',
+    [TELEMETRY_DB_NAME]: 'managerConfiguration_domain',
+    [TELEMETRY_DB_OPERATION]: 'read',
   }, findByTypeFn);
 };
 
