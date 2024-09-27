@@ -13,6 +13,8 @@ from pycti.utils.opencti_stix2_utils import (
     SUPPORTED_STIX_ENTITY_OBJECTS,
 )
 
+OPENCTI_EXTENSION = "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba"
+
 supported_types = (
     SUPPORTED_STIX_ENTITY_OBJECTS  # entities
     + list(STIX_CYBER_OBSERVABLE_MAPPING.keys())  # observables
@@ -21,8 +23,11 @@ supported_types = (
 
 
 def is_id_supported(key):
-    id_type = key.split("--")[0]
-    return id_type in supported_types
+    if "--" in key:
+        id_type = key.split("--")[0]
+        return id_type in supported_types
+    # If not a stix id, don't try to filter
+    return True
 
 
 class OpenCTIStix2Splitter:
@@ -30,6 +35,18 @@ class OpenCTIStix2Splitter:
         self.cache_index = {}
         self.cache_refs = {}
         self.elements = []
+
+    def get_internal_ids_in_extension(self, item):
+        ids = []
+        if item.get("x_opencti_id"):
+            ids.append(item["x_opencti_id"])
+        if (
+            item.get("extensions")
+            and item["extensions"].get(OPENCTI_EXTENSION)
+            and item["extensions"].get(OPENCTI_EXTENSION).get("id")
+        ):
+            ids.append(item["extensions"][OPENCTI_EXTENSION]["id"])
+        return ids
 
     def enlist_element(
         self, item_id, raw_data, cleanup_inconsistent_bundle, parent_acc
@@ -173,6 +190,8 @@ class OpenCTIStix2Splitter:
             if is_compatible:
                 self.elements.append(item)
             self.cache_index[item_id] = item
+            for internal_id in self.get_internal_ids_in_extension(item):
+                self.cache_index[internal_id] = item
 
         return nb_deps
 
@@ -202,6 +221,8 @@ class OpenCTIStix2Splitter:
         # Build flat list of elements
         for item in bundle_data["objects"]:
             raw_data[item["id"]] = item
+            for internal_id in self.get_internal_ids_in_extension(item):
+                raw_data[internal_id] = item
         for item in bundle_data["objects"]:
             self.enlist_element(item["id"], raw_data, cleanup_inconsistent_bundle, [])
 

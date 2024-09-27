@@ -43,7 +43,7 @@ def test_split_mono_entity_bundle():
     expectations, bundles = stix_splitter.split_bundle_with_expectations(content)
     assert expectations == 1
     json_bundle = json.loads(bundles[0])["objects"][0]
-    assert json_bundle["created_by_ref"] == "identity--not-available"
+    assert json_bundle["created_by_ref"] == "fa42a846-8d90-4e51-bc29-71d5b4802168"
     # Split with cleanup_inconsistent_bundle
     stix_splitter = OpenCTIStix2Splitter()
     expectations, bundles = stix_splitter.split_bundle_with_expectations(
@@ -74,6 +74,27 @@ def test_split_capec_bundle():
         content = file.read()
     expectations, bundles = stix_splitter.split_bundle_with_expectations(content)
     assert expectations == 2610
+
+
+def test_split_internal_ids_bundle():
+    stix_splitter = OpenCTIStix2Splitter()
+    with open("./tests/data/bundle_with_internal_ids.json") as file:
+        content = file.read()
+    expectations, bundles = stix_splitter.split_bundle_with_expectations(content)
+    assert expectations == 4
+    # Split with cleanup_inconsistent_bundle
+    stix_splitter = OpenCTIStix2Splitter()
+    expectations, bundles = stix_splitter.split_bundle_with_expectations(
+        bundle=content, cleanup_inconsistent_bundle=True
+    )
+    assert expectations == 4
+    for bundle in bundles:
+        json_bundle = json.loads(bundle)
+        object_json = json_bundle["objects"][0]
+        if object_json["id"] == "relationship--10e8c71d-a1b4-4e35-bca8-2e4a3785ea04":
+            assert (
+                object_json["created_by_ref"] == "ced3e53e-9663-4c96-9c60-07d2e778d931"
+            )
 
 
 def test_split_missing_refs_bundle():
