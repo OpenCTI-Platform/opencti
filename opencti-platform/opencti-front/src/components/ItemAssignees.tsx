@@ -9,6 +9,7 @@ import useGranted, { KNOWLEDGE_KNUPDATE } from '../utils/hooks/useGranted';
 import type { Theme } from './Theme';
 import FieldOrEmpty from './FieldOrEmpty';
 import { commitMutation, defaultCommitMutation } from '../relay/environment';
+import Tooltip from '@mui/material/Tooltip';
 
 type Node = {
   readonly entity_type: string;
@@ -42,24 +43,26 @@ const ItemAssignees: FunctionComponent<Props> = ({ assignees, stixDomainObjectId
   return (
     <FieldOrEmpty source={assignees}>
       {assignees.map((assignee) => (
-        <Chip
-          key={assignee.id}
-          variant="outlined"
-          label={truncate(assignee.name, 25)}
-          style={{
-            color: theme.palette.primary.main,
-            borderColor: theme.palette.primary.main,
-            backgroundColor: hexToRGB(theme.palette.primary.main),
-            margin: '0 7px 7px 0',
-            borderRadius: theme.borderRadius,
-          }}
-          onDelete={canUpdateKnowledge ? () => (handleRemoveAssignee(assignee.id)) : undefined}
-          deleteIcon={
-            <CancelOutlined
-              style={{ color: theme.palette.primary.main }}
-            />
-          }
-        />
+        <Tooltip title={assignee.name}>
+          <Chip
+            key={assignee.id}
+            variant="outlined"
+            label={truncate(assignee.name, 25)}
+            style={{
+              color: theme.palette.primary.main,
+              borderColor: theme.palette.primary.main,
+              backgroundColor: hexToRGB(theme.palette.primary.main),
+              margin: '0 7px 7px 0',
+              borderRadius: theme.borderRadius,
+            }}
+            onDelete={canUpdateKnowledge ? () => (handleRemoveAssignee(assignee.id)) : undefined}
+            deleteIcon={
+              <CancelOutlined
+                style={{ color: theme.palette.primary.main }}
+              />
+            }
+          />
+        </Tooltip>
       ))}
     </FieldOrEmpty>
   );

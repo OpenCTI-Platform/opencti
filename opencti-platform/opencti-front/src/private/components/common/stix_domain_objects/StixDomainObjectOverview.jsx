@@ -300,44 +300,56 @@ class StixDomainObjectOverview extends Component {
                 disabled={!stixDomainObject.workflowEnabled}
               />
               {displayAssignees && (
-                <div>
-                  <Typography
-                    variant="h3"
-                    gutterBottom={true}
-                    style={{ marginTop: 20 }}
-                  >
-                    {t('Assignees')}
-                    <IconButton
-                      color="primary"
-                      aria-label={t('Add new assignees')}
-                      title={t('Add new assignees')}
-                      onClick={this.handleToggleAddAssignee.bind(this)}
+                <>
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <Typography
+                      variant="h3"
+                      gutterBottom={true}
+                      style={{ marginTop: 20 }}
                     >
-                      <Add fontSize="small" />
-                    </IconButton>
-                  </Typography>
+                      {t('Assignees')}
+                    </Typography>
+                    <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                      <IconButton
+                        color="primary"
+                        aria-label={t('Add new assignees')}
+                        title={t('Add new assignees')}
+                        onClick={this.handleToggleAddAssignee.bind(this)}
+                        style={{ margin: '0 0 -14px 0' }}
+                        size="large"
+                      >
+                        <Add fontSize="small" />
+                      </IconButton>
+                    </Security>
+                  </div>
                   <ItemAssignees assignees={stixDomainObject.objectAssignee ?? []} stixDomainObjectId={stixDomainObject.id} />
-                </div>
+                </>
               )}
               {displayParticipants && (
-                <div>
-                  <Typography
-                    variant="h3"
-                    gutterBottom={true}
-                    style={{ marginTop: 20 }}
-                  >
-                    {t('Participants')}
-                    <IconButton
-                      color="primary"
-                      aria-label={t('Add new participant')}
-                      title={t('Add new participant')}
-                      onClick={this.handleToggleAddParticipant.bind(this)}
+                <>
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <Typography
+                      variant="h3"
+                      gutterBottom={true}
+                      style={{ marginTop: 20 }}
                     >
-                      <Add fontSize="small" />
-                    </IconButton>
-                  </Typography>
+                      {t('Participants')}
+                    </Typography>
+                    <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                      <IconButton
+                        color="primary"
+                        aria-label={t('Add new participant')}
+                        title={t('Add new participant')}
+                        onClick={this.handleToggleAddParticipant.bind(this)}
+                        style={{ margin: '0 0 -14px 0' }}
+                        size="large"
+                      >
+                        <Add fontSize="small" />
+                      </IconButton>
+                    </Security>
+                  </div>
                   <ItemParticipants participants={stixDomainObject.objectParticipant ?? []} stixDomainObjectId={stixDomainObject.id} />
-                </div>
+                </>
               )}
               <Typography
                 variant="h3"
