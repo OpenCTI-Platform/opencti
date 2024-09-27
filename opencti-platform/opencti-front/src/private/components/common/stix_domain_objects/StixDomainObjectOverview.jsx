@@ -41,7 +41,6 @@ import ItemOpenVocab from '../../../../components/ItemOpenVocab';
 import ItemParticipants from '../../../../components/ItemParticipants';
 import Transition from '../../../../components/Transition';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import { convertAssignees, convertParticipants } from '../../../../utils/edition';
 
 const styles = (theme) => ({
   paper: {
@@ -91,39 +90,45 @@ class StixDomainObjectOverview extends Component {
     this.setState({ openAddParticipant: !this.state.openAddParticipant });
   }
 
-  onSubmitAssignees(values, { setSubmitting }) {
+  onSubmitAssignees(values, { setSubmitting, resetForm }) {
     const { stixDomainObject } = this.props;
+    const currentAssigneesIds = stixDomainObject.objectAssignee.map((assignee) => assignee.id);
     const valuesIds = values.objectAssignee.map((assignee) => assignee.value);
+    const allIds = [...new Set([...currentAssigneesIds, ...valuesIds])]; // 'new Set' to merge without duplicates
     commitMutation({
       mutation: stixDomainObjectMutation,
       variables: {
         id: stixDomainObject.id,
         input: {
           key: 'objectAssignee',
-          value: valuesIds,
+          value: allIds,
         },
       },
       onCompleted: () => {
         setSubmitting(false);
+        resetForm();
         this.handleToggleAddAssignee();
       },
     });
   }
 
-  onSubmitParticipant(values, { setSubmitting }) {
+  onSubmitParticipant(values, { setSubmitting, resetForm }) {
     const { stixDomainObject } = this.props;
+    const currentParticipantsIds = stixDomainObject.objectParticipant.map((participant) => participant.id);
     const valuesIds = values.objectParticipant.map((participant) => participant.value);
+    const allIds = [...new Set([...currentParticipantsIds, ...valuesIds])]; // 'new Set' to merge without duplicates
     commitMutation({
       mutation: stixDomainObjectMutation,
       variables: {
         id: stixDomainObject.id,
         input: {
           key: 'objectParticipant',
-          value: valuesIds,
+          value: allIds,
         },
       },
       onCompleted: () => {
         setSubmitting(false);
+        resetForm();
         this.handleToggleAddParticipant();
       },
     });
@@ -149,10 +154,10 @@ class StixDomainObjectOverview extends Component {
     });
   }
 
-  initialValues = {
-    objectAssignee: convertAssignees(this.props.stixDomainObject),
-    objectParticipant: convertParticipants(this.props.stixDomainObject),
-  };
+  // initialValues = {
+  //   objectAssignee: convertAssignees(this.props.stixDomainObject),
+  //   objectParticipant: convertParticipants(this.props.stixDomainObject),
+  // };
 
   render() {
     const {
@@ -450,11 +455,11 @@ class StixDomainObjectOverview extends Component {
           </DialogActions>
         </Dialog>
         <Formik
-          initialValues={this.initialValues}
+          initialValues={{}}
           onSubmit={this.onSubmitAssignees.bind(this)}
           onReset={this.handleToggleAddAssignee.bind(this)}
         >
-          {({ submitForm }) => (
+          {({ submitForm, handleReset }) => (
             <Dialog
               PaperProps={{ elevation: 1 }}
               open={this.state.openAddAssignee}
@@ -471,7 +476,7 @@ class StixDomainObjectOverview extends Component {
               </DialogContent>
               <DialogActions>
                 <Button
-                  onClick={this.handleToggleAddAssignee.bind(this)}
+                  onClick={handleReset}
                 >
                   {t('Close')}
                 </Button>
@@ -486,7 +491,7 @@ class StixDomainObjectOverview extends Component {
           )}
         </Formik>
         <Formik
-          initialValues={this.initialValues}
+          initialValues={{}}
           onSubmit={this.onSubmitParticipant.bind(this)}
           onReset={this.handleToggleAddParticipant.bind(this)}
         >

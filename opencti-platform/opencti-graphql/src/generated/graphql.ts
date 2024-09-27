@@ -24205,7 +24205,7 @@ export type StixDomainObject = {
   objectLabel?: Maybe<Array<Label>>;
   objectMarking?: Maybe<Array<MarkingDefinition>>;
   objectOrganization?: Maybe<Array<Organization>>;
-  objectParticipant?: Maybe<Array<Maybe<Participant>>>;
+  objectParticipant?: Maybe<Array<Participant>>;
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   parent_types: Array<Maybe<Scalars['String']['output']>>;
@@ -38629,7 +38629,7 @@ export type StixDomainObjectResolvers<ContextType = any, ParentType extends Reso
   objectLabel?: Resolver<Maybe<Array<ResolversTypes['Label']>>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<Array<ResolversTypes['MarkingDefinition']>>, ParentType, ContextType>;
   objectOrganization?: Resolver<Maybe<Array<ResolversTypes['Organization']>>, ParentType, ContextType>;
-  objectParticipant?: Resolver<Maybe<Array<Maybe<ResolversTypes['Participant']>>>, ParentType, ContextType>;
+  objectParticipant?: Resolver<Maybe<Array<ResolversTypes['Participant']>>, ParentType, ContextType>;
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<StixDomainObjectObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<StixDomainObjectOpinionsArgs>>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
