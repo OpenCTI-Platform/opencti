@@ -1,5 +1,6 @@
 import React, { FunctionComponent, useCallback, useEffect, useState } from 'react';
 import IconButton from '@mui/material/IconButton';
+import * as Yup from 'yup';
 import Slider from '@mui/material/Slider';
 import { ThumbsUpDownOutlined } from '@mui/icons-material';
 import DialogTitle from '@mui/material/DialogTitle';
@@ -28,6 +29,7 @@ import {
 } from './__generated__/StixCoreObjectOpinionsRadarDialogMyOpinionQuery.graphql';
 import { MESSAGING$ } from '../../../../relay/environment';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import { yupShapeConditionalRequired, useDynamicSchemaCreationValidation, useIsMandatoryAttribute } from '../../../../utils/hooks/useEntitySettings';
 
 export const stixCoreObjectOpinionsRadarDialogMyOpinionQuery = graphql`
   query StixCoreObjectOpinionsRadarDialogMyOpinionQuery($id: String!) {
@@ -61,6 +63,8 @@ interface OpinionAddSubmit {
   objects?: string[];
 }
 
+const OPINION_TYPE = 'Opinion';
+
 const StixCoreObjectOpinionsDialogComponent: FunctionComponent<
 StixCoreObjectOpinionsRadarDialogProps
 > = ({
@@ -75,6 +79,16 @@ StixCoreObjectOpinionsRadarDialogProps
     stixCoreObjectOpinionsRadarDialogMyOpinionQuery,
     queryRef,
   );
+  const { mandatoryAttributes } = useIsMandatoryAttribute(OPINION_TYPE);
+  const basicShape = yupShapeConditionalRequired({
+    explanation: Yup.string(),
+  }, mandatoryAttributes);
+  const opinionValidator = useDynamicSchemaCreationValidation(
+    mandatoryAttributes,
+    basicShape,
+    ['opinion'],
+  );
+  console.log(opinionValidator);
 
   const myOpinionValue = opinionOptions.find(
     (m) => m.label === myOpinion?.opinion,
@@ -175,6 +189,9 @@ StixCoreObjectOpinionsRadarDialogProps
                 explanation: myOpinion?.explanation ?? '',
                 confidence: myOpinion?.confidence ?? 75,
               }}
+              validationSchema={opinionValidator}
+              validateOnChange={false} // Validation will occur on submission, required fields all have *'s
+              validateOnBlur={false} // Validation will occur on submission, required fields all have *'s
               onSubmit={onSubmit}
               onReset={handleClose}
             >
@@ -222,6 +239,7 @@ StixCoreObjectOpinionsRadarDialogProps
                       component={MarkdownField}
                       name="explanation"
                       label={t_i18n('Explanation')}
+                      required={(mandatoryAttributes.includes('explanation'))}
                       fullWidth={true}
                       multiline={true}
                       rows="4"
