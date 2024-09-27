@@ -4,7 +4,7 @@
     {
       "id": "marking-definition--fa42a846-8d90-4e51-bc29-71d5b4802168",
       "created": "2017-06-01T00:00:00.000Z",
-      "created_by_ref": "identity--not-available",
+      "created_by_ref": "fa42a846-8d90-4e51-bc29-71d5b4802168",
       "definition": {
         "statement": "Copyright 2015-2024, The MITRE Corporation. MITRE ATT&CK and ATT&CK are registered trademarks of The MITRE Corporation."
       },
