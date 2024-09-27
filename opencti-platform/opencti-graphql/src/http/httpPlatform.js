@@ -361,6 +361,7 @@ const createApp = async (app) => {
           const strategy = passport._strategy(provider);
           if (strategy) {
             if (strategy.logout_remote === true && strategy.logout) {
+              logApp.debug('Logout: requesting remote logout using authentication strategy parameters.');
               req.user = user; // Needed for passport
               strategy.logout(req, (error, request) => {
                 if (error) {
@@ -371,6 +372,7 @@ const createApp = async (app) => {
                 }
               });
             } else {
+              logApp.debug('Logout: OpenCTI logout only, remote logout on IDP not requested.');
               res.redirect(referer);
             }
           } else {

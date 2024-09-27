@@ -317,7 +317,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
           }
           // endregion
           const openIdScope = R.uniq(openIdScopes).join(' ');
-          const options = { client, passReqToCallback: true, params: { scope: openIdScope } };
+          const options = { logout_remote: mappedConfig.logout_remote, client, passReqToCallback: true, params: { scope: openIdScope } };
           const debugCallback = (message, meta) => logApp.info(message, meta);
           const openIDStrategy = new OpenIDStrategy(options, debugCallback, (_, tokenset, userinfo, done) => {
             logApp.info('[OPENID] Successfully logged', { userinfo });
@@ -386,6 +386,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
           openIDStrategy.logout = (_, callback) => {
             const isSpecificUri = isNotEmptyField(config.logout_callback_url);
             const endpointUri = issuer.end_session_endpoint ? issuer.end_session_endpoint : `${config.issuer}/oidc/logout`;
+            logApp.debug(`[OPENID] logout configuration, isSpecificUri:${isSpecificUri}, issuer.end_session_endpoint:${issuer.end_session_endpoint}, final endpointUri: ${endpointUri}`);
             if (isSpecificUri) {
               const logoutUri = `${endpointUri}?post_logout_redirect_uri=${config.logout_callback_url}`;
               callback(null, logoutUri);
