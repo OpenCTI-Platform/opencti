@@ -200,7 +200,7 @@ const Role = ({
                       <ListItemText primary={t_i18n('Allow modification of sensitive configuration')} />
                       <ListItemSecondaryAction>
                         <Checkbox
-                          checked={role.is_sensitive_changes_allow}
+                          checked={role.is_sensitive_changes_allow ? role.is_sensitive_changes_allow : false}
                           disabled={true}
                         />
                       </ListItemSecondaryAction>
