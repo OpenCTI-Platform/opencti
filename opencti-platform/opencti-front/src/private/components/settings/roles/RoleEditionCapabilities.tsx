@@ -9,6 +9,7 @@ import List from '@mui/material/List';
 import { PreloadedQuery } from 'react-relay/relay-hooks/EntryPointTypes';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import LocalPoliceOutlined from '@mui/icons-material/LocalPoliceOutlined';
+import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { useFormatter } from '../../../../components/i18n';
 import { RoleEditionCapabilitiesLinesSearchQuery } from './__generated__/RoleEditionCapabilitiesLinesSearchQuery.graphql';
@@ -58,8 +59,6 @@ const roleEditionPatchAllowSensitiveConf = graphql`
     }
   }
 `;
-
-
 
 export const roleEditionCapabilitiesLinesSearch = graphql`
   query RoleEditionCapabilitiesLinesSearchQuery {
@@ -119,40 +118,40 @@ const RoleEditionCapabilitiesComponent: FunctionComponent<RoleEditionCapabilitie
   };
 
   const handleSensitiveToggle = (
-      event: React.ChangeEvent<HTMLInputElement>,
+    event: React.ChangeEvent<HTMLInputElement>,
   ) => {
     const roleId = role.id;
-      commitPatchAllowSensitiveConf({
-        variables: {
-          id: roleId,
-          input: {
-            key:'is_sensitive_changes_allow',
-            value: event.target.checked,
-          },
+    commitPatchAllowSensitiveConf({
+      variables: {
+        id: roleId,
+        input: {
+          key: 'is_sensitive_changes_allow',
+          value: event.target.checked,
         },
-      });
-      // And invalid me ?? or invalidSession
+      },
+    });
+    // And invalid me ?? or invalidSession
   };
 
-  const {ffenabled, isSensitiveModifAllowed} = useSensitiveModifications();
+  const { ffenabled } = useSensitiveModifications();
 
   if (capabilities && capabilities.edges) {
     return (
       <List dense={true}>
         {ffenabled && (
         <ListItem
-            key='sensitive'
-            divider={true}
-            style={{paddingLeft: 0}}
+          key='sensitive'
+          divider={true}
+          style={{ paddingLeft: 0 }}
         >
           <ListItemIcon style={{ minWidth: 32 }}>
-            <LocalPoliceOutlined fontSize="small" />
+            <VerifiedUserIcon fontSize="small" />
           </ListItemIcon>
           <ListItemText primary={t_i18n('Allow modification of sensitive configuration')} />
           <ListItemSecondaryAction>
             <Checkbox
               onChange={(event) => handleSensitiveToggle(event)}
-              checked={isSensitiveModifAllowed}
+              checked={role.is_sensitive_changes_allow}
               disabled={false}
             />
           </ListItemSecondaryAction>
@@ -209,6 +208,7 @@ const RoleEditionCapabilities = createFragmentContainer(
     role: graphql`
       fragment RoleEditionCapabilities_role on Role {
         id
+        is_sensitive_changes_allow
         capabilities {
           id
           name

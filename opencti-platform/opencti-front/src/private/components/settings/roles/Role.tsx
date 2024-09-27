@@ -8,6 +8,10 @@ import ListItem from '@mui/material/ListItem';
 import { Link } from 'react-router-dom';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
+import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
+import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
+import Checkbox from '@mui/material/Checkbox';
+import List from '@mui/material/List';
 import AccessesMenu from '../AccessesMenu';
 import { useFormatter } from '../../../../components/i18n';
 import { Role_role$data, Role_role$key } from './__generated__/Role_role.graphql';
@@ -24,6 +28,7 @@ import { groupsSearchQuery } from '../Groups';
 import { GroupsSearchQuery } from '../__generated__/GroupsSearchQuery.graphql';
 import ItemIcon from '../../../../components/ItemIcon';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
+import useSensitiveModifications from '../../../../utils/hooks/useSensitiveModifications';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -61,6 +66,7 @@ const roleFragment = graphql`
       name
       description
     }
+    is_sensitive_changes_allow
   }
 `;
 
@@ -81,6 +87,7 @@ const Role = ({
         : null))
       .filter((n) => n !== null && n !== undefined);
   };
+  const { ffenabled, isSensitiveModifAllowed } = useSensitiveModifications();
   const role = useFragment<Role_role$key>(roleFragment, roleData);
   const queryRef = useQueryLoading<RoleEditionCapabilitiesLinesSearchQuery>(
     roleEditionCapabilitiesLinesSearch,
@@ -96,10 +103,20 @@ const Role = ({
         >
           {role.name}
         </Typography>
-        <div className={classes.popover}>
-          <RolePopover roleId={role.id} />
-        </div>
-        <div className="clearfix" />
+        {ffenabled && (
+          isSensitiveModifAllowed
+            ? <div className={classes.popover}>
+              <RolePopover roleId={role.id}/>
+            </div>
+            : <></>
+        )}
+        {!ffenabled && (
+          <div className={classes.popover}>
+            <RolePopover roleId={role.id}/>
+          </div>
+        )
+        }
+        <div className="clearfix"/>
       </div>
       <Grid
         container={true}
@@ -162,12 +179,53 @@ const Role = ({
             </Grid>
           </Paper>
         </Grid>
+        <Grid item xs={6} >
+          <Typography variant="h4" gutterBottom={true}>
+            {t_i18n('Allow modification of sensitive configuration')}
+          </Typography>
+          <Paper classes={{ root: classes.paper }} variant="outlined">
+            <Grid container={true} spacing={3}>
+              <Grid item xs={12} style={{ paddingTop: 10 }}>
+                {ffenabled && (
+                  <List dense={true}>
+                    <ListItem
+                      key='sensitive'
+                      divider={true}
+                      dense={true}
+                      style={{ paddingLeft: 0 }}
+                    >
+                      <ListItemIcon style={{ minWidth: 32 }}>
+                        <VerifiedUserIcon fontSize="small" />
+                      </ListItemIcon>
+                      <ListItemText primary={t_i18n('Allow modification of sensitive configuration')} />
+                      <ListItemSecondaryAction>
+                        <Checkbox
+                          checked={role.is_sensitive_changes_allow}
+                          disabled={true}
+                        />
+                      </ListItemSecondaryAction>
+                    </ListItem>
+                  </List>
+                )}
+              </Grid>
+            </Grid>
+          </Paper>
+        </Grid>
       </Grid>
       <QueryRenderer
         query={roleEditionQuery}
         variables={{ id: role.id }}
         render={({ props }: { props: RolePopoverEditionQuery$data }) => {
           if (props && props.role) {
+            if (ffenabled) {
+              return (
+                isSensitiveModifAllowed
+                  ? <RoleEdition
+                      role={props.role}
+                    />
+                  : <></>
+              );
+            }
             return (
               <RoleEdition
                 role={props.role}

@@ -30,6 +30,7 @@ import ItemIcon from '../../../../components/ItemIcon';
 import GroupHiddenTypesChipList from './GroupHiddenTypesChipList';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import { checkIsMarkingAllowed } from '../../../../utils/markings/markingsFiltering';
+import useSensitiveModifications from '../../../../utils/hooks/useSensitiveModifications';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -123,6 +124,7 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const group = useFragment<Group_group$key>(groupFragment, groupData);
+  const { ffenabled, isSensitiveModifAllowed } = useSensitiveModifications();
   const markingsSort = R.sortWith([
     R.ascend(R.propOr('TLP', 'definition_type')),
     R.descend(R.propOr(0, 'x_opencti_order')),
@@ -153,9 +155,19 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
       >
         {group.name}
       </Typography>
-      <div className={classes.popover}>
-        <GroupPopover groupId={group.id} />
-      </div>
+      {ffenabled && (
+        isSensitiveModifAllowed
+          ? <div className={classes.popover}>
+            <GroupPopover groupId={group.id} />
+          </div>
+          : <></>
+      )}
+      {!ffenabled && (
+        <div className={classes.popover}>
+          <GroupPopover groupId={group.id} />
+        </div>
+      )
+      }
       <div className="clearfix" />
       <Grid
         container={true}
@@ -458,7 +470,19 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
         <Triggers recipientId={group.id} filterKey="authorized_members.id" />
         <GroupUsers groupId={group.id} />
       </Grid>
-      <GroupEdition groupId={group.id} />
+      {ffenabled && (
+        isSensitiveModifAllowed
+          ? <div className={classes.popover}>
+            <GroupEdition groupId={group.id} />
+          </div>
+          : <></>
+      )}
+      {!ffenabled && (
+        <div className={classes.popover}>
+          <GroupEdition groupId={group.id} />
+        </div>
+      )
+      }
     </div>
   );
 };
