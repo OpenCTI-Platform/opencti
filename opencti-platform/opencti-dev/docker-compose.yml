@@ -45,6 +45,49 @@ services:
       - 5601:5601
     depends_on:
       - opencti-dev-elasticsearch
+
+  # Disabled by default, to run use:
+  # docker compose --profile opensearch up -d
+  # in opencti configuration:
+  # "elasticsearch": {
+  #     "url": "http://localhost:9201",
+  #     "username": "admin",
+  #     "password": "GraceH00per!"
+  opencti-dev-opensearch:
+    profiles: [ opensearch ]
+    container_name: opencti-dev-opensearch
+    image: opensearchproject/opensearch:2.17.0
+    volumes:
+      - osdata:/usr/share/opensearch/data
+      - ossnapshots:/usr/share/opensearch/snapshots
+    environment:
+      - discovery.type=single-node
+      - plugins.security.disabled=true
+      - bootstrap.memory_lock=true
+      - OPENSEARCH_JAVA_OPTS=-Xms2G -Xmx2G
+      - OPENSEARCH_INITIAL_ADMIN_PASSWORD=GraceH00per! # minimum 8 character password and must contain at least one uppercase letter, one lowercase letter, one digit, and one special character that is strong.
+    ulimits:
+      memlock:
+        soft: -1 # Set memlock to unlimited (no soft or hard limit)
+        hard: -1
+      nofile:
+        soft: 65536 # Maximum number of open files for the opensearch user - set to at least 65536
+        hard: 65536
+    ports:
+      - 9201:9200
+      - 9600:9600
+  opencti-dev-opensearch-dashboards:
+    profiles: [ opensearch ]
+    image: opensearchproject/opensearch-dashboards:2.17.0
+    container_name: opencti-dev-opensearch-dashboards
+    ports:
+      - 5602:5601 # Map host port 5601 to container port 5601
+    expose:
+      - 5602 # Expose port 5601 for web access to OpenSearch Dashboards
+    environment:
+      OPENSEARCH_HOSTS: '["http://opencti-dev-opensearch:9200"]' # Define the OpenSearch nodes that OpenSearch Dashboards will query
+      DISABLE_SECURITY_DASHBOARDS_PLUGIN: true
+
   opencti-dev-minio:
     container_name: opencti-dev-minio
     image: minio/minio:latest
@@ -164,4 +207,8 @@ volumes:
   esdata:
     driver: local
   essnapshots:
+    driver: local
+  osdata:
+    driver: local
+  ossnapshots:
     driver: local
