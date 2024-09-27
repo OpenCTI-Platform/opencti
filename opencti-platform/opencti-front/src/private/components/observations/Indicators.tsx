@@ -166,11 +166,7 @@ const Indicators = () => {
       percentWidth: 10,
       render: ({ created }, { nsdt }) => <Tooltip title={nsdt(created)}>{nsdt(created)}</Tooltip>,
     },
-    valid_until: {
-      label: 'Valid until',
-      percentWidth: 10,
-      isSortable: true,
-    },
+    valid_until: { },
     objectMarking: {
       percentWidth: 10,
       isSortable: isRuntimeSort ?? false,
