@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import Chip from '@mui/material/Chip';
-import { CancelOutlined } from '@mui/icons-material';
+import { CancelOutlined, Person, PersonOutline } from '@mui/icons-material';
 import { useTheme } from '@mui/styles';
 import { stixDomainObjectMutation } from '@components/common/stix_domain_objects/StixDomainObjectHeader';
 import { truncate } from '../utils/String';
@@ -47,11 +47,11 @@ const ItemAssignees: FunctionComponent<Props> = ({ assignees, stixDomainObjectId
           <Chip
             key={assignee.id}
             variant="outlined"
-            label={truncate(assignee.name, 25)}
+            icon={<PersonOutline color={'primary'} />}
+            label={truncate(assignee.name, 25).toUpperCase()}
             style={{
               color: theme.palette.primary.main,
               borderColor: theme.palette.primary.main,
-              backgroundColor: hexToRGB(theme.palette.primary.main),
               margin: '0 7px 7px 0',
               borderRadius: theme.borderRadius,
             }}
