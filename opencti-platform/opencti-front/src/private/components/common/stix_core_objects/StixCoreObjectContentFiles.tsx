@@ -30,7 +30,7 @@ import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import SelectField from '../../../../components/fields/SelectField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import useBuildOutcomeFromTemplate, { template2 } from '../../../../utils/templatesVariablesUtils';
+import buildOutcomeFromTemplate, { template2 } from '../../../../utils/templatesVariablesUtils';
 
 const useStyles = makeStyles((theme) => ({
   drawerPaper: {
@@ -196,12 +196,14 @@ const StixCoreObjectContentFiles = ({
     ) {
       name += '.html';
     }
+
     // const templateContent = template1.content; // TODO remove hardcoded
-    const templateContent = useBuildOutcomeFromTemplate({
+    const templateContent = buildOutcomeFromTemplate({
       containerId: stixCoreObjectId,
       template: template2,
       max_content_markings: [],
     });
+
     const blob = new Blob([templateContent], {
       type,
     });

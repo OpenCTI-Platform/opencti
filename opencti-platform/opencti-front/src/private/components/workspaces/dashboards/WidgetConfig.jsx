@@ -18,7 +18,17 @@ import CardContent from '@mui/material/CardContent';
 import Button from '@mui/material/Button';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
-import { AddOutlined, CancelOutlined, CloudUploadOutlined, FormatShapesOutlined, LibraryBooksOutlined, MapOutlined, PieChartOutlined, WidgetsOutlined } from '@mui/icons-material';
+import {
+  AddOutlined,
+  CancelOutlined,
+  CloudUploadOutlined,
+  FormatShapesOutlined,
+  FormatSizeOutlined,
+  LibraryBooksOutlined,
+  MapOutlined,
+  PieChartOutlined,
+  WidgetsOutlined,
+} from '@mui/icons-material';
 import {
   AlignHorizontalLeft,
   ChartAreasplineVariant,
@@ -162,6 +172,15 @@ const visualizationTypes = [
     availableParameters: [],
     isRelationships: false,
     isEntities: false,
+    isAudits: false,
+  },
+  {
+    key: 'attribute',
+    name: 'Attribute',
+    category: 'attribute',
+    availableParameters: [],
+    isRelationships: false,
+    isEntities: true,
     isAudits: false,
   },
   {
@@ -572,6 +591,8 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
         return <Counter fontSize="large" color="primary"/>;
       case 'text':
         return <FormatShapesOutlined fontSize="large" color="primary"/>;
+      case 'attribute':
+        return <FormatSizeOutlined fontSize="large" color="primary"/>;
       case 'heatmap':
         return <ChartBubble fontSize="large" color="primary"/>;
       case 'line':
@@ -905,6 +926,35 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
             .map((_, i) => {
               return (
                 <div key={i}>
+                  {getCurrentCategory() === 'attribute' && (
+                    <div
+                      style={{
+                        display: 'flex',
+                        width: '100%',
+                        marginTop: 20,
+                      }}
+                    >
+                      <FormControl fullWidth={true} style={{ flex: 1 }}>
+                        <InputLabel id="relative" size="small">
+                          {t_i18n('Attribute')}
+                        </InputLabel>
+                        <Select
+                          labelId="relative"
+                          size="small"
+                          fullWidth={true}
+                          value={dataSelection[i].attribute ?? 'entity_type'}
+                          onChange={(event) => handleChangeDataValidationParameter(i, 'attribute', event.target.value)}
+                        >
+                          <MenuItem key="representative.main" value="representative.main">
+                            {t_i18n('Representative')}
+                          </MenuItem>
+                          <MenuItem key="entity_type" value="entity_type">
+                            {t_i18n('Entity type')}
+                          </MenuItem>
+                        </Select>
+                      </FormControl>
+                    </div>
+                  )}
                   {(getCurrentCategory() === 'distribution'
                     || getCurrentCategory() === 'list') && (
                     <TextField

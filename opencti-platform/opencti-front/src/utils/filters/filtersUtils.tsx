@@ -442,23 +442,15 @@ export const addFilter = (
   mode = 'or',
 ): FilterGroup | undefined => {
   const filterFromParameters = {
-    id: uuid(),
     key,
     values: Array.isArray(value) ? value : [value],
     operator,
     mode,
   };
-  if (!filters) { // Add on nothing = create a new filter
-    return {
-      mode,
-      filters: [filterFromParameters],
-      filterGroups: [],
-    };
-  }
   return {
     mode: 'and',
     filters: [filterFromParameters],
-    filterGroups: [filters],
+    filterGroups: filters ? [filters] : [],
   };
 };
 

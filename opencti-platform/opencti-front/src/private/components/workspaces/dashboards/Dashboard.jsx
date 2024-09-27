@@ -5,6 +5,7 @@ import RGL, { WidthProvider } from 'react-grid-layout';
 import Paper from '@mui/material/Paper';
 import makeStyles from '@mui/styles/makeStyles';
 import { v4 as uuid } from 'uuid';
+import StixCoreObjectAttributeWidget from '@components/common/stix_core_objects/StixCoreObjectAttributeWidget';
 import AuditsPolarArea from '../../common/audits/AuditsPolarArea';
 import StixCoreObjectsPolarArea from '../../common/stix_core_objects/StixCoreObjectsPolarArea';
 import StixRelationshipsPolarArea from '../../common/stix_relationships/StixRelationshipsPolarArea';
@@ -223,6 +224,14 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
       : config.startDate;
     const endDate = relativeDate ? getDayStartDate() : config.endDate;
     switch (widget.type) {
+      case 'attribute':
+        return (
+          <StixCoreObjectAttributeWidget
+            dataSelection={widget.dataSelection}
+            parameters={widget.parameters}
+            variant="inLine"
+          />
+        );
       case 'bookmark':
         return (
           <StixDomainObjectBookmarksList
