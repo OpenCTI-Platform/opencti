@@ -75,7 +75,7 @@
     "@opentelemetry/semantic-conventions": "1.25.1",
     "ajv": "8.17.1",
     "amqplib": "0.10.4",
-    "antlr4": "4.13.1",
+    "antlr4": "4.13.2",
     "archiver": "7.0.1",
     "archiver-zip-encrypted": "2.0.0",
     "async-lock": "1.4.1",
