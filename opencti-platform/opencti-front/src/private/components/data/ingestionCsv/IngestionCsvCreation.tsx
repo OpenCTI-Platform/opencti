@@ -290,39 +290,39 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
             showConfidence
           />
           {
-                  queryRef && (
-                    <React.Suspense fallback={<Loader variant={LoaderVariant.inElement}/>}>
-                      <Box sx={{ width: '100%', marginTop: 5 }}>
-                        <Alert
-                          severity="info"
-                          variant="outlined"
-                          style={{ padding: '0px 10px 0px 10px' }}
-                        >
-                          {t_i18n('Depending on the selected CSV mapper configurations, marking definition levels can be set in the dedicated field.')}<br/>
-                          <br/>
-                          {t_i18n('If the CSV mapper is configured with "Use default markings definitions of the user", the default markings of the user responsible for data creation are applied to the ingested entities. Otherwise, you can choose markings to apply.')}<br/>
-                        </Alert>
-                      </Box>
-                      <CsvMapperField
-                        name="csv_mapper_id"
-                        onChange={(_, option) => onCsvMapperSelection(option, { setFieldValue, values })}
-                        isOptionEqualToValue={(option: Option, { value }: Option) => option.value === value}
-                        queryRef={queryRef}
-                      />
-                    </React.Suspense>
-                  )
-                }
+              queryRef && (
+              <React.Suspense fallback={<Loader variant={LoaderVariant.inElement}/>}>
+                <Box sx={{ width: '100%', marginTop: 5 }}>
+                  <Alert
+                    severity="info"
+                    variant="outlined"
+                    style={{ padding: '0px 10px 0px 10px' }}
+                  >
+                    {t_i18n('Depending on the selected CSV mapper configurations, marking definition levels can be set in the dedicated field.')}<br/>
+                    <br/>
+                    {t_i18n('If the CSV mapper is configured with "Use default markings definitions of the user", the default markings of the user responsible for data creation are applied to the ingested entities. Otherwise, you can choose markings to apply.')}<br/>
+                  </Alert>
+                </Box>
+                <CsvMapperField
+                  name="csv_mapper_id"
+                  onChange={(_, option) => onCsvMapperSelection(option, { setFieldValue, values })}
+                  isOptionEqualToValue={(option: Option, { value }: Option) => option.value === value}
+                  queryRef={queryRef}
+                />
+              </React.Suspense>
+              )
+          }
           {
-                hasUserChoiceCsvMapper && (
-                  <ObjectMarkingField
-                    name="markings"
-                    label={t_i18n('Marking definition levels')}
-                    style={fieldSpacingContainerStyle}
-                    allowedMarkingOwnerId={isGranted ? creatorId : undefined}
-                    setFieldValue={setFieldValue}
-                  />
-                )
-              }
+              hasUserChoiceCsvMapper && (
+              <ObjectMarkingField
+                name="markings"
+                label={t_i18n('Marking definition levels')}
+                style={fieldSpacingContainerStyle}
+                allowedMarkingOwnerId={isGranted ? creatorId : undefined}
+                setFieldValue={setFieldValue}
+              />
+              )
+          }
           <Field
             component={SelectField}
             variant="standard"
