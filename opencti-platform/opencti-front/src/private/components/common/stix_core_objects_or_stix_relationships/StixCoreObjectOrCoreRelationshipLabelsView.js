@@ -26,6 +26,7 @@ import { truncate } from '../../../../utils/String';
 import useGranted, { KNOWLEDGE_KNUPDATE, SETTINGS_SETLABELS } from '../../../../utils/hooks/useGranted';
 import CommitMessage from '../form/CommitMessage';
 import Transition from '../../../../components/Transition';
+import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -151,51 +152,54 @@ const StixCoreObjectOrCoreRelationshipLabelsView = (props) => {
   const onReset = () => setOpenAdd(false);
 
   return (
-    <div style={{ marginTop: marginTop || 0 }}>
-      <Typography variant="h3" gutterBottom={true} style={{ float: 'left' }}>
-        {t_i18n('Labels')}
-      </Typography>
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
-        <IconButton
-          color="primary"
-          aria-label={t_i18n('Add new labels')}
-          title={t_i18n('Add new labels')}
-          onClick={handleOpenAdd}
-          style={{ float: 'left', margin: '-15px 0 0 -2px' }}
-          size="large"
-        >
-          <Add fontSize="small" />
-        </IconButton>
-      </Security>
-      <div className="clearfix" />
+    <>
+      <div style={{ display: 'flex', alignItems: 'center' }}>
+        <Typography variant="h3" gutterBottom={true} style={{ marginTop: 20 }}>
+          {t_i18n('Labels')}
+        </Typography>
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <IconButton
+            color="primary"
+            aria-label={t_i18n('Add new labels')}
+            title={t_i18n('Add new labels')}
+            onClick={handleOpenAdd}
+            style={{ margin: '0 0 -14px 0' }}
+            size="large"
+          >
+            <Add fontSize="small" />
+          </IconButton>
+        </Security>
+      </div>
       <div className={classes.objectLabel}>
-        {map(
-          (label) => (
-            <Tooltip title={label.value}>
-              <Chip
-                key={label.id}
-                variant="outlined"
-                classes={{ root: classes.label }}
-                label={truncate(label.value, 25)}
-                style={{
-                  color: label.color,
-                  borderColor: label.color,
-                  backgroundColor: hexToRGB(label.color),
-                }}
-                onDelete={canUpdateKnowledge ? () => (enableReferences
-                  ? handleOpenCommitDelete(label)
-                  : handleRemoveLabel(label.id)) : undefined}
-                deleteIcon={
-                  <CancelOutlined
-                    className={classes.deleteIcon}
-                    style={{ color: label.color }}
-                  />
-                }
-              />
-            </Tooltip>
-          ),
-          (labels ?? []),
-        )}
+        <FieldOrEmpty source={labels}>
+          {map(
+            (label) => (
+              <Tooltip title={label.value}>
+                <Chip
+                  key={label.id}
+                  variant="outlined"
+                  classes={{ root: classes.label }}
+                  label={truncate(label.value, 25)}
+                  style={{
+                    color: label.color,
+                    borderColor: label.color,
+                    backgroundColor: hexToRGB(label.color),
+                  }}
+                  onDelete={canUpdateKnowledge ? () => (enableReferences
+                    ? handleOpenCommitDelete(label)
+                    : handleRemoveLabel(label.id)) : undefined}
+                  deleteIcon={
+                    <CancelOutlined
+                      className={classes.deleteIcon}
+                      style={{ color: label.color }}
+                    />
+                  }
+                />
+              </Tooltip>
+            ),
+            (labels ?? []),
+          )}
+        </FieldOrEmpty>
         {enableReferences && (
           <Formik initialValues={{}} onSubmit={onSubmitDeleteLabel}>
             {({ submitForm, isSubmitting, setFieldValue, values }) => (
@@ -303,7 +307,7 @@ const StixCoreObjectOrCoreRelationshipLabelsView = (props) => {
           </Dialog>
         )}
       </Formik>
-    </div>
+    </>
   );
 };
 

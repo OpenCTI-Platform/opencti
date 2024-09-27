@@ -9,6 +9,7 @@ import useGranted, { KNOWLEDGE_KNUPDATE } from '../utils/hooks/useGranted';
 import { truncate } from '../utils/String';
 import { hexToRGB } from '../utils/Colors';
 import { commitMutation, defaultCommitMutation } from '../relay/environment';
+import Tooltip from '@mui/material/Tooltip';
 
 interface ItemParticipantsProps {
   participants: {
@@ -40,24 +41,26 @@ const ItemParticipants: FunctionComponent<ItemParticipantsProps> = ({ participan
   return (
     <FieldOrEmpty source={participants}>
       {participants.map((participant) => (
-        <Chip
-          key={participant.id}
-          variant="outlined"
-          label={truncate(participant.name, 25)}
-          style={{
-            color: theme.palette.primary.main,
-            borderColor: theme.palette.primary.main,
-            backgroundColor: hexToRGB(theme.palette.primary.main),
-            margin: '0 7px 7px 0',
-            borderRadius: theme.borderRadius,
-          }}
-          onDelete={canUpdateKnowledge ? () => (handleRemoveParticipant(participant.id)) : undefined}
-          deleteIcon={
-            <CancelOutlined
-              style={{ color: theme.palette.primary.main }}
-            />
-          }
-        />
+        <Tooltip title={participant.name}>
+          <Chip
+            key={participant.id}
+            variant="outlined"
+            label={truncate(participant.name, 25)}
+            style={{
+              color: theme.palette.primary.main,
+              borderColor: theme.palette.primary.main,
+              backgroundColor: hexToRGB(theme.palette.primary.main),
+              margin: '0 7px 7px 0',
+              borderRadius: theme.borderRadius,
+            }}
+            onDelete={canUpdateKnowledge ? () => (handleRemoveParticipant(participant.id)) : undefined}
+            deleteIcon={
+              <CancelOutlined
+                style={{ color: theme.palette.primary.main }}
+              />
+            }
+          />
+        </Tooltip>
       ))}
     </FieldOrEmpty>
   );
