@@ -434,7 +434,7 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
                 variant="contained"
                 color="secondary"
                 onClick={submitForm}
-                disabled={isSubmitting}
+                disabled={isSubmitting || isCreateDisabled}
                 classes={{ root: classes.button }}
               >
                 {t_i18n('Duplicate')}
@@ -444,7 +444,7 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
                 variant="contained"
                 color="secondary"
                 onClick={submitForm}
-                disabled={isSubmitting}
+                disabled={isSubmitting || isCreateDisabled}
                 classes={{ root: classes.button }}
               >
                 {t_i18n('Create')}
