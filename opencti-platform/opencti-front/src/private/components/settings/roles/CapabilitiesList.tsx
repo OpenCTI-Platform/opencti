@@ -4,11 +4,15 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
+import Checkbox from '@mui/material/Checkbox';
+import LocalPoliceOutlined from '@mui/icons-material/LocalPoliceOutlined';
 import { useFormatter } from '../../../../components/i18n';
 import { roleEditionCapabilitiesLinesSearch } from './RoleEditionCapabilities';
 import { RoleEditionCapabilitiesLinesSearchQuery } from './__generated__/RoleEditionCapabilitiesLinesSearchQuery.graphql';
 import { Role_role$data } from './__generated__/Role_role.graphql';
 import ItemIcon from '../../../../components/ItemIcon';
+import useSensitiveModifications from '../../../../utils/hooks/useSensitiveModifications';
 
 interface CapabilitiesListProps {
   queryRef: PreloadedQuery<RoleEditionCapabilitiesLinesSearchQuery>;
@@ -27,8 +31,23 @@ const CapabilitiesList: FunctionComponent<CapabilitiesListProps> = ({
     roleEditionCapabilitiesLinesSearch,
     queryRef,
   );
+  const { ffenabled } = useSensitiveModifications();
+
   return (
     <List>
+      {ffenabled && (
+      <ListItem
+        key='sensitive'
+        dense={true}
+        divider={true}
+        style={{ paddingLeft: 0 }}
+      >
+        <ListItemIcon style={{ minWidth: 32 }}>
+          <ItemIcon type="Capability" />
+        </ListItemIcon>
+        <ListItemText primary={t_i18n('Allow modification of sensitive configuration')} />
+      </ListItem>
+      )}
       {capabilities?.edges?.map((edge, i) => {
         const capability = edge?.node;
         if (capability) {

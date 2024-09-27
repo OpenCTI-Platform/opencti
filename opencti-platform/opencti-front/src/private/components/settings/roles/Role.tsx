@@ -8,10 +8,6 @@ import ListItem from '@mui/material/ListItem';
 import { Link } from 'react-router-dom';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
-import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
-import Checkbox from '@mui/material/Checkbox';
-import List from '@mui/material/List';
 import AccessesMenu from '../AccessesMenu';
 import { useFormatter } from '../../../../components/i18n';
 import { Role_role$data, Role_role$key } from './__generated__/Role_role.graphql';
@@ -174,38 +170,6 @@ const Role = ({
                   <React.Suspense>
                     <CapabilitiesList queryRef={queryRef} role={role} />
                   </React.Suspense>
-                )}
-              </Grid>
-            </Grid>
-          </Paper>
-        </Grid>
-        <Grid item xs={6} >
-          <Typography variant="h4" gutterBottom={true}>
-            {t_i18n('Allow modification of sensitive configuration')}
-          </Typography>
-          <Paper classes={{ root: classes.paper }} variant="outlined">
-            <Grid container={true} spacing={3}>
-              <Grid item xs={12} style={{ paddingTop: 10 }}>
-                {ffenabled && (
-                  <List dense={true}>
-                    <ListItem
-                      key='sensitive'
-                      divider={true}
-                      dense={true}
-                      style={{ paddingLeft: 0 }}
-                    >
-                      <ListItemIcon style={{ minWidth: 32 }}>
-                        <VerifiedUserIcon fontSize="small" />
-                      </ListItemIcon>
-                      <ListItemText primary={t_i18n('Allow modification of sensitive configuration')} />
-                      <ListItemSecondaryAction>
-                        <Checkbox
-                          checked={role.is_sensitive_changes_allow ? role.is_sensitive_changes_allow : false}
-                          disabled={true}
-                        />
-                      </ListItemSecondaryAction>
-                    </ListItem>
-                  </List>
                 )}
               </Grid>
             </Grid>

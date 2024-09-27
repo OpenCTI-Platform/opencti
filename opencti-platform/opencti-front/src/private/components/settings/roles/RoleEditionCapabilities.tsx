@@ -9,7 +9,6 @@ import List from '@mui/material/List';
 import { PreloadedQuery } from 'react-relay/relay-hooks/EntryPointTypes';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import LocalPoliceOutlined from '@mui/icons-material/LocalPoliceOutlined';
-import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { useFormatter } from '../../../../components/i18n';
 import { RoleEditionCapabilitiesLinesSearchQuery } from './__generated__/RoleEditionCapabilitiesLinesSearchQuery.graphql';
@@ -145,7 +144,7 @@ const RoleEditionCapabilitiesComponent: FunctionComponent<RoleEditionCapabilitie
           style={{ paddingLeft: 0 }}
         >
           <ListItemIcon style={{ minWidth: 32 }}>
-            <VerifiedUserIcon fontSize="small" />
+            <LocalPoliceOutlined fontSize="small" />
           </ListItemIcon>
           <ListItemText primary={t_i18n('Allow modification of sensitive configuration')} />
           <ListItemSecondaryAction>
