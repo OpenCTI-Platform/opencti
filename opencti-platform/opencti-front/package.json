@@ -98,7 +98,7 @@
     "@testing-library/jest-dom": "6.4.2",
     "@testing-library/react": "16.0.0",
     "@testing-library/user-event": "14.5.2",
-    "@types/node": "20.16.5",
+    "@types/node": "20.16.10",
     "@types/qrcode": "1.5.5",
     "@types/ramda": "0.30.1",
     "@types/react": "18.3.3",
