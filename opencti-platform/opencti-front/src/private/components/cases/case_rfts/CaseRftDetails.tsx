@@ -1,4 +1,4 @@
-import { ExpandLessOutlined, ExpandMoreOutlined } from '@mui/icons-material';
+import { ExpandLessOutlined, ExpandMoreOutlined, OpenInNewOutlined } from '@mui/icons-material';
 import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
 import Grid from '@mui/material/Grid';
@@ -12,7 +12,8 @@ import makeStyles from '@mui/styles/makeStyles';
 import * as R from 'ramda';
 import React, { FunctionComponent, useState } from 'react';
 import { graphql, useFragment } from 'react-relay';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import IconButton from '@mui/material/IconButton';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
@@ -249,6 +250,7 @@ const CaseRftDetails: FunctionComponent<CaseRftDetailsProps> = ({
   caseRftData,
 }) => {
   const { t_i18n, fsd } = useFormatter();
+  const navigate = useNavigate();
   const classes = useStyles();
   const [expanded, setExpanded] = useState(false);
   const data = useFragment(CaseRftDetailsFragment, caseRftData);
@@ -317,9 +319,20 @@ const CaseRftDetails: FunctionComponent<CaseRftDetailsProps> = ({
             )}
           </Grid>
         </Grid>
-        <Typography variant="h3" gutterBottom={true}>
-          {t_i18n('Correlated containers')}
-        </Typography>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <Typography variant="h3" gutterBottom={true}>
+            {t_i18n('Correlated containers')}
+          </Typography>
+          <IconButton
+            color="primary"
+            aria-label="Go to correlation graph view"
+            onClick={() => navigate(`/dashboard/cases/rfts/${data.id}/knowledge/correlation`)}
+            size="medium"
+            style={{ marginBottom: 4 }}
+          >
+            <OpenInNewOutlined fontSize="small"/>
+          </IconButton>
+        </div>
         <List classes={{ root: classes.relatedContainers }}>
           {relatedContainers.length > 0
             ? relatedContainers.map((relatedContainerEdge) => {
