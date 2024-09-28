@@ -8,12 +8,13 @@ import Chip from '@mui/material/Chip';
 import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
 import ListItem from '@mui/material/ListItem';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import List from '@mui/material/List';
-import { ExpandLessOutlined, ExpandMoreOutlined } from '@mui/icons-material';
+import { ExpandLessOutlined, ExpandMoreOutlined, OpenInNewOutlined } from '@mui/icons-material';
 import Button from '@mui/material/Button';
+import IconButton from '@mui/material/IconButton';
 import StixRelationshipsHorizontalBars from '../../common/stix_relationships/StixRelationshipsHorizontalBars';
 import inject18n from '../../../../components/i18n';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
@@ -104,6 +105,7 @@ const inlineStyles = {
 
 const GroupingDetailsComponent = (props) => {
   const { t, fsd, classes, grouping } = props;
+  const navigate = useNavigate();
   const [expanded, setExpanded] = useState(false);
   const [height, setHeight] = useState(0);
   const ref = useRef(null);
@@ -178,9 +180,20 @@ const GroupingDetailsComponent = (props) => {
             />
           </Grid>
         </Grid>
-        <Typography variant="h3" gutterBottom={true}>
-          {t('Correlated containers')}
-        </Typography>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <Typography variant="h3" gutterBottom={true}>
+            {t('Correlated containers')}
+          </Typography>
+          <IconButton
+            color="primary"
+            aria-label="Go to correlation graph view"
+            onClick={() => navigate(`/dashboard/analyses/groupings/${grouping.id}/knowledge/correlation`)}
+            size="medium"
+            style={{ marginBottom: 4 }}
+          >
+            <OpenInNewOutlined fontSize="small"/>
+          </IconButton>
+        </div>
         <List>
           {relatedContainers.length > 0
             ? relatedContainers.map((relatedContainerEdge) => {
