@@ -20,6 +20,7 @@ import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import ItemIcon from '../../../../components/ItemIcon';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import { emptyFilterGroup } from '../../../../utils/filters/filtersUtils';
+import { resolveLink } from '../../../../utils/Entity';
 
 const styles = (theme) => ({
   paper: {
@@ -110,6 +111,11 @@ const GroupingDetailsComponent = (props) => {
     setHeight(ref.current.clientHeight);
   });
   const expandable = grouping.relatedContainers.edges.length > 5;
+  const relatedContainers = R.take(
+    expanded ? 200 : 5,
+    // exclude itself
+    (grouping.relatedContainers?.edges ?? []).filter((relatedContainerEdge) => relatedContainerEdge?.node?.id !== grouping.id),
+  );
 
   const entitiesDistributionDataSelection = [
     {
@@ -173,14 +179,11 @@ const GroupingDetailsComponent = (props) => {
           </Grid>
         </Grid>
         <Typography variant="h3" gutterBottom={true}>
-          {t('Correlated groupings')}
+          {t('Correlated containers')}
         </Typography>
         <List>
-          {R.take(expanded ? 200 : 5, grouping.relatedContainers.edges)
-            .filter(
-              (relatedContainerEdge) => relatedContainerEdge.node.id !== grouping.id,
-            )
-            .map((relatedContainerEdge) => {
+          {relatedContainers.length > 0
+            ? relatedContainers.map((relatedContainerEdge) => {
               const relatedContainer = relatedContainerEdge.node;
               return (
                 <ListItem
@@ -190,7 +193,7 @@ const GroupingDetailsComponent = (props) => {
                   classes={{ root: classes.item }}
                   divider={true}
                   component={Link}
-                  to={`/dashboard/analyses/groupings/${relatedContainer.id}`}
+                  to={`${resolveLink(relatedContainer?.entity_type)}/${relatedContainer?.id}`}
                 >
                   <ListItemIcon>
                     <ItemIcon type={relatedContainer.entity_type} />
@@ -200,13 +203,13 @@ const GroupingDetailsComponent = (props) => {
                       <div className={classes.itemText}>
                         {relatedContainer.name}
                       </div>
-                    }
+                  }
                   />
                   <div style={inlineStyles.itemAuthor}>
-                    {R.pathOr('', ['createdBy', 'name'], relatedContainer)}
+                    {relatedContainer?.createdBy?.name ?? '-'}
                   </div>
                   <div style={inlineStyles.itemDate}>
-                    {fsd(relatedContainer.published)}
+                    {fsd(relatedContainer?.created ?? relatedContainer?.published)}
                   </div>
                   <div style={{ width: 110, paddingRight: 20 }}>
                     <ItemMarkings
@@ -217,7 +220,8 @@ const GroupingDetailsComponent = (props) => {
                   </div>
                 </ListItem>
               );
-            })}
+            }) : '-'
+          }
         </List>
         {expandable && (
           <Button
@@ -255,17 +259,37 @@ const GroupingDetails = createFragmentContainer(GroupingDetailsComponent, {
         first: 10
         orderBy: published
         orderMode: desc
-        types: ["Grouping"]
+        types: ["Case", "Report", "Grouping"]
         viaTypes: ["Indicator", "Stix-Cyber-Observable"]
       ) {
         edges {
           node {
             id
             entity_type
+            ... on Report {
+              name
+              description
+              published
+              createdBy {
+                ... on Identity {
+                  id
+                  name
+                  entity_type
+                }
+              }
+              objectMarking {
+                id
+                definition_type
+                definition
+                x_opencti_order
+                x_opencti_color
+              }
+            }
             ... on Grouping {
               name
               context
               description
+              created
               createdBy {
                 ... on Identity {
                   id
@@ -276,6 +300,63 @@ const GroupingDetails = createFragmentContainer(GroupingDetailsComponent, {
               objectMarking {
                 id
                 definition
+                definition_type
+                definition
+                x_opencti_order
+                x_opencti_color
+              }
+            }
+            ... on CaseIncident {
+              name
+              description
+              created
+              createdBy {
+                ... on Identity {
+                  id
+                  name
+                  entity_type
+                }
+              }
+              objectMarking {
+                id
+                definition_type
+                definition
+                x_opencti_order
+                x_opencti_color
+              }
+            }
+            ... on CaseRfi {
+              name
+              description
+              created
+              createdBy {
+                ... on Identity {
+                  id
+                  name
+                  entity_type
+                }
+              }
+              objectMarking {
+                id
+                definition_type
+                definition
+                x_opencti_order
+                x_opencti_color
+              }
+            }
+            ... on CaseRft {
+              name
+              description
+              created
+              createdBy {
+                ... on Identity {
+                  id
+                  name
+                  entity_type
+                }
+              }
+              objectMarking {
+                id
                 definition_type
                 definition
                 x_opencti_order

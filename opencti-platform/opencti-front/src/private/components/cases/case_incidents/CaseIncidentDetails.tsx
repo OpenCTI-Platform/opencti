@@ -131,13 +131,53 @@ const CaseIncidentDetailsFragment = graphql`
       first: 10
       orderBy: created
       orderMode: desc
-      types: ["Case"]
+      types: ["Case", "Report", "Grouping"]
       viaTypes: ["Indicator", "Stix-Cyber-Observable"]
     ) {
       edges {
         node {
           id
           entity_type
+          ... on Report {
+            name
+            description
+            published
+            createdBy {
+              ... on Identity {
+                id
+                name
+                entity_type
+              }
+            }
+            objectMarking {
+              id
+              definition_type
+              definition
+              x_opencti_order
+              x_opencti_color
+            }
+          }
+          ... on Grouping {
+            name
+            context
+            description
+            created
+            createdBy {
+              ... on Identity {
+                id
+                name
+                entity_type
+              }
+            }
+            objectMarking {
+              id
+              definition
+              definition_type
+              definition
+              x_opencti_order
+              x_opencti_color
+            }
+          }
           ... on CaseIncident {
             name
             description
@@ -157,44 +197,44 @@ const CaseIncidentDetailsFragment = graphql`
               x_opencti_color
             }
           }
-            ... on CaseRfi {
-                name
-                description
-                created
-                createdBy {
-                    ... on Identity {
-                        id
-                        name
-                        entity_type
-                    }
-                }
-                objectMarking {
+          ... on CaseRfi {
+            name
+            description
+            created
+            createdBy {
+                ... on Identity {
                     id
-                    definition_type
-                    definition
-                    x_opencti_order
-                    x_opencti_color
+                    name
+                    entity_type
                 }
             }
-            ... on CaseRft {
-                name
-                description
-                created
-                createdBy {
-                    ... on Identity {
-                        id
-                        name
-                        entity_type
-                    }
-                }
-                objectMarking {
+            objectMarking {
+                id
+                definition_type
+                definition
+                x_opencti_order
+                x_opencti_color
+            }
+          }
+          ... on CaseRft {
+            name
+            description
+            created
+            createdBy {
+                ... on Identity {
                     id
-                    definition_type
-                    definition
-                    x_opencti_order
-                    x_opencti_color
+                    name
+                    entity_type
                 }
             }
+            objectMarking {
+                id
+                definition_type
+                definition
+                x_opencti_order
+                x_opencti_color
+            }
+          }
         }
       }
     }
@@ -217,9 +257,8 @@ const CaseIncidentDetails: FunctionComponent<CaseIncidentDetailsProps> = ({
 
   const relatedContainers = R.take(
     expanded ? 200 : 5,
-    data.relatedContainers?.edges ?? [],
-  ).filter(
-    (relatedContainerEdge) => relatedContainerEdge?.node?.id !== data.id,
+    // exclude itself
+    (data.relatedContainers?.edges ?? []).filter((relatedContainerEdge) => relatedContainerEdge?.node?.id !== data.id),
   );
 
   return (
@@ -279,7 +318,7 @@ const CaseIncidentDetails: FunctionComponent<CaseIncidentDetailsProps> = ({
           </Grid>
         </Grid>
         <Typography variant="h3" gutterBottom={true}>
-          {t_i18n('Correlated cases')}
+          {t_i18n('Correlated containers')}
         </Typography>
         <List classes={{ root: classes.relatedContainers }}>
           {relatedContainers.length > 0
@@ -306,10 +345,10 @@ const CaseIncidentDetails: FunctionComponent<CaseIncidentDetailsProps> = ({
                       }
                   />
                   <div className={classes.itemAuthor}>
-                    {R.pathOr('', ['createdBy', 'name'], relatedContainer)}
+                    {relatedContainer?.createdBy?.name ?? '-'}
                   </div>
                   <div className={classes.itemDate}>
-                    {fsd(relatedContainer?.created)}
+                    {fsd(relatedContainer?.created ?? relatedContainer?.published)}
                   </div>
                   <div className={classes.itemMarking}>
                     <ItemMarkings
