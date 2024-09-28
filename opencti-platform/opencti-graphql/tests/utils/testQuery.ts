@@ -75,8 +75,19 @@ export const executeExternalQuery = async (client: AxiosInstance, uri: string, q
   return data;
 };
 
-export const executeInternalQuery = async (client: AxiosInstance, query: unknown, variables = {}) => {
-  const response = await client.post(`${API_URI}/graphql`, { query, variables }, { withCredentials: true });
+interface QueryOption {
+  workId?: string
+  eventId?: string
+  previousStandard?: string
+  synchronizedUpsert?: string
+}
+export const executeInternalQuery = async (client: AxiosInstance, query: unknown, variables = {}, options: QueryOption = {}) => {
+  const headers: any = {};
+  if (options.workId) headers['opencti-work-id'] = options.workId;
+  if (options.eventId) headers['opencti-event-id'] = options.eventId;
+  if (options.previousStandard) headers['previous-standard'] = options.previousStandard;
+  if (options.synchronizedUpsert) headers['synchronized-upsert'] = options.synchronizedUpsert;
+  const response = await client.post(`${API_URI}/graphql`, { query, variables }, { withCredentials: true, headers });
   return response.data;
 };
 const adminClient = createHttpClient();
@@ -497,8 +508,8 @@ export const adminQuery = async (request: any) => {
   return internalAdminQuery(print(request.query), request.variables);
 };
 
-export const editorQuery = async (request: any) => {
-  return executeInternalQuery(USER_EDITOR.client, print(request.query), request.variables);
+export const editorQuery = async (request: any, options: QueryOption = {}) => {
+  return executeInternalQuery(USER_EDITOR.client, print(request.query), request.variables, options);
 };
 
 export const securityQuery = async (request: any) => {
