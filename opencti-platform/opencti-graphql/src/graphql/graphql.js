@@ -9,13 +9,11 @@ import { constraintDirectiveDocumentation } from 'graphql-constraint-directive';
 import { GraphQLError } from 'graphql/error';
 import { createApollo4QueryValidationPlugin } from 'graphql-constraint-directive/apollo4';
 import createSchema from './schema';
-import conf, { basePath, DEV_MODE, ENABLED_TRACING, GRAPHQL_ARMOR_DISABLED, logApp, PLAYGROUND_ENABLED, PLAYGROUND_INTROSPECTION_DISABLED } from '../config/conf';
-import { authenticateUserFromRequest, userWithOrigin } from '../domain/user';
+import conf, { basePath, DEV_MODE, ENABLED_TRACING, GRAPHQL_ARMOR_DISABLED, PLAYGROUND_ENABLED, PLAYGROUND_INTROSPECTION_DISABLED } from '../config/conf';
 import { ForbiddenAccess, ValidationError } from '../config/errors';
 import loggerPlugin from './loggerPlugin';
 import telemetryPlugin from './telemetryPlugin';
 import httpResponsePlugin from './httpResponsePlugin';
-import { executionContext } from '../utils/access';
 
 const createApolloServer = () => {
   let schema = createSchema();
@@ -103,25 +101,6 @@ const createApolloServer = () => {
     persistedQueries: false,
     validationRules: apolloValidationRules,
     csrfPrevention: false, // CSRF is handled by helmet
-    async context({ req, res }) {
-      const executeContext = executionContext('api');
-      executeContext.req = req;
-      executeContext.res = res;
-      // Building context from request headers
-      executeContext.workId = req.headers['opencti-work-id']; // Api call comes from a worker processing
-      executeContext.eventId = req.headers['opencti-event-id']; // Api call is due to listening event
-      executeContext.previousStandard = req.headers['previous-standard']; // Previous standard id
-      executeContext.synchronizedUpsert = req.headers['synchronized-upsert'] === 'true'; // If full sync needs to be done
-      try {
-        const user = await authenticateUserFromRequest(executeContext, req, res);
-        if (user) {
-          executeContext.user = userWithOrigin(req, user);
-        }
-      } catch (error) {
-        logApp.error(error);
-      }
-      return executeContext;
-    },
     tracing: DEV_MODE,
     plugins: apolloPlugins,
     formatError: (formattedError) => {
