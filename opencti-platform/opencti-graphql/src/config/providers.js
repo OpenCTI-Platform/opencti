@@ -368,10 +368,14 @@ for (let i = 0; i < providerKeys.length; i += 1) {
               const emailAttribute = mappedConfig.email_attribute ?? 'email';
               const firstnameAttribute = mappedConfig.firstname_attribute ?? 'given_name';
               const lastnameAttribute = mappedConfig.lastname_attribute ?? 'family_name';
-              const name = userinfo[nameAttribute];
-              const email = userinfo[emailAttribute];
-              const firstname = userinfo[firstnameAttribute];
-              const lastname = userinfo[lastnameAttribute];
+              const get_user_attributes_from_id_token = mappedConfig.get_user_attributes_from_id_token ?? false;
+
+              const user_attribute_obj = get_user_attributes_from_id_token ? jwtDecode(tokenset.id_token) : userinfo;
+
+              const name = user_attribute_obj[nameAttribute];
+              const email = user_attribute_obj[emailAttribute];
+              const firstname = user_attribute_obj[firstnameAttribute];
+              const lastname = user_attribute_obj[lastnameAttribute];
               const opts = {
                 providerGroups: groupsToAssociate,
                 providerOrganizations: organizationsToAssociate,
