@@ -355,6 +355,14 @@ input AuditsTimeSeriesParameters {
   search: String
 }
 
+input auditsDistributionParameters {
+  field: String!
+  startDate: DateTime
+  endDate: DateTime
+  filters: FilterGroup
+  search: String
+}
+
 input StixCoreObjectsTimeSeriesParameters {
   field: String!
   types: [String]
@@ -8102,8 +8110,9 @@ type Query {
   audits(first: Int, after: ID, types: [String!], orderBy: LogsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): LogConnection
   auditsNumber(dateAttribute: String, types: [String], startDate: DateTime, endDate: DateTime, onlyInferred: Boolean, filters: FilterGroup, search: String): Number
   auditsTimeSeries(field: String!, operation: StatsOperation!, startDate: DateTime!, endDate: DateTime, interval: String!, types: [String], filters: FilterGroup, search: String): [TimeSeries]
-  auditsDistribution(field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: FilterGroup, search: String): [Distribution]
   auditsMultiTimeSeries(operation: StatsOperation!, startDate: DateTime!, endDate: DateTime, interval: String!, onlyInferred: Boolean, timeSeriesParameters: [AuditsTimeSeriesParameters]): [MultiTimeSeries]
+  auditsDistribution(field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: FilterGroup, search: String): [Distribution]
+  auditsMultiDistribution(dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], distributionParameters: [auditsDistributionParameters]): [MultiDistribution]
   subType(id: String!): SubType
   subTypes(first: Int, after: ID, orderBy: SubTypesOrdering, orderMode: OrderingMode, type: String, includeParents: Boolean, search: String): SubTypeConnection!
   file(id: String!): File
