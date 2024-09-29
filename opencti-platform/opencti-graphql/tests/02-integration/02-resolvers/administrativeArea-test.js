@@ -109,6 +109,7 @@ describe('AdministrativeArea resolver standard behavior', () => {
           id
           name
           description
+          standard_id
           objectLabel {
             id
             value
@@ -132,6 +133,7 @@ describe('AdministrativeArea resolver standard behavior', () => {
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.administrativeAreaAdd).not.toBeNull();
     expect(queryResult.data.administrativeAreaAdd.name).toEqual('Administrative-Area');
+    expect(queryResult.data.administrativeAreaAdd.standard_id).toEqual('location--9904c841-f308-58bf-a39a-6ecd6024d3e0');
     expect(queryResult.data.administrativeAreaAdd.objectLabel.length).toEqual(3);
     administrativeAreaInternalId = queryResult.data.administrativeAreaAdd.id; // bc1f31d7-4d9d-4754-89b1-9a7813c7c521
   });
@@ -200,15 +202,43 @@ describe('AdministrativeArea resolver standard behavior', () => {
         mutation AdministrativeAreaEdit($id: ID!, $input: [EditInput]!) {
             administrativeAreaFieldPatch(id: $id, input: $input) {
                 id
+                name
                 description
+                standard_id
             }
         }
     `;
     const queryResult = await editorQuery({
       query: UPDATE_QUERY,
-      variables: { id: administrativeAreaInternalId, input: { key: 'description', value: ['Administrative-Area - test'] } },
+      variables: {
+        id: administrativeAreaInternalId,
+        input: [
+          { key: 'name', value: ['Administrative-Area - test'] },
+          { key: 'description', value: ['Administrative-Area - test'] }
+        ]
+      },
     });
+    expect(queryResult.data.administrativeAreaFieldPatch.name).toEqual('Administrative-Area - test');
+    expect(queryResult.data.administrativeAreaFieldPatch.standard_id).toEqual('location--345ba2b4-3c57-5b5e-bc6d-b79aaa36d941');
     expect(queryResult.data.administrativeAreaFieldPatch.description).toEqual('Administrative-Area - test');
+  });
+  it('should update administrativeArea via previous standard', async () => {
+    const CREATE_QUERY = gql`
+      mutation AdministrativeAreaAdd($input: AdministrativeAreaAddInput!) {
+        administrativeAreaAdd(input: $input) {
+          id
+          name
+        }
+      }
+    `;
+    const ADMINISTRATIVEAREA_TO_CREATE = {
+      input: {
+        name: 'Administrative-Area by previous'
+      },
+    };
+    const previousStandard = 'location--345ba2b4-3c57-5b5e-bc6d-b79aaa36d941';
+    const queryResult = await editorQuery({ query: CREATE_QUERY, variables: ADMINISTRATIVEAREA_TO_CREATE }, { previousStandard });
+    expect(queryResult.data.administrativeAreaAdd.name).toEqual('Administrative-Area by previous');
   });
   it('should not upsert administrativeArea if outdated', async () => {
     const eventId = `${utcDate().subtract(1, 'minute').valueOf()}-0`;
@@ -223,7 +253,7 @@ describe('AdministrativeArea resolver standard behavior', () => {
       `;
     const ADMINISTRATIVEAREA_TO_CREATE = {
       input: {
-        name: 'Administrative-Area',
+        name: 'Administrative-Area description previous standard',
         stix_id: administrativeAreaStixId,
         description: 'Administrative-Area description'
       },
