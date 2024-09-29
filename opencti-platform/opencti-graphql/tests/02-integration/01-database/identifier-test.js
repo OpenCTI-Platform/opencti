@@ -2,12 +2,7 @@
 import { expect, it, describe } from 'vitest';
 import { elLoadById, } from '../../../src/database/engine';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
-import {
-  generateStandardId,
-  isStandardIdDowngraded,
-  isStandardIdSameWay,
-  isStandardIdUpgraded
-} from '../../../src/schema/identifier';
+import { generateStandardId, isStandardIdDowngraded, isStandardIdSameWay, isStandardIdUpgraded } from '../../../src/schema/identifier';
 import { ENTITY_USER_ACCOUNT } from '../../../src/schema/stixCyberObservable';
 
 describe('Identifier generation test', () => {
