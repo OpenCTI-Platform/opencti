@@ -19,6 +19,7 @@ import { useWidgetConfigContext } from '@components/widgets/WidgetConfigContext'
 import useWidgetConfigValidateForm from '@components/widgets/useWidgetConfigValidateForm';
 import WidgetAttributesInputContainer, { widgetAttributesInputInstanceQuery } from '@components/widgets/WidgetAttributesInputContainer';
 import { WidgetAttributesInputContainerInstanceQuery$data } from '@components/widgets/__generated__/WidgetAttributesInputContainerInstanceQuery.graphql';
+import Box from '@mui/material/Box';
 import { QueryRenderer } from '../../../relay/environment';
 import { isNotEmptyField } from '../../../utils/utils';
 import { capitalizeFirstLetter } from '../../../utils/String';
@@ -169,6 +170,12 @@ const WidgetCreationParameters = () => {
     setDataSelectionWithIndex(newSelection, index);
   };
 
+  const [uniqueUsers, setUniqueUsers] = React.useState(parameters?.uniqueUsers === true);
+
+  React.useEffect(() => {
+    setUniqueUsers(parameters?.uniqueUsers === true);
+  }, [parameters?.uniqueUsers]);
+
   let varNameError = '';
   if (isWidgetVarNameAlreadyUsed) {
     varNameError = t_i18n('This name is already used for an other widget');
@@ -182,7 +189,7 @@ const WidgetCreationParameters = () => {
         label={t_i18n('Title')}
         required={context === 'fintelTemplate'}
         fullWidth={true}
-        value={parameters.title}
+        value={parameters?.title}
         disabled={dataSelection[0]?.instance_id === SELF_ID}
         onChange={(event) => handleChangeParameter('title', event.target.value)}
       />
@@ -233,7 +240,7 @@ const WidgetCreationParameters = () => {
         </div>
       )}
 
-      {getCurrentCategory(type) === 'timeseries' && (
+      {!uniqueUsers && getCurrentCategory(type) === 'timeseries' && (
         <FormControl fullWidth={true} style={{ marginTop: 20 }}>
           <InputLabel id="relative">{t_i18n('Interval')}</InputLabel>
           <Select
@@ -312,22 +319,22 @@ const WidgetCreationParameters = () => {
 
                 {(getCurrentCategory(type) === 'distribution'
                   || getCurrentCategory(type) === 'list') && (
-                  <TextField
-                    label={t_i18n('Number of results')}
-                    fullWidth={true}
-                    type="number"
-                    error={isNumberError}
-                    helperText={t_i18n('The number of results should be lower than 100')}
-                    value={dataSelection[i].number ?? 10}
-                    onChange={(event) => handleChangeDataValidationParameter(
-                      i,
-                      'number',
-                      event.target.value,
-                      true,
-                    )
-                    }
-                    style={{ marginTop: 20 }}
-                  />
+                    <TextField
+                      label={t_i18n('Number of results')}
+                      fullWidth={true}
+                      type="number"
+                      error={isNumberError}
+                      helperText={t_i18n('The number of results should be lower than 100')}
+                      value={dataSelection[i].number ?? 10}
+                      onChange={(event) => handleChangeDataValidationParameter(
+                        i,
+                        'number',
+                        event.target.value,
+                        true,
+                      )
+                      }
+                      style={{ marginTop: 20 }}
+                    />
                 )}
 
                 {getCurrentCategory(type) === 'list' && dataSelection[i].perspective === 'entities' && (
@@ -628,7 +635,7 @@ const WidgetCreationParameters = () => {
                                   </Select>
                                 );
                               }
-                              return <div/>;
+                              return <div />;
                             }}
                           />
                         </FormControl>
@@ -751,7 +758,7 @@ const WidgetCreationParameters = () => {
       </>
 
       <div style={{ display: 'flex', width: '100%', marginTop: 20 }}>
-        {getCurrentAvailableParameters(type).includes('stacked') && (
+        {!uniqueUsers && getCurrentAvailableParameters(type).includes('stacked') && (
           <FormControlLabel
             control={
               <Switch
@@ -773,7 +780,7 @@ const WidgetCreationParameters = () => {
             label={t_i18n('Distributed')}
           />
         )}
-        {getCurrentAvailableParameters(type).includes('legend') && (
+        {!uniqueUsers && getCurrentAvailableParameters(type).includes('legend') && (
           <FormControlLabel
             control={
               <Switch
@@ -783,6 +790,33 @@ const WidgetCreationParameters = () => {
             }
             label={t_i18n('Display legend')}
           />
+        )}
+        {getCurrentAvailableParameters(type).includes('uniqueUsers') && (
+          <FormControlLabel
+            control={
+              <Switch
+                onChange={() => handleToggleParameter('uniqueUsers')}
+                checked={parameters?.uniqueUsers ?? undefined}
+              />
+            }
+            label={t_i18n('Unique Users')}
+          />
+        )}
+        {uniqueUsers && getCurrentAvailableParameters(type).includes('intervalUniqueUsers') && (
+          <Box display="flex" alignItems="center" gap={1}>
+            <Box component="label" htmlFor="unique-interval-select">
+              <InputLabel id="unique-interval-label">{t_i18n('Unique Interval')}</InputLabel>
+            </Box>
+            <Select
+              id="unique-interval-select"
+              value={parameters?.intervalUniqueUsers || 'months'}
+              onChange={(e) => handleChangeParameter('intervalUniqueUsers', e.target.value)}
+              label={t_i18n('Unique Interval')}
+            >
+              <MenuItem value="weeks">{t_i18n('Weekly')}</MenuItem>
+              <MenuItem value="months">{t_i18n('Monthly')}</MenuItem>
+            </Select>
+          </Box>
         )}
         {getCurrentCategory(type) === 'list' && context !== 'fintelTemplate'
           && dataSelection.map(({ perspective, columns, filters }, index) => {

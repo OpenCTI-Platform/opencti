@@ -23,7 +23,7 @@ const WidgetMultiLines = ({
   readonly = false,
 }: WidgetMultiLinesProps) => {
   const theme = useTheme<Theme>();
-  const { fsd, mtdy, yd } = useFormatter();
+  const { fsd, mtdy, yd, ywiy } = useFormatter();
 
   const options: ApexOptions = useMemo(() => {
     let formatter = fsd;
@@ -32,6 +32,12 @@ const WidgetMultiLines = ({
     }
     if (interval === 'year') {
       formatter = yd;
+    }
+    if (interval === 'week') {
+      formatter = ywiy;
+    }
+    if (interval === 'day') {
+      formatter = ywiy;
     }
 
     return lineChartOptions(
