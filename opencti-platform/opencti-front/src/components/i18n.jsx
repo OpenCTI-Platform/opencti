@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { injectIntl, useIntl } from 'react-intl';
 import moment from 'moment-timezone';
+import { startOfWeek, format } from 'date-fns';
 import { bytesFormat, numberFormat } from '../utils/Number';
 
 const FROM_START = 0;
@@ -369,6 +370,17 @@ export const useFormatter = () => {
       hour: 'numeric',
     });
   };
+  const yearWeeksIntoYear = (date) => {
+    if (isNone(date)) {
+      return '-';
+    }
+    // the following few lines get the date to display as the number of weeks into the year with weeks starting on Mondays
+    const value = new Date(date);
+    const weekStart = startOfWeek(value, { weekStartsOn: 1 });
+    const weekEnd = new Date(weekStart);
+    weekEnd.setDate(weekEnd.getDate() + 6);
+    return `${format(weekStart, 'MMM dd')} - ${format(weekEnd, 'MMM dd')}`;
+  };
   return {
     t_i18n: translate,
     n: formatNumber,
@@ -388,6 +400,7 @@ export const useFormatter = () => {
     mhd: minuteHourDate,
     smhd: shortMinuteHourDate,
     rd: relativeDate,
+    ywiy: yearWeeksIntoYear,
   };
 };
 
