@@ -62,7 +62,7 @@ const ObjectAssigneeField = ({ defaultObjectAssignee, name, style, label, onChan
   const { t_i18n } = useFormatter();
   const { me } = useContext((UserContext));
   const [keyword, setKeyword] = useState('');
-  const [assignees, setAssignee] = useState(defaultObjectAssignee ? [
+  const [assignees, setAssignees] = useState(defaultObjectAssignee ? [
     {
       label: defaultObjectAssignee.name,
       value: defaultObjectAssignee.id,
@@ -89,7 +89,7 @@ const ObjectAssigneeField = ({ defaultObjectAssignee, name, style, label, onChan
             entity: n.node,
           })),
         )(data);
-        setAssignee(union(assignees, newAssignees));
+        setAssignees(union(assignees, newAssignees));
       });
   };
 
@@ -120,7 +120,7 @@ const ObjectAssigneeField = ({ defaultObjectAssignee, name, style, label, onChan
         onFocus: searchAssignees,
       }}
       noOptionsText={t_i18n('No available options')}
-      options={assignees.sort((a, b) => a.value === me.id ? -1 : b.value === me.id ? 1 : a.label.localeCompare(b.label))}
+      options={assignees.sort((a, b) => a.value === me?.id ? -1 : b.value === me?.id ? 1 : a.label.localeCompare(b.label))}
       onInputChange={handleSearch}
       onChange={typeof onChange === 'function' ? onChange : null}
       renderOption={(props, option) => (

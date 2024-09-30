@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent, useContext, useState } from 'react';
 import { Field } from 'formik';
 import { graphql } from 'react-relay';
 import { makeStyles } from '@mui/styles';
@@ -9,6 +9,7 @@ import ItemIcon from '../../../../components/ItemIcon';
 import type { Theme } from '../../../../components/Theme';
 import { Option } from './ReferenceField';
 import { ObjectParticipantFieldMembersSearchQuery$data } from './__generated__/ObjectParticipantFieldMembersSearchQuery.graphql';
+import { UserContext } from '../../../../utils/hooks/useAuth';
 
 const objectParticipantFieldMembersSearchQuery = graphql`
   query ObjectParticipantFieldMembersSearchQuery($search: String, $first: Int, $entityTypes: [MemberType!]) {
@@ -77,6 +78,7 @@ const ObjectParticipantField: FunctionComponent<ObjectParticipantFieldProps> = (
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
+  const { me } = useContext((UserContext));
   const [participants, setParticipants] = useState<OptionParticipant[]>([]);
 
   const searchParticipants = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -111,7 +113,7 @@ const ObjectParticipantField: FunctionComponent<ObjectParticipantFieldProps> = (
         onFocus: searchParticipants,
       }}
       noOptionsText={t_i18n('No available options')}
-      options={participants}
+      options={participants.sort((a, b) => a.value === me?.id ? -1 : b.value === me?.id ? 1 : a.label.localeCompare(b.label))}
       onInputChange={searchParticipants}
       onChange={typeof onChange === 'function' ? onChange : null}
       renderOption={(
