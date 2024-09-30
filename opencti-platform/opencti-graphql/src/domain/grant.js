@@ -24,7 +24,7 @@ export const addRole = async (context, user, role) => {
   if (isFeatureEnabled(PROTECT_SENSITIVE_CHANGES_FF)) {
     completeRoleToCreate = {
       ...roleToCreate,
-      can_manage_sensitive_config: role.can_manage_sensitive_config ?? true, // default when undefined is true
+      can_manage_sensitive_config: role.can_manage_sensitive_config ?? false, // default when undefined is false
     };
   } else {
     completeRoleToCreate = {
