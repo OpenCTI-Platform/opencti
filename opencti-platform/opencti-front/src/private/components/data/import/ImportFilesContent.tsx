@@ -180,7 +180,7 @@ const ImportFilesContent = () => {
         mode: 'or',
       },
       {
-        key: 'entity_id',
+        key: 'metaData.entity_id',
         values: [],
         operator: 'nil',
       },

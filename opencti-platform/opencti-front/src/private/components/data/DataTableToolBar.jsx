@@ -83,7 +83,7 @@ import { hexToRGB } from '../../../utils/Colors';
 import { externalReferencesQueriesSearchQuery } from '../analyses/external_references/ExternalReferencesQueries';
 import StixDomainObjectCreation from '../common/stix_domain_objects/StixDomainObjectCreation';
 import ItemMarkings from '../../../components/ItemMarkings';
-import { findFilterFromKey, removeIdAndIncorrectKeysFromFilterGroupObject, serializeFilterGroupForBackend } from '../../../utils/filters/filtersUtils';
+import { findFilterFromKey, serializeFilterGroupForBackend } from '../../../utils/filters/filtersUtils';
 import { getMainRepresentative } from '../../../utils/defaultRepresentatives';
 import { isNotEmptyField } from '../../../utils/utils';
 import EETooltip from '../common/entreprise_edition/EETooltip';
@@ -622,7 +622,7 @@ class DataTableToolBar extends Component {
     return t('Copy to clipboard');
   }
 
-  submitTask(availableFilterKeys) {
+  submitTask() {
     this.setState({ processing: true });
     const { actions, mergingElement, promoteToContainer } = this.state;
     const {
@@ -638,9 +638,7 @@ class DataTableToolBar extends Component {
       t,
     } = this.props;
     if (numberOfSelectedElements === 0) return;
-    const jsonFilters = serializeFilterGroupForBackend(
-      removeIdAndIncorrectKeysFromFilterGroupObject(filters, availableFilterKeys),
-    );
+    const jsonFilters = serializeFilterGroupForBackend(filters);
 
     const finalActions = R.map(
       (n) => ({
