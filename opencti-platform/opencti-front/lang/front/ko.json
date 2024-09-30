@@ -855,6 +855,8 @@
   "Download this support package": "이 지원 패키지를 다운로드",
   "Due Date": "마감일",
   "Duplicate": "복제",
+  "Duplicate a CSV ingester": "CSV 수집기 복제",
+  "Duplicate a feed": "피드 복제하기",
   "Duplicate the dashboard": "대시보드 복제",
   "Dynamic source filters": "동적 소스 필터",
   "Dynamic target filters": "동적 대상 필터",

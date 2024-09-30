@@ -203,6 +203,8 @@
   "DST Payload": "Carga útil DST",
   "DST port": "Puerto DST",
   "Due date": "Fecha de vencimiento",
+  "Duplicate a CSV ingester": "Duplicar una entrada CSV",
+  "Duplicate a feed": "Duplicar un feed",
   "Element ID": "Elemento ID",
   "Email": "Correo electrónico",
   "Email date": "Fecha de correo electrónico",
