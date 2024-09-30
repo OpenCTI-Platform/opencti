@@ -1,4 +1,4 @@
-import {isFeatureEnabled, logApp} from '../config/conf';
+import { isFeatureEnabled, logApp } from '../config/conf';
 import { addSettings } from '../domain/settings';
 import { BYPASS, ROLE_ADMINISTRATOR, ROLE_DEFAULT, SYSTEM_USER } from '../utils/access';
 import { initCreateEntitySettings } from '../modules/entitySetting/entitySetting-domain';
@@ -10,9 +10,9 @@ import { VocabularyCategory } from '../generated/graphql';
 import { builtInOv, openVocabularies } from '../modules/vocabulary/vocabulary-utils';
 import { addVocabulary } from '../modules/vocabulary/vocabulary-domain';
 import { addAllowedMarkingDefinition } from '../domain/markingDefinition';
-import { addCapability, addGroup, addRole } from '../domain/grant';
+import { addCapability, addGroup, addRole, PROTECT_SENSITIVE_CHANGES_FF } from '../domain/grant';
 import { GROUP_DEFAULT, groupAddRelation } from '../domain/group';
-import {PROTECT_SENSITIVE_CHANGES_FF, TAXIIAPI} from '../domain/user';
+import { TAXIIAPI } from '../domain/user';
 import { KNOWLEDGE_COLLABORATION, KNOWLEDGE_DELETE, KNOWLEDGE_MANAGE_AUTH_MEMBERS, KNOWLEDGE_UPDATE } from '../schema/general';
 
 // region Platform capabilities definition
@@ -253,11 +253,11 @@ const createBasicRolesAndCapabilities = async (context) => {
     description: 'Administrator role that bypass every capabilities',
     capabilities: [BYPASS],
   };
-  if(isFeatureEnabled((PROTECT_SENSITIVE_CHANGES_FF))){
+  if (isFeatureEnabled((PROTECT_SENSITIVE_CHANGES_FF))) {
     administratorRoleInput = {
       ...administratorRoleInput,
       can_manage_sensitive_config: false
-    }
+    };
   }
   await addRole(context, SYSTEM_USER, administratorRoleInput);
 
@@ -281,11 +281,11 @@ const createBasicRolesAndCapabilities = async (context) => {
     ],
   };
 
-  if(isFeatureEnabled((PROTECT_SENSITIVE_CHANGES_FF))){
+  if (isFeatureEnabled((PROTECT_SENSITIVE_CHANGES_FF))) {
     connectorRoleInput = {
       ...connectorRoleInput,
       can_manage_sensitive_config: false
-    }
+    };
   }
 
   const connectorRole = await addRole(context, SYSTEM_USER, connectorRoleInput);

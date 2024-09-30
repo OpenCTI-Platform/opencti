@@ -5,8 +5,9 @@ import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE } from '../
 import { RELATION_HAS_CAPABILITY } from '../schema/internalRelationship';
 import { generateStandardId } from '../schema/identifier';
 import { publishUserAction } from '../listener/UserActionListener';
-import {isFeatureEnabled} from '../config/conf';
-import {PROTECT_SENSITIVE_CHANGES_FF} from './user';
+import { isFeatureEnabled } from '../config/conf';
+
+export const PROTECT_SENSITIVE_CHANGES_FF = 'PROTECT_SENSITIVE_CHANGES';
 
 export const addCapability = async (context, user, capability) => {
   return createEntity(context, user, capability, ENTITY_TYPE_CAPABILITY);
@@ -20,15 +21,15 @@ export const addRole = async (context, user, role) => {
   )(role);
 
   let completeRoleToCreate;
-  if(isFeatureEnabled(PROTECT_SENSITIVE_CHANGES_FF)) {
-      completeRoleToCreate = {
-        ...roleToCreate,
-        can_manage_sensitive_config: role.can_manage_sensitive_config ?? true, //default when undefined is true
-      }
+  if (isFeatureEnabled(PROTECT_SENSITIVE_CHANGES_FF)) {
+    completeRoleToCreate = {
+      ...roleToCreate,
+      can_manage_sensitive_config: role.can_manage_sensitive_config ?? true, // default when undefined is true
+    };
   } else {
     completeRoleToCreate = {
       ...roleToCreate
-    }
+    };
   }
   const { element, isCreation } = await createEntity(context, user, completeRoleToCreate, ENTITY_TYPE_ROLE, { complete: true });
   const relationPromises = capabilities.map(async (capabilityName) => {
