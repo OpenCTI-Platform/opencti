@@ -1,14 +1,14 @@
-import React, { Component } from 'react';
-import { compose, pathOr, pipe, map, union } from 'ramda';
+import React, { useEffect, useState } from 'react';
+import { pathOr, pipe, map, union } from 'ramda';
 import { debounce } from 'rxjs/operators';
 import { Subject, timer } from 'rxjs';
 import { Field } from 'formik';
-import withStyles from '@mui/styles/withStyles';
 import { graphql } from 'react-relay';
 import { fetchQuery } from '../../../../relay/environment';
 import AutocompleteField from '../../../../components/AutocompleteField';
-import inject18n from '../../../../components/i18n';
+import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
+import makeStyles from '@mui/styles/makeStyles';
 
 const SEARCH$ = new Subject().pipe(debounce(() => timer(1500)));
 
@@ -40,7 +40,7 @@ export const objectAssigneeFieldAssigneesSearchQuery = graphql`
   }
 `;
 
-const styles = (theme) => ({
+const useStyles = makeStyles((theme) => ({
   icon: {
     paddingTop: 4,
     display: 'inline-block',
@@ -54,53 +54,46 @@ const styles = (theme) => ({
   autoCompleteIndicator: {
     display: 'none',
   },
-});
+}));
 
-class ObjectAssigneeField extends Component {
-  constructor(props) {
-    super(props);
-    const { defaultObjectAssignee } = props;
-    this.state = {
-      keyword: '',
-      assignees: defaultObjectAssignee
-        ? [
-          {
-            label: defaultObjectAssignee.name,
-            value: defaultObjectAssignee.id,
-            type: defaultObjectAssignee.entity_type,
-            entity: defaultObjectAssignee,
-          },
-        ]
-        : [],
-    };
-  }
+const ObjectAssigneeField = (props) => {
+  const { defaultObjectAssignee, name, style, label, onChange, helpertext, disabled } = props;
+  const classes = useStyles();
+  const { t_i18n } = useFormatter();
+  const [keyword, setKeyword] = useState('');
+  const [assignees, setAssignee] = useState(defaultObjectAssignee ? [
+      {
+        label: defaultObjectAssignee.name,
+        value: defaultObjectAssignee.id,
+        type: defaultObjectAssignee.entity_type,
+        entity: defaultObjectAssignee,
+      },
+    ]
+    : []);
 
-  componentDidMount() {
-    this.subscription = SEARCH$.subscribe({
-      next: () => this.searchAssignees(),
+  useEffect(() => {
+    const subscription = SEARCH$.subscribe({
+      next: () => searchAssignees(),
     });
-  }
+    return subscription.unsubscribe();
+  });
 
-  componentWillUnmount() {
-    this.subscription.unsubscribe();
-  }
-
-  handleSearch(event) {
+  const handleSearch = (event) => {
     if (event && event.target && event.target.value) {
-      this.setState({ keyword: event.target.value });
+      setKeyword(event.target.value);
       SEARCH$.next({ action: 'Search' });
     }
   }
 
-  searchAssignees() {
+  const searchAssignees = () => {
     fetchQuery(objectAssigneeFieldMembersSearchQuery, {
-      search: this.state.keyword,
+      search: keyword,
       entityTypes: ['User'],
       first: 10,
     })
       .toPromise()
       .then((data) => {
-        const assignees = pipe(
+        const newAssignees = pipe(
           pathOr([], ['members', 'edges']),
           map((n) => ({
             label: n.node.name,
@@ -109,40 +102,37 @@ class ObjectAssigneeField extends Component {
             entity: n.node,
           })),
         )(data);
-        this.setState({ assignees: union(this.state.assignees, assignees) });
+        setAssignee(union(assignees, newAssignees));
       });
   }
 
-  render() {
-    const { t, name, style, label, classes, onChange, helpertext, disabled } = this.props;
-    return (
-      <Field component={AutocompleteField}
-        style={style}
-        name={name}
-        disabled={disabled}
-        multiple={true}
-        textfieldprops={{
-          variant: 'standard',
-          label: label ?? t('Assignee(s)'),
-          helperText: helpertext,
-          onFocus: this.searchAssignees.bind(this),
-        }}
-        noOptionsText={t('No available options')}
-        options={this.state.assignees.sort((a, b) => a.label.localeCompare(b.label))}
-        onInputChange={this.handleSearch.bind(this)}
-        onChange={typeof onChange === 'function' ? onChange.bind(this) : null}
-        renderOption={(props, option) => (
-          <li {...props}>
-            <div className={classes.icon}>
-              <ItemIcon type={option.type} />
-            </div>
-            <div className={classes.text}>{option.label}</div>
-          </li>
-        )}
-        classes={{ clearIndicator: classes.autoCompleteIndicator }}
-      />
-    );
-  }
+  return (
+    <Field component={AutocompleteField}
+           style={style}
+           name={name}
+           disabled={disabled}
+           multiple={true}
+           textfieldprops={{
+             variant: 'standard',
+             label: label ?? t_i18n('Assignee(s)'),
+             helperText: helpertext,
+             onFocus: searchAssignees,
+           }}
+           noOptionsText={t_i18n('No available options')}
+           options={assignees.sort((a, b) => a.label.localeCompare(b.label))}
+           onInputChange={handleSearch}
+           onChange={typeof onChange === 'function' ? onChange : null}
+           renderOption={(props, option) => (
+             <li {...props}>
+               <div className={classes.icon}>
+                 <ItemIcon type={option.type} />
+               </div>
+               <div className={classes.text}>{option.label}</div>
+             </li>
+           )}
+           classes={{ clearIndicator: classes.autoCompleteIndicator }}
+    />
+  );
 }
 
-export default compose(inject18n, withStyles(styles))(ObjectAssigneeField);
+export default ObjectAssigneeField;

@@ -7,7 +7,6 @@ import FieldOrEmpty from './FieldOrEmpty';
 import type { Theme } from './Theme';
 import useGranted, { KNOWLEDGE_KNUPDATE } from '../utils/hooks/useGranted';
 import { truncate } from '../utils/String';
-import { hexToRGB } from '../utils/Colors';
 import { commitMutation, defaultCommitMutation } from '../relay/environment';
 import Tooltip from '@mui/material/Tooltip';
 
