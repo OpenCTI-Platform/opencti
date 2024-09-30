@@ -79,6 +79,7 @@ const AUTH_BEARER = 'Bearer';
 const AUTH_BASIC = 'BasicAuth';
 export const TAXIIAPI = 'TAXIIAPI';
 const PLATFORM_ORGANIZATION = 'settings_platform_organization';
+export const MEMBERS_ENTITY_TYPES = [ENTITY_TYPE_USER, ENTITY_TYPE_IDENTITY_ORGANIZATION, ENTITY_TYPE_GROUP];
 
 const roleSessionRefresh = async (context, user, roleId) => {
   // Get all groups that have this role
@@ -198,7 +199,7 @@ export const findParticipants = (context, user, args) => {
 
 export const findAllMembers = (context, user, args) => {
   const { entityTypes = null } = args;
-  const types = entityTypes || [ENTITY_TYPE_USER, ENTITY_TYPE_IDENTITY_ORGANIZATION, ENTITY_TYPE_GROUP];
+  const types = entityTypes || MEMBERS_ENTITY_TYPES;
   return listEntities(context, user, types, args);
 };
 

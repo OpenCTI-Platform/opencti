@@ -3,6 +3,7 @@ import { schemaAttributesDefinition } from '../../../schema/schema-attributes';
 import { type AttributeDefinition, createdAt, creators, entityType, id, internalId, standardId, updatedAt } from '../../../schema/attribute-definition';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../../schema/stixMetaObject';
 import { ABSTRACT_STIX_CORE_OBJECT } from '../../../schema/general';
+import { UPLOAD_STATUS_VALUES } from './document-domain';
 
 const attributes: Array<AttributeDefinition> = [
   id,
@@ -17,7 +18,7 @@ const attributes: Array<AttributeDefinition> = [
   { name: 'information', label: 'Information', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: false },
   { name: 'lastModified', label: 'Last modification date', type: 'date', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
   { name: 'lastModifiedSinceMin', label: 'Last modification since', type: 'numeric', precision: 'integer', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: false },
-  { name: 'uploadStatus', label: 'Upload status', type: 'string', format: 'enum', values: ['wait', 'progress', 'complete', 'timeout'], mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+  { name: 'uploadStatus', label: 'Upload status', type: 'string', format: 'enum', values: UPLOAD_STATUS_VALUES, mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
   { name: 'objectMarking', label: 'Object markings', type: 'string', format: 'id', entityTypes: [ENTITY_TYPE_MARKING_DEFINITION], mandatoryType: 'internal', editDefault: false, multiple: true, upsert: false, isFilterable: false },
   {
     name: 'metaData',
