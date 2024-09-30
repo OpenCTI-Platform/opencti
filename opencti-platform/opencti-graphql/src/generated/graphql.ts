@@ -12747,6 +12747,7 @@ export type MeUser = BasicObject & InternalObject & {
   administrated_organizations: Array<Organization>;
   allowed_marking?: Maybe<Array<MarkingDefinition>>;
   api_token: Scalars['String']['output'];
+  can_manage_sensitive_config?: Maybe<Scalars['Boolean']['output']>;
   capabilities: Array<Capability>;
   default_dashboard?: Maybe<Workspace>;
   default_dashboards: Array<Workspace>;
@@ -12761,7 +12762,6 @@ export type MeUser = BasicObject & InternalObject & {
   groups?: Maybe<GroupConnection>;
   id: Scalars['ID']['output'];
   individual_id?: Maybe<Scalars['String']['output']>;
-  is_sensitive_changes_allow?: Maybe<Scalars['Boolean']['output']>;
   language?: Maybe<Scalars['String']['output']>;
   lastname?: Maybe<Scalars['String']['output']>;
   max_shareable_marking?: Maybe<Array<MarkingDefinition>>;
@@ -22312,13 +22312,13 @@ export enum RetentionUnit {
 
 export type Role = BasicObject & InternalObject & {
   __typename?: 'Role';
+  can_manage_sensitive_config?: Maybe<Scalars['Boolean']['output']>;
   capabilities?: Maybe<Array<Maybe<Capability>>>;
   created_at: Scalars['DateTime']['output'];
   description?: Maybe<Scalars['String']['output']>;
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String']['output'];
   id: Scalars['ID']['output'];
-  is_sensitive_changes_allow?: Maybe<Scalars['Boolean']['output']>;
   name: Scalars['String']['output'];
   parent_types: Array<Maybe<Scalars['String']['output']>>;
   standard_id: Scalars['String']['output'];
@@ -35657,6 +35657,7 @@ export type MeUserResolvers<ContextType = any, ParentType extends ResolversParen
   administrated_organizations?: Resolver<Array<ResolversTypes['Organization']>, ParentType, ContextType>;
   allowed_marking?: Resolver<Maybe<Array<ResolversTypes['MarkingDefinition']>>, ParentType, ContextType>;
   api_token?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  can_manage_sensitive_config?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   capabilities?: Resolver<Array<ResolversTypes['Capability']>, ParentType, ContextType>;
   default_dashboard?: Resolver<Maybe<ResolversTypes['Workspace']>, ParentType, ContextType>;
   default_dashboards?: Resolver<Array<ResolversTypes['Workspace']>, ParentType, ContextType>;
@@ -35671,7 +35672,6 @@ export type MeUserResolvers<ContextType = any, ParentType extends ResolversParen
   groups?: Resolver<Maybe<ResolversTypes['GroupConnection']>, ParentType, ContextType, Partial<MeUserGroupsArgs>>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   individual_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  is_sensitive_changes_allow?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   language?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   lastname?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   max_shareable_marking?: Resolver<Maybe<Array<ResolversTypes['MarkingDefinition']>>, ParentType, ContextType>;
@@ -37824,13 +37824,13 @@ export type RetentionRuleEditMutationsResolvers<ContextType = any, ParentType ex
 }>;
 
 export type RoleResolvers<ContextType = any, ParentType extends ResolversParentTypes['Role'] = ResolversParentTypes['Role']> = ResolversObject<{
+  can_manage_sensitive_config?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   capabilities?: Resolver<Maybe<Array<Maybe<ResolversTypes['Capability']>>>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  is_sensitive_changes_allow?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;

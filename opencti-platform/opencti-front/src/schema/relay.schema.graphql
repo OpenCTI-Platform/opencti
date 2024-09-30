@@ -1608,7 +1608,7 @@ type MeUser implements BasicObject & InternalObject {
   submenu_show_icons: Boolean
   submenu_auto_collapse: Boolean
   monochrome_labels: Boolean
-  is_sensitive_changes_allow: Boolean
+  can_manage_sensitive_config: Boolean
 }
 
 type SessionDetail {
@@ -1695,7 +1695,7 @@ type Role implements BasicObject & InternalObject {
   updated_at: DateTime!
   capabilities: [Capability]
   editContext: [EditUserContext!]
-  is_sensitive_changes_allow: Boolean
+  can_manage_sensitive_config: Boolean
 }
 
 input RoleAddInput {

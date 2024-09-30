@@ -53,7 +53,7 @@ const roleEditionPatchAllowSensitiveConf = graphql`
   ) {
     roleEdit(id: $id) {
       fieldPatch(input: $input) {
-        is_sensitive_changes_allow
+        can_manage_sensitive_config
       }
     }
   }
@@ -124,7 +124,7 @@ const RoleEditionCapabilitiesComponent: FunctionComponent<RoleEditionCapabilitie
       variables: {
         id: roleId,
         input: {
-          key: 'is_sensitive_changes_allow',
+          key: 'can_manage_sensitive_config',
           value: event.target.checked,
         },
       },
@@ -150,7 +150,7 @@ const RoleEditionCapabilitiesComponent: FunctionComponent<RoleEditionCapabilitie
           <ListItemSecondaryAction>
             <Checkbox
               onChange={(event) => handleSensitiveToggle(event)}
-              checked={role.is_sensitive_changes_allow ? role.is_sensitive_changes_allow : false}
+              checked={role.can_manage_sensitive_config ? role.can_manage_sensitive_config : false}
               disabled={false}
             />
           </ListItemSecondaryAction>
@@ -207,7 +207,7 @@ const RoleEditionCapabilities = createFragmentContainer(
     role: graphql`
       fragment RoleEditionCapabilities_role on Role {
         id
-        is_sensitive_changes_allow
+        can_manage_sensitive_config
         capabilities {
           id
           name

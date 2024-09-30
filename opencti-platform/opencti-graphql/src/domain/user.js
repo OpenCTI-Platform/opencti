@@ -1290,8 +1290,8 @@ export const isSensitiveChangesAllowed = (userId, roles) => {
   }
   let hasExplicitAllowSensitiveChangeFalse = 0;
   for (let i = 0; i <roles.length ; i++) {
-    if(roles[i].is_sensitive_changes_allow !== undefined){
-      if(roles[i].is_sensitive_changes_allow === false){
+    if(roles[i].can_manage_sensitive_config !== undefined){
+      if(roles[i].can_manage_sensitive_config === false){
         hasExplicitAllowSensitiveChangeFalse++;
       }
     }
@@ -1351,7 +1351,7 @@ export const buildCompleteUser = async (context, client) => {
 
   let ff = null;
   if(isFeatureEnabled(PROTECT_SENSITIVE_CHANGES_FF)){
-    ff = {is_sensitive_changes_allow: isSensitiveChangesAllowed(client.id, roles)}
+    ff = {can_manage_sensitive_config: isSensitiveChangesAllowed(client.id, roles)}
   }
 
   return {

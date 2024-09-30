@@ -17,13 +17,13 @@ const useSensitiveModifications = () => {
   const { me } = useAuth();
   const { isFeatureEnable } = useHelper();
   const isGroupEditionAllowed = (groupStandardId: string) => {
-    if (me.is_sensitive_changes_allow) {
+    if (me.can_manage_sensitive_config) {
       return true;
     }
     return !PROTECTED_GROUPS_IDS.includes(groupStandardId);
   };
   const isRoleEditionAllowed = (roleStandardId: string) => {
-    if (me.is_sensitive_changes_allow) {
+    if (me.can_manage_sensitive_config) {
       return true;
     }
     return !PROTECTED_ROLES_IDS.includes(roleStandardId);

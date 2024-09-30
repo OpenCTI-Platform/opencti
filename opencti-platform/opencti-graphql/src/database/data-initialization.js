@@ -256,7 +256,7 @@ const createBasicRolesAndCapabilities = async (context) => {
   if(isFeatureEnabled((PROTECT_SENSITIVE_CHANGES_FF))){
     administratorRoleInput = {
       ...administratorRoleInput,
-      is_sensitive_changes_allow: false
+      can_manage_sensitive_config: false
     }
   }
   await addRole(context, SYSTEM_USER, administratorRoleInput);
@@ -284,7 +284,7 @@ const createBasicRolesAndCapabilities = async (context) => {
   if(isFeatureEnabled((PROTECT_SENSITIVE_CHANGES_FF))){
     connectorRoleInput = {
       ...connectorRoleInput,
-      is_sensitive_changes_allow: false
+      can_manage_sensitive_config: false
     }
   }
 

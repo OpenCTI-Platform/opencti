@@ -63,7 +63,7 @@ const roleFragment = graphql`
       name
       description
     }
-    is_sensitive_changes_allow
+    can_manage_sensitive_config
   }
 `;
 
