@@ -355,8 +355,8 @@ export const redisFetchLatestDeletions = async () => {
   await getClientLock().zremrangebyscore('platform-deletions', '-inf', time - (5 * 1000));
   return getClientLock().zrange('platform-deletions', 0, -1);
 };
-interface LockOptions { automaticExtension?: boolean, retryCount?: number }
-const defaultLockOpts: LockOptions = { automaticExtension: true, retryCount: conf.get('app:concurrency:retry_count') };
+interface LockOptions { automaticExtension?: boolean, retryCount?: number, draftId?: string }
+const defaultLockOpts: LockOptions = { automaticExtension: true, retryCount: conf.get('app:concurrency:retry_count'), draftId: '' };
 const getStackTrace = () => {
   const obj: any = {};
   Error.captureStackTrace(obj, getStackTrace);
@@ -366,7 +366,8 @@ export const lockResource = async (resources: Array<string>, opts: LockOptions =
   let timeout: NodeJS.Timeout | undefined;
   let extension: undefined | Promise<void>;
   const initialCallStack = getStackTrace();
-  const locks = R.uniq(resources).map((id) => `{locks}:${id}`);
+  const draftId = opts.draftId ? opts.draftId : '';
+  const locks = R.uniq(resources).map((id) => `{locks}:${id}${draftId}`);
   const automaticExtensionThreshold = conf.get('app:concurrency:extension_threshold');
   const retryDelay = conf.get('app:concurrency:retry_delay');
   const retryJitter = conf.get('app:concurrency:retry_jitter');
