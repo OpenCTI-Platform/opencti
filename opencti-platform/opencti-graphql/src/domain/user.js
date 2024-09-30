@@ -1036,7 +1036,7 @@ export const userDeleteOrganizationRelation = async (context, user, userId, toId
 };
 
 export const loginFromProvider = async (userInfo, opts = {}) => {
-  const { providerGroups = [], providerOrganizations = [], autoCreateGroup = false } = opts;
+  const { providerGroups = [], providerOrganizations = [], autoCreateGroup = false, autoCreateUsers = true } = opts;
   const context = executionContext('login_provider');
   // region test the groups existence and eventually auto create groups
   if (providerGroups.length > 0) {
@@ -1069,7 +1069,11 @@ export const loginFromProvider = async (userInfo, opts = {}) => {
   const name = isEmptyField(providedName) ? email : providedName;
   const user = await elLoadBy(context, SYSTEM_USER, 'user_email', email, ENTITY_TYPE_USER);
   if (!user) {
-    // If user doesn't exist, create it. Providers are trusted
+    // If auto user creation is not permitted, forbid access
+    if (!autoCreateUsers) {
+      throw ForbiddenAccess('User account does not exist and auto-creation is disabled. Please contact your administrator.');
+    }
+    // If auto user creation is permitted, trust provider and create new account
     const newUser = { name, firstname, lastname, user_email: email.toLowerCase(), external: true };
     return addUser(context, SYSTEM_USER, newUser).then(() => {
       // After user creation, reapply login to manage roles and groups
