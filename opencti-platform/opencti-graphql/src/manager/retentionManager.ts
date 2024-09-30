@@ -14,6 +14,7 @@ import type { AuthContext } from '../types/user';
 import type { FileEdge, RetentionRule } from '../generated/graphql';
 import { deleteFile } from '../database/file-storage';
 import { DELETABLE_FILE_STATUSES, paginatedForPathWithEnrichment } from '../modules/internal/document/document-domain';
+import { RetentionRuleScope, RetentionUnit } from '../generated/graphql';
 
 const RETENTION_MANAGER_ENABLED = booleanConf('retention_manager:enabled', false);
 const RETENTION_MANAGER_START_ENABLED = booleanConf('retention_manager:enabled', true);
@@ -23,6 +24,8 @@ const RETENTION_MANAGER_START_ENABLED = booleanConf('retention_manager:enabled',
 const SCHEDULE_TIME = conf.get('retention_manager:interval') || 60000;
 const RETENTION_MANAGER_KEY = conf.get('retention_manager:lock_key') || 'retention_manager_lock';
 const RETENTION_BATCH_SIZE = conf.get('retention_manager:batch_size') || 100;
+export const RETENTION_SCOPE_VALUES = Object.values(RetentionRuleScope);
+export const RETENTION_UNIT_VALUES = Object.values(RetentionUnit);
 
 export const deleteElement = async (context: AuthContext, scope: string, nodeId: string, nodeEntityType?: string) => {
   if (scope === 'knowledge') {

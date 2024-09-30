@@ -40,6 +40,7 @@ import {
   ENTITY_TYPE_TOOL,
   ENTITY_TYPE_VULNERABILITY
 } from '../../schema/stixDomainObject';
+import { CVSS_SEVERITY_VALUES } from '../../domain/vulnerability';
 
 const stixDomainObjectAttributes: Array<AttributeDefinition> = [
   created,
@@ -236,7 +237,7 @@ const stixDomainObjectsAttributes: { [k: string]: Array<AttributeDefinition> } =
     { name: 'name', label: 'Name', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true, isFilterable: true },
     { name: 'description', label: 'Description', type: 'string', format: 'text', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true, isFilterable: true },
     { name: 'x_opencti_cvss_base_score', label: 'CVSS3 Score', type: 'numeric', precision: 'float', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
-    { name: 'x_opencti_cvss_base_severity', label: 'CVSS3 Severity', type: 'string', format: 'enum', values: ['CRITICAL', 'HIGH', 'MEDIUM', 'LOW', 'Unknown'], mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
+    { name: 'x_opencti_cvss_base_severity', label: 'CVSS3 Severity', type: 'string', format: 'enum', values: CVSS_SEVERITY_VALUES, mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
     { name: 'x_opencti_cvss_attack_vector', label: 'CVSS3 Attack vector', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
     { name: 'x_opencti_cvss_integrity_impact', label: 'CVSS3 Integrity impact', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
     { name: 'x_opencti_cvss_availability_impact', label: 'CVSS3 Availability impact', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
