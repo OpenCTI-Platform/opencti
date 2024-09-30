@@ -1,7 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
-import { pathOr, pipe, map, union } from 'ramda';
-import { debounce } from 'rxjs/operators';
-import { Subject, timer } from 'rxjs';
+import React, { FunctionComponent, useContext, useEffect, useState } from 'react';
 import { Field } from 'formik';
 import { graphql } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
@@ -9,9 +6,10 @@ import { fetchQuery } from '../../../../relay/environment';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
+import type { Theme } from '../../../../components/Theme';
 import { UserContext } from '../../../../utils/hooks/useAuth';
-
-const SEARCH$ = new Subject().pipe(debounce(() => timer(1500)));
+import { Option } from '@components/common/form/ReferenceField';
+import { ObjectAssigneeFieldMembersSearchQuery$data } from '@components/common/form/__generated__/ObjectAssigneeFieldMembersSearchQuery.graphql';
 
 export const objectAssigneeFieldMembersSearchQuery = graphql`
   query ObjectAssigneeFieldMembersSearchQuery($search: String, $first: Int, $entityTypes: [MemberType!]) {
@@ -41,7 +39,9 @@ export const objectAssigneeFieldAssigneesSearchQuery = graphql`
   }
 `;
 
-const useStyles = makeStyles((theme) => ({
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
+const useStyles = makeStyles<Theme>((theme) => ({
   icon: {
     paddingTop: 4,
     display: 'inline-block',
@@ -57,54 +57,51 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const ObjectAssigneeField = ({ defaultObjectAssignee, name, style, label, onChange, helpertext, disabled }) => {
+interface OptionAssignee extends Option {
+  type: string;
+}
+interface ObjectAssigneeFieldProps {
+  name: string;
+  onChange?: (name: string, values: OptionAssignee[]) => void;
+  style?: Record<string, string | number>;
+  helpertext?: string;
+  label?: string,
+  disabled?: boolean,
+}
+const ObjectAssigneeField: FunctionComponent<ObjectAssigneeFieldProps> = ({
+  name,
+  style,
+  label,
+  onChange,
+  helpertext,
+  disabled
+}) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const { me } = useContext((UserContext));
-  const [keyword, setKeyword] = useState('');
-  const [assignees, setAssignees] = useState(defaultObjectAssignee ? [
-    {
-      label: defaultObjectAssignee.name,
-      value: defaultObjectAssignee.id,
-      type: defaultObjectAssignee.entity_type,
-      entity: defaultObjectAssignee,
-    },
-  ]
-    : []);
+  const [assignees, setAssignees] = useState<OptionAssignee[]>([]);
 
-  const searchAssignees = () => {
+  const searchAssignees = (event: React.ChangeEvent<HTMLInputElement>) => {
     fetchQuery(objectAssigneeFieldMembersSearchQuery, {
-      search: keyword,
+      search: (event && event.target && event.target.value) ?? '',
       entityTypes: ['User'],
       first: 10,
     })
       .toPromise()
       .then((data) => {
-        const newAssignees = pipe(
-          pathOr([], ['members', 'edges']),
-          map((n) => ({
-            label: n.node.name,
-            value: n.node.id,
-            type: n.node.entity_type,
-            entity: n.node,
-          })),
-        )(data);
-        setAssignees(union(assignees, newAssignees));
+        const newAssignees = (
+          (data as ObjectAssigneeFieldMembersSearchQuery$data)?.members?.edges ?? []
+        ).map((n) => ({
+          label: n.node.name,
+          value: n.node.id,
+          type: n.node.entity_type,
+        })).sort((a, b) => (
+          // Sort by alphabetic order
+          // And display first the current user
+          a.value === me?.id ? -1 : b.value === me?.id ? 1 : a.label.localeCompare(b.label))
+        );
+        setAssignees(newAssignees);
       });
-  };
-
-  useEffect(() => {
-    const subscription = SEARCH$.subscribe({
-      next: () => searchAssignees(),
-    });
-    return subscription.unsubscribe();
-  });
-
-  const handleSearch = (event) => {
-    if (event && event.target && event.target.value) {
-      setKeyword(event.target.value);
-      SEARCH$.next({ action: 'Search' });
-    }
   };
 
   return (
@@ -120,11 +117,14 @@ const ObjectAssigneeField = ({ defaultObjectAssignee, name, style, label, onChan
         onFocus: searchAssignees,
       }}
       noOptionsText={t_i18n('No available options')}
-      options={assignees.sort((a, b) => a.value === me?.id ? -1 : b.value === me?.id ? 1 : a.label.localeCompare(b.label))}
-      onInputChange={handleSearch}
+      options={assignees}
+      onInputChange={searchAssignees}
       onChange={typeof onChange === 'function' ? onChange : null}
-      renderOption={(props, option) => (
-        <li {...props}>
+      renderOption={(
+        fieldProps: React.HTMLAttributes<HTMLLIElement>,
+        option: { type: string; label: string },
+      ) => (
+        <li {...fieldProps}>
           <div className={classes.icon}>
             <ItemIcon type={option.type} />
           </div>

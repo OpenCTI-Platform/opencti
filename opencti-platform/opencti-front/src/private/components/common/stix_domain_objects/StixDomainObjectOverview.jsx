@@ -154,11 +154,6 @@ class StixDomainObjectOverview extends Component {
     });
   }
 
-  // initialValues = {
-  //   objectAssignee: convertAssignees(this.props.stixDomainObject),
-  //   objectParticipant: convertParticipants(this.props.stixDomainObject),
-  // };
-
   render() {
     const {
       t,
