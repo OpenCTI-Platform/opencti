@@ -54,7 +54,6 @@ const StixCoreObjectOrCoreRelationshipLabelsView = (props) => {
   const { t_i18n } = useFormatter();
   const {
     labels,
-    marginTop,
     mutationRelationsAdd,
     mutationRelationDelete,
     enableReferences = false,

@@ -3,12 +3,12 @@ import Chip from '@mui/material/Chip';
 import { CancelOutlined, PersonOutline } from '@mui/icons-material';
 import { useTheme } from '@mui/styles';
 import { stixDomainObjectMutation } from '@components/common/stix_domain_objects/StixDomainObjectHeader';
+import Tooltip from '@mui/material/Tooltip';
 import { truncate } from '../utils/String';
 import useGranted, { KNOWLEDGE_KNUPDATE } from '../utils/hooks/useGranted';
 import type { Theme } from './Theme';
 import FieldOrEmpty from './FieldOrEmpty';
 import { commitMutation, defaultCommitMutation } from '../relay/environment';
-import Tooltip from '@mui/material/Tooltip';
 
 type Node = {
   readonly entity_type: string;
@@ -42,7 +42,7 @@ const ItemAssignees: FunctionComponent<Props> = ({ assignees, stixDomainObjectId
   return (
     <FieldOrEmpty source={assignees}>
       {assignees.map((assignee) => (
-        <Tooltip title={assignee.name}>
+        <Tooltip key={assignee.id} title={assignee.name}>
           <Chip
             key={assignee.id}
             variant="outlined"
