@@ -95,7 +95,11 @@ const ObjectParticipantField: FunctionComponent<ObjectParticipantFieldProps> = (
           label: n.node.name,
           value: n.node.id,
           type: n.node.entity_type,
-        })).sort((a, b) => a.label.localeCompare(b.label));
+        })).sort((a, b) => (
+          // Sort by alphabetic order
+          // And display first the current user
+          a.value === me?.id ? -1 : b.value === me?.id ? 1 : a.label.localeCompare(b.label))
+        );
         setParticipants(newParticipants);
       });
   };
@@ -113,7 +117,7 @@ const ObjectParticipantField: FunctionComponent<ObjectParticipantFieldProps> = (
         onFocus: searchParticipants,
       }}
       noOptionsText={t_i18n('No available options')}
-      options={participants.sort((a, b) => a.value === me?.id ? -1 : b.value === me?.id ? 1 : a.label.localeCompare(b.label))}
+      options={participants}
       onInputChange={searchParticipants}
       onChange={typeof onChange === 'function' ? onChange : null}
       renderOption={(
