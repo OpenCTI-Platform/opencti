@@ -4,11 +4,11 @@ import { debounce } from 'rxjs/operators';
 import { Subject, timer } from 'rxjs';
 import { Field } from 'formik';
 import { graphql } from 'react-relay';
+import makeStyles from '@mui/styles/makeStyles';
 import { fetchQuery } from '../../../../relay/environment';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
-import makeStyles from '@mui/styles/makeStyles';
 
 const SEARCH$ = new Subject().pipe(debounce(() => timer(1500)));
 
@@ -56,34 +56,19 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const ObjectAssigneeField = (props) => {
-  const { defaultObjectAssignee, name, style, label, onChange, helpertext, disabled } = props;
+const ObjectAssigneeField = ({ defaultObjectAssignee, name, style, label, onChange, helpertext, disabled }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const [keyword, setKeyword] = useState('');
   const [assignees, setAssignee] = useState(defaultObjectAssignee ? [
-      {
-        label: defaultObjectAssignee.name,
-        value: defaultObjectAssignee.id,
-        type: defaultObjectAssignee.entity_type,
-        entity: defaultObjectAssignee,
-      },
-    ]
+    {
+      label: defaultObjectAssignee.name,
+      value: defaultObjectAssignee.id,
+      type: defaultObjectAssignee.entity_type,
+      entity: defaultObjectAssignee,
+    },
+  ]
     : []);
-
-  useEffect(() => {
-    const subscription = SEARCH$.subscribe({
-      next: () => searchAssignees(),
-    });
-    return subscription.unsubscribe();
-  });
-
-  const handleSearch = (event) => {
-    if (event && event.target && event.target.value) {
-      setKeyword(event.target.value);
-      SEARCH$.next({ action: 'Search' });
-    }
-  }
 
   const searchAssignees = () => {
     fetchQuery(objectAssigneeFieldMembersSearchQuery, {
@@ -104,35 +89,49 @@ const ObjectAssigneeField = (props) => {
         )(data);
         setAssignee(union(assignees, newAssignees));
       });
-  }
+  };
+
+  useEffect(() => {
+    const subscription = SEARCH$.subscribe({
+      next: () => searchAssignees(),
+    });
+    return subscription.unsubscribe();
+  });
+
+  const handleSearch = (event) => {
+    if (event && event.target && event.target.value) {
+      setKeyword(event.target.value);
+      SEARCH$.next({ action: 'Search' });
+    }
+  };
 
   return (
     <Field component={AutocompleteField}
-           style={style}
-           name={name}
-           disabled={disabled}
-           multiple={true}
-           textfieldprops={{
-             variant: 'standard',
-             label: label ?? t_i18n('Assignee(s)'),
-             helperText: helpertext,
-             onFocus: searchAssignees,
-           }}
-           noOptionsText={t_i18n('No available options')}
-           options={assignees.sort((a, b) => a.label.localeCompare(b.label))}
-           onInputChange={handleSearch}
-           onChange={typeof onChange === 'function' ? onChange : null}
-           renderOption={(props, option) => (
-             <li {...props}>
-               <div className={classes.icon}>
-                 <ItemIcon type={option.type} />
-               </div>
-               <div className={classes.text}>{option.label}</div>
-             </li>
-           )}
-           classes={{ clearIndicator: classes.autoCompleteIndicator }}
+      style={style}
+      name={name}
+      disabled={disabled}
+      multiple={true}
+      textfieldprops={{
+        variant: 'standard',
+        label: label ?? t_i18n('Assignee(s)'),
+        helperText: helpertext,
+        onFocus: searchAssignees,
+      }}
+      noOptionsText={t_i18n('No available options')}
+      options={assignees.sort((a, b) => a.label.localeCompare(b.label))}
+      onInputChange={handleSearch}
+      onChange={typeof onChange === 'function' ? onChange : null}
+      renderOption={(props, option) => (
+        <li {...props}>
+          <div className={classes.icon}>
+            <ItemIcon type={option.type} />
+          </div>
+          <div className={classes.text}>{option.label}</div>
+        </li>
+      )}
+      classes={{ clearIndicator: classes.autoCompleteIndicator }}
     />
   );
-}
+};
 
 export default ObjectAssigneeField;
