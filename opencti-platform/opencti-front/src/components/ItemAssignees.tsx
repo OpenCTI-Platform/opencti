@@ -1,10 +1,9 @@
 import React, { FunctionComponent } from 'react';
 import Chip from '@mui/material/Chip';
-import { CancelOutlined, Person, PersonOutline } from '@mui/icons-material';
+import { CancelOutlined, PersonOutline } from '@mui/icons-material';
 import { useTheme } from '@mui/styles';
 import { stixDomainObjectMutation } from '@components/common/stix_domain_objects/StixDomainObjectHeader';
 import { truncate } from '../utils/String';
-import { hexToRGB } from '../utils/Colors';
 import useGranted, { KNOWLEDGE_KNUPDATE } from '../utils/hooks/useGranted';
 import type { Theme } from './Theme';
 import FieldOrEmpty from './FieldOrEmpty';
