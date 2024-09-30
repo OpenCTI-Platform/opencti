@@ -49,7 +49,7 @@ export default defineConfig({
     video: 'retain-on-failure',
     ignoreHTTPSErrors: true,
   },
-  expect: { timeout: 60000 },
+  expect: { timeout: 30000 },
   timeout: 200000,
   /* Configure projects for major browsers */
   projects: [
