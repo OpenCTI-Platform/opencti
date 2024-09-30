@@ -8,9 +8,17 @@ interface GroupEditionProps {
   handleClose?: () => void
   groupId: string
   open?: boolean
+  disabled?: boolean
+  isSensitive?: boolean
 }
 
-const GroupEdition: FunctionComponent<GroupEditionProps> = ({ handleClose, groupId, open }) => {
+const GroupEdition: FunctionComponent<GroupEditionProps> = ({
+  handleClose,
+  groupId,
+  open,
+  disabled = false,
+  isSensitive = false,
+}) => {
   const groupQueryRef = useQueryLoading<GroupEditionContainerQuery>(groupEditionContainerQuery, { id: groupId });
   return (
     <div>
@@ -20,6 +28,8 @@ const GroupEdition: FunctionComponent<GroupEditionProps> = ({ handleClose, group
             groupQueryRef={groupQueryRef}
             handleClose={handleClose}
             open={open}
+            disabled={disabled}
+            isSensitive={isSensitive}
           />
         </React.Suspense>
       )}

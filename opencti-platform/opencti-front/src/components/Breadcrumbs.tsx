@@ -3,6 +3,7 @@ import MUIBreadcrumbs from '@mui/material/Breadcrumbs';
 import { Link } from 'react-router-dom';
 import Typography from '@mui/material/Typography';
 import { useTheme } from '@mui/styles';
+import DangerZoneChip from '@components/common/dangerZone/DangerZoneChip';
 import { truncate } from '../utils/String';
 import type { Theme } from './Theme';
 
@@ -13,17 +14,23 @@ interface element {
 }
 
 interface BreadcrumbsProps {
-  elements: element[],
+  elements: element[]
+  isSensitive?: boolean
 }
 
-const Breadcrumbs: FunctionComponent<BreadcrumbsProps> = ({ elements }) => {
+const Breadcrumbs: FunctionComponent<BreadcrumbsProps> = ({ elements, isSensitive = false }) => {
   const theme = useTheme<Theme>();
   return (
     <MUIBreadcrumbs style={{ marginBottom: theme.spacing(2) }}>
       {elements.map((element) => {
         if (element.current) {
           return (
-            <Typography key={element.label} color="text.primary">{truncate(element.label, 30, false)}</Typography>
+            <span key={element.label} style={{ display: 'flex', alignItems: 'center' }}>
+              <Typography color={'text.primary'}>
+                {truncate(element.label, 30, false)}
+              </Typography>
+              {isSensitive && <DangerZoneChip />}
+            </span>
           );
         }
         if (!element.link) {

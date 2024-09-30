@@ -1,4 +1,3 @@
-import { Role_role$data } from '@components/settings/roles/__generated__/Role_role.graphql';
 import useAuth from './useAuth';
 import useHelper from './useHelper';
 
@@ -14,42 +13,26 @@ const CONNECTOR_ROLE_ID = 'role--b375ed46-a11c-56d5-a2d4-0c654f61eeee';
 const DEFAULT_ROLE_ID = 'role--a7991a4f-6192-59a4-87d3-d006d2c41cc8';
 const PROTECTED_ROLES_IDS = [ADMINISTRATOR_ROLE_ID, CONNECTOR_ROLE_ID, DEFAULT_ROLE_ID];
 
-const useSensitiveModifications = () => {
+const PROTECTED_IDS = [...PROTECTED_GROUPS_IDS, ...PROTECTED_ROLES_IDS];
+
+const useSensitiveModifications = (id?: string) => {
   const { me } = useAuth();
   const { isFeatureEnable } = useHelper();
-  const isGroupEditionAllowed = (groupStandardId: string) => {
-    if (me.can_manage_sensitive_config) {
-      return true;
-    }
-    return !PROTECTED_GROUPS_IDS.includes(groupStandardId);
-  };
+  const isSensitiveModificationEnabled = isFeatureEnable(PROTECT_SENSITIVE_CHANGES_FF);
 
-  /**
-   * Return true when current user has the fake capa can_manage_sensitive_config enabled.
-   * @param roleStandardId
-   */
-  const isRoleEditionAllowed = (roleStandardId: string) => {
-    if (me.can_manage_sensitive_config) {
-      return true;
-    }
-    return !PROTECTED_ROLES_IDS.includes(roleStandardId);
-  };
+  let isAllowed = me.can_manage_sensitive_config != null ? me.can_manage_sensitive_config : true;
 
-  /**
-   * True when a role has the fake capa can_manage_sensitive_config enabled, false if not.
-   * when can_manage_sensitive_config undefined => true.
-   * @param role
-   */
-  const isRoleWithManageSensitiveConfig = (role: Role_role$data) => {
-    return role.can_manage_sensitive_config ?? true;
-  };
+  if (id) {
+    isAllowed = (me.can_manage_sensitive_config || !PROTECTED_IDS.includes(id));
+  }
+  if (!isSensitiveModificationEnabled) {
+    isAllowed = true;
+  }
 
   return {
-    ffenabled: isFeatureEnable(PROTECT_SENSITIVE_CHANGES_FF),
-    isGroupEditionAllowed,
-    isRoleEditionAllowed,
-    isRoleWithManageSensitiveConfig,
-    isPlatformOrgaModificationAllowed: me.can_manage_sensitive_config ?? true,
+    isSensitiveModificationEnabled,
+    isAllowed,
+    isSensitive: isSensitiveModificationEnabled && (!id || PROTECTED_IDS.includes(id)),
   };
 };
 

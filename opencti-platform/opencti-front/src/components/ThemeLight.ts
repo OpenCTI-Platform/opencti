@@ -34,6 +34,7 @@ const ThemeLight = (
       main: '#f44336',
       dark: '#c62828',
     },
+    dangerZone: { main: '#f6685e', light: '#fbc2be', dark: '#D1584F', contrastText: 'black', text: { primary: '#D1584F' } },
     success: { main: '#03a847' },
     primary: { main: primary || THEME_LIGHT_DEFAULT_PRIMARY },
     secondary: { main: secondary || THEME_LIGHT_DEFAULT_SECONDARY },

@@ -4,6 +4,7 @@ import { Theme as MuiTheme, ThemeOptions } from '@mui/material/styles/createThem
 declare module '@mui/material/IconButton' {
   interface IconButtonPropsColorOverrides {
     ee: true
+    dangerZone: true
   }
 }
 
@@ -26,9 +27,22 @@ declare module '@mui/material/SvgIcon' {
   }
 }
 
+declare module '@mui/material/Fab' {
+  interface FabPropsColorOverrides {
+    dangerZone: true
+  }
+}
+
+declare module '@mui/material/Alert' {
+  interface AlertPropsColorOverrides {
+    dangerZone: true
+  }
+}
+
 interface ExtendedColor extends PaletteColorOptions {
   main: string
   dark: string
+  light: string
   palette: ExtendedPaletteOptions
   text: Partial<TypeText>
   mode: PaletteMode
@@ -52,6 +66,7 @@ interface ExtendedPaletteOptions extends PaletteOptions {
     pagination: string
     lightBackground?: string
   }
+  dangerZone: Partial<ExtendedColor>
   primary: Partial<ExtendedColor>
   error: Partial<ExtendedColor>
   success: Partial<ExtendedColor>

@@ -33,6 +33,7 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import { FileIndexingConfigurationQuery$data } from '@components/settings/file_indexing/__generated__/FileIndexingConfigurationQuery.graphql';
+import DangerZoneBlock from '@components/common/dangerZone/DangerZoneBlock';
 import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
 import { handleError, MESSAGING$ } from '../../../../relay/environment';
@@ -120,9 +121,7 @@ const BorderLinearProgress = styled(LinearProgress)(({ theme }) => ({
   },
 }));
 
-const FileIndexingMonitoringComponent: FunctionComponent<
-FileIndexingMonitoringComponentProps
-> = ({
+const FileIndexingMonitoringComponent: FunctionComponent<FileIndexingMonitoringComponentProps> = ({
   managerConfigurationId,
   isStarted,
   totalFiles,
@@ -266,66 +265,70 @@ FileIndexingMonitoringComponentProps
           </Paper>
         </Grid>
         <Grid item xs={4}>
-          <Typography variant="h4" gutterBottom={true}>
-            {t_i18n('Control')}
-          </Typography>
-          <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
-            <Grid container={true} spacing={3}>
-              <Grid item xs={6}>
-                <Typography variant="h3" gutterBottom={true}>
-                  {t_i18n('Engine')}
-                </Typography>
-                {isStarted ? (
-                  <Button
-                    startIcon={<PauseOutlined />}
-                    aria-label="Pause"
-                    onClick={handlePause}
-                    color="warning"
-                    variant="contained"
-                  >
-                    {t_i18n('Pause')}
-                  </Button>
-                ) : (
-                  <Button
-                    startIcon={<PlayArrowOutlined />}
-                    aria-label="Start"
-                    onClick={handleStart}
-                    color="success"
-                    variant="contained"
-                  >
-                    {t_i18n('Start')}
-                  </Button>
-                )}
-              </Grid>
-              <Grid item xs={6}>
-                <Typography variant="h3" gutterBottom={true}>
-                  {t_i18n('Indexing')}
-                </Typography>
-                <Button
-                  startIcon={<ClearOutlined />}
-                  aria-label="Reset"
-                  onClick={handleReset}
-                  color="error"
-                  variant="contained"
-                  disabled={indexedFiles === 0}
-                >
-                  {t_i18n('Reset')}
-                </Button>
-              </Grid>
-              <Grid item xs={6}>
-                <Typography variant="h3" gutterBottom={true}>
-                  {t_i18n('Indexing manager start')}
-                </Typography>
-                {fldt(managerConfiguration?.last_run_start_date)}
-              </Grid>
-              <Grid item xs={6}>
-                <Typography variant="h3" gutterBottom={true}>
-                  {t_i18n('Last indexation')}
-                </Typography>
-                {fldt(lastIndexationDate)}
-              </Grid>
-            </Grid>
-          </Paper>
+          <DangerZoneBlock
+            title={t_i18n('Control')}
+            component={({ disabled, style }) => (
+              <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined" style={style}>
+                <Grid container={true} spacing={3}>
+                  <Grid item xs={6}>
+                    <Typography variant="h3" gutterBottom={true}>
+                      {t_i18n('Engine')}
+                    </Typography>
+                    {isStarted ? (
+                      <Button
+                        startIcon={<PauseOutlined />}
+                        aria-label="Pause"
+                        onClick={handlePause}
+                        color="warning"
+                        variant="contained"
+                        disabled={disabled}
+                      >
+                        {t_i18n('Pause')}
+                      </Button>
+                    ) : (
+                      <Button
+                        startIcon={<PlayArrowOutlined />}
+                        aria-label="Start"
+                        onClick={handleStart}
+                        color="success"
+                        variant="contained"
+                        disabled={disabled}
+                      >
+                        {t_i18n('Start')}
+                      </Button>
+                    )}
+                  </Grid>
+                  <Grid item xs={6}>
+                    <Typography variant="h3" gutterBottom={true}>
+                      {t_i18n('Indexing')}
+                    </Typography>
+                    <Button
+                      startIcon={<ClearOutlined />}
+                      aria-label="Reset"
+                      onClick={handleReset}
+                      color="error"
+                      variant="contained"
+                      disabled={disabled || indexedFiles === 0}
+                    >
+                      {t_i18n('Reset')}
+                    </Button>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <Typography variant="h3" gutterBottom={true}>
+                      {t_i18n('Indexing manager start')}
+                    </Typography>
+                    {fldt(managerConfiguration?.last_run_start_date)}
+                  </Grid>
+                  <Grid item xs={6}>
+                    <Typography variant="h3" gutterBottom={true}>
+                      {t_i18n('Last indexation')}
+                    </Typography>
+                    {fldt(lastIndexationDate)}
+                  </Grid>
+                </Grid>
+              </Paper>
+            )}
+          />
         </Grid>
         <Grid item xs={4}>
           <Typography variant="h4" gutterBottom={true}>
@@ -423,9 +426,7 @@ interface FileIndexingMonitoringProps {
   lastIndexationDate: Date;
 }
 
-const FileIndexingMonitoring: FunctionComponent<
-FileIndexingMonitoringProps
-> = ({
+const FileIndexingMonitoring: FunctionComponent<FileIndexingMonitoringProps> = ({
   managerConfigurationId,
   isStarted,
   totalFiles,

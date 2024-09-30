@@ -579,6 +579,8 @@
   "CVSS3 - Integrity impact (I)": "CVSS3 - 完全性への影響 (I)",
   "CVSS3 - Score": "CVSS3 - スコア",
   "CVSS3 - Severity": "CVSS3 - 重大度",
+  "Danger Zone": "危険地帯",
+  "DangerZoneTooltip": "ここで設定を変更すると、プラットフォームの安定性に重大な影響を及ぼす可能性がある。重要なコンフィギュレーションを変更できるのは、その権限を持つユーザーだけです。自分が何をしているのかをよく理解してください。",
   "Dark": "ダークテーマ",
   "Dark (with background)": "ダークテーマ (背景有り)",
   "Dark (without background)": "ダークテーマ (背景無し)",

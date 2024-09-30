@@ -14,39 +14,37 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
 import Alert from '@mui/material/Alert';
-import makeStyles from '@mui/styles/makeStyles';
 import AlertTitle from '@mui/material/AlertTitle';
 import React from 'react';
 import EnterpriseEditionButton from '@components/common/entreprise_edition/EnterpriseEditionButton';
-import type { Theme } from '../../../../components/Theme';
+import { useTheme } from '@mui/styles';
 import { useFormatter } from '../../../../components/i18n';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  alert: {
-    width: '100%',
-    marginBottom: 20,
-    borderColor: theme.palette.ee.main,
-    color: theme.palette.text?.primary,
-  },
-}));
+import useSensitiveModifications from '../../../../utils/hooks/useSensitiveModifications';
+import type { Theme } from '../../../../components/Theme';
 
 const EnterpriseEdition = ({ message, feature }: { message?: string, feature?: string }) => {
-  const classes = useStyles();
+  const theme = useTheme<Theme>();
+
+  const { isSensitiveModificationEnabled, isAllowed } = useSensitiveModifications();
+
   const { t_i18n } = useFormatter();
   return (
     <>
       <Alert
         icon={false}
-        classes={{ root: classes.alert }}
         severity="warning"
         variant="outlined"
-        style={{ position: 'relative' }}
+        style={{
+          position: 'relative',
+          width: '100%',
+          marginBottom: 20,
+          borderColor: isSensitiveModificationEnabled ? theme.palette.dangerZone.main : theme.palette.ee.main,
+          color: theme.palette.text?.primary,
+        }}
       >
         <AlertTitle style={{ marginBottom: 0, fontWeight: 400 }}>
           {t_i18n(message ?? 'You need to activate OpenCTI enterprise edition to use this feature.')}
-          <EnterpriseEditionButton feature={feature} />
+          <EnterpriseEditionButton disabled={!isAllowed} feature={feature} />
         </AlertTitle>
       </Alert>
     </>
