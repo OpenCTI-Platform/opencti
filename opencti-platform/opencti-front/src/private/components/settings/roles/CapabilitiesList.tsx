@@ -4,9 +4,6 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemIcon from '@mui/material/ListItemIcon';
-import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
-import Checkbox from '@mui/material/Checkbox';
-import LocalPoliceOutlined from '@mui/icons-material/LocalPoliceOutlined';
 import { useFormatter } from '../../../../components/i18n';
 import { roleEditionCapabilitiesLinesSearch } from './RoleEditionCapabilities';
 import { RoleEditionCapabilitiesLinesSearchQuery } from './__generated__/RoleEditionCapabilitiesLinesSearchQuery.graphql';
@@ -35,7 +32,7 @@ const CapabilitiesList: FunctionComponent<CapabilitiesListProps> = ({
 
   return (
     <List>
-      {ffenabled && role?.can_manage_sensitive_config && (
+      {ffenabled && role.can_manage_sensitive_config && (
       <ListItem
         key='sensitive'
         dense={true}
