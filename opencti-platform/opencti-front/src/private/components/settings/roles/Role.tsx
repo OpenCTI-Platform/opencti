@@ -53,6 +53,7 @@ const useStyles = makeStyles(() => ({
 const roleFragment = graphql`
   fragment Role_role on Role {
     id
+    standard_id
     name
     description
     created_at
@@ -83,7 +84,7 @@ const Role = ({
         : null))
       .filter((n) => n !== null && n !== undefined);
   };
-  const { ffenabled, isSensitiveModifAllowed } = useSensitiveModifications();
+  const { ffenabled, isRoleEditionAllowed } = useSensitiveModifications();
   const role = useFragment<Role_role$key>(roleFragment, roleData);
   const queryRef = useQueryLoading<RoleEditionCapabilitiesLinesSearchQuery>(
     roleEditionCapabilitiesLinesSearch,
@@ -100,7 +101,7 @@ const Role = ({
           {role.name}
         </Typography>
         {ffenabled && (
-          isSensitiveModifAllowed
+          isRoleEditionAllowed(role.standard_id)
             ? <div className={classes.popover}>
               <RolePopover roleId={role.id}/>
             </div>
@@ -183,7 +184,7 @@ const Role = ({
           if (props && props.role) {
             if (ffenabled) {
               return (
-                isSensitiveModifAllowed
+                isRoleEditionAllowed(role.standard_id)
                   ? <RoleEdition
                       role={props.role}
                     />

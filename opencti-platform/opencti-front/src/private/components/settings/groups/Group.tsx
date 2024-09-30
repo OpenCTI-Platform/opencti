@@ -63,6 +63,7 @@ const groupFragment = graphql`
     rolesOrderMode: { type: "OrderingMode", defaultValue: asc }
   ) {
     id
+    standard_id
     entity_type
     name
     default_assignation
@@ -124,7 +125,7 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const group = useFragment<Group_group$key>(groupFragment, groupData);
-  const { ffenabled, isSensitiveModifAllowed } = useSensitiveModifications();
+  const { ffenabled, isGroupEditionAllowed } = useSensitiveModifications();
   const markingsSort = R.sortWith([
     R.ascend(R.propOr('TLP', 'definition_type')),
     R.descend(R.propOr(0, 'x_opencti_order')),
@@ -156,7 +157,7 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
         {group.name}
       </Typography>
       {ffenabled && (
-        isSensitiveModifAllowed
+        isGroupEditionAllowed(group.standard_id)
           ? <div className={classes.popover}>
             <GroupPopover groupId={group.id} />
           </div>
@@ -471,7 +472,7 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
         <GroupUsers groupId={group.id} />
       </Grid>
       {ffenabled && (
-        isSensitiveModifAllowed
+        isGroupEditionAllowed(group.standard_id)
           ? <div className={classes.popover}>
             <GroupEdition groupId={group.id} />
           </div>
