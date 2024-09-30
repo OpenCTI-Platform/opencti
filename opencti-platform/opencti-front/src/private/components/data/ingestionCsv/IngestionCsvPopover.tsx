@@ -30,7 +30,7 @@ const ingestionCsvPopoverDeletionMutation = graphql`
 interface IngestionCsvPopoverProps {
   ingestionCsvId: string;
   running?: boolean | null;
-  paginationOptions?: IngestionCsvLinesPaginationQuery$variables;
+  paginationOptions?: IngestionCsvLinesPaginationQuery$variables | null | undefined;
 }
 
 const IngestionCsvPopover: FunctionComponent<IngestionCsvPopoverProps> = ({

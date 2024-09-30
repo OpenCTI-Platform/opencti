@@ -62,32 +62,33 @@ interface IngestionCsvCreationContainerProps {
   queryRef?: PreloadedQuery<IngestionCsvEditionContainerQuery>,
   handleClose: () => void,
   open: boolean,
-  paginationOptions: IngestionCsvLinesPaginationQuery$variables,
+  paginationOptions?: IngestionCsvLinesPaginationQuery$variables | null | undefined,
   isDuplicated: boolean,
   ingestionCsv?: IngestionCsvEditionFragment_ingestionCsv$key
 }
 
 export interface IngestionAddInput {
-  name: string | null
+  name: string
   message?: string | null
   references?: ExternalReferencesValues
   description?: string | null
   uri: string
-  csv_mapper_id?: string | Option
+  csv_mapper_id: string | Option
   authentication_type: IngestionAuthType | string
-  authentication_value: string | null
+  authentication_value?: string | null
   current_state_date: Date | null
+  ingestion_running?: boolean | null,
   user_id: string | Option
   username?: string
   password?: string
   cert?: string
   key?: string
   ca?: string
-  markings: Option[],
+  markings: Option[]
 }
 
 interface IngestionCsvCreationProps {
-  paginationOptions: IngestionCsvLinesPaginationQuery$variables;
+  paginationOptions?: IngestionCsvLinesPaginationQuery$variables | null | undefined;
   isDuplicated: boolean
   handleClose: () => void
   ingestionCsv?: IngestionCsvEditionFragment_ingestionCsv$key | null
@@ -164,18 +165,20 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
     values,
     { setSubmitting, resetForm },
   ) => {
-    let authenticationValue = values.authentication_value;
+    let authenticationValue = isDuplicated ? ingestionCsvData?.authentication_value : values.authentication_value;
     if (values.authentication_type === 'basic') {
       authenticationValue = `${values.username}:${values.password}`;
     } else if (values.authentication_type === 'certificate') {
       authenticationValue = `${values.cert}:${values.key}:${values.ca}`;
     }
-    const markings = values?.markings?.map((option) => option.value);
+    const markings = values.markings?.map((option) => option.value);
+    // console.log('markings', markings);
+    // console.log('status', values.current_state_date);
     const input = {
       name: values.name,
       description: values.description,
       uri: values.uri,
-      csv_mapper_id: typeof values.csv_mapper_id === 'string' ? values.csv_mapper_id : values?.csv_mapper_id?.value,
+      csv_mapper_id: typeof values.csv_mapper_id === 'string' ? values.csv_mapper_id : values.csv_mapper_id?.value,
       authentication_type: values.authentication_type,
       authentication_value: authenticationValue,
       current_state_date: values.current_state_date,
@@ -202,7 +205,7 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
     });
   };
   const queryRef = useQueryLoading<CsvMapperFieldSearchQuery>(csvMapperQuery);
-
+  // console.log('current status', ingestionCsvData);
   const initialValues: IngestionAddInput = isDuplicated && ingestionCsvData ? {
     name: ingestionCsvData.name,
     description: ingestionCsvData.description,
@@ -211,6 +214,7 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
     authentication_type: ingestionCsvData.authentication_type,
     authentication_value: ingestionCsvData.authentication_value,
     current_state_date: ingestionCsvData.current_state_date,
+    ingestion_running: ingestionCsvData.ingestion_running,
     user_id: convertUser(ingestionCsvData, 'user'),
     username: ingestionCsvData.authentication_type === BASIC_AUTH ? extractUsername(ingestionCsvData.authentication_value) : undefined,
     password: ingestionCsvData.authentication_type === BASIC_AUTH ? extractPassword(ingestionCsvData.authentication_value) : undefined,
@@ -222,7 +226,7 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
     ).map((marking) => ({
       label: marking.definition ?? '',
       value: marking.id,
-    })),
+    })) ?? [],
   } : {
     name: '',
     description: '',
