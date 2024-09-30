@@ -136,7 +136,7 @@ describe('Elasticsearch computation', () => {
     );
     const aggregationMap = new Map(malwaresAggregation.map((i) => [i.label, i.value]));
     expect(aggregationMap.get('Malware')).toEqual(2);
-    expect(aggregationMap.get('Indicator')).toEqual(3);
+    expect(aggregationMap.get('Indicator')).toEqual(4);
   });
   it('should entity aggregation with date accurate', async () => {
     const mostRecentMalware = await elLoadById(testContext, ADMIN_USER, 'malware--c6006dd5-31ca-45c2-8ae0-4e428e712f88');
@@ -232,7 +232,7 @@ describe('Elasticsearch computation', () => {
     // noinspection JSUnresolvedVariable
     const storedFormat = moment(R.head(data).date)._f;
     expect(storedFormat).toEqual('YYYY-MM-DD');
-    expect(R.head(data).value).toEqual(36);
+    expect(R.head(data).value).toEqual(48);
   });
   it('should month histogram accurate', async () => {
     const data = await elHistogramCount(
@@ -404,7 +404,7 @@ describe('Elasticsearch pagination', () => {
   it('should entity paginate everything', async () => {
     const data = await elPaginate(testContext, ADMIN_USER, READ_ENTITIES_INDICES, { first: ES_MAX_PAGINATION });
     expect(data).not.toBeNull();
-    expect(data.edges.length).toEqual(537);
+    expect(data.edges.length).toEqual(552);
     const filterBaseTypes = R.uniq(R.map((e) => e.node.base_type, data.edges));
     expect(filterBaseTypes.length).toEqual(1);
     expect(R.head(filterBaseTypes)).toEqual('ENTITY');
@@ -500,7 +500,7 @@ describe('Elasticsearch pagination', () => {
       filterGroups: [],
     };
     const data = await elPaginate(testContext, ADMIN_USER, READ_ENTITIES_INDICES, { filters, first: ES_MAX_PAGINATION });
-    expect(data.edges.length).toEqual(526);
+    expect(data.edges.length).toEqual(541);
   });
   it('should entity paginate with field exist filter', async () => {
     const filters = {
@@ -563,7 +563,7 @@ describe('Elasticsearch pagination', () => {
       filterGroups: [],
     };
     data = await elPaginate(testContext, ADMIN_USER, READ_ENTITIES_INDICES, { filters, first: ES_MAX_PAGINATION });
-    expect(data.edges.length).toEqual(368);
+    expect(data.edges.length).toEqual(380);
     filters = {
       mode: 'and',
       filters: [
@@ -581,7 +581,7 @@ describe('Elasticsearch pagination', () => {
       orderMode: 'asc',
       first: ES_MAX_PAGINATION
     });
-    expect(data.edges.length).toEqual(519 + TESTING_USERS.length + TESTING_ROLES.length + TESTING_GROUPS.length);
+    expect(data.edges.length).toEqual(534 + TESTING_USERS.length + TESTING_ROLES.length + TESTING_GROUPS.length);
     const createdDates = R.map((e) => e.node.created, data.edges);
     let previousCreatedDate = null;
     for (let index = 0; index < createdDates.length; index += 1) {
@@ -681,24 +681,24 @@ describe('Elasticsearch pagination', () => {
     const groupByIndices = R.groupBy((e) => e.node._index, data.edges);
     expect(groupByIndices[`${ES_INDEX_PREFIX}_internal_relationships-000001`].length).toEqual(94);
     expect(groupByIndices[`${ES_INDEX_PREFIX}_stix_core_relationships-000001`].length).toEqual(24);
-    expect(groupByIndices[`${ES_INDEX_PREFIX}_stix_meta_relationships-000001`].length).toEqual(129);
+    expect(groupByIndices[`${ES_INDEX_PREFIX}_stix_meta_relationships-000001`].length).toEqual(146);
     expect(groupByIndices[`${ES_INDEX_PREFIX}_stix_sighting_relationships-000001`].length).toEqual(2);
     const metas = groupByIndices[`${ES_INDEX_PREFIX}_stix_meta_relationships-000001`].map((m) => m.node);
     const metaByEntityType = R.groupBy((m) => m.entity_type, metas);
-    expect(metaByEntityType.object.length).toEqual(38);
-    expect(metaByEntityType['object-label'].length).toEqual(30);
-    expect(metaByEntityType['created-by'].length).toEqual(22);
+    expect(metaByEntityType.object.length).toEqual(48);
+    expect(metaByEntityType['object-label'].length).toEqual(32);
+    expect(metaByEntityType['created-by'].length).toEqual(27);
     expect(metaByEntityType['external-reference'].length).toEqual(7);
     expect(metaByEntityType['object-marking'].length).toEqual(28);
     expect(metaByEntityType['kill-chain-phase'].length).toEqual(3);
-    expect(data.edges.length).toEqual(249);
+    expect(data.edges.length).toEqual(266);
     let filterBaseTypes = R.uniq(R.map((e) => e.node.base_type, data.edges));
     expect(filterBaseTypes.length).toEqual(1);
     expect(R.head(filterBaseTypes)).toEqual('RELATION');
     // Same query with no pagination
     data = await elPaginate(testContext, ADMIN_USER, READ_RELATIONSHIPS_INDICES, { connectionFormat: false });
     expect(data).not.toBeNull();
-    expect(data.length).toEqual(249);
+    expect(data.length).toEqual(266);
     filterBaseTypes = R.uniq(R.map((e) => e.base_type, data));
     expect(filterBaseTypes.length).toEqual(1);
     expect(R.head(filterBaseTypes)).toEqual('RELATION');

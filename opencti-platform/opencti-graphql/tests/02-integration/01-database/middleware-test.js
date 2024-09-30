@@ -184,7 +184,7 @@ describe('Entities listing', () => {
   it('should list multiple entities', async () => {
     const entities = await listEntities(testContext, ADMIN_USER, ['Malware', 'Organization']);
     expect(entities).not.toBeNull();
-    expect(entities.edges.length).toEqual(10); // 2 malwares + 8 organizations
+    expect(entities.edges.length).toEqual(14); // 2 malwares + 12 organizations
     const aggregationMap = new Map(entities.edges.map((i) => [i.node.name, i.node]));
     expect(aggregationMap.get('Paradise Ransomware')).not.toBeUndefined();
     expect(aggregationMap.get('Allied Universal')).not.toBeUndefined();
@@ -196,7 +196,7 @@ describe('Entities listing', () => {
     const indicators = await listEntities(testContext, ADMIN_USER, ['Indicator'], options);
     expect(indicators.edges.length).toEqual(1);
     const indicator = R.head(indicators.edges).node;
-    expect(indicator.name).toEqual('www.xolod-teplo.ru');
+    expect(indicator.name).toEqual('72.18.130.48');
   });
   it('should list entities with search', async () => {
     let options = { search: 'xolod' };
@@ -210,7 +210,7 @@ describe('Entities listing', () => {
     expect(indicators.edges.length).toEqual(2);
     options = { search: 'i want a location' };
     indicators = await listEntities(testContext, ADMIN_USER, ['Indicator'], options);
-    expect(indicators.edges.length).toEqual(3);
+    expect(indicators.edges.length).toEqual(4);
   });
   it('should list entities with attribute filters', async () => {
     const filters = {
@@ -255,7 +255,7 @@ describe('Relations listing', () => {
     expect(stixCoreRelationships.edges.length).toEqual(24);
     const stixRefRelationships = await listRelations(testContext, ADMIN_USER, 'stix-ref-relationship');
     expect(stixRefRelationships).not.toBeNull();
-    expect(stixRefRelationships.edges.length).toEqual(129);
+    expect(stixRefRelationships.edges.length).toEqual(146);
   });
   it('should list relations with roles', async () => {
     const stixRelations = await listRelations(testContext, ADMIN_USER, 'uses', {

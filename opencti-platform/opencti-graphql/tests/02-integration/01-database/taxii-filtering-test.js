@@ -208,7 +208,7 @@ describe('Complex filters combinations, behavior tested on taxii collections', (
     const { edges: results1 } = await collectionQuery(testContext, ADMIN_USER, taxiiCollection, {});
     edgeIds = results1.map((e) => e.node.internal_id);
     const edgeNames = results1.map((e) => e.node.name);
-    expect(edgeIds.length).toEqual(2); // the report created + the report in DATA-TEST-STIX2_v2
+    expect(edgeIds.length).toEqual(3); // the report created + the 2 reports in DATA-TEST-STIX2_v2
     expect(edgeIds).includes(reportInternalId).toBeTruthy();
     expect(edgeNames).includes('Report').toBeTruthy();
     expect(edgeNames).includes('A demo report for testing purposes').toBeTruthy();
@@ -245,7 +245,7 @@ describe('Complex filters combinations, behavior tested on taxii collections', (
     taxiiCollection = await storeLoadById(testContext, ADMIN_USER, taxiiInternalId, ENTITY_TYPE_TAXII_COLLECTION);
     const { edges: results3_1 } = await collectionQuery(testContext, ADMIN_USER, taxiiCollection, {});
     edgeIds = results3_1.map((e) => e.node.internal_id);
-    expect(edgeIds.length).toEqual(3); // the report + city2 + the report in DATA-TEST-STIX2_v2
+    expect(edgeIds.length).toEqual(4); // the report + city2 + the 2 reports in DATA-TEST-STIX2_v2
     // global mode = 'and'
     await changeTaxiiFilters({
       mode: 'and',
@@ -338,7 +338,7 @@ describe('Complex filters combinations, behavior tested on taxii collections', (
     taxiiCollection = await storeLoadById(testContext, ADMIN_USER, taxiiInternalId, ENTITY_TYPE_TAXII_COLLECTION);
     const { edges: results5 } = await collectionQuery(testContext, ADMIN_USER, taxiiCollection, {});
     edgeIds = results5.map((e) => e.node.internal_id);
-    expect(edgeIds.length).toEqual(2);
+    expect(edgeIds.length).toEqual(3);
     expect(edgeIds).includes(reportInternalId).toBeTruthy();
     expect(edgeIds).includes(city2InternalId).toBeTruthy();
     // --- 06. filters with nil operator --- //

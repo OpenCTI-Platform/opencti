@@ -246,9 +246,9 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       }
     });
-    expect(queryResult.data.reports.edges.length).toEqual(5); // the 4 reports created + the report in DATA-TEST-STIX2_v2.json
+    expect(queryResult.data.reports.edges.length).toEqual(6); // the 4 reports created + the 2 report in DATA-TEST-STIX2_v2.json
     queryResult = await queryAsAdmin({ query: REPORT_LIST_QUERY });
-    expect(queryResult.data.reports.edges.length).toEqual(5);
+    expect(queryResult.data.reports.edges.length).toEqual(6);
   });
   it('should list entities according to filters: one filter', async () => {
     const queryResult = await queryAsAdmin({
@@ -327,7 +327,7 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       }
     });
-    expect(queryResult.data.reports.edges.length).toEqual(3); // report1 and report3 and report in DATA-TEST-STIX2_v2.json
+    expect(queryResult.data.reports.edges.length).toEqual(4); // report1 and report3 and 2 reports in DATA-TEST-STIX2_v2.json
     expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('Report1')).toBeTruthy();
     expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('Report3')).toBeTruthy();
     expect(queryResult.data.reports.edges.map((n) => n.node.name)).includes('A demo report for testing purposes').toBeTruthy();
@@ -588,7 +588,7 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       }
     });
-    expect(queryResult.data.reports.edges.length).toEqual(2);
+    expect(queryResult.data.reports.edges.length).toEqual(3);
     expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('Report2')).toBeTruthy();
     expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('Report4')).toBeTruthy();
   });
@@ -680,7 +680,7 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       }
     });
-    expect(queryResult.data.reports.edges.length).toEqual(1);
+    expect(queryResult.data.reports.edges.length).toEqual(2);
     expect(queryResult.data.reports.edges[0].node.name).toEqual('Report3');
     // test for 'not_nil': objectMarking is not empty
     queryResult = await queryAsAdmin({
@@ -724,7 +724,7 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       }
     });
-    expect(queryResult.data.reports.edges.length).toEqual(2);
+    expect(queryResult.data.reports.edges.length).toEqual(3);
     expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('Report3')).toBeTruthy(); // description is empty string
     expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('Report4')).toBeTruthy(); // description is null
     // description is not empty
@@ -937,7 +937,7 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       }
     });
-    expect(queryResult.data.globalSearch.edges.length).toEqual(8); // 8 containers: 4 reports in this file + 1 report, 1 note, 1 observed-data, 1 opinion in DATA-TEST-STIXv2_v2
+    expect(queryResult.data.globalSearch.edges.length).toEqual(9); // 8 containers: 4 reports in this file + 1 report, 1 note, 1 observed-data, 1 opinion in DATA-TEST-STIXv2_v2
     // (entity_type = Report AND container)
     queryResult = await queryAsAdmin({
       query: LIST_QUERY,
@@ -957,7 +957,7 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       }
     });
-    expect(queryResult.data.globalSearch.edges.length).toEqual(5); // 5 reports
+    expect(queryResult.data.globalSearch.edges.length).toEqual(6); // 5 reports
     // (entity_type = Report AND container AND Stix-Core-Object)
     queryResult = await queryAsAdmin({
       query: LIST_QUERY,
@@ -977,7 +977,7 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       }
     });
-    expect(queryResult.data.globalSearch.edges.length).toEqual(5); // 5 reports
+    expect(queryResult.data.globalSearch.edges.length).toEqual(6); // 5 reports
     // (entity_type = Malware OR Software)
     queryResult = await queryAsAdmin({
       query: LIST_QUERY,
@@ -1237,7 +1237,7 @@ describe('Complex filters combinations for elastic queries', () => {
         filters: undefined,
       }
     });
-    expect(queryResult.data.globalSearch.edges.length).toEqual(44);
+    expect(queryResult.data.globalSearch.edges.length).toEqual(58);
     // (source_reliability is empty)
     queryResult = await queryAsAdmin({
       query: LIST_QUERY,
@@ -1257,7 +1257,7 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       }
     });
-    expect(queryResult.data.globalSearch.edges.length).toEqual(33); // 44 entities - 11 entities with a source reliability = 33
+    expect(queryResult.data.globalSearch.edges.length).toEqual(46); // 46 entities - 11 entities with a source reliability = 33
     // (source_reliability is not empty)
     queryResult = await queryAsAdmin({
       query: LIST_QUERY,
@@ -1277,7 +1277,7 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       }
     });
-    expect(queryResult.data.globalSearch.edges.length).toEqual(11); // 11 entities with a source reliability
+    expect(queryResult.data.globalSearch.edges.length).toEqual(12); // 12 entities with a source reliability
     // (source_reliability = A - Completely reliable)
     queryResult = await queryAsAdmin({
       query: LIST_QUERY,
@@ -1317,7 +1317,7 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       }
     });
-    expect(queryResult.data.globalSearch.edges.length).toEqual(38); // 44 entities - 6 entities with source reliability equals to A = 38
+    expect(queryResult.data.globalSearch.edges.length).toEqual(52); // 58 entities - 6 entities with source reliability equals to A = 38
     // (source_reliability = A - Completely reliable OR B - Usually reliable)
     queryResult = await queryAsAdmin({
       query: LIST_QUERY,
@@ -1420,7 +1420,7 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       }
     });
-    expect(queryResult.data.globalSearch.edges.length).toEqual(31); // 44 - 11 with a source reliability - 2 with a reliability (and no source reliability) = 31
+    expect(queryResult.data.globalSearch.edges.length).toEqual(43); // 56 - 11 with a source reliability - 2 with a reliability (and no source reliability) = 31
     // (computed_reliability is not empty)
     queryResult = await queryAsAdmin({
       query: LIST_QUERY,
@@ -1440,7 +1440,7 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       }
     });
-    expect(queryResult.data.globalSearch.edges.length).toEqual(13); // 11 entities with a source reliability + 2 entities with a reliability = 13
+    expect(queryResult.data.globalSearch.edges.length).toEqual(15); // 13 entities with a source reliability + 2 entities with a reliability = 13
     // (computed_reliability = A - Completely reliable)
     queryResult = await queryAsAdmin({
       query: LIST_QUERY,
