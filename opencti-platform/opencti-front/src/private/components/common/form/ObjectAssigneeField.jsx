@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { pathOr, pipe, map, union } from 'ramda';
 import { debounce } from 'rxjs/operators';
 import { Subject, timer } from 'rxjs';
@@ -9,6 +9,7 @@ import { fetchQuery } from '../../../../relay/environment';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
+import { UserContext } from '../../../../utils/hooks/useAuth';
 
 const SEARCH$ = new Subject().pipe(debounce(() => timer(1500)));
 
@@ -59,6 +60,7 @@ const useStyles = makeStyles((theme) => ({
 const ObjectAssigneeField = ({ defaultObjectAssignee, name, style, label, onChange, helpertext, disabled }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
+  const { me } = useContext((UserContext));
   const [keyword, setKeyword] = useState('');
   const [assignees, setAssignee] = useState(defaultObjectAssignee ? [
     {
@@ -118,7 +120,7 @@ const ObjectAssigneeField = ({ defaultObjectAssignee, name, style, label, onChan
         onFocus: searchAssignees,
       }}
       noOptionsText={t_i18n('No available options')}
-      options={assignees.sort((a, b) => a.label.localeCompare(b.label))}
+      options={assignees.sort((a, b) => a.value === me.id ? -1 : b.value === me.id ? 1 : a.label.localeCompare(b.label))}
       onInputChange={handleSearch}
       onChange={typeof onChange === 'function' ? onChange : null}
       renderOption={(props, option) => (
