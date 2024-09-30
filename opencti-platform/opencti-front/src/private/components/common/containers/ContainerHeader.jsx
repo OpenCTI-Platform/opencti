@@ -44,6 +44,7 @@ import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 import StixCoreObjectFileExport from '../stix_core_objects/StixCoreObjectFileExport';
 import Transition from '../../../../components/Transition';
 import { authorizedMembersToOptions, useGetCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
+import StixCoreObjectEnrichment from '../stix_core_objects/StixCoreObjectEnrichment';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -488,6 +489,8 @@ const ContainerHeader = (props) => {
   const [selectedEntity, setSelectedEntity] = useState({});
   const [applying, setApplying] = useState([]);
   const [applied, setApplied] = useState([]);
+  const [displayEnrichment, setDisplayEnrichment] = useState(false);
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   // Suggestions
   const resolveThreats = (objects) => objects.filter(
     (o) => [
@@ -534,7 +537,12 @@ const ContainerHeader = (props) => {
       localStorage.getItem(`suggestions-rules-${container.id}`) || '[]',
     );
   };
-
+  const handleCloseEnrichment = () => {
+    setDisplayEnrichment(false);
+  };
+  const handleOpenEnrichment = () => {
+    setDisplayEnrichment(true);
+  };
   const generateSuggestions = (objects) => {
     const suggestions = [];
     const resolvedThreats = resolveThreats(objects);
@@ -1089,6 +1097,16 @@ const ContainerHeader = (props) => {
             {!knowledge && (
               <Security needs={popoverSecurity || [KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNENRICHMENT]} hasAccess={canEdit}>
                 {React.cloneElement(PopoverComponent, { id: container.id })}
+              </Security>
+            )}
+            {isFABReplaced && (
+              <Security needs={[KNOWLEDGE_KNENRICHMENT]}>
+                <StixCoreObjectEnrichment
+                  stixCoreObjectId={container.id}
+                  displayEnrichment={displayEnrichment}
+                  handleOpenEnrichment={handleOpenEnrichment}
+                  handleClose={handleCloseEnrichment}
+                />
               </Security>
             )}
             {EditComponent}
