@@ -3683,7 +3683,7 @@ const copyLiveElementToDraft = async (context, user, element) => {
   const updatedElement = structuredClone(element);
   const newId = generateInternalId();
   const setDraftData = `ctx._id="${newId}";ctx._source.draft_ids=['${draftContext}'];`;
-  await elReindexElements(context, user, [element.id], element._index, INDEX_DRAFT, setDraftData);
+  await elReindexElements(context, user, [element.internal_id], element._index, INDEX_DRAFT, setDraftData);
   updatedElement._id = newId;
   updatedElement._index = INDEX_DRAFT;
 
@@ -3698,7 +3698,7 @@ const copyLiveElementToDraft = async (context, user, element) => {
       `
     }
   };
-  await elUpdate(element._index, element.id, addDraftIdScript);
+  await elUpdate(element._index, element.internal_id, addDraftIdScript);
 
   return updatedElement;
 };
@@ -3913,14 +3913,20 @@ const elUpdateConnectionsOfElement = async (documentId, documentBody) => {
     throw DatabaseError('Error updating connections', { cause: err, documentId, body: documentBody });
   });
 };
-export const elUpdateElement = async (instance) => {
-  const esData = prepareElementForIndexing(instance);
+export const elUpdateElement = async (context, user, instance) => {
+  const draftContext = inDraftContext(context, user);
+  let instanceToUse = instance;
+  // We still want to be able to update internal entities in draft, but we don't want to copy them to draft index
+  if (draftContext && !isInternalObject(instance.entity_type) && !isInternalRelationship(instance.entity_type)) {
+    instanceToUse = await getElementDraftVersion(context, user, instance);
+  }
+  const esData = prepareElementForIndexing(instanceToUse);
   validateDataBeforeIndexing(esData);
-  const dataToReplace = R.dissoc('representative', esData);
-  const replacePromise = elReplace(instance._index, instance.internal_id, { doc: dataToReplace });
+  const dataToReplace = R.pipe(R.dissoc('representative'), R.dissoc('_id'))(esData);
+  const replacePromise = elReplace(instanceToUse._index, instanceToUse._id ?? instanceToUse.internal_id, { doc: dataToReplace });
   // If entity with a name, must update connections
   let connectionPromise = Promise.resolve();
-  if (esData.name && isStixObject(instance.entity_type)) {
+  if (esData.name && isStixObject(instanceToUse.entity_type)) {
     connectionPromise = elUpdateConnectionsOfElement(instance.internal_id, { name: extractEntityRepresentativeName(esData) });
   }
   return Promise.all([replacePromise, connectionPromise]);
