@@ -1,5 +1,4 @@
 import React, { useEffect, useRef, useState } from 'react';
-import * as R from 'ramda';
 import { graphql, useFragment } from 'react-relay';
 import Paper from '@mui/material/Paper';
 import Chip from '@mui/material/Chip';
@@ -149,12 +148,9 @@ const ReportDetails = ({ report }) => {
     setHeight(ref.current.clientHeight);
   });
   const expandable = reportData.relatedContainers.edges.length > 5;
-  const relatedContainers = R.take(
-    expanded ? 200 : 5,
-    reportData.relatedContainers.edges,
-  ).filter(
-    (relatedContainerEdge) => relatedContainerEdge.node.id !== reportData.id,
-  );
+  const relatedContainers = reportData.relatedContainers.edges
+    .slice(0, expanded ? 200 : 5)
+    .filter((relatedContainerEdge) => relatedContainerEdge.node.id !== reportData.id);
 
   const entitiesDistributionDataSelection = [
     {
