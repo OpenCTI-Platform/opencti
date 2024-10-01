@@ -32,11 +32,11 @@ const csvMapperCreation = graphql`
 `;
 
 interface CsvMapperCreationFormProps {
-  paginationOptions?: csvMappers_MappersQuery$variables
+  paginationOptions: csvMappers_MappersQuery$variables
   isDuplicated?: boolean
   onClose?: () => void
   open: boolean
-  mappingCsv?: CsvMapperEditionContainerFragment_csvMapper$key,
+  mappingCsv?: CsvMapperEditionContainerFragment_csvMapper$key | null,
 }
 
 const CsvMapperCreation: FunctionComponent<CsvMapperCreationFormProps> = ({
@@ -53,10 +53,10 @@ const CsvMapperCreation: FunctionComponent<CsvMapperCreationFormProps> = ({
   ) || { csvMapperSchemaAttributes: [] };
 
   const computeDefaultValues = useComputeDefaultValues();
-  const csvMapper = mappingCsv && (useFragment(
+  const csvMapper = useFragment(
     csvMapperEditionContainerFragment,
     mappingCsv,
-  ));
+  );
   const onSubmit: FormikConfig<CsvMapperFormData>['onSubmit'] = (
     values,
     { resetForm, setSubmitting, setErrors },
@@ -80,6 +80,7 @@ const CsvMapperCreation: FunctionComponent<CsvMapperCreationFormProps> = ({
         'csvMapperAdd',
       ),
       onCompleted: () => {
+        setSubmitting(false);
         resetForm();
         if (onClose) {
           onClose();

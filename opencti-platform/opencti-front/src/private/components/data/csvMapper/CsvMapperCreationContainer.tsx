@@ -5,13 +5,11 @@ import { csvMappers_MappersQuery$variables } from '@components/data/csvMapper/__
 import { PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { CsvMapperEditionContainerQuery } from '@components/data/csvMapper/__generated__/CsvMapperEditionContainerQuery.graphql';
 import { csvMapperEditionContainerQuery } from '@components/data/csvMapper/CsvMapperEditionContainer';
-import { CsvMapperEditionContainerFragment_csvMapper$key } from '@components/data/csvMapper/__generated__/CsvMapperEditionContainerFragment_csvMapper.graphql';
 import { useFormatter } from '../../../../components/i18n';
 
 interface CsvMapperCreationProps {
-  paginationOptions?: csvMappers_MappersQuery$variables;
+  paginationOptions: csvMappers_MappersQuery$variables;
   queryRef?: PreloadedQuery<CsvMapperEditionContainerQuery>,
-  mappingCsv?: CsvMapperEditionContainerFragment_csvMapper$key,
   isDuplicated?: boolean;
   onClose?: () => void;
   open: boolean;
@@ -25,7 +23,7 @@ const CsvMapperCreationContainer: FunctionComponent<CsvMapperCreationProps> = ({
   paginationOptions,
 }) => {
   const { t_i18n } = useFormatter();
-  const mappingCsv = queryRef ? (usePreloadedQuery(csvMapperEditionContainerQuery, queryRef).csvMapper) : null;
+  const mappingCsv = queryRef ? (usePreloadedQuery(csvMapperEditionContainerQuery, queryRef)).csvMapper : null;
 
   return (
     <Drawer

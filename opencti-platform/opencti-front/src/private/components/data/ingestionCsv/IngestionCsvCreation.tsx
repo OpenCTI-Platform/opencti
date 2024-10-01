@@ -64,7 +64,6 @@ interface IngestionCsvCreationContainerProps {
   open: boolean,
   paginationOptions?: IngestionCsvLinesPaginationQuery$variables | null | undefined,
   isDuplicated: boolean,
-  ingestionCsv?: IngestionCsvEditionFragment_ingestionCsv$key
 }
 
 export interface IngestionAddInput {
@@ -172,8 +171,7 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
       authenticationValue = `${values.cert}:${values.key}:${values.ca}`;
     }
     const markings = values.markings?.map((option) => option.value);
-    // console.log('markings', markings);
-    // console.log('status', values.current_state_date);
+
     const input = {
       name: values.name,
       description: values.description,
@@ -205,7 +203,6 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
     });
   };
   const queryRef = useQueryLoading<CsvMapperFieldSearchQuery>(csvMapperQuery);
-  // console.log('current status', ingestionCsvData);
   const initialValues: IngestionAddInput = isDuplicated && ingestionCsvData ? {
     name: ingestionCsvData.name,
     description: ingestionCsvData.description,
@@ -244,7 +241,6 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
     markings: [],
   };
   return (
-
     <Formik<IngestionAddInput>
       initialValues={initialValues}
       validationSchema={ingestionCsvCreationValidation}
