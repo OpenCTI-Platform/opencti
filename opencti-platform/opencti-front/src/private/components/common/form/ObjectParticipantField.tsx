@@ -64,7 +64,7 @@ interface ObjectParticipantFieldProps {
   name: string;
   onChange?: (name: string, values: OptionParticipant[]) => void;
   style?: Record<string, string | number>;
-  helpertext?: string;
+  helpertext?: unknown;
   label?: string,
   disabled?: boolean,
 }
