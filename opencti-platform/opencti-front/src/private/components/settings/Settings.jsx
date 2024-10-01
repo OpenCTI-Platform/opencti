@@ -382,7 +382,7 @@ const Settings = () => {
                               component={SelectField}
                               variant="standard"
                               name="platform_theme"
-                              label={t_i18n('Theme')}
+                              label={t_i18n('Default theme')}
                               fullWidth
                               containerstyle={fieldSpacingContainerStyle}
                               onFocus={(name) => handleChangeFocus(id, name)}
