@@ -1,5 +1,4 @@
 import React, { FunctionComponent } from 'react';
-import makeStyles from '@mui/styles/makeStyles';
 import StixDomainObjectAttackPatternsKillChainContainer from '@components/common/stix_domain_objects/StixDomainObjectAttackPatternsKillChainContainer';
 import {
   StixDomainObjectAttackPatternsKillChainQuery,
@@ -16,17 +15,6 @@ import {
 } from '../../../../utils/filters/filtersUtils';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  container: {
-    width: '100%',
-    height: '100%',
-    margin: 0,
-    padding: 0,
-  },
-}));
-
 interface StixDomainObjectAttackPatternsProps {
   stixDomainObjectId: string,
   defaultStartTime: string,
@@ -41,17 +29,20 @@ const StixDomainObjectAttackPatterns: FunctionComponent<StixDomainObjectAttackPa
   disableExport,
 }) => {
   const LOCAL_STORAGE_KEY = `attack-patterns-${stixDomainObjectId}`;
-  const classes = useStyles();
   const {
     viewStorage,
     helpers,
     paginationOptions,
-  } = usePaginationLocalStorage<StixDomainObjectAttackPatternsKillChainQuery$variables>(LOCAL_STORAGE_KEY, {
-    searchTerm: '',
-    openExports: false,
-    filters: emptyFilterGroup,
-    view: 'matrix',
-  });
+  } = usePaginationLocalStorage<StixDomainObjectAttackPatternsKillChainQuery$variables>(
+    LOCAL_STORAGE_KEY,
+    {
+      searchTerm: '',
+      openExports: false,
+      filters: emptyFilterGroup,
+      view: 'matrix',
+      numberOfElements: { number: 0, symbol: '', original: 0 },
+    },
+  );
   const { searchTerm, filters, view, openExports } = viewStorage;
   const userFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, ['Attack-Pattern']);
   const contextFilters = {
@@ -77,7 +68,14 @@ const StixDomainObjectAttackPatterns: FunctionComponent<StixDomainObjectAttackPa
     { first: 500, ...queryPaginationOptions },
   );
   return (
-    <div className={classes.container}>
+    <div
+      style={{
+        width: '100%',
+        height: '100%',
+        margin: 0,
+        padding: 0,
+      }}
+    >
       {queryRef && (
         <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
           <StixDomainObjectAttackPatternsKillChainContainer
@@ -93,6 +91,7 @@ const StixDomainObjectAttackPatterns: FunctionComponent<StixDomainObjectAttackPa
             disableExport={disableExport}
             openExports={openExports}
             availableFilterKeys={availableFilterKeys}
+            storageKey={LOCAL_STORAGE_KEY}
           />
         </React.Suspense>
       )}
