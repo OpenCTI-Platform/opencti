@@ -372,9 +372,16 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Kill chain phase',
     percentWidth: 15,
     isSortable: false,
-    render: ({ killChainPhases }) => ((killChainPhases && killChainPhases.length > 0)
-      ? `[${killChainPhases[0].kill_chain_name}] ${killChainPhases[0].phase_name}`
-      : '-'),
+    render: ({ killChainPhases }, { column: { size } }) => {
+      const formattedKillChainPhase = (killChainPhases && killChainPhases.length > 0)
+        ? `[${killChainPhases[0].kill_chain_name}] ${killChainPhases[0].phase_name}`
+        : '-';
+      return (
+        <Tooltip title={formattedKillChainPhase}>
+          <div>{truncate(formattedKillChainPhase, size * MAGICAL_SIZE)}</div>
+        </Tooltip>
+      );
+    },
   },
   kill_chain_name: {
     id: 'kill_chain_name',
