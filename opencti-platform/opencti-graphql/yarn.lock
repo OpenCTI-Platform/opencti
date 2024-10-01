@@ -4669,12 +4669,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/ramda@npm:0.30.1":
-  version: 0.30.1
-  resolution: "@types/ramda@npm:0.30.1"
+"@types/ramda@npm:0.30.2":
+  version: 0.30.2
+  resolution: "@types/ramda@npm:0.30.2"
   dependencies:
     types-ramda: "npm:^0.30.1"
-  checksum: 10/3975599065ebfb4a923566ec17e04e5c59ab3b010dc09fb4462393c0e1b6962ff88c852d43f0f524788e589efea09d0ccdf242306c32872d48caaf7ff0362934
+  checksum: 10/528e62da967adb38b7b6be3314ee11009f4e7312e4fbb9670f4556bb2f640754f08ae68ede87822ae255aba747e67296f40b37d53bfb427c58ab82f5b7a4989e
   languageName: node
   linkType: hard
 
@@ -10832,7 +10832,7 @@ __metadata:
     "@types/graphql-upload": "npm:16.0.7"
     "@types/mime-types": "npm:2.1.4"
     "@types/nconf": "npm:0.10.6"
-    "@types/ramda": "npm:0.30.1"
+    "@types/ramda": "npm:0.30.2"
     "@types/tough-cookie": "npm:4.0.5"
     "@types/turndown": "npm:5.0.4"
     "@types/uuid": "npm:10.0.0"
