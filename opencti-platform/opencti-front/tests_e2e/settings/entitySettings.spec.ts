@@ -27,7 +27,7 @@ test('Testing content customization for Report', async ({ page }) => {
   await page.getByRole('link', { name: 'Report' }).click();
   await page.getByRole('button', { name: 'Content' }).click();
   // Update the default value for content
-  await page.getByLabel('Editor editing area: main').fill('Content from customization');
+  await page.getByLabel('Editing area: main').fill('Content from customization');
   await page.getByRole('button', { name: 'Update' }).click();
 
   // Go back to the Report page
@@ -40,6 +40,6 @@ test('Testing content customization for Report', async ({ page }) => {
   await leftBarPage.clickOnMenu('Settings', 'Customization');
   await page.getByRole('link', { name: 'Report' }).click();
   await page.getByRole('button', { name: 'Content' }).click();
-  await page.getByLabel('Editor editing area: main').fill('');
+  await page.getByLabel('Editing area: main').fill('');
   await page.getByRole('button', { name: 'Update' }).click();
 });

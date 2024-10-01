@@ -18,7 +18,7 @@ export default class TextFieldPageModel {
       this.inputLocator = this.parentLocator.getByTestId('text-area');
     } else if (type === 'rich-content') {
       this.parentLocator = root.getByText(label).locator('..');
-      this.inputLocator = this.parentLocator.getByLabel('Editor editing area: main');
+      this.inputLocator = this.parentLocator.getByLabel('Editing area: main');
     } else if (type === 'text-no-label') {
       this.inputLocator = root.getByRole('textbox', { name: label });
       this.parentLocator = root.getByText(label).locator('..');

@@ -9,12 +9,12 @@ export default class StixDomainObjectContentTabPage {
 
   async selectMainContent() {
     await this.page.getByRole('button', { name: 'Description & Main content' }).click();
-    return this.page.getByLabel('Editor editing area: main');
+    return this.page.getByLabel('Editing area: main');
   }
 
   async selectFile(name: string) {
     await this.page.getByText(name, { exact: true }).click();
-    return this.page.getByLabel('Editor editing area: main');
+    return this.page.getByLabel('Editing area: main');
   }
 
   async editMainContent(input: string) {
@@ -23,7 +23,7 @@ export default class StixDomainObjectContentTabPage {
   }
 
   async editTextArea(input: string, isAutoSave = false) {
-    const element = this.page.getByLabel('Editor editing area: main');
+    const element = this.page.getByLabel('Editing area: main');
     await element.click();
     if (isAutoSave) {
       await element.fill(input);
