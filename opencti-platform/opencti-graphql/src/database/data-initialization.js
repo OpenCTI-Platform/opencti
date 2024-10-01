@@ -241,13 +241,26 @@ export const createCapabilities = async (context, capabilities, parentName = '')
 const createBasicRolesAndCapabilities = async (context) => {
   // Create capabilities
   await createCapabilities(context, CAPABILITIES);
-  // Create roles
+
+  // Create Default(s) Role and Group
   const defaultRole = await addRole(context, SYSTEM_USER, {
     name: ROLE_DEFAULT,
     description: 'Default role associated to the default group',
     capabilities: [KNOWLEDGE_CAPABILITY],
   });
 
+  const defaultGroup = await addGroup(context, SYSTEM_USER, {
+    name: GROUP_DEFAULT,
+    description: 'Default group associated to all users',
+    default_assignation: true,
+  });
+  const defaultRoleRelationInput = {
+    toId: defaultRole.id,
+    relationship_type: 'has-role',
+  };
+  await groupAddRelation(context, SYSTEM_USER, defaultGroup.id, defaultRoleRelationInput);
+
+  // Create Administrator(s) Role and Group
   let administratorRoleInput = {
     name: ROLE_ADMINISTRATOR,
     description: 'Administrator role that bypass every capabilities',
@@ -259,8 +272,20 @@ const createBasicRolesAndCapabilities = async (context) => {
       can_manage_sensitive_config: false
     };
   }
-  await addRole(context, SYSTEM_USER, administratorRoleInput);
+  const administratorRole = await addRole(context, SYSTEM_USER, administratorRoleInput);
 
+  const administratorGroup = await addGroup(context, SYSTEM_USER, {
+    name: 'Administrators',
+    description: 'Administrator group',
+    auto_new_marking: true,
+  });
+  const administratorRoleRelationInput = {
+    toId: administratorRole.id,
+    relationship_type: 'has-role',
+  };
+  await groupAddRelation(context, SYSTEM_USER, administratorGroup.id, administratorRoleRelationInput);
+
+  // Create Connector(s) Role and Group
   let connectorRoleInput = {
     name: 'Connector',
     description: 'Connector role that has the recommended capabilities',
@@ -290,16 +315,7 @@ const createBasicRolesAndCapabilities = async (context) => {
 
   const connectorRole = await addRole(context, SYSTEM_USER, connectorRoleInput);
   // Create default group with default role
-  const defaultGroup = await addGroup(context, SYSTEM_USER, {
-    name: GROUP_DEFAULT,
-    description: 'Default group associated to all users',
-    default_assignation: true,
-  });
-  const defaultRoleRelationInput = {
-    toId: defaultRole.id,
-    relationship_type: 'has-role',
-  };
-  await groupAddRelation(context, SYSTEM_USER, defaultGroup.id, defaultRoleRelationInput);
+
   // Create connector group with connector role
   const connectorGroup = await addGroup(context, SYSTEM_USER, {
     name: 'Connectors',
