@@ -107,6 +107,7 @@ const GroupEditionUsers: FunctionComponent<GroupEditionUsersProps> = ({ group, q
       globalCount={users.length}
       filtersComponent={children}
       variant={DataTableVariant.inline}
+      allowBackgroundtasks={false}
       disableNavigation
       actions={(user) => {
         const groupUser = groupUsers.find((g) => g.id === user.id);

@@ -1,12 +1,11 @@
 import React, { FunctionComponent, useState } from 'react';
 import { graphql, useQueryLoader } from 'react-relay';
 import Tooltip from '@mui/material/Tooltip';
-import { FileDownloadOutlined, FilterAltOutlined, InvertColorsOffOutlined, ViewColumnOutlined, ViewListOutlined } from '@mui/icons-material';
+import { FileDownloadOutlined, InvertColorsOffOutlined, ViewColumnOutlined } from '@mui/icons-material';
 import { ProgressWrench } from 'mdi-material-ui';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import ToggleButton from '@mui/material/ToggleButton';
 import IconButton from '@mui/material/IconButton';
-import makeStyles from '@mui/styles/makeStyles';
 import {
   StixDomainObjectAttackPatternsKillChainContainer_data$data,
 } from '@components/common/stix_domain_objects/__generated__/StixDomainObjectAttackPatternsKillChainContainer_data.graphql';
@@ -15,6 +14,13 @@ import {
   StixDomainObjectAttackPatternsKillChainQuery,
   StixDomainObjectAttackPatternsKillChainQuery$variables,
 } from '@components/common/stix_domain_objects/__generated__/StixDomainObjectAttackPatternsKillChainQuery.graphql';
+import StixDomainObjectAttackPatternsKillChainMatrixInline from '@components/common/stix_domain_objects/StixDomainObjectAttackPatternsKillChainMatrixInLine';
+import { ListViewIcon, SublistViewIcon } from 'filigran-icon';
+import FiligranIcon from '@components/common/FiligranIcon';
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
+import Select, { SelectChangeEvent } from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
 import StixCoreObjectsExports from '../stix_core_objects/StixCoreObjectsExports';
 import SearchInput from '../../../../components/SearchInput';
 import Security from '../../../../utils/Security';
@@ -30,53 +36,25 @@ import { useFormatter } from '../../../../components/i18n';
 import { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
 import { UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
 
-const useStyles = makeStyles(() => ({
-  filters: {
-    display: 'flex',
-    float: 'left',
-    alignItems: 'center',
-    flexWrap: 'wrap',
-    marginRight: 20,
-    marginLeft: 20,
-    gap: 10,
-  },
-  buttons: {
-    float: 'left',
-    display: 'flex',
-    margin: '-6px 4px 0 0',
-  },
-  container: {
-    width: '100%',
-    height: '100%',
-    margin: 0,
-    padding: 0,
-  },
-  parameters: {
-    marginBottom: 20,
-    padding: 0,
-    marginTop: -12,
-  },
-  export: {
-    float: 'right',
-    margin: '0 0 0 20px',
-  },
-}));
-
 export const stixDomainObjectAttackPatternsKillChainQuery = graphql`
-    query StixDomainObjectAttackPatternsKillChainQuery(
-        $search: String
-        $first: Int
-        $cursor: ID
-        $filters: FilterGroup
-    ) {
-        ...StixDomainObjectAttackPatternsKillChainContainer_data
-        @arguments(
-            search: $search
-            first: $first
-            cursor: $cursor
-            filters: $filters
-        )
-    }
+  query StixDomainObjectAttackPatternsKillChainQuery(
+    $search: String
+    $first: Int
+    $cursor: ID
+    $orderBy: AttackPatternsOrdering
+    $orderMode: OrderingMode
+    $filters: FilterGroup
+  ) {
+    ...StixDomainObjectAttackPatternsKillChainContainer_data
+    @arguments(
+      search: $search
+      first: $first
+      cursor: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+      filters: $filters
+    )
+  }
 `;
 
 interface StixDomainObjectAttackPatternsKillChainProps {
@@ -95,6 +73,7 @@ interface StixDomainObjectAttackPatternsKillChainProps {
   availableFilterKeys: string[];
   defaultStartTime: string;
   defaultStopTime: string;
+  storageKey: string;
 }
 
 const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjectAttackPatternsKillChainProps> = ({
@@ -113,22 +92,19 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
   availableFilterKeys,
   defaultStartTime,
   defaultStopTime,
+  storageKey,
 }) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
-  const [currentModeOnlyActive, setCurrentModeOnlyActive] = useState(false);
   const [currentColorsReversed, setCurrentColorsReversed] = useState(false);
   const [targetEntities, setTargetEntities] = useState<TargetEntity[]>([]);
+  const [selectedKillChain, setSelectedKillChain] = useState('mitre-attack');
   const [queryRef, loadQuery] = useQueryLoader<StixDomainObjectAttackPatternsKillChainQuery>(
     stixDomainObjectAttackPatternsKillChainQuery,
   );
+
   const refetch = React.useCallback(() => {
     loadQuery(paginationOptions, { fetchPolicy: 'store-and-network' });
   }, [queryRef]);
-
-  const handleToggleModeOnlyActive = () => {
-    setCurrentModeOnlyActive(!currentModeOnlyActive);
-  };
 
   const handleToggleColorsReversed = () => {
     setCurrentColorsReversed(!currentColorsReversed);
@@ -138,6 +114,10 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
     setTargetEntities([entity]);
   };
 
+  const handleKillChainChange = (event: SelectChangeEvent<unknown>) => {
+    setSelectedKillChain(event.target.value as string);
+  };
+
   let csvData = null;
   if (currentView === 'courses-of-action') {
     csvData = (data.attackPatterns?.edges ?? [])
@@ -145,6 +125,16 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
       .flat()
       .map((n) => n?.node);
   }
+
+  const killChains = data.attackPatterns ? Array.from(new Set([
+    'mitre-attack',
+    ...(data.attackPatterns.edges
+      .flatMap((edge) => edge.node.killChainPhases)
+      .map((phase) => phase?.kill_chain_name) ?? []),
+  ]))
+    .filter((name) => typeof name === 'string')
+    : [];
+
   const exportDisabled = targetEntities.length > export_max_size;
 
   const exportContextWithEntityType = { ...exportContext, entity_type: 'Attack-Pattern' };
@@ -168,58 +158,48 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
 
   return (
     <>
-      <div className={classes.parameters} >
-        <div style={{ float: 'left', marginRight: 20 }}>
+      {currentView !== 'matrix-in-line' && <div
+        style={{
+          marginBottom: 20,
+          padding: 0,
+          marginTop: -12,
+        }}
+                                           >
+        <div
+          style={{
+            float: 'left',
+          }}
+        >
           <SearchInput
             variant="small"
             keyword={searchTerm}
             onSubmit={handleSearch}
           />
         </div>
-        <div className={classes.buttons} >
-          <Tooltip
-            title={
-                currentModeOnlyActive
-                  ? t_i18n('Display the whole matrix')
-                  : t_i18n('Display only used techniques')
-              }
-          >
-            <span>
-              <IconButton
-                color={currentModeOnlyActive ? 'secondary' : 'primary'}
-                onClick={handleToggleModeOnlyActive}
-                size="large"
-              >
-                <FilterAltOutlined fontSize="medium"/>
-              </IconButton>
-            </span>
-          </Tooltip>
-          <Tooltip
-            title={
-                currentColorsReversed
-                  ? t_i18n('Disable invert colors')
-                  : t_i18n('Enable invert colors')
-                }
-          >
-            <span>
-              <IconButton
-                color={currentColorsReversed ? 'secondary' : 'primary'}
-                onClick={handleToggleColorsReversed}
-                size="large"
-              >
-                <InvertColorsOffOutlined fontSize="medium"/>
-              </IconButton>
-            </span>
-          </Tooltip>
-        </div>
-        <Box className={classes.filters} >
+        <Box
+          style={{
+            display: 'flex',
+            float: 'left',
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            marginRight: 20,
+            marginLeft: 8,
+            gap: 10,
+          }}
+        >
           <Filters
             availableFilterKeys={availableFilterKeys}
             helpers={helpers}
             searchContext={{ entityTypes: ['Attack-Pattern'] }}
           />
         </Box>
-        <div className={classes.buttons} >
+        <div
+          style={{
+            float: 'left',
+            display: 'flex',
+            margin: '-6px 4px 0 0',
+          }}
+        >
           <FilterIconButton
             filters={filters}
             helpers={helpers}
@@ -228,7 +208,70 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
             searchContext={{ entityTypes: ['Attack-Pattern'] }}
           />
         </div>
+        {currentView === 'matrix' && (
+        <div
+          style={{
+            float: 'left',
+            display: 'flex',
+            padding: '0 10px 2px 10px',
+          }}
+        >
+          <InputLabel
+            style={{
+              padding: '10px 10px 0 0',
+            }}
+          >
+            {t_i18n('Kill chain :')}
+          </InputLabel>
+          <FormControl
+            style={{
+              paddingTop: 10,
+            }}
+          >
+            <Select
+              size="small"
+              value={selectedKillChain}
+              onChange={handleKillChainChange}
+            >
+              {killChains.map((killChainName) => {
+                const stringValue = String(killChainName);
+                return (
+                  <MenuItem key={stringValue} value={stringValue}>
+                    {stringValue}
+                  </MenuItem>
+                );
+              })}
+            </Select>
+          </FormControl>
+        </div>
+        )}
         <div style={{ float: 'right', margin: 0 }}>
+          {currentView !== 'list' && currentView !== 'courses-of-action' && currentView !== 'matrix-in-line' && (
+          <Tooltip
+            title={
+                    currentColorsReversed
+                      ? t_i18n('Disable invert colors')
+                      : t_i18n('Enable invert colors')
+                  }
+          >
+            <span
+              style={{
+                marginRight: 10,
+              }}
+            >
+              <IconButton
+                style={{
+                  transform: 'translateY(-5px)',
+                }}
+                color={currentColorsReversed ? 'secondary' : 'primary'}
+                onClick={handleToggleColorsReversed}
+                size="large"
+              >
+                <InvertColorsOffOutlined fontSize="medium"/>
+              </IconButton>
+            </span>
+          </Tooltip>
+          )}
           <ToggleButtonGroup size="small" color="secondary" exclusive={true}>
             <Tooltip title={t_i18n('Matrix view')}>
               <ToggleButton
@@ -241,13 +284,24 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
                 />
               </ToggleButton>
             </Tooltip>
+            <Tooltip title={t_i18n('Matrix in line view')}>
+              <ToggleButton
+                onClick={() => handleChangeView('matrix-in-line')}
+                value={'matrix-in-line'}
+              >
+                <FiligranIcon icon={ListViewIcon}
+                  size="small"
+                  color={currentView === 'matrix-in-line' ? 'secondary' : 'primary'}
+                />
+              </ToggleButton>
+            </Tooltip>
             <Tooltip title={t_i18n('Kill chain view')}>
               <ToggleButton
                 onClick={() => handleChangeView('list')}
                 value={'list'}
               >
-                <ViewListOutlined
-                  fontSize="small"
+                <FiligranIcon icon={SublistViewIcon}
+                  size="small"
                   color={currentView === 'list' ? 'secondary' : 'primary'}
                 />
               </ToggleButton>
@@ -268,41 +322,47 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
               </ToggleButton>
             </Tooltip>
             {typeof handleToggleExports === 'function' && !exportDisabled && (
-              <Tooltip title={t_i18n('Open export panel')}>
-                <ToggleButton
-                  value="export"
-                  aria-label="export"
-                  onClick={handleToggleExports}
-                >
-                  <FileDownloadOutlined
-                    fontSize="small"
-                    color={openExports ? 'secondary' : 'primary'}
-                  />
-                </ToggleButton>
-              </Tooltip>
+            <Tooltip title={t_i18n('Open export panel')}>
+              <ToggleButton
+                value="export"
+                aria-label="export"
+                onClick={handleToggleExports}
+              >
+                <FileDownloadOutlined
+                  fontSize="small"
+                  color={openExports ? 'secondary' : 'primary'}
+                />
+              </ToggleButton>
+            </Tooltip>
             )}
             {typeof handleToggleExports === 'function' && exportDisabled && (
-              <Tooltip
-                title={`${
-                  t_i18n(
-                    'Export is disabled because too many entities are targeted (maximum number of entities is: ',
-                  ) + export_max_size
-                })`}
-              >
-                <span>
-                  <ToggleButton
-                    size="small"
-                    value="export"
-                    aria-label="export"
-                    disabled={true}
-                  >
-                    <FileDownloadOutlined fontSize="small"/>
-                  </ToggleButton>
-                </span>
-              </Tooltip>
+            <Tooltip
+              title={`${
+                t_i18n(
+                  'Export is disabled because too many entities are targeted (maximum number of entities is: ',
+                ) + export_max_size
+              })`}
+            >
+              <span>
+                <ToggleButton
+                  size="small"
+                  value="export"
+                  aria-label="export"
+                  disabled={true}
+                >
+                  <FileDownloadOutlined fontSize="small"/>
+                </ToggleButton>
+              </span>
+            </Tooltip>
             )}
           </ToggleButtonGroup>
-          <div className={classes.export}>
+
+          <div
+            style={{
+              float: 'right',
+              margin: '0 0 0 20px',
+            }}
+          >
             <ExportButtons
               domElementId="container"
               name={t_i18n('Attack patterns kill chain')}
@@ -312,8 +372,15 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
           </div>
         </div>
         <div className="clearfix"/>
-      </div>
-      <div className={classes.container}>
+      </div>}
+      <div
+        style={{
+          width: '100%',
+          height: '100%',
+          margin: 0,
+          padding: 0,
+        }}
+      >
         {currentView === 'list' && (
           <StixDomainObjectAttackPatternsKillChainLines
             data={data}
@@ -326,11 +393,18 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
           <StixDomainObjectAttackPatternsKillChainMatrix
             data={data}
             searchTerm={searchTerm}
-            handleToggleModeOnlyActive={handleToggleModeOnlyActive}
             handleToggleColorsReversed={handleToggleColorsReversed}
             currentColorsReversed={currentColorsReversed}
-            currentModeOnlyActive={currentModeOnlyActive}
             handleAdd={handleAdd}
+            selectedKillChain={selectedKillChain}
+          />
+        )}
+        {currentView === 'matrix-in-line' && (
+          <StixDomainObjectAttackPatternsKillChainMatrixInline
+            storageKey={storageKey}
+            entityId={stixDomainObjectId}
+            currentView={currentView}
+            paginationOptions={paginationOptions}
           />
         )}
         {currentView === 'courses-of-action' && (
@@ -355,7 +429,7 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
             defaultStopTime={defaultStopTime}
           />
         </Security>
-        <Security needs={[KNOWLEDGE_KNGETEXPORT]}>
+        {currentView !== 'matrix-in-line' && <Security needs={[KNOWLEDGE_KNGETEXPORT]}>
           <StixCoreObjectsExports
             open={openExports}
             exportType='simple'
@@ -363,7 +437,7 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
             paginationOptions={paginationOptionsForExport}
             exportContext={exportContextWithEntityType}
           />
-        </Security>
+        </Security>}
       </div>
     </>
   );
