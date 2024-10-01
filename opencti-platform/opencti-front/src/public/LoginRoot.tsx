@@ -20,8 +20,6 @@ export const rootPublicQuery = graphql`
       platform_banner_text
       platform_banner_level
       platform_consent_confirm_text
-      platform_theme_dark_logo_login
-      platform_theme_light_logo_login
       platform_whitemark
       platform_providers {
         name
@@ -32,6 +30,23 @@ export const rootPublicQuery = graphql`
       ...AppThemeProvider_settings
       ...AppIntlProvider_settings
       ...PublicSettingsProvider_settings
+    }
+    themes {
+      edges {
+        node {
+          id
+          name
+          theme_background
+          theme_paper
+          theme_nav
+          theme_primary
+          theme_secondary
+          theme_accent
+          theme_logo
+          theme_logo_collapsed
+          theme_logo_login
+        }
+      }
     }
   }
 `;
@@ -47,13 +62,13 @@ const LoginRoot = ({ type }: { type: string }) => {
     rootPublicQuery,
     queryRef,
   );
-  const { settings } = data;
+  const { settings, themes } = data;
   return (
     <StyledEngineProvider injectFirst={true}>
-      <ConnectedThemeProvider settings={settings}>
+      <ConnectedThemeProvider settings={settings} themes={themes}>
         <CssBaseline />
         <ConnectedIntlProvider settings={settings}>
-          <Login settings={settings} type={type} />
+          <Login settings={settings} themes={themes} type={type} />
         </ConnectedIntlProvider>
       </ConnectedThemeProvider>
     </StyledEngineProvider>
