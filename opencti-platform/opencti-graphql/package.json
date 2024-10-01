@@ -206,6 +206,7 @@
     "vitest": "2.0.5"
   },
   "resolutions": {
+    "axios": "1.7.7",
     "body-parser": "1.20.3",
     "json5": "2.2.3",
     "cross-fetch": "4.0.0",
