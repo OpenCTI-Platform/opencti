@@ -153,23 +153,26 @@ const Indicators = () => {
   );
 
   const dataColumns: DataTableProps['dataColumns'] = {
-    pattern_type: {},
-    name: { percentWidth: 21 },
+    pattern_type: {
+      percentWidth: 11,
+    },
+    name: {
+      percentWidth: 24,
+    },
     createdBy: {
       isSortable: isRuntimeSort ?? false,
+      percentWidth: 12,
     },
     creator: {
       isSortable: isRuntimeSort ?? false,
+      percentWidth: 12,
     },
-    objectLabel: {},
+    objectLabel: {
+      percentWidth: 15,
+    },
     created: {
-      percentWidth: 10,
+      percentWidth: 15,
       render: ({ created }, { nsdt }) => <Tooltip title={nsdt(created)}>{nsdt(created)}</Tooltip>,
-    },
-    valid_until: {
-      label: 'Valid until',
-      percentWidth: 10,
-      isSortable: true,
     },
     objectMarking: {
       percentWidth: 10,

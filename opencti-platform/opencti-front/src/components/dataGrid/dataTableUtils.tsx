@@ -900,6 +900,13 @@ const defaultColumns: DataTableProps['dataColumns'] = {
       return (<Tooltip title={file?.metaData?.mimetype}><>{b(file?.size)}</></Tooltip>);
     },
   },
+  valid_until: {
+    id: 'valid_until',
+    label: 'Valid until',
+    percentWidth: 10,
+    isSortable: true,
+    render: ({ valid_until }, { nsdt }) => <Tooltip title={nsdt(valid_until)}>{nsdt(valid_until)}</Tooltip>,
+  },
 };
 
 export const defaultColumnsMap = new Map<string, Partial<DataTableColumn>>(Object.entries(defaultColumns));
