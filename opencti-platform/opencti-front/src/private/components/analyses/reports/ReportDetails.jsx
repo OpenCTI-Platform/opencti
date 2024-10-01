@@ -1,8 +1,5 @@
-import React, { useState, useRef, useEffect } from 'react';
-import * as PropTypes from 'prop-types';
-import * as R from 'ramda';
-import { graphql, createFragmentContainer } from 'react-relay';
-import withStyles from '@mui/styles/withStyles';
+import React, { useEffect, useRef, useState } from 'react';
+import { graphql, useFragment } from 'react-relay';
 import Paper from '@mui/material/Paper';
 import Chip from '@mui/material/Chip';
 import Typography from '@mui/material/Typography';
@@ -14,15 +11,16 @@ import ListItemText from '@mui/material/ListItemText';
 import List from '@mui/material/List';
 import { ExpandLessOutlined, ExpandMoreOutlined } from '@mui/icons-material';
 import Button from '@mui/material/Button';
+import makeStyles from '@mui/styles/makeStyles';
 import StixRelationshipsHorizontalBars from '../../common/stix_relationships/StixRelationshipsHorizontalBars';
-import inject18n from '../../../../components/i18n';
+import { useFormatter } from '../../../../components/i18n';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import ItemIcon from '../../../../components/ItemIcon';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import { emptyFilterGroup } from '../../../../utils/filters/filtersUtils';
 
-const styles = (theme) => ({
+const useStyles = makeStyles((theme) => ({
   paper: {
     margin: '10px 0 0 0',
     padding: '15px',
@@ -48,15 +46,6 @@ const styles = (theme) => ({
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
-    paddingRight: 10,
-  },
-  itemIcon: {
-    marginRight: 0,
-    color: theme.palette.primary.main,
-  },
-  itemIconDisabled: {
-    marginRight: 0,
-    color: theme.palette.grey[700],
   },
   buttonExpand: {
     position: 'absolute',
@@ -104,23 +93,64 @@ const styles = (theme) => ({
   relatedContainers: {
     paddingTop: 0,
   },
-});
+}));
 
-const ReportDetailsComponent = (props) => {
-  const { t, fldt, fsd, classes, report } = props;
+const ReportDetailsFragment = graphql`
+    fragment ReportDetails_report on Report {
+        id
+        published
+        report_types
+        description
+        relatedContainers(
+            first: 10
+            orderBy: published
+            orderMode: desc
+            types: ["Report"]
+            viaTypes: ["Indicator", "Stix-Cyber-Observable"]
+        ) {
+            edges {
+                node {
+                    id
+                    entity_type
+                    ... on Report {
+                        name
+                        description
+                        published
+                        createdBy {
+                            ... on Identity {
+                                id
+                                name
+                                entity_type
+                            }
+                        }
+                        objectMarking {
+                            id
+                            definition_type
+                            definition
+                            x_opencti_order
+                            x_opencti_color
+                        }
+                    }
+                }
+            }
+        }
+    }
+`;
+
+const ReportDetails = ({ report }) => {
+  const classes = useStyles();
+  const { t_i18n, fldt, fsd } = useFormatter();
   const [expanded, setExpanded] = useState(false);
   const [height, setHeight] = useState(0);
   const ref = useRef(null);
+  const reportData = useFragment(ReportDetailsFragment, report);
   useEffect(() => {
     setHeight(ref.current.clientHeight);
   });
-  const expandable = report.relatedContainers.edges.length > 5;
-  const relatedContainers = R.take(
-    expanded ? 200 : 5,
-    report.relatedContainers.edges,
-  ).filter(
-    (relatedContainerEdge) => relatedContainerEdge.node.id !== report.id,
-  );
+  const expandable = reportData.relatedContainers.edges.length > 5;
+  const relatedContainers = reportData.relatedContainers.edges
+    .filter((relatedContainerEdge) => relatedContainerEdge.node.id !== reportData.id)
+    .slice(0, expanded ? 200 : 5);
 
   const entitiesDistributionDataSelection = [
     {
@@ -151,24 +181,24 @@ const ReportDetailsComponent = (props) => {
   return (
     <div style={{ height: '100%' }} data-testid='report-overview'>
       <Typography variant="h4" gutterBottom={true}>
-        {t('Entity details')}
+        {t_i18n('Entity details')}
       </Typography>
       <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
         <Grid container={true} spacing={3} style={{ marginBottom: 20 }}>
           <Grid item xs={6} ref={ref}>
             <Typography variant="h3" gutterBottom={true}>
-              {t('Description')}
+              {t_i18n('Description')}
             </Typography>
-            <ExpandableMarkdown source={report.description} limit={400} />
+            <ExpandableMarkdown source={reportData.description} limit={400} />
             <Typography
               variant="h3"
               gutterBottom={true}
               style={{ marginTop: 20 }}
             >
-              {t('Report types')}
+              {t_i18n('Report types')}
             </Typography>
-            <FieldOrEmpty source={report.report_types}>
-              {report.report_types?.map((reportType) => (
+            <FieldOrEmpty source={reportData.report_types}>
+              {reportData.report_types?.map((reportType) => (
                 <Chip
                   key={reportType}
                   classes={{ root: classes.chip }}
@@ -181,9 +211,9 @@ const ReportDetailsComponent = (props) => {
               gutterBottom={true}
               style={{ marginTop: 20 }}
             >
-              {t('Publication date')}
+              {t_i18n('Publication date')}
             </Typography>
-            {fldt(report.published)}
+            {fldt(reportData.published)}
           </Grid>
           <Grid
             item
@@ -192,7 +222,7 @@ const ReportDetailsComponent = (props) => {
           >
             <StixRelationshipsHorizontalBars
               isWidget={false}
-              fromId={report.id}
+              fromId={reportData.id}
               startDate={null}
               endDate={null}
               relationshipType="object"
@@ -204,7 +234,7 @@ const ReportDetailsComponent = (props) => {
           </Grid>
         </Grid>
         <Typography variant="h3" gutterBottom={true}>
-          {t('Correlated reports')}
+          {t_i18n('Correlated reports')}
         </Typography>
         <List classes={{ root: classes.relatedContainers }}>
           {relatedContainers.length > 0
@@ -212,7 +242,7 @@ const ReportDetailsComponent = (props) => {
               const relatedContainer = relatedContainerEdge.node;
               return (
                 <ListItem
-                  key={report.id}
+                  key={reportData.id}
                   dense={true}
                   button={true}
                   classes={{ root: classes.item }}
@@ -224,18 +254,29 @@ const ReportDetailsComponent = (props) => {
                     <ItemIcon type={relatedContainer.entity_type} />
                   </ListItemIcon>
                   <ListItemText
+                    className={classes.itemText}
                     primary={
-                      <div className={classes.itemText}>
+                      <div>
                         {relatedContainer.name}
                       </div>
-                      }
+                    }
                   />
-                  <div className={classes.itemAuthor}>
-                    {R.pathOr('', ['createdBy', 'name'], relatedContainer)}
-                  </div>
-                  <div className={classes.itemDate}>
-                    {fsd(relatedContainer.published)}
-                  </div>
+                  <ListItemText
+                    className={classes.itemAuthor}
+                    primary={
+                      <div>
+                        {relatedContainer.createdBy?.name ?? '-'}
+                      </div>
+                    }
+                  />
+                  <ListItemText
+                    className={classes.itemDate}
+                    primary={
+                      <div>
+                        {fsd(relatedContainer.published)}
+                      </div>
+                    }
+                  />
                   <div className={classes.itemMarking}>
                     <ItemMarkings
                       variant="inList"
@@ -267,55 +308,4 @@ const ReportDetailsComponent = (props) => {
   );
 };
 
-ReportDetailsComponent.propTypes = {
-  report: PropTypes.object,
-  classes: PropTypes.object,
-  t: PropTypes.func,
-  fld: PropTypes.func,
-};
-
-const ReportDetails = createFragmentContainer(ReportDetailsComponent, {
-  report: graphql`
-    fragment ReportDetails_report on Report {
-      id
-      published
-      report_types
-      description
-      relatedContainers(
-        first: 10
-        orderBy: published
-        orderMode: desc
-        types: ["Report"]
-        viaTypes: ["Indicator", "Stix-Cyber-Observable"]
-      ) {
-        edges {
-          node {
-            id
-            entity_type
-            ... on Report {
-              name
-              description
-              published
-              createdBy {
-                ... on Identity {
-                  id
-                  name
-                  entity_type
-                }
-              }
-              objectMarking {
-                id
-                definition_type
-                definition
-                x_opencti_order
-                x_opencti_color
-              }
-            }
-          }
-        }
-      }
-    }
-  `,
-});
-
-export default R.compose(inject18n, withStyles(styles))(ReportDetails);
+export default ReportDetails;
