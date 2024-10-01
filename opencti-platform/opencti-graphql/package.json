@@ -177,7 +177,7 @@
     "@types/express": "4.17.21",
     "@types/graphql-upload": "16.0.7",
     "@types/mime-types": "2.1.4",
-    "@types/nconf": "0.10.6",
+    "@types/nconf": "0.10.7",
     "@types/ramda": "0.30.2",
     "@types/tough-cookie": "4.0.5",
     "@types/turndown": "5.0.4",
