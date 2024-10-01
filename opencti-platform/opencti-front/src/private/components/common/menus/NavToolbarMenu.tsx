@@ -49,13 +49,13 @@ const NavToolbarMenu: FunctionComponent<{ entries: MenuEntry[] }> = ({ entries }
               key={idx}
               component={Link}
               to={entry.path}
-              selected={location.pathname.endsWith(entry.path)}
+              selected={location.pathname.startsWith(entry.path)}
               dense={false}
             >
               {entry.icon && (
-                <ListItemIcon>
-                  {entry.icon}
-                </ListItemIcon>
+              <ListItemIcon>
+                {entry.icon}
+              </ListItemIcon>
               )}
               <ListItemText primary={t_i18n(entry.label)} />
             </MenuItem>
