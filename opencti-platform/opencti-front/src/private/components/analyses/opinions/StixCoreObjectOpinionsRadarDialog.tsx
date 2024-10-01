@@ -30,6 +30,7 @@ import {
 import { MESSAGING$ } from '../../../../relay/environment';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { yupShapeConditionalRequired, useDynamicSchemaCreationValidation, useIsMandatoryAttribute } from '../../../../utils/hooks/useEntitySettings';
+import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 
 export const stixCoreObjectOpinionsRadarDialogMyOpinionQuery = graphql`
   query StixCoreObjectOpinionsRadarDialogMyOpinionQuery($id: String!) {
@@ -52,7 +53,7 @@ interface StixCoreObjectOpinionsRadarDialogProps {
 }
 
 interface OpinionAddInput {
-  alreadyExistingOpinion: string;
+  opinion: string;
   explanation: string;
   confidence: number;
 }
@@ -81,14 +82,15 @@ StixCoreObjectOpinionsRadarDialogProps
   );
   const { mandatoryAttributes } = useIsMandatoryAttribute(OPINION_TYPE);
   const basicShape = yupShapeConditionalRequired({
+    opinion: Yup.string(),
     explanation: Yup.string(),
+    confidence: Yup.number(),
   }, mandatoryAttributes);
   const opinionValidator = useDynamicSchemaCreationValidation(
     mandatoryAttributes,
     basicShape,
-    ['opinion'],
+    ['opinion', 'confidence'], // exclude these fields because their components don't support validation
   );
-  console.log(opinionValidator);
 
   const myOpinionValue = opinionOptions.find(
     (m) => m.label === myOpinion?.opinion,
@@ -120,20 +122,20 @@ StixCoreObjectOpinionsRadarDialogProps
     values: OpinionAddInput,
     { setSubmitting, resetForm }: FormikHelpers<OpinionAddInput>,
   ) => {
-    const { alreadyExistingOpinion, explanation, confidence } = values;
+    const { opinion, explanation, confidence } = values;
     let inputValues: OpinionAddSubmit = {
       opinion: opinionOptions[currentOpinion - 1].label,
       explanation,
       confidence: parseInt(String(confidence), 10),
     };
-    if (isNotEmptyField(alreadyExistingOpinion)) {
+    if (isNotEmptyField(opinion)) {
       const finalValues = Object.entries(inputValues).map(([key, value]) => ({
         key,
         value: adaptFieldValue(value),
       }));
       commitEdition({
         variables: {
-          id: alreadyExistingOpinion,
+          id: opinion,
           input: finalValues,
         },
         onCompleted: () => {
@@ -160,6 +162,16 @@ StixCoreObjectOpinionsRadarDialogProps
       });
     }
   };
+
+  const initialValues = useDefaultValues<OpinionAddInput>(
+    OPINION_TYPE,
+    {
+      opinion: myOpinion?.id ?? '',
+      explanation: myOpinion?.explanation ?? '',
+      confidence: myOpinion?.confidence ?? 75,
+    },
+  );
+
   return (
     <Security needs={[KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNPARTICIPATE]}>
       <>
@@ -182,13 +194,9 @@ StixCoreObjectOpinionsRadarDialogProps
             onClose={handleClose}
             fullWidth={true}
              >
-            <Formik
+            <Formik<OpinionAddInput>
               enableReinitialize={true}
-              initialValues={{
-                alreadyExistingOpinion: myOpinion?.id ?? '',
-                explanation: myOpinion?.explanation ?? '',
-                confidence: myOpinion?.confidence ?? 75,
-              }}
+              initialValues={initialValues}
               validationSchema={opinionValidator}
               validateOnChange={false} // Validation will occur on submission, required fields all have *'s
               validateOnBlur={false} // Validation will occur on submission, required fields all have *'s
