@@ -1,5 +1,6 @@
 import useAuth from './useAuth';
 import useHelper from './useHelper';
+import {Role_role$data} from '@components/settings/roles/__generated__/Role_role.graphql';
 
 const PROTECT_SENSITIVE_CHANGES_FF = 'PROTECT_SENSITIVE_CHANGES';
 
@@ -22,16 +23,32 @@ const useSensitiveModifications = () => {
     }
     return !PROTECTED_GROUPS_IDS.includes(groupStandardId);
   };
+
+  /**
+   * Return true when current user has the fake capa can_manage_sensitive_config enabled.
+   * @param roleStandardId
+   */
   const isRoleEditionAllowed = (roleStandardId: string) => {
     if (me.can_manage_sensitive_config) {
       return true;
     }
     return !PROTECTED_ROLES_IDS.includes(roleStandardId);
   };
+
+  /**
+   * True when a role has the fake capa can_manage_sensitive_config enabled, false if not.
+   * when can_manage_sensitive_config undefined => true.
+   * @param role
+   */
+  const isRoleWithManageSensitiveConfig = (role: Role_role$data) => {
+    return role.can_manage_sensitive_config ?? true;
+  };
+
   return {
     ffenabled: isFeatureEnable(PROTECT_SENSITIVE_CHANGES_FF),
     isGroupEditionAllowed,
     isRoleEditionAllowed,
+    isRoleWithManageSensitiveConfig,
   };
 };
 

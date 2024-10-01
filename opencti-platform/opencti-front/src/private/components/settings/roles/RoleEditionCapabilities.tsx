@@ -150,7 +150,7 @@ const RoleEditionCapabilitiesComponent: FunctionComponent<RoleEditionCapabilitie
           <ListItemSecondaryAction>
             <Checkbox
               onChange={(event) => handleSensitiveToggle(event)}
-              checked={role.can_manage_sensitive_config ? role.can_manage_sensitive_config : false}
+              checked={role.can_manage_sensitive_config ?? true}
               disabled={false}
             />
           </ListItemSecondaryAction>
