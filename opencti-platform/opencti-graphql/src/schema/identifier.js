@@ -182,6 +182,7 @@ const stixBaseEntityContribution = {
     [I.ENTITY_TYPE_STREAM_COLLECTION]: () => uuidv4(),
     [I.ENTITY_TYPE_INTERNAL_FILE]: () => uuidv4(),
     [I.ENTITY_TYPE_WORK]: () => uuidv4(),
+    [I.ENTITY_TYPE_THEME]: () => uuidv4(),
     // Stix Domain
     // Entities
     [D.ENTITY_TYPE_ATTACK_PATTERN]: [[{ src: X_MITRE_ID_FIELD }], [{ src: NAME_FIELD }]],

@@ -25,6 +25,14 @@ export const profileQuery = graphql`
     settings {
       ...ProfileOverview_settings
     }
+    themes {
+      edges {
+        node {
+          id
+          name
+        }
+      }
+    }
   }
 `;
 
@@ -37,11 +45,11 @@ const ProfileComponent: FunctionComponent<ProfileComponentProps> = ({
 }) => {
   const classes = useStyles();
   const data = usePreloadedQuery<ProfileQuery>(profileQuery, queryRef);
-  const { me, about, settings } = data;
+  const { me, about, settings, themes } = data;
   return (
     <div className={classes.container}>
       <Suspense fallback={<Loader />}>
-        <ProfileOverview me={me} about={about} settings={settings} />
+        <ProfileOverview me={me} about={about} settings={settings} themes={themes} />
       </Suspense>
     </div>
   );

@@ -27,6 +27,7 @@ interface CustomFileUploadProps extends Partial<FieldProps<File | null | undefin
   noFileSelectedLabel?: string
   noMargin?: boolean
   required?: boolean;
+  additionalOnChange?: (event: FormEvent) => void;
 }
 
 // Deprecated - https://mui.com/system/styles/basics/
@@ -76,6 +77,7 @@ const CustomFileUploader: FunctionComponent<CustomFileUploadProps> = ({
   noFileSelectedLabel,
   noMargin = false,
   required = false,
+  additionalOnChange,
 }) => {
   const { t_i18n } = useFormatter();
   const classes = useStyles();
@@ -137,6 +139,10 @@ const CustomFileUploader: FunctionComponent<CustomFileUploadProps> = ({
       if (!externalIdValue) {
         await setFieldValue('external_id', truncate(newFileName, 60));
       }
+    }
+
+    if (typeof additionalOnChange === 'function') {
+      additionalOnChange(event);
     }
   };
 
