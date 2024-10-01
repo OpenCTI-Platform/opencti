@@ -33,7 +33,7 @@ interface SettingsAnalyticsProps {
     readonly id: string;
   };
   handleChangeFocus: (id: string, name: string) => void;
-  handleSubmitField: (id: string, name: string, value: unknown) => void;
+  handleSubmitField: (id: string, name: string, value: string | null) => void;
   isEnterpriseEdition: boolean;
 }
 
