@@ -1,6 +1,6 @@
+import { Role_role$data } from '@components/settings/roles/__generated__/Role_role.graphql';
 import useAuth from './useAuth';
 import useHelper from './useHelper';
-import {Role_role$data} from '@components/settings/roles/__generated__/Role_role.graphql';
 
 const PROTECT_SENSITIVE_CHANGES_FF = 'PROTECT_SENSITIVE_CHANGES';
 

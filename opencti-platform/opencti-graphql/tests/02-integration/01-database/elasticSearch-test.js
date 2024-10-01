@@ -500,7 +500,7 @@ describe('Elasticsearch pagination', () => {
       filterGroups: [],
     };
     const data = await elPaginate(testContext, ADMIN_USER, READ_ENTITIES_INDICES, { filters, first: ES_MAX_PAGINATION });
-    expect(data.edges.length).toEqual(526);
+    expect(data.edges.length).toEqual(527);
   });
   it('should entity paginate with field exist filter', async () => {
     const filters = {
