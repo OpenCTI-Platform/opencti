@@ -12233,6 +12233,7 @@ union StixObjectOrStixRelationshipOrCreator =
   | Status
   | PublicDashboard
   | Pir
+  | Theme
 union StixObjectOrStixRelationship =
   MarkingDefinition
   | Label
@@ -12318,6 +12319,7 @@ union StixObjectOrStixRelationship =
   | CsvMapper
   | PublicDashboard
   | Pir
+  | Theme
 union StixCoreObjectOrStixCoreRelationship =
 #### Stix Core Objects
 ## Stix Domain Objects
@@ -12396,6 +12398,7 @@ union StixCoreObjectOrStixCoreRelationship =
   | ManagerConfiguration
   | Workspace
   | PublicDashboard
+  | Theme
 
 enum StixRelationshipsOrdering {
   entity_type
