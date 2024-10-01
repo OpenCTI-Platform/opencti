@@ -107,7 +107,7 @@ const DataTableComponent = ({
         effectiveColumns: columns.filter(({ visible }) => visible).sort((a, b) => a.order - b.order),
         initialValues,
         setColumns,
-        resetColumns: () => setReset(true),
+        resetColumns: () => setColumns(columnsInitialState),
         resolvePath,
         redirectionModeEnabled,
         toolbarFilters,
