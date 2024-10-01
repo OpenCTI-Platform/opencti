@@ -149,8 +149,8 @@ const ReportDetails = ({ report }) => {
   });
   const expandable = reportData.relatedContainers.edges.length > 5;
   const relatedContainers = reportData.relatedContainers.edges
-    .slice(0, expanded ? 200 : 5)
-    .filter((relatedContainerEdge) => relatedContainerEdge.node.id !== reportData.id);
+    .filter((relatedContainerEdge) => relatedContainerEdge.node.id !== reportData.id)
+    .slice(0, expanded ? 200 : 5);
 
   const entitiesDistributionDataSelection = [
     {
