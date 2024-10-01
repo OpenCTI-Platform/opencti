@@ -102,7 +102,7 @@ const DataTableBody = ({
     }
     // From there, currentRefContainer is not null
     /* eslint-disable @typescript-eslint/no-non-null-assertion */
-    const clientWidth = currentRefContainer!.clientWidth - storedSize; // Scrollbar size to prevent alignment issues
+    const clientWidth = currentRefContainer!.clientWidth - storedSize - 10; // Scrollbar size to prevent alignment issues
     for (let i = startsWithSelect ? 1 : 0; i < columns.length - (endsWithNavigate ? 1 : 0); i += 1) {
       const column = reset ? columns[i] : { ...columns[i], ...localStorageColumns[columns[i].id] };
       const shouldCompute = (!column.size || resize || !localStorageColumns[columns[i].id]?.size) && (column.percentWidth && Boolean(computeState));
@@ -146,8 +146,8 @@ const DataTableBody = ({
     } else {
       currentRefContainer!.style.overflow = 'hidden';
     }
-    colSizes['--header-table-size'] = tableSize;
-    colSizes['--col-table-size'] = tableSize;
+    colSizes['--header-table-size'] = tableSize + 10;
+    colSizes['--col-table-size'] = tableSize + 10;
     if (variant === DataTableVariant.widget) {
       if (!rootRef) {
         throw Error('Invalid configuration for widget list');
