@@ -4,6 +4,8 @@ import { ADMIN_USER, testContext, queryAsAdmin, TESTING_ROLES } from '../../util
 import { elLoadById } from '../../../src/database/engine';
 import { ENTITY_TYPE_CAPABILITY } from '../../../src/schema/internalObject';
 import { generateStandardId } from '../../../src/schema/identifier';
+import {isFeatureEnabled} from '../../../src/config/conf';
+import {PROTECT_SENSITIVE_CHANGES_FF} from '../../../src/domain/grant';
 
 const LIST_QUERY = gql`
   query roles($first: Int, $after: ID, $orderBy: RolesOrdering, $orderMode: OrderingMode, $search: String) {
@@ -39,6 +41,7 @@ describe('Role resolver standard behavior', () => {
           id
           name
           description
+          can_manage_sensitive_config
         }
       }
     `;
@@ -56,6 +59,12 @@ describe('Role resolver standard behavior', () => {
     expect(role).not.toBeNull();
     expect(role.data.roleAdd).not.toBeNull();
     expect(role.data.roleAdd.name).toEqual('Role');
+    if(isFeatureEnabled(PROTECT_SENSITIVE_CHANGES_FF)){
+      expect(role.data.roleAdd.can_manage_sensitive_config).toBeFalsy('New role should have the can_manage_sensitive_config to false by default');
+    } else {
+      expect(role.data.roleAdd.can_manage_sensitive_config).toBeUndefined('New role should not have the can_manage_sensitive_config when it is not enabled');
+    }
+
     roleInternalId = role.data.roleAdd.id;
   });
   it('should role loaded by internal id', async () => {
