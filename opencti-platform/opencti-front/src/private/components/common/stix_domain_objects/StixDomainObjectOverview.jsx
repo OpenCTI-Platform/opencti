@@ -1,7 +1,6 @@
-import React, { Component, useState } from 'react';
+import React, { useState } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
-import withStyles from '@mui/styles/withStyles';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
@@ -29,7 +28,7 @@ import ItemBoolean from '../../../../components/ItemBoolean';
 import ItemCreators from '../../../../components/ItemCreators';
 import ItemConfidence from '../../../../components/ItemConfidence';
 import ItemAuthor from '../../../../components/ItemAuthor';
-import inject18n, { useFormatter } from '../../../../components/i18n';
+import { useFormatter } from '../../../../components/i18n';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import { stixDomainObjectMutation } from './StixDomainObjectHeader';
 import ItemStatus from '../../../../components/ItemStatus';
