@@ -467,7 +467,6 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
   );
 };
 export const IngestionCsvCreationContainer: FunctionComponent<IngestionCsvCreationContainerProps> = ({
-
   queryRef,
   handleClose,
   open,
@@ -497,5 +496,3 @@ export const IngestionCsvCreationContainer: FunctionComponent<IngestionCsvCreati
     </Drawer>
   );
 };
-
-export default IngestionCsvCreation;

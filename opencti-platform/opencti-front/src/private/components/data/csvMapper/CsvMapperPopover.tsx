@@ -8,6 +8,7 @@ import { PopoverProps } from '@mui/material/Popover';
 import CsvMapperEditionContainer, { csvMapperEditionContainerQuery } from '@components/data/csvMapper/CsvMapperEditionContainer';
 import { CsvMapperEditionContainerQuery } from '@components/data/csvMapper/__generated__/CsvMapperEditionContainerQuery.graphql';
 import { csvMappers_MappersQuery$variables } from '@components/data/csvMapper/__generated__/csvMappers_MappersQuery.graphql';
+import CsvMapperCreationContainer from '@components/data/csvMapper/CsvMapperCreationContainer';
 import { useFormatter } from '../../../../components/i18n';
 import DeleteDialog from '../../../../components/DeleteDialog';
 import useDeletion from '../../../../utils/hooks/useDeletion';
@@ -45,6 +46,15 @@ const CsvMapperPopover: FunctionComponent<CsvMapperPopoverProps> = ({
     handleClose();
   };
 
+  // -- Duplication --
+  const [displayDuplicate, setDisplayDuplicate] = useState(false);
+
+  const handleOpenDuplicate = () => {
+    setDisplayDuplicate(true);
+    loadQuery({ id: csvMapperId });
+    handleClose();
+  };
+
   // -- Deletion --
 
   const [commit] = useApiMutation(csvMapperPopoverDelete);
@@ -78,6 +88,7 @@ const CsvMapperPopover: FunctionComponent<CsvMapperPopoverProps> = ({
       </IconButton>
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
         <MenuItem onClick={handleOpenUpdate}>{t_i18n('Update')}</MenuItem>
+        <MenuItem onClick={handleOpenDuplicate}>{t_i18n('Duplicate')}</MenuItem>
         <MenuItem onClick={deletion.handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
       </Menu>
       {queryRef && (
@@ -86,6 +97,12 @@ const CsvMapperPopover: FunctionComponent<CsvMapperPopoverProps> = ({
             queryRef={queryRef}
             onClose={() => setDisplayUpdate(false)}
             open={displayUpdate}
+          />
+          <CsvMapperCreationContainer
+            queryRef={queryRef}
+            isDuplicated={true}
+            onClose={() => setDisplayDuplicate(false)}
+            open={displayDuplicate}
           />
         </React.Suspense>
       )}

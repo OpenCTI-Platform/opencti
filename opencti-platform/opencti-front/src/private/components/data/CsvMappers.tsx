@@ -99,7 +99,7 @@ const CsvMappers = () => {
                 />
               </React.Suspense>
             </ListLines>
-            <CsvMapperCreationContainer paginationOptions={paginationOptions}/>
+            <CsvMapperCreationContainer paginationOptions={paginationOptions} open={false}/>
           </div>
         </CsvMappersProvider>
       </Suspense>

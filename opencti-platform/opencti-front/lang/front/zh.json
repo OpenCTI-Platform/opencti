@@ -856,6 +856,7 @@
   "Due Date": "到期日",
   "Duplicate": "复制",
   "Duplicate a CSV ingester": "复制 CSV 输入器",
+  "Duplicate a CSV mapper": "复制 CSV 映射器",
   "Duplicate a feed": "复制一个饲料",
   "Duplicate the dashboard": "复制仪表板",
   "Dynamic source filters": "动态源过滤器",

@@ -856,6 +856,7 @@
   "Due Date": "Due Date",
   "Duplicate": "Duplicate",
   "Duplicate a CSV ingester": "Duplicate a CSV ingester",
+  "Duplicate a CSV mapper": "Duplicate a CSV mapper",
   "Duplicate a feed": "Duplicate a feed",
   "Duplicate the dashboard": "Duplicate the dashboard",
   "Dynamic source filters": "Dynamic source filters",

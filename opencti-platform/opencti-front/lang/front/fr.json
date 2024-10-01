@@ -856,6 +856,7 @@
   "Due Date": "Date d'échéance",
   "Duplicate": "Dupliquer",
   "Duplicate a CSV ingester": "Dupliquer un injecteur CSV",
+  "Duplicate a CSV mapper": "Dupliquer un mappeur CSV",
   "Duplicate a feed": "Dupliquer un flux",
   "Duplicate the dashboard": "Dupliquer le tableau de bord",
   "Dynamic source filters": "Filtres de source dynamique",
