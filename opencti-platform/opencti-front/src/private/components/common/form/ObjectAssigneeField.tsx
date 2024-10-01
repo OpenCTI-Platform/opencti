@@ -64,7 +64,7 @@ interface ObjectAssigneeFieldProps {
   name: string;
   onChange?: (name: string, values: OptionAssignee[]) => void;
   style?: Record<string, string | number>;
-  helpertext?: string;
+  helpertext?: unknown;
   label?: string,
   disabled?: boolean,
 }
