@@ -57,45 +57,6 @@ const variable2 = {
 
 const templatesVariables = [variable1, variable2];
 
-const containerDataQuery = graphql`
-  query templatesVariablesUtilsContainerQuery(
-    $id: String!
-  ) {
-    stixCoreObject(
-      id: $id
-    ) {
-      id
-      entity_type
-      representative {
-        main
-        secondary
-      }
-      objectMarking {
-          id
-          standard_id
-          entity_type
-          definition_type
-          definition
-          created
-          modified
-          x_opencti_order
-          x_opencti_color
-      }
-      objectLabel {
-          id
-          value
-          color
-      }
-      ... on Report {
-        name
-        description
-        report_types
-        published
-      }
-    }
-  }
-`;
-
 const buildOutcomeFromTemplate = ({
   containerId,
   template,
@@ -105,6 +66,7 @@ const buildOutcomeFromTemplate = ({
   template: any,
   max_content_markings: string[],
 }) => {
+  return undefined;
   const generateWidgetFromVariable = (variableName: string) => {
     const variable = templatesVariables.filter((v) => v.name === variableName)[0];
     const { widget } = variable;

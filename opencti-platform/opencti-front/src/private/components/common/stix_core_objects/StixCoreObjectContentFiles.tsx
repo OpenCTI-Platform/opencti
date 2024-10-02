@@ -30,7 +30,9 @@ import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import SelectField from '../../../../components/fields/SelectField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import buildOutcomeFromTemplate, { template2 } from '../../../../utils/outcome_template/templatesVariablesUtils';
+import buildOutcomeFromTemplate from '../../../../utils/outcome_template/templatesVariablesUtils';
+import buildOutcomeTemplate from '../../../../utils/outcome_template/engine/engine';
+import { templateGraph } from '../../../../utils/outcome_template/engine/__template';
 
 const useStyles = makeStyles((theme) => ({
   drawerPaper: {
@@ -187,7 +189,7 @@ const StixCoreObjectContentFiles = ({
     });
   };
 
-  const onSubmitOutcomeTemplate = (values, { setSubmitting, resetForm }) => {
+  const onSubmitOutcomeTemplate = async (values, { setSubmitting, resetForm }) => {
     // eslint-disable-next-line prefer-const
     let { name, type } = values;
     if (
@@ -198,37 +200,33 @@ const StixCoreObjectContentFiles = ({
     }
 
     // const templateContent = template1.content; // TODO remove hardcoded
-    const templateContent = buildOutcomeFromTemplate({
-      containerId: stixCoreObjectId,
-      template: template2,
-      max_content_markings: [],
-    });
-
-    const blob = new Blob([templateContent], {
-      type,
-    });
-    const file = new File([blob], name, {
-      type,
-    });
-
-    const fileMarkings = values.fileMarkings.map(({ value }) => value);
-    const maxMarkings = (values.max_markings ?? []).map(({ value }) => value); // TODO
-
-    commitMutation({
-      mutation: stixCoreObjectContentFilesUploadStixCoreObjectMutation,
-      variables: { file, id: stixCoreObjectId, fileMarkings },
-      setSubmitting,
-      onCompleted: (result) => {
-        setSubmitting(false);
-        resetForm();
-        handleCloseCreateOutcomeTemplate();
-        onFileChange(result.stixCoreObjectEdit.importPush.id);
-      },
-      updater: undefined,
-      onError: undefined,
-      optimisticResponse: undefined,
-      optimisticUpdater: undefined,
-    });
+    const templateContent = await buildOutcomeTemplate(stixCoreObjectId, templateGraph);
+    console.log(templateContent);
+    // const blob = new Blob([templateContent], {
+    //   type,
+    // });
+    // const file = new File([blob], name, {
+    //   type,
+    // });
+    //
+    // const fileMarkings = values.fileMarkings.map(({ value }) => value);
+    // const maxMarkings = (values.max_markings ?? []).map(({ value }) => value); // TODO
+    //
+    // commitMutation({
+    //   mutation: stixCoreObjectContentFilesUploadStixCoreObjectMutation,
+    //   variables: { file, id: stixCoreObjectId, fileMarkings },
+    //   setSubmitting,
+    //   onCompleted: (result) => {
+    //     setSubmitting(false);
+    //     resetForm();
+    //     handleCloseCreateOutcomeTemplate();
+    //     onFileChange(result.stixCoreObjectEdit.importPush.id);
+    //   },
+    //   updater: undefined,
+    //   onError: undefined,
+    //   optimisticResponse: undefined,
+    //   optimisticUpdater: undefined,
+    // });
   };
 
   const renderIcon = (mimeType: string) => {

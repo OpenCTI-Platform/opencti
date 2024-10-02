@@ -1,4 +1,4 @@
-import { FilterGroup, Filter } from '../filters/filtersHelpers-types';
+import { FilterGroup } from '../filters/filtersHelpers-types';
 
 interface WidgetDataSelection {
   label?: string
@@ -9,6 +9,7 @@ interface WidgetDataSelection {
   centerLng?: number
   zoom?: number
   isTo?: boolean
+  perspective: 'entities' | 'relationships' | 'audits' | null
   filters?: FilterGroup
   dynamicFrom?: FilterGroup
   dynamicTo?: FilterGroup
@@ -35,7 +36,7 @@ interface WidgetLayout {
 export interface Widget {
   id: string;
   type: string;
-  perspective: 'entities' | 'relationships' | 'audits' | null;
+  perspective: 'entities' | 'relationships' | 'audits' | null
   dataSelection: WidgetDataSelection[]
   parameters: WidgetParameters
   layout?: WidgetLayout
