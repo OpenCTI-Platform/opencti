@@ -209,6 +209,7 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
     }
     setFeedAttributes({ ...updatedFeedAttributes });
   };
+
   const [commit] = useApiMutation(feedCreationMutation);
 
   const onSubmit: FormikConfig<FeedAddInput>['onSubmit'] = (values, { setSubmitting, resetForm }) => {

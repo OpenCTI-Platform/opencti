@@ -1,5 +1,6 @@
 import * as R from 'ramda';
 import moment from 'moment/moment';
+import { checkPatternValidity } from '../../utils/dataPrep';
 import { createEntity, createRelation, distributionEntities, patchAttribute, storeLoadByIdWithRefs, timeSeriesEntities } from '../../database/middleware';
 import { type EntityOptions, listAllEntities, listEntitiesPaginated, listEntitiesThroughRelationsPaginated, storeLoadById } from '../../database/middleware-loader';
 import { BUS_TOPICS, extendedErrors, logApp } from '../../config/conf';
@@ -240,6 +241,12 @@ export const addIndicator = async (context: AuthContext, user: AuthUser, indicat
 
   const formattedPattern = await getFormattedPattern(context, user, indicator.pattern_type, indicator.pattern);
   const extractedObservableValues = getObservableValuesFromPattern(formattedPattern);
+
+  // check pattern validity
+  checkPatternValidity(extractedObservableValues);
+  console.timeEnd();
+
+  // -----------------------------------
 
   const indicatorToCreate = R.pipe(
     R.dissoc('createObservables'),

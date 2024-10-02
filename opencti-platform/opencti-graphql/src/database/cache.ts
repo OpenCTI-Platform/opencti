@@ -1,4 +1,7 @@
 import { SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION } from '@opentelemetry/semantic-conventions';
+import ipaddr from 'ipaddr.js';
+import { convertIpv4ToBinary, convertIpv6ToBinary, getIsRange } from '../utils/dataPrep';
+import type { ExclusionListProperties } from './exclusionList/constants';
 import type { BasicStoreIdentifier, StoreEntity, StoreRelation } from '../types/store';
 import { logApp } from '../config/conf';
 import { UnsupportedError } from '../config/errors';
@@ -12,6 +15,8 @@ import { convertStoreToStix } from './stix-converter';
 import { ENTITY_TYPE_PLAYBOOK } from '../modules/playbook/playbook-types';
 import { type BasicStoreEntityPublicDashboard, ENTITY_TYPE_PUBLIC_DASHBOARD } from '../modules/publicDashboard/publicDashboard-types';
 import { wait } from './utils';
+import * as exclusionList from './exclusionList/index';
+import { exclusionListEntityType } from './exclusionList/constants';
 
 const STORE_ENTITIES_LINKS: Record<string, string[]> = {
   // Filters must be reset depending on stream and triggers modifications
@@ -22,6 +27,86 @@ const STORE_ENTITIES_LINKS: Record<string, string[]> = {
   // Users must be reset depending on roles and groups modifications
   [ENTITY_TYPE_ROLE]: [ENTITY_TYPE_USER],
   [ENTITY_TYPE_GROUP]: [ENTITY_TYPE_USER],
+};
+
+const STORE_EXCLUSION_LIST = [
+  exclusionList.vpnIpv4List,
+  exclusionList.vpnIpv6List,
+  exclusionList.publicDnsV4List,
+  exclusionList.publicDnsV4List,
+  exclusionList.publicDnsV4List,
+  exclusionList.publicDnsV4List,
+  exclusionList.publicDnsV4List,
+  exclusionList.publicDnsV4List,
+  exclusionList.publicDnsV4List,
+  exclusionList.publicDnsV4List,
+  exclusionList.publicDnsV4List,
+  exclusionList.publicDnsV4List,
+  exclusionList.publicDnsV4List,
+  exclusionList.publicDnsV4List,
+  exclusionList.publicDnsV4List,
+  exclusionList.publicDnsV4List,
+  exclusionList.publicDnsV4List,
+  exclusionList.publicDnsV4List,
+  exclusionList.publicDnsV4List,
+  exclusionList.publicDnsV4List,
+  exclusionList.publicDnsV4List,
+  exclusionList.publicDnsV4List,
+  exclusionList.publicDnsV6List,
+  exclusionList.openaiGptBotList,
+  exclusionList.captivePortalsList,
+  exclusionList.bankWebsiteList,
+  exclusionList.googleBotList,
+];
+
+const STORE_TEST = [exclusionList.googleBotList];
+const STORE_TEST_2 = [exclusionList.vpnIpv4List];
+
+const STORE_EXCLUSION_LIST_BINARY = [];
+
+const STORE_EXCLUSION_LIST_BYTES = [];
+
+const convertTest = () => {
+  let ipListLength = 0;
+  STORE_EXCLUSION_LIST.forEach((item) => {
+    if (item.type.includes(exclusionListEntityType.IPV4_ADDR) || item.type.includes(exclusionListEntityType.IPV6_ADDR)) {
+      ipListLength += item.list.length;
+      const newList = item.list.map((ip) => {
+        const ipAddress = ip.split('/')[0];
+        const isIpv6 = ipAddress.indexOf(':') !== -1;
+        const isIpv4 = ipAddress.indexOf('.') !== -1;
+        if (!isIpv4 && !isIpv6) return ip;
+        const isRange = getIsRange(ip);
+        const ipAddressRangeValue = ip.split('/')?.[1] ?? '0';
+        if (isIpv6) return convertIpv6ToBinary(ipAddress, isRange, parseInt(ipAddressRangeValue, 10));
+        if (isIpv4) return convertIpv4ToBinary(ipAddress, isRange, parseInt(ipAddressRangeValue, 10));
+      });
+      STORE_EXCLUSION_LIST_BINARY.push({ ...item, list: newList });
+      return;
+    }
+    STORE_EXCLUSION_LIST_BINARY.push(item);
+  });
+  console.log('ipListLength : ', ipListLength);
+};
+
+convertTest();
+
+export const getExclusionListsFromCache = (): ExclusionListProperties[] | undefined => {
+  if (!STORE_EXCLUSION_LIST.length) return undefined;
+  return STORE_EXCLUSION_LIST;
+};
+
+export const getExclusionListByNameFromCache = (name: string): ExclusionListProperties | undefined => {
+  if (!STORE_EXCLUSION_LIST.length) return undefined;
+  return STORE_EXCLUSION_LIST.find((list) => list.name === name);
+};
+
+export const getExclusionListsByTypeFromCache = (exclusionListType: string): ExclusionListProperties[] => {
+  return STORE_EXCLUSION_LIST.filter((list) => list.type.includes(exclusionListType));
+};
+
+export const getExclusionListsByTypeFromCache2 = (exclusionListType: string): ExclusionListProperties[] => {
+  return STORE_EXCLUSION_LIST_BINARY.filter((list) => list.type.includes(exclusionListType));
 };
 
 const cache: any = {};
