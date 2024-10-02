@@ -8,7 +8,7 @@ import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetLoader from '../../../../components/dashboard/WidgetLoader';
 import WidgetListCoreObjects from '../../../../components/dashboard/WidgetListCoreObjects';
 
-const stixCoreObjectsListQuery = graphql`
+export const stixCoreObjectsListQuery = graphql`
   query StixCoreObjectsListQuery(
     $types: [String]
     $first: Int

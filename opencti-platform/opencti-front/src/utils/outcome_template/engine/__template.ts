@@ -1,9 +1,97 @@
-import { Widget } from '../../widget/widget';
 import { TemplateWidget } from '../template';
+import { Widget } from '../../widget/widget';
+
+// text //
+export const templateText = {
+  name: 'Template Text',
+  content: '<body>\n'
+    + '<h1> Voici le titre principal </h1>\n'
+    + '<p> Et voilà le texte de la page</p>\n'
+    + '<h2> On crée les autres titres de la même manière </h2>\n'
+    + '<h3> On peut créer jusqu\'à six niveaux de titres </h3>\n'
+    + '<h4> Titre de niveau 4 </h4>\n'
+    + '<h5> Titre de niveau 5 </h5>\n'
+    + '<h6> Titre de niveau 6 </h6>\n'
+    + '<p> Chaque titre peut contenir du texte, comme ici </p> \n'
+    + '</body> \n'
+    + '</html>',
+  used_variables: [],
+};
+
+// attribute //
+
+export const templateAttribute = {
+  name: 'template2',
+  content: '<body>\n'
+    + '<h1> Titre principal </h1>\n'
+    + '<p> nom du rapport: $rapportName</p>\n'
+    + '</body> \n'
+    + '</html>',
+  used_variables: ['rapportName'],
+};
+
+export const widgetAttribute = {
+  name: 'rapportName',
+  widget: {
+    type: 'attribute',
+    perspective: 'entities',
+    parameters: {
+      title: 'Report name (widget title)',
+    },
+    dataSelection: [
+      {
+        filters: {
+          mode: 'and',
+          filters: [{ key: 'id', values: ['CONTAINER_ID'] }],
+          filterGroups: [],
+        },
+        attribute: 'representative.main',
+      },
+    ],
+  } as Widget,
+};
+
+// list //
+
+export const templateList = {
+  name: 'template3',
+  content: '<body>\n'
+    + '<h1> Titre principal </h1>\n'
+    + '<p> Observables contenus dans le rapport: $observablesList</p>\n'
+    + '</body> \n'
+    + '</html>',
+  used_variables: ['observablesList'],
+};
+
+export const widgetList = {
+  name: 'observablesList',
+  widget: {
+    id: 'XXX',
+    type: 'list',
+    perspective: 'entities',
+    parameters: {
+      title: 'Observables contained in the report',
+    },
+    dataSelection: [
+      {
+        filters: {
+          mode: 'and',
+          filters: [
+            { key: 'entity_type', values: ['Stix-Cyber-Observable'] },
+            { key: 'objects', values: ['CONTAINER_ID'] },
+          ],
+          filterGroups: [],
+        },
+      },
+    ],
+  } as Widget,
+};
+
+// graph //
 
 export const templateGraph = {
   name: 'template graph',
-  used_variables: ['$widgetGraph'],
+  used_variables: ['widgetGraph'],
   content: `
   <body>
     <h1>Template graph</h1>

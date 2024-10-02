@@ -1,12 +1,14 @@
 import { stixRelationshipsDonutsDistributionQuery } from '@components/common/stix_relationships/StixRelationshipsDonut';
-import { buildFiltersAndOptionsForWidgets } from '../../../filters/filtersUtils';
+import {
+  buildFiltersAndOptionsForTemplateWidgets,
+} from '../../../filters/filtersUtils';
 import type { Widget } from '../../../widget/widget';
 import { fetchQuery } from '../../../../relay/environment';
 
 const buildDonutOutcome = async (containerId: string, widget: Widget) => {
   const [selection] = widget.dataSelection;
 
-  const filtersAndOptions = buildFiltersAndOptionsForWidgets(selection.filters);
+  const filtersAndOptions = buildFiltersAndOptionsForTemplateWidgets(containerId, selection.filters);
   const finalField = selection.attribute || 'entity_type';
   const variables = {
     field: finalField,

@@ -30,8 +30,7 @@ import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import SelectField from '../../../../components/fields/SelectField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import buildOutcomeFromTemplate from '../../../../utils/outcome_template/templatesVariablesUtils';
-import buildOutcomeTemplate from '../../../../utils/outcome_template/engine/engine';
+import buildOutcomeTemplate from '../../../../utils/outcome_template/engine/templateWidgetEngine';
 import { templateGraph } from '../../../../utils/outcome_template/engine/__template';
 
 const useStyles = makeStyles((theme) => ({

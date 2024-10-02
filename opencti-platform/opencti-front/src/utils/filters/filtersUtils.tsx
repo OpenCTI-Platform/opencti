@@ -239,6 +239,15 @@ export const buildFiltersAndOptionsForWidgets = (
   };
 };
 
+export const buildFiltersAndOptionsForTemplateWidgets = (
+  containerId: string,
+  inputFilters: FilterGroup | undefined,
+  opts: { removeTypeAll?: boolean, startDate?: string, endDate?: string, dateAttribute?: string } = {},
+) => {
+  const stringFilters = JSON.stringify(inputFilters).replace('CONTAINER_ID', containerId);
+  return buildFiltersAndOptionsForWidgets(JSON.parse(stringFilters), opts);
+};
+
 // return the i18n label corresponding to a value
 export const filterValue = (filterKey: string, value?: string | null, filterType?: string) => {
   const { t_i18n, nsd } = useFormatter();
