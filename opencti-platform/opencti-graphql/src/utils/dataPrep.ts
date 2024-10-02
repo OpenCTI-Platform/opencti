@@ -1,4 +1,3 @@
-import ipaddr from 'ipaddr.js';
 import { FunctionalError } from '../config/errors';
 import { getExclusionListsByTypeFromCache, getExclusionListsByTypeFromCache2 } from '../database/cache';
 import { exclusionListEntityType, ExclusionListProperties } from '../database/exclusionList/constants';
@@ -8,7 +7,6 @@ type ExtractedPattern = {
   value: string;
 };
 
-export const getIpAddrType = (range) => ipaddr.parse(range.split('/')[0]).kind();
 export const getIsRange = (value) => value.indexOf('/') !== -1;
 
 const checkIpAddrType = (ipAddr) => {
@@ -53,35 +51,24 @@ export const convertIpv4ToBinary = (ipv4: string, isRange?: boolean, range?: num
   return binary;
 };
 
-const checkRange = (parsedIpAddrToTest, test) => parsedIpAddrToTest.match(ipaddr.parseCIDR(test));
-
 const throwExclusionListError = (value: string, listName: string) => {
   console.timeEnd();
   throw FunctionalError(`Indicator creation failed, this pattern (${value}) is contained on an exclusion list (${listName})`, { value });
 };
 
-const checkIpAddressLists = (ipToTest: string, exclusionList: ExclusionListProperties[]) => {
-  exclusionList.forEach(({ name, list }) => {
-    list.forEach((item) => {
-      const parsedIpAddrToTest = ipaddr.parse(ipToTest);
-      const ipAddrToTestType = parsedIpAddrToTest.kind();
-      if (getIpAddrType(item) !== ipAddrToTestType) return;
-      if (checkRange(parsedIpAddrToTest, item) || ipToTest === item) {
-        console.log('item : ', item);
-        throwExclusionListError(ipToTest, name);
-      }
-    });
-  });
-};
+let viewedLine = 0;
 
 const checkIpAddressLists2 = (ipToTest: string, exclusionList: ExclusionListProperties[]) => {
   const { isIpv4 } = checkIpAddrType(ipToTest);
   const binary = isIpv4 ? convertIpv4ToBinary(ipToTest) : convertIpv6ToBinary(ipToTest);
 
   exclusionList.forEach(({ name, list }) => {
-    list.forEach((item) => {
-      if (binary.startsWith(item)) {
-        console.log('item match : ', item);
+    list.forEach((line) => {
+      viewedLine += 1;
+      if (binary.startsWith(line)) {
+        console.log('viewedLine match IP : ', viewedLine);
+        console.log('line match : ', line);
+        viewedLine = 0;
         throwExclusionListError(ipToTest, name);
       }
     });
@@ -91,12 +78,27 @@ const checkIpAddressLists2 = (ipToTest: string, exclusionList: ExclusionListProp
 export const checkPatternValidity = (extractedPattern: ExtractedPattern[]): void => {
   console.time();
   extractedPattern.forEach(({ type, value }) => {
-    // const selectedExclusionLists = getExclusionListsByTypeFromCache(type);
+    console.log('type : ', type);
+    console.log('value : ', value);
     const selectedExclusionLists = getExclusionListsByTypeFromCache2(type);
+    console.log('selectedExclusionLists : ', selectedExclusionLists.map((item) => item.name));
     if (!selectedExclusionLists.length) return;
     if (type === exclusionListEntityType.IPV4_ADDR || type === exclusionListEntityType.IPV6_ADDR) {
-      // checkIpAddressLists(value, selectedExclusionLists);
       checkIpAddressLists2(value, selectedExclusionLists);
+    } else {
+      selectedExclusionLists.forEach(({ name, list }) => {
+        list.forEach((line) => {
+          const isWildCard = line.startsWith('.');
+          if ((isWildCard && value.endsWith(line)) || value === line) {
+            console.log('line match : ', line);
+            console.log('viewedLine match OTHER : ', viewedLine);
+            viewedLine = 0;
+            throwExclusionListError(value, name);
+          }
+        });
+      });
     }
   });
+  console.log('viewedLine no match : ', viewedLine);
+  viewedLine = 0;
 };
