@@ -109,7 +109,7 @@ describe('Individual resolver standard behavior', () => {
   });
   it('should list individuals', async () => {
     const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 10 } });
-    expect(queryResult.data.individuals.edges.length).toEqual(3);
+    expect(queryResult.data.individuals.edges.length).toEqual(4);
   });
   it('should update individual', async () => {
     const UPDATE_QUERY = gql`

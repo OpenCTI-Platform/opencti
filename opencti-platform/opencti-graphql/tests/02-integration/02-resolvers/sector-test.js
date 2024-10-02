@@ -135,7 +135,7 @@ describe('Sector resolver standard behavior', () => {
   });
   it('should list sectors', async () => {
     const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 10 } });
-    expect(queryResult.data.sectors.edges.length).toEqual(4);
+    expect(queryResult.data.sectors.edges.length).toEqual(5);
   });
   it('should update sector', async () => {
     const UPDATE_QUERY = gql`

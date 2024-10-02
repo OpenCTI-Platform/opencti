@@ -132,7 +132,7 @@ describe('Region resolver standard behavior', () => {
   });
   it('should list regions', async () => {
     const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 10 } });
-    expect(queryResult.data.regions.edges.length).toEqual(3);
+    expect(queryResult.data.regions.edges.length).toEqual(4);
   });
   it('should update region', async () => {
     const UPDATE_QUERY = gql`

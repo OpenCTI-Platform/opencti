@@ -223,7 +223,7 @@ describe('Report resolver standard behavior', () => {
   });
   it('should list reports', async () => {
     const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 10 } });
-    expect(queryResult.data.reports.edges.length).toEqual(2);
+    expect(queryResult.data.reports.edges.length).toEqual(3);
   });
   it('should timeseries reports to be accurate', async () => {
     const queryResult = await queryAsAdmin({

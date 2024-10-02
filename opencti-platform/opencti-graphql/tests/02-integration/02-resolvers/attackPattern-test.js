@@ -142,7 +142,7 @@ describe('AttackPattern resolver standard behavior', () => {
   });
   it('should list attackPatterns', async () => {
     const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 10 } });
-    expect(queryResult.data.attackPatterns.edges.length).toEqual(3);
+    expect(queryResult.data.attackPatterns.edges.length).toEqual(4);
   });
   it('should query attackPatterns matrix', async () => {
     const queryResult = await queryAsAdmin({ query: MATRIX_QUERY });

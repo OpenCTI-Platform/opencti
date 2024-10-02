@@ -103,7 +103,7 @@ describe('Country resolver standard behavior', () => {
   });
   it('should list countries', async () => {
     const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 10 } });
-    expect(queryResult.data.countries.edges.length).toEqual(2);
+    expect(queryResult.data.countries.edges.length).toEqual(3);
   });
   it('should update country', async () => {
     const UPDATE_QUERY = gql`
