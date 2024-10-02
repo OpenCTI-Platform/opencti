@@ -2598,6 +2598,7 @@
   "The rule has been disabled, clean-up launched...": "규칙이 비활성화되었습니다, 정리 시작...",
   "The rule has been enabled, rescan of platform data launched...": "규칙이 활성화되었습니다, 플랫폼 데이터 다시 스캔 시작...",
   "The scenario has been correctly generated in your OpenBAS platform": "시나리오가 OpenBAS 플랫폼에서 올바르게 생성되었습니다",
+  "The STIX ID has been removed": "STIX ID가 제거되었습니다",
   "The tag has been added": "태그가 추가되었습니다",
   "The tag has been removed": "태그가 제거되었습니다",
   "The token is missing in your platform configuration, please ask your Filigran representative to provide you with it or with on-premise deployment instructions. Your can open a support ticket to do so.": "플랫폼 구성에 토큰이 누락되었습니다. Filigran 담당자에게 이를 제공하거나 온프레미스 배포 지침을 요청하십시오. 지원 티켓을 열 수 있습니다.",

@@ -2598,6 +2598,7 @@
   "The rule has been disabled, clean-up launched...": "La règle a été déséactivée, purge lancée...",
   "The rule has been enabled, rescan of platform data launched...": "La règle a été activée, re-scan des données de la plateforme lancé...",
   "The scenario has been correctly generated in your OpenBAS platform": "Le scénario a été correctement généré dans votre plateforme OpenBAS",
+  "The STIX ID has been removed": "L'ID STIX a été supprimé",
   "The tag has been added": "La balise a été ajoutée",
   "The tag has been removed": "La balise a été supprimée",
   "The token is missing in your platform configuration, please ask your Filigran representative to provide you with it or with on-premise deployment instructions. Your can open a support ticket to do so.": "Le token est manquant dans la configuration de votre plateforme, veuillez demander à votre représentant Filigran de vous le fournir ou de vous donner des instructions pour le déploiement sur site. Vous pouvez ouvrir un ticket de support pour ce faire.",
