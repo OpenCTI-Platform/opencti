@@ -10,12 +10,13 @@ import { QueryRenderer } from '../../../../relay/environment';
 import SearchInput from '../../../../components/SearchInput';
 import Loader from '../../../../components/Loader';
 
-const styles = () => ({
+const styles = (theme) => ({
   container: {
     margin: 0,
   },
   gridContainer: {
-    marginBottom: 20,
+    marginBottom: theme.spacing(2),
+    marginTop: theme.spacing(1),
   },
 });
 
