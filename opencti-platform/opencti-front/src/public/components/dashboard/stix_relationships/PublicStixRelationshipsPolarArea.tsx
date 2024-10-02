@@ -1,6 +1,5 @@
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import React from 'react';
-import type { PublicManifestWidget } from '../PublicManifest';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import type { PublicWidgetContainerProps } from '../PublicWidgetContainerProps';
 import { useFormatter } from '../../../../components/i18n';
@@ -9,6 +8,7 @@ import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetLoader from '../../../../components/dashboard/WidgetLoader';
 import { PublicStixRelationshipsPolarAreaQuery } from './__generated__/PublicStixRelationshipsPolarAreaQuery.graphql';
 import WidgetPolarArea from '../../../../components/dashboard/WidgetPolarArea';
+import type { Widget } from '../../../../utils/widget/widget';
 
 const publicStixRelationshipsPolarAreaQuery = graphql`
   query PublicStixRelationshipsPolarAreaQuery(
@@ -70,7 +70,7 @@ const publicStixRelationshipsPolarAreaQuery = graphql`
 `;
 
 interface PublicStixRelationshipsPolarAreaComponentProps {
-  dataSelection: PublicManifestWidget['dataSelection']
+  dataSelection: Widget['dataSelection']
   queryRef: PreloadedQuery<PublicStixRelationshipsPolarAreaQuery>
 }
 

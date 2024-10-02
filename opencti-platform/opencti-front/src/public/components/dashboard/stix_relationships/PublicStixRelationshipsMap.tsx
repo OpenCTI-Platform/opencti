@@ -1,7 +1,6 @@
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import React from 'react';
 import LocationMiniMapTargets from '@components/common/location/LocationMiniMapTargets';
-import type { PublicManifestWidget } from '../PublicManifest';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import { computeLevel } from '../../../../utils/Number';
 import type { PublicWidgetContainerProps } from '../PublicWidgetContainerProps';
@@ -10,6 +9,7 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetLoader from '../../../../components/dashboard/WidgetLoader';
 import { PublicStixRelationshipsMapQuery } from './__generated__/PublicStixRelationshipsMapQuery.graphql';
+import type { Widget } from '../../../../utils/widget/widget';
 
 const publicStixRelationshipsMapQuery = graphql`
   query PublicStixRelationshipsMapQuery(
@@ -51,7 +51,7 @@ const publicStixRelationshipsMapQuery = graphql`
 `;
 
 interface PublicStixRelationshipsMapComponentProps {
-  dataSelection: PublicManifestWidget['dataSelection']
+  dataSelection: Widget['dataSelection']
   queryRef: PreloadedQuery<PublicStixRelationshipsMapQuery>
 }
 
