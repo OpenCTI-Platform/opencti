@@ -203,7 +203,7 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                       <EETooltip>
                         <ObjectOrganizationField
                           name="platform_organization"
-                          disabled={!isEnterpriseEdition || (ffenabled && !isPlatformOrgaModificationAllowed())}
+                          disabled={!isEnterpriseEdition || (ffenabled && !isPlatformOrgaModificationAllowed)}
                           label={'Platform organization'}
                           onChange={() => setOpenPlatformOrganizationChanges(true)}
                           style={{ width: '100%', marginTop: 20 }}

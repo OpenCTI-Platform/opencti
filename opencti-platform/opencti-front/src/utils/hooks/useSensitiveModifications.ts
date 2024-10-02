@@ -44,19 +44,12 @@ const useSensitiveModifications = () => {
     return role.can_manage_sensitive_config ?? true;
   };
 
-  /**
-   * Return true when current user has the fake capa can_manage_sensitive_config enabled.
-   */
-  const isPlatformOrgaModificationAllowed = () => {
-    return me.can_manage_sensitive_config;
-  };
-
   return {
     ffenabled: isFeatureEnable(PROTECT_SENSITIVE_CHANGES_FF),
     isGroupEditionAllowed,
     isRoleEditionAllowed,
     isRoleWithManageSensitiveConfig,
-    isPlatformOrgaModificationAllowed,
+    isPlatformOrgaModificationAllowed: me.can_manage_sensitive_config ?? true,
   };
 };
 
