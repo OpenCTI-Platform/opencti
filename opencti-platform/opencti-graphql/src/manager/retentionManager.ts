@@ -6,7 +6,7 @@ import { deleteElementById, patchAttribute } from '../database/middleware';
 import { executionContext, RETENTION_MANAGER_USER } from '../utils/access';
 import { ENTITY_TYPE_RETENTION_RULE } from '../schema/internalObject';
 import { now, utcDate } from '../utils/format';
-import { READ_ENTITIES_INDICES_WITHOUT_INFERRED } from '../database/utils';
+import { READ_STIX_INDICES } from '../database/utils';
 import { elPaginate } from '../database/engine';
 import { convertFiltersToQueryOptions } from '../utils/filtering/filtering-resolution';
 import type { ManagerDefinition } from './managerModule';
@@ -17,6 +17,7 @@ import { deleteFile } from '../database/file-storage';
 import { DELETABLE_FILE_STATUSES, paginatedForPathWithEnrichment } from '../modules/internal/document/document-domain';
 import { RetentionRuleScope, RetentionUnit } from '../generated/graphql';
 import type { BasicStoreCommonEdge, StoreObject } from '../types/store';
+import { ALREADY_DELETED_ERROR } from '../config/errors';
 
 const RETENTION_MANAGER_ENABLED = booleanConf('retention_manager:enabled', false);
 const RETENTION_MANAGER_START_ENABLED = booleanConf('retention_manager:enabled', true);
@@ -45,7 +46,7 @@ export const getElementsToDelete = async (context: AuthContext, scope: string, b
   if (scope === 'knowledge') {
     const jsonFilters = filters ? JSON.parse(filters) : null;
     const queryOptions = await convertFiltersToQueryOptions(jsonFilters, { before });
-    result = await elPaginate(context, RETENTION_MANAGER_USER, READ_ENTITIES_INDICES_WITHOUT_INFERRED, { ...queryOptions, first: RETENTION_BATCH_SIZE });
+    result = await elPaginate(context, RETENTION_MANAGER_USER, READ_STIX_INDICES, { ...queryOptions, first: RETENTION_BATCH_SIZE });
   } else if (scope === 'file') {
     result = await paginatedForPathWithEnrichment(
       context,
@@ -90,8 +91,11 @@ const executeProcessing = async (context: AuthContext, retentionRule: RetentionR
         const humanDuration = moment.duration(utcDate(up).diff(utcDate())).humanize();
         await deleteElement(context, scope, scope === 'knowledge' ? node.internal_id : node.id, node.entity_type);
         logApp.debug(`[OPENCTI] Retention manager deleting ${node.id} after ${humanDuration}`);
-      } catch (e) {
-        logApp.error(e, { id: node.id, manager: 'RETENTION_MANAGER' });
+      } catch (err: any) {
+        // Only log the error if not an already deleted message (that can happen though concurrency deletion)
+        if (err?.extensions?.code !== ALREADY_DELETED_ERROR) {
+          logApp.error(err, { id: node.id, manager: 'RETENTION_MANAGER' });
+        }
       }
     };
     await BluePromise.map(elements, deleteFn, { concurrency: RETENTION_MAX_CONCURRENCY });
