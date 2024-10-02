@@ -95,11 +95,13 @@ const ObjectParticipantField: FunctionComponent<ObjectParticipantFieldProps> = (
           label: n.node.name,
           value: n.node.id,
           type: n.node.entity_type,
-        })).sort((a, b) => (
+        })).sort((a, b) => {
+          // Display first the current user
+          if (a.value === me?.id) return -1;
+          if (b.value === me?.id) return 1;
           // Sort by alphabetic order
-          // And display first the current user
-          a.value === me?.id ? -1 : b.value === me?.id ? 1 : a.label.localeCompare(b.label))
-        );
+          return a.label.localeCompare(b.label);
+        });
         setParticipants(newParticipants);
       });
   };

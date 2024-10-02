@@ -18,6 +18,7 @@ import { Add, BrushOutlined, Delete } from '@mui/icons-material';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import { Formik } from 'formik';
+import makeStyles from '@mui/styles/makeStyles';
 import ObjectAssigneeField from '../form/ObjectAssigneeField';
 import ObjectParticipantField from '../form/ObjectParticipantField';
 import StixCoreObjectOpinions from '../../analyses/opinions/StixCoreObjectOpinions';
@@ -40,7 +41,6 @@ import ItemOpenVocab from '../../../../components/ItemOpenVocab';
 import ItemParticipants from '../../../../components/ItemParticipants';
 import Transition from '../../../../components/Transition';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import makeStyles from '@mui/styles/makeStyles';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -48,14 +48,6 @@ const useStyles = makeStyles((theme) => ({
   paper: {
     marginTop: theme.spacing(1),
     padding: '15px',
-    borderRadius: 4,
-  },
-  chip: {
-    fontSize: 12,
-    lineHeight: '12px',
-    backgroundColor: theme.palette.background.accent,
-    color: theme.palette.text.primary,
-    textTransform: 'uppercase',
     borderRadius: 4,
   },
   standard_id: {
@@ -87,15 +79,15 @@ const StixDomainObjectOverview = ({
 
   const handleToggleOpenStixIds = () => {
     setOpenStixIds(!openStixIds);
-  }
+  };
 
   const handleToggleAddAssignee = () => {
     setOpenAddAssignee(!openAddAssignee);
-  }
+  };
 
   const handleToggleAddParticipant = () => {
     setOpenAddParticipant(!openAddParticipant);
-  }
+  };
 
   const onSubmitAssignees = (values, { setSubmitting, resetForm }) => {
     const currentAssigneesIds = stixDomainObject.objectAssignee.map((assignee) => assignee.id);
@@ -116,7 +108,7 @@ const StixDomainObjectOverview = ({
         handleToggleAddAssignee();
       },
     });
-  }
+  };
 
   const onSubmitParticipant = (values, { setSubmitting, resetForm }) => {
     const currentParticipantsIds = stixDomainObject.objectParticipant.map((participant) => participant.id);
@@ -137,7 +129,7 @@ const StixDomainObjectOverview = ({
         handleToggleAddParticipant();
       },
     });
-  }
+  };
 
   const deleteStixId = (stixId) => {
     const otherStixIds = stixDomainObject.x_opencti_stix_ids || [];
@@ -156,7 +148,7 @@ const StixDomainObjectOverview = ({
       },
       onCompleted: () => MESSAGING$.notifySuccess(t_i18n('The STIX ID has been removed')),
     });
-  }
+  };
 
   const otherStixIds = stixDomainObject.x_opencti_stix_ids || [];
   const stixIds = R.filter(
@@ -324,8 +316,8 @@ const StixDomainObjectOverview = ({
                   <Security needs={[KNOWLEDGE_KNUPDATE]}>
                     <IconButton
                       color="primary"
-                      aria-label={t_i18n('Add new participant')}
-                      title={t_i18n('Add new participant')}
+                      aria-label={t_i18n('Add new participants')}
+                      title={t_i18n('Add new participants')}
                       onClick={handleToggleAddParticipant}
                       style={{ margin: '0 0 -14px 0' }}
                       size="large"
@@ -465,7 +457,7 @@ const StixDomainObjectOverview = ({
             onClose={handleToggleAddAssignee}
             fullWidth={true}
           >
-            <DialogTitle>{t_i18n('Add new Assignees')}</DialogTitle>
+            <DialogTitle>{t_i18n('Add new assignees')}</DialogTitle>
             <DialogContent>
               <ObjectAssigneeField
                 name="objectAssignee"
@@ -501,7 +493,7 @@ const StixDomainObjectOverview = ({
             onClose={handleToggleAddParticipant}
             fullWidth={true}
           >
-            <DialogTitle>{t_i18n('Add new Participant')}</DialogTitle>
+            <DialogTitle>{t_i18n('Add new participants')}</DialogTitle>
             <DialogContent>
               <ObjectParticipantField
                 name="objectParticipant"
@@ -526,7 +518,7 @@ const StixDomainObjectOverview = ({
       </Formik>
     </>
   );
-}
+};
 
 StixDomainObjectOverview.propTypes = {
   stixDomainObject: PropTypes.object,

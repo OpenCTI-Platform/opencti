@@ -2,14 +2,14 @@ import React, { FunctionComponent, useContext, useState } from 'react';
 import { Field } from 'formik';
 import { graphql } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
+import { Option } from '@components/common/form/ReferenceField';
+import { ObjectAssigneeFieldMembersSearchQuery$data } from '@components/common/form/__generated__/ObjectAssigneeFieldMembersSearchQuery.graphql';
 import { fetchQuery } from '../../../../relay/environment';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import type { Theme } from '../../../../components/Theme';
 import { UserContext } from '../../../../utils/hooks/useAuth';
-import { Option } from '@components/common/form/ReferenceField';
-import { ObjectAssigneeFieldMembersSearchQuery$data } from '@components/common/form/__generated__/ObjectAssigneeFieldMembersSearchQuery.graphql';
 
 export const objectAssigneeFieldMembersSearchQuery = graphql`
   query ObjectAssigneeFieldMembersSearchQuery($search: String, $first: Int, $entityTypes: [MemberType!]) {
@@ -74,7 +74,7 @@ const ObjectAssigneeField: FunctionComponent<ObjectAssigneeFieldProps> = ({
   label,
   onChange,
   helpertext,
-  disabled
+  disabled,
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
@@ -95,11 +95,13 @@ const ObjectAssigneeField: FunctionComponent<ObjectAssigneeFieldProps> = ({
           label: n.node.name,
           value: n.node.id,
           type: n.node.entity_type,
-        })).sort((a, b) => (
+        })).sort((a, b) => {
+          // Display first the current user
+          if (a.value === me?.id) return -1;
+          if (b.value === me?.id) return 1;
           // Sort by alphabetic order
-          // And display first the current user
-          a.value === me?.id ? -1 : b.value === me?.id ? 1 : a.label.localeCompare(b.label))
-        );
+          return a.label.localeCompare(b.label);
+        });
         setAssignees(newAssignees);
       });
   };
