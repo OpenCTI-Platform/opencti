@@ -30,7 +30,7 @@ import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import SelectField from '../../../../components/fields/SelectField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import buildOutcomeFromTemplate, { template2 } from '../../../../utils/templatesVariablesUtils';
+import buildOutcomeFromTemplate, { template2 } from '../../../../utils/outcome_template/templatesVariablesUtils';
 
 const useStyles = makeStyles((theme) => ({
   drawerPaper: {

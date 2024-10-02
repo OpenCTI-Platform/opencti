@@ -3,7 +3,7 @@ import React from 'react';
 import StixCoreObjectAttributeWidget from '@components/common/stix_core_objects/StixCoreObjectAttributeWidget';
 import { renderToString } from 'react-dom/server';
 import { IntlProvider } from 'react-intl';
-import { addFilter } from './filters/filtersUtils';
+import { addFilter } from '../filters/filtersUtils';
 
 // hardcoded templates //
 export const template1 = { // only text
