@@ -937,6 +937,16 @@ describe('User has no settings capability and is organization admin query behavi
     });
     expect(queryResult.data.userEdit.organizationDelete.id).toEqual(userInternalId);
   });
+  it('should remove Editor from PLATFORM_ORGANIZATION', async () => {
+    const queryResult = await adminQueryWithSuccess({
+      query: ORGANIZATION_DELETE_QUERY,
+      variables: {
+        id: userEditorId,
+        organizationId: platformOrganizationId,
+      },
+    });
+    expect(queryResult.data.userEdit.organizationDelete.id).toEqual(userEditorId);
+  });
   it('should user deleted', async () => {
     // Delete user
     await editorQuery({
