@@ -66,7 +66,7 @@ interface IngestionCsvCreationContainerProps {
   isDuplicated: boolean,
 }
 
-export interface IngestionAddInput {
+export interface IngestionCsvAddInput {
   name: string
   message?: string | null
   references?: ExternalReferencesValues
@@ -120,8 +120,8 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
     setCreatorId(option.value);
   };
   const updateObjectMarkingField = async (
-    setFieldValue: (field: string, value: Option[], shouldValidate?: boolean) => Promise<void | FormikErrors<IngestionAddInput>>,
-    values: IngestionAddInput,
+    setFieldValue: (field: string, value: Option[], shouldValidate?: boolean) => Promise<void | FormikErrors<IngestionCsvAddInput>>,
+    values: IngestionCsvAddInput,
   ) => {
     await setFieldValue('markings', values.markings);
   };
@@ -133,8 +133,8 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
       setFieldValue,
       values,
     }:{
-      setFieldValue: ((field: string, value: Option[], shouldValidate?: boolean) => Promise<void | FormikErrors<IngestionAddInput>>);
-      values: IngestionAddInput
+      setFieldValue: ((field: string, value: Option[], shouldValidate?: boolean) => Promise<void | FormikErrors<IngestionCsvAddInput>>);
+      values: IngestionCsvAddInput
     },
   ) => {
     const hasUserChoiceCsvMapperRepresentations = resolveHasUserChoiceCsvMapper(option);
@@ -160,7 +160,7 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
   });
 
   const [commit] = useApiMutation(ingestionCsvCreationMutation);
-  const onSubmit: FormikConfig<IngestionAddInput>['onSubmit'] = (
+  const onSubmit: FormikConfig<IngestionCsvAddInput>['onSubmit'] = (
     values,
     { setSubmitting, resetForm },
   ) => {
@@ -203,7 +203,7 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
     });
   };
   const queryRef = useQueryLoading<CsvMapperFieldSearchQuery>(csvMapperQuery);
-  const initialValues: IngestionAddInput = isDuplicated && ingestionCsvData ? {
+  const initialValues: IngestionCsvAddInput = isDuplicated && ingestionCsvData ? {
     name: ingestionCsvData.name,
     description: ingestionCsvData.description,
     uri: ingestionCsvData.uri,
@@ -241,7 +241,7 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
     markings: [],
   };
   return (
-    <Formik<IngestionAddInput>
+    <Formik<IngestionCsvAddInput>
       initialValues={initialValues}
       validationSchema={ingestionCsvCreationValidation}
       onSubmit={onSubmit}
@@ -344,62 +344,62 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
             </MenuItem>
           </Field>
           {values.authentication_type === 'basic' && (
-          <>
-            <Field
-              component={TextField}
-              variant="standard"
-              name="username"
-              label={t_i18n('Username')}
-              fullWidth={true}
-              style={fieldSpacingContainerStyle}
-            />
-            <Field
-              component={TextField}
-              variant="standard"
-              name="password"
-              label={t_i18n('Password')}
-              fullWidth={true}
-              style={fieldSpacingContainerStyle}
-            />
-          </>
+            <>
+              <Field
+                component={TextField}
+                variant="standard"
+                name="username"
+                label={t_i18n('Username')}
+                fullWidth={true}
+                style={fieldSpacingContainerStyle}
+              />
+              <Field
+                component={TextField}
+                variant="standard"
+                name="password"
+                label={t_i18n('Password')}
+                fullWidth={true}
+                style={fieldSpacingContainerStyle}
+              />
+            </>
           )}
           {values.authentication_type === 'bearer' && (
-          <Field
-            component={TextField}
-            variant="standard"
-            name="authentication_value"
-            label={t_i18n('Token')}
-            fullWidth={true}
-            style={fieldSpacingContainerStyle}
-          />
+            <Field
+              component={TextField}
+              variant="standard"
+              name="authentication_value"
+              label={t_i18n('Token')}
+              fullWidth={true}
+              style={fieldSpacingContainerStyle}
+            />
           )}
           {values.authentication_type === 'certificate' && (
-          <>
-            <Field
-              component={TextField}
-              variant="standard"
-              name="cert"
-              label={t_i18n('Certificate (base64)')}
-              fullWidth={true}
-              style={fieldSpacingContainerStyle}
-            />
-            <Field
-              component={TextField}
-              variant="standard"
-              name="key"
-              label={t_i18n('Key (base64)')}
-              fullWidth={true}
-              style={fieldSpacingContainerStyle}
-            />
-            <Field
-              component={TextField}
-              variant="standard"
-              name="ca"
-              label={t_i18n('CA certificate (base64)')}
-              fullWidth={true}
-              style={fieldSpacingContainerStyle}
-            />
-          </>
+            <>
+              <Field
+                component={TextField}
+                variant="standard"
+                name="cert"
+                label={t_i18n('Certificate (base64)')}
+                fullWidth={true}
+                style={fieldSpacingContainerStyle}
+              />
+              <Field
+                component={TextField}
+                variant="standard"
+                name="key"
+                label={t_i18n('Key (base64)')}
+                fullWidth={true}
+                style={fieldSpacingContainerStyle}
+              />
+              <Field
+                component={TextField}
+                variant="standard"
+                name="ca"
+                label={t_i18n('CA certificate (base64)')}
+                fullWidth={true}
+                style={fieldSpacingContainerStyle}
+              />
+            </>
           )}
           <Box sx={{ width: '100%', marginTop: 5 }}>
             <Alert

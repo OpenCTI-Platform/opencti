@@ -181,6 +181,9 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
   const { ignoredAttributesInFeeds } = useAttributes();
 
   const onHandleClose = () => {
+    setSelectedTypes([]);
+    helpers.handleClearAllFilters();
+    setFeedAttributes({ 0: {} });
     if (isDuplicated) {
       onDrawerClose();
     }
@@ -637,27 +640,15 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
                         >
                           {t_i18n('Cancel')}
                         </Button>
-                        {isDuplicated ? (
-                          <Button
-                            variant="contained"
-                            color="secondary"
-                            onClick={submitForm}
-                            disabled={isSubmitting || !areAttributesValid()}
-                            classes={{ root: classes.button }}
-                          >
-                            {t_i18n('Duplicate')}
-                          </Button>
-                        ) : (
-                          <Button
-                            variant="contained"
-                            color="secondary"
-                            onClick={submitForm}
-                            disabled={isSubmitting || !areAttributesValid()}
-                            classes={{ root: classes.button }}
-                          >
-                            {t_i18n('Create')}
-                          </Button>
-                        )}
+                        <Button
+                          variant="contained"
+                          color="secondary"
+                          onClick={submitForm}
+                          disabled={isSubmitting || !areAttributesValid()}
+                          classes={{ root: classes.button }}
+                        >
+                          {isDuplicated ? t_i18n('Duplicate') : t_i18n('Create')}
+                        </Button>
                       </div>
                     </Form>
                   )}
