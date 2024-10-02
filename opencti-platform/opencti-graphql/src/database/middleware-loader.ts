@@ -545,7 +545,13 @@ export const listEntitiesThroughRelationsPaginated = async <T extends BasicStore
   });
   return {
     edges: rebuildEdges,
-    pageInfo: { ...entityPagination.pageInfo, globalCount: entityPagination.pageInfo.globalCount - (entityPagination.edges.length - rebuildEdges.length) },
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    baseCount: entityPagination.edges.length, // Keep the base count to enforce pagination
+    pageInfo: {
+      ...entityPagination.pageInfo,
+      globalCount: entityPagination.pageInfo.globalCount - (entityPagination.edges.length - rebuildEdges.length)
+    },
   };
 };
 
