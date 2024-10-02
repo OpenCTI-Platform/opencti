@@ -70,7 +70,7 @@ describe('Raw streams tests', () => {
       expect(updateEventsByTypes['external-reference'].length).toBe(1);
       expect(updateEventsByTypes['grouping'].length).toBe(3);
       expect(updateEventsByTypes['incident'].length).toBe(3);
-      expect(updateEventsByTypes['indicator'].length).toBe(5);
+      expect(updateEventsByTypes['indicator'].length).toBe(8);
       expect(updateEventsByTypes['label'].length).toBe(1);
       expect(updateEventsByTypes['malware-analysis'].length).toBe(3);
       expect(updateEventsByTypes['note'].length).toBe(3);
