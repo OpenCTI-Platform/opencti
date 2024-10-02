@@ -3,7 +3,6 @@
 import React, { FunctionComponent } from 'react';
 import { Route, Routes, useParams } from 'react-router-dom';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
-import AccessesMenu from '@components/settings/AccessesMenu';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
@@ -48,7 +47,6 @@ const RootRoleComponent: FunctionComponent<RootRoleComponentProps> = ({ queryRef
     <Security needs={[SETTINGS_SETACCESSES]}>
       {role ? (
         <>
-          <AccessesMenu/>
           <Breadcrumbs elements={[
             { label: t_i18n('Settings') },
             { label: t_i18n('Security') },
