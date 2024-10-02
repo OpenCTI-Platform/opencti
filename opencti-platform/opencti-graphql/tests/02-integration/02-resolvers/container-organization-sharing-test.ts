@@ -1,9 +1,22 @@
 import { describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
-import { ADMIN_USER, adminQuery, getOrganizationIdByName, PLATFORM_ORGANIZATION, TEST_ORGANIZATION, testContext, USER_EDITOR } from '../../utils/testQuery';
+import {
+  ADMIN_API_TOKEN,
+  ADMIN_USER,
+  adminQuery,
+  API_URI,
+  FIVE_MINUTES,
+  getOrganizationIdByName,
+  PLATFORM_ORGANIZATION,
+  PYTHON_PATH,
+  TEST_ORGANIZATION,
+  testContext,
+  USER_EDITOR
+} from '../../utils/testQuery';
 import { adminQueryWithSuccess, enableCEAndUnSetOrganization, enableEEAndSetOrganization, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
 import { findById } from '../../../src/domain/report';
 import { taskHandler } from '../../../src/manager/taskManager';
+import { execChildPython } from '../../../src/python/pythonBridge';
 
 const READ_QUERY = gql`
   query caseIncident($id: String!) {
@@ -42,7 +55,7 @@ const ORGANIZATION_SHARING_QUERY = gql`
     }
   }
 `;
-/*
+
 const importOpts: string[] = [API_URI, ADMIN_API_TOKEN, './tests/data/DATA-TEST-STIX2_v2.json'];
 
 describe('Database provision', () => {
@@ -58,7 +71,7 @@ describe('Database provision', () => {
     expect(execution).not.toBeNull();
     expect(execution.status).toEqual('success');
   }, FIVE_MINUTES);
-}); */
+});
 
 describe('Organization sharing standard behavior for container', () => {
   let reportInternalId: string;
