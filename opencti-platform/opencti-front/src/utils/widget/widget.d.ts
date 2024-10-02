@@ -9,9 +9,9 @@ interface WidgetDataSelection {
   centerLng?: number
   zoom?: number
   isTo?: boolean
-  filters?: Filter[]
-  dynamicFrom?: FilterGroup[]
-  dynamicTo?: FilterGroup[]
+  filters?: FilterGroup
+  dynamicFrom?: FilterGroup
+  dynamicTo?: FilterGroup
 }
 
 interface WidgetParameters {

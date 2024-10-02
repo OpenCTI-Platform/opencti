@@ -2,6 +2,7 @@ import type { BasicStoreEntity, StoreEntity } from '../../types/store';
 import type { StixDomainObject, StixOpenctiExtensionSDO } from '../../types/stix-common';
 import { STIX_EXT_OCTI } from '../../types/stix-extensions';
 import type { AuthorizedMember } from '../../utils/access';
+import type { FilterGroup } from '../../generated/graphql';
 
 export const ENTITY_TYPE_WORKSPACE = 'Workspace';
 
@@ -62,66 +63,9 @@ export interface WidgetConfiguration {
       date_attribute: string;
       perspective: string;
       isTo: boolean;
-      filters: {
-        key: string;
-        values: string[];
-        operator: string;
-        mode: string;
-      }[];
-      dynamicFrom: {
-        mode: string;
-        filters: {
-          key: string;
-          values: string[];
-          operator: string;
-          mode: string;
-        }[];
-        filterGroups: {
-          mode: string;
-          filters: {
-            key: string;
-            values: string[];
-            operator: string;
-            mode: string;
-          }[];
-          filterGroups: {
-            mode: string;
-            filters: {
-              key: string;
-              values: string[];
-              operator: string;
-              mode: string;
-            }[];
-          }[];
-        }[];
-      };
-      dynamicTo: {
-        mode: string;
-        filters: {
-          key: string;
-          values: string[];
-          operator: string;
-          mode: string;
-        }[];
-        filterGroups: {
-          mode: string;
-          filters: {
-            key: string;
-            values: string[];
-            operator: string;
-            mode: string;
-          }[];
-          filterGroups: {
-            mode: string;
-            filters: {
-              key: string;
-              values: string[];
-              operator: string;
-              mode: string;
-            }[];
-          }[];
-        }[];
-      };
+      filters: FilterGroup;
+      dynamicFrom: FilterGroup;
+      dynamicTo: FilterGroup;
     },
   ];
   parameters: {
