@@ -185,9 +185,9 @@ export const getScenarioResult = async (id: string) => {
       success: 0,
       failure: 0
     } : {
-      unknown: prevention.distribution?.filter((n: { label: string, value: number }) => n.label === 'Pending').at(0).value,
-      success: prevention.distribution?.filter((n: { label: string, value: number }) => n.label === 'Successful').at(0).value,
-      failure: prevention.distribution?.filter((n: { label: string, value: number }) => n.label === 'Failed').at(0).value
+      unknown: prevention.distribution?.filter((n: { id: string, value: number }) => n.id === 'PENDING').at(0)?.value,
+      success: prevention.distribution?.filter((n: { id: string, value: number }) => n.id === 'SUCCESS').at(0)?.value,
+      failure: prevention.distribution?.filter((n: { id: string, value: number }) => n.id === 'FAILED').at(0)?.value
     };
     const detection = exercise.exercise_global_score.filter((n: { type: string, value: number }) => n.type === 'DETECTION').at(0);
     const detectionResult = detection.avgResult === 'UNKNOWN' ? {
@@ -195,9 +195,9 @@ export const getScenarioResult = async (id: string) => {
       success: 0,
       failure: 0
     } : {
-      unknown: detection.distribution?.filter((n: { label: string, value: number }) => n.label === 'Pending').at(0).value,
-      success: detection.distribution?.filter((n: { label: string, value: number }) => n.label === 'Successful').at(0).value,
-      failure: detection.distribution?.filter((n: { label: string, value: number }) => n.label === 'Failed').at(0).value
+      unknown: detection.distribution?.filter((n: { id: string, value: number }) => n.id === 'PENDING').at(0)?.value,
+      success: detection.distribution?.filter((n: { id: string, value: number }) => n.id === 'SUCCESS').at(0)?.value,
+      failure: detection.distribution?.filter((n: { id: string, value: number }) => n.id === 'FAILED').at(0)?.value
     };
     const humanResponse = exercise.exercise_global_score.filter((n: { type: string, value: number }) => n.type === 'HUMAN_RESPONSE').at(0);
     const humanResponseResult = humanResponse.avgResult === 'UNKNOWN' ? {
@@ -205,9 +205,9 @@ export const getScenarioResult = async (id: string) => {
       success: 0,
       failure: 0
     } : {
-      unknown: humanResponse.distribution?.filter((n: { label: string, value: number }) => n.label === 'Pending').at(0).value,
-      success: humanResponse.distribution?.filter((n: { label: string, value: number }) => n.label === 'Successful').at(0).value,
-      failure: humanResponse.distribution?.filter((n: { label: string, value: number }) => n.label === 'Failed').at(0).value
+      unknown: humanResponse.distribution?.filter((n: { id: string, value: number }) => n.id === 'PENDING').at(0)?.value,
+      success: humanResponse.distribution?.filter((n: { id: string, value: number }) => n.id === 'SUCCESS').at(0)?.value,
+      failure: humanResponse.distribution?.filter((n: { id: string, value: number }) => n.id === 'FAILED').at(0)?.value
     };
     return {
       prevention: preventionResult,
