@@ -98,7 +98,8 @@ This strategy can be used to authenticate your user with your company SAML and i
         "cert": "MIICmzCCAYMCBgF2Qt3X1zANBgkqhkiG9w0BAQsFADARMQ8w...",
         "logout_remote": false
         "want_assertions_signed": true,
-        "want_authn_response_signed": true
+        "want_authn_response_signed": true,
+        // "mail_attribute": "email" -- optional, to be used when "nameID" is not an email.
     }
 }
 ```
