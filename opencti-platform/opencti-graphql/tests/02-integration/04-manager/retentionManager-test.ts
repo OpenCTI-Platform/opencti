@@ -19,7 +19,7 @@ describe('Retention Manager tests ', () => {
 
   const globalPath = 'import/global';
   const fileName = 'fileToTestRetentionRule';
-  const fileId = `${globalPath}/${fileName}`;
+  const fileId = `${globalPath}/${fileName.toLowerCase()}`;
   const progressFileName = 'progressFile';
   const progressFileId = `${globalPath}/${progressFileName}`;
 

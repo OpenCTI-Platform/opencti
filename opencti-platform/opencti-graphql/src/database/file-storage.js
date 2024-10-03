@@ -448,9 +448,10 @@ export const upload = async (context, user, filePath, fileUpload, opts) => {
   }
   const { createReadStream, filename, encoding = '' } = await fileUpload;
   const truncatedFileName = `${truncate(path.parse(filename).name, 200, false)}${truncate(path.parse(filename).ext, 10, false)}`;
-  const key = `${filePath}/${truncatedFileName}`;
+  let key = `${filePath}/${truncatedFileName.toLowerCase()}`;
   const currentFile = await documentFindById(context, user, key);
   if (currentFile) {
+    key = currentFile.internal_id;
     if (utcDate(currentFile.metaData.version).isSameOrAfter(utcDate(metadata.version))) {
       return { upload: currentFile, untouched: true };
     }
