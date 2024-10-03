@@ -278,7 +278,7 @@ const StixDomainObjectOverview = ({
               disabled={!stixDomainObject.workflowEnabled}
             />
             {displayAssignees && (
-              <>
+              <div data-testid='sdo-overview-assignees'>
                 <div style={{ display: 'flex', alignItems: 'center' }}>
                   <Typography
                     variant="h3"
@@ -301,10 +301,10 @@ const StixDomainObjectOverview = ({
                   </Security>
                 </div>
                 <ItemAssignees assignees={stixDomainObject.objectAssignee ?? []} stixDomainObjectId={stixDomainObject.id} />
-              </>
+              </div>
             )}
             {displayParticipants && (
-              <>
+              <div data-testid='sdo-overview-participants'>
                 <div style={{ display: 'flex', alignItems: 'center' }}>
                   <Typography
                     variant="h3"
@@ -327,7 +327,7 @@ const StixDomainObjectOverview = ({
                   </Security>
                 </div>
                 <ItemParticipants participants={stixDomainObject.objectParticipant ?? []} stixDomainObjectId={stixDomainObject.id} />
-              </>
+              </div>
             )}
             <Typography
               variant="h3"
