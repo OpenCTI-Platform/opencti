@@ -72,7 +72,7 @@ class IndividualKnowledgeComponent extends Component {
           element={
             <EntityStixCoreRelationships
               entityId={individual.id}
-              relationshipTypes={['related-to', 'derived-from']}
+              relationshipTypes={['related-to']}
               entityLink={link}
               allDirections={true}
             />

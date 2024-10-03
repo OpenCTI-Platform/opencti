@@ -52,7 +52,7 @@ class CampaignKnowledgeComponent extends Component {
             element={
               <EntityStixCoreRelationships
                 entityId={campaign.id}
-                relationshipTypes={['related-to', 'derived-from']}
+                relationshipTypes={['related-to']}
                 stixCoreObjectTypes={[
                   'Threat-Actor',
                   'Intrusion-Set',

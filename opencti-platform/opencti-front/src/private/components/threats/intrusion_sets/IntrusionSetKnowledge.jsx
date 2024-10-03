@@ -52,7 +52,7 @@ class IntrusionSetKnowledgeComponent extends Component {
             element={
               <EntityStixCoreRelationships
                 entityId={intrusionSet.id}
-                relationshipTypes={['related-to', 'derived-from']}
+                relationshipTypes={['related-to']}
                 entityLink={link}
                 defaultStartTime={intrusionSet.first_seen}
                 defaultStopTime={intrusionSet.last_seen}

@@ -43,7 +43,7 @@ class AttackPatternKnowledgeComponent extends Component {
             element={
               <EntityStixCoreRelationships
                 entityId={attackPattern.id}
-                relationshipTypes={['related-to', 'derived-from']}
+                relationshipTypes={['related-to']}
                 stixCoreObjectTypes={[
                   'Attack-Pattern',
                   'Threat-Actor',

@@ -53,7 +53,7 @@ class ToolKnowledgeComponent extends Component {
             element={
               <EntityStixCoreRelationships
                 entityId={tool.id}
-                relationshipTypes={['related-to', 'derived-from']}
+                relationshipTypes={['related-to']}
                 entityLink={link}
                 allDirections={true}
               />

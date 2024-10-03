@@ -48,7 +48,7 @@ class NarrativeKnowledgeComponent extends Component {
             element={
               <EntityStixCoreRelationships
                 entityId={narrative.id}
-                relationshipTypes={['related-to', 'derived-from']}
+                relationshipTypes={['related-to']}
                 stixCoreObjectTypes={[
                   'Threat-Actor',
                   'Intrusion-Set',

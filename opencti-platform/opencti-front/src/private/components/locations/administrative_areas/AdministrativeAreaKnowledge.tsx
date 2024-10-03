@@ -84,7 +84,7 @@ const AdministrativeAreaKnowledge = ({
           element={
             <EntityStixCoreRelationships
               entityId={administrativeArea.id}
-              relationshipTypes={['related-to', 'derived-from']}
+              relationshipTypes={['related-to']}
               stixCoreObjectTypes={[
                 'Threat-Actor',
                 'Intrusion-Set',

@@ -70,7 +70,7 @@ class PositionKnowledgeComponent extends Component {
             element={
               <EntityStixCoreRelationships
                 entityId={position.id}
-                relationshipTypes={['related-to', 'derived-from']}
+                relationshipTypes={['related-to']}
                 stixCoreObjectTypes={[
                   'Threat-Actor',
                   'Intrusion-Set',

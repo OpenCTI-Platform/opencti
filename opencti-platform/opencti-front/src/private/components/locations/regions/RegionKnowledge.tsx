@@ -83,7 +83,7 @@ const RegionKnowledgeComponent = ({
           element={
             <EntityStixCoreRelationships
               entityId={region.id}
-              relationshipTypes={['related-to', 'derived-from']}
+              relationshipTypes={['related-to']}
               stixCoreObjectTypes={[
                 'Threat-Actor',
                 'Intrusion-Set',

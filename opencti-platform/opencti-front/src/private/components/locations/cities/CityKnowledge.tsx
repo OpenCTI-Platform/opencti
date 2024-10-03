@@ -80,7 +80,7 @@ const CityKnowledge = ({ cityData }: { cityData: CityKnowledge_city$key }) => {
           element={
             <EntityStixCoreRelationships
               entityId={city.id}
-              relationshipTypes={['related-to', 'derived-from']}
+              relationshipTypes={['related-to']}
               stixCoreObjectTypes={[
                 'Threat-Actor',
                 'Intrusion-Set',

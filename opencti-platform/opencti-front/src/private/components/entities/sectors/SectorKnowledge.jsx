@@ -66,7 +66,7 @@ class SectorKnowledgeComponent extends Component {
             element={
               <EntityStixCoreRelationships
                 entityId={sector.id}
-                relationshipTypes={['related-to', 'derived-from']}
+                relationshipTypes={['related-to']}
                 entityLink={link}
                 allDirections={true}
               />
