@@ -17,6 +17,9 @@ import 'react-pdf/dist/esm/Page/TextLayer.css';
 import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
 import ReactMde from 'react-mde';
 import { interval } from 'rxjs';
+import { compiler } from 'markdown-to-jsx';
+import { renderToString } from 'react-dom/server';
+import { Buffer } from 'buffer';
 import StixCoreObjectMappableContent from './StixCoreObjectMappableContent';
 import TextFieldAskAI from '../form/TextFieldAskAI';
 import inject18n from '../../../../components/i18n';
@@ -413,13 +416,16 @@ class StixCoreObjectContentComponent extends Component {
     this.setState({ markdownSelectedTab: tab });
   }
 
-  handleDownloadPdf() {
+  async handleDownloadPdf() {
     const { currentFileId, currentContent } = this.state;
     const { stixCoreObject } = this.props;
     const regex = /<img[^>]+src=(\\?["'])[^'"]+\.gif\1[^>]*\/?>/gi;
-    const htmlData = currentContent
+    let htmlData = currentContent
       .replaceAll('id="undefined" ', '')
       .replaceAll(regex, '');
+    if (currentFileId.endsWith('.md')) {
+      htmlData = renderToString(compiler(htmlData, { wrapper: null }));
+    }
     const ret = htmlToPdfmake(htmlData, {
       imagesByReference: true,
       ignoreStyles: ['font-family'],
@@ -536,7 +542,7 @@ class StixCoreObjectContentComponent extends Component {
       && [...files, ...exportFiles].find((n) => n.id === currentFileId);
     const currentFileType = currentFile && currentFile.metaData.mimetype;
     const { innerHeight } = window;
-    const height = innerHeight - 270;
+    const height = innerHeight - 300;
     const isContentCompatible = isContainerWithContent(stixCoreObject.entity_type);
     return (
       <div className={classes.container} data-testid='sco-content-page'>
