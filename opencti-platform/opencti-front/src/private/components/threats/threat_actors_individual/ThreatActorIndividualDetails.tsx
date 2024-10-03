@@ -5,8 +5,6 @@ import Grid from '@mui/material/Grid';
 import Chip from '@mui/material/Chip';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import { BullseyeArrow, ArmFlexOutline, DramaMasks } from 'mdi-material-ui';
 import ListItemText from '@mui/material/ListItemText';
 import makeStyles from '@mui/styles/makeStyles';
 import Typography from '@mui/material/Typography';
@@ -245,10 +243,7 @@ ThreatActorIndividualDetailsProps
               {data.roles && (
                 <List>
                   {data.roles.map((role) => (
-                    <ListItem key={role} dense={true} divider={true}>
-                      <ListItemIcon>
-                        <DramaMasks />
-                      </ListItemIcon>
+                    <ListItem key={role} dense={true} divider={true} disablePadding>
                       <ListItemText
                         primary={
                           <ItemOpenVocab
@@ -276,10 +271,7 @@ ThreatActorIndividualDetailsProps
               {data.goals && (
                 <List>
                   {data.goals.map((goal) => (
-                    <ListItem key={goal} dense={true} divider={true}>
-                      <ListItemIcon>
-                        <BullseyeArrow />
-                      </ListItemIcon>
+                    <ListItem key={goal} dense={true} divider={true} disablePadding>
                       <ListItemText
                         primary={<pre className={classes.smallPre}>{goal}</pre>}
                       />
@@ -305,10 +297,8 @@ ThreatActorIndividualDetailsProps
                       key={secondaryMotivation}
                       dense={true}
                       divider={true}
+                      disablePadding
                     >
-                      <ListItemIcon>
-                        <ArmFlexOutline />
-                      </ListItemIcon>
                       <ListItemText
                         primary={
                           <ItemOpenVocab
@@ -340,10 +330,8 @@ ThreatActorIndividualDetailsProps
                       key={personalMotivation}
                       dense={true}
                       divider={true}
+                      disablePadding
                     >
-                      <ListItemIcon>
-                        <ArmFlexOutline />
-                      </ListItemIcon>
                       <ListItemText
                         primary={
                           <ItemOpenVocab

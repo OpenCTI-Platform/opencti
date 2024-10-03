@@ -99,7 +99,7 @@ import {
   Target,
 } from 'mdi-material-ui';
 import TableViewIcon from '@mui/icons-material/TableView';
-import { itemColor } from '../utils/Colors';
+import itemColor from './ItemColor';
 
 const iconSelector = (type, variant, fontSize, color, isReversed) => {
   let style;

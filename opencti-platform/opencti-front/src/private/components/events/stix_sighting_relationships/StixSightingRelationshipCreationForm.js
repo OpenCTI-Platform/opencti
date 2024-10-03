@@ -4,7 +4,6 @@ import Button from '@mui/material/Button';
 import { Field, Form, Formik } from 'formik';
 import makeStyles from '@mui/styles/makeStyles';
 import * as Yup from 'yup';
-import { itemColor } from '../../../../utils/Colors';
 import ItemIcon from '../../../../components/ItemIcon';
 import { truncate } from '../../../../utils/String';
 import { useFormatter } from '../../../../components/i18n';
@@ -19,6 +18,7 @@ import SwitchField from '../../../../components/fields/SwitchField';
 import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
+import itemColor from '../../../../components/ItemColor';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.

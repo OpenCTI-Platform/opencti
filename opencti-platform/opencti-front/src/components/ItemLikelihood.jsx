@@ -5,6 +5,7 @@ import withStyles from '@mui/styles/withStyles';
 import withTheme from '@mui/styles/withTheme';
 import Chip from '@mui/material/Chip';
 import inject18n from './i18n';
+import useAuth from '../utils/hooks/useAuth';
 
 const styles = () => ({
   chip: {
@@ -50,6 +51,7 @@ const inlineStyles = {
 };
 
 const ItemLikelihood = ({ likelihood, classes, variant, t, theme }) => {
+  const { me: { monochrome_labels } } = useAuth();
   const style = variant === 'inList' ? classes.chipInList : classes.chip;
   if (!likelihood) {
     return (
@@ -64,46 +66,20 @@ const ItemLikelihood = ({ likelihood, classes, variant, t, theme }) => {
       />
     );
   }
-  if (likelihood <= 20) {
-    return (
-      <Chip
-        classes={{ root: style }}
-        style={inlineStyles.red}
-        label={`${likelihood} / 100`}
-      />
-    );
-  }
-  if (likelihood <= 50) {
-    return (
-      <Chip
-        classes={{ root: style }}
-        style={inlineStyles.orange}
-        label={`${likelihood} / 100`}
-      />
-    );
-  }
-  if (likelihood <= 75) {
-    return (
-      <Chip
-        classes={{ root: style }}
-        style={inlineStyles.blue}
-        label={`${likelihood} / 100`}
-      />
-    );
-  }
-  if (likelihood <= 100) {
-    return (
-      <Chip
-        classes={{ root: style }}
-        style={inlineStyles.green}
-        label={`${likelihood} / 100`}
-      />
-    );
-  }
+  let chipStyle = inlineStyles.white;
+  if (likelihood <= 20) chipStyle = inlineStyles.red;
+  else if (likelihood <= 50) chipStyle = inlineStyles.orange;
+  else if (likelihood <= 75) chipStyle = inlineStyles.blue;
+  else if (likelihood <= 100) chipStyle = inlineStyles.green;
   return (
     <Chip
       classes={{ root: style }}
-      style={inlineStyles.white}
+      style={{
+        color: theme.palette.chip.main,
+        backgroundColor: monochrome_labels
+          ? theme.palette.background.accent
+          : chipStyle.backgroundColor,
+      }}
       label={`${likelihood} / 100`}
     />
   );
