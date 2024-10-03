@@ -20,7 +20,7 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
-import AlertTitle from '@mui/material/AlertTitle';
+import DialogTitle from '@mui/material/DialogTitle';
 import AccessesMenu from './AccessesMenu';
 import ObjectOrganizationField from '../common/form/ObjectOrganizationField';
 import { useFormatter } from '../../../components/i18n';
@@ -216,9 +216,9 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                         TransitionComponent={Transition}
                         onClose={() => setOpenPlatformOrganizationChanges(false)}
                       >
+                        <DialogTitle>{t_i18n('Warning')}</DialogTitle>
                         <DialogContent>
                           <DialogContentText>
-                            <AlertTitle>{t_i18n('Warning')}</AlertTitle>
                             <Alert severity="warning" variant="outlined">
                               {t_i18n(
                                 'This change may have an impact on users and connectors who WILL NO LONGER BE ABLE TO ACCESS KNOWLEDGE if they do not belong to the main platform organization.',
