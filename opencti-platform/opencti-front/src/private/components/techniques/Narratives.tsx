@@ -2,10 +2,11 @@ import React, { FunctionComponent } from 'react';
 import { NarrativeWithSubnarrativeLineDummy } from '@components/techniques/narratives/NarrativeWithSubnarrativeLine';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import FiligranIcon from '@components/common/FiligranIcon';
-import { ListViewIcon, SublistViewIcon } from 'filigran-icon';
+import { SublistViewIcon } from 'filigran-icon';
 import ToggleButton from '@mui/material/ToggleButton';
 import Tooltip from '@mui/material/Tooltip';
 import { NarrativesLines_data$data } from '@components/techniques/narratives/__generated__/NarrativesLines_data.graphql';
+import { ViewListOutlined } from '@mui/icons-material';
 import ExportContextProvider from '../../../utils/ExportContextProvider';
 import { narrativeLineFragment } from './narratives/NarrativeLine';
 import { narrativesLinesFragment, narrativesLinesQuery } from './narratives/NarrativesLines';
@@ -71,7 +72,7 @@ const Narratives: FunctionComponent = () => {
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          marginTop: -10,
+          marginBottom: 16,
         }}
         >
           <SearchInput
@@ -184,7 +185,7 @@ const Narratives: FunctionComponent = () => {
                     value="lines"
                     aria-label="lines"
                   >
-                    <FiligranIcon icon={ListViewIcon} color="secondary" size="small" />
+                    <ViewListOutlined color="primary" fontSize="small" />
                   </ToggleButton>
                 </Tooltip>
               ),
@@ -193,7 +194,6 @@ const Narratives: FunctionComponent = () => {
                   <ToggleButton
                     value="subEntityLines"
                     aria-label="subEntityLines"
-                    style={{ height: 36 }}
                   >
                     <FiligranIcon icon={SublistViewIcon} color="primary" size="small" />
                   </ToggleButton>
