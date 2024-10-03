@@ -805,7 +805,7 @@ export const buildGraphData = (objects, graphData, t) => {
                 .filter((additionalName) => additionalName !== n.observableName)
                 .join(', ')
               : '';
-            const additionalNamesString = additionalNames ? `\nAdditional-Names: ${additionalNames}` : '';
+            const additionalNamesString = additionalNames ? `\n${t('Additional Names')}: ${additionalNames}` : '';
             return `${label}: ${displayValue}${hashesList ? `\n${hashesList}` : ''}${additionalInfo}${additionalNamesString}\n${dateFormat(defaultDate(n))}`;
           }
           return `${getMainRepresentative(n)}\n${dateFormat(defaultDate(n))}`;
