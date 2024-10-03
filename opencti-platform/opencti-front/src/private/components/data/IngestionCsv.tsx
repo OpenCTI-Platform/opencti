@@ -5,7 +5,7 @@ import IngestionMenu from '@components/data/IngestionMenu';
 import IngestionCsvLines, { ingestionCsvLinesQuery } from '@components/data/ingestionCsv/IngestionCsvLines';
 import { IngestionCsvLinesPaginationQuery, IngestionCsvLinesPaginationQuery$variables } from '@components/data/ingestionCsv/__generated__/IngestionCsvLinesPaginationQuery.graphql';
 import { IngestionCsvLineDummy } from '@components/data/ingestionCsv/IngestionCsvLine';
-import IngestionCsvCreation from '@components/data/ingestionCsv/IngestionCsvCreation';
+import { IngestionCsvCreationContainer } from '@components/data/ingestionCsv/IngestionCsvCreation';
 import { useFormatter } from '../../../components/i18n';
 import useAuth from '../../../utils/hooks/useAuth';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
@@ -127,8 +127,12 @@ const IngestionCsv = () => {
       <IngestionMenu/>
       {renderLines()}
       <Security needs={[INGESTION_SETINGESTIONS]}>
-        <IngestionCsvCreation
+        <IngestionCsvCreationContainer
+          open={false}
+          handleClose={() => {
+          }}
           paginationOptions={paginationOptions}
+          isDuplicated={false}
         />
       </Security>
     </div>

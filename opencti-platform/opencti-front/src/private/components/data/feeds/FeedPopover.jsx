@@ -17,6 +17,7 @@ import { ConnectionHandler } from 'relay-runtime';
 import inject18n from '../../../../components/i18n';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import FeedEdition from './FeedEdition';
+import FeedCreation from './FeedCreation';
 
 const styles = () => ({
   container: {
@@ -45,6 +46,16 @@ const feedEditionQuery = graphql`
   }
 `;
 
+const feedDuplicateQuery = graphql`
+  query FeedPopoverDuplicateQuery($id: String!) {
+    feed(id: $id) {
+      id
+      name
+      ...FeedCreation
+    }
+  }
+`;
+
 class FeedPopover extends Component {
   constructor(props) {
     super(props);
@@ -53,6 +64,7 @@ class FeedPopover extends Component {
       displayUpdate: false,
       displayDelete: false,
       deleting: false,
+      displayDuplicate: false,
     };
   }
 
@@ -71,6 +83,15 @@ class FeedPopover extends Component {
 
   handleCloseUpdate() {
     this.setState({ displayUpdate: false });
+  }
+
+  handleOpenDuplicate() {
+    this.setState({ displayDuplicate: true });
+    this.handleClose();
+  }
+
+  handleCloseDuplicate() {
+    this.setState({ displayDuplicate: false });
   }
 
   handleOpenDelete() {
@@ -127,6 +148,9 @@ class FeedPopover extends Component {
           <MenuItem onClick={this.handleOpenUpdate.bind(this)}>
             {t('Update')}
           </MenuItem>
+          <MenuItem onClick={this.handleOpenDuplicate.bind(this)}>
+            {t('Duplicate')}
+          </MenuItem>
           <MenuItem onClick={this.handleOpenDelete.bind(this)}>
             {t('Delete')}
           </MenuItem>
@@ -137,10 +161,30 @@ class FeedPopover extends Component {
           render={({ props }) => {
             if (props) {
               return (
-                <FeedEdition
+                <>
+                  <FeedEdition
+                    feed={props.feed}
+                    handleClose={this.handleCloseUpdate.bind(this)}
+                    open={this.state.displayUpdate}
+                  />
+                </>
+              );
+            }
+            return <div/>;
+          }}
+        />
+        <QueryRenderer
+          query={feedDuplicateQuery}
+          variables={{ id: feedId }}
+          render={({ props }) => {
+            if (props) {
+              return (
+                <FeedCreation
                   feed={props.feed}
-                  handleClose={this.handleCloseUpdate.bind(this)}
-                  open={this.state.displayUpdate}
+                  onDrawerClose={this.handleCloseDuplicate.bind(this)}
+                  open={this.state.displayDuplicate}
+                  paginationOptions={this.props.paginationOptions}
+                  isDuplicated={true}
                 />
               );
             }

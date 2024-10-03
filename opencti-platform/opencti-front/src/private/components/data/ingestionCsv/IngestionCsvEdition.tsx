@@ -54,7 +54,7 @@ export const ingestionCsvEditionPatch = graphql`
   } 
 `;
 
-const ingestionCsvEditionFragment = graphql`
+export const ingestionCsvEditionFragment = graphql`
   fragment IngestionCsvEditionFragment_ingestionCsv on IngestionCsv {
     id
     name

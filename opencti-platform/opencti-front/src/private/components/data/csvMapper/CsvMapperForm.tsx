@@ -61,9 +61,10 @@ interface CsvMapperFormProps {
     values: CsvMapperFormData,
     formikHelpers: FormikHelpers<CsvMapperFormData>,
   ) => void;
+  isDuplicated?: boolean,
 }
 
-const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({ csvMapper, onSubmit }) => {
+const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({ csvMapper, onSubmit, isDuplicated }) => {
   const { t_i18n } = useFormatter();
   const classes = useStyles();
 
@@ -140,6 +141,16 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({ csvMapper, onSub
       ...values.relationship_representations,
       representationInitialization('relationship'),
     ]);
+  };
+
+  const getButtonText = () => {
+    if (isDuplicated) {
+      return t_i18n('Duplicate');
+    }
+    if (csvMapper.id) {
+      return t_i18n('Update');
+    }
+    return t_i18n('Create');
   };
 
   // -- ERRORS --
@@ -334,7 +345,7 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({ csvMapper, onSub
                   disabled={isSubmitting}
                   classes={{ root: classes.button }}
                 >
-                  {csvMapper.id ? t_i18n('Update') : t_i18n('Create')}
+                  {getButtonText()}
                 </Button>
               </div>
               <CsvMapperTestDialog

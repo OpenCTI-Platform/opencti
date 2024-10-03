@@ -14,6 +14,7 @@ import IngestionCsvEditionContainer, { ingestionCsvEditionContainerQuery } from 
 import { ingestionCsvEditionPatch } from '@components/data/ingestionCsv/IngestionCsvEdition';
 import { IngestionCsvLinesPaginationQuery$variables } from '@components/data/ingestionCsv/__generated__/IngestionCsvLinesPaginationQuery.graphql';
 import { IngestionCsvEditionContainerQuery } from '@components/data/ingestionCsv/__generated__/IngestionCsvEditionContainerQuery.graphql';
+import { IngestionCsvCreationContainer } from '@components/data/ingestionCsv/IngestionCsvCreation';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { deleteNode } from '../../../../utils/store';
 import { useFormatter } from '../../../../components/i18n';
@@ -29,7 +30,7 @@ const ingestionCsvPopoverDeletionMutation = graphql`
 interface IngestionCsvPopoverProps {
   ingestionCsvId: string;
   running?: boolean | null;
-  paginationOptions?: IngestionCsvLinesPaginationQuery$variables;
+  paginationOptions?: IngestionCsvLinesPaginationQuery$variables | null | undefined;
 }
 
 const IngestionCsvPopover: FunctionComponent<IngestionCsvPopoverProps> = ({
@@ -54,6 +55,15 @@ const IngestionCsvPopover: FunctionComponent<IngestionCsvPopoverProps> = ({
     loadQuery({ id: ingestionCsvId });
     handleClose();
   };
+
+  // -- Duplicate --
+  const [displayDuplicate, setDisplayDuplicate] = useState<boolean>(false);
+  const handleOpenDuplicate = () => {
+    setDisplayDuplicate(true);
+    loadQuery({ id: ingestionCsvId });
+    handleClose();
+  };
+
   const handleOpenStart = () => {
     setDisplayStart(true);
     handleClose();
@@ -158,17 +168,29 @@ const IngestionCsvPopover: FunctionComponent<IngestionCsvPopoverProps> = ({
           <MenuItem onClick={handleOpenUpdate}>
             {t_i18n('Update')}
           </MenuItem>
+          <MenuItem onClick={handleOpenDuplicate}>
+            {t_i18n('Duplicate')}
+          </MenuItem>
           <MenuItem onClick={handleOpenDelete}>
             {t_i18n('Delete')}
           </MenuItem>
         </Menu>
         {queryRef && (
           <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-            <IngestionCsvEditionContainer
-              queryRef={queryRef}
-              handleClose={() => setDisplayUpdate(false)}
-              open={displayUpdate}
-            />
+            <>
+              <IngestionCsvEditionContainer
+                queryRef={queryRef}
+                handleClose={() => setDisplayUpdate(false)}
+                open={displayUpdate}
+              />
+              <IngestionCsvCreationContainer
+                queryRef={queryRef}
+                handleClose={() => setDisplayDuplicate(false)}
+                open={displayDuplicate}
+                paginationOptions={paginationOptions}
+                isDuplicated={true}
+              />
+            </>
           </React.Suspense>
         )}
         <Dialog
