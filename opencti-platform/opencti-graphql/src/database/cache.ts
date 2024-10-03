@@ -97,11 +97,11 @@ const STORE_EXCLUSION_LIST_BINARY = [];
 const STORE_EXCLUSION_LIST_BYTES = [];
 
 const convertTest = () => {
-  let ipAddrListLength = 0;
+  // let ipAddrListLength = 0;
   // let otherListLength = 0;
   STORE_EXCLUSION_LIST.forEach((item) => {
     if (item.type.includes(exclusionListEntityType.IPV4_ADDR) || item.type.includes(exclusionListEntityType.IPV6_ADDR)) {
-      ipAddrListLength += item.list.length;
+      // ipAddrListLength += item.list.length;
       const newList = item.list.map((ip) => {
         const ipAddress = ip.split('/')[0];
         const isIpv6 = ipAddress.indexOf(':') !== -1;
@@ -118,7 +118,7 @@ const convertTest = () => {
     // otherListLength += item.list.length;
     STORE_EXCLUSION_LIST_BINARY.push(item);
   });
-  console.log('ipAddrListLength : ', ipAddrListLength);
+  // console.log('ipAddrListLength : ', ipAddrListLength);
   // console.log('otherListLength : ', otherListLength);
   // console.log('total list : ', ipAddrListLength + otherListLength);
 };
