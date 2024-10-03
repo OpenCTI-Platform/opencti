@@ -218,10 +218,10 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                       >
                         <DialogContent>
                           <DialogContentText>
-                            <AlertTitle>{t_i18n('Platform organization changes')}</AlertTitle>
+                            <AlertTitle>{t_i18n('Warning')}</AlertTitle>
                             <Alert severity="warning" variant="outlined">
                               {t_i18n(
-                                'You are about to remove or change platform organization, this may have an impact on users who will no longer be able to access knowledge if they do not belong to the main platform organization.',
+                                'This change may have an impact on users and connectors who WILL NO LONGER BE ABLE TO ACCESS KNOWLEDGE if they do not belong to the main platform organization.',
                               )}
                             </Alert>
                           </DialogContentText>
