@@ -56,28 +56,28 @@ export const widgetAttribute = {
 export const templateList = {
   name: 'template3',
   content: '<body>\n'
-    + '<h1> Titre principal </h1>\n'
-    + '<p> Observables contenus dans le rapport: $observablesList</p>\n'
+    + '<h1> Main title </h1>\n'
+    + '<p> Locations contained in the report: $locationsList</p>\n'
     + '</body> \n'
     + '</html>',
-  used_variables: ['observablesList'],
+  used_variables: ['locationsList'],
 };
 
 export const widgetList = {
-  name: 'observablesList',
+  name: 'locationsList',
   widget: {
     id: 'XXX',
     type: 'list',
     perspective: 'entities',
     parameters: {
-      title: 'Observables contained in the report',
+      title: 'Locations contained in the report',
     },
     dataSelection: [
       {
         filters: {
           mode: 'and',
           filters: [
-            { key: 'entity_type', values: ['Stix-Cyber-Observable'] },
+            { key: 'entity_type', values: ['Country', 'City', 'Region', 'Position', 'Administrative-Area'] },
             { key: 'objects', values: ['CONTAINER_ID'] },
           ],
           filterGroups: [],

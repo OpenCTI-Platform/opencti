@@ -28,6 +28,9 @@ export const stixCoreObjectsListQuery = graphql`
           id
           entity_type
           created_at
+          representative {
+            main
+          }
           ... on StixDomainObject {
             created
             modified

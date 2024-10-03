@@ -30,7 +30,7 @@ import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import SelectField from '../../../../components/fields/SelectField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import { templateGraph } from '../../../../utils/outcome_template/engine/__template';
+import { templateList } from '../../../../utils/outcome_template/engine/__template';
 import useOutcomeTemplate from '../../../../utils/outcome_template/engine/templateWidgetEngine';
 
 const useStyles = makeStyles((theme) => ({
@@ -201,33 +201,34 @@ const StixCoreObjectContentFiles = ({
     }
 
     // const templateContent = template1.content; // TODO remove hardcoded
-    const templateContent = await buildOutcomeTemplate(stixCoreObjectId, templateGraph);
-    console.log(templateContent);
-    // const blob = new Blob([templateContent], {
-    //   type,
-    // });
-    // const file = new File([blob], name, {
-    //   type,
-    // });
-    //
-    // const fileMarkings = values.fileMarkings.map(({ value }) => value);
-    // const maxMarkings = (values.max_markings ?? []).map(({ value }) => value); // TODO
-    //
-    // commitMutation({
-    //   mutation: stixCoreObjectContentFilesUploadStixCoreObjectMutation,
-    //   variables: { file, id: stixCoreObjectId, fileMarkings },
-    //   setSubmitting,
-    //   onCompleted: (result) => {
-    //     setSubmitting(false);
-    //     resetForm();
-    //     handleCloseCreateOutcomeTemplate();
-    //     onFileChange(result.stixCoreObjectEdit.importPush.id);
-    //   },
-    //   updater: undefined,
-    //   onError: undefined,
-    //   optimisticResponse: undefined,
-    //   optimisticUpdater: undefined,
-    // });
+    const templateContent = await buildOutcomeTemplate(stixCoreObjectId, templateList);
+    console.log('templateContent', templateContent);
+
+    const blob = new Blob([templateContent], {
+      type,
+    });
+    const file = new File([blob], name, {
+      type,
+    });
+
+    const fileMarkings = values.fileMarkings.map(({ value }) => value);
+    const maxMarkings = (values.max_markings ?? []).map(({ value }) => value); // TODO
+
+    commitMutation({
+      mutation: stixCoreObjectContentFilesUploadStixCoreObjectMutation,
+      variables: { file, id: stixCoreObjectId, fileMarkings },
+      setSubmitting,
+      onCompleted: (result) => {
+        setSubmitting(false);
+        resetForm();
+        handleCloseCreateOutcomeTemplate();
+        onFileChange(result.stixCoreObjectEdit.importPush.id);
+      },
+      updater: undefined,
+      onError: undefined,
+      optimisticResponse: undefined,
+      optimisticUpdater: undefined,
+    });
   };
 
   const renderIcon = (mimeType: string) => {

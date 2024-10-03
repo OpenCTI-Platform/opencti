@@ -1,14 +1,13 @@
 import { stixCoreObjectsListQuery } from '@components/common/stix_core_objects/StixCoreObjectsList';
-import React from 'react';
 import { StixCoreObjectsListQuery } from '@components/common/stix_core_objects/__generated__/StixCoreObjectsListQuery.graphql';
-import { renderToString } from 'react-dom/server';
-import { IntlProvider } from 'react-intl';
 import { buildFiltersAndOptionsForTemplateWidgets } from '../../../filters/filtersUtils';
 import type { Widget } from '../../../widget/widget';
 import { fetchQuery } from '../../../../relay/environment';
-import WidgetListCoreObjects from '../../../../components/dashboard/WidgetListCoreObjects';
 
-const buildListOutcome = async (containerId: string, widget: Widget) => {
+const buildListOutcome = async (
+  containerId: string,
+  widget: Widget,
+) => {
   const [selection] = widget.dataSelection;
   const dataSelectionTypes = ['Stix-Core-Object'];
   const dateAttribute = selection.date_attribute && selection.date_attribute.length > 0
@@ -25,27 +24,23 @@ const buildListOutcome = async (containerId: string, widget: Widget) => {
   };
 
   const data = await fetchQuery<StixCoreObjectsListQuery>(stixCoreObjectsListQuery, variables).toPromise();
-  console.log(data);
-  return renderToString(
-    <IntlProvider
-      locale={'en'}
-      key={'en'}
-      messages={'Base message'}
-      onError={(err) => {
-        if (err.code === 'MISSING_TRANSLATION') {
-          return;
-        }
-        throw err;
-      }}
-    >
-      <WidgetListCoreObjects
-        data={data.stixCoreObjects.edges}
-        dateAttribute={dateAttribute}
-        rootRef={undefined}
-        widgetId={widget.id}
-        pageSize={selection.number ?? 10}
-      />
-    </IntlProvider>,
+  const nodes = data.stixCoreObjects.edges.map((n) => n.node);
+  const rows = nodes.map((n) => `
+    <tr>
+      <td>${n.entity_type}</td>
+      <td>${n.representative.main}</td>
+      <td>${n.created_at}</td>
+    </tr>
+  `).join('\n');
+  return (
+    `<table>
+      <tr>
+        <th>Entity type</th>
+        <th>Representative</th>
+        <th>Creation date</th>
+      </tr>
+      ${rows}
+    </table>`
   );
 };
 
