@@ -128,7 +128,7 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
 
   const data = usePreloadedQuery(policiesQuery, queryRef);
   const settings = useFragment<Policies$key>(PoliciesFragment, data.settings);
-  const [platformOrganization, setplatformOrganization] = useState(
+  const [platformOrganization, setPlatformOrganization] = useState(
     settings.platform_organization
       ? {
         label: settings.platform_organization?.name,
@@ -238,7 +238,7 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                           <Button
                             color="secondary"
                             onClick={() => {
-                              setplatformOrganization(values.platform_organization);
+                              setPlatformOrganization(values.platform_organization);
                               setOpenPlatformOrganizationChanges(false);
                               handleSubmitField('platform_organization', values.platform_organization);
                             }}
