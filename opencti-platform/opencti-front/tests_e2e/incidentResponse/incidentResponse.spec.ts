@@ -366,8 +366,7 @@ test('Incident response live entities creation and relationships', async ({ page
   const author = incidentResponseDetailsPage.getTextForHeading('Author', 'Jeanne Mitchel');
   await expect(author).toBeVisible();
 
-  const labelCampaign = incidentResponseDetailsPage.getTextForHeading('Labels', 'threat');
-  await expect(labelCampaign).toBeVisible();
+  await expect(incidentResponseDetailsPage.overview.getLabel('threat')).toBeVisible();
 
   // ---------
   // endregion

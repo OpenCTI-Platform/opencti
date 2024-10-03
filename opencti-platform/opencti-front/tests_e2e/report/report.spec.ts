@@ -377,8 +377,7 @@ test('Report live entities creation and relationships', { tag: ['@report', '@kno
   const author = reportDetailsPage.getTextForHeading('Author', 'Jeanne Mitchel');
   await expect(author).toBeVisible();
 
-  const labelCampaign = reportDetailsPage.getTextForHeading('Labels', 'threat');
-  await expect(labelCampaign).toBeVisible();
+  await expect(reportDetailsPage.overview.getLabel('threat')).toBeVisible();
 
   const externalReference = reportDetailsPage.getTextForHeading('EXTERNAL REFERENCES', 'external ref (report.test.pdf)');
   await expect(externalReference).toBeVisible();
