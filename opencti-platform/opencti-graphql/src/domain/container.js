@@ -66,7 +66,7 @@ export const objects = async (context, user, containerId, args) => {
       // Force options to prevent connection format and manage search after
       const paginateOpts = { ...baseOpts, first: args.first ?? ES_DEFAULT_PAGINATION, after: searchAfter };
       const currentPagination = await listEntitiesThroughRelationsPaginated(context, user, containerId, RELATION_OBJECT, types, false, paginateOpts);
-      const noMoreElements = currentPagination.baseCount === 0 || currentPagination.baseCount < paginateOpts.first;
+      const noMoreElements = (currentPagination.baseCount ?? 0) === 0 || currentPagination.baseCount < paginateOpts.first;
       if (noMoreElements) {
         hasNextPage = false;
         paginatedElements.pageInfo = currentPagination.pageInfo;
