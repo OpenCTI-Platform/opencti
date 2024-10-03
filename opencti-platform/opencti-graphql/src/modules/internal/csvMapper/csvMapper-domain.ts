@@ -48,6 +48,7 @@ export const findAll = (context: AuthContext, user: AuthUser, opts: QueryCsvMapp
 
 export const createCsvMapper = async (context: AuthContext, user: AuthUser, csvMapperInput: CsvMapperAddInput) => {
   // attempt to parse and validate the mapper representations ; this can throw errors
+  console.log('ANGIE - createCsvMapper', csvMapperInput);
   const parsedMapper = parseCsvMapper(csvMapperInput);
   await validateCsvMapper(context, user, parsedMapper);
 
@@ -55,6 +56,7 @@ export const createCsvMapper = async (context: AuthContext, user: AuthUser, csvM
 };
 
 export const fieldPatchCsvMapper = async (context: AuthContext, user: AuthUser, csvMapperId: string, input: EditInput[]) => {
+  console.log('ANGIE - fieldPatchCsvMapper', input);
   return editInternalObject<StoreEntityCsvMapper>(context, user, csvMapperId, ENTITY_TYPE_CSV_MAPPER, input);
 };
 

@@ -57,7 +57,8 @@ export const bundleProcess = async (
           // Add to bundle
           bundleBuilder.addObjects(stixObjects);
         } catch (e) {
-          logApp.error(UnknownError('Error CSV mapping record', { cause: e }));
+          logApp.info('Record that generated following error', { record });
+          logApp.error(e);
         }
       }
     })));
