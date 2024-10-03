@@ -2987,7 +2987,7 @@
   "you": "당신",
   "You are about to change the marking with another rank.": "다른 순위로 마킹을 변경하려고 합니다.",
   "You are about to download a file related to an Artifact (or a binary). It might be malicious. You can download it as an encrypted archive (password: \"infected\") in order to protect your workstation and share it safely.": "아티팩트(또는 바이너리)와 관련된 파일을 다운로드하려고 합니다. 악성 파일일 수 있습니다. 워크스테이션을 보호하고 안전하게 공유하기 위해 암호화된 아카이브로 다운로드할 수 있습니다(암호: &``감염된&``).",
-  "You are about to remove or change platform organization, this may have an impact on users who will no longer be able to access knowledge if they do not belong to the main platform organization.": "플랫폼 조직을 제거하거나 변경하려는 경우 주 플랫폼 조직에 속하지 않은 사용자가 더 이상 지식에 액세스할 수 없게 되는 사용자에게 영향을 미칠 수 있습니다.",
+  "You are about to remove or change platform organization, this may have an impact on connectors and users who will no longer be able to access knowledge if they do not belong to the main platform organization.": "플랫폼 조직을 제거하거나 변경하려는 경우 주 플랫폼 조직에 속하지 않는 경우 더 이상 지식에 액세스할 수 없게 되는 커넥터 및 사용자에게 영향을 미칠 수 있습니다.",
   "You are about to validate this mapping, it will add suggested entities to your container.": "이 매핑의 유효성을 검사하려고 하며, 컨테이너에 제안된 엔티티를 추가합니다.",
   "You are not allowed to do this.": "이 작업을 수행할 수 없습니다.",
   "You are not authorized to see this data.": "이 데이터를 볼 권한이 없습니다.",

@@ -2987,7 +2987,7 @@
   "you": "君",
   "You are about to change the marking with another rank.": "別のランクにマークを変更しようとしています。",
   "You are about to download a file related to an Artifact (or a binary). It might be malicious. You can download it as an encrypted archive (password: \"infected\") in order to protect your workstation and share it safely.": "アーティファクト（またはバイナリ）に関連するファイルをダウンロードしようとしています。それは悪意のあるものかもしれません。ワークステーションを保護し、安全に共有するために、暗号化アーカイブ（パスワード: \"infected\"）としてダウンロードすることができます。",
-  "You are about to remove or change platform organization, this may have an impact on users who will no longer be able to access knowledge if they do not belong to the main platform organization.": "あなたは、プラットフォームの組織を削除または変更しようとしている、これはもはや彼らはメインのプラットフォームの組織に属していない場合、ナレッジにアクセスすることはできませんユーザーに影響を与える可能性があります。",
+  "You are about to remove or change platform organization, this may have an impact on connectors and users who will no longer be able to access knowledge if they do not belong to the main platform organization.": "プラットフォーム組織を削除または変更しようとしている場合、メインのプラットフォーム組織に所属していないと、ナレッジにアクセスできなくなるコネクタやユーザーに影響が及ぶ可能性があります。",
   "You are about to validate this mapping, it will add suggested entities to your container.": "このマッピングを検証すると、提案されたエンティティがコンテナに追加されます。",
   "You are not allowed to do this.": "この操作を行う権限がありません。",
   "You are not authorized to see this data.": "このデータを見る権限がありません。",

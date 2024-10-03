@@ -2987,7 +2987,7 @@
   "you": "你",
   "You are about to change the marking with another rank.": "您即将用另一个级别更改标记。",
   "You are about to download a file related to an Artifact (or a binary). It might be malicious. You can download it as an encrypted archive (password: \"infected\") in order to protect your workstation and share it safely.": "您将要下载一个与人工制品（或二进制文件）相关的文件。它可能是恶意文件。您可以下载加密存档（密码：\"已感染\"），以保护您的工作站并安全共享。",
-  "You are about to remove or change platform organization, this may have an impact on users who will no longer be able to access knowledge if they do not belong to the main platform organization.": "您即将删除或更改平台组织，这可能会对用户产生影响，如果他们不属于主平台组织，将无法再访问知识。",
+  "You are about to remove or change platform organization, this may have an impact on connectors and users who will no longer be able to access knowledge if they do not belong to the main platform organization.": "您即将删除或更改平台组织，这可能会对连接器和用户产生影响，如果他们不属于主平台组织，将无法再访问知识。",
   "You are about to validate this mapping, it will add suggested entities to your container.": "您即将验证此映射，它将把建议的实体添加到您的容器中。",
   "You are not allowed to do this.": "您这样操作不被允许。",
   "You are not authorized to see this data.": "您无权查看此数据。",
