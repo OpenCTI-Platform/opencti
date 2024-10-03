@@ -195,7 +195,7 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                     <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
                       <Alert severity="warning" variant="outlined">
                         {t_i18n(
-                          'When you set a platform organization, organization segregation is enabled: all the pieces of knowledge which are not shared with any organization will be accessible only for users part of the platform one.',
+                          'When you set a platform organization, organization segregation is enabled: users without an organization will no longer be able to log in, all the pieces of knowledge which are not shared with any organization will be accessible only for users part of the platform one.',
                         )}
                       </Alert>
                       <EETooltip>
@@ -221,7 +221,7 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                             <AlertTitle>{t_i18n('Platform organization changes')}</AlertTitle>
                             <Alert severity="warning" variant="outlined">
                               {t_i18n(
-                                'You are about to remove or change platform organization, all the pieces of knowledge which are not shared with any organization will be accessible only for users part of the platform one.',
+                                'You are about to remove or change platform organization, this may have an impact on users who will no longer be able to access knowledge if they do not belong to the main platform organization.',
                               )}
                             </Alert>
                           </DialogContentText>
