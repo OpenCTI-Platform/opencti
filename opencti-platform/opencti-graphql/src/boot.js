@@ -1,4 +1,4 @@
-import { environment, getStoppingState, logApp, setStoppingState } from './config/conf';
+import { environment, getStoppingState, logApp, setStoppingState, shutdownLoggers } from './config/conf';
 import platformInit, { checkDeactivatedFeatureFlags, checkSystemDependencies } from './initialization';
 import cacheManager from './manager/cacheManager';
 import { shutdownRedisClients } from './database/redis';
@@ -40,6 +40,18 @@ export const platformStart = async () => {
     }
   } catch (mainError) {
     logApp.error(mainError);
+
+    try {
+      await shutdownLoggers();
+    } catch (e) {
+      /*
+        errors when shutting down the loggers can't be logged to them, so we just try using the standard console as a
+        "best effort" to give them some visibility
+      */
+      // eslint-disable-next-line no-console
+      console.error(e);
+    }
+
     process.exit(1);
   }
 };

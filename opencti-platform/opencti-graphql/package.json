@@ -158,6 +158,7 @@
     "validator": "13.11.0",
     "winston": "3.14.2",
     "winston-daily-rotate-file": "5.0.0",
+    "winston-gelf": "1.7.0",
     "ws": "8.18.0",
     "xml2js": "0.6.2"
   },
