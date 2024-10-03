@@ -1,6 +1,6 @@
 {
     "type": "bundle",
-    "id": "bundle--f1b36847-cd8d-4f32-9754-caaa8e5a8806",
+    "id": "bundle--b03625a3-1035-4f8c-a9ee-ca8c708ff9a1",
     "objects": [
         {
             "id": "report--ce32448d-733b-5e34-ac4f-2759ce5db1ae",
@@ -15,9 +15,6 @@
             "x_opencti_id": "93d0dd3f-a894-4808-bdb9-ff151b0b1517",
             "x_opencti_type": "Report",
             "type": "report",
-            "x_opencti_granted_refs": [
-                "identity--90d3f8c8-2512-586b-ac60-1f8722b6abcd"
-            ],
             "object_refs": [
                 "email-addr--4879e703-0b80-52b8-983c-fc87774643c9",
                 "malware--d5c2c089-04db-5e3a-a694-62e266b14fef",
@@ -36,10 +33,7 @@
             "value": "mail@mail.com",
             "x_opencti_id": "4eafced1-a3a5-4f97-9f0d-fc11f4669b4e",
             "x_opencti_type": "Email-Addr",
-            "type": "email-addr",
-            "x_opencti_granted_refs": [
-                "identity--90d3f8c8-2512-586b-ac60-1f8722b6abcd"
-            ]
+            "type": "email-addr"
         },
         {
             "id": "malware--d5c2c089-04db-5e3a-a694-62e266b14fef",
@@ -52,10 +46,7 @@
             "is_family": false,
             "x_opencti_id": "8b3d6843-ebf9-40dc-8925-e607ec8dd82c",
             "x_opencti_type": "Malware",
-            "type": "malware",
-            "x_opencti_granted_refs": [
-                "identity--90d3f8c8-2512-586b-ac60-1f8722b6abcd"
-            ]
+            "type": "malware"
         },
         {
             "id": "location--d1693b3f-fcd4-5996-aede-f78d1144c1ce",
@@ -88,10 +79,7 @@
             "x_opencti_main_observable_type": "IPv4-Addr",
             "x_opencti_id": "26b238ef-4842-4f5b-88bc-56b418a7d2ba",
             "x_opencti_type": "Indicator",
-            "type": "indicator",
-            "x_opencti_granted_refs": [
-                "identity--90d3f8c8-2512-586b-ac60-1f8722b6abcd"
-            ]
+            "type": "indicator"
         },
         {
             "id": "identity--efcffe42-72f2-59ef-a0db-8c532f716dbe",
@@ -130,10 +118,7 @@
             "name": "systemTest",
             "x_opencti_id": "5b75efd0-9431-47a5-9d71-3fb5d958e846",
             "x_opencti_type": "System",
-            "type": "identity",
-            "x_opencti_granted_refs": [
-                "identity--90d3f8c8-2512-586b-ac60-1f8722b6abcd"
-            ]
+            "type": "identity"
         },
         {
             "id": "identity--9e5e6cbd-570d-5c0f-a587-3eb6c1e8aaff",
@@ -146,21 +131,6 @@
             "name": "individualTest",
             "x_opencti_id": "85f4c4e2-53f2-4d08-8d37-b39273fb8680",
             "x_opencti_type": "Individual",
-            "type": "identity",
-            "x_opencti_granted_refs": [
-                "identity--90d3f8c8-2512-586b-ac60-1f8722b6abcd"
-            ]
-        },
-        {
-            "id": "identity--90d3f8c8-2512-586b-ac60-1f8722b6abcd",
-            "spec_version": "2.1",
-            "revoked": false,
-            "confidence": 100,
-            "created": "2024-10-03T09:12:43.360Z",
-            "modified": "2024-10-03T09:12:43.360Z",
-            "name": "Organization User 1 Test",
-            "x_opencti_id": "7a711a76-e5da-44cd-9ec8-544a6d3215a7",
-            "x_opencti_type": "Organization",
             "type": "identity"
         }
     ]
