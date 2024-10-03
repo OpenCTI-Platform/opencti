@@ -273,7 +273,7 @@ NotificationLineProps
                 {events.length > 1 ? (
                   <i>{t_i18n('Digest with multiple notifiers')}</i>
                 ) : (
-                  <MarkdownDisplay content={firstEvent?.message ?? '-'} remarkGfmPlugin={true} commonmark={true}/>
+                  <MarkdownDisplay content={firstEvent?.message ?? '-'} remarkGfmPlugin commonmark removeLinks/>
                 )}
               </div>
               <div className={classes.bodyItem} style={{ width: dataColumns.created.width }}>
