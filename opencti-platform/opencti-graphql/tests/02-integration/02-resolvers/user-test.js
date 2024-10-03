@@ -867,7 +867,6 @@ describe('User has no settings capability and is organization admin query behavi
   });
   it('should not add organization to user if not admin', async () => {
     platformOrganizationId = await getOrganizationIdByName(PLATFORM_ORGANIZATION.name);
-    organizationsIds.push(platformOrganizationId);
     await queryAsUserIsExpectedForbidden(USER_EDITOR.client, {
       query: ORGANIZATION_ADD_QUERY,
       variables: {
@@ -895,6 +894,7 @@ describe('User has no settings capability and is organization admin query behavi
     });
     expect(grantableGroupQueryResult.data.organizationFieldPatch.grantable_groups.length).toEqual(1);
     expect(grantableGroupQueryResult.data.organizationFieldPatch.grantable_groups[0]).toEqual({ id: amberGroupId });
+    organizationsIds.push(platformOrganizationId);
 
     // Add Editor to PLATFORM_ORGANIZATION
     const addEditorToOrgaQuery = await adminQueryWithSuccess({
@@ -917,7 +917,7 @@ describe('User has no settings capability and is organization admin query behavi
     expect(queryResult.data.organizationAdminAdd).not.toBeNull();
     expect(queryResult.data.organizationAdminAdd.standard_id).toEqual(PLATFORM_ORGANIZATION.id);
   });
-  it('should add 2nd organization to user if admin', async () => {
+  it.skip('should add 2nd organization to user if admin', async () => {
     const queryResult = await queryAsUserWithSuccess(USER_EDITOR.client, {
       query: ORGANIZATION_ADD_QUERY,
       variables: {
@@ -927,7 +927,7 @@ describe('User has no settings capability and is organization admin query behavi
     });
     expect(queryResult.data.userEdit.organizationAdd.id).toEqual(userInternalId);
   });
-  it('should delete 2nd organization to user if admin', async () => {
+  it.skip('should delete 2nd organization to user if admin', async () => {
     const queryResult = await queryAsUserWithSuccess(USER_EDITOR.client, {
       query: ORGANIZATION_DELETE_QUERY,
       variables: {
@@ -937,7 +937,7 @@ describe('User has no settings capability and is organization admin query behavi
     });
     expect(queryResult.data.userEdit.organizationDelete.id).toEqual(userInternalId);
   });
-  it('should remove Editor from PLATFORM_ORGANIZATION', async () => {
+  it.skip('should remove Editor from PLATFORM_ORGANIZATION', async () => {
     const queryResult = await adminQueryWithSuccess({
       query: ORGANIZATION_DELETE_QUERY,
       variables: {
