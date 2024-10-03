@@ -25,6 +25,8 @@ import SearchInput from '../../../components/SearchInput';
 import ViewSwitchingButtons from '../../../components/ViewSwitchingButtons';
 import DataTable from '../../../components/dataGrid/DataTable';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
+import type { Theme } from '../../../components/Theme';
+import { useTheme } from '@mui/styles';
 
 const LOCAL_STORAGE_KEY = 'narratives';
 
@@ -32,6 +34,7 @@ const Narratives: FunctionComponent = () => {
   const { t_i18n } = useFormatter();
   const { isFeatureEnable } = useHelper();
   const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
+  const theme = useTheme<Theme>();
 
   const initialValues = {
     searchTerm: '',
@@ -72,7 +75,7 @@ const Narratives: FunctionComponent = () => {
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          marginBottom: 16,
+          marginBottom: theme.spacing(2),
         }}
         >
           <SearchInput
