@@ -234,6 +234,9 @@ for (let i = 0; i < providerKeys.length; i += 1) {
         const roleAttributes = mappedConfig.roles_management?.role_attributes || ['roles'];
         const groupAttributes = mappedConfig.groups_management?.group_attributes || ['groups'];
         const userEmail = samlAttributes[mappedConfig.mail_attribute] || nameID;
+        if (mappedConfig.mail_attribute && !samlAttributes[mappedConfig.mail_attribute]) {
+          logApp.info(`[SAML] custom mail_attribute "${mappedConfig.mail_attribute}" in configuration but the custom field is not present SAML server response.`);
+        }
         const userName = samlAttributes[mappedConfig.account_attribute] || '';
         const firstname = samlAttributes[mappedConfig.firstname_attribute] || '';
         const lastname = samlAttributes[mappedConfig.lastname_attribute] || '';
