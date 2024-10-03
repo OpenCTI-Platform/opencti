@@ -13,9 +13,9 @@ import type { ManagerDefinition } from './managerModule';
 import { registerManager } from './managerModule';
 import type { AuthContext } from '../types/user';
 import type { FileEdge, RetentionRule } from '../generated/graphql';
+import { RetentionRuleScope, RetentionUnit } from '../generated/graphql';
 import { deleteFile } from '../database/file-storage';
 import { DELETABLE_FILE_STATUSES, paginatedForPathWithEnrichment } from '../modules/internal/document/document-domain';
-import { RetentionRuleScope, RetentionUnit } from '../generated/graphql';
 import type { BasicStoreCommonEdge, StoreObject } from '../types/store';
 import { ALREADY_DELETED_ERROR } from '../config/errors';
 
@@ -48,28 +48,15 @@ export const getElementsToDelete = async (context: AuthContext, scope: string, b
     const queryOptions = await convertFiltersToQueryOptions(jsonFilters, { before });
     result = await elPaginate(context, RETENTION_MANAGER_USER, READ_STIX_INDICES, { ...queryOptions, first: RETENTION_BATCH_SIZE });
   } else if (scope === 'file') {
-    result = await paginatedForPathWithEnrichment(
-      context,
-      RETENTION_MANAGER_USER,
-      'import/global',
-      undefined,
-      { first: RETENTION_BATCH_SIZE, notModifiedSince: before.toISOString() }
-    );
+    result = await paginatedForPathWithEnrichment(context, RETENTION_MANAGER_USER, 'import/global', undefined, { first: RETENTION_BATCH_SIZE, notModifiedSince: before.toISOString() });
   } else if (scope === 'workbench') {
-    result = await paginatedForPathWithEnrichment(
-      context,
-      RETENTION_MANAGER_USER,
-      'import/pending',
-      undefined,
-      { first: RETENTION_BATCH_SIZE, notModifiedSince: before.toISOString() }
-    );
+    result = await paginatedForPathWithEnrichment(context, RETENTION_MANAGER_USER, 'import/pending', undefined, { first: RETENTION_BATCH_SIZE, notModifiedSince: before.toISOString() });
   } else {
     throw Error(`[Retention manager] Scope ${scope} not existing for Retention Rule.`);
   }
   if (scope === 'file' || scope === 'workbench') { // don't delete progress files or files with works in progress
-    const resultEdges = result.edges.filter((e: FileEdge) => DELETABLE_FILE_STATUSES.includes(e.node.uploadStatus)
-      && (e.node.works ?? []).every((work) => !work || DELETABLE_FILE_STATUSES.includes(work?.status)));
-    result.edges = resultEdges;
+    result.edges = result.edges.filter((e: FileEdge) => DELETABLE_FILE_STATUSES.includes(e.node.uploadStatus)
+        && (e.node.works ?? []).every((work) => !work || DELETABLE_FILE_STATUSES.includes(work?.status)));
   }
   return result;
 };
