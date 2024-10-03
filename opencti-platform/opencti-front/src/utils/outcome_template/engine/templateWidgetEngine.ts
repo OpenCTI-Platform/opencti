@@ -1,26 +1,33 @@
-import { Template, TemplateWidget } from '../template';
-import { widgetGraph, widgetList } from './__template';
-import buildDonutOutcome from './stix_relationships/donut';
+import type { Template, TemplateWidget } from '../template';
+import { widgetGraph } from './__template';
 import buildListOutcome from './stix_core_objects/list';
+import useDonutOutcome from './stix_relationships/donut';
 
-const buildOutcomeTemplate = async (containerId: string, template: Template) => {
-  let { content } = template;
+const useOutcomeTemplate = () => {
+  const { buildDonutOutcome } = useDonutOutcome();
 
-  // Retrieve widgets used in the template, for now, hardcoded
-  const templateWidgets: TemplateWidget[] = [widgetGraph];
+  const buildOutcomeTemplate = async (containerId: string, template: Template) => {
+    let { content } = template;
 
-  for (const templateWidget of templateWidgets) {
-    if (templateWidget.widget.type === 'list') {
-      const outcome = await buildListOutcome(containerId, templateWidget.widget);
+    // Retrieve widgets used in the template, for now, hardcoded
+    const templateWidgets: TemplateWidget[] = [widgetGraph];
+
+    for (const templateWidget of templateWidgets) {
+      let outcome = '';
+      if (templateWidget.widget.type === 'list') {
+        // eslint-disable-next-line no-await-in-loop
+        outcome = await buildListOutcome(containerId, templateWidget.widget);
+      } else if (templateWidget.widget.type === 'donut') {
+        // eslint-disable-next-line no-await-in-loop
+        outcome = await buildDonutOutcome(containerId, templateWidget.widget);
+      }
       content = content.replace(`$${templateWidget.name}`, outcome);
     }
-    if (templateWidget.widget.type === 'donut') {
-      const outcome = await buildDonutOutcome(containerId, templateWidget.widget);
-      content = content.replace(`$${templateWidget.name}`, outcome);
-    }
-  }
 
-  return content;
+    return content;
+  };
+
+  return { buildOutcomeTemplate };
 };
 
-export default buildOutcomeTemplate;
+export default useOutcomeTemplate;

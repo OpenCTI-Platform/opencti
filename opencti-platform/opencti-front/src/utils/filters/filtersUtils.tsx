@@ -244,8 +244,12 @@ export const buildFiltersAndOptionsForTemplateWidgets = (
   inputFilters: FilterGroup | undefined,
   opts: { removeTypeAll?: boolean, startDate?: string, endDate?: string, dateAttribute?: string } = {},
 ) => {
-  const stringFilters = JSON.stringify(inputFilters).replace('CONTAINER_ID', containerId);
-  return buildFiltersAndOptionsForWidgets(JSON.parse(stringFilters), opts);
+  let filters = inputFilters;
+  if (inputFilters) {
+    const filtersWithId = JSON.stringify(inputFilters).replace('CONTAINER_ID', containerId);
+    filters = JSON.parse(filtersWithId);
+  }
+  return buildFiltersAndOptionsForWidgets(filters, opts);
 };
 
 // return the i18n label corresponding to a value

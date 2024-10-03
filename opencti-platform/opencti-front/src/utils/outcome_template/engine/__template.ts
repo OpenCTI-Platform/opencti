@@ -1,4 +1,4 @@
-import { TemplateWidget } from '../template';
+import { Template, TemplateWidget } from '../template';
 import { Widget } from '../../widget/widget';
 
 // text //
@@ -89,7 +89,7 @@ export const widgetList = {
 
 // graph //
 
-export const templateGraph = {
+export const templateGraph: Template = {
   name: 'template graph',
   used_variables: ['widgetGraph'],
   content: `

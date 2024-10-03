@@ -30,8 +30,8 @@ import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import SelectField from '../../../../components/fields/SelectField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import buildOutcomeTemplate from '../../../../utils/outcome_template/engine/templateWidgetEngine';
 import { templateGraph } from '../../../../utils/outcome_template/engine/__template';
+import useOutcomeTemplate from '../../../../utils/outcome_template/engine/templateWidgetEngine';
 
 const useStyles = makeStyles((theme) => ({
   drawerPaper: {
@@ -93,6 +93,8 @@ const StixCoreObjectContentFiles = ({
 }) => {
   const classes = useStyles();
   const { t_i18n, fld } = useFormatter();
+  const { buildOutcomeTemplate } = useOutcomeTemplate();
+
   const [deleting, setDeleting] = useState<string | null>(null);
   const [displayCreate, setDisplayCreate] = useState(false);
   const [displayCreateOutcomeTemplate, setDisplayCreateOutcomeTemplate] = useState(false);
@@ -414,7 +416,12 @@ const StixCoreObjectContentFiles = ({
       </Formik>
       <Formik
         enableReinitialize={true}
-        initialValues={{ name: '', type: 'text/html', fileMarkings: [] }}
+        initialValues={{
+          name: '',
+          type: 'text/html',
+          fileMarkings: [],
+          max_markings: [],
+        }}
         validationSchema={fileValidation}
         onSubmit={onSubmitOutcomeTemplate}
         onReset={onResetOutcomeTemplate}
