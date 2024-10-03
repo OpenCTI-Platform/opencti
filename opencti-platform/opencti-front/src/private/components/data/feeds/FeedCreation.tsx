@@ -4,7 +4,7 @@ import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import { AddOutlined, CancelOutlined } from '@mui/icons-material';
 import * as Yup from 'yup';
-import { graphql } from 'react-relay';
+import { createFragmentContainer, graphql } from 'react-relay';
 import { ConnectionHandler } from 'relay-runtime';
 import * as R from 'ramda';
 import MenuItem from '@mui/material/MenuItem';
@@ -28,7 +28,7 @@ import { FeedAttributeMappingInput } from '@components/data/feeds/__generated__/
 import { StixCyberObservablesLinesAttributesQuery$data } from '@components/observations/stix_cyber_observables/__generated__/StixCyberObservablesLinesAttributesQuery.graphql';
 import { Option } from '@components/common/form/ReferenceField';
 import ObjectMembersField from '../../common/form/ObjectMembersField';
-import { useFormatter } from '../../../../components/i18n';
+import inject18n, { useFormatter } from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import SelectField from '../../../../components/fields/SelectField';
@@ -38,6 +38,7 @@ import { stixCyberObservablesLinesAttributesQuery } from '../../observations/sti
 import Filters from '../../common/lists/Filters';
 import {
   cleanFilters,
+  deserializeFilterGroupForFrontend,
   emptyFilterGroup,
   serializeFilterGroupForBackend,
   useAvailableFilterKeysForEntityTypes,
@@ -141,7 +142,11 @@ interface FeedAddInput {
 }
 
 interface FeedCreationFormProps {
-  paginationOptions: PaginationOptions
+  paginationOptions: PaginationOptions;
+  open: boolean;
+  isDuplicated: boolean;
+  onDrawerClose: () => void;
+  feed: FeedAddInput | undefined;
 }
 
 const feedCreationValidation = (t_i18n: (s: string) => string) => Yup.object().shape({
@@ -154,25 +159,34 @@ const feedCreationValidation = (t_i18n: (s: string) => string) => Yup.object().s
 });
 
 const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
-  const { paginationOptions } = props;
+  const { onDrawerClose, open, paginationOptions, isDuplicated, feed } = props;
   const classes = useStyles();
   const { t_i18n } = useFormatter();
-  const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
-  const [filters, helpers] = useFiltersState(emptyFilterGroup);
+  const [selectedTypes, setSelectedTypes] = useState(feed?.feed_types ?? []);
+  const [filters, helpers] = useFiltersState(deserializeFilterGroupForFrontend(feed?.filters) ?? emptyFilterGroup);
 
   const completeFilterKeysMap: Map<string, Map<string, FilterDefinition>> = useFetchFilterKeysSchema();
   const availableFilterKeys = useAvailableFilterKeysForEntityTypes(selectedTypes).filter((k) => k !== 'entity_type');
 
+  const feedAttributesInitialState = feed && feed.feed_attributes
+    ? feed.feed_attributes.map((n) => ({
+      ...n,
+      mappings: R.indexBy(R.prop('type'), n.mappings),
+    }))
+    : { 0: {} };
+
   // TODO: typing this state properly implies deep refactoring
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [feedAttributes, setFeedAttributes] = useState<{ [key: string]: any }>({ 0: {} });
-
+  const [feedAttributes, setFeedAttributes] = useState<{ [key: string]: any }>(feedAttributesInitialState);
   const { ignoredAttributesInFeeds } = useAttributes();
 
-  const handleClose = () => {
+  const onHandleClose = () => {
     setSelectedTypes([]);
     helpers.handleClearAllFilters();
     setFeedAttributes({ 0: {} });
+    if (isDuplicated) {
+      onDrawerClose();
+    }
   };
 
   const handleSelectTypes = (types: string[]) => {
@@ -196,6 +210,7 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
     setFeedAttributes({ ...updatedFeedAttributes });
   };
   const [commit] = useApiMutation(feedCreationMutation);
+
   const onSubmit: FormikConfig<FeedAddInput>['onSubmit'] = (values, { setSubmitting, resetForm }) => {
     const finalFeedAttributes = R.values(feedAttributes).map((n) => ({
       attribute: n.attribute,
@@ -303,12 +318,37 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
     );
     setFeedAttributes(R.assoc(i, newFeedAttribute, feedAttributes));
   };
-
+  const initialValues: FeedAddInput = isDuplicated && feed ? {
+    name: feed.name,
+    description: feed.description,
+    separator: feed.separator,
+    filters: feed.filters,
+    rolling_time: feed.rolling_time,
+    include_header: feed.include_header,
+    feed_types: feed.feed_types,
+    authorized_members: feed.authorized_members,
+    feed_attributes: feed.feed_attributes,
+    feed_date_attribute: feed.feed_date_attribute,
+    feed_public: feed.feed_public,
+  } : {
+    name: '',
+    description: '',
+    separator: ';',
+    filters: '',
+    rolling_time: 60,
+    include_header: true,
+    feed_types: [],
+    authorized_members: [],
+    feed_attributes: [],
+    feed_date_attribute: 'created_at',
+    feed_public: false,
+  };
   return (
     <Drawer
-      title={t_i18n('Create a feed')}
-      variant={DrawerVariant.createWithPanel}
-      onClose={handleClose}
+      title={isDuplicated ? (t_i18n('Duplicate a feed')) : (t_i18n('Create a feed'))}
+      variant={isDuplicated ? undefined : DrawerVariant.createWithPanel}
+      open={open}
+      onClose={onHandleClose}
     >
       {({ onClose }) => (
         <QueryRenderer
@@ -330,21 +370,10 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
                 [R.ascend(R.prop('label'))],
                 result,
               );
+
               return (
                 <Formik<FeedAddInput>
-                  initialValues={{
-                    name: '',
-                    description: '',
-                    separator: ';',
-                    filters: '',
-                    rolling_time: 60,
-                    include_header: true,
-                    feed_types: [],
-                    authorized_members: [],
-                    feed_attributes: [],
-                    feed_date_attribute: 'created_at',
-                    feed_public: false,
-                  }}
+                  initialValues={initialValues}
                   validationSchema={feedCreationValidation(t_i18n)}
                   onSubmit={onSubmit}
                   onReset={onClose}
@@ -555,8 +584,15 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
                                             return (
                                               <Select
                                                 style={{ width: 150 }}
-                                                value={feedAttributes[i]?.mappings?.[selectedType]?.attribute || ''}
-                                                onChange={(event) => handleChangeAttributeMapping(i, selectedType, event.target.value) }
+                                                value={feedAttributes[i]?.mappings
+                                                    && feedAttributes[i]?.mappings?.[
+                                                      selectedType
+                                                    ]?.attribute}
+                                                onChange={(event) => handleChangeAttributeMapping(
+                                                  i,
+                                                  selectedType,
+                                                  event.target.value,
+                                                )}
                                               >
                                                 {attributes.map(
                                                   (attribute) => (
@@ -611,7 +647,7 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
                           disabled={isSubmitting || !areAttributesValid()}
                           classes={{ root: classes.button }}
                         >
-                          {t_i18n('Create')}
+                          {isDuplicated ? t_i18n('Duplicate') : t_i18n('Create')}
                         </Button>
                       </div>
                     </Form>
@@ -626,5 +662,30 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
     </Drawer>
   );
 };
-
-export default FeedCreation;
+const FeedCreationFragment = createFragmentContainer(FeedCreation, {
+  feed: graphql`
+    fragment FeedCreation on Feed {
+      id
+      name
+      description
+      filters
+      rolling_time
+      include_header
+      feed_types
+      feed_date_attribute
+      separator
+      feed_attributes {
+        attribute
+        mappings {
+          type
+          attribute
+        }
+      }
+      feed_public
+      authorized_members {
+        id
+        name
+      }
+    }`,
+});
+export default R.compose(inject18n)(FeedCreationFragment);
