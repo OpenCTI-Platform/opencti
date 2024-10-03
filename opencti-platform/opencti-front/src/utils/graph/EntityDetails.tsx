@@ -247,6 +247,11 @@ const entityDetailsQuery = graphql`
       }
       ... on StixFile {
         observableName: name
+        x_opencti_additional_names
+        hashes {
+          algorithm
+          hash
+        }
       }
       ... on Event {
         name
@@ -313,12 +318,55 @@ EntityDetailsComponentProps
   const entityDescription = stixCoreObject.description || stixCoreObject.x_opencti_description;
   return (
     <div>
-      <Typography variant="h3" gutterBottom={true} className={classes.label}>
-        {t_i18n('Value')}
-      </Typography>
-      <Tooltip title={getMainRepresentative(stixCoreObject)}>
-        <span>{truncate(getMainRepresentative(stixCoreObject), 40)}</span>
-      </Tooltip>
+      {stixCoreObject.entity_type !== 'StixFile' && (
+      <>
+        <Typography variant="h3" gutterBottom={true} className={classes.label}>
+          {t_i18n('Value')}
+        </Typography>
+        <Tooltip title={getMainRepresentative(stixCoreObject)}>
+          <span>{truncate(getMainRepresentative(stixCoreObject), 40)}</span>
+        </Tooltip>
+      </>
+      )}
+      {stixCoreObject.entity_type === 'StixFile' && (
+      <>
+        {stixCoreObject.hashes && stixCoreObject.hashes.map((hashObj, index) => (hashObj ? (
+          <div key={`${hashObj.algorithm}-${index}`}>
+            <Typography variant="h3" gutterBottom={true} className={classes.label}>
+              {hashObj.algorithm ? String(hashObj.algorithm) : ''}
+            </Typography>
+            <Tooltip title={hashObj.hash ? String(hashObj.hash) : ''}>
+              <span>{truncate(hashObj.hash, 40)}</span>
+            </Tooltip>
+          </div>
+        ) : null))}
+
+        {stixCoreObject.observableName && (
+        <>
+          <Typography variant="h3" gutterBottom={true} className={classes.label}>
+            {t_i18n('Name')}
+          </Typography>
+          <span>{stixCoreObject.observableName}</span>
+        </>
+        )}
+
+        {stixCoreObject.x_opencti_additional_names && (
+          (() => {
+            const filteredAdditionalNames = stixCoreObject.x_opencti_additional_names.filter(
+              (additionalName) => additionalName !== stixCoreObject.observableName,
+            );
+            return filteredAdditionalNames.length > 0 ? (
+              <>
+                <Typography variant="h3" gutterBottom={true} className={classes.label}>
+                  {t_i18n('Additional Names')}
+                </Typography>
+                <span>{filteredAdditionalNames.join(', ')}</span>
+              </>
+            ) : null;
+          })()
+        )}
+      </>
+      )}
       <Typography variant="h3" gutterBottom={true} className={classes.label}>
         {t_i18n('Type')}
       </Typography>

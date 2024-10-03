@@ -769,30 +769,59 @@ export const buildGraphData = (objects, graphData, t) => {
               ? 'relationship'
               : n.entity_type
           ] || graphLevel.Unknown,
-        name: `${
-          n.relationship_type
-            ? `<strong>${t(
-              `relationship_${n.relationship_type}`,
-            )}</strong>\n${t('Created the')} ${dateFormat(n.created)}\n${t(
-              'Start time',
-            )} ${
-              isNone(n.start_time || n.first_seen)
-                ? '-'
-                : dateFormat(n.start_time || n.first_seen)
+        name: (() => {
+          if (n.relationship_type) {
+            return `<strong>${t(`relationship_${n.relationship_type}`)}</strong>\n${t('Created the')} ${dateFormat(n.created)}\n${t('Start time')} ${
+              isNone(n.start_time || n.first_seen) ? '-' : dateFormat(n.start_time || n.first_seen)
             }\n${t('Stop time')} ${
-              isNone(n.stop_time || n.last_seen)
-                ? '-'
-                : dateFormat(n.stop_time || n.last_seen)
-            }`
-            : getMainRepresentative(n)
-        }\n${dateFormat(defaultDate(n))}`,
+              isNone(n.stop_time || n.last_seen) ? '-' : dateFormat(n.stop_time || n.last_seen)
+            }\n${dateFormat(defaultDate(n))}`;
+          } if (n.entity_type === 'StixFile' && n.observable_value) {
+            const hashAlgorithms = ['SHA-512', 'SHA-256', 'SHA-1', 'MD5'];
+            // Find if the observable_value matches one of the hashes
+            let displayValue = n.observable_value;
+            let label = 'Name';
+            const matchingHash = n.hashes.find((hashObj) => hashObj.hash === n.observable_value && hashAlgorithms.includes(hashObj.algorithm));
+            if (matchingHash) {
+              displayValue = matchingHash.hash;
+              label = `${matchingHash.algorithm}`;
+            } else if (n.observable_value === n.observableName) {
+            // Find if observable_value matches observableName
+              displayValue = n.observable_value;
+              label = 'Name';
+            }
+            // List of other hashes to display (without duplicating the observable_value)
+            const hashesList = n.hashes && Array.isArray(n.hashes)
+              ? n.hashes
+                .filter((hashObj) => hashObj.hash !== displayValue)
+                .map((hashObj) => `${hashObj.algorithm}: ${hashObj.hash}`)
+                .join('\n')
+              : '';
+            // Add name (observableName) if available and different from observable_value
+            const additionalInfo = (n.observableName && n.observableName !== displayValue) ? `\nName: ${n.observableName}` : '';
+            // Add additional_names if available and different from `observableName`.
+            const additionalNames = n.x_opencti_additional_names && Array.isArray(n.x_opencti_additional_names)
+              ? n.x_opencti_additional_names
+                .filter((additionalName) => additionalName !== n.observableName)
+                .join(', ')
+              : '';
+            const additionalNamesString = additionalNames ? `\n${t('Additional Names')}: ${additionalNames}` : '';
+            return `${label}: ${displayValue}${hashesList ? `\n${hashesList}` : ''}${additionalInfo}${additionalNamesString}\n${dateFormat(defaultDate(n))}`;
+          }
+          return `${getMainRepresentative(n)}\n${dateFormat(defaultDate(n))}`;
+        })(),
         defaultDate: jsDate(defaultDate(n)),
-        label: n.parent_types.includes('basic-relationship')
-          ? t(`relationship_${n.relationship_type}`)
-          : truncate(
+        label: (() => {
+          if (n.parent_types.includes('basic-relationship')) {
+            return t(`relationship_${n.relationship_type}`);
+          } if (n.entity_type === 'StixFile' && n.observable_value) {
+            return n.observable_value;
+          }
+          return truncate(
             getMainRepresentative(n),
             n.entity_type === 'Attack-Pattern' ? 30 : 20,
-          ),
+          );
+        })(),
         img:
           graphImages[
             n.parent_types.includes('basic-relationship')
