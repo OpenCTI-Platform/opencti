@@ -229,13 +229,17 @@ for (let i = 0; i < providerKeys.length; i += 1) {
       const samlOptions = { ...mappedConfig };
       const samlStrategy = new SamlStrategy(samlOptions, (profile, done) => {
         logApp.info('[SAML] Successfully logged', { profile });
+        const { nameID, nameIDFormat } = profile;
         const samlAttributes = profile.attributes ? profile.attributes : profile;
         const roleAttributes = mappedConfig.roles_management?.role_attributes || ['roles'];
         const groupAttributes = mappedConfig.groups_management?.group_attributes || ['groups'];
+        const userEmail = samlAttributes[mappedConfig.mail_attribute] || nameID;
+        if (mappedConfig.mail_attribute && !samlAttributes[mappedConfig.mail_attribute]) {
+          logApp.info(`[SAML] custom mail_attribute "${mappedConfig.mail_attribute}" in configuration but the custom field is not present SAML server response.`);
+        }
         const userName = samlAttributes[mappedConfig.account_attribute] || '';
         const firstname = samlAttributes[mappedConfig.firstname_attribute] || '';
         const lastname = samlAttributes[mappedConfig.lastname_attribute] || '';
-        const { nameID, nameIDFormat } = samlAttributes;
         const isGroupBaseAccess = (isNotEmptyField(mappedConfig.groups_management) && isNotEmptyField(mappedConfig.groups_management?.groups_mapping));
         logApp.info('[SAML] Groups management configuration', { groupsManagement: mappedConfig.groups_management });
         // region roles mapping
@@ -276,13 +280,12 @@ for (let i = 0; i < providerKeys.length; i += 1) {
         // endregion
         logApp.info('[SAML] Login handler', { isGroupBaseAccess, groupsToAssociate });
         if (!isGroupBaseAccess || groupsToAssociate.length > 0) {
-          const { nameID: email } = profile;
           const opts = {
             providerGroups: groupsToAssociate,
             providerOrganizations: organizationsToAssociate,
             autoCreateGroup: mappedConfig.auto_create_group ?? false,
           };
-          providerLoginHandler({ email, name: userName, firstname, lastname, provider_metadata: { nameID, nameIDFormat } }, done, opts);
+          providerLoginHandler({ email: userEmail, name: userName, firstname, lastname, provider_metadata: { nameID, nameIDFormat } }, done, opts);
         } else {
           done({ message: 'Restricted access, ask your administrator' });
         }
