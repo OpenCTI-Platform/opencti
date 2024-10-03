@@ -31,6 +31,6 @@ test('Create a new grouping', async ({ page }) => {
   await stixDomainObjectContentTab.editFile('Test file.html', 'Test file content text');
   await stixDomainObjectContentTab.selectMainContent();
   await expect(page.getByText('Main content text')).toBeVisible();
-  await stixDomainObjectContentTab.selectFile('Test file.html');
+  await stixDomainObjectContentTab.selectFile('test file.html');
   await expect(page.getByText('Test file content text')).toBeVisible();
 });
