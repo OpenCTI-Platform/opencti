@@ -15708,7 +15708,7 @@ __metadata:
     react-virtualized: "npm:9.22.5"
     reactflow: "npm:11.11.4"
     recharts: "npm:2.12.7"
-    relay-compiler: "npm:17.0.0"
+    relay-compiler: "npm:18.1.0"
     relay-runtime: "npm:17.0.0"
     relay-test-utils: "npm:17.0.0"
     remark-flexible-markers: "npm:1.2.1"
@@ -17820,12 +17820,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"relay-compiler@npm:17.0.0":
-  version: 17.0.0
-  resolution: "relay-compiler@npm:17.0.0"
+"relay-compiler@npm:18.1.0":
+  version: 18.1.0
+  resolution: "relay-compiler@npm:18.1.0"
   bin:
     relay-compiler: cli.js
-  checksum: 10/1cb4531205f1a26a7b27bfec104cf685c12d92d46b322191ab086ec817fce4a3ae42e520630444a72840d8e5d1a1e00779fd6387c82c542fbf11cc0b884623f4
+  checksum: 10/0d1caba96d1f132f30307d5fe42ab2bd6ffcad3f13eae6e987f3dde04e116845ffe8d9f56c034061f085832d0d125187ab3293a49a6c0644b1138b89e7d76a50
   languageName: node
   linkType: hard
 
