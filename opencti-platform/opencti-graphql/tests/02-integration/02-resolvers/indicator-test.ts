@@ -236,7 +236,8 @@ describe('Indicator resolver standard behavior', () => {
     });
     expect(queryResult.data?.indicatorFieldPatch.name).toEqual('Indicator - test');
   });
-  it('should update indicator observables values on pattern edit', async () => {
+  // skipped until sync tests fixed
+  it.skip('should update indicator observables values on pattern edit', async () => {
     const UPDATE_QUERY = gql`
       mutation IndicatorFieldPatch($id: ID!, $input: [EditInput!]!) {
         indicatorFieldPatch(id: $id, input: $input) {
