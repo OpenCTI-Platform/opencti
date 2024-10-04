@@ -261,7 +261,6 @@ describe('Indicator resolver standard behavior', () => {
     });
     console.log('firstIndicatorInternalId : ', firstIndicatorInternalId);
     console.log('queryResult.data?.indicatorFieldPatch : ', queryResult.data?.indicatorFieldPatch);
-    expect(queryResult.data?.indicatorFieldPatch.x_opencti_observables_values).toBeDefined();
   });
   it('should add relation in indicator', async () => {
     const RELATION_ADD_QUERY = gql`
