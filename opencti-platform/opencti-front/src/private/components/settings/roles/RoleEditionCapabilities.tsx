@@ -9,6 +9,8 @@ import List from '@mui/material/List';
 import { PreloadedQuery } from 'react-relay/relay-hooks/EntryPointTypes';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import LocalPoliceOutlined from '@mui/icons-material/LocalPoliceOutlined';
+import { useTheme } from '@mui/styles';
+import DangerZoneChip from '@components/common/dangerZone/DangerZoneChip';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { useFormatter } from '../../../../components/i18n';
 import { RoleEditionCapabilitiesLinesSearchQuery } from './__generated__/RoleEditionCapabilitiesLinesSearchQuery.graphql';
@@ -16,6 +18,7 @@ import { RoleEditionCapabilities_role$data } from './__generated__/RoleEditionCa
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { SETTINGS } from '../../../../utils/hooks/useGranted';
 import useSensitiveModifications from '../../../../utils/hooks/useSensitiveModifications';
+import type { Theme } from '../../../../components/Theme';
 
 const roleEditionAddCapability = graphql`
   mutation RoleEditionCapabilitiesAddCapabilityMutation(
@@ -80,6 +83,8 @@ interface RoleEditionCapabilitiesComponentProps {
 
 const RoleEditionCapabilitiesComponent: FunctionComponent<RoleEditionCapabilitiesComponentProps> = ({ role, queryRef }) => {
   const { t_i18n } = useFormatter();
+  const theme = useTheme<Theme>();
+
   const { capabilities } = usePreloadedQuery<RoleEditionCapabilitiesLinesSearchQuery>(
     roleEditionCapabilitiesLinesSearch,
     queryRef,
@@ -132,29 +137,37 @@ const RoleEditionCapabilitiesComponent: FunctionComponent<RoleEditionCapabilitie
     // And invalid me ?? or invalidSession
   };
 
-  const { ffenabled } = useSensitiveModifications();
+  const { isSensitiveModificationEnabled } = useSensitiveModifications();
 
   if (capabilities && capabilities.edges) {
     return (
       <List dense={true}>
-        {ffenabled && (
-        <ListItem
-          key='sensitive'
-          divider={true}
-          style={{ paddingLeft: 0 }}
-        >
-          <ListItemIcon style={{ minWidth: 32 }}>
-            <LocalPoliceOutlined fontSize="small" />
-          </ListItemIcon>
-          <ListItemText primary={t_i18n('Allow modification of sensitive configuration')} />
-          <ListItemSecondaryAction>
-            <Checkbox
-              onChange={(event) => handleSensitiveToggle(event)}
-              checked={role.can_manage_sensitive_config ?? true}
-              disabled={false}
+        {isSensitiveModificationEnabled && (
+          <ListItem
+            key="sensitive"
+            divider={true}
+            style={{ paddingLeft: 0 }}
+          >
+            <ListItemIcon style={{ minWidth: 32 }}>
+              <LocalPoliceOutlined fontSize="small" />
+            </ListItemIcon>
+            <ListItemText
+              primary={
+                <>
+                  {t_i18n('Allow modification of sensitive configuration')}
+                  <DangerZoneChip />
+                </>
+              }
             />
-          </ListItemSecondaryAction>
-        </ListItem>
+            <ListItemSecondaryAction>
+              <Checkbox
+                onChange={(event) => handleSensitiveToggle(event)}
+                checked={role.can_manage_sensitive_config ? role.can_manage_sensitive_config : false}
+                style={{ color: theme.palette.dangerZone.main }}
+                disabled={false}
+              />
+            </ListItemSecondaryAction>
+          </ListItem>
         )}
         {capabilities.edges.map((edge) => {
           const capability = edge?.node;

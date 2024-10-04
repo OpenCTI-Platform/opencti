@@ -57,7 +57,7 @@ const ThreatActorGroupQuery = graphql`
       stixCoreObjectsDistribution(field: "entity_type", operation: count) {
         label
         value
-      }  
+      }
       ...ThreatActorGroup_ThreatActorGroup
       ...ThreatActorGroupKnowledge_ThreatActorGroup
       ...FileImportViewer_entity
@@ -137,11 +137,12 @@ const RootThreatActorGroup = ({ queryRef, threatActorGroupId }: RootThreatActorG
             />
           </Routes>
           <div style={{ paddingRight }}>
-            <Breadcrumbs elements={[
-              { label: t_i18n('Threats') },
-              { label: t_i18n('Threat actors (group)'), link: '/dashboard/threats/threat_actors_group' },
-              { label: threatActorGroup.name, current: true },
-            ]}
+            <Breadcrumbs
+              elements={[
+                { label: t_i18n('Threats') },
+                { label: t_i18n('Threat actors (group)'), link: '/dashboard/threats/threat_actors_group' },
+                { label: threatActorGroup.name, current: true },
+              ]}
             />
             <StixDomainObjectHeader
               entityType="Threat-Actor-Group"

@@ -579,6 +579,8 @@
   "CVSS3 - Integrity impact (I)": "CVSS3 - 完整性影响 (I)",
   "CVSS3 - Score": "CVSS3 - 得分",
   "CVSS3 - Severity": "CVSS3 - 严重程度",
+  "Danger Zone": "危险地带",
+  "DangerZoneTooltip": "更改这里的配置可能会对平台的稳定性产生重大影响。只有有能力更改敏感配置的用户才能更改。请确保您知道自己在做什么。",
   "Dark": "暗色",
   "Dark (with background)": "暗色(带背景)",
   "Dark (without background)": "暗色(无背景)",

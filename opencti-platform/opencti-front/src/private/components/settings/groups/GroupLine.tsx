@@ -11,10 +11,12 @@ import makeStyles from '@mui/styles/makeStyles';
 import { GroupLine_node$data } from '@components/settings/groups/__generated__/GroupLine_node.graphql';
 import Tooltip from '@mui/material/Tooltip';
 import { GroupingsLinesPaginationQuery$variables } from '@components/analyses/__generated__/GroupingsLinesPaginationQuery.graphql';
+import DangerZoneChip from '@components/common/dangerZone/DangerZoneChip';
 import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import type { Theme } from '../../../../components/Theme';
 import { DataColumns } from '../../../../components/list_lines';
+import useSensitiveModifications from '../../../../utils/hooks/useSensitiveModifications';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -48,9 +50,11 @@ interface GroupLineProps {
 }
 
 const GroupLineComponent: React.FC<GroupLineProps> = (props) => {
-  const { fd, t_i18n } = useFormatter();
   const classes = useStyles();
+
+  const { fd, t_i18n } = useFormatter();
   const { dataColumns, node } = props;
+  const { isSensitive } = useSensitiveModifications(node.standard_id);
 
   return (
     <ListItem
@@ -68,9 +72,9 @@ const GroupLineComponent: React.FC<GroupLineProps> = (props) => {
           <>
             <div
               className={classes.bodyItem}
-              style={{ width: dataColumns.name.width }}
+              style={{ width: dataColumns.name.width, display: 'flex', alignItems: 'center' }}
             >
-              {node.name}
+              {node.name}{isSensitive && <DangerZoneChip />}
             </div>
             <div
               className={classes.bodyItem}
@@ -141,6 +145,7 @@ export const GroupLine = createFragmentContainer(GroupLineComponent, {
     fragment GroupLine_node on Group {
       id
       name
+      standard_id
       default_assignation
       no_creators
       auto_new_marking

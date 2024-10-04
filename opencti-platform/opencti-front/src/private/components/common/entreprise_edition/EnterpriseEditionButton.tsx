@@ -5,9 +5,11 @@ import EnterpriseEditionAgreement from '@components/common/entreprise_edition/En
 import { RocketLaunchOutlined } from '@mui/icons-material';
 import FeedbackCreation from '@components/cases/feedbacks/FeedbackCreation';
 import classNames from 'classnames';
+import { useTheme } from '@mui/styles';
 import { useFormatter } from '../../../../components/i18n';
 import useGranted, { SETTINGS_SETPARAMETERS } from '../../../../utils/hooks/useGranted';
 import useAuth from '../../../../utils/hooks/useAuth';
+import type { Theme } from '../../../../components/Theme';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -15,21 +17,21 @@ const useStyles = makeStyles({
   button: {
     marginLeft: 20,
   },
-  inLine: {
-    float: 'right',
-    marginTop: -30,
-  },
 });
 
 const EnterpriseEditionButton = ({
   feature,
   inLine = false,
+  disabled = false,
 }: {
   feature?: string;
-  inLine?: boolean;
+  inLine?: boolean
+  disabled?: boolean
 }) => {
   const { t_i18n } = useFormatter();
   const classes = useStyles();
+  const theme = useTheme<Theme>();
+
   const [openEnterpriseEditionConsent, setOpenEnterpriseEditionConsent] = useState(false);
   const [feedbackCreation, setFeedbackCreation] = useState(false);
   const {
@@ -49,11 +51,14 @@ const EnterpriseEditionButton = ({
           variant="outlined"
           color="ee"
           onClick={() => setOpenEnterpriseEditionConsent(true)}
-          startIcon={<RocketLaunchOutlined />}
+          startIcon={<RocketLaunchOutlined style={{ color: disabled ? theme.palette.dangerZone.main : undefined }} />}
+          disabled={disabled}
+          style={{
+            borderColor: disabled ? theme.palette.dangerZone.main : undefined,
+          }}
           classes={{
             root: classNames({
-              [classes.button]: true,
-              [classes.inLine]: inLine,
+              [classes.button]: !inLine,
             }),
           }}
         >
@@ -64,6 +69,7 @@ const EnterpriseEditionButton = ({
           color="primary"
           variant="outlined"
           size="small"
+          disabled={disabled}
           onClick={() => setFeedbackCreation(true)}
           classes={{ root: classes.button }}
         >

@@ -579,6 +579,8 @@
   "CVSS3 - Integrity impact (I)": "CVSS3 - 무결성 영향 (I)",
   "CVSS3 - Score": "CVSS3 - 점수",
   "CVSS3 - Severity": "CVSS3 - 심각도",
+  "Danger Zone": "위험 구역",
+  "DangerZoneTooltip": "여기서 구성을 변경하면 플랫폼의 안정성에 중대한 영향을 미칠 수 있습니다. 민감한 구성을 변경할 수 있는 권한이 있는 사용자만 변경할 수 있습니다. 자신이 수행하는 작업에 대해 잘 알고 있는지 확인하세요.",
   "Dark": "어두운",
   "Dark (with background)": "어두운 (배경 포함)",
   "Dark (without background)": "어두운 (배경 없음)",

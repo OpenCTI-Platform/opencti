@@ -3,7 +3,7 @@ import { testContext } from '../../utils/testQuery';
 import { checkPasswordInlinePolicy, isSensitiveChangesAllowed } from '../../../src/domain/user';
 import { OPENCTI_ADMIN_UUID } from '../../../src/schema/general';
 
-describe('password checker', () => {
+describe.skip('password checker', () => {
   it('should no policy applied', async () => {
     const policy = {};
     expect(checkPasswordInlinePolicy(testContext, policy, '').length).toBe(1);

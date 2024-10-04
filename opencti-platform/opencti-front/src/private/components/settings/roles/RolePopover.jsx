@@ -112,7 +112,7 @@ class RolePopover extends Component {
   }
 
   render() {
-    const { classes, t, roleId } = this.props;
+    const { classes, t, roleId, disabled, isSensitive } = this.props;
     return (
       <div className={classes.container}>
         <IconButton
@@ -120,7 +120,8 @@ class RolePopover extends Component {
           aria-haspopup="true"
           size="large"
           style={{ marginTop: 3 }}
-          color="primary"
+          disabled={disabled}
+          color={isSensitive ? 'dangerZone' : 'primary'}
         >
           <MoreVert />
         </IconButton>

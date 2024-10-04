@@ -15,6 +15,7 @@ import Security from '../../../../utils/Security';
 import { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { useFormatter } from '../../../../components/i18n';
+import useSensitiveModifications from '../../../../utils/hooks/useSensitiveModifications';
 
 const subscription = graphql`
     subscription RootGroupsSubscription($id: ID!) {
@@ -33,6 +34,7 @@ const groupQuery = graphql`
     group(id: $id) {
       id
       name
+      standard_id
       ...Group_group
       @arguments(
         rolesOrderBy: $rolesOrderBy
@@ -60,17 +62,21 @@ const RootGroupComponent: FunctionComponent<RootGroupComponentProps> = ({ queryR
   const { group } = data;
   const { t_i18n } = useFormatter();
 
+  const { isSensitive } = useSensitiveModifications(group?.standard_id);
+
   return (
     <Security needs={[SETTINGS_SETACCESSES]}>
       {group ? (
         <>
           <AccessesMenu/>
-          <Breadcrumbs elements={[
-            { label: t_i18n('Settings') },
-            { label: t_i18n('Security') },
-            { label: t_i18n('Groups'), link: '/dashboard/settings/accesses/groups' },
-            { label: group.name, current: true },
-          ]}
+          <Breadcrumbs
+            isSensitive={isSensitive}
+            elements={[
+              { label: t_i18n('Settings') },
+              { label: t_i18n('Security') },
+              { label: t_i18n('Groups'), link: '/dashboard/settings/accesses/groups' },
+              { label: group.name, current: true },
+            ]}
           />
           <Routes>
             <Route

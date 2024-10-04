@@ -66,11 +66,16 @@ interface GroupEditionContainerProps {
   groupQueryRef: PreloadedQuery<GroupEditionContainerQuery>
   handleClose?: () => void
   open?: boolean
+  disabled?: boolean
+  isSensitive?: boolean
 }
 
 const GroupEditionContainer: FunctionComponent<GroupEditionContainerProps> = ({
-  groupQueryRef, handleClose = () => {
-  }, open,
+  groupQueryRef,
+  handleClose = () => {},
+  open,
+  disabled = false,
+  isSensitive = false,
 }) => {
   const { t_i18n } = useFormatter();
 
@@ -107,6 +112,8 @@ const GroupEditionContainer: FunctionComponent<GroupEditionContainerProps> = ({
       context={editContext}
       onClose={handleClose}
       open={open}
+      disabled={disabled}
+      isSensitive={isSensitive}
     >
       <>
         <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>

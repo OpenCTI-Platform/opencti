@@ -14,6 +14,8 @@ import inject18n from '../../../../components/i18n';
 import { groupsSearchQuery } from '../Groups';
 import { QueryRenderer } from '../../../../relay/environment';
 import ItemIcon from '../../../../components/ItemIcon';
+import useSensitiveModifications from '../../../../utils/hooks/useSensitiveModifications';
+import DangerZoneChip from '../../common/dangerZone/DangerZoneChip';
 
 const styles = (theme) => ({
   item: {
@@ -43,83 +45,82 @@ const styles = (theme) => ({
   },
 });
 
-class RoleLineComponent extends Component {
-  render() {
-    const { fd, classes, dataColumns, node } = this.props;
-    return (
-      <ListItem
-        classes={{ root: classes.item }}
-        divider={true}
-        button={true}
-        component={Link}
-        to={`/dashboard/settings/accesses/roles/${node.id}`}
-      >
-        <ListItemIcon>
-          <ItemIcon type="Role" />
-        </ListItemIcon>
-        <ListItemText
-          primary={
-            <>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.name.width }}
-              >
-                {node.name}
-              </div>
-              <QueryRenderer
-                query={groupsSearchQuery}
-                variables={{
-                  count: 50,
-                  orderBy: 'name',
-                  orderMode: 'asc',
-                }}
-                render={({ props }) => {
-                  if (props) {
-                    const groupIds = props.groups.edges.map((group) => (group.node.roles.edges.map((role) => role.node.id).includes(node.id)
-                      ? group.node.id
-                      : null));
-                    const numberOfGroups = groupIds.filter(
-                      (id) => id !== null,
-                    ).length;
-                    return (
-                      <div
-                        className={classes.bodyItem}
-                        style={{ width: dataColumns.groups.width }}
-                      >
-                        {numberOfGroups}
-                      </div>
-                    );
-                  }
+const RoleLineComponent = ({ fd, classes, dataColumns, node }) => {
+  const { isSensitive } = useSensitiveModifications(node.standard_id);
+
+  return (
+    <ListItem
+      classes={{ root: classes.item }}
+      divider={true}
+      button={true}
+      component={Link}
+      to={`/dashboard/settings/accesses/roles/${node.id}`}
+    >
+      <ListItemIcon>
+        <ItemIcon type="Role" />
+      </ListItemIcon>
+      <ListItemText
+        primary={
+          <>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.name.width, display: 'flex', alignItems: 'center' }}
+            >
+              {node.name}{isSensitive && <DangerZoneChip />}
+            </div>
+            <QueryRenderer
+              query={groupsSearchQuery}
+              variables={{
+                count: 50,
+                orderBy: 'name',
+                orderMode: 'asc',
+              }}
+              render={({ props }) => {
+                if (props) {
+                  const groupIds = props.groups.edges.map((group) => (group.node.roles.edges.map((role) => role.node.id).includes(node.id)
+                    ? group.node.id
+                    : null));
+                  const numberOfGroups = groupIds.filter(
+                    (id) => id !== null,
+                  ).length;
                   return (
                     <div
                       className={classes.bodyItem}
                       style={{ width: dataColumns.groups.width }}
-                    ></div>
+                    >
+                      {numberOfGroups}
+                    </div>
                   );
-                }}
-              />
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.created_at.width }}
-              >
-                {fd(node.created_at)}
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.updated_at.width }}
-              >
-                {fd(node.updated_at)}
-              </div>
-            </>
-          }
-        />
-        <ListItemIcon classes={{ root: classes.goIcon }}>
-          <KeyboardArrowRightOutlined />
-        </ListItemIcon>
-      </ListItem>
-    );
-  }
-}
+                }
+                return (
+                  <div
+                    className={classes.bodyItem}
+                    style={{ width: dataColumns.groups.width }}
+                  ></div>
+                );
+              }}
+            />
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.created_at.width }}
+            >
+              {fd(node.created_at)}
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.updated_at.width }}
+            >
+              {fd(node.updated_at)}
+            </div>
+          </>
+        }
+      />
+      <ListItemIcon classes={{ root: classes.goIcon }}>
+        <KeyboardArrowRightOutlined />
+      </ListItemIcon>
+    </ListItem>
+  );
+};
 
 RoleLineComponent.propTypes = {
   dataColumns: PropTypes.object,
@@ -134,6 +135,7 @@ const RoleLineFragment = createFragmentContainer(RoleLineComponent, {
   node: graphql`
     fragment RoleLine_node on Role {
       id
+      standard_id
       name
       created_at
       updated_at

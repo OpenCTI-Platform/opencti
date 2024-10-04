@@ -579,6 +579,8 @@
   "CVSS3 - Integrity impact (I)": "CVSS3 - Integrity impact (I)",
   "CVSS3 - Score": "CVSS3 - Score",
   "CVSS3 - Severity": "CVSS3 - Severity",
+  "Danger Zone": "Danger Zone",
+  "DangerZoneTooltip": "Changing the configuration here could have a significant impact on the stability of the platform. Only users with the  capability to change sensitive configurations are allowed to do so. Make sure you know what you are doing.",
   "Dark": "Dark",
   "Dark (with background)": "Dark (with background)",
   "Dark (without background)": "Dark (without background)",

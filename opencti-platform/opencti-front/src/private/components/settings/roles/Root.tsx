@@ -14,16 +14,18 @@ import { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
+import useSensitiveModifications from '../../../../utils/hooks/useSensitiveModifications';
 
 const roleQuery = graphql`
-    query RootRoleQuery($id: String!) {
-        role(id: $id) {
-            id
-            name
-            ...Role_role
-            ...RoleEdition_role
-        }
+  query RootRoleQuery($id: String!) {
+    role(id: $id) {
+      id
+      standard_id
+      name
+      ...Role_role
+      ...RoleEdition_role
     }
+  }
 `;
 
 interface RootRoleComponentProps {
@@ -34,6 +36,9 @@ const RootRoleComponent: FunctionComponent<RootRoleComponentProps> = ({ queryRef
   const data = usePreloadedQuery(roleQuery, queryRef);
   const { role } = data;
   const { t_i18n } = useFormatter();
+
+  const { isSensitive } = useSensitiveModifications(role?.standard_id);
+
   const groupsQueryRef = useQueryLoading<GroupsSearchQuery>(
     groupsSearchQuery,
     {
@@ -47,29 +52,31 @@ const RootRoleComponent: FunctionComponent<RootRoleComponentProps> = ({ queryRef
     <Security needs={[SETTINGS_SETACCESSES]}>
       {role ? (
         <>
-          <Breadcrumbs elements={[
-            { label: t_i18n('Settings') },
-            { label: t_i18n('Security') },
-            { label: t_i18n('Roles'), link: '/dashboard/settings/accesses/roles' },
-            { label: role.name, current: true },
-          ]}
+          <Breadcrumbs
+            isSensitive={isSensitive}
+            elements={[
+              { label: t_i18n('Settings') },
+              { label: t_i18n('Security') },
+              { label: t_i18n('Roles'), link: '/dashboard/settings/accesses/roles' },
+              { label: role.name, current: true },
+            ]}
           />
           <>
             {groupsQueryRef ? (
-              <React.Suspense fallback={<Loader variant={LoaderVariant.inElement}/>}>
+              <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
                 <Routes>
                   <Route
                     path="/"
                     element={(
-                      <Role roleData={role} groupsQueryRef={groupsQueryRef}/>
-                                  )}
+                      <Role roleData={role} groupsQueryRef={groupsQueryRef} />
+                    )}
                   />
                 </Routes>
               </React.Suspense>
             ) : (
-              <Loader variant={LoaderVariant.inElement}/>
+              <Loader variant={LoaderVariant.inElement} />
             )
-                  }
+            }
           </>
         </>
       ) : (

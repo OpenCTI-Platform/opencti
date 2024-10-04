@@ -75,6 +75,7 @@ const Role = ({
   groupsQueryRef: PreloadedQuery<GroupsSearchQuery>;
 }) => {
   const classes = useStyles();
+
   const { t_i18n } = useFormatter();
   const groupsData = usePreloadedQuery(groupsSearchQuery, groupsQueryRef);
   const groupNodes = (role: Role_role$data) => {
@@ -84,8 +85,8 @@ const Role = ({
         : null))
       .filter((n) => n !== null && n !== undefined);
   };
-  const { ffenabled, isRoleEditionAllowed } = useSensitiveModifications();
   const role = useFragment<Role_role$key>(roleFragment, roleData);
+  const { isAllowed, isSensitive } = useSensitiveModifications(role.standard_id);
   const queryRef = useQueryLoading<RoleEditionCapabilitiesLinesSearchQuery>(
     roleEditionCapabilitiesLinesSearch,
   );
@@ -100,19 +101,9 @@ const Role = ({
         >
           {role.name}
         </Typography>
-        {ffenabled && (
-          isRoleEditionAllowed(role.standard_id)
-            ? <div className={classes.popover}>
-              <RolePopover roleId={role.id}/>
-            </div>
-            : <></>
-        )}
-        {!ffenabled && (
-          <div className={classes.popover}>
-            <RolePopover roleId={role.id}/>
-          </div>
-        )
-        }
+        <div className={classes.popover}>
+          <RolePopover roleId={role.id}disabled={!isAllowed} isSensitive={isSensitive} />
+        </div>
         <div className="clearfix"/>
       </div>
       <Grid
@@ -160,7 +151,7 @@ const Role = ({
             </Grid>
           </Paper>
         </Grid>
-        <Grid item xs={6} >
+        <Grid item xs={6}>
           <Typography variant="h4" gutterBottom={true}>
             {t_i18n('Capabilities')}
           </Typography>
@@ -182,18 +173,11 @@ const Role = ({
         variables={{ id: role.id }}
         render={({ props }: { props: RolePopoverEditionQuery$data }) => {
           if (props && props.role) {
-            if (ffenabled) {
-              return (
-                isRoleEditionAllowed(role.standard_id)
-                  ? <RoleEdition
-                      role={props.role}
-                    />
-                  : <></>
-              );
-            }
             return (
               <RoleEdition
                 role={props.role}
+                isSensitive={isSensitive}
+                disabled={!isAllowed}
               />
             );
           }
