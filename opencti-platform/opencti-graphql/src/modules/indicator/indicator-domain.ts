@@ -310,17 +310,17 @@ export const indicatorEditField = async (context: AuthContext, user: AuthUser, i
     throw FunctionalError('Cannot edit the field, Indicator cannot be found.');
   }
 
-  const foundPattern = finalInput.find((item) => item.key === 'pattern');
-  if (!indicator.x_opencti_observables_values || foundPattern) {
-    const patternType = indicator.pattern_type.toLowerCase();
-    const formattedPattern = cleanupIndicatorPattern(patternType, foundPattern?.value ? foundPattern?.value[0] : indicator.pattern);
-    const check = await checkIndicatorSyntax(context, user, patternType, formattedPattern);
-    if (check === false) {
-      throw FunctionalError(`Indicator of type ${indicator.pattern_type} is not correctly formatted.`);
-    }
-    const extractedObservableValues = getObservableValuesFromPattern(formattedPattern);
-    finalInput.push({ key: 'x_opencti_observables_values', value: [...extractedObservableValues] });
-  }
+  // const foundPattern = finalInput.find((item) => item.key === 'pattern');
+  // if (!indicator.x_opencti_observables_values || foundPattern) {
+  //   const patternType = indicator.pattern_type.toLowerCase();
+  //   const formattedPattern = cleanupIndicatorPattern(patternType, foundPattern?.value ? foundPattern?.value[0] : indicator.pattern);
+  //   const check = await checkIndicatorSyntax(context, user, patternType, formattedPattern);
+  //   if (check === false) {
+  //     throw FunctionalError(`Indicator of type ${indicator.pattern_type} is not correctly formatted.`);
+  //   }
+  //   const extractedObservableValues = getObservableValuesFromPattern(formattedPattern);
+  //   finalInput.push({ key: 'x_opencti_observables_values', value: [...extractedObservableValues] });
+  // }
   // validation check because according to STIX 2.1 specification the valid_until must be greater than the valid_from
   let { valid_from, valid_until } = indicator;
   input.forEach((e) => {
