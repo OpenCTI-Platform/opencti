@@ -9,6 +9,7 @@ import { roleEditionCapabilitiesLinesSearch } from './RoleEditionCapabilities';
 import { RoleEditionCapabilitiesLinesSearchQuery } from './__generated__/RoleEditionCapabilitiesLinesSearchQuery.graphql';
 import { Role_role$data } from './__generated__/Role_role.graphql';
 import ItemIcon from '../../../../components/ItemIcon';
+import useSensitiveModifications from '../../../../utils/hooks/useSensitiveModifications';
 
 interface CapabilitiesListProps {
   queryRef: PreloadedQuery<RoleEditionCapabilitiesLinesSearchQuery>;
@@ -27,8 +28,23 @@ const CapabilitiesList: FunctionComponent<CapabilitiesListProps> = ({
     roleEditionCapabilitiesLinesSearch,
     queryRef,
   );
+  const { ffenabled, isRoleWithManageSensitiveConfig } = useSensitiveModifications();
+
   return (
     <List>
+      {ffenabled && isRoleWithManageSensitiveConfig(role) && (
+      <ListItem
+        key='sensitive'
+        dense={true}
+        divider={true}
+        style={{ paddingLeft: 0 }}
+      >
+        <ListItemIcon style={{ minWidth: 32 }}>
+          <ItemIcon type="Capability" />
+        </ListItemIcon>
+        <ListItemText primary={t_i18n('Allow modification of sensitive configuration')} />
+      </ListItem>
+      )}
       {capabilities?.edges?.map((edge, i) => {
         const capability = edge?.node;
         if (capability) {

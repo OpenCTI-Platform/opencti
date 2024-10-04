@@ -10,9 +10,10 @@ import {
   BUS_TOPICS,
   DEFAULT_ACCOUNT_STATUS,
   ENABLED_DEMO_MODE,
+  isFeatureEnabled,
   logApp,
   OPENCTI_SESSION,
-  PLATFORM_VERSION,
+  PLATFORM_VERSION
 } from '../config/conf';
 import { AuthenticationFailure, DatabaseError, ForbiddenAccess, FunctionalError, UnsupportedError } from '../config/errors';
 import { getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache, resetCacheForEntity } from '../database/cache';
@@ -62,7 +63,7 @@ import {
 } from '../utils/access';
 import { ASSIGNEE_FILTER, CREATOR_FILTER, PARTICIPANT_FILTER } from '../utils/filtering/filtering-constants';
 import { now, utcDate } from '../utils/format';
-import { addGroup } from './grant';
+import { addGroup, PROTECT_SENSITIVE_CHANGES_FF } from './grant';
 import { defaultMarkingDefinitionsFromGroups, findAll as findGroups } from './group';
 import { addIndividual } from './individual';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
@@ -1281,6 +1282,14 @@ const getStackTrace = () => {
   Error.captureStackTrace(obj, getStackTrace);
   return obj.stack;
 };
+
+export const isSensitiveChangesAllowed = (userId, roles) => {
+  if (userId === OPENCTI_ADMIN_UUID) {
+    return true;
+  }
+  return roles.some((role) => role.can_manage_sensitive_config !== false);
+};
+
 export const buildCompleteUser = async (context, client) => {
   if (!client) {
     return undefined;
@@ -1331,8 +1340,14 @@ export const buildCompleteUser = async (context, client) => {
   const no_creators = groups.filter((g) => g.no_creators).length === groups.length;
   const restrict_delete = !isByPass && groups.filter((g) => g.restrict_delete).length === groups.length;
 
+  let canManageSensitiveConfig = null;
+  if (isFeatureEnabled(PROTECT_SENSITIVE_CHANGES_FF)) {
+    canManageSensitiveConfig = { can_manage_sensitive_config: isSensitiveChangesAllowed(client.id, roles) };
+  }
+
   return {
     ...client,
+    ...canManageSensitiveConfig,
     roles,
     capabilities,
     default_hidden_types,

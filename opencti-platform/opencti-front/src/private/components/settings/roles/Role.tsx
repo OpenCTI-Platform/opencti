@@ -24,6 +24,7 @@ import { groupsSearchQuery } from '../Groups';
 import { GroupsSearchQuery } from '../__generated__/GroupsSearchQuery.graphql';
 import ItemIcon from '../../../../components/ItemIcon';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
+import useSensitiveModifications from '../../../../utils/hooks/useSensitiveModifications';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -52,6 +53,7 @@ const useStyles = makeStyles(() => ({
 const roleFragment = graphql`
   fragment Role_role on Role {
     id
+    standard_id
     name
     description
     created_at
@@ -61,6 +63,7 @@ const roleFragment = graphql`
       name
       description
     }
+    can_manage_sensitive_config
   }
 `;
 
@@ -81,6 +84,7 @@ const Role = ({
         : null))
       .filter((n) => n !== null && n !== undefined);
   };
+  const { ffenabled, isRoleEditionAllowed } = useSensitiveModifications();
   const role = useFragment<Role_role$key>(roleFragment, roleData);
   const queryRef = useQueryLoading<RoleEditionCapabilitiesLinesSearchQuery>(
     roleEditionCapabilitiesLinesSearch,
@@ -96,10 +100,20 @@ const Role = ({
         >
           {role.name}
         </Typography>
-        <div className={classes.popover}>
-          <RolePopover roleId={role.id} />
-        </div>
-        <div className="clearfix" />
+        {ffenabled && (
+          isRoleEditionAllowed(role.standard_id)
+            ? <div className={classes.popover}>
+              <RolePopover roleId={role.id}/>
+            </div>
+            : <></>
+        )}
+        {!ffenabled && (
+          <div className={classes.popover}>
+            <RolePopover roleId={role.id}/>
+          </div>
+        )
+        }
+        <div className="clearfix"/>
       </div>
       <Grid
         container={true}
@@ -168,6 +182,15 @@ const Role = ({
         variables={{ id: role.id }}
         render={({ props }: { props: RolePopoverEditionQuery$data }) => {
           if (props && props.role) {
+            if (ffenabled) {
+              return (
+                isRoleEditionAllowed(role.standard_id)
+                  ? <RoleEdition
+                      role={props.role}
+                    />
+                  : <></>
+              );
+            }
             return (
               <RoleEdition
                 role={props.role}

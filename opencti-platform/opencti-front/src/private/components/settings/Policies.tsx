@@ -37,6 +37,7 @@ import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
 import ItemBoolean from '../../../components/ItemBoolean';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
+import useSensitiveModifications from '../../../utils/hooks/useSensitiveModifications';
 import Transition from '../../../components/Transition';
 
 // Deprecated - https://mui.com/system/styles/basics/
@@ -124,6 +125,7 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
   queryRef,
 }) => {
   const isEnterpriseEdition = useEnterpriseEdition();
+  const { ffenabled, isPlatformOrgaModificationAllowed } = useSensitiveModifications();
   const [openPlatformOrganizationChanges, setOpenPlatformOrganizationChanges] = useState<boolean>(false);
 
   const data = usePreloadedQuery(policiesQuery, queryRef);
@@ -201,7 +203,7 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                       <EETooltip>
                         <ObjectOrganizationField
                           name="platform_organization"
-                          disabled={!isEnterpriseEdition}
+                          disabled={!isEnterpriseEdition || (ffenabled && !isPlatformOrgaModificationAllowed)}
                           label={'Platform organization'}
                           onChange={() => setOpenPlatformOrganizationChanges(true)}
                           style={{ width: '100%', marginTop: 20 }}

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { testContext } from '../../utils/testQuery';
-import { checkPasswordInlinePolicy } from '../../../src/domain/user';
+import { checkPasswordInlinePolicy, isSensitiveChangesAllowed } from '../../../src/domain/user';
+import { OPENCTI_ADMIN_UUID } from '../../../src/schema/general';
 
 describe('password checker', () => {
   it('should no policy applied', async () => {
@@ -73,5 +74,244 @@ describe('password checker', () => {
     };
     expect(checkPasswordInlinePolicy(testContext, policy03, 'julA').length).toBe(1);
     expect(checkPasswordInlinePolicy(testContext, policy03, 'ju!lA').length).toBe(0);
+  });
+});
+
+describe('isSensitiveChangesAllowed use case coverage', () => {
+  const NOT_INFRA_ADMIN_USER_ID = '1c0925fe-ab65-42a1-8e96-ee6dc7fab4fa';
+
+  it('should user with one role and not can_manage_sensitive_config set be allow change sensitive conf', async () => {
+    // subset of role data
+    const roles = [{
+      base_type: 'ENTITY',
+      confidence: 100,
+      created_at: '2024-08-06T13:30:04.478Z',
+      description: 'Administrator role that bypass every capabilities',
+      entity_type: 'Role',
+      id: '57312f0e-f276-44f8-97d3-88191ee57e1a',
+      internal_id: '57312f0e-f276-44f8-97d3-88191ee57e1a',
+      name: 'Administrator',
+      updated_at: '2024-08-06T13:30:04.478Z'
+    }
+    ];
+
+    const result = isSensitiveChangesAllowed(NOT_INFRA_ADMIN_USER_ID, roles);
+    expect(result, 'Role without can_manage_sensitive_config field should be isSensitiveChangesAllowed=true').toBeTruthy();
+  });
+
+  it('should user with one role can_manage_sensitive_config=true be allow change sensitive conf', async () => {
+    // subset of role data
+    const roles = [{
+      base_type: 'ENTITY',
+      confidence: 100,
+      created_at: '2024-08-06T13:30:04.478Z',
+      description: 'Administrator role that bypass every capabilities',
+      entity_type: 'Role',
+      id: '57312f0e-f276-44f8-97d3-88191ee57e1a',
+      internal_id: '57312f0e-f276-44f8-97d3-88191ee57e1a',
+      name: 'Administrator',
+      updated_at: '2024-08-06T13:30:04.478Z',
+      can_manage_sensitive_config: true
+    }
+    ];
+
+    const result = isSensitiveChangesAllowed(NOT_INFRA_ADMIN_USER_ID, roles);
+    expect(result, 'Role with can_manage_sensitive_config field true should be isSensitiveChangesAllowed=true').toBeTruthy();
+  });
+
+  it('should user with one role can_manage_sensitive_config=false not be allow change sensitive conf', async () => {
+    // subset of role data
+    const roles = [{
+      base_type: 'ENTITY',
+      confidence: 100,
+      created_at: '2024-08-06T13:30:04.478Z',
+      description: 'Administrator role that bypass every capabilities',
+      entity_type: 'Role',
+      id: '57312f0e-f276-44f8-97d3-88191ee57e1a',
+      internal_id: '57312f0e-f276-44f8-97d3-88191ee57e1a',
+      name: 'Administrator',
+      updated_at: '2024-08-06T13:30:04.478Z',
+      can_manage_sensitive_config: false
+    }
+    ];
+
+    const result = isSensitiveChangesAllowed(NOT_INFRA_ADMIN_USER_ID, roles);
+    expect(result, 'Role with can_manage_sensitive_config field false should be isSensitiveChangesAllowed=false').toBeFalsy();
+  });
+
+  it('should user with 2 roles one without can_manage_sensitive_config, the other is false', async () => {
+    // subset of role data
+    const roles = [{
+      base_type: 'ENTITY',
+      confidence: 100,
+      created_at: '2024-08-06T13:30:04.478Z',
+      description: 'Administrator role that bypass every capabilities',
+      entity_type: 'Role',
+      id: '57312f0e-f276-44f8-97d3-88191ee57e1a',
+      internal_id: '57312f0e-f276-44f8-97d3-88191ee57e1a',
+      name: 'Administrator',
+      updated_at: '2024-08-06T13:30:04.478Z',
+    },
+    {
+      _index: 'opencti_internal_objects-000001',
+      base_type: 'ENTITY',
+      confidence: 100,
+      created_at: '2024-08-06T13:30:04.478Z',
+      description: 'Administrator role that bypass every capabilities',
+      entity_type: 'Role',
+      id: '57312f0e-f276-44f8-97d3-88191ee57e1a',
+      internal_id: '57312f0e-f276-44f8-97d3-88191ee57e1a',
+      name: 'Administrator',
+      updated_at: '2024-08-06T13:30:04.478Z',
+      can_manage_sensitive_config: false
+    }
+    ];
+
+    const result = isSensitiveChangesAllowed(NOT_INFRA_ADMIN_USER_ID, roles);
+    expect(result, 'Role with one can_manage_sensitive_config true should be isSensitiveChangesAllowed=true').toBeTruthy();
+  });
+
+  it('should user with 2 roles one without can_manage_sensitive_config, the other is true', async () => {
+    // subset of role data
+    const roles = [{
+      base_type: 'ENTITY',
+      confidence: 100,
+      created_at: '2024-08-06T13:30:04.478Z',
+      description: 'Administrator role that bypass every capabilities',
+      entity_type: 'Role',
+      id: '57312f0e-f276-44f8-97d3-88191ee57e1a',
+      internal_id: '57312f0e-f276-44f8-97d3-88191ee57e1a',
+      name: 'Administrator',
+      updated_at: '2024-08-06T13:30:04.478Z',
+    },
+    {
+      _index: 'opencti_internal_objects-000001',
+      base_type: 'ENTITY',
+      confidence: 100,
+      created_at: '2024-08-06T13:30:04.478Z',
+      description: 'Administrator role that bypass every capabilities',
+      entity_type: 'Role',
+      id: '57312f0e-f276-44f8-97d3-88191ee57e1a',
+      internal_id: '57312f0e-f276-44f8-97d3-88191ee57e1a',
+      name: 'Administrator',
+      updated_at: '2024-08-06T13:30:04.478Z',
+      can_manage_sensitive_config: true
+    }
+    ];
+
+    const result = isSensitiveChangesAllowed(NOT_INFRA_ADMIN_USER_ID, roles);
+    expect(result, 'Role with one can_manage_sensitive_config true should be isSensitiveChangesAllowed=true').toBeTruthy();
+  });
+
+  it('should user with 2 roles all with can_manage_sensitive_config set to false', async () => {
+    // subset of role data
+    const roles = [{
+      base_type: 'ENTITY',
+      confidence: 100,
+      created_at: '2024-08-06T13:30:04.478Z',
+      description: 'Administrator role that bypass every capabilities',
+      entity_type: 'Role',
+      id: '57312f0e-f276-44f8-97d3-88191ee57e1a',
+      internal_id: '57312f0e-f276-44f8-97d3-88191ee57e1a',
+      name: 'Administrator',
+      updated_at: '2024-08-06T13:30:04.478Z',
+      can_manage_sensitive_config: false
+    },
+    {
+      _index: 'opencti_internal_objects-000001',
+      base_type: 'ENTITY',
+      confidence: 100,
+      created_at: '2024-08-06T13:30:04.478Z',
+      description: 'Administrator role that bypass every capabilities',
+      entity_type: 'Role',
+      id: '57312f0e-f276-44f8-97d3-88191ee57e1a',
+      internal_id: '57312f0e-f276-44f8-97d3-88191ee57e1a',
+      name: 'Administrator',
+      updated_at: '2024-08-06T13:30:04.478Z',
+      can_manage_sensitive_config: false
+    }
+    ];
+
+    const result = isSensitiveChangesAllowed(NOT_INFRA_ADMIN_USER_ID, roles);
+    expect(result, 'Role with all can_manage_sensitive_config field false should be isSensitiveChangesAllowed=false').toBeFalsy();
+  });
+
+  it('should INFRA admin bypass sensitive conf', async () => {
+    // subset of role data
+    const roles = [{
+      base_type: 'ENTITY',
+      confidence: 100,
+      created_at: '2024-08-06T13:30:04.478Z',
+      description: 'Administrator role that bypass every capabilities',
+      entity_type: 'Role',
+      id: '57312f0e-f276-44f8-97d3-88191ee57e1a',
+      internal_id: '57312f0e-f276-44f8-97d3-88191ee57e1a',
+      name: 'Administrator',
+      updated_at: '2024-08-06T13:30:04.478Z',
+      can_manage_sensitive_config: false
+    },
+    {
+      _index: 'opencti_internal_objects-000001',
+      base_type: 'ENTITY',
+      confidence: 100,
+      created_at: '2024-08-06T13:30:04.478Z',
+      description: 'Administrator role that bypass every capabilities',
+      entity_type: 'Role',
+      id: '57312f0e-f276-44f8-97d3-88191ee57e1a',
+      internal_id: '57312f0e-f276-44f8-97d3-88191ee57e1a',
+      name: 'Administrator',
+      updated_at: '2024-08-06T13:30:04.478Z',
+      can_manage_sensitive_config: false
+    }
+    ];
+
+    const result = isSensitiveChangesAllowed(OPENCTI_ADMIN_UUID, roles);
+    expect(result, 'OPENCTI_ADMIN_UUID should be always isSensitiveChangesAllowed=true').toBeTruthy();
+  });
+
+  it('should INFRA user with 2 roles one without can_manage_sensitive_config, the other is true', async () => {
+    // subset of role data
+    const roles = [{
+      base_type: 'ENTITY',
+      confidence: 100,
+      created_at: '2024-08-06T13:30:04.478Z',
+      description: 'Administrator role that bypass every capabilities',
+      entity_type: 'Role',
+      id: '57312f0e-f276-44f8-97d3-88191ee57e1a',
+      internal_id: '57312f0e-f276-44f8-97d3-88191ee57e1a',
+      name: 'Administrator',
+      updated_at: '2024-08-06T13:30:04.478Z',
+    },
+    {
+      _index: 'opencti_internal_objects-000001',
+      base_type: 'ENTITY',
+      confidence: 100,
+      created_at: '2024-08-06T13:30:04.478Z',
+      description: 'Administrator role that bypass every capabilities',
+      entity_type: 'Role',
+      id: '57312f0e-f276-44f8-97d3-88191ee57e1a',
+      internal_id: '57312f0e-f276-44f8-97d3-88191ee57e1a',
+      name: 'Administrator',
+      updated_at: '2024-08-06T13:30:04.478Z',
+      can_manage_sensitive_config: true
+    }
+    ];
+
+    const result = isSensitiveChangesAllowed(OPENCTI_ADMIN_UUID, roles);
+    expect(result, 'OPENCTI_ADMIN_UUID should be always isSensitiveChangesAllowed=true').toBeTruthy();
+  });
+
+  it('should INFRA admin bypass sensitive conf with zero role', async () => {
+    // subset of role data
+    const roles: any[] = [];
+    const result = isSensitiveChangesAllowed(OPENCTI_ADMIN_UUID, roles);
+    expect(result, 'OPENCTI_ADMIN_UUID should be always isSensitiveChangesAllowed=true').toBeTruthy();
+  });
+
+  it('should a user with zero role be isSensitiveChangesAllowed=false', async () => {
+    // subset of role data
+    const roles: any[] = [];
+    const result = isSensitiveChangesAllowed(NOT_INFRA_ADMIN_USER_ID, roles);
+    expect(result, 'A user with no role should be isSensitiveChangesAllowed=false').toBeFalsy();
   });
 });

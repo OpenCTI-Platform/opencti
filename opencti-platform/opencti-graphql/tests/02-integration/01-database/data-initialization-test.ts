@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { listAllEntities } from '../../../src/database/middleware-loader';
-import { ENTITY_TYPE_CAPABILITY } from '../../../src/schema/internalObject';
+import {ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE} from '../../../src/schema/internalObject';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import type { BasicStoreEntity } from '../../../src/types/store';
 
@@ -50,5 +50,23 @@ describe('Data initialization test', () => {
       'TAXIIAPI_SETCOLLECTIONS',
     ];
     expect(capabilitiesNames).toEqual(allExpectedNames);
+  });
+
+  it('should create all initial roles', async () => {
+    const allRoles = await listAllEntities<BasicStoreEntity>(testContext, ADMIN_USER, [ENTITY_TYPE_ROLE]);
+    const allRolesNames = allRoles.map((role) => role.name).sort();
+    const allExpectedRoles = ['Administrator', 'Connector', 'Default'];
+    for (let i = 0; i < allExpectedRoles.length; i = i+1) {
+      expect(allRolesNames, `${allExpectedRoles[i]} Role is missing from initialization`).toContain(allExpectedRoles[i]);
+    }
+  });
+
+  it('should create all initial Groups', async () => {
+    const allGroups = await listAllEntities<BasicStoreEntity>(testContext, ADMIN_USER, [ENTITY_TYPE_GROUP]);
+    const allGroupsNames = allGroups.map((group) => group.name).sort();
+    const allExpectedGroups = ['Administrators', 'Connectors', 'Default'];
+    for (let i = 0; i < allExpectedGroups.length; i = i+1) {
+      expect(allGroupsNames, `${allExpectedGroups[i]} Group is missing from initialization`).toContain(allExpectedGroups[i]);
+    }
   });
 });

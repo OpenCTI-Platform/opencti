@@ -15,6 +15,7 @@ import { RoleEditionCapabilitiesLinesSearchQuery } from './__generated__/RoleEdi
 import { RoleEditionCapabilities_role$data } from './__generated__/RoleEditionCapabilities_role.graphql';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { SETTINGS } from '../../../../utils/hooks/useGranted';
+import useSensitiveModifications from '../../../../utils/hooks/useSensitiveModifications';
 
 const roleEditionAddCapability = graphql`
   mutation RoleEditionCapabilitiesAddCapabilityMutation(
@@ -40,6 +41,19 @@ const roleEditionRemoveCapability = graphql`
     roleEdit(id: $id) {
       relationDelete(toId: $toId, relationship_type: $relationship_type) {
         ...RoleEditionCapabilities_role
+      }
+    }
+  }
+`;
+
+const roleEditionPatchAllowSensitiveConf = graphql`
+  mutation RoleEditionCapabilitiesPatchAllowSensitiveChangesMutation(
+    $id: ID!
+    $input: [EditInput]!
+  ) {
+    roleEdit(id: $id) {
+      fieldPatch(input: $input) {
+        can_manage_sensitive_config
       }
     }
   }
@@ -75,6 +89,7 @@ const RoleEditionCapabilitiesComponent: FunctionComponent<RoleEditionCapabilitie
   })) as { name: string }[];
   const [commitAddCapability] = useApiMutation(roleEditionAddCapability);
   const [commitRemoveCapability] = useApiMutation(roleEditionRemoveCapability);
+  const [commitPatchAllowSensitiveConf] = useApiMutation(roleEditionPatchAllowSensitiveConf);
   const handleToggle = (
     capabilityId: string,
     event: React.ChangeEvent<HTMLInputElement>,
@@ -101,9 +116,46 @@ const RoleEditionCapabilitiesComponent: FunctionComponent<RoleEditionCapabilitie
     }
   };
 
+  const handleSensitiveToggle = (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const roleId = role.id;
+    commitPatchAllowSensitiveConf({
+      variables: {
+        id: roleId,
+        input: {
+          key: 'can_manage_sensitive_config',
+          value: event.target.checked,
+        },
+      },
+    });
+    // And invalid me ?? or invalidSession
+  };
+
+  const { ffenabled } = useSensitiveModifications();
+
   if (capabilities && capabilities.edges) {
     return (
       <List dense={true}>
+        {ffenabled && (
+        <ListItem
+          key='sensitive'
+          divider={true}
+          style={{ paddingLeft: 0 }}
+        >
+          <ListItemIcon style={{ minWidth: 32 }}>
+            <LocalPoliceOutlined fontSize="small" />
+          </ListItemIcon>
+          <ListItemText primary={t_i18n('Allow modification of sensitive configuration')} />
+          <ListItemSecondaryAction>
+            <Checkbox
+              onChange={(event) => handleSensitiveToggle(event)}
+              checked={role.can_manage_sensitive_config ?? true}
+              disabled={false}
+            />
+          </ListItemSecondaryAction>
+        </ListItem>
+        )}
         {capabilities.edges.map((edge) => {
           const capability = edge?.node;
           if (capability) {
@@ -155,6 +207,7 @@ const RoleEditionCapabilities = createFragmentContainer(
     role: graphql`
       fragment RoleEditionCapabilities_role on Role {
         id
+        can_manage_sensitive_config
         capabilities {
           id
           name
