@@ -209,7 +209,7 @@ const GroupEditionOverviewComponent: FunctionComponent<GroupEditionOverviewCompo
               type="checkbox"
               name="restrict_delete"
               label={t_i18n(
-                'Deny users to delete content not created by them',
+                'Do not allow these users to delete content created by other users',
               )}
               containerstyle={{ marginTop: 20 }}
               onChange={editor.changeField}
