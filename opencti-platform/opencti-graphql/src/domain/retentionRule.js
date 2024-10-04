@@ -3,7 +3,7 @@ import { listEntities, storeLoadById } from '../database/middleware-loader';
 import { ENTITY_TYPE_RETENTION_RULE } from '../schema/internalObject';
 import { generateInternalId, generateStandardId } from '../schema/identifier';
 import { elIndex, elPaginate } from '../database/engine';
-import { INDEX_INTERNAL_OBJECTS, READ_DATA_INDICES_WITHOUT_INFERRED } from '../database/utils';
+import { INDEX_INTERNAL_OBJECTS, READ_STIX_INDICES } from '../database/utils';
 import { UnsupportedError } from '../config/errors';
 import { utcDate } from '../utils/format';
 import { RETENTION_MANAGER_USER } from '../utils/access';
@@ -20,33 +20,20 @@ export const checkRetentionRule = async (context, input) => {
   if (scope === 'knowledge') {
     const jsonFilters = filters ? JSON.parse(filters) : null;
     const queryOptions = await convertFiltersToQueryOptions(jsonFilters, { before });
-    result = await elPaginate(context, RETENTION_MANAGER_USER, READ_DATA_INDICES_WITHOUT_INFERRED, queryOptions);
+    result = await elPaginate(context, RETENTION_MANAGER_USER, READ_STIX_INDICES, { ...queryOptions, first: 1 });
     return result.pageInfo.globalCount;
   }
   // file and workbench rules
   if (scope === 'file') {
-    result = await paginatedForPathWithEnrichment(
-      context,
-      RETENTION_MANAGER_USER,
-      'import/global',
-      undefined,
-      { notModifiedSince: before.toISOString() }
-    );
+    result = await paginatedForPathWithEnrichment(context, RETENTION_MANAGER_USER, 'import/global', undefined, { notModifiedSince: before.toISOString() });
   } else if (scope === 'workbench') {
-    result = await paginatedForPathWithEnrichment(
-      context,
-      RETENTION_MANAGER_USER,
-      'import/pending',
-      undefined,
-      { notModifiedSince: before.toISOString() }
-    );
+    result = await paginatedForPathWithEnrichment(context, RETENTION_MANAGER_USER, 'import/pending', undefined, { notModifiedSince: before.toISOString() });
   } else {
     logApp.error(`[Retention manager] Scope ${scope} not existing for Retention Rule.`);
   }
   if (scope === 'file' || scope === 'workbench') { // don't delete progress files or files with works in progress
-    const resultEdges = result.edges.filter((e) => DELETABLE_FILE_STATUSES.includes(e.node.uploadStatus)
-      && (e.node.works ?? []).every((work) => !work || DELETABLE_FILE_STATUSES.includes(work?.status)));
-    result.edges = resultEdges;
+    result.edges = result.edges.filter((e) => DELETABLE_FILE_STATUSES.includes(e.node.uploadStatus)
+        && (e.node.works ?? []).every((work) => !work || DELETABLE_FILE_STATUSES.includes(work?.status)));
   }
   return result.edges.length;
 };

@@ -227,7 +227,7 @@
   "retention_manager": {
     "enabled": true,
     "lock_key": "retention_manager_lock",
-    "interval": 60000
+    "interval": 30000
   },
   "file_index_manager": {
     "enabled": true,

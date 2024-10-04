@@ -1,4 +1,5 @@
 import { clearIntervalAsync, setIntervalAsync, type SetIntervalAsyncTimer } from 'set-interval-async/fixed';
+import { clearIntervalAsync as clearDynamicIntervalAsync, setIntervalAsync as setDynamicIntervalAsync } from 'set-interval-async/dynamic';
 import moment from 'moment/moment';
 import { createStreamProcessor, lockResource, type StreamProcessor } from '../database/redis';
 import type { BasicStoreSettings } from '../types/settings';
@@ -19,6 +20,7 @@ export interface ManagerCronScheduler {
   infiniteInterval?: number
   handlerInitializer?: () => Promise<HandlerInput>
   lockInHandlerParams?: boolean
+  dynamicSchedule?: boolean
 }
 
 export interface ManagerStreamScheduler {
@@ -122,14 +124,16 @@ const initManager = (manager: ManagerDefinition) => {
   return {
     manager,
     start: async () => {
-      logApp.info(`[OPENCTI-MODULE] Starting ${manager.label}`);
       if (manager.cronSchedulerHandler) {
+        const asyncInterval = manager.cronSchedulerHandler.dynamicSchedule ? setDynamicIntervalAsync : setIntervalAsync;
+        logApp.info(`[OPENCTI-MODULE] Starting ${manager.label} every ${manager.cronSchedulerHandler.interval}`);
         const { handlerInitializer } = manager.cronSchedulerHandler;
-        scheduler = setIntervalAsync(async () => {
+        scheduler = asyncInterval(async () => {
           await cronHandler(handlerInitializer);
         }, manager.cronSchedulerHandler.interval);
       }
       if (manager.streamSchedulerHandler) {
+        logApp.info(`[OPENCTI-MODULE] Starting ${manager.label}`);
         streamScheduler = setIntervalAsync(async () => {
           await streamHandler();
         }, manager.streamSchedulerHandler.interval);
@@ -146,7 +150,11 @@ const initManager = (manager: ManagerDefinition) => {
     shutdown: async () => {
       logApp.info(`[OPENCTI-MODULE] Stopping ${manager.label}`);
       shutdown = true;
-      if (scheduler) await clearIntervalAsync(scheduler);
+      if (scheduler) {
+        const asyncCleanInterval = manager.cronSchedulerHandler && manager.cronSchedulerHandler.dynamicSchedule
+          ? clearDynamicIntervalAsync : clearIntervalAsync;
+        await asyncCleanInterval(scheduler);
+      }
       if (streamScheduler) await clearIntervalAsync(streamScheduler);
       return true;
     },

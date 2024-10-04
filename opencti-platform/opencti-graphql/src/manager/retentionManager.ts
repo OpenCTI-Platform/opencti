@@ -1,4 +1,5 @@
 import moment, { type Moment } from 'moment';
+import { Promise as BluePromise } from 'bluebird';
 import { findAll as findRetentionRulesToExecute } from '../domain/retentionRule';
 import conf, { booleanConf, logApp } from '../config/conf';
 import { deleteElementById, patchAttribute } from '../database/middleware';
@@ -12,18 +13,21 @@ import type { ManagerDefinition } from './managerModule';
 import { registerManager } from './managerModule';
 import type { AuthContext } from '../types/user';
 import type { FileEdge, RetentionRule } from '../generated/graphql';
+import { RetentionRuleScope, RetentionUnit } from '../generated/graphql';
 import { deleteFile } from '../database/file-storage';
 import { DELETABLE_FILE_STATUSES, paginatedForPathWithEnrichment } from '../modules/internal/document/document-domain';
-import { RetentionRuleScope, RetentionUnit } from '../generated/graphql';
+import type { BasicStoreCommonEdge, StoreObject } from '../types/store';
+import { ALREADY_DELETED_ERROR } from '../config/errors';
 
 const RETENTION_MANAGER_ENABLED = booleanConf('retention_manager:enabled', false);
 const RETENTION_MANAGER_START_ENABLED = booleanConf('retention_manager:enabled', true);
 // Retention manager responsible to cleanup old data
 // Each API will start is retention manager.
 // If the lock is free, every API as the right to take it.
-const SCHEDULE_TIME = conf.get('retention_manager:interval') || 60000;
+const SCHEDULE_TIME = conf.get('retention_manager:interval') || 30000;
 const RETENTION_MANAGER_KEY = conf.get('retention_manager:lock_key') || 'retention_manager_lock';
-const RETENTION_BATCH_SIZE = conf.get('retention_manager:batch_size') || 100;
+const RETENTION_BATCH_SIZE = conf.get('retention_manager:batch_size') || 1500;
+const RETENTION_MAX_CONCURRENCY = conf.get('retention_manager:max_deletion_concurrency') || 10;
 export const RETENTION_SCOPE_VALUES = Object.values(RetentionRuleScope);
 export const RETENTION_UNIT_VALUES = Object.values(RetentionUnit);
 
@@ -44,28 +48,15 @@ export const getElementsToDelete = async (context: AuthContext, scope: string, b
     const queryOptions = await convertFiltersToQueryOptions(jsonFilters, { before });
     result = await elPaginate(context, RETENTION_MANAGER_USER, READ_STIX_INDICES, { ...queryOptions, first: RETENTION_BATCH_SIZE });
   } else if (scope === 'file') {
-    result = await paginatedForPathWithEnrichment(
-      context,
-      RETENTION_MANAGER_USER,
-      'import/global',
-      undefined,
-      { first: RETENTION_BATCH_SIZE, notModifiedSince: before.toISOString() }
-    );
+    result = await paginatedForPathWithEnrichment(context, RETENTION_MANAGER_USER, 'import/global', undefined, { first: RETENTION_BATCH_SIZE, notModifiedSince: before.toISOString() });
   } else if (scope === 'workbench') {
-    result = await paginatedForPathWithEnrichment(
-      context,
-      RETENTION_MANAGER_USER,
-      'import/pending',
-      undefined,
-      { first: RETENTION_BATCH_SIZE, notModifiedSince: before.toISOString() }
-    );
+    result = await paginatedForPathWithEnrichment(context, RETENTION_MANAGER_USER, 'import/pending', undefined, { first: RETENTION_BATCH_SIZE, notModifiedSince: before.toISOString() });
   } else {
     throw Error(`[Retention manager] Scope ${scope} not existing for Retention Rule.`);
   }
   if (scope === 'file' || scope === 'workbench') { // don't delete progress files or files with works in progress
-    const resultEdges = result.edges.filter((e: FileEdge) => DELETABLE_FILE_STATUSES.includes(e.node.uploadStatus)
-      && (e.node.works ?? []).every((work) => !work || DELETABLE_FILE_STATUSES.includes(work?.status)));
-    result.edges = resultEdges;
+    result.edges = result.edges.filter((e: FileEdge) => DELETABLE_FILE_STATUSES.includes(e.node.uploadStatus)
+        && (e.node.works ?? []).every((work) => !work || DELETABLE_FILE_STATUSES.includes(work?.status)));
   }
   return result;
 };
@@ -77,17 +68,25 @@ const executeProcessing = async (context: AuthContext, retentionRule: RetentionR
   const result = await getElementsToDelete(context, scope, before, filters);
   const remainingDeletions = result.pageInfo.globalCount;
   const elements = result.edges;
-  logApp.debug(`[OPENCTI] Retention manager clearing ${elements.length} elements`);
-  for (let index = 0; index < elements.length; index += 1) {
-    const { node } = elements[index];
-    const { updated_at: up } = node;
-    const humanDuration = moment.duration(utcDate(up).diff(utcDate())).humanize();
-    try {
-      await deleteElement(context, scope, scope === 'knowledge' ? node.internal_id : node.id, node.entity_type);
-      logApp.debug(`[OPENCTI] Retention manager deleting ${node.id} after ${humanDuration}`);
-    } catch (e) {
-      logApp.error(e, { id: node.id, manager: 'RETENTION_MANAGER' });
-    }
+  if (elements.length > 0) {
+    logApp.debug(`[OPENCTI] Retention manager clearing ${elements.length} elements`);
+    const start = new Date().getTime();
+    const deleteFn = async (element: BasicStoreCommonEdge<StoreObject>) => {
+      const { node } = element;
+      const { updated_at: up } = node;
+      try {
+        const humanDuration = moment.duration(utcDate(up).diff(utcDate())).humanize();
+        await deleteElement(context, scope, scope === 'knowledge' ? node.internal_id : node.id, node.entity_type);
+        logApp.debug(`[OPENCTI] Retention manager deleting ${node.id} after ${humanDuration}`);
+      } catch (err: any) {
+        // Only log the error if not an already deleted message (that can happen though concurrency deletion)
+        if (err?.extensions?.code !== ALREADY_DELETED_ERROR) {
+          logApp.error(err, { id: node.id, manager: 'RETENTION_MANAGER' });
+        }
+      }
+    };
+    await BluePromise.map(elements, deleteFn, { concurrency: RETENTION_MAX_CONCURRENCY });
+    logApp.debug(`[OPENCTI] Retention manager deleted ${elements.length} in ${new Date().getTime() - start} ms`);
   }
   // Patch the last execution of the rule
   const patch = {
@@ -121,6 +120,7 @@ const RETENTION_MANAGER_DEFINITION: ManagerDefinition = {
     interval: SCHEDULE_TIME,
     lockKey: RETENTION_MANAGER_KEY,
     lockInHandlerParams: true,
+    dynamicSchedule: true
   },
   enabledByConfig: RETENTION_MANAGER_ENABLED,
   enabledToStart(): boolean {
