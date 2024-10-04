@@ -64,6 +64,8 @@ const CsvMapperEditionContainer: FunctionComponent<CsvMapperEditionProps> = ({
   const { t_i18n } = useFormatter();
 
   const data = usePreloadedQuery(csvMapperEditionContainerQuery, queryRef);
+  console.log('ED', csvMapperEditionContainerQuery);
+  console.log('queryRef', queryRef);
   const csvMapper = useFragment<CsvMapperEditionContainerFragment_csvMapper$key>(
     csvMapperEditionContainerFragment,
     data.csvMapper,
