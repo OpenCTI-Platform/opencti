@@ -233,7 +233,7 @@ export const addIndicator = async (context: AuthContext, user: AuthUser, indicat
   // find default decay rule (even if decay is not activated, it is used to compute default validFrom and validUntil)
   const decayRule = await findDecayRuleForIndicator(context, observableType);
   const { validFrom, validUntil, revoked, validPeriod } = await computeValidPeriod(indicator, decayRule.decay_lifetime);
-  const extractedObservableValues = getObservableValuesFromPattern(formattedPattern);
+  // const extractedObservableValues = getObservableValuesFromPattern(formattedPattern);
   const indicatorToCreate = R.pipe(
     R.dissoc('createObservables'),
     R.dissoc('basedOn'),
