@@ -33,7 +33,7 @@ const CapabilitiesList: FunctionComponent<CapabilitiesListProps> = ({
 
   return (
     <List>
-      {(isSensitiveModificationEnabled && role.can_manage_sensitive_config) && (
+      {(isSensitiveModificationEnabled && role.can_manage_sensitive_config !== false) && (
         <ListItem
           key="sensitive"
           dense={true}
