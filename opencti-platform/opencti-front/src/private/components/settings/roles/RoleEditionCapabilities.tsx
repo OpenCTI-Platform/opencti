@@ -162,7 +162,7 @@ const RoleEditionCapabilitiesComponent: FunctionComponent<RoleEditionCapabilitie
             <ListItemSecondaryAction>
               <Checkbox
                 onChange={(event) => handleSensitiveToggle(event)}
-                checked={role.can_manage_sensitive_config ? role.can_manage_sensitive_config : false}
+                checked={role.can_manage_sensitive_config !== false} // beware: undefined value means access is granted
                 style={{ color: theme.palette.dangerZone.main }}
                 disabled={false}
               />
