@@ -65,14 +65,14 @@ import {
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles((theme) => ({
   container: {
     margin: '0 -20px 0 -20px',
   },
   paper: {
     height: '100%',
     margin: 0,
-    padding: 20,
+    padding: theme.spacing(2),
     borderRadius: 4,
     display: 'relative',
     overflow: 'hidden',

@@ -791,7 +791,7 @@ const ME_USER_MODIFIABLE_ATTRIBUTES = [
   'theme',
   'language',
   'personal_notifiers',
-  'default_dashboards',
+  'default_dashboard',
   'default_time_field',
   'unit_system',
   'submenu_show_icons',
