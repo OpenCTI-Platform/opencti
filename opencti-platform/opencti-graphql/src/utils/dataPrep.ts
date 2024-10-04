@@ -2,7 +2,7 @@ import { FunctionalError } from '../config/errors';
 import { getExclusionListsByTypeFromCache, getExclusionListsByTypeFromCache2 } from '../database/cache';
 import { exclusionListEntityType, ExclusionListProperties } from '../database/exclusionList/constants';
 
-type ExtractedPattern = {
+type ExtractedObservableValues = {
   type: string;
   value: string;
 };
@@ -52,11 +52,9 @@ export const convertIpv4ToBinary = (ipv4: string, isRange?: boolean, range?: num
 };
 
 const throwExclusionListError = (value: string, listName: string) => {
-  // console.timeEnd();
+  console.timeEnd();
   throw FunctionalError(`Indicator creation failed, this pattern (${value}) is contained on an exclusion list (${listName})`, { value });
 };
-
-// let viewedLine = 0;
 
 const checkIpAddressLists2 = (ipToTest: string, exclusionList: ExclusionListProperties[]) => {
   const { isIpv4 } = checkIpAddrType(ipToTest);
@@ -64,24 +62,17 @@ const checkIpAddressLists2 = (ipToTest: string, exclusionList: ExclusionListProp
 
   exclusionList.forEach(({ name, list }) => {
     list.forEach((line) => {
-      // viewedLine += 1;
       if (binary.startsWith(line)) {
-        // console.log('viewedLine match IP : ', viewedLine);
-        // console.log('line match : ', line);
-        // viewedLine = 0;
         throwExclusionListError(ipToTest, name);
       }
     });
   });
 };
 
-export const checkPatternValidity = (extractedPattern: ExtractedPattern[]): void => {
+export const checkPatternValidity = (extractedObservableValues: ExtractedObservableValues[]): void => {
   console.time();
-  extractedPattern.forEach(({ type, value }) => {
-    // console.log('type : ', type);
-    // console.log('value : ', value);
+  extractedObservableValues.forEach(({ type, value }) => {
     const selectedExclusionLists = getExclusionListsByTypeFromCache2(type);
-    // console.log('selectedExclusionLists : ', selectedExclusionLists.map((item) => item.name));
     if (!selectedExclusionLists.length) return;
     if (type === exclusionListEntityType.IPV4_ADDR || type === exclusionListEntityType.IPV6_ADDR) {
       checkIpAddressLists2(value, selectedExclusionLists);
@@ -90,15 +81,10 @@ export const checkPatternValidity = (extractedPattern: ExtractedPattern[]): void
         list.forEach((line) => {
           const isWildCard = line.startsWith('.');
           if ((isWildCard && value.endsWith(line)) || value === line) {
-            // console.log('line match : ', line);
-            // console.log('viewedLine match OTHER : ', viewedLine);
-            // viewedLine = 0;
             throwExclusionListError(value, name);
           }
         });
       });
     }
   });
-  // console.log('viewedLine no match : ', viewedLine);
-  // viewedLine = 0;
 };
