@@ -287,6 +287,12 @@ export const InvestigationAddStixCoreObjectsLine = createFragmentContainer(
         ... on StixCyberObservable {
           observable_value
           x_opencti_description
+          ... on StixFile {
+            hashes {
+              algorithm
+              hash
+            }
+          }
         }
         ... on StixFile {
           observableName: name

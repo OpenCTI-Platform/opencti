@@ -276,6 +276,12 @@ export const ContainerAddStixCoreObjectsLine = createFragmentContainer(
         }
         ... on StixCyberObservable {
           observable_value
+          ... on StixFile {
+            hashes {
+              algorithm
+              hash
+            }
+          }
         }
         createdBy {
           id
