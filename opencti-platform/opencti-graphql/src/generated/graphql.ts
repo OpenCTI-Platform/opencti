@@ -19558,6 +19558,7 @@ export type QueryDraftWorkspaceArgs = {
 
 export type QueryDraftWorkspaceEntitiesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  draftId: Scalars['String']['input'];
   filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<StixDomainObjectsOrdering>;
@@ -37448,7 +37449,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   deleteOperation?: Resolver<Maybe<ResolversTypes['DeleteOperation']>, ParentType, ContextType, RequireFields<QueryDeleteOperationArgs, 'id'>>;
   deleteOperations?: Resolver<Maybe<ResolversTypes['DeleteOperationConnection']>, ParentType, ContextType, Partial<QueryDeleteOperationsArgs>>;
   draftWorkspace?: Resolver<Maybe<ResolversTypes['DraftWorkspace']>, ParentType, ContextType, RequireFields<QueryDraftWorkspaceArgs, 'id'>>;
-  draftWorkspaceEntities?: Resolver<Maybe<ResolversTypes['StixCoreObjectConnection']>, ParentType, ContextType, Partial<QueryDraftWorkspaceEntitiesArgs>>;
+  draftWorkspaceEntities?: Resolver<Maybe<ResolversTypes['StixCoreObjectConnection']>, ParentType, ContextType, RequireFields<QueryDraftWorkspaceEntitiesArgs, 'draftId'>>;
   draftWorkspaces?: Resolver<Maybe<ResolversTypes['DraftWorkspaceConnection']>, ParentType, ContextType, Partial<QueryDraftWorkspacesArgs>>;
   elasticSearchMetrics?: Resolver<Maybe<ResolversTypes['ElasticSearchMetrics']>, ParentType, ContextType>;
   enrichmentConnectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, RequireFields<QueryEnrichmentConnectorsArgs, 'type'>>;

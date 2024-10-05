@@ -16,6 +16,7 @@ import { usePage } from 'use-analytics';
 import Popover from '@mui/material/Popover';
 import Box from '@mui/material/Box';
 import { OPEN_BAR_WIDTH, SMALL_BAR_WIDTH } from '@components/nav/LeftBar';
+import DraftContextBanner from '@components/drafts/DraftContextBanner';
 import { useFormatter } from '../../../components/i18n';
 import SearchInput from '../../../components/SearchInput';
 import { APP_BASE_PATH, fileUri, MESSAGING$ } from '../../../relay/environment';
@@ -38,6 +39,7 @@ import oermLight from '../../../static/images/xtm/oerm_light.png';
 import omtdDark from '../../../static/images/xtm/omtd_dark.png';
 import omtdLight from '../../../static/images/xtm/omtd_light.png';
 import { isNotEmptyField } from '../../../utils/utils';
+import useHelper from '../../../utils/hooks/useHelper';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -72,8 +74,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
     width: '30%',
   },
   barRight: {
-    position: 'absolute',
-    top: 0,
     right: theme.spacing(2),
     height: '100%',
     display: 'flex',
@@ -134,6 +134,8 @@ const topBarQuery = graphql`
 const TopBarComponent: FunctionComponent<TopBarProps> = ({
   queryRef,
 }) => {
+  const { isFeatureEnable } = useHelper();
+  const isDraftFeatureEnabled = isFeatureEnable('DRAFT_WORKSPACE');
   const theme = useTheme<Theme>();
   const navigate = useNavigate();
   const location = useLocation();
@@ -142,6 +144,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
   const {
     bannerSettings: { bannerHeightNumber },
     settings: { platform_openbas_url: openBASUrl },
+    me,
   } = useAuth();
   const hasKnowledgeAccess = useGranted([KNOWLEDGE]);
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
@@ -233,6 +236,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
       {/* Header and Footer Banners containing classification level of system */}
       <Toolbar
         style={{
+          display: 'flex',
           alignItems: 'center',
           marginTop: bannerHeightNumber + settingsMessagesBannerHeight,
           padding: 0,
@@ -247,15 +251,22 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
             />
           </Link>
         </div>
-        {hasKnowledgeAccess && <div className={classes.menuContainer} style={{ marginLeft: navOpen ? theme.spacing(3) : theme.spacing(3) }}>
-          <SearchInput
-            onSubmit={handleSearch}
-            keyword={keyword}
-            variant="topBar"
-            placeholder={`${t_i18n('Search the platform')}...`}
-            fullWidth={true}
-          />
-        </div>}
+        {hasKnowledgeAccess && (
+          <div className={classes.menuContainer} style={{ flex: 1, marginLeft: theme.spacing(3) }}>
+            <SearchInput
+              onSubmit={handleSearch}
+              keyword={keyword}
+              variant="topBar"
+              placeholder={`${t_i18n('Search the platform')}...`}
+              fullWidth={true}
+            />
+          </div>
+        )}
+        {isDraftFeatureEnabled && me.draft_context
+          && <div style={{ flex: 1 }}>
+            <DraftContextBanner/>
+          </div>
+        }
         <div className={classes.barRight}>
           <div className={classes.barRightContainer}>
             <Security needs={[KNOWLEDGE]}>

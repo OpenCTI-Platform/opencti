@@ -32,6 +32,7 @@ const RootEntities = lazy(() => import('./components/entities/Root'));
 const RootLocation = lazy(() => import('./components/locations/Root'));
 const RootData = lazy(() => import('./components/data/Root'));
 const RootTrash = lazy(() => import('./components/trash/Root'));
+const RootDrafts = lazy(() => import('./components/drafts/Root'));
 const RootWorkspaces = lazy(() => import('./components/workspaces/Root'));
 const RootSettings = lazy(() => import('./components/settings/Root'));
 const RootAudit = lazy(() => import('./components/settings/activity/audit/Root'));
@@ -119,6 +120,9 @@ const Index = ({ settings }: IndexProps) => {
               />
               <Route path="/trash/*"
                 element={boundaryWrapper(RootTrash)}
+              />
+              <Route path="/drafts/*"
+                element={boundaryWrapper(RootDrafts)}
               />
               <Route
                 path="/workspaces/*"
