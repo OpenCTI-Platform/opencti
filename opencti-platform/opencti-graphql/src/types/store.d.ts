@@ -104,6 +104,7 @@ interface BasicStoreBase extends BasicStoreIdentifier {
   x_opencti_workflow_id?: string;
   creator_id?: string | string[];
   type?: string;
+  draft_ids?: string[];
   // representative
   representative: Representative
 }

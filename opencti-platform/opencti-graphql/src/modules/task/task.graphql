@@ -10,6 +10,7 @@ type Task implements Container & StixDomainObject & StixCoreObject & StixObject 
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   # StixCoreObject
   createdBy: Identity

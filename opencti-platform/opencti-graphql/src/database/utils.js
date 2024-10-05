@@ -69,6 +69,7 @@ export const READ_INDEX_INFERRED_RELATIONSHIPS = `${INDEX_INFERRED_RELATIONSHIPS
 export const INDEX_DRAFT_OBJECTS = `${ES_INDEX_PREFIX}_draft_objects`;
 export const READ_INDEX_DRAFT_OBJECTS = `${INDEX_DRAFT_OBJECTS}*`;
 export const isInferredIndex = (index) => index.startsWith(INDEX_INFERRED_ENTITIES) || index.startsWith(INDEX_INFERRED_RELATIONSHIPS);
+export const isDraftIndex = (index) => index.startsWith(INDEX_DRAFT_OBJECTS);
 
 // indices that we only use as read only, not created anymore on new platforms
 export const DEPRECATED_INDICES = [
