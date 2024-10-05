@@ -75,7 +75,7 @@ const rootSettingsFragment = graphql`
   }
 `;
 
-const meUserFragment = graphql`
+export const meUserFragment = graphql`
   fragment RootMe_data on MeUser {
     id
     name
@@ -154,7 +154,7 @@ const subscription = graphql`
   }
 `;
 
-const rootPrivateQuery = graphql`
+export const rootPrivateQuery = graphql`
   query RootPrivateQuery {
     me {
       ...RootMe_data
