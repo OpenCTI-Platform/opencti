@@ -38,7 +38,7 @@ const markingDefinitionResolvers = {
         const preFn = () => markingDefinitionEditContext(context, context.user, id);
         const cleanFn = () => markingDefinitionCleanContext(context, context.user, id);
         const bus = BUS_TOPICS[ENTITY_TYPE_MARKING_DEFINITION];
-        return subscribeToInstanceEvents(_, context, id, [bus.EDIT_TOPIC], { preFn, cleanFn });
+        return subscribeToInstanceEvents(_, context, id, [bus.EDIT_TOPIC], { type: ENTITY_TYPE_MARKING_DEFINITION, preFn, cleanFn });
       },
     },
   },

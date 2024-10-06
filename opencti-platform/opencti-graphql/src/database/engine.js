@@ -1464,7 +1464,8 @@ export const elConvertHits = async (data, opts = {}) => {
   return convertedHits;
 };
 
-export const computeQueryIndices = (indices, types) => {
+export const computeQueryIndices = (indices, typeOrTypes) => {
+  const types = (Array.isArray(typeOrTypes) || isEmptyField(typeOrTypes)) ? typeOrTypes : [typeOrTypes];
   // If indices are explicitly defined, just rely on the definition
   if (isEmptyField(indices)) {
     // If not and have no clue about the expected types, ask for all indices.
@@ -1519,7 +1520,7 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
   const { withoutRels = false, toMap = false, mapWithAllIds = false, type = null } = opts;
   const { orderBy = 'created_at', orderMode = 'asc' } = opts;
   const idsArray = Array.isArray(ids) ? ids : [ids];
-  const types = (Array.isArray(type) || !type) ? type : [type];
+  const types = (Array.isArray(type) || isEmptyField(type)) ? type : [type];
   const processIds = R.filter((id) => isNotEmptyField(id), idsArray);
   if (processIds.length === 0) {
     return toMap ? {} : [];

@@ -101,7 +101,7 @@ const stixSightingRelationshipResolvers = {
         const preFn = () => stixSightingRelationshipEditContext(context, context.user, id);
         const cleanFn = () => stixSightingRelationshipCleanContext(context, context.user, id);
         const bus = BUS_TOPICS[STIX_SIGHTING_RELATIONSHIP];
-        return subscribeToInstanceEvents(_, context, id, [bus.EDIT_TOPIC], { preFn, cleanFn });
+        return subscribeToInstanceEvents(_, context, id, [bus.EDIT_TOPIC], { type: STIX_SIGHTING_RELATIONSHIP, preFn, cleanFn });
       },
     },
   },
