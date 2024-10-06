@@ -210,6 +210,18 @@ class SystemKnowledgeComponent extends Component {
               />
             }
           />
+          <Route
+            path="/vulnerabilities"
+            element={
+              <EntityStixCoreRelationships
+                entityId={system.id}
+                relationshipTypes={['has']}
+                stixCoreObjectTypes={['Vulnerability']}
+                entityLink={link}
+                isRelationReversed={false}
+              />
+            }
+          />
         </Routes>
       </>
     );
