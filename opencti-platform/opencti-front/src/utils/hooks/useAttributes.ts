@@ -4,6 +4,7 @@ import useAuth from './useAuth';
 const ignoredAttributes = [
   'id',
   'draft_ids',
+  'draft_change',
   'parent_types',
   'base_type',
   'internal_id',
