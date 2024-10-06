@@ -52,5 +52,6 @@ input DraftWorkspaceAddInput {
 
 type Mutation {
     draftWorkspaceAdd(input: DraftWorkspaceAddInput!): DraftWorkspace @auth(for: [KNOWLEDGE])
+    draftWorkspaceValidate(id: ID!): Work @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
     draftWorkspaceDelete(id: ID!): ID @auth(for: [KNOWLEDGE])
 }

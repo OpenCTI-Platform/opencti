@@ -26,6 +26,7 @@ import {
   offsetToCursor,
   pascalize,
   READ_DATA_INDICES,
+  READ_DATA_INDICES_WITHOUT_INTERNAL_WITHOUT_INFERRED,
   READ_ENTITIES_INDICES,
   READ_INDEX_INFERRED_ENTITIES,
   READ_INDEX_INFERRED_RELATIONSHIPS,
@@ -166,7 +167,7 @@ import { rule_definitions } from '../rules/rules-definition';
 import { buildElasticSortingForAttributeCriteria } from '../utils/sorting';
 import { ENTITY_TYPE_DELETE_OPERATION } from '../modules/deleteOperation/deleteOperation-types';
 import { buildEntityData } from './data-builder';
-import { buildDraftFilter, isDraftSupportedEntity } from './draft-utils';
+import { buildDraftFilter, DRAFT_OPERATION_CREATE, DRAFT_OPERATION_DELETE_LINKED, DRAFT_OPERATION_DELETE, DRAFT_OPERATION_UPDATE, isDraftSupportedEntity } from './draft-utils';
 import { controlUserConfidenceAgainstElement } from '../utils/confidence-level';
 import { getDraftContext } from '../utils/draftContext';
 import { enrichWithRemoteCredentials } from '../config/credentials';
@@ -1569,7 +1570,7 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
     const markingRestrictions = await buildDataRestrictions(context, user, restrictionOptions);
     mustTerms.push(...markingRestrictions.must);
     // Handle draft
-    const draftMust = buildDraftFilter(context, user);
+    const draftMust = buildDraftFilter(context, user, opts);
     const body = {
       sort: [{ [orderBy]: orderMode }],
       query: {
@@ -2930,7 +2931,7 @@ const elQueryBodyBuilder = async (context, user, options) => {
     ordering.push({ 'standard_id.keyword': 'asc' });
   }
   // Handle draft
-  const draftMust = buildDraftFilter(context, user);
+  const draftMust = buildDraftFilter(context, user, options);
   // Build query
   const body = {
     query: {
@@ -3484,7 +3485,7 @@ export const elDelete = (indexName, documentId) => {
   });
 };
 
-const getRelatedRelations = async (context, user, targetIds, elements, level, cache) => {
+const getRelatedRelations = async (context, user, targetIds, elements, level, cache, opts = {}) => {
   const fromOrToIds = Array.isArray(targetIds) ? targetIds : [targetIds];
   const filtersContent = [{
     key: 'connections',
@@ -3507,20 +3508,20 @@ const getRelatedRelations = async (context, user, targetIds, elements, level, ca
     });
     elements.unshift(...preparedElements);
   };
-  const opts = { filters, connectionFormat: false, callback, types: [ABSTRACT_BASIC_RELATIONSHIP] };
-  await elList(context, user, READ_RELATIONSHIPS_INDICES, opts);
+  const finalOpts = { ...opts, filters, connectionFormat: false, callback, types: [ABSTRACT_BASIC_RELATIONSHIP] };
+  await elList(context, user, READ_RELATIONSHIPS_INDICES, finalOpts);
   // If relations find, need to recurs to find relations to relations
   if (foundRelations.length > 0) {
     const groups = R.splitEvery(MAX_BULK_OPERATIONS, foundRelations);
-    const concurrentFetch = (gIds) => getRelatedRelations(context, user, gIds, elements, level + 1, cache);
+    const concurrentFetch = (gIds) => getRelatedRelations(context, user, gIds, elements, level + 1, cache, opts);
     await BluePromise.map(groups, concurrentFetch, { concurrency: ES_MAX_CONCURRENCY });
   }
 };
-export const getRelationsToRemove = async (context, user, elements) => {
+export const getRelationsToRemove = async (context, user, elements, opts = {}) => {
   const relationsToRemoveMap = new Map();
   const relationsToRemove = [];
   const ids = elements.map((e) => e.internal_id);
-  await getRelatedRelations(context, user, ids, relationsToRemove, 0, relationsToRemoveMap);
+  await getRelatedRelations(context, user, ids, relationsToRemove, 0, relationsToRemoveMap, opts);
   return { relations: R.flatten(relationsToRemove), relationsToRemoveMap };
 };
 export const elDeleteInstances = async (instances) => {
@@ -3531,7 +3532,7 @@ export const elDeleteInstances = async (instances) => {
     for (let i = 0; i < groupsOfInstances.length; i += 1) {
       const instancesBulk = groupsOfInstances[i];
       const bodyDelete = instancesBulk.flatMap((doc) => {
-        return [{ delete: { _index: doc._index, _id: doc.internal_id, retry_on_conflict: ES_RETRY_ON_CONFLICT } }];
+        return [{ delete: { _index: doc._index, _id: doc._id ?? doc.internal_id, retry_on_conflict: ES_RETRY_ON_CONFLICT } }];
       });
       await elBulk({ refresh: true, timeout: BULK_TIMEOUT, body: bodyDelete });
     }
@@ -3542,6 +3543,7 @@ const elRemoveRelationConnection = async (context, user, elementsImpact) => {
   if (impacts.length > 0) {
     const idsToResolve = impacts.map(([k]) => k);
     const dataIds = await elFindByIds(context, user, idsToResolve, { baseData: true });
+    const elIdsCache = R.mergeAll(dataIds.map((element) => ({ [element.internal_id]: element._id })));
     const indexCache = R.mergeAll(dataIds.map((element) => ({ [element.internal_id]: element._index })));
     const groupsOfImpacts = R.splitEvery(MAX_BULK_OPERATIONS, impacts);
     for (let i = 0; i < groupsOfImpacts.length; i += 1) {
@@ -3549,6 +3551,7 @@ const elRemoveRelationConnection = async (context, user, elementsImpact) => {
       const bodyUpdateRaw = impactsBulk.map(([impactId, elementMeta]) => {
         return Object.entries(elementMeta).map(([typeAndIndex, cleanupIds]) => {
           const updates = [];
+          const elId = elIdsCache[impactId];
           const fromIndex = indexCache[impactId];
           if (isEmptyField(fromIndex)) { // No need to clean up the connections if the target is already deleted.
             return updates;
@@ -3562,7 +3565,7 @@ const elRemoveRelationConnection = async (context, user, elementsImpact) => {
           }
           const script = { source, params: { cleanupIds, updated_at: now() } };
           updates.push([
-            { update: { _index: fromIndex, _id: impactId, retry_on_conflict: ES_RETRY_ON_CONFLICT } },
+            { update: { _index: fromIndex, _id: elId, retry_on_conflict: ES_RETRY_ON_CONFLICT } },
             { script },
           ]);
           return updates;
@@ -3645,16 +3648,79 @@ export const elReindexElements = async (context, user, ids, sourceIndex, destInd
         params: { changes: sourceUpdate },
         source,
       },
-    }
+    },
+    refresh: true
   };
   return engine.reindex(reindexParams).catch((err) => {
     throw DatabaseError(`Reindexing fail from ${sourceIndex} to ${destIndex}`, { cause: err, body: reindexParams.body });
   });
 };
 
+export const elMarkElementsAsDraftDelete = async (context, user, elements) => {
+  if (elements.some((e) => !isDraftSupportedEntity(e))) throw UnsupportedError('Cannot delete unsupported element in draft context', { elements });
+  const draftContext = getDraftContext(context, user);
+  // Relations from and to need to be elements that are also in draft.
+  for (let i = 0; i < elements.length; i += 1) {
+    const e = elements[i];
+    if (e.base_type === BASE_TYPE_RELATION) {
+      const { from, to } = e;
+      const draftFrom = await loadDraftElement(context, user, from);
+      e.from = draftFrom;
+      e.fromId = draftFrom.id;
+      const draftTo = await loadDraftElement(context, user, to);
+      e.to = draftTo;
+      e.toId = draftTo.id;
+    }
+  }
+
+  const { relations } = await getRelationsToRemove(context, SYSTEM_USER, elements, { includeDeletedInDraft: true });
+
+  // 01. Remove all related relations and elements: delete instances created in draft, mark as deletionLink for others
+  const draftRelations = relations.filter((f) => f._index.includes(INDEX_DRAFT_OBJECTS));
+  const liveRelations = relations.filter((f) => !f._index.includes(INDEX_DRAFT_OBJECTS));
+  await elDeleteInstances(draftRelations);
+  liveRelations.map((r) => copyLiveElementToDraft(context, user, r, DRAFT_OPERATION_DELETE_LINKED));
+  // 02/ Remove all elements: delete instances created in draft, mark as deletion for others
+  const draftElements = elements.filter((f) => f._index.includes(INDEX_DRAFT_OBJECTS));
+  const liveElements = elements.filter((f) => !f._index.includes(INDEX_DRAFT_OBJECTS));
+  await elDeleteInstances(draftElements);
+  liveElements.map((e) => copyLiveElementToDraft(context, user, e, DRAFT_OPERATION_DELETE));
+  // 03/ Remove draft_ids from live relations and live elements of draft reverts
+  const allDraftIds = [...draftRelations, ...draftElements].map((d) => d.internal_id);
+  const revertDraftIdSource = `
+    if (ctx._source.containsKey('draft_ids')) { 
+      for (int i = 0; i < ctx._source.draft_ids.length; ++i){
+        if(ctx._source.draft_ids[i] == '${draftContext}'){
+          ctx._source.draft_ids.remove(i);
+        }
+      }
+    }  
+  `;
+  if (allDraftIds.length > 0) {
+    await elRawUpdateByQuery({
+      index: READ_DATA_INDICES_WITHOUT_INTERNAL_WITHOUT_INFERRED,
+      refresh: true,
+      conflicts: 'proceed',
+      body: {
+        script: { source: revertDraftIdSource },
+        query: {
+          terms: {
+            'id.keyword': allDraftIds
+          }
+        },
+      },
+    }).catch((err) => {
+      throw DatabaseError('Revert live entities indexing fail', { cause: err });
+    });
+  }
+};
+
 export const elDeleteElements = async (context, user, elements, opts = {}) => {
   if (elements.length === 0) return;
-  if (getDraftContext(context, user)) throw UnsupportedError('Cannot delete elements in draft context, not implemented yet');
+  if (getDraftContext(context, user)) {
+    await elMarkElementsAsDraftDelete(context, user, elements);
+    return;
+  }
   const { forceDelete = true } = opts;
   const { relations, relationsToRemoveMap } = await getRelationsToRemove(context, SYSTEM_USER, elements);
   // User must have access to all relations to remove to be able to delete
@@ -3837,6 +3903,7 @@ const prepareIndexing = async (context, user, elements) => {
       }
       element._index = INDEX_DRAFT_OBJECTS;
       element.draft_ids = [draftContext];
+      element.draft_change = { draft_operation: DRAFT_OPERATION_CREATE };
     }
     const prepared = await prepareIndexingElement(element);
     preparedElements.push(prepared);
@@ -3851,13 +3918,13 @@ export const elListExistingDraftWorkspaces = async (context, user) => {
   return elList(context, user, READ_INDEX_INTERNAL_OBJECTS, listArgs);
 };
 // Creates a copy of a live element in the draft index with the current draft context
-const copyLiveElementToDraft = async (context, user, element) => {
+const copyLiveElementToDraft = async (context, user, element, draftOperation = DRAFT_OPERATION_UPDATE) => {
   const draftContext = getDraftContext(context, user);
   if (!draftContext || element._index.includes(INDEX_DRAFT_OBJECTS)) return element;
 
   const updatedElement = structuredClone(element);
   const newId = generateInternalId();
-  const reindexOpts = { dbId: newId, sourceUpdate: { draft_ids: [draftContext] } };
+  const reindexOpts = { dbId: newId, sourceUpdate: { draft_ids: [draftContext], draft_change: { draft_operation: draftOperation } } };
   await elReindexElements(context, user, [element.internal_id], element._index, INDEX_DRAFT_OBJECTS, reindexOpts);
   updatedElement._id = newId;
   updatedElement._index = INDEX_DRAFT_OBJECTS;

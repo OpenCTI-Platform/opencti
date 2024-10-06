@@ -34,7 +34,7 @@ clone_for_pr_build() {
         # ------
         # For client-python, maybe one day we will refactor to a function.
         echo "[CLONE-DEPS][CLIENT-PYTHON] Multi repository PR, looking for client-python related branch"
-        gh repo clone https://github.com/OpenCTI-Platform/client-python ${CLI_PYTHON_DIR} -- --branch ${PR_TARGET_BRANCH}  --depth=1
+        gh repo clone https://github.com/OpenCTI-Platform/client-python ${CLI_PYTHON_DIR} -- --branch ${PR_TARGET_BRANCH}
         cd ${CLI_PYTHON_DIR}
 
         # search for the first opencti PR that matches OPENCTI_BRANCH

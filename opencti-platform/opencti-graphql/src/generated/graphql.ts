@@ -13298,6 +13298,7 @@ export type Mutation = {
   deleteOperationRestore?: Maybe<Scalars['ID']['output']>;
   draftWorkspaceAdd?: Maybe<DraftWorkspace>;
   draftWorkspaceDelete?: Maybe<Scalars['ID']['output']>;
+  draftWorkspaceValidate?: Maybe<Work>;
   entitySettingsFieldPatch?: Maybe<Array<Maybe<EntitySetting>>>;
   eventAdd?: Maybe<Event>;
   eventContextClean?: Maybe<Event>;
@@ -14053,6 +14054,11 @@ export type MutationDraftWorkspaceAddArgs = {
 
 
 export type MutationDraftWorkspaceDeleteArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type MutationDraftWorkspaceValidateArgs = {
   id: Scalars['ID']['input'];
 };
 
@@ -36257,6 +36263,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   deleteOperationRestore?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationDeleteOperationRestoreArgs, 'id'>>;
   draftWorkspaceAdd?: Resolver<Maybe<ResolversTypes['DraftWorkspace']>, ParentType, ContextType, RequireFields<MutationDraftWorkspaceAddArgs, 'input'>>;
   draftWorkspaceDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationDraftWorkspaceDeleteArgs, 'id'>>;
+  draftWorkspaceValidate?: Resolver<Maybe<ResolversTypes['Work']>, ParentType, ContextType, RequireFields<MutationDraftWorkspaceValidateArgs, 'id'>>;
   entitySettingsFieldPatch?: Resolver<Maybe<Array<Maybe<ResolversTypes['EntitySetting']>>>, ParentType, ContextType, RequireFields<MutationEntitySettingsFieldPatchArgs, 'ids' | 'input'>>;
   eventAdd?: Resolver<Maybe<ResolversTypes['Event']>, ParentType, ContextType, RequireFields<MutationEventAddArgs, 'input'>>;
   eventContextClean?: Resolver<Maybe<ResolversTypes['Event']>, ParentType, ContextType, RequireFields<MutationEventContextCleanArgs, 'id'>>;

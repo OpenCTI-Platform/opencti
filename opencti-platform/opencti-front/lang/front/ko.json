@@ -1439,6 +1439,7 @@
   "INTERNAL_ENRICHMENT": "풍부화",
   "INTERNAL_EXPORT_FILE": "파일 내보내기",
   "INTERNAL_IMPORT_FILE": "파일 가져오기",
+  "INTERNAL_INGESTION": "데이터 수집",
   "Interval": "간격",
   "Interval between injections (in minute)": "주입 간격 (분 단위)",
   "Intrusion set": "침입 세트",

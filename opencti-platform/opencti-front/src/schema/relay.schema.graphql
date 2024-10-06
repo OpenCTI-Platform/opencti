@@ -8715,6 +8715,7 @@ type Mutation {
   supportPackageForceZip(input: SupportPackageForceZipInput!): SupportPackage
   supportPackageDelete(id: ID!): ID
   draftWorkspaceAdd(input: DraftWorkspaceAddInput!): DraftWorkspace
+  draftWorkspaceValidate(id: ID!): Work
   draftWorkspaceDelete(id: ID!): ID
 }
 

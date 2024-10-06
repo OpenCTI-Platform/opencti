@@ -1,7 +1,9 @@
 import { expect, it, describe } from 'vitest';
 import gql from 'graphql-tag';
-import { adminQuery, queryAsAdmin } from '../../utils/testQuery';
+import { ADMIN_USER, adminQuery, queryAsAdmin, testContext } from '../../utils/testQuery';
 import { MARKING_TLP_RED } from '../../../src/schema/identifier';
+import { buildDraftValidationBundle } from '../../../src/modules/draftWorkspace/draftWorkspace-domain';
+import { DRAFT_VALIDATION_CONNECTOR_ID } from '../../../src/modules/draftWorkspace/draftWorkspace-connector';
 
 const CREATE_DRAFT_WORKSPACE_QUERY = gql`
     mutation DraftWorkspaceAdd($input: DraftWorkspaceAddInput!) {
@@ -16,6 +18,18 @@ const CREATE_DRAFT_WORKSPACE_QUERY = gql`
 const DELETE_DRAFT_WORKSPACE_QUERY = gql`
     mutation DraftWorkspaceDelete($id: ID!) {
         draftWorkspaceDelete(id: $id)
+    }
+`;
+
+const VALIDATE_DRAFT_WORKSPACE_QUERY = gql`
+    mutation DraftWorkspaceValidate($id: ID!) {
+        draftWorkspaceValidate(id: $id) {
+            id
+            name
+            connector {
+                id
+            }
+        }
     }
 `;
 
@@ -67,6 +81,7 @@ const CREATE_REPORT_QUERY = gql`
     mutation ReportAdd($input: ReportAddInput!) {
         reportAdd(input: $input) {
             id
+            standard_id
         }
     }
 `;
@@ -222,6 +237,50 @@ describe('Drafts workspace resolver testing', () => {
 
     expect(deleteResult.data?.draftWorkspaceDelete).toBeDefined();
     expect(deleteResult.data?.draftWorkspaceDelete).toEqual(addedDraftId);
+    expect(drafts.length).toEqual(0);
+  });
+
+  it('should validate a draft and get a correct bundle', async () => {
+    // Create a draft
+    const draftName = 'validationTestDraft';
+    const createdDraft = await queryAsAdmin({
+      query: CREATE_DRAFT_WORKSPACE_QUERY,
+      variables: { input: { name: draftName } },
+    });
+    expect(createdDraft.data?.draftWorkspaceAdd).toBeDefined();
+    addedDraftId = createdDraft.data?.draftWorkspaceAdd.id;
+    addedDraftName = createdDraft.data?.draftWorkspaceAdd.name;
+    await modifyAdminDraftContext(addedDraftId);
+
+    // Create a report in the draft
+    const REPORT_TO_CREATE = {
+      input: {
+        name: 'Report for validation draft',
+        description: 'Report for validation draft',
+        published: '2020-02-26T00:51:35.000Z',
+        confidence: 90,
+      },
+    };
+    const report = await adminQuery({ query: CREATE_REPORT_QUERY, variables: REPORT_TO_CREATE });
+    const reportStandardId = report.data.reportAdd.standard_id;
+
+    // Verify that validation bundle contains report
+    const bundleData = await buildDraftValidationBundle(testContext, ADMIN_USER, addedDraftId);
+    expect(bundleData.objects.length).toEqual(1);
+    expect(bundleData.objects[0].id).toEqual(reportStandardId);
+
+    // Validate draft, verify work result and that draft was correctly deleted
+    const validateResult = await queryAsAdmin({
+      query: VALIDATE_DRAFT_WORKSPACE_QUERY,
+      variables: { id: addedDraftId },
+    });
+    expect(validateResult.data?.draftWorkspaceValidate).toBeDefined();
+    expect(validateResult.data?.draftWorkspaceValidate.name).toEqual(`Draft validation ${addedDraftName} (${addedDraftId})`);
+    expect(validateResult.data?.draftWorkspaceValidate.connector.id).toEqual(DRAFT_VALIDATION_CONNECTOR_ID);
+    const { data } = await queryAsAdmin({
+      query: LIST_DRAFT_WORKSPACES_QUERY,
+    });
+    const drafts = data?.draftWorkspaces.edges;
     expect(drafts.length).toEqual(0);
   });
 });

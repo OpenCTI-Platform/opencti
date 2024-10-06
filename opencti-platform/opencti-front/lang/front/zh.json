@@ -1439,6 +1439,7 @@
   "INTERNAL_ENRICHMENT": "丰富",
   "INTERNAL_EXPORT_FILE": "导出文件",
   "INTERNAL_IMPORT_FILE": "导入文件",
+  "INTERNAL_INGESTION": "数据摄取",
   "Interval": "时间间隔",
   "Interval between injections (in minute)": "注射间隔时间（分钟）",
   "Intrusion set": "入侵集合",
