@@ -60,7 +60,7 @@ const groupResolvers = {
         const preFn = () => groupEditContext(context, context.user, id);
         const cleanFn = () => groupCleanContext(context, context.user, id);
         const bus = BUS_TOPICS[ENTITY_TYPE_GROUP];
-        return subscribeToInstanceEvents(_, context, id, [bus.EDIT_TOPIC], { preFn, cleanFn });
+        return subscribeToInstanceEvents(_, context, id, [bus.EDIT_TOPIC], { type: ENTITY_TYPE_GROUP, preFn, cleanFn });
       },
     },
   },

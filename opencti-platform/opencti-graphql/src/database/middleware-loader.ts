@@ -418,7 +418,8 @@ export const listAllEntitiesThroughRelations = async <T extends BasicStoreCommon
   });
   // region Resolved all targets for all relations
   const targetIds = R.uniq(relations.map((s) => s[`${opposite}Id`]));
-  return await elFindByIds(context, user, targetIds) as unknown as Array<T>;
+  const targetTypes = R.uniq(relations.map((s) => s[`${opposite}Type`]));
+  return await elFindByIds(context, user, targetIds, { type: targetTypes }) as unknown as Array<T>;
 };
 
 interface ListAllOpts {

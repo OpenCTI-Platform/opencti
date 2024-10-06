@@ -160,7 +160,9 @@ export const allFilesMimeTypeDistribution = async (context: AuthContext, user: A
   });
 };
 
-export const checkFileAccess = async (context: AuthContext, user: AuthUser, scope: string, { entity_id, filename, id }: { entity_id?: string, filename: string, id: string }) => {
+type CheckArgs = { entity_id?: string, filename: string, id: string };
+export const checkFileAccess = async (context: AuthContext, user: AuthUser, scope: string, args: CheckArgs) => {
+  const { entity_id, filename, id } = args;
   // Checks for support/* files
   if (id && (id.startsWith(SUPPORT_STORAGE_PATH) && !isUserHasCapability(user, SETTINGS_SUPPORT))) {
     throw ForbiddenAccess('Access to this file is restricted', { id: entity_id, file: id });
@@ -172,8 +174,8 @@ export const checkFileAccess = async (context: AuthContext, user: AuthUser, scop
   }
   const userInstancePromise = internalLoadById(context, user, entity_id);
   const systemInstancePromise = internalLoadById(context, SYSTEM_USER, entity_id);
-  const userFileInstancePromise = internalLoadById(context, user, id);
-  const systemFileInstancePromise = internalLoadById(context, SYSTEM_USER, id);
+  const userFileInstancePromise = internalLoadById(context, user, id, { type: ENTITY_TYPE_INTERNAL_FILE });
+  const systemFileInstancePromise = internalLoadById(context, SYSTEM_USER, id, { type: ENTITY_TYPE_INTERNAL_FILE });
   const [
     instance,
     systemInstance,
@@ -211,7 +213,6 @@ export const paginatedForPathWithEnrichment = async (context: AuthContext, user:
   }
   const listOptions = { ...opts, entity_id, ...findOpts, ...orderOptions };
 
-  await checkFileAccess(context, user, 'read', { entity_id, id: path, filename: '' });
   const pagination = await listEntitiesPaginated<BasicStoreEntityDocument>(context, user, [ENTITY_TYPE_INTERNAL_FILE], listOptions);
 
   // region enrichment only possible for single path resolution

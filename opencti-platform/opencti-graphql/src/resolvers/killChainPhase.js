@@ -40,7 +40,7 @@ const killChainPhaseResolvers = {
         const preFn = () => killChainPhaseEditContext(context, context.user, id);
         const cleanFn = () => killChainPhaseCleanContext(context, context.user, id);
         const bus = BUS_TOPICS[ENTITY_TYPE_KILL_CHAIN_PHASE];
-        return subscribeToInstanceEvents(_, context, id, [bus.EDIT_TOPIC], { preFn, cleanFn });
+        return subscribeToInstanceEvents(_, context, id, [bus.EDIT_TOPIC], { type: ENTITY_TYPE_KILL_CHAIN_PHASE, preFn, cleanFn });
       },
     },
   },
