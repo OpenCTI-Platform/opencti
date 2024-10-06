@@ -171,6 +171,7 @@ const OPENSEARCH_ENGINE = 'opensearch';
 export const ES_MAX_CONCURRENCY = conf.get('elasticsearch:max_concurrency');
 export const ES_DEFAULT_WILDCARD_PREFIX = booleanConf('elasticsearch:search_wildcard_prefix', false);
 export const ES_DEFAULT_FUZZY = booleanConf('elasticsearch:search_fuzzy', false);
+export const ES_INIT_RETRO_MAPPING_MIGRATION = booleanConf('elasticsearch:internal_init_retro_compatible_mapping_migration', false);
 export const ES_MINIMUM_FIXED_PAGINATION = 20; // When really low pagination is better by default
 export const ES_DEFAULT_PAGINATION = conf.get('elasticsearch:default_pagination_result') || 500;
 export const ES_MAX_PAGINATION = conf.get('elasticsearch:max_pagination_result') || 5000;
@@ -771,6 +772,196 @@ const computeIndexSettings = (rolloverAlias) => {
   };
 };
 
+// Only useful for option ES_INIT_RETRO_MAPPING_MIGRATION
+// This mode let the platform initialize old mapping protection before direct stop
+// Its only useful when old platform needs to be reindex
+const getRetroCompatibleMappings = () => {
+  const flattenedType = engine instanceof ElkClient ? 'flattened' : 'flat_object';
+  return {
+    internal_id: {
+      type: 'text',
+      fields: {
+        keyword: {
+          type: 'keyword',
+          normalizer: 'string_normalizer',
+          ignore_above: 512,
+        },
+      },
+    },
+    standard_id: {
+      type: 'text',
+      fields: {
+        keyword: {
+          type: 'keyword',
+          normalizer: 'string_normalizer',
+          ignore_above: 512,
+        },
+      },
+    },
+    name: {
+      type: 'text',
+      fields: {
+        keyword: {
+          type: 'keyword',
+          normalizer: 'string_normalizer',
+          ignore_above: 512,
+        },
+      },
+    },
+    height: {
+      type: 'nested',
+      properties: {
+        measure: { type: 'float' },
+        date_seen: { type: 'date' },
+      },
+    },
+    weight: {
+      type: 'nested',
+      properties: {
+        measure: { type: 'float' },
+        date_seen: { type: 'date' },
+      },
+    },
+    timestamp: {
+      type: 'date',
+    },
+    created: {
+      type: 'date',
+    },
+    created_at: {
+      type: 'date',
+    },
+    modified: {
+      type: 'date',
+    },
+    modified_at: {
+      type: 'date',
+    },
+    indexed_at: {
+      type: 'date',
+    },
+    uploaded_at: {
+      type: 'date',
+    },
+    first_seen: {
+      type: 'date',
+    },
+    last_seen: {
+      type: 'date',
+    },
+    start_time: {
+      type: 'date',
+    },
+    stop_time: {
+      type: 'date',
+    },
+    published: {
+      type: 'date',
+    },
+    valid_from: {
+      type: 'date',
+    },
+    valid_until: {
+      type: 'date',
+    },
+    observable_date: {
+      type: 'date',
+    },
+    event_date: {
+      type: 'date',
+    },
+    received_time: {
+      type: 'date',
+    },
+    processed_time: {
+      type: 'date',
+    },
+    completed_time: {
+      type: 'date',
+    },
+    ctime: {
+      type: 'date',
+    },
+    mtime: {
+      type: 'date',
+    },
+    atime: {
+      type: 'date',
+    },
+    current_state_date: {
+      type: 'date',
+    },
+    confidence: {
+      type: 'integer',
+    },
+    attribute_order: {
+      type: 'integer',
+    },
+    base_score: {
+      type: 'integer',
+    },
+    is_family: {
+      type: 'boolean',
+    },
+    number_observed: {
+      type: 'integer',
+    },
+    x_opencti_negative: {
+      type: 'boolean',
+    },
+    default_assignation: {
+      type: 'boolean',
+    },
+    x_opencti_detection: {
+      type: 'boolean',
+    },
+    x_opencti_order: {
+      type: 'integer',
+    },
+    import_expected_number: {
+      type: 'integer',
+    },
+    import_processed_number: {
+      type: 'integer',
+    },
+    x_opencti_score: {
+      type: 'integer',
+    },
+    connections: {
+      type: 'nested',
+    },
+    manager_setting: {
+      type: flattenedType,
+    },
+    context_data: {
+      properties: {
+        input: { type: flattenedType },
+      },
+    },
+    size: {
+      type: 'integer',
+    },
+    lastModifiedSinceMin: {
+      type: 'integer',
+    },
+    lastModified: {
+      type: 'date',
+    },
+    metaData: {
+      properties: {
+        order: {
+          type: 'integer',
+        },
+        inCarousel: {
+          type: 'boolean',
+        },
+        messages: { type: flattenedType },
+        errors: { type: flattenedType },
+      },
+    }
+  };
+};
+
 const updateIndexTemplate = async (name, mapping_properties) => {
   // compute pattern to be retro compatible for platform < 5.9
   // Before 5.9, only one pattern for all indices
@@ -782,7 +973,9 @@ const updateIndexTemplate = async (name, mapping_properties) => {
       index_patterns: [index_pattern],
       template: {
         settings: computeIndexSettings(name),
-        mappings: {
+        mappings: ES_INIT_RETRO_MAPPING_MIGRATION ? {
+          properties: getRetroCompatibleMappings()
+        } : {
           // Global option to prevent elastic to try any magic
           dynamic: 'strict',
           date_detection: false,

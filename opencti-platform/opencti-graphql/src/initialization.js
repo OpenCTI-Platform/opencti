@@ -2,7 +2,7 @@
 import { v4 as uuidv4 } from 'uuid';
 import semver from 'semver';
 import { DISABLED_FEATURE_FLAGS, logApp, PLATFORM_VERSION } from './config/conf';
-import { elUpdateIndicesMappings, initializeSchema, searchEngineInit } from './database/engine';
+import { elUpdateIndicesMappings, ES_INIT_RETRO_MAPPING_MIGRATION, initializeSchema, searchEngineInit } from './database/engine';
 import { initializeAdminUser } from './config/providers';
 import { initializeBucket, storageInit } from './database/file-storage';
 import { initializeInternalQueues, rabbitMQIsAlive } from './database/rabbitmq';
@@ -12,7 +12,7 @@ import { lockResource, redisInit } from './database/redis';
 import { ENTITY_TYPE_MIGRATION_STATUS } from './schema/internalObject';
 import { applyMigration, lastAvailableMigrationTime } from './database/migration';
 import { createEntity, loadEntity } from './database/middleware';
-import { LockTimeoutError, TYPE_LOCK_ERROR, UnsupportedError } from './config/errors';
+import { ConfigurationError, LockTimeoutError, TYPE_LOCK_ERROR, UnsupportedError } from './config/errors';
 import { executionContext, SYSTEM_USER } from './utils/access';
 import { smtpIsAlive } from './database/smtp';
 import { initCreateEntitySettings } from './modules/entitySetting/entitySetting-domain';
@@ -69,12 +69,8 @@ const initializeMigration = async (context) => {
 };
 
 const isExistingPlatform = async (context) => {
-  try {
-    const migration = await loadEntity(context, SYSTEM_USER, [ENTITY_TYPE_MIGRATION_STATUS]);
-    return migration !== undefined;
-  } catch {
-    return false;
-  }
+  const migration = await loadEntity(context, SYSTEM_USER, [ENTITY_TYPE_MIGRATION_STATUS]);
+  return migration !== undefined;
 };
 
 const isCompatiblePlatform = async (context) => {
@@ -102,12 +98,22 @@ const platformInit = async (withMarkings = true) => {
       await initializeInternalQueues();
       await initializeBucket();
       await initializeSchema();
+      if (ES_INIT_RETRO_MAPPING_MIGRATION) {
+        logApp.warn('Templates and indices created with retro compatible mapping protection. '
+            + 'This is only used to help indices reindex and migration. Please reindex, restart and then '
+            + 'trigger a rollover to secure the new indices');
+        process.exit(1);
+      }
       await initializeMigration(context);
       await initializeData(context, withMarkings);
       await initializeAdminUser(context);
       await initDefaultNotifiers(context);
     } else {
       logApp.info('[INIT] Existing platform detected, initialization...');
+      if (ES_INIT_RETRO_MAPPING_MIGRATION) {
+        // noinspection ExceptionCaughtLocallyJS
+        throw ConfigurationError('Internal option internal_init_retro_compatible_mapping_migration is only available for new platform init');
+      }
       await refreshMappingsAndIndices();
       await initializeInternalQueues();
       await isCompatiblePlatform(context);
