@@ -165,7 +165,7 @@ import { rule_definitions } from '../rules/rules-definition';
 import { buildElasticSortingForAttributeCriteria } from '../utils/sorting';
 import { ENTITY_TYPE_DELETE_OPERATION } from '../modules/deleteOperation/deleteOperation-types';
 import { buildEntityData } from './data-builder';
-import { buildDraftFilter, isDraftSupportedEntity } from './draft-utils';
+import { buildDraftFilter, DRAFT_OPERATION_CREATE, DRAFT_OPERATION_DELETE_LINKED, DRAFT_OPERATION_DELETE, DRAFT_OPERATION_UPDATE, isDraftSupportedEntity } from './draft-utils';
 import { controlUserConfidenceAgainstElement } from '../utils/confidence-level';
 import { getDraftContext } from '../utils/draftContext';
 import { enrichWithRemoteCredentials } from '../config/credentials';
@@ -3638,9 +3638,38 @@ export const elReindexElements = async (context, user, ids, sourceIndex, destInd
   });
 };
 
+export const elMarkElementsAsDraftDelete = async (context, user, elements) => {
+  if (elements.some((e) => !isDraftSupportedEntity(e))) throw UnsupportedError('Cannot delete unsupported element in draft context', { elements });
+
+  const { relations, relationsToRemoveMap } = await getRelationsToRemove(context, SYSTEM_USER, elements);
+  // Compute the id that needs to be removed from rel
+  const basicCleanup = elements.filter((f) => isBasicRelationship(f.entity_type));
+  // Update all rel connections that will remain
+  const cleanupRelations = relations.concat(basicCleanup);
+  const toBeRemovedIds = elements.map((e) => e.internal_id);
+  const elementsImpact = await computeDeleteElementsImpacts(cleanupRelations, toBeRemovedIds, relationsToRemoveMap);
+  // 01. Start by clearing connections rel
+  await elRemoveRelationConnection(context, user, elementsImpact);
+  // 02. Remove all related relations and elements: delete instances created in draft, mark as deletionLink for others
+  const draftRelations = relations.filter((f) => f.draft_change && f.draft_change.draft_operation !== DRAFT_OPERATION_DELETE
+      && f.draft_change.draft_operation !== DRAFT_OPERATION_DELETE);
+  const liveRelations = relations.filter((f) => !f._index.includes(INDEX_DRAFT_OBJECTS));
+  await elDeleteInstances(draftRelations);
+  liveRelations.map((r) => copyLiveElementToDraft(context, user, r, DRAFT_OPERATION_DELETE_LINKED));
+  // 03/ Remove all elements: delete instances created in draft, mark as deletion for others
+  const draftElements = elements.filter((f) => f.draft_change && f.draft_change.draft_operation !== DRAFT_OPERATION_DELETE_LINKED
+      && f.draft_change.draft_operation !== DRAFT_OPERATION_DELETE);
+  const liveElements = elements.filter((f) => !f._index.includes(INDEX_DRAFT_OBJECTS));
+  await elDeleteInstances(draftElements);
+  liveElements.map((e) => copyLiveElementToDraft(context, user, e, DRAFT_OPERATION_DELETE));
+};
+
 export const elDeleteElements = async (context, user, elements, opts = {}) => {
   if (elements.length === 0) return;
-  if (getDraftContext(context, user)) throw UnsupportedError('Cannot delete elements in draft context, not implemented yet');
+  if (getDraftContext(context, user)) {
+    await elMarkElementsAsDraftDelete(context, user, elements);
+    return;
+  }
   const { forceDelete = true } = opts;
   const { relations, relationsToRemoveMap } = await getRelationsToRemove(context, SYSTEM_USER, elements);
   // User must have access to all relations to remove to be able to delete
@@ -3823,6 +3852,7 @@ const prepareIndexing = async (context, user, elements) => {
       }
       element._index = INDEX_DRAFT_OBJECTS;
       element.draft_ids = [draftContext];
+      element.draft_change = { draft_operation: DRAFT_OPERATION_CREATE };
     }
     const prepared = await prepareIndexingElement(element);
     preparedElements.push(prepared);
@@ -3837,13 +3867,13 @@ export const elListExistingDraftWorkspaces = async (context, user) => {
   return elList(context, user, READ_INDEX_INTERNAL_OBJECTS, listArgs);
 };
 // Creates a copy of a live element in the draft index with the current draft context
-const copyLiveElementToDraft = async (context, user, element) => {
+const copyLiveElementToDraft = async (context, user, element, draftOperation = DRAFT_OPERATION_UPDATE) => {
   const draftContext = getDraftContext(context, user);
   if (!draftContext || element._index.includes(INDEX_DRAFT_OBJECTS)) return element;
 
   const updatedElement = structuredClone(element);
   const newId = generateInternalId();
-  const reindexOpts = { dbId: newId, sourceUpdate: { draft_ids: [draftContext] } };
+  const reindexOpts = { dbId: newId, sourceUpdate: { draft_ids: [draftContext], draft_change: { draft_operation: draftOperation } } };
   await elReindexElements(context, user, [element.internal_id], element._index, INDEX_DRAFT_OBJECTS, reindexOpts);
   updatedElement._id = newId;
   updatedElement._index = INDEX_DRAFT_OBJECTS;

@@ -239,6 +239,7 @@ export const registerConnectorQueues = async (id, name, type, scope) => {
 export const initializeInternalQueues = async () => {
   await registerConnectorQueues('playbook', 'Internal playbook manager', 'internal', 'playbook');
   await registerConnectorQueues('sync', 'Internal sync manager', 'internal', 'sync');
+  await registerConnectorQueues('draft', 'Internal draft', 'internal', 'draft');
 };
 
 export const initializeConnectorQueues = async (context, user) => {
@@ -283,6 +284,10 @@ export const rabbitMQIsAlive = async () => {
       throw DatabaseError('RabbitMQ seems down', { cause: e });
     }
   );
+};
+
+export const pushToWorkerForDraft = (message) => {
+  return send(WORKER_EXCHANGE, pushRouting('draft'), JSON.stringify(message));
 };
 
 export const pushToWorkerForConnector = (connectorId, message) => {
