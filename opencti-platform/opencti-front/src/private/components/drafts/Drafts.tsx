@@ -82,9 +82,9 @@ const Drafts: React.FC = () => {
                   .fill(0)
                   .map((_, idx) => (
                     <DraftLineDummy
-                            key={idx}
-                            dataColumns={dataColumns}
-                          />
+                      key={idx}
+                      dataColumns={dataColumns}
+                    />
                   ))}
               </>
                             }

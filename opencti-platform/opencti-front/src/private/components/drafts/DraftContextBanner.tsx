@@ -50,7 +50,7 @@ const DraftContextBanner = () => {
     >
       <Formik
         onSubmit={() => {}}
-        initialValues={{ workspace_context: '' }}
+        initialValues={{ draft_context: '' }}
       >
         <Form style={{ display: 'flex', width: '100%', alignItems: 'center' }}>
           <div style={{ flex: 1, marginRight: '10px' }}>

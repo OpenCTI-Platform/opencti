@@ -53,7 +53,6 @@ interface DraftEntitiesLineProps {
     k: string,
     id: string,
     value: Record<string, unknown>,
-    value: Record<string, unknown>,
     event: React.KeyboardEvent,
   ) => void;
   node: DraftEntitiesLine_node$key;

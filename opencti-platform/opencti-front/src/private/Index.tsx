@@ -83,7 +83,7 @@ const Index = ({ settings }: IndexProps) => {
       <SettingsMessagesBanner />
       <PlatformCriticalAlertDialog alerts={settings.platform_critical_alerts}/>
       {me.draft_context && (
-      <DraftContextBanner/>
+        <DraftContextBanner/>
       )}
       <Box
         sx={{
@@ -100,7 +100,7 @@ const Index = ({ settings }: IndexProps) => {
         <Box component="main" sx={boxSx}>
           <Suspense fallback={<Loader />}>
             <Routes>
-              <Route path="/" element={me.workspace_context ? boundaryWrapper(DraftEntities) : boundaryWrapper(Dashboard)}/>
+              <Route path="/" element={me.draft_context ? boundaryWrapper(DraftEntities) : boundaryWrapper(Dashboard)}/>
 
               {/* Search need to be rework */}
               <Route path="/search/*" element={boundaryWrapper(RootSearch)} />

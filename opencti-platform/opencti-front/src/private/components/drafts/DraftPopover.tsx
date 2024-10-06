@@ -100,7 +100,7 @@ const DraftPopover: React.FC<DraftPopoverProps> = ({
     setSwitchToDraft(true);
     commitSwitchToDraft({
       variables: {
-        input: [{ key: 'workspace_context', value: [draftId] }],
+        input: [{ key: 'draft_context', value: [draftId] }],
       },
       onCompleted: () => {
         MESSAGING$.notifySuccess(<span>{t_i18n('You are now in Draft Mode')}</span>);

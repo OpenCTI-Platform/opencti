@@ -10,6 +10,7 @@ import Drawer from '@mui/material/Drawer';
 import Tooltip, { tooltipClasses } from '@mui/material/Tooltip';
 import {
   AccountBalanceOutlined,
+  ArchitectureOutlined,
   AssignmentOutlined,
   BiotechOutlined,
   BugReportOutlined,
@@ -858,7 +859,7 @@ const LeftBar = () => {
                   classes={{ root: classes.menuItem }}
                 >
                   <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
-                    <ArchitectureOutlined />
+                    <ArchitectureOutlined/>
                   </ListItemIcon>
                   {navOpen && (
                   <ListItemText
