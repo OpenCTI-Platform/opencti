@@ -246,6 +246,22 @@ describe('Indicator resolver standard behavior', () => {
     });
     expect(queryResult.data?.indicatorContextClean.id).toEqual(firstIndicatorInternalId);
   });
+  it('should update indicator observables values on pattern edit', async () => {
+    const UPDATE_QUERY = gql`
+      mutation IndicatorFieldPatch($id: ID!, $input: [EditInput!]!) {
+        indicatorFieldPatch(id: $id, input: $input) {
+          id
+          name
+        }
+      }
+    `;
+    const queryResult = await queryAsAdminWithSuccess({
+      query: UPDATE_QUERY,
+      variables: { id: firstIndicatorInternalId, input: { key: 'pattern', value: ['[domain-name:value = \'www.payah.test\']'] } },
+    });
+    console.log('firstIndicatorInternalId : ', firstIndicatorInternalId);
+    console.log('queryResult.data?.indicatorFieldPatch : ', queryResult.data?.indicatorFieldPatch);
+  });
   it('should add relation in indicator', async () => {
     const RELATION_ADD_QUERY = gql`
         mutation IndicatorRelationAdd($id: ID!, $input: StixRefRelationshipAddInput!) {
