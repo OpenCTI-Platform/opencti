@@ -146,6 +146,7 @@ const RootSystem = ({ systemId, queryRef }: RootSystemProps) => {
                     'attack_patterns',
                     'tools',
                     'observables',
+                    'vulnerabilities',
                   ]}
                   stixCoreObjectsDistribution={system.stixCoreObjectsDistribution}
                 />
