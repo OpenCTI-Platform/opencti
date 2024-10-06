@@ -51,6 +51,8 @@ export const RELATION_RESIDES_IN = 'resides-in'; // Extension (OpenCTI)
 export const RELATION_CITIZEN_OF = 'citizen-of'; // Extension (OpenCTI)
 export const RELATION_NATIONAL_OF = 'national-of'; // Extension (OpenCTI)
 export const RELATION_KNOWN_AS = 'known-as'; // Extension (OpenCTI)
+export const RELATION_REPORTS_TO = 'reports-to'; // Extension (OpenCTI)
+export const RELATION_SUPPORTS = 'supports'; // Extension (OpenCTI)
 
 export const RELATION_SUBTECHNIQUE_OF = 'subtechnique-of'; // Extension (MITRE)
 export const RELATION_REVOKED_BY = 'revoked-by'; // Extension (MITRE)
@@ -107,6 +109,8 @@ export const STIX_CORE_RELATIONSHIPS = [
   RELATION_CITIZEN_OF,
   RELATION_NATIONAL_OF,
   RELATION_KNOWN_AS,
+  RELATION_REPORTS_TO,
+  RELATION_SUPPORTS,
 ];
 
 schemaTypesDefinition.register(ABSTRACT_STIX_CORE_RELATIONSHIP, STIX_CORE_RELATIONSHIPS);
