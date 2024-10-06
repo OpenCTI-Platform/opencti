@@ -58,8 +58,8 @@ describe('Raw streams tests', () => {
       expect(updateEventsByTypes['marking-definition'].length).toBe(2);
       expect(updateEventsByTypes['campaign'].length).toBe(7);
       expect(updateEventsByTypes['relationship'].length).toBe(8);
-      expect(updateEventsByTypes['identity'].length).toBe(16);
-      expect(updateEventsByTypes['malware'].length).toBe(16);
+      expect(updateEventsByTypes['identity'].length).toBe(18);
+      expect(updateEventsByTypes['malware'].length).toBe(17);
       expect(updateEventsByTypes['intrusion-set'].length).toBe(4);
       expect(updateEventsByTypes['data-component'].length).toBe(4);
       expect(updateEventsByTypes['location'].length).toBe(14);
@@ -70,19 +70,19 @@ describe('Raw streams tests', () => {
       expect(updateEventsByTypes['external-reference'].length).toBe(1);
       expect(updateEventsByTypes['grouping'].length).toBe(3);
       expect(updateEventsByTypes['incident'].length).toBe(3);
-      expect(updateEventsByTypes['indicator'].length).toBe(4);
+      expect(updateEventsByTypes['indicator'].length).toBe(5);
       expect(updateEventsByTypes['label'].length).toBe(1);
       expect(updateEventsByTypes['malware-analysis'].length).toBe(3);
       expect(updateEventsByTypes['note'].length).toBe(3);
       expect(updateEventsByTypes['opinion'].length).toBe(6);
-      expect(updateEventsByTypes['report'].length).toBe(12);
+      expect(updateEventsByTypes['report'].length).toBe(13);
       expect(updateEventsByTypes['ipv4-addr'].length).toBe(3);
       expect(updateEventsByTypes['tool'].length).toBe(7);
       expect(updateEventsByTypes['sighting'].length).toBe(4);
       expect(updateEventsByTypes['threat-actor'].length).toBe(17);
       expect(updateEventsByTypes['vocabulary'].length).toBe(3);
       expect(updateEventsByTypes['vulnerability'].length).toBe(3);
-      expect(updateEvents.length).toBe(163);
+      expect(updateEvents.length).toBe(169);
       for (let updateIndex = 0; updateIndex < updateEvents.length; updateIndex += 1) {
         const event = updateEvents[updateIndex];
         const { data: insideData, origin, type } = event;

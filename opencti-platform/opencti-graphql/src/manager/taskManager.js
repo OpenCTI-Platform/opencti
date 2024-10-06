@@ -550,7 +550,7 @@ const executeProcessing = async (context, user, job, scope) => {
   return errors;
 };
 
-const taskHandler = async () => {
+export const taskHandler = async () => {
   let lock;
   try {
     // Lock the manager

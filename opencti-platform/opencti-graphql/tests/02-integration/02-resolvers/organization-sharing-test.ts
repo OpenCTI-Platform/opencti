@@ -1,9 +1,21 @@
 import { describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
-import { ADMIN_API_TOKEN, ADMIN_USER, API_URI, FIVE_MINUTES, getOrganizationIdByName, PYTHON_PATH, TEST_ORGANIZATION, testContext, USER_EDITOR } from '../../utils/testQuery';
-import { adminQueryWithSuccess, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
+import {
+  ADMIN_API_TOKEN,
+  ADMIN_USER,
+  API_URI,
+  FIVE_MINUTES,
+  getOrganizationIdByName,
+  PLATFORM_ORGANIZATION,
+  PYTHON_PATH,
+  TEST_ORGANIZATION,
+  testContext,
+  USER_EDITOR
+} from '../../utils/testQuery';
+import { adminQueryWithSuccess, enableCEAndUnSetOrganization, enableEEAndSetOrganization, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
 import { findById } from '../../../src/domain/report';
 import { execChildPython } from '../../../src/python/pythonBridge';
+import { taskHandler } from '../../../src/manager/taskManager';
 
 const ORGANIZATION_SHARING_QUERY = gql`
   mutation StixCoreObjectSharingGroupAddMutation(
@@ -16,6 +28,29 @@ const ORGANIZATION_SHARING_QUERY = gql`
         objectOrganization {
           id
           name
+        }
+      }
+    }
+  }
+`;
+
+const REPORT_STIX_DOMAIN_ENTITIES = gql`
+  query report($id: String!) {
+    report(id: $id) {
+      id
+      standard_id
+      objects(first: 30) {
+        edges {
+          node {
+            ... on BasicObject {
+              id
+              standard_id
+            }
+            ... on BasicRelationship {
+              id
+              standard_id
+            }
+          }
         }
       }
     }
@@ -47,10 +82,17 @@ describe('Organization sharing standard behavior for container', () => {
     expect(report).not.toBeUndefined();
     reportInternalId = report.id;
   });
-  it.skip('should platform organization sharing and EE activated', async () => {
-    // await enableEEAndSetOrganization(PLATFORM_ORGANIZATION);
+  it('should platform organization sharing and EE activated', async () => {
+    await enableEEAndSetOrganization(PLATFORM_ORGANIZATION);
   });
-  it.skip('should share Report with Organization', async () => {
+  it('should user from different organization not access the report', async () => {
+    const queryResult = await queryAsUserWithSuccess(USER_EDITOR.client, {
+      query: REPORT_STIX_DOMAIN_ENTITIES,
+      variables: { id: reportInternalId },
+    });
+    expect(queryResult.data.report).toBeNull();
+  });
+  it('should share Report with Organization', async () => {
     // Get organization id
     organizationId = await getOrganizationIdByName(TEST_ORGANIZATION.name);
     const organizationSharingQueryResult = await adminQueryWithSuccess({
@@ -61,36 +103,14 @@ describe('Organization sharing standard behavior for container', () => {
     expect(organizationSharingQueryResult?.data?.stixCoreObjectEdit.restrictionOrganizationAdd.objectOrganization[0].name).toEqual(TEST_ORGANIZATION.name);
 
     // Need background task magic to happens for sharing
-    //  await taskHandler();
+    await taskHandler();
   });
-  it.skip('should Editor user access all objects', async () => {
-    const REPORT_STIX_DOMAIN_ENTITIES = gql`
-      query report($id: String!) {
-        report(id: $id) {
-          id
-          standard_id
-          objects(first: 30) {
-            edges {
-              node {
-                ... on BasicObject {
-                  id
-                  standard_id
-                }
-                ... on BasicRelationship {
-                  id
-                  standard_id
-                }
-              }
-            }
-          }
-        }
-      }
-    `;
+  it('should Editor user access all objects', async () => {
     const queryResult = await queryAsUserWithSuccess(USER_EDITOR.client, {
       query: REPORT_STIX_DOMAIN_ENTITIES,
       variables: { id: reportInternalId },
     });
-    expect(queryResult.data.report.objects.edges.length).toEqual(10);
+    expect(queryResult.data.report.objects.edges.length).toEqual(8);
   });
   it('should all entities deleted', async () => {
     const PURGE_QUERY = gql`
@@ -112,7 +132,7 @@ describe('Organization sharing standard behavior for container', () => {
     });
     expect(purgeQueryResult.data.reportEdit.delete).toEqual(reportInternalId);
   });
-  it.skip('should plateform organization sharing and EE deactivated', async () => {
-    // await enableCEAndUnSetOrganization();
+  it('should plateform organization sharing and EE deactivated', async () => {
+    await enableCEAndUnSetOrganization();
   });
 });
