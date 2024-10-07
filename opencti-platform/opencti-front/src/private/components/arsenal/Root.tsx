@@ -37,35 +37,35 @@ const Root = () => {
         />
         <Route
           path="/malwares"
-          Component={boundaryWrapper(Malwares)}
+          element={boundaryWrapper(Malwares)}
         />
         <Route
           path="/malwares/:malwareId/*"
-          Component={boundaryWrapper(RootMalware)}
+          element={boundaryWrapper(RootMalware)}
         />
         <Route
           path="/channels"
-          Component={boundaryWrapper(Channels)}
+          element={boundaryWrapper(Channels)}
         />
         <Route
           path="/channels/:channelId/*"
-          Component={boundaryWrapper(RootChannel)}
+          element={boundaryWrapper(RootChannel)}
         />
         <Route
           path="/tools"
-          Component={boundaryWrapper(Tools)}
+          element={boundaryWrapper(Tools)}
         />
         <Route
           path="/tools/:toolId/*"
-          Component={boundaryWrapper(RootTool)}
+          element={boundaryWrapper(RootTool)}
         />
         <Route
           path="/vulnerabilities"
-          Component={boundaryWrapper(Vulnerabilities)}
+          element={boundaryWrapper(Vulnerabilities)}
         />
         <Route
           path="/vulnerabilities/:vulnerabilityId/*"
-          Component={boundaryWrapper(RootVulnerabilities)}
+          element={boundaryWrapper(RootVulnerabilities)}
         />
       </Routes>
     </Suspense>

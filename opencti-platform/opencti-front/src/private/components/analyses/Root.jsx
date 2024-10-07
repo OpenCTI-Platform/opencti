@@ -39,47 +39,47 @@ const Root = () => {
         />
         <Route
           path="/reports"
-          Component={boundaryWrapper(Reports)}
+          element={boundaryWrapper(Reports)}
         />
         <Route
           path="/reports/:reportId/*"
-          Component={boundaryWrapper(RootReport)}
+          element={boundaryWrapper(RootReport)}
         />
         <Route
           path="/groupings"
-          Component={boundaryWrapper(Groupings)}
+          element={boundaryWrapper(Groupings)}
         />
         <Route
           path="/groupings/:groupingId/*"
-          Component={boundaryWrapper(RootGrouping)}
+          element={boundaryWrapper(RootGrouping)}
         />
         <Route
           path="/malware_analyses"
-          Component={boundaryWrapper(MalwareAnalyses)}
+          element={boundaryWrapper(MalwareAnalyses)}
         />
         <Route
           path="/malware_analyses/:malwareAnalysisId/*"
-          Component={boundaryWrapper(RootMalwareAnalysis)}
+          element={boundaryWrapper(RootMalwareAnalysis)}
         />
         <Route
           path="/notes"
-          Component={boundaryWrapper(Notes)}
+          element={boundaryWrapper(Notes)}
         />
         <Route
           path="/notes/:noteId/*"
-          Component={boundaryWrapper(RootNote)}
+          element={boundaryWrapper(RootNote)}
         />
         <Route
           path="/opinions/:opinionId/*"
-          Component={boundaryWrapper(RootOpinion)}
+          element={boundaryWrapper(RootOpinion)}
         />
         <Route
           path="/external_references"
-          Component={boundaryWrapper(ExternalReferences)}
+          element={boundaryWrapper(ExternalReferences)}
         />
         <Route
           path="/external_references/:externalReferenceId/*"
-          Component={boundaryWrapper(RootExternalReference)}
+          element={boundaryWrapper(RootExternalReference)}
         />
       </Routes>
     </Suspense>

@@ -41,43 +41,43 @@ const Root = () => {
         />
         <Route
           path="/regions"
-          Component={boundaryWrapper(Regions)}
+          element={boundaryWrapper(Regions)}
         />
         <Route
           path="/regions/:regionId/*"
-          Component={boundaryWrapper(RootRegion)}
+          element={boundaryWrapper(RootRegion)}
         />
         <Route
           path="/countries"
-          Component={boundaryWrapper(Countries)}
+          element={boundaryWrapper(Countries)}
         />
         <Route
           path="/countries/:countryId/*"
-          Component={boundaryWrapper(RootCountry)}
+          element={boundaryWrapper(RootCountry)}
         />
         <Route
           path="/administrative_areas"
-          Component={boundaryWrapper(AdministrativeAreas)}
+          element={boundaryWrapper(AdministrativeAreas)}
         />
         <Route
           path="/administrative_areas/:administrativeAreaId/*"
-          Component={boundaryWrapper(RootAdministrativeArea)}
+          element={boundaryWrapper(RootAdministrativeArea)}
         />
         <Route
           path="/cities"
-          Component={boundaryWrapper(Cities)}
+          element={boundaryWrapper(Cities)}
         />
         <Route
           path="/cities/:cityId/*"
-          Component={boundaryWrapper(RootCity)}
+          element={boundaryWrapper(RootCity)}
         />
         <Route
           path="/positions"
-          Component={boundaryWrapper(Positions)}
+          element={boundaryWrapper(Positions)}
         />
         <Route
           path="/positions/:positionId/*"
-          Component={boundaryWrapper(RootPosition)}
+          element={boundaryWrapper(RootPosition)}
         />
       </Routes>
     </Suspense>
