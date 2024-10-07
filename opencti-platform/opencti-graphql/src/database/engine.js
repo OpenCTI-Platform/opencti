@@ -3655,7 +3655,7 @@ const copyLiveElementToDraft = async (context, user, element) => {
   updatedElement._index = INDEX_DRAFT_OBJECTS;
 
   // Add draftId to live element draftsIds
-  const allDrafts = await elListExistingDraftWorkspaces(context, user);
+  const allDrafts = await elListExistingDraftWorkspaces(context, SYSTEM_USER);
   const allDraftIds = allDrafts.map((d) => d.internal_id);
   const addDraftIdScript = {
     script: {
