@@ -1,5 +1,5 @@
 import type { Template, TemplateWidget } from '../template';
-import { widgetGraph, widgetList } from './__template';
+import { ResolvedAttributesWidgets } from '../template';
 import buildListOutcome from './stix_core_objects/list';
 import useDonutOutcome from './stix_relationships/donut';
 
@@ -9,13 +9,16 @@ const useOutcomeTemplate = () => {
   const buildOutcomeTemplate = async (
     containerId: string,
     template: Template,
+    usedTemplateWidgets: TemplateWidget[],
+    resolvedAttributesWidgets: ResolvedAttributesWidgets[],
   ) => {
     let { content } = template;
 
-    // Retrieve widgets used in the template, for now, hardcoded
-    const templateWidgets: TemplateWidget[] = [widgetList];
+    for (const attributeWidget of resolvedAttributesWidgets) {
+      content = content.replace(`$${attributeWidget.template_widget_name}`, attributeWidget.data);
+    }
 
-    for (const templateWidget of templateWidgets) {
+    for (const templateWidget of usedTemplateWidgets) {
       let outcome = '';
       if (templateWidget.widget.type === 'list') {
         // eslint-disable-next-line no-await-in-loop

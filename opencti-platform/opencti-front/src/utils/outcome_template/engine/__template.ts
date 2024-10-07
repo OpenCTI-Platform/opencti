@@ -24,10 +24,11 @@ export const templateAttribute = {
   name: 'template2',
   content: '<body>\n'
     + '<h1> Titre principal </h1>\n'
-    + '<p> nom du rapport: $rapportName</p>\n'
+    + '<p> nom du rapport: $reportName</p>\n'
+    + '<p> Ce rapport, publié le $reportPublicationDate, a pour labels: $reportLabels</p>\n'
     + '</body> \n'
     + '</html>',
-  used_variables: ['rapportName'],
+  used_variables: ['reportName', 'reportPublicationDate', 'reportLabels'],
 };
 
 export const widgetAttribute = {
@@ -50,6 +51,13 @@ export const widgetAttribute = {
     ],
   } as Widget,
 };
+
+// attributes widgets (resolved from backend)
+export const resolvedAttributesWidgets = [
+  { template_widget_name: 'reportName', data: '[Hardcoded report name]' },
+  { template_widget_name: 'reportPublicationDate', data: '[Hardcoded publication date]' },
+  { template_widget_name: 'reportLabels', data: 'label1, label2, label3' },
+];
 
 // list //
 
@@ -120,3 +128,6 @@ export const widgetGraph: TemplateWidget = {
     },
   },
 };
+
+// Retrieve widgets used in the template, for now, hardcoded
+export const usedTemplateWidgets: TemplateWidget[] = [widgetAttribute, widgetList, widgetGraph];

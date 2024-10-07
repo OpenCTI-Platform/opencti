@@ -30,7 +30,7 @@ import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import SelectField from '../../../../components/fields/SelectField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import { templateList } from '../../../../utils/outcome_template/engine/__template';
+import { resolvedAttributesWidgets, templateAttribute, templateList, usedTemplateWidgets } from '../../../../utils/outcome_template/engine/__template';
 import useOutcomeTemplate from '../../../../utils/outcome_template/engine/templateWidgetEngine';
 
 const useStyles = makeStyles((theme) => ({
@@ -200,9 +200,10 @@ const StixCoreObjectContentFiles = ({
       name += '.html';
     }
 
-    // const templateContent = template1.content; // TODO remove hardcoded
-    const templateContent = await buildOutcomeTemplate(stixCoreObjectId, templateList);
-    console.log('templateContent', templateContent);
+    const hardcodedTemplate = templateAttribute;
+    const hardcodedUsedTemplateWidgets = usedTemplateWidgets;
+    const hardcodedResolvedAttributesWidgets = resolvedAttributesWidgets;
+    const templateContent = await buildOutcomeTemplate(stixCoreObjectId, hardcodedTemplate, hardcodedUsedTemplateWidgets, hardcodedResolvedAttributesWidgets);
 
     const blob = new Blob([templateContent], {
       type,
