@@ -54,15 +54,13 @@ import {
 } from 'ckeditor5';
 import React from 'react';
 import { useIntl } from 'react-intl';
-
-// Translations files
-import de from 'ckeditor5/translations/de.js';
-import en from 'ckeditor5/translations/en.js';
-import es from 'ckeditor5/translations/es.js';
-import fr from 'ckeditor5/translations/fr.js';
-import ja from 'ckeditor5/translations/ja.js';
-import ko from 'ckeditor5/translations/ko.js';
-import zh from 'ckeditor5/translations/zh.js';
+import de from 'ckeditor5/translations/de';
+import en from 'ckeditor5/translations/en';
+import es from 'ckeditor5/translations/es';
+import fr from 'ckeditor5/translations/fr';
+import ja from 'ckeditor5/translations/ja';
+import ko from 'ckeditor5/translations/ko';
+import zh from 'ckeditor5/translations/zh';
 
 const CKEDITOR_DEFAULT_CONFIG = {
   translations: [de, en, es, fr, ja, ko, zh],
