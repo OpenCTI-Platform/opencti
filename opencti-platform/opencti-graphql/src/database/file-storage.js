@@ -448,9 +448,12 @@ export const upload = async (context, user, filePath, fileUpload, opts) => {
   }
   const { createReadStream, filename, encoding = '' } = await fileUpload;
   const truncatedFileName = `${truncate(path.parse(filename).name, 200, false)}${truncate(path.parse(filename).ext, 10, false)}`;
-  const key = `${filePath}/${truncatedFileName}`;
+  // We lowercase the file name to make it case-insensitive
+  let key = `${filePath}/${truncatedFileName.toLowerCase()}`;
   const currentFile = await documentFindById(context, user, key);
   if (currentFile) {
+    // If file exists, we want to use it's internal_id to use the same casing and keep it compatible
+    key = currentFile.internal_id;
     if (utcDate(currentFile.metaData.version).isSameOrAfter(utcDate(metadata.version))) {
       return { upload: currentFile, untouched: true };
     }
