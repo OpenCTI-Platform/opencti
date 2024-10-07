@@ -5,10 +5,6 @@ import Typography from '@mui/material/Typography';
 import LinearProgress from '@mui/material/LinearProgress';
 import Paper from '@mui/material/Paper';
 import Button from '@mui/material/Button';
-import Dialog from '@mui/material/Dialog';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
-import DialogActions from '@mui/material/DialogActions';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -25,10 +21,14 @@ import TaskStatus from '../../../../components/TaskStatus';
 import { useFormatter } from '../../../../components/i18n';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 import { MESSAGING$ } from '../../../../relay/environment';
-import Transition from '../../../../components/Transition';
 import { MODULES_MODMANAGE } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import Drawer from '@components/common/drawer/Drawer';
+import Alert from '@mui/material/Alert';
+import ConnectorWorksErrorLine from './ConnectorWorksErrorLine';
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -72,7 +72,12 @@ export const connectorWorksWorkDeletionMutation = graphql`
   }
 `;
 
-type WorkMessages = NonNullable<NonNullable<NonNullable<ConnectorWorks_data$data['works']>['edges']>[0]>['node']['errors'];
+type WorkMessages = {
+  message: string,
+  sequence: number,
+  source: string,
+  timestamp: any,
+}
 
 interface ConnectorWorksComponentProps {
   data: ConnectorWorks_data$data
@@ -80,22 +85,92 @@ interface ConnectorWorksComponentProps {
   relay: RelayRefetchProp
 }
 
+type ParsedWorkMessage = {
+  isParsed: boolean,
+  tabsType: ErrorTabsType,
+  parsedError: {
+    timestamp: any,
+    type: string,
+    reason: string,
+    entityId: any,
+  }
+  rawError: WorkMessages,
+}
+
+type ErrorTabsType = 'Critical' | 'Warning' | 'Other';
+
+const criticalErrorTypes = [
+  'MULTIPLE_REFERENCES_ERROR',
+  'UNSUPPORTED_ERROR',
+  'DATABASE_ERROR',
+  'INTERNAL_SERVER_ERROR',
+];
+
+const warningErrorTypes = [
+  'VALIDATION_ERROR',
+  'MULTIPLE_ENTITIES_ERROR',
+  'ACL_ERROR',
+];
+
 const ConnectorWorksComponent: FunctionComponent<ConnectorWorksComponentProps> = ({ data, options, relay }) => {
   const works = data.works?.edges ?? [];
   const { t_i18n, nsdt } = useFormatter();
   const classes = useStyles();
-  const [displayErrors, setDisplayErrors] = useState<boolean>(false);
-  const [errors, setErrors] = useState<WorkMessages>([]);
   const [commit] = useApiMutation(connectorWorksWorkDeletionMutation);
+  const [openDrawerErrors, setOpenDrawerErrors] = useState<boolean>(false);
+  const [errors, setErrors] = useState<ParsedWorkMessage[]>([]);
+  const [tabValue, setTabValue] = useState<string>('Critical');
 
-  const handleOpenErrors = (errorsList: WorkMessages) => {
-    if (!errorsList) return;
-    setDisplayErrors(true);
-    setErrors(errorsList);
+  // Create custom error object from error because errors are in JSON
+  const parseErrors = (errorsList: WorkMessages[]) => {
+    let list: ParsedWorkMessage[];
+    // Try/Catch to prevent JSON.parse Exception
+    try {
+      const getTabsType = (message: string) => {
+        const type = JSON.parse(message.replace(/'/g, '"')).name;
+        if (criticalErrorTypes.includes(type)) return 'Critical';
+        if (warningErrorTypes.includes(type)) return 'Warning';
+        return 'Other';
+      };
+      list = errorsList.map((error) => (
+        {
+          isParsed: true,
+          tabsType: getTabsType(error.message),
+          parsedError: {
+            timestamp: error.timestamp,
+            type: JSON.parse(error.message.replace(/'/g, '"')).name,
+            reason: JSON.parse(error.message.replace(/'/g, '"')).error_message,
+            entityId: JSON.parse(error.source).source_ref,
+          },
+          rawError: error,
+        }
+      ));
+    } catch (_) {
+      list = errorsList.map((error) => (
+        {
+          isParsed: false,
+          tabsType: 'Other',
+          parsedError: {
+            timestamp: error.timestamp,
+            type: error.message,
+            reason: error.message,
+            entityId: error.source,
+          },
+          rawError: error,
+        }
+      ));
+    }
+    return (list);
   };
 
-  const handleCloseErrors = () => {
-    setDisplayErrors(false);
+  const handleOpenDrawerErrors = (errorsList: WorkMessages[]) => {
+    setOpenDrawerErrors(true);
+    const parsedList = parseErrors(errorsList as any);
+    setErrors(parsedList);
+  };
+
+  const handleCloseDrawerErrors = () => {
+    setOpenDrawerErrors(false);
     setErrors([]);
   };
 
@@ -220,7 +295,7 @@ const ConnectorWorksComponent: FunctionComponent<ConnectorWorksComponentProps> =
                 classes={{ root: classes.errorButton }}
                 variant="outlined"
                 color={(work.errors ?? []).length === 0 ? 'success' : 'warning'}
-                onClick={() => handleOpenErrors(work.errors ?? [])}
+                onClick={() => handleOpenDrawerErrors(work.errors ?? [] as any)}
                 size="small"
               >
                 {work.errors?.length} {t_i18n('errors')}
@@ -240,43 +315,37 @@ const ConnectorWorksComponent: FunctionComponent<ConnectorWorksComponentProps> =
           </Paper>
         );
       })}
-      <Dialog
-        PaperProps={{ elevation: 1 }}
-        open={displayErrors}
-        TransitionComponent={Transition}
-        onClose={handleCloseErrors}
-        fullScreen={true}
+      <Drawer
+        title={t_i18n('Errors')}
+        open={openDrawerErrors}
+        onClose={handleCloseDrawerErrors}
       >
-        <DialogContent>
-          <DialogContentText>
-            <TableContainer component={Paper}>
-              <Table aria-label="simple table">
-                <TableHead>
-                  <TableRow>
-                    <TableCell>{t_i18n('Timestamp')}</TableCell>
-                    <TableCell>{t_i18n('Message')}</TableCell>
-                    <TableCell>{t_i18n('Source')}</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {errors?.map((error) => error && (
-                    <TableRow key={error.timestamp}>
-                      <TableCell>{nsdt(error.timestamp)}</TableCell>
-                      <TableCell>{error.message}</TableCell>
-                      <TableCell>{error.source}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseErrors} color="primary">
-            {t_i18n('Close')}
-          </Button>
-        </DialogActions>
-      </Dialog>
+        <>
+          <Alert severity="info">{t_i18n('This page lists only the first 100 errors returned by the connector to ensure readability and efficient troubleshooting')}</Alert>
+          <Tabs value={tabValue} onChange={(_, newValue) => setTabValue(newValue)} centered>
+            <Tab label={t_i18n('Critical')} value="Critical" />
+            <Tab label={t_i18n('Warning')} value="Warning" />
+            <Tab label={t_i18n('Other')} value="Other" />
+          </Tabs>
+          <TableContainer component={Paper}>
+            <Table aria-label="simple table">
+              <TableHead>
+                <TableRow>
+                  <TableCell>{t_i18n('Timestamp')}</TableCell>
+                  <TableCell>{t_i18n('Error code')}</TableCell>
+                  <TableCell>{t_i18n('Message')}</TableCell>
+                  <TableCell>{t_i18n('Source')}</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {errors.map((error) => error.tabsType === tabValue && (
+                  <ConnectorWorksErrorLine error={error} />
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </>
+      </Drawer>
     </div>
   );
 };
