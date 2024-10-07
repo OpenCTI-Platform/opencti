@@ -4,7 +4,7 @@ import Tooltip from '@mui/material/Tooltip';
 import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 
-const DangerZoneChip = () => {
+const DangerZoneChip = ({ style }: { style?: React.CSSProperties }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   return (
@@ -24,6 +24,7 @@ const DangerZoneChip = () => {
         border: `1px solid ${theme.palette.dangerZone.main}`,
         color: theme.palette.dangerZone.text?.primary,
         backgroundColor: 'transparent',
+        ...style,
       }}
     >
       <Tooltip
