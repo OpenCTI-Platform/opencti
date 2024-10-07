@@ -18,6 +18,7 @@ import type { StixIdentity, StixMalware, StixThreatActor } from '../../../src/ty
 import type { StixRelation, StixSighting } from '../../../src/types/stix-sro';
 import { csvMapperDynamicIpAndUrl } from './dynamic-url-and-ip/mapper-url-ip';
 import type { StixIPv4Address, StixURL } from '../../../src/types/stix-sco';
+import { csvMapperMockFileHashHack } from './dynamic-file-hash/csv-mapper-mock-file-hash-hack';
 
 describe('CSV-PARSER', () => {
   it('Parse CSV - Simple entity', async () => {
@@ -192,5 +193,15 @@ describe('CSV-PARSER with dynamic mapping (aka different entity on one file)', (
     expect(firstUrl.score).toBe(22);
     expect(firstIdentity.name).toBe('AlienVault');
     expect(firstIdentity.identity_class).toBe('individual');
+  });
+
+  it('Parse CSV - dynamic entity with MD5 and SHA-256 files', async () => {
+    const filePath = './tests/02-integration/05-parser/dynamic-file-hash/distinct-hash.csv';
+    const bundle = await bundleProcess(testContext, ADMIN_USER, filePath, csvMapperMockFileHashHack as CsvMapperParsed);
+
+    const { objects } = bundle;
+    expect(objects.length).toBe(7); // 76 lines + 1 individual
+    console.log('ANGIE - objects:', objects);
+    // TODO expect
   });
 });
