@@ -29,6 +29,10 @@ import Transition from '../../../../components/Transition';
 import { MODULES_MODMANAGE } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import Drawer from '@components/common/drawer/Drawer';
+import DialogTitle from '@mui/material/DialogTitle';
+import ItemCopy from '../../../../components/ItemCopy';
+import Alert from '@mui/material/Alert';
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -72,7 +76,12 @@ export const connectorWorksWorkDeletionMutation = graphql`
   }
 `;
 
-type WorkMessages = NonNullable<NonNullable<NonNullable<ConnectorWorks_data$data['works']>['edges']>[0]>['node']['errors'];
+type WorkMessages = {
+  message: string,
+  sequence: number,
+  source: string,
+  timestamp: any,
+}
 
 interface ConnectorWorksComponentProps {
   data: ConnectorWorks_data$data
@@ -80,23 +89,60 @@ interface ConnectorWorksComponentProps {
   relay: RelayRefetchProp
 }
 
+type ParsedWorkMessage = {
+  parsedError: {
+    timestamp: any,
+    type: string,
+    reason: string,
+    entityId: any,
+  }
+  rawError: WorkMessages,
+}
+
 const ConnectorWorksComponent: FunctionComponent<ConnectorWorksComponentProps> = ({ data, options, relay }) => {
   const works = data.works?.edges ?? [];
   const { t_i18n, nsdt } = useFormatter();
   const classes = useStyles();
-  const [displayErrors, setDisplayErrors] = useState<boolean>(false);
-  const [errors, setErrors] = useState<WorkMessages>([]);
   const [commit] = useApiMutation(connectorWorksWorkDeletionMutation);
+  const [openDrawerErrors, setOpenDrawerErrors] = useState<boolean>(false);
+  const [errors, setErrors] = useState<ParsedWorkMessage[]>([]);
+  const [openModalErrorDetails, setOpenModalErrorDetails] = useState<boolean>(false);
+  const [errorDetails, setErrorDetails] = useState<WorkMessages>({});
 
-  const handleOpenErrors = (errorsList: WorkMessages) => {
-    if (!errorsList) return;
-    setDisplayErrors(true);
-    setErrors(errorsList);
+  const parseErrors = (errorsList: WorkMessages[]) => {
+    const list = errorsList && errorsList.map((error) => (
+      {
+        parsedError: {
+          timestamp: error.timestamp,
+          type: error.message && JSON.parse(error.message.replace(/'/g, '"')).name || error.message,
+          reason: error.message && JSON.parse(error.message.replace(/'/g, '"')).error_message || error.message,
+          entityId: error.source && JSON.parse(error.source).source_ref,
+        },
+        rawError: error,
+      }
+    ));
+    return (list);
   };
 
-  const handleCloseErrors = () => {
-    setDisplayErrors(false);
+  const handleOpenDrawerErrors = (errorsList: WorkMessages[]) => {
+    setOpenDrawerErrors(true);
+    const parsedList = parseErrors(errorsList as any);
+    setErrors(parsedList);
+  };
+
+  const handleCloseDrawerErrors = () => {
+    setOpenDrawerErrors(false);
     setErrors([]);
+  };
+
+  const handleOpenModalError = (error: WorkMessages) => {
+    setOpenModalErrorDetails(true);
+    setErrorDetails(error);
+  };
+
+  const handleCloseModalError = () => {
+    setOpenModalErrorDetails(false);
+    // setErrorDetails({});
   };
 
   const handleDeleteWork = (workId: string) => {
@@ -220,7 +266,7 @@ const ConnectorWorksComponent: FunctionComponent<ConnectorWorksComponentProps> =
                 classes={{ root: classes.errorButton }}
                 variant="outlined"
                 color={(work.errors ?? []).length === 0 ? 'success' : 'warning'}
-                onClick={() => handleOpenErrors(work.errors ?? [])}
+                onClick={() => handleOpenDrawerErrors(work.errors ?? [] as any)}
                 size="small"
               >
                 {work.errors?.length} {t_i18n('errors')}
@@ -240,39 +286,63 @@ const ConnectorWorksComponent: FunctionComponent<ConnectorWorksComponentProps> =
           </Paper>
         );
       })}
+      <Drawer
+        title={t_i18n('Errors')}
+        open={openDrawerErrors}
+        onClose={handleCloseDrawerErrors}
+      >
+        <>
+          <Alert severity="info">{t_i18n('This page lists only the first 100 errors returned by the connector to ensure readability and efficient troubleshooting')}</Alert>
+          <TableContainer component={Paper}>
+            <Table aria-label="simple table">
+              <TableHead>
+                <TableRow>
+                  <TableCell>{t_i18n('Timestamp')}</TableCell>
+                  <TableCell>{t_i18n('Error code')}</TableCell>
+                  <TableCell>{t_i18n('Message')}</TableCell>
+                  <TableCell>{t_i18n('Source')}</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {errors?.map((error) => error && (
+                  <TableRow key={error.parsedError.timestamp} hover onClick={() => handleOpenModalError(error.rawError)}>
+                    <TableCell>{nsdt(error.parsedError.timestamp)}</TableCell>
+                    <TableCell>
+                      <Button href={`https://docs.opencti.io/latest/deployment/troubleshooting/#${error.parsedError.type}`} target="_blank" onClick={(event) => event.stopPropagation()}>
+                        {error.parsedError.type}
+                      </Button>
+                    </TableCell>
+                    <TableCell>{error.parsedError.reason}</TableCell>
+                    <TableCell>
+                      <Button href={`/dashboard/id/${error.parsedError.entityId}`} target="_blank" onClick={(event) => event.stopPropagation()}>
+                        {error.parsedError.entityId}
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </>
+      </Drawer>
       <Dialog
         PaperProps={{ elevation: 1 }}
-        open={displayErrors}
+        open={openModalErrorDetails}
         TransitionComponent={Transition}
-        onClose={handleCloseErrors}
-        fullScreen={true}
+        onClose={handleCloseModalError}
       >
+        <DialogTitle>
+          Error
+        </DialogTitle>
         <DialogContent>
           <DialogContentText>
-            <TableContainer component={Paper}>
-              <Table aria-label="simple table">
-                <TableHead>
-                  <TableRow>
-                    <TableCell>{t_i18n('Timestamp')}</TableCell>
-                    <TableCell>{t_i18n('Message')}</TableCell>
-                    <TableCell>{t_i18n('Source')}</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {errors?.map((error) => error && (
-                    <TableRow key={error.timestamp}>
-                      <TableCell>{nsdt(error.timestamp)}</TableCell>
-                      <TableCell>{error.message}</TableCell>
-                      <TableCell>{error.source}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
+            <pre><ItemCopy content={errorDetails.timestamp} variant={'inline'} /></pre>
+            <pre><ItemCopy content={errorDetails.message} /></pre>
+            <pre><ItemCopy content={errorDetails.source} /></pre>
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseErrors} color="primary">
+          <Button onClick={handleCloseModalError} color="primary">
             {t_i18n('Close')}
           </Button>
         </DialogActions>
