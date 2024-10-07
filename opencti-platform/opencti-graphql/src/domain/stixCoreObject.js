@@ -48,6 +48,7 @@ import { getEntitiesMapFromCache } from '../database/cache';
 import { isUserCanAccessStoreElement, SYSTEM_USER, validateUserAccessOperation } from '../utils/access';
 import { uploadToStorage } from '../database/file-storage-helper';
 import { connectorsForAnalysis } from '../database/repository';
+import { getDraftContext } from '../utils/draftContext';
 
 export const findAll = async (context, user, args) => {
   let types = [];
@@ -198,6 +199,7 @@ export const stixCoreObjectDelete = async (context, user, stixCoreObjectId) => {
 };
 
 export const askElementEnrichmentForConnector = async (context, user, enrichedId, connectorId) => {
+  if (getDraftContext(context, user)) throw new Error('Cannot ask for enrichment in draft');
   const connector = await storeLoadById(context, user, connectorId, ENTITY_TYPE_CONNECTOR);
   const element = await internalLoadById(context, user, enrichedId);
   if (!element) {
@@ -349,6 +351,7 @@ export const stixCoreObjectsMultiDistribution = (context, user, args) => {
 
 // region export
 export const stixCoreObjectsExportAsk = async (context, user, args) => {
+  if (getDraftContext(context, user)) throw new Error('Cannot ask for export in draft');
   const { exportContext, format, exportType, contentMaxMarkings, selectedIds, fileMarkings } = args;
   const { search, orderBy, orderMode, filters } = args;
   const argsFilters = { search, orderBy, orderMode, filters };
@@ -358,6 +361,7 @@ export const stixCoreObjectsExportAsk = async (context, user, args) => {
   return works.map((w) => workToExportFile(w));
 };
 export const stixCoreObjectExportAsk = async (context, user, stixCoreObjectId, input) => {
+  if (getDraftContext(context, user)) throw new Error('Cannot ask for export in draft');
   const { format, exportType, contentMaxMarkings, fileMarkings } = input;
   const entity = await storeLoadById(context, user, stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT);
   const works = await askEntityExport(context, user, format, entity, exportType, contentMaxMarkings, fileMarkings);
@@ -394,6 +398,7 @@ export const CONTENT_TYPE_FIELDS = 'fields';
 export const CONTENT_TYPE_FILE = 'file';
 
 export const askElementAnalysisForConnector = async (context, user, analyzedId, contentSource, contentType, connectorId) => {
+  if (getDraftContext(context, user)) throw new Error('Cannot ask for analysis in draft');
   logApp.debug(`[JOBS] ask analysis for content type ${contentType} and content source ${contentSource}`);
 
   if (contentType === CONTENT_TYPE_FIELDS) return await askFieldsAnalysisForConnector(context, user, analyzedId, contentSource, connectorId);
@@ -596,6 +601,7 @@ export const stixCoreAnalysis = async (context, user, entityId, contentSource, c
 };
 
 export const stixCoreObjectImportPush = async (context, user, id, file, args = {}) => {
+  if (getDraftContext(context, user)) throw new Error('Cannot import in draft');
   let lock;
   const { noTriggerImport, version: fileVersion, fileMarkings: file_markings, importContextEntities } = args;
   const previous = await storeLoadByIdWithRefs(context, user, id);
@@ -641,7 +647,7 @@ export const stixCoreObjectImportPush = async (context, user, id, file, args = {
     // Patch the updated_at to force live stream evolution
     const eventFile = storeFileConverter(user, up);
     const files = [...(previous.x_opencti_files ?? []).filter((f) => f.id !== up.id), eventFile];
-    await elUpdateElement({
+    await elUpdateElement(context, user, {
       _index: previous._index,
       internal_id: internalId,
       entity_type: previous.entity_type, // required for schema validation
@@ -680,6 +686,7 @@ export const stixCoreObjectImportPush = async (context, user, id, file, args = {
 };
 
 export const stixCoreObjectImportDelete = async (context, user, fileId) => {
+  if (getDraftContext(context, user)) throw new Error('Cannot delete imports in draft');
   if (!fileId.startsWith('import')) {
     throw UnsupportedError('Cant delete an exported file with this method');
   }
@@ -715,7 +722,7 @@ export const stixCoreObjectImportDelete = async (context, user, fileId) => {
     await deleteFile(context, user, fileId);
     // Patch the updated_at to force live stream evolution
     const files = (previous.x_opencti_files ?? []).filter((f) => f.id !== fileId);
-    await elUpdateElement({
+    await elUpdateElement(context, user, {
       _index: previous._index,
       internal_id: entityId,
       updated_at: now(),

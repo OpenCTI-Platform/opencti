@@ -17,6 +17,7 @@ import { ENTITY_TYPE_VOCABULARY } from '../modules/vocabulary/vocabulary-types';
 import { ENTITY_TYPE_DELETE_OPERATION } from '../modules/deleteOperation/deleteOperation-types';
 import { BackgroundTaskScope, Capabilities, FilterMode } from '../generated/graphql';
 import { extractFilterGroupValues, isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
+import { getDraftContext } from '../utils/draftContext';
 
 export const TASK_TYPE_QUERY = 'QUERY';
 export const TASK_TYPE_RULE = 'RULE';
@@ -283,6 +284,7 @@ const authorizedMembersForTask = (user, scope) => {
 };
 
 export const createListTask = async (context, user, input) => {
+  if (getDraftContext(context, user)) throw new Error('Cannot create background task in draft');
   const { actions, ids, scope } = input;
   await checkActionValidity(context, user, input, scope, TASK_TYPE_LIST);
   const task = createDefaultTask(user, input, TASK_TYPE_LIST, ids.length, scope);

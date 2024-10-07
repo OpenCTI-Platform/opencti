@@ -8,6 +8,7 @@
     "enabled_ui": true,
     "disabled_dev_features": [
       "FAB_REPLACEMENT",
+      "DRAFT_WORKSPACE",
       "NEW_IMPORT_SCREENS",
       "FILIGRAN_LOADER",
       "CONTAINERS_AUTHORIZED_MEMBERS",

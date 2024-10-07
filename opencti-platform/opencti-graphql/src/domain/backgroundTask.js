@@ -19,6 +19,7 @@ import { ENTITY_TYPE_DELETE_OPERATION } from '../modules/deleteOperation/deleteO
 import { BackgroundTaskScope, FilterMode } from '../generated/graphql';
 import { findAll as findAllWorkspaces } from '../modules/workspace/workspace-domain';
 import { addFilter } from '../utils/filtering/filtering-utils';
+import { getDraftContext } from '../utils/draftContext';
 
 export const DEFAULT_ALLOWED_TASK_ENTITY_TYPES = [
   ABSTRACT_STIX_CORE_OBJECT,
@@ -126,6 +127,7 @@ export const createRuleTask = async (context, user, ruleDefinition, input) => {
 };
 
 export const createQueryTask = async (context, user, input) => {
+  if (getDraftContext(context, user)) throw new Error('Cannot create background task in draft');
   const { actions, filters, excluded_ids = [], search = null, scope } = input;
   await checkActionValidity(context, user, input, scope, TASK_TYPE_QUERY);
   const queryData = await executeTaskQuery(context, user, filters, search, scope);

@@ -24,6 +24,7 @@ import { ENTITY_TYPE_LABEL } from '../../schema/stixMetaObject';
 import { RELATION_TARGETS, RELATION_USES } from '../../schema/stixCoreRelationship';
 import { ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL } from '../threatActorIndividual/threatActorIndividual-types';
 import { compute } from '../../database/ai-llm';
+import { getDraftContext } from '../../utils/draftContext';
 
 const XTM_OPENBAS_URL = conf.get('xtm:openbas_url');
 const RESOLUTION_LIMIT = 50;
@@ -356,6 +357,7 @@ export const generateOpenBasScenario = async (context, user, stixCoreObject, att
 };
 
 export const generateContainerScenario = async (context, user, args) => {
+  if (getDraftContext(context, user)) throw new Error('Cannot generate scenario in draft');
   const { id, interval, selection, simulationType = 'technical', useAI = false } = args;
   if (useAI || simulationType !== 'technical') {
     await checkEnterpriseEdition(context);
@@ -368,6 +370,7 @@ export const generateContainerScenario = async (context, user, args) => {
 };
 
 export const generateThreatScenario = async (context, user, args) => {
+  if (getDraftContext(context, user)) throw new Error('Cannot generate scenario in draft');
   const { id, interval, selection, simulationType = 'technical', useAI = false } = args;
   if (useAI || simulationType !== 'technical') {
     await checkEnterpriseEdition(context);
@@ -380,6 +383,7 @@ export const generateThreatScenario = async (context, user, args) => {
 };
 
 export const generateVictimScenario = async (context, user, args) => {
+  if (getDraftContext(context, user)) throw new Error('Cannot generate scenario in draft');
   const { id, interval, selection, simulationType = 'technical', useAI = false } = args;
   if (useAI || simulationType !== 'technical') {
     await checkEnterpriseEdition(context);
