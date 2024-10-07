@@ -112,7 +112,6 @@ test('Add and remove observable from Observables tab of a Report as Admin user',
   const containerObservablesPage = new ContainerObservablesPage(page);
   const containerAddObservablesPage = new ContainerAddObservablesPage(page);
   const leftBarPage = new LeftBarPage(page);
-  const search = new SearchPageModel(page);
 
   // Create a report and check that adding an observable is possible
   await page.goto('/dashboard/analyses/reports');
@@ -127,9 +126,6 @@ test('Add and remove observable from Observables tab of a Report as Admin user',
   await expect(containerObservablesPage.getPage()).toBeVisible();
   await containerObservablesPage.getAddObservableListButton().click();
   await containerAddObservablesPage.createNewIPV4Observable('8.8.8.8');
-  await page.getByRole('textbox', { name: 'Search these results...' }).click();
-  await page.getByRole('textbox', { name: 'Search these results...' }).pressSequentially('8.8.8.8', { delay: 100 });
-  await page.getByRole('textbox', { name: 'Search these results...' }).press('Enter');
   await expect(containerAddObservablesPage.getObservable('IPv4 address 8.8.8.8')).toBeVisible();
   await containerAddObservablesPage.getObservable('IPv4 address 8.8.8.8').click();
   await containerAddObservablesPage.getCloseObservablesListButton().click();
@@ -137,6 +133,7 @@ test('Add and remove observable from Observables tab of a Report as Admin user',
 
   // Enable report references and check that removing observable is still possible as admin user
   await leftBarPage.clickOnMenu('Settings', 'Customization');
+  const search = new SearchPageModel(page);
   await search.addSearch('report');
   await page.getByRole('link', { name: 'Report' }).click();
   await page.locator('span').filter({ hasText: 'Enforce references' }).click();
@@ -167,7 +164,6 @@ test.describe('Add and remove observable from Observables tab of a Report as noB
     const containerAddObservablesPage = new ContainerAddObservablesPage(page);
     const commitMessagePage = new CommitMessagePage(page);
     const leftBarPage = new LeftBarPage(page);
-    const search = new SearchPageModel(page);
 
     // Create a report and check that adding an observable is possible
     await reportPage.goto();
@@ -181,9 +177,6 @@ test.describe('Add and remove observable from Observables tab of a Report as noB
     await expect(containerObservablesPage.getPage()).toBeVisible();
     await containerObservablesPage.getAddObservableListButton().click();
     await containerAddObservablesPage.createNewIPV4Observable('9.9.9.9');
-    await page.getByRole('textbox', { name: 'Search these results...' }).click();
-    await page.getByRole('textbox', { name: 'Search these results...' }).pressSequentially('9.9.9.9', { delay: 100 });
-    await page.getByRole('textbox', { name: 'Search these results...' }).press('Enter');
     await expect(containerAddObservablesPage.getObservable('IPv4 address 9.9.9.9')).toBeVisible();
     await containerAddObservablesPage.getObservable('IPv4 address 9.9.9.9').click();
     await containerAddObservablesPage.getCloseObservablesListButton().click();
@@ -191,6 +184,7 @@ test.describe('Add and remove observable from Observables tab of a Report as noB
 
     // Enable report references and check that removing observable asks for an external reference
     await leftBarPage.clickOnMenu('Settings', 'Customization');
+    const search = new SearchPageModel(page);
     await search.addSearch('report');
     await page.getByRole('link', { name: 'Report' }).click();
     await page.locator('span').filter({ hasText: 'Enforce references' }).click();
