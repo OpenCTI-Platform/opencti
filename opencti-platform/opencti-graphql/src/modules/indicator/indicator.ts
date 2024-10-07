@@ -4,6 +4,8 @@ import { ENTITY_TYPE_INDICATOR, type StixIndicator, type StoreEntityIndicator } 
 import convertIndicatorToStix from './indicator-converter';
 import { killChainPhases, objectOrganization } from '../../schema/stixRefRelationship';
 import { revoked } from '../../schema/attribute-definition';
+import { RELATION_DERIVED_FROM } from '../../schema/stixCoreRelationship';
+import { REL_BUILT_IN } from '../../database/stix';
 
 const INDICATOR_DEFINITION: ModuleDefinition<StoreEntityIndicator, StixIndicator> = {
   type: {
@@ -86,7 +88,14 @@ const INDICATOR_DEFINITION: ModuleDefinition<StoreEntityIndicator, StixIndicator
     },
     { ...revoked, isFilterable: true },
   ],
-  relations: [],
+  relations: [
+    {
+      name: RELATION_DERIVED_FROM,
+      targets: [
+        { name: ENTITY_TYPE_INDICATOR, type: REL_BUILT_IN },
+      ]
+    }
+  ],
   relationsRefs: [objectOrganization, killChainPhases],
   representative: (stix: StixIndicator) => {
     return stix.name;

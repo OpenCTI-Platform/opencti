@@ -11,6 +11,7 @@ import {
   RELATION_CITIZEN_OF,
   RELATION_COMPROMISES,
   RELATION_COOPERATES_WITH,
+  RELATION_DERIVED_FROM,
   RELATION_EMPLOYED_BY,
   RELATION_HOSTS,
   RELATION_IMPERSONATES,
@@ -270,6 +271,14 @@ const THREAT_ACTOR_INDIVIDUAL_DEFINITION: ModuleDefinition<StoreEntityThreatActo
         { name: ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL, type: REL_EXTENDED },
       ]
     },
+    {
+      name: RELATION_DERIVED_FROM,
+      targets: [
+        { name: ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL, type: REL_BUILT_IN },
+        { name: ENTITY_TYPE_THREAT_ACTOR_GROUP, type: REL_BUILT_IN },
+        { name: ENTITY_TYPE_THREAT_ACTOR, type: REL_BUILT_IN },
+      ]
+    }
   ],
   relationsRefs: [
     objectOrganization,

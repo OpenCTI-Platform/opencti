@@ -140,7 +140,7 @@ class ChannelKnowledgeComponent extends Component {
             element={
               <EntityStixCoreRelationships
                 entityId={channel.id}
-                relationshipTypes={['amplifies']}
+                relationshipTypes={['amplifies', 'derived-from']}
                 stixCoreObjectTypes={['Channel']}
                 entityLink={link}
                 isRelationReversed={false}
