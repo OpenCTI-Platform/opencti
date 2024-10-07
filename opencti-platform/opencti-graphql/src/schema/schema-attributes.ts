@@ -337,7 +337,7 @@ export const validateDataBeforeIndexing = (element: any) => {
 
   Object.keys(element).forEach((elementKey) => {
     const input = element[elementKey];
-    const attributeSchemaDef = schemaAttributesDefinition.getAttributeByName(elementKey);
+    const attributeSchemaDef = schemaAttributesDefinition.getAttribute(element.entity_type, elementKey);
     if (!attributeSchemaDef) {
       return; // no validation to do, happens for meta fields like "_index"
     }
