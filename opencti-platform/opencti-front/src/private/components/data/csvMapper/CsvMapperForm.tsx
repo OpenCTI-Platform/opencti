@@ -214,17 +214,17 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({ csvMapper, onSub
                   >
                     <FormControlLabel
                       value=","
-                      control={<Radio />}
+                      control={<Radio/>}
                       label={t_i18n('Comma')}
                     />
                     <FormControlLabel
                       value=";"
-                      control={<Radio />}
+                      control={<Radio/>}
                       label={t_i18n('Semicolon')}
                     />
                     <FormControlLabel
                       value={'|'}
-                      control={<Radio />}
+                      control={<Radio/>}
                       label={t_i18n('Pipe')}
                     />
                   </RadioGroup>
@@ -265,6 +265,25 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({ csvMapper, onSub
                 >
                   <Add fontSize="small"/>
                 </IconButton>
+              </div>
+              <div className={classNames(classes.center, classes.marginTop)}>
+                <Field
+                  component={SwitchField}
+                  type="checkbox"
+                  name="Dynamic_mapping"
+                  label={t_i18n('Dynamic mapping')}
+                />
+                <Tooltip
+                  title={t_i18n(
+                    'If this option is selected, we will dynamically map the column value that you provide to the entity.',
+                  )}
+                >
+                  <InformationOutline
+                    fontSize="small"
+                    color="primary"
+                    style={{ cursor: 'default' }}
+                  />
+                </Tooltip>
               </div>
               <FieldArray
                 name="entity_representations"
