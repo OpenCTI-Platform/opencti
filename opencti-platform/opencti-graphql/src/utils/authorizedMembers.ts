@@ -17,13 +17,14 @@ import { findAllMembers, findById as findUser } from '../domain/user';
 import { findById as findGroup } from '../domain/group';
 import { findById as findOrganization } from '../modules/organization/organization-domain';
 import { RELATION_MEMBER_OF, RELATION_PARTICIPATE_TO } from '../schema/internalRelationship';
-import { FunctionalError } from '../config/errors';
+import { FunctionalError, UnsupportedError } from '../config/errors';
 import { patchAttribute } from '../database/middleware';
 import { notify } from '../database/redis';
 import { BUS_TOPICS } from '../config/conf';
 import { getEntityFromCache } from '../database/cache';
 import { ENTITY_TYPE_SETTINGS, isInternalObject } from '../schema/internalObject';
 import type { BasicStoreSettings } from '../types/settings';
+import { getDraftContext } from './draftContext';
 
 export const getAuthorizedMembers = async (
   context: AuthContext,
@@ -100,6 +101,7 @@ export const editAuthorizedMembers = async (
     busTopicKey: keyof typeof BUS_TOPICS, // TODO improve busTopicKey types
   },
 ) => {
+  if (getDraftContext(context, user)) throw UnsupportedError('Cannot edit authorized members in draft');
   const { entityId, input, requiredCapabilities, entityType, busTopicKey } = args;
   let authorized_members: { id: string, access_right: string }[] | null = null;
 

@@ -677,6 +677,7 @@ export const userEditField = async (context, user, userId, rawInputs) => {
       throw ForbiddenAccess();
     }
   }
+  let refreshSessionNeeded = false;
   for (let index = 0; index < rawInputs.length; index += 1) {
     const input = rawInputs[index];
     if (input.key === 'password') {
@@ -701,11 +702,23 @@ export const userEditField = async (context, user, userId, rawInputs) => {
     }
     if (input.key === 'user_confidence_level') {
       // user's effective level might have changed, we need to refresh session info
-      await userSessionRefresh(userId);
+      refreshSessionNeeded = true;
+    }
+    if (input.key === 'draft_context') {
+      // draft context might have changed, we need to check draft context exists and refresh session info
+      const draftContext = R.head(input.value).toString();
+      if (draftContext !== '') {
+        const draftWorkspace = await internalLoadById(context, user, draftContext);
+        if (!draftWorkspace) throw Error('Could not find draft workspace');
+      }
+      refreshSessionNeeded = true;
     }
     inputs.push(input);
   }
   const { element } = await updateAttribute(context, user, userId, ENTITY_TYPE_USER, inputs);
+  if (refreshSessionNeeded) { // refresh session after update
+    await userSessionRefresh(userId);
+  }
   const input = updatedInputsToData(element, inputs);
   const personalUpdate = user.id === userId;
   const actionEmail = ENABLED_DEMO_MODE ? REDACTED_USER.user_email : element.user_email;
@@ -799,6 +812,7 @@ const ME_USER_MODIFIABLE_ATTRIBUTES = [
   'submenu_auto_collapse',
   'monochrome_labels',
   'password',
+  'draft_context',
 ];
 export const meEditField = async (context, user, userId, inputs, password = null) => {
   const input = R.head(inputs);
@@ -1200,7 +1214,7 @@ const regenerateUserSession = async (user, req, res) => {
 
 const buildSessionUser = (origin, impersonate, provider, settings) => {
   const user = impersonate ?? origin;
-  return {
+  const sessionUser = {
     id: user.id,
     individual_id: user.individual_id,
     session_creation: now(),
@@ -1266,6 +1280,11 @@ const buildSessionUser = (origin, impersonate, provider, settings) => {
     personal_notifiers: user.personal_notifiers,
     ...user.provider_metadata
   };
+
+  if (isFeatureEnabled('DRAFT_WORKSPACE')) {
+    return { ...sessionUser, draft_context: user.draft_context };
+  }
+  return sessionUser;
 };
 
 const virtualOrganizationAdminCapability = {

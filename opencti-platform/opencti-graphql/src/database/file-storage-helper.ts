@@ -8,6 +8,7 @@ import { logApp } from '../config/conf';
 import { allFilesForPaths, EXPORT_STORAGE_PATH, IMPORT_STORAGE_PATH, SUPPORT_STORAGE_PATH } from '../modules/internal/document/document-domain';
 import { deleteWorkForSource } from '../domain/work';
 import { ENTITY_TYPE_SUPPORT_PACKAGE } from '../modules/support/support-types';
+import { getDraftContext } from '../utils/draftContext';
 
 interface FileUploadOpts {
   entity?:BasicStoreBase | unknown, // entity on which the file is uploaded
@@ -53,6 +54,7 @@ interface S3File {
  * @param opts
  */
 export const uploadToStorage = (context: AuthContext, user: AuthUser, filePath: string, fileUpload: FileUploadData, opts: FileUploadOpts) => {
+  if (getDraftContext(context, user)) throw new Error('Cannot upload file in draft context');
   return upload(context, user, filePath, fileUpload, opts);
 };
 

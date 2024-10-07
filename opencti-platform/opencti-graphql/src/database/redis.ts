@@ -26,6 +26,7 @@ import type { ExecutionEnvelop } from '../manager/playbookManager';
 import { generateCreateMessage, generateDeleteMessage, generateMergeMessage, generateRestoreMessage } from './generate-message';
 import { INPUT_OBJECTS } from '../schema/general';
 import { enrichWithRemoteCredentials } from '../config/credentials';
+import { getDraftContext } from '../utils/draftContext';
 
 const USE_SSL = booleanConf('redis:use_ssl', false);
 const REDIS_CA = conf.get('redis:ca').map((path: string) => loadCert(path));
@@ -354,8 +355,8 @@ export const redisFetchLatestDeletions = async () => {
   await getClientLock().zremrangebyscore('platform-deletions', '-inf', time - (5 * 1000));
   return getClientLock().zrange('platform-deletions', 0, -1);
 };
-interface LockOptions { automaticExtension?: boolean, retryCount?: number }
-const defaultLockOpts: LockOptions = { automaticExtension: true, retryCount: conf.get('app:concurrency:retry_count') };
+interface LockOptions { automaticExtension?: boolean, retryCount?: number, draftId?: string }
+const defaultLockOpts: LockOptions = { automaticExtension: true, retryCount: conf.get('app:concurrency:retry_count'), draftId: '' };
 const getStackTrace = () => {
   const obj: any = {};
   Error.captureStackTrace(obj, getStackTrace);
@@ -365,7 +366,8 @@ export const lockResource = async (resources: Array<string>, opts: LockOptions =
   let timeout: NodeJS.Timeout | undefined;
   let extension: undefined | Promise<void>;
   const initialCallStack = getStackTrace();
-  const locks = R.uniq(resources).map((id) => `{locks}:${id}`);
+  const draftId = opts.draftId ? opts.draftId : '';
+  const locks = R.uniq(resources).map((id) => `{locks}:${id}${draftId}`);
   const automaticExtensionThreshold = conf.get('app:concurrency:extension_threshold');
   const retryDelay = conf.get('app:concurrency:retry_delay');
   const retryJitter = conf.get('app:concurrency:retry_jitter');
@@ -452,7 +454,8 @@ const mapJSToStream = (event: any) => {
   return cmdArgs;
 };
 const pushToStream = async (context: AuthContext, user: AuthUser, client: Cluster | Redis, event: BaseEvent, opts: EventOpts = {}) => {
-  if (isStreamPublishable(opts)) {
+  const draftContext = getDraftContext(context, user);
+  if (!draftContext && isStreamPublishable(opts)) {
     const pushToStreamFn = async () => {
       if (streamTrimming) {
         await client.call('XADD', REDIS_STREAM_NAME, 'MAXLEN', '~', streamTrimming, '*', ...mapJSToStream(event));
