@@ -3,10 +3,6 @@ import InputLabel from '@mui/material/InputLabel';
 import FormHelperText from '@mui/material/FormHelperText';
 import { CloseOutlined, FullscreenOutlined } from '@mui/icons-material';
 import * as R from 'ramda';
-import { CKEditor } from '@ckeditor/ckeditor5-react';
-import Editor from 'ckeditor5-custom-build/build/ckeditor';
-import 'ckeditor5-custom-build/build/translations/fr';
-import 'ckeditor5-custom-build/build/translations/zh-cn';
 import IconButton from '@mui/material/IconButton';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
@@ -17,6 +13,7 @@ import Tooltip from '@mui/material/Tooltip';
 import { FilePdfBox } from 'mdi-material-ui';
 import TextFieldAskAI from '../../private/components/common/form/TextFieldAskAI';
 import { useFormatter } from '../i18n';
+import CKEditor from '../CKEditor';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -88,20 +85,12 @@ const RichTextField = (props) => {
 
   const CKEditorInstance = (
     <CKEditor
-      editor={Editor}
       onReady={(editor) => {
         editorReference.current = editor;
         editorReference.current.model.document.selection.on(
           'change',
           internalOnSelect,
         );
-      }}
-      config={{
-        width: '100%',
-        language: 'en',
-        image: {
-          resizeUnit: 'px',
-        },
       }}
       data={value || ''}
       onChange={(_, editor) => {
