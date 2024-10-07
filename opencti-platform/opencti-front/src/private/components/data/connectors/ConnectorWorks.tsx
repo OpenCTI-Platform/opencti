@@ -5,10 +5,6 @@ import Typography from '@mui/material/Typography';
 import LinearProgress from '@mui/material/LinearProgress';
 import Paper from '@mui/material/Paper';
 import Button from '@mui/material/Button';
-import Dialog from '@mui/material/Dialog';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
-import DialogActions from '@mui/material/DialogActions';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -25,14 +21,12 @@ import TaskStatus from '../../../../components/TaskStatus';
 import { useFormatter } from '../../../../components/i18n';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 import { MESSAGING$ } from '../../../../relay/environment';
-import Transition from '../../../../components/Transition';
 import { MODULES_MODMANAGE } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import Drawer from '@components/common/drawer/Drawer';
-import DialogTitle from '@mui/material/DialogTitle';
-import ItemCopy from '../../../../components/ItemCopy';
 import Alert from '@mui/material/Alert';
+import ConnectorWorksErrorLine from '@components/data/connectors/ConnectorWorksErrorLine';
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -107,8 +101,6 @@ const ConnectorWorksComponent: FunctionComponent<ConnectorWorksComponentProps> =
   const [commit] = useApiMutation(connectorWorksWorkDeletionMutation);
   const [openDrawerErrors, setOpenDrawerErrors] = useState<boolean>(false);
   const [errors, setErrors] = useState<ParsedWorkMessage[]>([]);
-  const [openModalErrorDetails, setOpenModalErrorDetails] = useState<boolean>(false);
-  const [errorDetails, setErrorDetails] = useState<WorkMessages>({});
 
   const parseErrors = (errorsList: WorkMessages[]) => {
     let list: ParsedWorkMessage[];
@@ -151,16 +143,6 @@ const ConnectorWorksComponent: FunctionComponent<ConnectorWorksComponentProps> =
   const handleCloseDrawerErrors = () => {
     setOpenDrawerErrors(false);
     setErrors([]);
-  };
-
-  const handleOpenModalError = (error: WorkMessages) => {
-    setOpenModalErrorDetails(true);
-    setErrorDetails(error);
-  };
-
-  const handleCloseModalError = () => {
-    setOpenModalErrorDetails(false);
-    // setErrorDetails({});
   };
 
   const handleDeleteWork = (workId: string) => {
@@ -322,60 +304,14 @@ const ConnectorWorksComponent: FunctionComponent<ConnectorWorksComponentProps> =
                 </TableRow>
               </TableHead>
               <TableBody>
-                {errors.map((error) => error.isParsed ? (
-                  <TableRow key={error.parsedError.timestamp} hover onClick={() => handleOpenModalError(error.rawError)}>
-                    <TableCell>{nsdt(error.parsedError.timestamp)}</TableCell>
-                    <TableCell>
-                      <Button href={`https://docs.opencti.io/latest/deployment/troubleshooting/#${error.parsedError.type}`} target="_blank" onClick={(event) => event.stopPropagation()}>
-                        {error.parsedError.type}
-                      </Button>
-                    </TableCell>
-                    <TableCell>{error.parsedError.reason}</TableCell>
-                    <TableCell>
-                      <Button href={`/dashboard/id/${error.parsedError.entityId}`} target="_blank" onClick={(event) => event.stopPropagation()}>
-                        {error.parsedError.entityId}
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  <TableRow key={error.parsedError.timestamp} hover onClick={() => handleOpenModalError(error.rawError)}>
-                    <TableCell>{nsdt(error.rawError.timestamp)}</TableCell>
-                    <TableCell>
-                      <Button href={'https://docs.opencti.io/latest/deployment/troubleshooting'} target="_blank" onClick={(event) => event.stopPropagation()}>
-                        {t_i18n('Docs')}
-                      </Button>
-                    </TableCell>
-                    <TableCell>{error.rawError.message}</TableCell>
-                    <TableCell>{error.rawError.source}</TableCell>
-                  </TableRow>
+                {errors.map((error) => (
+                  <ConnectorWorksErrorLine error={error} />
                 ))}
               </TableBody>
             </Table>
           </TableContainer>
         </>
       </Drawer>
-      <Dialog
-        PaperProps={{ elevation: 1 }}
-        open={openModalErrorDetails}
-        TransitionComponent={Transition}
-        onClose={handleCloseModalError}
-      >
-        <DialogTitle>
-          Error
-        </DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            <pre><ItemCopy content={errorDetails.timestamp} variant={'inline'} /></pre>
-            <pre><ItemCopy content={errorDetails.message} /></pre>
-            <pre><ItemCopy content={errorDetails.source} /></pre>
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseModalError} color="primary">
-            {t_i18n('Close')}
-          </Button>
-        </DialogActions>
-      </Dialog>
     </div>
   );
 };
