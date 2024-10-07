@@ -1,6 +1,5 @@
 import * as R from 'ramda';
 import { v4 as uuidv4 } from 'uuid';
-import { SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION } from '@opentelemetry/semantic-conventions';
 import type { Context, Span, Tracer } from '@opentelemetry/api';
 import { context as telemetryContext, trace } from '@opentelemetry/api';
 import { OPENCTI_SYSTEM_UUID } from '../schema/general';
@@ -20,6 +19,7 @@ import { schemaAttributesDefinition } from '../schema/schema-attributes';
 import { FunctionalError } from '../config/errors';
 import { isNotEmptyField } from '../database/utils';
 import { isStixObject } from '../schema/stixCoreObject';
+import { TELEMETRY_DB_NAME, TELEMETRY_DB_OPERATION } from './telemetry-attributes';
 
 export const DEFAULT_INVALID_CONF_VALUE = 'ChangeMe';
 
@@ -445,8 +445,8 @@ export const userFilterStoreElements = async (context: AuthContext, user: AuthUs
     });
   };
   return telemetry(context, user, 'FILTERING store filter', {
-    [SEMATTRS_DB_NAME]: 'search_engine',
-    [SEMATTRS_DB_OPERATION]: 'read',
+    [TELEMETRY_DB_NAME]: 'search_engine',
+    [TELEMETRY_DB_OPERATION]: 'read',
   }, userFilterStoreElementsFn);
 };
 
