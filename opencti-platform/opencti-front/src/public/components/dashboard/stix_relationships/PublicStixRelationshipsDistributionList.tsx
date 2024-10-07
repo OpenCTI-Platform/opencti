@@ -8,8 +8,8 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetLoader from '../../../../components/dashboard/WidgetLoader';
 import { PublicStixRelationshipsDistributionListQuery } from './__generated__/PublicStixRelationshipsDistributionListQuery.graphql';
-import type { PublicManifestWidget } from '../PublicManifest';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
+import type { Widget } from '../../../../utils/widget/widget';
 
 const publicStixRelationshipsDistributionListQuery = graphql`
   query PublicStixRelationshipsDistributionListQuery(
@@ -54,7 +54,7 @@ const publicStixRelationshipsDistributionListQuery = graphql`
 `;
 
 interface PublicStixRelationshipsDistributionListComponentProps {
-  dataSelection: PublicManifestWidget['dataSelection']
+  dataSelection: Widget['dataSelection']
   queryRef: PreloadedQuery<PublicStixRelationshipsDistributionListQuery>
 }
 

@@ -1,6 +1,5 @@
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import React from 'react';
-import type { PublicManifestWidget } from '../PublicManifest';
 import WidgetTree from '../../../../components/dashboard/WidgetTree';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import type { PublicWidgetContainerProps } from '../PublicWidgetContainerProps';
@@ -9,6 +8,7 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetLoader from '../../../../components/dashboard/WidgetLoader';
 import { PublicStixRelationshipsTreeMapQuery } from './__generated__/PublicStixRelationshipsTreeMapQuery.graphql';
+import type { Widget } from '../../../../utils/widget/widget';
 
 const publicStixRelationshipsTreeMapsQuery = graphql`
   query PublicStixRelationshipsTreeMapQuery(
@@ -54,8 +54,8 @@ const publicStixRelationshipsTreeMapsQuery = graphql`
 `;
 
 interface PublicStixRelationshipsTreeMapComponentProps {
-  parameters: PublicManifestWidget['parameters']
-  dataSelection: PublicManifestWidget['dataSelection']
+  parameters: Widget['parameters']
+  dataSelection: Widget['dataSelection']
   queryRef: PreloadedQuery<PublicStixRelationshipsTreeMapQuery>
 }
 

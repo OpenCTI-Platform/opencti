@@ -239,6 +239,19 @@ export const buildFiltersAndOptionsForWidgets = (
   };
 };
 
+export const buildFiltersAndOptionsForTemplateWidgets = (
+  containerId: string,
+  inputFilters: FilterGroup | undefined,
+  opts: { removeTypeAll?: boolean, startDate?: string, endDate?: string, dateAttribute?: string } = {},
+) => {
+  let filters = inputFilters;
+  if (inputFilters) {
+    const filtersWithId = JSON.stringify(inputFilters).replace('CONTAINER_ID', containerId);
+    filters = JSON.parse(filtersWithId);
+  }
+  return buildFiltersAndOptionsForWidgets(filters, opts);
+};
+
 // return the i18n label corresponding to a value
 export const filterValue = (filterKey: string, value?: string | null, filterType?: string) => {
   const { t_i18n, nsd } = useFormatter();
@@ -442,23 +455,15 @@ export const addFilter = (
   mode = 'or',
 ): FilterGroup | undefined => {
   const filterFromParameters = {
-    id: uuid(),
     key,
     values: Array.isArray(value) ? value : [value],
     operator,
     mode,
   };
-  if (!filters) { // Add on nothing = create a new filter
-    return {
-      mode,
-      filters: [filterFromParameters],
-      filterGroups: [],
-    };
-  }
   return {
     mode: 'and',
     filters: [filterFromParameters],
-    filterGroups: [filters],
+    filterGroups: filters ? [filters] : [],
   };
 };
 
