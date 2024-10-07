@@ -38,43 +38,43 @@ const Root = () => {
         />
         <Route
           path="/incidents"
-          Component={boundaryWrapper(CaseIncidents)}
+          element={boundaryWrapper(CaseIncidents)}
         />
         <Route
           path="/incidents/:caseId/*"
-          Component={boundaryWrapper(RootIncident)}
+          element={boundaryWrapper(RootIncident)}
         />
         <Route
           path="/rfis"
-          Component={boundaryWrapper(CaseRfis)}
+          element={boundaryWrapper(CaseRfis)}
         />
         <Route
           path="/rfis/:caseId/*"
-          Component={boundaryWrapper(RootCaseRfi)}
+          element={boundaryWrapper(RootCaseRfi)}
         />
         <Route
           path="/rfts"
-          Component={boundaryWrapper(CaseRfts)}
+          element={boundaryWrapper(CaseRfts)}
         />
         <Route
           path="/rfts/:caseId/*"
-          Component={boundaryWrapper(RootCaseRft)}
+          element={boundaryWrapper(RootCaseRft)}
         />
         <Route
           path="/tasks"
-          Component={boundaryWrapper(Tasks)}
+          element={boundaryWrapper(Tasks)}
         />
         <Route
           path="/tasks/:taskId/*"
-          Component={boundaryWrapper(RootTask)}
+          element={boundaryWrapper(RootTask)}
         />
         <Route
           path="/feedbacks"
-          Component={boundaryWrapper(Feedbacks)}
+          element={boundaryWrapper(Feedbacks)}
         />
         <Route
           path="/feedbacks/:caseId/*"
-          Component={boundaryWrapper(RootFeedback)}
+          element={boundaryWrapper(RootFeedback)}
         />
       </Routes>
     </Suspense>
