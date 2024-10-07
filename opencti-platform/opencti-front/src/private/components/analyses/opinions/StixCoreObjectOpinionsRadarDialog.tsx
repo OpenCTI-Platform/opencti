@@ -21,7 +21,6 @@ import { adaptFieldValue } from '../../../../utils/String';
 import { opinionMutationFieldPatch } from './OpinionEditionOverview';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import ConfidenceField from '../../common/form/ConfidenceField';
-import { isNotEmptyField } from '../../../../utils/utils';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import {
   StixCoreObjectOpinionsRadarDialogMyOpinionQuery,
@@ -53,6 +52,7 @@ interface StixCoreObjectOpinionsRadarDialogProps {
 }
 
 interface OpinionAddInput {
+  id?: string;
   opinion: string;
   explanation: string;
   confidence: number;
@@ -89,15 +89,9 @@ StixCoreObjectOpinionsRadarDialogProps
   const opinionValidator = useDynamicSchemaCreationValidation(
     mandatoryAttributes,
     basicShape,
-    ['opinion', 'confidence'], // exclude these fields because their components don't support validation
+    ['opinion'], // exclude these fields because their components don't support validation
   );
 
-  const myOpinionValue = opinionOptions.find(
-    (m) => m.label === myOpinion?.opinion,
-  )?.value;
-  const [currentOpinion, setCurrentOpinion] = useState(
-    myOpinionValue ?? Math.round(opinionOptions.length / 2),
-  );
   const [open, setOpen] = useState(false);
   const handleOpen = () => {
     if (opinionOptions.length > 0) {
@@ -122,22 +116,20 @@ StixCoreObjectOpinionsRadarDialogProps
     values: OpinionAddInput,
     { setSubmitting, resetForm }: FormikHelpers<OpinionAddInput>,
   ) => {
-    const { opinion, explanation, confidence } = values;
-    let inputValues: OpinionAddSubmit = {
-      opinion: opinionOptions[currentOpinion - 1].label,
-      explanation,
-      confidence: parseInt(String(confidence), 10),
+    const { id, ...inputValues } = values;
+    let parsedConfidence = parseInt(String(inputValues.confidence), 10);
+    if (Number.isNaN(parsedConfidence)) parsedConfidence = 0;
+    const baseInput: OpinionAddSubmit = {
+      ...inputValues,
+      confidence: parsedConfidence,
     };
-    if (isNotEmptyField(opinion)) {
-      const finalValues = Object.entries(inputValues).map(([key, value]) => ({
+    if (id) {
+      const input = Object.entries(baseInput).map(([key, value]) => ({
         key,
         value: adaptFieldValue(value),
       }));
       commitEdition({
-        variables: {
-          id: opinion,
-          input: finalValues,
-        },
+        variables: { id, input },
         onCompleted: () => {
           handleClose();
           setSubmitting(false);
@@ -147,11 +139,12 @@ StixCoreObjectOpinionsRadarDialogProps
         },
       });
     } else {
-      inputValues = { ...inputValues, objects: [stixCoreObjectId] };
+      const input: OpinionAddSubmit = {
+        ...baseInput,
+        objects: [stixCoreObjectId],
+      };
       commitCreation({
-        variables: {
-          input: inputValues,
-        },
+        variables: { input },
         onCompleted: () => {
           handleClose();
           setSubmitting(false);
@@ -166,7 +159,8 @@ StixCoreObjectOpinionsRadarDialogProps
   const initialValues = useDefaultValues<OpinionAddInput>(
     OPINION_TYPE,
     {
-      opinion: myOpinion?.id ?? '',
+      id: myOpinion?.id,
+      opinion: myOpinion?.opinion ?? opinionOptions[Math.floor(opinionOptions.length / 2)].label,
       explanation: myOpinion?.explanation ?? '',
       confidence: myOpinion?.confidence ?? 75,
     },
@@ -203,7 +197,7 @@ StixCoreObjectOpinionsRadarDialogProps
               onSubmit={onSubmit}
               onReset={handleClose}
             >
-              {({ submitForm, handleReset, isSubmitting }) => (
+              {({ submitForm, handleReset, isSubmitting, values, setFieldValue }) => (
                 <Form>
                   <DialogTitle>
                     {myOpinion ? t_i18n('Update opinion') : t_i18n('Create an opinion')}
@@ -233,8 +227,12 @@ StixCoreObjectOpinionsRadarDialogProps
                           },
                         }}
                         style={{ marginTop: 30 }}
-                        value={currentOpinion}
-                        onChange={(_, v) => setCurrentOpinion(v as number)}
+                        value={opinionOptions.find((o) => o.label === values.opinion)?.value}
+                        onChange={(_, v) => {
+                          setFieldValue('opinion', opinionOptions.find(
+                            (m) => m.value === v,
+                          )?.label);
+                        }}
                         valueLabelDisplay="on"
                         valueLabelFormat={(v) => opinionOptions[v - 1].label}
                         marks={opinionOptions}
