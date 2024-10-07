@@ -151,23 +151,28 @@ export const createInjectInScenario = async (
   }
 };
 
+const emptyResult = {
+  unknown: 1,
+  success: 0,
+  failure: 0,
+};
+
+const extractExerciseResultByType = (exerciseGlobalScore: any, type: string) => {
+  const resultType = exerciseGlobalScore.filter((n: { type: string, value: number }) => n.type === type).at(0);
+  return resultType.avgResult === 'UNKNOWN' ? {
+    emptyResult
+  } : {
+    unknown: resultType.distribution?.filter((n: { id: string, value: number }) => n.id === 'PENDING').at(0)?.value,
+    success: resultType.distribution?.filter((n: { id: string, value: number }) => n.id === 'SUCCESS').at(0)?.value,
+    failure: resultType.distribution?.filter((n: { id: string, value: number }) => n.id === 'FAILED').at(0)?.value
+  };
+};
+
 export const getScenarioResult = async (id: string) => {
   const noResult = {
-    prevention: {
-      unknown: 1,
-      success: 0,
-      failure: 0,
-    },
-    detection: {
-      unknown: 1,
-      success: 0,
-      failure: 0,
-    },
-    human: {
-      unknown: 1,
-      success: 0,
-      failure: 0,
-    }
+    prevention: emptyResult,
+    detection: emptyResult,
+    human: emptyResult,
   };
   // OpenBAS not configured
   if (isEmptyField(XTM_OPENBAS_URL) || isEmptyField(XTM_OPENBAS_TOKEN)) {
@@ -179,40 +184,14 @@ export const getScenarioResult = async (id: string) => {
     if (!exercise || !exercise.exercise_id) {
       return noResult;
     }
-    const prevention = exercise.exercise_global_score.filter((n: { type: string, value: number }) => n.type === 'PREVENTION').at(0);
-    const preventionResult = prevention.avgResult === 'UNKNOWN' ? {
-      unknown: 1,
-      success: 0,
-      failure: 0
-    } : {
-      unknown: prevention.distribution?.filter((n: { label: string, value: number }) => n.label === 'Pending').at(0).value,
-      success: prevention.distribution?.filter((n: { label: string, value: number }) => n.label === 'Successful').at(0).value,
-      failure: prevention.distribution?.filter((n: { label: string, value: number }) => n.label === 'Failed').at(0).value
-    };
-    const detection = exercise.exercise_global_score.filter((n: { type: string, value: number }) => n.type === 'DETECTION').at(0);
-    const detectionResult = detection.avgResult === 'UNKNOWN' ? {
-      unknown: 1,
-      success: 0,
-      failure: 0
-    } : {
-      unknown: detection.distribution?.filter((n: { label: string, value: number }) => n.label === 'Pending').at(0).value,
-      success: detection.distribution?.filter((n: { label: string, value: number }) => n.label === 'Successful').at(0).value,
-      failure: detection.distribution?.filter((n: { label: string, value: number }) => n.label === 'Failed').at(0).value
-    };
-    const humanResponse = exercise.exercise_global_score.filter((n: { type: string, value: number }) => n.type === 'HUMAN_RESPONSE').at(0);
-    const humanResponseResult = humanResponse.avgResult === 'UNKNOWN' ? {
-      unknown: 1,
-      success: 0,
-      failure: 0
-    } : {
-      unknown: humanResponse.distribution?.filter((n: { label: string, value: number }) => n.label === 'Pending').at(0).value,
-      success: humanResponse.distribution?.filter((n: { label: string, value: number }) => n.label === 'Successful').at(0).value,
-      failure: humanResponse.distribution?.filter((n: { label: string, value: number }) => n.label === 'Failed').at(0).value
-    };
+    const { exercise_global_score: exerciseGlobalScore } = exercise;
+    const prevention = extractExerciseResultByType(exerciseGlobalScore, 'PREVENTION');
+    const detection = extractExerciseResultByType(exerciseGlobalScore, 'DETECTION');
+    const human = extractExerciseResultByType(exerciseGlobalScore, 'HUMAN_RESPONSE');
     return {
-      prevention: preventionResult,
-      detection: detectionResult,
-      human: humanResponseResult
+      prevention,
+      detection,
+      human,
     };
   } catch (err) {
     logApp.info('Scenario not found in OpenBAS', { err });
