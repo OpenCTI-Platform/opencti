@@ -55,7 +55,6 @@ const NarrativesWithSubnarrativesLines: FunctionComponent<NarrativesWithSubnarra
     <List
       component="nav"
       aria-labelledby="nested-list-subheader"
-      style={{ marginTop: 30 }}
     >
       {data
         ? ([...narratives, ...parentOnlyNarratives] as unknown as SubNarrativeNode[]).map((narrative) => {
