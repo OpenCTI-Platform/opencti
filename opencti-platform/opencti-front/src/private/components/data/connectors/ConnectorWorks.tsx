@@ -90,6 +90,7 @@ interface ConnectorWorksComponentProps {
 }
 
 type ParsedWorkMessage = {
+  isParsed: boolean,
   parsedError: {
     timestamp: any,
     type: string,
@@ -110,17 +111,34 @@ const ConnectorWorksComponent: FunctionComponent<ConnectorWorksComponentProps> =
   const [errorDetails, setErrorDetails] = useState<WorkMessages>({});
 
   const parseErrors = (errorsList: WorkMessages[]) => {
-    const list = errorsList && errorsList.map((error) => (
-      {
-        parsedError: {
-          timestamp: error.timestamp,
-          type: error.message && JSON.parse(error.message.replace(/'/g, '"')).name || error.message,
-          reason: error.message && JSON.parse(error.message.replace(/'/g, '"')).error_message || error.message,
-          entityId: error.source && JSON.parse(error.source).source_ref,
-        },
-        rawError: error,
-      }
-    ));
+    let list: ParsedWorkMessage[];
+    try {
+      list = errorsList && errorsList.map((error) => (
+        {
+          isParsed: true,
+          parsedError: {
+            timestamp: error.timestamp,
+            type: JSON.parse(error.message.replace(/'/g, '"')).name,
+            reason: JSON.parse(error.message.replace(/'/g, '"')).error_message,
+            entityId: JSON.parse(error.source).source_ref,
+          },
+          rawError: error,
+        }
+      ));
+    } catch (_) {
+      list = errorsList && errorsList.map((error) => (
+        {
+          isParsed: false,
+          parsedError: {
+            timestamp: error.timestamp,
+            type: error.message,
+            reason: error.message,
+            entityId: error.source,
+          },
+          rawError: error,
+        }
+      ));
+    }
     return (list);
   };
 
@@ -304,7 +322,7 @@ const ConnectorWorksComponent: FunctionComponent<ConnectorWorksComponentProps> =
                 </TableRow>
               </TableHead>
               <TableBody>
-                {errors?.map((error) => error && (
+                {errors.map((error) => error.isParsed ? (
                   <TableRow key={error.parsedError.timestamp} hover onClick={() => handleOpenModalError(error.rawError)}>
                     <TableCell>{nsdt(error.parsedError.timestamp)}</TableCell>
                     <TableCell>
@@ -318,6 +336,17 @@ const ConnectorWorksComponent: FunctionComponent<ConnectorWorksComponentProps> =
                         {error.parsedError.entityId}
                       </Button>
                     </TableCell>
+                  </TableRow>
+                ) : (
+                  <TableRow key={error.parsedError.timestamp} hover onClick={() => handleOpenModalError(error.rawError)}>
+                    <TableCell>{nsdt(error.rawError.timestamp)}</TableCell>
+                    <TableCell>
+                      <Button href={'https://docs.opencti.io/latest/deployment/troubleshooting'} target="_blank" onClick={(event) => event.stopPropagation()}>
+                        {t_i18n('Docs')}
+                      </Button>
+                    </TableCell>
+                    <TableCell>{error.rawError.message}</TableCell>
+                    <TableCell>{error.rawError.source}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
