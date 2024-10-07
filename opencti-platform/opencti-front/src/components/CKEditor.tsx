@@ -54,12 +54,26 @@ import {
 } from 'ckeditor5';
 import React from 'react';
 import { useIntl } from 'react-intl';
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
 import de from 'ckeditor5/translations/de';
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
 import en from 'ckeditor5/translations/en';
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
 import es from 'ckeditor5/translations/es';
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
 import fr from 'ckeditor5/translations/fr';
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
 import ja from 'ckeditor5/translations/ja';
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
 import ko from 'ckeditor5/translations/ko';
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
 import zh from 'ckeditor5/translations/zh';
 
 const CKEDITOR_DEFAULT_CONFIG = {
