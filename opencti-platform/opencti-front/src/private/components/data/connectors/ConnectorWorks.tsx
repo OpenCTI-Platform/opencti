@@ -26,7 +26,9 @@ import Security from '../../../../utils/Security';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import Drawer from '@components/common/drawer/Drawer';
 import Alert from '@mui/material/Alert';
-import ConnectorWorksErrorLine from '@components/data/connectors/ConnectorWorksErrorLine';
+import ConnectorWorksErrorLine from './ConnectorWorksErrorLine';
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -85,6 +87,7 @@ interface ConnectorWorksComponentProps {
 
 type ParsedWorkMessage = {
   isParsed: boolean,
+  tabsType: ErrorTabsType,
   parsedError: {
     timestamp: any,
     type: string,
@@ -94,6 +97,21 @@ type ParsedWorkMessage = {
   rawError: WorkMessages,
 }
 
+type ErrorTabsType = 'Critical' | 'Warning' | 'Other';
+
+const criticalErrorTypes = [
+  'MULTIPLE_REFERENCES_ERROR',
+  'UNSUPPORTED_ERROR',
+  'DATABASE_ERROR',
+  'INTERNAL_SERVER_ERROR',
+];
+
+const warningErrorTypes = [
+  'VALIDATION_ERROR',
+  'MULTIPLE_ENTITIES_ERROR',
+  'ACL_ERROR',
+];
+
 const ConnectorWorksComponent: FunctionComponent<ConnectorWorksComponentProps> = ({ data, options, relay }) => {
   const works = data.works?.edges ?? [];
   const { t_i18n, nsdt } = useFormatter();
@@ -101,13 +119,23 @@ const ConnectorWorksComponent: FunctionComponent<ConnectorWorksComponentProps> =
   const [commit] = useApiMutation(connectorWorksWorkDeletionMutation);
   const [openDrawerErrors, setOpenDrawerErrors] = useState<boolean>(false);
   const [errors, setErrors] = useState<ParsedWorkMessage[]>([]);
+  const [tabValue, setTabValue] = useState<string>('Critical');
 
+  // Create custom error object from error because errors are in JSON
   const parseErrors = (errorsList: WorkMessages[]) => {
     let list: ParsedWorkMessage[];
+    // Try/Catch to prevent JSON.parse Exception
     try {
-      list = errorsList && errorsList.map((error) => (
+      const getTabsType = (message: string) => {
+        const type = JSON.parse(message.replace(/'/g, '"')).name;
+        if (criticalErrorTypes.includes(type)) return 'Critical';
+        if (warningErrorTypes.includes(type)) return 'Warning';
+        return 'Other';
+      };
+      list = errorsList.map((error) => (
         {
           isParsed: true,
+          tabsType: getTabsType(error.message),
           parsedError: {
             timestamp: error.timestamp,
             type: JSON.parse(error.message.replace(/'/g, '"')).name,
@@ -118,9 +146,10 @@ const ConnectorWorksComponent: FunctionComponent<ConnectorWorksComponentProps> =
         }
       ));
     } catch (_) {
-      list = errorsList && errorsList.map((error) => (
+      list = errorsList.map((error) => (
         {
           isParsed: false,
+          tabsType: 'Other',
           parsedError: {
             timestamp: error.timestamp,
             type: error.message,
@@ -293,6 +322,11 @@ const ConnectorWorksComponent: FunctionComponent<ConnectorWorksComponentProps> =
       >
         <>
           <Alert severity="info">{t_i18n('This page lists only the first 100 errors returned by the connector to ensure readability and efficient troubleshooting')}</Alert>
+          <Tabs value={tabValue} onChange={(_, newValue) => setTabValue(newValue)} centered>
+            <Tab label={t_i18n('Critical')} value="Critical" />
+            <Tab label={t_i18n('Warning')} value="Warning" />
+            <Tab label={t_i18n('Other')} value="Other" />
+          </Tabs>
           <TableContainer component={Paper}>
             <Table aria-label="simple table">
               <TableHead>
@@ -304,7 +338,7 @@ const ConnectorWorksComponent: FunctionComponent<ConnectorWorksComponentProps> =
                 </TableRow>
               </TableHead>
               <TableBody>
-                {errors.map((error) => (
+                {errors.map((error) => error.tabsType === tabValue && (
                   <ConnectorWorksErrorLine error={error} />
                 ))}
               </TableBody>
