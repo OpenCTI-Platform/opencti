@@ -79,9 +79,9 @@ const ConnectorWorksErrorLine: FunctionComponent<ConnectorWorksErrorLineProps> =
         <DialogTitle>Error</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            <pre><ItemCopy content={error.rawError.timestamp} variant={'inline'} /></pre>
-            <pre><ItemCopy content={error.rawError.message} variant={'inline'} /></pre>
-            <pre><ItemCopy content={error.rawError.source} variant={'inline'} /></pre>
+            <pre><ItemCopy content={error.rawError.timestamp} /></pre>
+            <pre><ItemCopy content={error.rawError.message} variant={'wrap'} /></pre>
+            <pre><ItemCopy content={error.rawError.source} variant={'wrap'} /></pre>
           </DialogContentText>
         </DialogContent>
         <DialogActions>
