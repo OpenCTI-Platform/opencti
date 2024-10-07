@@ -63,7 +63,7 @@
     "react-csv": "2.2.2",
     "react-dom": "18.3.1",
     "react-draggable": "4.4.6",
-    "react-force-graph-2d": "1.25.5",
+    "react-force-graph-2d": "1.25.6",
     "react-force-graph-3d": "1.24.4",
     "react-grid-layout": "1.4.4",
     "react-intl": "6.7.0",
