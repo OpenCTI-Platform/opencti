@@ -91,6 +91,8 @@ const isValidTarget = (record: string[], representation: CsvMapperRepresentation
   // Target type
   isValidRepresentationType(representation);
 
+  console.log('ANGIE - isValidTarget', { record, representation });
+
   // Column based
   // TODO verify that it's covering our needs
   const columnBased = representation.target.column_based;
