@@ -156,7 +156,6 @@ export const playbookExecutor = async ({
       const end = utcDate();
       const durationDiff = end.diff(start);
       const duration = moment.duration(durationDiff);
-
       const observation: ObservationFn = {
         message: `${nextStep.instance.name.trim()} successfully executed in ${duration.humanize()}`,
         status: 'success',

@@ -178,7 +178,6 @@ export const playbookReplaceNode = async (context: AuthContext, user: AuthUser, 
     }
     return n;
   });
-
   const patch: any = { playbook_definition: JSON.stringify(definition) };
   const { element: updatedElem } = await patchAttribute(context, user, id, ENTITY_TYPE_PLAYBOOK, patch);
   return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, updatedElem, user).then(() => nodeId);
