@@ -237,15 +237,22 @@ class ReportKnowledgeGraphComponent extends Component {
   savePositions() {
     const initialPositions = R.indexBy(
       R.prop('id'),
-      R.map((n) => ({ id: n.id, x: n.fx, y: n.fy }), this.graphData.nodes),
+      R.map((n) => ({
+        id: n.id,
+        x: n.fx !== null ? n.fx : n.x,
+        y: n.fy !== null ? n.fy : n.y,
+      }), this.graphData.nodes),
     );
+
     const newPositions = R.indexBy(
       R.prop('id'),
-      R.map(
-        (n) => ({ id: n.id, x: n.fx, y: n.fy }),
-        this.state.graphData.nodes,
-      ),
+      R.map((n) => ({
+        id: n.id,
+        x: n.fx !== null ? n.fx : n.x,
+        y: n.fy !== null ? n.fy : n.y,
+      }), this.state.graphData.nodes),
     );
+
     const positions = R.mergeLeft(newPositions, initialPositions);
     commitMutation({
       mutation: reportMutationFieldPatch,
@@ -320,11 +327,16 @@ class ReportKnowledgeGraphComponent extends Component {
   }
 
   handleToggleFixedMode() {
-    this.setState({ modeFixed: !this.state.modeFixed }, () => {
+    const { modeFixed } = this.state;
+    this.setState({ modeFixed: !modeFixed }, () => {
       this.saveParameters();
       this.handleDragEnd();
       this.forceUpdate();
-      this.graph.current.d3ReheatSimulation();
+      if (!this.state.modeFixed) {
+        this.handleResetLayout();
+      } else {
+        this.graph.current.d3ReheatSimulation();
+      }
     });
   }
 
@@ -527,7 +539,7 @@ class ReportKnowledgeGraphComponent extends Component {
     this.graphObjects = [...this.graphObjects, stixCoreObject];
     this.graphData = buildGraphData(
       this.graphObjects,
-      decodeGraphData(this.props.report.graph_data),
+      decodeGraphData(this.props.report.x_opencti_graph_data),
       this.props.t,
     );
     await this.resetAllFilters();
