@@ -12,7 +12,6 @@ import { isStixDomainObjectContainer } from '../schema/stixDomainObject';
 import { objects } from '../schema/stixRefRelationship';
 import { isEmptyField } from '../database/utils';
 import { logApp } from '../config/conf';
-import { UnknownError } from '../config/errors';
 import { STIX_EXT_OCTI } from '../types/stix-extensions';
 
 const inlineEntityTypes = [ENTITY_TYPE_EXTERNAL_REFERENCE];
@@ -53,9 +52,11 @@ export const bundleProcess = async (
           const stixObjects = withoutInlineInputs.map((input) => {
             const stixObject = convertStoreToStix(input as unknown as StoreCommon);
             stixObject.extensions[STIX_EXT_OCTI].converter_csv = record.join(sanitizedMapper.separator);
+            console.log('ANGIE pushing stix:', stixObject);
             return stixObject;
           });
           // Add to bundle
+
           bundleBuilder.addObjects(stixObjects);
         } catch (e) {
           logApp.error(e);
