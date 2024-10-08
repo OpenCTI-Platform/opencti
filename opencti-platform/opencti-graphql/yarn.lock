@@ -8699,10 +8699,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"helmet@npm:7.1.0":
-  version: 7.1.0
-  resolution: "helmet@npm:7.1.0"
-  checksum: 10/aa13b0907d9d31b65e4ec73093b58d7e94e83c06818cc06869f5eb95d205574a14f01ed71cadfac4a68b736a1a6d7ef2290f3f6ef77ac664c7e75b8f9eddf88c
+"helmet@npm:7.2.0":
+  version: 7.2.0
+  resolution: "helmet@npm:7.2.0"
+  checksum: 10/37419351755a66f48af0f7c1f25b8e55ceaf2087efb1309ab29d6f664ea72f3a6fecbbcc0c9231e45b9e2f7079d3403eb35040463a45293c876e776d0574b538
   languageName: node
   linkType: hard
 
@@ -10873,7 +10873,7 @@ __metadata:
     graphql-tag: "npm:2.12.6"
     graphql-upload: "npm:16.0.2"
     graphql-ws: "npm:5.16.0"
-    helmet: "npm:7.1.0"
+    helmet: "npm:7.2.0"
     http-proxy-agent: "npm:7.0.2"
     https-proxy-agent: "npm:7.0.5"
     ioredis: "npm:5.4.1"
