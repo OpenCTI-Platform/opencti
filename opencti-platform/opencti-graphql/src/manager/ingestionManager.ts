@@ -57,7 +57,7 @@ const asArray = (data: unknown) => {
 interface UpdateInfo {
   state?: any
   buffering?: boolean
-  messages_number?: number
+  messages_size?: number
 }
 const updateBuiltInConnectorInfo = async (context: AuthContext, user_id: string | undefined, id: string, opts: UpdateInfo = {}) => {
   // Patch the related connector
@@ -70,7 +70,7 @@ const updateBuiltInConnectorInfo = async (context: AuthContext, user_id: string 
       run_and_terminate: false,
       buffering: opts.buffering ?? false,
       queue_threshold: 0,
-      queue_messages_size: opts.messages_number ?? 0
+      queue_messages_size: (opts.messages_size ?? 0) / 1000000 // In Mb
     },
     connector_user_id: user_id,
   };
@@ -249,7 +249,7 @@ const rssExecutor = async (context: AuthContext, turndownService: TurndownServic
   for (let i = 0; i < ingestions.length; i += 1) {
     const ingestion = ingestions[i];
     // If ingestion have remaining messages in the queue, dont fetch any new data
-    const { messages_number } = await queueDetails(connectorIdFromIngestId(ingestion.id));
+    const { messages_number, messages_size } = await queueDetails(connectorIdFromIngestId(ingestion.id));
     if (messages_number === 0) {
       const ingestionPromise = rssDataHandler(context, httpGet, turndownService, ingestion)
         .catch((e) => {
@@ -259,7 +259,7 @@ const rssExecutor = async (context: AuthContext, turndownService: TurndownServic
       ingestionPromises.push(ingestionPromise);
     } else {
       // Update the state
-      const ingestionPromise = updateBuiltInConnectorInfo(context, ingestion.user_id, ingestion.id, { buffering: true, messages_number });
+      const ingestionPromise = updateBuiltInConnectorInfo(context, ingestion.user_id, ingestion.id, { buffering: true, messages_size });
       ingestionPromises.push(ingestionPromise);
     }
   }
@@ -390,7 +390,7 @@ const taxiiExecutor = async (context: AuthContext) => {
   for (let i = 0; i < ingestions.length; i += 1) {
     const ingestion = ingestions[i];
     // If ingestion have remaining messages in the queue, dont fetch any new data
-    const { messages_number } = await queueDetails(connectorIdFromIngestId(ingestion.id));
+    const { messages_number, messages_size } = await queueDetails(connectorIdFromIngestId(ingestion.id));
     if (messages_number === 0) {
       const taxiiHandler = TAXII_HANDLERS[ingestion.version];
       if (!taxiiHandler) {
@@ -404,7 +404,7 @@ const taxiiExecutor = async (context: AuthContext) => {
       ingestionPromises.push(ingestionPromise);
     } else {
       // Update the state
-      const ingestionPromise = updateBuiltInConnectorInfo(context, ingestion.user_id, ingestion.id, { buffering: true, messages_number });
+      const ingestionPromise = updateBuiltInConnectorInfo(context, ingestion.user_id, ingestion.id, { buffering: true, messages_size });
       ingestionPromises.push(ingestionPromise);
     }
   }
@@ -473,7 +473,7 @@ const csvExecutor = async (context: AuthContext) => {
   for (let i = 0; i < ingestions.length; i += 1) {
     const ingestion = ingestions[i];
     // If ingestion have remaining messages in the queue, dont fetch any new data
-    const { messages_number } = await queueDetails(connectorIdFromIngestId(ingestion.id));
+    const { messages_number, messages_size } = await queueDetails(connectorIdFromIngestId(ingestion.id));
     if (messages_number === 0) {
       const ingestionPromise = csvDataHandler(context, ingestion)
         .catch((e) => {
@@ -483,7 +483,7 @@ const csvExecutor = async (context: AuthContext) => {
       ingestionPromises.push(ingestionPromise);
     } else {
       // Update the state
-      const ingestionPromise = updateBuiltInConnectorInfo(context, ingestion.user_id, ingestion.id, { buffering: true, messages_number });
+      const ingestionPromise = updateBuiltInConnectorInfo(context, ingestion.user_id, ingestion.id, { buffering: true, messages_size });
       ingestionPromises.push(ingestionPromise);
     }
   }
