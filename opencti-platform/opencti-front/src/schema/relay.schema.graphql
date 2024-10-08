@@ -2733,6 +2733,7 @@ interface Container {
   currentUserAccessRight: String
   objects(first: Int, after: ID, orderBy: StixObjectOrStixRelationshipsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], all: Boolean): StixObjectOrStixRelationshipRefConnection
   relatedContainers(first: Int, after: ID, orderBy: ContainersOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], viaTypes: [String]): ContainerConnection
+  outcomeTemplates(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   creators: [Creator!]
   workflowEnabled: Boolean
   status: Status
@@ -2812,6 +2813,7 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   toStix: String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
+  outcomeTemplates(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -2940,6 +2942,7 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
   toStix: String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
+  outcomeTemplates(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -3043,6 +3046,7 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   toStix: String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
+  outcomeTemplates(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -3172,6 +3176,7 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   toStix: String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
+  outcomeTemplates(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -8034,7 +8039,7 @@ type StixCoreObjectEditMutations {
   askAnalysis(contentSource: String!, contentType: AnalysisContentType!, connectorId: ID): Work
   analysisPush(file: Upload!, contentSource: String!, contentType: AnalysisContentType!, analysisType: String!): File
   analysisClear(contentSource: String!, contentType: AnalysisContentType!): Boolean
-  importPush(file: Upload!, fileMarkings: [String], version: DateTime, noTriggerImport: Boolean): File
+  importPush(file: Upload!, fileMarkings: [String], version: DateTime, noTriggerImport: Boolean, fromTemplate: Boolean): File
   exportAsk(input: ExportAskInput!): [File!]
   exportPush(file: Upload!): Boolean
 }
@@ -8055,7 +8060,7 @@ type StixDomainObjectEditMutations {
   relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship
   relationsAdd(input: StixRefRelationshipsAddInput!): StixDomainObject
   relationDelete(toId: StixRef!, relationship_type: String): StixDomainObject
-  importPush(file: Upload!, fileMarkings: [String], version: DateTime, noTriggerImport: Boolean): File
+  importPush(file: Upload!, fileMarkings: [String], version: DateTime, noTriggerImport: Boolean, fromTemplate: Boolean): File
   exportAsk(input: ExportAskInput!): [File!]
   exportPush(file: Upload!, file_markings: [String]!): Boolean
   stixDomainObjectFileEdit(input: StixDomainObjectFileEditInput): StixDomainObject
@@ -9013,6 +9018,7 @@ type Grouping implements BasicObject & StixObject & StixCoreObject & StixDomainO
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
+  outcomeTemplates(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
@@ -9796,6 +9802,7 @@ type Task implements Container & StixDomainObject & StixCoreObject & StixObject 
   toStix: String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
+  outcomeTemplates(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -9934,6 +9941,7 @@ interface Case implements BasicObject & StixObject & StixCoreObject & StixDomain
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
+  outcomeTemplates(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
@@ -10053,6 +10061,7 @@ type CaseIncident implements BasicObject & StixObject & StixCoreObject & StixDom
   toStix: String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
+  outcomeTemplates(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -10174,6 +10183,7 @@ type CaseRfi implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   toStix: String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
+  outcomeTemplates(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -10293,6 +10303,7 @@ type CaseRft implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   toStix: String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
+  outcomeTemplates(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -10413,6 +10424,7 @@ type Feedback implements BasicObject & StixObject & StixCoreObject & StixDomainO
   toStix: String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
+  outcomeTemplates(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]

@@ -50,9 +50,10 @@ export const stixCoreObjectContentFilesUploadStixCoreObjectMutation = graphql`
     $file: Upload!
     $fileMarkings: [String]
     $noTriggerImport: Boolean
+    $fromTemplate: Boolean
   ) {
     stixCoreObjectEdit(id: $id) {
-      importPush(file: $file, noTriggerImport: $noTriggerImport, fileMarkings: $fileMarkings) {
+      importPush(file: $file, noTriggerImport: $noTriggerImport, fileMarkings: $fileMarkings, fromTemplate: $fromTemplate) {
         id
         name
         uploadStatus
@@ -89,6 +90,7 @@ const StixCoreObjectContentFiles = ({
   onFileChange,
   settingsMessagesBannerHeight,
   exportFiles,
+  outcomeTemplates,
   handleSelectExportFile,
 }) => {
   const classes = useStyles();
@@ -217,7 +219,7 @@ const StixCoreObjectContentFiles = ({
 
     commitMutation({
       mutation: stixCoreObjectContentFilesUploadStixCoreObjectMutation,
-      variables: { file, id: stixCoreObjectId, fileMarkings },
+      variables: { file, id: stixCoreObjectId, fileMarkings, fromTemplate: true },
       setSubmitting,
       onCompleted: (result) => {
         setSubmitting(false);
@@ -342,7 +344,7 @@ const StixCoreObjectContentFiles = ({
         })}
       </List>
       <div>
-        <Typography variant="body2" style={{ margin: '5px 0 0 15px', float: 'left' }}>{t_i18n('Outcomes templates')}</Typography>
+        <Typography variant="body2" style={{ margin: '5px 0 0 15px', float: 'left' }}>{t_i18n('Outcome templates')}</Typography>
         <div style={{ float: 'right', display: 'flex', margin: '-4px 15px 0 0' }}>
           <Tooltip title={t_i18n('Create an outcome based on a template')}>
             <IconButton
@@ -356,6 +358,42 @@ const StixCoreObjectContentFiles = ({
           </Tooltip>
         </div>
       </div>
+      <List style={{ marginBottom: 30 }}>
+        {outcomeTemplates.map((outcomeFile) => {
+          return (
+            <Tooltip key={outcomeFile.id} title={`${outcomeFile.name} (${outcomeFile.metaData.mimetype})`}>
+              <ListItemButton
+                dense={true}
+                divider={true}
+                selected={outcomeFile.id === currentFileId}
+                onClick={() => (outcomeFile.perspective === 'export' ? handleSelectExportFile(outcomeFile.id) : handleSelectFile(outcomeFile.id))}
+                disabled={deleting === outcomeFile.id}
+              >
+                <ListItemIcon>
+                  {renderIcon(outcomeFile.metaData.mimetype)}
+                </ListItemIcon>
+                <ListItemText
+                  sx={{
+                    '.MuiListItemText-primary': {
+                      overflowX: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                      marginRight: '20px',
+                    },
+                  }}
+                  primary={outcomeFile.name}
+                  secondary={fld(R.propOr(moment(), 'lastModified', outcomeFile))}
+                />
+                <ListItemSecondaryAction>
+                  <IconButton onClick={(event) => submitDelete(outcomeFile.id, event)} size="small">
+                    <DeleteOutlined color="primary" fontSize="small"/>
+                  </IconButton>
+                </ListItemSecondaryAction>
+              </ListItemButton>
+            </Tooltip>
+          );
+        })}
+      </List>
       <Formik
         enableReinitialize={true}
         initialValues={{ name: '', type: 'text/html', fileMarkings: [] }}

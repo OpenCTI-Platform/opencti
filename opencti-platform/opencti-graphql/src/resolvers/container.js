@@ -21,6 +21,7 @@ import {
 import { investigationAddFromContainer } from '../modules/workspace/investigation-domain';
 import { getAuthorizedMembers } from '../utils/authorizedMembers';
 import { getUserAccessRight } from '../utils/access';
+import { paginatedForPathWithEnrichment } from '../modules/internal/document/document-domain';
 
 const containerResolvers = {
   Query: {
@@ -48,6 +49,10 @@ const containerResolvers = {
     currentUserAccessRight: (container, _, context) => getUserAccessRight(context.user, container),
     objects: (container, args, context) => objects(context, context.user, container.id, args),
     relatedContainers: (container, args, context) => relatedContainers(context, context.user, container.id, args),
+    outcomeTemplates: (stixCoreObject, { first, prefixMimeType }, context) => {
+      const opts = { first, prefixMimeTypes: prefixMimeType ? [prefixMimeType] : null, entity_id: stixCoreObject.id, entity_type: stixCoreObject.entity_type };
+      return paginatedForPathWithEnrichment(context, context.user, `fromTemplate/${stixCoreObject.entity_type}/${stixCoreObject.id}`, stixCoreObject.id, opts);
+    },
   },
   // TODO Reactivate after official release of graphQL 17
   // StixObjectOrStixRelationshipRefConnection: {

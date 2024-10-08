@@ -170,6 +170,13 @@ const getFiles = (stixCoreObject) => {
   );
 };
 
+const getOutcomeTemplates = (stixCoreObject) => {
+  const outcomeTemplates = stixCoreObject.outcomeTemplates?.edges
+    ?.filter((n) => !!n?.node)
+    .map((n) => n.node) ?? [];
+  return sortByLastModified(outcomeTemplates);
+};
+
 const getExportFiles = (stixCoreObject) => {
   const exportFiles = stixCoreObject.exportFiles?.edges
     ?.filter((n) => !!n?.node)
@@ -243,6 +250,7 @@ class StixCoreObjectContentComponent extends Component {
     const files = [
       ...getFiles(stixCoreObject),
       ...getExportFiles(stixCoreObject),
+      ...getOutcomeTemplates(stixCoreObject),
     ];
     this.setState({ isLoading: true }, () => {
       const { currentFileId } = this.state;
@@ -281,6 +289,7 @@ class StixCoreObjectContentComponent extends Component {
     const files = [
       ...getFiles(stixCoreObject),
       ...getExportFiles(stixCoreObject),
+      ...getOutcomeTemplates(stixCoreObject),
     ];
     const currentFile = files.find((f) => f.id === currentFileId);
 
@@ -369,7 +378,7 @@ class StixCoreObjectContentComponent extends Component {
   prepareSaveFile() {
     const { stixCoreObject } = this.props;
     const { currentFileId } = this.state;
-    const files = getFiles(stixCoreObject);
+    const files = [...getFiles(stixCoreObject), ...getOutcomeTemplates(stixCoreObject)];
     const currentFile = currentFileId && R.head(R.filter((n) => n.id === currentFileId, files));
     const currentFileType = currentFile && currentFile.metaData.mimetype;
     const fragment = currentFileId.split('/');
@@ -395,7 +404,13 @@ class StixCoreObjectContentComponent extends Component {
       mutation: isExternalReference
         ? stixCoreObjectContentUploadExternalReferenceMutation
         : stixCoreObjectContentFilesUploadStixCoreObjectMutation,
-      variables: { file, id: currentId, noTriggerImport: true, fileMarkings },
+      variables: {
+        file,
+        id: currentId,
+        noTriggerImport: true,
+        fileMarkings,
+        fromTemplate: !!currentFile.id.startsWith('fromTemplate/'),
+      },
       onCompleted: () => this.setState({ changed: false }),
     });
   }
@@ -534,12 +549,13 @@ class StixCoreObjectContentComponent extends Component {
     } = this.state;
     const files = getFiles(stixCoreObject);
     const exportFiles = getExportFiles(stixCoreObject);
+    const outcomeTemplates = getOutcomeTemplates(stixCoreObject);
     const currentUrl = currentFileId
       && `${APP_BASE_PATH}/storage/view/${encodeURIComponent(currentFileId)}`;
     const currentGetUrl = currentFileId
       && `${APP_BASE_PATH}/storage/get/${encodeURIComponent(currentFileId)}`;
     const currentFile = currentFileId
-      && [...files, ...exportFiles].find((n) => n.id === currentFileId);
+      && [...files, ...exportFiles, ...outcomeTemplates].find((n) => n.id === currentFileId);
     const currentFileType = currentFile && currentFile.metaData.mimetype;
     const { innerHeight } = window;
     const height = innerHeight - 300;
@@ -557,6 +573,7 @@ class StixCoreObjectContentComponent extends Component {
           handleSelectExportFile={this.handleSelectFile.bind(this)}
           currentFileId={currentFileId}
           onFileChange={this.handleFileChange.bind(this)}
+          outcomeTemplates={outcomeTemplates}
         />
         {isLoading ? (
           <Loader variant={LoaderVariant.inElement} />
@@ -864,6 +881,35 @@ const StixCoreObjectContent = createRefetchContainer(
             }
           }
         }
+          ... on Container {
+            outcomeTemplates(first: 500) @connection(key: "Pagination_outcomeTemplates") {
+                edges {
+                    node {
+                        id
+                        name
+                        uploadStatus
+                        lastModified
+                        lastModifiedSinceMin
+                        metaData {
+                            mimetype
+                            list_filters
+                            file_markings
+                            messages {
+                                timestamp
+                                message
+                            }
+                            errors {
+                                timestamp
+                                message
+                            }
+                        }
+                        metaData {
+                            mimetype
+                        }
+                    }
+                }
+            }
+          }
         externalReferences {
           edges {
             node {

@@ -144,6 +144,15 @@ type Grouping implements BasicObject & StixObject & StixCoreObject & StixDomainO
     filters: FilterGroup
   ): FileConnection
     exportFiles(first: Int): FileConnection
+    outcomeTemplates(
+        first: Int
+        prefixMimeType: String
+        after: ID
+        orderBy: FileOrdering
+        orderMode: OrderingMode
+        search: String
+        filters: FilterGroup
+    ): FileConnection
     editContext: [EditUserContext!]
     connectors(onlyAlive: Boolean): [Connector]
     jobs(first: Int): [Work]
