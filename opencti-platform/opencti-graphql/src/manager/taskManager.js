@@ -57,7 +57,7 @@ import { isStixCyberObservable } from '../schema/stixCyberObservable';
 import { promoteObservableToIndicator } from '../domain/stixCyberObservable';
 import { indicatorEditField, promoteIndicatorToObservables } from '../modules/indicator/indicator-domain';
 import { askElementEnrichmentForConnector } from '../domain/stixCoreObject';
-import { RELATION_GRANTED_TO, RELATION_OBJECT } from '../schema/stixRefRelationship';
+import { objectOrganization, RELATION_GRANTED_TO, RELATION_OBJECT } from '../schema/stixRefRelationship';
 import {
   ACTION_TYPE_COMPLETE_DELETE,
   ACTION_TYPE_DELETE,
@@ -79,6 +79,7 @@ import { BackgroundTaskScope } from '../generated/graphql';
 import { ENTITY_TYPE_INTERNAL_FILE } from '../schema/internalObject';
 import { deleteFile } from '../database/file-storage';
 import { checkUserIsAdminOnDashboard } from '../modules/publicDashboard/publicDashboard-utils';
+import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
 
 // Task manager responsible to execute long manual tasks
 // Each API will start is task manager.
@@ -406,7 +407,7 @@ const executeShare = async (context, user, actionContext, element) => {
   for (let indexCreate = 0; indexCreate < values.length; indexCreate += 1) {
     const target = values[indexCreate];
     const currentGrants = element[buildRefRelationKey(RELATION_GRANTED_TO)] ?? [];
-    if (!currentGrants.includes(target)) {
+    if (!currentGrants.includes(target) && objectOrganization.isRefExistingForTypes(element.entity_type, ENTITY_TYPE_IDENTITY_ORGANIZATION)) {
       await createRelation(context, user, { fromId: element.id, toId: target, relationship_type: RELATION_GRANTED_TO });
     }
   }
@@ -549,7 +550,7 @@ const executeProcessing = async (context, user, job, scope) => {
   return errors;
 };
 
-const taskHandler = async () => {
+export const taskHandler = async () => {
   let lock;
   try {
     // Lock the manager

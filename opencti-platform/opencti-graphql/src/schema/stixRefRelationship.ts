@@ -23,7 +23,6 @@ import {
   ENTITY_TYPE_IDENTITY_SYSTEM,
   ENTITY_TYPE_LOCATION_COUNTRY,
   isStixDomainObjectContainer,
-  isStixDomainObjectIdentity,
   isStixDomainObjectLocation
 } from './stixDomainObject';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_KILL_CHAIN_PHASE, ENTITY_TYPE_LABEL, ENTITY_TYPE_MARKING_DEFINITION } from './stixMetaObject';
@@ -727,7 +726,9 @@ export const objectOrganization: RefAttribute = {
   multiple: true,
   upsert: true,
   isRefExistingForTypes(this, fromType, toType) {
-    return !(fromType === ENTITY_TYPE_EVENT || isStixDomainObjectIdentity(fromType)
+    return !(fromType === ENTITY_TYPE_EVENT
+        || fromType === ENTITY_TYPE_IDENTITY_ORGANIZATION
+        || fromType === ENTITY_TYPE_IDENTITY_SECTOR
         || isStixDomainObjectLocation(fromType))
       && this.toTypes.includes(toType);
   },
