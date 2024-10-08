@@ -110,7 +110,7 @@ const PLAYBOOK_LOGGER_COMPONENT_SCHEMA: JSONSchemaType<LoggerConfiguration> = {
       oneOf: [
         { const: 'debug', title: 'debug' },
         { const: 'info', title: 'info' },
-        { const: 'warning', title: 'warning' },
+        { const: 'warn', title: 'warn' },
         { const: 'error', title: 'error' }
       ]
     },
