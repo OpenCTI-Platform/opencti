@@ -1,4 +1,4 @@
-import { ExpandLessOutlined, ExpandMoreOutlined } from '@mui/icons-material';
+import { ExpandLessOutlined, ExpandMoreOutlined, OpenInNewOutlined } from '@mui/icons-material';
 import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
 import Grid from '@mui/material/Grid';
@@ -12,7 +12,8 @@ import makeStyles from '@mui/styles/makeStyles';
 import * as R from 'ramda';
 import React, { FunctionComponent, useState } from 'react';
 import { graphql, useFragment } from 'react-relay';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import IconButton from '@mui/material/IconButton';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
@@ -131,70 +132,110 @@ const CaseRftDetailsFragment = graphql`
       first: 10
       orderBy: created
       orderMode: desc
-      types: ["Case"]
+      types: ["Case", "Report", "Grouping"]
       viaTypes: ["Indicator", "Stix-Cyber-Observable"]
     ) {
       edges {
         node {
           id
           entity_type
-            ... on CaseIncident {
-              name
-              description
-              created
-              createdBy {
-                ... on Identity {
-                  id
-                  name
-                  entity_type
-                }
-              }
-              objectMarking {
+          ... on Report {
+            name
+            description
+            published
+            createdBy {
+              ... on Identity {
                 id
-                definition_type
-                definition
-                x_opencti_order
-                x_opencti_color
+                name
+                entity_type
               }
             }
-            ... on CaseRfi {
-              name
-              description
-              created
-              createdBy {
-                ... on Identity {
-                  id
-                  name
-                  entity_type
-                }
-              }
-              objectMarking {
+            objectMarking {
+              id
+              definition_type
+              definition
+              x_opencti_order
+              x_opencti_color
+            }
+          }
+          ... on Grouping {
+            name
+            context
+            description
+            created
+            createdBy {
+              ... on Identity {
                 id
-                definition_type
-                definition
-                x_opencti_order
-                x_opencti_color
+                name
+                entity_type
               }
             }
-            ... on CaseRft {
-              name
-              description
-              created
-              createdBy {
-                ... on Identity {
-                  id
-                  name
-                  entity_type
-                }
-              }
-              objectMarking {
+            objectMarking {
+              id
+              definition
+              definition_type
+              definition
+              x_opencti_order
+              x_opencti_color
+            }
+          }
+          ... on CaseIncident {
+            name
+            description
+            created
+            createdBy {
+              ... on Identity {
                 id
-                definition_type
-                definition
-                x_opencti_order
-                x_opencti_color
+                name
+                entity_type
               }
             }
+            objectMarking {
+              id
+              definition_type
+              definition
+              x_opencti_order
+              x_opencti_color
+            }
+          }
+          ... on CaseRfi {
+            name
+            description
+            created
+            createdBy {
+              ... on Identity {
+                id
+                name
+                entity_type
+              }
+            }
+            objectMarking {
+              id
+              definition_type
+              definition
+              x_opencti_order
+              x_opencti_color
+            }
+          }
+          ... on CaseRft {
+            name
+            description
+            created
+            createdBy {
+              ... on Identity {
+                id
+                name
+                entity_type
+              }
+            }
+            objectMarking {
+              id
+              definition_type
+              definition
+              x_opencti_order
+              x_opencti_color
+            }
+          }
         }
       }
     }
@@ -209,6 +250,7 @@ const CaseRftDetails: FunctionComponent<CaseRftDetailsProps> = ({
   caseRftData,
 }) => {
   const { t_i18n, fsd } = useFormatter();
+  const navigate = useNavigate();
   const classes = useStyles();
   const [expanded, setExpanded] = useState(false);
   const data = useFragment(CaseRftDetailsFragment, caseRftData);
@@ -217,9 +259,8 @@ const CaseRftDetails: FunctionComponent<CaseRftDetailsProps> = ({
 
   const relatedContainers = R.take(
     expanded ? 200 : 5,
-    data.relatedContainers?.edges ?? [],
-  ).filter(
-    (relatedContainerEdge) => relatedContainerEdge?.node?.id !== data.id,
+    // exclude itself
+    (data.relatedContainers?.edges ?? []).filter((relatedContainerEdge) => relatedContainerEdge?.node?.id !== data.id),
   );
 
   return (
@@ -278,9 +319,20 @@ const CaseRftDetails: FunctionComponent<CaseRftDetailsProps> = ({
             )}
           </Grid>
         </Grid>
-        <Typography variant="h3" gutterBottom={true}>
-          {t_i18n('Correlated cases')}
-        </Typography>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <Typography variant="h3" gutterBottom={true}>
+            {t_i18n('Correlated containers')}
+          </Typography>
+          <IconButton
+            color="primary"
+            aria-label="Go to correlation graph view"
+            onClick={() => navigate(`/dashboard/cases/rfts/${data.id}/knowledge/correlation`)}
+            size="medium"
+            style={{ marginBottom: 4 }}
+          >
+            <OpenInNewOutlined fontSize="small"/>
+          </IconButton>
+        </div>
         <List classes={{ root: classes.relatedContainers }}>
           {relatedContainers.length > 0
             ? relatedContainers.map((relatedContainerEdge) => {
@@ -306,10 +358,10 @@ const CaseRftDetails: FunctionComponent<CaseRftDetailsProps> = ({
                       }
                   />
                   <div className={classes.itemAuthor}>
-                    {relatedContainer?.createdBy?.name ?? ''}
+                    {relatedContainer?.createdBy?.name ?? '-'}
                   </div>
                   <div className={classes.itemDate}>
-                    {fsd(relatedContainer?.created)}
+                    {fsd(relatedContainer?.created ?? relatedContainer?.published)}
                   </div>
                   <div className={classes.itemMarking}>
                     <ItemMarkings

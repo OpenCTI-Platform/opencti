@@ -8,18 +8,20 @@ import Chip from '@mui/material/Chip';
 import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
 import ListItem from '@mui/material/ListItem';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import List from '@mui/material/List';
-import { ExpandLessOutlined, ExpandMoreOutlined } from '@mui/icons-material';
+import { ExpandLessOutlined, ExpandMoreOutlined, OpenInNewOutlined } from '@mui/icons-material';
 import Button from '@mui/material/Button';
+import IconButton from '@mui/material/IconButton';
 import StixRelationshipsHorizontalBars from '../../common/stix_relationships/StixRelationshipsHorizontalBars';
 import inject18n from '../../../../components/i18n';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import ItemIcon from '../../../../components/ItemIcon';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import { emptyFilterGroup } from '../../../../utils/filters/filtersUtils';
+import { resolveLink } from '../../../../utils/Entity';
 
 const styles = (theme) => ({
   paper: {
@@ -103,6 +105,7 @@ const inlineStyles = {
 
 const GroupingDetailsComponent = (props) => {
   const { t, fsd, classes, grouping } = props;
+  const navigate = useNavigate();
   const [expanded, setExpanded] = useState(false);
   const [height, setHeight] = useState(0);
   const ref = useRef(null);
@@ -110,6 +113,11 @@ const GroupingDetailsComponent = (props) => {
     setHeight(ref.current.clientHeight);
   });
   const expandable = grouping.relatedContainers.edges.length > 5;
+  const relatedContainers = R.take(
+    expanded ? 200 : 5,
+    // exclude itself
+    (grouping.relatedContainers?.edges ?? []).filter((relatedContainerEdge) => relatedContainerEdge?.node?.id !== grouping.id),
+  );
 
   const entitiesDistributionDataSelection = [
     {
@@ -172,15 +180,23 @@ const GroupingDetailsComponent = (props) => {
             />
           </Grid>
         </Grid>
-        <Typography variant="h3" gutterBottom={true}>
-          {t('Correlated groupings')}
-        </Typography>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <Typography variant="h3" gutterBottom={true}>
+            {t('Correlated containers')}
+          </Typography>
+          <IconButton
+            color="primary"
+            aria-label="Go to correlation graph view"
+            onClick={() => navigate(`/dashboard/analyses/groupings/${grouping.id}/knowledge/correlation`)}
+            size="medium"
+            style={{ marginBottom: 4 }}
+          >
+            <OpenInNewOutlined fontSize="small"/>
+          </IconButton>
+        </div>
         <List>
-          {R.take(expanded ? 200 : 5, grouping.relatedContainers.edges)
-            .filter(
-              (relatedContainerEdge) => relatedContainerEdge.node.id !== grouping.id,
-            )
-            .map((relatedContainerEdge) => {
+          {relatedContainers.length > 0
+            ? relatedContainers.map((relatedContainerEdge) => {
               const relatedContainer = relatedContainerEdge.node;
               return (
                 <ListItem
@@ -190,7 +206,7 @@ const GroupingDetailsComponent = (props) => {
                   classes={{ root: classes.item }}
                   divider={true}
                   component={Link}
-                  to={`/dashboard/analyses/groupings/${relatedContainer.id}`}
+                  to={`${resolveLink(relatedContainer?.entity_type)}/${relatedContainer?.id}`}
                 >
                   <ListItemIcon>
                     <ItemIcon type={relatedContainer.entity_type} />
@@ -200,13 +216,13 @@ const GroupingDetailsComponent = (props) => {
                       <div className={classes.itemText}>
                         {relatedContainer.name}
                       </div>
-                    }
+                  }
                   />
                   <div style={inlineStyles.itemAuthor}>
-                    {R.pathOr('', ['createdBy', 'name'], relatedContainer)}
+                    {relatedContainer?.createdBy?.name ?? '-'}
                   </div>
                   <div style={inlineStyles.itemDate}>
-                    {fsd(relatedContainer.published)}
+                    {fsd(relatedContainer?.created ?? relatedContainer?.published)}
                   </div>
                   <div style={{ width: 110, paddingRight: 20 }}>
                     <ItemMarkings
@@ -217,7 +233,8 @@ const GroupingDetailsComponent = (props) => {
                   </div>
                 </ListItem>
               );
-            })}
+            }) : '-'
+          }
         </List>
         {expandable && (
           <Button
@@ -255,17 +272,37 @@ const GroupingDetails = createFragmentContainer(GroupingDetailsComponent, {
         first: 10
         orderBy: published
         orderMode: desc
-        types: ["Grouping"]
+        types: ["Case", "Report", "Grouping"]
         viaTypes: ["Indicator", "Stix-Cyber-Observable"]
       ) {
         edges {
           node {
             id
             entity_type
+            ... on Report {
+              name
+              description
+              published
+              createdBy {
+                ... on Identity {
+                  id
+                  name
+                  entity_type
+                }
+              }
+              objectMarking {
+                id
+                definition_type
+                definition
+                x_opencti_order
+                x_opencti_color
+              }
+            }
             ... on Grouping {
               name
               context
               description
+              created
               createdBy {
                 ... on Identity {
                   id
@@ -276,6 +313,63 @@ const GroupingDetails = createFragmentContainer(GroupingDetailsComponent, {
               objectMarking {
                 id
                 definition
+                definition_type
+                definition
+                x_opencti_order
+                x_opencti_color
+              }
+            }
+            ... on CaseIncident {
+              name
+              description
+              created
+              createdBy {
+                ... on Identity {
+                  id
+                  name
+                  entity_type
+                }
+              }
+              objectMarking {
+                id
+                definition_type
+                definition
+                x_opencti_order
+                x_opencti_color
+              }
+            }
+            ... on CaseRfi {
+              name
+              description
+              created
+              createdBy {
+                ... on Identity {
+                  id
+                  name
+                  entity_type
+                }
+              }
+              objectMarking {
+                id
+                definition_type
+                definition
+                x_opencti_order
+                x_opencti_color
+              }
+            }
+            ... on CaseRft {
+              name
+              description
+              created
+              createdBy {
+                ... on Identity {
+                  id
+                  name
+                  entity_type
+                }
+              }
+              objectMarking {
+                id
                 definition_type
                 definition
                 x_opencti_order
