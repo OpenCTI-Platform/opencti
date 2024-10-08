@@ -308,9 +308,7 @@ const SearchBulk = () => {
                     (o) => o.node,
                   );
                   return values.map((value) => {
-                    const resolvedStixCoreObjects = stixCoreObjects.filter(
-                      (o) => values.includes(getMainRepresentative(o).toLowerCase()),
-                    );
+                    const resolvedStixCoreObjects = stixCoreObjects.filter((o) => value.toLowerCase() === getMainRepresentative(o).toLowerCase());
                     if (resolvedStixCoreObjects.length > 0) {
                       return resolvedStixCoreObjects.map(
                         (resolvedStixCoreObject) => ({
