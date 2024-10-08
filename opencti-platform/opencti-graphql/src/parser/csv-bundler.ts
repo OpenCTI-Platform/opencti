@@ -52,7 +52,7 @@ export const bundleProcess = async (
           const stixObjects = withoutInlineInputs.map((input) => {
             const stixObject = convertStoreToStix(input as unknown as StoreCommon);
             stixObject.extensions[STIX_EXT_OCTI].converter_csv = record.join(sanitizedMapper.separator);
-            console.log('ANGIE pushing stix:', stixObject);
+            logApp.info('ANGIE pushing stix:', stixObject);
             return stixObject;
           });
           // Add to bundle
