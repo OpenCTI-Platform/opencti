@@ -41,6 +41,7 @@ const initImportCsvConnector = () => {
   };
 
   const doWorkOldWay = async (context: AuthContext, applicantUser: AuthUser, stream: SdkStream<Readable>, messageParsed: any, csvMapper: CsvMapperParsed, entity: any) => {
+    logApp.info('START - ANGIE doWorkOldWay');
     const workId = messageParsed.internal.work_id;
     const applicantId = messageParsed.internal.applicant_id;
     const fileId = messageParsed.event.file_id;
@@ -55,10 +56,12 @@ const initImportCsvConnector = () => {
       await reportExpectation(context, applicantUser, workId, errorData);
     }).on('end', async () => {
       if (!hasError) {
+        logApp.info(`ANGIE doWorkOldWay - ${chunks.length} items to process to bundle.`);
         const chunksAsStringArray: string[] = chunks.map((chunk) => chunk.toString());
         const bundle = await bundleProcess(context, applicantUser, chunksAsStringArray, csvMapper, { entity });
         const validateBeforeImport = connectorConfig.config.validate_before_import;
         if (validateBeforeImport) {
+          logApp.info('ANGIE doWorkOldWay - validateBeforeImport.');
           await updateExpectationsNumber(context, applicantUser, workId, 1);
           const contentStream = Readable.from([JSON.stringify(bundle, null, '  ')]);
           const file = {
@@ -69,6 +72,7 @@ const initImportCsvConnector = () => {
           await uploadToStorage(context, applicantUser, 'import/pending', file, { entity });
           await reportExpectation(context, applicantUser, workId);
         } else {
+          logApp.info('ANGIE doWorkOldWay - not validateBeforeImport.');
           await updateExpectationsNumber(context, applicantUser, workId, bundle.objects.length);
           const content = Buffer.from(JSON.stringify(bundle), 'utf-8').toString('base64');
           await pushToWorkerForConnector(connector.internal_id, {
@@ -81,6 +85,7 @@ const initImportCsvConnector = () => {
         }
       }
     });
+    logApp.info('END - ANGIE doWorkOldWay');
   };
 
   const generateBundle = async (context: AuthContext, csvMapper: CsvMapperParsed, messageParsed: any, entity: BasicStoreBase | undefined, csvLines: string[]) => {
@@ -113,6 +118,7 @@ const initImportCsvConnector = () => {
   };
 
   const doWorkNewWay = async (context: AuthContext, applicantUser: AuthUser, stream: SdkStream<Readable>, messageParsed: any, csvMapper: CsvMapperParsed, entity: any) => {
+    logApp.info(`START - ANGIE doWorkNewWay, BULK_LINE_PARSING_NUMBER:${BULK_LINE_PARSING_NUMBER}`);
     const workId = messageParsed.internal.work_id;
     const fileId = messageParsed.event.file_id;
 
@@ -125,17 +131,20 @@ const initImportCsvConnector = () => {
         lines.push(line);
         // Only create bundle with a limited size to prevent OOM
         if (lines.length > BULK_LINE_PARSING_NUMBER) {
+          logApp.info('ANGIE doWorkNewWay - lines.length > BULK_LINE_PARSING_NUMBER => generateBundle');
           await generateBundle(context, csvMapper, messageParsed, entity, lines);
           lines = [];
         }
       }
       if (lines.length > 0) {
+        logApp.info('ANGIE doWorkNewWay - lines.length > 0 => generateBundle');
         await generateBundle(context, csvMapper, messageParsed, entity, lines);
       }
     } catch (error: any) {
       const errorData = { error: error.message, source: fileId };
       await reportExpectation(context, applicantUser, workId, errorData);
     }
+    logApp.info('END - ANGIE doWorkNewWay');
   };
 
   const consumeQueueCallback = async (context: AuthContext, message: string) => {
@@ -158,7 +167,7 @@ const initImportCsvConnector = () => {
       const stream: SdkStream<Readable> | null | undefined = await downloadFile(fileId) as SdkStream<Readable> | null | undefined;
       await updateReceivedTime(context, applicantUser, workId, 'Connector ready to process the operation');
       if (stream) {
-        await doWorkOldWay(context, applicantUser, stream, messageParsed, csvMapper, entity);
+        // await doWorkOldWay(context, applicantUser, stream, messageParsed, csvMapper, entity);
         await doWorkNewWay(context, applicantUser, stream, messageParsed, csvMapper, entity);
       }
       await updateProcessedTime(context, applicantUser, workId, ' generated bundle(s) for worker import');
