@@ -4662,13 +4662,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/qs@npm:^6.9.15":
-  version: 6.9.16
-  resolution: "@types/qs@npm:6.9.16"
-  checksum: 10/2e8918150c12735630f7ee16b770c72949274938c30306025f68aaf977227f41fe0c698ed93db1099e04916d582ac5a1faf7e3c7061c8d885d9169f59a184b6c
-  languageName: node
-  linkType: hard
-
 "@types/ramda@npm:0.30.2":
   version: 0.30.2
   resolution: "@types/ramda@npm:0.30.2"
@@ -10735,19 +10728,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"openai@npm:4.61.1":
-  version: 4.61.1
-  resolution: "openai@npm:4.61.1"
+"openai@npm:4.67.3":
+  version: 4.67.3
+  resolution: "openai@npm:4.67.3"
   dependencies:
     "@types/node": "npm:^18.11.18"
     "@types/node-fetch": "npm:^2.6.4"
-    "@types/qs": "npm:^6.9.15"
     abort-controller: "npm:^3.0.0"
     agentkeepalive: "npm:^4.2.1"
     form-data-encoder: "npm:1.7.2"
     formdata-node: "npm:^4.3.2"
     node-fetch: "npm:^2.6.7"
-    qs: "npm:^6.10.3"
   peerDependencies:
     zod: ^3.23.8
   peerDependenciesMeta:
@@ -10755,7 +10746,7 @@ __metadata:
       optional: true
   bin:
     openai: bin/cli
-  checksum: 10/d3ef4b9bea9f57aeb4f42f2a90714a090ded8f7561a622d52852a35e5b51e84262e543f659728f6479e310a7b969de11873cc80e4d288650cc7f82ec995ce726
+  checksum: 10/fcb07a80a9e08a52aaa1fd014764b39ca956bfdecea0c1b3e430b258e8e53ff886ead0ae362f2a5c4af5786cdad5d3713234cf5870243c348c53ea4a2510549b
   languageName: node
   linkType: hard
 
@@ -10891,7 +10882,7 @@ __metadata:
     node-calls-python: "npm:1.9.1"
     node-fetch: "npm:3.3.2"
     nodemailer: "npm:6.9.15"
-    openai: "npm:4.61.1"
+    openai: "npm:4.67.3"
     openid-client: "npm:5.6.5"
     opentelemetry-node-metrics: "npm:3.0.0"
     otplib: "npm:12.0.1"
@@ -11573,7 +11564,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"qs@npm:6.13.0, qs@npm:^6.10.3":
+"qs@npm:6.13.0":
   version: 6.13.0
   resolution: "qs@npm:6.13.0"
   dependencies:
