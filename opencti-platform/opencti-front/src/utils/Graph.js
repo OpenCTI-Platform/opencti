@@ -440,7 +440,6 @@ export const buildCorrelationData = (
   graphData,
   t,
   filterAdjust,
-  key = 'reports',
 ) => {
   const objects = R.map((n) => {
     let { objectMarking } = n;
@@ -460,29 +459,35 @@ export const buildCorrelationData = (
         name: t('None'),
       };
     }
+    // we need to aggregate all containers nodes
+    const aggregatedContainersEdges = [...(n.reports?.edges ?? []), ...(n.groupings?.edges ?? []), ...(n.cases?.edges ?? [])];
     return {
       ...n,
+      aggregatedContainers: aggregatedContainersEdges.length > 0 ? { edges: aggregatedContainersEdges } : undefined,
       objectMarking,
       createdBy,
       markedBy: objectMarking,
     };
   }, originalObjects);
-  const thisReportOriginalNodes = R.filter(
+
+  const key = 'aggregatedContainers';
+
+  const thisContainerOriginalNodes = R.filter(
     (o) => o && o.id && o.entity_type && o[key],
     objects,
   );
   const filteredNodesIds = computeFilteredNodesIds(
-    thisReportOriginalNodes,
+    thisContainerOriginalNodes,
     filterAdjust.stixCoreObjectsTypes,
     filterAdjust.markedBy,
     filterAdjust.createdBy,
   );
-  const thisReportNodes = thisReportOriginalNodes.map((n) => R.assoc('disabled', filteredNodesIds.includes(n.id), n));
-  const thisReportLinkNodes = R.filter(
+  const thisContainerNodes = thisContainerOriginalNodes.map((n) => R.assoc('disabled', filteredNodesIds.includes(n.id), n));
+  const thisContainerLinkNodes = R.filter(
     (n) => n[key] && n.parent_types && n[key].edges.length > 1,
-    thisReportNodes,
+    thisContainerNodes,
   );
-  const relatedReportOriginalNodes = R.pipe(
+  const relatedContainerOriginalNodes = R.pipe(
     R.map((n) => n[key].edges),
     R.flatten,
     R.map((n) => {
@@ -512,14 +517,14 @@ export const buildCorrelationData = (
     }),
     R.uniqBy(R.prop('id')),
     R.map((n) => (n.defaultDate ? { ...n } : { ...n, defaultDate: jsDate(defaultDate(n)) })),
-  )(thisReportLinkNodes);
-  const relatedReportFilteredNodeIds = computeFilteredNodesIds(
-    relatedReportOriginalNodes,
+  )(thisContainerLinkNodes);
+  const relatedContainerFilteredNodeIds = computeFilteredNodesIds(
+    relatedContainerOriginalNodes,
     filterAdjust.stixCoreObjectsTypes,
     filterAdjust.markedBy,
     filterAdjust.createdBy,
   );
-  const relatedReportNodes = relatedReportOriginalNodes.map((n) => R.assoc('disabled', relatedReportFilteredNodeIds.includes(n.id), n));
+  const relatedContainerNodes = relatedContainerOriginalNodes.map((n) => R.assoc('disabled', relatedContainerFilteredNodeIds.includes(n.id), n));
   const links = R.pipe(
     R.map((n) => R.map(
       (e) => ({
@@ -547,11 +552,11 @@ export const buildCorrelationData = (
               m.id,
               R.map((o) => o.node.id, n[key].edges),
             ),
-      )(relatedReportNodes),
+      )(relatedContainerNodes),
     )),
     R.flatten,
-  )(thisReportLinkNodes);
-  const combinedNodes = R.concat(thisReportLinkNodes, relatedReportNodes);
+  )(thisContainerLinkNodes);
+  const combinedNodes = R.concat(thisContainerLinkNodes, relatedContainerNodes);
   const nodes = R.pipe(
     R.map((n) => ({
       id: n.id,
