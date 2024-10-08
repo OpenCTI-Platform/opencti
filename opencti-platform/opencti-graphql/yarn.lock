@@ -8010,15 +8010,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"file-type@npm:19.4.1":
-  version: 19.4.1
-  resolution: "file-type@npm:19.4.1"
+"file-type@npm:19.5.0":
+  version: 19.5.0
+  resolution: "file-type@npm:19.5.0"
   dependencies:
     get-stream: "npm:^9.0.1"
     strtok3: "npm:^8.1.0"
     token-types: "npm:^6.0.0"
     uint8array-extras: "npm:^1.3.0"
-  checksum: 10/3200a0dd738087c8bbd3a9cb45a5ffbdbd10cf209b3ea98e816864593bbf0a4d3bb004270231dee7a95dc714a7aa26cf4f41271f02d78eb8ae5e09fbd2ac91e5
+  checksum: 10/debe119b3ad51a67b9cb72b380bb2bfe04f72e9940c384937251c9fcb35a8c71c0b79145108a92839a321a051789954d7e16449bf837638ec2b42f31f6cce629
   languageName: node
   linkType: hard
 
@@ -10860,7 +10860,7 @@ __metadata:
     express-session: "npm:1.18.0"
     fast-glob: "npm:3.3.2"
     fast-json-patch: "npm:3.1.1"
-    file-type: "npm:19.4.1"
+    file-type: "npm:19.5.0"
     github-api: "npm:3.4.0"
     graphql: "npm:16.9.0"
     graphql-constraint-directive: "npm:5.4.3"
