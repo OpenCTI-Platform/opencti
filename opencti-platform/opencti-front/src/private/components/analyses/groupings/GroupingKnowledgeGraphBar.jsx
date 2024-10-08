@@ -333,6 +333,7 @@ class GroupingKnowledgeGraphBar extends Component {
     const {
       t,
       classes,
+      currentQueryMode,
       currentMode3D,
       currentModeTree,
       currentModeFixed,
@@ -341,6 +342,7 @@ class GroupingKnowledgeGraphBar extends Component {
       currentStixCoreObjectsTypes,
       currentSelectRectangleModeFree,
       currentSelectModeFree,
+      handleToggleQueryMode,
       handleToggle3DMode,
       handleToggleTreeMode,
       handleToggleFixedMode,
@@ -492,6 +494,23 @@ class GroupingKnowledgeGraphBar extends Component {
                     display: 'flex',
                   }}
                 >
+                  {handleToggleQueryMode && (
+                    <Tooltip
+                      title={
+                        currentQueryMode === 'all-entities' ? t('Query only observables and indicators') : t('Query all entity types')
+                      }
+                    >
+                      <span>
+                        <IconButton
+                          color={currentMode3D ? 'secondary' : 'primary'}
+                          onClick={handleToggleQueryMode.bind(this)}
+                          size="large"
+                        >
+                          <Video3d />
+                        </IconButton>
+                      </span>
+                    </Tooltip>
+                  )}
                   <Tooltip
                     title={
                       currentMode3D ? t('Disable 3D mode') : t('Enable 3D mode')
@@ -1237,6 +1256,8 @@ GroupingKnowledgeGraphBar.propTypes = {
   classes: PropTypes.object,
   t: PropTypes.func,
   grouping: PropTypes.object,
+  handleToggleQueryMode: PropTypes.func,
+  currentQueryMode: PropTypes.string,
   handleToggle3DMode: PropTypes.func,
   currentMode3D: PropTypes.bool,
   handleToggleTreeMode: PropTypes.func,
