@@ -7,11 +7,13 @@ import MarkdownDisplay from './MarkdownDisplay';
 interface ExpandableMarkdownProps {
   source?: string | null;
   limit: number;
+  removeLinks?: boolean;
 }
 
 const ExpandableMarkdown: FunctionComponent<ExpandableMarkdownProps> = ({
   source,
   limit,
+  removeLinks = false,
 }) => {
   const [expand, setExpand] = useState(false);
   const onClick = () => setExpand(!expand);
@@ -30,6 +32,7 @@ const ExpandableMarkdown: FunctionComponent<ExpandableMarkdownProps> = ({
           content={expand ? emptyFilled(source) : truncate(source, limit)}
           remarkGfmPlugin={true}
           commonmark={true}
+          removeLinks={removeLinks}
         />
       </div>
     </div>

@@ -140,7 +140,7 @@ const IndicatorDetailsComponent: FunctionComponent<IndicatorDetailsComponentProp
             >
               {t_i18n('Description')}
             </Typography>
-            <ExpandableMarkdown source={indicator.description} limit={400} />
+            <ExpandableMarkdown source={indicator.description} limit={400} removeLinks />
             <Typography
               variant="h3"
               gutterBottom={true}
