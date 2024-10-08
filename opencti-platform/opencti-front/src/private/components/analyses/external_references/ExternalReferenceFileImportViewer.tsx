@@ -191,7 +191,7 @@ ExternalReferenceFileImportViewerBaseProps
           />
         </div>
         <div className="clearfix" />
-        <Paper classes={{ root: classes.paper }} variant="outlined">
+        <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
           {importFiles?.edges?.length ? (
             <List>
               {importFiles?.edges?.map(
