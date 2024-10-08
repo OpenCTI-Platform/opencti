@@ -38,7 +38,7 @@ import { connectorIdFromIngestId, queueDetails } from '../domain/connector';
 // Ingestion manager responsible to cleanup old data
 // Each API will start is ingestion manager.
 // If the lock is free, every API as the right to take it.
-const SCHEDULE_TIME = conf.get('ingestion_manager:interval') || 60000;
+const SCHEDULE_TIME = conf.get('ingestion_manager:interval') || 30000;
 const INGESTION_MANAGER_KEY = conf.get('ingestion_manager:lock_key') || 'ingestion_manager_lock';
 
 let running = false;
