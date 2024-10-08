@@ -222,7 +222,7 @@
   "ingestion_manager": {
     "enabled": true,
     "lock_key": "ingestion_manager_lock",
-    "interval": 300000
+    "interval": 30000
   },
   "retention_manager": {
     "enabled": true,
