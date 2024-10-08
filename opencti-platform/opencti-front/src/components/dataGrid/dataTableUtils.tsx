@@ -4,6 +4,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import StixCoreObjectLabels from '@components/common/stix_core_objects/StixCoreObjectLabels';
 import Tooltip from '@mui/material/Tooltip';
 import { Link } from 'react-router-dom';
+import * as R from 'ramda';
 import type { DataTableColumn, DataTableContextProps } from './dataTableTypes';
 import { DataTableProps, DataTableVariant } from './dataTableTypes';
 import ItemMarkings from '../ItemMarkings';
@@ -20,6 +21,7 @@ import ItemEntityType from '../ItemEntityType';
 import ItemOpenVocab from '../ItemOpenVocab';
 import ItemBoolean from '../ItemBoolean';
 import ItemSeverity from '../ItemSeverity';
+import { APP_BASE_PATH } from '../../relay/environment';
 
 const MAGICAL_SIZE = 0.113;
 
@@ -494,14 +496,49 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Value',
     percentWidth: 20,
     isSortable: false,
-    render: ({ observable_value }, helpers) => defaultRender(observable_value, helpers),
+    // Please check the String.jsx->renderObservableValue. It should have the same behavior and will replace it at the end.
+    render: (observable, helpers) => {
+      switch (observable.entity_type) {
+        case 'IPv4-Addr':
+        case 'IPv6-Addr': {
+          const country = observable.countries?.edges?.at(0)?.node;
+          if (country) {
+            const flag = R.head(
+              (country.x_opencti_aliases ?? []).filter((n: string) => n.length === 2),
+            );
+            if (flag) {
+              return (
+                <div>
+                  <div style={{ float: 'left', paddingTop: 2 }}>
+                    <Tooltip title={country.name}>
+                      <img
+                        style={{ width: 20 }}
+                        src={`${APP_BASE_PATH}/static/flags/4x3/${flag.toLowerCase()}.svg`}
+                        alt={country.name}
+                      />
+                    </Tooltip>
+                  </div>
+                  <div style={{ float: 'left', marginLeft: 10 }}>
+                    {defaultRender(observable.observable_value, helpers)}
+                  </div>
+                </div>
+              );
+            }
+          }
+          return defaultRender(observable.observable_value, helpers);
+        }
+        default:
+          return defaultRender(observable.observable_value, helpers);
+      }
+    },
   },
   operatingSystem: {
     id: 'operatingSystem',
     label: 'Operating System',
     percentWidth: 15,
     isSortable: false,
-    render: ({ operatingSystem }) => (<Tooltip title={operatingSystem?.name}><>{operatingSystem?.name ?? '-'}</></Tooltip>),
+    render: ({ operatingSystem }) => (<Tooltip title={operatingSystem?.name}><>{operatingSystem?.name ?? '-'}</>
+    </Tooltip>),
   },
   owner: {
     id: 'owner',
