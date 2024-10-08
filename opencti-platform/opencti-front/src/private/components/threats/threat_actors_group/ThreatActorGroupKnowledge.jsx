@@ -56,7 +56,7 @@ class ThreatActorGroupKnowledgeComponent extends Component {
                 entityLink={link}
                 defaultStartTime={threatActorGroup.first_seen}
                 defaultStopTime={threatActorGroup.last_seen}
-                allDirections={true}
+                allDirections
               />
             }
           />
@@ -81,7 +81,7 @@ class ThreatActorGroupKnowledgeComponent extends Component {
                 entityLink={link}
                 defaultStartTime={threatActorGroup.first_seen}
                 defaultStopTime={threatActorGroup.last_seen}
-                allDirections={true}
+                allDirections
               />
             }
           />
@@ -109,7 +109,6 @@ class ThreatActorGroupKnowledgeComponent extends Component {
                 entityLink={link}
                 defaultStartTime={threatActorGroup.first_seen}
                 defaultStopTime={threatActorGroup.last_seen}
-                allDirections={true}
               />
             }
           />
@@ -128,11 +127,12 @@ class ThreatActorGroupKnowledgeComponent extends Component {
             element={
               <EntityStixCoreRelationships
                 entityId={threatActorGroup.id}
-                relationshipTypes={['uses']}
+                relationshipTypes={['uses', 'authored-by']}
                 stixCoreObjectTypes={['Malware']}
                 entityLink={link}
                 defaultStartTime={threatActorGroup.first_seen}
                 defaultStopTime={threatActorGroup.last_seen}
+                allDirections
               />
             }
           />
