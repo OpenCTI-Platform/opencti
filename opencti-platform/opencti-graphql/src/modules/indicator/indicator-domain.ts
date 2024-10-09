@@ -234,7 +234,7 @@ export const addIndicator = async (context: AuthContext, user: AuthUser, indicat
   const decayRule = await findDecayRuleForIndicator(context, observableType);
   const { validFrom, validUntil, revoked, validPeriod } = await computeValidPeriod(indicator, decayRule.decay_lifetime);
   const extractedObservableValues = getObservableValuesFromPattern(formattedPattern);
-  if (!extractedObservableValues) {
+  if (!extractedObservableValues || !extractedObservableValues.length) {
     throw FunctionalError(`Indicator of type ${indicator.pattern_type} is not correctly formatted.`);
   }
   const indicatorToCreate = R.pipe(
