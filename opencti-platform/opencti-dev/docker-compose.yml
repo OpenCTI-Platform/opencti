@@ -107,7 +107,7 @@ services:
     restart: unless-stopped
   opencti-dev-rabbitmq:
     container_name: opencti-dev-rabbitmq
-    image: rabbitmq:3.13-management
+    image: rabbitmq:4.0-management
     restart: unless-stopped
     ports:
       - 5672:5672
