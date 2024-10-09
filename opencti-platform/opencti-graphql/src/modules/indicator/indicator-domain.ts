@@ -247,7 +247,7 @@ export const addIndicator = async (context: AuthContext, user: AuthUser, indicat
     R.assoc('valid_from', validFrom.toISOString()),
     R.assoc('valid_until', validUntil.toISOString()),
     R.assoc('revoked', revoked),
-    // R.assoc('x_opencti_observables_values', extractedObservableValues)
+    R.assoc('x_opencti_observables_values', extractedObservableValues)
   )(indicator);
   let finalIndicatorToCreate;
   if (isDecayActivated && !revoked) {
