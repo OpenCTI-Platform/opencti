@@ -766,18 +766,18 @@ describe('User has no settings capability and is organization admin query behavi
         }
       }
     `;
+    // Delete admin to ORGANIZATION
+    await adminQuery({
+      query: ORGA_ADMIN_DELETE_QUERY, // +1 update organization
+      variables: {
+        id: testOrganizationId,
+        memberId: userEditorId,
+      },
+    });
     for (let i = 0; i < organizationsIds.length; i += 1) {
-      // Delete admin to ORGANIZATION
-      await adminQuery({
-        query: ORGA_ADMIN_DELETE_QUERY,
-        variables: {
-          id: organizationsIds[i],
-          memberId: userEditorId,
-        },
-      });
       // remove granted_groups to ORGANIZATION
       await adminQuery({
-        query: UPDATE_QUERY,
+        query: UPDATE_QUERY, // +1 update organization for each (+2 total)
         variables: { id: organizationsIds[i], input: { key: 'grantable_groups', value: [] } },
       });
     }
@@ -785,7 +785,7 @@ describe('User has no settings capability and is organization admin query behavi
   it('should has the capability to administrate the Organization', async () => {
     userEditorId = await getUserIdByEmail(USER_EDITOR.email); // USER_EDITOR is perfect because she has no settings capabilities and is part of TEST_ORGANIZATION
     const organizationAdminAddQueryResult = await adminQueryWithSuccess({
-      query: ORGA_ADMIN_ADD_QUERY,
+      query: ORGA_ADMIN_ADD_QUERY, // +1 update event of organization
       variables: {
         id: TEST_ORGANIZATION.id,
         memberId: userEditorId,
@@ -898,7 +898,7 @@ describe('User has no settings capability and is organization admin query behavi
 
     // Add Editor to PLATFORM_ORGANIZATION
     const addEditorToOrgaQuery = await adminQueryWithSuccess({
-      query: ORGANIZATION_ADD_QUERY,
+      query: ORGANIZATION_ADD_QUERY, // +1 create of relation between orga & user
       variables: {
         id: userEditorId,
         organizationId: platformOrganizationId,
@@ -908,7 +908,7 @@ describe('User has no settings capability and is organization admin query behavi
 
     // Editor administrate PLATFORM_ORGANIZATION
     const queryResult = await adminQueryWithSuccess({
-      query: ORGA_ADMIN_ADD_QUERY,
+      query: ORGA_ADMIN_ADD_QUERY, // +1 update event of organization
       variables: {
         id: PLATFORM_ORGANIZATION.id,
         memberId: userEditorId,
@@ -919,7 +919,7 @@ describe('User has no settings capability and is organization admin query behavi
   });
   it.skip('should add 2nd organization to user if admin', async () => {
     const queryResult = await queryAsUserWithSuccess(USER_EDITOR.client, {
-      query: ORGANIZATION_ADD_QUERY,
+      query: ORGANIZATION_ADD_QUERY, // +1 create of relation between orga & user
       variables: {
         id: userInternalId,
         organizationId: platformOrganizationId,
@@ -937,9 +937,9 @@ describe('User has no settings capability and is organization admin query behavi
     });
     expect(queryResult.data.userEdit.organizationDelete.id).toEqual(userInternalId);
   });
-  it.skip('should remove Editor from PLATFORM_ORGANIZATION', async () => {
+  it('should remove Editor from PLATFORM_ORGANIZATION', async () => {
     const queryResult = await adminQueryWithSuccess({
-      query: ORGANIZATION_DELETE_QUERY,
+      query: ORGANIZATION_DELETE_QUERY, // +1 delete event (delete relation) +1 update event
       variables: {
         id: userEditorId,
         organizationId: platformOrganizationId,
