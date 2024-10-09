@@ -327,6 +327,9 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
   [`${ENTITY_TYPE_IDENTITY_SYSTEM}_${ENTITY_TYPE_LOCATION_REGION}`]: [
     { name: RELATION_LOCATED_AT, type: REL_BUILT_IN }
   ],
+  [`${ENTITY_TYPE_IDENTITY_SYSTEM}_${ENTITY_TYPE_VULNERABILITY}`]: [
+    { name: RELATION_HAS, type: REL_EXTENDED }
+  ],
   // endregion
   // region INCIDENT
   [`${ENTITY_TYPE_INCIDENT}_${ENTITY_TYPE_ATTACK_PATTERN}`]: [
