@@ -1,5 +1,5 @@
 import { stixCoreObjectsListQuery } from '@components/common/stix_core_objects/StixCoreObjectsList';
-import { StixCoreObjectsListQuery } from '@components/common/stix_core_objects/__generated__/StixCoreObjectsListQuery.graphql';
+import { StixCoreObjectsListQuery$data } from '@components/common/stix_core_objects/__generated__/StixCoreObjectsListQuery.graphql';
 import { buildFiltersAndOptionsForTemplateWidgets } from '../../../filters/filtersUtils';
 import type { Widget } from '../../../widget/widget';
 import { fetchQuery } from '../../../../relay/environment';
@@ -23,8 +23,8 @@ const buildListOutcome = async (
     filters,
   };
 
-  const data = await fetchQuery<StixCoreObjectsListQuery>(stixCoreObjectsListQuery, variables).toPromise();
-  const nodes = data.stixCoreObjects.edges.map((n) => n.node);
+  const data = await fetchQuery(stixCoreObjectsListQuery, variables).toPromise() as StixCoreObjectsListQuery$data;
+  const nodes = data.stixCoreObjects?.edges.map((n) => n.node) ?? [];
   const rows = nodes.map((n) => `
     <tr>
       <td>${n.entity_type}</td>

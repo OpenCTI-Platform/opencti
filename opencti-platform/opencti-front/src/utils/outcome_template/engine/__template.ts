@@ -101,7 +101,7 @@ export const templateGraph: Template = {
   name: 'template graph',
   used_variables: ['widgetGraph'],
   content: `
-  <body>
+  <body style="width: 800px">
     <h1>Template graph</h1>
     <div>$widgetGraph</div>
   </body>

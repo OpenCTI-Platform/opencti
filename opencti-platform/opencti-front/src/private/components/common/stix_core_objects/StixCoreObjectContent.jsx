@@ -32,6 +32,7 @@ import { isEmptyField } from '../../../../utils/utils';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 import withRouter from '../../../../utils/compat_router/withRouter';
+import htmlToPdf from '../../../../utils/htmlToPdf';
 
 pdfjs.GlobalWorkerOptions.workerSrc = `${APP_BASE_PATH}/static/ext/pdf.worker.mjs`;
 
@@ -434,6 +435,7 @@ class StixCoreObjectContentComponent extends Component {
   async handleDownloadPdf() {
     const { currentFileId, currentContent } = this.state;
     const { stixCoreObject } = this.props;
+    htmlToPdf(currentFileId, currentContent).download('pouet.pdf');
     const regex = /<img[^>]+src=(\\?["'])[^'"]+\.gif\1[^>]*\/?>/gi;
     let htmlData = currentContent
       .replaceAll('id="undefined" ', '')

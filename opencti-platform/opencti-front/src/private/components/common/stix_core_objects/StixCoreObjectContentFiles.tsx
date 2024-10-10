@@ -30,7 +30,7 @@ import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import SelectField from '../../../../components/fields/SelectField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import { resolvedAttributesWidgets, templateList, usedTemplateWidgets } from '../../../../utils/outcome_template/engine/__template';
+import { resolvedAttributesWidgets, templateGraph, usedTemplateWidgets, widgetGraph, widgetList } from '../../../../utils/outcome_template/engine/__template';
 import useOutcomeTemplate from '../../../../utils/outcome_template/engine/templateWidgetEngine';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 
@@ -204,7 +204,7 @@ const StixCoreObjectContentFiles = ({
       name += '.html';
     }
 
-    const hardcodedTemplate = templateList;
+    const hardcodedTemplate = templateGraph;
     const hardcodedUsedTemplateWidgets = usedTemplateWidgets;
     const hardcodedResolvedAttributesWidgets = resolvedAttributesWidgets;
     const templateContent = await buildOutcomeTemplate(stixCoreObjectId, hardcodedTemplate, hardcodedUsedTemplateWidgets, hardcodedResolvedAttributesWidgets);
