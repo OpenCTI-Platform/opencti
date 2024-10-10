@@ -131,12 +131,13 @@ class StatusField extends Component {
   }
 
   render() {
-    const { t, name, style, classes, onChange, helpertext, type } = this.props;
+    const { t, name, style, classes, onChange, helpertext, type, required } = this.props;
     return (
       <Field
         component={AutocompleteField}
         style={style}
         name={name}
+        required={required}
         textfieldprops={{
           variant: 'standard',
           label: t('Status'),

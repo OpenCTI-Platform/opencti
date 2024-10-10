@@ -65,6 +65,7 @@ interface RatingProps {
   style?: Record<string, unknown>;
   size: 'tiny' | 'small' | 'large';
   handleOnChange?: (value: number | null) => void;
+  required?: boolean;
 }
 
 const RatingField: FunctionComponent<RatingProps> = ({
@@ -74,6 +75,7 @@ const RatingField: FunctionComponent<RatingProps> = ({
   handleOnChange,
   readOnly,
   size,
+  required = false,
 }) => {
   let IconContainer;
   if (size === 'tiny') {
@@ -86,7 +88,7 @@ const RatingField: FunctionComponent<RatingProps> = ({
   return (
     <div style={style}>
       {!readOnly && (
-        <InputLabel id="input-slider" shrink={true}>
+        <InputLabel id="input-slider" shrink={true} required={required}>
           {label}
         </InputLabel>
       )}

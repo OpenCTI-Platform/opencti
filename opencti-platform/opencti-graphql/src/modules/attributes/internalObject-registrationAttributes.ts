@@ -161,10 +161,10 @@ export const settingsMessages = {
 
 const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
   [ENTITY_TYPE_SETTINGS]: [
-    { name: 'platform_title', label: 'Platform title', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    { name: 'platform_title', label: 'Platform title', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'platform_organization', label: 'Platform organization', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'platform_favicon', label: 'Platform favicon', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
-    { name: 'platform_email', label: 'Platform email', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    { name: 'platform_email', label: 'Platform email', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'platform_theme', label: 'Theme', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'platform_theme_dark_background', label: 'Dark background', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'platform_theme_dark_paper', label: 'Dark paper', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
@@ -282,6 +282,7 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
     { name: 'user_email', label: 'Email', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false, isFilterable: true },
     { name: 'personal_notifiers', label: 'Trigger for personal notifiers', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: true, upsert: false, isFilterable: false },
     { name: 'password', label: 'Password', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    // { name: 'password', label: 'Password', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'name', label: 'Name', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false, isFilterable: true },
     { name: 'description', label: 'Description', type: 'string', format: 'text', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'firstname', label: 'Firstname', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
@@ -371,7 +372,7 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
     { name: 'only_contextual', label: 'Contextual only', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'connector_info', label: 'Connector information', type: 'object', format: 'flat', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: false },
     { name: 'connector_type', label: 'Connector type', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
-    { name: 'connector_scope', label: 'Connector scope', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'connector_scope', label: 'Connector scope', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'connector_state', label: 'Connector state', type: 'string', format: 'json', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'connector_state_reset', label: 'State reset', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'connector_trigger_filters', label: 'Connector trigger filters', type: 'string', format: 'text', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
@@ -401,26 +402,26 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
       label: 'Feed attributes',
       type: 'object',
       format: 'standard',
-      mandatoryType: 'no',
+      mandatoryType: 'internal',
       editDefault: false,
       multiple: true,
       upsert: false,
       isFilterable: true,
       mappings: [
-        { name: 'attribute', label: 'Attribute', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: true },
+        { name: 'attribute', label: 'Attribute', type: 'string', format: 'short', editDefault: false, mandatoryType: 'internal', multiple: false, upsert: true, isFilterable: true },
         {
           name: 'mappings',
           label: 'Mappings',
           type: 'object',
           format: 'standard',
           editDefault: false,
-          mandatoryType: 'no',
+          mandatoryType: 'internal',
           multiple: true,
           upsert: true,
           isFilterable: false,
           mappings: [
-            { name: 'type', label: 'Type', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: false },
-            { name: 'attribute', label: 'Attribute', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: false },
+            { name: 'type', label: 'Type', type: 'string', format: 'short', editDefault: false, mandatoryType: 'internal', multiple: false, upsert: true, isFilterable: false },
+            { name: 'attribute', label: 'Attribute', type: 'string', format: 'short', editDefault: false, mandatoryType: 'internal', multiple: false, upsert: true, isFilterable: false },
           ]
         },
       ]

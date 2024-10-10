@@ -175,7 +175,7 @@ const StreamCollectionEditionContainer: FunctionComponent<{ streamCollection: St
                 style={fieldSpacingContainerStyle}
                 onChange={handleSubmitFieldOptions}
                 multiple={true}
-                helpertext={t_i18n('Let the field empty to grant all authenticated users')}
+                helpertext={t_i18n('Leave the field empty to grant all authenticated users')}
                 name="authorized_members"
               />
             )}

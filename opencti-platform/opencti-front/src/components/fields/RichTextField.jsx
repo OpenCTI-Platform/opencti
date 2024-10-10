@@ -2,7 +2,6 @@ import React, { useRef, useState } from 'react';
 import InputLabel from '@mui/material/InputLabel';
 import FormHelperText from '@mui/material/FormHelperText';
 import { CloseOutlined, FullscreenOutlined } from '@mui/icons-material';
-import * as R from 'ramda';
 import { CKEditor } from '@ckeditor/ckeditor5-react';
 import Editor from 'ckeditor5-custom-build/build/ckeditor';
 import 'ckeditor5-custom-build/build/translations/fr';
@@ -41,6 +40,7 @@ const RichTextField = (props) => {
   const {
     form: { setFieldValue, setFieldTouched },
     field: { name, value },
+    required = false,
     meta = {},
     onFocus,
     onChange,
@@ -115,8 +115,13 @@ const RichTextField = (props) => {
   );
 
   return (
-    <div style={{ ...style, position: 'relative' }} className={!R.isNil(meta.error) ? 'error' : 'main'}>
-      <InputLabel shrink={true} style={{ float: 'left' }}>
+    <div style={{ ...style, position: 'relative' }} className={meta.error ? 'error' : 'main'}>
+      <InputLabel
+        shrink={true}
+        required={required}
+        style={{ float: 'left' }}
+        error={meta.error}
+      >
         {label}
       </InputLabel>
       <IconButton
@@ -149,7 +154,7 @@ const RichTextField = (props) => {
           <div className={classes.container}>
             {CKEditorInstance}
           </div>
-          {!R.isNil(meta.error) && (
+          {meta.error && (
             <FormHelperText error={true}>{meta.error}</FormHelperText>
           )}
           <DialogActions>
@@ -157,7 +162,7 @@ const RichTextField = (props) => {
           </DialogActions>
         </Dialog>
       ) : CKEditorInstance}
-      {!R.isNil(meta.error) && (
+      {meta.error && (
         <FormHelperText error={true}>{meta.error}</FormHelperText>
       )}
       {askAi && (

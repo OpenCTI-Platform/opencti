@@ -3,7 +3,6 @@ import ReactMde from 'react-mde';
 import { useField } from 'formik';
 import InputLabel from '@mui/material/InputLabel';
 import FormHelperText from '@mui/material/FormHelperText';
-import * as R from 'ramda';
 import TextFieldAskAI from '../../private/components/common/form/TextFieldAskAI';
 import { useFormatter } from '../i18n';
 import MarkdownDisplay from '../MarkdownDisplay';
@@ -12,6 +11,7 @@ const MarkdownField = (props) => {
   const {
     form: { setFieldValue, setFieldTouched },
     field: { name },
+    required = false,
     onFocus,
     onSubmit,
     onSelect,
@@ -52,11 +52,15 @@ const MarkdownField = (props) => {
   return (
     <div
       style={{ ...style, position: 'relative' }}
-      className={!R.isNil(meta.error) ? 'error' : 'main'}
+      className={meta.error ? 'error' : 'main'}
       onBlur={internalOnBlur}
       onFocus={internalOnFocus}
     >
-      <InputLabel shrink={true}>
+      <InputLabel
+        shrink={true}
+        required={required}
+        error={meta.error}
+      >
         {label}
       </InputLabel>
       <ReactMde
@@ -90,7 +94,7 @@ const MarkdownField = (props) => {
         minEditorHeight={height || 100}
         maxEditorHeight={height || 100}
       />
-      {!R.isNil(meta.error) && (
+      {meta.error && (
         <FormHelperText error={true}>{meta.error}</FormHelperText>
       )}
       {askAi && (

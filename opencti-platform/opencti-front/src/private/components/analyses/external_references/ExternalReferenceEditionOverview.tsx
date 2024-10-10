@@ -101,6 +101,8 @@ ExternalReferenceEditionOverviewComponentProps
       enableReinitialize={true}
       initialValues={initialValues}
       validationSchema={externalReferenceValidation(t_i18n)}
+      validateOnChange={true}
+      validateOnBlur={true}
       onSubmit={() => {}}
     >
       {() => (

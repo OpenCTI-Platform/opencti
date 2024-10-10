@@ -111,6 +111,7 @@ const CommitMessage: FunctionComponent<CommitMessageProps> = ({
             values={values}
             id={id}
             noStoreUpdate={noStoreUpdate}
+            required={false}
           />
           <Field
             component={MarkdownField}

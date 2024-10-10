@@ -12,10 +12,10 @@ import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../ut
 import StatusField from '../../common/form/StatusField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import OpenVocabField from '../../common/form/OpenVocabField';
-import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import useGranted, { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
+import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 
 export const opinionMutationFieldPatch = graphql`
     mutation OpinionEditionOverviewFieldPatchMutation(
@@ -70,17 +70,22 @@ const opinionMutationRelationDelete = graphql`
     }
 `;
 
+const OPINION_TYPE = 'Opinion';
+
 const OpinionEditionOverviewComponent = (props) => {
   const { opinion, context } = props;
   const { t_i18n } = useFormatter();
+  const { mandatoryAttributes } = useIsMandatoryAttribute(OPINION_TYPE);
   const userIsKnowledgeEditor = useGranted([KNOWLEDGE_KNUPDATE]);
-  const basicShape = {
-    opinion: Yup.string().required(t_i18n('This field is required')),
+  const basicShape = yupShapeConditionalRequired({
+    opinion: Yup.string(),
     explanation: Yup.string().nullable(),
     confidence: Yup.number(),
     x_opencti_workflow_id: Yup.object(),
-  };
-  const opinionValidator = useSchemaEditionValidation('Opinion', basicShape);
+    createdBy: Yup.object().nullable(),
+    objectMarking: Yup.array().nullable(),
+  }, mandatoryAttributes);
+  const opinionValidator = useDynamicSchemaEditionValidation(mandatoryAttributes, basicShape);
 
   const queries = {
     fieldPatch: opinionMutationFieldPatch,
@@ -114,6 +119,7 @@ const OpinionEditionOverviewComponent = (props) => {
     x_opencti_workflow_id: convertStatus(t_i18n, opinion),
     confidence: opinion.confidence,
     explanation: opinion.explanation,
+    opinion: opinion.opinion,
   };
 
   return (
@@ -121,6 +127,8 @@ const OpinionEditionOverviewComponent = (props) => {
       enableReinitialize={true}
       initialValues={initialValues}
       validationSchema={opinionValidator}
+      validateOnChange={true}
+      validateOnBlur={true}
       onSubmit={() => {
       }}
     >
@@ -132,6 +140,7 @@ const OpinionEditionOverviewComponent = (props) => {
               label={t_i18n('Opinion')}
               type="opinion-ov"
               name="opinion"
+              required={(mandatoryAttributes.includes('opinion'))}
               onFocus={editor.changeFocus}
               onSubmit={handleSubmitField}
               onChange={(name, value) => setFieldValue(name, value)}
@@ -144,6 +153,7 @@ const OpinionEditionOverviewComponent = (props) => {
               component={MarkdownField}
               name="explanation"
               label={t_i18n('Explanation')}
+              required={(mandatoryAttributes.includes('explanation'))}
               fullWidth={true}
               multiline={true}
               rows="4"
@@ -181,6 +191,7 @@ const OpinionEditionOverviewComponent = (props) => {
             {userIsKnowledgeEditor && (
               <CreatedByField
                 name="createdBy"
+                required={(mandatoryAttributes.includes('createdBy'))}
                 style={fieldSpacingContainerStyle}
                 setFieldValue={setFieldValue}
                 helpertext={
@@ -191,6 +202,7 @@ const OpinionEditionOverviewComponent = (props) => {
             )}
             <ObjectMarkingField
               name="objectMarking"
+              required={(mandatoryAttributes.includes('objectMarking'))}
               style={fieldSpacingContainerStyle}
               helpertext={
                 <SubscriptionFocus
