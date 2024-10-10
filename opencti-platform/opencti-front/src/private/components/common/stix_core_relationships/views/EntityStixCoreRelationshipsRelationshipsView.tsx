@@ -1,4 +1,4 @@
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useState } from 'react';
 import useAuth from '../../../../../utils/hooks/useAuth';
 import ListLines from '../../../../../components/list_lines/ListLines';
 import { QueryRenderer } from '../../../../../relay/environment';
@@ -156,6 +156,11 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
     onToggleEntity,
   } = useEntityToggle(localStorageKey);
 
+  const [reversedRelation, setReversedRelation] = useState(isRelationReversed);
+  const handleReverseRelation = () => {
+    setReversedRelation(!reversedRelation);
+  };
+
   const finalView = currentView || view;
   return (
     <>
@@ -265,7 +270,8 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
         <StixCoreRelationshipCreationFromEntity
           entityId={entityId}
           allowedRelationshipTypes={relationshipTypes}
-          isRelationReversed={isRelationReversed}
+          isRelationReversed={reversedRelation}
+          handleReverseRelation={handleReverseRelation}
           targetStixDomainObjectTypes={computeTargetStixDomainObjectTypes(stixCoreObjectTypes)}
           targetStixCyberObservableTypes={computeTargetStixCyberObservableTypes(stixCoreObjectTypes)}
           defaultStartTime={defaultStartTime}

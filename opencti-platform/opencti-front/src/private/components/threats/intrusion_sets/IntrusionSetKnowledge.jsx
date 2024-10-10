@@ -56,7 +56,7 @@ class IntrusionSetKnowledgeComponent extends Component {
                 entityLink={link}
                 defaultStartTime={intrusionSet.first_seen}
                 defaultStopTime={intrusionSet.last_seen}
-                allDirections={true}
+                allDirections
               />
             }
           />
@@ -114,12 +114,13 @@ class IntrusionSetKnowledgeComponent extends Component {
             element={
               <EntityStixCoreRelationships
                 entityId={intrusionSet.id}
-                relationshipTypes={['uses']}
+                relationshipTypes={['uses', 'authored-by']}
                 stixCoreObjectTypes={['Malware']}
                 entityLink={link}
                 defaultStartTime={intrusionSet.first_seen}
                 defaultStopTime={intrusionSet.last_seen}
                 isRelationReversed={false}
+                allDirections
               />
             }
           />
