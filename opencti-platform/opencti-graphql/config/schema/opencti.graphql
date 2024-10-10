@@ -1486,7 +1486,7 @@ type User implements BasicObject & InternalObject {
   ): OrganizationConnection @auth(for: [SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN])
   created_at: DateTime!
   updated_at: DateTime!
-  sessions: [SessionDetail] @auth(for: [SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN])
+  sessions: UserSession @auth(for: [SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN])
   default_time_field: String
   account_status: String! @auth(for: [SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN])
   account_lock_after_date: DateTime @auth(for: [SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN])
@@ -1546,12 +1546,14 @@ type MeUser implements BasicObject & InternalObject {
 }
 type SessionDetail {
   id: ID!
+  user_execution: User
   created: DateTime
   ttl: Int
   originalMaxAge: Int
 }
 type UserSession {
   user: Creator
+  total: Int
   sessions: [SessionDetail]
 }
 input UserAddInput {
@@ -14023,6 +14025,7 @@ type Mutation {
   logout: ID @auth
   roleAdd(input: RoleAddInput!): Role @auth(for: [SETTINGS_SETACCESSES])
   sessionKill(id: ID!): ID @auth(for: [SETTINGS_SETACCESSES])
+  cleanAllSessions: Boolean @auth(for: [SETTINGS_SETACCESSES])
   userSessionsKill(id: ID!): [ID] @auth(for: [SETTINGS_SETACCESSES])
   roleEdit(id: ID!): RoleEditMutations @auth(for: [SETTINGS_SETACCESSES])
   pingConnector(id: ID!, state: String, connectorInfo: ConnectorInfoInput): Connector @auth(for: [CONNECTORAPI])

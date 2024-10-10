@@ -26,7 +26,7 @@ import { getEntityFromCache } from '../database/cache';
 import { isEmptyField, isNotEmptyField } from '../database/utils';
 import { buildContextDataForFile, publishUserAction } from '../listener/UserActionListener';
 import { internalLoadById } from '../database/middleware-loader';
-import { delUserContext, redisIsAlive } from '../database/redis';
+import { redisIsAlive } from '../database/redis';
 import { UnknownError } from '../config/errors';
 import { rabbitMQIsAlive } from '../database/rabbitmq';
 import { isEngineAlive } from '../database/engine';
@@ -355,7 +355,6 @@ const createApp = async (app) => {
           event_scope: 'logout',
           context_data: undefined
         });
-        await delUserContext(user);
         res.clearCookie(OPENCTI_SESSION);
         req.session.destroy(() => {
           const strategy = passport._strategy(provider);

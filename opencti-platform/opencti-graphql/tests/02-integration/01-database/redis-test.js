@@ -1,14 +1,7 @@
 import { expect, it, describe } from 'vitest';
 import { v4 as uuid } from 'uuid';
 import { head } from 'ramda';
-import {
-  delEditContext,
-  delUserContext,
-  fetchEditContext,
-  getRedisVersion,
-  lockResource,
-  setEditContext,
-} from '../../../src/database/redis';
+import { delEditContext, fetchEditContext, getRedisVersion, lockResource, setEditContext } from '../../../src/database/redis';
 import { OPENCTI_ADMIN_UUID } from '../../../src/schema/general';
 
 describe('Redis basic and utils', () => {
@@ -39,21 +32,6 @@ describe('Redis context management', () => {
     expect(input.data).toEqual(head(initialContext).data);
     await delEditContext(user, contextInstanceId);
     const getContext = await fetchEditContext(contextInstanceId);
-    expect(getContext).toEqual([]);
-  });
-
-  it('should clear context user', async () => {
-    const secondContextId = uuid();
-    await setEditContext(user, contextInstanceId, input);
-    await setEditContext(user, secondContextId, input);
-    let getContext = await fetchEditContext(contextInstanceId);
-    expect(input.data).toEqual(head(getContext).data);
-    getContext = await fetchEditContext(secondContextId);
-    expect(input.data).toEqual(head(getContext).data);
-    await delUserContext(user);
-    getContext = await fetchEditContext(contextInstanceId);
-    expect(getContext).toEqual([]);
-    getContext = await fetchEditContext(secondContextId);
     expect(getContext).toEqual([]);
   });
 });
