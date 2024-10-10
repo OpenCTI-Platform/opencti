@@ -14,10 +14,12 @@ const useOutcomeTemplate = () => {
   ) => {
     let { content } = template;
 
+    // attribute widgets
     for (const attributeWidget of resolvedAttributesWidgets) {
       content = content.replace(`$${attributeWidget.template_widget_name}`, attributeWidget.data);
     }
 
+    // other widgets
     for (const templateWidget of usedTemplateWidgets) {
       let outcome = '';
       if (templateWidget.widget.type === 'list') {

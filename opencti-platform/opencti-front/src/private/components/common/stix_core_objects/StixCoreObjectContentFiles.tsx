@@ -30,8 +30,9 @@ import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import SelectField from '../../../../components/fields/SelectField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import { resolvedAttributesWidgets, templateAttribute, templateList, usedTemplateWidgets } from '../../../../utils/outcome_template/engine/__template';
+import { resolvedAttributesWidgets, templateList, usedTemplateWidgets } from '../../../../utils/outcome_template/engine/__template';
 import useOutcomeTemplate from '../../../../utils/outcome_template/engine/templateWidgetEngine';
+import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 
 const useStyles = makeStyles((theme) => ({
   drawerPaper: {
@@ -96,6 +97,7 @@ const StixCoreObjectContentFiles = ({
   const classes = useStyles();
   const { t_i18n, fld } = useFormatter();
   const { buildOutcomeTemplate } = useOutcomeTemplate();
+  const isEnterpriseEdition = useEnterpriseEdition();
 
   const [deleting, setDeleting] = useState<string | null>(null);
   const [displayCreate, setDisplayCreate] = useState(false);
@@ -202,7 +204,7 @@ const StixCoreObjectContentFiles = ({
       name += '.html';
     }
 
-    const hardcodedTemplate = templateAttribute;
+    const hardcodedTemplate = templateList;
     const hardcodedUsedTemplateWidgets = usedTemplateWidgets;
     const hardcodedResolvedAttributesWidgets = resolvedAttributesWidgets;
     const templateContent = await buildOutcomeTemplate(stixCoreObjectId, hardcodedTemplate, hardcodedUsedTemplateWidgets, hardcodedResolvedAttributesWidgets);
@@ -343,57 +345,61 @@ const StixCoreObjectContentFiles = ({
           );
         })}
       </List>
-      <div>
-        <Typography variant="body2" style={{ margin: '5px 0 0 15px', float: 'left' }}>{t_i18n('Outcome templates')}</Typography>
-        <div style={{ float: 'right', display: 'flex', margin: '-4px 15px 0 0' }}>
-          <Tooltip title={t_i18n('Create an outcome based on a template')}>
-            <IconButton
-              onClick={handleOpenCreateOutcomeTemplate}
-              color="primary"
-              size="small"
-              aria-label={t_i18n('Create an outcome based on a template')}
-            >
-              <AddOutlined />
-            </IconButton>
-          </Tooltip>
-        </div>
-      </div>
-      <List style={{ marginBottom: 30 }}>
-        {outcomeTemplates.map((outcomeFile) => {
-          return (
-            <Tooltip key={outcomeFile.id} title={`${outcomeFile.name} (${outcomeFile.metaData.mimetype})`}>
-              <ListItemButton
-                dense={true}
-                divider={true}
-                selected={outcomeFile.id === currentFileId}
-                onClick={() => (outcomeFile.perspective === 'export' ? handleSelectExportFile(outcomeFile.id) : handleSelectFile(outcomeFile.id))}
-                disabled={deleting === outcomeFile.id}
+      {isEnterpriseEdition && <>
+        <div>
+          <Typography variant="body2"
+            style={{ margin: '5px 0 0 15px', float: 'left' }}
+          >{t_i18n('Outcome templates')}</Typography>
+          <div style={{ float: 'right', display: 'flex', margin: '-4px 15px 0 0' }}>
+            <Tooltip title={t_i18n('Create an outcome based on a template')}>
+              <IconButton
+                onClick={handleOpenCreateOutcomeTemplate}
+                color="primary"
+                size="small"
+                aria-label={t_i18n('Create an outcome based on a template')}
               >
-                <ListItemIcon>
-                  {renderIcon(outcomeFile.metaData.mimetype)}
-                </ListItemIcon>
-                <ListItemText
-                  sx={{
-                    '.MuiListItemText-primary': {
-                      overflowX: 'hidden',
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap',
-                      marginRight: '20px',
-                    },
-                  }}
-                  primary={outcomeFile.name}
-                  secondary={fld(R.propOr(moment(), 'lastModified', outcomeFile))}
-                />
-                <ListItemSecondaryAction>
-                  <IconButton onClick={(event) => submitDelete(outcomeFile.id, event)} size="small">
-                    <DeleteOutlined color="primary" fontSize="small"/>
-                  </IconButton>
-                </ListItemSecondaryAction>
-              </ListItemButton>
+                <AddOutlined/>
+              </IconButton>
             </Tooltip>
-          );
-        })}
-      </List>
+          </div>
+        </div>
+        <List style={{ marginBottom: 30 }}>
+          {outcomeTemplates.map((outcomeFile) => {
+            return (
+              <Tooltip key={outcomeFile.id} title={`${outcomeFile.name} (${outcomeFile.metaData.mimetype})`}>
+                <ListItemButton
+                  dense={true}
+                  divider={true}
+                  selected={outcomeFile.id === currentFileId}
+                  onClick={() => (outcomeFile.perspective === 'export' ? handleSelectExportFile(outcomeFile.id) : handleSelectFile(outcomeFile.id))}
+                  disabled={deleting === outcomeFile.id}
+                >
+                  <ListItemIcon>
+                    {renderIcon(outcomeFile.metaData.mimetype)}
+                  </ListItemIcon>
+                  <ListItemText
+                    sx={{
+                      '.MuiListItemText-primary': {
+                        overflowX: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                        marginRight: '20px',
+                      },
+                    }}
+                    primary={outcomeFile.name}
+                    secondary={fld(R.propOr(moment(), 'lastModified', outcomeFile))}
+                  />
+                  <ListItemSecondaryAction>
+                    <IconButton onClick={(event) => submitDelete(outcomeFile.id, event)} size="small">
+                      <DeleteOutlined color="primary" fontSize="small"/>
+                    </IconButton>
+                  </ListItemSecondaryAction>
+                </ListItemButton>
+              </Tooltip>
+            );
+          })}
+        </List>
+      </>}
       <Formik
         enableReinitialize={true}
         initialValues={{ name: '', type: 'text/html', fileMarkings: [] }}
@@ -454,7 +460,7 @@ const StixCoreObjectContentFiles = ({
           </Form>
         )}
       </Formik>
-      <Formik
+      {isEnterpriseEdition && <Formik
         enableReinitialize={true}
         initialValues={{
           name: '',
@@ -465,7 +471,7 @@ const StixCoreObjectContentFiles = ({
         validationSchema={fileValidation}
         onSubmit={onSubmitOutcomeTemplate}
         onReset={onResetOutcomeTemplate}
-      >
+                              >
         {({ submitForm, handleReset, isSubmitting, setFieldValue }) => (
           <Form>
             <Dialog
@@ -525,7 +531,7 @@ const StixCoreObjectContentFiles = ({
             </Dialog>
           </Form>
         )}
-      </Formik>
+      </Formik>}
     </Drawer>
   );
 };
