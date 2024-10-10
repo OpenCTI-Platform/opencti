@@ -20,6 +20,7 @@ import { useFormatter } from '../../../components/i18n';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 import DataTable from '../../../components/dataGrid/DataTable';
 import useHelper from '../../../utils/hooks/useHelper';
+import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 
 const LOCAL_STORAGE_KEY = 'campaigns';
 
@@ -33,6 +34,8 @@ const Campaigns = () => {
     openExports: false,
     view: 'cards',
   };
+  const { setTitle } = useConnectedDocumentModifier();
+  setTitle(t_i18n('Campaigns | Threats'));
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<CampaignsCardsPaginationQuery$variables>(
     LOCAL_STORAGE_KEY,
     initialValues,
