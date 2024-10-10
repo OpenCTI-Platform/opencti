@@ -246,7 +246,7 @@ const stixBaseRelationshipContribution = {
   definition: {
     relationship: [
       { src: 'relationship_type' },
-      { src: 'from', dest: 'source_ref' }, { src: 'to', dest: 'target_ref' },
+      { src: 'from', dest: 'source_ref', dependencies: ['to'] }, { src: 'to', dest: 'target_ref', dependencies: ['from'] },
       { src: 'start_time' }, { src: 'stop_time' }
     ],
   },
@@ -264,7 +264,7 @@ const stixBaseSightingContribution = {
   definition: {
     sighting: [
       { src: 'relationship_type', dest: 'type' },
-      { src: 'from', dest: 'sighting_of_ref' }, { src: 'to', dest: 'where_sighted_refs' },
+      { src: 'from', dest: 'sighting_of_ref', dependencies: ['to'] }, { src: 'to', dest: 'where_sighted_refs', dependencies: ['from'] },
       { src: 'first_seen' }, { src: 'last_seen' }
     ],
   },

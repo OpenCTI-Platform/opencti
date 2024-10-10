@@ -3,7 +3,7 @@ import { generateStandardId, isFieldContributingToStandardId } from '../../../sr
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../../../src/schema/stixDomainObject';
 import { ENTITY_HASHED_OBSERVABLE_ARTIFACT } from '../../../src/schema/stixCyberObservable';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE } from '../../../src/schema/stixMetaObject';
-import { RELATION_LOCATED_AT } from '../../../src/schema/stixCoreRelationship';
+import { RELATION_BASED_ON } from '../../../src/schema/stixCoreRelationship';
 import { RELATION_MEMBER_OF } from '../../../src/schema/internalRelationship';
 import { RELATION_OBJECT_MARKING } from '../../../src/schema/stixRefRelationship';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../../src/schema/stixSightingRelationship';
@@ -40,15 +40,33 @@ it('should external reference ids stable', () => {
 });
 
 it('should relation ids be prefixed uuid V4', () => {
-  const data = {}; // irrelevant for relationships; it's supposed to be just uuidv4
-  let standardId = generateStandardId(RELATION_MEMBER_OF, data);
+  // Internal and meta
+  let standardId = generateStandardId(RELATION_MEMBER_OF, {});
   expect(standardId).toMatch(/^internal-relationship--[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$/);
-  standardId = generateStandardId(RELATION_LOCATED_AT, data);
-  expect(standardId).toMatch(/^relationship--[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$/);
-  standardId = generateStandardId(RELATION_OBJECT_MARKING, data);
+  standardId = generateStandardId(RELATION_OBJECT_MARKING, {});
   expect(standardId).toMatch(/^relationship-meta--[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$/);
-  standardId = generateStandardId(STIX_SIGHTING_RELATIONSHIP, data);
-  expect(standardId).toMatch(/^sighting--[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$/);
+  // Core and sightings
+  standardId = generateStandardId(STIX_SIGHTING_RELATIONSHIP, {
+    relationship_type: STIX_SIGHTING_RELATIONSHIP,
+    from: { standard_id: 'from_id' },
+    to: { standard_id: 'to_id' }
+  });
+  expect(standardId).toEqual('sighting--161901df-21bb-527a-b96b-354119279fe2');
+  standardId = generateStandardId(RELATION_BASED_ON, {
+    relationship_type: RELATION_BASED_ON,
+    start_time: '2022-11-25T19:00:05.000Z',
+    stop_time: '2022-11-26T19:00:05.000Z',
+    from: { standard_id: 'from_id' },
+    to: { standard_id: 'to_id' }
+  });
+  expect(standardId).toEqual('relationship--a7778a7d-a743-5193-9912-89f88f9ed0b4');
+  standardId = generateStandardId(RELATION_BASED_ON, {
+    relationship_type: RELATION_BASED_ON,
+    start_time: '2022-11-25T19:00:05.000Z',
+    from: { standard_id: 'from_id' },
+    to: { standard_id: 'to_id' }
+  });
+  expect(standardId).toEqual('relationship--c5e1e2ce-14d6-535b-911d-267e92119e01');
 });
 
 it('should throw an error on unrecognized object type', () => {
