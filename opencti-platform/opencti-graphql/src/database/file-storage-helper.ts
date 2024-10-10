@@ -19,7 +19,7 @@ interface FileUploadOpts {
   importContextEntities?: BasicStoreEntity[], // entities used for import context
 }
 
-interface FileUploadData {
+export interface FileUploadData {
   createReadStream: () => Readable,
   filename: string,
   mimeType?: string,
