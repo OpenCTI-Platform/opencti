@@ -1,81 +1,82 @@
-import React, { Component } from 'react';
+import React, { useState, useEffect } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, propOr } from 'ramda';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { QueryRenderer } from '../../../relay/environment';
 import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../utils/ListParameters';
-import inject18n from '../../../components/i18n';
+import { useFormatter } from '../../../components/i18n';
 import SectorsLines, { sectorsLinesQuery } from './sectors/SectorsLines';
 import SectorCreation from './sectors/SectorCreation';
 import SearchInput from '../../../components/SearchInput';
 import Security from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
-import withRouter from '../../../utils/compat_router/withRouter';
 import Breadcrumbs from '../../../components/Breadcrumbs';
+import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 
 const LOCAL_STORAGE_KEY = 'sectors';
 
-class Sectors extends Component {
-  constructor(props) {
-    super(props);
-    const params = buildViewParamsFromUrlAndStorage(
-      props.navigate,
-      props.location,
-      LOCAL_STORAGE_KEY,
-    );
-    this.state = {
-      searchTerm: propOr('', 'searchTerm', params),
-      openExports: false,
-    };
-  }
+const Sectors = () => {
+  const { t_i18n } = useFormatter();
+  const { setTitle } = useConnectedDocumentModifier();
+  setTitle(t_i18n('Sectors | Entities'));
+  const navigate = useNavigate();
+  const location = useLocation();
+  const params = buildViewParamsFromUrlAndStorage(
+    navigate,
+    location,
+    LOCAL_STORAGE_KEY,
+  );
 
-  saveView() {
+  const [sectorsState, setSectorsState] = useState({
+    searchTerm: params.searchTerm ?? '',
+    openExports: false,
+  });
+
+  const saveView = () => {
     saveViewParameters(
-      this.props.navigate,
-      this.props.location,
+      navigate,
+      location,
       LOCAL_STORAGE_KEY,
-      this.state,
+      sectorsState,
     );
-  }
+  };
 
-  handleSearch(value) {
-    this.setState({ searchTerm: value }, () => this.saveView());
-  }
+  const handleSearch = (value) => {
+    setSectorsState({ ...sectorsState,
+      searchTerm: value,
+    });
+  };
 
-  handleToggleExports() {
-    this.setState({ openExports: !this.state.openExports });
-  }
+  useEffect(() => {
+    saveView();
+  }, [sectorsState]);
 
-  render() {
-    const { searchTerm } = this.state;
-    const { t } = this.props;
-    return (
-      <>
-        <Breadcrumbs elements={[{ label: t('Entities') }, { label: t('Sectors'), current: true }]} />
-        <div style={{ marginTop: -10 }}>
-          <SearchInput
-            variant="small"
-            onSubmit={this.handleSearch.bind(this)}
-            keyword={searchTerm}
-            style={{ float: 'left' }}
-          />
-          <div style={{ float: 'right' }}>
-            <Security needs={[KNOWLEDGE_KNUPDATE]}>
-              <SectorCreation />
-            </Security>
-          </div>
-        </div>
-        <div className="clearfix" />
-        <QueryRenderer
-          query={sectorsLinesQuery}
-          variables={{ count: 500 }}
-          render={({ props }) => (
-            <SectorsLines data={props} keyword={searchTerm} />
-          )}
+  return (
+    <>
+      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Entities') }, { label: t_i18n('Sectors'), current: true }]} />
+      <div style={{ marginTop: -10 }}>
+        <SearchInput
+          variant="small"
+          onSubmit={handleSearch}
+          keyword={sectorsState.searchTerm}
+          style={{ float: 'left' }}
         />
-      </>
-    );
-  }
-}
+        <div style={{ float: 'right' }}>
+          <Security needs={[KNOWLEDGE_KNUPDATE]}>
+            <SectorCreation />
+          </Security>
+        </div>
+      </div>
+      <div className="clearfix" />
+      <QueryRenderer
+        query={sectorsLinesQuery}
+        variables={{ count: 500 }}
+        render={({ props }) => (
+          <SectorsLines data={props} keyword={sectorsState.searchTerm} />
+        )}
+      />
+    </>
+  );
+};
 
 Sectors.propTypes = {
   t: PropTypes.func,
@@ -83,4 +84,4 @@ Sectors.propTypes = {
   location: PropTypes.object,
 };
 
-export default compose(inject18n, withRouter)(Sectors);
+export default Sectors;
