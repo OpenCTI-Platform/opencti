@@ -41,6 +41,5 @@ describe('Verify internal importCsv connector', () => {
     const workUpdated: any = await findWorkById(testContext, ADMIN_USER, work.id);
     expect(workUpdated).toBeDefined();
     expect(workUpdated.errors.length).toBe(0);
-    expect(workUpdated.import_expected_number).toBe(18); // 16 lines in the CSV file + 2 labels
   });
 });

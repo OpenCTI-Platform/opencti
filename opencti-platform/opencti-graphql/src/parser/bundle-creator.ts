@@ -22,6 +22,16 @@ export const deduplicatedBundleData = (bundles: StixObject[]): StixObject[] => {
   );
 };
 
+export const deduplicatedBundleDataV2 = (bundles: StixObject[]): StixObject[] => {
+  return bundles.filter(
+    (obj: StixObject, index, self) => index === self.findIndex(
+      (t: StixObject) => {
+        return t.id === obj.id;
+      }
+    )
+  );
+};
+
 export class BundleBuilder {
   id: string;
 
@@ -33,6 +43,26 @@ export class BundleBuilder {
     this.id = `bundle--${uuidv4()}`;
     this.type = 'bundle';
     this.objects = [];
+  }
+
+  canAddObjects(objectsToCheck: StixObject[]) {
+    let canAdd = true;
+    for (let i = 0; i < objectsToCheck.length; i += 1) {
+      const currentToCheck = objectsToCheck[i];
+      const existingObjectWithDifferentLabel = this.objects.find((item: StixObject) => {
+        if (item.id === currentToCheck.id && item.type === currentToCheck.type) {
+          const abstractStixObject = currentToCheck as any;
+          if (abstractStixObject.labels) {
+            const stixObject1 = currentToCheck as any;
+            const stixObject2 = item as any;
+            return stixObject1.labels !== stixObject2.labels;
+          }
+        }
+        return false;
+      });
+      canAdd = canAdd && !existingObjectWithDifferentLabel;
+    }
+    return canAdd;
   }
 
   addObject(object: StixObject) {
@@ -50,7 +80,7 @@ export class BundleBuilder {
   }
 
   build(): StixBundle {
-    const deduplicatedObjects = deduplicatedBundleData(this.objects);
+    const deduplicatedObjects = deduplicatedBundleDataV2(this.objects);
 
     return {
       id: this.id,

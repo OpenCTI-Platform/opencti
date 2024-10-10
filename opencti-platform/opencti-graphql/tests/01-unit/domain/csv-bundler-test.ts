@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { bundleProcess } from '../../../src/parser/csv-bundler';
+import { bundleProcess, bundleProcessV2 } from '../../../src/parser/csv-bundler';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import {
   indicatorsWithExternalReferencesCsvContent,
@@ -13,9 +13,8 @@ import {
   indicatorsWithKillChainPhasesCsvMapper,
   indicatorsWithKillChainPhasesExpectedBundle
 } from '../../data/csv-bundler/kill-chains-constants';
-import { citiesWithTwoLabels, citiesWithTwoLabelsCsvMapper } from '../../data/csv-bundler/cities-with-two-labels-constants';
-import { logApp } from '../../../src/config/conf';
-import { deduplicatedBundleData } from '../../../src/parser/bundle-creator';
+import { citiesWithTwoLabelsCsvMapper } from '../../data/csv-bundler/cities-with-two-labels-constants';
+import { BundleBuilder, deduplicatedBundleData } from '../../../src/parser/bundle-creator';
 import type { StixObject } from '../../../src/types/stix-common';
 import type { StixLabel } from '../../../src/types/stix-smo';
 import type { StixLocation } from '../../../src/types/stix-sdo';
@@ -73,14 +72,29 @@ describe('CSV bundler', () => {
         indicatorsWithKillChainPhasesExpectedBundleWithoutId
       );
     });
-    it('Should send all', async () => {
-      const bundleResult = await bundleProcess(
+    it('Should split same city with different label in 2 valid bundles', async () => {
+      // duplicate should be removed, unless label are different.
+      const citiesWithTwoLabels:string[] = [
+        'name,label,color',
+        'Lyon,label1,#ffffff',
+        'Lyon,label2,#000000',
+        'Grenoble,label2,#000000',
+        'Grenoble,label2,#000000',
+      ];
+
+      const bundleResult: BundleBuilder[] = await bundleProcessV2(
         testContext,
         ADMIN_USER,
         citiesWithTwoLabels,
         citiesWithTwoLabelsCsvMapper as CsvMapperParsed
       );
-      logApp.info('ANGIE - bundleResult:', { bundleResult });
+
+      expect(bundleResult.length).toBe(2);
+      const firstBundle = bundleResult[0].build();
+      expect(firstBundle.objects.length).toBe(4); // 2 labels + 2 cities
+
+      const secondBundle = bundleResult[1].build();
+      expect(secondBundle.objects.length).toBe(2); // Only Lyon + label2
     });
   });
 

@@ -52,9 +52,3 @@ export const citiesWithTwoLabelsCsvMapper: Partial<CsvMapperParsed> = {
     }
   ]
 };
-
-export const citiesWithTwoLabels:string[] = [
-  'name,label,color',
-  'Lyon,label1,#ffffff',
-  'Lyon,label2,#ffffff',
-];

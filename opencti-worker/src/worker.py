@@ -230,12 +230,10 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
             if event_type == "bundle":
                 content = base64.b64decode(data["content"]).decode("utf-8")
                 content_json = json.loads(content)
-                self.worker_logger.info("[ANGIE] processing bundle", {"json":content_json})
                 if "objects" not in content_json or len(content_json["objects"]) == 0:
                     raise ValueError("JSON data type is not a STIX2 bundle")
                 if len(content_json["objects"]) == 1:
                     update = data["update"] if "update" in data else False
-                    self.worker_logger.info("[ANGIE] one object", {"object":content_json["objects"], "update":update})
                     imported_items = self.api.stix2.import_bundle_from_json(
                         content, update, types, work_id
                     )

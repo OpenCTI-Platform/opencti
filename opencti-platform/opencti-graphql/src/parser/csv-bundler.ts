@@ -28,6 +28,7 @@ export const bundleProcess = async (
   mapper: CsvMapperParsed,
   opts: BundleProcessOpts = {}
 ) => {
+  logApp.info('ANGIE bundleProcess V1');
   const { entity, maxRecordNumber } = opts;
   await validateCsvMapper(context, user, mapper);
   const sanitizedMapper = sanitized(mapper);
@@ -70,6 +71,74 @@ export const bundleProcess = async (
   }
   // Build and return the result
   return bundleBuilder.build();
+};
+
+export const bundleProcessV2 = async (
+  context: AuthContext,
+  user: AuthUser,
+  lines: string[],
+  mapper: CsvMapperParsed,
+  opts: BundleProcessOpts = {}
+) => {
+  logApp.info('ANGIE bundleProcessV2');
+  const { entity, maxRecordNumber } = opts;
+  await validateCsvMapper(context, user, mapper);
+  const sanitizedMapper = sanitized(mapper);
+  const allBundles: BundleBuilder[] = [];
+  allBundles.push(new BundleBuilder());
+  let skipLine = sanitizedMapper.has_header;
+  const rawRecords = await parsingProcess(lines, mapper.separator, mapper.skipLineChar);
+  const records = maxRecordNumber ? rawRecords.slice(0, maxRecordNumber) : rawRecords;
+  const refEntities = await handleRefEntities(context, user, mapper);
+  if (records) {
+    await Promise.all((records.map(async (record: string[]) => {
+      const isEmptyLine = record.length === 1 && isEmptyField(record[0]);
+      // Handle header
+      if (skipLine) {
+        skipLine = false;
+      } else if (!isEmptyLine) {
+        try {
+          // Compute input by representation
+          const inputs = await mappingProcess(context, user, sanitizedMapper, record, refEntities);
+          // Remove inline elements
+          const withoutInlineInputs = inputs.filter((input) => !inlineEntityTypes.includes(input.entity_type as string));
+          // Transform entity to stix
+          const stixObjects = withoutInlineInputs.map((input) => {
+            const stixObject = convertStoreToStix(input as unknown as StoreCommon);
+            stixObject.extensions[STIX_EXT_OCTI].converter_csv = record.join(sanitizedMapper.separator);
+            return stixObject;
+          });
+          // Add to bundle
+          let added: boolean = false;
+          let i = 0;
+          while (!added && i < allBundles.length) {
+            if (allBundles[i].canAddObjects(stixObjects)) {
+              allBundles[0].addObjects(stixObjects);
+              added = true;
+            }
+            i += 1;
+          }
+
+          if (!added) {
+            const nextBuilder = new BundleBuilder();
+            nextBuilder.addObjects(stixObjects);
+            allBundles.push(nextBuilder);
+          }
+        } catch (e) {
+          logApp.error(e);
+        }
+      }
+    })));
+  }
+  // Handle container
+  if (entity && isStixDomainObjectContainer(entity.entity_type)) {
+    const refs = allBundles[0].ids();
+    const stixEntity = { ...convertStoreToStix(entity), [objects.stixName]: refs };
+    allBundles[0].addObject(stixEntity);
+    // FIXME to implement
+  }
+  // Build and return the result
+  return allBundles;
 };
 
 export const bundleProcessFromFile = async (
