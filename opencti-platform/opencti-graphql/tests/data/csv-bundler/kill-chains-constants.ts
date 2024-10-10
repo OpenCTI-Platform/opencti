@@ -1,4 +1,4 @@
-import type { CsvMapperParsed, CsvMapperRepresentation } from '../../../src/modules/internal/csvMapper/csvMapper-types';
+import { type CsvMapperParsed, type CsvMapperRepresentation } from '../../../src/modules/internal/csvMapper/csvMapper-types';
 import type { StixBundle, StixDomainObject } from '../../../src/types/stix-common';
 
 export const indicatorsWithKillChainPhasesExpectedBundle: StixBundle = {

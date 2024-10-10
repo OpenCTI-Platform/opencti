@@ -61,85 +61,6 @@ const generateBundle = async (context: AuthContext, csvMapper: CsvMapperParsed, 
   }
 };
 
-const doWorkNewWay = async (context: AuthContext, applicantUser: AuthUser, stream: SdkStream<Readable>, messageParsed: any, csvMapper: CsvMapperParsed, entity: any) => {
-  logApp.info(`START - ANGIE doWorkNewWay, BULK_LINE_PARSING_NUMBER:${BULK_LINE_PARSING_NUMBER}`);
-  const workId = messageParsed.internal.work_id;
-  const fileId = messageParsed.event.file_id;
-
-  let lines: string[] = [];
-  const rl = readline.createInterface({ input: stream, crlfDelay: 5000 });
-  try {
-    // Need an async interator to prevent blocking
-    // eslint-disable-next-line no-restricted-syntax
-    for await (const line of rl) {
-      lines.push(line);
-      // Only create bundle with a limited size to prevent OOM
-      if (lines.length > BULK_LINE_PARSING_NUMBER) {
-        logApp.info('ANGIE doWorkNewWay - lines.length > BULK_LINE_PARSING_NUMBER => generateBundle');
-        await generateBundle(context, csvMapper, messageParsed, entity, lines);
-        lines = [];
-      }
-    }
-    if (lines.length > 0) {
-      logApp.info('ANGIE doWorkNewWay - lines.length > 0 => generateBundle');
-      await generateBundle(context, csvMapper, messageParsed, entity, lines);
-    }
-  } catch (error: any) {
-    const errorData = { error: error.message, source: fileId };
-    await reportExpectation(context, applicantUser, workId, errorData);
-  }
-  logApp.info('END - ANGIE doWorkNewWay');
-};
-
-const doWorkOldWay = async (context: AuthContext, applicantUser: AuthUser, stream: SdkStream<Readable>, messageParsed: any, csvMapper: CsvMapperParsed, entity: any) => {
-  logApp.info('START - ANGIE doWorkOldWay');
-  const workId = messageParsed.internal.work_id;
-  const applicantId = messageParsed.internal.applicant_id;
-  const fileId = messageParsed.event.file_id;
-
-  const chunks: Uint8Array[] = [];
-  let hasError: boolean = false;
-  stream.on('data', async (chunk) => {
-    chunks.push(chunk.toString('utf8'));
-  }).on('error', async (error) => {
-    hasError = true;
-    const errorData = { error: error.message, source: fileId };
-    await reportExpectation(context, applicantUser, workId, errorData);
-  }).on('end', async () => {
-    if (!hasError) {
-      logApp.info(`ANGIE doWorkOldWay - ${chunks.length} items to process to bundle.`);
-      const chunksAsStringArray: string[] = chunks.map((chunk) => chunk.toString());
-      const bundle = await bundleProcess(context, applicantUser, chunksAsStringArray, csvMapper, { entity });
-      const validateBeforeImport = connectorConfig.config.validate_before_import;
-      if (validateBeforeImport) {
-        logApp.info('ANGIE doWorkOldWay - validateBeforeImport.');
-        await updateExpectationsNumber(context, applicantUser, workId, 1);
-        const contentStream = Readable.from([JSON.stringify(bundle, null, '  ')]);
-        const file = {
-          createReadStream: () => contentStream,
-          filename: `${workId}.json`,
-          mimetype: 'application/json',
-        };
-        await uploadToStorage(context, applicantUser, 'import/pending', file, { entity });
-        await reportExpectation(context, applicantUser, workId);
-      } else {
-        logApp.info('ANGIE doWorkOldWay - not validateBeforeImport.');
-        await updateExpectationsNumber(context, applicantUser, workId, bundle.objects.length);
-        const content = Buffer.from(JSON.stringify(bundle), 'utf-8').toString('base64');
-        await pushToWorkerForConnector(connector.internal_id, {
-          type: 'bundle',
-          update: true,
-          applicant_id: applicantId ?? OPENCTI_SYSTEM_UUID,
-          work_id: workId,
-          content
-        });
-      }
-    }
-  });
-  logApp.info('END - ANGIE doWorkOldWay');
-};
-
-// TODO: is it ok to extract from initImportCsvConnector for test reasons ?
 export const consumeQueueCallback = async (context: AuthContext, message: string) => {
   logApp.info(`ANGIE consumeQueueCallback, message:${message}`);
   const messageParsed = JSON.parse(message);
@@ -160,8 +81,26 @@ export const consumeQueueCallback = async (context: AuthContext, message: string
     const stream: SdkStream<Readable> | null | undefined = await downloadFile(fileId) as SdkStream<Readable> | null | undefined;
     await updateReceivedTime(context, applicantUser, workId, 'Connector ready to process the operation');
     if (stream) {
-      await doWorkOldWay(context, applicantUser, stream, messageParsed, csvMapper, entity);
-      await doWorkNewWay(context, applicantUser, stream, messageParsed, csvMapper, entity);
+      let lines: string[] = [];
+      const rl = readline.createInterface({ input: stream, crlfDelay: 5000 });
+      try {
+        // Need an async interator to prevent blocking
+        // eslint-disable-next-line no-restricted-syntax
+        for await (const line of rl) {
+          lines.push(line);
+          // Only create bundle with a limited size to prevent OOM
+          if (lines.length >= BULK_LINE_PARSING_NUMBER) {
+            await generateBundle(context, csvMapper, messageParsed, entity, lines);
+            lines = [];
+          }
+        }
+        if (lines.length > 0) {
+          await generateBundle(context, csvMapper, messageParsed, entity, lines);
+        }
+      } catch (error: any) {
+        const errorData = { error: error.message, source: fileId };
+        await reportExpectation(context, applicantUser, workId, errorData);
+      }
     }
     await updateProcessedTime(context, applicantUser, workId, ' generated bundle(s) for worker import');
   } catch (error: any) {
