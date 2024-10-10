@@ -27,7 +27,7 @@ const DangerZoneBlock: FunctionComponent<DangerZoneBlockProps> = ({ title, compo
   if (isSensitiveModificationEnabled) {
     currentTitle = (
       <>
-        {title}<DangerZoneChip />
+        {title}<DangerZoneChip style={{ marginTop: 0 }} />
       </>
     );
   }

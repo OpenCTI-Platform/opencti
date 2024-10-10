@@ -176,7 +176,6 @@ const Role = ({
             return (
               <RoleEdition
                 role={props.role}
-                isSensitive={isSensitive}
                 disabled={!isAllowed}
               />
             );

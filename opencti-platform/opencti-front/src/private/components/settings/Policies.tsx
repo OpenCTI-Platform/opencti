@@ -3,7 +3,7 @@ import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-r
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import Grid from '@mui/material/Grid';
-import { makeStyles } from '@mui/styles';
+import { makeStyles, useTheme } from '@mui/styles';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import Alert from '@mui/material/Alert';
@@ -40,6 +40,7 @@ import Breadcrumbs from '../../../components/Breadcrumbs';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
 import useSensitiveModifications from '../../../utils/hooks/useSensitiveModifications';
 import Transition from '../../../components/Transition';
+import type { Theme } from '../../../components/Theme';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -141,7 +142,10 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
   );
 
   const [commitField] = useApiMutation(policiesFieldPatch);
+
   const classes = useStyles();
+  const theme = useTheme<Theme>();
+
   const { t_i18n } = useFormatter();
   const handleSubmitField = (name: string, value: string | string[] | Option | null) => {
     policiesValidation()
@@ -201,10 +205,10 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                       )}
                       component={({ disabled, style }) => (
                         <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined" style={style}>
-                          <Alert severity="warning" variant="outlined">
-                            {t_i18n(
-                              'When you set a platform organization, all the pieces of knowledge which are not shared with any organization will be accessible only for users part of the platform one.',
-                            )}
+                          <Alert severity="info" variant="outlined">
+                            {t_i18n('When you set a platform organization you enable the organization sharing and segregation feature.')}
+                            <br/>
+                            {t_i18n('Therefore all pieces of knowledge which are not explicitly shared with any organization won\'t be accessible to user(s) not member of the platform organization.')}
                           </Alert>
                           <EETooltip>
                             <ObjectOrganizationField
@@ -224,12 +228,19 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                             TransitionComponent={Transition}
                             onClose={() => setOpenPlatformOrganizationChanges(false)}
                           >
-                            <DialogTitle>{t_i18n('Warning')}</DialogTitle>
+                            <DialogTitle>{t_i18n('Numerous repercussions linked to the activation of this feature')}</DialogTitle>
                             <DialogContent>
                               <DialogContentText>
-                                <Alert severity="warning" variant="filled" color="dangerZone">
+                                <Alert
+                                  severity="warning"
+                                  variant="outlined"
+                                  color="dangerZone"
+                                  style={{
+                                    borderColor: theme.palette.dangerZone.main,
+                                  }}
+                                >
                                   {t_i18n(
-                                    'This change may have an impact on users and connectors who WILL NO LONGER BE ABLE TO ACCESS KNOWLEDGE if they do not belong to the main platform organization.',
+                                    'This feature has implications for the entire platform and must be fully understood before being used. For example, it\'s mandatory to have organizations set up for each user, otherwise they won\'t be able to log in. It is also mandatory to include connector\'s users in the platform main organization to avoid import problems.',
                                   )}
                                 </Alert>
                               </DialogContentText>

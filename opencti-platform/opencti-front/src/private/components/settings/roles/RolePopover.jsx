@@ -112,7 +112,7 @@ class RolePopover extends Component {
   }
 
   render() {
-    const { classes, t, roleId, disabled, isSensitive } = this.props;
+    const { classes, t, roleId, disabled } = this.props;
     return (
       <div className={classes.container}>
         <IconButton
@@ -121,7 +121,7 @@ class RolePopover extends Component {
           size="large"
           style={{ marginTop: 3 }}
           disabled={disabled}
-          color={isSensitive ? 'dangerZone' : 'primary'}
+          color={'primary'}
         >
           <MoreVert />
         </IconButton>

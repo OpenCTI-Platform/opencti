@@ -437,6 +437,10 @@ const Settings = () => {
                               color={isSensitiveModificationEnabled ? 'dangerZone' : 'primary'}
                               onClick={() => handleSubmitField(id, 'enterprise_edition', '')}
                               disabled={disabled}
+                              style={isSensitiveModificationEnabled ? {
+                                color: theme.palette.dangerZone.text.primary,
+                                borderColor: theme.palette.dangerZone.main,
+                              } : undefined}
                             >
                               {t_i18n('Disable Enterprise Edition')}
                             </Button>

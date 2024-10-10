@@ -47,7 +47,7 @@ const CapabilitiesList: FunctionComponent<CapabilitiesListProps> = ({
             primary={
               <>
                 {t_i18n('Allow modification of sensitive configuration')}
-                <DangerZoneChip />
+                <DangerZoneChip style={{ marginTop: 0 }} />
               </>
             }
           />

@@ -126,7 +126,7 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
   const { t_i18n } = useFormatter();
 
   const group = useFragment<Group_group$key>(groupFragment, groupData);
-  const { isAllowed, isSensitive } = useSensitiveModifications(group.standard_id);
+  const { isAllowed } = useSensitiveModifications(group.standard_id);
 
   const markingsSort = R.sortWith([
     R.ascend(R.propOr('TLP', 'definition_type')),
@@ -159,7 +159,7 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
         {group.name}
       </Typography>
       <div className={classes.popover}>
-        <GroupPopover groupId={group.id} disabled={!isAllowed} isSensitive={isSensitive} />
+        <GroupPopover groupId={group.id} disabled={!isAllowed} />
       </div>
       <div className="clearfix" />
       <Grid
@@ -466,7 +466,6 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
       </Grid>
       <GroupEdition
         groupId={group.id}
-        isSensitive={isSensitive}
         disabled={!isAllowed}
       />
     </div>

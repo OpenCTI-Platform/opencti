@@ -17,7 +17,6 @@ interface RoleEditionProps {
   handleClose?: () => void
   open?: boolean
   disabled?: boolean
-  isSensitive?: boolean
 }
 
 const RoleEdition: FunctionComponent<RoleEditionProps> = ({
@@ -25,7 +24,6 @@ const RoleEdition: FunctionComponent<RoleEditionProps> = ({
   role,
   open,
   disabled = false,
-  isSensitive = false,
 }) => {
   const { t_i18n } = useFormatter();
   const [currentTab, setTab] = useState(0);
@@ -41,7 +39,6 @@ const RoleEdition: FunctionComponent<RoleEditionProps> = ({
       onClose={handleClose}
       context={editContext}
       disabled={disabled}
-      isSensitive={isSensitive}
     >
       <>
         <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>

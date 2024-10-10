@@ -47,7 +47,7 @@ const groupPopoverDeletionMutation = graphql`
   }
 `;
 
-const GroupPopover = ({ groupId, disabled = false, isSensitive = false }: { groupId: string, disabled?: boolean, isSensitive?: boolean }) => {
+const GroupPopover = ({ groupId, disabled = false }: { groupId: string, disabled?: boolean }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
@@ -109,7 +109,7 @@ const GroupPopover = ({ groupId, disabled = false, isSensitive = false }: { grou
         size="large"
         style={{ marginTop: 3 }}
         disabled={disabled}
-        color={isSensitive ? 'dangerZone' : 'primary'}
+        color={'primary'}
       >
         <MoreVert />
       </IconButton>
