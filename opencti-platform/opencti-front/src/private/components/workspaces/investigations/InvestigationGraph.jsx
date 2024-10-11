@@ -1440,7 +1440,7 @@ class InvestigationGraphComponent extends Component {
     this.graphObjects = [...this.graphObjects, stixCoreObject];
     this.graphData = buildGraphData(
       this.graphObjects,
-      decodeGraphData(this.props.workspace.x_opencti_graph_data),
+      decodeGraphData(this.props.workspace.graph_data),
       this.props.t,
     );
     await this.resetAllFilters();
