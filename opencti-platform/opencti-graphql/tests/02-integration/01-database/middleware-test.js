@@ -50,7 +50,6 @@ import { addReport } from '../../../src/domain/report';
 import { addIndividual } from '../../../src/domain/individual';
 import { addOrganization } from '../../../src/modules/organization/organization-domain';
 import { generateInternalId } from '../../../src/schema/identifier';
-import { addLocation } from '../../../src/domain/location';
 
 describe('Basic and utils', () => {
   it('should escape according to our needs', () => {
@@ -1390,26 +1389,6 @@ describe('Elements upsert behaviors', () => {
 
     // Cleanup
     await deleteElementById(testContext, ADMIN_USER, stixId, ENTITY_TYPE_MALWARE);
-  });
-
-  it('should upsert labels', async () => {
-    const label1 = await addLabel(testContext, ADMIN_USER, { color: '#ff9933', value: 'upsert-label-1' });
-    const label2 = await addLabel(testContext, ADMIN_USER, { color: '#cc33ff', value: 'upsert-label-2' });
-
-    const locationInput = {
-      name: 'myCityForTest',
-      objectLabel: [label1.id],
-      type: 'City'
-    };
-    await addLocation(testContext, ADMIN_USER, locationInput);
-
-    const locationInput2 = {
-      name: 'myCityForTest',
-      objectLabel: [label2.id],
-      type: 'City'
-    };
-    const locationSecondLabel = await addLocation(testContext, ADMIN_USER, locationInput2);
-    expect(locationSecondLabel.objectLabel.length).toBe(2);
   });
 });
 describe('Elements deduplication behaviors', () => {

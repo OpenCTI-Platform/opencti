@@ -6,30 +6,31 @@ export const deduplicatedBundleData = (bundles: StixObject[]): StixObject[] => {
   return bundles.filter(
     (obj: StixObject, index, self) => index === self.findIndex(
       (t: StixObject) => {
-        if (t.id === obj.id && t.type === obj.type) {
-          // Cannot use isStixDomainObject because type is lowercase here and isStixDomainObject is case-sensitive.
-          const abstractStixObject = t as any;
-          if (abstractStixObject.labels) {
-            const stixObject1 = t as any;
-            const stixObject2 = obj as any;
-            return stixObject1.id === stixObject2.id && stixObject1.labels === stixObject2.labels;
-          }
-          return t.id === obj.id;
-        }
         return t.id === obj.id;
       }
     )
   );
 };
 
-export const deduplicatedBundleDataV2 = (bundles: StixObject[]): StixObject[] => {
-  return bundles.filter(
-    (obj: StixObject, index, self) => index === self.findIndex(
-      (t: StixObject) => {
-        return t.id === obj.id;
+/**
+ * Check if bundle object can be added to the current bundle or if a new bundle is required to use upsert feature.
+ * Same ids on the one bundle are removed from processing during worker split process.
+ * @param objectsToAdd
+ * @param bundles
+ */
+export const canAddObjectToBundle = (objectsToAdd: StixObject[], bundles: StixObject[]): boolean => {
+  let canAdd = true;
+  for (let i = 0; i < objectsToAdd.length; i += 1) {
+    const currentToCheck = objectsToAdd[i];
+    const existingObjectWithDifferentContent = bundles.find((item: StixObject) => {
+      if (item.id === currentToCheck.id && item.type === currentToCheck.type) {
+        return JSON.stringify(item) !== JSON.stringify(currentToCheck);
       }
-    )
-  );
+      return false;
+    });
+    canAdd = canAdd && !existingObjectWithDifferentContent;
+  }
+  return canAdd;
 };
 
 export class BundleBuilder {
@@ -46,23 +47,7 @@ export class BundleBuilder {
   }
 
   canAddObjects(objectsToCheck: StixObject[]) {
-    let canAdd = true;
-    for (let i = 0; i < objectsToCheck.length; i += 1) {
-      const currentToCheck = objectsToCheck[i];
-      const existingObjectWithDifferentLabel = this.objects.find((item: StixObject) => {
-        if (item.id === currentToCheck.id && item.type === currentToCheck.type) {
-          const abstractStixObject = currentToCheck as any;
-          if (abstractStixObject.labels) {
-            const stixObject1 = currentToCheck as any;
-            const stixObject2 = item as any;
-            return stixObject1.labels !== stixObject2.labels;
-          }
-        }
-        return false;
-      });
-      canAdd = canAdd && !existingObjectWithDifferentLabel;
-    }
-    return canAdd;
+    return canAddObjectToBundle(objectsToCheck, this.objects);
   }
 
   addObject(object: StixObject) {
@@ -80,7 +65,7 @@ export class BundleBuilder {
   }
 
   build(): StixBundle {
-    const deduplicatedObjects = deduplicatedBundleDataV2(this.objects);
+    const deduplicatedObjects = deduplicatedBundleData(this.objects);
 
     return {
       id: this.id,

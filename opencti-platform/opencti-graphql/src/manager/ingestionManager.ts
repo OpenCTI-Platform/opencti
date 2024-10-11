@@ -475,7 +475,7 @@ const csvDataHandler = async (context: AuthContext, ingestion: BasicStoreEntityI
       // Update the state
       const state = { current_state_hash: hashedIncomingData, added_after_start: utcDate(addedLast) };
       await patchCsvIngestion(context, SYSTEM_USER, ingestion.internal_id, state);
-      await updateBuiltInConnectorInfo(context, ingestion.user_id, ingestion.id, state);
+      await updateBuiltInConnectorInfo(context, ingestion.user_id, ingestion.id, { state });
     }
   } catch (e: any) {
     logApp.error(`[OPENCTI-MODULE] INGESTION - Error trying to fetch csv feed for: ${ingestion.name}`);
