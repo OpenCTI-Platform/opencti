@@ -55,14 +55,14 @@ const useStyles = makeStyles((theme) => ({
   },
   chart: {
     position: 'absolute',
-    top: -6,
-    left: -28,
+    top: -5,
+    left: -5,
   },
   iconOverlay: {
     fontSize: 18,
     position: 'absolute',
-    top: 17,
-    left: 39,
+    top: 16,
+    left: 16,
   },
   buttons: {
     marginTop: 20,
@@ -255,8 +255,8 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
                       options={options}
                       series={[prevention.unknown, prevention.success, prevention.failure]}
                       type="donut"
-                      width={95}
-                      height={95}
+                      width={50}
+                      height={50}
                     />
                     <Tooltip title={`${t_i18n('Prevention')}`} placement="bottom">
                       <ShieldOutlined className={classes.iconOverlay} />
@@ -269,8 +269,8 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
                       options={options}
                       series={[detection.unknown, detection.success, detection.failure]}
                       type="donut"
-                      width={95}
-                      height={95}
+                      width={50}
+                      height={50}
                     />
                     <Tooltip title={`${t_i18n('Detection')}`} placement="bottom">
                       <TrackChangesOutlined className={classes.iconOverlay} />
@@ -283,8 +283,8 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
                       options={options}
                       series={[human.unknown, human.success, human.failure]}
                       type="donut"
-                      width={95}
-                      height={95}
+                      width={50}
+                      height={50}
                     />
                     <Tooltip title={`${t_i18n('Human response')}`} placement="bottom">
                       <SensorOccupiedOutlined className={classes.iconOverlay} />
