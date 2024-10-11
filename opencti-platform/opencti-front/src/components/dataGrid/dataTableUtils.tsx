@@ -4,7 +4,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import StixCoreObjectLabels from '@components/common/stix_core_objects/StixCoreObjectLabels';
 import Tooltip from '@mui/material/Tooltip';
 import { Link } from 'react-router-dom';
-import * as R from 'ramda';
+import { useTheme } from '@mui/styles';
 import type { DataTableColumn, DataTableContextProps } from './dataTableTypes';
 import { DataTableProps, DataTableVariant } from './dataTableTypes';
 import ItemMarkings from '../ItemMarkings';
@@ -98,7 +98,9 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
-const defaultRender: DataTableColumn['render'] = (data, { column: { size } }) => (<Tooltip title={data}><div>{truncate(data, size * MAGICAL_SIZE)}</div></Tooltip>);
+const defaultRender: DataTableColumn['render'] = (data, { column: { size } }) => (<Tooltip title={data}>
+  <div>{truncate(data, size * MAGICAL_SIZE)}</div>
+</Tooltip>);
 
 const defaultColumns: DataTableProps['dataColumns'] = {
   allowed_markings: {
@@ -450,7 +452,8 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Nb.',
     percentWidth: 8,
     isSortable: true,
-    render: ({ number_observed }, { n }) => (<Tooltip title={number_observed}><>{n(number_observed)}</></Tooltip>),
+    render: ({ number_observed }, { n }) => (<Tooltip title={number_observed}><>{n(number_observed)}</>
+    </Tooltip>),
   },
   objectAssignee: {
     id: 'objectAssignee',
@@ -498,27 +501,24 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     isSortable: false,
     // Please check the String.jsx->renderObservableValue. It should have the same behavior and will replace it at the end.
     render: (observable, helpers) => {
+      const theme = useTheme<Theme>();
       switch (observable.entity_type) {
         case 'IPv4-Addr':
         case 'IPv6-Addr': {
-          const country = observable.countries?.edges?.at(0)?.node;
+          const country = observable.countries?.edges?.[0]?.node;
           if (country) {
-            const flag = R.head(
-              (country.x_opencti_aliases ?? []).filter((n: string) => n.length === 2),
-            );
+            const flag = (country.x_opencti_aliases ?? []).filter((n: string) => n.length === 2)[0];
             if (flag) {
               return (
-                <div>
-                  <div style={{ float: 'left', paddingTop: 2 }}>
-                    <Tooltip title={country.name}>
-                      <img
-                        style={{ width: 20 }}
-                        src={`${APP_BASE_PATH}/static/flags/4x3/${flag.toLowerCase()}.svg`}
-                        alt={country.name}
-                      />
-                    </Tooltip>
-                  </div>
-                  <div style={{ float: 'left', marginLeft: 10 }}>
+                <div style={{ display: 'flex', gap: theme.spacing(1), alignItems: 'center' }}>
+                  <Tooltip title={country.name}>
+                    <img
+                      style={{ width: 20 }}
+                      src={`${APP_BASE_PATH}/static/flags/4x3/${flag.toLowerCase()}.svg`}
+                      alt={country.name}
+                    />
+                  </Tooltip>
+                  <div>
                     {defaultRender(observable.observable_value, helpers)}
                   </div>
                 </div>
@@ -537,8 +537,12 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Operating System',
     percentWidth: 15,
     isSortable: false,
-    render: ({ operatingSystem }) => (<Tooltip title={operatingSystem?.name}><>{operatingSystem?.name ?? '-'}</>
-    </Tooltip>),
+    render: ({ operatingSystem }) => (
+      <Tooltip
+        title={operatingSystem?.name}
+      >
+        <>{operatingSystem?.name ?? '-'}</>
+      </Tooltip>),
   },
   owner: {
     id: 'owner',
@@ -759,7 +763,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
         >
           <div>
             <Chip label={tags[0]} style={chipStyle} />
-            <Chip label='...' style={chipStyle} />
+            <Chip label="..." style={chipStyle} />
           </div>
         </Tooltip>
       );
@@ -910,7 +914,8 @@ const defaultColumns: DataTableProps['dataColumns'] = {
       const file = (data.importFiles?.edges && data.importFiles.edges.length > 0)
         ? data.importFiles.edges[0]?.node
         : { name: 'N/A', metaData: { mimetype: 'N/A' }, size: 0 };
-      return (<Tooltip title={file?.name}><>{truncate(file?.name, size * MAGICAL_SIZE)}</></Tooltip>);
+      return (<Tooltip title={file?.name}><>{truncate(file?.name, size * MAGICAL_SIZE)}</>
+      </Tooltip>);
     },
   },
   file_mime_type: {
@@ -922,7 +927,8 @@ const defaultColumns: DataTableProps['dataColumns'] = {
       const file = (data.importFiles?.edges && data.importFiles.edges.length > 0)
         ? data.importFiles.edges[0]?.node
         : { name: 'N/A', metaData: { mimetype: 'N/A' }, size: 0 };
-      return (<Tooltip title={file?.metaData?.mimetype}><>{truncate(file?.metaData?.mimetype, size * MAGICAL_SIZE)}</></Tooltip>);
+      return (<Tooltip title={file?.metaData?.mimetype}><>{truncate(file?.metaData?.mimetype, size * MAGICAL_SIZE)}</>
+      </Tooltip>);
     },
   },
   file_size: {
@@ -934,7 +940,8 @@ const defaultColumns: DataTableProps['dataColumns'] = {
       const file = (data.importFiles?.edges && data.importFiles.edges.length > 0)
         ? data.importFiles.edges[0]?.node
         : { name: 'N/A', metaData: { mimetype: 'N/A' }, size: 0 };
-      return (<Tooltip title={file?.metaData?.mimetype}><>{b(file?.size)}</></Tooltip>);
+      return (<Tooltip title={file?.metaData?.mimetype}><>{b(file?.size)}</>
+      </Tooltip>);
     },
   },
   valid_until: {
