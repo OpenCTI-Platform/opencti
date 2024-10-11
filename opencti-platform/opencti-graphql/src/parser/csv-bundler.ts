@@ -73,7 +73,7 @@ export const bundleProcess = async (
   return bundleBuilder.build();
 };
 
-export const bundleProcessV2 = async (
+export const bundleAllowUpsertProcess = async (
   context: AuthContext,
   user: AuthUser,
   lines: string[],
@@ -132,10 +132,12 @@ export const bundleProcessV2 = async (
   }
   // Handle container
   if (entity && isStixDomainObjectContainer(entity.entity_type)) {
-    const refs = allBundles[0].ids();
-    const stixEntity = { ...convertStoreToStix(entity), [objects.stixName]: refs };
-    allBundles[0].addObject(stixEntity);
-    // FIXME to implement
+    for (let i = 0; i < allBundles.length; i += 1) {
+      const currentBundle = allBundles[i];
+      const refs = currentBundle.ids();
+      const stixEntity = { ...convertStoreToStix(entity), [objects.stixName]: refs };
+      currentBundle.addObject(stixEntity);
+    }
   }
   // Build and return the result
   return allBundles;

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { bundleProcess, bundleProcessV2 } from '../../../src/parser/csv-bundler';
+import { bundleProcess, bundleAllowUpsertProcess } from '../../../src/parser/csv-bundler';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import {
   indicatorsWithExternalReferencesCsvContent,
@@ -14,7 +14,7 @@ import {
   indicatorsWithKillChainPhasesExpectedBundle
 } from '../../data/csv-bundler/kill-chains-constants';
 import { citiesWithTwoLabelsCsvMapper } from '../../data/csv-bundler/cities-with-two-labels-constants';
-import { BundleBuilder, deduplicatedBundleData } from '../../../src/parser/bundle-creator';
+import { BundleBuilder, canAddObjectToBundle, deduplicatedBundleData } from '../../../src/parser/bundle-creator';
 import type { StixObject } from '../../../src/types/stix-common';
 import type { StixLabel } from '../../../src/types/stix-smo';
 import type { StixLocation } from '../../../src/types/stix-sdo';
@@ -82,7 +82,7 @@ describe('CSV bundler', () => {
         'Grenoble,label2,#000000',
       ];
 
-      const bundleResult: BundleBuilder[] = await bundleProcessV2(
+      const bundleResult: BundleBuilder[] = await bundleAllowUpsertProcess(
         testContext,
         ADMIN_USER,
         citiesWithTwoLabels,
@@ -98,7 +98,7 @@ describe('CSV bundler', () => {
     });
   });
 
-  describe('BundleBuilder testing deduplicatedBundleData', () => {
+  describe('BundleBuilder testing deduplication and canAdd checks', () => {
     it('Should do nothing when no duplicated ids', async () => {
       const inputArray: StixObject[] = [
         {
@@ -215,25 +215,8 @@ describe('CSV bundler', () => {
       expect(deduplicatedBundleData(inputArray)).toStrictEqual(expectedResult);
     });
 
-    it('Should remove duplicated ids except when labels differs', async () => {
-      const inputArray: StixObject[] = [
-        {
-          color: '#ffffff',
-          id: 'label--1c284682-f33e-5c37-9bad-9820cb37ee2a',
-          spec_version: '2.1',
-          type: 'label',
-          value: 'label1'
-        } as unknown as StixLabel,
-        {
-          city: 'ville du pont',
-          id: 'location--542797f4-36b0-5404-8a1b-05da43029f13',
-          labels: ['label1'],
-          latitude: 46.999873398,
-          longitude: 6.498147193,
-          name: 'ville du pont',
-          spec_version: '2.1',
-          type: 'location'
-        } as unknown as StixLocation,
+    it('Should request a new bundle when id already exists but with different data', async () => {
+      const objectsInBundle: StixObject[] = [
         {
           color: '#000000',
           id: 'label--ad140703-c0bd-5572-818e-b480708034b5',
@@ -250,17 +233,11 @@ describe('CSV bundler', () => {
           name: 'ville du pont',
           spec_version: '2.1',
           type: 'location'
-        } as unknown as StixLocation,
-        {
-          color: '#ffffff',
-          id: 'label--1c284682-f33e-5c37-9bad-9820cb37ee2a',
-          spec_version: '2.1',
-          type: 'label',
-          value: 'label1'
-        } as unknown as StixLabel,
+        } as unknown as StixLocation
       ];
 
-      const expectedResult: StixObject[] = [
+      // For exemple different label
+      const newObjectsLabels: StixObject[] = [
         {
           color: '#ffffff',
           id: 'label--1c284682-f33e-5c37-9bad-9820cb37ee2a',
@@ -277,7 +254,38 @@ describe('CSV bundler', () => {
           name: 'ville du pont',
           spec_version: '2.1',
           type: 'location'
-        } as unknown as StixLocation,
+        } as unknown as StixLocation
+      ];
+
+      expect(canAddObjectToBundle(newObjectsLabels, objectsInBundle)).toBeFalsy();
+
+      // For example different description
+      const newObjectsDesc: StixObject[] = [
+        {
+          color: '#000000',
+          id: 'label--ad140703-c0bd-5572-818e-b480708034b5',
+          spec_version: '2.1',
+          type: 'label',
+          value: 'label2'
+        } as unknown as StixLabel,
+        {
+          city: 'ville du pont',
+          id: 'location--542797f4-36b0-5404-8a1b-05da43029f13',
+          labels: ['label2'],
+          latitude: 46.999873398,
+          longitude: 6.498147193,
+          name: 'ville du pont',
+          spec_version: '2.1',
+          type: 'location',
+          description: 'new data in the same entity id'
+        } as unknown as StixLocation
+      ];
+
+      expect(canAddObjectToBundle(newObjectsDesc, objectsInBundle)).toBeFalsy();
+    });
+
+    it('Should not request a new bundle when id are new', async () => {
+      const objectsInBundle: StixObject[] = [
         {
           color: '#000000',
           id: 'label--ad140703-c0bd-5572-818e-b480708034b5',
@@ -294,10 +302,74 @@ describe('CSV bundler', () => {
           name: 'ville du pont',
           spec_version: '2.1',
           type: 'location'
-        } as unknown as StixLocation,
+        } as unknown as StixLocation
       ];
 
-      expect(deduplicatedBundleData(inputArray)).toStrictEqual(expectedResult);
+      const newObjects: StixObject[] = [
+        {
+          color: '#ffffff',
+          id: 'label--1c284682-f33e-5c37-9bad-9820cb37ee2a',
+          spec_version: '2.1',
+          type: 'label',
+          value: 'label1'
+        } as unknown as StixLabel,
+        {
+          city: 'ville du pont2',
+          id: 'location--542797f4-36b0-5404-8a1b-05da43029faa',
+          labels: ['label1'],
+          latitude: 45.999873398,
+          longitude: 5.498147193,
+          name: 'ville du pont2',
+          spec_version: '2.1',
+          type: 'location'
+        } as unknown as StixLocation
+      ];
+
+      expect(canAddObjectToBundle(newObjects, objectsInBundle)).toBeTruthy();
+    });
+
+    it('Should not request a new bundle when object are exactly the same', async () => {
+      const objectsInBundle: StixObject[] = [
+        {
+          color: '#000000',
+          id: 'label--ad140703-c0bd-5572-818e-b480708034b5',
+          spec_version: '2.1',
+          type: 'label',
+          value: 'label2'
+        } as unknown as StixLabel,
+        {
+          city: 'ville du pont',
+          id: 'location--542797f4-36b0-5404-8a1b-05da43029f13',
+          labels: ['label2'],
+          latitude: 46.999873398,
+          longitude: 6.498147193,
+          name: 'ville du pont',
+          spec_version: '2.1',
+          type: 'location'
+        } as unknown as StixLocation
+      ];
+
+      const newObjects: StixObject[] = [
+        {
+          color: '#000000',
+          id: 'label--ad140703-c0bd-5572-818e-b480708034b5',
+          spec_version: '2.1',
+          type: 'label',
+          value: 'label2'
+        } as unknown as StixLabel,
+        {
+          city: 'ville du pont',
+          id: 'location--542797f4-36b0-5404-8a1b-05da43029f13',
+          labels: ['label2'],
+          latitude: 46.999873398,
+          longitude: 6.498147193,
+          name: 'ville du pont',
+          spec_version: '2.1',
+          type: 'location'
+        } as unknown as StixLocation
+      ];
+
+      expect(canAddObjectToBundle(newObjects, objectsInBundle)).toBeTruthy();
     });
   });
 });
