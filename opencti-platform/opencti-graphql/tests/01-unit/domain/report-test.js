@@ -1,6 +1,6 @@
 import { expect, it } from 'vitest';
 import { generateStandardId, isFieldContributingToStandardId } from '../../../src/schema/identifier';
-import { ENTITY_TYPE_CONTAINER_REPORT } from '../../../src/schema/stixDomainObject';
+import { ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_CONTAINER_REPORT } from '../../../src/schema/stixDomainObject';
 import { ENTITY_HASHED_OBSERVABLE_ARTIFACT } from '../../../src/schema/stixCyberObservable';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE } from '../../../src/schema/stixMetaObject';
 import { RELATION_BASED_ON, RELATION_USES } from '../../../src/schema/stixCoreRelationship';
@@ -75,6 +75,11 @@ it('should relation ids be prefixed uuid V4', () => {
     to: { standard_id: 'attack-pattern--fd8179dd-1632-5ec8-8b93-d2ae121e05a4' }
   });
   expect(standardId).toEqual('relationship--67f5f01f-6b15-5154-ae31-019a75fedcff');
+  standardId = generateStandardId(ENTITY_TYPE_ATTACK_PATTERN, {
+    entity_type: ENTITY_TYPE_ATTACK_PATTERN,
+    name: 'Evil Pattern!'
+  });
+  expect(standardId).toEqual('attack-pattern--23a5b210-f675-5936-ae14-21327e9798e2');
 });
 
 it('should throw an error on unrecognized object type', () => {
