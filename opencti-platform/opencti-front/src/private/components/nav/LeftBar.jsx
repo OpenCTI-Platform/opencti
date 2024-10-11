@@ -467,7 +467,7 @@ const LeftBar = () => {
       <div ref={ref} aria-label="Main navigation">
         <MenuList
           component="nav"
-          style={{ marginTop: `calc( ${bannerHeightNumber}px + ${settingsMessagesBannerHeight}px + 58px )` }}
+          style={{ marginTop: `calc( ${bannerHeightNumber}px + ${settingsMessagesBannerHeight}px + 66px )` }}
         >
           <StyledTooltip title={!navOpen && t_i18n('Home')} placement="right">
             <MenuItem
@@ -482,7 +482,7 @@ const LeftBar = () => {
               </ListItemIcon>
               {navOpen && (
                 <ListItemText
-                  classes={{ primary: classes.menuSubItemText }}
+                  classes={{ primary: classes.menuItemText }}
                   primary={t_i18n('Home')}
                 />
               )}
