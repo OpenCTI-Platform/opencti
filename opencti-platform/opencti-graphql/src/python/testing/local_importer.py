@@ -14,7 +14,7 @@ class TestLocalImporter:  # pylint: disable=too-few-public-methods
     def inject(self):
         opencti_api_client = OpenCTIApiClient(self.api_url, self.api_token)
         opencti_api_client.stix2.import_bundle_from_file(
-            self.config_file_path, update=True
+            self.config_file_path, update=True, keep_original_id=True
         )
 
 

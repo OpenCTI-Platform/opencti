@@ -62,6 +62,7 @@ describe('identifier', () => {
     // attack_pattern
     expect(generateStandardId(ENTITY_TYPE_ATTACK_PATTERN, { name: 'attack' })).toEqual('attack-pattern--25f21617-8de8-5d5e-8cd4-b7e88547ba76');
     expect(generateStandardId(ENTITY_TYPE_ATTACK_PATTERN, { name: 'attack', x_mitre_id: 'MITREID' })).toEqual('attack-pattern--b74cfee2-7b14-585e-862f-fea45e802da9');
+    expect(generateStandardId(ENTITY_TYPE_ATTACK_PATTERN, { name: 'Spear phishing messages with malicious links', x_mitre_id: 'T1368' })).toEqual('attack-pattern--a01046cc-192f-5d52-8e75-6e447fae3890');
     expect(generateStandardId(ENTITY_TYPE_ATTACK_PATTERN, { x_mitre_id: 'MITREID' })).toEqual('attack-pattern--b74cfee2-7b14-585e-862f-fea45e802da9');
     // campaign
     expect(generateStandardId(ENTITY_TYPE_CAMPAIGN, { name: 'attack' })).toEqual('campaign--25f21617-8de8-5d5e-8cd4-b7e88547ba76');

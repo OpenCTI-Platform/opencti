@@ -3,7 +3,7 @@ import { generateStandardId, isFieldContributingToStandardId } from '../../../sr
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../../../src/schema/stixDomainObject';
 import { ENTITY_HASHED_OBSERVABLE_ARTIFACT } from '../../../src/schema/stixCyberObservable';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE } from '../../../src/schema/stixMetaObject';
-import { RELATION_BASED_ON } from '../../../src/schema/stixCoreRelationship';
+import { RELATION_BASED_ON, RELATION_USES } from '../../../src/schema/stixCoreRelationship';
 import { RELATION_MEMBER_OF } from '../../../src/schema/internalRelationship';
 import { RELATION_OBJECT_MARKING } from '../../../src/schema/stixRefRelationship';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../../src/schema/stixSightingRelationship';
@@ -67,6 +67,14 @@ it('should relation ids be prefixed uuid V4', () => {
     to: { standard_id: 'to_id' }
   });
   expect(standardId).toEqual('relationship--c5e1e2ce-14d6-535b-911d-267e92119e01');
+  standardId = generateStandardId(RELATION_USES, {
+    relationship_type: RELATION_USES,
+    start_time: '2020-02-29T22:30:00.000Z',
+    stop_time: '2020-02-29T22:30:00.000Z',
+    from: { standard_id: 'malware--21c45dbe-54ec-5bb7-b8cd-9f27cc518714' },
+    to: { standard_id: 'attack-pattern--fd8179dd-1632-5ec8-8b93-d2ae121e05a4' }
+  });
+  expect(standardId).toEqual('relationship--67f5f01f-6b15-5154-ae31-019a75fedcff');
 });
 
 it('should throw an error on unrecognized object type', () => {
