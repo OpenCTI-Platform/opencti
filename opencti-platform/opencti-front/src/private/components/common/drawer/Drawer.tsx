@@ -79,7 +79,6 @@ interface DrawerProps {
   controlledDial?: DrawerControlledDialType;
   containerStyle?: CSSProperties
   disabled?: boolean
-  isSensitive?: boolean
 }
 
 // eslint-disable-next-line react/display-name
@@ -94,7 +93,6 @@ const Drawer = forwardRef(({
   controlledDial,
   containerStyle,
   disabled = false,
-  isSensitive = false,
 }: DrawerProps, ref) => {
   const {
     bannerSettings: { bannerHeightNumber },
@@ -131,7 +129,7 @@ const Drawer = forwardRef(({
       {variant && (
         <Fab
           onClick={() => setOpen(true)}
-          color={isSensitive ? 'dangerZone' : 'primary'}
+          color={'primary'}
           aria-label={update ? 'Edit' : 'Add'}
           disabled={disabled}
           className={classNames({
