@@ -214,7 +214,7 @@ export const getEntityTypeTwoFirstLevelsFilterValues = (filters?: FilterGroup, o
     if (subFilters.length > 0) {
       const secondLevelValues = findFilterFromKey(subFilters, 'entity_type', 'eq')?.values ?? [];
       // if all second values are observables sub types : remove observable from firstLevelValue
-      if (secondLevelValues.every((type) => observableTypes.includes(type))) {
+      if (secondLevelValues.every((type) => observableTypes?.includes(type))) {
         firstLevelValues = firstLevelValues.filter((type) => type !== 'Stix-Cyber-Observable');
       }
       return [...firstLevelValues, ...secondLevelValues];
