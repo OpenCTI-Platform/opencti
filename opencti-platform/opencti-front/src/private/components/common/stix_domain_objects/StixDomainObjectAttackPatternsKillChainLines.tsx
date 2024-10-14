@@ -139,13 +139,13 @@ const StixDomainObjectAttackPatternsKillChainLines: FunctionComponent<StixDomain
               <Collapse
                 in={expandedLines[element.id] !== false}
               >
-                <List>
+                <>
                   {(element.attackPatterns ?? []).map(
                     (attackPattern) => {
                       const link = `/dashboard/techniques/attack_patterns/${attackPattern.id}`;
                       return (
                         <div key={attackPattern.id}>
-                          <ListItem
+                          <ListItemButton
                             classes={{ root: classes.nested }}
                             divider={true}
                             dense={true}
@@ -155,7 +155,7 @@ const StixDomainObjectAttackPatternsKillChainLines: FunctionComponent<StixDomain
                                   : undefined
                               }
                           >
-                            <ListItemButton
+                            <ListItem
                               to={coursesOfAction ? undefined : link}
                               component={coursesOfAction ? 'ul' : Link}
                             >
@@ -185,12 +185,13 @@ const StixDomainObjectAttackPatternsKillChainLines: FunctionComponent<StixDomain
                                 }
                               />
                               <ItemMarkings
+                                variant="inList"
                                 markingDefinitions={
                                   attackPattern.objectMarking ?? []
                                 }
                                 limit={1}
                               />
-                            </ListItemButton>
+                            </ListItem>
                             <div className={classes.nested} >
                               <ListItemSecondaryAction classes={{ root: classes.itemIconDisabled }}>
                                 {coursesOfAction ? (
@@ -214,7 +215,7 @@ const StixDomainObjectAttackPatternsKillChainLines: FunctionComponent<StixDomain
                                 )}
                               </ListItemSecondaryAction>
                             </div>
-                          </ListItem>
+                          </ListItemButton>
                           {coursesOfAction && (
                             <Collapse
                               in={expandedLines[attackPattern.id] !== false}
@@ -273,7 +274,7 @@ const StixDomainObjectAttackPatternsKillChainLines: FunctionComponent<StixDomain
                       );
                     },
                   )}
-                </List>
+                </>
               </Collapse>
             </div>
           ))}
