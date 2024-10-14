@@ -2394,6 +2394,7 @@ interface StixDomainObject {
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
   avatar: OpenCtiFile
   creators: [Creator!]
   toStix: String
@@ -2488,6 +2489,7 @@ type AttackPattern implements BasicObject & StixObject & StixCoreObject & StixDo
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
   avatar: OpenCtiFile
   name: String!
   description: String
@@ -2624,6 +2626,7 @@ type Campaign implements BasicObject & StixObject & StixCoreObject & StixDomainO
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
   avatar: OpenCtiFile
   name: String!
   description: String
@@ -2799,6 +2802,7 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
   avatar: OpenCtiFile
   authorized_members: [MemberAccess!]
   currentUserAccessRight: String
@@ -2928,6 +2932,7 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
   avatar: OpenCtiFile
   authorized_members: [MemberAccess!]
   currentUserAccessRight: String
@@ -3032,6 +3037,7 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
   avatar: OpenCtiFile
   authorized_members: [MemberAccess!]
   currentUserAccessRight: String
@@ -3269,6 +3275,7 @@ type CourseOfAction implements BasicObject & StixObject & StixCoreObject & StixD
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
   avatar: OpenCtiFile
   name: String!
   description: String
@@ -3474,6 +3481,7 @@ type Individual implements BasicObject & StixObject & StixCoreObject & StixDomai
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
   avatar: OpenCtiFile
   identity_class: String!
   name: String!
@@ -3583,6 +3591,7 @@ type Sector implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
   avatar: OpenCtiFile
   identity_class: String!
   name: String!
@@ -3687,6 +3696,7 @@ type System implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
   avatar: OpenCtiFile
   identity_class: String!
   name: String!
@@ -3800,6 +3810,7 @@ type Infrastructure implements BasicObject & StixObject & StixCoreObject & StixD
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
   avatar: OpenCtiFile
   name: String!
   aliases: [String]
@@ -3906,6 +3917,7 @@ type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDom
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
   avatar: OpenCtiFile
   name: String!
   description: String
@@ -4117,6 +4129,7 @@ type Position implements BasicObject & StixObject & StixCoreObject & StixDomainO
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
   avatar: OpenCtiFile
   name: String!
   description: String
@@ -4224,6 +4237,7 @@ type City implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
   avatar: OpenCtiFile
   name: String!
   description: String
@@ -4326,6 +4340,7 @@ type Country implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
   avatar: OpenCtiFile
   name: String!
   description: String
@@ -4426,6 +4441,7 @@ type Region implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
   avatar: OpenCtiFile
   name: String!
   description: String
@@ -4535,6 +4551,7 @@ type Malware implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
   avatar: OpenCtiFile
   name: String!
   description: String
@@ -4653,6 +4670,7 @@ interface ThreatActor implements BasicObject & StixObject & StixCoreObject & Sti
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
   avatar: OpenCtiFile
   name: String!
   description: String
@@ -4727,6 +4745,7 @@ type ThreatActorGroup implements BasicObject & StixObject & StixCoreObject & Sti
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
   avatar: OpenCtiFile
   name: String!
   description: String
@@ -4845,6 +4864,7 @@ type Tool implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
   avatar: OpenCtiFile
   name: String!
   description: String
@@ -4950,6 +4970,7 @@ type Vulnerability implements BasicObject & StixObject & StixCoreObject & StixDo
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
   avatar: OpenCtiFile
   name: String!
   description: String
@@ -8706,6 +8727,7 @@ type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
   avatar: OpenCtiFile
   name: String!
   description: String
@@ -8806,6 +8828,7 @@ type Language implements BasicObject & StixCoreObject & StixDomainObject & StixO
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
   avatar: OpenCtiFile
   name: String!
   aliases: [String]
@@ -8899,6 +8922,7 @@ type Event implements BasicObject & StixCoreObject & StixDomainObject & StixObje
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
   avatar: OpenCtiFile
   name: String!
   description: String
@@ -9003,6 +9027,7 @@ type Grouping implements BasicObject & StixObject & StixCoreObject & StixDomainO
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
   avatar: OpenCtiFile
   authorized_members: [MemberAccess!]
   currentUserAccessRight: String
@@ -9112,6 +9137,7 @@ type Narrative implements BasicObject & StixCoreObject & StixDomainObject & Stix
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
   avatar: OpenCtiFile
   name: String!
   description: String
@@ -9375,6 +9401,7 @@ type DataComponent implements BasicObject & StixObject & StixCoreObject & StixDo
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
   avatar: OpenCtiFile
   creators: [Creator!]
   toStix: String
@@ -9473,6 +9500,7 @@ type DataSource implements BasicObject & StixObject & StixCoreObject & StixDomai
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
   avatar: OpenCtiFile
   creators: [Creator!]
   toStix: String
@@ -9689,6 +9717,7 @@ type AdministrativeArea implements BasicObject & StixCoreObject & StixDomainObje
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
   avatar: OpenCtiFile
   name: String!
   description: String
@@ -10661,6 +10690,7 @@ type MalwareAnalysis implements BasicObject & StixCoreObject & StixDomainObject 
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
   avatar: OpenCtiFile
   creators: [Creator!]
   toStix: String
@@ -10869,6 +10899,7 @@ type ThreatActorIndividual implements BasicObject & StixObject & StixCoreObject 
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
   avatar: OpenCtiFile
   name: String!
   description: String
@@ -11324,6 +11355,7 @@ type Indicator implements BasicObject & StixObject & StixCoreObject & StixDomain
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
   avatar: OpenCtiFile
   pattern_type: String
   pattern_version: String
@@ -11480,6 +11512,7 @@ type Organization implements BasicObject & StixObject & StixCoreObject & StixDom
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
   avatar: OpenCtiFile
   identity_class: String!
   name: String!

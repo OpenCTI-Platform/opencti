@@ -1,18 +1,18 @@
 import React, { FunctionComponent, useContext, useState } from 'react';
 import { Field } from 'formik';
 import { graphql } from 'react-relay';
-import { makeStyles } from '@mui/styles';
+import makeStyles from '@mui/styles/makeStyles';
+import { Option } from '@components/common/form/ReferenceField';
+import { ObjectAssigneeFieldMembersSearchQuery$data } from '@components/common/form/__generated__/ObjectAssigneeFieldMembersSearchQuery.graphql';
 import { fetchQuery } from '../../../../relay/environment';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import type { Theme } from '../../../../components/Theme';
-import { Option } from './ReferenceField';
-import { ObjectParticipantFieldMembersSearchQuery$data } from './__generated__/ObjectParticipantFieldMembersSearchQuery.graphql';
 import { UserContext } from '../../../../utils/hooks/useAuth';
 
-const objectParticipantFieldMembersSearchQuery = graphql`
-  query ObjectParticipantFieldMembersSearchQuery($search: String, $first: Int, $entityTypes: [MemberType!]) {
+export const objectAssigneeFieldMembersSearchQuery = graphql`
+  query ObjectAssigneeFieldMembersSearchQuery($search: String, $first: Int, $entityTypes: [MemberType!]) {
     members(search: $search, first: $first, entityTypes: $entityTypes) {
       edges {
         node {
@@ -25,9 +25,9 @@ const objectParticipantFieldMembersSearchQuery = graphql`
   }
 `;
 
-export const objectParticipantFieldParticipantsSearchQuery = graphql`
-  query ObjectParticipantFieldParticipantsSearchQuery($entityTypes: [String!]) {
-    participants(entityTypes: $entityTypes) {
+export const objectAssigneeFieldAssigneesSearchQuery = graphql`
+  query ObjectAssigneeFieldAssigneesSearchQuery($entityTypes: [String!]) {
+    assignees(entityTypes: $entityTypes) {
       edges {
         node {
           id
@@ -57,18 +57,18 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
-interface OptionParticipant extends Option {
+interface OptionAssignee extends Option {
   type: string;
 }
-interface ObjectParticipantFieldProps {
+interface ObjectAssigneeFieldProps {
   name: string;
-  onChange?: (name: string, values: OptionParticipant[]) => void;
+  onChange?: (name: string, values: OptionAssignee[]) => void;
   style?: Record<string, string | number>;
   helpertext?: unknown;
   label?: string,
   disabled?: boolean,
 }
-const ObjectParticipantField: FunctionComponent<ObjectParticipantFieldProps> = ({
+const ObjectAssigneeField: FunctionComponent<ObjectAssigneeFieldProps> = ({
   name,
   style,
   label,
@@ -79,18 +79,18 @@ const ObjectParticipantField: FunctionComponent<ObjectParticipantFieldProps> = (
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const { me } = useContext((UserContext));
-  const [participants, setParticipants] = useState<OptionParticipant[]>([]);
+  const [assignees, setAssignees] = useState<OptionAssignee[]>([]);
 
-  const searchParticipants = (event: React.ChangeEvent<HTMLInputElement>) => {
-    fetchQuery(objectParticipantFieldMembersSearchQuery, {
+  const searchAssignees = (event: React.ChangeEvent<HTMLInputElement>) => {
+    fetchQuery(objectAssigneeFieldMembersSearchQuery, {
       search: (event && event.target && event.target.value) ?? '',
       entityTypes: ['User'],
       first: 10,
     })
       .toPromise()
       .then((data) => {
-        const newParticipants = (
-          (data as ObjectParticipantFieldMembersSearchQuery$data)?.members?.edges ?? []
+        const newAssignees = (
+          (data as ObjectAssigneeFieldMembersSearchQuery$data)?.members?.edges ?? []
         ).map((n) => ({
           label: n.node.name,
           value: n.node.id,
@@ -102,25 +102,25 @@ const ObjectParticipantField: FunctionComponent<ObjectParticipantFieldProps> = (
           // Sort by alphabetic order
           return a.label.localeCompare(b.label);
         });
-        setParticipants(newParticipants);
+        setAssignees(newAssignees);
       });
   };
+
   return (
-    <Field
-      component={AutocompleteField}
+    <Field component={AutocompleteField}
       style={style}
       name={name}
       disabled={disabled}
       multiple={true}
       textfieldprops={{
         variant: 'standard',
-        label: label ?? t_i18n('Participant(s)'),
+        label: label ?? t_i18n('Assignee(s)'),
         helperText: helpertext,
-        onFocus: searchParticipants,
+        onFocus: searchAssignees,
       }}
       noOptionsText={t_i18n('No available options')}
-      options={participants}
-      onInputChange={searchParticipants}
+      options={assignees}
+      onInputChange={searchAssignees}
       onChange={typeof onChange === 'function' ? onChange : null}
       renderOption={(
         fieldProps: React.HTMLAttributes<HTMLLIElement>,
@@ -138,4 +138,4 @@ const ObjectParticipantField: FunctionComponent<ObjectParticipantFieldProps> = (
   );
 };
 
-export default ObjectParticipantField;
+export default ObjectAssigneeField;

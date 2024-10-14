@@ -1,8 +1,10 @@
 import { Page } from '@playwright/test';
 import AutocompleteFieldPageModel from './field/AutocompleteField.pageModel';
+import SDOOverview from './SDOOverview.pageModel';
 
 export default class IncidentResponseDetailsPage {
   labelsSelect = new AutocompleteFieldPageModel(this.page, 'Labels', true);
+  overview = new SDOOverview(this.page);
 
   constructor(private page: Page) {}
 

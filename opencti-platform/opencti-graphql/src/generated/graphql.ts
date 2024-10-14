@@ -103,6 +103,7 @@ export type AdministrativeArea = BasicObject & Location & StixCoreObject & StixD
   objectLabel?: Maybe<Array<Label>>;
   objectMarking?: Maybe<Array<MarkingDefinition>>;
   objectOrganization?: Maybe<Array<Organization>>;
+  objectParticipant?: Maybe<Array<Participant>>;
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   parent_types: Array<Maybe<Scalars['String']['output']>>;
@@ -631,6 +632,7 @@ export type AttackPattern = BasicObject & StixCoreObject & StixDomainObject & St
   objectLabel?: Maybe<Array<Label>>;
   objectMarking?: Maybe<Array<MarkingDefinition>>;
   objectOrganization?: Maybe<Array<Organization>>;
+  objectParticipant?: Maybe<Array<Participant>>;
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   parentAttackPatterns?: Maybe<AttackPatternConnection>;
@@ -1586,6 +1588,7 @@ export type Campaign = BasicObject & StixCoreObject & StixDomainObject & StixObj
   objectLabel?: Maybe<Array<Label>>;
   objectMarking?: Maybe<Array<MarkingDefinition>>;
   objectOrganization?: Maybe<Array<Organization>>;
+  objectParticipant?: Maybe<Array<Participant>>;
   objective?: Maybe<Scalars['String']['output']>;
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
@@ -3082,6 +3085,7 @@ export type Channel = BasicObject & StixCoreObject & StixDomainObject & StixObje
   objectLabel?: Maybe<Array<Label>>;
   objectMarking?: Maybe<Array<MarkingDefinition>>;
   objectOrganization?: Maybe<Array<Organization>>;
+  objectParticipant?: Maybe<Array<Participant>>;
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   parent_types: Array<Maybe<Scalars['String']['output']>>;
@@ -3340,6 +3344,7 @@ export type City = BasicObject & Location & StixCoreObject & StixDomainObject & 
   objectLabel?: Maybe<Array<Label>>;
   objectMarking?: Maybe<Array<MarkingDefinition>>;
   objectOrganization?: Maybe<Array<Organization>>;
+  objectParticipant?: Maybe<Array<Participant>>;
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   parent_types: Array<Maybe<Scalars['String']['output']>>;
@@ -3997,6 +4002,7 @@ export type Country = BasicObject & Location & StixCoreObject & StixDomainObject
   objectLabel?: Maybe<Array<Label>>;
   objectMarking?: Maybe<Array<MarkingDefinition>>;
   objectOrganization?: Maybe<Array<Organization>>;
+  objectParticipant?: Maybe<Array<Participant>>;
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   parent_types: Array<Maybe<Scalars['String']['output']>>;
@@ -4262,6 +4268,7 @@ export type CourseOfAction = BasicObject & StixCoreObject & StixDomainObject & S
   objectLabel?: Maybe<Array<Label>>;
   objectMarking?: Maybe<Array<MarkingDefinition>>;
   objectOrganization?: Maybe<Array<Organization>>;
+  objectParticipant?: Maybe<Array<Participant>>;
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   parent_types: Array<Maybe<Scalars['String']['output']>>;
@@ -5279,6 +5286,7 @@ export type DataComponent = BasicObject & StixCoreObject & StixDomainObject & St
   objectLabel?: Maybe<Array<Label>>;
   objectMarking?: Maybe<Array<MarkingDefinition>>;
   objectOrganization?: Maybe<Array<Organization>>;
+  objectParticipant?: Maybe<Array<Participant>>;
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   parent_types: Array<Maybe<Scalars['String']['output']>>;
@@ -5520,6 +5528,7 @@ export type DataSource = BasicObject & StixCoreObject & StixDomainObject & StixO
   objectLabel?: Maybe<Array<Label>>;
   objectMarking?: Maybe<Array<MarkingDefinition>>;
   objectOrganization?: Maybe<Array<Organization>>;
+  objectParticipant?: Maybe<Array<Participant>>;
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   parent_types: Array<Maybe<Scalars['String']['output']>>;
@@ -7092,6 +7101,7 @@ export type Event = BasicObject & StixCoreObject & StixDomainObject & StixObject
   objectLabel?: Maybe<Array<Label>>;
   objectMarking?: Maybe<Array<MarkingDefinition>>;
   objectOrganization?: Maybe<Array<Organization>>;
+  objectParticipant?: Maybe<Array<Participant>>;
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   parent_types: Array<Maybe<Scalars['String']['output']>>;
@@ -8102,6 +8112,7 @@ export type Grouping = BasicObject & Container & StixCoreObject & StixDomainObje
   objectLabel?: Maybe<Array<Label>>;
   objectMarking?: Maybe<Array<MarkingDefinition>>;
   objectOrganization?: Maybe<Array<Organization>>;
+  objectParticipant?: Maybe<Array<Participant>>;
   objects?: Maybe<StixObjectOrStixRelationshipRefConnection>;
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
@@ -9794,6 +9805,7 @@ export type Indicator = BasicObject & StixCoreObject & StixDomainObject & StixOb
   objectLabel?: Maybe<Array<Label>>;
   objectMarking?: Maybe<Array<MarkingDefinition>>;
   objectOrganization?: Maybe<Array<Organization>>;
+  objectParticipant?: Maybe<Array<Participant>>;
   observables?: Maybe<StixCyberObservableConnection>;
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
@@ -10087,6 +10099,7 @@ export type Individual = BasicObject & Identity & StixCoreObject & StixDomainObj
   objectLabel?: Maybe<Array<Label>>;
   objectMarking?: Maybe<Array<MarkingDefinition>>;
   objectOrganization?: Maybe<Array<Organization>>;
+  objectParticipant?: Maybe<Array<Participant>>;
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   organizations?: Maybe<OrganizationConnection>;
@@ -10386,6 +10399,7 @@ export type Infrastructure = BasicObject & StixCoreObject & StixDomainObject & S
   objectLabel?: Maybe<Array<Label>>;
   objectMarking?: Maybe<Array<MarkingDefinition>>;
   objectOrganization?: Maybe<Array<Organization>>;
+  objectParticipant?: Maybe<Array<Participant>>;
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   parent_types: Array<Maybe<Scalars['String']['output']>>;
@@ -10868,6 +10882,7 @@ export type IntrusionSet = BasicObject & StixCoreObject & StixDomainObject & Sti
   objectLabel?: Maybe<Array<Label>>;
   objectMarking?: Maybe<Array<MarkingDefinition>>;
   objectOrganization?: Maybe<Array<Organization>>;
+  objectParticipant?: Maybe<Array<Participant>>;
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   parent_types: Array<Maybe<Scalars['String']['output']>>;
@@ -11312,6 +11327,7 @@ export type Language = BasicObject & StixCoreObject & StixDomainObject & StixObj
   objectLabel?: Maybe<Array<Label>>;
   objectMarking?: Maybe<Array<MarkingDefinition>>;
   objectOrganization?: Maybe<Array<Organization>>;
+  objectParticipant?: Maybe<Array<Participant>>;
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   parent_types: Array<Maybe<Scalars['String']['output']>>;
@@ -12099,6 +12115,7 @@ export type Malware = BasicObject & StixCoreObject & StixDomainObject & StixObje
   objectLabel?: Maybe<Array<Label>>;
   objectMarking?: Maybe<Array<MarkingDefinition>>;
   objectOrganization?: Maybe<Array<Organization>>;
+  objectParticipant?: Maybe<Array<Participant>>;
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   parent_types: Array<Maybe<Scalars['String']['output']>>;
@@ -12345,6 +12362,7 @@ export type MalwareAnalysis = BasicObject & StixCoreObject & StixDomainObject & 
   objectLabel?: Maybe<Array<Label>>;
   objectMarking?: Maybe<Array<MarkingDefinition>>;
   objectOrganization?: Maybe<Array<Organization>>;
+  objectParticipant?: Maybe<Array<Participant>>;
   observedData?: Maybe<ObservedDataConnection>;
   operatingSystem?: Maybe<Software>;
   opinions?: Maybe<OpinionConnection>;
@@ -15623,6 +15641,7 @@ export type Narrative = BasicObject & StixCoreObject & StixDomainObject & StixOb
   objectLabel?: Maybe<Array<Label>>;
   objectMarking?: Maybe<Array<MarkingDefinition>>;
   objectOrganization?: Maybe<Array<Organization>>;
+  objectParticipant?: Maybe<Array<Participant>>;
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   parentNarratives?: Maybe<NarrativeConnection>;
@@ -16086,6 +16105,7 @@ export type Note = BasicObject & Container & StixCoreObject & StixDomainObject &
   objectLabel?: Maybe<Array<Label>>;
   objectMarking?: Maybe<Array<MarkingDefinition>>;
   objectOrganization?: Maybe<Array<Organization>>;
+  objectParticipant?: Maybe<Array<Participant>>;
   objects?: Maybe<StixObjectOrStixRelationshipRefConnection>;
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
@@ -16544,6 +16564,7 @@ export type ObservedData = BasicObject & Container & StixCoreObject & StixDomain
   objectLabel?: Maybe<Array<Label>>;
   objectMarking?: Maybe<Array<MarkingDefinition>>;
   objectOrganization?: Maybe<Array<Organization>>;
+  objectParticipant?: Maybe<Array<Participant>>;
   objects?: Maybe<StixObjectOrStixRelationshipRefConnection>;
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
@@ -16862,6 +16883,7 @@ export type Opinion = BasicObject & Container & StixCoreObject & StixDomainObjec
   objectLabel?: Maybe<Array<Label>>;
   objectMarking?: Maybe<Array<MarkingDefinition>>;
   objectOrganization?: Maybe<Array<Organization>>;
+  objectParticipant?: Maybe<Array<Participant>>;
   objects?: Maybe<StixObjectOrStixRelationshipRefConnection>;
   observedData?: Maybe<ObservedDataConnection>;
   opinion: Scalars['String']['output'];
@@ -17195,6 +17217,7 @@ export type Organization = BasicObject & Identity & StixCoreObject & StixDomainO
   objectLabel?: Maybe<Array<Label>>;
   objectMarking?: Maybe<Array<MarkingDefinition>>;
   objectOrganization?: Maybe<Array<Organization>>;
+  objectParticipant?: Maybe<Array<Participant>>;
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   parentOrganizations?: Maybe<OrganizationConnection>;
@@ -18214,6 +18237,7 @@ export type Position = BasicObject & Location & StixCoreObject & StixDomainObjec
   objectLabel?: Maybe<Array<Label>>;
   objectMarking?: Maybe<Array<MarkingDefinition>>;
   objectOrganization?: Maybe<Array<Organization>>;
+  objectParticipant?: Maybe<Array<Participant>>;
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   parent_types: Array<Maybe<Scalars['String']['output']>>;
@@ -21709,6 +21733,7 @@ export type Region = BasicObject & Location & StixCoreObject & StixDomainObject 
   objectLabel?: Maybe<Array<Label>>;
   objectMarking?: Maybe<Array<MarkingDefinition>>;
   objectOrganization?: Maybe<Array<Organization>>;
+  objectParticipant?: Maybe<Array<Participant>>;
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   parentRegions?: Maybe<RegionConnection>;
@@ -22547,6 +22572,7 @@ export type Sector = BasicObject & Identity & StixCoreObject & StixDomainObject 
   objectLabel?: Maybe<Array<Label>>;
   objectMarking?: Maybe<Array<MarkingDefinition>>;
   objectOrganization?: Maybe<Array<Organization>>;
+  objectParticipant?: Maybe<Array<Participant>>;
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   parentSectors?: Maybe<SectorConnection>;
@@ -24179,6 +24205,7 @@ export type StixDomainObject = {
   objectLabel?: Maybe<Array<Label>>;
   objectMarking?: Maybe<Array<MarkingDefinition>>;
   objectOrganization?: Maybe<Array<Organization>>;
+  objectParticipant?: Maybe<Array<Participant>>;
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   parent_types: Array<Maybe<Scalars['String']['output']>>;
@@ -25668,6 +25695,7 @@ export type System = BasicObject & Identity & StixCoreObject & StixDomainObject 
   objectLabel?: Maybe<Array<Label>>;
   objectMarking?: Maybe<Array<MarkingDefinition>>;
   objectOrganization?: Maybe<Array<Organization>>;
+  objectParticipant?: Maybe<Array<Participant>>;
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   organizations?: Maybe<OrganizationConnection>;
@@ -26511,6 +26539,7 @@ export type ThreatActor = {
   objectLabel?: Maybe<Array<Label>>;
   objectMarking?: Maybe<Array<MarkingDefinition>>;
   objectOrganization?: Maybe<Array<Organization>>;
+  objectParticipant?: Maybe<Array<Participant>>;
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   parent_types: Array<Maybe<Scalars['String']['output']>>;
@@ -26728,6 +26757,7 @@ export type ThreatActorGroup = BasicObject & StixCoreObject & StixDomainObject &
   objectLabel?: Maybe<Array<Label>>;
   objectMarking?: Maybe<Array<MarkingDefinition>>;
   objectOrganization?: Maybe<Array<Organization>>;
+  objectParticipant?: Maybe<Array<Participant>>;
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   parent_types: Array<Maybe<Scalars['String']['output']>>;
@@ -27020,6 +27050,7 @@ export type ThreatActorIndividual = BasicObject & StixCoreObject & StixDomainObj
   objectLabel?: Maybe<Array<Label>>;
   objectMarking?: Maybe<Array<MarkingDefinition>>;
   objectOrganization?: Maybe<Array<Organization>>;
+  objectParticipant?: Maybe<Array<Participant>>;
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   parent_types: Array<Maybe<Scalars['String']['output']>>;
@@ -27319,6 +27350,7 @@ export type Tool = BasicObject & StixCoreObject & StixDomainObject & StixObject 
   objectLabel?: Maybe<Array<Label>>;
   objectMarking?: Maybe<Array<MarkingDefinition>>;
   objectOrganization?: Maybe<Array<Organization>>;
+  objectParticipant?: Maybe<Array<Participant>>;
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   parent_types: Array<Maybe<Scalars['String']['output']>>;
@@ -28840,6 +28872,7 @@ export type Vulnerability = BasicObject & StixCoreObject & StixDomainObject & St
   objectLabel?: Maybe<Array<Label>>;
   objectMarking?: Maybe<Array<MarkingDefinition>>;
   objectOrganization?: Maybe<Array<Organization>>;
+  objectParticipant?: Maybe<Array<Participant>>;
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   parent_types: Array<Maybe<Scalars['String']['output']>>;
@@ -31623,6 +31656,7 @@ export type AdministrativeAreaResolvers<ContextType = any, ParentType extends Re
   objectLabel?: Resolver<Maybe<Array<ResolversTypes['Label']>>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<Array<ResolversTypes['MarkingDefinition']>>, ParentType, ContextType>;
   objectOrganization?: Resolver<Maybe<Array<ResolversTypes['Organization']>>, ParentType, ContextType>;
+  objectParticipant?: Resolver<Maybe<Array<ResolversTypes['Participant']>>, ParentType, ContextType>;
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<AdministrativeAreaObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<AdministrativeAreaOpinionsArgs>>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
@@ -31810,6 +31844,7 @@ export type AttackPatternResolvers<ContextType = any, ParentType extends Resolve
   objectLabel?: Resolver<Maybe<Array<ResolversTypes['Label']>>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<Array<ResolversTypes['MarkingDefinition']>>, ParentType, ContextType>;
   objectOrganization?: Resolver<Maybe<Array<ResolversTypes['Organization']>>, ParentType, ContextType>;
+  objectParticipant?: Resolver<Maybe<Array<ResolversTypes['Participant']>>, ParentType, ContextType>;
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<AttackPatternObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<AttackPatternOpinionsArgs>>;
   parentAttackPatterns?: Resolver<Maybe<ResolversTypes['AttackPatternConnection']>, ParentType, ContextType, Partial<AttackPatternParentAttackPatternsArgs>>;
@@ -32129,6 +32164,7 @@ export type CampaignResolvers<ContextType = any, ParentType extends ResolversPar
   objectLabel?: Resolver<Maybe<Array<ResolversTypes['Label']>>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<Array<ResolversTypes['MarkingDefinition']>>, ParentType, ContextType>;
   objectOrganization?: Resolver<Maybe<Array<ResolversTypes['Organization']>>, ParentType, ContextType>;
+  objectParticipant?: Resolver<Maybe<Array<ResolversTypes['Participant']>>, ParentType, ContextType>;
   objective?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<CampaignObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<CampaignOpinionsArgs>>;
@@ -32555,6 +32591,7 @@ export type ChannelResolvers<ContextType = any, ParentType extends ResolversPare
   objectLabel?: Resolver<Maybe<Array<ResolversTypes['Label']>>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<Array<ResolversTypes['MarkingDefinition']>>, ParentType, ContextType>;
   objectOrganization?: Resolver<Maybe<Array<ResolversTypes['Organization']>>, ParentType, ContextType>;
+  objectParticipant?: Resolver<Maybe<Array<ResolversTypes['Participant']>>, ParentType, ContextType>;
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<ChannelObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<ChannelOpinionsArgs>>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
@@ -32623,6 +32660,7 @@ export type CityResolvers<ContextType = any, ParentType extends ResolversParentT
   objectLabel?: Resolver<Maybe<Array<ResolversTypes['Label']>>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<Array<ResolversTypes['MarkingDefinition']>>, ParentType, ContextType>;
   objectOrganization?: Resolver<Maybe<Array<ResolversTypes['Organization']>>, ParentType, ContextType>;
+  objectParticipant?: Resolver<Maybe<Array<ResolversTypes['Participant']>>, ParentType, ContextType>;
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<CityObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<CityOpinionsArgs>>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
@@ -32878,6 +32916,7 @@ export type CountryResolvers<ContextType = any, ParentType extends ResolversPare
   objectLabel?: Resolver<Maybe<Array<ResolversTypes['Label']>>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<Array<ResolversTypes['MarkingDefinition']>>, ParentType, ContextType>;
   objectOrganization?: Resolver<Maybe<Array<ResolversTypes['Organization']>>, ParentType, ContextType>;
+  objectParticipant?: Resolver<Maybe<Array<ResolversTypes['Participant']>>, ParentType, ContextType>;
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<CountryObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<CountryOpinionsArgs>>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
@@ -32956,6 +32995,7 @@ export type CourseOfActionResolvers<ContextType = any, ParentType extends Resolv
   objectLabel?: Resolver<Maybe<Array<ResolversTypes['Label']>>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<Array<ResolversTypes['MarkingDefinition']>>, ParentType, ContextType>;
   objectOrganization?: Resolver<Maybe<Array<ResolversTypes['Organization']>>, ParentType, ContextType>;
+  objectParticipant?: Resolver<Maybe<Array<ResolversTypes['Participant']>>, ParentType, ContextType>;
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<CourseOfActionObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<CourseOfActionOpinionsArgs>>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
@@ -33276,6 +33316,7 @@ export type DataComponentResolvers<ContextType = any, ParentType extends Resolve
   objectLabel?: Resolver<Maybe<Array<ResolversTypes['Label']>>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<Array<ResolversTypes['MarkingDefinition']>>, ParentType, ContextType>;
   objectOrganization?: Resolver<Maybe<Array<ResolversTypes['Organization']>>, ParentType, ContextType>;
+  objectParticipant?: Resolver<Maybe<Array<ResolversTypes['Participant']>>, ParentType, ContextType>;
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<DataComponentObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<DataComponentOpinionsArgs>>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
@@ -33343,6 +33384,7 @@ export type DataSourceResolvers<ContextType = any, ParentType extends ResolversP
   objectLabel?: Resolver<Maybe<Array<ResolversTypes['Label']>>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<Array<ResolversTypes['MarkingDefinition']>>, ParentType, ContextType>;
   objectOrganization?: Resolver<Maybe<Array<ResolversTypes['Organization']>>, ParentType, ContextType>;
+  objectParticipant?: Resolver<Maybe<Array<ResolversTypes['Participant']>>, ParentType, ContextType>;
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<DataSourceObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<DataSourceOpinionsArgs>>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
@@ -33902,6 +33944,7 @@ export type EventResolvers<ContextType = any, ParentType extends ResolversParent
   objectLabel?: Resolver<Maybe<Array<ResolversTypes['Label']>>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<Array<ResolversTypes['MarkingDefinition']>>, ParentType, ContextType>;
   objectOrganization?: Resolver<Maybe<Array<ResolversTypes['Organization']>>, ParentType, ContextType>;
+  objectParticipant?: Resolver<Maybe<Array<ResolversTypes['Participant']>>, ParentType, ContextType>;
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<EventObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<EventOpinionsArgs>>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
@@ -34276,6 +34319,7 @@ export type GroupingResolvers<ContextType = any, ParentType extends ResolversPar
   objectLabel?: Resolver<Maybe<Array<ResolversTypes['Label']>>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<Array<ResolversTypes['MarkingDefinition']>>, ParentType, ContextType>;
   objectOrganization?: Resolver<Maybe<Array<ResolversTypes['Organization']>>, ParentType, ContextType>;
+  objectParticipant?: Resolver<Maybe<Array<ResolversTypes['Participant']>>, ParentType, ContextType>;
   objects?: Resolver<Maybe<ResolversTypes['StixObjectOrStixRelationshipRefConnection']>, ParentType, ContextType, Partial<GroupingObjectsArgs>>;
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<GroupingObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<GroupingOpinionsArgs>>;
@@ -34726,6 +34770,7 @@ export type IndicatorResolvers<ContextType = any, ParentType extends ResolversPa
   objectLabel?: Resolver<Maybe<Array<ResolversTypes['Label']>>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<Array<ResolversTypes['MarkingDefinition']>>, ParentType, ContextType>;
   objectOrganization?: Resolver<Maybe<Array<ResolversTypes['Organization']>>, ParentType, ContextType>;
+  objectParticipant?: Resolver<Maybe<Array<ResolversTypes['Participant']>>, ParentType, ContextType>;
   observables?: Resolver<Maybe<ResolversTypes['StixCyberObservableConnection']>, ParentType, ContextType, Partial<IndicatorObservablesArgs>>;
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<IndicatorObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<IndicatorOpinionsArgs>>;
@@ -34812,6 +34857,7 @@ export type IndividualResolvers<ContextType = any, ParentType extends ResolversP
   objectLabel?: Resolver<Maybe<Array<ResolversTypes['Label']>>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<Array<ResolversTypes['MarkingDefinition']>>, ParentType, ContextType>;
   objectOrganization?: Resolver<Maybe<Array<ResolversTypes['Organization']>>, ParentType, ContextType>;
+  objectParticipant?: Resolver<Maybe<Array<ResolversTypes['Participant']>>, ParentType, ContextType>;
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<IndividualObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<IndividualOpinionsArgs>>;
   organizations?: Resolver<Maybe<ResolversTypes['OrganizationConnection']>, ParentType, ContextType>;
@@ -34910,6 +34956,7 @@ export type InfrastructureResolvers<ContextType = any, ParentType extends Resolv
   objectLabel?: Resolver<Maybe<Array<ResolversTypes['Label']>>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<Array<ResolversTypes['MarkingDefinition']>>, ParentType, ContextType>;
   objectOrganization?: Resolver<Maybe<Array<ResolversTypes['Organization']>>, ParentType, ContextType>;
+  objectParticipant?: Resolver<Maybe<Array<ResolversTypes['Participant']>>, ParentType, ContextType>;
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<InfrastructureObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<InfrastructureOpinionsArgs>>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
@@ -35110,6 +35157,7 @@ export type IntrusionSetResolvers<ContextType = any, ParentType extends Resolver
   objectLabel?: Resolver<Maybe<Array<ResolversTypes['Label']>>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<Array<ResolversTypes['MarkingDefinition']>>, ParentType, ContextType>;
   objectOrganization?: Resolver<Maybe<Array<ResolversTypes['Organization']>>, ParentType, ContextType>;
+  objectParticipant?: Resolver<Maybe<Array<ResolversTypes['Participant']>>, ParentType, ContextType>;
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<IntrusionSetObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<IntrusionSetOpinionsArgs>>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
@@ -35277,6 +35325,7 @@ export type LanguageResolvers<ContextType = any, ParentType extends ResolversPar
   objectLabel?: Resolver<Maybe<Array<ResolversTypes['Label']>>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<Array<ResolversTypes['MarkingDefinition']>>, ParentType, ContextType>;
   objectOrganization?: Resolver<Maybe<Array<ResolversTypes['Organization']>>, ParentType, ContextType>;
+  objectParticipant?: Resolver<Maybe<Array<ResolversTypes['Participant']>>, ParentType, ContextType>;
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<LanguageObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<LanguageOpinionsArgs>>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
@@ -35529,6 +35578,7 @@ export type MalwareResolvers<ContextType = any, ParentType extends ResolversPare
   objectLabel?: Resolver<Maybe<Array<ResolversTypes['Label']>>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<Array<ResolversTypes['MarkingDefinition']>>, ParentType, ContextType>;
   objectOrganization?: Resolver<Maybe<Array<ResolversTypes['Organization']>>, ParentType, ContextType>;
+  objectParticipant?: Resolver<Maybe<Array<ResolversTypes['Participant']>>, ParentType, ContextType>;
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<MalwareObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<MalwareOpinionsArgs>>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
@@ -35589,6 +35639,7 @@ export type MalwareAnalysisResolvers<ContextType = any, ParentType extends Resol
   objectLabel?: Resolver<Maybe<Array<ResolversTypes['Label']>>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<Array<ResolversTypes['MarkingDefinition']>>, ParentType, ContextType>;
   objectOrganization?: Resolver<Maybe<Array<ResolversTypes['Organization']>>, ParentType, ContextType>;
+  objectParticipant?: Resolver<Maybe<Array<ResolversTypes['Participant']>>, ParentType, ContextType>;
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<MalwareAnalysisObservedDataArgs>>;
   operatingSystem?: Resolver<Maybe<ResolversTypes['Software']>, ParentType, ContextType>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<MalwareAnalysisOpinionsArgs>>;
@@ -36331,6 +36382,7 @@ export type NarrativeResolvers<ContextType = any, ParentType extends ResolversPa
   objectLabel?: Resolver<Maybe<Array<ResolversTypes['Label']>>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<Array<ResolversTypes['MarkingDefinition']>>, ParentType, ContextType>;
   objectOrganization?: Resolver<Maybe<Array<ResolversTypes['Organization']>>, ParentType, ContextType>;
+  objectParticipant?: Resolver<Maybe<Array<ResolversTypes['Participant']>>, ParentType, ContextType>;
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<NarrativeObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<NarrativeOpinionsArgs>>;
   parentNarratives?: Resolver<Maybe<ResolversTypes['NarrativeConnection']>, ParentType, ContextType>;
@@ -36457,6 +36509,7 @@ export type NoteResolvers<ContextType = any, ParentType extends ResolversParentT
   objectLabel?: Resolver<Maybe<Array<ResolversTypes['Label']>>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<Array<ResolversTypes['MarkingDefinition']>>, ParentType, ContextType>;
   objectOrganization?: Resolver<Maybe<Array<ResolversTypes['Organization']>>, ParentType, ContextType>;
+  objectParticipant?: Resolver<Maybe<Array<ResolversTypes['Participant']>>, ParentType, ContextType>;
   objects?: Resolver<Maybe<ResolversTypes['StixObjectOrStixRelationshipRefConnection']>, ParentType, ContextType, Partial<NoteObjectsArgs>>;
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<NoteObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<NoteOpinionsArgs>>;
@@ -36641,6 +36694,7 @@ export type ObservedDataResolvers<ContextType = any, ParentType extends Resolver
   objectLabel?: Resolver<Maybe<Array<ResolversTypes['Label']>>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<Array<ResolversTypes['MarkingDefinition']>>, ParentType, ContextType>;
   objectOrganization?: Resolver<Maybe<Array<ResolversTypes['Organization']>>, ParentType, ContextType>;
+  objectParticipant?: Resolver<Maybe<Array<ResolversTypes['Participant']>>, ParentType, ContextType>;
   objects?: Resolver<Maybe<ResolversTypes['StixObjectOrStixRelationshipRefConnection']>, ParentType, ContextType, Partial<ObservedDataObjectsArgs>>;
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<ObservedDataObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<ObservedDataOpinionsArgs>>;
@@ -36729,6 +36783,7 @@ export type OpinionResolvers<ContextType = any, ParentType extends ResolversPare
   objectLabel?: Resolver<Maybe<Array<ResolversTypes['Label']>>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<Array<ResolversTypes['MarkingDefinition']>>, ParentType, ContextType>;
   objectOrganization?: Resolver<Maybe<Array<ResolversTypes['Organization']>>, ParentType, ContextType>;
+  objectParticipant?: Resolver<Maybe<Array<ResolversTypes['Participant']>>, ParentType, ContextType>;
   objects?: Resolver<Maybe<ResolversTypes['StixObjectOrStixRelationshipRefConnection']>, ParentType, ContextType, Partial<OpinionObjectsArgs>>;
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<OpinionObservedDataArgs>>;
   opinion?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -36813,6 +36868,7 @@ export type OrganizationResolvers<ContextType = any, ParentType extends Resolver
   objectLabel?: Resolver<Maybe<Array<ResolversTypes['Label']>>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<Array<ResolversTypes['MarkingDefinition']>>, ParentType, ContextType>;
   objectOrganization?: Resolver<Maybe<Array<ResolversTypes['Organization']>>, ParentType, ContextType>;
+  objectParticipant?: Resolver<Maybe<Array<ResolversTypes['Participant']>>, ParentType, ContextType>;
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<OrganizationObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<OrganizationOpinionsArgs>>;
   parentOrganizations?: Resolver<Maybe<ResolversTypes['OrganizationConnection']>, ParentType, ContextType>;
@@ -37160,6 +37216,7 @@ export type PositionResolvers<ContextType = any, ParentType extends ResolversPar
   objectLabel?: Resolver<Maybe<Array<ResolversTypes['Label']>>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<Array<ResolversTypes['MarkingDefinition']>>, ParentType, ContextType>;
   objectOrganization?: Resolver<Maybe<Array<ResolversTypes['Organization']>>, ParentType, ContextType>;
+  objectParticipant?: Resolver<Maybe<Array<ResolversTypes['Participant']>>, ParentType, ContextType>;
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<PositionObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<PositionOpinionsArgs>>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
@@ -37738,6 +37795,7 @@ export type RegionResolvers<ContextType = any, ParentType extends ResolversParen
   objectLabel?: Resolver<Maybe<Array<ResolversTypes['Label']>>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<Array<ResolversTypes['MarkingDefinition']>>, ParentType, ContextType>;
   objectOrganization?: Resolver<Maybe<Array<ResolversTypes['Organization']>>, ParentType, ContextType>;
+  objectParticipant?: Resolver<Maybe<Array<ResolversTypes['Participant']>>, ParentType, ContextType>;
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<RegionObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<RegionOpinionsArgs>>;
   parentRegions?: Resolver<Maybe<ResolversTypes['RegionConnection']>, ParentType, ContextType>;
@@ -38055,6 +38113,7 @@ export type SectorResolvers<ContextType = any, ParentType extends ResolversParen
   objectLabel?: Resolver<Maybe<Array<ResolversTypes['Label']>>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<Array<ResolversTypes['MarkingDefinition']>>, ParentType, ContextType>;
   objectOrganization?: Resolver<Maybe<Array<ResolversTypes['Organization']>>, ParentType, ContextType>;
+  objectParticipant?: Resolver<Maybe<Array<ResolversTypes['Participant']>>, ParentType, ContextType>;
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<SectorObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<SectorOpinionsArgs>>;
   parentSectors?: Resolver<Maybe<ResolversTypes['SectorConnection']>, ParentType, ContextType>;
@@ -38570,6 +38629,7 @@ export type StixDomainObjectResolvers<ContextType = any, ParentType extends Reso
   objectLabel?: Resolver<Maybe<Array<ResolversTypes['Label']>>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<Array<ResolversTypes['MarkingDefinition']>>, ParentType, ContextType>;
   objectOrganization?: Resolver<Maybe<Array<ResolversTypes['Organization']>>, ParentType, ContextType>;
+  objectParticipant?: Resolver<Maybe<Array<ResolversTypes['Participant']>>, ParentType, ContextType>;
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<StixDomainObjectObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<StixDomainObjectOpinionsArgs>>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
@@ -39156,6 +39216,7 @@ export type SystemResolvers<ContextType = any, ParentType extends ResolversParen
   objectLabel?: Resolver<Maybe<Array<ResolversTypes['Label']>>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<Array<ResolversTypes['MarkingDefinition']>>, ParentType, ContextType>;
   objectOrganization?: Resolver<Maybe<Array<ResolversTypes['Organization']>>, ParentType, ContextType>;
+  objectParticipant?: Resolver<Maybe<Array<ResolversTypes['Participant']>>, ParentType, ContextType>;
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<SystemObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<SystemOpinionsArgs>>;
   organizations?: Resolver<Maybe<ResolversTypes['OrganizationConnection']>, ParentType, ContextType>;
@@ -39411,6 +39472,7 @@ export type ThreatActorResolvers<ContextType = any, ParentType extends Resolvers
   objectLabel?: Resolver<Maybe<Array<ResolversTypes['Label']>>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<Array<ResolversTypes['MarkingDefinition']>>, ParentType, ContextType>;
   objectOrganization?: Resolver<Maybe<Array<ResolversTypes['Organization']>>, ParentType, ContextType>;
+  objectParticipant?: Resolver<Maybe<Array<ResolversTypes['Participant']>>, ParentType, ContextType>;
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<ThreatActorObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<ThreatActorOpinionsArgs>>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
@@ -39487,6 +39549,7 @@ export type ThreatActorGroupResolvers<ContextType = any, ParentType extends Reso
   objectLabel?: Resolver<Maybe<Array<ResolversTypes['Label']>>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<Array<ResolversTypes['MarkingDefinition']>>, ParentType, ContextType>;
   objectOrganization?: Resolver<Maybe<Array<ResolversTypes['Organization']>>, ParentType, ContextType>;
+  objectParticipant?: Resolver<Maybe<Array<ResolversTypes['Participant']>>, ParentType, ContextType>;
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<ThreatActorGroupObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<ThreatActorGroupOpinionsArgs>>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
@@ -39583,6 +39646,7 @@ export type ThreatActorIndividualResolvers<ContextType = any, ParentType extends
   objectLabel?: Resolver<Maybe<Array<ResolversTypes['Label']>>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<Array<ResolversTypes['MarkingDefinition']>>, ParentType, ContextType>;
   objectOrganization?: Resolver<Maybe<Array<ResolversTypes['Organization']>>, ParentType, ContextType>;
+  objectParticipant?: Resolver<Maybe<Array<ResolversTypes['Participant']>>, ParentType, ContextType>;
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<ThreatActorIndividualObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<ThreatActorIndividualOpinionsArgs>>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
@@ -39663,6 +39727,7 @@ export type ToolResolvers<ContextType = any, ParentType extends ResolversParentT
   objectLabel?: Resolver<Maybe<Array<ResolversTypes['Label']>>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<Array<ResolversTypes['MarkingDefinition']>>, ParentType, ContextType>;
   objectOrganization?: Resolver<Maybe<Array<ResolversTypes['Organization']>>, ParentType, ContextType>;
+  objectParticipant?: Resolver<Maybe<Array<ResolversTypes['Participant']>>, ParentType, ContextType>;
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<ToolObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<ToolOpinionsArgs>>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
@@ -40121,6 +40186,7 @@ export type VulnerabilityResolvers<ContextType = any, ParentType extends Resolve
   objectLabel?: Resolver<Maybe<Array<ResolversTypes['Label']>>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<Array<ResolversTypes['MarkingDefinition']>>, ParentType, ContextType>;
   objectOrganization?: Resolver<Maybe<Array<ResolversTypes['Organization']>>, ParentType, ContextType>;
+  objectParticipant?: Resolver<Maybe<Array<ResolversTypes['Participant']>>, ParentType, ContextType>;
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<VulnerabilityObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<VulnerabilityOpinionsArgs>>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
