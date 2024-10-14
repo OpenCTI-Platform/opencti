@@ -1,4 +1,3 @@
-import { SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION } from '@opentelemetry/semantic-conventions';
 import type { AuthContext, AuthUser } from '../../types/user';
 import type { BasicStoreEntityEntitySetting } from './entitySetting-types';
 import { defaultScale, type EntitySettingSchemaAttribute, getAttributesConfiguration } from './entitySetting-utils';
@@ -10,6 +9,7 @@ import { isNotEmptyField } from '../../database/utils';
 import { internalFindByIdsMapped } from '../../database/middleware-loader';
 import { extractRepresentative } from '../../database/entity-representative';
 import { isUserHasCapability, KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS } from '../../utils/access';
+import { TELEMETRY_DB_NAME, TELEMETRY_DB_OPERATION } from '../../utils/telemetry-attributes';
 
 // ==================================================================
 // Need a specific utils file to those functions because
@@ -25,8 +25,8 @@ export const getEntitySettingSchemaAttributes = async (
   entitySetting: BasicStoreEntityEntitySetting
 ): Promise<EntitySettingSchemaAttribute[]> => {
   return telemetry(context, user, 'ATTRIBUTES', {
-    [SEMATTRS_DB_NAME]: 'attributes_domain',
-    [SEMATTRS_DB_OPERATION]: 'attributes_definition',
+    [TELEMETRY_DB_NAME]: 'attributes_domain',
+    [TELEMETRY_DB_OPERATION]: 'attributes_definition',
   }, async () => {
     if (!entitySetting) {
       return [];

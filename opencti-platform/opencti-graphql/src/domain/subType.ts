@@ -1,5 +1,4 @@
 import * as R from 'ramda';
-import { SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION } from '@opentelemetry/semantic-conventions';
 import { ABSTRACT_STIX_CORE_RELATIONSHIP, ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_DOMAIN_OBJECT } from '../schema/general';
 import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
 import { buildPagination } from '../database/utils';
@@ -11,6 +10,7 @@ import { ENTITY_HASHED_OBSERVABLE_ARTIFACT } from '../schema/stixCyberObservable
 import { telemetry } from '../config/tracing';
 import type { AuthContext, AuthUser } from '../types/user';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE } from '../schema/stixMetaObject';
+import { TELEMETRY_DB_NAME, TELEMETRY_DB_OPERATION } from '../utils/telemetry-attributes';
 
 // -- ENTITY TYPES --
 
@@ -32,8 +32,8 @@ export const queryDefaultSubTypes = async (context: AuthContext, user: AuthUser,
   };
 
   return telemetry(context, user, 'QUERY default subtypes', {
-    [SEMATTRS_DB_NAME]: 'subtypes_domain',
-    [SEMATTRS_DB_OPERATION]: 'read',
+    [TELEMETRY_DB_NAME]: 'subtypes_domain',
+    [TELEMETRY_DB_OPERATION]: 'read',
   }, queryDefaultSubTypesFn);
 };
 

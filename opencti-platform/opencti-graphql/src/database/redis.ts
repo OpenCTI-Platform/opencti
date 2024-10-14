@@ -1,4 +1,3 @@
-import { SEMATTRS_DB_NAME } from '@opentelemetry/semantic-conventions';
 import Redis, { Cluster, type RedisOptions, type SentinelAddress } from 'ioredis';
 import Redlock from 'redlock';
 import * as jsonpatch from 'fast-json-patch';
@@ -26,6 +25,7 @@ import type { ExecutionEnvelop } from '../manager/playbookManager';
 import { generateCreateMessage, generateDeleteMessage, generateMergeMessage, generateRestoreMessage } from './generate-message';
 import { INPUT_OBJECTS } from '../schema/general';
 import { enrichWithRemoteCredentials } from '../config/credentials';
+import { TELEMETRY_DB_NAME } from '../utils/telemetry-attributes';
 
 const USE_SSL = booleanConf('redis:use_ssl', false);
 const REDIS_CA = conf.get('redis:ca').map((path: string) => loadCert(path));
@@ -461,7 +461,7 @@ const pushToStream = async (context: AuthContext, user: AuthUser, client: Cluste
       }
     };
     telemetry(context, user, 'INSERT STREAM', {
-      [SEMATTRS_DB_NAME]: 'stream_engine',
+      [TELEMETRY_DB_NAME]: 'stream_engine',
     }, pushToStreamFn);
   }
 };

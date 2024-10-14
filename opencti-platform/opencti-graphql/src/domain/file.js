@@ -1,6 +1,5 @@
 import * as R from 'ramda';
 import { Readable } from 'stream';
-import { SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION } from '@opentelemetry/semantic-conventions';
 import { logApp } from '../config/conf';
 import { deleteFile, loadFile, uploadJobImport } from '../database/file-storage';
 import { internalLoadById, listAllEntities } from '../database/middleware-loader';
@@ -22,6 +21,7 @@ import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { FilterMode, OrderingMode } from '../generated/graphql';
 import { telemetry } from '../config/tracing';
 import { ENTITY_TYPE_WORK } from '../schema/internalObject';
+import { TELEMETRY_DB_NAME, TELEMETRY_DB_OPERATION } from '../utils/telemetry-attributes';
 
 export const buildOptionsFromFileManager = async (context) => {
   let importPaths = ['import/'];
@@ -217,7 +217,7 @@ export const batchFileWorks = async (context, user, files) => {
     return files.map((fileId) => items.filter(({ event_source_id }) => event_source_id === fileId));
   };
   return telemetry(context, user, 'BATCH works for file', {
-    [SEMATTRS_DB_NAME]: 'file_domain',
-    [SEMATTRS_DB_OPERATION]: 'read',
+    [TELEMETRY_DB_NAME]: 'file_domain',
+    [TELEMETRY_DB_OPERATION]: 'read',
   }, getWorkForFileFn);
 };
