@@ -75,6 +75,16 @@ export const stixDomainObjectMutation = graphql`
         references: $references
       ) {
         x_opencti_stix_ids
+        objectAssignee {
+          id
+          name
+          entity_type
+        }
+        objectParticipant {
+          id
+          name
+          entity_type
+        }
         ... on AttackPattern {
           aliases
         }

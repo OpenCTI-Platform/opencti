@@ -92,6 +92,7 @@ type Event implements BasicObject & StixCoreObject & StixDomainObject & StixObje
     modified: DateTime
     x_opencti_graph_data: String
     objectAssignee: [Assignee!]
+    objectParticipant: [Participant!]
     avatar: OpenCtiFile
     # Event
     name: String!
