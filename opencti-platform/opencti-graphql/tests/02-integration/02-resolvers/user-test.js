@@ -917,7 +917,7 @@ describe('User has no settings capability and is organization admin query behavi
     expect(queryResult.data.organizationAdminAdd).not.toBeNull();
     expect(queryResult.data.organizationAdminAdd.standard_id).toEqual(PLATFORM_ORGANIZATION.id);
   });
-  it.skip('should add 2nd organization to user if admin', async () => {
+  it('should add 2nd organization to user if admin', async () => {
     const queryResult = await queryAsUserWithSuccess(USER_EDITOR.client, {
       query: ORGANIZATION_ADD_QUERY, // +1 create of relation between orga & user
       variables: {
@@ -927,9 +927,9 @@ describe('User has no settings capability and is organization admin query behavi
     });
     expect(queryResult.data.userEdit.organizationAdd.id).toEqual(userInternalId);
   });
-  it.skip('should delete 2nd organization to user if admin', async () => {
+  it('should delete 2nd organization to user if admin', async () => {
     const queryResult = await queryAsUserWithSuccess(USER_EDITOR.client, {
-      query: ORGANIZATION_DELETE_QUERY,
+      query: ORGANIZATION_DELETE_QUERY, // +1 delete of relation between orga & user
       variables: {
         id: userInternalId,
         organizationId: platformOrganizationId,
