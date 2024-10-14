@@ -74,7 +74,7 @@ class SystemKnowledgeComponent extends Component {
             element={
               <EntityStixCoreRelationships
                 entityId={system.id}
-                relationshipTypes={['related-to', 'has']}
+                relationshipTypes={['related-to']}
                 entityLink={link}
                 allDirections={true}
               />
