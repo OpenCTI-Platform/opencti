@@ -124,6 +124,7 @@ const InfrastructureKnowledge = ({ infrastructure }: { infrastructure: Infrastru
                 'consists-of',
                 'controls',
                 'uses',
+                'derived-from',
               ]}
               stixCoreObjectTypes={['Infrastructure']}
               entityLink={link}

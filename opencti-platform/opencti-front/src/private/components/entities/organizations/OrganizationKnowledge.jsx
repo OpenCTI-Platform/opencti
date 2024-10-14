@@ -83,7 +83,7 @@ class OrganizationKnowledgeComponent extends Component {
           element={
             <EntityStixCoreRelationships
               entityId={organization.id}
-              relationshipTypes={['part-of']}
+              relationshipTypes={['part-of', 'derived-from']}
               role="part-of_to"
               stixCoreObjectTypes={['Organization']}
               entityLink={link}

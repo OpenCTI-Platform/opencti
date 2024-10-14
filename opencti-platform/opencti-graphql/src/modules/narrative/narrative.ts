@@ -1,8 +1,8 @@
 import convertNarrativeToStix from './narrative-converter';
 import { NAME_FIELD, normalizeName } from '../../schema/identifier';
 import { ENTITY_TYPE_NARRATIVE, type StixNarrative, type StoreEntityNarrative } from './narrative-types';
-import { REL_NEW } from '../../database/stix';
-import { RELATION_SUBNARRATIVE_OF } from '../../schema/stixCoreRelationship';
+import { REL_BUILT_IN, REL_NEW } from '../../database/stix';
+import { RELATION_DERIVED_FROM, RELATION_SUBNARRATIVE_OF } from '../../schema/stixCoreRelationship';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
 import { type ModuleDefinition, registerDefinition } from '../../schema/module';
 import { objectOrganization } from '../../schema/stixRefRelationship';
@@ -45,6 +45,12 @@ const NARRATIVE_DEFINITION: ModuleDefinition<StoreEntityNarrative, StixNarrative
         { name: ENTITY_TYPE_NARRATIVE, type: REL_NEW },
       ]
     },
+    {
+      name: RELATION_DERIVED_FROM,
+      targets: [
+        { name: ENTITY_TYPE_NARRATIVE, type: REL_BUILT_IN },
+      ]
+    }
   ],
   relationsRefs: [
     { ...objectOrganization, isFilterable: false }
