@@ -101,7 +101,7 @@ const ThreatActorIndividualKnowledgeComponent = ({
               'employed-by',
               'reports-to',
               'supports',
-              'derived-from'
+              'derived-from',
             ]}
             stixCoreObjectTypes={['Threat-Actor']}
             entityLink={link}
