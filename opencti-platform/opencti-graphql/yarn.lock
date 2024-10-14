@@ -4663,6 +4663,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/qs@npm:^6.9.11":
+  version: 6.9.16
+  resolution: "@types/qs@npm:6.9.16"
+  checksum: 10/2e8918150c12735630f7ee16b770c72949274938c30306025f68aaf977227f41fe0c698ed93db1099e04916d582ac5a1faf7e3c7061c8d885d9169f59a184b6c
+  languageName: node
+  linkType: hard
+
 "@types/ramda@npm:0.30.2":
   version: 0.30.2
   resolution: "@types/ramda@npm:0.30.2"
@@ -5055,10 +5062,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@xmldom/xmldom@npm:0.9.2":
-  version: 0.9.2
-  resolution: "@xmldom/xmldom@npm:0.9.2"
-  checksum: 10/ac92fb641859650acdb37012775a41a58edffb7541fae3575792c3f09c2e7228f00d309c47ebc61d307a460c687137c260213dd2e962d42b940e96f7c125c576
+"@xmldom/xmldom@npm:0.8.10":
+  version: 0.8.10
+  resolution: "@xmldom/xmldom@npm:0.8.10"
+  checksum: 10/62400bc5e0e75b90650e33a5ceeb8d94829dd11f9b260962b71a784cd014ddccec3e603fe788af9c1e839fa4648d8c521ebd80d8b752878d3a40edabc9ce7ccf
   languageName: node
   linkType: hard
 
