@@ -151,6 +151,7 @@ const DataTableLine = ({
   };
 
   const handleNavigate = (event: React.MouseEvent) => {
+    if (!navigable) return;
     if (event.ctrlKey) {
       window.open(link, '_blank');
     } else {
@@ -159,6 +160,7 @@ const DataTableLine = ({
   };
 
   const handleRowClick = (event: React.MouseEvent) => {
+    if (!clickable) return;
     event.preventDefault();
     event.stopPropagation();
 
@@ -221,18 +223,7 @@ const DataTableLine = ({
             width: 'calc(var(--col-navigate-size) * 1px)',
             overflow: 'initial',
           }}
-          onMouseDown={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-          }}
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-          }}
-          onMouseUp={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-          }}
+          onClick={(e) => e.stopPropagation()}
         >
           {actions && actions(data)}
           {endWithNavigate && (
