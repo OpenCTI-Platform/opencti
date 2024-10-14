@@ -3,6 +3,7 @@ import {
   baseType,
   createdAt,
   creators,
+  draftIds,
   entityLocationType,
   entityType,
   files,
@@ -27,6 +28,7 @@ export const INTERNAL_ATTRIBUTES = [
   id.name,
   internalId.name,
   standardId.name,
+  draftIds.name,
   xOpenctiStixIds.name,
   iAliasedIds.name,
   // Auditing
