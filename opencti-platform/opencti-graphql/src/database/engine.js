@@ -88,7 +88,7 @@ import {
 } from '../schema/stixDomainObject';
 import { isBasicObject, isStixCoreObject, isStixObject } from '../schema/stixCoreObject';
 import { isBasicRelationship, isStixRelationship } from '../schema/stixRelationship';
-import { isStixCoreRelationship, RELATION_INDICATES, RELATION_PUBLISHES, STIX_CORE_RELATIONSHIPS } from '../schema/stixCoreRelationship';
+import { isStixCoreRelationship, RELATION_INDICATES, RELATION_PUBLISHES, RELATION_RELATED_TO, STIX_CORE_RELATIONSHIPS } from '../schema/stixCoreRelationship';
 import { INTERNAL_FROM_FIELD, INTERNAL_TO_FIELD } from '../schema/identifier';
 import {
   BYPASS,
@@ -165,6 +165,7 @@ import { ENTITY_TYPE_DELETE_OPERATION } from '../modules/deleteOperation/deleteO
 import { buildEntityData } from './data-builder';
 import { controlUserConfidenceAgainstElement } from '../utils/confidence-level';
 import { enrichWithRemoteCredentials } from '../config/credentials';
+import { isStixCyberObservable } from '../schema/stixCyberObservable';
 
 const ELK_ENGINE = 'elk';
 const OPENSEARCH_ENGINE = 'opensearch';
@@ -3806,7 +3807,7 @@ export const elIndexElements = async (context, user, indexingType, elements) => 
     const impactedEntities = R.pipe(
       R.filter((e) => e.base_type === BASE_TYPE_RELATION),
       R.map((e) => {
-        const { fromRole, toRole } = e;
+        const { fromType, fromRole, toRole } = e;
         const impacts = [];
         // We impact target entities of the relation only if not global entities like
         // MarkingDefinition (marking) / KillChainPhase (kill_chain_phase) / Label (tagging)
@@ -3814,10 +3815,13 @@ export const elIndexElements = async (context, user, indexingType, elements) => 
         cache[e.toId] = e.to;
         const refField = isStixRefRelationship(e.entity_type) && isInferredIndex(e._index) ? ID_INFERRED : ID_INTERNAL;
         const relationshipType = e.entity_type;
+        const isRelatedToFromObservable = isStixCyberObservable(fromType) && relationshipType === RELATION_RELATED_TO;
         if (isImpactedRole(fromRole)) {
           impacts.push({ refField, from: e.fromId, relationshipType, to: e.to, type: e.to.entity_type, side: 'from' });
         }
-        if (isImpactedRole(toRole)) {
+        // Waiting for JRI work, we need to avoid impact rel on very large entities
+        // Slowing down the performances due to original misconception
+        if (isImpactedRole(toRole) && !isRelatedToFromObservable) {
           impacts.push({ refField, from: e.toId, relationshipType, to: e.from, type: e.from.entity_type, side: 'to' });
         }
         return impacts;
