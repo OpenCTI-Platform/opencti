@@ -418,11 +418,14 @@ export const roleEditContext = async (context, user, roleId, input) => {
   });
 };
 
+const isAdministratedOrga = (user, organizationId) => {
+  return user.administrated_organizations.some(({ id }) => id === organizationId);
+};
+
 export const assignOrganizationToUser = async (context, user, userId, organizationId) => {
   if (isOnlyOrgaAdmin(user)) {
     // When user is organization admin, we make sure she is also admin of organization added
-    const isAdministratedOrga = user.administrated_organizations.some(({ id }) => id === organizationId);
-    if (!isAdministratedOrga) {
+    if (!isAdministratedOrga(user, organizationId)) {
       throw ForbiddenAccess();
     }
   }
@@ -1011,8 +1014,7 @@ export const userIdDeleteRelation = async (context, user, userId, toId, relation
 export const userDeleteOrganizationRelation = async (context, user, userId, toId) => {
   if (isOnlyOrgaAdmin(user)) {
     // When user is organization admin, we make sure she is also admin of organization removed
-    const isAdministratedOrga = user.administrated_organizations.some(({ id }) => id === toId);
-    if (!isAdministratedOrga) {
+    if (!isAdministratedOrga(user, toId)) {
       throw ForbiddenAccess();
     }
   }
