@@ -29,11 +29,7 @@ const ThemeLight = (
   borderRadius: 4,
   palette: {
     mode: 'light',
-<<<<<<< HEAD
     common: { white: '#ffffff', grey: '#494A50', lightGrey: 'rgba(0, 0, 0, 0.6)' },
-=======
-    common: { white: '#ffffff', grey: '#494A50', lightGrey: '#ffffff99' },
->>>>>>> 5a18134ad ([frontend] Multiple alignment issues)
     error: {
       main: '#f44336',
       dark: '#c62828',

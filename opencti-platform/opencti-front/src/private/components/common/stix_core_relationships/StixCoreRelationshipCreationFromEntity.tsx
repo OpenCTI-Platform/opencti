@@ -46,11 +46,7 @@ import DataTable from '../../../../components/dataGrid/DataTable';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
-<<<<<<< HEAD
 const useStyles = makeStyles<Theme>(() => ({
-=======
-const useStyles = makeStyles<Theme>((theme) => ({
->>>>>>> 5a18134ad ([frontend] Multiple alignment issues)
   createButton: {
     position: 'fixed',
     bottom: 30,
