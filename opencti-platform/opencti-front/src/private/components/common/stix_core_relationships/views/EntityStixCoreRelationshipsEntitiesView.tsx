@@ -1,4 +1,4 @@
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useState } from 'react';
 import useAuth from '../../../../../utils/hooks/useAuth';
 import ListLines from '../../../../../components/list_lines/ListLines';
 import ToolBar from '../../../data/ToolBar';
@@ -146,6 +146,11 @@ EntityStixCoreRelationshipsEntitiesViewProps
     onToggleEntity,
   } = useEntityToggle(localStorageKey);
 
+  const [reversedRelation, setReversedRelation] = useState(isRelationReversed);
+  const handleReverseRelation = () => {
+    setReversedRelation(!reversedRelation);
+  };
+
   const finalView = currentView || view;
   return (
     <>
@@ -238,7 +243,8 @@ EntityStixCoreRelationshipsEntitiesViewProps
         <StixCoreRelationshipCreationFromEntity
           entityId={entityId}
           allowedRelationshipTypes={relationshipTypes}
-          isRelationReversed={isRelationReversed}
+          isRelationReversed={reversedRelation}
+          handleReverseRelation={handleReverseRelation}
           targetStixDomainObjectTypes={computeTargetStixDomainObjectTypes(
             stixCoreObjectTypes,
           )}

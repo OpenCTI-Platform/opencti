@@ -75,7 +75,7 @@ const ThreatActorIndividualKnowledgeComponent = ({
             entityLink={link}
             defaultStartTime={threatActorIndividual.first_seen}
             defaultStopTime={threatActorIndividual.last_seen}
-            allDirections={true}
+            allDirections
           />
         }
       />
@@ -107,7 +107,7 @@ const ThreatActorIndividualKnowledgeComponent = ({
             entityLink={link}
             defaultStartTime={threatActorIndividual.first_seen}
             defaultStopTime={threatActorIndividual.last_seen}
-            allDirections={true}
+            allDirections
           />
         }
       />
@@ -135,7 +135,7 @@ const ThreatActorIndividualKnowledgeComponent = ({
             entityLink={link}
             defaultStartTime={threatActorIndividual.first_seen}
             defaultStopTime={threatActorIndividual.last_seen}
-            allDirections={true}
+            allDirections
           />
         }
       />
@@ -154,11 +154,12 @@ const ThreatActorIndividualKnowledgeComponent = ({
         element={
           <EntityStixCoreRelationships
             entityId={threatActorIndividual.id}
-            relationshipTypes={['uses']}
+            relationshipTypes={['uses', 'authored-by']}
             stixCoreObjectTypes={['Malware']}
             entityLink={link}
             defaultStartTime={threatActorIndividual.first_seen}
             defaultStopTime={threatActorIndividual.last_seen}
+            allDirections
           />
         }
       />
