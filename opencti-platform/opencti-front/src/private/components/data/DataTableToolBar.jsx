@@ -83,7 +83,12 @@ import { hexToRGB } from '../../../utils/Colors';
 import { externalReferencesQueriesSearchQuery } from '../analyses/external_references/ExternalReferencesQueries';
 import StixDomainObjectCreation from '../common/stix_domain_objects/StixDomainObjectCreation';
 import ItemMarkings from '../../../components/ItemMarkings';
-import { findFilterFromKey, removeIdAndIncorrectKeysFromFilterGroupObject, serializeFilterGroupForBackend } from '../../../utils/filters/filtersUtils';
+import {
+  findFilterFromKey,
+  getEntityTypeTwoFirstLevelsFilterValues,
+  removeIdAndIncorrectKeysFromFilterGroupObject,
+  serializeFilterGroupForBackend,
+} from '../../../utils/filters/filtersUtils';
 import { getMainRepresentative } from '../../../utils/defaultRepresentatives';
 import { isNotEmptyField } from '../../../utils/utils';
 import EETooltip from '../common/entreprise_edition/EETooltip';
@@ -1277,8 +1282,8 @@ class DataTableToolBar extends Component {
     this.setState((prevState) => ({ promoteToContainer: !prevState.promoteToContainer }));
   }
 
-  getSelectedTypes() {
-    const entityTypeFilterValues = findFilterFromKey(this.props.filters?.filters ?? [], 'entity_type', 'eq')?.values ?? [];
+  getSelectedTypes(observableTypes) {
+    const entityTypeFilterValues = getEntityTypeTwoFirstLevelsFilterValues(this.props.filters, observableTypes);
     const selectedElementsList = Object.values(this.props.selectedElements || {});
 
     const selectedTypes = R.uniq([...selectedElementsList.map((o) => o.entity_type), ...entityTypeFilterValues]
@@ -1310,66 +1315,6 @@ class DataTableToolBar extends Component {
       taskScope,
     } = this.props;
     const { actions, keptEntityId, mergingElement, actionsInputs, promoteToContainer } = this.state;
-    const { entityTypeFilterValues, selectedElementsList, selectedTypes } = this.getSelectedTypes();
-
-    // Some filter types are high level, we do not want to check them as "Different"
-    // We might need to add some other types here before refactoring the toolbar
-    const typesAreDifferent = (selectedTypes.filter((type) => !['Stix-Domain-Object', 'stix-core-relationship', 'Stix-Cyber-Observable'].includes(type))).length > 1;
-    const preventMerge = selectedTypes.at(0) === 'Vocabulary'
-      && Object.values(selectedElements).some(({ builtIn }) => Boolean(builtIn));
-    // region update
-    const typesAreNotUpdatable = notUpdatableTypes.includes(selectedTypes[0])
-      || (entityTypeFilterValues.length === 1
-        && notUpdatableTypes.includes(entityTypeFilterValues[0]));
-    // endregion
-    // region rules
-    const typesAreNotScannable = notScannableTypes.includes(selectedTypes[0])
-      || (entityTypeFilterValues.length === 1
-        && notScannableTypes.includes(entityTypeFilterValues[0]));
-    // endregion
-    // region enrich
-    const isManualEnrichSelect = !selectAll && (selectedTypes.filter((st) => !['Stix-Cyber-Observable'].includes(st))).length === 1;
-    const isAllEnrichSelect = selectAll
-      && entityTypeFilterValues.length === 1
-      && entityTypeFilterValues[0] !== 'Stix-Cyber-Observable'
-      && entityTypeFilterValues[0] !== 'Stix-Domain-Object';
-    const enrichDisable = notEnrichableTypes.includes(selectedTypes[0])
-      || (entityTypeFilterValues.length === 1
-        && notEnrichableTypes.includes(entityTypeFilterValues[0]))
-      || (!isManualEnrichSelect && !isAllEnrichSelect);
-    // endregion
-    // region orgaSharing
-    const isShareableType = !notShareableTypes.includes(selectedTypes[0]);
-    // endregion
-    const typesAreNotMergable = notMergableTypes.includes(selectedTypes[0]);
-    const enableMerge = !typesAreNotMergable && !mergeDisable;
-    const typesAreNotAddableInContainer = notAddableTypes.includes(selectedTypes[0])
-      || (entityTypeFilterValues.length === 1
-        && notScannableTypes.includes(entityTypeFilterValues[0]));
-    const titleCopy = this.titleCopy();
-    let keptElement = null;
-    let newAliases = [];
-    if (!typesAreNotMergable && !typesAreDifferent) {
-      keptElement = keptEntityId
-        ? selectedElementsList.find((o) => o.id === keptEntityId)
-        : selectedElementsList[0];
-      if (keptElement) {
-        const names = selectedElementsList
-          .map((el) => el.name)
-          .filter((name) => name !== keptElement.name);
-        const aliases = keptElement.aliases !== null
-          ? selectedElementsList
-            .map((el) => el.aliases)
-            .flat()
-            .filter((alias) => alias !== null && alias !== undefined)
-          : selectedElementsList
-            .map((el) => el.x_opencti_aliases)
-            .flat()
-            .filter((alias) => alias !== null && alias !== undefined);
-
-        newAliases = names.concat(aliases).filter((o) => o && o.length > 0);
-      }
-    }
 
     let deleteCapability = KNOWLEDGE_KNUPDATE_KNDELETE;
     if (taskScope === 'DASHBOARD') deleteCapability = EXPLORE_EXUPDATE_EXDELETE;
@@ -1379,6 +1324,68 @@ class DataTableToolBar extends Component {
     return (
       <UserContext.Consumer>
         {({ schema, settings }) => {
+          const stixCyberObservableSubTypes = schema.scos.map((sco) => sco.id);
+          const { entityTypeFilterValues, selectedElementsList, selectedTypes } = this.getSelectedTypes(stixCyberObservableSubTypes);
+          // Some filter types are high level, we do not want to check them as "Different"
+          // We might need to add some other types here before refactoring the toolbar
+          const typesAreDifferent = (selectedTypes.filter((type) => !['Stix-Domain-Object', 'stix-core-relationship', 'Stix-Cyber-Observable'].includes(type))).length > 1;
+          const preventMerge = selectedTypes.at(0) === 'Vocabulary'
+              && Object.values(selectedElements).some(({ builtIn }) => Boolean(builtIn));
+          // region update
+          const typesAreNotUpdatable = notUpdatableTypes.includes(selectedTypes[0])
+              || (entityTypeFilterValues.length === 1
+                  && notUpdatableTypes.includes(entityTypeFilterValues[0]));
+          // endregion
+          // region rules
+          const typesAreNotScannable = notScannableTypes.includes(selectedTypes[0])
+              || (entityTypeFilterValues.length === 1
+                  && notScannableTypes.includes(entityTypeFilterValues[0]));
+          // endregion
+          // region enrich
+          const isManualEnrichSelect = !selectAll && (selectedTypes.filter((st) => !['Stix-Cyber-Observable'].includes(st))).length === 1;
+          const isAllEnrichSelect = selectAll
+              && entityTypeFilterValues.length === 1
+              && entityTypeFilterValues[0] !== 'Stix-Cyber-Observable'
+              && entityTypeFilterValues[0] !== 'Stix-Domain-Object';
+          const enrichDisable = notEnrichableTypes.includes(selectedTypes[0])
+              || (entityTypeFilterValues.length === 1
+                  && notEnrichableTypes.includes(entityTypeFilterValues[0]))
+              || (!isManualEnrichSelect && !isAllEnrichSelect);
+          // endregion
+          // region orgaSharing
+          const isShareableType = !notShareableTypes.includes(selectedTypes[0]);
+          // endregion
+          // region merge
+          const typesAreNotMergable = notMergableTypes.includes(selectedTypes[0]);
+          const enableMerge = !typesAreNotMergable && !mergeDisable;
+          const typesAreNotAddableInContainer = notAddableTypes.includes(selectedTypes[0])
+              || (entityTypeFilterValues.length === 1
+                  && notScannableTypes.includes(entityTypeFilterValues[0]));
+          const titleCopy = this.titleCopy();
+          let keptElement = null;
+          let newAliases = [];
+          if (!typesAreNotMergable && !typesAreDifferent) {
+            keptElement = keptEntityId
+              ? selectedElementsList.find((o) => o.id === keptEntityId)
+              : selectedElementsList[0];
+            if (keptElement) {
+              const names = selectedElementsList
+                .map((el) => el.name)
+                .filter((name) => name !== keptElement.name);
+              const aliases = keptElement.aliases !== null
+                ? selectedElementsList
+                  .map((el) => el.aliases)
+                  .flat()
+                  .filter((alias) => alias !== null && alias !== undefined)
+                : selectedElementsList
+                  .map((el) => el.x_opencti_aliases)
+                  .flat()
+                  .filter((alias) => alias !== null && alias !== undefined);
+
+              newAliases = names.concat(aliases).filter((o) => o && o.length > 0);
+            }
+          }
+          // endregion
           // region EE
           const isEnterpriseEdition = isNotEmptyField(settings.enterprise_edition);
           // endregion
