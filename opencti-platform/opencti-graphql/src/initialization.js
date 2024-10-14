@@ -5,7 +5,7 @@ import { DISABLED_FEATURE_FLAGS, logApp, PLATFORM_VERSION } from './config/conf'
 import { elUpdateIndicesMappings, ES_INIT_RETRO_MAPPING_MIGRATION, initializeSchema, searchEngineInit } from './database/engine';
 import { initializeAdminUser } from './config/providers';
 import { initializeBucket, storageInit } from './database/file-storage';
-import { initializeInternalQueues, rabbitMQIsAlive } from './database/rabbitmq';
+import { initializeConnectorQueues, initializeInternalQueues, rabbitMQIsAlive } from './database/rabbitmq';
 import { initDefaultNotifiers } from './modules/notifier/notifier-domain';
 import { checkPythonAvailability } from './python/pythonBridge';
 import { lockResource, redisInit } from './database/redis';
@@ -116,6 +116,7 @@ const platformInit = async (withMarkings = true) => {
       }
       await refreshMappingsAndIndices();
       await initializeInternalQueues();
+      await initializeConnectorQueues(context, SYSTEM_USER);
       await isCompatiblePlatform(context);
       await initializeAdminUser(context);
       await applyMigration(context);

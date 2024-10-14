@@ -8,6 +8,8 @@ import { SYSTEM_USER } from '../utils/access';
 import { telemetry } from '../config/tracing';
 import { isEmptyField, RABBIT_QUEUE_PREFIX } from './utils';
 import { getHttpClient } from '../utils/http-client';
+import { listEntities } from './middleware-loader';
+import { ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
 
 export const CONNECTOR_EXCHANGE = `${RABBIT_QUEUE_PREFIX}amqp.connector.exchange`;
 export const WORKER_EXCHANGE = `${RABBIT_QUEUE_PREFIX}amqp.worker.exchange`;
@@ -237,6 +239,16 @@ export const registerConnectorQueues = async (id, name, type, scope) => {
 export const initializeInternalQueues = async () => {
   await registerConnectorQueues('playbook', 'Internal playbook manager', 'internal', 'playbook');
   await registerConnectorQueues('sync', 'Internal sync manager', 'internal', 'sync');
+};
+
+export const initializeConnectorQueues = async (context, user) => {
+  // List all current platform connectors and ensure queues are correctly setup
+  const connectors = await listEntities(context, user, [ENTITY_TYPE_CONNECTOR], { connectionFormat: false });
+  for (let index = 0; index < connectors.length; index += 1) {
+    const connector = connectors[index];
+    const scopes = connector.connector_scope ? connector.connector_scope.split(',') : [];
+    await registerConnectorQueues(connector.id, connector.name, connector.connector_type, scopes);
+  }
 };
 
 export const unregisterConnector = async (id) => {
