@@ -2,32 +2,28 @@ import TableRow from '@mui/material/TableRow';
 import TableCell from '@mui/material/TableCell';
 import Button from '@mui/material/Button';
 import React, { FunctionComponent, useState } from 'react';
-import { useFormatter } from '../../../../components/i18n';
-import Transition from '../../../../components/Transition';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
-import ItemCopy from '../../../../components/ItemCopy';
 import DialogActions from '@mui/material/DialogActions';
 import Dialog from '@mui/material/Dialog';
+import { WorkMessages } from '@components/data/connectors/ConnectorWorks';
+import ItemCopy from '../../../../components/ItemCopy';
+import Transition from '../../../../components/Transition';
+import { useFormatter } from '../../../../components/i18n';
 
-type WorkMessages = {
-  message: string,
-  sequence: number,
-  source: string,
-  timestamp: any,
-}
-
-type ParsedWorkMessage = {
+export type ParsedWorkMessage = {
   isParsed: boolean,
+  tabsType: 'Critical' | 'Warning' | 'Other',
   parsedError: {
-    timestamp: any,
+    timestamp: string,
     type: string,
     reason: string,
-    entityId: any,
+    entityId: string,
+    entityName: string,
   }
   rawError: WorkMessages,
-}
+};
 
 interface ConnectorWorksErrorLineProps {
   error: ParsedWorkMessage;
@@ -54,7 +50,7 @@ const ConnectorWorksErrorLine: FunctionComponent<ConnectorWorksErrorLineProps> =
           <TableCell>{error.parsedError.reason}</TableCell>
           <TableCell>
             <Button href={`/dashboard/id/${error.parsedError.entityId}`} target="_blank" onClick={(event) => event.stopPropagation()}>
-              {error.parsedError.entityId}
+              {error.parsedError.entityName}
             </Button>
           </TableCell>
         </TableRow>
