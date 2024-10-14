@@ -4594,10 +4594,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/nconf@npm:0.10.6":
-  version: 0.10.6
-  resolution: "@types/nconf@npm:0.10.6"
-  checksum: 10/8c9999d2785f83d5db8a0c6a4dc161e64b2e170ea9d9e7e4b3a9bacfe68fb2a83c9994969d464c453971830c627eaf0834849933c480148f700c0d3cd0b9d449
+"@types/nconf@npm:0.10.7":
+  version: 0.10.7
+  resolution: "@types/nconf@npm:0.10.7"
+  checksum: 10/7757d7f87cce90ec40c0b0e6347561d2cc930f2148d3d20b4855b1152865c843e137ac8ccd7789b4f52fd5d62d51419e4ad87b52b8121568e283bce5d50fc69f
   languageName: node
   linkType: hard
 
@@ -10811,7 +10811,7 @@ __metadata:
     "@types/express": "npm:4.17.21"
     "@types/graphql-upload": "npm:16.0.7"
     "@types/mime-types": "npm:2.1.4"
-    "@types/nconf": "npm:0.10.6"
+    "@types/nconf": "npm:0.10.7"
     "@types/ramda": "npm:0.30.2"
     "@types/tough-cookie": "npm:4.0.5"
     "@types/turndown": "npm:5.0.4"
