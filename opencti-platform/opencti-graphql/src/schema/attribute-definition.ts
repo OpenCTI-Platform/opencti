@@ -109,6 +109,42 @@ export const draftIds: AttributeDefinition = {
   entityTypes: [ABSTRACT_BASIC_OBJECT, ABSTRACT_BASIC_RELATIONSHIP],
   featureFlag: 'DRAFT_WORKSPACE'
 };
+
+export const draftUpdates: AttributeDefinition = {
+  name: 'draft_updates',
+  label: 'Draft updates',
+  type: 'object',
+  format: 'standard',
+  update: false,
+  mandatoryType: 'no',
+  editDefault: false,
+  multiple: true,
+  upsert: false,
+  isFilterable: false,
+  mappings: [
+    { name: 'draft_update_operation', label: 'Draft update operation', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    { name: 'draft_update_field', label: 'Draft update field', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    { name: 'draft_update_values', label: 'Draft update field', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: true, upsert: false, isFilterable: false },
+  ]
+};
+
+export const draftChange: AttributeDefinition = {
+  name: 'draft_change',
+  label: 'Draft change',
+  type: 'object',
+  format: 'standard',
+  update: false,
+  mandatoryType: 'no',
+  editDefault: false,
+  multiple: false,
+  upsert: false,
+  isFilterable: false,
+  mappings: [
+    { name: 'draft_operation', label: 'Draft operation', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: false, upsert: true, isFilterable: false },
+    draftUpdates
+  ]
+};
+
 export const iAttributes: AttributeDefinition = {
   name: 'i_attributes',
   label: 'Attributes',
