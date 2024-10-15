@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import * as PropTypes from 'prop-types';
-import { graphql, createRefetchContainer } from 'react-relay';
+import { createRefetchContainer, graphql } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
@@ -10,8 +10,8 @@ import Chip from '@mui/material/Chip';
 import { interval } from 'rxjs';
 import Tooltip from '@mui/material/Tooltip';
 import IconButton from '@mui/material/IconButton';
-import { Delete, InformationOutline, LayersRemove } from 'mdi-material-ui';
-import { DeleteSweepOutlined } from '@mui/icons-material';
+import { InformationOutline } from 'mdi-material-ui';
+import { DeleteOutlined, DeleteSweepOutlined, PlaylistRemoveOutlined } from '@mui/icons-material';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
@@ -286,7 +286,7 @@ const ConnectorComponent = ({ connector, relay }) => {
                 size="large"
                 disabled={connector.built_in}
               >
-                <LayersRemove />
+                <PlaylistRemoveOutlined/>
               </IconButton>
             </Tooltip>
             <Tooltip title={t_i18n('Clear all works')}>
@@ -296,7 +296,7 @@ const ConnectorComponent = ({ connector, relay }) => {
                 color="primary"
                 size="large"
               >
-                <DeleteSweepOutlined />
+                <DeleteSweepOutlined/>
               </IconButton>
             </Tooltip>
             <Tooltip title={t_i18n('Clear this connector')}>
@@ -307,7 +307,7 @@ const ConnectorComponent = ({ connector, relay }) => {
                 disabled={connector.active || connector.built_in}
                 size="large"
               >
-                <Delete />
+                <DeleteOutlined/>
               </IconButton>
             </Tooltip>
           </Security>
