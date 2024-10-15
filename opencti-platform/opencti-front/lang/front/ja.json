@@ -615,6 +615,7 @@
   "Days": "日数",
   "days": "日",
   "Deactivate": "無効化",
+  "Deactivating this feature will disable several other functions on the platform: Organizations management and segregation, Playbooks and automation, File indexing, Activity monitoring.": "この機能を無効にすると、プラットフォーム上の他のいくつかの機能が無効になります：組織管理と分離、プレイブックと自動化、ファイルインデックス作成、アクティビティ監視。",
   "Decay factor": "減衰係数",
   "Decay rules": "減衰ルール",
   "Decay rules are applied on indicators by priority order (from greatest to lowest, lowest being 0). There are built-in rules applied by default that are not editable, you can add a custom decay rule and define its priority order.": "ディケイ・ルールは、優先順位（最大から最小へ、最小は0）によってインジケータに適用されます。デフォルトで適用される組み込みのルールは編集できませんが、カスタム減衰ルールを追加し、その優先順位を定義することができます。",
