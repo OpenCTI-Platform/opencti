@@ -42,7 +42,7 @@ Here are the configuration keys, for both containers (environment variables) and
 | app:session_timeout          | APP__SESSION_TIMEOUT            | 1200000               | Session timeout, in ms (default 20 minutes)                                                                                                  |
 | app:session_idle_timeout     | APP__SESSION_IDLE_TIMEOUT       | 0                     | Idle timeout (locking the screen), in ms (default 0 minute - disabled)                                                                       |
 | app:session_cookie           | APP__SESSION_COOKIE             | false                 | Use memory/session cookie instead of persistent one                                                                                          |
-| app:admin:externally_managed | APP__ADMIN__EXTERNALLY_MANAGED  | false                 | Completely remove the default admin user from the platform and never create it again.                                                        |
+| app:admin:externally_managed | APP__ADMIN__EXTERNALLY_MANAGED  | false                 | Completely remove the default admin user from the platform and never create it again                                                         |
 | app:admin:email              | APP__ADMIN__EMAIL               | admin@opencti.io      | Default login email of the admin user                                                                                                        |
 | app:admin:password           | APP__ADMIN__PASSWORD            | ChangeMe              | Default password of the admin user                                                                                                           |
 | app:admin:token              | APP__ADMIN__TOKEN               | ChangeMe              | Default token (must be a valid UUIDv4)                                                                                                       |
@@ -50,17 +50,23 @@ Here are the configuration keys, for both containers (environment variables) and
 
 #### Network and security
 
-| Parameter                               | Environment variable                     | Default value | Description                                                                                                         |
-|:----------------------------------------|:-----------------------------------------|:--------------|:--------------------------------------------------------------------------------------------------------------------|
-| http_proxy                              | HTTP_PROXY                               |               | Proxy URL for HTTP connection (example: http://proxy:80080)                                                         |
-| https_proxy                             | HTTPS_PROXY                              |               | Proxy URL for HTTPS connection (example: http://proxy:80080)                                                        |
-| no_proxy                                | NO_PROXY                                 |               | Comma separated list of hostnames for proxy exception (example: localhost,127.0.0.0/8,internal.opencti.io)          |
-| app:https_cert:cookie_secure            | APP__HTTPS_CERT__COOKIE_SECURE           | false         | Set the flag "secure" for session cookies.                                                                          |
-| app:https_cert:ca                       | APP__HTTPS_CERT__CA                      | Empty list [] | Certificate authority paths or content, only if the client uses a self-signed certificate.                          |
-| app:https_cert:key                      | APP__HTTPS_CERT__KEY                     |               | Certificate key path or content                                                                                     |
-| app:https_cert:crt                      | APP__HTTPS_CERT__CRT                     |               | Certificate crt path or content                                                                                     |
-| app:https_cert:reject_unauthorized      | APP__HTTPS_CERT__REJECT_UNAUTHORIZED     |               | If not false, the server certificate is verified against the list of supplied CAs                                   |
-| app:public_dashboard_authorized_domains | APP__PUBLIC_DASHBOARD_AUTHORIZED_DOMAINS | Empty string  | List of domain name that can display public dashboard in an embedded iframe. Empty string means none, '*' means all.|
+| Parameter                                            | Environment variable                                   | Default value | Description                                                                                                         |
+|:-----------------------------------------------------|:-------------------------------------------------------|:--------------|:--------------------------------------------------------------------------------------------------------------------|
+| http_proxy                                           | HTTP_PROXY                                             |               | Proxy URL for HTTP connection (example: http://proxy:80080)                                                         |
+| https_proxy                                          | HTTPS_PROXY                                            |               | Proxy URL for HTTPS connection (example: http://proxy:80080)                                                        |
+| no_proxy                                             | NO_PROXY                                               |               | Comma separated list of hostnames for proxy exception (example: localhost,127.0.0.0/8,internal.opencti.io)          |
+| app:https_cert:cookie_secure                         | APP__HTTPS_CERT__COOKIE_SECURE                         | false         | Set the flag "secure" for session cookies                                                                           |
+| app:https_cert:ca                                    | APP__HTTPS_CERT__CA                                    | Empty list [] | Certificate authority paths or content, only if the client uses a self-signed certificate                           |
+| app:https_cert:key                                   | APP__HTTPS_CERT__KEY                                   |               | Certificate key path or content                                                                                     |
+| app:https_cert:crt                                   | APP__HTTPS_CERT__CRT                                   |               | Certificate crt path or content                                                                                     |
+| app:https_cert:reject_unauthorized                   | APP__HTTPS_CERT__REJECT_UNAUTHORIZED                   |               | If not false, the server certificate is verified against the list of supplied CAs                                   |
+| app:public_dashboard_authorized_domains              | APP__PUBLIC_DASHBOARD_AUTHORIZED_DOMAINS               | Empty string  | List of domain name that can display public dashboard in an embedded iframe. Empty string means none, '*' means all |
+| app:graphql:armor_protection:disabled                | APP__GRAPHQL__ARMOR_PROTECTION__DISABLED               | true          | Disable GraphQL armor protection                                                                                    |
+| app:graphql:armor_protection:max_depth               | APP__GRAPHQL__ARMOR_PROTECTION__MAX_DEPTH              | 20            | GraphQL armor protection max depth in queries                                                                       |
+| app:graphql:armor_protection:max_directives          | APP__GRAPHQL__ARMOR_PROTECTION__MAX_DIRECTIVES         | 20            | GraphQL armor protection max directives in queries                                                                  |
+| app:graphql:armor_protection:max_tokens              | APP__GRAPHQL__ARMOR_PROTECTION__MAX_TOKENS             | 100000        | GraphQL armor protection max tokens                                                                                 |
+| app:graphql:armor_protection:cost_limit              | APP__GRAPHQL__ARMOR_PROTECTION__COST_LIMIT             | 3000000       | GraphQL armor protection cost limit                                                                                 |
+| app:graphql:armor_protection:block_field_suggestion  | APP__GRAPHQL__ARMOR_PROTECTION__BLOCK_FIELD_SUGGESTION | true          | GraphQL armor protection, block the field suggestion                                                                |
 
 #### Logging
 
@@ -87,9 +93,9 @@ Here are the configuration keys, for both containers (environment variables) and
 
 | Parameter                                 | Environment variable                         | Default value | Description                             |
 |:------------------------------------------|:---------------------------------------------|:--------------|:----------------------------------------|
-| app:telemetry:metrics:enabled             | APP__TELEMETRY__METRICS__ENABLED             | `false`       | Enable the metrics collection.          |
-| app:telemetry:metrics:exporter_otlp       | APP__TELEMETRY__METRICS__EXPORTER_OTLP       |               | Port to expose the OTLP endpoint.       |
-| app:telemetry:metrics:exporter_prometheus | APP__TELEMETRY__METRICS__EXPORTER_PROMETHEUS | 14269         | Port to expose the Prometheus endpoint. |
+| app:telemetry:metrics:enabled             | APP__TELEMETRY__METRICS__ENABLED             | `false`       | Enable the metrics collection           |
+| app:telemetry:metrics:exporter_otlp       | APP__TELEMETRY__METRICS__EXPORTER_OTLP       |               | Port to expose the OTLP endpoint        |
+| app:telemetry:metrics:exporter_prometheus | APP__TELEMETRY__METRICS__EXPORTER_PROMETHEUS | 14269         | Port to expose the Prometheus endpoint  |
 
 
 #### Maps & references
