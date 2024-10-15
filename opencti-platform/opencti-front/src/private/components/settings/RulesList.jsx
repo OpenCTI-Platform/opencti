@@ -20,6 +20,7 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import FormGroup from '@mui/material/FormGroup';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
+import DangerZoneBlock from '@components/common/dangerZone/DangerZoneBlock';
 import Chart from '../common/charts/Chart';
 import { FIVE_SECONDS, parse } from '../../../utils/Time';
 import { useFormatter } from '../../../components/i18n';
@@ -455,71 +456,71 @@ const RulesListComponent = ({ relay, data, keyword }) => {
                   style={{ marginBottom: 50 }}
                 >
                   <Grid item xs={3}>
-                    <Typography variant="h4" gutterBottom={true}>
-                      {t_i18n(rule.name)}
-                    </Typography>
-                    <Paper
-                      variant="outlined"
-                      classes={{ root: classes.paper }}
-                      style={{ padding: 15, minWidth: 280 }}
-                    >
-                      <Grid container={true} spacing={3}>
-                        <Grid item xs={6}>
-                          <Typography variant="h3">
-                            {t_i18n('Description')}
-                          </Typography>
-                          {t_i18n(rule.description)}
-                        </Grid>
-                        <Grid item xs={6}>
-                          <Typography variant="h3" gutterBottom={true}>
-                            {t_i18n('Status')}
-                          </Typography>
-                          <FormGroup>
-                            <FormControlLabel
-                              control={
-                                <Switch
-                                  disabled={!isEngineEnabled}
-                                  checked={isEngineEnabled && rule.activated}
-                                  color="secondary"
-                                  onChange={() => (rule.activated
-                                    ? handleOpenDisable(rule.id)
-                                    : handleOpenEnable(rule.id))
+                    <DangerZoneBlock
+                      title={t_i18n(rule.name)}
+                      component={({ disabled, style }) => (
+                        <Paper
+                          variant="outlined"
+                          classes={{ root: classes.paper }}
+                          style={style} // TODO how to add style={{ padding: 15, minWidth: 280 }}
+                        >
+                          <Grid container={true} spacing={3}>
+                            <Grid item xs={6}>
+                              <Typography variant="h3">
+                                {t_i18n('Description')}
+                              </Typography>
+                              {t_i18n(rule.description)}
+                            </Grid>
+                            <Grid item xs={6}>
+                              <Typography variant="h3" gutterBottom={true}>
+                                {t_i18n('Status')}
+                              </Typography>
+                              <FormGroup>
+                                <FormControlLabel
+                                  control={
+                                    <Switch
+                                      disabled={!isEngineEnabled || disabled}
+                                      checked={isEngineEnabled && rule.activated}
+                                      color="secondary"
+                                      onChange={() => (rule.activated
+                                        ? handleOpenDisable(rule.id)
+                                        : handleOpenEnable(rule.id))
                                   }
-                                />
+                                    />
                               }
-                              label={
+                                  label={
                                 isEngineEnabled && rule.activated
                                   ? t_i18n('Enabled')
                                   : t_i18n('Disabled')
                               }
-                            />
-                          </FormGroup>
-                        </Grid>
-                        <Grid item xs={12}>
-                          {isEngineEnabled && task && (
-                            <div
-                              style={{
-                                width: '100%',
-                                textAlign: 'center',
-                                fontSize: 9,
-                                fontFamily: 'Consolas, monaco, monospace',
-                              }}
-                            >
-                              {task.enable
-                                ? t_i18n(
-                                  task.completed
-                                    ? 'This rule has been applied on the existing data'
-                                    : 'Applying this rule on the existing data',
-                                )
-                                : t_i18n(
-                                  task.completed
-                                    ? 'Rule has been cleaned up on the existing data'
-                                    : 'Cleaning up this rule on the existing data',
-                                )}
-                              <LinearProgress
-                                classes={{ root: classes.progress }}
-                                variant="determinate"
-                                value={
+                                />
+                              </FormGroup>
+                            </Grid>
+                            <Grid item xs={12}>
+                              {isEngineEnabled && task && (
+                              <div
+                                style={{
+                                  width: '100%',
+                                  textAlign: 'center',
+                                  fontSize: 9,
+                                  fontFamily: 'Consolas, monaco, monospace',
+                                }}
+                              >
+                                {task.enable
+                                  ? t_i18n(
+                                    task.completed
+                                      ? 'This rule has been applied on the existing data'
+                                      : 'Applying this rule on the existing data',
+                                  )
+                                  : t_i18n(
+                                    task.completed
+                                      ? 'Rule has been cleaned up on the existing data'
+                                      : 'Cleaning up this rule on the existing data',
+                                  )}
+                                <LinearProgress
+                                  classes={{ root: classes.progress }}
+                                  variant="determinate"
+                                  value={
                                   // eslint-disable-next-line no-nested-ternary
                                   task.task_expected_number === 0
                                     ? task.completed
@@ -533,12 +534,14 @@ const RulesListComponent = ({ relay, data, keyword }) => {
                                           * 100,
                                       )
                                 }
-                              />
-                            </div>
-                          )}
-                        </Grid>
-                      </Grid>
-                    </Paper>
+                                />
+                              </div>
+                              )}
+                            </Grid>
+                          </Grid>
+                        </Paper>
+                      )}
+                    />
                   </Grid>
                   <Grid item xs={9}>
                     <Paper
