@@ -1,7 +1,7 @@
 import { expect } from 'vitest';
 import { print } from 'graphql/index';
 import type { AxiosInstance } from 'axios';
-import { adminQuery, createUnauthenticatedClient, executeInternalQuery } from './testQuery';
+import { adminQuery, createUnauthenticatedClient, executeInternalQuery, queryAsAdmin } from './testQuery';
 import { downloadFile, streamConverter } from '../../src/database/file-storage';
 import { logApp } from '../../src/config/conf';
 import { AUTH_REQUIRED, FORBIDDEN_ACCESS } from '../../src/config/errors';
@@ -16,7 +16,7 @@ import { getHttpClient, type GetHttpClient } from '../../src/utils/http-client';
  * @param request
  */
 export const queryAsAdminWithSuccess = async (request: { query: any, variables: any }) => {
-  const requestResult = await adminQuery({
+  const requestResult = await queryAsAdmin({
     query: request.query,
     variables: request.variables,
   });
