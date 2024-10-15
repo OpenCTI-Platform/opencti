@@ -17,11 +17,18 @@ import {
   testContext,
   TESTING_GROUPS,
   TESTING_USERS,
+  USER_DISINFORMATION_ANALYST,
   USER_EDITOR
 } from '../../utils/testQuery';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../src/modules/organization/organization-types';
 import { VIRTUAL_ORGANIZATION_ADMIN } from '../../../src/utils/access';
-import { adminQueryWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
+  USER_EDITOR
+} from '../../utils/testQuery';
+import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../src/modules/organization/organization-types';
+import { VIRTUAL_ORGANIZATION_ADMIN } from '../../../src/utils/access';
+import { queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden } from '../../utils/testQueryHelper';
+import { resolveUserByToken } from '../../../src/domain/user';
+import { OPENCTI_ADMIN_UUID } from '../../../src/schema/general';
 
 const LIST_QUERY = gql`
   query users(
@@ -181,13 +188,24 @@ const DELETE_GROUP_QUERY = gql`
   }
 `;
 
+const TOKEN_RENEW_QUERY = gql`
+    mutation UserEdit($id: ID!) {
+        userEdit(id: $id) {
+            tokenRenew {
+                id
+                api_token
+            }
+        }
+    }
+`;
+
 describe('User resolver standard behavior', () => {
-  let userInternalId;
-  let groupInternalId;
-  let userStandardId;
-  let roleInternalId;
+  let userInternalId: string;
+  let groupInternalId: string;
+  let userStandardId: string;
+  let roleInternalId: string;
   let capabilityId;
-  const userToDeleteIds = [];
+  const userToDeleteIds: string[] = [];
   it('should user created', async () => {
     // Create the user
     const USER_TO_CREATE = {
@@ -244,14 +262,14 @@ describe('User resolver standard behavior', () => {
   it('should user loaded by internal id', async () => {
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: userInternalId } });
     expect(queryResult).not.toBeNull();
-    expect(queryResult.data.user).not.toBeNull();
-    expect(queryResult.data.user.id).toEqual(userInternalId);
+    expect(queryResult.data?.user).not.toBeNull();
+    expect(queryResult.data?.user.id).toEqual(userInternalId);
   });
   it('should user loaded by standard id', async () => {
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: userStandardId } });
     expect(queryResult).not.toBeNull();
-    expect(queryResult.data.user).not.toBeNull();
-    expect(queryResult.data.user.id).toEqual(userInternalId);
+    expect(queryResult.data?.user).not.toBeNull();
+    expect(queryResult.data?.user.id).toEqual(userInternalId);
   });
   it('should user login', async () => {
     const res = await queryAsAdmin({
@@ -265,11 +283,11 @@ describe('User resolver standard behavior', () => {
     });
     expect(res).not.toBeNull();
     expect(res.data).not.toBeNull();
-    expect(res.data.token).toBeDefined();
+    expect(res.data?.token).toBeDefined();
   });
   it('should list users', async () => {
     const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 10 } });
-    expect(queryResult.data.users.edges.length).toEqual(TESTING_USERS.length + 3);
+    expect(queryResult.data?.users.edges.length).toEqual(TESTING_USERS.length + 3);
   });
   it('should update user', async () => {
     const UPDATE_QUERY = gql`
@@ -286,7 +304,44 @@ describe('User resolver standard behavior', () => {
       query: UPDATE_QUERY,
       variables: { id: userInternalId, input: { key: 'name', value: ['User - test'] } },
     });
-    expect(queryResult.data.userEdit.fieldPatch.name).toEqual('User - test');
+    expect(queryResult.data?.userEdit.fieldPatch.name).toEqual('User - test');
+  });
+  it('should Admin be able renew a user token', async () => {
+    const queryUserBeforeRenew = await queryAsAdminWithSuccess({ query: READ_QUERY, variables: { id: userInternalId } });
+    const tokenBeforeRenew = queryUserBeforeRenew.data?.user.api_token;
+    expect(tokenBeforeRenew).toBeDefined();
+
+    // This is a shortcut, hard to test the token with an external query
+    const userShouldBeFound = await resolveUserByToken(testContext, tokenBeforeRenew);
+    expect(userShouldBeFound.id).toBe(queryUserBeforeRenew.data?.user.id);
+
+    const renewResult = await queryAsAdminWithSuccess({
+      query: TOKEN_RENEW_QUERY,
+      variables: { id: userInternalId },
+    });
+    expect(renewResult.data?.userEdit.tokenRenew.api_token).toBeDefined();
+    expect(renewResult.data?.userEdit.tokenRenew.api_token).not.toBe(tokenBeforeRenew);
+
+    // Token has been renew, same token must be not found here
+    const userShouldNotBeFound = await resolveUserByToken(testContext, tokenBeforeRenew);
+    expect(userShouldNotBeFound).toBeUndefined();
+  });
+  it('should Analyst NOT ne able to renew user token', async () => {
+    await queryAsUserIsExpectedForbidden(USER_DISINFORMATION_ANALYST.client, {
+      query: TOKEN_RENEW_QUERY,
+      variables: { id: userInternalId },
+    });
+  });
+  it('should be forbidden to renew yaml/env configured token (admin)', async () => {
+    const result = await queryAsAdmin({
+      query: TOKEN_RENEW_QUERY,
+      variables: { id: OPENCTI_ADMIN_UUID },
+    });
+    expect(result.errors).toBeDefined();
+    expect(result.errors?.length).toBe(1);
+    if (result.errors) {
+      expect(result.errors[0].message).toBe('Cannot renew token of admin user defined in configuration, please change configuration instead.');
+    }
   });
   it('should update user confidence level', async () => {
     const UPDATE_QUERY = gql`
@@ -336,7 +391,7 @@ describe('User resolver standard behavior', () => {
       query: CONTEXT_PATCH_QUERY,
       variables: { id: userInternalId, input: { focusOn: 'description' } },
     });
-    expect(queryResult.data.userEdit.contextPatch.id).toEqual(userInternalId);
+    expect(queryResult.data?.userEdit.contextPatch.id).toEqual(userInternalId);
   });
   it('should context clean user', async () => {
     const CONTEXT_PATCH_QUERY = gql`
@@ -352,7 +407,7 @@ describe('User resolver standard behavior', () => {
       query: CONTEXT_PATCH_QUERY,
       variables: { id: userInternalId },
     });
-    expect(queryResult.data.userEdit.contextClean.id).toEqual(userInternalId);
+    expect(queryResult.data?.userEdit.contextClean.id).toEqual(userInternalId);
   });
   it('should add user in group', async () => {
     // Create the group
@@ -478,9 +533,9 @@ describe('User resolver standard behavior', () => {
       variables: ROLE_TO_CREATE,
     });
     expect(role).not.toBeNull();
-    expect(role.data.roleAdd).not.toBeNull();
-    expect(role.data.roleAdd.name).toEqual('Role in group');
-    roleInternalId = role.data.roleAdd.id;
+    expect(role.data?.roleAdd).not.toBeNull();
+    expect(role.data?.roleAdd.name).toEqual('Role in group');
+    roleInternalId = role.data?.roleAdd.id;
     const RELATION_ADD_QUERY = gql`
       mutation GroupEdit($id: ID!, $input: InternalRelationshipAddInput!) {
         groupEdit(id: $id) {
@@ -512,17 +567,17 @@ describe('User resolver standard behavior', () => {
         },
       },
     });
-    expect(queryResult.data.groupEdit.relationAdd.from.roles.edges.length).toEqual(1);
+    expect(queryResult.data?.groupEdit.relationAdd.from.roles.edges.length).toEqual(1);
   });
   it('should user roles to be accurate', async () => {
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: userInternalId } });
     expect(queryResult).not.toBeNull();
-    expect(queryResult.data.user).not.toBeNull();
-    expect(queryResult.data.user.roles.length).toEqual(2); // the 2 roles are: 'Role in group' and 'Default'
+    expect(queryResult.data?.user).not.toBeNull();
+    expect(queryResult.data?.user.roles.length).toEqual(2); // the 2 roles are: 'Role in group' and 'Default'
   });
   it('should add capability in role', async () => {
     const capabilityStandardId = generateStandardId(ENTITY_TYPE_CAPABILITY, { name: 'KNOWLEDGE' });
-    const capability = await elLoadById(testContext, ADMIN_USER, capabilityStandardId);
+    const capability = await elLoadById(testContext, ADMIN_USER, capabilityStandardId) as unknown as Capability;
     capabilityId = capability.id;
     const RELATION_ADD_QUERY = gql`
       mutation RoleEdit($id: ID!, $input: InternalRelationshipAddInput!) {
@@ -552,15 +607,15 @@ describe('User resolver standard behavior', () => {
         },
       },
     });
-    expect(queryResult.data.roleEdit.relationAdd.from.capabilities.length).toEqual(1);
-    expect(queryResult.data.roleEdit.relationAdd.from.capabilities[0].name).toEqual('KNOWLEDGE');
+    expect(queryResult.data?.roleEdit.relationAdd.from.capabilities.length).toEqual(1);
+    expect(queryResult.data?.roleEdit.relationAdd.from.capabilities[0].name).toEqual('KNOWLEDGE');
   });
   it('should user capabilities to be accurate', async () => {
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: userInternalId } });
     expect(queryResult).not.toBeNull();
-    expect(queryResult.data.user).not.toBeNull();
-    expect(queryResult.data.user.capabilities.length).toEqual(1);
-    expect(queryResult.data.user.capabilities[0].name).toEqual('KNOWLEDGE');
+    expect(queryResult.data?.user).not.toBeNull();
+    expect(queryResult.data?.user.capabilities.length).toEqual(1);
+    expect(queryResult.data?.user.capabilities[0].name).toEqual('KNOWLEDGE');
   });
   it('should delete relation in user', async () => {
     const RELATION_DELETE_QUERY = gql`
@@ -588,8 +643,8 @@ describe('User resolver standard behavior', () => {
         relationship_type: 'member-of',
       },
     });
-    expect(queryResult.data.userEdit.relationDelete.groups.edges.length).toEqual(1);
-    expect(queryResult.data.userEdit.relationDelete.groups.edges[0].node.name).toEqual('Default');
+    expect(queryResult.data?.userEdit.relationDelete.groups.edges.length).toEqual(1);
+    expect(queryResult.data?.userEdit.relationDelete.groups.edges[0].node.name).toEqual('Default');
     // Delete the group
     await adminQuery({
       query: DELETE_GROUP_QUERY,
@@ -615,10 +670,11 @@ describe('User resolver standard behavior', () => {
 describe('User list members query behavior', () => {
   it('Should user lists all members', async () => {
     const queryResult = await editorQuery({ query: LIST_MEMBERS_QUERY });
-    expect(queryResult.data.members.edges.length).toEqual(24);
-    expect(queryResult.data.members.edges.filter(({ node: { entity_type } }) => entity_type === ENTITY_TYPE_USER).length).toEqual(TESTING_USERS.length + 1); // +1 = Plus admin user
-    expect(queryResult.data.members.edges.filter(({ node: { entity_type } }) => entity_type === ENTITY_TYPE_GROUP).length).toEqual(TESTING_GROUPS.length + 3); // 3 built-in groups
-    expect(queryResult.data.members.edges.filter(({ node: { entity_type } }) => entity_type === ENTITY_TYPE_IDENTITY_ORGANIZATION).length).toEqual(8);
+    const usersEdges = queryResult.data.members.edges as { node: Member }[];
+    expect(usersEdges.length).toEqual(24);
+    expect(usersEdges.filter(({ node: { entity_type } }) => entity_type === ENTITY_TYPE_USER).length).toEqual(TESTING_USERS.length + 1); // +1 = Plus admin user
+    expect(usersEdges.filter(({ node: { entity_type } }) => entity_type === ENTITY_TYPE_GROUP).length).toEqual(TESTING_GROUPS.length + 3); // 3 built-in groups
+    expect(usersEdges.filter(({ node: { entity_type } }) => entity_type === ENTITY_TYPE_IDENTITY_ORGANIZATION).length).toEqual(8);
   });
 });
 
@@ -656,7 +712,7 @@ describe('User has no capability query behavior', () => {
       }
     }
   `;
-  let userWithoutRoleInternalId;
+  let userWithoutRoleInternalId: string;
   beforeAll(async () => {
     // Modify the default group to prevent default_assignation
     await queryAsAdmin({
@@ -679,12 +735,12 @@ describe('User has no capability query behavior', () => {
       query: CREATE_QUERY,
       variables: USER_TO_CREATE,
     });
-    userWithoutRoleInternalId = userAddResult.data.userAdd.id;
+    userWithoutRoleInternalId = userAddResult.data?.userAdd.id;
   });
 
   it('should has no capability if no role', async () => {
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: userWithoutRoleInternalId } });
-    expect(queryResult.data.user.capabilities.length).toEqual(0);
+    expect(queryResult.data?.user.capabilities.length).toEqual(0);
   });
 
   afterAll(async () => {
@@ -703,9 +759,9 @@ describe('User has no capability query behavior', () => {
 });
 
 describe('User has no settings capability and is organization admin query behavior', () => {
-  let userInternalId;
-  let userEditorId;
-  let testOrganizationId;
+  let userInternalId: string;
+  let userEditorId: string;
+  let testOrganizationId: string;
   let amberGroupId;
   let platformOrganizationId;
   const organizationsIds = [];
@@ -800,7 +856,7 @@ describe('User has no settings capability and is organization admin query behavi
     expect(editorUserQueryResult.data.user).not.toBeNull();
     expect(editorUserQueryResult.data.user.capabilities.length).toEqual(5);
     const { capabilities } = editorUserQueryResult.data.user;
-    expect(capabilities.some((capa) => capa.name === VIRTUAL_ORGANIZATION_ADMIN)).toEqual(true);
+    expect(capabilities.some((capa: Capability) => capa.name === VIRTUAL_ORGANIZATION_ADMIN)).toEqual(true);
   });
   it('should user created', async () => {
     testOrganizationId = await getOrganizationIdByName(TEST_ORGANIZATION.name);

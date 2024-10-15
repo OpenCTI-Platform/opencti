@@ -1389,15 +1389,35 @@ export const resolveUserById = async (context, id) => {
   return buildCompleteUser(context, client);
 };
 
-const resolveUserByToken = async (context, tokenValue) => {
+export const resolveUserByToken = async (context, tokenValue) => {
   const client = await elLoadBy(context, SYSTEM_USER, 'api_token', tokenValue, ENTITY_TYPE_USER);
   return buildCompleteUser(context, client);
 };
 
 export const userRenewToken = async (context, user, userId) => {
+  if (userId === OPENCTI_ADMIN_UUID) {
+    throw FunctionalError('Cannot renew token of admin user defined in configuration, please change configuration instead.');
+  }
+
+  const userData = await storeLoadById(context, user, userId, ENTITY_TYPE_USER);
+  if (!userData) {
+    throw FunctionalError(`Cannot renew token, ${userId} user cannot be found.`);
+  }
   const patch = { api_token: uuid() };
   await patchAttribute(context, user, userId, ENTITY_TYPE_USER, patch);
-  return storeLoadById(context, user, userId, ENTITY_TYPE_USER);
+  const result = storeLoadById(context, user, userId, ENTITY_TYPE_USER);
+
+  const actionEmail = ENABLED_DEMO_MODE ? REDACTED_USER.user_email : userData.user_email;
+  await publishUserAction({
+    user,
+    event_type: 'mutation',
+    event_scope: 'update',
+    event_access: 'administration',
+    message: `renew token of user \`${actionEmail}\``,
+    context_data: { id: userId, entity_type: ENTITY_TYPE_USER }
+  });
+
+  return result;
 };
 
 /**
