@@ -1,6 +1,6 @@
 import { FunctionalError } from '../config/errors';
 import { getExclusionListsByTypeFromCache, getExclusionListsByTypeFromCache2 } from '../database/cache';
-import { exclusionListEntityType, ExclusionListProperties } from '../database/exclusionList/constants';
+import { exclusionListEntityType, type ExclusionListProperties, type IpAddrListType } from '../database/exclusionList/constants';
 
 type ExtractedObservableValues = {
   type: string;
@@ -59,11 +59,11 @@ const throwExclusionListError = (value: string, listName: string) => {
 const checkIpAddressLists2 = (ipToTest: string, exclusionList: ExclusionListProperties[]) => {
   const { isIpv4 } = checkIpAddrType(ipToTest);
   const binary = isIpv4 ? convertIpv4ToBinary(ipToTest) : convertIpv6ToBinary(ipToTest);
-
-  exclusionList.forEach(({ name, list }) => {
+  exclusionList.forEach((currentList) => {
+    const aze: IpAddrListType = currentList.list;
     list.forEach((line) => {
       if (binary.startsWith(line)) {
-        throwExclusionListError(ipToTest, name);
+        throwExclusionListError(ipToTest, currentList.name);
       }
     });
   });
@@ -73,7 +73,9 @@ export const checkPatternValidity = (extractedObservableValues: ExtractedObserva
   console.time();
   extractedObservableValues.forEach(({ type, value }) => {
     const selectedExclusionLists = getExclusionListsByTypeFromCache2(type);
+    console.log('selectedExclusionLists : ', selectedExclusionLists);
     if (!selectedExclusionLists.length) return;
+    return;
     if (type === exclusionListEntityType.IPV4_ADDR || type === exclusionListEntityType.IPV6_ADDR) {
       checkIpAddressLists2(value, selectedExclusionLists);
     } else {

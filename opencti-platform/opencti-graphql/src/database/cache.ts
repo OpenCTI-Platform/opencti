@@ -1,6 +1,6 @@
 import { SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION } from '@opentelemetry/semantic-conventions';
 import { convertIpv4ToBinary, convertIpv6ToBinary, getIsRange } from '../utils/dataPrep';
-import type { ExclusionListProperties } from './exclusionList/constants';
+import type { ExclusionListProperties, IpAddrListType } from './exclusionList/constants';
 import type { BasicStoreIdentifier, StoreEntity, StoreRelation } from '../types/store';
 import { logApp } from '../config/conf';
 import { UnsupportedError } from '../config/errors';
@@ -90,23 +90,52 @@ const STORE_EXCLUSION_LIST = [
 ];
 
 // const STORE_TEST = [exclusionList.googleBotList];
-// const STORE_TEST_2 = [exclusionList.vpnIpv4List];
+const STORE_TEST_2 = [exclusionList.vpnIpv4List];
 
 const STORE_EXCLUSION_LIST_BINARY = [];
 
+const convertIpaddr = (list) => {
+  const initialeValue: IpAddrListType = { ipv4: [], ipv6: [] };
+
+  const qsd = list.reduce((acc: IpAddrListType, ip) => {
+    const ipAddress = ip.split('/')[0];
+    const isIpv6 = ipAddress.indexOf(':') !== -1;
+    const isIpv4 = ipAddress.indexOf('.') !== -1;
+    if (!isIpv4 && !isIpv6) return acc;
+    const isRange = getIsRange(ip);
+    const ipAddressRangeValue = ip.split('/')?.[1] ?? '0';
+    if (isIpv4) {
+      const result = convertIpv4ToBinary(ipAddress, isRange, parseInt(ipAddressRangeValue, 10));
+      return { ...acc, ipv4: [...acc.ipv4, result] };
+    }
+    if (isIpv6) {
+      const result = convertIpv6ToBinary(ipAddress, isRange, parseInt(ipAddressRangeValue, 10));
+      return { ...acc, ipv6: [...acc.ipv6, result] };
+    }
+  }, initialeValue);
+  console.log('qsd : ', qsd);
+
+  // const aze = list.map((ip) => {
+  //   const ipAddress = ip.split('/')[0];
+  //   const isIpv6 = ipAddress.indexOf(':') !== -1;
+  //   const isIpv4 = ipAddress.indexOf('.') !== -1;
+  //   if (!isIpv4 && !isIpv6) return ip;
+  //   return ip;
+  //   const isRange = getIsRange(ip);
+  //   const ipAddressRangeValue = ip.split('/')?.[1] ?? '0';
+  //   // if (isIpv6) return convertIpv6ToBinary(ipAddress, isRange, parseInt(ipAddressRangeValue, 10));
+  //   if (isIpv4) {
+  //     return convertIpv4ToBinary(ipAddress, isRange, parseInt(ipAddressRangeValue, 10));
+  //   }
+  // });
+  // console.log('aze : ', aze);
+  return qsd;
+};
+
 const convertTest = () => {
-  STORE_EXCLUSION_LIST.forEach((item) => {
+  STORE_TEST_2.forEach((item) => {
     if (item.type.includes(exclusionListEntityType.IPV4_ADDR) || item.type.includes(exclusionListEntityType.IPV6_ADDR)) {
-      const newList = item.list.map((ip) => {
-        const ipAddress = ip.split('/')[0];
-        const isIpv6 = ipAddress.indexOf(':') !== -1;
-        const isIpv4 = ipAddress.indexOf('.') !== -1;
-        if (!isIpv4 && !isIpv6) return ip;
-        const isRange = getIsRange(ip);
-        const ipAddressRangeValue = ip.split('/')?.[1] ?? '0';
-        if (isIpv6) return convertIpv6ToBinary(ipAddress, isRange, parseInt(ipAddressRangeValue, 10));
-        if (isIpv4) return convertIpv4ToBinary(ipAddress, isRange, parseInt(ipAddressRangeValue, 10));
-      });
+      const newList = convertIpaddr(item.list);
       STORE_EXCLUSION_LIST_BINARY.push({ ...item, list: newList });
       return;
     }

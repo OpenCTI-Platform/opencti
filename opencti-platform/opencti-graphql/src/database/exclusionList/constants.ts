@@ -1,7 +1,9 @@
+export type IpAddrListType = { ipv4: string[], ipv6: string[] };
+
 export type ExclusionListProperties = {
   name: string;
-  type: string[ExclusionListEntityType]
-  list: string[]
+  type: string[ExclusionListEntityType];
+  list: string[] | IpAddrListType;
   actions: null;
 };
 
