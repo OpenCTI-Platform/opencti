@@ -402,10 +402,10 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                   {t_i18n('Token')}
                 </Typography>
                 <Security needs={[SETTINGS_SETACCESSES]}>
-                  <Tooltip title='Revoke token'>
+                  <Tooltip title={t_i18n('Revoke token')}>
                     <IconButton
                       color='primary'
-                      aria-label='Revoke token'
+                      aria-label={t_i18n('Revoke token')}
                       onClick={handleOpenRenewToken}
                       classes={{ root: classes.floatingButton }}
                       size='small'
@@ -566,10 +566,10 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                   {t_i18n('Sessions')}
                 </Typography>
                 <Security needs={[SETTINGS_SETACCESSES]}>
-                  <Tooltip title='Kill all sessions'>
+                  <Tooltip title={t_i18n('Kill all sessions')}>
                     <IconButton
                       color="primary"
-                      aria-label="Delete all"
+                      aria-label={t_i18n('Delete all')}
                       onClick={handleOpenKillSessions}
                       classes={{ root: classes.floatingButton }}
                       size="small"
@@ -821,7 +821,7 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
       >
         <DialogContent>
           <DialogContentText>
-            {t_i18n('Do you want to revoke this user token ? Once the token is revoked all access are forbidden, please verify that the token is not used by connectors or other API calls.')}
+            {t_i18n('Do you want to revoke this user token ? Once the token is revoked all access are forbidden, please verify that the token is not used by connectors or other API calls before revoking.')}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
