@@ -615,6 +615,7 @@
   "Days": "Días",
   "days": "días",
   "Deactivate": "Desactivar",
+  "Deactivating this feature will disable several other functions on the platform: Organizations management and segregation, Playbooks and automation, File indexing, Activity monitoring.": "La desactivación de esta función inhabilitará varias otras funciones de la plataforma: Gestión y segregación de organizaciones, Playbooks y automatización, Indexación de archivos, Monitorización de actividades.",
   "Decay factor": "Factor de decaimiento",
   "Decay rules": "Reglas de decaimiento",
   "Decay rules are applied on indicators by priority order (from greatest to lowest, lowest being 0). There are built-in rules applied by default that are not editable, you can add a custom decay rule and define its priority order.": "Las reglas de decaimiento se aplican a los indicadores por orden de prioridad (de mayor a menor, siendo 0 el valor más bajo). Hay reglas incorporadas (built-in) aplicadas por defecto que no son editables, puede añadir una regla de decaimiento personalizada y definir su orden de prioridad.",
