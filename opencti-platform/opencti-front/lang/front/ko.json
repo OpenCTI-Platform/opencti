@@ -1357,6 +1357,7 @@
   "Imports": "Imports",
   "In all the database": "모든 데이터베이스에서",
   "In Carousel": "캐러셀에서",
+  "In containers": "컨테이너에서",
   "In OpenCTI, a predictable STIX ID is generated based on one or multiple attributes of the entity.": "OpenCTI에서는 엔터티의 하나 또는 여러 속성을 기반으로 예측 가능한 STIX ID가 생성됩니다.",
   "In platform": "플랫폼에서",
   "in progress": "진행 중",
