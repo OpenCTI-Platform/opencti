@@ -12,7 +12,7 @@ import {
   TEST_ORGANIZATION,
   USER_EDITOR
 } from '../../utils/testQuery';
-import { adminQueryWithSuccess, queryAsUserIsExpectedForbidden } from '../../utils/testQueryHelper';
+import { queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden } from '../../utils/testQueryHelper';
 import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../../../src/modules/case/case-incident/case-incident-types';
 
 const CREATE_QUERY = gql`
@@ -449,7 +449,7 @@ describe('Case Incident Response and organization sharing standard behavior with
     settingsInternalId = queryResult.data?.settings?.id;
 
     // Set EE
-    const EEqueryResult = await adminQueryWithSuccess({
+    const EEqueryResult = await queryAsAdminWithSuccess({
       query: PLATFORM_ORGANIZATION_QUERY,
       variables: {
         id: settingsInternalId,
@@ -495,7 +495,7 @@ describe('Case Incident Response and organization sharing standard behavior with
     expect(queryResult?.data?.caseIncident).toBeNull();
   });
   it('should EE deactivated', async () => {
-    const EEDeactivationQuery = await adminQueryWithSuccess({
+    const EEDeactivationQuery = await queryAsAdminWithSuccess({
       query: PLATFORM_ORGANIZATION_QUERY,
       variables: {
         id: settingsInternalId,
@@ -531,7 +531,7 @@ describe('Case Incident Response and organization sharing standard behavior with
     settingsInternalId = queryResult.data?.settings?.id;
 
     // Set plateform organization
-    const platformOrganization = await adminQueryWithSuccess({
+    const platformOrganization = await queryAsAdminWithSuccess({
       query: PLATFORM_ORGANIZATION_QUERY,
       variables: {
         id: settingsInternalId,
@@ -635,7 +635,7 @@ describe('Case Incident Response and organization sharing standard behavior with
   });
   it('should plateform organization sharing and EE deactivated', async () => {
     // Remove plateform organization
-    const platformOrganization = await adminQueryWithSuccess({
+    const platformOrganization = await queryAsAdminWithSuccess({
       query: PLATFORM_ORGANIZATION_QUERY,
       variables: {
         id: settingsInternalId,
