@@ -95,7 +95,10 @@ const CsvMapperCreation: FunctionComponent<CsvMapperCreationFormProps> = ({
 
   const initialValues: CsvMapperFormData = isDuplicated && csvMapper
     ? csvMapperToFormData(
-      csvMapper,
+      {
+        ...csvMapper,
+        name: `${csvMapper.name} - copy`,
+      },
       data.csvMapperSchemaAttributes,
       computeDefaultValues,
     ) : {
