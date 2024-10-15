@@ -60,6 +60,7 @@ const StixRelationshipsNumber = ({
   variant,
   height,
   startDate,
+  endDate,
   dataSelection,
   parameters = {},
 }) => {
@@ -69,7 +70,7 @@ const StixRelationshipsNumber = ({
     const dateAttribute = selection.date_attribute && selection.date_attribute.length > 0
       ? selection.date_attribute
       : 'created_at';
-    const { filters } = buildFiltersAndOptionsForWidgets(selection.filters);
+    const { filters } = buildFiltersAndOptionsForWidgets(selection.filters, { startDate, endDate, dateAttribute });
     return (
       <QueryRenderer
         query={stixRelationshipsNumberNumberQuery}
