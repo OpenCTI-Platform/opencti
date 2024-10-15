@@ -197,26 +197,31 @@ const MAX_AGGREGATION_SIZE = 100;
 export const ROLE_FROM = 'from';
 export const ROLE_TO = 'to';
 export const UNIMPACTED_ENTITIES_ROLE = [
-  // Refs relationships
+  // Created by never impacted
   `${RELATION_CREATED_BY}_${ROLE_TO}`,
-  `${RELATION_OBJECT_MARKING}_${ROLE_TO}`,
-  `${RELATION_OBJECT_ASSIGNEE}_${ROLE_TO}`,
-  `${RELATION_OBJECT_PARTICIPANT}_${ROLE_TO}`,
-  `${RELATION_GRANTED_TO}_${ROLE_TO}`,
-  `${RELATION_OBJECT_LABEL}_${ROLE_TO}`,
-  `${RELATION_KILL_CHAIN_PHASE}_${ROLE_TO}`,
   `${RELATION_CREATED_BY}_${ROLE_FROM}`,
+  // Marking by never impacted
+  `${RELATION_OBJECT_MARKING}_${ROLE_TO}`,
   `${RELATION_OBJECT_MARKING}_${ROLE_FROM}`,
+  // User assign never impacted
+  `${RELATION_OBJECT_ASSIGNEE}_${ROLE_TO}`,
   `${RELATION_OBJECT_ASSIGNEE}_${ROLE_FROM}`,
+  `${RELATION_OBJECT_PARTICIPANT}_${ROLE_TO}`,
   `${RELATION_OBJECT_PARTICIPANT}_${ROLE_FROM}`,
+  // ACL never impacted
+  `${RELATION_GRANTED_TO}_${ROLE_TO}`,
   `${RELATION_GRANTED_TO}_${ROLE_FROM}`,
-  `${RELATION_OBJECT_LABEL}_${ROLE_FROM}`,
+  // Kill chain never impacted
+  `${RELATION_KILL_CHAIN_PHASE}_${ROLE_TO}`,
   `${RELATION_KILL_CHAIN_PHASE}_${ROLE_FROM}`,
+  // Labels never impacted
+  `${RELATION_OBJECT_LABEL}_${ROLE_FROM}`,
+  `${RELATION_OBJECT_LABEL}_${ROLE_TO}`,
+  // External ref not impacted on the FROM side
   `${RELATION_EXTERNAL_REFERENCE}_${ROLE_FROM}`,
-  // Core relationships
+  // Core publishes not impacted on the from
   `${RELATION_PUBLISHES}_${ROLE_FROM}`,
-  // RELATION_OBJECT
-  // RELATION_EXTERNAL_REFERENCE
+  // Core indicates not impacted on the to
   `${RELATION_INDICATES}_${ROLE_TO}`,
 ];
 export const isImpactedTypeAndSide = (type, side) => {
@@ -3867,7 +3872,10 @@ export const elIndexElements = async (context, user, indexingType, elements) => 
     }).flat();
     const promiseFrom = bodyChildFrom.length > 0
       ? elBulk({ refresh: bulkDenormRefresh, timeout: BULK_TIMEOUT, body: bodyChildFrom }) : Promise.resolve();
-    const bodyChildTo = elements.filter((e) => (e.base_type === BASE_TYPE_RELATION && isImpactedRole(e.toRole))).map((e) => {
+    const bodyChildTo = elements.filter((e) => {
+      const isRelatedToFromObservable = isStixCyberObservable(e.fromType) && e.entity_type === RELATION_RELATED_TO;
+      return e.base_type === BASE_TYPE_RELATION && isImpactedRole(e.toRole) && !isRelatedToFromObservable;
+    }).map((e) => {
       const { toRole, toType } = e;
       bulkDenormRefresh = bulkDenormRefresh || isInternalObject(toType);
       return [
