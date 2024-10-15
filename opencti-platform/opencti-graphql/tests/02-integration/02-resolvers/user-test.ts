@@ -198,23 +198,6 @@ const TOKEN_RENEW_QUERY = gql`
     }
 `;
 
-const importOpts: string[] = [API_URI, ADMIN_API_TOKEN, './tests/data/DATA-TEST-STIX2_v2.json'];
-
-describe('Database provision', () => {
-  it('Should import creation succeed', async () => {
-    // Inject data
-    const execution = await execChildPython(testContext, ADMIN_USER, PYTHON_PATH, 'local_importer.py', importOpts);
-    expect(execution).not.toBeNull();
-    expect(execution.status).toEqual('success');
-  }, FIVE_MINUTES);
-  // Python lib is fixed but we need to wait for a new release
-  it('Should import update succeed', async () => {
-    const execution = await execChildPython(testContext, ADMIN_USER, PYTHON_PATH, 'local_importer.py', importOpts);
-    expect(execution).not.toBeNull();
-    expect(execution.status).toEqual('success');
-  }, FIVE_MINUTES);
-});
-
 describe('User resolver standard behavior', () => {
   let userInternalId: string;
   let groupInternalId: string;
@@ -672,7 +655,7 @@ describe('User resolver standard behavior', () => {
   });
 });
 
-describe.skip('User list members query behavior', () => {
+describe('User list members query behavior', () => {
   it('Should user lists all members', async () => {
     const queryResult = await editorQuery({ query: LIST_MEMBERS_QUERY });
     expect(queryResult.data.members.edges.length).toEqual(24);
@@ -685,7 +668,7 @@ describe.skip('User list members query behavior', () => {
   });
 });
 
-describe.skip('User creator completion', () => {
+describe('User creator completion', () => {
   it('Should sector upsert accumulate creator_id', async () => {
     const SECTOR_CREATE_QUERY = gql`
       mutation SectorAdd($input: SectorAddInput!) {
@@ -709,7 +692,7 @@ describe.skip('User creator completion', () => {
   });
 });
 
-describe.skip('User has no capability query behavior', () => {
+describe('User has no capability query behavior', () => {
   const GROUP_UPDATE_QUERY = gql`
     mutation GroupEdit($id: ID!, $input: [EditInput]!) {
       groupEdit(id: $id) {
@@ -765,7 +748,7 @@ describe.skip('User has no capability query behavior', () => {
   });
 });
 
-describe.skip('User has no settings capability and is organization admin query behavior', () => {
+describe('User has no settings capability and is organization admin query behavior', () => {
   let userInternalId: string;
   let userEditorId: string;
   let testOrganizationId: string;
