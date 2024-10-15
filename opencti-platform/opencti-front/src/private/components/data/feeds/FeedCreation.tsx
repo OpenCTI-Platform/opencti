@@ -319,7 +319,7 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
     setFeedAttributes(R.assoc(i, newFeedAttribute, feedAttributes));
   };
   const initialValues: FeedAddInput = isDuplicated && feed ? {
-    name: feed.name,
+    name: `${feed.name} - copy `,
     description: feed.description,
     separator: feed.separator,
     filters: feed.filters,
