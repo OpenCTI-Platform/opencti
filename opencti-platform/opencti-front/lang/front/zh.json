@@ -615,6 +615,7 @@
   "Days": "天数",
   "days": "天",
   "Deactivate": "停用",
+  "Deactivating this feature will disable several other functions on the platform: Organizations management and segregation, Playbooks and automation, File indexing, Activity monitoring.": "停用该功能将禁用平台上的其他几项功能：组织管理和隔离、Playbook 和自动化、文件索引、活动监控。",
   "Decay factor": "衰减系数",
   "Decay rules": "衰变规则",
   "Decay rules are applied on indicators by priority order (from greatest to lowest, lowest being 0). There are built-in rules applied by default that are not editable, you can add a custom decay rule and define its priority order.": "衰减规则按优先级顺序（从高到低，最低为 0）应用于指标。默认应用的内置规则不可编辑，您可以添加自定义衰减规则并定义其优先级顺序。",

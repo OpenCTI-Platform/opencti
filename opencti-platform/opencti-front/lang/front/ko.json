@@ -614,6 +614,7 @@
   "Days": "일",
   "days": "일",
   "Deactivate": "비활성화",
+  "Deactivating this feature will disable several other functions on the platform: Organizations management and segregation, Playbooks and automation, File indexing, Activity monitoring.": "이 기능을 비활성화하면 플랫폼의 다른 여러 기능이 비활성화됩니다: 조직 관리 및 분리, 플레이북 및 자동화, 파일 인덱싱, 활동 모니터링.",
   "Decay factor": "감쇠 인자",
   "Decay rules": "감쇠 규칙",
   "Decay rules are applied on indicators by priority order (from greatest to lowest, lowest being 0). There are built-in rules applied by default that are not editable, you can add a custom decay rule and define its priority order.": "감쇠 규칙은 우선순위 순서에 따라 지표에 적용됩니다 (가장 큰 것부터 가장 작은 것까지, 가장 작은 것이 0). 기본적으로 적용되는 내장 규칙이 있으며, 편집할 수 없지만 사용자 정의 감쇠 규칙을 추가하고 우선순위 순서를 정의할 수 있습니다.",

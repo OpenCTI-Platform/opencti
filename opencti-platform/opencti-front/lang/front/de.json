@@ -615,6 +615,7 @@
   "Days": "Tage",
   "days": "tage",
   "Deactivate": "Deaktivieren",
+  "Deactivating this feature will disable several other functions on the platform: Organizations management and segregation, Playbooks and automation, File indexing, Activity monitoring.": "Durch die Deaktivierung dieser Funktion werden mehrere andere Funktionen der Plattform deaktiviert: Organisationsmanagement und -trennung, Playbooks und Automatisierung, Dateiindizierung, Aktivitätsüberwachung.",
   "Decay factor": "Zerfallsfaktor",
   "Decay rules": "Zerfallregeln",
   "Decay rules are applied on indicators by priority order (from greatest to lowest, lowest being 0). There are built-in rules applied by default that are not editable, you can add a custom decay rule and define its priority order.": "Abklingregeln werden auf Indikatoren in der Reihenfolge ihrer Priorität angewandt (vom höchsten zum niedrigsten Wert, wobei der niedrigste Wert 0 ist). Es gibt integrierte Regeln, die standardmäßig angewendet werden und nicht bearbeitet werden können. Sie können eine benutzerdefinierte Abklingregel hinzufügen und ihre Prioritätsreihenfolge festlegen.",
