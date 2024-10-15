@@ -5,7 +5,6 @@ import { adminQuery, createUnauthenticatedClient, executeInternalQuery, queryAsA
 import { downloadFile, streamConverter } from '../../src/database/file-storage';
 import { logApp } from '../../src/config/conf';
 import { AUTH_REQUIRED, FORBIDDEN_ACCESS } from '../../src/config/errors';
-import { getHttpClient, type GetHttpClient } from '../../src/utils/http-client';
 
 // Helper for test usage whit expect inside.
 // vitest cannot be an import of testQuery, so it must be a separate file.
@@ -17,6 +16,16 @@ import { getHttpClient, type GetHttpClient } from '../../src/utils/http-client';
  */
 export const queryAsAdminWithSuccess = async (request: { query: any, variables: any }) => {
   const requestResult = await queryAsAdmin({
+    query: request.query,
+    variables: request.variables,
+  });
+  expect(requestResult, `Something is wrong with this query: ${request.query}`).toBeDefined();
+  expect(requestResult.errors, `This errors should not be there: ${requestResult.errors}`).toBeUndefined();
+  return requestResult;
+};
+
+export const adminQueryWithSuccess = async (request: { query: any, variables: any }) => {
+  const requestResult = await adminQuery({
     query: request.query,
     variables: request.variables,
   });
@@ -78,28 +87,4 @@ export const requestFileFromStorageAsAdmin = async (storageId: string) => {
   const stream = await downloadFile(storageId);
   expect(stream, `No stream mean no file found in storage or error for ${storageId}`).not.toBeNull();
   return streamConverter(stream);
-};
-
-const buildOpenCTICustomTokenHttpClient = (token:string) => {
-  // note that baseURL is filled in executeInternalQuery
-  const httpClientOptions: GetHttpClient = {
-    baseURL: '',
-    responseType: 'json',
-    headers: {
-      Authorization: `Bearer ${token}`
-    }
-  };
-  return getHttpClient(httpClientOptions);
-};
-
-/**
- * To be used when wanting to validate a token.
- * Please look at queryAsUser or queryAsAdmin first.
- * @param token
- * @param request
- */
-export const queryWithToken = async (token: string, request: { query: any, variables: any }) => {
-  const httpClient = buildOpenCTICustomTokenHttpClient(token) as AxiosInstance;
-  const response = await queryAsUser(httpClient, request);
-  return response;
 };

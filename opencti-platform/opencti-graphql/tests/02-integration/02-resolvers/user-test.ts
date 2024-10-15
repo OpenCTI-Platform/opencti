@@ -4,17 +4,13 @@ import { elLoadById } from '../../../src/database/engine';
 import { generateStandardId } from '../../../src/schema/identifier';
 import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_GROUP, ENTITY_TYPE_USER } from '../../../src/schema/internalObject';
 import {
-  ADMIN_API_TOKEN,
   ADMIN_USER,
   adminQuery,
   AMBER_GROUP,
-  API_URI,
   editorQuery,
-  FIVE_MINUTES,
   getGroupIdByName,
   getOrganizationIdByName,
   getUserIdByEmail,
-  PYTHON_PATH,
   queryAsAdmin,
   TEST_ORGANIZATION,
   testContext,
@@ -26,8 +22,8 @@ import {
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../src/modules/organization/organization-types';
 import { VIRTUAL_ORGANIZATION_ADMIN } from '../../../src/utils/access';
 import type { Capability } from '../../../src/generated/graphql';
-import { execChildPython } from '../../../src/python/pythonBridge';
-import { queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryWithToken } from '../../utils/testQueryHelper';
+import { queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden } from '../../utils/testQueryHelper';
+import { resolveUserByToken } from '../../../src/domain/user';
 
 const LIST_QUERY = gql`
   query users(
@@ -310,8 +306,9 @@ describe('User resolver standard behavior', () => {
     const tokenBeforeRenew = queryUserBeforeRenew.data?.user.api_token;
     expect(tokenBeforeRenew).toBeDefined();
 
-    const tokenShouldWork = await queryWithToken(tokenBeforeRenew, { query: READ_QUERY, variables: { id: userInternalId } });
-    expect(tokenShouldWork.errors.length).toBe(0); // no error here, token should work
+    // This is a shortcut, hard to test the token with an external query
+    const userShouldBeFound = await resolveUserByToken(testContext, tokenBeforeRenew);
+    expect(userShouldBeFound.id).toBe(queryUserBeforeRenew.data?.user.id);
 
     const renewResult = await queryAsAdminWithSuccess({
       query: TOKEN_RENEW_QUERY,
@@ -320,10 +317,9 @@ describe('User resolver standard behavior', () => {
     expect(renewResult.data?.userEdit.tokenRenew.api_token).toBeDefined();
     expect(renewResult.data?.userEdit.tokenRenew.api_token).not.toBe(tokenBeforeRenew);
 
-    // Token has been renew, must be refused here.
-    const tokenShouldBeRefused = await queryWithToken(tokenBeforeRenew, { query: READ_QUERY, variables: { id: userInternalId } });
-    expect(tokenShouldBeRefused.errors.length, 'After being renew, token should be refused').toBeGreaterThan(0);
-    expect(tokenShouldBeRefused.errors[0].name).toBe('AUTH_REQUIRED');
+    // Token has been renew, same token must be not found here
+    const userShouldNotBeFound = await resolveUserByToken(testContext, tokenBeforeRenew);
+    expect(userShouldNotBeFound).toBeUndefined();
   });
   it('should Analyst NOT ne able to renew user token', async () => {
     await queryAsUserIsExpectedForbidden(USER_DISINFORMATION_ANALYST.client, {

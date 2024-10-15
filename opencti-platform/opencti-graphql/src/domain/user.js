@@ -1379,7 +1379,7 @@ export const resolveUserById = async (context, id) => {
   return buildCompleteUser(context, client);
 };
 
-const resolveUserByToken = async (context, tokenValue) => {
+export const resolveUserByToken = async (context, tokenValue) => {
   const client = await elLoadBy(context, SYSTEM_USER, 'api_token', tokenValue, ENTITY_TYPE_USER);
   return buildCompleteUser(context, client);
 };
