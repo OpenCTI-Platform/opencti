@@ -8,36 +8,25 @@ import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
 import Dialog from '@mui/material/Dialog';
 import { WorkMessages } from '@components/data/connectors/ConnectorWorks';
+import IconButton from '@mui/material/IconButton';
+import { InfoOutlined } from '@mui/icons-material';
+import Tooltip from '@mui/material/Tooltip';
 import ItemCopy from '../../../../components/ItemCopy';
 import Transition from '../../../../components/Transition';
 import { useFormatter } from '../../../../components/i18n';
-import IconButton from '@mui/material/IconButton';
-import { DeleteOutlined, InfoOutlined } from '@mui/icons-material';
-import Tooltip from '@mui/material/Tooltip';
 import { truncate } from '../../../../utils/String';
 
 export type ParsedWorkMessage = {
-  isParsed: boolean,
-  level: 'Critical' | 'Warning' | 'Unclassified',
-  parsedError: {
-    category: string,
-    message: string,
-    entityId: string,
-    entityName: string,
-    entityType: string,
-  }
-  rawError: WorkMessages,
-};
-
-export type testMessage = {
   isParsed: true,
   level: 'Critical' | 'Warning' | 'Unclassified',
   parsedError: {
     category: string,
-    reason: string,
-    entityId: string,
-    entityName: string,
-    entityType: string,
+    message: string,
+    entity: {
+      id: string,
+      name: string,
+      type: string,
+    }
   }
   rawError: WorkMessages,
 } | {
@@ -64,15 +53,15 @@ const ConnectorWorksErrorLine: FunctionComponent<ConnectorWorksErrorLineProps> =
         <TableCell>{nsdt(error.rawError.timestamp)}</TableCell>
         <TableCell>
           {error.isParsed ? (
-            <a href={`https://docs.opencti.io/latest/deployment/troubleshooting/#${error.parsedError.category}`} target="_blank">{error.parsedError.category}</a>
+            <a href={`https://docs.opencti.io/latest/deployment/troubleshooting/#${error.parsedError.category}`} target="_blank" rel="noreferrer">{error.parsedError.category}</a>
           ) : (
-            <a href={'https://docs.opencti.io/latest/deployment/troubleshooting'} target="_blank">{t_i18n('Docs')}</a>
+            <a href={'https://docs.opencti.io/latest/deployment/troubleshooting'} target="_blank" rel="noreferrer">{t_i18n('Docs')}</a>
           )}
         </TableCell>
         <TableCell>{error.isParsed ? error.parsedError.message : error.rawError.message}</TableCell>
         <TableCell>
           {error.isParsed ? (
-            <a href={`/dashboard/id/${error.parsedError.entityId}`} target="_blank">{`[${error.parsedError.entityType}] ${error.parsedError.entityName}`}</a>
+            <a href={`/dashboard/id/${error.parsedError.entity.id}`} target="_blank" rel="noreferrer">{`[${error.parsedError.entity.type}] ${error.parsedError.entity.name}`}</a>
           ) : (
             truncate(error.rawError.source, 50)
           )}
