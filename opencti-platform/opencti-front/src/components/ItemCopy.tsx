@@ -65,7 +65,7 @@ const ItemCopy: FunctionComponent<ItemCopyProps> = ({
   const classes = useStyles();
 
   const classNameVariant = () => {
-    if (variant === 'inLine') return classes.containerInLine;
+    if (variant === 'inLine') return classes.containerInline;
     if (variant === 'wrap') return classes.containerWrap;
     return classes.container;
   };

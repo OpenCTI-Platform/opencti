@@ -11,17 +11,38 @@ import { WorkMessages } from '@components/data/connectors/ConnectorWorks';
 import ItemCopy from '../../../../components/ItemCopy';
 import Transition from '../../../../components/Transition';
 import { useFormatter } from '../../../../components/i18n';
+import IconButton from '@mui/material/IconButton';
+import { DeleteOutlined, InfoOutlined } from '@mui/icons-material';
+import Tooltip from '@mui/material/Tooltip';
+import { truncate } from '../../../../utils/String';
 
 export type ParsedWorkMessage = {
   isParsed: boolean,
-  tabsType: 'Critical' | 'Warning' | 'Other',
+  level: 'Critical' | 'Warning' | 'Unclassified',
   parsedError: {
-    timestamp: string,
-    type: string,
+    category: string,
+    message: string,
+    entityId: string,
+    entityName: string,
+    entityType: string,
+  }
+  rawError: WorkMessages,
+};
+
+export type testMessage = {
+  isParsed: true,
+  level: 'Critical' | 'Warning' | 'Unclassified',
+  parsedError: {
+    category: string,
     reason: string,
     entityId: string,
     entityName: string,
+    entityType: string,
   }
+  rawError: WorkMessages,
+} | {
+  isParsed: false,
+  level: 'Unclassified',
   rawError: WorkMessages,
 };
 
@@ -39,33 +60,36 @@ const ConnectorWorksErrorLine: FunctionComponent<ConnectorWorksErrorLineProps> =
 
   return (
     <>
-      {error.isParsed ? (
-        <TableRow key={error.parsedError.timestamp} hover onClick={handleToggleModalError}>
-          <TableCell>{nsdt(error.parsedError.timestamp)}</TableCell>
-          <TableCell>
-            <Button href={`https://docs.opencti.io/latest/deployment/troubleshooting/#${error.parsedError.type}`} target="_blank" onClick={(event) => event.stopPropagation()}>
-              {error.parsedError.type}
-            </Button>
-          </TableCell>
-          <TableCell>{error.parsedError.reason}</TableCell>
-          <TableCell>
-            <Button href={`/dashboard/id/${error.parsedError.entityId}`} target="_blank" onClick={(event) => event.stopPropagation()}>
-              {error.parsedError.entityName}
-            </Button>
-          </TableCell>
-        </TableRow>
-      ) : (
-        <TableRow key={error.parsedError.timestamp} hover onClick={handleToggleModalError}>
-          <TableCell>{nsdt(error.rawError.timestamp)}</TableCell>
-          <TableCell>
-            <Button href={'https://docs.opencti.io/latest/deployment/troubleshooting'} target="_blank" onClick={(event) => event.stopPropagation()}>
-              {t_i18n('Docs')}
-            </Button>
-          </TableCell>
-          <TableCell>{error.rawError.message}</TableCell>
-          <TableCell>{error.rawError.source}</TableCell>
-        </TableRow>
-      )}
+      <TableRow key={error.rawError.timestamp}>
+        <TableCell>{nsdt(error.rawError.timestamp)}</TableCell>
+        <TableCell>
+          {error.isParsed ? (
+            <a href={`https://docs.opencti.io/latest/deployment/troubleshooting/#${error.parsedError.category}`} target="_blank">{error.parsedError.category}</a>
+          ) : (
+            <a href={'https://docs.opencti.io/latest/deployment/troubleshooting'} target="_blank">{t_i18n('Docs')}</a>
+          )}
+        </TableCell>
+        <TableCell>{error.isParsed ? error.parsedError.message : error.rawError.message}</TableCell>
+        <TableCell>
+          {error.isParsed ? (
+            <a href={`/dashboard/id/${error.parsedError.entityId}`} target="_blank">{`[${error.parsedError.entityType}] ${error.parsedError.entityName}`}</a>
+          ) : (
+            truncate(error.rawError.source, 50)
+          )}
+        </TableCell>
+        <TableCell>
+          <Tooltip title={t_i18n('Details')}>
+            <IconButton
+              onClick={handleToggleModalError}
+              aria-haspopup="true"
+              color="primary"
+            >
+              <InfoOutlined />
+            </IconButton>
+          </Tooltip>
+        </TableCell>
+      </TableRow>
+
       <Dialog
         PaperProps={{ elevation: 1 }}
         open={openModalErrorDetails}
@@ -75,9 +99,9 @@ const ConnectorWorksErrorLine: FunctionComponent<ConnectorWorksErrorLineProps> =
         <DialogTitle>Error</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            <pre><ItemCopy content={error.rawError.timestamp} /></pre>
-            <pre><ItemCopy content={error.rawError.message} variant={'wrap'} /></pre>
-            <pre><ItemCopy content={error.rawError.source} variant={'wrap'} /></pre>
+            <pre><ItemCopy content={error.rawError.timestamp ?? '-'} /></pre>
+            <pre><ItemCopy content={error.rawError.message ?? '-'} variant={'wrap'} /></pre>
+            <pre><ItemCopy content={error.rawError.source ?? '-'} variant={'wrap'} /></pre>
           </DialogContentText>
         </DialogContent>
         <DialogActions>
