@@ -4,9 +4,9 @@ import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import { buildFiltersAndOptionsForWidgets } from '../../../../utils/filters/filtersUtils';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
-import WidgetLoader from '../../../../components/dashboard/WidgetLoader';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetPolarArea from '../../../../components/dashboard/WidgetPolarArea';
+import Loader, { LoaderVariant } from '../../../../components/Loader';
 
 const stixRelationshipsPolarAreasDistributionQuery = graphql`
   query StixRelationshipsPolarAreaDistributionQuery(
@@ -157,7 +157,7 @@ const StixRelationshipsPolarArea = ({
           if (props) {
             return <WidgetNoData />;
           }
-          return <WidgetLoader />;
+          return <Loader variant={LoaderVariant.inElement} />;
         }}
       />
     );

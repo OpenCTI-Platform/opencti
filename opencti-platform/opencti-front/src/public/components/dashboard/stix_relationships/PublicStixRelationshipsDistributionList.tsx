@@ -6,10 +6,10 @@ import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import type { PublicWidgetContainerProps } from '../PublicWidgetContainerProps';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
-import WidgetLoader from '../../../../components/dashboard/WidgetLoader';
 import { PublicStixRelationshipsDistributionListQuery } from './__generated__/PublicStixRelationshipsDistributionListQuery.graphql';
 import type { PublicManifestWidget } from '../PublicManifest';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
+import Loader, { LoaderVariant } from '../../../../components/Loader';
 
 const publicStixRelationshipsDistributionListQuery = graphql`
   query PublicStixRelationshipsDistributionListQuery(
@@ -112,14 +112,14 @@ const PublicStixRelationshipsDistributionList = ({
       variant="inLine"
     >
       {queryRef ? (
-        <React.Suspense fallback={<WidgetLoader />}>
+        <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
           <PublicStixRelationshipsDistributionListComponent
             queryRef={queryRef}
             dataSelection={dataSelection}
           />
         </React.Suspense>
       ) : (
-        <WidgetLoader />
+        <Loader variant={LoaderVariant.inElement} />
       )}
     </WidgetContainer>
   );

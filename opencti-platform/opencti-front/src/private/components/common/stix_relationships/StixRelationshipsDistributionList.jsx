@@ -6,9 +6,9 @@ import { getMainRepresentative, isFieldForIdentifier } from '../../../../utils/d
 import useGranted, { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
 import { buildFiltersAndOptionsForWidgets } from '../../../../utils/filters/filtersUtils';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
-import WidgetLoader from '../../../../components/dashboard/WidgetLoader';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetDistributionList from '../../../../components/dashboard/WidgetDistributionList';
+import Loader, { LoaderVariant } from '../../../../components/Loader';
 
 const stixRelationshipsDistributionListDistributionQuery = graphql`
   query StixRelationshipsDistributionListDistributionQuery(
@@ -166,7 +166,7 @@ const StixRelationshipsDistributionList = ({
           if (props) {
             return <WidgetNoData />;
           }
-          return <WidgetLoader />;
+          return <Loader variant={LoaderVariant.inElement} />;
         }}
       />
     );

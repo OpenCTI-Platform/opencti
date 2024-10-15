@@ -5,10 +5,10 @@ import type { PublicWidgetContainerProps } from '../PublicWidgetContainerProps';
 import { useFormatter } from '../../../../components/i18n';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
-import WidgetLoader from '../../../../components/dashboard/WidgetLoader';
 import { PublicStixCoreObjectsRadarQuery } from './__generated__/PublicStixCoreObjectsRadarQuery.graphql';
 import WidgetRadar from '../../../../components/dashboard/WidgetRadar';
 import type { PublicManifestWidget } from '../PublicManifest';
+import Loader, { LoaderVariant } from '../../../../components/Loader';
 
 const publicStixCoreObjectsRadarQuery = graphql`
   query PublicStixCoreObjectsRadarQuery(
@@ -125,14 +125,14 @@ const PublicStixCoreObjectsRadar = ({
       variant="inLine"
     >
       {queryRef ? (
-        <React.Suspense fallback={<WidgetLoader />}>
+        <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
           <PublicStixCoreObjectsRadarComponent
             queryRef={queryRef}
             dataSelection={dataSelection}
           />
         </React.Suspense>
       ) : (
-        <WidgetLoader />
+        <Loader variant={LoaderVariant.inElement} />
       )}
     </WidgetContainer>
   );

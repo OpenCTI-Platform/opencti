@@ -4,9 +4,9 @@ import * as PropTypes from 'prop-types';
 import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
-import WidgetLoader from '../../../../components/dashboard/WidgetLoader';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetDonut from '../../../../components/dashboard/WidgetDonut';
+import Loader, { LoaderVariant } from '../../../../components/Loader';
 
 const stixCoreObjectsDonutDistributionQuery = graphql`
   query StixCoreObjectsDonutDistributionQuery(
@@ -136,7 +136,7 @@ const StixCoreObjectsDonut = ({
           if (props) {
             return <WidgetNoData />;
           }
-          return <WidgetLoader />;
+          return <Loader variant={LoaderVariant.inElement} />;
         }}
       />
     );

@@ -5,9 +5,9 @@ import { useFormatter } from '../../../../components/i18n';
 import { monthsAgo, now } from '../../../../utils/Time';
 import { removeEntityTypeAllFromFilterGroup } from '../../../../utils/filters/filtersUtils';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
-import WidgetLoader from '../../../../components/dashboard/WidgetLoader';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetMultiHeatMap from '../../../../components/dashboard/WidgetMultiHeatMap';
+import Loader, { LoaderVariant } from '../../../../components/Loader';
 
 const stixCoreObjectsMultiHeatMapTimeSeriesQuery = graphql`
   query StixCoreObjectsMultiHeatMapTimeSeriesQuery(
@@ -94,7 +94,7 @@ const StixCoreObjectsMultiHeatMap = ({
           if (props) {
             return <WidgetNoData />;
           }
-          return <WidgetLoader />;
+          return <Loader variant={LoaderVariant.inElement} />;
         }}
       />
     );

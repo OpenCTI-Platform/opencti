@@ -6,9 +6,9 @@ import type { PublicWidgetContainerProps } from '../PublicWidgetContainerProps';
 import { useFormatter } from '../../../../components/i18n';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
-import WidgetLoader from '../../../../components/dashboard/WidgetLoader';
 import { PublicStixRelationshipsPolarAreaQuery } from './__generated__/PublicStixRelationshipsPolarAreaQuery.graphql';
 import WidgetPolarArea from '../../../../components/dashboard/WidgetPolarArea';
+import Loader, { LoaderVariant } from '../../../../components/Loader';
 
 const publicStixRelationshipsPolarAreaQuery = graphql`
   query PublicStixRelationshipsPolarAreaQuery(
@@ -125,14 +125,14 @@ const PublicStixRelationshipsPolarArea = ({
       variant="inLine"
     >
       {queryRef ? (
-        <React.Suspense fallback={<WidgetLoader />}>
+        <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
           <PublicStixRelationshipsPolarAreaComponent
             queryRef={queryRef}
             dataSelection={dataSelection}
           />
         </React.Suspense>
       ) : (
-        <WidgetLoader />
+        <Loader variant={LoaderVariant.inElement} />
       )}
     </WidgetContainer>
   );

@@ -4,10 +4,10 @@ import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import { dayAgo } from '../../../../utils/Time';
 import { buildFiltersAndOptionsForWidgets } from '../../../../utils/filters/filtersUtils';
-import WidgetLoader from '../../../../components/dashboard/WidgetLoader';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetNumber from '../../../../components/dashboard/WidgetNumber';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
+import Loader, { LoaderVariant } from '../../../../components/Loader';
 
 const stixCoreObjectsNumberNumberQuery = graphql`
   query StixCoreObjectsNumberNumberSeriesQuery(
@@ -69,7 +69,7 @@ const StixCoreObjectsNumber = ({
           if (props) {
             return <WidgetNoData />;
           }
-          return <WidgetLoader />;
+          return <Loader variant={LoaderVariant.inElement} />;
         }}
       />
     );

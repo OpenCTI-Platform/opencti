@@ -5,10 +5,10 @@ import type { PublicWidgetContainerProps } from '../PublicWidgetContainerProps';
 import { useFormatter } from '../../../../components/i18n';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
-import WidgetLoader from '../../../../components/dashboard/WidgetLoader';
 import { PublicStixCoreObjectsDonutQuery } from './__generated__/PublicStixCoreObjectsDonutQuery.graphql';
 import WidgetDonut from '../../../../components/dashboard/WidgetDonut';
 import type { PublicManifestWidget } from '../PublicManifest';
+import Loader, { LoaderVariant } from '../../../../components/Loader';
 
 const publicStixCoreObjectsDonutQuery = graphql`
   query PublicStixCoreObjectsDonutQuery(
@@ -124,14 +124,14 @@ const PublicStixCoreObjectsDonut = ({
       variant="inLine"
     >
       {queryRef ? (
-        <React.Suspense fallback={<WidgetLoader />}>
+        <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
           <PublicStixCoreObjectsDonutComponent
             queryRef={queryRef}
             dataSelection={dataSelection}
           />
         </React.Suspense>
       ) : (
-        <WidgetLoader />
+        <Loader variant={LoaderVariant.inElement} />
       )}
     </WidgetContainer>
   );

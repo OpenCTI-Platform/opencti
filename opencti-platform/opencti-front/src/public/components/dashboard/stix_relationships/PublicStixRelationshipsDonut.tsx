@@ -7,8 +7,8 @@ import type { PublicWidgetContainerProps } from '../PublicWidgetContainerProps';
 import { useFormatter } from '../../../../components/i18n';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
-import WidgetLoader from '../../../../components/dashboard/WidgetLoader';
 import { PublicStixRelationshipsDonutQuery } from './__generated__/PublicStixRelationshipsDonutQuery.graphql';
+import Loader, { LoaderVariant } from '../../../../components/Loader';
 
 const publicStixRelationshipsDonutQuery = graphql`
   query PublicStixRelationshipsDonutQuery(
@@ -124,14 +124,14 @@ const PublicStixRelationshipsDonut = ({
       variant="inLine"
     >
       {queryRef ? (
-        <React.Suspense fallback={<WidgetLoader />}>
+        <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
           <PublicStixRelationshipsDonutComponent
             queryRef={queryRef}
             dataSelection={dataSelection}
           />
         </React.Suspense>
       ) : (
-        <WidgetLoader />
+        <Loader variant={LoaderVariant.inElement} />
       )}
     </WidgetContainer>
   );

@@ -5,11 +5,11 @@ import type { PublicWidgetContainerProps } from '../PublicWidgetContainerProps';
 import { useFormatter } from '../../../../components/i18n';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
-import WidgetLoader from '../../../../components/dashboard/WidgetLoader';
 import { PublicStixCoreObjectsMultiHeatMapQuery } from './__generated__/PublicStixCoreObjectsMultiHeatMapQuery.graphql';
 import WidgetMultiHeatMap from '../../../../components/dashboard/WidgetMultiHeatMap';
 import type { PublicManifestWidget } from '../PublicManifest';
 import { monthsAgo, now } from '../../../../utils/Time';
+import Loader, { LoaderVariant } from '../../../../components/Loader';
 
 const publicStixCoreObjectsMultiHeatMapQuery = graphql`
   query PublicStixCoreObjectsMultiHeatMapQuery(
@@ -101,7 +101,7 @@ const PublicStixCoreObjectsMultiHeatMap = ({
       variant="inLine"
     >
       {queryRef ? (
-        <React.Suspense fallback={<WidgetLoader />}>
+        <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
           <PublicStixCoreObjectsMultiHeatMapComponent
             queryRef={queryRef}
             parameters={parameters}
@@ -109,7 +109,7 @@ const PublicStixCoreObjectsMultiHeatMap = ({
           />
         </React.Suspense>
       ) : (
-        <WidgetLoader />
+        <Loader variant={LoaderVariant.inElement} />
       )}
     </WidgetContainer>
   );
