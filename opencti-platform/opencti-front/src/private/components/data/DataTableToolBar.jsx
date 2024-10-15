@@ -3,6 +3,7 @@ import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
 import { Link } from 'react-router-dom';
 import { graphql } from 'react-relay';
+import useVocabularyCategory, { vocabCategoriesQuery } from '../../../utils/hooks/useVocabularyCategory';
 import withTheme from '@mui/styles/withTheme';
 import withStyles from '@mui/styles/withStyles';
 import Toolbar from '@mui/material/Toolbar';
@@ -59,6 +60,7 @@ import Grid from '@mui/material/Grid';
 import Avatar from '@mui/material/Avatar';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
+import { vocabularySearchQuery } from '@components/settings/VocabularyQuery';
 import PromoteDrawer from './drawers/PromoteDrawer';
 import TasksFilterValueContainer from '../../../components/TasksFilterValueContainer';
 import inject18n from '../../../components/i18n';
@@ -87,6 +89,9 @@ import { findFilterFromKey, removeIdAndIncorrectKeysFromFilterGroupObject, seria
 import { getMainRepresentative } from '../../../utils/defaultRepresentatives';
 import { isNotEmptyField } from '../../../utils/utils';
 import EETooltip from '../common/entreprise_edition/EETooltip';
+import { map, pathOr, pipe, union } from "ramda";
+import { objectParticipantFieldMembersSearchQuery } from "@components/common/form/ObjectParticipantField"
+import { objectAssigneeFieldMembersSearchQuery } from "@components/common/form/ObjectAssigneeField";
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -194,6 +199,11 @@ const notUpdatableTypes = ['Label', 'Vocabulary', 'Case-Template', 'Task', 'Dele
 const notScannableTypes = ['Label', 'Vocabulary', 'Case-Template', 'Task', 'DeleteOperation', 'InternalFile', 'PublicDashboard', 'Workspace'];
 const notEnrichableTypes = ['Label', 'Vocabulary', 'Case-Template', 'Task', 'DeleteOperation', 'InternalFile', 'PublicDashboard', 'Workspace'];
 const typesWithScore = ['Stix-Cyber-Observable', 'Indicator'];
+const typesWithSeverity = ['Case-Incident', 'Case-Rft', 'Case-Rfi'];
+const typesWithPriority = ['CaseIncident', 'Case-Rft', 'Case-Rfi'];
+const typesWithAssignee = ['Case-Incident', 'Case-Rft', 'Case-Rfi'];
+const typesWithParticipant = ['Case-Incident', 'Case-Rft', 'Case-Rfi'];
+
 const typesWithoutStatus = ['Stix-Core-Object', 'Stix-Domain-Object', 'Stix-Cyber-Observable', 'Artifact', 'ExternalReference'];
 const notShareableTypes = ['Label', 'Vocabulary', 'Case-Template', 'DeleteOperation', 'InternalFile', 'PublicDashboard', 'Workspace'];
 
@@ -302,7 +312,11 @@ class DataTableToolBar extends Component {
       enrichSelected: [],
       organizationInput: '',
       shareOrganizations: [],
+      selectedCategory: '',
+      vocabularies: [],
       navOpen: localStorage.getItem('navOpen') === 'true',
+      assignees: [],
+      participants: [],
     };
   }
 
@@ -460,6 +474,8 @@ class DataTableToolBar extends Component {
         || value === 'object-label'
         || value === 'created-by'
         || value === 'external-reference'
+        || value === 'object-assignee'
+        || value === 'object-participant'
       ) {
         actionsInputs[i] = R.assoc(
           'fieldType',
@@ -725,6 +741,12 @@ class DataTableToolBar extends Component {
       && entityTypeFilterValues.every((filterType) => typesWithScore.includes(filterType));
     const typesHaveStatus = selectedTypes.length === 1 // the proposed statuses values depends on the entity type, so we should have only one type selected
       && !typesWithoutStatus.includes(selectedTypes[0]);
+    const typesHaveSeverity = selectedTypes.every((selectedType) => typesWithSeverity.includes(selectedType))
+      && entityTypeFilterValues.every((filterType) => typesWithSeverity.includes(filterType));
+    const typeHaveAssignee = selectedTypes.every((selectedType) => typesWithAssignee.includes(selectedType))
+    && entityTypeFilterValues.every((filterType) => typesWithAssignee.includes(filterType));
+    const typeHaveParticipant = selectedTypes.every((selectedType) => typesWithParticipant.includes(selectedType))
+    && entityTypeFilterValues.every((filterType) => typesWithParticipant.includes(filterType));
     let options = [];
     if (actionsInputs[i]?.type === 'ADD') {
       options = [
@@ -746,6 +768,15 @@ class DataTableToolBar extends Component {
       }
       if (typesHaveStatus) {
         options.push({ label: t('Status'), value: 'x_opencti_workflow_id' });
+      }
+      if (typesHaveSeverity) {
+        options.push({ label: t('Severity'), value: 'case_severity_ov' });
+      }
+      if (typeHaveAssignee) {
+        options.push({ label: t('Assignee'), value: 'object-assignee' });
+      }
+      if (typeHaveParticipant) {
+        options.push({ label: t('Participant'), value: 'object-participant' });
       }
     } else if (actionsInputs[i]?.type === 'REMOVE') {
       options = [
@@ -978,10 +1009,98 @@ class DataTableToolBar extends Component {
       });
   }
 
+  searchVocabularies(i, event, newValue) {
+    if (!event) return;
+
+    const { actionsInputs } = this.state;
+    actionsInputs[i] = R.assoc(
+      'inputValue',
+      newValue && newValue.length > 0 ? newValue : '',
+      actionsInputs[i],
+    );
+    this.setState({ actionsInputs });
+
+    fetchQuery(vocabularySearchQuery, {
+      category: this.state.selectedCategory,
+      search: newValue && newValue.length > 0 ? newValue : '',
+    })
+      .toPromise()
+      .then((data) => {
+        const vocabularies = (data?.vocabularies?.edges ?? [])
+          .map((n) => ({
+            label: n.node.name,
+            value: n.node.id,
+          }))
+          .sort((a, b) => a.label.localeCompare(b.label));
+
+        this.setState({
+          vocabularies: R.union(
+            this.state.vocabularies,
+            vocabularies,
+          ),
+        });
+      });
+  }
+
+  searchParticipants(i, event, newValue) {
+    if (!event) return;
+    const { actionsInputs } = this.state;
+    actionsInputs[i] = R.assoc(
+      'inputValue',
+      newValue && newValue.length > 0 ? newValue : '',
+      actionsInputs[i],
+    );
+    this.setState({ actionsInputs });
+    fetchQuery(objectParticipantFieldMembersSearchQuery, {
+      search: newValue && newValue.length > 0 ? newValue : '',
+      entityTypes: ['User'],
+      first: 10,
+    })
+      .toPromise()
+      .then((data) => {
+        const participants = (data.members?.edges ?? []).map((n) => ({
+          label: n.node.name,
+          value: n.node.id,
+          type: n.node.entity_type,
+        })).sort((a, b) => a.label.localeCompare(b.label));
+        this.setState({ participants: union(this.setState.participants, participants) });
+      })
+  }
+
+  searchAssignees(i, event, newValue) {
+    if (!event) return;
+    const { actionsInputs } = this.state;
+    actionsInputs[i] = R.assoc(
+      'inputValue',
+      newValue && newValue.length > 0 ? newValue : '',
+      actionsInputs[i],
+    );
+    this.setState({ actionsInputs });
+    fetchQuery(objectAssigneeFieldMembersSearchQuery, {
+      search: newValue && newValue.length > 0 ? newValue : '',
+      entityTypes: ['User'],
+      first: 10,
+    })
+      .toPromise()
+      .then((data) => {
+        const assignees = pipe(
+          pathOr([], ['members', 'edges']),
+          map((n) => ({
+            label: n.node.name,
+            value: n.node.id,
+            type: n.node.entity_type,
+            entity: n.node,
+          })),
+        )(data);
+        this.setState({ assignees: union(this.state.assignees, assignees) });
+      });
+  }
+
   renderValuesOptions(i, selectedTypes) {
     const { t, classes } = this.props;
     const { actionsInputs } = this.state;
     const disabled = R.isNil(actionsInputs[i]?.field) || R.isEmpty(actionsInputs[i]?.field);
+
     switch (actionsInputs[i]?.field) {
       case 'container-object':
         return (
@@ -1237,6 +1356,124 @@ class DataTableToolBar extends Component {
               </li>
             )}
           />
+        );
+      case 'object-assignee':
+        return (
+          <Autocomplete
+            disabled={disabled}
+            size="small"
+            fullWidth={true}
+            selectOnFocus={true}
+            autoHighlight={true}
+            getOptionLabel={(option) => (option.label ? option.label : '')}
+            value={actionsInputs[i]?.values || []}
+            isOptionEqualToValue={(option, value) => option.value === value.value}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                variant="standard"
+                label={t('Values')}
+                fullWidth={true}
+                onFocus={this.searchAssignees.bind(this, i)}
+                style={{ marginTop: 3 }}
+              />
+            )}
+            noOptionsText={t('No available options')}
+            options={this.state.assignees}
+            onInputChange={this.searchAssignees.bind(this, i)}
+            inputValue={actionsInputs[i]?.inputValue || ''}
+            onChange={this.handleChangeActionInputValues.bind(this, i)}
+            renderOption={(props, option) => (
+              <li {...props}>
+                <div className={classes.icon}>
+                  <ItemIcon type={option.type}/>
+                </div>
+                <div className={classes.text}>{option.label}</div>
+              </li>
+            )}
+          />
+        );
+      case 'object-participant':
+        return (
+          <Autocomplete
+            disabled={disabled}
+            size="small"
+            fullWidth={true}
+            selectOnFocus={true}
+            autoHighlight={true}
+            getOptionLabel={(option) => (option.label ? option.label : '')}
+            value={actionsInputs[i]?.values || []}
+            isOptionEqualToValue={(option, value) => option.value === value.value}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                variant="standard"
+                label={t('Values')}
+                fullWidth={true}
+                onFocus={this.searchParticipants.bind(this, i)}
+                style={{ marginTop: 3 }}
+              />
+            )}
+            noOptionsText={t('No available options')}
+            options={this.state.participants}
+            onInputChange={this.searchParticipants.bind(this, i)}
+            inputValue={actionsInputs[i]?.inputValue || ''}
+            onChange={this.handleChangeActionInputValues.bind(this, i)}
+            renderOption={(props, option) => (
+              <li {...props}>
+                <div className={classes.icon}>
+                  <ItemIcon type={option.type}/>
+                </div>
+                <div className={classes.text}>{option.label}</div>
+              </li>
+            )}
+          />
+        );
+      case 'case_severity_ov':
+      case 'case_priority_ov':
+        return (
+          <>
+            <select
+              value={this.state.selectedCategory}
+              onChange={(e) => this.setState({ selectedCategory: e.target.value })}
+            >
+              {this.props.categories.map((cat) => (
+                <option key={cat.value} value={cat.value}>
+                  {cat.label}
+                </option>
+              ))}
+            </select>
+            <Autocomplete
+              disabled={disabled}
+              size="small"
+              fullWidth
+              selectOnFocus
+              autoHighlight
+              getOptionLabel={(option) => option.label || ''}
+              value={actionsInputs[i]?.values || []}
+              multiple={false}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  variant="standard"
+                  label={t('Select Value')}
+                  fullWidth
+                  onFocus={(event) => this.searchVocabularies(i, event, actionsInputs[i]?.inputValue)}
+                  style={{ marginTop: 3 }}
+                />
+              )}
+              noOptionsText={t('No available options')}
+              options={this.state.vocabularies}
+              onInputChange={(event, newValue) => this.searchVocabularies(i, event, newValue)}
+              inputValue={actionsInputs[i]?.inputValue || ''}
+              onChange={(event, value) => this.handleChangeActionInputValues(i, null, value)}
+              renderOption={(props, option) => (
+                <li {...props}>
+                  <div>{option.label}</div>
+                </li>
+              )}
+            />
+          </>
         );
       case 'x_opencti_score':
       case 'confidence':
