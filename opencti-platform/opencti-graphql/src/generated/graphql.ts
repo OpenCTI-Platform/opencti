@@ -12803,7 +12803,7 @@ export type MeUser = BasicObject & InternalObject & {
   default_marking?: Maybe<Array<DefaultMarking>>;
   default_time_field?: Maybe<Scalars['String']['output']>;
   description?: Maybe<Scalars['String']['output']>;
-  draft_context?: Maybe<Scalars['String']['output']>;
+  draftContext?: Maybe<DraftWorkspace>;
   effective_confidence_level?: Maybe<EffectiveConfidenceLevel>;
   entity_type: Scalars['String']['output'];
   external?: Maybe<Scalars['Boolean']['output']>;
@@ -35830,7 +35830,7 @@ export type MeUserResolvers<ContextType = any, ParentType extends ResolversParen
   default_marking?: Resolver<Maybe<Array<ResolversTypes['DefaultMarking']>>, ParentType, ContextType>;
   default_time_field?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  draft_context?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  draftContext?: Resolver<Maybe<ResolversTypes['DraftWorkspace']>, ParentType, ContextType>;
   effective_confidence_level?: Resolver<Maybe<ResolversTypes['EffectiveConfidenceLevel']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   external?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;

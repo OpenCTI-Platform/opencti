@@ -14,7 +14,10 @@ export const draftContextBannerMutation = graphql`
     ) {
         meEdit(input: $input) {
             name
-            draft_context
+            draftContext {
+              id
+              name
+            }
         }
     }
 `;
@@ -24,20 +27,24 @@ const DraftContextBanner = () => {
   const [commit] = useApiMutation(draftContextBannerMutation);
   const { me } = useAuth();
   const navigate = useNavigate();
-  const currentDraftContext = me.draft_context ?? '';
+  const currentDraftContext = me.draftContext ? { label: me.draftContext.name, value: me.draftContext.id } : {};
+
+  const initialValues = { draft_context: currentDraftContext };
 
   const handleSubmitField = (
     name: string,
     value: string | null,
   ) => {
-    commit({
-      variables: {
-        input: { key: name, value, operation: 'replace' },
-      },
-      onCompleted: () => {
-        navigate(`/dashboard/drafts/${value}`);
-      },
-    });
+    if (value) {
+      commit({
+        variables: {
+          input: { key: name, value, operation: 'replace' },
+        },
+        onCompleted: () => {
+          navigate(`/dashboard/drafts/${value}`);
+        },
+      });
+    }
   };
 
   const handleSwitchToLive = () => {
@@ -55,7 +62,8 @@ const DraftContextBanner = () => {
     <div style={{ padding: '0 12px' }}>
       <Formik
         onSubmit={() => {}}
-        initialValues={{ draft_context: currentDraftContext }}
+        enableReinitialize={true}
+        initialValues={initialValues}
       >
         <Form style={{ display: 'flex', width: '100%', alignItems: 'center' }}>
           <div style={{ marginRight: '10px', minWidth: 160 }}>
