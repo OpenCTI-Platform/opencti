@@ -1,4 +1,4 @@
-import { Template, TemplateWidget } from '../template';
+import type { Template, TemplateWidget } from '../template';
 
 // text //
 export const templateText: Template = {
