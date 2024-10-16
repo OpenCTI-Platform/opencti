@@ -46,6 +46,10 @@ const READ_QUERY = gql`
             name
             description
             toStix
+            x_opencti_observables_values {
+              type
+              value
+            }
             decay_base_score
             decay_base_score_date
             decay_applied_rule {
@@ -82,6 +86,10 @@ const CREATE_QUERY = gql`
             id
             name
             description
+            x_opencti_observables_values {
+              type
+              value
+            }
             observables {
                 edges {
                     node {
@@ -119,6 +127,10 @@ describe('Indicator resolver standard behavior', () => {
     expect(indicator.data?.indicatorAdd).toBeDefined();
     expect(indicator.data?.indicatorAdd.name).toEqual(indicatorForTestName);
     expect(indicator.data?.indicatorAdd.observables.edges.length).toEqual(0);
+    expect(indicator.data?.indicatorAdd.x_opencti_observables_values).toBeDefined();
+    const observablesValues = indicator.data?.indicatorAdd.x_opencti_observables_values;
+    expect(observablesValues?.[0].type).toEqual('Domain-Name');
+    expect(observablesValues?.[0].value).toEqual('www.payah.rest');
     firstIndicatorInternalId = indicator.data?.indicatorAdd.id;
   });
   it('should indicator with same name be created also (no upsert) (see issues/5819)', async () => {
@@ -138,6 +150,10 @@ describe('Indicator resolver standard behavior', () => {
     expect(indicator.data?.indicatorAdd).toBeDefined();
     expect(indicator.data?.indicatorAdd.name).toEqual(indicatorForTestName);
     expect(indicator.data?.indicatorAdd.observables.edges.length).toEqual(0);
+    expect(indicator.data?.indicatorAdd.x_opencti_observables_values).toBeDefined();
+    const observablesValues = indicator.data?.indicatorAdd.x_opencti_observables_values;
+    expect(observablesValues?.[0].type).toEqual('Domain-Name');
+    expect(observablesValues?.[0].value).toEqual('www.test2.rest');
     expect(indicator.data?.indicatorAdd.id, 'A new indicator should be created, if not it is an upsert and it is a bug').not.toEqual(firstIndicatorInternalId);
     secondIndicatorInternalId = indicator.data?.indicatorAdd.id;
   });
@@ -160,6 +176,10 @@ describe('Indicator resolver standard behavior', () => {
     expect(indicator.data?.indicatorAdd).toBeDefined();
     expect(indicator.data?.indicatorAdd.name).toEqual(`New name for ${indicatorForTestName}`);
     expect(indicator.data?.indicatorAdd.observables.edges.length).toEqual(0);
+    expect(indicator.data?.indicatorAdd.x_opencti_observables_values).toBeDefined();
+    const observablesValues = indicator.data?.indicatorAdd.x_opencti_observables_values;
+    expect(observablesValues?.[0].type).toEqual('Domain-Name');
+    expect(observablesValues?.[0].value).toEqual('www.payah.rest');
     expect(indicator.data?.indicatorAdd.id).toEqual(firstIndicatorInternalId);
     expect(indicator.data?.indicatorAdd.id).toEqual(firstIndicatorInternalId);
   });
@@ -217,6 +237,29 @@ describe('Indicator resolver standard behavior', () => {
       variables: { id: firstIndicatorInternalId, input: { key: 'name', value: ['Indicator - test'] } },
     });
     expect(queryResult.data?.indicatorFieldPatch.name).toEqual('Indicator - test');
+  });
+  // skipped until sync tests fixed
+  it.skip('should update indicator observables values on pattern edit', async () => {
+    const UPDATE_QUERY = gql`
+      mutation IndicatorFieldPatch($id: ID!, $input: [EditInput!]!) {
+        indicatorFieldPatch(id: $id, input: $input) {
+          id
+          name
+          x_opencti_observables_values {
+            type
+            value
+          }
+        }
+      }
+    `;
+    const queryResult = await queryAsAdminWithSuccess({
+      query: UPDATE_QUERY,
+      variables: { id: firstIndicatorInternalId, input: { key: 'pattern', value: ['[domain-name:value = \'www.payah.test\']'] } },
+    });
+    expect(queryResult.data?.indicatorFieldPatch.x_opencti_observables_values).toBeDefined();
+    const observablesValues = queryResult.data?.indicatorFieldPatch.x_opencti_observables_values;
+    expect(observablesValues?.[0].type).toEqual('Domain-Name');
+    expect(observablesValues?.[0].value).toEqual('www.payah.test');
   });
   it('should context patch indicator', async () => {
     const CONTEXT_PATCH_QUERY = gql`
