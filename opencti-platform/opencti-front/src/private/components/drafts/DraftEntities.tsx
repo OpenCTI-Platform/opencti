@@ -27,21 +27,24 @@ const DraftEntities = () => {
   const { t_i18n } = useFormatter();
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
+    me,
   } = useAuth();
   const [commitSwitchToDraft] = useApiMutation<DraftContextBannerMutation>(draftContextBannerMutation);
   useEffect(() => {
-    commitSwitchToDraft({
-      variables: {
-        input: [{ key: 'draft_context', value: [draftId] }],
-      },
-      onCompleted: () => {
-        MESSAGING$.notifySuccess(<span>{t_i18n('You are now in Draft Mode')}</span>);
-      },
-      onError: (error) => {
-        const { errors } = (error as unknown as RelayError).res;
-        MESSAGING$.notifyError(errors.at(0)?.message);
-      },
-    });
+    if (me.draft_context !== draftId) {
+      commitSwitchToDraft({
+        variables: {
+          input: [{ key: 'draft_context', value: [draftId] }],
+        },
+        onCompleted: () => {
+          MESSAGING$.notifySuccess(<span>{t_i18n('You are now in Draft Mode')}</span>);
+        },
+        onError: (error) => {
+          const { errors } = (error as unknown as RelayError).res;
+          MESSAGING$.notifyError(errors.at(0)?.message);
+        },
+      });
+    }
   }, [commitSwitchToDraft]);
   const {
     viewStorage,
