@@ -269,6 +269,11 @@ interface StoreCommonConnection<T extends BasicStoreCommon> {
   pageInfo: PageInfo;
 }
 
+interface ObservablesValuesType {
+  type: string;
+  value: string;
+}
+
 interface BasicStoreEntity extends BasicStoreCommon {
   id: string;
   name: string;
@@ -316,7 +321,6 @@ interface BasicStoreEntity extends BasicStoreCommon {
   source: string;
   severity: string;
   incident_type: string;
-
   x_opencti_location_type: string;
   x_opencti_reliability: string;
   x_opencti_organization_type: string;
@@ -329,6 +333,7 @@ interface BasicStoreEntity extends BasicStoreCommon {
   x_opencti_epss_score: number;
   x_opencti_epss_percentile: number;
   x_opencti_main_observable_type: string;
+  x_opencti_observables_values: Array<ObservablesValuesType>;
   x_opencti_lastname: string;
   x_opencti_firstname: string;
   x_opencti_inferences: Array<StoreRule> | undefined;
