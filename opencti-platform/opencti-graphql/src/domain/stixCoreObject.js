@@ -32,7 +32,7 @@ import { now } from '../utils/format';
 import { ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
 import { deleteFile, loadFile, getFileContent, storeFileConverter } from '../database/file-storage';
 import { findById as documentFindById, paginatedForPathWithEnrichment } from '../modules/internal/document/document-domain';
-import { elCount, elFindByIds, elUpdateElement } from '../database/engine';
+import {elCount, elFindByIds, elUpdateElement, inDraftContext} from '../database/engine';
 import { generateStandardId, getInstanceIds } from '../schema/identifier';
 import { askEntityExport, askListExport, exportTransformFilters } from './stix';
 import { isEmptyField, isNotEmptyField, READ_ENTITIES_INDICES, READ_INDEX_INFERRED_ENTITIES } from '../database/utils';
@@ -198,6 +198,7 @@ export const stixCoreObjectDelete = async (context, user, stixCoreObjectId) => {
 };
 
 export const askElementEnrichmentForConnector = async (context, user, enrichedId, connectorId) => {
+  const draftContext = inDraftContext(context, user);
   const connector = await storeLoadById(context, user, connectorId, ENTITY_TYPE_CONNECTOR);
   const element = await internalLoadById(context, user, enrichedId);
   if (!element) {
@@ -213,6 +214,7 @@ export const askElementEnrichmentForConnector = async (context, user, enrichedId
       event_type: CONNECTOR_INTERNAL_ENRICHMENT,
       entity_id: element.standard_id,
       entity_type: element.entity_type,
+      draft_id: draftContext ?? '',
     },
   };
   await pushToConnector(connector.internal_id, message);

@@ -798,6 +798,7 @@ const ME_USER_MODIFIABLE_ATTRIBUTES = [
   'submenu_show_icons',
   'submenu_auto_collapse',
   'monochrome_labels',
+  'workspace_context',
   'password',
 ];
 export const meEditField = async (context, user, userId, inputs, password = null) => {

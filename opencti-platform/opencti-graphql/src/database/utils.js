@@ -74,7 +74,7 @@ export const isInferredIndex = (index) => index.startsWith(INDEX_INFERRED_ENTITI
 export const DEPRECATED_INDICES = [
   INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS,
 ];
-export const INDEX_DRAFT = `${ES_INDEX_PREFIX}_draft`;
+export const INDEX_DRAFT = `${ES_INDEX_PREFIX}_draft_objects`;
 export const READ_INDEX_DRAFT = `${INDEX_DRAFT}*`;
 
 export const WRITE_PLATFORM_INDICES = [
