@@ -6,7 +6,7 @@ import { removeEntityTypeAllFromFilterGroup } from '../../../../utils/filters/fi
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetBookmarks from '../../../../components/dashboard/WidgetBookmarks';
-import Loader from '../../../../components/Loader';
+import Loader, { LoaderVariant } from '../../../../components/Loader';
 
 const stixDomainObjectBookmarksListQuery = graphql`
   query StixDomainObjectBookmarksListQuery($types: [String], $first: Int, $filters: FilterGroup) {
@@ -186,7 +186,7 @@ const StixDomainObjectBookmarksList = ({
           if (props) {
             return <WidgetNoData />;
           }
-          return <Loader />;
+          return <Loader variant={LoaderVariant.inElement} />;
         }}
       />
     );
