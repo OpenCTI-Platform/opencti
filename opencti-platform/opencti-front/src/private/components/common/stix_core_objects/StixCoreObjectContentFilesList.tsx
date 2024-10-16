@@ -4,9 +4,10 @@ import moment from 'moment/moment';
 import { DeleteOutlined } from '@mui/icons-material';
 import React, { useState } from 'react';
 import { FileOutline, FilePdfBox, LanguageHtml5, LanguageMarkdownOutline, NoteTextOutline } from 'mdi-material-ui';
-import { FileLineDeleteMutation } from '@components/common/files/FileLine';
+import { FileLineDeleteMutation as deleteMutation } from '@components/common/files/FileLine';
+import { FileLineDeleteMutation } from '@components/common/files/__generated__/FileLineDeleteMutation.graphql';
 import { useFormatter } from '../../../../components/i18n';
-import { commitMutation } from '../../../../relay/environment';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 const renderIcon = (mimeType: string) => {
   switch (mimeType) {
@@ -48,6 +49,8 @@ const StixCoreObjectContentFilesList = ({
   const { fld } = useFormatter();
   const [deleting, setDeleting] = useState<string | null>(null);
 
+  const [commitDelete] = useApiMutation<FileLineDeleteMutation>(deleteMutation);
+
   const submitDelete = (
     fileName: string,
     event: React.MouseEvent<HTMLButtonElement, MouseEvent>,
@@ -56,19 +59,12 @@ const StixCoreObjectContentFilesList = ({
     event.preventDefault();
     setDeleting(fileName);
 
-    // TODO use hook
-    commitMutation({
-      mutation: FileLineDeleteMutation,
+    commitDelete({
       variables: { fileName },
       onCompleted: () => {
         setDeleting(null);
         onFileChange(fileName, true);
       },
-      updater: undefined,
-      onError: undefined,
-      optimisticUpdater: undefined,
-      optimisticResponse: undefined,
-      setSubmitting: undefined,
     });
   };
 
