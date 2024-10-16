@@ -108,7 +108,11 @@ const modifyAdminDraftContext = async (draftId: string) => {
     query: MODIFY_USER_DRAFT_WORKSPACE_QUERY,
     variables: { input: { key: 'draft_context', value: draftId } },
   });
-  expect(meUserModifyResult.data?.meEdit.draftContext.id).toEqual(draftId);
+  if (draftId) {
+    expect(meUserModifyResult.data?.meEdit.draftContext.id).toEqual(draftId);
+  } else {
+    expect(meUserModifyResult.data?.meEdit.draftContext).toBeNull();
+  }
 };
 
 describe('Drafts workspace resolver testing', () => {
