@@ -1385,9 +1385,26 @@ export const resolveUserByToken = async (context, tokenValue) => {
 };
 
 export const userRenewToken = async (context, user, userId) => {
+  const userData = await storeLoadById(context, user, userId, ENTITY_TYPE_USER);
+  if (!userData) {
+    throw FunctionalError(`Cannot renew token, ${userId} user cannot be found.`);
+  }
+
   const patch = { api_token: uuid() };
   await patchAttribute(context, user, userId, ENTITY_TYPE_USER, patch);
-  return storeLoadById(context, user, userId, ENTITY_TYPE_USER);
+  const result = storeLoadById(context, user, userId, ENTITY_TYPE_USER);
+
+  const actionEmail = ENABLED_DEMO_MODE ? REDACTED_USER.user_email : userData.user_email;
+  await publishUserAction({
+    user,
+    event_type: 'mutation',
+    event_scope: 'update',
+    event_access: 'administration',
+    message: `renew token of user \`${actionEmail}\``,
+    context_data: { id: userId, entity_type: ENTITY_TYPE_USER }
+  });
+
+  return result;
 };
 
 /**
