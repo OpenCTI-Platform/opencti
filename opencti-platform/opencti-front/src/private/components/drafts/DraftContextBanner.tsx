@@ -1,6 +1,6 @@
 import React from 'react';
 import { Form, Formik } from 'formik';
-import DraftField from '@components/drafts/DraftContextField';
+import DraftContextField from '@components/drafts/DraftContextField';
 import { graphql } from 'react-relay';
 import Button from '@mui/material/Button';
 import { useNavigate } from 'react-router-dom';
@@ -59,7 +59,7 @@ const DraftContextBanner = () => {
       >
         <Form style={{ display: 'flex', width: '100%', alignItems: 'center' }}>
           <div style={{ marginRight: '10px', minWidth: 160 }}>
-            <DraftField onChange={handleSubmitField}/>
+            <DraftContextField onChange={handleSubmitField}/>
           </div>
           <div>
             <Button

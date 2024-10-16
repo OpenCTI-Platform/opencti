@@ -1,22 +1,20 @@
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useState } from 'react';
 import { Option } from '@components/common/form/ReferenceField';
 import { Field } from 'formik';
-import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
-import { DraftContextFieldQuery } from '@components/drafts/__generated__/DraftContextFieldQuery.graphql';
-import Loader, { LoaderVariant } from '../../../components/Loader';
+import { graphql } from 'react-relay';
+import { DraftContextFieldQuery$data } from '@components/drafts/__generated__/DraftContextFieldQuery.graphql';
+import { fetchQuery } from '../../../relay/environment';
 import { useFormatter } from '../../../components/i18n';
 import AutocompleteField from '../../../components/AutocompleteField';
 import ItemIcon from '../../../components/ItemIcon';
-import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 
 interface DraftContextFieldProps {
   onChange: (name: string, value: string) => void;
-  queryRef: PreloadedQuery<DraftContextFieldQuery>;
 }
 
 const draftContextFieldQuery = graphql`
-    query DraftContextFieldQuery {
-        draftWorkspaces {
+    query DraftContextFieldQuery($search: String, $first: Int) {
+        draftWorkspaces(search: $search, first: $first) {
             edges {
                 node {
                     id
@@ -29,13 +27,26 @@ const draftContextFieldQuery = graphql`
 
 const DraftContextField: FunctionComponent<DraftContextFieldProps> = ({
   onChange,
-  queryRef,
 }) => {
   const { t_i18n } = useFormatter();
-  const { draftWorkspaces } = usePreloadedQuery<DraftContextFieldQuery>(
-    draftContextFieldQuery,
-    queryRef,
-  );
+
+  const [drafts, setDrafts] = useState<Option[]>([]);
+  const searchDrafts = (event: React.ChangeEvent<HTMLInputElement>) => {
+    fetchQuery(draftContextFieldQuery, {
+      search: (event && event.target && event.target.value) ?? '',
+      first: 10,
+    })
+      .toPromise()
+      .then((data) => {
+        const newDrafts = (
+          (data as DraftContextFieldQuery$data)?.draftWorkspaces?.edges ?? []
+        ).map((n) => ({
+          label: n.node.name,
+          value: n.node.id,
+        }));
+        setDrafts(newDrafts);
+      });
+  };
 
   return (
     <Field
@@ -48,11 +59,10 @@ const DraftContextField: FunctionComponent<DraftContextFieldProps> = ({
         variant: 'standard',
         label: t_i18n('Drafts'),
         fullWidth: true,
+        onFocus: searchDrafts,
       }}
-      options={(draftWorkspaces?.edges ?? []).map(({ node: { id, name } }) => ({
-        value: id,
-        label: name,
-      }))}
+      options={drafts}
+      onInputChange={searchDrafts}
       fullWidth={true}
       renderOption={(
         props: React.HTMLAttributes<HTMLLIElement>,
@@ -81,15 +91,4 @@ const DraftContextField: FunctionComponent<DraftContextFieldProps> = ({
   );
 };
 
-const DraftField: FunctionComponent<Omit<DraftContextFieldProps, 'queryRef'>> = (props) => {
-  const queryRef = useQueryLoading<DraftContextFieldQuery>(draftContextFieldQuery);
-  return queryRef ? (
-    <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-      <DraftContextField {...props} queryRef={queryRef} />
-    </React.Suspense>
-  ) : (
-    <Loader variant={LoaderVariant.inElement} />
-  );
-};
-
-export default DraftField;
+export default DraftContextField;
