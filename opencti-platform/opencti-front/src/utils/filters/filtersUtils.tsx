@@ -203,7 +203,7 @@ export const removeEntityTypeAllFromFilterGroup = (inputFilters?: FilterGroup) =
 // exemple: Observable AND (Domain-Name) --> [Domain-Name]
 // exemple: Domain-Name OR Observable --> [Domain-Name, Observable]
 // exemple: Stix-Domain-Object AND (Malware OR (Country AND Location)) --> [Stix-Domain-Object, Malware]
-export const getEntityTypeTwoFirstLevelsFilterValues = (filters?: FilterGroup, observableTypes?: string[]) => {
+export const getEntityTypeTwoFirstLevelsFilterValues = (filters?: FilterGroup, observableTypes?: string[], domainObjectTypes?: string []) => {
   if (!filters) {
     return [];
   }
@@ -216,6 +216,9 @@ export const getEntityTypeTwoFirstLevelsFilterValues = (filters?: FilterGroup, o
       // if all second values are observables sub types : remove observable from firstLevelValue
       if (secondLevelValues.every((type) => observableTypes?.includes(type))) {
         firstLevelValues = firstLevelValues.filter((type) => type !== 'Stix-Cyber-Observable');
+      }
+      if (secondLevelValues.every((type) => domainObjectTypes?.includes(type))) {
+        firstLevelValues = firstLevelValues.filter((type) => type !== 'Stix-Domain-Object');
       }
       return [...firstLevelValues, ...secondLevelValues];
     }

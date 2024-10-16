@@ -1282,10 +1282,9 @@ class DataTableToolBar extends Component {
     this.setState((prevState) => ({ promoteToContainer: !prevState.promoteToContainer }));
   }
 
-  getSelectedTypes(observableTypes) {
-    const entityTypeFilterValues = getEntityTypeTwoFirstLevelsFilterValues(this.props.filters, observableTypes);
+  getSelectedTypes(observableTypes, domainObjectTypes) {
+    const entityTypeFilterValues = getEntityTypeTwoFirstLevelsFilterValues(this.props.filters, observableTypes, domainObjectTypes);
     const selectedElementsList = Object.values(this.props.selectedElements || {});
-
     const selectedTypes = R.uniq([...selectedElementsList.map((o) => o.entity_type), ...entityTypeFilterValues]
       .filter((entity_type) => entity_type !== undefined));
     return { entityTypeFilterValues, selectedElementsList, selectedTypes };
@@ -1325,7 +1324,8 @@ class DataTableToolBar extends Component {
       <UserContext.Consumer>
         {({ schema, settings }) => {
           const stixCyberObservableSubTypes = schema.scos.map((sco) => sco.id);
-          const { entityTypeFilterValues, selectedElementsList, selectedTypes } = this.getSelectedTypes(stixCyberObservableSubTypes);
+          const stixDomainObjectSubTypes = schema.sdos.map((sdo) => sdo.id);
+          const { entityTypeFilterValues, selectedElementsList, selectedTypes } = this.getSelectedTypes(stixCyberObservableSubTypes, stixDomainObjectSubTypes);
           // Some filter types are high level, we do not want to check them as "Different"
           // We might need to add some other types here before refactoring the toolbar
           const typesAreDifferent = (selectedTypes.filter((type) => !['Stix-Domain-Object', 'stix-core-relationship', 'Stix-Cyber-Observable'].includes(type))).length > 1;
@@ -1342,7 +1342,7 @@ class DataTableToolBar extends Component {
                   && notScannableTypes.includes(entityTypeFilterValues[0]));
           // endregion
           // region enrich
-          const isManualEnrichSelect = !selectAll && (selectedTypes.filter((st) => !['Stix-Cyber-Observable'].includes(st))).length === 1;
+          const isManualEnrichSelect = !selectAll && (selectedTypes.filter((st) => !['Stix-Cyber-Observable', 'Stix-Domain-Object'].includes(st))).length === 1;
           const isAllEnrichSelect = selectAll
               && entityTypeFilterValues.length === 1
               && entityTypeFilterValues[0] !== 'Stix-Cyber-Observable'
