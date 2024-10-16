@@ -2987,36 +2987,37 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@node-saml/node-saml@npm:^4.0.4":
-  version: 4.0.5
-  resolution: "@node-saml/node-saml@npm:4.0.5"
+"@node-saml/node-saml@npm:^5.0.0":
+  version: 5.0.0
+  resolution: "@node-saml/node-saml@npm:5.0.0"
   dependencies:
-    "@types/debug": "npm:^4.1.7"
-    "@types/passport": "npm:^1.0.11"
-    "@types/xml-crypto": "npm:^1.4.2"
-    "@types/xml-encryption": "npm:^1.2.1"
-    "@types/xml2js": "npm:^0.4.11"
-    "@xmldom/xmldom": "npm:^0.8.6"
+    "@types/debug": "npm:^4.1.12"
+    "@types/qs": "npm:^6.9.11"
+    "@types/xml-encryption": "npm:^1.2.4"
+    "@types/xml2js": "npm:^0.4.14"
+    "@xmldom/is-dom-node": "npm:^1.0.1"
+    "@xmldom/xmldom": "npm:^0.8.10"
     debug: "npm:^4.3.4"
-    xml-crypto: "npm:^3.0.1"
+    xml-crypto: "npm:^6.0.0"
     xml-encryption: "npm:^3.0.2"
-    xml2js: "npm:^0.5.0"
+    xml2js: "npm:^0.6.2"
     xmlbuilder: "npm:^15.1.1"
-  checksum: 10/91295b8b0bec57a017d7818c20d38712fba60212b7788dc8bffefeaa77591801ae551070e461ef49118418a8f5d728b8496690056077626c01dbd4013b69de19
+    xpath: "npm:^0.0.34"
+  checksum: 10/e886f0831321997f682e2f1c652dee4c42e47e417bbe09c7d0f237ccd4604c8212449091398157e09cef03d389e7009b01413d7dedc97f275590317aff7185ff
   languageName: node
   linkType: hard
 
-"@node-saml/passport-saml@npm:4.0.4":
-  version: 4.0.4
-  resolution: "@node-saml/passport-saml@npm:4.0.4"
+"@node-saml/passport-saml@npm:5.0.0":
+  version: 5.0.0
+  resolution: "@node-saml/passport-saml@npm:5.0.0"
   dependencies:
-    "@node-saml/node-saml": "npm:^4.0.4"
-    "@types/express": "npm:^4.17.14"
-    "@types/passport": "npm:^1.0.11"
-    "@types/passport-strategy": "npm:^0.2.35"
-    passport: "npm:^0.6.0"
+    "@node-saml/node-saml": "npm:^5.0.0"
+    "@types/express": "npm:^4.17.21"
+    "@types/passport": "npm:^1.0.16"
+    "@types/passport-strategy": "npm:^0.2.38"
+    passport: "npm:^0.7.0"
     passport-strategy: "npm:^1.0.0"
-  checksum: 10/a29274ef0ce8688e4b45c1921642b1676033a7ceb3c391ab7fc517d6893b79b611cf8c48b184fcfdba92b1c7989be132bbe18e8edef198f62f54efdf0db04ebd
+  checksum: 10/3142f1f69c011288edd4c6a9d252b3186c3bcf7af6d0995b52258d7c1ba1c86a5b8ee5fa9306a522cf1d6c525da775439bc50164664a72aebb86ead7244fcc9e
   languageName: node
   linkType: hard
 
@@ -4423,7 +4424,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/debug@npm:^4.1.7":
+"@types/debug@npm:^4.1.12":
   version: 4.1.12
   resolution: "@types/debug@npm:4.1.12"
   dependencies:
@@ -4465,7 +4466,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/express@npm:*, @types/express@npm:4.17.21, @types/express@npm:^4.17.13, @types/express@npm:^4.17.14":
+"@types/express@npm:*, @types/express@npm:4.17.21, @types/express@npm:^4.17.13, @types/express@npm:^4.17.21":
   version: 4.17.21
   resolution: "@types/express@npm:4.17.21"
   dependencies:
@@ -4636,7 +4637,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/passport-strategy@npm:^0.2.35":
+"@types/passport-strategy@npm:^0.2.38":
   version: 0.2.38
   resolution: "@types/passport-strategy@npm:0.2.38"
   dependencies:
@@ -4646,7 +4647,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/passport@npm:*, @types/passport@npm:^1.0.11":
+"@types/passport@npm:*, @types/passport@npm:^1.0.16":
   version: 1.0.16
   resolution: "@types/passport@npm:1.0.16"
   dependencies:
@@ -4659,6 +4660,13 @@ __metadata:
   version: 6.9.15
   resolution: "@types/qs@npm:6.9.15"
   checksum: 10/97d8208c2b82013b618e7a9fc14df6bd40a73e1385ac479b6896bafc7949a46201c15f42afd06e86a05e914f146f495f606b6fb65610cc60cf2e0ff743ec38a2
+  languageName: node
+  linkType: hard
+
+"@types/qs@npm:^6.9.11":
+  version: 6.9.16
+  resolution: "@types/qs@npm:6.9.16"
+  checksum: 10/2e8918150c12735630f7ee16b770c72949274938c30306025f68aaf977227f41fe0c698ed93db1099e04916d582ac5a1faf7e3c7061c8d885d9169f59a184b6c
   languageName: node
   linkType: hard
 
@@ -4759,17 +4767,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/xml-crypto@npm:^1.4.2":
-  version: 1.4.6
-  resolution: "@types/xml-crypto@npm:1.4.6"
-  dependencies:
-    "@types/node": "npm:*"
-    xpath: "npm:0.0.27"
-  checksum: 10/e53516a2f5e4e018e164eb1cb9fc922294b9a339624e567c1c00a2b1496e9f86826210473e62ceb0b45949638c9d149da088b3598f6b3acd86e933f0a2b23f2c
-  languageName: node
-  linkType: hard
-
-"@types/xml-encryption@npm:^1.2.1":
+"@types/xml-encryption@npm:^1.2.4":
   version: 1.2.4
   resolution: "@types/xml-encryption@npm:1.2.4"
   dependencies:
@@ -4778,7 +4776,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/xml2js@npm:0.4.14, @types/xml2js@npm:^0.4.11":
+"@types/xml2js@npm:0.4.14, @types/xml2js@npm:^0.4.14":
   version: 0.4.14
   resolution: "@types/xml2js@npm:0.4.14"
   dependencies:
@@ -5054,6 +5052,13 @@ __metadata:
     fast-querystring: "npm:^1.1.1"
     tslib: "npm:^2.6.3"
   checksum: 10/2b420147b9c7ee6ee7decc794d275b415bad6d3dad8d32b2fe9b64938848e66351c3a4cfe4b8d46f98bfbda8e1739e750670e21ffc794b577071aab38195a1da
+  languageName: node
+  linkType: hard
+
+"@xmldom/is-dom-node@npm:^1.0.1":
+  version: 1.0.1
+  resolution: "@xmldom/is-dom-node@npm:1.0.1"
+  checksum: 10/45683a6a192e4eff0f5189d4e3ef5272fcf8e3458f598f99614810490a8163c9a7ebe4ecaf241286fb74fcd762610b46c062ad3c7fddaa6eafa9a9f1537e338a
   languageName: node
   linkType: hard
 
@@ -10775,7 +10780,7 @@ __metadata:
     "@jorgeferrero/stream-to-buffer": "npm:2.0.6"
     "@luckycatfactory/esbuild-graphql-loader": "npm:3.8.1"
     "@mistralai/mistralai": "npm:0.5.0"
-    "@node-saml/passport-saml": "npm:4.0.4"
+    "@node-saml/passport-saml": "npm:5.0.0"
     "@opensearch-project/opensearch": "npm:2.12.0"
     "@opentelemetry/api": "npm:1.9.0"
     "@opentelemetry/api-metrics": "npm:0.33.0"
@@ -11234,7 +11239,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"passport@npm:0.7.0":
+"passport@npm:0.7.0, passport@npm:^0.7.0":
   version: 0.7.0
   resolution: "passport@npm:0.7.0"
   dependencies:
@@ -11242,17 +11247,6 @@ __metadata:
     pause: "npm:0.0.1"
     utils-merge: "npm:^1.0.1"
   checksum: 10/0ebd4de8e3cba6731b1fddd09b95b8332526f316afded9c9589ff68751e10001c9f1c007170a516e8c1909f9fafdc378c12feb82820241856775005924735b29
-  languageName: node
-  linkType: hard
-
-"passport@npm:^0.6.0":
-  version: 0.6.0
-  resolution: "passport@npm:0.6.0"
-  dependencies:
-    passport-strategy: "npm:1.x.x"
-    pause: "npm:0.0.1"
-    utils-merge: "npm:^1.0.1"
-  checksum: 10/5051e1d773ac0d802d4d71315f5fee566b8765b9731396b60c1d6822b7983bef31ae2f51af94d973ade94fb040efae0816e736e534b55294d0fbd10efcdf2d36
   languageName: node
   linkType: hard
 
@@ -13869,13 +13863,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"xml-crypto@npm:^3.0.1":
-  version: 3.2.0
-  resolution: "xml-crypto@npm:3.2.0"
+"xml-crypto@npm:^6.0.0":
+  version: 6.0.0
+  resolution: "xml-crypto@npm:6.0.0"
   dependencies:
-    "@xmldom/xmldom": "npm:^0.8.8"
-    xpath: "npm:0.0.32"
-  checksum: 10/ea9c3ecf60fbe54b947aff86f56f5b50ecc6713f5e514b268262610c97d1f602aacfff07bc4e972d1c1dd5ca4f591aeadb723abe081eae5033c701bcecfaa765
+    "@xmldom/is-dom-node": "npm:^1.0.1"
+    "@xmldom/xmldom": "npm:^0.8.10"
+    xpath: "npm:^0.0.33"
+  checksum: 10/bc8f634618e8c30844546cf7a19d3c80634f8134118a2d2b9b76f0bb094b745c53ad94214cd3577fba93327d5d992c7570903e4463ce078d9699e45008246400
   languageName: node
   linkType: hard
 
@@ -13890,23 +13885,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"xml2js@npm:0.6.2":
+"xml2js@npm:0.6.2, xml2js@npm:^0.6.2":
   version: 0.6.2
   resolution: "xml2js@npm:0.6.2"
   dependencies:
     sax: "npm:>=0.6.0"
     xmlbuilder: "npm:~11.0.0"
   checksum: 10/df29de8eeedb762c367d87945c39bcf54db19a2c522607491c266ed6184b5a749e37ff29cfaed0ac149da9ba332ac3dcf8e5ff2bd0a206be3343eca95faa941d
-  languageName: node
-  linkType: hard
-
-"xml2js@npm:^0.5.0":
-  version: 0.5.0
-  resolution: "xml2js@npm:0.5.0"
-  dependencies:
-    sax: "npm:>=0.6.0"
-    xmlbuilder: "npm:~11.0.0"
-  checksum: 10/27c4d759214e99be5ec87ee5cb1290add427fa43df509d3b92d10152b3806fd2f7c9609697a18b158ccf2caa01e96af067cdba93196f69ca10c90e4f79a08896
   languageName: node
   linkType: hard
 
@@ -13924,17 +13909,24 @@ __metadata:
   languageName: node
   linkType: hard
 
-"xpath@npm:0.0.27":
-  version: 0.0.27
-  resolution: "xpath@npm:0.0.27"
-  checksum: 10/e4648276cc3dba7e368c4b6604baf5130600988b4b371c6d1bc4b01e893dc1a8c4521193478ea43bb3588a7c028f082ce5cb7204415c7636730a710d6e04a826
-  languageName: node
-  linkType: hard
-
 "xpath@npm:0.0.32":
   version: 0.0.32
   resolution: "xpath@npm:0.0.32"
   checksum: 10/9d8be7adde4500e9ee96db963838269021f89ef1ad222fdfd41b7266336e851a38416b4a710c194dcf9eb35cf58ad11e023e5951e919151b76ffcd6eb3b2cbf4
+  languageName: node
+  linkType: hard
+
+"xpath@npm:^0.0.33":
+  version: 0.0.33
+  resolution: "xpath@npm:0.0.33"
+  checksum: 10/09c539661cafc0d75bb48d13fee7ce6e7593d88f4387c401a3b15d46d543e81f46680be5c6ecf868c11f6090ee67ea78e0c327c4e0ffceb2969308a2d1e238bb
+  languageName: node
+  linkType: hard
+
+"xpath@npm:^0.0.34":
+  version: 0.0.34
+  resolution: "xpath@npm:0.0.34"
+  checksum: 10/77ce03c4494dab97b70fa443761c35a6bd484538a449714b981387a532a6eb22e245b29164f5d8a4a82f4f3cfd71d27ba71d09ed2b6fe933654585c6e46c0a25
   languageName: node
   linkType: hard
 
