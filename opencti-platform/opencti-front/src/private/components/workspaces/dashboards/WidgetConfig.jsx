@@ -18,16 +18,7 @@ import CardContent from '@mui/material/CardContent';
 import Button from '@mui/material/Button';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
-import {
-  AddOutlined,
-  CancelOutlined,
-  CloudUploadOutlined,
-  FormatShapesOutlined,
-  LibraryBooksOutlined,
-  MapOutlined,
-  PieChartOutlined,
-  WidgetsOutlined,
-} from '@mui/icons-material';
+import { AddOutlined, CancelOutlined, CloudUploadOutlined, FormatShapesOutlined, LibraryBooksOutlined, MapOutlined, PieChartOutlined, WidgetsOutlined } from '@mui/icons-material';
 import {
   AlignHorizontalLeft,
   ChartAreasplineVariant,
