@@ -1,5 +1,7 @@
 import { stixCoreObjectsListQuery } from '@components/common/stix_core_objects/StixCoreObjectsList';
 import { StixCoreObjectsListQuery$data } from '@components/common/stix_core_objects/__generated__/StixCoreObjectsListQuery.graphql';
+import React from 'react';
+import { renderToString } from 'react-dom/server';
 import { useBuildFiltersForTemplateWidgets } from '../../../filters/filtersUtils';
 import type { Widget } from '../../../widget/widget';
 import { fetchQuery } from '../../../../relay/environment';
@@ -26,22 +28,26 @@ const useBuildListOutcome = () => {
 
     const data = await fetchQuery(stixCoreObjectsListQuery, variables).toPromise() as StixCoreObjectsListQuery$data;
     const nodes = (data.stixCoreObjects?.edges ?? []).map((n) => n.node) ?? [];
-    const rows = nodes.map((n) => `
-    <tr>
-      <td>${n.entity_type}</td>
-      <td>${n.representative.main}</td>
-      <td>${n.created_at}</td>
-    </tr>
-  `).join('\n');
-    return (
-      `<table>
-      <tr>
-        <th>Entity type</th>
-        <th>Representative</th>
-        <th>Creation date</th>
-      </tr>
-      ${rows}
-    </table>`
+
+    return renderToString(
+      <table>
+        <thead>
+          <tr>
+            <th>Entity type</th>
+            <th>Representative</th>
+            <th>Creation date</th>
+          </tr>
+        </thead>
+        <tbody>
+          {nodes.map((n) => (
+            <tr key={n.id}>
+              <td>${n.entity_type}</td>
+              <td>${n.representative.main}</td>
+              <td>${n.created_at}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>,
     );
   };
   return { buildListOutcome };
