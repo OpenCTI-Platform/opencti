@@ -1,4 +1,4 @@
-import { exclusionListEntityType, type ExclusionListProperties } from './constants';
+import { exclusionListEntityType, type ExclusionListProperties } from '../../../src/utils/exclusionListTypes';
 
 const list: string[] = [
   '192.178.5.0/27',

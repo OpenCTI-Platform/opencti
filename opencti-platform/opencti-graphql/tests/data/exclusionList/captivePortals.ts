@@ -1,4 +1,4 @@
-import { exclusionListEntityType, type ExclusionListProperties } from './constants';
+import { exclusionListEntityType, type ExclusionListProperties } from '../../../src/utils/exclusionListTypes';
 
 const list = [
   'android.clients.google.com',
