@@ -31,7 +31,7 @@ const DraftEntities = () => {
   } = useAuth();
   const [commitSwitchToDraft] = useApiMutation<DraftContextBannerMutation>(draftContextBannerMutation);
   useEffect(() => {
-    if (me.draft_context !== draftId) {
+    if (!me.draftContext || me.draftContext.id !== draftId) {
       commitSwitchToDraft({
         variables: {
           input: [{ key: 'draft_context', value: [draftId] }],

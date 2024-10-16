@@ -86,7 +86,10 @@ export const meUserFragment = graphql`
     individual_id
     no_creators
     restrict_delete
-    draft_context
+    draftContext {
+      id
+      name
+    }
     effective_confidence_level {
       max_confidence
       overrides {

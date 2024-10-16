@@ -262,11 +262,9 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
             />
           </div>
         )}
-        {isDraftFeatureEnabled && me.draft_context
-          && <div style={{ flex: 1 }}>
-            <DraftContextBanner/>
-          </div>
-        }
+        {isDraftFeatureEnabled && me.draftContext && (
+          <DraftContextBanner/>
+        )}
         <div className={classes.barRight}>
           <div className={classes.barRightContainer}>
             <Security needs={[KNOWLEDGE]}>
