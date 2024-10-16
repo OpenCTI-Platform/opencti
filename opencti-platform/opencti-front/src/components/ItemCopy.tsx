@@ -47,7 +47,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
 
 interface ItemCopyProps {
   content: string;
-  variant: string;
+  variant?: string;
   limit?: number;
 }
 

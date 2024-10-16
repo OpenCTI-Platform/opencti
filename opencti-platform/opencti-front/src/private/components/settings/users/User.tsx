@@ -51,6 +51,7 @@ import Security from '../../../../utils/Security';
 import useAuth from '../../../../utils/hooks/useAuth';
 import type { Theme } from '../../../../components/Theme';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import ItemCopy from '../../../../components/ItemCopy';
 
 const startDate = yearsAgo(1);
 const endDate = now();
@@ -415,7 +416,7 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                   </Tooltip>
                 </Security>
                 <div className="clearfix"/>
-                <pre style={{ margin: 0 }}>{user.api_token}</pre>
+                <pre style={{ margin: 0 }}><ItemCopy content={user.api_token} /></pre>
               </Grid>
               <Grid item xs={6}>
                 <Typography variant="h3" gutterBottom={true}>
