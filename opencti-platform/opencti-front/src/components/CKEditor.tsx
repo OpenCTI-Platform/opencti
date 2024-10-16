@@ -24,7 +24,6 @@ import {
   ImageResize,
   ImageStyle,
   ImageToolbar,
-  ImageUpload,
   Indent,
   IndentBlock,
   Italic,
@@ -52,6 +51,7 @@ import {
   ImageEditing,
   ImageBlockEditing,
   EditorConfig,
+  ImageTextAlternative,
 } from 'ckeditor5';
 import React from 'react';
 import { useIntl } from 'react-intl';
@@ -85,7 +85,7 @@ import ko from 'ckeditor5/translations/ko.js';
 // eslint-disable-next-line import/extensions
 import zh from 'ckeditor5/translations/zh.js';
 
-const CKEDITOR_DEFAULT_CONFIG = {
+const CKEDITOR_DEFAULT_CONFIG: EditorConfig = {
   translations: [de, en, es, fr, ja, ko, zh],
   plugins: [
     Alignment,
@@ -112,7 +112,7 @@ const CKEDITOR_DEFAULT_CONFIG = {
     ImageResize,
     ImageStyle,
     ImageToolbar,
-    ImageUpload,
+    ImageTextAlternative,
     Indent,
     IndentBlock,
     Italic,
@@ -160,7 +160,6 @@ const CKEDITOR_DEFAULT_CONFIG = {
       'indent',
       'todoList',
       '|',
-      'imageUpload',
       'imageInsert',
       'blockQuote',
       'code',
@@ -178,10 +177,10 @@ const CKEDITOR_DEFAULT_CONFIG = {
     ],
   },
   image: {
+    resizeUnit: 'px',
     toolbar: [
       'imageTextAlternative',
       'toggleImageCaption',
-      'imageStyle:inline',
       'imageStyle:block',
       'imageStyle:side',
       'linkImage',
@@ -204,8 +203,6 @@ const CKEditor = (props: CKEditorProps<ClassicEditor>) => {
   const config: EditorConfig = {
     ...CKEDITOR_DEFAULT_CONFIG,
     language: locale.slice(0, 2),
-    image: { resizeUnit: 'px' },
-    toolbar: { shouldNotGroupWhenFull: true },
   };
 
   return (
