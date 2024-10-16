@@ -26,13 +26,13 @@ export const findAll = (context: AuthContext, user: AuthUser, args: QueryDraftWo
 
 export const listDraftObjects = (context: AuthContext, user: AuthUser, args: QueryDraftWorkspaceEntitiesArgs) => {
   let types: string[] = [];
-  if (args && args.types) {
+  const { draftId, ...listArgs } = args;
+  if (args.types) {
     types = args.types.filter((t) => t && isStixCoreObject(t)) as string[];
   }
   if (types.length === 0) {
     types.push(ABSTRACT_STIX_CORE_OBJECT);
   }
-  const { draftId, ...listArgs } = args;
   const newArgs: EntityOptions<BasicStoreEntity> = { ...listArgs, types, indices: [READ_INDEX_DRAFT_OBJECTS] };
   const draftContext = { ...context, draft_context: draftId };
   return listEntitiesPaginated<BasicStoreEntity>(draftContext, user, types, newArgs);
