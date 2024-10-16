@@ -4,6 +4,12 @@ const sleep = (delay: number) => new Promise((resolve) => {
   setTimeout(resolve, delay);
 });
 
+/**
+ * Creates a chart in base64 that can be inject inside a <img /> tag.
+ *
+ * @param chartOptions The ApexChart options to set up the chart.
+ * @returns The base64 data for <img /> tag.
+ */
 const chartDataURI = async (chartOptions: ApexOptions) => {
   const options = chartOptions;
   const canvas = document.createElement('canvas');
