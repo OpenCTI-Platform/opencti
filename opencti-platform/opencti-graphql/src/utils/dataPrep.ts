@@ -1,18 +1,12 @@
 import { FunctionalError } from '../config/errors';
-import { getExclusionListsByTypeFromCache, getExclusionListsByTypeFromCache2 } from '../database/cache';
-import { exclusionListEntityType, type ExclusionListProperties, type IpAddrListType } from '../database/exclusionList/constants';
-
-type ExtractedObservableValues = {
-  type: string;
-  value: string;
-};
+import { getExclusionListsByTypeFromCache } from '../database/cache';
+import { type ExtractedObservableValues, type ExclusionListProperties, exclusionListEntityType } from './exclusionListTypes';
 
 export const getIsRange = (value) => value.indexOf('/') !== -1;
 
 const checkIpAddrType = (ipAddr) => {
-  const isIpv4 = ipAddr.indexOf('.') !== -1;
+  const isIpv4 = ipAddr.split('.').length === 4;
   const isIpv6 = ipAddr.indexOf(':') !== -1;
-
   return { isIpv4, isIpv6 };
 };
 
@@ -52,32 +46,39 @@ export const convertIpv4ToBinary = (ipv4: string, isRange?: boolean, range?: num
 };
 
 const throwExclusionListError = (value: string, listName: string) => {
-  console.timeEnd();
   throw FunctionalError(`Indicator creation failed, this pattern (${value}) is contained on an exclusion list (${listName})`, { value });
 };
 
-const checkIpAddressLists2 = (ipToTest: string, exclusionList: ExclusionListProperties[]) => {
+export const convertIpAddr = (list) => {
+  return list.map((value) => {
+    const ipAddress = value.split('/')[0];
+    const { isIpv4, isIpv6 } = checkIpAddrType(ipAddress);
+    if (!isIpv4 && !isIpv6) return value;
+    const isRange = getIsRange(value);
+    const ipAddressRangeValue = value.split('/')?.[1] ?? '0';
+    if (isIpv6) return convertIpv6ToBinary(ipAddress, isRange, parseInt(ipAddressRangeValue, 10));
+    return convertIpv4ToBinary(ipAddress, isRange, parseInt(ipAddressRangeValue, 10));
+  });
+};
+
+const checkIpAddressLists = (ipToTest: string, exclusionList: ExclusionListProperties[]) => {
   const { isIpv4 } = checkIpAddrType(ipToTest);
   const binary = isIpv4 ? convertIpv4ToBinary(ipToTest) : convertIpv6ToBinary(ipToTest);
-  exclusionList.forEach((currentList) => {
-    const aze: IpAddrListType = currentList.list;
+  exclusionList.forEach(({ name, list }) => {
     list.forEach((line) => {
       if (binary.startsWith(line)) {
-        throwExclusionListError(ipToTest, currentList.name);
+        throwExclusionListError(ipToTest, name);
       }
     });
   });
 };
 
 export const checkPatternValidity = (extractedObservableValues: ExtractedObservableValues[]): void => {
-  console.time();
   extractedObservableValues.forEach(({ type, value }) => {
-    const selectedExclusionLists = getExclusionListsByTypeFromCache2(type);
-    console.log('selectedExclusionLists : ', selectedExclusionLists);
+    const selectedExclusionLists = getExclusionListsByTypeFromCache(type);
     if (!selectedExclusionLists.length) return;
-    return;
     if (type === exclusionListEntityType.IPV4_ADDR || type === exclusionListEntityType.IPV6_ADDR) {
-      checkIpAddressLists2(value, selectedExclusionLists);
+      checkIpAddressLists(value, selectedExclusionLists);
     } else {
       selectedExclusionLists.forEach(({ name, list }) => {
         list.forEach((line) => {

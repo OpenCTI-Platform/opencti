@@ -242,12 +242,6 @@ export const addIndicator = async (context: AuthContext, user: AuthUser, indicat
   const formattedPattern = await getFormattedPattern(context, user, indicator.pattern_type, indicator.pattern);
   const extractedObservableValues = getObservableValuesFromPattern(formattedPattern);
 
-  // check pattern validity
-  checkPatternValidity(extractedObservableValues);
-  console.timeEnd();
-
-  // -----------------------------------
-
   const indicatorToCreate = R.pipe(
     R.dissoc('createObservables'),
     R.dissoc('basedOn'),
