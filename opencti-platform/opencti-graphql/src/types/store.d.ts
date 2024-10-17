@@ -316,7 +316,6 @@ interface BasicStoreEntity extends BasicStoreCommon {
   source: string;
   severity: string;
   incident_type: string;
-
   x_opencti_location_type: string;
   x_opencti_reliability: string;
   x_opencti_organization_type: string;

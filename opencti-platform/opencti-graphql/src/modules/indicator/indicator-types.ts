@@ -7,11 +7,17 @@ import type { DecayHistory } from '../decayRule/decayRule-domain';
 export const INDICATOR_DECAY_FEATURE_FLAG = 'INDICATOR_DECAY';
 export const ENTITY_TYPE_INDICATOR = 'Indicator';
 
+interface ObservableValues {
+  type: string;
+  value: string;
+}
+
 // Indicator Specific Properties
 export interface StixIndicatorExtension extends StixOpenctiExtension {
   detection: boolean;
   score: number;
   main_observable_type: string;
+  observable_values: ObservableValues[]
 }
 // name, description, indicator_types, pattern, pattern_type, pattern_version, valid_from, valid_until, kill_chain_phases
 export interface StixIndicator extends StixDomainObject {
