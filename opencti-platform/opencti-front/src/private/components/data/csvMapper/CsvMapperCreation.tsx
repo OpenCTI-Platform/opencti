@@ -24,6 +24,7 @@ const csvMapperCreation = graphql`
       id
       name
       has_header
+      has_entity_dynamic_mapping
       separator
       skipLineChar
       errors
@@ -51,7 +52,7 @@ const CsvMapperCreation: FunctionComponent<CsvMapperCreationFormProps> = ({
     CsvMapperRepresentationAttributesFormFragment,
     schemaAttributes,
   ) || { csvMapperSchemaAttributes: [] };
-
+  console.log('mappingCsv', mappingCsv);
   const computeDefaultValues = useComputeDefaultValues();
   const csvMapper = useFragment(
     csvMapperEditionContainerFragment,
@@ -67,6 +68,7 @@ const CsvMapperCreation: FunctionComponent<CsvMapperCreationFormProps> = ({
       has_header: formattedValues.has_header,
       separator: formattedValues.separator,
       skipLineChar: formattedValues.skipLineChar,
+      has_entity_dynamic_mapping: formattedValues.has_entity_dynamic_mapping,
       representations: JSON.stringify(formattedValues.representations),
     };
     commit({
@@ -105,6 +107,7 @@ const CsvMapperCreation: FunctionComponent<CsvMapperCreationFormProps> = ({
       id: '',
       name: '',
       has_header: false,
+      has_entity_dynamic_mapping: false,
       separator: ',',
       skip_line_char: '',
       entity_representations: [],
