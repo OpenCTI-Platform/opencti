@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+// TODO : remove this line (needed to don't crash test with example array)
 /* eslint max-len: ["error", { "code": 7000, "ignoreComments": true }] */
 import React, { FunctionComponent, useEffect, useState } from 'react';
 import { graphql, createRefetchContainer, RelayRefetchProp } from 'react-relay';
@@ -103,7 +104,7 @@ const warningErrorTypes = [
 ];
 
 // TODO : Remove
-const examples: WorkMessages[] = [
+// const examples: WorkMessages[] = [
   // {
   //   'timestamp': '2024-10-11T20:10:06.788Z',
   //   'message': 'Sample',
@@ -164,7 +165,7 @@ const examples: WorkMessages[] = [
   //   'sequence': null,
   //   'source': '{"type": "relationship", "spec_version": "2.1", "id": "relationship--799f653d-da5c-53ac-86d2-2046f1c93378", "created_by_ref": "identity--180d3ffd-a014-54ff-a817-211dddd29059", "created": "2024-10-11T17:19:43.689008Z", "modified": "2024-10-11T17:19:43.689008Z", "relationship_type": "originates-from", "source_ref": "intrusion-set--826cb3d9-0de3-5af7-9e95-f64fa12501a0", "target_ref": "location--efa1b9b0-dc59-5bad-baa2-4fc495e55fcc", "object_marking_refs": ["marking-definition--f88d31f6-486f-44da-b317-01333bde0b82"], "nb_deps": 1, "x_opencti_granted_refs": null, "x_opencti_workflow_id": null}'
   // },
-];
+// ];
 
 const ConnectorWorksComponent: FunctionComponent<ConnectorWorksComponentProps> = ({
   data,
@@ -221,7 +222,8 @@ const ConnectorWorksComponent: FunctionComponent<ConnectorWorksComponentProps> =
   const handleOpenDrawerErrors = (errorsList: WorkMessages[]) => {
     setOpenDrawerErrors(true);
     // TODO : remove examples and use errorList
-    const parsedList = parseErrors([...errorsList, ...examples]);
+    // const parsedList = parseErrors([...errorsList, ...examples]);
+    const parsedList = parseErrors(errorsList);
     setErrors(parsedList);
     const criticalErrors = parsedList.filter((error) => error.level === 'Critical');
     setCriticals(criticalErrors);
