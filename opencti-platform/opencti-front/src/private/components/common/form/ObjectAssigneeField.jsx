@@ -114,16 +114,18 @@ class ObjectAssigneeField extends Component {
   }
 
   render() {
-    const { t, name, style, label, classes, onChange, helpertext, disabled } = this.props;
+    const { t, name, style, label, classes, onChange, helpertext, disabled, required = false } = this.props;
     return (
       <Field component={AutocompleteField}
         style={style}
         name={name}
         disabled={disabled}
         multiple={true}
+        required={required}
         textfieldprops={{
           variant: 'standard',
           label: label ?? t('Assignee(s)'),
+          required,
           helperText: helpertext,
           onFocus: this.searchAssignees.bind(this),
         }}

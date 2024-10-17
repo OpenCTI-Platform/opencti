@@ -20,9 +20,9 @@ import OpenVocabField from '../../common/form/OpenVocabField';
 import { Option } from '../../common/form/ReferenceField';
 import { NoteEditionOverview_note$data } from './__generated__/NoteEditionOverview_note.graphql';
 import SliderField from '../../../../components/fields/SliderField';
-import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
+import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 
 export const noteMutationFieldPatch = graphql`
   mutation NoteEditionOverviewFieldPatchMutation(
@@ -83,17 +83,20 @@ interface NoteEditionOverviewProps {
   handleClose: () => void;
 }
 
+const NOTE_TYPE = 'Note';
+
 const NoteEditionOverviewComponent: FunctionComponent<
 NoteEditionOverviewProps
 > = ({ note, context }) => {
   const { t_i18n } = useFormatter();
 
   const userIsKnowledgeEditor = useGranted([KNOWLEDGE_KNUPDATE]);
-  const basicShape = {
-    content: Yup.string().trim().min(2).required(t_i18n('This field is required')),
+
+  const { mandatoryAttributes } = useIsMandatoryAttribute(NOTE_TYPE);
+  const basicShape = yupShapeConditionalRequired({
+    content: Yup.string().trim().min(2),
     created: Yup.date()
-      .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
-      .required(t_i18n('This field is required')),
+      .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
     attribute_abstract: Yup.string().nullable(),
     confidence: Yup.number().nullable(),
     note_types: Yup.array().nullable(),
@@ -103,8 +106,10 @@ NoteEditionOverviewProps
       .transform((value) => (Number.isNaN(value) ? null : value))
       .nullable(),
     x_opencti_workflow_id: Yup.object(),
-  };
-  const noteValidator = useSchemaEditionValidation('Note', basicShape);
+    createdBy: Yup.object().nullable(),
+    objectMarking: Yup.array().nullable(),
+  }, mandatoryAttributes);
+  const noteValidator = useDynamicSchemaEditionValidation(mandatoryAttributes, basicShape);
 
   const queries = {
     fieldPatch: noteMutationFieldPatch,
@@ -152,6 +157,8 @@ NoteEditionOverviewProps
       enableReinitialize={true}
       initialValues={initialValues}
       validationSchema={noteValidator}
+      validateOnChange={true}
+      validateOnBlur={true}
       onSubmit={() => {}}
     >
       {({ setFieldValue }) => (
@@ -169,12 +176,14 @@ NoteEditionOverviewProps
               helperText: (
                 <SubscriptionFocus context={context} fieldName="created"/>
               ),
+              required: mandatoryAttributes.includes('created'),
             }}
           />
           <Field
             component={TextField}
             name="attribute_abstract"
             label={t_i18n('Abstract')}
+            required={(mandatoryAttributes.includes('attribute_abstract'))}
             fullWidth={true}
             style={{ marginTop: 20 }}
             onFocus={editor.changeFocus}
@@ -191,6 +200,7 @@ NoteEditionOverviewProps
             component={MarkdownField}
             name="content"
             label={t_i18n('Content')}
+            required={(mandatoryAttributes.includes('content'))}
             fullWidth={true}
             multiline={true}
             rows="4"
@@ -206,6 +216,7 @@ NoteEditionOverviewProps
             label={t_i18n('Note types')}
             type="note_types_ov"
             name="note_types"
+            required={(mandatoryAttributes.includes('note_types'))}
             onSubmit={handleSubmitField}
             onChange={(name, value) => setFieldValue(name, value)}
             containerStyle={fieldSpacingContainerStyle}
@@ -224,6 +235,7 @@ NoteEditionOverviewProps
           <Field
             component={SliderField}
             name="likelihood"
+            required={(mandatoryAttributes.includes('likelihood'))}
             type="number"
             label={t_i18n('Likelihood')}
             fullWidth={true}
@@ -237,6 +249,7 @@ NoteEditionOverviewProps
           {userIsKnowledgeEditor && (
             <CreatedByField
               name="createdBy"
+              required={(mandatoryAttributes.includes('createdBy'))}
               style={{ marginTop: 10, width: '100%' }}
               setFieldValue={setFieldValue}
               onChange={editor.changeCreated}
@@ -260,6 +273,7 @@ NoteEditionOverviewProps
           )}
           <ObjectMarkingField
             name="objectMarking"
+            required={(mandatoryAttributes.includes('objectMarking'))}
             style={{
               marginTop:
                 note.workflowEnabled || userIsKnowledgeEditor ? 20 : 10,

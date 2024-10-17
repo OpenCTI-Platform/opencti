@@ -227,6 +227,8 @@ const ExternalReferenceCreation: FunctionComponent<ExternalReferenceCreationProp
               file: '',
             }}
             validationSchema={externalReferenceValidation(t_i18n)}
+            validateOnChange={true}
+            validateOnBlur={true}
             onSubmit={onSubmit}
             onReset={() => {
               onResetClassic();
@@ -327,6 +329,8 @@ const ExternalReferenceCreation: FunctionComponent<ExternalReferenceCreationProp
               file: '',
             }}
             validationSchema={externalReferenceValidation(t_i18n)}
+            validateOnChange={true}
+            validateOnBlur={true}
             onReset={onResetContextual}
           >
             {({ submitForm, handleReset, isSubmitting, setFieldValue }) => (

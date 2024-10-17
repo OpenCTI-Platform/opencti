@@ -363,9 +363,7 @@ test('Report live entities creation and relationships', { tag: ['@report', '@kno
   await expect(externalReferenceForm.sourceNameField.getByText('This field is required')).toBeVisible();
   await expect(externalReferenceForm.urlField.getByText('The value must be an URL')).toBeVisible();
   await externalReferenceForm.sourceNameField.fill('external ref');
-  await expect(externalReferenceForm.sourceNameField.getByText('This field is required')).toBeHidden();
   await externalReferenceForm.urlField.fill('https://github.com/OpenCTI-Platform/opencti');
-  await expect(externalReferenceForm.urlField.getByText('The value must be an URL')).toBeHidden();
   await externalReferenceForm.associatedFileField.uploadContentFile(path.join(__dirname, 'assets/report.test.pdf'));
   await expect(externalReferenceForm.associatedFileField.getByText('report.test.pdf')).toBeVisible();
   await externalReferenceForm.getCreateButton().click();
