@@ -13555,7 +13555,7 @@ type UserEditMutations {
   fieldPatch(input: [EditInput]!): User
   contextPatch(input: EditContext): User
   contextClean: User
-  tokenRenew: User
+  tokenRenew: User @auth(for: [SETTINGS_SETACCESSES])
   relationAdd(input: InternalRelationshipAddInput!): InternalRelationship
   relationDelete(toId: StixRef!, relationship_type: String!): User
   organizationAdd(organizationId: ID!): User
