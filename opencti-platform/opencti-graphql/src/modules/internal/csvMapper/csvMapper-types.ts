@@ -53,7 +53,6 @@ export interface CsvMapperRepresentation {
   attributes: CsvMapperRepresentationAttribute[]
   from?: string
   to?: string
-  dynamic_mapping_name?: string
 }
 
 export interface CsvMapperRepresentationAttributeResolved {
@@ -75,7 +74,6 @@ export interface CsvMapperRepresentationResolved {
 export type CsvMapperParsed = Omit<BasicStoreEntityCsvMapper, 'representations'> & {
   representations: CsvMapperRepresentation[]
   user_chosen_markings?: string[]
-  has_entity_dynamic_mapping?: boolean
 };
 
 export type CsvMapperResolved = Omit<BasicStoreEntityCsvMapper, 'representations'> & {
