@@ -30,6 +30,7 @@ import type { Theme } from '../../../components/Theme';
 import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
 import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
+import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 
 export const LOCAL_STORAGE_KEY_PLAYBOOKS = 'playbooks';
 
@@ -46,6 +47,8 @@ const Playbooks: FunctionComponent = () => {
   const classes = useStyles();
   const isEnterpriseEdition = useEnterpriseEdition();
   const { t_i18n } = useFormatter();
+  const { setTitle } = useConnectedDocumentModifier();
+  setTitle(t_i18n('Processing: Automation | Data'));
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<PlaybooksLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY_PLAYBOOKS,
     {

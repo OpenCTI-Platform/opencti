@@ -13,6 +13,8 @@ import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext, useGetDefaultFi
 import { decodeSearchKeyword } from '../../utils/SearchUtils';
 import DataTable from '../../components/dataGrid/DataTable';
 import { UsePreloadedPaginationFragment } from '../../utils/hooks/usePreloadedPaginationFragment';
+import { useFormatter } from '../../components/i18n';
+import useConnectedDocumentModifier from '../../utils/hooks/useConnectedDocumentModifier';
 
 const LOCAL_STORAGE_KEY = 'search';
 
@@ -185,6 +187,9 @@ const Search = () => {
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
+  const { t_i18n } = useFormatter();
+  const { setTitle } = useConnectedDocumentModifier();
+  setTitle(t_i18n('Knowledge Search | Advanced Search'));
   const { keyword } = useParams() as { keyword: string };
 
   const searchTerm = decodeSearchKeyword(keyword);
