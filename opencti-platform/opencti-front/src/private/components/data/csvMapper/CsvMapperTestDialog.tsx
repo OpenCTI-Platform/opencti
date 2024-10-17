@@ -7,16 +7,16 @@ import Tooltip from '@mui/material/Tooltip';
 import { graphql } from 'react-relay';
 import CustomFileUploader from '@components/common/files/CustomFileUploader';
 import CodeBlock from '@components/common/CodeBlock';
-import { CsvMapperTestDialogQuery$data } from '@components/data/csvMapper/__generated__/CsvMapperTestDialogQuery.graphql';
+import { CsvMapperTestDialogMutation$data } from '@components/data/csvMapper/__generated__/CsvMapperTestDialogMutation.graphql';
 import { InformationOutline } from 'mdi-material-ui';
 import Box from '@mui/material/Box';
 import { useFormatter } from '../../../../components/i18n';
-import { fetchQuery, handleError } from '../../../../relay/environment';
+import { commitMutation, handleError } from '../../../../relay/environment';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 
 const csvMapperTestQuery = graphql`
-  query CsvMapperTestDialogQuery($configuration: String!, $content: String!) {
-    csvMapperTest(configuration: $configuration, content: $content) {
+  mutation CsvMapperTestDialogMutation($configuration: String!, $file: Upload!) {
+    csvMapperTest(configuration: $configuration, file: $file) {
       objects
       nbRelationships
       nbEntities
@@ -37,17 +37,16 @@ const CsvMapperTestDialog: FunctionComponent<CsvMapperTestDialogProps> = ({
 }) => {
   const { t_i18n } = useFormatter();
 
-  const [value, setValue] = useState<string>('');
-  const [result, setResult] = useState<CsvMapperTestDialogQuery$data | undefined>(undefined);
+  const [value, setValue] = useState<File | undefined>(undefined);
+  const [result, setResult] = useState<CsvMapperTestDialogMutation$data | undefined>(undefined);
   const [loading, setLoading] = useState<boolean>(false);
 
   const onChange = async (field: string, v: string | File | undefined | null) => {
     if (field === 'file' && v instanceof File) {
       if (v.type === 'text/csv' || v.type === 'application/vnd.ms-excel') {
-        const fileValue = await v.text();
-        setValue(fileValue);
+        setValue(v);
       } else {
-        setValue('');
+        setValue(undefined);
         setResult(undefined);
       }
     }
@@ -55,30 +54,30 @@ const CsvMapperTestDialog: FunctionComponent<CsvMapperTestDialogProps> = ({
 
   const onTest = () => {
     setLoading(true);
-    fetchQuery(csvMapperTestQuery, {
-      configuration,
-      content: value,
-    })
-      .toPromise()
-      .then((data) => {
-        const resultTest = (data as CsvMapperTestDialogQuery$data)
-          .csvMapperTest;
+
+    commitMutation({
+      mutation: csvMapperTestQuery,
+      variables: { file: value, configuration },
+      onCompleted: (data: CsvMapperTestDialogMutation$data) => {
+        const resultTest = data.csvMapperTest;
         if (resultTest) {
-          setResult({
-            csvMapperTest: {
-              ...resultTest,
-            },
-          });
+          setResult({ csvMapperTest: { ...resultTest } });
         }
         setLoading(false);
-      }).catch((error) => {
+      },
+      onError: (error: Error) => {
         handleError(error);
         setLoading(false);
-      });
+      },
+      setSubmitting: undefined,
+      optimisticResponse: undefined,
+      optimisticUpdater: undefined,
+      updater: undefined,
+    });
   };
 
   const handleClose = () => {
-    setValue('');
+    setValue(undefined);
     setResult(undefined);
     onClose();
   };
