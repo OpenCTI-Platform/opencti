@@ -8,10 +8,6 @@ import withTheme from '@mui/styles/withTheme';
 import TextField from '@mui/material/TextField';
 import htmlToPdfmake from 'html-to-pdfmake';
 import pdfMake from 'pdfmake';
-import { CKEditor } from '@ckeditor/ckeditor5-react';
-import Editor from 'ckeditor5-custom-build/build/ckeditor';
-import 'ckeditor5-custom-build/build/translations/fr';
-import 'ckeditor5-custom-build/build/translations/zh-cn';
 import { Document, Page, pdfjs } from 'react-pdf';
 import 'react-pdf/dist/esm/Page/TextLayer.css';
 import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
@@ -32,6 +28,7 @@ import { isEmptyField } from '../../../../utils/utils';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 import withRouter from '../../../../utils/compat_router/withRouter';
+import CKEditor from '../../../../components/CKEditor';
 
 pdfjs.GlobalWorkerOptions.workerSrc = `${APP_BASE_PATH}/static/ext/pdf.worker.mjs`;
 
@@ -621,11 +618,6 @@ class StixCoreObjectContentComponent extends Component {
                   style={{ minHeight: height, height }}
                 >
                   <CKEditor
-                    editor={Editor}
-                    config={{
-                      language: 'en',
-                      toolbar: { shouldNotGroupWhenFull: true },
-                    }}
                     data={currentContent ?? ''}
                     onChange={() => {
                       this.setState({ changed: true });

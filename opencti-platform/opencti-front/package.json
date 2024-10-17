@@ -5,7 +5,7 @@
   "main": "src/front.tsx",
   "dependencies": {
     "@analytics/google-analytics": "1.0.7",
-    "@ckeditor/ckeditor5-react": "6.2.0",
+    "@ckeditor/ckeditor5-react": "9.3.0",
     "@date-fns/upgrade": "1.0.3",
     "@date-io/date-fns": "3.0.0",
     "@emotion/react": "11.13.0",
@@ -26,7 +26,7 @@
     "apexcharts": "3.54.0",
     "axios": "1.7.7",
     "buffer": "6.0.3",
-    "ckeditor5-custom-build": "0.0.1",
+    "ckeditor5": "43.1.1",
     "classnames": "2.5.1",
     "convert": "5.4.0",
     "d3-hierarchy": "3.1.2",
