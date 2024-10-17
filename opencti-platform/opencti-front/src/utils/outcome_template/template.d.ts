@@ -4,7 +4,7 @@ export interface Template {
   name: string
   description?: string
   content: string
-  used_variables: string[]
+  used_widgets: string[]
 }
 
 export interface TemplateWidget {

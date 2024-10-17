@@ -22,7 +22,7 @@ import CreateFileForm, { CreateFileFormInputs } from '@components/common/form/Cr
 import StixCoreObjectContentFilesList from '@components/common/stix_core_objects/StixCoreObjectContentFilesList';
 import { useFormatter } from '../../../../components/i18n';
 import FileUploader from '../files/FileUploader';
-import { resolvedAttributesWidgets, templateAttribute, templateGraph, templateList, templateText, usedTemplateWidgets } from '../../../../utils/outcome_template/engine/__template';
+import { resolvedAttributesWidgets, templateAttribute, templateGraph, templateList, templateText, usedTemplateWidgets } from '../../../../utils/outcome_template/__template';
 import useContentFromTemplate from '../../../../utils/outcome_template/engine/useContentFromTemplate';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import type { Template } from '../../../../utils/outcome_template/template';
