@@ -25,7 +25,7 @@ const INDICATOR_DEFINITION: ModuleDefinition<StoreEntityIndicator, StixIndicator
     { name: 'description', label: 'Description', type: 'string', format: 'text', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true, isFilterable: true },
     { name: 'pattern_type', label: 'Pattern type', type: 'string', format: 'vocabulary', vocabularyCategory: 'pattern_type_ov', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false, isFilterable: true },
     { name: 'pattern_version', label: 'Pattern version', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
-    { name: 'pattern', label: 'Pattern', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false, isFilterable: true },
+    { name: 'pattern', label: 'Pattern', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true, isFilterable: true },
     { name: 'indicator_types', label: 'Indicator types', type: 'string', format: 'vocabulary', vocabularyCategory: 'indicator_type_ov', mandatoryType: 'customizable', editDefault: true, multiple: true, upsert: true, isFilterable: true },
     { name: 'valid_from', label: 'Valid from', type: 'date', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true, isFilterable: true },
     { name: 'valid_until', label: 'Valid until', type: 'date', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true, isFilterable: true },
