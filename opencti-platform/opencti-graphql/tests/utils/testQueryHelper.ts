@@ -1,10 +1,11 @@
 import { expect } from 'vitest';
 import { print } from 'graphql/index';
 import type { AxiosInstance } from 'axios';
-import { adminQuery, createUnauthenticatedClient, executeInternalQuery, queryAsAdmin } from './testQuery';
+import { ADMIN_USER, adminQuery, createUnauthenticatedClient, executeInternalQuery, getOrganizationIdByName, type Organization, queryAsAdmin, testContext } from './testQuery';
 import { downloadFile, streamConverter } from '../../src/database/file-storage';
 import { logApp } from '../../src/config/conf';
 import { AUTH_REQUIRED, FORBIDDEN_ACCESS } from '../../src/config/errors';
+import { getSettings, settingsEditField } from '../../src/domain/settings';
 
 // Helper for test usage whit expect inside.
 // vitest cannot be an import of testQuery, so it must be a separate file.
@@ -87,4 +88,39 @@ export const requestFileFromStorageAsAdmin = async (storageId: string) => {
   const stream = await downloadFile(storageId);
   expect(stream, `No stream mean no file found in storage or error for ${storageId}`).not.toBeNull();
   return streamConverter(stream);
+};
+
+/**
+ * Enable Enterprise edition and set the platform organisation.
+ * @param organization: organization to use as platform organization.
+ */
+export const enableEEAndSetOrganization = async (organization: Organization) => {
+  const platformOrganizationId = await getOrganizationIdByName(organization.name);
+  const platformSettings: any = await getSettings(testContext);
+
+  const input = [
+    { key: 'enterprise_edition', value: [new Date().getTime()] },
+    { key: 'platform_organization', value: [platformOrganizationId] }
+  ];
+  const settingsResult = await settingsEditField(testContext, ADMIN_USER, platformSettings.id, input);
+
+  expect(settingsResult.platform_organization).not.toBeUndefined();
+  expect(settingsResult.enterprise_edition).not.toBeUndefined();
+  expect(settingsResult.platform_organization).toEqual(platformOrganizationId);
+};
+
+/**
+ * Remove any platform organization and go back to comunity edition.
+ */
+export const enableCEAndUnSetOrganization = async () => {
+  const platformSettings: any = await getSettings(testContext);
+
+  const input = [
+    { key: 'enterprise_edition', value: [] },
+    { key: 'platform_organization', value: [] }
+  ];
+  const settingsResult = await settingsEditField(testContext, ADMIN_USER, platformSettings.id, input);
+
+  expect(settingsResult.platform_organization).toBeUndefined();
+  expect(settingsResult.enterprise_edition).toBeUndefined();
 };
