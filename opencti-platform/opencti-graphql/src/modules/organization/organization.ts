@@ -32,6 +32,9 @@ const ORGANIZATION_DEFINITION: ModuleDefinition<StoreEntityOrganization, StixOrg
       name(data: object) {
         return normalizeName(data);
       },
+      identity_class(data: object) {
+        return normalizeName(data);
+      },
     },
   },
   attributes: [
