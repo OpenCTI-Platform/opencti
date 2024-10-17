@@ -14,7 +14,7 @@ describe('Verify internal importCsv connector', () => {
     const file = fileToReadStream('./tests/data/importCsv-connector', 'csv-file-cities-for-importCsv-connector.csv', 'csv-file-cities-for-importCsv-connector.csv', 'text/csv');
     const uploadedFile = await uploadToStorage(testContext, ADMIN_USER, `${IMPORT_STORAGE_PATH}/global`, file, {});
     expect(uploadedFile).toBeDefined();
-    expect(uploadedFile.upload.id).toBe('import/global/csv-file-cities-for-importCsv-connector.csv');
+    expect(uploadedFile.upload.id).toBe('import/global/csv-file-cities-for-importcsv-connector.csv');
 
     work = await createWork(testContext, ADMIN_USER, IMPORT_CSV_CONNECTOR, '[File] Import csv for test', 'sourceTest');
   });
