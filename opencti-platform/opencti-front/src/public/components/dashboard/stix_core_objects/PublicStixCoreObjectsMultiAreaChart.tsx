@@ -1,6 +1,5 @@
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import React from 'react';
-import type { PublicManifestWidget } from '../PublicManifest';
 import { useFormatter } from '../../../../components/i18n';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetMultiAreas from '../../../../components/dashboard/WidgetMultiAreas';
@@ -10,6 +9,7 @@ import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetLoader from '../../../../components/dashboard/WidgetLoader';
 import { PublicStixCoreObjectsMultiAreaChartQuery } from './__generated__/PublicStixCoreObjectsMultiAreaChartQuery.graphql';
 import { monthsAgo, now } from '../../../../utils/Time';
+import type { Widget } from '../../../../utils/widget/widget';
 
 const publicStixCoreObjectsMultiAreaChartQuery = graphql`
   query PublicStixCoreObjectsMultiAreaChartQuery(
@@ -33,8 +33,8 @@ const publicStixCoreObjectsMultiAreaChartQuery = graphql`
 `;
 
 interface PublicStixCoreObjectsMultiAreaChartComponentProps {
-  parameters: PublicManifestWidget['parameters']
-  dataSelection: PublicManifestWidget['dataSelection']
+  parameters: Widget['parameters']
+  dataSelection: Widget['dataSelection']
   queryRef: PreloadedQuery<PublicStixCoreObjectsMultiAreaChartQuery>
 }
 
