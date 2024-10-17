@@ -1,4 +1,4 @@
-import type { StoreEntity, BasicStoreEntity } from '../../../types/store';
+import type { BasicStoreEntity, StoreEntity } from '../../../types/store';
 import type { StixObject, StixOpenctiExtensionSDO } from '../../../types/stix-common';
 import { STIX_EXT_OCTI } from '../../../types/stix-extensions';
 
@@ -86,6 +86,7 @@ export interface BasicStoreEntityCsvMapper extends BasicStoreEntity {
   has_header: boolean
   separator: string
   skipLineChar: string
+  has_entity_dynamic_mapping: boolean
   representations: string
 }
 
@@ -95,6 +96,7 @@ export interface StixCsvMapper extends StixObject {
   name: string
   has_header: boolean
   separator: string
+  has_entity_dynamic_mapping: boolean
   representations: string
   extensions: {
     [STIX_EXT_OCTI] : StixOpenctiExtensionSDO

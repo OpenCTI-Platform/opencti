@@ -91,7 +91,10 @@ const isValidTarget = (record: string[], representation: CsvMapperRepresentation
   // Target type
   isValidRepresentationType(representation);
 
+  console.log('ANGIE - isValidTarget', { record, representation });
+
   // Column based
+  // TODO verify that it's covering our needs
   const columnBased = representation.target.column_based;
   if (columnBased && columnBased.column_reference) {
     const recordValue = extractValueFromCsv(record, columnBased.column_reference);
@@ -256,7 +259,7 @@ const handleAttributes = (
     } else if (refDef || ['from', 'to'].includes(attribute.key)) {
       handleBasedOnAttribute(attribute, input, refDef, otherEntities, refEntities);
     } else {
-      throw UnsupportedError('Unknown schema for attribute:', { attribute });
+      throw UnsupportedError(`Unknown schema for attribute: ${attribute.key}`, { attribute });
     }
   });
 };
@@ -419,6 +422,6 @@ export const mappingProcess = async (
       results.set(representation.id, input);
     }
   }
-
+  console.log('ANGIE, mappingProcess result:', results);
   return Array.from(results.values());
 };
