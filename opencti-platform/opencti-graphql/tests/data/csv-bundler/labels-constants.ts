@@ -32,7 +32,7 @@ export const indicatorsWithLabelsExpectedBundle: StixBundle = {
             undefined,
           ],
           main_observable_type: 'IPv4-Addr',
-          observables_values: [
+          observable_values: [
             {
               type: 'IPv4-Addr',
               value: '198.168.8.5',
@@ -63,7 +63,7 @@ export const indicatorsWithLabelsExpectedBundle: StixBundle = {
             undefined,
           ],
           main_observable_type: 'IPv4-Addr',
-          observables_values: [
+          observable_values: [
             {
               type: 'IPv4-Addr',
               value: '198.168.8.6',

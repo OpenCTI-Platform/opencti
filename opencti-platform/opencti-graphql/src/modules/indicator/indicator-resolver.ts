@@ -54,7 +54,7 @@ const indicatorResolvers: Resolvers = {
     observables: (indicator, args, context) => observablesPaginated<any>(context, context.user, indicator.id, args),
     decayLiveDetails: (indicator, _, context) => getDecayDetails(context, context.user, indicator),
     decayChartData: (indicator, _, context) => getDecayChartData(context, context.user, indicator),
-    x_opencti_observables_values: (indicator) => getObservableValuesFromPattern(indicator.pattern),
+    x_opencti_observable_values: (indicator) => getObservableValuesFromPattern(indicator.pattern),
   },
   Mutation: {
     indicatorAdd: (_, { input }, context) => addIndicator(context, context.user, input),

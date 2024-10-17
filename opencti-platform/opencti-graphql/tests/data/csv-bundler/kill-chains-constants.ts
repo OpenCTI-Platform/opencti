@@ -30,7 +30,7 @@ export const indicatorsWithKillChainPhasesExpectedBundle: StixBundle = {
           converter_csv: "[ipv4-addr:value = '198.168.8.3'],IPv4-Addr,kill_chain_name_1,kill_chain_phase_name_1,1",
           extension_type: 'property-extension',
           main_observable_type: 'IPv4-Addr',
-          observables_values: [
+          observable_values: [
             {
               type: 'IPv4-Addr',
               value: '198.168.8.3',
@@ -61,7 +61,7 @@ export const indicatorsWithKillChainPhasesExpectedBundle: StixBundle = {
           converter_csv: "[ipv4-addr:value = '198.168.8.4'],IPv4-Addr,kill_chain_name_1,kill_chain_phase_name_1,1",
           extension_type: 'property-extension',
           main_observable_type: 'IPv4-Addr',
-          observables_values: [
+          observable_values: [
             {
               type: 'IPv4-Addr',
               value: '198.168.8.4',

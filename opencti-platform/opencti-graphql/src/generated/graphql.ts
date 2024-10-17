@@ -9833,7 +9833,7 @@ export type Indicator = BasicObject & StixCoreObject & StixDomainObject & StixOb
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_main_observable_type?: Maybe<Scalars['String']['output']>;
-  x_opencti_observables_values?: Maybe<Array<Maybe<ObservablesValues>>>;
+  x_opencti_observable_values?: Maybe<Array<ObservablesValues>>;
   x_opencti_score?: Maybe<Scalars['Int']['output']>;
   x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']['output']>>>;
 };
@@ -34807,7 +34807,7 @@ export type IndicatorResolvers<ContextType = any, ParentType extends ResolversPa
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_main_observable_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  x_opencti_observables_values?: Resolver<Maybe<Array<Maybe<ResolversTypes['ObservablesValues']>>>, ParentType, ContextType>;
+  x_opencti_observable_values?: Resolver<Maybe<Array<ResolversTypes['ObservablesValues']>>, ParentType, ContextType>;
   x_opencti_score?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;

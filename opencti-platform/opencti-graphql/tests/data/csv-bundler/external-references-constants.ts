@@ -16,7 +16,7 @@ export const indicatorsWithExternalReferencesExpectedBundle: StixBundle = {
           type: 'Indicator',
           main_observable_type: 'IPv4-Addr',
           converter_csv: "[ipv4-addr:value = '198.168.8.1'],IPv4-Addr,http://twitter.com/filigraner",
-          observables_values: [
+          observable_values: [
             {
               type: 'IPv4-Addr',
               value: '198.168.8.1',
@@ -47,7 +47,7 @@ export const indicatorsWithExternalReferencesExpectedBundle: StixBundle = {
           type: 'Indicator',
           main_observable_type: 'IPv4-Addr',
           converter_csv: "[ipv4-addr:value = '198.168.8.2'],IPv4-Addr,http://twitter.com/filigraner",
-          observables_values: [
+          observable_values: [
             {
               type: 'IPv4-Addr',
               value: '198.168.8.2',
