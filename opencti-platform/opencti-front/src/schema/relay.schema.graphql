@@ -11714,7 +11714,7 @@ type CsvMapper implements InternalObject & BasicObject {
   has_header: Boolean!
   separator: String!
   skipLineChar: String
-    has_entity_dynamic_mapping: Boolean
+  has_entity_dynamic_mapping: Boolean
   representations: [CsvMapperRepresentation!]!
   errors: String
 }
@@ -11811,7 +11811,7 @@ input CsvMapperAddInput {
   separator: String!
   representations: String!
   skipLineChar: String
-    has_entity_dynamic_mapping: Boolean!
+  has_entity_dynamic_mapping: Boolean!
 }
 
 type PublicDashboard implements InternalObject & BasicObject {
