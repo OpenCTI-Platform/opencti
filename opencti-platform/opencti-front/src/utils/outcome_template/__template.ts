@@ -1,4 +1,4 @@
-import type { Template, TemplateWidget } from '../template';
+import type { Template, TemplateWidget } from './template';
 
 // text //
 export const templateText: Template = {
@@ -11,7 +11,7 @@ export const templateText: Template = {
     + '<p> A paragraph content </p> \n'
     + '</body> \n'
     + '</html>',
-  used_variables: [],
+  used_widgets: [],
 };
 
 // attribute //
@@ -24,7 +24,7 @@ export const templateAttribute: Template = {
     <p> This report has been published $reportPublicationDate, and has labels: $reportLabels</p>
     </body>
     </html>`,
-  used_variables: ['reportName', 'reportPublicationDate', 'reportLabels'],
+  used_widgets: ['reportName', 'reportPublicationDate', 'reportLabels'],
 };
 
 export const widgetAttribute: TemplateWidget = {
@@ -66,7 +66,7 @@ export const templateList: Template = {
     + '<p> Locations contained in the report: $locationsList</p>\n'
     + '</body> \n'
     + '</html>',
-  used_variables: ['locationsList'],
+  used_widgets: ['locationsList'],
 };
 
 export const widgetList: TemplateWidget = {
@@ -98,7 +98,7 @@ export const widgetList: TemplateWidget = {
 
 export const templateGraph: Template = {
   name: 'template graph (donut)',
-  used_variables: ['widgetGraph'],
+  used_widgets: ['widgetGraph'],
   content: `
   <div style="width: 600px">
     <h1>Template graph</h1>

@@ -9,7 +9,7 @@ const useContentFromTemplate = () => {
   const buildContentFromTemplate = async (
     containerId: string,
     template: Template,
-    usedTemplateWidgets: TemplateWidget[],
+    templateWidgets: TemplateWidget[],
     resolvedAttributesWidgets: ResolvedAttributesWidgets[],
     maxContentMarkings: string[],
   ) => {
@@ -23,7 +23,7 @@ const useContentFromTemplate = () => {
     }
 
     // other widgets
-    for (const templateWidget of usedTemplateWidgets) {
+    for (const templateWidget of templateWidgets) {
       let outcome = '';
       if (templateWidget.widget.type === 'list') {
         // eslint-disable-next-line no-await-in-loop
