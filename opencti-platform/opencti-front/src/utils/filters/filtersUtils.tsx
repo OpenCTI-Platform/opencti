@@ -210,9 +210,9 @@ export const getEntityTypeTwoFirstLevelsFilterValues = (filters?: FilterGroup, o
   let firstLevelValues = findFilterFromKey(filters.filters, 'entity_type', 'eq')?.values ?? [];
 
   if (filters.mode === 'and') {
-    const subFilters = filters.filterGroups.map((fg) => fg.filters).flat();
-    if (subFilters.length > 0) {
-      const secondLevelValues = findFilterFromKey(subFilters, 'entity_type', 'eq')?.values ?? [];
+    const subFiltersSeparatedWithAnd = filters.filterGroups.filter((fg) => fg.mode === 'and').map((fg) => fg.filters).flat();
+    if (subFiltersSeparatedWithAnd.length > 0) {
+      const secondLevelValues = findFilterFromKey(subFiltersSeparatedWithAnd, 'entity_type', 'eq')?.values ?? [];
       // if all second values are observables sub types : remove observable from firstLevelValue
       if (secondLevelValues.every((type) => observableTypes?.includes(type))) {
         firstLevelValues = firstLevelValues.filter((type) => type !== 'Stix-Cyber-Observable');
