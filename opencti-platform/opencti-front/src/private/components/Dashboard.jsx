@@ -28,7 +28,6 @@ import StixRelationshipsHorizontalBars from './common/stix_relationships/StixRel
 import DashboardView from './workspaces/dashboards/Dashboard';
 import useQueryLoading from '../../utils/hooks/useQueryLoading';
 import useConnectedDocumentModifier from '../../utils/hooks/useConnectedDocumentModifier';
-import WidgetLoader from '../../components/dashboard/WidgetLoader';
 
 // region styles
 // Deprecated - https://mui.com/system/styles/basics/
@@ -163,7 +162,7 @@ const TargetedCountries = ({ timeField }) => {
   return (
     <>
       {queryRef && (
-        <React.Suspense fallback={<WidgetLoader />}>
+        <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
           <TargetedCountriesComponent queryRef={queryRef} />
         </React.Suspense>
       )}

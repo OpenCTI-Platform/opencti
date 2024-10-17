@@ -7,9 +7,9 @@ import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import type { PublicWidgetContainerProps } from '../PublicWidgetContainerProps';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
-import WidgetLoader from '../../../../components/dashboard/WidgetLoader';
 import { PublicStixRelationshipsHorizontalBarsQuery } from './__generated__/PublicStixRelationshipsHorizontalBarsQuery.graphql';
 import useDistributionGraphData from '../../../../utils/hooks/useDistributionGraphData';
+import Loader, { LoaderVariant } from '../../../../components/Loader';
 
 const publicStixRelationshipsHorizontalBarsQuery = graphql`
   query PublicStixRelationshipsHorizontalBarsQuery(
@@ -131,7 +131,7 @@ const PublicStixRelationshipsHorizontalBars = ({
       variant="inLine"
     >
       {queryRef ? (
-        <React.Suspense fallback={<WidgetLoader />}>
+        <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
           <PublicStixRelationshipsHorizontalBarsComponent
             queryRef={queryRef}
             parameters={parameters}
@@ -139,7 +139,7 @@ const PublicStixRelationshipsHorizontalBars = ({
           />
         </React.Suspense>
       ) : (
-        <WidgetLoader />
+        <Loader variant={LoaderVariant.inElement} />
       )}
     </WidgetContainer>
   );

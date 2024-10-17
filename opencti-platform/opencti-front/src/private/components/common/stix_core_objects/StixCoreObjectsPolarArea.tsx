@@ -3,11 +3,11 @@ import React, { CSSProperties } from 'react';
 import { StixCoreObjectsPolarAreaDistributionQuery } from '@components/common/stix_core_objects/__generated__/StixCoreObjectsPolarAreaDistributionQuery.graphql';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
-import WidgetLoader from '../../../../components/dashboard/WidgetLoader';
 import { useFormatter } from '../../../../components/i18n';
 import WidgetPolarArea from '../../../../components/dashboard/WidgetPolarArea';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import { DashboardWidgetDataSelection, DashboardWidgetParameters } from '../../../../utils/dashboard';
+import Loader, { LoaderVariant } from '../../../../components/Loader';
 
 const stixCoreObjectsPolarAreaDistributionQuery = graphql`
   query StixCoreObjectsPolarAreaDistributionQuery(
@@ -173,7 +173,7 @@ const StixCoreObjectsPolarArea = ({
       variant={variant}
     >
       {queryRef ? (
-        <React.Suspense fallback={<WidgetLoader />}>
+        <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
           <StixCoreObjectsPolarAreaComponent
             queryRef={queryRef}
             dataSelection={dataSelection}
@@ -182,7 +182,7 @@ const StixCoreObjectsPolarArea = ({
           />
         </React.Suspense>
       ) : (
-        <WidgetLoader />
+        <Loader variant={LoaderVariant.inElement} />
       )}
     </WidgetContainer>
   );

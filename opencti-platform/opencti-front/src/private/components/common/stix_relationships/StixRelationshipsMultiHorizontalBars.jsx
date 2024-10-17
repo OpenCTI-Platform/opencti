@@ -7,8 +7,8 @@ import { getMainRepresentative } from '../../../../utils/defaultRepresentatives'
 import { buildFiltersAndOptionsForWidgets } from '../../../../utils/filters/filtersUtils';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
-import WidgetLoader from '../../../../components/dashboard/WidgetLoader';
 import WidgetHorizontalBars from '../../../../components/dashboard/WidgetHorizontalBars';
+import Loader, { LoaderVariant } from '../../../../components/Loader';
 
 const stixRelationshipsMultiHorizontalBarsWithRelationshipsDistributionQuery = graphql`
   query StixRelationshipsMultiHorizontalBarsWithRelationshipsDistributionQuery(
@@ -550,7 +550,7 @@ const StixRelationshipsMultiHorizontalBars = ({
           if (props) {
             return <WidgetNoData />;
           }
-          return <WidgetLoader />;
+          return <Loader variant={LoaderVariant.inElement} />;
         }}
       />
     );

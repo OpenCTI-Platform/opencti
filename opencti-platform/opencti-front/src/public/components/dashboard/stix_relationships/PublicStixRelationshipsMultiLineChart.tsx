@@ -7,9 +7,9 @@ import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import type { PublicWidgetContainerProps } from '../PublicWidgetContainerProps';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
-import WidgetLoader from '../../../../components/dashboard/WidgetLoader';
 import { PublicStixRelationshipsMultiLineChartQuery } from './__generated__/PublicStixRelationshipsMultiLineChartQuery.graphql';
 import { monthsAgo, now } from '../../../../utils/Time';
+import Loader, { LoaderVariant } from '../../../../components/Loader';
 
 const publicStixRelationshipsMultiLineChartQuery = graphql`
   query PublicStixRelationshipsMultiLineChartQuery(
@@ -94,7 +94,7 @@ const PublicStixRelationshipsMultiLineChart = ({
       variant="inLine"
     >
       {queryRef ? (
-        <React.Suspense fallback={<WidgetLoader />}>
+        <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
           <PublicStixRelationshipsMultiLineChartComponent
             queryRef={queryRef}
             parameters={parameters}
@@ -102,7 +102,7 @@ const PublicStixRelationshipsMultiLineChart = ({
           />
         </React.Suspense>
       ) : (
-        <WidgetLoader />
+        <Loader variant={LoaderVariant.inElement} />
       )}
     </WidgetContainer>
   );

@@ -5,9 +5,9 @@ import type { PublicWidgetContainerProps } from '../PublicWidgetContainerProps';
 import { useFormatter } from '../../../../components/i18n';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
-import WidgetLoader from '../../../../components/dashboard/WidgetLoader';
 import { PublicStixRelationshipsListQuery } from './__generated__/PublicStixRelationshipsListQuery.graphql';
 import WidgetListRelationships from '../../../../components/dashboard/WidgetListRelationships';
+import Loader, { LoaderVariant } from '../../../../components/Loader';
 
 const publicStixRelationshipsListQuery = graphql`
   query PublicStixRelationshipsListQuery(
@@ -4399,14 +4399,14 @@ const PublicStixRelationshipsList = ({
       variant="inLine"
     >
       {queryRef ? (
-        <React.Suspense fallback={<WidgetLoader />}>
+        <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
           <PublicStixRelationshipsListComponent
             queryRef={queryRef}
             dateAttribute={dateAttribute}
           />
         </React.Suspense>
       ) : (
-        <WidgetLoader />
+        <Loader variant={LoaderVariant.inElement} />
       )}
     </WidgetContainer>
   );

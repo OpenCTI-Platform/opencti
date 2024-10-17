@@ -5,8 +5,8 @@ import { QueryRenderer } from '../../../../relay/environment';
 import { buildFiltersAndOptionsForWidgets } from '../../../../utils/filters/filtersUtils';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
-import WidgetLoader from '../../../../components/dashboard/WidgetLoader';
 import WidgetListRelationships from '../../../../components/dashboard/WidgetListRelationships';
+import Loader, { LoaderVariant } from '../../../../components/Loader';
 
 export const stixRelationshipsListSearchQuery = graphql`
   query StixRelationshipsListSearchQuery(
@@ -4508,7 +4508,7 @@ const StixRelationshipsList = ({
           if (props) {
             return <WidgetNoData />;
           }
-          return <WidgetLoader />;
+          return <Loader variant={LoaderVariant.inElement} />;
         }}
       />
     );

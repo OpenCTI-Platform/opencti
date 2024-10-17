@@ -7,9 +7,9 @@ import WidgetHorizontalBars from '../../../../components/dashboard/WidgetHorizon
 import type { PublicWidgetContainerProps } from '../PublicWidgetContainerProps';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
-import WidgetLoader from '../../../../components/dashboard/WidgetLoader';
 import { PublicStixCoreObjectsHorizontalBarsQuery } from './__generated__/PublicStixCoreObjectsHorizontalBarsQuery.graphql';
 import useDistributionGraphData from '../../../../utils/hooks/useDistributionGraphData';
+import Loader, { LoaderVariant } from '../../../../components/Loader';
 
 const publicStixCoreObjectsHorizontalBarsQuery = graphql`
   query PublicStixCoreObjectsHorizontalBarsQuery(
@@ -131,7 +131,7 @@ const PublicStixCoreObjectsHorizontalBars = ({
       variant="inLine"
     >
       {queryRef ? (
-        <React.Suspense fallback={<WidgetLoader />}>
+        <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
           <PublicStixCoreObjectsHorizontalBarsComponent
             queryRef={queryRef}
             parameters={parameters}
@@ -139,7 +139,7 @@ const PublicStixCoreObjectsHorizontalBars = ({
           />
         </React.Suspense>
       ) : (
-        <WidgetLoader />
+        <Loader variant={LoaderVariant.inElement} />
       )}
     </WidgetContainer>
   );

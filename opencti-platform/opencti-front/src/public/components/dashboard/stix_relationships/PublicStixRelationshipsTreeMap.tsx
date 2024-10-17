@@ -7,8 +7,8 @@ import type { PublicWidgetContainerProps } from '../PublicWidgetContainerProps';
 import { useFormatter } from '../../../../components/i18n';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
-import WidgetLoader from '../../../../components/dashboard/WidgetLoader';
 import { PublicStixRelationshipsTreeMapQuery } from './__generated__/PublicStixRelationshipsTreeMapQuery.graphql';
+import Loader, { LoaderVariant } from '../../../../components/Loader';
 
 const publicStixRelationshipsTreeMapsQuery = graphql`
   query PublicStixRelationshipsTreeMapQuery(
@@ -111,7 +111,7 @@ const PublicStixRelationshipsTreeMap = ({
       variant="inLine"
     >
       {queryRef ? (
-        <React.Suspense fallback={<WidgetLoader />}>
+        <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
           <PublicStixRelationshipsTreeMapComponent
             queryRef={queryRef}
             parameters={parameters}
@@ -119,7 +119,7 @@ const PublicStixRelationshipsTreeMap = ({
           />
         </React.Suspense>
       ) : (
-        <WidgetLoader />
+        <Loader variant={LoaderVariant.inElement} />
       )}
     </WidgetContainer>
   );

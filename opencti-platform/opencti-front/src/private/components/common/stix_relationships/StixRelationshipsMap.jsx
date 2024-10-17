@@ -8,7 +8,7 @@ import { computeLevel } from '../../../../utils/Number';
 import { buildFiltersAndOptionsForWidgets } from '../../../../utils/filters/filtersUtils';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
-import WidgetLoader from '../../../../components/dashboard/WidgetLoader';
+import Loader, { LoaderVariant } from '../../../../components/Loader';
 
 export const stixRelationshipsMapStixRelationshipsDistributionQuery = graphql`
   query StixRelationshipsMapStixRelationshipsDistributionQuery(
@@ -159,7 +159,7 @@ const StixRelationshipsMap = ({
           if (props) {
             return <WidgetNoData />;
           }
-          return <WidgetLoader />;
+          return <Loader variant={LoaderVariant.inElement} />;
         }}
       />
     );

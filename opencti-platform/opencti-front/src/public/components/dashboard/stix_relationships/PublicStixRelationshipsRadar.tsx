@@ -7,8 +7,8 @@ import type { PublicWidgetContainerProps } from '../PublicWidgetContainerProps';
 import { useFormatter } from '../../../../components/i18n';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
-import WidgetLoader from '../../../../components/dashboard/WidgetLoader';
 import { PublicStixRelationshipsRadarQuery } from './__generated__/PublicStixRelationshipsRadarQuery.graphql';
+import Loader, { LoaderVariant } from '../../../../components/Loader';
 
 const publicStixRelationshipsRadarsQuery = graphql`
   query PublicStixRelationshipsRadarQuery(
@@ -128,14 +128,14 @@ const PublicStixRelationshipsRadar = ({
       variant="inLine"
     >
       {queryRef ? (
-        <React.Suspense fallback={<WidgetLoader />}>
+        <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
           <PublicStixRelationshipsRadarComponent
             queryRef={queryRef}
             dataSelection={dataSelection}
           />
         </React.Suspense>
       ) : (
-        <WidgetLoader />
+        <Loader variant={LoaderVariant.inElement} />
       )}
     </WidgetContainer>
   );

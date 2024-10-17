@@ -5,10 +5,10 @@ import type { PublicWidgetContainerProps } from '../PublicWidgetContainerProps';
 import { useFormatter } from '../../../../components/i18n';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
-import WidgetLoader from '../../../../components/dashboard/WidgetLoader';
 import { PublicStixCoreObjectsTreeMapQuery } from './__generated__/PublicStixCoreObjectsTreeMapQuery.graphql';
 import WidgetTree from '../../../../components/dashboard/WidgetTree';
 import type { PublicManifestWidget } from '../PublicManifest';
+import Loader, { LoaderVariant } from '../../../../components/Loader';
 
 const publicStixCoreObjectsTreeMapQuery = graphql`
   query PublicStixCoreObjectsTreeMapQuery(
@@ -111,7 +111,7 @@ const PublicStixCoreObjectsTreeMap = ({
       variant="inLine"
     >
       {queryRef ? (
-        <React.Suspense fallback={<WidgetLoader />}>
+        <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
           <PublicStixCoreObjectsTreeMapComponent
             queryRef={queryRef}
             parameters={parameters}
@@ -119,7 +119,7 @@ const PublicStixCoreObjectsTreeMap = ({
           />
         </React.Suspense>
       ) : (
-        <WidgetLoader />
+        <Loader variant={LoaderVariant.inElement} />
       )}
     </WidgetContainer>
   );

@@ -23,8 +23,8 @@ import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import { removeEntityTypeAllFromFilterGroup } from '../../../../utils/filters/filtersUtils';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
-import WidgetLoader from '../../../../components/dashboard/WidgetLoader';
 import WidgetMultiLines from '../../../../components/dashboard/WidgetMultiLines';
+import Loader, { LoaderVariant } from '../../../../components/Loader';
 
 const auditsMultiLineChartTimeSeriesQuery = graphql`
   query AuditsMultiLineChartTimeSeriesQuery(
@@ -124,7 +124,7 @@ const AuditsMultiLineChart = ({
           if (props) {
             return <WidgetNoData />;
           }
-          return <WidgetLoader />;
+          return <Loader variant={LoaderVariant.inElement} />;
         }}
       />
     );
