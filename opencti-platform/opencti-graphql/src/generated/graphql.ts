@@ -19307,7 +19307,7 @@ export type Query = {
   creators?: Maybe<CreatorConnection>;
   csvMapper?: Maybe<CsvMapper>;
   csvMapperSchemaAttributes: Array<CsvMapperSchemaAttributes>;
-  /** @deprecated [>=6.3 & <6.6]. Use `csvMapperTest mutation`. */
+  /** @deprecated [>=6.4 & <6.7]. Use `csvMapperTest mutation`. */
   csvMapperTest?: Maybe<CsvMapperTestResult>;
   csvMappers?: Maybe<CsvMapperConnection>;
   dataComponent?: Maybe<DataComponent>;

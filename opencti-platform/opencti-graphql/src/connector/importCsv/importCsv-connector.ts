@@ -23,6 +23,7 @@ import { BundleBuilder } from '../../parser/bundle-creator';
 const RETRY_CONNECTION_PERIOD = 10000;
 const BULK_LINE_PARSING_NUMBER = conf.get('import_csv_built_in_connector:bulk_creation_size') || 5000;
 const connector = IMPORT_CSV_CONNECTOR;
+const logDisplayName = '[CSV CONNECTOR]';
 
 const connectorConfig: ConnectorConfig = {
   id: 'IMPORT_CSV_BUILT_IN_CONNECTOR',
@@ -71,6 +72,7 @@ const processCSVforWorkbench = async (context: AuthContext, stream: SdkStream<Re
       hasError = true;
       const errorData = { error: error.message, source: fileId };
       await reportExpectation(context, applicantUser, workId, errorData);
+      logApp.error(error);
     }).on('end', async () => {
       if (!hasError) {
         const bundle = await bundleProcess(context, applicantUser, chunks, csvMapper, { entity });
@@ -93,23 +95,39 @@ const processCSVforWorkbench = async (context: AuthContext, stream: SdkStream<Re
 const processCSVforWorkers = async (context: AuthContext, stream: SdkStream<Readable> | null | undefined, opts: ConsumerOpts) => {
   const { workId, fileId, applicantUser } = opts;
   if (stream) {
+    logApp.info('');
     let lines: string[] = [];
     const rl = readline.createInterface({ input: stream, crlfDelay: 5000 });
     try {
+      let lineNumber = 0;
       // Need an async interator to prevent blocking
       // eslint-disable-next-line no-restricted-syntax
       for await (const line of rl) {
+        lineNumber += 1;
         lines.push(line);
         // Only create bundle with a limited size to prevent OOM
         if (lines.length >= BULK_LINE_PARSING_NUMBER) {
-          await generateBundle(context, lines, opts);
-          lines = [];
+          try {
+            await generateBundle(context, lines, opts);
+            lines = [];
+          } catch (error: any) {
+            const errorData = { error: error.message, source: `${fileId}, from ${lineNumber} and ${BULK_LINE_PARSING_NUMBER} following lines.` };
+            logApp.error(error, { errorData });
+            await reportExpectation(context, applicantUser, workId, errorData);
+          }
         }
       }
       if (lines.length > 0) {
-        await generateBundle(context, lines, opts);
+        try {
+          await generateBundle(context, lines, opts);
+        } catch (error: any) {
+          const errorData = { error: error.message, source: `${fileId}, from ${lineNumber} and ${BULK_LINE_PARSING_NUMBER} following lines.` };
+          logApp.error(error, { errorData });
+          await reportExpectation(context, applicantUser, workId, errorData);
+        }
       }
     } catch (error: any) {
+      logApp.error(error);
       const errorData = { error: error.message, source: fileId };
       await reportExpectation(context, applicantUser, workId, errorData);
     }
@@ -152,6 +170,7 @@ export const consumeQueueCallback = async (context: AuthContext, message: string
     }
   } catch (error: any) {
     const errorData = { error: error.stack, source: fileId };
+    logApp.error(error, { context, errorData });
     await reportExpectation(context, applicantUser, workId, errorData);
   }
 };

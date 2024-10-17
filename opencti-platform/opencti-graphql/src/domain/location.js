@@ -24,7 +24,6 @@ export const findAll = async (context, user, args) => {
 };
 
 export const addLocation = async (context, user, location) => {
-  logApp.info('ANGIE - locationAdd', location);
   const { type } = location;
   if (!isStixDomainObjectLocation(type)) {
     const supportedTypes = schemaTypesDefinition.get(ENTITY_TYPE_LOCATION).join(', ');

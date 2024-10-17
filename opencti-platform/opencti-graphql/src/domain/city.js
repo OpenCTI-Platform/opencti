@@ -19,8 +19,6 @@ export const locatedAtCountry = async (context, user, stixCoreObjectId) => {
 };
 
 export const addCity = async (context, user, city) => {
-  logApp.info('ANGIE addCity:', city);
-
   const created = await createEntity(
     context,
     user,

@@ -28,7 +28,6 @@ export const bundleProcess = async (
   mapper: CsvMapperParsed,
   opts: BundleProcessOpts = {}
 ) => {
-  logApp.info('ANGIE bundleProcess V1');
   const { entity, maxRecordNumber } = opts;
   await validateCsvMapper(context, user, mapper);
   const sanitizedMapper = sanitized(mapper);
@@ -80,7 +79,6 @@ export const bundleAllowUpsertProcess = async (
   mapper: CsvMapperParsed,
   opts: BundleProcessOpts = {}
 ) => {
-  logApp.info('ANGIE bundleProcessV2');
   const { entity, maxRecordNumber } = opts;
   await validateCsvMapper(context, user, mapper);
   const sanitizedMapper = sanitized(mapper);

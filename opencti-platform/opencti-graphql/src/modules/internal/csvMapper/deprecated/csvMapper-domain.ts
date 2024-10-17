@@ -7,7 +7,7 @@ import { parseReadableToLines } from '../../../../parser/csv-parser';
 import { bundleProcess } from '../../../../parser/csv-bundler';
 
 /**
- * @deprecated [>=6.3 & <6.6]. Use `csvMapperTest mutation`.
+ * @deprecated [>=6.4 & <6.7]. Use `csvMapperTest mutation`.
  */
 export const csvMapperTest = async (context: AuthContext, user: AuthUser, configuration: string, content: string) => {
   let parsedConfiguration;

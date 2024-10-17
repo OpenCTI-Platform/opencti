@@ -3,5 +3,5 @@ type Query {
   csvMapperTest(
     configuration: String!
     content: String!
-  ): CsvMapperTestResult @auth(for: [CSVMAPPERS]) @deprecated(reason: "[>=6.3 & <6.6]. Use `csvMapperTest mutation`.")
+  ): CsvMapperTestResult @auth(for: [CSVMAPPERS]) @deprecated(reason: "[>=6.4 & <6.7]. Use `csvMapperTest mutation`.")
 }
