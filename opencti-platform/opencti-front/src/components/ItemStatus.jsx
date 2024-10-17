@@ -3,8 +3,10 @@ import * as PropTypes from 'prop-types';
 import withStyles from '@mui/styles/withStyles';
 import Chip from '@mui/material/Chip';
 import { compose } from 'ramda';
+import { useTheme } from '@mui/material';
 import inject18n from './i18n';
 import { hexToRGB } from '../utils/Colors';
+import useAuth from '../utils/hooks/useAuth';
 
 const styles = () => ({
   chip: {
@@ -36,6 +38,8 @@ const styles = () => ({
 });
 
 const ItemStatus = (props) => {
+  const { me: { monochrome_labels } } = useAuth();
+  const theme = useTheme();
   const { classes, t, status, variant, disabled, onClick } = props;
   let style = classes.chip;
   if (variant === 'inList') {
@@ -55,9 +59,9 @@ const ItemStatus = (props) => {
         }}
         label={status.template.name}
         style={{
-          color: status.template.color,
-          borderColor: status.template.color,
-          backgroundColor: hexToRGB(status.template.color),
+          color: theme.palette.chip.main,
+          borderColor: monochrome_labels ? theme.palette.background.accent : status.template.color,
+          backgroundColor: monochrome_labels ? theme.palette.background.accent : hexToRGB(status.template.color),
           cursor: onClick ? 'pointer' : 'default',
         }}
       />

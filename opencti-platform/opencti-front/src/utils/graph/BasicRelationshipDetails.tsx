@@ -2,11 +2,12 @@ import React, { FunctionComponent } from 'react';
 import Typography from '@mui/material/Typography';
 import Chip from '@mui/material/Chip';
 import makeStyles from '@mui/styles/makeStyles';
-import { hexToRGB, itemColor } from '../Colors';
+import { hexToRGB } from '../Colors';
 import RelationShipFromAndTo from './RelationShipFromAndTo';
 import ItemMarkings from '../../components/ItemMarkings';
 import { useFormatter } from '../../components/i18n';
 import type { SelectedEntity } from './EntitiesDetailsRightBar';
+import itemColor from '../../components/ItemColor';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -28,6 +29,7 @@ interface BasicRelationshipDetailsProps {
 const BasicRelationshipDetails: FunctionComponent<BasicRelationshipDetailsProps> = ({ relation }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
+  const relationshipType = relation.relationship_type ?? '';
   return (
     <div>
       <Typography variant="h3" gutterBottom={true} className={classes.label}>
@@ -37,15 +39,15 @@ const BasicRelationshipDetails: FunctionComponent<BasicRelationshipDetailsProps>
         classes={{ root: classes.chipInList }}
         style={{
           backgroundColor: hexToRGB(
-            itemColor(relation.relationship_type),
+            itemColor(relationshipType),
             0.08,
           ),
-          color: itemColor(relation.relationship_type),
+          color: itemColor(relationshipType),
           border: `1px solid ${itemColor(
-            relation.relationship_type,
+            relationshipType,
           )}`,
         }}
-        label={t_i18n(`relationship_${relation.relationship_type}`)}
+        label={t_i18n(`relationship_${relationshipType}`)}
       />
       {relation.source_id && (
         <RelationShipFromAndTo

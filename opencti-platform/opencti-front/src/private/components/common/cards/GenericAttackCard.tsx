@@ -91,7 +91,7 @@ interface fromEdges {
   edges: ReadonlyArray<{ node: { from: { name?: string } | null } }>;
 }
 
-interface labelEdges {
+export interface labelEdges {
   edges: ReadonlyArray<{
     node: { id: string; value: string | null; color: string | null };
   }>;
@@ -237,7 +237,11 @@ export const GenericAttackCard: FunctionComponent<GenericAttackCardProps> = ({
           </div>
           <div className={classes.objectLabel}>
             <StixCoreObjectLabels
-              labels={cardData.objectLabel}
+              labels={(cardData.objectLabel?.edges ?? []).map(({ node }) => ({
+                id: node.id,
+                value: node.value,
+                color: node.color,
+              }))}
               onClick={onLabelClick}
             />
           </div>

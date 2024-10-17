@@ -2,12 +2,11 @@ import Chip from '@mui/material/Chip';
 import React, { FunctionComponent } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import { useTheme } from '@mui/material';
-import { itemColor } from '../utils/Colors';
 import { useFormatter } from './i18n';
-import ThemeLight from './ThemeLight';
-import ThemeDark from './ThemeDark';
 import ItemIcon from './ItemIcon';
 import { truncate } from '../utils/String';
+import itemColor from './ItemColor';
+import type { Theme } from './Theme';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -55,10 +54,7 @@ const ItemEntityType: FunctionComponent<ItemEntityTypeProps> = ({
 
   const isRelationship = t_i18n(`relationship_${entityType}`) !== `relationship_${entityType}`;
 
-  const { palette: { mode } } = useTheme();
-  const theme = mode === 'dark'
-    ? ThemeDark()
-    : ThemeLight();
+  const theme = useTheme<Theme>();
   const getStyle = () => {
     let width;
     switch (size) {

@@ -45,6 +45,7 @@ import StixCoreRelationshipObjectLabelsView from './StixCoreRelationshipLabelsVi
 import Transition from '../../../../components/Transition';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 import withRouter from '../../../../utils/compat_router/withRouter';
+import { UserContext } from '../../../../utils/hooks/useAuth';
 
 const styles = (theme) => ({
   container: {
@@ -188,10 +189,7 @@ class StixCoreRelationshipContainer extends Component {
 
   submitDelete() {
     this.setState({ deleting: true });
-    const {
-      location,
-      stixCoreRelationship,
-    } = this.props;
+    const { location, stixCoreRelationship } = this.props;
     commitMutation({
       mutation: stixCoreRelationshipEditionDeleteMutation,
       variables: {
@@ -207,7 +205,16 @@ class StixCoreRelationshipContainer extends Component {
   }
 
   render() {
-    const { t, fldt, nsdt, classes, stixCoreRelationship, paddingRight } = this.props;
+    const {
+      t,
+      fldt,
+      nsdt,
+      classes,
+      stixCoreRelationship,
+      paddingRight,
+      theme,
+    } = this.props;
+    const dark = theme.palette.mode === 'dark';
     const { expanded } = this.state;
     const { from } = stixCoreRelationship;
     const { to } = stixCoreRelationship;
@@ -248,184 +255,220 @@ class StixCoreRelationshipContainer extends Component {
               style={{ position: 'relative' }}
               className={'paper-for-grid'}
             >
-              <Link to={!fromRestricted ? `${linkFrom}/${from.id}` : '#'}>
-                <div
-                  className={classes.item}
-                  style={{
-                    border: `2px solid ${itemColor(
-                      !fromRestricted ? from.entity_type : 'Restricted',
-                    )}`,
-                    top: 20,
-                    left: 20,
-                  }}
-                >
-                  <div
-                    className={classes.itemHeader}
-                    style={{
-                      borderBottom: `1px solid ${itemColor(
-                        !fromRestricted ? from.entity_type : 'Restricted',
-                      )}`,
-                    }}
-                  >
-                    <div className={classes.icon}>
-                      <ItemIcon
-                        type={!fromRestricted ? from.entity_type : 'Restricted'}
-                        color={itemColor(
-                          !fromRestricted ? from.entity_type : 'Restricted',
+              <UserContext.Consumer>
+                {({ monochrome_labels }) => (
+                  <>
+                    <Link to={!fromRestricted ? `${linkFrom}/${from.id}` : '#'}>
+                      <div
+                        className={classes.item}
+                        style={{
+                          border: `2px solid ${itemColor(
+                            !fromRestricted ? from.entity_type : 'Restricted',
+                            dark,
+                            undefined,
+                            monochrome_labels,
+                          )}`,
+                          top: 20,
+                          left: 20,
+                        }}
+                      >
+                        <div
+                          className={classes.itemHeader}
+                          style={{
+                            borderBottom: `1px solid ${itemColor(
+                              !fromRestricted ? from.entity_type : 'Restricted',
+                              dark,
+                              undefined,
+                              monochrome_labels,
+                            )}`,
+                          }}
+                        >
+                          <div className={classes.icon}>
+                            <ItemIcon
+                              type={
+                                !fromRestricted
+                                  ? from.entity_type
+                                  : 'Restricted'
+                              }
+                              color={itemColor(
+                                !fromRestricted
+                                  ? from.entity_type
+                                  : 'Restricted',
+                                dark,
+                                undefined,
+                                monochrome_labels,
+                              )}
+                              size="small"
+                            />
+                          </div>
+                          <div className={classes.type}>
+                            {/* eslint-disable-next-line no-nested-ternary */}
+                            {!fromRestricted
+                              ? from.relationship_type
+                                ? t('Relationship')
+                                : t(`entity_${from.entity_type}`)
+                              : t('Restricted')}
+                          </div>
+                        </div>
+                        <div className={classes.content}>
+                          <span className={classes.name}>
+                            {!fromRestricted
+                              ? truncate(
+                                getMainRepresentative(from) !== 'Unknown'
+                                  ? getMainRepresentative(from)
+                                  : t(`relationship_${from.entity_type}`),
+                                50,
+                              )
+                              : t('Restricted')}
+                          </span>
+                        </div>
+                      </div>
+                    </Link>
+                    <div className={classes.middle}>
+                      <ArrowRightAlt fontSize="large" />
+                      <br />
+                      <Chip
+                        variant="outlined"
+                        classes={{ root: classes.chipInList }}
+                        color="primary"
+                        label={t(
+                          `relationship_${stixCoreRelationship.relationship_type}`,
                         )}
-                        size="small"
                       />
                     </div>
-                    <div className={classes.type}>
-                      {/* eslint-disable-next-line no-nested-ternary */}
-                      {!fromRestricted
-                        ? from.relationship_type
-                          ? t('Relationship')
-                          : t(`entity_${from.entity_type}`)
-                        : t('Restricted')}
+                    <Link to={!toRestricted ? `${linkTo}/${to.id}` : '#'}>
+                      <div
+                        className={classes.item}
+                        style={{
+                          border: `2px solid ${itemColor(
+                            !toRestricted ? to.entity_type : 'Restricted',
+                            dark,
+                            undefined,
+                            monochrome_labels,
+                          )}`,
+                          top: 20,
+                          right: 20,
+                        }}
+                      >
+                        <div
+                          className={classes.itemHeader}
+                          style={{
+                            borderBottom: `1px solid ${itemColor(
+                              !toRestricted ? to.entity_type : 'Restricted',
+                              dark,
+                              undefined,
+                              monochrome_labels,
+                            )}`,
+                          }}
+                        >
+                          <div className={classes.icon}>
+                            <ItemIcon
+                              type={!toRestricted ? to.entity_type : 'Unknown'}
+                              color={itemColor(
+                                !toRestricted ? to.entity_type : 'Restricted',
+                                dark,
+                                undefined,
+                                monochrome_labels,
+                              )}
+                              size="small"
+                            />
+                          </div>
+                          <div className={classes.type}>
+                            {
+                              // eslint-disable-next-line no-nested-ternary
+                              !toRestricted
+                                ? to.relationship_type
+                                  ? t('Relationship')
+                                  : t(`entity_${to.entity_type}`)
+                                : t('Restricted')
+                            }
+                          </div>
+                        </div>
+                        <div className={classes.content}>
+                          <span className={classes.name}>
+                            {!toRestricted
+                              ? truncate(
+                                getMainRepresentative(to) !== 'Unknown'
+                                  ? getMainRepresentative(to)
+                                  : t(`relationship_${to.entity_type}`),
+                                50,
+                              )
+                              : t('Restricted')}
+                          </span>
+                        </div>
+                      </div>
+                    </Link>
+                    <Divider style={{ marginTop: 30 }} />
+                    <div style={{ padding: 15 }}>
+                      <Grid container={true} spacing={3}>
+                        <Grid item xs={6}>
+                          <Typography variant="h3" gutterBottom={true}>
+                            {t('Marking')}
+                          </Typography>
+                          <ItemMarkings
+                            markingDefinitions={
+                              stixCoreRelationship.objectMarking ?? []
+                            }
+                          />
+                          <Typography
+                            variant="h3"
+                            gutterBottom={true}
+                            style={{ marginTop: 20 }}
+                          >
+                            {t('Start time')}
+                          </Typography>
+                          {nsdt(stixCoreRelationship.start_time)}
+                          <Typography
+                            variant="h3"
+                            style={{ marginTop: 20 }}
+                            gutterBottom={true}
+                          >
+                            {t('Stop time')}
+                          </Typography>
+                          {nsdt(stixCoreRelationship.stop_time)}
+                        </Grid>
+                        <Grid item xs={6}>
+                          <StixCoreRelationshipSharing
+                            elementId={stixCoreRelationship.id}
+                          />
+                          <Typography
+                            variant="h3"
+                            gutterBottom={true}
+                            style={{ marginTop: 20 }}
+                          >
+                            {t('Description')}
+                          </Typography>
+                          <MarkdownDisplay
+                            content={
+                              stixCoreRelationship.x_opencti_inferences !== null
+                                ? t('Inferred knowledge')
+                                : stixCoreRelationship.description
+                            }
+                            remarkGfmPlugin={true}
+                            commonmark={true}
+                          />
+                          <StixCoreObjectKillChainPhasesView
+                            killChainPhases={
+                              stixCoreRelationship.killChainPhases
+                            }
+                          />
+                        </Grid>
+                      </Grid>
                     </div>
-                  </div>
-                  <div className={classes.content}>
-                    <span className={classes.name}>
-                      {!fromRestricted
-                        ? truncate(
-                          getMainRepresentative(from) !== 'Unknown'
-                            ? getMainRepresentative(from)
-                            : t(`relationship_${from.entity_type}`),
-                          50,
-                        )
-                        : t('Restricted')}
-                    </span>
-                  </div>
-                </div>
-              </Link>
-              <div className={classes.middle}>
-                <ArrowRightAlt fontSize="large" />
-                <br />
-                <Chip
-                  variant="outlined"
-                  classes={{ root: classes.chipInList }}
-                  color="primary"
-                  label={t(
-                    `relationship_${stixCoreRelationship.relationship_type}`,
-                  )}
-                />
-              </div>
-              <Link to={!toRestricted ? `${linkTo}/${to.id}` : '#'}>
-                <div
-                  className={classes.item}
-                  style={{
-                    border: `2px solid ${itemColor(
-                      !toRestricted ? to.entity_type : 'Restricted',
-                    )}`,
-                    top: 20,
-                    right: 20,
-                  }}
-                >
-                  <div
-                    className={classes.itemHeader}
-                    style={{
-                      borderBottom: `1px solid ${itemColor(
-                        !toRestricted ? to.entity_type : 'Restricted',
-                      )}`,
-                    }}
-                  >
-                    <div className={classes.icon}>
-                      <ItemIcon
-                        type={!toRestricted ? to.entity_type : 'Unknown'}
-                        color={itemColor(
-                          !toRestricted ? to.entity_type : 'Restricted',
-                        )}
-                        size="small"
-                      />
-                    </div>
-                    <div className={classes.type}>
-                      {
-                        // eslint-disable-next-line no-nested-ternary
-                        !toRestricted
-                          ? to.relationship_type
-                            ? t('Relationship')
-                            : t(`entity_${to.entity_type}`)
-                          : t('Restricted')
-                      }
-                    </div>
-                  </div>
-                  <div className={classes.content}>
-                    <span className={classes.name}>
-                      {!toRestricted
-                        ? truncate(
-                          getMainRepresentative(to) !== 'Unknown'
-                            ? getMainRepresentative(to)
-                            : t(`relationship_${to.entity_type}`),
-                          50,
-                        )
-                        : t('Restricted')}
-                    </span>
-                  </div>
-                </div>
-              </Link>
-              <Divider style={{ marginTop: 30 }} />
-              <div style={{ padding: 15 }}>
-                <Grid container={true} spacing={3}>
-                  <Grid item xs={6}>
-                    <Typography variant="h3" gutterBottom={true}>
-                      {t('Marking')}
-                    </Typography>
-                    <ItemMarkings markingDefinitions={stixCoreRelationship.objectMarking ?? []} />
-                    <Typography
-                      variant="h3"
-                      gutterBottom={true}
-                      style={{ marginTop: 20 }}
-                    >
-                      {t('Start time')}
-                    </Typography>
-                    {nsdt(stixCoreRelationship.start_time)}
-                    <Typography
-                      variant="h3"
-                      style={{ marginTop: 20 }}
-                      gutterBottom={true}
-                    >
-                      {t('Stop time')}
-                    </Typography>
-                    {nsdt(stixCoreRelationship.stop_time)}
-                  </Grid>
-                  <Grid item xs={6}>
-                    <StixCoreRelationshipSharing
-                      elementId={stixCoreRelationship.id}
-                    />
-                    <Typography
-                      variant="h3"
-                      gutterBottom={true}
-                      style={{ marginTop: 20 }}
-                    >
-                      {t('Description')}
-                    </Typography>
-                    <MarkdownDisplay
-                      content={
-                        stixCoreRelationship.x_opencti_inferences !== null ? (
-                          t('Inferred knowledge')
-                        ) : (
-                          stixCoreRelationship.description
-                        )
-                      }
-                      remarkGfmPlugin={true}
-                      commonmark={true}
-                    />
-                    <StixCoreObjectKillChainPhasesView
-                      killChainPhases={
-                        stixCoreRelationship.killChainPhases
-                      }
-                    />
-                  </Grid>
-                </Grid>
-              </div>
+                  </>
+                )}
+              </UserContext.Consumer>
             </Paper>
           </Grid>
           <Grid item xs={6}>
             <Typography variant="h4" gutterBottom={true}>
               {t('Details')}
             </Typography>
-            <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
+            <Paper
+              classes={{ root: classes.paper }}
+              className={'paper-for-grid'}
+              variant="outlined"
+            >
               <Grid container={true} spacing={3}>
                 <Grid item xs={6}>
                   <Typography variant="h3" gutterBottom={true}>
@@ -529,7 +572,9 @@ class StixCoreRelationshipContainer extends Component {
               </Grid>
               <Grid item xs={12}>
                 <StixCoreObjectOrStixCoreRelationshipNotes
-                  stixCoreObjectOrStixCoreRelationshipId={stixCoreRelationship.id}
+                  stixCoreObjectOrStixCoreRelationshipId={
+                    stixCoreRelationship.id
+                  }
                   isRelationship={true}
                   defaultMarkings={stixCoreRelationship.objectMarking ?? []}
                 />
@@ -632,6 +677,7 @@ StixCoreRelationshipContainer.propTypes = {
   stixCoreRelationship: PropTypes.object,
   paddingRight: PropTypes.bool,
   classes: PropTypes.object,
+  theme: PropTypes.object,
   t: PropTypes.func,
   nsdt: PropTypes.func,
   match: PropTypes.object,
