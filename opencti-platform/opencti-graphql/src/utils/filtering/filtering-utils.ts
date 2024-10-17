@@ -21,6 +21,11 @@ import {
 import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
 import { STIX_CORE_RELATIONSHIPS } from '../../schema/stixCoreRelationship';
 import { UnsupportedError } from '../../config/errors';
+// eslint-disable-next-line import/no-cycle
+import { getLiveIdsFromIds, inDraftContext } from '../../database/engine';
+import { isFeatureEnabled } from '../../config/conf';
+import type { AuthContext, AuthUser } from '../../types/user';
+
 
 //----------------------------------------------------------------------------------------------------------------------
 // Basic utility functions
@@ -188,7 +193,7 @@ const specialFilterKeysConvertor = new Map([
  * Return a filterGroup where all special keys (rel refs) have been converted from frontend format to backend format
  * @param filterGroup
  */
-export const convertRelationRefsFilterKeys = (filterGroup: FilterGroup): FilterGroup => {
+export const convertRelationRefsFilterKeys = async (context: AuthContext, user: AuthUser, filterGroup: FilterGroup): Promise<FilterGroup> => {
   if (isFilterGroupNotEmpty(filterGroup)) {
     const { filters = [], filterGroups = [] } = filterGroup;
     const newFiltersContent: Filter[] = [];
@@ -196,19 +201,30 @@ export const convertRelationRefsFilterKeys = (filterGroup: FilterGroup): FilterG
     if (filterGroups.length > 0) {
       for (let i = 0; i < filterGroups.length; i += 1) {
         const group = filterGroups[i];
-        const convertedGroup = convertRelationRefsFilterKeys(group);
+        const convertedGroup = await convertRelationRefsFilterKeys(context, user, group);
         newFilterGroups.push(convertedGroup);
       }
     }
-    filters.forEach((f) => {
+
+    // eslint-disable-next-line no-restricted-syntax
+    for (const f of filters) {
       const filterKeys = Array.isArray(f.key) ? f.key : [f.key];
+      const draftContext = inDraftContext(context, user);
+      const isDraftNewID = isFeatureEnabled('DRAFT_NEW_ID');
+      let valuesToUse = f.values;
+      if (valuesToUse && valuesToUse.filter((v) => typeof v === 'string').length > 0 && draftContext && isDraftNewID) {
+        const stringValues = valuesToUse.filter((v) => typeof v === 'string');
+        const idMap = await getLiveIdsFromIds(context, user, stringValues);
+        const valuesMapped = stringValues.map((v) => idMap[v]).filter((d) => d);
+        valuesToUse = [...f.values, ...valuesMapped];
+      }
       const convertedFilterKeys = filterKeys
         .map((key) => specialFilterKeysConvertor.get(key) ?? key) //  convert special keys
         .map((key) => (STIX_CORE_RELATIONSHIPS.includes(key) ? buildRefRelationKey(key, '*') : key)) // convert relation keys -> rel_X or keep key
         .map((key) => [key, schemaRelationsRefDefinition.getDatabaseName(key) ?? '']) // fetch eventual ref database names
         .map(([key, name]) => (name ? buildRefRelationKey(name, '*') : key)); // convert databaseName if exists or keep initial key if not
-      newFiltersContent.push({ ...f, key: convertedFilterKeys });
-    });
+      newFiltersContent.push({ ...f, values: valuesToUse, key: convertedFilterKeys });
+    }
     return {
       mode: filterGroup.mode,
       filters: newFiltersContent,
@@ -232,7 +248,7 @@ const getConvertedRelationsNames = (relationNames: string[]) => {
  * - check that the key is available with respect to the schema, throws an Error if not
  * - convert relation refs key if any
  */
-export const checkAndConvertFilters = (filterGroup: FilterGroup | null | undefined, opts: { noFiltersChecking?: boolean } = {}) => {
+export const checkAndConvertFilters = async (context: AuthContext, user: AuthUser, filterGroup: FilterGroup | null | undefined, opts: { noFiltersChecking?: boolean } = {}) => {
   if (!filterGroup) {
     return undefined;
   }
@@ -268,7 +284,7 @@ export const checkAndConvertFilters = (filterGroup: FilterGroup | null | undefin
     }
 
     // 02. translate the filter keys on relation refs and return the converted filters
-    return convertRelationRefsFilterKeys(filterGroup);
+    return convertRelationRefsFilterKeys(context, user, filterGroup);
   }
 
   // nothing to convert

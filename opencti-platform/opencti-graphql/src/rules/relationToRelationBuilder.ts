@@ -10,13 +10,14 @@ import type { StixRelation } from '../types/stix-sro';
 import { STIX_EXT_OCTI } from '../types/stix-extensions';
 import { RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
 import { executionContext, RULE_MANAGER_USER } from '../utils/access';
+import type { DataEvent, UpdateEvent } from '../types/event';
 
 const buildRelationToRelationRule = (ruleDefinition: RuleDefinition, relationTypes: RelationTypes): RuleRuntime => {
   const { id } = ruleDefinition;
   const { leftType, rightType, creationType } = relationTypes;
   // Execution
-  const applyUpsert = async (data: StixRelation): Promise<void> => {
-    const context = executionContext(ruleDefinition.name, RULE_MANAGER_USER);
+  const applyUpsert = async (data: StixRelation, event: DataEvent): Promise<void> => {
+    const context = executionContext(ruleDefinition.name, RULE_MANAGER_USER, event.draftContext);
     const { extensions } = data;
     const createdId = extensions[STIX_EXT_OCTI].id;
     const sourceRef = extensions[STIX_EXT_OCTI].source_ref;
@@ -87,14 +88,14 @@ const buildRelationToRelationRule = (ruleDefinition: RuleDefinition, relationTyp
     }
   };
   // Contract
-  const clean = async (element: StoreObject, deletedDependencies: Array<string>): Promise<void> => {
-    await deleteInferredRuleElement(id, element, deletedDependencies);
+  const clean = async (element: StoreObject, deletedDependencies: Array<string>, event: DataEvent): Promise<void> => {
+    await deleteInferredRuleElement(id, element, deletedDependencies, { draftContext: event.draftContext });
   };
-  const insert = async (element: StixRelation): Promise<void> => {
-    return applyUpsert(element);
+  const insert = async (element: StixRelation, event: DataEvent): Promise<void> => {
+    return applyUpsert(element, event);
   };
-  const update = async (element: StixRelation): Promise<void> => {
-    return applyUpsert(element);
+  const update = async (element: StixRelation, event: UpdateEvent): Promise<void> => {
+    return applyUpsert(element, event);
   };
   return { ...ruleDefinition, insert, update, clean };
 };

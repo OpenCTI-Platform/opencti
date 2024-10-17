@@ -44,6 +44,7 @@ export const ROLE_DEFAULT = 'Default';
 export const ROLE_ADMINISTRATOR = 'Administrator';
 const RETENTION_MANAGER_USER_UUID = '82ed2c6c-eb27-498e-b904-4f2abc04e05f';
 export const RULE_MANAGER_USER_UUID = 'f9d7b43f-b208-4c56-8637-375a1ce84943';
+export const DRAFT_RULE_MANAGER_USER_UUID = 'f9d7b43f-b208-4c56-8637-375a1ce84945';
 export const AUTOMATION_MANAGER_USER_UUID = 'c49fe040-2dad-412d-af07-ce639204ad55';
 export const DECAY_MANAGER_USER_UUID = '7f176d74-9084-4d23-8138-22ac78549547';
 export const GARBAGE_COLLECTION_MANAGER_USER_UUID = 'c30d12be-d5fb-4724-88e7-8a7c9a4516c2';
@@ -120,6 +121,40 @@ export const RETENTION_MANAGER_USER: AuthUser = {
   user_email: 'RETENTION MANAGER',
   inside_platform_organization: true,
   origin: { user_id: RETENTION_MANAGER_USER_UUID, socket: 'internal' },
+  roles: [ADMINISTRATOR_ROLE],
+  groups: [],
+  capabilities: [{ name: BYPASS }],
+  organizations: [],
+  allowed_organizations: [],
+  allowed_marking: [],
+  max_shareable_marking: [],
+  default_marking: [],
+  all_marking: [],
+  api_token: '',
+  account_lock_after_date: undefined,
+  account_status: ACCOUNT_STATUS_ACTIVE,
+  administrated_organizations: [],
+  effective_confidence_level: {
+    max_confidence: 100,
+    overrides: [],
+  },
+  user_confidence_level: {
+    max_confidence: 100,
+    overrides: [],
+  },
+  no_creators: false,
+  restrict_delete: false,
+};
+
+export const DRAFT_RULE_MANAGER_USER: AuthUser = {
+  entity_type: 'User',
+  id: DRAFT_RULE_MANAGER_USER_UUID,
+  internal_id: DRAFT_RULE_MANAGER_USER_UUID,
+  individual_id: undefined,
+  name: 'DRAFT_RULE MANAGER',
+  user_email: 'DRAFT_RULE MANAGER',
+  inside_platform_organization: true,
+  origin: { user_id: DRAFT_RULE_MANAGER_USER_UUID, socket: 'internal' },
   roles: [ADMINISTRATOR_ROLE],
   groups: [],
   capabilities: [{ name: BYPASS }],
@@ -367,10 +402,10 @@ class TracingContext {
   }
 }
 
-export const executionContext = (source: string, auth?: AuthUser): AuthContext => {
+export const executionContext = (source: string, auth?: AuthUser, draftContext: string = ''): AuthContext => {
   const tracer = trace.getTracer('instrumentation-opencti', '1.0.0');
   const tracing = new TracingContext(tracer);
-  return { otp_mandatory: false, source, tracing, user: auth ?? undefined };
+  return { otp_mandatory: false, source, tracing, user: auth ?? undefined, draftId: draftContext};
 };
 
 export const INTERNAL_USERS = {

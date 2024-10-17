@@ -10,6 +10,10 @@
       "FAB_REPLACEMENT",
       "NEW_IMPORT_SCREENS",
       "FILIGRAN_LOADER",
+      "CAPABILITY_BYPASSFIELDS",
+      "BULK_ENTITIES",
+      "DRAFT_NEW_ID",
+      "DRAFT_COPY_ID",
       "CONTAINERS_AUTHORIZED_MEMBERS",
       "TELEMETRY_COUNT_ACTIVE_USERS",
       "PROTECT_SENSITIVE_CHANGES"
@@ -148,6 +152,10 @@
   "rule_engine": {
     "enabled": true,
     "lock_key": "rule_engine_lock"
+  },
+  "draft_rule_engine": {
+    "enabled": true,
+    "lock_key": "draft_rule_engine_lock"
   },
   "history_manager": {
     "enabled": true,

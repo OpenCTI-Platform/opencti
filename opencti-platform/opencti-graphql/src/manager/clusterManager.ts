@@ -17,6 +17,7 @@ import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import type { BasicStoreSettings } from '../types/settings';
 import playbookManager from './playbookManager';
 import { getAllManagersStatuses } from './managerModule';
+import draftRuleEngine from "./draftRuleManager";
 
 const SCHEDULE_TIME = 30000;
 
@@ -37,6 +38,7 @@ const initClusterManager = () => {
     // TODO migrate managers modules
     const managers = [
       ruleEngine.status(),
+      draftRuleEngine.status(),
       historyManager.status(),
       taskManager.status(),
       expiredManager.status(),

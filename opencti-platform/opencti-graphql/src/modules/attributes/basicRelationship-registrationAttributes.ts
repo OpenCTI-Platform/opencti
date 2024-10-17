@@ -6,12 +6,15 @@ import {
   entityType,
   iAttributes,
   id,
+  liveId,
   type IdAttribute,
   internalId,
   parentTypes,
   relationshipType,
   standardId,
-  updatedAt
+  updatedAt,
+  draftIds,
+  draftChange
 } from '../../schema/attribute-definition';
 import { schemaAttributesDefinition } from '../../schema/schema-attributes';
 import { ABSTRACT_BASIC_RELATIONSHIP } from '../../schema/general';
@@ -51,6 +54,9 @@ export const connections: AttributeDefinition = {
 
 const basicRelationshipAttributes: Array<AttributeDefinition> = [
   id,
+  liveId,
+  draftIds,
+  draftChange,
   internalId,
   standardId,
   iAttributes,

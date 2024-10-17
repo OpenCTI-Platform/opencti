@@ -1543,6 +1543,7 @@ type MeUser implements BasicObject & InternalObject {
   submenu_auto_collapse: Boolean
   monochrome_labels: Boolean
   can_manage_sensitive_config: Boolean
+  workspace_context: String
 }
 type SessionDetail {
   id: ID!
@@ -1869,6 +1870,7 @@ interface StixObject {
   parent_types: [String]!
   # StixObject
   representative: Representative!
+  inDraft: Boolean
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -1904,6 +1906,7 @@ interface StixMetaObject {
   entity_type: String!
   parent_types: [String]!
   # StixObject
+  inDraft: Boolean
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -1941,6 +1944,7 @@ type MarkingDefinition implements BasicObject & StixObject & StixMetaObject {
   parent_types: [String]!
   # StixObject
   representative: Representative!
+  inDraft: Boolean
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -2009,6 +2013,7 @@ type Label implements BasicObject & StixObject & StixMetaObject {
   parent_types: [String]!
   # StixObject
   representative: Representative!
+  inDraft: Boolean
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -2066,6 +2071,7 @@ type ExternalReference implements BasicObject & StixObject & StixMetaObject {
   parent_types: [String]!
   # StixObject
   representative: Representative!
+  inDraft: Boolean
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -2149,6 +2155,7 @@ type KillChainPhase implements BasicObject & StixObject & StixMetaObject {
   parent_types: [String]!
   # StixObject
   representative: Representative!
+  inDraft: Boolean
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -2226,6 +2233,7 @@ interface StixCoreObject {
   parent_types: [String]!
   # StixObject
   representative: Representative!
+  inDraft: Boolean
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -2390,6 +2398,7 @@ interface StixDomainObject {
   parent_types: [String]!
   # StixObject
   representative: Representative!
+  inDraft: Boolean
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -2553,6 +2562,7 @@ type AttackPattern implements BasicObject & StixObject & StixCoreObject & StixDo
   parent_types: [String]!
   # StixObject
   representative: Representative!
+  inDraft: Boolean
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -2778,6 +2788,7 @@ type Campaign implements BasicObject & StixObject & StixCoreObject & StixDomainO
   parent_types: [String]!
   # StixObject
   representative: Representative!
+  inDraft: Boolean
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -2956,6 +2967,7 @@ interface Container {
   parent_types: [String]!
   # StixObject
   representative: Representative!
+  inDraft: Boolean
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -3100,6 +3112,7 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   parent_types: [String]!
   # StixObject
   representative: Representative!
+  inDraft: Boolean
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -3319,6 +3332,7 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
   parent_types: [String]!
   # StixObject
   representative: Representative!
+  inDraft: Boolean
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -3514,6 +3528,7 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   parent_types: [String]!
   # StixObject
   representative: Representative!
+  inDraft: Boolean
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -3728,6 +3743,7 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   parent_types: [String]!
   # StixObject
   representative: Representative!
+  inDraft: Boolean
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -3932,6 +3948,7 @@ type CourseOfAction implements BasicObject & StixObject & StixCoreObject & StixD
   parent_types: [String]!
   # StixObject
   representative: Representative!
+  inDraft: Boolean
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -4109,6 +4126,7 @@ interface Identity {
   parent_types: [String]!
   # StixObject
   representative: Representative!
+  inDraft: Boolean
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -4279,6 +4297,7 @@ type Individual implements BasicObject & StixObject & StixCoreObject & StixDomai
   parent_types: [String]!
   # StixObject
   representative: Representative!
+  inDraft: Boolean
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -4461,6 +4480,7 @@ type Sector implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   parent_types: [String]!
   # StixObject
   representative: Representative!
+  inDraft: Boolean
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -4638,6 +4658,7 @@ type System implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   parent_types: [String]!
   # StixObject
   representative: Representative!
+  inDraft: Boolean
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -4824,6 +4845,7 @@ type Infrastructure implements BasicObject & StixObject & StixCoreObject & StixD
   parent_types: [String]!
   # StixObject
   representative: Representative!
+  inDraft: Boolean
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -5002,6 +5024,7 @@ type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDom
   parent_types: [String]!
   # StixObject
   representative: Representative!
+  inDraft: Boolean
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -5185,6 +5208,7 @@ interface Location {
   parent_types: [String]!
   # StixObject
   representative: Representative!
+  inDraft: Boolean
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -5356,6 +5380,7 @@ type Position implements BasicObject & StixObject & StixCoreObject & StixDomainO
   parent_types: [String]!
   # StixObject
   representative: Representative!
+  inDraft: Boolean
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -5536,6 +5561,7 @@ type City implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   parent_types: [String]!
   # StixObject
   representative: Representative!
+  inDraft: Boolean
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -5710,6 +5736,7 @@ type Country implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   parent_types: [String]!
   # StixObject
   representative: Representative!
+  inDraft: Boolean
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -5883,6 +5910,7 @@ type Region implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   parent_types: [String]!
   # StixObject
   representative: Representative!
+  inDraft: Boolean
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -6065,6 +6093,7 @@ type Malware implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   parent_types: [String]!
   # StixObject
   representative: Representative!
+  inDraft: Boolean
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -6257,6 +6286,7 @@ interface ThreatActor implements BasicObject & StixObject & StixCoreObject & Sti
   parent_types: [String]!
   # StixObject
   representative: Representative!
+  inDraft: Boolean
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -6406,6 +6436,7 @@ type ThreatActorGroup implements BasicObject & StixObject & StixCoreObject & Sti
   parent_types: [String]!
   # StixObject
   representative: Representative!
+  inDraft: Boolean
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -6597,6 +6628,7 @@ type Tool implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   parent_types: [String]!
   # StixObject
   representative: Representative!
+  inDraft: Boolean
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -6774,6 +6806,7 @@ type Vulnerability implements BasicObject & StixObject & StixCoreObject & StixDo
   parent_types: [String]!
   # StixObject
   representative: Representative!
+  inDraft: Boolean
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -6968,6 +7001,7 @@ type Incident implements BasicObject & StixObject & StixCoreObject & StixDomainO
   parent_types: [String]!
   # StixObject
   representative: Representative!
+  inDraft: Boolean
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -7151,6 +7185,7 @@ interface StixCyberObservable {
   parent_types: [String]!
   # StixObject
   representative: Representative!
+  inDraft: Boolean
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -7265,6 +7300,7 @@ type AutonomousSystem implements BasicObject & StixObject & StixCoreObject & Sti
   parent_types: [String]!
   # StixObject
   representative: Representative!
+  inDraft: Boolean
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -7391,6 +7427,7 @@ type Directory implements BasicObject & StixObject & StixCoreObject & StixCyberO
   parent_types: [String]!
   # StixObject
   representative: Representative!
+  inDraft: Boolean
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -7521,6 +7558,7 @@ type DomainName implements BasicObject & StixObject & StixCoreObject & StixCyber
   parent_types: [String]!
   # StixObject
   representative: Representative!
+  inDraft: Boolean
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -7643,6 +7681,7 @@ type EmailAddr implements BasicObject & StixObject & StixCoreObject & StixCyberO
   parent_types: [String]!
   # StixObject
   representative: Representative!
+  inDraft: Boolean
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -7767,6 +7806,7 @@ type EmailMessage implements BasicObject & StixObject & StixCoreObject & StixCyb
   parent_types: [String]!
   # StixObject
   representative: Representative!
+  inDraft: Boolean
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -7901,6 +7941,7 @@ type EmailMimePartType implements BasicObject & StixObject & StixCoreObject & St
   parent_types: [String]!
   # StixObject
   representative: Representative!
+  inDraft: Boolean
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -8045,6 +8086,7 @@ interface HashedObservable {
   parent_types: [String]!
   # StixObject
   representative: Representative!
+  inDraft: Boolean
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -8161,6 +8203,7 @@ type Artifact implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   parent_types: [String]!
   # StixObject
   representative: Representative!
+  inDraft: Boolean
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -8296,6 +8339,7 @@ type StixFile implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   parent_types: [String]!
   # StixObject
   representative: Representative!
+  inDraft: Boolean
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -8440,6 +8484,7 @@ type X509Certificate implements BasicObject & StixObject & StixCoreObject & Stix
   parent_types: [String]!
   # StixObject
   representative: Representative!
+  inDraft: Boolean
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -8619,6 +8664,7 @@ type IPv4Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   parent_types: [String]!
   # StixObject
   representative: Representative!
+  inDraft: Boolean
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -8744,6 +8790,7 @@ type IPv6Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   parent_types: [String]!
   # StixObject
   representative: Representative!
+  inDraft: Boolean
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -8867,6 +8914,7 @@ type MacAddr implements BasicObject & StixObject & StixCoreObject & StixCyberObs
   parent_types: [String]!
   # StixObject
   representative: Representative!
+  inDraft: Boolean
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -8989,6 +9037,7 @@ type Mutex implements BasicObject & StixObject & StixCoreObject & StixCyberObser
   parent_types: [String]!
   # StixObject
   representative: Representative!
+  inDraft: Boolean
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -9111,6 +9160,7 @@ type NetworkTraffic implements BasicObject & StixObject & StixCoreObject & StixC
   parent_types: [String]!
   # StixObject
   representative: Representative!
+  inDraft: Boolean
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -9254,6 +9304,7 @@ type Process implements BasicObject & StixObject & StixCoreObject & StixCyberObs
   parent_types: [String]!
   # StixObject
   representative: Representative!
+  inDraft: Boolean
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -9422,6 +9473,7 @@ type Software implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   parent_types: [String]!
   # StixObject
   representative: Representative!
+  inDraft: Boolean
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -9563,6 +9615,7 @@ type Url implements BasicObject & StixObject & StixCoreObject & StixCyberObserva
   parent_types: [String]!
   # StixObject
   representative: Representative!
+  inDraft: Boolean
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -9685,6 +9738,7 @@ type UserAccount implements BasicObject & StixObject & StixCoreObject & StixCybe
   parent_types: [String]!
   # StixObject
   representative: Representative!
+  inDraft: Boolean
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -9834,6 +9888,7 @@ type WindowsRegistryKey implements BasicObject & StixObject & StixCoreObject & S
   parent_types: [String]!
   # StixObject
   representative: Representative!
+  inDraft: Boolean
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -9960,6 +10015,7 @@ type WindowsRegistryValueType implements BasicObject & StixObject & StixCoreObje
   parent_types: [String]!
   # StixObject
   representative: Representative!
+  inDraft: Boolean
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -10086,6 +10142,7 @@ type CryptographicKey implements BasicObject & StixObject & StixCoreObject & Sti
   parent_types: [String]!
   # StixObject
   representative: Representative!
+  inDraft: Boolean
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -10208,6 +10265,7 @@ type CryptocurrencyWallet implements BasicObject & StixObject & StixCoreObject &
   parent_types: [String]!
   # StixObject
   representative: Representative!
+  inDraft: Boolean
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -10330,6 +10388,7 @@ type Hostname implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   parent_types: [String]!
   # StixObject
   representative: Representative!
+  inDraft: Boolean
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -10452,6 +10511,7 @@ type Text implements BasicObject & StixObject & StixCoreObject & StixCyberObserv
   parent_types: [String]!
   # StixObject
   representative: Representative!
+  inDraft: Boolean
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -10574,6 +10634,7 @@ type UserAgent implements BasicObject & StixObject & StixCoreObject & StixCyberO
   parent_types: [String]!
   # StixObject
   representative: Representative!
+  inDraft: Boolean
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -10696,6 +10757,7 @@ type BankAccount implements BasicObject & StixObject & StixCoreObject & StixCybe
   parent_types: [String]!
   # StixObject
   representative: Representative!
+  inDraft: Boolean
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -10823,6 +10885,7 @@ type TrackingNumber implements BasicObject & StixObject & StixCoreObject & StixC
   parent_types: [String]!
   # StixObject
   representative: Representative!
+  inDraft: Boolean
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -10948,6 +11011,7 @@ type Credential implements BasicObject & StixObject & StixCoreObject & StixCyber
   parent_types: [String]!
   # StixObject
   representative: Representative!
+  inDraft: Boolean
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -11073,6 +11137,7 @@ type PhoneNumber implements BasicObject & StixObject & StixCoreObject & StixCybe
   parent_types: [String]!
   # StixObject
   representative: Representative!
+  inDraft: Boolean
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -11195,6 +11260,7 @@ type PaymentCard implements BasicObject & StixObject & StixCoreObject & StixCybe
   parent_types: [String]!
   # StixObject
   representative: Representative!
+  inDraft: Boolean
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -11323,6 +11389,7 @@ type MediaContent implements BasicObject & StixObject & StixCoreObject & StixCyb
   parent_types: [String]!
   # StixObject
   representative: Representative!
+  inDraft: Boolean
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -11453,6 +11520,7 @@ type Persona implements BasicObject & StixObject & StixCoreObject & StixCyberObs
   entity_type: String!
   parent_types: [String]!
   # StixObject
+  inDraft: Boolean
   representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
@@ -11936,6 +12004,7 @@ interface StixRelationship {
   updated_at: DateTime!
   # StixRelationship
   representative: Representative!
+  inDraft: Boolean
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   from: StixObjectOrStixRelationshipOrCreator
@@ -12010,6 +12079,7 @@ type StixCoreRelationship implements BasicRelationship & StixRelationship {
   updated_at: DateTime!
   # StixRelationship
   representative: Representative!
+  inDraft: Boolean
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   from: StixObjectOrStixRelationshipOrCreator
@@ -12140,6 +12210,7 @@ type StixSightingRelationship implements BasicRelationship & StixRelationship {
   updated_at: DateTime!
   # StixRelationship
   representative: Representative!
+  inDraft: Boolean
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   from: StixObjectOrStixRelationshipOrCreator
@@ -12242,6 +12313,7 @@ type StixRefRelationship implements BasicRelationship & StixRelationship {
   updated_at: DateTime!
   # StixRelationship
   representative: Representative!
+  inDraft: Boolean
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   from: StixObjectOrStixRelationshipOrCreator

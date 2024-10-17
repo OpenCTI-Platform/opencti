@@ -6,6 +6,7 @@ type DataComponent implements BasicObject & StixObject & StixCoreObject & StixDo
     parent_types: [String]!
     # Stix Object
     representative: Representative!
+    inDraft: Boolean
     x_opencti_stix_ids: [StixId]
     is_inferred: Boolean!
     spec_version: String!

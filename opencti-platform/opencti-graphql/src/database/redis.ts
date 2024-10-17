@@ -30,6 +30,7 @@ import { enrichWithRemoteCredentials } from '../config/credentials';
 const USE_SSL = booleanConf('redis:use_ssl', false);
 const REDIS_CA = conf.get('redis:ca').map((path: string) => loadCert(path));
 export const REDIS_STREAM_NAME = `${REDIS_PREFIX}stream.opencti`;
+export const REDIS_DRAFT_STREAM_NAME = `${REDIS_PREFIX}draft.stream.opencti`;
 
 export const EVENT_CURRENT_VERSION = '4';
 
@@ -354,8 +355,8 @@ export const redisFetchLatestDeletions = async () => {
   await getClientLock().zremrangebyscore('platform-deletions', '-inf', time - (5 * 1000));
   return getClientLock().zrange('platform-deletions', 0, -1);
 };
-interface LockOptions { automaticExtension?: boolean, retryCount?: number }
-const defaultLockOpts: LockOptions = { automaticExtension: true, retryCount: conf.get('app:concurrency:retry_count') };
+interface LockOptions { automaticExtension?: boolean, retryCount?: number, draftId?: string }
+const defaultLockOpts: LockOptions = { automaticExtension: true, retryCount: conf.get('app:concurrency:retry_count'), draftId: '' };
 const getStackTrace = () => {
   const obj: any = {};
   Error.captureStackTrace(obj, getStackTrace);
@@ -365,7 +366,8 @@ export const lockResource = async (resources: Array<string>, opts: LockOptions =
   let timeout: NodeJS.Timeout | undefined;
   let extension: undefined | Promise<void>;
   const initialCallStack = getStackTrace();
-  const locks = R.uniq(resources).map((id) => `{locks}:${id}`);
+  const draftId = opts.draftId ? opts.draftId : '';
+  const locks = R.uniq(resources).map((id) => `{locks}:${id}${draftId}`);
   const automaticExtensionThreshold = conf.get('app:concurrency:extension_threshold');
   const retryDelay = conf.get('app:concurrency:retry_delay');
   const retryJitter = conf.get('app:concurrency:retry_jitter');
@@ -451,18 +453,38 @@ const mapJSToStream = (event: any) => {
   });
   return cmdArgs;
 };
+
+const inDraftContext = (context: AuthContext, user: AuthUser) => {
+  return context.draftId ?? user.workspace_context;
+};
+
 const pushToStream = async (context: AuthContext, user: AuthUser, client: Cluster | Redis, event: BaseEvent, opts: EventOpts = {}) => {
+  const draftContext = inDraftContext(context, user);
   if (isStreamPublishable(opts)) {
-    const pushToStreamFn = async () => {
-      if (streamTrimming) {
-        await client.call('XADD', REDIS_STREAM_NAME, 'MAXLEN', '~', streamTrimming, '*', ...mapJSToStream(event));
-      } else {
-        await client.call('XADD', REDIS_STREAM_NAME, '*', ...mapJSToStream(event));
-      }
-    };
-    telemetry(context, user, 'INSERT STREAM', {
-      [SEMATTRS_DB_NAME]: 'stream_engine',
-    }, pushToStreamFn);
+    if (draftContext) {
+      const draftEvent = { ...event, draftContext };
+      const pushToDraftStreamFn = async () => {
+        if (streamTrimming) {
+          await client.call('XADD', REDIS_DRAFT_STREAM_NAME, 'MAXLEN', '~', streamTrimming, '*', ...mapJSToStream(draftEvent));
+        } else {
+          await client.call('XADD', REDIS_DRAFT_STREAM_NAME, '*', ...mapJSToStream(draftEvent));
+        }
+      };
+      telemetry(context, user, 'INSERT DRAFT STREAM', {
+        [SEMATTRS_DB_NAME]: 'stream_engine',
+      }, pushToDraftStreamFn);
+    } else {
+      const pushToStreamFn = async () => {
+        if (streamTrimming) {
+          await client.call('XADD', REDIS_STREAM_NAME, 'MAXLEN', '~', streamTrimming, '*', ...mapJSToStream(event));
+        } else {
+          await client.call('XADD', REDIS_STREAM_NAME, '*', ...mapJSToStream(event));
+        }
+      };
+      telemetry(context, user, 'INSERT STREAM', {
+        [SEMATTRS_DB_NAME]: 'stream_engine',
+      }, pushToStreamFn);
+    }
   }
 };
 
@@ -535,6 +557,7 @@ const buildUpdateEvent = (user: AuthUser, previous: StoreObject, instance: Store
   const previousStix = convertStoreToStix(previous) as StixCoreObject;
   return buildStixUpdateEvent(user, previousStix, stix, message, opts);
 };
+
 export const storeUpdateEvent = async (context: AuthContext, user: AuthUser, previous: StoreObject, instance: StoreObject, message: string, opts: UpdateEventOpts = {}) => {
   try {
     if (isStixExportableData(instance)) {
@@ -627,8 +650,8 @@ const mapStreamToJS = ([id, data]: any): SseEvent<any> => {
   }
   return { id, event: obj.type, data: obj };
 };
-export const fetchStreamInfo = async () => {
-  const res: any = await getClientBase().xinfo('STREAM', REDIS_STREAM_NAME);
+export const fetchStreamInfo = async (streamName: string) => {
+  const res: any = await getClientBase().xinfo('STREAM', streamName);
   const info: any = R.fromPairs(R.splitEvery(2, res) as any);
   const firstId = info['first-entry'][0];
   const firstEventDate = utcDate(parseInt(firstId.split('-')[0], 10)).toISOString();
@@ -675,7 +698,7 @@ export const createStreamProcessor = <T extends BaseEvent> (
   let streamListening = true;
   const streamName = opts.streamName ?? REDIS_STREAM_NAME;
   const processInfo = async () => {
-    return fetchStreamInfo();
+    return fetchStreamInfo(streamName);
   };
   const processStep = async () => {
     // since previous call is async (and blocking) we should check if we are still running before processing the message

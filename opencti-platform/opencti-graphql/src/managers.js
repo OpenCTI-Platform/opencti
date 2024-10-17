@@ -2,6 +2,7 @@
 import conf, {
   ENABLED_API,
   ENABLED_CONNECTOR_MANAGER,
+  ENABLED_DRAFT_RULE_ENGINE,
   ENABLED_EXPIRED_MANAGER,
   ENABLED_FILE_INDEX_MANAGER,
   ENABLED_HISTORY_MANAGER,
@@ -21,6 +22,7 @@ import { ENABLED_IMPORT_CSV_BUILT_IN_CONNECTOR } from './connector/importCsv/imp
 import importCsvConnector from './connector/importCsv/importCsv-connector';
 import taskManager from './manager/taskManager';
 import ruleEngine from './manager/ruleManager';
+import draftRuleEngine from './manager/draftRuleManager';
 import syncManager from './manager/syncManager';
 import ingestionManager from './manager/ingestionManager';
 import historyManager from './manager/historyManager';
@@ -77,6 +79,12 @@ export const startModules = async () => {
     await ruleEngine.start();
   } else {
     logApp.info('[OPENCTI-MODULE] Rule engine not started (disabled by configuration)');
+  }
+  // region Draft Inference engine
+  if (ENABLED_DRAFT_RULE_ENGINE) {
+    await draftRuleEngine.start();
+  } else {
+    logApp.info('[OPENCTI-MODULE] Draft Rule engine not started (disabled by configuration)');
   }
   // endregion
   // region Sync manager
@@ -170,6 +178,11 @@ export const shutdownModules = async () => {
   // region Inference engine
   if (ENABLED_RULE_ENGINE) {
     stoppingPromises.push(ruleEngine.shutdown());
+  }
+  // endregion
+  // region Inference engine
+  if (ENABLED_DRAFT_RULE_ENGINE) {
+    stoppingPromises.push(draftRuleEngine.shutdown());
   }
   // endregion
   // region Ingestion managers
