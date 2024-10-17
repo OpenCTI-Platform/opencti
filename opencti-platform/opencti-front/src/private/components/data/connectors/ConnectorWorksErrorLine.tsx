@@ -55,13 +55,13 @@ const ConnectorWorksErrorLine: FunctionComponent<ConnectorWorksErrorLineProps> =
           {error.isParsed ? (
             <a href={`https://docs.opencti.io/latest/deployment/troubleshooting/#${error.parsedError.category}`} target="_blank" rel="noreferrer">{error.parsedError.category}</a>
           ) : (
-            <a href={'https://docs.opencti.io/latest/deployment/troubleshooting'} target="_blank" rel="noreferrer">{t_i18n('Docs')}</a>
+            <a href={'https://docs.opencti.io/latest/deployment/troubleshooting'} target="_blank" rel="noreferrer">{t_i18n('Unknown')}</a>
           )}
         </TableCell>
         <TableCell>{error.isParsed ? error.parsedError.message : error.rawError.message}</TableCell>
         <TableCell>
           {error.isParsed ? (
-            <a href={`/dashboard/id/${error.parsedError.entity.id}`} target="_blank" rel="noreferrer">{`[${error.parsedError.entity.type}] ${error.parsedError.entity.name}`}</a>
+            <a href={`/dashboard/id/${error.parsedError.entity.id}`} target="_blank" rel="noreferrer">[{error.parsedError.entity.type}] {error.parsedError.entity.name}</a>
           ) : (
             truncate(error.rawError.source, 50)
           )}
@@ -85,7 +85,7 @@ const ConnectorWorksErrorLine: FunctionComponent<ConnectorWorksErrorLineProps> =
         TransitionComponent={Transition}
         onClose={handleToggleModalError}
       >
-        <DialogTitle>Error</DialogTitle>
+        <DialogTitle>{t_i18n('Error')}</DialogTitle>
         <DialogContent>
           <DialogContentText>
             <pre><ItemCopy content={error.rawError.timestamp ?? '-'} /></pre>

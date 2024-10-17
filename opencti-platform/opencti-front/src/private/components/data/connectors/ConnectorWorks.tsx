@@ -392,7 +392,7 @@ const ConnectorWorksComponent: FunctionComponent<ConnectorWorksComponentProps> =
               <TableHead>
                 <TableRow>
                   <TableCell>{t_i18n('Timestamp')}</TableCell>
-                  <TableCell>{t_i18n('Error code')}</TableCell>
+                  <TableCell>{t_i18n('Code')}</TableCell>
                   <TableCell>{t_i18n('Message')}</TableCell>
                   <TableCell>{t_i18n('Source')}</TableCell>
                 </TableRow>
