@@ -63,7 +63,7 @@ const stixRefRelationshipResolvers = {
         const preFn = () => stixRefRelationshipEditContext(context, context.user, id);
         const cleanFn = () => stixRefRelationshipCleanContext(context, context.user, id);
         const bus = BUS_TOPICS[ABSTRACT_STIX_REF_RELATIONSHIP];
-        return subscribeToInstanceEvents(_, context, id, [bus.EDIT_TOPIC], { preFn, cleanFn });
+        return subscribeToInstanceEvents(_, context, id, [bus.EDIT_TOPIC], { type: ABSTRACT_STIX_REF_RELATIONSHIP, preFn, cleanFn });
       }
     }
   },

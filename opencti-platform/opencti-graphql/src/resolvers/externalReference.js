@@ -77,7 +77,7 @@ const externalReferenceResolvers = {
         const preFn = () => externalReferenceEditContext(context, context.user, id);
         const cleanFn = () => externalReferenceCleanContext(context, context.user, id);
         const bus = BUS_TOPICS[ENTITY_TYPE_EXTERNAL_REFERENCE];
-        return subscribeToInstanceEvents(_, context, id, [bus.EDIT_TOPIC], { preFn, cleanFn });
+        return subscribeToInstanceEvents(_, context, id, [bus.EDIT_TOPIC], { type: ENTITY_TYPE_EXTERNAL_REFERENCE, preFn, cleanFn });
       },
     },
   },
