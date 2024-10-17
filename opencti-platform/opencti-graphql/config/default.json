@@ -153,6 +153,10 @@
     "enabled": true,
     "lock_key": "rule_engine_lock"
   },
+  "draft_rule_engine": {
+    "enabled": true,
+    "lock_key": "draft_rule_engine_lock"
+  },
   "history_manager": {
     "enabled": true,
     "include_inferences": true,

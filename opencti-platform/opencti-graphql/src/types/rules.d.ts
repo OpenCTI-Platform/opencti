@@ -1,7 +1,7 @@
 import type { StixEntities } from './general';
 import type { StixRelation } from './stix-sro';
 import type { StoreObject } from './store';
-import type { UpdateEvent } from './event';
+import type {DataEvent, UpdateEvent} from './event';
 
 interface RuleFilters {
   types: Array<string>;
@@ -54,7 +54,7 @@ interface RuleDefinition {
 
 interface RuleRuntime extends RuleDefinition {
   activated?: boolean;
-  insert: (element: StixEntities | StixRelation) => Promise<void>;
+  insert: (element: StixEntities | StixRelation, event: DataEvent) => Promise<void>;
   update: (element: StixEntities | StixRelation, event: UpdateEvent) => Promise<void>;
-  clean: (element: StoreObject, deletedDependencies: Array<string>) => Promise<void>;
+  clean: (element: StoreObject, deletedDependencies: Array<string>, event: DataEvent) => Promise<void>;
 }

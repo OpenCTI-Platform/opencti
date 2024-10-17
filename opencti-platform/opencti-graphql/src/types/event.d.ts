@@ -44,6 +44,7 @@ interface StreamDataEvent extends BaseEvent {
   origin: Partial<UserOrigin>;
   message: string;
   data: StixCoreObject
+  draftContext: string | undefined
 }
 
 interface UpdateEvent extends StreamDataEvent {

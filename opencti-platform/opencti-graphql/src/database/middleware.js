@@ -3238,7 +3238,7 @@ export const deleteElementById = async (context, user, id, type, opts = {}) => {
   return deleted;
 };
 export const deleteInferredRuleElement = async (rule, instance, deletedDependencies, opts = {}) => {
-  const context = executionContext(rule.name, RULE_MANAGER_USER);
+  const context = executionContext(rule.name, RULE_MANAGER_USER, opts.draftContext ?? '');
   // Check if deletion is really targeting an inference
   const isInferred = isInferredIndex(instance._index);
   if (!isInferred) {
