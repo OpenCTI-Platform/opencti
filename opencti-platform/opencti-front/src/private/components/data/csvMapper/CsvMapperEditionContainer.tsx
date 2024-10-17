@@ -14,12 +14,18 @@ export const csvMapperEditionContainerFragment = graphql`
     has_header
     separator
     skipLineChar
+    has_entity_dynamic_mapping
     errors
     representations {
       id
       type
       target {
         entity_type
+        column_based {
+          column_reference
+          operator
+          value
+        }
       }
       attributes {
         key

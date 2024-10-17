@@ -14,6 +14,9 @@ import { CsvMapperFormData } from '@components/data/csvMapper/CsvMapper';
 import classNames from 'classnames';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import { formDataToCsvMapper } from '@components/data/csvMapper/CsvMapperUtils';
+import MUIAutocomplete from '@mui/material/Autocomplete';
+import MuiTextField from '@mui/material/TextField';
+import { alphabet } from '@components/data/csvMapper/representations/attributes/AttributeUtils';
 import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
@@ -53,6 +56,7 @@ const csvMapperValidation = (t_i18n: (s: string) => string) => Yup.object().shap
   has_header: Yup.boolean().required(t_i18n('This field is required')),
   separator: Yup.string().trim().required(t_i18n('This field is required')),
   skipLineChar: Yup.string().max(1),
+  has_entity_dynamic_mapping: Yup.boolean().required(t_i18n('This field is required')),
 });
 
 interface CsvMapperFormProps {
@@ -67,7 +71,9 @@ interface CsvMapperFormProps {
 const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({ csvMapper, onSubmit, isDuplicated }) => {
   const { t_i18n } = useFormatter();
   const classes = useStyles();
-
+  const options = alphabet(26);
+  const [selectedOption, setSelectedOption] = useState(null);
+  console.log('csvMapper', csvMapper);
   // -- INIT --
 
   // accordion state
@@ -153,6 +159,15 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({ csvMapper, onSub
     return t_i18n('Create');
   };
 
+  const handleParentSelect = (
+    setFieldValue: FormikHelpers<CsvMapperFormData>['setFieldValue'],
+    value: CsvMapperFormData,
+  ) => {
+    setFieldValue(
+      'has_dynamic_mapping',
+      value.has_entity_dynamic_mapping,
+    );
+  };
   // -- ERRORS --
   // on edit mode, csvMapper.errors might be set; on create mode backend validation is not done yet so error is null
   const [hasError, setHasError] = useState<boolean>(
@@ -270,8 +285,8 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({ csvMapper, onSub
                 <Field
                   component={SwitchField}
                   type="checkbox"
-                  name="Dynamic_mapping"
-                  label={t_i18n('Dynamic mapping')}
+                  name="has_entity_dynamic_mapping"
+                  label={t_i18n('Entity dynamic mapping')}
                 />
                 <Tooltip
                   title={t_i18n(
@@ -284,6 +299,24 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({ csvMapper, onSub
                     style={{ cursor: 'default' }}
                   />
                 </Tooltip>
+                <MUIAutocomplete
+                  selectOnFocus
+                  openOnFocus
+                  autoSelect={false}
+                  autoHighlight
+                  options={options}
+                    // value={setFieldValue ?? null}
+                  sx={{}}
+                  onChange={handleParentSelect}
+                  renderInput={(params) => (
+                    <MuiTextField
+                      {...params}
+                      label={t_i18n('Column index')}
+                      variant="outlined"
+                      size="small"
+                    />
+                  )}
+                />
               </div>
               <FieldArray
                 name="entity_representations"
@@ -302,6 +335,8 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({ csvMapper, onSub
                           handleRepresentationErrors={handleRepresentationErrors}
                           prefixLabel="entity_"
                           onDelete={() => arrayHelpers.remove(idx)}
+                          selectedOption={selectedOption}
+                          options={options}
                         />
                       </div>
                     ))}
@@ -340,6 +375,8 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({ csvMapper, onSub
                           handleRepresentationErrors={handleRepresentationErrors}
                           prefixLabel="relationship_"
                           onDelete={() => arrayHelpers.remove(idx)}
+                          selectedOption={selectedOption}
+                          options={options}
                         />
                       </div>
                     ))}
