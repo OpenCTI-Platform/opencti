@@ -41,9 +41,9 @@ const useBuildListOutcome = () => {
         <tbody>
           {nodes.map((n) => (
             <tr key={n.id}>
-              <td>${n.entity_type}</td>
-              <td>${n.representative.main}</td>
-              <td>${n.created_at}</td>
+              <td>{n.entity_type}</td>
+              <td>{n.representative.main}</td>
+              <td>{n.created_at}</td>
             </tr>
           ))}
         </tbody>
