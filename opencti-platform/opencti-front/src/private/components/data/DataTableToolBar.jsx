@@ -60,9 +60,9 @@ import Avatar from '@mui/material/Avatar';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
 import { map, pathOr, pipe, union } from 'ramda';
-import { objectParticipantFieldMembersSearchQuery } from '@components/common/form/ObjectParticipantField';
-import { objectAssigneeFieldMembersSearchQuery } from '@components/common/form/ObjectAssigneeField';
-import { vocabularyQuery } from '@components/common/form/OpenVocabField';
+import { objectParticipantFieldMembersSearchQuery } from '../common/form/ObjectParticipantField';
+import { objectAssigneeFieldMembersSearchQuery } from '../common/form/ObjectAssigneeField';
+import { vocabularyQuery } from '../common/form/OpenVocabField';
 import PromoteDrawer from './drawers/PromoteDrawer';
 import TasksFilterValueContainer from '../../../components/TasksFilterValueContainer';
 import inject18n from '../../../components/i18n';
@@ -446,18 +446,37 @@ class DataTableToolBar extends Component {
 
   handleLaunchUpdate() {
     const { actionsInputs } = this.state;
+    const categoryAttributeMapping = {
+      case_severity_ov: 'severity',
+      case_priority_ov: 'priority',
+      incident_response_types_ov: 'response_types',
+      request_for_information_types_ov: 'information_types',
+      request_for_takedown_types_ov: 'takedown_types',
+    };
+
     const actions = R.map(
-      (n) => ({
-        type: n.type,
-        context: {
-          field: n.field,
-          type: n.fieldType,
-          values: n.values,
-          options: n.options,
-        },
-      }),
-      actionsInputs,
-    );
+      (n) => {
+        if (categoryAttributeMapping[n.field]) {
+          return ({
+            type: n.type,
+            context: {
+              field: categoryAttributeMapping[n.field],
+              type: n.fieldType,
+              values: n.values.map(value => value.label),
+              options: n.options,
+            },
+          })
+        }
+        return {
+          type: n.type,
+          context: {
+            field: n.field,
+            type: n.fieldType,
+            values: n.values,
+            options: n.options,
+          },
+        };
+      }, actionsInputs);
     this.setState({ actions }, () => {
       this.handleCloseUpdate();
       this.handleOpenTask();
@@ -467,6 +486,7 @@ class DataTableToolBar extends Component {
   handleChangeActionInput(i, key, event) {
     const { value } = event.target;
     const { actionsInputs } = this.state;
+
     actionsInputs[i] = R.assoc(key, value, actionsInputs[i] || {});
     if (key === 'field') {
       const values = [];
@@ -504,7 +524,7 @@ class DataTableToolBar extends Component {
     actionsInputs[i] = R.assoc(
       'values',
       Array.isArray(value) ? value : [value],
-      actionsInputs[i] || {},
+      actionsInputs[i] || {}
     );
     this.setState({ actionsInputs });
   }
@@ -1356,7 +1376,7 @@ class DataTableToolBar extends Component {
             autoHighlight={true}
             getOptionLabel={(option) => (option.label ? option.label : '')}
             value={actionsInputs[i]?.values || []}
-            isOptionEqualToValue={(option, value) => option.value === value.value}
+            multiple={true}
             renderInput={(params) => (
               <TextField
                 {...params}
@@ -1392,7 +1412,7 @@ class DataTableToolBar extends Component {
             autoHighlight={true}
             getOptionLabel={(option) => (option.label ? option.label : '')}
             value={actionsInputs[i]?.values || []}
-            isOptionEqualToValue={(option, value) => option.value === value.value}
+            multiple={true}
             renderInput={(params) => (
               <TextField
                 {...params}
@@ -1431,8 +1451,7 @@ class DataTableToolBar extends Component {
             selectOnFocus={true}
             autoHighlight={true}
             getOptionLabel={(option) => (option.label ? option.label : '')}
-            value={actionsInputs[i]?.values || []}
-            isOptionEqualToValue={(option, value) => option.value === value.value}
+            value={actionsInputs[i]?.values[0] || null}
             renderInput={(params) => (
               <TextField
                 {...params}
