@@ -33,6 +33,7 @@ import WorkspaceShareButton from './WorkspaceShareButton';
 import WorkspaceDuplicationDialog from './WorkspaceDuplicationDialog';
 import handleExportJson from './workspaceExportHandler';
 import WorkspaceTurnToContainerDialog from './WorkspaceTurnToContainerDialog';
+import WidgetConfig from './dashboards/WidgetConfig';
 import { commitMutation, fetchQuery, MESSAGING$ } from '../../../relay/environment';
 import Security from '../../../utils/Security';
 import { nowUTC } from '../../../utils/Time';
@@ -110,6 +111,7 @@ const WorkspaceHeader = ({
   adjust,
   handleDateChange,
   widgetActions,
+  handleAddWidget,
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
@@ -354,6 +356,17 @@ const WorkspaceHeader = ({
               />
             </div>
           </Security>
+        )}
+        {variant === 'dashboard' && isFeatureEnable('FAB_REPLACEMENT') && (
+          <Security
+            needs={[EXPLORE_EXUPDATE]}
+            hasAccess={canEdit}
+          >
+            <div style={{ marginTop: '-8px', float: 'right' }}>
+              <WidgetConfig onComplete={handleAddWidget} workspace={workspace}></WidgetConfig>
+            </div>
+          </Security>
+
         )}
         {isFeatureEnable('PUBLIC_DASHBOARD') && variant === 'dashboard' && (
           <Security needs={[EXPLORE_EXUPDATE_PUBLISH]} hasAccess={canManage}>
