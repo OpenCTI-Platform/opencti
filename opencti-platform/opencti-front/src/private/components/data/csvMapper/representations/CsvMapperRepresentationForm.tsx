@@ -16,6 +16,7 @@ import { representationLabel } from '@components/data/csvMapper/representations/
 import IconButton from '@mui/material/IconButton';
 import Button from '@mui/material/Button';
 import { CsvMapperRepresentationFormData } from '@components/data/csvMapper/representations/Representation';
+import CsvMapperConditionalEntityMapping from '@components/data/csvMapper/representations/CsvMapperConditionalEntityMapping';
 import { useFormatter } from '../../../../../components/i18n';
 import ItemIcon from '../../../../../components/ItemIcon';
 import type { Theme } from '../../../../../components/Theme';
@@ -56,6 +57,7 @@ interface CsvMapperRepresentationFormProps
   handleRepresentationErrors: (key: string, value: boolean) => void;
   prefixLabel: string;
   onDelete: () => void;
+  selectedOption: string;
 }
 
 const CsvMapperRepresentationForm: FunctionComponent<
@@ -68,6 +70,7 @@ CsvMapperRepresentationFormProps
   handleRepresentationErrors,
   prefixLabel,
   onDelete,
+  selectedOption,
 }) => {
   const { t_i18n } = useFormatter();
   const classes = useStyles();
@@ -124,7 +127,6 @@ CsvMapperRepresentationFormProps
         || t_i18n(`${prefixLabel}${type.label}`).includes(val),
     );
   };
-
   return (
     <>
       <Accordion
@@ -171,7 +173,7 @@ CsvMapperRepresentationFormProps
               renderOption={(props, option) => (
                 <li {...props}>
                   <div className={classes.icon}>
-                    <ItemIcon type={option.label} />
+                    <ItemIcon type={option.label}/>
                   </div>
                   <div className={classes.text}>
                     {t_i18n(`${prefixLabel}${option.label}`)}
@@ -180,6 +182,11 @@ CsvMapperRepresentationFormProps
               )}
             />
             <div style={{ marginTop: 20 }}>
+              {field.name.startsWith('entity_representation') && (
+              <CsvMapperConditionalEntityMapping
+                options={selectedOption}
+              />
+              )}
               <CsvMapperRepresentationAttributesForm
                 handleErrors={handleErrors}
                 representation={value}

@@ -9,6 +9,7 @@ export interface CsvMapperFormData {
   id: string
   separator: string
   has_header: boolean
+  has_entity_dynamic_mapping?: boolean
   name?: string
   skip_line_char?: string
   entity_representations: CsvMapperRepresentationFormData[]

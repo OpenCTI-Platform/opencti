@@ -23,7 +23,7 @@ import type { BasicStoreEntityMalwareAnalysis } from '../modules/malwareAnalysis
 import type { BasicStoreEntityManagerConfiguration } from '../modules/managerConfiguration/managerConfiguration-types';
 import type { BasicStoreEntityNotifier } from '../modules/notifier/notifier-types';
 import type { BasicStoreEntityThreatActorIndividual } from '../modules/threatActorIndividual/threatActorIndividual-types';
-import type { BasicStoreEntityIngestionRss, BasicStoreEntityIngestionTaxii, BasicStoreEntityIngestionCsv } from '../modules/ingestion/ingestion-types';
+import type { BasicStoreEntityIngestionCsv, BasicStoreEntityIngestionRss, BasicStoreEntityIngestionTaxii } from '../modules/ingestion/ingestion-types';
 import type { BasicStoreEntityIndicator } from '../modules/indicator/indicator-types';
 import type { BasicStoreEntityDecayRule } from '../modules/decayRule/decayRule-types';
 import type { BasicStoreEntityOrganization } from '../modules/organization/organization-types';
@@ -32,6 +32,7 @@ import type { BasicStoreEntityPlaybook } from '../modules/playbook/playbook-type
 import type { BasicStoreEntityPublicDashboard } from '../modules/publicDashboard/publicDashboard-types';
 import type { BasicStoreEntityDeleteOperation } from '../modules/deleteOperation/deleteOperation-types';
 import type { BasicStoreEntitySupportPackage } from '../modules/support/support-types';
+
 export type Maybe<T> = T | null | undefined;
 export type InputMaybe<T> = T | null;
 export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
@@ -5187,6 +5188,7 @@ export type CsvMapper = BasicObject & InternalObject & {
   __typename?: 'CsvMapper';
   entity_type: Scalars['String']['output'];
   errors?: Maybe<Scalars['String']['output']>;
+    has_entity_dynamic_mapping?: Maybe<Scalars['Boolean']['output']>;
   has_header: Scalars['Boolean']['output'];
   id: Scalars['ID']['output'];
   name: Scalars['String']['output'];
@@ -5198,6 +5200,7 @@ export type CsvMapper = BasicObject & InternalObject & {
 };
 
 export type CsvMapperAddInput = {
+    has_entity_dynamic_mapping: Scalars['Boolean']['input'];
   has_header: Scalars['Boolean']['input'];
   name: Scalars['String']['input'];
   representations: Scalars['String']['input'];
@@ -33403,6 +33406,7 @@ export type CryptographicKeyResolvers<ContextType = any, ParentType extends Reso
 export type CsvMapperResolvers<ContextType = any, ParentType extends ResolversParentTypes['CsvMapper'] = ResolversParentTypes['CsvMapper']> = ResolversObject<{
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   errors?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+    has_entity_dynamic_mapping?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   has_header?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
