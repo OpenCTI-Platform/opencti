@@ -12802,7 +12802,7 @@ export type MeUser = BasicObject & InternalObject & {
   default_marking?: Maybe<Array<DefaultMarking>>;
   default_time_field?: Maybe<Scalars['String']['output']>;
   description?: Maybe<Scalars['String']['output']>;
-  draft_context?: Maybe<Scalars['String']['output']>;
+  draftContext?: Maybe<DraftWorkspace>;
   effective_confidence_level?: Maybe<EffectiveConfidenceLevel>;
   entity_type: Scalars['String']['output'];
   external?: Maybe<Scalars['Boolean']['output']>;
@@ -19558,6 +19558,7 @@ export type QueryDraftWorkspaceArgs = {
 
 export type QueryDraftWorkspaceEntitiesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  draftId: Scalars['String']['input'];
   filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<StixDomainObjectsOrdering>;
@@ -35819,7 +35820,7 @@ export type MeUserResolvers<ContextType = any, ParentType extends ResolversParen
   default_marking?: Resolver<Maybe<Array<ResolversTypes['DefaultMarking']>>, ParentType, ContextType>;
   default_time_field?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  draft_context?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  draftContext?: Resolver<Maybe<ResolversTypes['DraftWorkspace']>, ParentType, ContextType>;
   effective_confidence_level?: Resolver<Maybe<ResolversTypes['EffectiveConfidenceLevel']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   external?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
@@ -37448,7 +37449,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   deleteOperation?: Resolver<Maybe<ResolversTypes['DeleteOperation']>, ParentType, ContextType, RequireFields<QueryDeleteOperationArgs, 'id'>>;
   deleteOperations?: Resolver<Maybe<ResolversTypes['DeleteOperationConnection']>, ParentType, ContextType, Partial<QueryDeleteOperationsArgs>>;
   draftWorkspace?: Resolver<Maybe<ResolversTypes['DraftWorkspace']>, ParentType, ContextType, RequireFields<QueryDraftWorkspaceArgs, 'id'>>;
-  draftWorkspaceEntities?: Resolver<Maybe<ResolversTypes['StixCoreObjectConnection']>, ParentType, ContextType, Partial<QueryDraftWorkspaceEntitiesArgs>>;
+  draftWorkspaceEntities?: Resolver<Maybe<ResolversTypes['StixCoreObjectConnection']>, ParentType, ContextType, RequireFields<QueryDraftWorkspaceEntitiesArgs, 'draftId'>>;
   draftWorkspaces?: Resolver<Maybe<ResolversTypes['DraftWorkspaceConnection']>, ParentType, ContextType, Partial<QueryDraftWorkspacesArgs>>;
   elasticSearchMetrics?: Resolver<Maybe<ResolversTypes['ElasticSearchMetrics']>, ParentType, ContextType>;
   enrichmentConnectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, RequireFields<QueryEnrichmentConnectorsArgs, 'type'>>;

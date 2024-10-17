@@ -75,7 +75,7 @@ const rootSettingsFragment = graphql`
   }
 `;
 
-const meUserFragment = graphql`
+export const meUserFragment = graphql`
   fragment RootMe_data on MeUser {
     id
     name
@@ -86,6 +86,10 @@ const meUserFragment = graphql`
     individual_id
     no_creators
     restrict_delete
+    draftContext {
+      id
+      name
+    }
     effective_confidence_level {
       max_confidence
       overrides {
@@ -154,7 +158,7 @@ const subscription = graphql`
   }
 `;
 
-const rootPrivateQuery = graphql`
+export const rootPrivateQuery = graphql`
   query RootPrivateQuery {
     me {
       ...RootMe_data

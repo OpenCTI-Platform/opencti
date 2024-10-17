@@ -36,6 +36,7 @@ type Query {
         search: String
     ): DraftWorkspaceConnection @auth(for: [KNOWLEDGE])
     draftWorkspaceEntities(
+        draftId: String!,
         types: [String]
         first: Int
         after: ID
