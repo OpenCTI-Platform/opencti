@@ -7,33 +7,14 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
 import Dialog from '@mui/material/Dialog';
-import { WorkMessages } from '@components/data/connectors/ConnectorWorks';
 import IconButton from '@mui/material/IconButton';
 import { InfoOutlined } from '@mui/icons-material';
 import Tooltip from '@mui/material/Tooltip';
+import { ParsedWorkMessage } from '@components/data/connectors/parseWorkErrors';
 import ItemCopy from '../../../../components/ItemCopy';
 import Transition from '../../../../components/Transition';
 import { useFormatter } from '../../../../components/i18n';
 import { truncate } from '../../../../utils/String';
-
-export type ParsedWorkMessage = {
-  isParsed: true,
-  level: 'Critical' | 'Warning' | 'Unclassified',
-  parsedError: {
-    category: string,
-    message: string,
-    entity: {
-      id: string,
-      name: string,
-      type: string,
-    }
-  }
-  rawError: WorkMessages,
-} | {
-  isParsed: false,
-  level: 'Unclassified',
-  rawError: WorkMessages,
-};
 
 interface ConnectorWorksErrorLineProps {
   error: ParsedWorkMessage;
@@ -46,6 +27,10 @@ const ConnectorWorksErrorLine: FunctionComponent<ConnectorWorksErrorLineProps> =
   const handleToggleModalError = () => {
     setOpenModalErrorDetails(!openModalErrorDetails);
   };
+
+  if (!error.rawError) {
+    return null;
+  }
 
   return (
     <>
