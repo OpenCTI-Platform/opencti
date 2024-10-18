@@ -1,6 +1,6 @@
 import React from 'react';
 import WidgetText from '@components/workspaces/dashboards/WidgetText';
-import type { PublicManifestConfig, PublicManifestWidget } from './PublicManifest';
+import type { PublicManifestConfig } from './PublicManifest';
 import { computerRelativeDate, dayStartDate, formatDate } from '../../../utils/Time';
 import PublicStixCoreObjectsNumber from './stix_core_objects/PublicStixCoreObjectsNumber';
 import PublicStixCoreObjectsList from './stix_core_objects/PublicStixCoreObjectsList';
@@ -31,6 +31,7 @@ import PublicStixRelationshipsMultiHorizontalBars from './stix_relationships/Pub
 import PublicStixRelationshipsPolarArea from './stix_relationships/PublicStixRelationshipsPolarArea';
 import PublicStixCoreObjectsPolarArea from './stix_core_objects/PublicStixCoreObjectsPolarArea';
 import { useFormatter } from '../../../components/i18n';
+import type { Widget } from '../../../utils/widget/widget';
 
 const usePublicDashboardWidgets = (uriKey: string, config?: PublicManifestConfig) => {
   const { t_i18n } = useFormatter();
@@ -38,7 +39,7 @@ const usePublicDashboardWidgets = (uriKey: string, config?: PublicManifestConfig
   const startDate = config?.relativeDate ? computerRelativeDate(config.relativeDate) : config?.startDate;
   const endDate = config?.relativeDate ? formatDate(dayStartDate(null, false)) : config?.endDate;
 
-  const entityWidget = (widget: PublicManifestWidget) => {
+  const entityWidget = (widget: Widget) => {
     switch (widget.type) {
       case 'bookmark':
         return t_i18n('Bookmarks are not supported in public dashboards');
@@ -168,7 +169,7 @@ const usePublicDashboardWidgets = (uriKey: string, config?: PublicManifestConfig
     }
   };
 
-  const relationshipWidget = (widget: PublicManifestWidget) => {
+  const relationshipWidget = (widget: Widget) => {
     switch (widget.type) {
       case 'number':
         return (
@@ -311,14 +312,14 @@ const usePublicDashboardWidgets = (uriKey: string, config?: PublicManifestConfig
     }
   };
 
-  const auditWidget = (widget: PublicManifestWidget) => {
+  const auditWidget = (widget: Widget) => {
     switch (widget.type) {
       default:
         return t_i18n('Audits are not supported in public dashboards');
     }
   };
 
-  const rawWidget = (widget: PublicManifestWidget) => {
+  const rawWidget = (widget: Widget) => {
     switch (widget.type) {
       case 'text':
         return (

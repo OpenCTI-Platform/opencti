@@ -8,8 +8,8 @@ import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetLoader from '../../../../components/dashboard/WidgetLoader';
 import { PublicStixCoreObjectsMultiHeatMapQuery } from './__generated__/PublicStixCoreObjectsMultiHeatMapQuery.graphql';
 import WidgetMultiHeatMap from '../../../../components/dashboard/WidgetMultiHeatMap';
-import type { PublicManifestWidget } from '../PublicManifest';
 import { monthsAgo, now } from '../../../../utils/Time';
+import type { Widget } from '../../../../utils/widget/widget';
 
 const publicStixCoreObjectsMultiHeatMapQuery = graphql`
   query PublicStixCoreObjectsMultiHeatMapQuery(
@@ -33,8 +33,8 @@ const publicStixCoreObjectsMultiHeatMapQuery = graphql`
 `;
 
 interface PublicStixCoreObjectsMultiHeatMapComponentProps {
-  parameters: PublicManifestWidget['parameters']
-  dataSelection: PublicManifestWidget['dataSelection']
+  parameters: Widget['parameters']
+  dataSelection: Widget['dataSelection']
   queryRef: PreloadedQuery<PublicStixCoreObjectsMultiHeatMapQuery>
 }
 

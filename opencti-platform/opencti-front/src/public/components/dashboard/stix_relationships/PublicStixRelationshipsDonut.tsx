@@ -1,6 +1,5 @@
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import React from 'react';
-import type { PublicManifestWidget } from '../PublicManifest';
 import WidgetDonut from '../../../../components/dashboard/WidgetDonut';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import type { PublicWidgetContainerProps } from '../PublicWidgetContainerProps';
@@ -9,6 +8,7 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetLoader from '../../../../components/dashboard/WidgetLoader';
 import { PublicStixRelationshipsDonutQuery } from './__generated__/PublicStixRelationshipsDonutQuery.graphql';
+import type { Widget } from '../../../../utils/widget/widget';
 
 const publicStixRelationshipsDonutQuery = graphql`
   query PublicStixRelationshipsDonutQuery(
@@ -70,7 +70,7 @@ const publicStixRelationshipsDonutQuery = graphql`
 `;
 
 interface PublicStixRelationshipsDonutComponentProps {
-  dataSelection: PublicManifestWidget['dataSelection']
+  dataSelection: Widget['dataSelection']
   queryRef: PreloadedQuery<PublicStixRelationshipsDonutQuery>
 }
 

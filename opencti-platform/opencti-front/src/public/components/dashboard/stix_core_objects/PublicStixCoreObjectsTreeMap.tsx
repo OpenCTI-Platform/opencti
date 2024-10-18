@@ -8,7 +8,7 @@ import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetLoader from '../../../../components/dashboard/WidgetLoader';
 import { PublicStixCoreObjectsTreeMapQuery } from './__generated__/PublicStixCoreObjectsTreeMapQuery.graphql';
 import WidgetTree from '../../../../components/dashboard/WidgetTree';
-import type { PublicManifestWidget } from '../PublicManifest';
+import type { Widget } from '../../../../utils/widget/widget';
 
 const publicStixCoreObjectsTreeMapQuery = graphql`
   query PublicStixCoreObjectsTreeMapQuery(
@@ -54,8 +54,8 @@ const publicStixCoreObjectsTreeMapQuery = graphql`
 `;
 
 interface PublicStixCoreObjectsTreeMapComponentProps {
-  parameters: PublicManifestWidget['parameters']
-  dataSelection: PublicManifestWidget['dataSelection']
+  parameters: Widget['parameters']
+  dataSelection: Widget['dataSelection']
   queryRef: PreloadedQuery<PublicStixCoreObjectsTreeMapQuery>
 }
 
