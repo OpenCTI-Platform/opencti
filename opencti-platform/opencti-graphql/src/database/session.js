@@ -1,11 +1,11 @@
 import session from 'express-session';
 import nconf from 'nconf';
 import * as R from 'ramda';
-import { uniq } from 'ramda';
 import conf, { booleanConf, OPENCTI_SESSION } from '../config/conf';
 import SessionStoreMemory from './sessionStore-memory';
 import RedisStore from './sessionStore-redis';
 import { getSession } from './redis';
+import { MAX_EVENT_LOOP_PROCESSING_TIME } from './utils';
 
 const sessionManager = nconf.get('app:session_manager');
 const sessionSecret = nconf.get('app:session_secret') || nconf.get('app:admin:password');
@@ -44,46 +44,66 @@ const createSessionMiddleware = () => {
   };
 };
 
-export const findSessions = () => {
+export const findSessions = async ({ maxInactivityDurationInMin = 1, maxSessionsPerUser = undefined } = {}) => {
   const { store } = applicationSession;
-  return new Promise((accept) => {
-    store.all((_, result) => {
-      const sessionsPerUser = R.groupBy((s) => s.user.id, R.filter((n) => n.user, result));
-      const sessions = Object.entries(sessionsPerUser).map(([k, v]) => {
-        const userSessions = v.map((s) => {
-          return {
-            id: s.redis_key_id,
-            created: s.user.session_creation,
-            ttl: s.redis_key_ttl,
-            originalMaxAge: Math.round(s.cookie.originalMaxAge / 1000)
-          };
-        });
-        return { user_id: k, sessions: userSessions };
-      });
-      accept(sessions);
+  const fetchedSessions = await new Promise((accept, reject) => {
+    store.all((err, result) => {
+      if (err) {
+        reject(err);
+      } else {
+        accept(result);
+      }
     });
   });
+  const preparedSessions = {};
+  let startProcessingTime = new Date().getTime();
+  for (let index = 0; index < fetchedSessions.length; index += 1) {
+    const s = fetchedSessions[index];
+    const currentUserId = s.user.impersonate_user_id ?? s.user.id;
+    const data = {
+      id: s.redis_key_id,
+      user_execution_id: currentUserId !== s.user.id ? s.user.id : undefined,
+      created: s.user.session_creation,
+      ttl: s.redis_key_ttl,
+      originalMaxAge: Math.round(s.cookie.originalMaxAge / 1000)
+    };
+    const isActiveSession = (s.cookie.originalMaxAge / 1000 - s.redis_key_ttl) / 60 < maxInactivityDurationInMin;
+    if (preparedSessions[currentUserId]) {
+      preparedSessions[currentUserId].total += 1;
+      preparedSessions[currentUserId].isActiveUser = preparedSessions[currentUserId].isActiveUser || isActiveSession;
+      if (maxSessionsPerUser === undefined || preparedSessions[currentUserId].sessions.length < maxSessionsPerUser) {
+        preparedSessions[currentUserId].sessions.push(data);
+      }
+    } else {
+      preparedSessions[currentUserId] = { sessions: [data], total: 1, isActiveUser: isActiveSession };
+    }
+    if (new Date().getTime() - startProcessingTime > MAX_EVENT_LOOP_PROCESSING_TIME) {
+      startProcessingTime = new Date().getTime();
+      await new Promise((resolve) => {
+        setImmediate(resolve);
+      });
+    }
+  }
+  const sessions = [];
+  const refEntries = Object.entries(preparedSessions);
+  for (let indexRef = 0; indexRef < refEntries.length; indexRef += 1) {
+    const [user_id, data] = refEntries[indexRef];
+    sessions.push({ user_id, ...data });
+  }
+  return sessions;
 };
 
 // return the list of users ids that have a session activ in the last maxInactivityDuration min
-export const usersWithActiveSession = (maxInactivityDurationInMin = 1) => {
-  const { store } = applicationSession;
-  return new Promise((accept) => {
-    store.all((_, result) => {
-      const usersWithSession = uniq(result
-        .filter((n) => n.user
-          && (n.cookie.originalMaxAge / 1000 - n.redis_key_ttl) / 60 < maxInactivityDurationInMin) // the time with no activity in the session is < to 1 hour
-        .map((s) => s.user.id));
-      accept(usersWithSession);
-    });
-  });
+export const usersWithActiveSessionCount = async (maxInactivityDurationInMin = 1) => {
+  const sessions = await findSessions({ maxInactivityDurationInMin, maxSessionsPerUser: 0 }); // No need for session detail
+  return sessions.filter((s) => s.isActiveUser).length;
 };
 
 export const findUserSessions = async (userId) => {
-  const sessions = await findSessions();
+  const sessions = await findSessions({ maxSessionsPerUser: 10 });
   const userSessions = sessions.filter((s) => s.user_id === userId);
   if (userSessions.length > 0) {
-    return R.head(userSessions).sessions;
+    return R.head(userSessions);
   }
   return [];
 };
@@ -118,8 +138,6 @@ export const markSessionForRefresh = async (id) => {
     const newSession = { ...currentSession, session_refresh: true };
     const sessId = id.includes(store.prefix) ? id.split(store.prefix)[1] : id;
     store.set(sessId, newSession); // this will ensure the session is updated in the cache
-    // TODO check what to do with currentSession.expiration
-    // await setSession(id, newSession, currentSession.expiration);
   }
   return undefined;
 };

@@ -12,7 +12,7 @@ class RedisStore extends Store {
   constructor(options = {}) {
     super(options);
     this.ttl = options.ttl / 1000;
-    this.prefix = options.prefix == null ? 'sess:' : options.prefix;
+    this.prefix = options.prefix == null ? '{sess}:' : `{${options.prefix}}:`;
     this.scanCount = Number(options.scanCount) || 100;
     this.serializer = options.serializer || JSON;
     this.cache = new LRUCache({ ttl: 2500, max: 1000 }); // Force refresh the session every 2.5 sec
