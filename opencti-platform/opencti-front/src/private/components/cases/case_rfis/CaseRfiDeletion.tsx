@@ -13,13 +13,13 @@ import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted'
 import useDeletion from '../../../../utils/hooks/useDeletion';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
-const caseRfiPopoverDeletionDeleteMutation = graphql`
-  mutation CaseRfiPopoverDeletionDeleteMutation($id: ID!) {
+const caseRfiDeletionDeleteMutation = graphql`
+  mutation CaseRfiDeletionDeleteMutation($id: ID!) {
     caseRfiDelete(id: $id)
   }
 `;
 
-const CaseRfiPopoverDeletion = ({ id }: { id: string }) => {
+const CaseRfiDeletion = ({ id }: { id: string }) => {
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
   const deleteSuccessMessage = t_i18n('', {
@@ -27,7 +27,7 @@ const CaseRfiPopoverDeletion = ({ id }: { id: string }) => {
     values: { entity_type: t_i18n('entity_Case-Rfi') },
   });
   const [commit] = useApiMutation(
-    caseRfiPopoverDeletionDeleteMutation,
+    caseRfiDeletionDeleteMutation,
     undefined,
     { successMessage: deleteSuccessMessage },
   );
@@ -92,4 +92,4 @@ const CaseRfiPopoverDeletion = ({ id }: { id: string }) => {
   );
 };
 
-export default CaseRfiPopoverDeletion;
+export default CaseRfiDeletion;

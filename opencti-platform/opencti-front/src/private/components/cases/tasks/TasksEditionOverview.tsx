@@ -24,7 +24,7 @@ import { TasksEditionOverview_task$key } from './__generated__/TasksEditionOverv
 import { buildDate, formatDate } from '../../../../utils/Time';
 import ObjectParticipantField from '../../common/form/ObjectParticipantField';
 import { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
-import TaskPopoverDeletion from './TaskPopoverDeletion';
+import TaskDeletion from './TaskDeletion';
 
 export const tasksMutationFieldPatch = graphql`
   mutation TasksEditionOverviewFieldPatchMutation(
@@ -318,7 +318,7 @@ const TasksEditionOverview: FunctionComponent<TasksEditionOverviewProps> = ({
             onChange={editor.changeMarking}
           />
           {isFABReplaced && (
-            <TaskPopoverDeletion id={taskData.id} />
+            <TaskDeletion id={taskData.id} />
           )}
         </Form>
       )}

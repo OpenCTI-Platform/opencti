@@ -27,7 +27,7 @@ import StatusField from '../../common/form/StatusField';
 import { CaseRftEditionOverview_case$key } from './__generated__/CaseRftEditionOverview_case.graphql';
 import ObjectParticipantField from '../../common/form/ObjectParticipantField';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
-import CaseRftPopoverDeletion from './CaseRftPopoverDeletion';
+import CaseRftDeletion from './CaseRftDeletion';
 
 export const caseRftMutationFieldPatch = graphql`
   mutation CaseRftEditionOverviewCaseFieldPatchMutation(
@@ -413,7 +413,7 @@ const CaseRftEditionOverview: FunctionComponent<CaseRftEditionOverviewProps> = (
             />
           )}
           {isFABReplaced && (
-            <CaseRftPopoverDeletion id={caseData.id} />
+            <CaseRftDeletion id={caseData.id} />
           )}
         </Form>
       )}
