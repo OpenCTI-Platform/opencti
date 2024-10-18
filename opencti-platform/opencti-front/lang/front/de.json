@@ -1844,6 +1844,7 @@
   "Number of uppercase chars must be greater or equals to": "Anzahl der Großbuchstaben muss größer oder gleich sein",
   "Number of words (split on hyphen, space) must be greater or equals to": "Anzahl der Wörter (getrennt durch Bindestrich, Leerzeichen) muss größer oder gleich sein",
   "Numerous repercussions linked to the activation of this feature": "Zahlreiche Auswirkungen, die mit der Aktivierung dieser Funktion verbunden sind",
+  "Numerous repercussions linked to the deactivation of EE edition": "Zahlreiche Auswirkungen im Zusammenhang mit der Deaktivierung der EE-Ausgabe",
   "OBAS security posture": "OBAS-Sicherheitslage",
   "Object": "Objekt",
   "Object permanently deleted": "Objekt dauerhaft gelöscht",

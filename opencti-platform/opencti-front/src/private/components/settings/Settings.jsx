@@ -460,7 +460,7 @@ const Settings = () => {
                                 TransitionComponent={Transition}
                                 onClose={() => setOpenEEChanges(false)}
                               >
-                                <DialogTitle>{t_i18n('Numerous repercussions linked to the deactivation of this feature')}</DialogTitle>
+                                <DialogTitle>{t_i18n('Numerous repercussions linked to the deactivation of EE edition')}</DialogTitle>
                                 <DialogContent>
                                   <DialogContentText>
                                     <Alert

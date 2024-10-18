@@ -1844,6 +1844,7 @@
   "Number of uppercase chars must be greater or equals to": "大文字の数は次の値以上でなければなりません",
   "Number of words (split on hyphen, space) must be greater or equals to": "単語数 (ハイフン、スペースで分割) は次の値以上でなければなりません",
   "Numerous repercussions linked to the activation of this feature": "この機能の発動に関連する数々の影響",
+  "Numerous repercussions linked to the deactivation of EE edition": "EE版非稼働がもたらす数々の影響",
   "OBAS security posture": "OBAS セキュリティ姿勢",
   "Object": "オブジェクト",
   "Object permanently deleted": "永久に削除されたオブジェクト",
