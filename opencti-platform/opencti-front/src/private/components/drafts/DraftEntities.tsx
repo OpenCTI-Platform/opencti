@@ -1,24 +1,272 @@
 import React, { useEffect } from 'react';
 import { DraftEntitiesLinesPaginationQuery, DraftEntitiesLinesPaginationQuery$variables } from '@components/drafts/__generated__/DraftEntitiesLinesPaginationQuery.graphql';
-import { DraftEntitiesLine_node$data } from '@components/drafts/__generated__/DraftEntitiesLine_node.graphql';
-import DraftEntitiesLines, { draftEntitiesLinesQuery } from '@components/drafts/DraftEntitiesLines';
-import { DraftEntitiesLineDummy } from '@components/drafts/DraftEntitiesLine';
-import ToolBar from '@components/data/ToolBar';
 import { useParams } from 'react-router-dom';
 import { DraftContextBannerMutation } from '@components/drafts/__generated__/DraftContextBannerMutation.graphql';
 import { draftContextBannerMutation } from '@components/drafts/DraftContextBanner';
-import ListLines from '../../../components/list_lines/ListLines';
+import { graphql } from 'react-relay';
+import { DraftEntitiesLines_data$data } from '@components/drafts/__generated__/DraftEntitiesLines_data.graphql';
 import useAuth from '../../../utils/hooks/useAuth';
-import ExportContextProvider from '../../../utils/ExportContextProvider';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
-import useEntityToggle from '../../../utils/hooks/useEntityToggle';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import { useBuildEntityTypeBasedFilterContext, emptyFilterGroup, useGetDefaultFilterObject } from '../../../utils/filters/filtersUtils';
+import { useBuildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
 import { MESSAGING$ } from '../../../relay/environment';
 import { RelayError } from '../../../relay/relayTypes';
+import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
+import DataTable from '../../../components/dataGrid/DataTable';
+import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
+
+const draftEntitiesLineFragment = graphql`
+    fragment DraftEntities_node on StixCoreObject {
+        id
+        entity_type
+        created_at
+        ... on AttackPattern {
+            name
+            description
+            aliases
+        }
+        ... on Campaign {
+            name
+            description
+            aliases
+        }
+        ... on Note {
+            attribute_abstract
+            content
+        }
+        ... on ObservedData {
+            name
+            first_observed
+            last_observed
+        }
+        ... on Opinion {
+            opinion
+            explanation
+        }
+        ... on Report {
+            name
+            description
+        }
+        ... on Grouping {
+            name
+            description
+        }
+        ... on CourseOfAction {
+            name
+            description
+            x_opencti_aliases
+        }
+        ... on DataComponent {
+            name
+            aliases
+            description
+        }
+        ... on DataSource {
+            name
+            aliases
+            description
+        }
+        ... on Case {
+            name
+            description
+        }
+        ... on Task {
+            name
+            description
+        }
+        ... on Individual {
+            name
+            description
+            x_opencti_aliases
+        }
+        ... on Organization {
+            name
+            description
+            x_opencti_aliases
+        }
+        ... on Sector {
+            name
+            description
+            x_opencti_aliases
+        }
+        ... on System {
+            name
+            description
+            x_opencti_aliases
+        }
+        ... on Indicator {
+            name
+            description
+        }
+        ... on Infrastructure {
+            name
+            description
+        }
+        ... on IntrusionSet {
+            name
+            aliases
+            description
+        }
+        ... on Position {
+            name
+            description
+            x_opencti_aliases
+        }
+        ... on City {
+            name
+            description
+            x_opencti_aliases
+        }
+        ... on AdministrativeArea {
+            name
+            description
+            x_opencti_aliases
+        }
+        ... on Country {
+            name
+            description
+            x_opencti_aliases
+        }
+        ... on Region {
+            name
+            description
+            x_opencti_aliases
+        }
+        ... on Malware {
+            name
+            aliases
+            description
+        }
+        ... on MalwareAnalysis {
+            result_name
+        }
+        ... on ThreatActor {
+            name
+            aliases
+            description
+        }
+        ... on Tool {
+            name
+            aliases
+            description
+        }
+        ... on Vulnerability {
+            name
+            description
+        }
+        ... on Incident {
+            name
+            aliases
+            description
+        }
+        ... on Event {
+            name
+            description
+            aliases
+        }
+        ... on Channel {
+            name
+            description
+            aliases
+        }
+        ... on Narrative {
+            name
+            description
+            aliases
+        }
+        ... on Language {
+            name
+            aliases
+        }
+        ... on DataComponent {
+            name
+        }
+        ... on DataSource {
+            name
+        }
+        ... on Case {
+            name
+        }
+        ... on Task {
+            name
+        }
+        objectMarking {
+            id
+            definition
+            x_opencti_order
+            x_opencti_color
+        }
+        creators {
+            id
+            name
+        }
+    }
+`;
+
+const draftEntitiesLinesQuery = graphql`
+    query DraftEntitiesLinesPaginationQuery(
+        $draftId: String!
+        $types: [String]
+        $search: String
+        $count: Int!
+        $cursor: ID
+        $orderBy: StixDomainObjectsOrdering
+        $orderMode: OrderingMode
+        $filters: FilterGroup
+    ) {
+        ...DraftEntitiesLines_data
+        @arguments(
+            draftId: $draftId
+            types: $types
+            search: $search
+            count: $count
+            cursor: $cursor
+            orderBy: $orderBy
+            orderMode: $orderMode
+            filters: $filters
+        )
+    }
+`;
+
+export const draftEntitiesLinesFragment = graphql`
+    fragment DraftEntitiesLines_data on Query
+    @argumentDefinitions(
+        draftId: { type: "String!" }
+        types: { type: "[String]" }
+        search: { type: "String" }
+        count: { type: "Int", defaultValue: 25 }
+        cursor: { type: "ID" }
+        orderBy: { type: "StixDomainObjectsOrdering", defaultValue: name }
+        orderMode: { type: "OrderingMode", defaultValue: asc }
+        filters: { type: "FilterGroup" }
+    )
+    @refetchable(queryName: "DraftEntitiesLinesRefetchQuery") {
+        draftWorkspaceEntities(
+            draftId: $draftId
+            types: $types
+            search: $search
+            first: $count
+            after: $cursor
+            orderBy: $orderBy
+            orderMode: $orderMode
+            filters: $filters
+        ) @connection(key: "Pagination_draftWorkspaceEntities") {
+            edges {
+                node {
+                    ...DraftEntities_node
+                }
+            }
+            pageInfo {
+                endCursor
+                hasNextPage
+                globalCount
+            }
+        }
+    }
+`;
 
 const LOCAL_STORAGE_KEY = 'draft_entities';
 
@@ -26,9 +274,80 @@ const DraftEntities = () => {
   const { draftId } = useParams() as { draftId: string };
   const { t_i18n } = useFormatter();
   const {
-    platformModuleHelpers: { isRuntimeFieldEnable },
     me,
+    platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
+  const initialValues = {
+    filters: emptyFilterGroup,
+    searchTerm: '',
+    sortBy: 'name',
+    orderAsc: false,
+    openExports: false,
+    redirectionMode: 'overview',
+    draftId,
+  };
+
+  const {
+    viewStorage,
+    paginationOptions,
+    helpers: storageHelpers,
+  } = usePaginationLocalStorage<DraftEntitiesLinesPaginationQuery$variables>(LOCAL_STORAGE_KEY, initialValues);
+  const {
+    filters,
+  } = viewStorage;
+
+  const contextFilters = useBuildEntityTypeBasedFilterContext('Stix-Domain-Object', filters);
+  const queryPaginationOptions = {
+    ...paginationOptions,
+    draftId,
+    filters: contextFilters,
+  } as unknown as DraftEntitiesLinesPaginationQuery$variables;
+
+  const queryRef = useQueryLoading<DraftEntitiesLinesPaginationQuery>(
+    draftEntitiesLinesQuery,
+    queryPaginationOptions,
+  );
+
+  const preloadedPaginationProps = {
+    linesQuery: draftEntitiesLinesQuery,
+    linesFragment: draftEntitiesLinesFragment,
+    queryRef,
+    nodePath: ['draftWorkspaceEntities', 'pageInfo', 'globalCount'],
+    setNumberOfElements: storageHelpers.handleSetNumberOfElements,
+  } as UsePreloadedPaginationFragment<DraftEntitiesLinesPaginationQuery>;
+
+  const isRuntimeSort = isRuntimeFieldEnable() ?? false;
+  const dataColumns: DataTableProps['dataColumns'] = {
+    entity_type: {
+      percentWidth: 12,
+      isSortable: true,
+    },
+    name: {
+      percentWidth: 25,
+      isSortable: true,
+    },
+    createdBy: {
+      percentWidth: 12,
+      isSortable: isRuntimeSort,
+    },
+    creator: {
+      percentWidth: 12,
+      isSortable: isRuntimeSort,
+    },
+    objectLabel: {
+      percentWidth: 15,
+      isSortable: false,
+    },
+    created_at: {
+      percentWidth: 15,
+      isSortable: true,
+    },
+    objectMarking: {
+      isSortable: isRuntimeSort,
+      percentWidth: 8,
+    },
+  };
+
   const [commitSwitchToDraft] = useApiMutation<DraftContextBannerMutation>(draftContextBannerMutation);
   useEffect(() => {
     if (!me.draftContext || me.draftContext.id !== draftId) {
@@ -46,163 +365,24 @@ const DraftEntities = () => {
       });
     }
   }, [commitSwitchToDraft]);
-  const {
-    viewStorage,
-    paginationOptions,
-    helpers: storageHelpers,
-  } = usePaginationLocalStorage<DraftEntitiesLinesPaginationQuery$variables>(
-    LOCAL_STORAGE_KEY,
-    {
-      filters: {
-        ...emptyFilterGroup,
-        filters: useGetDefaultFilterObject(['entity_type'], ['Stix-Core-Object']),
-      },
-      sortBy: 'created_at',
-      orderAsc: false,
-      openExports: false,
-    },
-  );
-  const {
-    numberOfElements,
-    filters,
-    searchTerm,
-    sortBy,
-    orderAsc,
-    openExports,
-  } = viewStorage;
-  const {
-    selectedElements,
-    deSelectedElements,
-    selectAll,
-    handleClearSelectedElements,
-    handleToggleSelectAll,
-    onToggleEntity,
-    numberOfSelectedElements,
-  } = useEntityToggle<DraftEntitiesLine_node$data>(LOCAL_STORAGE_KEY);
 
-  const contextFilters = useBuildEntityTypeBasedFilterContext('Stix-Domain-Object', filters);
-  const queryPaginationOptions = {
-    ...paginationOptions,
-    filters: contextFilters,
-    draftId,
-  } as unknown as DraftEntitiesLinesPaginationQuery$variables;
-  const queryRef = useQueryLoading<DraftEntitiesLinesPaginationQuery>(
-    draftEntitiesLinesQuery,
-    queryPaginationOptions,
-  );
-
-  const renderLines = () => {
-    const isRuntimeSort = isRuntimeFieldEnable() ?? false;
-    const dataColumns = {
-      entity_type: {
-        label: 'Type',
-        width: '12%',
-        isSortable: true,
-      },
-      name: {
-        label: 'Name',
-        width: '25%',
-        isSortable: true,
-      },
-      createdBy: {
-        label: 'Author',
-        width: '12%',
-        isSortable: isRuntimeSort,
-      },
-      creator: {
-        label: 'Creators',
-        width: '12%',
-        isSortable: isRuntimeSort,
-      },
-      objectLabel: {
-        label: 'Labels',
-        width: '15%',
-        isSortable: false,
-      },
-      created_at: {
-        label: 'Platform creation date',
-        width: '15%',
-        isSortable: true,
-      },
-      objectMarking: {
-        label: 'Marking',
-        isSortable: isRuntimeSort,
-        width: '8%',
-      },
-    };
-    return (
-      <div data-testid='draft-entities-page'>
-        <ListLines
-          helpers={storageHelpers}
-          sortBy={sortBy}
-          orderAsc={orderAsc}
-          dataColumns={dataColumns}
-          handleSort={storageHelpers.handleSort}
-          handleSearch={storageHelpers.handleSearch}
-          handleAddFilter={storageHelpers.handleAddFilter}
-          handleRemoveFilter={storageHelpers.handleRemoveFilter}
-          handleSwitchGlobalMode={storageHelpers.handleSwitchGlobalMode}
-          handleSwitchLocalMode={storageHelpers.handleSwitchLocalMode}
-          handleToggleExports={storageHelpers.handleToggleExports}
-          openExports={openExports}
-          handleToggleSelectAll={handleToggleSelectAll}
-          availableEntityTypes={['Stix-Domain-Object']}
-          exportContext={{ entity_type: 'Stix-Domain-Object' }}
-          selectAll={selectAll}
-          disableCards={true}
-          keyword={searchTerm}
-          filters={filters}
-          noPadding={true}
-          paginationOptions={queryPaginationOptions}
-          numberOfElements={numberOfElements}
-          iconExtension={true}
-        >
-          {queryRef && (
-          <React.Suspense
-            fallback={
-              <>
-                {Array(20)
-                  .fill(0)
-                  .map((_, idx) => (
-                    <DraftEntitiesLineDummy
-                      key={idx}
-                      dataColumns={dataColumns}
-                    />
-                  ))}
-              </>
-                            }
-          >
-            <DraftEntitiesLines
-              queryRef={queryRef}
-              paginationOptions={queryPaginationOptions}
-              dataColumns={dataColumns}
-              onLabelClick={storageHelpers.handleAddFilter}
-              selectedElements={selectedElements}
-              deSelectedElements={deSelectedElements}
-              onToggleEntity={onToggleEntity}
-              selectAll={selectAll}
-              setNumberOfElements={storageHelpers.handleSetNumberOfElements}
-            />
-            <ToolBar
-              selectedElements={selectedElements}
-              deSelectedElements={deSelectedElements}
-              numberOfSelectedElements={numberOfSelectedElements}
-              selectAll={selectAll}
-              search={searchTerm}
-              filters={contextFilters}
-              handleClearSelectedElements={handleClearSelectedElements}
-            />
-          </React.Suspense>
-          )}
-        </ListLines>
-      </div>
-    );
-  };
   return (
-    <ExportContextProvider>
-      <Breadcrumbs elements={[{ label: t_i18n('Draft') }, { label: t_i18n('Entities'), current: true }]} />
-      {renderLines()}
-    </ExportContextProvider>
+    <span data-testid="draft-entities-page">
+      <Breadcrumbs elements={[{ label: t_i18n('Draft') }, { label: t_i18n('Entities'), current: true }]}/>
+      {queryRef && (
+        <DataTable
+          dataColumns={dataColumns}
+          resolvePath={(data: DraftEntitiesLines_data$data) => data.draftWorkspaceEntities?.edges?.map((n) => n?.node)}
+          storageKey={LOCAL_STORAGE_KEY}
+          initialValues={initialValues}
+          toolbarFilters={contextFilters}
+          preloadedPaginationProps={preloadedPaginationProps}
+          lineFragment={draftEntitiesLineFragment}
+          exportContext={{ entity_type: 'Stix-Domain-Object' }}
+          redirectionModeEnabled
+        />
+      )}
+    </span>
   );
 };
 
