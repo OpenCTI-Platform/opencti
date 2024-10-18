@@ -11,23 +11,33 @@ import Security from '../../../../utils/Security';
 import Transition from '../../../../components/Transition';
 import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import useDeletion from '../../../../utils/hooks/useDeletion';
+import { deleteNode } from '../../../../utils/store';
+import { CaseTasksLinesQuery$variables } from './__generated__/CaseTasksLinesQuery.graphql';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
-const caseRftPopoverDeletionDeleteMutation = graphql`
-  mutation CaseRftPopoverDeletionDeleteMutation($id: ID!) {
-    caseRftDelete(id: $id)
+const taskDeletionDeleteMutation = graphql`
+  mutation TaskDeletionDeleteMutation($id: ID!) {
+    taskDelete(id: $id)
   }
 `;
 
-const CaseRftPopoverDeletion = ({ id }: { id: string }) => {
+const TaskDeletion = ({
+  id,
+  objectId,
+  paginationOptions,
+}: {
+  id: string;
+  objectId?: string;
+  paginationOptions?: CaseTasksLinesQuery$variables;
+}) => {
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
   const deleteSuccessMessage = t_i18n('', {
     id: '... successfully deleted',
-    values: { entity_type: t_i18n('entity_Case-Rft') },
+    values: { entity_type: t_i18n('entity_Task') },
   });
   const [commit] = useApiMutation(
-    caseRftPopoverDeletionDeleteMutation,
+    taskDeletionDeleteMutation,
     undefined,
     { successMessage: deleteSuccessMessage },
   );
@@ -45,16 +55,25 @@ const CaseRftPopoverDeletion = ({ id }: { id: string }) => {
       variables: {
         id,
       },
+      updater: (store) => {
+        if (paginationOptions) {
+          deleteNode(store, 'Pagination_tasks', paginationOptions, id);
+        }
+      },
       onCompleted: () => {
         setDeleting(false);
         handleClose();
-        navigate('/dashboard/cases/rfts');
+        if (objectId) {
+          handleCloseDelete();
+        } else {
+          navigate('/dashboard/cases/tasks');
+        }
       },
     });
   };
 
   return (
-    <React.Fragment>
+    <div style={{ margin: 0 }}>
       <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
         <Button
           color="error"
@@ -75,7 +94,7 @@ const CaseRftPopoverDeletion = ({ id }: { id: string }) => {
       >
         <DialogContent>
           <DialogContentText>
-            {t_i18n('Do you want to delete this request for takedown?')}
+            {t_i18n('Do you want to delete this task?')}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
@@ -87,8 +106,8 @@ const CaseRftPopoverDeletion = ({ id }: { id: string }) => {
           </Button>
         </DialogActions>
       </Dialog>
-    </React.Fragment>
+    </div>
   );
 };
 
-export default CaseRftPopoverDeletion;
+export default TaskDeletion;

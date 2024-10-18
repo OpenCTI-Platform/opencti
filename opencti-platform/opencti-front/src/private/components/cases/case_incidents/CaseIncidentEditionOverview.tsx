@@ -27,7 +27,7 @@ import StatusField from '../../common/form/StatusField';
 import { CaseIncidentEditionOverview_case$key } from './__generated__/CaseIncidentEditionOverview_case.graphql';
 import ObjectParticipantField from '../../common/form/ObjectParticipantField';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
-import CaseIncidentPopoverDeletion from './CaseIncidentPopoverDeletion';
+import CaseIncidentDeletion from './CaseIncidentDeletion';
 
 export const caseIncidentMutationFieldPatch = graphql`
   mutation CaseIncidentEditionOverviewCaseFieldPatchMutation(
@@ -418,7 +418,7 @@ const CaseIncidentEditionOverview: FunctionComponent<CaseIncidentEditionOverview
             />
           )}
           {isFABReplaced && (
-            <CaseIncidentPopoverDeletion id={caseData.id} />
+            <CaseIncidentDeletion id={caseData.id} />
           )}
         </Form>
       )}

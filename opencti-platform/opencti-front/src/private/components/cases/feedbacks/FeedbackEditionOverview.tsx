@@ -24,7 +24,7 @@ import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
-import FeedbackPopoverDeletion from './FeedbackPopoverDeletion';
+import FeedbackDeletion from './FeedbackDeletion';
 
 const feedbackMutationFieldPatch = graphql`
   mutation FeedbackEditionOverviewFieldPatchMutation(
@@ -347,9 +347,11 @@ FeedbackEditionOverviewProps
               id={feedbackData.id}
             />
           )}
-          {isFABReplaced && (<FeedbackPopoverDeletion
-            id={feedbackData.id}
-                             />)}
+          {isFABReplaced && (
+            <FeedbackDeletion
+              id={feedbackData.id}
+            />
+          )}
         </Form>
       )}
     </Formik>

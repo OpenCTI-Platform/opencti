@@ -5,45 +5,35 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import { graphql } from 'react-relay';
-import makeStyles from '@mui/styles/makeStyles';
 import { useNavigate } from 'react-router-dom';
 import { useFormatter } from '../../../../components/i18n';
 import Security from '../../../../utils/Security';
 import Transition from '../../../../components/Transition';
 import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import useDeletion from '../../../../utils/hooks/useDeletion';
+import { RelayError } from '../../../../relay/relayTypes';
+import { MESSAGING$ } from '../../../../relay/environment';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  container: {
-    margin: 0,
-  },
-}));
-
-const feedbackPopoverDeletionDeleteMutation = graphql`
-  mutation FeedbackPopoverDeletionDeleteMutation($id: ID!) {
-    feedbackDelete(id: $id)
+const CaseIncidentDeletionDeleteMutation = graphql`
+  mutation CaseIncidentDeletionDeleteMutation($id: ID!) {
+    caseIncidentDelete(id: $id)
   }
 `;
 
-const FeedbackPopoverDeletion = ({ id }: { id: string }) => {
-  const classes = useStyles();
+const CaseIncidentDeletion = ({ id }: { id: string }) => {
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
   const deleteSuccessMessage = t_i18n('', {
     id: '... successfully deleted',
-    values: { entity_type: t_i18n('entity_Feedback') },
+    values: { entity_type: t_i18n('entity_Case-Incident') },
   });
   const [commit] = useApiMutation(
-    feedbackPopoverDeletionDeleteMutation,
+    CaseIncidentDeletionDeleteMutation,
     undefined,
     { successMessage: deleteSuccessMessage },
   );
-
   const handleClose = () => {};
-
   const {
     deleting,
     handleOpenDelete,
@@ -51,7 +41,6 @@ const FeedbackPopoverDeletion = ({ id }: { id: string }) => {
     handleCloseDelete,
     setDeleting,
   } = useDeletion({ handleClose });
-
   const submitDelete = () => {
     setDeleting(true);
     commit({
@@ -61,13 +50,16 @@ const FeedbackPopoverDeletion = ({ id }: { id: string }) => {
       onCompleted: () => {
         setDeleting(false);
         handleClose();
-        navigate('/dashboard/cases/feedbacks');
+        navigate('/dashboard/cases/incidents');
+      },
+      onError: (error) => {
+        const { errors } = (error as unknown as RelayError).res;
+        MESSAGING$.notifyError(errors.at(0)?.data.reason);
       },
     });
   };
-
   return (
-    <div className={classes.container}>
+    <>
       <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
         <Button
           color="error"
@@ -88,7 +80,7 @@ const FeedbackPopoverDeletion = ({ id }: { id: string }) => {
       >
         <DialogContent>
           <DialogContentText>
-            {t_i18n('Do you want to delete this feedback ?')}
+            {t_i18n('Do you want to delete this incident response?')}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
@@ -100,8 +92,8 @@ const FeedbackPopoverDeletion = ({ id }: { id: string }) => {
           </Button>
         </DialogActions>
       </Dialog>
-    </div>
+    </>
   );
 };
 
-export default FeedbackPopoverDeletion;
+export default CaseIncidentDeletion;

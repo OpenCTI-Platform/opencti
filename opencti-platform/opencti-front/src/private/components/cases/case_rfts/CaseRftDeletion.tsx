@@ -5,49 +5,29 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import { graphql } from 'react-relay';
-import makeStyles from '@mui/styles/makeStyles';
 import { useNavigate } from 'react-router-dom';
 import { useFormatter } from '../../../../components/i18n';
 import Security from '../../../../utils/Security';
 import Transition from '../../../../components/Transition';
 import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import useDeletion from '../../../../utils/hooks/useDeletion';
-import { deleteNode } from '../../../../utils/store';
-import { CaseTasksLinesQuery$variables } from './__generated__/CaseTasksLinesQuery.graphql';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  container: {
-    margin: 0,
-  },
-}));
-
-const taskPopoverDeletionDeleteMutation = graphql`
-  mutation TaskPopoverDeletionDeleteMutation($id: ID!) {
-    taskDelete(id: $id)
+const caseRftDeletionDeleteMutation = graphql`
+  mutation CaseRftDeletionDeleteMutation($id: ID!) {
+    caseRftDelete(id: $id)
   }
 `;
 
-const TaskPopoverDeletion = ({
-  id,
-  objectId,
-  paginationOptions,
-}: {
-  id: string;
-  objectId?: string;
-  paginationOptions?: CaseTasksLinesQuery$variables;
-}) => {
-  const classes = useStyles();
+const CaseRftDeletion = ({ id }: { id: string }) => {
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
   const deleteSuccessMessage = t_i18n('', {
     id: '... successfully deleted',
-    values: { entity_type: t_i18n('entity_Task') },
+    values: { entity_type: t_i18n('entity_Case-Rft') },
   });
   const [commit] = useApiMutation(
-    taskPopoverDeletionDeleteMutation,
+    caseRftDeletionDeleteMutation,
     undefined,
     { successMessage: deleteSuccessMessage },
   );
@@ -65,25 +45,16 @@ const TaskPopoverDeletion = ({
       variables: {
         id,
       },
-      updater: (store) => {
-        if (paginationOptions) {
-          deleteNode(store, 'Pagination_tasks', paginationOptions, id);
-        }
-      },
       onCompleted: () => {
         setDeleting(false);
         handleClose();
-        if (objectId) {
-          handleCloseDelete();
-        } else {
-          navigate('/dashboard/cases/tasks');
-        }
+        navigate('/dashboard/cases/rfts');
       },
     });
   };
 
   return (
-    <div className={classes.container}>
+    <React.Fragment>
       <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
         <Button
           color="error"
@@ -104,7 +75,7 @@ const TaskPopoverDeletion = ({
       >
         <DialogContent>
           <DialogContentText>
-            {t_i18n('Do you want to delete this task?')}
+            {t_i18n('Do you want to delete this request for takedown?')}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
@@ -116,8 +87,8 @@ const TaskPopoverDeletion = ({
           </Button>
         </DialogActions>
       </Dialog>
-    </div>
+    </React.Fragment>
   );
 };
 
-export default TaskPopoverDeletion;
+export default CaseRftDeletion;
