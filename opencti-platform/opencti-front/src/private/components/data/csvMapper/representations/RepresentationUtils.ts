@@ -18,6 +18,7 @@ export const representationInitialization = (
     type,
     attributes: {},
     target_type: '',
+    column_based: {},
   };
 };
 
@@ -55,7 +56,6 @@ export const csvMapperRepresentationToFormData = (
   const entitySchemaAttributes = schemaAttributes.find(
     (schema) => schema.name === representation.target.entity_type,
   )?.attributes ?? [];
-
   return {
     id: representation.id,
     type: representation.type,
@@ -89,6 +89,11 @@ export const formDataToCsvMapperRepresentation = (
     type: data.type as CsvMapperRepresentationType,
     target: {
       entity_type: data.target_type ?? '',
+      column_based: {
+        column_reference: data.column_based?.column_reference,
+        operator: data.column_based?.operator,
+        value: data.column_based?.value,
+      },
     },
     attributes: (Object.entries(data.attributes)).flatMap(([name, attribute]) => {
       const mapperAttribute = formDataToCsvMapperAttribute(attribute, name);
