@@ -3721,6 +3721,7 @@ export type Container = {
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
   currentUserAccessRight?: Maybe<Scalars['String']['output']>;
+  draftVersion?: Maybe<DraftVersion>;
   entity_type: Scalars['String']['output'];
   externalReferences?: Maybe<ExternalReferenceConnection>;
   groupings?: Maybe<GroupingConnection>;
@@ -8424,6 +8425,7 @@ export type HashedObservable = {
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
+  draftVersion?: Maybe<DraftVersion>;
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String']['output'];
   exportFiles?: Maybe<FileConnection>;
@@ -9219,6 +9221,7 @@ export type Identity = {
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
   description?: Maybe<Scalars['String']['output']>;
+  draftVersion?: Maybe<DraftVersion>;
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String']['output'];
   exportFiles?: Maybe<FileConnection>;
@@ -11621,6 +11624,7 @@ export type Location = {
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
   description?: Maybe<Scalars['String']['output']>;
+  draftVersion?: Maybe<DraftVersion>;
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String']['output'];
   exportFiles?: Maybe<FileConnection>;
@@ -23352,6 +23356,7 @@ export type StixCoreObject = {
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
+  draftVersion?: Maybe<DraftVersion>;
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String']['output'];
   exportFiles?: Maybe<FileConnection>;
@@ -23979,6 +23984,7 @@ export type StixCyberObservable = {
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
+  draftVersion?: Maybe<DraftVersion>;
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String']['output'];
   exportFiles?: Maybe<FileConnection>;
@@ -24269,6 +24275,7 @@ export type StixDomainObject = {
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
+  draftVersion?: Maybe<DraftVersion>;
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String']['output'];
   exportFiles?: Maybe<FileConnection>;
@@ -24851,6 +24858,7 @@ export type StixFileEdge = {
 export type StixMetaObject = {
   created?: Maybe<Scalars['DateTime']['output']>;
   created_at: Scalars['DateTime']['output'];
+  draftVersion?: Maybe<DraftVersion>;
   entity_type: Scalars['String']['output'];
   id: Scalars['ID']['output'];
   is_inferred: Scalars['Boolean']['output'];
@@ -32933,6 +32941,7 @@ export type ContainerResolvers<ContextType = any, ParentType extends ResolversPa
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
   currentUserAccessRight?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  draftVersion?: Resolver<Maybe<ResolversTypes['DraftVersion']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<ContainerExternalReferencesArgs>>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<ContainerGroupingsArgs>>;
@@ -34513,6 +34522,7 @@ export type HashedObservableResolvers<ContextType = any, ParentType extends Reso
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
+  draftVersion?: Resolver<Maybe<ResolversTypes['DraftVersion']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   exportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<HashedObservableExportFilesArgs>>;
@@ -34702,6 +34712,7 @@ export type IdentityResolvers<ContextType = any, ParentType extends ResolversPar
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  draftVersion?: Resolver<Maybe<ResolversTypes['DraftVersion']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   exportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<IdentityExportFilesArgs>>;
@@ -35544,6 +35555,7 @@ export type LocationResolvers<ContextType = any, ParentType extends ResolversPar
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  draftVersion?: Resolver<Maybe<ResolversTypes['DraftVersion']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   exportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<LocationExportFilesArgs>>;
@@ -38570,6 +38582,7 @@ export type StixCoreObjectResolvers<ContextType = any, ParentType extends Resolv
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
+  draftVersion?: Resolver<Maybe<ResolversTypes['DraftVersion']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   exportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<StixCoreObjectExportFilesArgs>>;
@@ -38719,6 +38732,7 @@ export type StixCyberObservableResolvers<ContextType = any, ParentType extends R
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
+  draftVersion?: Resolver<Maybe<ResolversTypes['DraftVersion']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   exportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<StixCyberObservableExportFilesArgs>>;
@@ -38793,6 +38807,7 @@ export type StixDomainObjectResolvers<ContextType = any, ParentType extends Reso
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
+  draftVersion?: Resolver<Maybe<ResolversTypes['DraftVersion']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   exportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<StixDomainObjectExportFilesArgs>>;
@@ -38942,6 +38957,7 @@ export type StixMetaObjectResolvers<ContextType = any, ParentType extends Resolv
   __resolveType: TypeResolveFn<'ExternalReference' | 'KillChainPhase' | 'Label' | 'MarkingDefinition' | 'Vocabulary', ParentType, ContextType>;
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  draftVersion?: Resolver<Maybe<ResolversTypes['DraftVersion']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
