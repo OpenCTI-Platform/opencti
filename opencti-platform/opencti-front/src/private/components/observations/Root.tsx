@@ -38,35 +38,35 @@ const Root = () => {
         />
         <Route
           path="/observables"
-          Component={boundaryWrapper(StixCyberObservables)}
+          element={boundaryWrapper(StixCyberObservables)}
         />
         <Route
           path="/observables/:observableId/*"
-          Component={boundaryWrapper(RootStixCyberObservable)}
+          element={boundaryWrapper(RootStixCyberObservable)}
         />
         <Route
           path="/artifacts"
-          Component={boundaryWrapper(Artifacts)}
+          element={boundaryWrapper(Artifacts)}
         />
         <Route
           path="/artifacts/:observableId/*"
-          Component={boundaryWrapper(RootArtifact)}
+          element={boundaryWrapper(RootArtifact)}
         />
         <Route
           path="/indicators"
-          Component={boundaryWrapper(Indicators)}
+          element={boundaryWrapper(Indicators)}
         />
         <Route
           path="/indicators/:indicatorId/*"
-          Component={boundaryWrapper(RootIndicator)}
+          element={boundaryWrapper(RootIndicator)}
         />
         <Route
           path="/infrastructures"
-          Component={boundaryWrapper(Infrastructures)}
+          element={boundaryWrapper(Infrastructures)}
         />
         <Route
           path="/infrastructures/:infrastructureId/*"
-          Component={boundaryWrapper(RootInfrastructure)}
+          element={boundaryWrapper(RootInfrastructure)}
         />
       </Routes>
     </Suspense>

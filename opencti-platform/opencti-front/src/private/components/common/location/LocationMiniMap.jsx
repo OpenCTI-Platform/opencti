@@ -16,9 +16,9 @@ import MarkerDark from '../../../../static/images/leaflet/marker_dark.png';
 import CityLight from '../../../../static/images/leaflet/city_light.png';
 import MarkerLight from '../../../../static/images/leaflet/marker_light.png';
 
-const styles = () => ({
+const styles = (theme) => ({
   paper: {
-    margin: '10px 0 0 0',
+    marginTop: theme.spacing(1),
     padding: 0,
     borderRadius: 8,
   },

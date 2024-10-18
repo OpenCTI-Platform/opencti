@@ -49,14 +49,20 @@ const i18n: { messages: Record<PlatformLang, Record<string, string>> } = {
   },
 };
 
-export const availableLanguage: { value : PlatformLang, label: string }[] = [
-  { value: 'en-us', label: 'English' },
-  { value: 'fr-fr', label: 'Français' },
-  { value: 'es-es', label: 'Español' },
-  { value: 'ja-jp', label: '日本語' },
-  { value: 'zh-cn', label: '简化字' },
-  { value: 'de-de', label: 'Deutsch' },
-  { value: 'ko-kr', label: '한국어' },
+export const availableLanguage: { value: PlatformLang, label: string, name: string }[] = [
+  { value: 'en-us', label: 'English', name: 'English' },
+  { value: 'fr-fr', label: 'Français', name: 'French' },
+  { value: 'es-es', label: 'Español', name: 'Spanish' },
+  { value: 'ja-jp', label: '日本語', name: 'Japanese' },
+  { value: 'zh-cn', label: '简化字', name: 'Chinese' },
+  { value: 'de-de', label: 'Deutsch', name: 'German' },
+  { value: 'ko-kr', label: '한국어', name: 'Korean' },
+];
+
+// list of available languages for Ai text generation (minimal support : platform languages)
+export const aiLanguage: { value: string, label: string, name: string }[] = [
+  ...availableLanguage,
+  // Add new languages which are only supported for ia, not for the platform
 ];
 
 interface AppIntlProviderProps {

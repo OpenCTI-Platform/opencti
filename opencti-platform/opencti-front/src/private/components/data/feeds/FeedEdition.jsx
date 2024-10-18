@@ -30,10 +30,10 @@ import { stixCyberObservablesLinesAttributesQuery } from '../../observations/sti
 import Filters from '../../common/lists/Filters';
 import { feedCreationAllTypesQuery } from './FeedCreation';
 import {
-  useAvailableFilterKeysForEntityTypes,
   cleanFilters,
   deserializeFilterGroupForFrontend,
   serializeFilterGroupForBackend,
+  useAvailableFilterKeysForEntityTypes,
   useFetchFilterKeysSchema,
 } from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';

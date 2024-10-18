@@ -17,7 +17,7 @@ import { QueryRenderer } from '../../../../relay/environment';
 
 const styles = (theme) => ({
   paper: {
-    margin: '10px 0 0 0',
+    marginTop: theme.spacing(1),
     padding: 0,
     borderRadius: 4,
   },

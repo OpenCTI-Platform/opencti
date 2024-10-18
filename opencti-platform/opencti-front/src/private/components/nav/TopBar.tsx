@@ -15,6 +15,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import { usePage } from 'use-analytics';
 import Popover from '@mui/material/Popover';
 import Box from '@mui/material/Box';
+import { OPEN_BAR_WIDTH, SMALL_BAR_WIDTH } from '@components/nav/LeftBar';
 import { useFormatter } from '../../../components/i18n';
 import SearchInput from '../../../components/SearchInput';
 import { APP_BASE_PATH, fileUri, MESSAGING$ } from '../../../relay/environment';
@@ -53,7 +54,9 @@ const useStyles = makeStyles<Theme>((theme) => ({
     color: theme.palette.text?.primary,
   },
   logoContainer: {
-    margin: '2px 0 0 10px',
+    marginTop: theme.spacing(0.2),
+    paddingLeft: theme.spacing(1),
+    minWidth: SMALL_BAR_WIDTH,
   },
   logo: {
     cursor: 'pointer',
@@ -71,7 +74,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
   barRight: {
     position: 'absolute',
     top: 0,
-    right: 13,
+    right: theme.spacing(2),
     height: '100%',
     display: 'flex',
     alignItems: 'center',
@@ -229,9 +232,13 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
     >
       {/* Header and Footer Banners containing classification level of system */}
       <Toolbar
-        style={{ marginTop: bannerHeightNumber + settingsMessagesBannerHeight, paddingLeft: 0 }}
+        style={{
+          alignItems: 'center',
+          marginTop: bannerHeightNumber + settingsMessagesBannerHeight,
+          padding: 0,
+        }}
       >
-        <div className={classes.logoContainer}>
+        <div className={classes.logoContainer} style={navOpen ? { width: OPEN_BAR_WIDTH } : {}}>
           <Link to="/dashboard">
             <img
               src={navOpen ? theme.logo : theme.logo_collapsed}
@@ -240,7 +247,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
             />
           </Link>
         </div>
-        {hasKnowledgeAccess && <div className={classes.menuContainer} style={{ marginLeft: navOpen ? 25 : 30 }}>
+        {hasKnowledgeAccess && <div className={classes.menuContainer} style={{ marginLeft: navOpen ? theme.spacing(3) : theme.spacing(3) }}>
           <SearchInput
             onSubmit={handleSearch}
             keyword={keyword}

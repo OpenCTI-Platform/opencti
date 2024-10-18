@@ -904,6 +904,36 @@ class ReportKnowledgeGraphComponent extends Component {
     this.setState({ numberOfSelectedNodes: this.selectedNodes.size });
   }
 
+  handleSelectRelationshipsByAdjacentNode(type) {
+    const selectedNodes = Array.from(this.selectedNodes);
+    const selectedNodesIds = selectedNodes.map((n) => n.id);
+    this.selectedLinks = new Set(
+      Array.from(this.selectedLinks).filter((link) => !selectedNodesIds.includes(link.source_id) && !selectedNodesIds.includes(link.target_id)),
+    );
+
+    const relationshipsToSelect = this.state.graphData.links.filter(
+      (link) => {
+        const isSourceSelected = selectedNodesIds.includes(link.source_id);
+        const isTargetSelected = selectedNodesIds.includes(link.target_id);
+
+        if (type === 'children') {
+          return isSourceSelected;
+        }
+        if (type === 'parent') {
+          return isTargetSelected;
+        }
+        if (type === 'deselect') {
+          return null;
+        }
+        return isSourceSelected || isTargetSelected;
+      },
+      this.state.graphData.links,
+    );
+
+    relationshipsToSelect.forEach((link) => this.selectedLinks.add(link));
+    this.setState({ numberOfSelectedLinks: this.selectedLinks.size });
+  }
+
   handleResetLayout() {
     this.graphData = buildGraphData(this.graphObjects, {}, this.props.t);
     this.setState(
@@ -1082,6 +1112,7 @@ class ReportKnowledgeGraphComponent extends Component {
                 selectedLinks={Array.from(this.selectedLinks)}
                 numberOfSelectedNodes={numberOfSelectedNodes}
                 numberOfSelectedLinks={numberOfSelectedLinks}
+                handleSelectRelationshipsByAdjacentNode={this.handleSelectRelationshipsByAdjacentNode.bind(this)}
                 handleCloseEntityEdition={this.handleCloseEntityEdition.bind(
                   this,
                 )}

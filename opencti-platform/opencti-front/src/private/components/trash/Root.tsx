@@ -14,7 +14,7 @@ const Root = () => {
         <Routes>
           <Route
             path="/"
-            Component={boundaryWrapper(Trash)}
+            element={boundaryWrapper(Trash)}
           />
         </Routes>
       </Suspense>

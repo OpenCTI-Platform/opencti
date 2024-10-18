@@ -8,12 +8,13 @@ import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import { useFormatter } from '../../../../components/i18n';
 import { FeedbackDetails_case$data, FeedbackDetails_case$key } from './__generated__/FeedbackDetails_case.graphql';
 import RatingField from '../../../../components/fields/RatingField';
+import type { Theme } from '../../../../components/Theme';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles<Theme>((theme) => ({
   paper: {
-    margin: '10px 0 0 0',
+    marginTop: theme.spacing(1),
     padding: '15px',
     borderRadius: 4,
   },

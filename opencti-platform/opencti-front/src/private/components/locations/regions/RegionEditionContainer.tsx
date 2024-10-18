@@ -59,7 +59,7 @@ const RegionEditionContainer: FunctionComponent<RegionEditionContainerProps> = (
     );
   }
 
-  return <Loader variant={LoaderVariant.inElement} />;
+  return <Loader variant={LoaderVariant.inline} />;
 };
 
 export default RegionEditionContainer;

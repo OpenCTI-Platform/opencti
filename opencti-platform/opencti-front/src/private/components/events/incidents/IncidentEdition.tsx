@@ -26,7 +26,7 @@ const IncidentEdition = ({ incidentId }: { incidentId: string }) => {
     <>
       {queryRef && (
         <React.Suspense
-          fallback={<Loader variant={LoaderVariant.inElement} />}
+          fallback={<Loader variant={LoaderVariant.inline} />}
         >
           <IncidentEditionContainer
             queryRef={queryRef}

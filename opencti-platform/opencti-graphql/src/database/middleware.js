@@ -1454,6 +1454,8 @@ export const mergeEntities = async (context, user, targetEntityId, sourceEntityI
     await redisAddDeletions(sources.map((s) => s.internal_id));
     // - END TRANSACTION
     return await storeLoadById(context, user, target.id, ABSTRACT_STIX_OBJECT).then((finalStixCoreObject) => {
+      // console.log('notify');
+      logApp.info('notify');
       return notify(BUS_TOPICS[ABSTRACT_STIX_CORE_OBJECT].EDIT_TOPIC, finalStixCoreObject, user);
     });
   } catch (err) {
@@ -2473,6 +2475,7 @@ const isOutdatedUpdate = (context, element, attributeKey) => {
 };
 
 const upsertElement = async (context, user, element, type, basePatch, opts = {}) => {
+  logApp.warn('upsertElement ----------------');
   // -- Independent update
   const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   const updatePatch = { ...basePatch };
@@ -2643,6 +2646,8 @@ const upsertElement = async (context, user, element, type, basePatch, opts = {})
   if (inputs.length > 0) {
     // Update the attribute and return the result
     const updateOpts = { ...opts, upsert: context.synchronizedUpsert !== true };
+    logApp.debug('upsertElement ----------------', inputs);
+
     return await updateAttributeMetaResolved(context, user, element, inputs, updateOpts);
   }
   // -- No modification applied
@@ -2978,11 +2983,15 @@ const createEntityRaw = async (context, user, rawInput, type, opts = {}) => {
           throw UnsupportedError('Cant upsert inferred entity. Too many entities resolved', { input, entityIds });
         }
         // If upsert come from a rule, do a specific upsert.
+        // console.log('HERE 1');
+        logApp.info('HERE 1 ----------------');
         return await upsertEntityRule(context, user, R.head(filteredEntities), input, { ...opts, locks: participantIds });
       }
       if (filteredEntities.length === 1) {
         const upsertEntityOpts = { ...opts, locks: participantIds, bypassIndividualUpdate: true };
         const element = await storeLoadByIdWithRefs(context, user, R.head(filteredEntities).internal_id, { type });
+        // console.log('HERE 2');
+        logApp.info('HERE 2 ----------------');
         return upsertElement(context, user, element, type, resolvedInput, upsertEntityOpts);
       }
       // If creation is not by a reference
@@ -3008,6 +3017,8 @@ const createEntityRaw = async (context, user, rawInput, type, opts = {}) => {
               mergeSource = existingByStandard.internal_id;
             }
             logApp.info('[OPENCTI] Merge during creation detected');
+            // console.log('HERE MERGED');
+            logApp.info('HERE MERGED ----------------');
             await mergeEntities(context, user, mergeTarget, [mergeSource], { locks: participantIds });
           }
         }
@@ -3019,6 +3030,8 @@ const createEntityRaw = async (context, user, rawInput, type, opts = {}) => {
         const normedAliases = R.uniq(concurrentAliases.map((c) => normalizeName(c)));
         const filteredAliases = R.filter((i) => !normedAliases.includes(normalizeName(i)), resolvedInput[key] || []);
         const resolvedAliases = { ...resolvedInput, [key]: filteredAliases };
+        // console.log('HERE 3');
+        logApp.info('HERE 3 ----------------');
         return upsertElement(context, user, existingByStandard, type, resolvedAliases, { ...opts, locks: participantIds });
       }
       if (resolvedInput.update === true) {
@@ -3027,13 +3040,20 @@ const createEntityRaw = async (context, user, rawInput, type, opts = {}) => {
         const target = R.find((e) => e.standard_id === standardId, filteredEntities) || R.head(filteredEntities);
         const sources = R.filter((e) => e.internal_id !== target.internal_id, filteredEntities);
         hashMergeValidation([target, ...sources]);
+        // console.log('HERE MERGED 2');
+        logApp.info('HERE MERGED 2 ----------------');
         await mergeEntities(context, user, target.internal_id, sources.map((s) => s.internal_id), { locks: participantIds });
+        // console.log('HERE 4');
+        logApp.info('HERE 4 ----------------');
+
         return upsertElement(context, user, target, type, resolvedInput, { ...opts, locks: participantIds });
       }
       if (resolvedInput.stix_id && !existingEntities.map((n) => getInstanceIds(n)).flat().includes(resolvedInput.stix_id)) {
         // Upsert others
         const target = R.head(filteredEntities);
         const resolvedStixIds = { ...target, x_opencti_stix_ids: [...target.x_opencti_stix_ids, resolvedInput.stix_id] };
+        // console.log('HERE 5');
+        logApp.info('HERE 5 ----------------');
         return upsertElement(context, user, target, type, resolvedStixIds, { ...opts, locks: participantIds });
       }
       // Return the matching STIX IDs in others

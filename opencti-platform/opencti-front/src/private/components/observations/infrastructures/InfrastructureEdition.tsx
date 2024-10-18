@@ -27,7 +27,7 @@ const InfrastructureEdition = ({ infrastructureId }: { infrastructureId: string 
     <>
       {queryRef && (
         <React.Suspense
-          fallback={<Loader variant={LoaderVariant.inElement} />}
+          fallback={<Loader variant={LoaderVariant.inline} />}
         >
           <InfrastructureEditionContainer
             queryRef={queryRef}

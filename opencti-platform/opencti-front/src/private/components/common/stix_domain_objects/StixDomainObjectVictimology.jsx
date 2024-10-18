@@ -11,7 +11,7 @@ import EntityStixCoreRelationships from '../stix_core_relationships/EntityStixCo
 import EntityStixCoreRelationshipsHorizontalBars from '../stix_core_relationships/EntityStixCoreRelationshipsHorizontalBars';
 import StixDomainObjectVictimologyMap from './StixDomainObjectVictimologyMap';
 
-const styles = () => ({
+const styles = (theme) => ({
   container: {
     marginTop: 40,
   },
@@ -22,7 +22,7 @@ const styles = () => ({
     height: 50,
   },
   paper: {
-    margin: '10px 0 0 0',
+    marginTop: theme.spacing(1),
     padding: 0,
     overflow: 'hidden',
   },

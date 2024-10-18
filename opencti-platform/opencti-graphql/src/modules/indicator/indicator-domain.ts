@@ -1,5 +1,6 @@
 import * as R from 'ramda';
 import moment from 'moment/moment';
+import { checkPatternValidity } from '../../utils/dataPrep';
 import { createEntity, createRelation, distributionEntities, patchAttribute, storeLoadByIdWithRefs, timeSeriesEntities } from '../../database/middleware';
 import { type EntityOptions, listAllEntities, listEntitiesPaginated, listEntitiesThroughRelationsPaginated, storeLoadById } from '../../database/middleware-loader';
 import { BUS_TOPICS, extendedErrors, logApp } from '../../config/conf';
@@ -20,7 +21,7 @@ import {
 } from '../../schema/general';
 import { elCount } from '../../database/engine';
 import { isEmptyField, READ_INDEX_STIX_DOMAIN_OBJECTS } from '../../database/utils';
-import { cleanupIndicatorPattern, extractValidObservablesFromIndicatorPattern } from '../../utils/syntax';
+import { cleanupIndicatorPattern, extractObservablesFromIndicatorPattern, extractValidObservablesFromIndicatorPattern } from '../../utils/syntax';
 import { computeValidPeriod } from './indicator-utils';
 import { addFilter } from '../../utils/filtering/filtering-utils';
 import type { AuthContext, AuthUser } from '../../types/user';
@@ -210,6 +211,18 @@ export const promoteIndicatorToObservables = async (context: AuthContext, user: 
   return createObservablesFromIndicator(context, user, input, indicator);
 };
 
+export const getObservableValuesFromPattern = (pattern: string) => extractObservablesFromIndicatorPattern(pattern);
+
+const getFormattedPattern = async (context: AuthContext, user: AuthUser, pattern_type: string, pattern: string) => {
+  const patternType = pattern_type.toLowerCase();
+  const formattedPattern = cleanupIndicatorPattern(patternType, pattern);
+  const check = await checkIndicatorSyntax(context, user, patternType, formattedPattern);
+  if (check === false) {
+    throw FunctionalError(`Indicator of type ${pattern_type} is not correctly formatted.`);
+  }
+  return formattedPattern;
+};
+
 export const addIndicator = async (context: AuthContext, user: AuthUser, indicator: IndicatorAddInput) => {
   let observableType: string = isEmptyField(indicator.x_opencti_main_observable_type) ? 'Unknown' : indicator.x_opencti_main_observable_type as string;
   if (observableType === 'File') {
@@ -219,18 +232,16 @@ export const addIndicator = async (context: AuthContext, user: AuthUser, indicat
   if (isKnownObservable && !isStixCyberObservable(observableType)) {
     throw FunctionalError(`Observable type ${observableType} is not supported.`);
   }
-  // check indicator syntax
-  const patternType = indicator.pattern_type.toLowerCase();
-  const formattedPattern = cleanupIndicatorPattern(patternType, indicator.pattern);
-  const check = await checkIndicatorSyntax(context, user, patternType, formattedPattern);
-  if (check === false) {
-    throw FunctionalError(`Indicator of type ${indicator.pattern_type} is not correctly formatted.`);
-  }
+
   const indicatorBaseScore = indicator.x_opencti_score ?? 50;
   const isDecayActivated = await isModuleActivated('INDICATOR_DECAY_MANAGER');
   // find default decay rule (even if decay is not activated, it is used to compute default validFrom and validUntil)
   const decayRule = await findDecayRuleForIndicator(context, observableType);
   const { validFrom, validUntil, revoked, validPeriod } = await computeValidPeriod(indicator, decayRule.decay_lifetime);
+
+  const formattedPattern = await getFormattedPattern(context, user, indicator.pattern_type, indicator.pattern);
+  const extractedObservableValues = getObservableValuesFromPattern(formattedPattern);
+
   const indicatorToCreate = R.pipe(
     R.dissoc('createObservables'),
     R.dissoc('basedOn'),
@@ -241,6 +252,7 @@ export const addIndicator = async (context: AuthContext, user: AuthUser, indicat
     R.assoc('valid_from', validFrom.toISOString()),
     R.assoc('valid_until', validUntil.toISOString()),
     R.assoc('revoked', revoked),
+    R.assoc('x_opencti_observables_values', extractedObservableValues)
   )(indicator);
   let finalIndicatorToCreate;
   if (isDecayActivated && !revoked) {
@@ -305,6 +317,7 @@ export const indicatorEditField = async (context: AuthContext, user: AuthUser, i
   if (!indicator) {
     throw FunctionalError('Cannot edit the field, Indicator cannot be found.');
   }
+
   // validation check because according to STIX 2.1 specification the valid_until must be greater than the valid_from
   let { valid_from, valid_until } = indicator;
   input.forEach((e) => {
@@ -314,6 +327,14 @@ export const indicatorEditField = async (context: AuthContext, user: AuthUser, i
   if (new Date(valid_until) <= new Date(valid_from)) {
     throw ValidationError('The valid until date must be greater than the valid from date', 'valid_from');
   }
+
+  const foundPattern = finalInput.find((item) => item.key === 'pattern');
+  if (!indicator.x_opencti_observables_values || foundPattern) {
+    const formattedPattern = await getFormattedPattern(context, user, indicator.pattern_type, foundPattern?.value ? foundPattern?.value[0] : indicator.pattern);
+    const extractedObservableValues = getObservableValuesFromPattern(formattedPattern);
+    finalInput.push({ key: 'x_opencti_observables_values', value: [...extractedObservableValues] });
+  }
+
   const scoreEditInput = input.find((e) => e.key === 'x_opencti_score');
   if (scoreEditInput) {
     if (indicator.decay_applied_rule && !scoreEditInput.value.includes(indicator.decay_base_score)) {

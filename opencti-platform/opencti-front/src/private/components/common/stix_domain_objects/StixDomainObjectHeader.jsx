@@ -24,6 +24,7 @@ import MenuItem from '@mui/material/MenuItem';
 import * as R from 'ramda';
 import * as Yup from 'yup';
 import makeStyles from '@mui/styles/makeStyles';
+import { useTheme } from '@mui/styles';
 import { stixCoreObjectQuickSubscriptionContentQuery } from '../stix_core_objects/stixCoreObjectTriggersUtils';
 import StixCoreObjectAskAI from '../stix_core_objects/StixCoreObjectAskAI';
 import StixCoreObjectSubscribers from '../stix_core_objects/StixCoreObjectSubscribers';
@@ -45,14 +46,6 @@ import Transition from '../../../../components/Transition';
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
 const useStyles = makeStyles(() => ({
-  title: {
-    float: 'left',
-    marginRight: 10,
-  },
-  aliases: {
-    float: 'left',
-    marginTop: -6,
-  },
   alias: {
     margin: '4px 7px 0 0',
     fontSize: 12,
@@ -62,19 +55,6 @@ const useStyles = makeStyles(() => ({
   aliasesInput: {
     margin: '4px 15px 0 10px',
     float: 'left',
-  },
-  viewAsField: {
-    marginTop: -4,
-    float: 'left',
-  },
-  viewAsFieldLabel: {
-    margin: '4px 15px 0 0',
-    fontSize: 14,
-    float: 'left',
-  },
-  actions: {
-    margin: '-6px 0 0 0',
-    float: 'right',
   },
   actionButtons: {
     display: 'flex',
@@ -181,6 +161,7 @@ const aliasValidation = (t) => Yup.object().shape({
 
 const StixDomainObjectHeader = (props) => {
   const classes = useStyles();
+  const theme = useTheme();
   const { t_i18n } = useFormatter();
   const {
     stixDomainObject,
@@ -343,215 +324,212 @@ const StixDomainObjectHeader = (props) => {
 
   return (
     <React.Suspense fallback={<span />}>
-      <Tooltip title={getMainRepresentative(stixDomainObject)}>
-        <Typography
-          variant="h1"
-          gutterBottom={true}
-          classes={{ root: classes.title }}
-        >
-          {truncate(getMainRepresentative(stixDomainObject), 80)}
-        </Typography>
-      </Tooltip>
-      {typeof onViewAs === 'function' && (
-        <>
-          <InputLabel classes={{ root: classes.viewAsFieldLabel }}>
-            {t_i18n('Display as')}
-          </InputLabel>
-          <FormControl
-            classes={{ root: classes.viewAsField }}
-            variant="outlined"
-          >
-            <Select
-              size="small"
-              name="view-as"
-              value={viewAs}
-              onChange={onViewAs}
-              inputProps={{
-                name: 'view-as',
-                id: 'view-as',
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: theme.spacing(1) }}>
+        <div style={{ display: 'flex', gap: theme.spacing(2) }}>
+          <Tooltip title={getMainRepresentative(stixDomainObject)}>
+            <Typography
+              variant="h1"
+              sx={{
+                margin: 0,
+                lineHeight: 'unset',
               }}
-              variant="outlined"
             >
-              <MenuItem value="knowledge">{t_i18n('Knowledge entity')}</MenuItem>
-              <MenuItem value="author">{t_i18n('Author')}</MenuItem>
-            </Select>
-          </FormControl>
-        </>
-      )}
-      {!noAliases && (
-        <div
-          className={classes.aliases}
-          style={{
-            marginLeft:
-              typeof onViewAs === 'function' || !isKnowledgeUpdater ? 10 : 0,
-          }}
-        >
-          {R.take(5, aliases).map(
-            (label) => label.length > 0 && (
-            <Security
-              needs={[KNOWLEDGE_KNUPDATE]}
-              key={label}
-              placeholder={
-                <Tooltip title={label}>
-                  <Chip
-                    classes={{ root: classes.alias }}
-                    label={truncate(label, 40)}
-                  />
-                </Tooltip>
-              }
-            >
-              <Tooltip title={label}>
-                <Chip
-                  classes={{ root: classes.alias }}
-                  label={truncate(label, 40)}
-                  onDelete={
-                        enableReferences
-                          ? () => handleOpenCommitDelete(label)
-                          : () => deleteAlias(label)
+              {truncate(getMainRepresentative(stixDomainObject), 80)}
+            </Typography>
+          </Tooltip>
+          {typeof onViewAs === 'function' && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(0.5) }}>
+              <InputLabel>
+                {t_i18n('Display as')}
+              </InputLabel>
+              <FormControl
+                variant="outlined"
+              >
+                <Select
+                  size="small"
+                  name="view-as"
+                  value={viewAs}
+                  onChange={onViewAs}
+                  inputProps={{
+                    name: 'view-as',
+                    id: 'view-as',
+                  }}
+                  variant="outlined"
+                >
+                  <MenuItem value="knowledge">{t_i18n('Knowledge entity')}</MenuItem>
+                  <MenuItem value="author">{t_i18n('Author')}</MenuItem>
+                </Select>
+              </FormControl>
+            </div>
+          )}
+          <div style={{ display: 'flex' }}>
+            {(!noAliases && aliases.length > 0) && (
+              <div>
+                {R.take(5, aliases).map(
+                  (label) => label.length > 0 && (
+                    <Security
+                      needs={[KNOWLEDGE_KNUPDATE]}
+                      key={label}
+                      placeholder={
+                        <Tooltip title={label}>
+                          <Chip
+                            classes={{ root: classes.alias }}
+                            label={truncate(label, 40)}
+                          />
+                        </Tooltip>
                       }
-                />
-              </Tooltip>
-            </Security>
-            ),
-          )}
-        </div>
-      )}
-      {!noAliases && (
-        <Slide
-          direction="right"
-          in={openAlias}
-          mountOnEnter={true}
-          unmountOnExit={true}
-        >
-          <div style={{ float: 'left', marginTop: -5 }}>
-            <Formik
-              initialValues={{ new_alias: '' }}
-              onSubmit={onSubmitCreateAlias}
-              validationSchema={enableReferences ? aliasValidation(t_i18n) : null}
-            >
-              {({ submitForm, isSubmitting, setFieldValue, values }) => (
-                <Form style={{ float: 'right' }}>
-                  <Field
-                    component={TextField}
-                    variant="standard"
-                    name="new_alias"
-                    autoFocus={true}
-                    placeholder={t_i18n('New alias')}
-                    className={classes.aliasesInput}
-                    onChange={handleChangeNewAlias}
-                    value={newAlias}
-                    onKeyDown={(e) => {
-                      if (e.keyCode === 13) {
-                        if (enableReferences && !openCommitCreate) {
-                          return handleOpenCommitCreate();
-                        }
-                        return submitForm();
-                      }
-                      return true;
-                    }}
-                  />
-                  {enableReferences && (
-                    <CommitMessage
-                      handleClose={openCommitCreate}
-                      open={openCommitCreate}
-                      submitForm={submitForm}
-                      disabled={isSubmitting}
-                      setFieldValue={setFieldValue}
-                      values={values.references}
-                      id={stixDomainObject.id}
-                    />
-                  )}
-                </Form>
-              )}
-            </Formik>
-          </div>
-        </Slide>
-      )}
-      {!noAliases && (
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          {aliases.length > 5 ? (
-            <IconButton
-              style={{ float: 'left', marginTop: -5 }}
-              color="primary"
-              aria-label="More"
-              onClick={handleToggleOpenAliases}
-              size="medium"
-            >
-              <DotsHorizontalCircleOutline fontSize="small" />
-            </IconButton>
-          ) : (
-            <IconButton
-              style={{ float: 'left', marginTop: -5 }}
-              color="primary"
-              aria-label="Alias"
-              onClick={handleToggleCreateAlias}
-              size="medium"
-            >
-              {openAlias ? (
-                <Close fontSize="small" />
-              ) : (
-                <Add fontSize="small" />
-              )}
-            </IconButton>
-          )}
-        </Security>
-      )}
-      <div className={classes.actions}>
-        <div className={classes.actionButtons}>
-          {enableQuickSubscription && (
-            <StixCoreObjectSubscribers triggerData={triggerData} />
-          )}
-          {disableSharing !== true && (
-            <StixCoreObjectSharing
-              elementId={stixDomainObject.id}
-              variant="header"
-            />
-          )}
-          <StixCoreObjectFileExport
-            id={stixDomainObject.id}
-            type={entityType}
-          />
-          {isKnowledgeUpdater && (
-            <StixCoreObjectContainer elementId={stixDomainObject.id} />
-          )}
-          {enableQuickSubscription && (
-            <StixCoreObjectQuickSubscription
-              instanceId={stixDomainObject.id}
-              instanceName={getMainRepresentative(stixDomainObject)}
-              paginationOptions={triggersPaginationOptions}
-              triggerData={triggerData}
-            />
-          )}
-          {enableAskAi && (
-            <StixCoreObjectAskAI
-              instanceId={stixDomainObject.id}
-              instanceType={stixDomainObject.entity_type}
-              instanceName={getMainRepresentative(stixDomainObject)}
-              instanceMarkings={stixDomainObject.objectMarking.map(({ id }) => id) ?? []}
-              type={type}
-            />
-          )}
-          {(isKnowledgeUpdater || isKnowledgeEnricher) && (
-          <div className={classes.popover}>
-            {/* TODO remove this when all components are pure function without compose() */}
-            {!React.isValidElement(PopoverComponent) ? (
-              <PopoverComponent
-                disabled={disablePopover}
-                id={stixDomainObject.id}
-              />
-            ) : (
-              React.cloneElement(PopoverComponent, {
-                id: stixDomainObject.id,
-                disabled: disablePopover,
-              })
+                    >
+                      <Tooltip title={label}>
+                        <Chip
+                          classes={{ root: classes.alias }}
+                          label={truncate(label, 40)}
+                          onDelete={
+                            enableReferences
+                              ? () => handleOpenCommitDelete(label)
+                              : () => deleteAlias(label)
+                          }
+                        />
+                      </Tooltip>
+                    </Security>
+                  ),
+                )}
+              </div>
+            )}
+            {!noAliases && (
+              <Slide
+                direction="right"
+                in={openAlias}
+                mountOnEnter={true}
+                unmountOnExit={true}
+              >
+                <div>
+                  <Formik
+                    initialValues={{ new_alias: '' }}
+                    onSubmit={onSubmitCreateAlias}
+                    validationSchema={enableReferences ? aliasValidation(t_i18n) : null}
+                  >
+                    {({ submitForm, isSubmitting, setFieldValue, values }) => (
+                      <Form>
+                        <Field
+                          component={TextField}
+                          variant="standard"
+                          name="new_alias"
+                          autoFocus={true}
+                          placeholder={t_i18n('New alias')}
+                          className={classes.aliasesInput}
+                          onChange={handleChangeNewAlias}
+                          value={newAlias}
+                          onKeyDown={(e) => {
+                            if (e.keyCode === 13) {
+                              if (enableReferences && !openCommitCreate) {
+                                return handleOpenCommitCreate();
+                              }
+                              return submitForm();
+                            }
+                            return true;
+                          }}
+                        />
+                        {enableReferences && (
+                          <CommitMessage
+                            handleClose={openCommitCreate}
+                            open={openCommitCreate}
+                            submitForm={submitForm}
+                            disabled={isSubmitting}
+                            setFieldValue={setFieldValue}
+                            values={values.references}
+                            id={stixDomainObject.id}
+                          />
+                        )}
+                      </Form>
+                    )}
+                  </Formik>
+                </div>
+              </Slide>
+            )}
+            {!noAliases && (
+              <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                {aliases.length > 5 ? (
+                  <IconButton
+                    color="primary"
+                    aria-label="More"
+                    onClick={handleToggleOpenAliases}
+                    size="small"
+                  >
+                    <DotsHorizontalCircleOutline fontSize="small" />
+                  </IconButton>
+                ) : (
+                  <IconButton
+                    color="primary"
+                    aria-label="Alias"
+                    onClick={handleToggleCreateAlias}
+                    size="small"
+                  >
+                    {openAlias ? (
+                      <Close fontSize="small" />
+                    ) : (
+                      <Add fontSize="small" />
+                    )}
+                  </IconButton>
+                )}
+              </Security>
             )}
           </div>
-          )}
-          {EditComponent}
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <div className={classes.actionButtons}>
+            {enableQuickSubscription && (
+              <StixCoreObjectSubscribers triggerData={triggerData} />
+            )}
+            {disableSharing !== true && (
+              <StixCoreObjectSharing
+                elementId={stixDomainObject.id}
+                variant="header"
+              />
+            )}
+            <StixCoreObjectFileExport
+              id={stixDomainObject.id}
+              type={entityType}
+            />
+            {isKnowledgeUpdater && (
+              <StixCoreObjectContainer elementId={stixDomainObject.id} />
+            )}
+            {enableQuickSubscription && (
+              <StixCoreObjectQuickSubscription
+                instanceId={stixDomainObject.id}
+                instanceName={getMainRepresentative(stixDomainObject)}
+                paginationOptions={triggersPaginationOptions}
+                triggerData={triggerData}
+              />
+            )}
+            {enableAskAi && (
+              <StixCoreObjectAskAI
+                instanceId={stixDomainObject.id}
+                instanceType={stixDomainObject.entity_type}
+                instanceName={getMainRepresentative(stixDomainObject)}
+                instanceMarkings={stixDomainObject.objectMarking.map(({ id }) => id) ?? []}
+                type={type}
+              />
+            )}
+            {(isKnowledgeUpdater || isKnowledgeEnricher) && (
+              <div className={classes.popover}>
+                {/* TODO remove this when all components are pure function without compose() */}
+                {!React.isValidElement(PopoverComponent) ? (
+                  <PopoverComponent
+                    disabled={disablePopover}
+                    id={stixDomainObject.id}
+                  />
+                ) : (
+                  React.cloneElement(PopoverComponent, {
+                    id: stixDomainObject.id,
+                    disabled: disablePopover,
+                  })
+                )}
+              </div>
+            )}
+            {EditComponent}
+          </div>
         </div>
       </div>
-
-      <div className="clearfix" />
       {!noAliases && (
         <Dialog
           PaperProps={{ elevation: 1 }}
@@ -611,23 +589,23 @@ const StixDomainObjectHeader = (props) => {
                 stixDomainObject,
               ).map(
                 (label) => label.length > 0 && (
-                <ListItem key={label} disableGutters={true} dense={true}>
-                  <ListItemText primary={label} />
-                  <ListItemSecondaryAction>
-                    <IconButton
-                      edge="end"
-                      aria-label="delete"
-                      onClick={
-                            enableReferences
-                              ? () => handleOpenCommitDelete(label)
-                              : () => deleteAlias(label)
-                          }
-                      size="large"
-                    >
-                      <Delete />
-                    </IconButton>
-                  </ListItemSecondaryAction>
-                </ListItem>
+                  <ListItem key={label} disableGutters={true} dense={true}>
+                    <ListItemText primary={label} />
+                    <ListItemSecondaryAction>
+                      <IconButton
+                        edge="end"
+                        aria-label="delete"
+                        onClick={
+                          enableReferences
+                            ? () => handleOpenCommitDelete(label)
+                            : () => deleteAlias(label)
+                        }
+                        size="large"
+                      >
+                        <Delete />
+                      </IconButton>
+                    </ListItemSecondaryAction>
+                  </ListItem>
                 ),
               )}
             </List>

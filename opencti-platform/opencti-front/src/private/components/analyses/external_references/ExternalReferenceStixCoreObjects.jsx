@@ -16,9 +16,9 @@ import { computeLink } from '../../../../utils/Entity';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles((theme) => ({
   paper: {
-    margin: '10px 0 0 0',
+    marginTop: theme.spacing(1),
     padding: 0,
     borderRadius: 4,
   },

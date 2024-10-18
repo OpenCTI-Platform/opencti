@@ -8,9 +8,9 @@ import Typography from '@mui/material/Typography';
 import inject18n from '../../../../components/i18n';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 
-const styles = () => ({
+const styles = (theme) => ({
   paper: {
-    margin: '10px 0 0 0',
+    marginTop: theme.spacing(1),
     padding: '15px',
     borderRadius: 4,
   },

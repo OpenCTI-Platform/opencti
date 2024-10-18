@@ -37,19 +37,13 @@ import Loader, { LoaderVariant } from '../../../../components/Loader';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
-const useStyles = makeStyles({
+const useStyles = makeStyles(() => ({
   container: {
     width: '100%',
     height: '100%',
     overflow: 'auto',
     paddingBottom: 10,
     marginBottom: 10,
-  },
-  paper: {
-    height: '100%',
-    margin: '10px 0 0 0',
-    padding: 0,
-    borderRadius: 4,
   },
   item: {
     height: 50,
@@ -66,7 +60,7 @@ const useStyles = makeStyles({
     textOverflow: 'ellipsis',
     paddingRight: 10,
   },
-});
+}));
 
 const auditsListQuery = graphql`
   query AuditsListQuery(

@@ -33,8 +33,8 @@ const PublicRoot = () => {
             <CssBaseline />
             <Message />
             <Routes>
-              <Route path="/" Component={boundaryWrapper(PublicDataSharing)} />
-              <Route path="/dashboard/:uriKey/*" Component={boundaryWrapper(PublicDashboard)} />
+              <Route path="/" element={boundaryWrapper(PublicDataSharing)} />
+              <Route path="/dashboard/:uriKey/*" element={boundaryWrapper(PublicDashboard)} />
             </Routes>
           </ConnectedIntlProvider>
         </ConnectedThemeProvider>

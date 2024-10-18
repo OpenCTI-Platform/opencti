@@ -37,35 +37,35 @@ const Root = () => {
         />
         <Route
           path="/threat_actors_group"
-          Component={boundaryWrapper(ThreatActorsGroup)}
+          element={boundaryWrapper(ThreatActorsGroup)}
         />
         <Route
           path="/threat_actors_group/:threatActorGroupId/*"
-          Component={boundaryWrapper(RootThreatActorGroup)}
+          element={boundaryWrapper(RootThreatActorGroup)}
         />
         <Route
           path="/threat_actors_individual"
-          Component={boundaryWrapper(ThreatActorsIndividual)}
+          element={boundaryWrapper(ThreatActorsIndividual)}
         />
         <Route
           path="/threat_actors_individual/:threatActorIndividualId/*"
-          Component={boundaryWrapper(RootThreatActorIndividual)}
+          element={boundaryWrapper(RootThreatActorIndividual)}
         />
         <Route
           path="/intrusion_sets"
-          Component={boundaryWrapper(IntrusionSets)}
+          element={boundaryWrapper(IntrusionSets)}
         />
         <Route
           path="/intrusion_sets/:intrusionSetId/*"
-          Component={boundaryWrapper(RootIntrusionSet)}
+          element={boundaryWrapper(RootIntrusionSet)}
         />
         <Route
           path="/campaigns"
-          Component={boundaryWrapper(Campaigns)}
+          element={boundaryWrapper(Campaigns)}
         />
         <Route
           path="/campaigns/:campaignId/*"
-          Component={boundaryWrapper(RootCampaign)}
+          element={boundaryWrapper(RootCampaign)}
         />
       </Routes>
     </Suspense>

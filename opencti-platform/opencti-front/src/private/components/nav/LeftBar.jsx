@@ -108,8 +108,8 @@ import logoFiligranTextLight from '../../../static/images/logo_filigran_text_lig
 import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
 import useDimensions from '../../../utils/hooks/useDimensions';
 
-const SMALL_BAR_WIDTH = 55;
-const OPEN_BAR_WIDTH = 180;
+export const SMALL_BAR_WIDTH = 55;
+export const OPEN_BAR_WIDTH = 180;
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.

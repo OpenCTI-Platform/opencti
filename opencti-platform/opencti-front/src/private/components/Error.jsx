@@ -99,9 +99,9 @@ export const ErrorBoundary = ErrorBoundaryComponent;
 
 export const boundaryWrapper = (Component) => {
   // eslint-disable-next-line react/display-name
-  return (routeProps) => (
+  return (
     <ErrorBoundary>
-      <Component {...routeProps} />
+      <Component />
     </ErrorBoundary>
   );
 };

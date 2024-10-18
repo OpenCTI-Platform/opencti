@@ -41,43 +41,43 @@ const Root = () => {
         />
         <Route
           path="/attack_patterns"
-          Component={boundaryWrapper(AttackPatterns)}
+          element={boundaryWrapper(AttackPatterns)}
         />
         <Route
           path="/attack_patterns/:attackPatternId/*"
-          Component={boundaryWrapper(RootAttackPattern)}
+          element={boundaryWrapper(RootAttackPattern)}
         />
         <Route
           path="/narratives"
-          Component={boundaryWrapper(Narratives)}
+          element={boundaryWrapper(Narratives)}
         />
         <Route
           path="/narratives/:narrativeId/*"
-          Component={boundaryWrapper(RootNarrative)}
+          element={boundaryWrapper(RootNarrative)}
         />
         <Route
           path="/courses_of_action"
-          Component={boundaryWrapper(CoursesOfAction)}
+          element={boundaryWrapper(CoursesOfAction)}
         />
         <Route
           path="/courses_of_action/:courseOfActionId/*"
-          Component={boundaryWrapper(RootCourseOfAction)}
+          element={boundaryWrapper(RootCourseOfAction)}
         />
         <Route
           path="/data_components"
-          Component={boundaryWrapper(DataComponents)}
+          element={boundaryWrapper(DataComponents)}
         />
         <Route
           path="/data_components/:dataComponentId/*"
-          Component={boundaryWrapper(RootDataComponent)}
+          element={boundaryWrapper(RootDataComponent)}
         />
         <Route
           path="/data_sources"
-          Component={boundaryWrapper(DataSources)}
+          element={boundaryWrapper(DataSources)}
         />
         <Route
           path="/data_sources/:dataSourceId/*"
-          Component={boundaryWrapper(RootDataSource)}
+          element={boundaryWrapper(RootDataSource)}
         />
       </Routes>
     </Suspense>

@@ -28,7 +28,7 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import PictureManagementViewer from './PictureManagementViewer';
 import { resolveHasUserChoiceParsedCsvMapper } from '../../../../utils/csvMapperUtils';
 
-const styles = () => ({
+const styles = (theme) => ({
   container: {
     margin: 0,
   },
@@ -36,7 +36,7 @@ const styles = () => ({
     marginBottom: 20,
   },
   paper: {
-    margin: '10px 0 0 0',
+    marginTop: theme.spacing(1),
     padding: '15px',
     borderRadius: 4,
   },

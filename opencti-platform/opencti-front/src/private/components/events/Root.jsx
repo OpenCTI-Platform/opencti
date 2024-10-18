@@ -29,27 +29,27 @@ const Root = () => {
         />
         <Route
           path="/incidents"
-          Component={boundaryWrapper(Incidents)}
+          element={boundaryWrapper(Incidents)}
         />
         <Route
           path="/incidents/:incidentId/*"
-          Component={boundaryWrapper(RootIncident)}
+          element={boundaryWrapper(RootIncident)}
         />
         <Route
           path="/observed_data"
-          Component={boundaryWrapper(ObservedDatas)}
+          element={boundaryWrapper(ObservedDatas)}
         />
         <Route
           path="/observed_data/:observedDataId/*"
-          Component={boundaryWrapper(RootObservedData)}
+          element={boundaryWrapper(RootObservedData)}
         />
         <Route
           path="/sightings"
-          Component={boundaryWrapper(StixSightingRelationships)}
+          element={boundaryWrapper(StixSightingRelationships)}
         />
         <Route
           path="/sightings/:sightingId/*"
-          Component={boundaryWrapper(StixSightingRelationship)}
+          element={boundaryWrapper(StixSightingRelationship)}
         />
       </Routes>
     </Suspense>

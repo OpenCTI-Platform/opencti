@@ -11,7 +11,8 @@ const timeFormatsMap = {
   'fr-fr': 'HH:mm',
   'es-es': 'HH:mm',
   'ja-jp': 'hh:mm a',
-  'zg-cn': 'hh:mm a',
+  'zh-cn': 'hh:mm a',
+  'de-de': 'HH:mm',
   'ko-kr': 'hh:mm a',
 };
 
@@ -20,7 +21,8 @@ const timeFormatsMapWithSeconds = {
   'fr-fr': 'HH:mm:ss',
   'es-es': 'HH:mm:ss',
   'ja-jp': 'hh:mm:ss a',
-  'zg-cn': 'hh:mm:ss a',
+  'zh-cn': 'hh:mm:ss a',
+  'de-de': 'HH:mm:ss',
   'ko-kr': 'hh:mm:ss a',
 };
 

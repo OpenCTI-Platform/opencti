@@ -25,7 +25,7 @@ const FeedbackEdition: FunctionComponent<{ feedbackId: string }> = ({ feedbackId
     <>
       {queryRef && (
         <React.Suspense
-          fallback={<Loader variant={LoaderVariant.inElement} />}
+          fallback={<Loader variant={LoaderVariant.inline} />}
         >
           <FeedbackEditionContainer
             queryRef={queryRef}

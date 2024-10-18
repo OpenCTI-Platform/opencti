@@ -127,7 +127,7 @@ const GroupEditionContainer: FunctionComponent<GroupEditionContainerProps> = ({
         )}
         {currentTab === 1 && roleQueryRef && (
           <React.Suspense
-            fallback={<Loader variant={LoaderVariant.inElement} />}
+            fallback={<Loader variant={LoaderVariant.inline} />}
           >
             <GroupEditionRoles group={group} queryRef={roleQueryRef} />
           </React.Suspense>
@@ -135,7 +135,7 @@ const GroupEditionContainer: FunctionComponent<GroupEditionContainerProps> = ({
         {currentTab === 2 && <GroupEditionMarkings group={group} />}
         {currentTab === 3 && userQueryRef && (
           <React.Suspense
-            fallback={<Loader variant={LoaderVariant.inElement} />}
+            fallback={<Loader variant={LoaderVariant.inline} />}
           >
             <GroupEditionUsers group={group} queryRef={userQueryRef} paginationOptionsForUpdater={paginationOptionsForUserEdition}>
               <SearchInput

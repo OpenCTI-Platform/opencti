@@ -21,9 +21,9 @@ import AttackPatternCoursesOfAction from './AttackPatternCoursesOfAction';
 import AttackPatternDataComponents from './AttackPatternDataComponents';
 import StixCoreObjectKillChainPhasesView from '../../common/stix_core_objects/StixCoreObjectKillChainPhasesView';
 
-const styles = () => ({
+const styles = (theme) => ({
   paper: {
-    margin: '10px 0 0 0',
+    marginTop: theme.spacing(1),
     padding: '15px',
     borderRadius: 4,
   },

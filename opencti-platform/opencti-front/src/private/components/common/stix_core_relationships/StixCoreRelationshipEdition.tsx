@@ -70,7 +70,7 @@ const StixCoreRelationshipEdition = ({
   });
 
   return queryRef ? (
-    <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+    <React.Suspense fallback={<Loader variant={LoaderVariant.inline} />}>
       <StixCoreRelationshipEditionOverview
         queryRef={queryRef}
         handleClose={handleClose}
@@ -79,7 +79,7 @@ const StixCoreRelationshipEdition = ({
       />
     </React.Suspense>
   ) : (
-    <Loader variant={LoaderVariant.inElement} />
+    <Loader variant={LoaderVariant.inline} />
   );
 };
 

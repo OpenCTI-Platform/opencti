@@ -41,43 +41,43 @@ const Root = () => {
         />
         <Route
           path="/sectors"
-          Component={boundaryWrapper(Sectors)}
+          element={boundaryWrapper(Sectors)}
         />
         <Route
           path="/sectors/:sectorId/*"
-          Component={boundaryWrapper(RootSector)}
+          element={boundaryWrapper(RootSector)}
         />
         <Route
           path="/events"
-          Component={boundaryWrapper(Events)}
+          element={boundaryWrapper(Events)}
         />
         <Route
           path="/events/:eventId/*"
-          Component={boundaryWrapper(RootEvent)}
+          element={boundaryWrapper(RootEvent)}
         />
         <Route
           path="/organizations"
-          Component={boundaryWrapper(Organizations)}
+          element={boundaryWrapper(Organizations)}
         />
         <Route
           path="/organizations/:organizationId/*"
-          Component={boundaryWrapper(RootOrganization)}
+          element={boundaryWrapper(RootOrganization)}
         />
         <Route
           path="/systems"
-          Component={boundaryWrapper(Systems)}
+          element={boundaryWrapper(Systems)}
         />
         <Route
           path="/systems/:systemId/*"
-          Component={boundaryWrapper(RootSystem)}
+          element={boundaryWrapper(RootSystem)}
         />
         <Route
           path="/individuals"
-          Component={boundaryWrapper(Individuals)}
+          element={boundaryWrapper(Individuals)}
         />
         <Route
           path="/individuals/:individualId/*"
-          Component={boundaryWrapper(RootIndividual)}
+          element={boundaryWrapper(RootIndividual)}
         />
       </Routes>
     </Suspense>

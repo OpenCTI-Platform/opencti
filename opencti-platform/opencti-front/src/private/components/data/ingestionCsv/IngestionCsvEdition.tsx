@@ -54,7 +54,7 @@ export const ingestionCsvEditionPatch = graphql`
   } 
 `;
 
-const ingestionCsvEditionFragment = graphql`
+export const ingestionCsvEditionFragment = graphql`
   fragment IngestionCsvEditionFragment_ingestionCsv on IngestionCsv {
     id
     name
@@ -345,7 +345,7 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
           />
           {
             queryRef && (
-              <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+              <React.Suspense fallback={<Loader variant={LoaderVariant.inline} />}>
                 <Box sx={{ width: '100%', marginTop: 5 }}>
                   <Alert
                     severity="info"

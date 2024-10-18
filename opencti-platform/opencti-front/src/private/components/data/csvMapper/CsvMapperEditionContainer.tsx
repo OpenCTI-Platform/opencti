@@ -7,7 +7,7 @@ import Drawer from '@components/common/drawer/Drawer';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { useFormatter } from '../../../../components/i18n';
 
-const csvMapperEditionContainerFragment = graphql`
+export const csvMapperEditionContainerFragment = graphql`
   fragment CsvMapperEditionContainerFragment_csvMapper on CsvMapper {
     id
     name
@@ -70,7 +70,7 @@ const CsvMapperEditionContainer: FunctionComponent<CsvMapperEditionProps> = ({
   );
 
   if (!csvMapper) {
-    return <Loader variant={LoaderVariant.inElement}/>;
+    return <Loader variant={LoaderVariant.inline}/>;
   }
 
   return (

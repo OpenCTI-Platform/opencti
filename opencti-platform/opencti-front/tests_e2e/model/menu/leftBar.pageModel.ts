@@ -28,6 +28,6 @@ export default class LeftBarPage {
   }
 
   async expectBreadcrumb(...items: string[]) {
-    return expect(this.page.getByRole('navigation').getByText(items.join('/'))).toBeVisible();
+    return expect(this.page.getByTestId('navigation').getByText(items.join('/'))).toBeVisible();
   }
 }

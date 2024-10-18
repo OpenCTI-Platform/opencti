@@ -49,7 +49,7 @@ import Security from '../../../../../utils/Security';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
-const useStyles = makeStyles<Theme>(() => ({
+const useStyles = makeStyles<Theme>((theme) => ({
   alert: {
     width: '100%',
     marginBottom: 20,
@@ -59,7 +59,7 @@ const useStyles = makeStyles<Theme>(() => ({
     padding: '0 200px 50px 0',
   },
   paper: {
-    margin: '10px 0 0 0',
+    marginTop: theme.spacing(1),
     padding: 20,
     borderRadius: 4,
   },
