@@ -5,6 +5,7 @@ import useHelper from 'src/utils/hooks/useHelper';
 import { useFormatter } from '../../../../components/i18n';
 import { ExternalReferenceEditionContainer_externalReference$data } from './__generated__/ExternalReferenceEditionContainer_externalReference.graphql';
 import ExternalReferenceEditionOverview from './ExternalReferenceEditionOverview';
+import ExternalReferencePopoverDeletion from './ExternalReferencePopoverDeletion';
 
 interface ExternalReferenceEditionContainerProps {
   handleClose: () => void
@@ -34,10 +35,18 @@ const ExternalReferenceEditionContainer: FunctionComponent<ExternalReferenceEdit
       open={open}
       controlledDial={isFABReplaced ? controlledDial : undefined}
     >
-      <ExternalReferenceEditionOverview
-        externalReference={externalReference}
-        context={editContext}
-      />
+      <>
+        <ExternalReferenceEditionOverview
+          externalReference={externalReference}
+          context={editContext}
+        />
+        {isFABReplaced && (
+          <ExternalReferencePopoverDeletion
+            id={externalReference.id}
+            handleRemove={undefined}
+          />
+        )}
+      </>
     </Drawer>
   );
 };

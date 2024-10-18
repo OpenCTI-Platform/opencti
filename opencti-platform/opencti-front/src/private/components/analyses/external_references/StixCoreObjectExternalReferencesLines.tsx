@@ -342,6 +342,7 @@ StixCoreObjectExternalReferencesLinesContainerProps
                               handleRemove={() => handleOpenDialog(externalReferenceEdge)
                               }
                               objectId={stixCoreObjectId}
+                              variant="inLine"
                             />
                           </Security>
                         </ListItemSecondaryAction>
@@ -407,6 +408,7 @@ StixCoreObjectExternalReferencesLinesContainerProps
                             handleRemove={() => handleOpenDialog(externalReferenceEdge)
                             }
                             objectId={stixCoreObjectId}
+                            variant="inLine"
                           />
                         </Security>
                       </ListItemSecondaryAction>
