@@ -22,7 +22,7 @@ import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEdito
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { GenericContext } from '../../common/model/GenericContextModel';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
-import RegionPopoverDeletion from './RegionPopoverDeletion';
+import RegionDeletion from './RegionDeletion';
 
 const regionMutationFieldPatch = graphql`
   mutation RegionEditionOverviewFieldPatchMutation(
@@ -312,9 +312,11 @@ RegionEdititionOverviewProps
               id={region.id}
             />
           )}
-          {isFABReplaced && <RegionPopoverDeletion
-            id={region.id}
-                            />}
+          {isFABReplaced && (
+            <RegionDeletion
+              id={region.id}
+            />
+          )}
         </Form>
       )}
     </Formik>

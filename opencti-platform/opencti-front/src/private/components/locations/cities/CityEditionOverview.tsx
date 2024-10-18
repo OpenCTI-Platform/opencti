@@ -22,7 +22,7 @@ import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySet
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
-import CityPopoverDeletion from './CityPopoverDeletion';
+import CityDeletion from './CityDeletion';
 
 const cityMutationFieldPatch = graphql`
   mutation CityEditionOverviewFieldPatchMutation(
@@ -344,9 +344,11 @@ const CityEditionOverview: FunctionComponent<CityEditionOverviewProps> = ({
               id={city.id}
             />
           )}
-          {isFABReplaced && <CityPopoverDeletion
-            id={city.id}
-                            />}
+          {isFABReplaced && (
+            <CityDeletion
+              id={city.id}
+            />
+          )}
         </Form>
       )}
     </Formik>

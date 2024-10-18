@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
@@ -6,52 +6,42 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import { graphql } from 'react-relay';
 import { useNavigate } from 'react-router-dom';
-import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../../components/i18n';
 import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
-import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import Transition from '../../../../components/Transition';
+import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
+import useDeletion from '../../../../utils/hooks/useDeletion';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  container: {
-    margin: 0,
-  },
-}));
-
-const RegionPopoverDeletionDeleteMutation = graphql`
-  mutation RegionPopoverDeletionDeleteMutation($id: ID!) {
-    regionEdit(id: $id) {
+const CityDeletionDeleteMutation = graphql`
+  mutation CityDeletionDeleteMutation($id: ID!) {
+    cityEdit(id: $id) {
       delete
     }
   }
 `;
 
-const RegionPopoverDeletion = ({ id }: { id: string }) => {
-  const classes = useStyles();
+const CityDeletion = ({ id }: { id: string }) => {
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
-  const [deleting, setDeleting] = useState<boolean>(false);
-  const [displayDelete, setDisplayDelete] = useState<boolean>(false);
   const deleteSuccessMessage = t_i18n('', {
     id: '... successfully deleted',
-    values: { entity_type: t_i18n('entity_Region') },
+    values: { entity_type: t_i18n('entity_City') },
   });
   const [commit] = useApiMutation(
-    RegionPopoverDeletionDeleteMutation,
+    CityDeletionDeleteMutation,
     undefined,
     { successMessage: deleteSuccessMessage },
   );
-  const handleClose = () => {};
-  const handleOpenDelete = () => {
-    setDisplayDelete(true);
-    handleClose();
-  };
-  const handleCloseDelete = () => {
-    setDisplayDelete(false);
-  };
+  const handleClose = () => { };
+  const {
+    deleting,
+    handleOpenDelete,
+    displayDelete,
+    handleCloseDelete,
+    setDeleting,
+  } = useDeletion({ handleClose });
+
   const submitDelete = () => {
     setDeleting(true);
     commit({
@@ -61,13 +51,12 @@ const RegionPopoverDeletion = ({ id }: { id: string }) => {
       onCompleted: () => {
         setDeleting(false);
         handleClose();
-        navigate('/dashboard/locations/regions');
+        navigate('/dashboard/locations/cities');
       },
     });
   };
-
   return (
-    <div className={classes.container}>
+    <div style={{ margin: 0 }}>
       <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
         <Button
           color="error"
@@ -88,7 +77,7 @@ const RegionPopoverDeletion = ({ id }: { id: string }) => {
       >
         <DialogContent>
           <DialogContentText>
-            {t_i18n('Do you want to delete this region?')}
+            {t_i18n('Do you want to delete this city?')}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
@@ -104,4 +93,4 @@ const RegionPopoverDeletion = ({ id }: { id: string }) => {
   );
 };
 
-export default RegionPopoverDeletion;
+export default CityDeletion;
