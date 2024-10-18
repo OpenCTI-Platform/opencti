@@ -14,13 +14,14 @@ import { handleErrorInForm } from '../../../relay/environment';
 import TextField from '../../../components/TextField';
 import { useFormatter } from '../../../components/i18n';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
+import useHelper from '../../../utils/hooks/useHelper';
 
 const draftCreationMutation = graphql`
     mutation DraftCreationMutation($input: DraftWorkspaceAddInput!) {
         draftWorkspaceAdd(input: $input) {
             id
             name
-            ...DraftLine_node
+            ...Drafts_node
         }
     }
 `;
@@ -116,9 +117,8 @@ const DraftCreationForm: React.FC<DraftFormProps> = ({ updater, onCompleted, onR
 
 const DraftCreation = ({ paginationOptions }: { paginationOptions: DraftsLinesPaginationQuery$variables }) => {
   const { t_i18n } = useFormatter();
-  // const { isFeatureEnable } = useHelper();
-  // TODO put back again when migrating to data table (because create buttons are only possible with data table)
-  const isFABReplaced = false; // isFeatureEnable('FAB_REPLACEMENT');
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const updater = (store: RecordSourceSelectorProxy) => insertNode(
     store,
     'Pagination_draftWorkspaces',
