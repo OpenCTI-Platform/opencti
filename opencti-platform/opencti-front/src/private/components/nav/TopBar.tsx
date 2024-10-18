@@ -247,7 +247,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
             />
           </Link>
         </div>
-        {hasKnowledgeAccess && <div className={classes.menuContainer} style={{ marginLeft: navOpen ? theme.spacing(3) : theme.spacing(3) }}>
+        {hasKnowledgeAccess && <div className={classes.menuContainer} style={{ marginLeft: theme.spacing(3) }}>
           <SearchInput
             onSubmit={handleSearch}
             keyword={keyword}
