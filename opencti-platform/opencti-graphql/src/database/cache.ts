@@ -1,4 +1,5 @@
 import { SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION } from '@opentelemetry/semantic-conventions';
+import type { ExclusionListProperties } from '../utils/exclusionListTypes';
 import type { BasicStoreIdentifier, StoreEntity, StoreRelation } from '../types/store';
 import { logApp } from '../config/conf';
 import { UnsupportedError } from '../config/errors';
@@ -22,6 +23,12 @@ const STORE_ENTITIES_LINKS: Record<string, string[]> = {
   // Users must be reset depending on roles and groups modifications
   [ENTITY_TYPE_ROLE]: [ENTITY_TYPE_USER],
   [ENTITY_TYPE_GROUP]: [ENTITY_TYPE_USER],
+};
+
+const STORE_EXCLUSION_LIST = [];
+
+export const getExclusionListsByTypeFromCache = (exclusionListType: string): ExclusionListProperties[] => {
+  return STORE_EXCLUSION_LIST.filter((list) => list.type.includes(exclusionListType));
 };
 
 const cache: any = {};
