@@ -1922,6 +1922,7 @@ interface StixMetaObject {
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   # StixMetaObject
   created: DateTime
   modified: DateTime
@@ -2248,6 +2249,7 @@ interface StixCoreObject {
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   # StixCoreObject
   createdBy: Identity
   numberOfConnectedElement: Int!
@@ -2412,6 +2414,7 @@ interface StixDomainObject {
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   # StixCoreObject
   createdBy: Identity
   numberOfConnectedElement: Int!
@@ -2983,6 +2986,7 @@ interface Container {
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   # StixCoreObject
   createdBy: Identity
   numberOfConnectedElement: Int!
@@ -4145,6 +4149,7 @@ interface Identity {
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   # StixCoreObject
   createdBy: Identity
   numberOfConnectedElement: Int!
@@ -5231,6 +5236,7 @@ interface Location {
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   # StixCoreObject
   createdBy: Identity
   numberOfConnectedElement: Int!
@@ -7216,6 +7222,7 @@ interface StixCyberObservable {
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   # StixCoreObject
   createdBy: Identity
   numberOfConnectedElement: Int!
@@ -8116,6 +8123,7 @@ interface HashedObservable {
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   # StixCoreObject
   createdBy: Identity
   numberOfConnectedElement: Int!
