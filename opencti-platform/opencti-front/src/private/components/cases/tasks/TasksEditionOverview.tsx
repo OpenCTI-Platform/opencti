@@ -4,6 +4,7 @@ import React, { FunctionComponent } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import * as Yup from 'yup';
 import { GenericContext } from '@components/common/model/GenericContextModel';
+import useHelper from 'src/utils/hooks/useHelper';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { useFormatter } from '../../../../components/i18n';
 import MarkdownField from '../../../../components/fields/MarkdownField';
@@ -23,6 +24,7 @@ import { TasksEditionOverview_task$key } from './__generated__/TasksEditionOverv
 import { buildDate, formatDate } from '../../../../utils/Time';
 import ObjectParticipantField from '../../common/form/ObjectParticipantField';
 import { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
+import TaskDeletion from './TaskDeletion';
 
 export const tasksMutationFieldPatch = graphql`
   mutation TasksEditionOverviewFieldPatchMutation(
@@ -214,6 +216,9 @@ const TasksEditionOverview: FunctionComponent<TasksEditionOverviewProps> = ({
     objectParticipant: convertParticipants(taskData),
     x_opencti_workflow_id: convertStatus(t_i18n, taskData) as Option,
   };
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
+
   return (
     <Formik
       enableReinitialize={true}
@@ -246,7 +251,7 @@ const TasksEditionOverview: FunctionComponent<TasksEditionOverviewProps> = ({
               variant: 'standard',
               fullWidth: true,
               helperText: (
-                <SubscriptionFocus context={context} fieldName="due_date"/>
+                <SubscriptionFocus context={context} fieldName="due_date" />
               ),
             }}
             containerStyle={fieldSpacingContainerStyle}
@@ -312,6 +317,9 @@ const TasksEditionOverview: FunctionComponent<TasksEditionOverviewProps> = ({
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
           />
+          {isFABReplaced && (
+            <TaskDeletion id={taskData.id} />
+          )}
         </Form>
       )}
     </Formik>

@@ -4,6 +4,7 @@ import React, { FunctionComponent } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import * as Yup from 'yup';
 import { GenericContext } from '@components/common/model/GenericContextModel';
+import useHelper from 'src/utils/hooks/useHelper';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { useFormatter } from '../../../../components/i18n';
 import MarkdownField from '../../../../components/fields/MarkdownField';
@@ -26,6 +27,7 @@ import StatusField from '../../common/form/StatusField';
 import { CaseIncidentEditionOverview_case$key } from './__generated__/CaseIncidentEditionOverview_case.graphql';
 import ObjectParticipantField from '../../common/form/ObjectParticipantField';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
+import CaseIncidentDeletion from './CaseIncidentDeletion';
 
 export const caseIncidentMutationFieldPatch = graphql`
   mutation CaseIncidentEditionOverviewCaseFieldPatchMutation(
@@ -252,6 +254,10 @@ const CaseIncidentEditionOverview: FunctionComponent<CaseIncidentEditionOverview
     x_opencti_workflow_id: convertStatus(t_i18n, caseData) as Option,
     references: [],
   };
+
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
+
   return (
     <Formik
       enableReinitialize={true}
@@ -292,7 +298,7 @@ const CaseIncidentEditionOverview: FunctionComponent<CaseIncidentEditionOverview
               variant: 'standard',
               fullWidth: true,
               helperText: (
-                <SubscriptionFocus context={context} fieldName="created"/>
+                <SubscriptionFocus context={context} fieldName="created" />
               ),
               style: { marginTop: 20 },
             }}
@@ -410,6 +416,9 @@ const CaseIncidentEditionOverview: FunctionComponent<CaseIncidentEditionOverview
               values={values.references}
               id={caseData.id}
             />
+          )}
+          {isFABReplaced && (
+            <CaseIncidentDeletion id={caseData.id} />
           )}
         </Form>
       )}
