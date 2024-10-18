@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
@@ -8,40 +8,37 @@ import { graphql } from 'react-relay';
 import { useNavigate } from 'react-router-dom';
 import { useFormatter } from '../../../../components/i18n';
 import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import Transition from '../../../../components/Transition';
+import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
+import useDeletion from '../../../../utils/hooks/useDeletion';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
-const CountryPopoverDeletionDeleteMutation = graphql`
-  mutation CountryPopoverDeletionDeleteMutation($id: ID!) {
-    countryEdit(id: $id) {
-      delete
-    }
+const AdministrativeAreaDeletionDeleteMutation = graphql`
+  mutation AdministrativeAreaDeletionDeleteMutation($id: ID!) {
+    administrativeAreaDelete(id: $id)
   }
 `;
 
-const CountryPopoverDeletion = ({ id }: { id: string }) => {
+const AdministrativeAreaDeletion = ({ id }: { id: string }) => {
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
-  const [deleting, setDeleting] = useState<boolean>(false);
-  const [displayDelete, setDisplayDelete] = useState<boolean>(false);
   const deleteSuccessMessage = t_i18n('', {
     id: '... successfully deleted',
-    values: { entity_type: t_i18n('entity_Country') },
+    values: { entity_type: t_i18n('entity_Administrative-Area') },
   });
   const [commit] = useApiMutation(
-    CountryPopoverDeletionDeleteMutation,
+    AdministrativeAreaDeletionDeleteMutation,
     undefined,
     { successMessage: deleteSuccessMessage },
   );
   const handleClose = () => {};
-  const handleOpenDelete = () => {
-    setDisplayDelete(true);
-    handleClose();
-  };
-  const handleCloseDelete = () => {
-    setDisplayDelete(false);
-  };
+  const {
+    deleting,
+    handleOpenDelete,
+    displayDelete,
+    handleCloseDelete,
+    setDeleting,
+  } = useDeletion({ handleClose });
   const submitDelete = () => {
     setDeleting(true);
     commit({
@@ -51,7 +48,7 @@ const CountryPopoverDeletion = ({ id }: { id: string }) => {
       onCompleted: () => {
         setDeleting(false);
         handleClose();
-        navigate('/dashboard/locations/countries');
+        navigate('/dashboard/locations/administrative_areas');
       },
     });
   };
@@ -77,7 +74,7 @@ const CountryPopoverDeletion = ({ id }: { id: string }) => {
       >
         <DialogContent>
           <DialogContentText>
-            {t_i18n('Do you want to delete this country?')}
+            {t_i18n('Do you want to delete this area?')}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
@@ -93,4 +90,4 @@ const CountryPopoverDeletion = ({ id }: { id: string }) => {
   );
 };
 
-export default CountryPopoverDeletion;
+export default AdministrativeAreaDeletion;

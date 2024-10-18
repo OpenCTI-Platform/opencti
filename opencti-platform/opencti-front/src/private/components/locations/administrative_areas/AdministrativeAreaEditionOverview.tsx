@@ -22,7 +22,7 @@ import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEdito
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { GenericContext } from '../../common/model/GenericContextModel';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
-import AdministrativeAreaPopoverDeletion from './AdministrativeAreaPopoverDeletion';
+import AdministrativeAreaDeletion from './AdministrativeAreaDeletion';
 
 const administrativeAreaMutationFieldPatch = graphql`
   mutation AdministrativeAreaEditionOverviewFieldPatchMutation(
@@ -357,9 +357,11 @@ AdministrativeAreaEditionOverviewProps
               id={administrativeArea.id}
             />
           )}
-          {isFABReplaced && <AdministrativeAreaPopoverDeletion
-            id={administrativeArea.id}
-                            />}
+          {isFABReplaced && (
+            <AdministrativeAreaDeletion
+              id={administrativeArea.id}
+            />
+          )}
         </Form>
       )}
     </Formik>
