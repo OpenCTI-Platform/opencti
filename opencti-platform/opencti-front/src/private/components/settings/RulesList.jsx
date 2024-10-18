@@ -7,7 +7,7 @@ import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import Switch from '@mui/material/Switch';
-import { graphql, createRefetchContainer } from 'react-relay';
+import { createRefetchContainer, graphql } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import LinearProgress from '@mui/material/LinearProgress';
 import Typography from '@mui/material/Typography';
@@ -15,12 +15,12 @@ import Paper from '@mui/material/Paper';
 import makeStyles from '@mui/styles/makeStyles';
 import { useTheme } from '@mui/styles';
 import { ArrowRightAlt, SettingsSuggestOutlined } from '@mui/icons-material';
-import { Database, GraphOutline, AutoFix } from 'mdi-material-ui';
+import { AutoFix, Database, GraphOutline } from 'mdi-material-ui';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import FormGroup from '@mui/material/FormGroup';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
-import DangerZoneBlock from '@components/common/dangerZone/DangerZoneBlock';
+import DangerZoneBlock from '../common/dangerZone/DangerZoneBlock';
 import Chart from '../common/charts/Chart';
 import { FIVE_SECONDS, parse } from '../../../utils/Time';
 import { useFormatter } from '../../../components/i18n';
@@ -66,8 +66,8 @@ const useStyles = makeStyles((theme) => ({
     height: 10,
   },
   paper: {
-    margin: '10px 0 0 0',
-    padding: 0,
+    marginTop: theme.spacing(1),
+    padding: theme.spacing(2),
     overflow: 'hidden',
     height: '100%',
   },
@@ -462,7 +462,7 @@ const RulesListComponent = ({ relay, data, keyword }) => {
                         <Paper
                           variant="outlined"
                           classes={{ root: classes.paper }}
-                          style={style} // TODO how to add style={{ padding: 15, minWidth: 280 }}
+                          style={style}
                         >
                           <Grid container={true} spacing={3}>
                             <Grid item xs={6}>
