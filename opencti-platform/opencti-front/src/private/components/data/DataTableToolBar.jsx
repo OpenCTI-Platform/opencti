@@ -200,8 +200,8 @@ const notEnrichableTypes = ['Label', 'Vocabulary', 'Case-Template', 'Task', 'Del
 const typesWithScore = ['Stix-Cyber-Observable', 'Indicator'];
 const typesWithSeverity = ['Case-Incident', 'Case-Rft', 'Case-Rfi'];
 const typesWithPriority = ['Case-Incident', 'Case-Rft', 'Case-Rfi'];
-const typesWithAssignee = ['Case-Incident', 'Case-Rft', 'Case-Rfi'];
-const typesWithParticipant = ['Case-Incident', 'Case-Rft', 'Case-Rfi'];
+const typesWithAssignee = ['Case-Incident', 'Case-Rft', 'Case-Rfi', 'Report'];
+const typesWithParticipant = ['Case-Incident', 'Case-Rft', 'Case-Rfi', 'Report'];
 const typesWithIncidentResponseType = ['Case-Incident'];
 const typesWithRfiTypes = ['Case-Rfi'];
 const typesWithRftTypes = ['Case-Rft'];
@@ -315,7 +315,13 @@ class DataTableToolBar extends Component {
       organizationInput: '',
       shareOrganizations: [],
       selectedCategory: '',
-      vocabularies: [],
+      vocabularies: {
+        case_severity_ov: [],
+        case_priority_ov: [],
+        incident_response_types_ov: [],
+        request_for_information_types_ov: [],
+        request_for_takedown_types_ov: [],
+      },
       navOpen: localStorage.getItem('navOpen') === 'true',
       assignees: [],
       participants: [],
@@ -765,10 +771,10 @@ class DataTableToolBar extends Component {
     const dynamicOptions = [
       checkTypes(typesWithSeverity) && { label: t('Severity'), value: 'case_severity_ov' },
       checkTypes(typesWithPriority) && { label: t('Priority'), value: 'case_priority_ov' },
-      checkTypes(typesWithIncidentResponseType) && { label: t('Incident Response Type'), value: 'incident_response_types_ov' },
-      checkTypes(typesWithRfiTypes) && { label: t('Request for Information Type'), value: 'request_for_information_types_ov' },
-      checkTypes(typesWithRftTypes) && { label: t('Request for Takedown Type'), value: 'request_for_takedown_types_ov' },
-      checkTypes(typesWithAssignee) && { label: t('Assignee'), value: 'object-assignee' },
+      checkTypes(typesWithIncidentResponseType) && { label: t('Incident response type'), value: 'incident_response_types_ov' },
+      checkTypes(typesWithRfiTypes) && { label: t('Request for information type'), value: 'request_for_information_types_ov' },
+      checkTypes(typesWithRftTypes) && { label: t('Request for takedown type'), value: 'request_for_takedown_types_ov' },
+      checkTypes(typesWithAssignee) && { label: t('Assignees'), value: 'object-assignee' },
       checkTypes(typesWithParticipant) && { label: t('Participant'), value: 'object-participant' },
       (actionsInputs[i]?.type === 'REPLACE' && checkTypes(typesWithScore)) && { label: t('Score'), value: 'x_opencti_score' },
       (actionsInputs[i]?.type === 'REPLACE' && selectedTypes.length === 1 && !typesWithoutStatus.includes(selectedTypes[0]))
@@ -783,7 +789,6 @@ class DataTableToolBar extends Component {
         { label: t('Labels'), value: 'object-label' },
         { label: t('External references'), value: 'external-reference' },
         { label: t('In containers'), value: 'container-object' },
-        ...dynamicOptions,
       ];
     } else if (actionsInputs[i]?.type === 'REPLACE') {
       options = [
@@ -802,6 +807,8 @@ class DataTableToolBar extends Component {
         ...dynamicOptions,
       ];
     }
+    const sortedOptions = options.sort((a, b) => a.label.localeCompare(b.label));
+
     return (
       <Select
         variant="standard"
@@ -809,14 +816,14 @@ class DataTableToolBar extends Component {
         value={actionsInputs[i]?.type}
         onChange={this.handleChangeActionInput.bind(this, i, 'field')}
       >
-        {options.length > 0 ? (
+        {sortedOptions.length > 0 ? (
           R.map(
             (n) => (
               <MenuItem key={n.value} value={n.value}>
                 {n.label}
               </MenuItem>
             ),
-            options,
+            sortedOptions,
           )
         ) : (
           <MenuItem value="none">{t('None')}</MenuItem>
@@ -1046,7 +1053,12 @@ class DataTableToolBar extends Component {
           label: n.node.name,
           value: n.node.id,
         }));
-        this.setState({ vocabularies: union(this.state.vocabularies, vocabularies) });
+        this.setState((prevState) => ({
+          vocabularies: {
+            ...prevState.vocabularies,
+            [category]: union(prevState.vocabularies[category], vocabularies),
+          },
+        }));
       });
   }
 
@@ -1463,7 +1475,7 @@ class DataTableToolBar extends Component {
               />
             )}
             noOptionsText={t('No available options')}
-            options={this.state.vocabularies}
+            options={this.state.vocabularies[selectedField] || []}
             onInputChange={this.searchVocabulary.bind(this, i, selectedField)}
             inputValue={actionsInputs[i]?.inputValue || ''}
             onChange={this.handleChangeActionInputValues.bind(this, i)}
