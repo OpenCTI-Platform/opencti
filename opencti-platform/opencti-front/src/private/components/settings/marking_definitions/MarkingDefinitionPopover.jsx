@@ -108,13 +108,14 @@ class MarkingDefinitionPopover extends Component {
   }
 
   render() {
-    const { classes, t, markingDefinitionId } = this.props;
+    const { classes, t, markingDefinitionId, disabled } = this.props;
     return (
       <div className={classes.container}>
         <IconButton
           onClick={this.handleOpen.bind(this)}
           aria-haspopup="true"
           size="large"
+          disabled={disabled}
           color="primary"
         >
           <MoreVert />
@@ -186,6 +187,7 @@ MarkingDefinitionPopover.propTypes = {
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
+  disabled: PropTypes.bool,
 };
 
 export default compose(inject18n, withStyles(styles))(MarkingDefinitionPopover);
