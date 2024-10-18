@@ -17,6 +17,7 @@ import IconButton from '@mui/material/IconButton';
 import Button from '@mui/material/Button';
 import { CsvMapperRepresentationFormData } from '@components/data/csvMapper/representations/Representation';
 import CsvMapperConditionalEntityMapping from '@components/data/csvMapper/representations/CsvMapperConditionalEntityMapping';
+import { alphabet } from '@components/data/csvMapper/representations/attributes/AttributeUtils';
 import { useFormatter } from '../../../../../components/i18n';
 import ItemIcon from '../../../../../components/ItemIcon';
 import type { Theme } from '../../../../../components/Theme';
@@ -74,6 +75,7 @@ CsvMapperRepresentationFormProps
 }) => {
   const { t_i18n } = useFormatter();
   const classes = useStyles();
+  const options = alphabet(26);
 
   const { name, value } = field;
   const { setFieldValue } = form;
@@ -98,6 +100,7 @@ CsvMapperRepresentationFormProps
       ...value,
       attributes: {},
       target_type: option?.value ?? undefined,
+      column_based: {},
     };
     await setFieldValue(name, newValue);
   };
@@ -184,7 +187,10 @@ CsvMapperRepresentationFormProps
             <div style={{ marginTop: 20 }}>
               {field.name.startsWith('entity_representation') && (
               <CsvMapperConditionalEntityMapping
-                options={selectedOption}
+                representation={value}
+                representationName={name}
+                selectedOption={selectedOption}
+                options={options}
               />
               )}
               <CsvMapperRepresentationAttributesForm
