@@ -454,29 +454,28 @@ class DataTableToolBar extends Component {
       request_for_takedown_types_ov: 'takedown_types',
     };
 
-    const actions = R.map(
-      (n) => {
-        if (categoryAttributeMapping[n.field]) {
-          return ({
-            type: n.type,
-            context: {
-              field: categoryAttributeMapping[n.field],
-              type: n.fieldType,
-              values: n.values.map(value => value.label),
-              options: n.options,
-            },
-          })
-        }
-        return {
+    const actions = R.map((n) => {
+      if (categoryAttributeMapping[n.field]) {
+        return ({
           type: n.type,
           context: {
-            field: n.field,
+            field: categoryAttributeMapping[n.field],
             type: n.fieldType,
-            values: n.values,
+            values: n.values.map((value) => value.label),
             options: n.options,
           },
-        };
-      }, actionsInputs);
+        });
+      }
+      return {
+        type: n.type,
+        context: {
+          field: n.field,
+          type: n.fieldType,
+          values: n.values,
+          options: n.options,
+        },
+      };
+    }, actionsInputs);
     this.setState({ actions }, () => {
       this.handleCloseUpdate();
       this.handleOpenTask();
@@ -524,7 +523,7 @@ class DataTableToolBar extends Component {
     actionsInputs[i] = R.assoc(
       'values',
       Array.isArray(value) ? value : [value],
-      actionsInputs[i] || {}
+      actionsInputs[i] || {},
     );
     this.setState({ actionsInputs });
   }
@@ -1108,9 +1107,10 @@ class DataTableToolBar extends Component {
   renderValuesOptions(i, selectedTypes) {
     const { t, classes } = this.props;
     const { actionsInputs } = this.state;
-    const disabled = R.isNil(actionsInputs[i]?.field) || R.isEmpty(actionsInputs[i]?.field);
+    const selectedField = actionsInputs[i]?.field;
+    const disabled = R.isNil(selectedField) || R.isEmpty(selectedField);
 
-    switch (actionsInputs[i]?.field) {
+    switch (selectedField) {
       case 'container-object':
         return (
           <>
