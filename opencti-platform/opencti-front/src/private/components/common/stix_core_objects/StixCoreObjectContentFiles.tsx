@@ -27,7 +27,7 @@ import useContentFromTemplate from '../../../../utils/outcome_template/engine/us
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import type { Template } from '../../../../utils/outcome_template/template';
 import type { Theme } from '../../../../components/Theme';
-import { isEmptyField } from '../../../../utils/utils';
+import { isNilField } from '../../../../utils/utils';
 import useHelper from '../../../../utils/hooks/useHelper';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { MESSAGING$ } from '../../../../relay/environment';
@@ -223,7 +223,7 @@ const StixCoreObjectContentFiles: FunctionComponent<StixCoreObjectContentFilesPr
       classes={{ paper: classes.drawerPaper }}
     >
       <div className={classes.toolbar} />
-      {!isEmptyField(content) && (
+      {!isNilField(content) && (
         <>
           <Typography variant="body2" style={{ margin: '5px 0 0 15px' }}>{t_i18n('Mappable content')}</Typography>
           <List style={{ marginBottom: 30, marginTop: settingsMessagesBannerHeight }}>

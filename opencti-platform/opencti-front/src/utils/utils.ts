@@ -8,6 +8,8 @@ export const isEmptyField = <T>(
   field: T | null | undefined,
 ): field is null | undefined => !isNotEmptyField(field);
 
+export const isNilField = <T>(field: T | null | undefined) => field === null || field === undefined;
+
 export const copyToClipboard = (t: (text: string) => string, text: string) => {
   navigator.clipboard.writeText(text);
   MESSAGING$.notifySuccess(t('Copied to clipboard'));
