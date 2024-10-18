@@ -72,8 +72,8 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({ csvMapper, onSub
   const { t_i18n } = useFormatter();
   const classes = useStyles();
   const options = alphabet(26);
-  const [selectedOption, setSelectedOption] = useState(null);
-  console.log('csvMapper', csvMapper);
+  const [selectedOption, setSelectedOption] = useState('');
+  // const [disabledColumn, setDisabledColumn] = useState(false);
   // -- INIT --
 
   // accordion state
@@ -167,7 +167,11 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({ csvMapper, onSub
       'has_dynamic_mapping',
       value.has_entity_dynamic_mapping,
     );
+    // if (csvMapper.has_entity_dynamic_mapping === false) {
+    //   setDisabledColumn(true);
+    // }
   };
+
   // -- ERRORS --
   // on edit mode, csvMapper.errors might be set; on create mode backend validation is not done yet so error is null
   const [hasError, setHasError] = useState<boolean>(
@@ -287,6 +291,7 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({ csvMapper, onSub
                   type="checkbox"
                   name="has_entity_dynamic_mapping"
                   label={t_i18n('Entity dynamic mapping')}
+                  onChange={handleParentSelect}
                 />
                 <Tooltip
                   title={t_i18n(
@@ -305,9 +310,8 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({ csvMapper, onSub
                   autoSelect={false}
                   autoHighlight
                   options={options}
-                    // value={setFieldValue ?? null}
-                  sx={{}}
-                  onChange={handleParentSelect}
+                    // disabled={disabledColumn}
+                  onChange={(_, column) => setSelectedOption(column)}
                   renderInput={(params) => (
                     <MuiTextField
                       {...params}
