@@ -458,6 +458,7 @@ const RulesListComponent = ({ relay, data, keyword }) => {
                   <Grid item xs={3}>
                     <DangerZoneBlock
                       title={t_i18n(rule.name)}
+                      sx={{ title: { textWrap: 'nowrap' } }}
                       component={({ disabled, style }) => (
                         <Paper
                           variant="outlined"

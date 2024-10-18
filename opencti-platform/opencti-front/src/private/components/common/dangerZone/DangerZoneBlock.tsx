@@ -39,6 +39,7 @@ const DangerZoneBlock: FunctionComponent<DangerZoneBlockProps> = ({ title, compo
           <Typography
             variant="h4"
             gutterBottom
+            style={sx?.title}
           >
             {currentTitle}
           </Typography>
@@ -57,6 +58,7 @@ const DangerZoneBlock: FunctionComponent<DangerZoneBlockProps> = ({ title, compo
         <Typography
           variant="h4"
           gutterBottom
+          style={sx?.title}
         >
           {currentTitle}
         </Typography>
