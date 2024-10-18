@@ -21,7 +21,7 @@ const internalObjectResolvers = {
         const preFn = () => internalObjectEditContext(context, context.user, id);
         const cleanFn = () => internalObjectCleanContext(context, context.user, id);
         const bus = BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT];
-        return subscribeToInstanceEvents(_, context, id, [bus.EDIT_TOPIC], { preFn, cleanFn });
+        return subscribeToInstanceEvents(_, context, id, [bus.EDIT_TOPIC], { type: ABSTRACT_INTERNAL_OBJECT, preFn, cleanFn });
       },
     },
   },
