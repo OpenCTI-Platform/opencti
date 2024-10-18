@@ -90,7 +90,7 @@ const DraftContextBanner = () => {
           <div>
             <Button
               variant="contained"
-              color="secondary"
+              color="primary"
               style={{ width: '100%' }}
               onClick={handleSwitchToLive}
             >
