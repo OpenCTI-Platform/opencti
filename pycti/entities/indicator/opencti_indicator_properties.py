@@ -92,6 +92,10 @@ INDICATOR_PROPERTIES = """
     x_opencti_score
     x_opencti_detection
     x_opencti_main_observable_type
+    x_opencti_observable_values {
+        type
+        value
+    }
     x_mitre_platforms
     observables {
         edges {
@@ -220,6 +224,10 @@ INDICATOR_PROPERTIES_WITH_FILES = """
     x_opencti_score
     x_opencti_detection
     x_opencti_main_observable_type
+    x_opencti_observable_values {
+        type
+        value
+    }
     x_mitre_platforms
     observables {
         edges {
