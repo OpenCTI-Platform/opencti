@@ -23,7 +23,8 @@ const WidgetListCoreObjects = ({
   <DataTableWithoutFragment
     dataColumns={{
       entity_type: { percentWidth: 10 },
-      value: { percentWidth: 30 },
+      value: { percentWidth: 20 },
+      createdBy: { percentWidth: 15 },
       date: {
         id: 'date',
         isSortable: false,
@@ -31,7 +32,7 @@ const WidgetListCoreObjects = ({
         label: 'Date',
         render: (({ [dateAttribute]: date }, { fsd }) => fsd(date)),
       },
-      objectLabel: { percentWidth: 15 },
+      objectLabel: { percentWidth: 10 },
       x_opencti_workflow_id: { percentWidth: 15 },
       objectMarking: { percentWidth: 15 },
     }}
