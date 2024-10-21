@@ -59,7 +59,7 @@ import Grid from '@mui/material/Grid';
 import Avatar from '@mui/material/Avatar';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
-import { map, pathOr, pipe, union } from 'ramda';
+import { map, pathOr, pipe } from 'ramda';
 import { objectParticipantFieldMembersSearchQuery } from '../common/form/ObjectParticipantField';
 import { objectAssigneeFieldMembersSearchQuery } from '../common/form/ObjectAssigneeField';
 import { vocabularyQuery } from '../common/form/OpenVocabField';
@@ -469,7 +469,7 @@ class DataTableToolBar extends Component {
       request_for_takedown_types_ov: 'takedown_types',
     };
 
-    const actions = R.map((n) => {
+    const actions = actionsInputs.map((n) => {
       if (categoryAttributeMapping[n.field]) {
         return ({
           type: n.type,
@@ -490,7 +490,7 @@ class DataTableToolBar extends Component {
           options: n.options,
         },
       };
-    }, actionsInputs);
+    });
     this.setState({ actions }, () => {
       this.handleCloseUpdate();
       this.handleOpenTask();
@@ -829,7 +829,7 @@ class DataTableToolBar extends Component {
         onChange={this.handleChangeActionInput.bind(this, i, 'field')}
       >
         {sortedOptions.length > 0 ? (
-          R.map(
+          sortedOptions.map(
             (n) => (
               <MenuItem key={n.value} value={n.value}>
                 {n.label}
@@ -1048,11 +1048,10 @@ class DataTableToolBar extends Component {
   searchVocabulary(i, category, event, newValue) {
     if (!event) return;
     const { actionsInputs } = this.state;
-    actionsInputs[i] = R.assoc(
-      'inputValue',
-      newValue && newValue.length > 0 ? newValue : '',
-      actionsInputs[i],
-    );
+    actionsInputs[i] = {
+      ...actionsInputs[i],
+      inputValue: newValue && newValue.length > 0 ? newValue : '',
+    };
     this.setState({ actionsInputs });
     fetchQuery(vocabularyQuery, {
       category,
@@ -1068,7 +1067,7 @@ class DataTableToolBar extends Component {
         this.setState((prevState) => ({
           vocabularies: {
             ...prevState.vocabularies,
-            [category]: union(prevState.vocabularies[category], vocabularies),
+            [category]: [...new Set([...(prevState.vocabularies[category] || []), ...vocabularies])],
           },
         }));
       });
@@ -1077,11 +1076,10 @@ class DataTableToolBar extends Component {
   searchParticipants(i, event, newValue) {
     if (!event) return;
     const { actionsInputs } = this.state;
-    actionsInputs[i] = R.assoc(
-      'inputValue',
-      newValue && newValue.length > 0 ? newValue : '',
-      actionsInputs[i],
-    );
+    actionsInputs[i] = {
+      ...actionsInputs[i],
+      inputValue: newValue && newValue.length > 0 ? newValue : '',
+    };
     this.setState({ actionsInputs });
     fetchQuery(objectParticipantFieldMembersSearchQuery, {
       search: newValue && newValue.length > 0 ? newValue : '',
@@ -1095,18 +1093,19 @@ class DataTableToolBar extends Component {
           value: n.node.id,
           type: n.node.entity_type,
         })).sort((a, b) => a.label.localeCompare(b.label));
-        this.setState({ participants: union(this.setState.participants, participants) });
+        this.setState((prevState) => ({
+          participants: [...new Set([...(prevState.participants || []), ...participants])],
+        }));
       });
   }
 
   searchAssignees(i, event, newValue) {
     if (!event) return;
     const { actionsInputs } = this.state;
-    actionsInputs[i] = R.assoc(
-      'inputValue',
-      newValue && newValue.length > 0 ? newValue : '',
-      actionsInputs[i],
-    );
+    actionsInputs[i] = {
+      ...actionsInputs[i],
+      inputValue: newValue && newValue.length > 0 ? newValue : '',
+    };
     this.setState({ actionsInputs });
     fetchQuery(objectAssigneeFieldMembersSearchQuery, {
       search: newValue && newValue.length > 0 ? newValue : '',
@@ -1124,7 +1123,9 @@ class DataTableToolBar extends Component {
             entity: n.node,
           })),
         )(data);
-        this.setState({ assignees: union(this.state.assignees, assignees) });
+        this.setState((prevState) => ({
+          assignees: [...new Set([...(prevState.assignees || []), ...assignees])],
+        }));
       });
   }
 
@@ -1161,7 +1162,7 @@ class DataTableToolBar extends Component {
     const { t, classes } = this.props;
     const { actionsInputs } = this.state;
     const selectedField = actionsInputs[i]?.field;
-    const disabled = R.isNil(selectedField) || R.isEmpty(selectedField);
+    const disabled = selectedField == null || selectedField === '';
 
     switch (selectedField) {
       case 'container-object':
