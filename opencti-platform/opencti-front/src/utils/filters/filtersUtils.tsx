@@ -202,17 +202,19 @@ export const removeEntityTypeAllFromFilterGroup = (inputFilters?: FilterGroup) =
 // and remove Observable if the filters target only some sub observable types
 // exemple: Observable AND (Domain-Name) --> [Domain-Name]
 // exemple: Domain-Name OR Observable --> [Domain-Name, Observable]
-// exemple: Stix-Domain-Object AND (Malware OR (Country AND Location)) --> [Stix-Domain-Object, Malware]
+// exemple: Stix-Domain-Object AND (Malware OR (Country AND City)) --> [Stix-Domain-Object, Malware]
 export const getEntityTypeTwoFirstLevelsFilterValues = (filters?: FilterGroup, observableTypes?: string[], domainObjectTypes?: string []) => {
   if (!filters) {
     return [];
   }
   let firstLevelValues = findFilterFromKey(filters.filters, 'entity_type', 'eq')?.values ?? [];
-
-  if (filters.mode === 'and') {
-    const subFiltersSeparatedWithAnd = filters.filterGroups.filter((fg) => fg.mode === 'and').map((fg) => fg.filters).flat();
-    if (subFiltersSeparatedWithAnd.length > 0) {
-      const secondLevelValues = findFilterFromKey(subFiltersSeparatedWithAnd, 'entity_type', 'eq')?.values ?? [];
+  const subFiltersSeparatedWithAnd = filters.filterGroups
+    .filter((fg) => fg.mode === 'and' || (fg.mode === 'or' && fg.filters.length === 1))
+    .map((fg) => fg.filters)
+    .flat();
+  if (subFiltersSeparatedWithAnd.length > 0) {
+    const secondLevelValues = findFilterFromKey(subFiltersSeparatedWithAnd, 'entity_type', 'eq')?.values ?? [];
+    if (filters.mode === 'and') {
       // if all second values are observables sub types : remove observable from firstLevelValue
       if (secondLevelValues.every((type) => observableTypes?.includes(type))) {
         firstLevelValues = firstLevelValues.filter((type) => type !== 'Stix-Cyber-Observable');
@@ -220,8 +222,8 @@ export const getEntityTypeTwoFirstLevelsFilterValues = (filters?: FilterGroup, o
       if (secondLevelValues.every((type) => domainObjectTypes?.includes(type))) {
         firstLevelValues = firstLevelValues.filter((type) => type !== 'Stix-Domain-Object');
       }
-      return [...firstLevelValues, ...secondLevelValues];
     }
+    return [...firstLevelValues, ...secondLevelValues];
   }
   return firstLevelValues;
 };
