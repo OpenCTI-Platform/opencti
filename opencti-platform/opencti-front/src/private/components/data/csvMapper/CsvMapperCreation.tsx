@@ -68,7 +68,6 @@ const CsvMapperCreation: FunctionComponent<CsvMapperCreationFormProps> = ({
       has_header: formattedValues.has_header,
       separator: formattedValues.separator,
       skipLineChar: formattedValues.skipLineChar,
-      has_entity_dynamic_mapping: formattedValues.has_entity_dynamic_mapping,
       representations: JSON.stringify(formattedValues.representations),
     };
     commit({

@@ -1,5 +1,5 @@
 import React, { FunctionComponent, useState } from 'react';
-import { FieldProps } from 'formik';
+import { Field, FieldProps } from 'formik';
 import CsvMapperRepresentationAttributesForm from '@components/data/csvMapper/representations/attributes/CsvMapperRepresentationAttributesForm';
 import MUIAutocomplete from '@mui/material/Autocomplete';
 import { SelectChangeEvent } from '@mui/material/Select';
@@ -17,7 +17,6 @@ import IconButton from '@mui/material/IconButton';
 import Button from '@mui/material/Button';
 import { CsvMapperRepresentationFormData } from '@components/data/csvMapper/representations/Representation';
 import CsvMapperConditionalEntityMapping from '@components/data/csvMapper/representations/CsvMapperConditionalEntityMapping';
-import { alphabet } from '@components/data/csvMapper/representations/attributes/AttributeUtils';
 import { useFormatter } from '../../../../../components/i18n';
 import ItemIcon from '../../../../../components/ItemIcon';
 import type { Theme } from '../../../../../components/Theme';
@@ -71,11 +70,9 @@ CsvMapperRepresentationFormProps
   handleRepresentationErrors,
   prefixLabel,
   onDelete,
-  selectedOption,
 }) => {
   const { t_i18n } = useFormatter();
   const classes = useStyles();
-  const options = alphabet(26);
 
   const { name, value } = field;
   const { setFieldValue } = form;
@@ -186,11 +183,12 @@ CsvMapperRepresentationFormProps
             />
             <div style={{ marginTop: 20 }}>
               {field.name.startsWith('entity_representation') && (
-              <CsvMapperConditionalEntityMapping
+              <Field
+                component={CsvMapperConditionalEntityMapping}
+                name={'entity_conditional_mapping'}
+                handleRepresentationErrors={handleRepresentationErrors}
                 representation={value}
                 representationName={name}
-                selectedOption={selectedOption}
-                options={options}
               />
               )}
               <CsvMapperRepresentationAttributesForm

@@ -1,6 +1,11 @@
 import { v4 as uuid } from 'uuid';
 import { CsvMapperRepresentationType } from '@components/data/csvMapper/__generated__/CsvMapperEditionContainerFragment_csvMapper.graphql';
-import { CsvMapperRepresentation, CsvMapperRepresentationEdit, CsvMapperRepresentationFormData } from '@components/data/csvMapper/representations/Representation';
+import {
+  CsvMapperColumnBasedFormData,
+  CsvMapperRepresentation,
+  CsvMapperRepresentationEdit,
+  CsvMapperRepresentationFormData,
+} from '@components/data/csvMapper/representations/Representation';
 import { csvMapperAttributeToFormData, formDataToCsvMapperAttribute } from '@components/data/csvMapper/representations/attributes/AttributeUtils';
 import {
   CsvMapperRepresentationAttributesForm_allSchemaAttributes$data,
@@ -52,7 +57,7 @@ export const csvMapperRepresentationToFormData = (
   representation: CsvMapperRepresentation,
   schemaAttributes: CsvMapperRepresentationAttributesForm_allSchemaAttributes$data['csvMapperSchemaAttributes'],
   computeDefaultValues: ReturnType<typeof useComputeDefaultValues>,
-): CsvMapperRepresentationFormData => {
+): CsvMapperRepresentationFormData | CsvMapperColumnBasedFormData => {
   const entitySchemaAttributes = schemaAttributes.find(
     (schema) => schema.name === representation.target.entity_type,
   )?.attributes ?? [];
@@ -60,6 +65,7 @@ export const csvMapperRepresentationToFormData = (
     id: representation.id,
     type: representation.type,
     target_type: representation.target.entity_type,
+    // has_entity_dynamic_mapping: representation.target.column_based?.column_reference !== null,
     attributes: representation.attributes.reduce((acc, attribute) => {
       const schemaAttribute = entitySchemaAttributes.find((attr) => attr.name === attribute.key);
       return {
