@@ -476,6 +476,7 @@ class StixCoreObjectContentComponent extends Component {
           onFileChange={this.handleFileChange.bind(this)}
           contentsFromTemplate={contentsFromTemplate}
           hasOutcomesTemplate={isContentCompatible}
+          isContentCompatible={isContentCompatible}
         />
         {isLoading ? (
           <Loader variant={LoaderVariant.inElement} />
