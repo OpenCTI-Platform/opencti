@@ -835,7 +835,6 @@ class DataTableToolBar extends Component {
                 {n.label}
               </MenuItem>
             ),
-            sortedOptions,
           )
         ) : (
           <MenuItem value="none">{t('None')}</MenuItem>
