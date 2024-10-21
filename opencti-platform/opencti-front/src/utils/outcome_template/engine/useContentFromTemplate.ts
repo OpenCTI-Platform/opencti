@@ -1,6 +1,8 @@
-import type { Template, TemplateWidget, ResolvedAttributesWidgets } from '../template';
 import useBuildListOutcome from './stix_core_objects/useBuildListOutcome';
 import useDonutOutcome from './stix_relationships/useDonutOutcome';
+import { fetchQuery } from '../../../relay/environment';
+import { templateAndUtilsContainerQuery } from './TemplateAndUtils';
+import { TemplateAndUtilsContainerQuery } from './__generated__/TemplateAndUtilsContainerQuery.graphql';
 
 const useContentFromTemplate = () => {
   const { buildDonutOutcome } = useDonutOutcome();
@@ -8,33 +10,35 @@ const useContentFromTemplate = () => {
 
   const buildContentFromTemplate = async (
     containerId: string,
-    template: Template,
-    templateWidgets: TemplateWidget[],
-    resolvedAttributesWidgets: ResolvedAttributesWidgets[],
+    templateName: string,
     maxContentMarkings: string[],
   ) => {
+    const variables = { id: containerId, templateId: templateName };
+    const data = await fetchQuery<TemplateAndUtilsContainerQuery>(templateAndUtilsContainerQuery, variables).toPromise();
+    const { template, template_widgets, resolved_widgets_attributes } = data.container.templateAndUtils;
     let { content } = template;
 
     // attribute widgets
-    for (const attributeWidget of resolvedAttributesWidgets) {
+    for (const attributeWidget of resolved_widgets_attributes) {
       if (attributeWidget.template_widget_name && attributeWidget.data) {
         content = content.replace(`$${attributeWidget.template_widget_name}`, attributeWidget.data);
       }
     }
 
     // other widgets
-    for (const templateWidget of templateWidgets) {
+    for (const templateWidget of template_widgets) {
       let outcome = '';
-      if (templateWidget.widget.type === 'list') {
+      const widget = JSON.parse(templateWidget.widget);
+      if (widget.type === 'list') {
         // eslint-disable-next-line no-await-in-loop
         outcome = await buildListOutcome(
           containerId,
-          templateWidget.widget,
+          widget,
           maxContentMarkings,
         );
-      } else if (templateWidget.widget.type === 'donut') {
+      } else if (widget.type === 'donut') {
         // eslint-disable-next-line no-await-in-loop
-        outcome = await buildDonutOutcome(containerId, templateWidget.widget, maxContentMarkings);
+        outcome = await buildDonutOutcome(containerId, widget, maxContentMarkings);
       }
       content = content.replace(`$${templateWidget.name}`, outcome);
     }

@@ -187,18 +187,11 @@ const StixCoreObjectContentFiles: FunctionComponent<StixCoreObjectContentFilesPr
 
     const fileMarkings = values.fileMarkings.map(({ value }) => value);
     const maxContentMarkings = (values.maxMarkings ?? []).map(({ value }) => value);
-    const template = hardcodedTemplates.find((t) => t.name === values.template);
-
-    if (!template) {
-      MESSAGING$.notifyError(t_i18n('No template found for this name'));
-      return;
-    }
+    const templateName = values.template;
 
     const templateContent = await buildContentFromTemplate(
       stixCoreObjectId,
-      template,
-      hardcodedUsedTemplateWidgets,
-      hardcodedResolvedAttributesWidgets,
+      templateName,
       maxContentMarkings,
     );
     const blob = new Blob([templateContent], { type });
