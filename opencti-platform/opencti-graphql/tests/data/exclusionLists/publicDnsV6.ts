@@ -1,4 +1,4 @@
-import { exclusionListEntityType, type ExclusionListProperties } from '../../../src/utils/exclusionListTypes';
+import { exclusionListEntityType, type ExclusionListProperties } from '../../../src/utils/exclusionListsTypes';
 
 const list = [
   '2001:148f:fffe::1',

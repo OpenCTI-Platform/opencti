@@ -1,4 +1,4 @@
-import { exclusionListEntityType, type ExclusionListProperties } from '../../../src/utils/exclusionListTypes';
+import { exclusionListEntityType, type ExclusionListProperties } from '../../../src/utils/exclusionListsTypes';
 
 const list = [
   '52.230.152.0/24',

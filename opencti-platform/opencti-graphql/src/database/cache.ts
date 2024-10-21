@@ -1,5 +1,5 @@
 import { SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION } from '@opentelemetry/semantic-conventions';
-import type { ExclusionListProperties } from '../utils/exclusionListTypes';
+import type { ExclusionListProperties } from '../utils/exclusionListsTypes';
 import type { BasicStoreIdentifier, StoreEntity, StoreRelation } from '../types/store';
 import { logApp } from '../config/conf';
 import { UnsupportedError } from '../config/errors';

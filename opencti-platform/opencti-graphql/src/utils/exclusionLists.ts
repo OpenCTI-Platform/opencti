@@ -1,10 +1,11 @@
+import { MAX_EVENT_LOOP_PROCESSING_TIME } from 'src/database/utils';
 import { FunctionalError } from '../config/errors';
 import { getExclusionListsByTypeFromCache } from '../database/cache';
-import { type ExtractedObservableValues, type ExclusionListProperties, exclusionListEntityType } from './exclusionListTypes';
+import { type ExtractedObservableValues, type ExclusionListProperties, exclusionListEntityType } from './exclusionListsTypes';
 
 export const getIsRange = (value) => value.indexOf('/') !== -1;
 
-const checkIpAddrType = (ipAddr) => {
+export const checkIpAddrType = (ipAddr) => {
   const isIpv4 = ipAddr.split('.').length === 4;
   const isIpv6 = ipAddr.indexOf(':') !== -1;
   return { isIpv4, isIpv6 };
@@ -61,33 +62,61 @@ export const convertIpAddr = (list) => {
   });
 };
 
-const checkIpAddressLists = (ipToTest: string, exclusionList: ExclusionListProperties[]) => {
+const checkIpAddressLists = async (ipToTest: string, exclusionList: ExclusionListProperties[]) => {
   const { isIpv4 } = checkIpAddrType(ipToTest);
   const binary = isIpv4 ? convertIpv4ToBinary(ipToTest) : convertIpv6ToBinary(ipToTest);
-  exclusionList.forEach(({ name, list }) => {
-    list.forEach((line) => {
-      if (binary.startsWith(line)) {
+
+  let startProcessingTime = new Date().getTime();
+
+  for (let i = 0; i < exclusionList.length; i += 1) {
+    const { list, name } = exclusionList[i];
+
+    for (let j = 0; j < list.length; j += 1) {
+      if (binary.startsWith(list[j])) {
         throwExclusionListError(ipToTest, name);
       }
-    });
-  });
+
+      if (new Date().getTime() - startProcessingTime > MAX_EVENT_LOOP_PROCESSING_TIME) {
+        startProcessingTime = new Date().getTime();
+        await new Promise((resolve) => {
+          setImmediate(resolve);
+        });
+      }
+    }
+  }
 };
 
-export const checkPatternValidity = (extractedObservableValues: ExtractedObservableValues[]): void => {
-  extractedObservableValues.forEach(({ type, value }) => {
+const checkExclusionList = async (valueToTest: string, exclusionList: ExclusionListProperties[]) => {
+  let startProcessingTime = new Date().getTime();
+
+  for (let i = 0; i < exclusionList.length; i += 1) {
+    const { list, name } = exclusionList[i];
+
+    for (let j = 0; j < list.length; j += 1) {
+      const isWildCard = list[j].startsWith('.');
+      if ((isWildCard && valueToTest.endsWith(list[j])) || valueToTest === list[j]) {
+        throwExclusionListError(valueToTest, name);
+      }
+
+      if (new Date().getTime() - startProcessingTime > MAX_EVENT_LOOP_PROCESSING_TIME) {
+        startProcessingTime = new Date().getTime();
+        await new Promise((resolve) => {
+          setImmediate(resolve);
+        });
+      }
+    }
+  }
+};
+
+export const checkPatternValidity = async (extractedObservableValues: ExtractedObservableValues[]) => {
+  for (let i = 0; i < extractedObservableValues.length; i += 1) {
+    const { type, value } = extractedObservableValues[i];
     const selectedExclusionLists = getExclusionListsByTypeFromCache(type);
     if (!selectedExclusionLists.length) return;
     if (type === exclusionListEntityType.IPV4_ADDR || type === exclusionListEntityType.IPV6_ADDR) {
-      checkIpAddressLists(value, selectedExclusionLists);
+      await checkIpAddressLists(value, selectedExclusionLists);
     } else {
-      selectedExclusionLists.forEach(({ name, list }) => {
-        list.forEach((line) => {
-          const isWildCard = line.startsWith('.');
-          if ((isWildCard && value.endsWith(line)) || value === line) {
-            throwExclusionListError(value, name);
-          }
-        });
-      });
+      await checkExclusionList(value, selectedExclusionLists);
     }
-  });
+  }
 };
