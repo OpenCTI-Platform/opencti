@@ -1,105 +1,147 @@
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useState } from 'react';
 import MuiTextField from '@mui/material/TextField';
 import MUIAutocomplete from '@mui/material/Autocomplete';
-import { Field } from 'formik';
-import { FormikHelpers } from 'formik/dist/types';
-import { CsvMapperFormData } from '@components/data/csvMapper/CsvMapper';
+import { Field, FieldProps } from 'formik';
 import { CsvMapperColumnBasedFormData, CsvMapperRepresentationFormData } from '@components/data/csvMapper/representations/Representation';
+import Tooltip from '@mui/material/Tooltip';
+import { InformationOutline } from 'mdi-material-ui';
+import { alphabet } from '@components/data/csvMapper/representations/attributes/AttributeUtils';
+import { RepresentationAttributeForm } from '@components/data/csvMapper/representations/attributes/CsvMapperRepresentationAttributeForm';
+import { SelectChangeEvent } from '@mui/material/Select';
 import { useFormatter } from '../../../../../components/i18n';
 import TextField from '../../../../../components/TextField';
+import SwitchField from '../../../../../components/fields/SwitchField';
 
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
-interface CsvMapperConditionalEntityMappingProps {
-  options: string[]
-  selectedOption: string
-  representation: CsvMapperRepresentationFormData
-  representationName: string
+interface CsvMapperConditionalEntityMappingProps
+  extends FieldProps<RepresentationAttributeForm> {
+  representation: CsvMapperRepresentationFormData;
+  representationName: string;
 }
 
-const CsvMapperConditionalEntityMapping: FunctionComponent<CsvMapperConditionalEntityMappingProps> = ({
-  options, selectedOption,
-}) => {
+const CsvMapperConditionalEntityMapping: FunctionComponent<
+CsvMapperConditionalEntityMappingProps
+> = ({ form, field }) => {
   const { t_i18n } = useFormatter();
-  // console.log('representation', representation);
-  // console.log('representationName', representationName);
-  const handleValueSelect = async (
-    setFieldValue: FormikHelpers<CsvMapperFormData>['setFieldValue'],
-    value: CsvMapperColumnBasedFormData
-    ,
-  ) => {
+  const options = alphabet(26);
+  const operators = ['Equal', 'Not equal'];
+  const [selectedOption, setSelectedOption] = useState();
+  const [selectedOperator, setSelectedOperator] = useState();
+
+  const { name, value } = field;
+  const { setFieldValue } = form;
+
+  const handleValueSelect = async () => {
     await setFieldValue('value', value);
   };
   const handleColumnSelect = async (
-    setFieldValue: FormikHelpers<CsvMapperFormData>['setFieldValue'],
-    value: CsvMapperColumnBasedFormData,
+    column: any,
   ) => {
-    // const newValue: CsvMapperColumnBasedFormData = {
-    //   ...value,
-    //   column_reference: value.column_reference ?? undefined,
-    //   operator: Operator.Eq,
-    //   value: 'dd',
-    // };
-    await setFieldValue('column_reference', value.column_reference ?? undefined);
-    await setFieldValue('operator', value.operator ?? undefined);
-    await setFieldValue('value', value.value ?? undefined);
+    if (!value) {
+      setSelectedOption(column);
+
+      const newValue: CsvMapperColumnBasedFormData = {
+        column_reference: column ?? undefined,
+        operator: 'eq',
+        value: 'dd',
+      };
+      await setFieldValue(name, newValue);
+    } else {
+      setSelectedOption(column);
+      const updatedValue: CsvMapperColumnBasedFormData = {
+        ...value,
+        column_reference: column ?? undefined,
+        operator: 'eq',
+        value: 'dd',
+      };
+      await setFieldValue(name, updatedValue);
+    }
   };
+
+  const handleParentSelect = () => {
+    setFieldValue(
+      'has_dynamic_mapping',
+      value,
+    );
+    // if (csvMapper.has_entity_dynamic_mapping === false) {
+    //   setDisabledColumn(true);
+    // }
+  };
+
+  const handleOperatorSelect = (event: SelectChangeEvent) => {
+    setSelectedOperator(event.target.value);
+  };
+
   return (
-    <div style={{
-      width: '100%',
-      display: 'inline-grid',
-      gridTemplateColumns: '2fr 2fr 2fr 50px',
-      // display: 'flex',
-      // justifyContent: 'center',
-      alignItems: 'center',
-      margin: '20px 0px 40px',
-      gap: '10px',
-    }}
-    >
-      <div>{t_i18n('If entity dynamic mapping')}</div>
-      <MUIAutocomplete
-        selectOnFocus
-        openOnFocus
-        autoSelect={false}
-        autoHighlight
-        options={options}
-        disabled={true}
-        value={selectedOption}
-        onChange={() => handleColumnSelect}
-        sx={{ width: '240px', marginLeft: '85px' }}
-        renderInput={(params) => (
-          <MuiTextField
-            {...params}
-            label={t_i18n('Column index')}
-            variant="outlined"
-            size="small"
-          />
-        )}
-      />
+    <div style={{ display: 'flex', alignItems: 'center' }}>
       <Field
-        component={TextField}
-        name="value"
-        label={t_i18n('Value')}
-        sx={{ margin: '0px 5px 10px' }}
-        onChange={handleValueSelect}
+        component={SwitchField}
+        type="checkbox"
+        name="has_entity_dynamic_mapping"
+        label={t_i18n('Entity dynamic mapping')}
+        onChange={handleParentSelect}
       />
-      {/* <MUIAutocomplete */}
-      {/*  selectOnFocus */}
-      {/*  openOnFocus */}
-      {/*  autoSelect={false} */}
-      {/*  autoHighlight */}
-      {/*  options={operators} */}
-      {/*  disabled={true} */}
-      {/*  value={selectedOption} */}
-      {/*  sx={{ width: '240px', marginLeft: '85px' }} */}
-      {/*  renderInput={(params) => ( */}
-      {/*    <MuiTextField */}
-      {/*      {...params} */}
-      {/*      label={t_i18n('Column index')} */}
-      {/*      variant="outlined" */}
-      {/*      size="small" */}
-      {/*    /> */}
-      {/*  )} */}
-      {/* /> */}
+      <Tooltip
+        title={t_i18n(
+          'If this option is selected, we will dynamically map the column value that you provide to the entity.',
+        )}
+      >
+        <InformationOutline
+          fontSize="small"
+          color="primary"
+          style={{ cursor: 'default' }}
+        />
+      </Tooltip>
+      <div style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+      }}
+      >
+        <MUIAutocomplete
+          selectOnFocus
+          openOnFocus
+          autoSelect={false}
+          autoHighlight
+          options={options}
+          value={selectedOption}
+          onChange={(_, val) => handleColumnSelect(val)}
+          sx={{ width: '180px', marginLeft: '95px' }}
+          renderInput={(params) => (
+            <MuiTextField
+              {...params}
+              label={t_i18n('Column index')}
+              variant="outlined"
+              size="small"
+            />
+          )}
+        />
+        <MUIAutocomplete
+          selectOnFocus
+          openOnFocus
+          autoSelect={false}
+          autoHighlight
+          options={operators}
+          value={selectedOperator}
+          onChange={() => handleOperatorSelect}
+          sx={{ width: '150px', marginLeft: '5px' }}
+          renderInput={(params) => (
+            <MuiTextField
+              {...params}
+              label={t_i18n('Operators')}
+              variant="outlined"
+              size="small"
+            />
+          )}
+        />
+        <div style={{ width: '145px', marginLeft: '5px', marginBottom: '10px' }}>
+          <Field
+            component={TextField}
+            name="value"
+            label={t_i18n('Value')}
+            onChange={handleValueSelect}
+          />
+        </div>
+      </div>
     </div>
   );
 };

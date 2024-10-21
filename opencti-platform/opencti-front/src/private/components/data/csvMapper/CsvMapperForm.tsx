@@ -14,8 +14,6 @@ import { CsvMapperFormData } from '@components/data/csvMapper/CsvMapper';
 import classNames from 'classnames';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import { formDataToCsvMapper } from '@components/data/csvMapper/CsvMapperUtils';
-import MUIAutocomplete from '@mui/material/Autocomplete';
-import MuiTextField from '@mui/material/TextField';
 import { alphabet } from '@components/data/csvMapper/representations/attributes/AttributeUtils';
 import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
@@ -72,7 +70,6 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({ csvMapper, onSub
   const { t_i18n } = useFormatter();
   const classes = useStyles();
   const options = alphabet(26);
-  const [selectedOption, setSelectedOption] = useState('');
   // const [disabledColumn, setDisabledColumn] = useState(false);
   // -- INIT --
 
@@ -157,19 +154,6 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({ csvMapper, onSub
       return t_i18n('Update');
     }
     return t_i18n('Create');
-  };
-
-  const handleParentSelect = (
-    setFieldValue: FormikHelpers<CsvMapperFormData>['setFieldValue'],
-    value: CsvMapperFormData,
-  ) => {
-    setFieldValue(
-      'has_dynamic_mapping',
-      value.has_entity_dynamic_mapping,
-    );
-    // if (csvMapper.has_entity_dynamic_mapping === false) {
-    //   setDisabledColumn(true);
-    // }
   };
 
   // -- ERRORS --
@@ -285,43 +269,6 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({ csvMapper, onSub
                   <Add fontSize="small"/>
                 </IconButton>
               </div>
-              <div className={classNames(classes.center, classes.marginTop)}>
-                <Field
-                  component={SwitchField}
-                  type="checkbox"
-                  name="has_entity_dynamic_mapping"
-                  label={t_i18n('Entity dynamic mapping')}
-                  onChange={handleParentSelect}
-                />
-                <Tooltip
-                  title={t_i18n(
-                    'If this option is selected, we will dynamically map the column value that you provide to the entity.',
-                  )}
-                >
-                  <InformationOutline
-                    fontSize="small"
-                    color="primary"
-                    style={{ cursor: 'default' }}
-                  />
-                </Tooltip>
-                <MUIAutocomplete
-                  selectOnFocus
-                  openOnFocus
-                  autoSelect={false}
-                  autoHighlight
-                  options={options}
-                    // disabled={disabledColumn}
-                  onChange={(_, column) => setSelectedOption(column)}
-                  renderInput={(params) => (
-                    <MuiTextField
-                      {...params}
-                      label={t_i18n('Column index')}
-                      variant="outlined"
-                      size="small"
-                    />
-                  )}
-                />
-              </div>
               <FieldArray
                 name="entity_representations"
                 render={(arrayHelpers) => (
@@ -339,7 +286,6 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({ csvMapper, onSub
                           handleRepresentationErrors={handleRepresentationErrors}
                           prefixLabel="entity_"
                           onDelete={() => arrayHelpers.remove(idx)}
-                          selectedOption={selectedOption}
                           options={options}
                         />
                       </div>
@@ -379,7 +325,6 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({ csvMapper, onSub
                           handleRepresentationErrors={handleRepresentationErrors}
                           prefixLabel="relationship_"
                           onDelete={() => arrayHelpers.remove(idx)}
-                          selectedOption={selectedOption}
                           options={options}
                         />
                       </div>
