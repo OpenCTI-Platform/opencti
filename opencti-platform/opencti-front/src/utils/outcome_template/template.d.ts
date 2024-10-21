@@ -12,7 +12,8 @@ export interface TemplateWidget {
   widget: Widget
 }
 
-export interface ResolvedAttributesWidgets {
+export interface ResolvedAttributesWidget {
   template_widget_name: string,
-  data: string,
+  displayStyle?: string,
+  data: string[],
 }

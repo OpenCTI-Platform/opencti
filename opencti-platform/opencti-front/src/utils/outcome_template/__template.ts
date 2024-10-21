@@ -1,7 +1,22 @@
-import type { Template, TemplateWidget } from './template';
+import { ResolvedAttributesWidget, Template, TemplateWidget } from './template';
+import templateIncidentCase from './__incidentCase.template';
+import widgetContainerName from './widgets/containerName.widget';
+import widgetContainerCreationDate from './widgets/containerCreationDate.widget';
+import widgetContainerDescription from './widgets/containerDescription.widget';
+import widgetContainerLabels from './widgets/containerLabels.widget';
+import widgetContainerMarkings from './widgets/containerMarkings.widget';
+import widgetContainerModificationDate from './widgets/containerModificationDate.widget';
+import widgetContainerObservables from './widgets/containerObservables.widget';
+import widgetContainerReferences from './widgets/containerReferences.widget';
+import widgetIncidentIOC from './widgets/incidentIOC.widget';
+import widgetIncidentPriority from './widgets/incidentPriority.widget';
+import widgetIncidentSeverity from './widgets/incidentSeverity.widget';
+import widgetIncidentTasksActions from './widgets/incidentTasksActions.widget';
+import widgetIncidentTTP from './widgets/incidentTTP.widget';
+import widgetIncidentType from './widgets/incidentType.widget';
 
 // text //
-export const templateText: Template = {
+const templateText: Template = {
   name: 'template with simple text',
   content: '<body>\n'
     + '<h1> Main title </h1>\n'
@@ -16,7 +31,7 @@ export const templateText: Template = {
 
 // attribute //
 
-export const templateAttribute: Template = {
+const templateAttribute: Template = {
   name: 'template with attributes',
   content: `<body>
     <h1> Main title </h1>
@@ -27,7 +42,7 @@ export const templateAttribute: Template = {
   used_widgets: ['reportName', 'reportPublicationDate', 'reportLabels'],
 };
 
-export const widgetAttribute: TemplateWidget = {
+const widgetAttribute: TemplateWidget = {
   name: 'rapportName',
   widget: {
     type: 'attribute',
@@ -50,16 +65,9 @@ export const widgetAttribute: TemplateWidget = {
   },
 };
 
-// attributes widgets (resolved from backend)
-export const resolvedAttributesWidgets = [
-  { template_widget_name: 'reportName', data: '[Hardcoded report name]' },
-  { template_widget_name: 'reportPublicationDate', data: '[Hardcoded publication date]' },
-  { template_widget_name: 'reportLabels', data: 'label1, label2, label3' },
-];
-
 // list //
 
-export const templateList: Template = {
+const templateList: Template = {
   name: 'template list: list of locations contained in the report',
   content: '<body>\n'
     + '<h1> Main title </h1>\n'
@@ -69,7 +77,7 @@ export const templateList: Template = {
   used_widgets: ['locationsList'],
 };
 
-export const widgetList: TemplateWidget = {
+const widgetList: TemplateWidget = {
   name: 'locationsList',
   widget: {
     id: 'widgetList_id',
@@ -96,7 +104,7 @@ export const widgetList: TemplateWidget = {
 
 // graph //
 
-export const templateGraph: Template = {
+const templateGraph: Template = {
   name: 'template graph (donut)',
   used_widgets: ['widgetGraph'],
   content: `
@@ -107,7 +115,7 @@ export const templateGraph: Template = {
   `,
 };
 
-export const widgetGraph: TemplateWidget = {
+const widgetGraph: TemplateWidget = {
   name: 'widgetGraph',
   widget: {
     id: 'e1853ae4-f947-4cf6-beca-f2ea6dc564d9',
@@ -128,5 +136,47 @@ export const widgetGraph: TemplateWidget = {
   },
 };
 
-// Retrieve widgets used in the template, for now, hardcoded
-export const usedTemplateWidgets: TemplateWidget[] = [widgetAttribute, widgetList, widgetGraph];
+export const hardcodedTemplates: Template[] = [
+  templateGraph,
+  templateList,
+  templateAttribute,
+  templateText,
+  templateIncidentCase,
+];
+
+export const hardcodedTemplateWidgets: TemplateWidget[] = [
+  widgetAttribute,
+  widgetList,
+  widgetGraph,
+  widgetContainerName,
+  widgetContainerCreationDate,
+  widgetContainerDescription,
+  widgetContainerLabels,
+  widgetContainerMarkings,
+  widgetContainerModificationDate,
+  widgetContainerObservables,
+  widgetContainerReferences,
+  widgetIncidentIOC,
+  widgetIncidentPriority,
+  widgetIncidentSeverity,
+  widgetIncidentTasksActions,
+  widgetIncidentTTP,
+  widgetIncidentType,
+];
+
+// attributes widgets (resolved from backend)
+export const resolvedAttributesWidgets: ResolvedAttributesWidget[] = [
+  { template_widget_name: 'reportName', data: ['[Hardcoded report name]'] },
+  { template_widget_name: 'reportPublicationDate', data: ['[Hardcoded publication date]'] },
+  { template_widget_name: 'reportLabels', data: ['label1, label2, label3'] },
+  { template_widget_name: 'containerName', data: ['Suspicious \'UACBypassExp\' behavior was blocked on one endpoint'] },
+  { template_widget_name: 'containerCreationDate', data: ['16 october 2024, 09:00'] },
+  { template_widget_name: 'containerDescription', data: ['This is my **super** *description*'] },
+  { template_widget_name: 'containerLabels', data: ['sentinel, detection'] },
+  { template_widget_name: 'containerMarkings', data: ['TLP:RED'] },
+  { template_widget_name: 'containerModificationDate', data: ['17 october 2024, 09:00'] },
+  { template_widget_name: 'containerReferences', data: ['TODO list of references'] },
+  { template_widget_name: 'incidentPriority', data: ['P1'] },
+  { template_widget_name: 'incidentSeverity', data: ['MEDIUM'] },
+  { template_widget_name: 'incidentType', data: ['intrusion'] },
+];
