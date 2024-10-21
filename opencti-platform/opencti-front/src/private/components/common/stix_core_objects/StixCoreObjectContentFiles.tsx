@@ -89,6 +89,7 @@ interface StixCoreObjectContentFilesProps {
   settingsMessagesBannerHeight?: number,
   exportFiles: NonNullable<StixCoreObjectContent_stixCoreObject$data['exportFiles']>['edges'][number]['node'][],
   contentsFromTemplate: NonNullable<StixCoreObjectContent_stixCoreObject$data['contentsFromTemplate']>['edges'][number]['node'][],
+  hasOutcomesTemplate?: boolean,
 }
 
 const StixCoreObjectContentFiles: FunctionComponent<StixCoreObjectContentFilesProps> = ({
@@ -103,6 +104,7 @@ const StixCoreObjectContentFiles: FunctionComponent<StixCoreObjectContentFilesPr
   settingsMessagesBannerHeight,
   exportFiles,
   contentsFromTemplate,
+  hasOutcomesTemplate,
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
@@ -281,7 +283,7 @@ const StixCoreObjectContentFiles: FunctionComponent<StixCoreObjectContentFilesPr
         onFileChange={onFileChange}
       />
 
-      {isContentFromTemplateEnabled && (
+      {isContentFromTemplateEnabled && hasOutcomesTemplate && (
         <div>
           <Typography variant="body2" style={{ margin: '5px 0 0 15px', float: 'left' }}>
             {t_i18n('Content from template')}
@@ -303,7 +305,7 @@ const StixCoreObjectContentFiles: FunctionComponent<StixCoreObjectContentFilesPr
         </div>
       )}
 
-      {isEnterpriseEdition && isContentFromTemplateEnabled && (
+      {isEnterpriseEdition && isContentFromTemplateEnabled && hasOutcomesTemplate && (
         <StixCoreObjectContentFilesList
           files={contentsFromTemplate}
           currentFileId={currentFileId}
@@ -319,7 +321,7 @@ const StixCoreObjectContentFiles: FunctionComponent<StixCoreObjectContentFilesPr
         onSubmit={onSubmit}
       />
 
-      {isEnterpriseEdition && isContentFromTemplateEnabled && (
+      {isEnterpriseEdition && isContentFromTemplateEnabled && hasOutcomesTemplate && (
         <ContentTemplateForm
           isOpen={displayCreateContentFromTemplate}
           onClose={handleCloseCreateContentFromTemplate}
