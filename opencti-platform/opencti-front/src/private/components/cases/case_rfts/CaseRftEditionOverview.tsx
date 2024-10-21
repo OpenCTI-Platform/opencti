@@ -40,6 +40,7 @@ export const caseRftMutationFieldPatch = graphql`
         commitMessage: $commitMessage
         references: $references
       ) {
+        x_opencti_graph_data
         ...CaseRftEditionOverview_case
         ...CaseUtils_case
       }
