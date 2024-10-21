@@ -1954,6 +1954,7 @@ export type Case = {
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   tasks: TaskConnection;
+  templateAndUtils?: Maybe<TemplateAndUtils>;
   toStix?: Maybe<Scalars['String']['output']>;
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
@@ -2137,6 +2138,11 @@ export type CaseStixCoreRelationshipsDistributionArgs = {
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
 
+
+export type CaseTemplateAndUtilsArgs = {
+  templateId: Scalars['String']['input'];
+};
+
 export type CaseConnection = {
   __typename?: 'CaseConnection';
   edges?: Maybe<Array<Maybe<CaseEdge>>>;
@@ -2206,6 +2212,7 @@ export type CaseIncident = BasicObject & Case & Container & StixCoreObject & Sti
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   tasks: TaskConnection;
+  templateAndUtils?: Maybe<TemplateAndUtils>;
   toStix?: Maybe<Scalars['String']['output']>;
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
@@ -2389,6 +2396,11 @@ export type CaseIncidentStixCoreRelationshipsDistributionArgs = {
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
 
+
+export type CaseIncidentTemplateAndUtilsArgs = {
+  templateId: Scalars['String']['input'];
+};
+
 export type CaseIncidentAddInput = {
   caseTemplates?: InputMaybe<Array<Scalars['String']['input']>>;
   clientMutationId?: InputMaybe<Scalars['String']['input']>;
@@ -2505,6 +2517,7 @@ export type CaseRfi = BasicObject & Case & Container & StixCoreObject & StixDoma
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   tasks: TaskConnection;
+  templateAndUtils?: Maybe<TemplateAndUtils>;
   toStix?: Maybe<Scalars['String']['output']>;
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
@@ -2688,6 +2701,11 @@ export type CaseRfiStixCoreRelationshipsDistributionArgs = {
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
 
+
+export type CaseRfiTemplateAndUtilsArgs = {
+  templateId: Scalars['String']['input'];
+};
+
 export type CaseRfiAddInput = {
   caseTemplates?: InputMaybe<Array<Scalars['String']['input']>>;
   clientMutationId?: InputMaybe<Scalars['String']['input']>;
@@ -2803,6 +2821,7 @@ export type CaseRft = BasicObject & Case & Container & StixCoreObject & StixDoma
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   takedown_types?: Maybe<Array<Scalars['String']['output']>>;
   tasks: TaskConnection;
+  templateAndUtils?: Maybe<TemplateAndUtils>;
   toStix?: Maybe<Scalars['String']['output']>;
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
@@ -2984,6 +3003,11 @@ export type CaseRftStixCoreRelationshipsDistributionArgs = {
   toId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   toRole?: InputMaybe<Scalars['String']['input']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+};
+
+
+export type CaseRftTemplateAndUtilsArgs = {
+  templateId: Scalars['String']['input'];
 };
 
 export type CaseRftAddInput = {
@@ -3785,6 +3809,7 @@ export type Container = {
   stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
+  templateAndUtils?: Maybe<TemplateAndUtils>;
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
@@ -3928,6 +3953,11 @@ export type ContainerStixCoreRelationshipsDistributionArgs = {
   toId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   toRole?: InputMaybe<Scalars['String']['input']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+};
+
+
+export type ContainerTemplateAndUtilsArgs = {
+  templateId: Scalars['String']['input'];
 };
 
 export type ContainerConnection = {
@@ -7671,6 +7701,7 @@ export type Feedback = BasicObject & Case & Container & StixCoreObject & StixDom
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   tasks: TaskConnection;
+  templateAndUtils?: Maybe<TemplateAndUtils>;
   toStix?: Maybe<Scalars['String']['output']>;
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
@@ -7852,6 +7883,11 @@ export type FeedbackStixCoreRelationshipsDistributionArgs = {
   toId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   toRole?: InputMaybe<Scalars['String']['input']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+};
+
+
+export type FeedbackTemplateAndUtilsArgs = {
+  templateId: Scalars['String']['input'];
 };
 
 export type FeedbackAddInput = {
@@ -8201,6 +8237,7 @@ export type Grouping = BasicObject & Container & StixCoreObject & StixDomainObje
   stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
+  templateAndUtils?: Maybe<TemplateAndUtils>;
   toStix?: Maybe<Scalars['String']['output']>;
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
@@ -8383,6 +8420,11 @@ export type GroupingStixCoreRelationshipsDistributionArgs = {
   toId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   toRole?: InputMaybe<Scalars['String']['input']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+};
+
+
+export type GroupingTemplateAndUtilsArgs = {
+  templateId: Scalars['String']['input'];
 };
 
 export type GroupingAddInput = {
@@ -16216,6 +16258,7 @@ export type Note = BasicObject & Container & StixCoreObject & StixDomainObject &
   stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
+  templateAndUtils?: Maybe<TemplateAndUtils>;
   toStix?: Maybe<Scalars['String']['output']>;
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
@@ -16397,6 +16440,11 @@ export type NoteStixCoreRelationshipsDistributionArgs = {
   toId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   toRole?: InputMaybe<Scalars['String']['input']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+};
+
+
+export type NoteTemplateAndUtilsArgs = {
+  templateId: Scalars['String']['input'];
 };
 
 export type NoteAddInput = {
@@ -16693,6 +16741,7 @@ export type ObservedData = BasicObject & Container & StixCoreObject & StixDomain
   stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
+  templateAndUtils?: Maybe<TemplateAndUtils>;
   toStix?: Maybe<Scalars['String']['output']>;
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
@@ -16876,6 +16925,11 @@ export type ObservedDataStixCoreRelationshipsDistributionArgs = {
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
 
+
+export type ObservedDataTemplateAndUtilsArgs = {
+  templateId: Scalars['String']['input'];
+};
+
 export type ObservedDataAddInput = {
   clientMutationId?: InputMaybe<Scalars['String']['input']>;
   confidence?: InputMaybe<Scalars['Int']['input']>;
@@ -17025,6 +17079,7 @@ export type Opinion = BasicObject & Container & StixCoreObject & StixDomainObjec
   stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
+  templateAndUtils?: Maybe<TemplateAndUtils>;
   toStix?: Maybe<Scalars['String']['output']>;
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
@@ -17206,6 +17261,11 @@ export type OpinionStixCoreRelationshipsDistributionArgs = {
   toId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   toRole?: InputMaybe<Scalars['String']['input']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+};
+
+
+export type OpinionTemplateAndUtilsArgs = {
+  templateId: Scalars['String']['input'];
 };
 
 export type OpinionAddInput = {
@@ -22212,6 +22272,7 @@ export type Report = BasicObject & Container & StixCoreObject & StixDomainObject
   stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
+  templateAndUtils?: Maybe<TemplateAndUtils>;
   toStix?: Maybe<Scalars['String']['output']>;
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
@@ -22396,6 +22457,11 @@ export type ReportStixCoreRelationshipsDistributionArgs = {
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
 
+
+export type ReportTemplateAndUtilsArgs = {
+  templateId: Scalars['String']['input'];
+};
+
 export type ReportAddInput = {
   clientMutationId?: InputMaybe<Scalars['String']['input']>;
   confidence?: InputMaybe<Scalars['Int']['input']>;
@@ -22513,6 +22579,12 @@ export type ResolvedInstanceFilter = {
   id: Scalars['String']['output'];
   valid: Scalars['Boolean']['output'];
   value?: Maybe<Scalars['String']['output']>;
+};
+
+export type ResolvedWidgetAttribute = {
+  __typename?: 'ResolvedWidgetAttribute';
+  data?: Maybe<Scalars['String']['output']>;
+  template_widget_name?: Maybe<Scalars['String']['output']>;
 };
 
 export type RetentionRule = {
@@ -26173,6 +26245,7 @@ export type Task = BasicObject & Container & StixCoreObject & StixDomainObject &
   stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
+  templateAndUtils?: Maybe<TemplateAndUtils>;
   toStix?: Maybe<Scalars['String']['output']>;
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
@@ -26356,6 +26429,11 @@ export type TaskStixCoreRelationshipsDistributionArgs = {
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
 
+
+export type TaskTemplateAndUtilsArgs = {
+  templateId: Scalars['String']['input'];
+};
+
 export type TaskAddInput = {
   created?: InputMaybe<Scalars['DateTime']['input']>;
   createdBy?: InputMaybe<Scalars['String']['input']>;
@@ -26497,6 +26575,28 @@ export enum TaxiiVersion {
   V2 = 'v2',
   V21 = 'v21'
 }
+
+export type Template = {
+  __typename?: 'Template';
+  content: Scalars['String']['output'];
+  description?: Maybe<Scalars['String']['output']>;
+  filters?: Maybe<Scalars['String']['output']>;
+  name: Scalars['String']['output'];
+  used_template_widgets_names: Array<Scalars['String']['output']>;
+};
+
+export type TemplateAndUtils = {
+  __typename?: 'TemplateAndUtils';
+  resolved_widgets_attributes: Array<ResolvedWidgetAttribute>;
+  template: Template;
+  template_widgets: Array<TemplateWidget>;
+};
+
+export type TemplateWidget = {
+  __typename?: 'TemplateWidget';
+  name: Scalars['String']['output'];
+  widget: Scalars['String']['output'];
+};
 
 export type Text = BasicObject & StixCoreObject & StixCyberObservable & StixObject & {
   __typename?: 'Text';
@@ -30801,6 +30901,7 @@ export type ResolversTypes = ResolversObject<{
   Representative: ResolverTypeWrapper<Representative>;
   RepresentativeWithId: ResolverTypeWrapper<RepresentativeWithId>;
   ResolvedInstanceFilter: ResolverTypeWrapper<ResolvedInstanceFilter>;
+  ResolvedWidgetAttribute: ResolverTypeWrapper<ResolvedWidgetAttribute>;
   RetentionRule: ResolverTypeWrapper<RetentionRule>;
   RetentionRuleAddInput: RetentionRuleAddInput;
   RetentionRuleConnection: ResolverTypeWrapper<RetentionRuleConnection>;
@@ -30975,6 +31076,9 @@ export type ResolversTypes = ResolversObject<{
   TaxiiCollectionEditMutations: ResolverTypeWrapper<Omit<TaxiiCollectionEditMutations, 'fieldPatch'> & { fieldPatch?: Maybe<ResolversTypes['TaxiiCollection']> }>;
   TaxiiCollectionOrdering: TaxiiCollectionOrdering;
   TaxiiVersion: TaxiiVersion;
+  Template: ResolverTypeWrapper<Template>;
+  TemplateAndUtils: ResolverTypeWrapper<TemplateAndUtils>;
+  TemplateWidget: ResolverTypeWrapper<TemplateWidget>;
   Text: ResolverTypeWrapper<Omit<Text, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversTypes['Connector']>>>, containers?: Maybe<ResolversTypes['ContainerConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversTypes['Work']>>>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversTypes['Label']>>, objectMarking?: Maybe<Array<ResolversTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversTypes['Organization']>>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversTypes['Inference']>>> }>;
   TextAddInput: TextAddInput;
   ThreatActor: ResolverTypeWrapper<ResolversInterfaceTypes<ResolversTypes>['ThreatActor']>;
@@ -31558,6 +31662,7 @@ export type ResolversParentTypes = ResolversObject<{
   Representative: Representative;
   RepresentativeWithId: RepresentativeWithId;
   ResolvedInstanceFilter: ResolvedInstanceFilter;
+  ResolvedWidgetAttribute: ResolvedWidgetAttribute;
   RetentionRule: RetentionRule;
   RetentionRuleAddInput: RetentionRuleAddInput;
   RetentionRuleConnection: RetentionRuleConnection;
@@ -31702,6 +31807,9 @@ export type ResolversParentTypes = ResolversObject<{
   TaxiiCollectionConnection: Omit<TaxiiCollectionConnection, 'edges'> & { edges: Array<Maybe<ResolversParentTypes['TaxiiCollectionEdge']>> };
   TaxiiCollectionEdge: Omit<TaxiiCollectionEdge, 'node'> & { node: ResolversParentTypes['TaxiiCollection'] };
   TaxiiCollectionEditMutations: Omit<TaxiiCollectionEditMutations, 'fieldPatch'> & { fieldPatch?: Maybe<ResolversParentTypes['TaxiiCollection']> };
+  Template: Template;
+  TemplateAndUtils: TemplateAndUtils;
+  TemplateWidget: TemplateWidget;
   Text: Omit<Text, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversParentTypes['Connector']>>>, containers?: Maybe<ResolversParentTypes['ContainerConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversParentTypes['Work']>>>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversParentTypes['Label']>>, objectMarking?: Maybe<Array<ResolversParentTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversParentTypes['Organization']>>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversParentTypes['Inference']>>> };
   TextAddInput: TextAddInput;
   ThreatActor: ResolversInterfaceTypes<ResolversParentTypes>['ThreatActor'];
@@ -32485,6 +32593,7 @@ export type CaseResolvers<ContextType = any, ParentType extends ResolversParentT
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<CaseStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<CaseStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
   tasks?: Resolver<ResolversTypes['TaskConnection'], ParentType, ContextType>;
+  templateAndUtils?: Resolver<Maybe<ResolversTypes['TemplateAndUtils']>, ParentType, ContextType, RequireFields<CaseTemplateAndUtilsArgs, 'templateId'>>;
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
@@ -32561,6 +32670,7 @@ export type CaseIncidentResolvers<ContextType = any, ParentType extends Resolver
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<CaseIncidentStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<CaseIncidentStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
   tasks?: Resolver<ResolversTypes['TaskConnection'], ParentType, ContextType>;
+  templateAndUtils?: Resolver<Maybe<ResolversTypes['TemplateAndUtils']>, ParentType, ContextType, RequireFields<CaseIncidentTemplateAndUtilsArgs, 'templateId'>>;
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
@@ -32637,6 +32747,7 @@ export type CaseRfiResolvers<ContextType = any, ParentType extends ResolversPare
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<CaseRfiStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<CaseRfiStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
   tasks?: Resolver<ResolversTypes['TaskConnection'], ParentType, ContextType>;
+  templateAndUtils?: Resolver<Maybe<ResolversTypes['TemplateAndUtils']>, ParentType, ContextType, RequireFields<CaseRfiTemplateAndUtilsArgs, 'templateId'>>;
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
@@ -32713,6 +32824,7 @@ export type CaseRftResolvers<ContextType = any, ParentType extends ResolversPare
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<CaseRftStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
   takedown_types?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   tasks?: Resolver<ResolversTypes['TaskConnection'], ParentType, ContextType>;
+  templateAndUtils?: Resolver<Maybe<ResolversTypes['TemplateAndUtils']>, ParentType, ContextType, RequireFields<CaseRftTemplateAndUtilsArgs, 'templateId'>>;
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
@@ -33042,6 +33154,7 @@ export type ContainerResolvers<ContextType = any, ParentType extends ResolversPa
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<ContainerStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<ContainerStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<ContainerStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
+  templateAndUtils?: Resolver<Maybe<ResolversTypes['TemplateAndUtils']>, ParentType, ContextType, RequireFields<ContainerTemplateAndUtilsArgs, 'templateId'>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -34331,6 +34444,7 @@ export type FeedbackResolvers<ContextType = any, ParentType extends ResolversPar
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<FeedbackStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<FeedbackStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
   tasks?: Resolver<ResolversTypes['TaskConnection'], ParentType, ContextType>;
+  templateAndUtils?: Resolver<Maybe<ResolversTypes['TemplateAndUtils']>, ParentType, ContextType, RequireFields<FeedbackTemplateAndUtilsArgs, 'templateId'>>;
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
@@ -34538,6 +34652,7 @@ export type GroupingResolvers<ContextType = any, ParentType extends ResolversPar
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<GroupingStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<GroupingStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<GroupingStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
+  templateAndUtils?: Resolver<Maybe<ResolversTypes['TemplateAndUtils']>, ParentType, ContextType, RequireFields<GroupingTemplateAndUtilsArgs, 'templateId'>>;
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
@@ -36732,6 +36847,7 @@ export type NoteResolvers<ContextType = any, ParentType extends ResolversParentT
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<NoteStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<NoteStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<NoteStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
+  templateAndUtils?: Resolver<Maybe<ResolversTypes['TemplateAndUtils']>, ParentType, ContextType, RequireFields<NoteTemplateAndUtilsArgs, 'templateId'>>;
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
@@ -36924,6 +37040,7 @@ export type ObservedDataResolvers<ContextType = any, ParentType extends Resolver
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<ObservedDataStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<ObservedDataStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<ObservedDataStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
+  templateAndUtils?: Resolver<Maybe<ResolversTypes['TemplateAndUtils']>, ParentType, ContextType, RequireFields<ObservedDataTemplateAndUtilsArgs, 'templateId'>>;
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
@@ -37015,6 +37132,7 @@ export type OpinionResolvers<ContextType = any, ParentType extends ResolversPare
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<OpinionStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<OpinionStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<OpinionStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
+  templateAndUtils?: Resolver<Maybe<ResolversTypes['TemplateAndUtils']>, ParentType, ContextType, RequireFields<OpinionTemplateAndUtilsArgs, 'templateId'>>;
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
@@ -38141,6 +38259,7 @@ export type ReportResolvers<ContextType = any, ParentType extends ResolversParen
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<ReportStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<ReportStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<ReportStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
+  templateAndUtils?: Resolver<Maybe<ResolversTypes['TemplateAndUtils']>, ParentType, ContextType, RequireFields<ReportTemplateAndUtilsArgs, 'templateId'>>;
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
@@ -38191,6 +38310,12 @@ export type ResolvedInstanceFilterResolvers<ContextType = any, ParentType extend
   id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   valid?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type ResolvedWidgetAttributeResolvers<ContextType = any, ParentType extends ResolversParentTypes['ResolvedWidgetAttribute'] = ResolversParentTypes['ResolvedWidgetAttribute']> = ResolversObject<{
+  data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  template_widget_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -39554,6 +39679,7 @@ export type TaskResolvers<ContextType = any, ParentType extends ResolversParentT
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<TaskStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<TaskStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<TaskStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
+  templateAndUtils?: Resolver<Maybe<ResolversTypes['TemplateAndUtils']>, ParentType, ContextType, RequireFields<TaskTemplateAndUtilsArgs, 'templateId'>>;
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
@@ -39626,6 +39752,28 @@ export type TaxiiCollectionEdgeResolvers<ContextType = any, ParentType extends R
 export type TaxiiCollectionEditMutationsResolvers<ContextType = any, ParentType extends ResolversParentTypes['TaxiiCollectionEditMutations'] = ResolversParentTypes['TaxiiCollectionEditMutations']> = ResolversObject<{
   delete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
   fieldPatch?: Resolver<Maybe<ResolversTypes['TaxiiCollection']>, ParentType, ContextType, RequireFields<TaxiiCollectionEditMutationsFieldPatchArgs, 'input'>>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type TemplateResolvers<ContextType = any, ParentType extends ResolversParentTypes['Template'] = ResolversParentTypes['Template']> = ResolversObject<{
+  content?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  filters?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  used_template_widgets_names?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type TemplateAndUtilsResolvers<ContextType = any, ParentType extends ResolversParentTypes['TemplateAndUtils'] = ResolversParentTypes['TemplateAndUtils']> = ResolversObject<{
+  resolved_widgets_attributes?: Resolver<Array<ResolversTypes['ResolvedWidgetAttribute']>, ParentType, ContextType>;
+  template?: Resolver<ResolversTypes['Template'], ParentType, ContextType>;
+  template_widgets?: Resolver<Array<ResolversTypes['TemplateWidget']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type TemplateWidgetResolvers<ContextType = any, ParentType extends ResolversParentTypes['TemplateWidget'] = ResolversParentTypes['TemplateWidget']> = ResolversObject<{
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  widget?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -41112,6 +41260,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   Representative?: RepresentativeResolvers<ContextType>;
   RepresentativeWithId?: RepresentativeWithIdResolvers<ContextType>;
   ResolvedInstanceFilter?: ResolvedInstanceFilterResolvers<ContextType>;
+  ResolvedWidgetAttribute?: ResolvedWidgetAttributeResolvers<ContextType>;
   RetentionRule?: RetentionRuleResolvers<ContextType>;
   RetentionRuleConnection?: RetentionRuleConnectionResolvers<ContextType>;
   RetentionRuleEdge?: RetentionRuleEdgeResolvers<ContextType>;
@@ -41223,6 +41372,9 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   TaxiiCollectionConnection?: TaxiiCollectionConnectionResolvers<ContextType>;
   TaxiiCollectionEdge?: TaxiiCollectionEdgeResolvers<ContextType>;
   TaxiiCollectionEditMutations?: TaxiiCollectionEditMutationsResolvers<ContextType>;
+  Template?: TemplateResolvers<ContextType>;
+  TemplateAndUtils?: TemplateAndUtilsResolvers<ContextType>;
+  TemplateWidget?: TemplateWidgetResolvers<ContextType>;
   Text?: TextResolvers<ContextType>;
   ThreatActor?: ThreatActorResolvers<ContextType>;
   ThreatActorConnection?: ThreatActorConnectionResolvers<ContextType>;

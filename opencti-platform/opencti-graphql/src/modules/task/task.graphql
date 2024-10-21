@@ -145,6 +145,9 @@ type Task implements Container & StixDomainObject & StixCoreObject & StixObject 
     search: String
     filters: FilterGroup
   ): FileConnection
+  templateAndUtils(
+    templateId: String!
+  ): TemplateAndUtils
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]

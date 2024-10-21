@@ -854,6 +854,27 @@ type FileConnection {
   edges: [FileEdge!]!
 }
 
+type Template {
+  name: String!
+  description: String
+  filters: String
+  content: String!
+  used_template_widgets_names: [String!]!
+}
+type TemplateWidget {
+  name: String!
+  widget: String!
+}
+type ResolvedWidgetAttribute {
+  template_widget_name: String
+  data: String
+}
+type TemplateAndUtils {
+  template: Template!,
+  template_widgets: [TemplateWidget!]!,
+  resolved_widgets_attributes: [ResolvedWidgetAttribute!]!
+}
+
 type IndexedFile {
   id: ID!
   name: String!
@@ -3095,6 +3116,9 @@ interface Container {
     search: String
     filters: FilterGroup
   ): FileConnection
+  templateAndUtils(
+    templateId: String!
+  ): TemplateAndUtils
   # Technical
   creators: [Creator!]
   workflowEnabled: Boolean
@@ -3277,6 +3301,9 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
     search: String
     filters: FilterGroup
   ): FileConnection
+  templateAndUtils(
+    templateId: String!
+  ): TemplateAndUtils
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -3505,6 +3532,9 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
     search: String
     filters: FilterGroup
   ): FileConnection
+  templateAndUtils(
+    templateId: String!
+  ): TemplateAndUtils
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -3709,6 +3739,9 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
     search: String
     filters: FilterGroup
   ): FileConnection
+  templateAndUtils(
+    templateId: String!
+  ): TemplateAndUtils
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -3937,6 +3970,9 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
     search: String
     filters: FilterGroup
   ): FileConnection
+  templateAndUtils(
+    templateId: String!
+  ): TemplateAndUtils
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
