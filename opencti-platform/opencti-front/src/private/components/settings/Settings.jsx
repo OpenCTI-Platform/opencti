@@ -460,7 +460,7 @@ const Settings = () => {
                                 TransitionComponent={Transition}
                                 onClose={() => setOpenEEChanges(false)}
                               >
-                                <DialogTitle>{t_i18n('Numerous repercussions linked to the deactivation of EE edition')}</DialogTitle>
+                                <DialogTitle>{t_i18n('Disable Enterprise Edition')}</DialogTitle>
                                 <DialogContent>
                                   <DialogContentText>
                                     <Alert
@@ -472,7 +472,7 @@ const Settings = () => {
                                       }}
                                     >
                                       {t_i18n(
-                                        'Deactivating this feature will disable several other functions on the platform: Organizations management and segregation, Playbooks and automation, File indexing, Activity monitoring.',
+                                        'You are about to disable the "Enterprise Edition" mode. Please note that this action will disable access to certain advanced features (Organization segregation, Automation, File indexing, Activity monitoring...). However, your existing data will remain intact and will not be lost.',
                                       )}
                                     </Alert>
                                   </DialogContentText>
