@@ -1,6 +1,7 @@
 {
   " (reversed)": " (역순)",
   " & ": " & ",
+  "... successfully deleted": "{entity_type} 성공적으로 삭제되었습니다",
   "+ N override(s)": "+ {count} 재정의",
   "0 equals no maximum": "0은 최대치 없음",
   "24 hours": "24시간",
