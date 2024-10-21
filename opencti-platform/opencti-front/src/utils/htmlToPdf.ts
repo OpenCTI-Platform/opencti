@@ -2,13 +2,17 @@ import { renderToString } from 'react-dom/server';
 import { compiler } from 'markdown-to-jsx';
 import htmlToPdfmake from 'html-to-pdfmake';
 import pdfMake from 'pdfmake/build/pdfmake';
-import { TDocumentDefinitions } from 'pdfmake/interfaces';
+import { Content, TDocumentDefinitions } from 'pdfmake/interfaces';
 import { APP_BASE_PATH } from '../relay/environment';
+import { truncate } from './String';
+import { dateFormat } from './Time';
 
 const CKEDITOR_CONTAINER_SELECTOR = '.ck-content.ck-editor__editable.ck-editor__editable_inline';
 const MAX_WIDTH_PORTRAIT = 680;
 
 /**
+ * DO NOT EXPORT
+ *
  * Loop through elements inside CKEditor to determine if it is
  * necessary to generate a PDF in landscape or portrait.
  *
@@ -33,6 +37,8 @@ const determineOrientation = () => {
 };
 
 /**
+ * DO NOT EXPORT
+ *
  * @returns Roboto URLs for pdfmake.
  */
 const robotoURLs = () => {
@@ -49,6 +55,8 @@ const robotoURLs = () => {
 };
 
 /**
+ * DO NOT EXPORT
+ *
  * Find images and apply a width in pixels on it.
  * We have several cases that can happened:
  * - An image with a width in pixels => nothing to do.
@@ -85,19 +93,45 @@ const setImagesWidth = (content: string) => {
 };
 
 /**
+ * DO NOT EXPORT
+ *
+ * There are some tags we don't want in the generated PDF.
+ *
+ * @param content The content to analyse.
+ * @returns Content without necessary stuff.
+ */
+const removeUselessContent = (content: string) => {
+  return content
+    .replaceAll('id="undefined" ', '') // ???
+    .replaceAll(/<img[^>]+src=(\\?["'])[^'"]+\.gif\1[^>]*\/?>/gi, ''); // Remove GIFs from content.
+};
+
+/**
+ * DO NOT EXPORT
+ *
+ * Generate a PDF that can be downloaded.
+ *
+ * @param pdfMakeObject Definition of the PDF to generate.
+ * @param checkOrientation True if check content to determine PDF orientation.
+ * @returns PDF ready to be downloaded.
+ */
+const generatePdf = (pdfMakeObject: TDocumentDefinitions, checkOrientation = false) => {
+  const docDefinition = { ...pdfMakeObject };
+  if (checkOrientation) {
+    docDefinition.pageOrientation = determineOrientation();
+  }
+  return pdfMake.createPdf(docDefinition, undefined, robotoURLs());
+};
+
+/**
  * Transform html file into a PDF that can be downloaded.
  *
  * @param fileName name of the file to transform.
  * @param content The content of the file.
  * @returns PDF object ready to be downloaded.
  */
-const htmlToPdf = (fileName: string, content: string) => {
-  // Remove some content we don't want in the PDF.
-  let htmlData = content
-    .replaceAll('id="undefined" ', '') // ???
-    .replaceAll(/<img[^>]+src=(\\?["'])[^'"]+\.gif\1[^>]*\/?>/gi, ''); // Remove GIFs from content.
-
-  // Replace images in percentage with pixels.
+export const htmlToPdf = (fileName: string, content: string) => {
+  let htmlData = removeUselessContent(content);
   htmlData = setImagesWidth(htmlData);
 
   // Improve render for markdown files.
@@ -111,15 +145,120 @@ const htmlToPdf = (fileName: string, content: string) => {
     ignoreStyles: ['font-family'], // Ignoring fonts to force Roboto later.
   }) as unknown as TDocumentDefinitions; // Because wrong type when using imagesByReference: true.
 
-  // Generate a PDF that can be opened or downloaded.
-  return pdfMake.createPdf(
-    {
-      ...pdfMakeObject,
-      pageOrientation: determineOrientation(),
-    },
-    undefined,
-    robotoURLs(),
-  );
+  return generatePdf(pdfMakeObject);
 };
 
-export default htmlToPdf;
+export const htmlToPdfReport = (stixCoreObject: any, content: string, templateName: string) => {
+  let htmlData = removeUselessContent(content);
+  htmlData = setImagesWidth(htmlData);
+
+  // Transform html string into a JS object that lib pdfmake can understand.
+  const pdfMakeObject = htmlToPdfmake(htmlData, {
+    imagesByReference: true,
+    ignoreStyles: ['font-family'], // Ignoring fonts to force Roboto later.
+  }) as unknown as TDocumentDefinitions; // Because wrong type when using imagesByReference: true.
+
+  const date = dateFormat(new Date()) ?? '';
+
+  const docDefinition: TDocumentDefinitions = {
+    pageMargins: [50, 70],
+    styles: {
+      headerTitle: { fontSize: 22, bold: true },
+      headerSubtitle: { fontSize: 18, marginLeft: 40 },
+      headerDate: { fontSize: 16, bold: true, opacity: 0.7, marginTop: 10 },
+      headerFooter: { opacity: 0.5 },
+    },
+    ...pdfMakeObject,
+    content: [
+      {
+        absolutePosition: { x: 50, y: 120 },
+        color: 'white',
+        columns: [
+          {
+            width: 200,
+            stack: [
+              {
+                text: templateName.toUpperCase(),
+                style: 'headerTitle',
+              },
+              {
+                text: date,
+                style: 'headerDate',
+              },
+            ],
+            style: 'headerTitle',
+          },
+          {
+            text: stixCoreObject.name,
+            alignment: 'right',
+            style: 'headerSubtitle',
+          },
+        ],
+      },
+      {
+        text: '',
+        pageBreak: 'after',
+      },
+      ...(pdfMakeObject.content as Content[]),
+    ],
+    background(currentPage, pageSize) {
+      if (currentPage > 1) return [];
+      return {
+        canvas: [
+          {
+            type: 'rect',
+            x: 0,
+            y: 0,
+            w: pageSize.width,
+            h: pageSize.height,
+            color: '#f8f8f8',
+          },
+          {
+            type: 'rect',
+            x: 0,
+            y: 0,
+            w: pageSize.width,
+            h: pageSize.height / 2,
+            color: '#0019ce',
+          },
+        ],
+      };
+    },
+    header(currentPage) {
+      if (currentPage === 1) return [];
+      return [
+        {
+          style: 'headerFooter',
+          text: truncate(stixCoreObject.name, 40, false),
+          alignment: 'left',
+          margin: [50, 30],
+        },
+      ];
+    },
+    footer(currentPage, pageCount) {
+      if (currentPage === 1) return [];
+      return {
+        style: 'headerFooter',
+        margin: [50, 30],
+        columns: [
+          {
+            text: `${truncate(templateName, 30, false)}`,
+            alignment: 'left',
+          },
+          {
+            text: date,
+            alignment: 'center',
+          },
+          {
+            text: `Page ${currentPage} / ${pageCount}`,
+            alignment: 'right',
+          },
+        ],
+      };
+    },
+  };
+
+  console.log(docDefinition);
+
+  return generatePdf(docDefinition);
+};
