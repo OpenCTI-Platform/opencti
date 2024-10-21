@@ -24,7 +24,7 @@ import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 import withRouter from '../../../../utils/compat_router/withRouter';
 import CKEditor from '../../../../components/CKEditor';
-import htmlToPdf from '../../../../utils/htmlToPdf';
+import { htmlToPdf, htmlToPdfReport } from '../../../../utils/htmlToPdf';
 
 pdfjs.GlobalWorkerOptions.workerSrc = `${APP_BASE_PATH}/static/ext/pdf.worker.mjs`;
 
@@ -427,9 +427,16 @@ class StixCoreObjectContentComponent extends Component {
   async handleDownloadPdf() {
     const { currentFileId, currentContent } = this.state;
     const { stixCoreObject } = this.props;
-    const fragment = (currentFileId ?? stixCoreObject.name).split('/');
-    const currentName = R.last(fragment);
-    if (currentFileId) htmlToPdf(currentFileId, currentContent).download(`${currentName}.pdf`);
+    if (currentFileId) {
+      if (currentFileId.startsWith('fromTemplate')) {
+        const name = currentFileId.split('/').pop().split('.')[0];
+        htmlToPdfReport(stixCoreObject, currentContent, name).download(`${name}.pdf`);
+      } else {
+        const fragment = (currentFileId ?? stixCoreObject.name).split('/');
+        const currentName = R.last(fragment);
+        htmlToPdf(currentFileId, currentContent).download(`${currentName}.pdf`);
+      }
+    }
   }
 
   render() {
