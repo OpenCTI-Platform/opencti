@@ -38,6 +38,6 @@ export interface Widget {
   type: string;
   perspective: 'entities' | 'relationships' | 'audits' | null
   dataSelection: WidgetDataSelection[]
-  parameters: WidgetParameters
+  parameters?: WidgetParameters
   layout?: WidgetLayout
 }

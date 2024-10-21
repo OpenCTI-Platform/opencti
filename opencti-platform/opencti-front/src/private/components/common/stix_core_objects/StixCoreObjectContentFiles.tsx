@@ -22,9 +22,10 @@ import StixCoreObjectContentFilesList from '@components/common/stix_core_objects
 import { useSettingsMessagesBannerHeight } from '@components/settings/settings_messages/SettingsMessagesBanner';
 import { useFormatter } from '../../../../components/i18n';
 import FileUploader from '../files/FileUploader';
-import { resolvedAttributesWidgets, templateAttribute, templateGraph, templateList, templateText, usedTemplateWidgets } from '../../../../utils/outcome_template/__template';
+import { hardcodedTemplates, hardcodedTemplateWidgets, resolvedAttributesWidgets } from '../../../../utils/outcome_template/__template';
 import useContentFromTemplate from '../../../../utils/outcome_template/engine/useContentFromTemplate';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
+import type { Theme } from '../../../../components/Theme';
 import type { Template } from '../../../../utils/outcome_template/template';
 import { isNilField } from '../../../../utils/utils';
 import useHelper from '../../../../utils/hooks/useHelper';
@@ -124,9 +125,12 @@ const StixCoreObjectContentFiles: FunctionComponent<StixCoreObjectContentFilesPr
   const [displayCreate, setDisplayCreate] = useState(false);
   const [displayCreateContentFromTemplate, setDisplayCreateContentFromTemplate] = useState(false);
 
-  const hardcodedTemplates: Template[] = [templateGraph, templateList, templateAttribute, templateText];
-  const hardcodedUsedTemplateWidgets = usedTemplateWidgets;
-  const hardcodedResolvedAttributesWidgets = resolvedAttributesWidgets;
+  // TODO needed while hardcoded in frontend
+  const allTemplates = hardcodedTemplates;
+  // TODO needed while hardcoded in frontend
+  const allTemplateWidgets = hardcodedTemplateWidgets;
+  // TODO needed while hardcoded in frontend
+  const allResolvedAttributesWidgets = resolvedAttributesWidgets;
 
   const handleOpenCreate = () => {
     setDisplayCreate(true);
@@ -188,6 +192,11 @@ const StixCoreObjectContentFiles: FunctionComponent<StixCoreObjectContentFilesPr
     const fileMarkings = values.fileMarkings.map(({ value }) => value);
     const maxContentMarkings = (values.maxMarkings ?? []).map(({ value }) => value);
     const templateName = values.template;
+
+    // TODO needed while hardcoded in frontend
+    const widgets = allTemplateWidgets.filter((w) => template.used_widgets.includes(w.name));
+    // TODO needed while hardcoded in frontend
+    const resolvedAttributes = allResolvedAttributesWidgets.filter((w) => template.used_widgets.includes(w.template_widget_name));
 
     const templateContent = await buildContentFromTemplate(
       stixCoreObjectId,
@@ -316,7 +325,7 @@ const StixCoreObjectContentFiles: FunctionComponent<StixCoreObjectContentFilesPr
           onClose={handleCloseCreateContentFromTemplate}
           onReset={handleCloseCreateContentFromTemplate}
           onSubmit={onSubmitContentFromTemplate}
-          templates={hardcodedTemplates.map((t) => t.name)}
+          templates={allTemplates.map((t) => t.name)}
         />
       )}
     </Drawer>
