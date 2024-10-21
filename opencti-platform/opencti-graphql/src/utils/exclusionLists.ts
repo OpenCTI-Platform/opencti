@@ -1,4 +1,4 @@
-import { MAX_EVENT_LOOP_PROCESSING_TIME } from 'src/database/utils';
+import { MAX_EVENT_LOOP_PROCESSING_TIME } from '../database/utils';
 import { FunctionalError } from '../config/errors';
 import { getExclusionListsByTypeFromCache } from '../database/cache';
 import { type ExtractedObservableValues, type ExclusionListProperties, exclusionListEntityType } from './exclusionListsTypes';
@@ -21,7 +21,7 @@ export const convertIpv6ToBinary = (ipv6: string, isRange?: boolean, range?: num
       .map((t) => (t === '' ? '0' : t))
       .map((hex) => (parseInt(hex, 16).toString(2)).padStart(16, '0'))
       .join('');
-    return binary.slice(0, range + 1);
+    return binary.slice(0, range);
   }
 
   if (emptyFieldIndex !== -1 && test.length < 8) {
@@ -41,7 +41,7 @@ export const convertIpv6ToBinary = (ipv6: string, isRange?: boolean, range?: num
 export const convertIpv4ToBinary = (ipv4: string, isRange?: boolean, range?: number) => {
   const binary = ipv4.split('.').map((ip) => (parseInt(ip, 10).toString(2)).padStart(8, '0')).join('');
   if (isRange && range) {
-    return binary.slice(0, range + 1);
+    return binary.slice(0, range);
   }
   return binary;
 };
@@ -62,7 +62,7 @@ export const convertIpAddr = (list) => {
   });
 };
 
-const checkIpAddressLists = async (ipToTest: string, exclusionList: ExclusionListProperties[]) => {
+export const checkIpAddressLists = async (ipToTest: string, exclusionList: ExclusionListProperties[]) => {
   const { isIpv4 } = checkIpAddrType(ipToTest);
   const binary = isIpv4 ? convertIpv4ToBinary(ipToTest) : convertIpv6ToBinary(ipToTest);
 
@@ -86,7 +86,7 @@ const checkIpAddressLists = async (ipToTest: string, exclusionList: ExclusionLis
   }
 };
 
-const checkExclusionList = async (valueToTest: string, exclusionList: ExclusionListProperties[]) => {
+export const checkExclusionList = async (valueToTest: string, exclusionList: ExclusionListProperties[]) => {
   let startProcessingTime = new Date().getTime();
 
   for (let i = 0; i < exclusionList.length; i += 1) {
