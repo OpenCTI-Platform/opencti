@@ -480,7 +480,6 @@ const Settings = () => {
                                 <DialogActions>
                                   <Button
                                     onClick={() => {
-                                      handleSubmitField(id, 'enterprise_edition', '');
                                       setOpenEEChanges(false);
                                     }}
                                   >
