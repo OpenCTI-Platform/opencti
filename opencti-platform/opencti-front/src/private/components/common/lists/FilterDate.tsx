@@ -1,6 +1,5 @@
 import React, { FunctionComponent, useState, KeyboardEvent } from 'react';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { addDays } from 'date-fns';
 
 interface FilterDateProps {
   defaultHandleAddFilter: (
