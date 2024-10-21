@@ -107,7 +107,11 @@ export const enableEEAndSetOrganization = async (organization: Organization) => 
   expect(settingsResult.platform_organization).not.toBeUndefined();
   expect(settingsResult.enterprise_edition).not.toBeUndefined();
   expect(settingsResult.platform_organization).toEqual(platformOrganizationId);
+};
+
+/**
  * Remove any platform organization and go back to comunity edition.
+ */
 export const enableCEAndUnSetOrganization = async () => {
   const platformSettings: any = await getSettings(testContext);
 
@@ -119,3 +123,4 @@ export const enableCEAndUnSetOrganization = async () => {
 
   expect(settingsResult.platform_organization).toBeUndefined();
   expect(settingsResult.enterprise_edition).toBeUndefined();
+};

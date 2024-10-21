@@ -22,13 +22,10 @@ import {
 } from '../../utils/testQuery';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../src/modules/organization/organization-types';
 import { VIRTUAL_ORGANIZATION_ADMIN } from '../../../src/utils/access';
-  USER_EDITOR
-} from '../../utils/testQuery';
-import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../src/modules/organization/organization-types';
-import { VIRTUAL_ORGANIZATION_ADMIN } from '../../../src/utils/access';
-import { queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden } from '../../utils/testQueryHelper';
+import { adminQueryWithSuccess, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
 import { resolveUserByToken } from '../../../src/domain/user';
 import { OPENCTI_ADMIN_UUID } from '../../../src/schema/general';
+import type { Capability, Member } from '../../../src/generated/graphql';
 
 const LIST_QUERY = gql`
   query users(
@@ -762,66 +759,66 @@ describe('User has no settings capability and is organization admin query behavi
   let userInternalId: string;
   let userEditorId: string;
   let testOrganizationId: string;
-  let amberGroupId;
-  let platformOrganizationId;
-  const organizationsIds = [];
+  let amberGroupId: string;
+  let platformOrganizationId: string;
+  const organizationsIds: string[] = [];
 
   const ORGA_ADMIN_ADD_QUERY = gql`
-    mutation OrganizationAdminAdd($id: ID!, $memberId: String!) {
-      organizationAdminAdd(id: $id, memberId: $memberId) {
-        id
-        standard_id
-      }
-    }
-  `;
+        mutation OrganizationAdminAdd($id: ID!, $memberId: String!) {
+            organizationAdminAdd(id: $id, memberId: $memberId) {
+                id
+                standard_id
+            }
+        }
+    `;
 
   const ORGANIZATION_ADD_QUERY = gql`
-    mutation UserOrganizationAddMutation(
-      $id: ID!
-      $organizationId: ID!
-    ) {
-      userEdit(id: $id) {
-        organizationAdd(organizationId: $organizationId) {
-          id
+        mutation UserOrganizationAddMutation(
+            $id: ID!
+            $organizationId: ID!
+        ) {
+            userEdit(id: $id) {
+                organizationAdd(organizationId: $organizationId) {
+                    id
+                }
+            }
         }
-      }
-    }
-  `;
+    `;
 
   const ORGANIZATION_DELETE_QUERY = gql`
-    mutation UserOrganizationDeleteMutation(
-      $id: ID!
-      $organizationId: ID!
-    ) {
-      userEdit(id: $id) {
-        organizationDelete(organizationId: $organizationId) {
-          id
+        mutation UserOrganizationDeleteMutation(
+            $id: ID!
+            $organizationId: ID!
+        ) {
+            userEdit(id: $id) {
+                organizationDelete(organizationId: $organizationId) {
+                    id
+                }
+            }
         }
-      }
-    }
-  `;
+    `;
 
   afterAll(async () => {
     // remove the capability to administrate the Organization
     const ORGA_ADMIN_DELETE_QUERY = gql`
-      mutation OrganizationAdminRemove($id: ID!, $memberId: String!) {
-        organizationAdminRemove(id: $id, memberId: $memberId) {
-          id
-        }
-      }
-    `;
+            mutation OrganizationAdminRemove($id: ID!, $memberId: String!) {
+                organizationAdminRemove(id: $id, memberId: $memberId) {
+                    id
+                }
+            }
+        `;
 
     const UPDATE_QUERY = gql`
-      mutation OrganizationEdit($id: ID!, $input: [EditInput]!) {
-        organizationFieldPatch(id: $id, input: $input) {
-          id
-          name
-          grantable_groups {
-            id
-          }
-        }
-      }
-    `;
+            mutation OrganizationEdit($id: ID!, $input: [EditInput]!) {
+                organizationFieldPatch(id: $id, input: $input) {
+                    id
+                    name
+                    grantable_groups {
+                        id
+                    }
+                }
+            }
+        `;
     // Delete admin to ORGANIZATION
     await adminQuery({
       query: ORGA_ADMIN_DELETE_QUERY, // +1 update organization
@@ -878,16 +875,16 @@ describe('User has no settings capability and is organization admin query behavi
 
     // Need to add granted_groups to TEST_ORGANIZATION because of line 533 in domain/user.js
     const UPDATE_QUERY = gql`
-      mutation OrganizationEdit($id: ID!, $input: [EditInput]!) {
-        organizationFieldPatch(id: $id, input: $input) {
-          id
-          name
-          grantable_groups {
-            id
-          }
-        }
-      }
-    `;
+            mutation OrganizationEdit($id: ID!, $input: [EditInput]!) {
+                organizationFieldPatch(id: $id, input: $input) {
+                    id
+                    name
+                    grantable_groups {
+                        id
+                    }
+                }
+            }
+        `;
     const queryResult = await adminQuery({
       query: UPDATE_QUERY,
       variables: { id: testOrganizationId, input: { key: 'grantable_groups', value: [amberGroupId] } },
@@ -907,14 +904,14 @@ describe('User has no settings capability and is organization admin query behavi
   });
   it('should update user from its own organization', async () => {
     const UPDATE_QUERY = gql`
-      mutation UserEdit($id: ID!, $input: [EditInput]!) {
-        userEdit(id: $id) {
-          fieldPatch(input: $input) {
-            account_status
-          }
-        }
-      }
-    `;
+            mutation UserEdit($id: ID!, $input: [EditInput]!) {
+                userEdit(id: $id) {
+                    fieldPatch(input: $input) {
+                        account_status
+                    }
+                }
+            }
+        `;
     const queryResult = await queryAsUserWithSuccess(USER_EDITOR.client, {
       query: UPDATE_QUERY,
       variables: { id: userInternalId, input: { key: 'account_status', value: ['Inactive'] } },
@@ -934,16 +931,16 @@ describe('User has no settings capability and is organization admin query behavi
   it('should administrate more than 1 organization', async () => {
     // Need to add granted_groups to PLATFORM_ORGANIZATION because of line 533 in domain/user.js
     const UPDATE_QUERY = gql`
-      mutation OrganizationEdit($id: ID!, $input: [EditInput]!) {
-        organizationFieldPatch(id: $id, input: $input) {
-          id
-          name
-          grantable_groups {
-            id
-          }
-        }
-      }
-    `;
+            mutation OrganizationEdit($id: ID!, $input: [EditInput]!) {
+                organizationFieldPatch(id: $id, input: $input) {
+                    id
+                    name
+                    grantable_groups {
+                        id
+                    }
+                }
+            }
+        `;
     const grantableGroupQueryResult = await adminQuery({
       query: UPDATE_QUERY,
       variables: { id: platformOrganizationId, input: { key: 'grantable_groups', value: [amberGroupId] } },
