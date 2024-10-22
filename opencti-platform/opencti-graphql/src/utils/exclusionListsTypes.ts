@@ -13,6 +13,6 @@ export type ExclusionListProperties = {
 };
 
 export type ExtractedObservableValues = {
-  type: string;
+  type: exclusionListEntityType;
   value: string;
 };
