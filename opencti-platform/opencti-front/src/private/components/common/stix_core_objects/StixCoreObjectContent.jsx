@@ -476,6 +476,7 @@ class StixCoreObjectContentComponent extends Component {
           onFileChange={this.handleFileChange.bind(this)}
           contentsFromTemplate={contentsFromTemplate}
           hasOutcomesTemplate={isContentCompatible}
+          templates={stixCoreObject.templates}
         />
         {isLoading ? (
           <Loader variant={LoaderVariant.inElement} />
@@ -771,35 +772,40 @@ const StixCoreObjectContent = createRefetchContainer(
             }
           }
         }
-          ... on Container {
-            contentsFromTemplate(first: 500) @connection(key: "Pagination_contentsFromTemplate") {
-                edges {
-                    node {
-                        id
-                        name
-                        uploadStatus
-                        lastModified
-                        lastModifiedSinceMin
-                        metaData {
-                            mimetype
-                            list_filters
-                            file_markings
-                            messages {
-                                timestamp
-                                message
-                            }
-                            errors {
-                                timestamp
-                                message
-                            }
-                        }
-                        metaData {
-                            mimetype
-                        }
-                    }
-                }
-            }
+        ... on Container {
+          contentsFromTemplate(first: 500) @connection(key: "Pagination_contentsFromTemplate") {
+              edges {
+                  node {
+                      id
+                      name
+                      uploadStatus
+                      lastModified
+                      lastModifiedSinceMin
+                      metaData {
+                          mimetype
+                          list_filters
+                          file_markings
+                          messages {
+                              timestamp
+                              message
+                          }
+                          errors {
+                              timestamp
+                              message
+                          }
+                      }
+                      metaData {
+                          mimetype
+                      }
+                  }
+              }
           }
+          templates {
+              name
+              content
+              used_template_widgets_names
+          }
+        }
         externalReferences {
           edges {
             node {

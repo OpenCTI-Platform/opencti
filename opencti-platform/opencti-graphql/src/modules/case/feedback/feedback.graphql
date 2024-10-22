@@ -146,6 +146,7 @@ type Feedback implements BasicObject & StixObject & StixCoreObject & StixDomainO
     search: String
     filters: FilterGroup
   ): FileConnection
+  templates: [Template!]!
   templateAndUtils(
     templateId: String!
   ): TemplateAndUtils

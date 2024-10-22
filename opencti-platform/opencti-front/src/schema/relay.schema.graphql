@@ -918,8 +918,9 @@ type TemplateWidget {
 }
 
 type ResolvedWidgetAttribute {
-  template_widget_name: String
-  data: String
+  template_widget_name: String!
+  data: [String!]!
+  displayStyle: String
 }
 
 type TemplateAndUtils {
@@ -2781,6 +2782,7 @@ interface Container {
   objects(first: Int, after: ID, orderBy: StixObjectOrStixRelationshipsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], all: Boolean): StixObjectOrStixRelationshipRefConnection
   relatedContainers(first: Int, after: ID, orderBy: ContainersOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], viaTypes: [String]): ContainerConnection
   contentsFromTemplate(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
+  templates: [Template!]!
   templateAndUtils(templateId: String!): TemplateAndUtils
   creators: [Creator!]
   workflowEnabled: Boolean
@@ -2863,6 +2865,7 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   contentsFromTemplate(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
+  templates: [Template!]!
   templateAndUtils(templateId: String!): TemplateAndUtils
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -2994,6 +2997,7 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   contentsFromTemplate(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
+  templates: [Template!]!
   templateAndUtils(templateId: String!): TemplateAndUtils
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -3100,6 +3104,7 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   contentsFromTemplate(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
+  templates: [Template!]!
   templateAndUtils(templateId: String!): TemplateAndUtils
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -3231,6 +3236,7 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   contentsFromTemplate(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
+  templates: [Template!]!
   templateAndUtils(templateId: String!): TemplateAndUtils
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -9101,6 +9107,7 @@ type Grouping implements BasicObject & StixObject & StixCoreObject & StixDomainO
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
   contentsFromTemplate(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
+  templates: [Template!]!
   templateAndUtils(templateId: String!): TemplateAndUtils
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -9890,6 +9897,7 @@ type Task implements Container & StixDomainObject & StixCoreObject & StixObject 
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   contentsFromTemplate(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
+  templates: [Template!]!
   templateAndUtils(templateId: String!): TemplateAndUtils
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -10030,6 +10038,7 @@ interface Case implements BasicObject & StixObject & StixCoreObject & StixDomain
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
   contentsFromTemplate(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
+  templates: [Template!]!
   templateAndUtils(templateId: String!): TemplateAndUtils
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -10151,6 +10160,7 @@ type CaseIncident implements BasicObject & StixObject & StixCoreObject & StixDom
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   contentsFromTemplate(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
+  templates: [Template!]!
   templateAndUtils(templateId: String!): TemplateAndUtils
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -10274,6 +10284,7 @@ type CaseRfi implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   contentsFromTemplate(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
+  templates: [Template!]!
   templateAndUtils(templateId: String!): TemplateAndUtils
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -10395,6 +10406,7 @@ type CaseRft implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   contentsFromTemplate(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
+  templates: [Template!]!
   templateAndUtils(templateId: String!): TemplateAndUtils
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -10517,6 +10529,7 @@ type Feedback implements BasicObject & StixObject & StixCoreObject & StixDomainO
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   contentsFromTemplate(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
+  templates: [Template!]!
   templateAndUtils(templateId: String!): TemplateAndUtils
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]

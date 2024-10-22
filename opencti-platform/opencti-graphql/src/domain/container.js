@@ -24,7 +24,9 @@ import { isFeatureEnabled } from '../config/conf';
 import { ENTITY_TYPE_CONTAINER_FEEDBACK } from '../modules/case/feedback/feedback-types';
 import { paginatedForPathWithEnrichment } from '../modules/internal/document/document-domain';
 import { isEnterpriseEdition } from '../utils/ee';
-import { usedTemplates, usedTemplateWidgets } from '../utils/__template';
+import { usedTemplates } from '../utils/template/__template';
+import { hardcodedTemplateWidgets } from '../utils/template/__widget';
+import { hardcodedResolvedAttributesWidgets } from '../utils/template/__resolvedAttributesWidgets';
 
 export const findById = async (context, user, containerId) => {
   return storeLoadById(context, user, containerId, ENTITY_TYPE_CONTAINER);
@@ -257,18 +259,18 @@ export const getContentsFromTemplate = async (context, user, container, args) =>
   return paginatedForPathWithEnrichment(context, context.user, `fromTemplate/${container.entity_type}/${container.id}`, container.id, opts);
 };
 
+export const getTemplates = (context, user, containerId) => {
+  return usedTemplates;
+};
+
 export const getTemplateAndUtils = (context, user, containerId, templateId) => {
   // fetch template (hardcoded for the moment)
   const template = usedTemplates.find((t) => t.name === templateId);
   const { used_template_widgets_names } = template;
   // fetch the widgets used in the template (hardcoded for the moment)
-  const template_widgets = usedTemplateWidgets.filter((w) => used_template_widgets_names.includes(w.name));
+  const template_widgets = hardcodedTemplateWidgets.filter((w) => used_template_widgets_names.includes(w.name));
   // resolve widget attributes // TODO
-  const resolved_widgets_attributes = [
-    { template_widget_name: 'reportName', data: '[Hardcoded report name]' },
-    { template_widget_name: 'reportPublicationDate', data: '[Hardcoded publication date]' },
-    { template_widget_name: 'reportLabels', data: 'label1, label2, label3' },
-  ];
+  const resolved_widgets_attributes = hardcodedResolvedAttributesWidgets;
   // return template and the associated utils
   return { template, template_widgets, resolved_widgets_attributes };
 };

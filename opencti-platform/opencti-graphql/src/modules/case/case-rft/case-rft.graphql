@@ -146,6 +146,7 @@ type CaseRft implements BasicObject & StixObject & StixCoreObject & StixDomainOb
     search: String
     filters: FilterGroup
   ): FileConnection
+  templates: [Template!]!
   templateAndUtils(
     templateId: String!
   ): TemplateAndUtils
