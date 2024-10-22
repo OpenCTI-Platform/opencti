@@ -618,6 +618,7 @@ export const taskHandler = async () => {
     }
   } finally {
     running = false;
+    logApp.debug('[OPENCTI-MODULE] Task manager done');
     if (lock) await lock.unlock();
   }
 };
