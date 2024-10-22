@@ -6629,6 +6629,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/html-to-pdfmake@npm:2.4.4":
+  version: 2.4.4
+  resolution: "@types/html-to-pdfmake@npm:2.4.4"
+  dependencies:
+    "@types/jsdom": "npm:*"
+    "@types/pdfmake": "npm:*"
+  checksum: 10/b477c9fc93e80c679c2511cd3741f604476fcfbc4cd18ead9fec02b1b2505fa905c16c8e667188b468bbd6fcd9d3b540d22d2c99f12a4fa242d5e966dd256b71
+  languageName: node
+  linkType: hard
+
 "@types/http-proxy@npm:^1.17.15":
   version: 1.17.15
   resolution: "@types/http-proxy@npm:1.17.15"
@@ -6660,6 +6670,17 @@ __metadata:
   dependencies:
     "@types/istanbul-lib-report": "npm:*"
   checksum: 10/93eb18835770b3431f68ae9ac1ca91741ab85f7606f310a34b3586b5a34450ec038c3eed7ab19266635499594de52ff73723a54a72a75b9f7d6a956f01edee95
+  languageName: node
+  linkType: hard
+
+"@types/jsdom@npm:*":
+  version: 21.1.7
+  resolution: "@types/jsdom@npm:21.1.7"
+  dependencies:
+    "@types/node": "npm:*"
+    "@types/tough-cookie": "npm:*"
+    parse5: "npm:^7.0.0"
+  checksum: 10/a5ee54aec813ac928ef783f69828213af4d81325f584e1fe7573a9ae139924c40768d1d5249237e62d51b9a34ed06bde059c86c6b0248d627457ec5e5d532dfa
   languageName: node
   linkType: hard
 
@@ -6752,6 +6773,25 @@ __metadata:
   version: 4.0.2
   resolution: "@types/parse-json@npm:4.0.2"
   checksum: 10/5bf62eec37c332ad10059252fc0dab7e7da730764869c980b0714777ad3d065e490627be9f40fc52f238ffa3ac4199b19de4127196910576c2fe34dd47c7a470
+  languageName: node
+  linkType: hard
+
+"@types/pdfkit@npm:*":
+  version: 0.13.5
+  resolution: "@types/pdfkit@npm:0.13.5"
+  dependencies:
+    "@types/node": "npm:*"
+  checksum: 10/4ba9078ad57aa0ba5166b6af684ed6fbff0a59f2f8ec38b54f47b0b50b0843331d7d28d640f3b502a99e1f9f412ba9b6f98460cef0978dea8849ab6b3034afa5
+  languageName: node
+  linkType: hard
+
+"@types/pdfmake@npm:*":
+  version: 0.2.9
+  resolution: "@types/pdfmake@npm:0.2.9"
+  dependencies:
+    "@types/node": "npm:*"
+    "@types/pdfkit": "npm:*"
+  checksum: 10/61c46fc6e4dcdbf14b9c670cebbe30ee31552b330352520472207b9e59cf1cca298794252ca9deff694b79403e09c29d0207610d1c45fea9a0ea1017992b4269
   languageName: node
   linkType: hard
 
@@ -16439,6 +16479,7 @@ __metadata:
     "@testing-library/jest-dom": "npm:6.4.2"
     "@testing-library/react": "npm:16.0.0"
     "@testing-library/user-event": "npm:14.5.2"
+    "@types/html-to-pdfmake": "npm:2.4.4"
     "@types/node": "npm:20.16.10"
     "@types/qrcode": "npm:1.5.5"
     "@types/ramda": "npm:0.30.2"
@@ -16713,7 +16754,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"parse5@npm:^7.1.2":
+"parse5@npm:^7.0.0, parse5@npm:^7.1.2":
   version: 7.1.2
   resolution: "parse5@npm:7.1.2"
   dependencies:

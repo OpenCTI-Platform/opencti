@@ -8,7 +8,7 @@ import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetLoader from '../../../../components/dashboard/WidgetLoader';
 import WidgetDonut from '../../../../components/dashboard/WidgetDonut';
 
-const stixRelationshipsDonutsDistributionQuery = graphql`
+export const stixRelationshipsDonutsDistributionQuery = graphql`
   query StixRelationshipsDonutDistributionQuery(
     $field: String!
     $operation: StatsOperation!

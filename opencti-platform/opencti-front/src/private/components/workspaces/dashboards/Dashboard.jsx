@@ -95,6 +95,7 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
   const manifest = workspace.manifest && workspace.manifest.length > 0
     ? deserializeDashboardManifestForFrontend(fromB64(workspace.manifest))
     : { widgets: {}, config: {} };
+
   const saveManifest = (newManifest) => {
     const strManifest = serializeDashboardManifestForBackend(newManifest);
     const newManifestEncoded = toB64(strManifest);

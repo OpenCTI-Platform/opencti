@@ -9,6 +9,7 @@ import {
   containersNumberByAuthor,
   containersNumberByEntity,
   containerEditAuthorizedMembers,
+  getContentsFromTemplate
 } from '../domain/container';
 import {
   stixDomainObjectAddRelation,
@@ -48,6 +49,7 @@ const containerResolvers = {
     currentUserAccessRight: (container, _, context) => getUserAccessRight(context.user, container),
     objects: (container, args, context) => objects(context, context.user, container.id, args),
     relatedContainers: (container, args, context) => relatedContainers(context, context.user, container.id, args),
+    contentsFromTemplate: (container, { first, prefixMimeType }, context) => getContentsFromTemplate(context, context.user, container, { first, prefixMimeType }),
   },
   // TODO Reactivate after official release of graphQL 17
   // StixObjectOrStixRelationshipRefConnection: {

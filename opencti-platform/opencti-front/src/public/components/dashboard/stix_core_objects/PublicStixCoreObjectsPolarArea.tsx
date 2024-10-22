@@ -6,9 +6,9 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetLoader from '../../../../components/dashboard/WidgetLoader';
 import { PublicStixCoreObjectsPolarAreaQuery } from './__generated__/PublicStixCoreObjectsPolarAreaQuery.graphql';
-import type { PublicManifestWidget } from '../PublicManifest';
 import WidgetPolarArea from '../../../../components/dashboard/WidgetPolarArea';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
+import type { Widget } from '../../../../utils/widget/widget';
 
 const publicStixCoreObjectsPolarAreaQuery = graphql`
   query PublicStixCoreObjectsPolarAreaQuery(
@@ -70,7 +70,7 @@ const publicStixCoreObjectsPolarAreaQuery = graphql`
 `;
 
 interface PublicStixRelationshipsPolarAreaComponentProps {
-  dataSelection: PublicManifestWidget['dataSelection']
+  dataSelection: Widget['dataSelection']
   queryRef: PreloadedQuery<PublicStixCoreObjectsPolarAreaQuery>
 }
 

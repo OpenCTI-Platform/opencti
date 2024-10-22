@@ -8,7 +8,7 @@ import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetLoader from '../../../../components/dashboard/WidgetLoader';
 import { PublicStixCoreObjectsRadarQuery } from './__generated__/PublicStixCoreObjectsRadarQuery.graphql';
 import WidgetRadar from '../../../../components/dashboard/WidgetRadar';
-import type { PublicManifestWidget } from '../PublicManifest';
+import type { Widget } from '../../../../utils/widget/widget';
 
 const publicStixCoreObjectsRadarQuery = graphql`
   query PublicStixCoreObjectsRadarQuery(
@@ -70,7 +70,7 @@ const publicStixCoreObjectsRadarQuery = graphql`
 `;
 
 interface PublicStixCoreObjectsRadarComponentProps {
-  dataSelection: PublicManifestWidget['dataSelection']
+  dataSelection: Widget['dataSelection']
   queryRef: PreloadedQuery<PublicStixCoreObjectsRadarQuery>
 }
 
