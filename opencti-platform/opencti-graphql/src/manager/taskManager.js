@@ -612,7 +612,7 @@ export const taskHandler = async () => {
     logApp.info(`[OPENCTI-MODULE][TASK-MANAGER] Task manager done in ${totalTime} ms`);
   } catch (e) {
     if (e.name === TYPE_LOCK_ERROR) {
-      logApp.info('[OPENCTI-MODULE][TASK-MANAGER] Task manager already in progress by another API');
+      logApp.debug('[OPENCTI-MODULE] Task manager already in progress by another API');
     } else {
       logApp.error(e, { manager: 'TASK_MANAGER' });
     }
