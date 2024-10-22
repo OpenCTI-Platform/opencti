@@ -27,6 +27,12 @@
       "logs_console": true,
       "logs_max_files": 7,
       "logs_directory": "./logs",
+      "logs_shipping": true,
+      "logs_shipping_level": "info",
+      "logs_shipping_env_var_prefix": "APP__",
+      "logs_graylog_host": "127.0.0.1",
+      "logs_graylog_port": 12201,
+      "logs_graylog_adapter": "udp",
       "logs_redacted_inputs": ["password", "secret", "token"],
       "extended_error_message": false
     },
@@ -34,7 +40,13 @@
       "logs_files": true,
       "logs_console": true,
       "logs_max_files": 7,
-      "logs_directory": "./logs"
+      "logs_directory": "./logs",
+      "logs_shipping": true,
+      "logs_shipping_level": "info",
+      "logs_shipping_env_var_prefix": "APP_AUDIT_",
+      "logs_graylog_host": "127.0.0.1",
+      "logs_graylog_port": 12201,
+      "logs_graylog_adapter": "udp"
     },
     "event_loop_logs": {
       "enabled": false,
