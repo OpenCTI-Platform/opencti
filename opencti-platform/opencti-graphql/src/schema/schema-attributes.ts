@@ -5,6 +5,7 @@ import type { AttributeDefinition, AttrType, ComplexAttributeWithMappings, Mappi
 import { shortStringFormats } from './attribute-definition';
 import { getParentTypes } from './schemaUtils';
 import { isFeatureEnabled } from '../config/conf';
+import { uniq } from 'ramda';
 
 export const depsKeysRegister = {
   deps: [] as { src: string, types?: string[] }[],
@@ -81,18 +82,17 @@ export const schemaAttributesDefinition = {
     const currentAttributes = Object.values(this.attributes);
     attributes.filter((a) => (!a.featureFlag || isFeatureEnabled(a.featureFlag))).forEach((attribute) => {
       // Check different attributes have different labels
-      let attributesWithSameLabelAndDifferentName: AttributeDefinition[] = [];
       currentAttributes
         .forEach((m) => {
           const attributeDefinitionsList = Array.from(m.values());
-          attributesWithSameLabelAndDifferentName = attributeDefinitionsList.filter((a) => (a.label === attribute.label) && (a.name !== attribute.name));
+          const attributesWithSameLabelAndDifferentName = attributeDefinitionsList.filter((a) => (a.label === attribute.label) && (a.name !== attribute.name));
+          if (attributesWithSameLabelAndDifferentName.length > 0) {
+            throw UnsupportedError('You can\'t have two attributes with the same label and a different name in the platform', {
+              attributesWithSameLabelAndDifferentName,
+              attribute,
+            });
+          }
         });
-      if (attributesWithSameLabelAndDifferentName.length > 0) {
-        throw UnsupportedError('You can\'t have two attributes with the same label and a different name in the platform', {
-          attributesWithSameLabelAndDifferentName,
-          attribute,
-        });
-      }
       // Check the homogeneity of attribute types
       const existingAttribute = currentAttributes.find((a) => a.get(attribute.name))?.get(attribute.name); // Maybe better way ?
       if (existingAttribute) {
