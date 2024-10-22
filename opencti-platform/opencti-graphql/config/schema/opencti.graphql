@@ -864,8 +864,9 @@ type TemplateWidget {
   widget: String!
 }
 type ResolvedWidgetAttribute {
-  template_widget_name: String
-  data: String
+  template_widget_name: String!
+  data: [String!]!
+  displayStyle: String
 }
 type TemplateAndUtils {
   template: Template!,
@@ -3099,6 +3100,7 @@ interface Container {
     search: String
     filters: FilterGroup
   ): FileConnection
+  templates: [Template!]!
   templateAndUtils(
     templateId: String!
   ): TemplateAndUtils
@@ -3284,6 +3286,7 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
     search: String
     filters: FilterGroup
   ): FileConnection
+  templates: [Template!]!
   templateAndUtils(
     templateId: String!
   ): TemplateAndUtils
@@ -3515,6 +3518,7 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
     search: String
     filters: FilterGroup
   ): FileConnection
+  templates: [Template!]!
   templateAndUtils(
     templateId: String!
   ): TemplateAndUtils
@@ -3722,6 +3726,7 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
     search: String
     filters: FilterGroup
   ): FileConnection
+  templates: [Template!]!
   templateAndUtils(
     templateId: String!
   ): TemplateAndUtils
@@ -3953,6 +3958,7 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
     search: String
     filters: FilterGroup
   ): FileConnection
+  templates: [Template!]!
   templateAndUtils(
     templateId: String!
   ): TemplateAndUtils

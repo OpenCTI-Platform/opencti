@@ -26,7 +26,14 @@ const useContentFromTemplate = () => {
     // attribute widgets
     for (const attributeWidget of resolved_widgets_attributes) {
       if (attributeWidget.template_widget_name && attributeWidget.data) {
-        content = content.replace(`$${attributeWidget.template_widget_name}`, attributeWidget.data[0]);
+        let attributeData;
+        if (attributeWidget.data.length === 1) {
+          attributeData = attributeWidget.data[0];
+        }
+        if (attributeWidget.data.length > 1) {
+          attributeData = JSON.stringify(attributeWidget.data);
+        }
+        content = content.replace(`$${attributeWidget.template_widget_name}`, attributeData);
       }
     }
 

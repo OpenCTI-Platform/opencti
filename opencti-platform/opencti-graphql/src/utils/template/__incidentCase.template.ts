@@ -1,4 +1,4 @@
-import type { Template } from './template';
+import type { Template } from '../../generated/graphql';
 
 const content = `
 <body>
@@ -72,10 +72,10 @@ const content = `
 </body>
 `;
 
-const templateIncidentCase: Template = {
+export const templateIncidentCase: Template = {
   name: 'Incident Response Report',
   content,
-  used_widgets: [
+  used_template_widgets_names: [
     'containerName',
     'containerCreationDate',
     'containerDescription',
@@ -92,5 +92,3 @@ const templateIncidentCase: Template = {
     'incidentType',
   ],
 };
-
-export default templateIncidentCase;

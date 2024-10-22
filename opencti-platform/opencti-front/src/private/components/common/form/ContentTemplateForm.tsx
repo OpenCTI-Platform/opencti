@@ -10,6 +10,7 @@ import AutocompleteField from '../../../../components/AutocompleteField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import SelectField from '../../../../components/fields/SelectField';
 import { useFormatter } from '../../../../components/i18n';
+import { Template } from '../../../../utils/outcome_template/template';
 
 export interface ContentTemplateFormInputs {
   name: string
@@ -24,7 +25,7 @@ interface ContentTemplateFormProps {
   onClose: () => void
   onReset: () => void
   onSubmit: FormikConfig<ContentTemplateFormInputs>['onSubmit']
-  templates: string[]
+  templates: Template[]
 }
 
 const ContentTemplateForm = ({
@@ -80,7 +81,7 @@ const ContentTemplateForm = ({
                 name='template'
                 fullWidth={true}
                 style={fieldSpacingContainerStyle}
-                options={templates}
+                options={templates.map((t) => t.name)}
                 textfieldprops={{ label: t_i18n('Template') }}
                 optionLength={80}
               />

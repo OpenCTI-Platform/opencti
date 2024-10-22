@@ -22,7 +22,6 @@ import StixCoreObjectContentFilesList from '@components/common/stix_core_objects
 import { useSettingsMessagesBannerHeight } from '@components/settings/settings_messages/SettingsMessagesBanner';
 import { useFormatter } from '../../../../components/i18n';
 import FileUploader from '../files/FileUploader';
-import { hardcodedTemplates } from '../../../../utils/outcome_template/__template';
 import useContentFromTemplate from '../../../../utils/outcome_template/engine/useContentFromTemplate';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import type { Theme } from '../../../../components/Theme';
@@ -30,6 +29,7 @@ import type { Template } from '../../../../utils/outcome_template/template';
 import { isNilField } from '../../../../utils/utils';
 import useHelper from '../../../../utils/hooks/useHelper';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import { Template } from '../../../../utils/outcome_template/template';
 import { MESSAGING$ } from '../../../../relay/environment';
 
 interface ContentBlocProps {
@@ -96,6 +96,7 @@ interface StixCoreObjectContentFilesProps {
   exportFiles: NonNullable<StixCoreObjectContent_stixCoreObject$data['exportFiles']>['edges'][number]['node'][],
   contentsFromTemplate: NonNullable<StixCoreObjectContent_stixCoreObject$data['contentsFromTemplate']>['edges'][number]['node'][],
   hasOutcomesTemplate?: boolean,
+  templates: Template[],
 }
 
 const StixCoreObjectContentFiles: FunctionComponent<StixCoreObjectContentFilesProps> = ({
@@ -110,6 +111,7 @@ const StixCoreObjectContentFiles: FunctionComponent<StixCoreObjectContentFilesPr
   exportFiles,
   contentsFromTemplate,
   hasOutcomesTemplate,
+  templates,
 }) => {
   const { t_i18n } = useFormatter();
   const { buildContentFromTemplate } = useContentFromTemplate();
@@ -124,9 +126,6 @@ const StixCoreObjectContentFiles: FunctionComponent<StixCoreObjectContentFilesPr
 
   const [displayCreate, setDisplayCreate] = useState(false);
   const [displayCreateContentFromTemplate, setDisplayCreateContentFromTemplate] = useState(false);
-
-  // TODO needed while hardcoded in frontend
-  const allTemplates = hardcodedTemplates;
 
   const handleOpenCreate = () => {
     setDisplayCreate(true);
@@ -320,7 +319,7 @@ const StixCoreObjectContentFiles: FunctionComponent<StixCoreObjectContentFilesPr
           onClose={handleCloseCreateContentFromTemplate}
           onReset={handleCloseCreateContentFromTemplate}
           onSubmit={onSubmitContentFromTemplate}
-          templates={allTemplates.map((t) => t.name)}
+          templates={templates}
         />
       )}
     </Drawer>
