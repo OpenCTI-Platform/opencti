@@ -206,7 +206,7 @@ const Settings = () => {
   const classes = useStyles();
   const theme = useTheme();
 
-  const { isSensitiveModificationEnabled, isAllowed } = useSensitiveModifications();
+  const { isSensitive, isAllowed } = useSensitiveModifications('ce_ee_toggle');
   const [openEEChanges, setOpenEEChanges] = useState(false);
 
   const { t_i18n } = useFormatter();
@@ -428,7 +428,7 @@ const Settings = () => {
                     <Typography variant="h4" gutterBottom={true} stye={{ float: 'left' }}>
                       {t_i18n('OpenCTI platform')}
                     </Typography>
-                    <div style={{ float: 'right', marginTop: isSensitiveModificationEnabled ? theme.spacing(-5) : theme.spacing(-4.5), position: 'relative' }}>
+                    <div style={{ float: 'right', marginTop: isSensitive ? theme.spacing(-5) : theme.spacing(-4.5), position: 'relative' }}>
                       {!isEnterpriseEdition ? (
                         <EnterpriseEditionButton disabled={!isAllowed} inLine />
                       ) : (
@@ -443,10 +443,10 @@ const Settings = () => {
                               <Button
                                 size="small"
                                 variant="outlined"
-                                color={isSensitiveModificationEnabled ? 'dangerZone' : 'primary'}
+                                color={isSensitive ? 'dangerZone' : 'primary'}
                                 onClick={() => setOpenEEChanges(true)}
                                 disabled={disabled}
-                                style={isSensitiveModificationEnabled ? {
+                                style={isSensitive ? {
                                   color: theme.palette.dangerZone.text.primary,
                                   borderColor: theme.palette.dangerZone.main,
                                 } : undefined}

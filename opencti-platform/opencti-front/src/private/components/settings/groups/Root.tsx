@@ -62,7 +62,7 @@ const RootGroupComponent: FunctionComponent<RootGroupComponentProps> = ({ queryR
   const { group } = data;
   const { t_i18n } = useFormatter();
 
-  const { isSensitive } = useSensitiveModifications(group?.standard_id);
+  const { isSensitive } = useSensitiveModifications('groups', group?.standard_id);
 
   return (
     <Security needs={[SETTINGS_SETACCESSES]}>

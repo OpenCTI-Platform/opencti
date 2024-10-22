@@ -72,6 +72,33 @@ const rootSettingsFragment = graphql`
     platform_ai_enabled
     platform_ai_type
     platform_ai_has_token
+    platform_protected_sensitive_config {
+      enabled
+      markings {
+        enabled
+        protected_ids
+      }
+      groups {
+        enabled
+        protected_ids
+      }
+      roles {
+        enabled
+        protected_ids
+      }
+      rules {
+        enabled
+      }
+      file_indexing {
+        enabled
+      }
+      platform_organization {
+        enabled
+      }
+      ce_ee_toggle {
+        enabled
+      }
+    }
   }
 `;
 

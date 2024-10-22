@@ -46,7 +46,7 @@ const styles = (theme) => ({
 });
 
 const RoleLineComponent = ({ fd, classes, dataColumns, node }) => {
-  const { isSensitive } = useSensitiveModifications(node.standard_id);
+  const { isSensitive } = useSensitiveModifications('roles', node.standard_id);
 
   return (
     <ListItem

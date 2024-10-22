@@ -18236,6 +18236,24 @@ export enum PlatformCriticalAlertType {
   GroupWithNullConfidenceLevel = 'GROUP_WITH_NULL_CONFIDENCE_LEVEL'
 }
 
+export type PlatformProtectedSensitiveConfig = {
+  __typename?: 'PlatformProtectedSensitiveConfig';
+  ce_ee_toggle: PlatformProtectedSubConfig;
+  enabled: Scalars['Boolean']['output'];
+  file_indexing: PlatformProtectedSubConfig;
+  groups: PlatformProtectedSubConfig;
+  markings: PlatformProtectedSubConfig;
+  platform_organization: PlatformProtectedSubConfig;
+  roles: PlatformProtectedSubConfig;
+  rules: PlatformProtectedSubConfig;
+};
+
+export type PlatformProtectedSubConfig = {
+  __typename?: 'PlatformProtectedSubConfig';
+  enabled: Scalars['Boolean']['output'];
+  protected_ids?: Maybe<Array<Scalars['String']['output']>>;
+};
+
 export type PlayBookExecution = {
   __typename?: 'PlayBookExecution';
   execution_start?: Maybe<Scalars['String']['output']>;
@@ -23016,6 +23034,7 @@ export type Settings = BasicObject & InternalObject & {
   platform_openerm_url?: Maybe<Scalars['String']['output']>;
   platform_openmtd_url?: Maybe<Scalars['String']['output']>;
   platform_organization?: Maybe<Organization>;
+  platform_protected_sensitive_config: PlatformProtectedSensitiveConfig;
   platform_providers: Array<Provider>;
   platform_reference_attachment?: Maybe<Scalars['Boolean']['output']>;
   platform_session_idle_timeout?: Maybe<Scalars['Int']['output']>;
@@ -30709,6 +30728,8 @@ export type ResolversTypes = ResolversObject<{
   PlatformCriticalAlert: ResolverTypeWrapper<Omit<PlatformCriticalAlert, 'details'> & { details?: Maybe<ResolversTypes['PlatformCriticalAlertDetails']> }>;
   PlatformCriticalAlertDetails: ResolverTypeWrapper<Omit<PlatformCriticalAlertDetails, 'groups'> & { groups: Array<ResolversTypes['Group']> }>;
   PlatformCriticalAlertType: PlatformCriticalAlertType;
+  PlatformProtectedSensitiveConfig: ResolverTypeWrapper<PlatformProtectedSensitiveConfig>;
+  PlatformProtectedSubConfig: ResolverTypeWrapper<PlatformProtectedSubConfig>;
   PlayBookExecution: ResolverTypeWrapper<PlayBookExecution>;
   PlayBookExecutionStep: ResolverTypeWrapper<PlayBookExecutionStep>;
   Playbook: ResolverTypeWrapper<BasicStoreEntityPlaybook>;
@@ -31469,6 +31490,8 @@ export type ResolversParentTypes = ResolversObject<{
   PhoneNumberAddInput: PhoneNumberAddInput;
   PlatformCriticalAlert: Omit<PlatformCriticalAlert, 'details'> & { details?: Maybe<ResolversParentTypes['PlatformCriticalAlertDetails']> };
   PlatformCriticalAlertDetails: Omit<PlatformCriticalAlertDetails, 'groups'> & { groups: Array<ResolversParentTypes['Group']> };
+  PlatformProtectedSensitiveConfig: PlatformProtectedSensitiveConfig;
+  PlatformProtectedSubConfig: PlatformProtectedSubConfig;
   PlayBookExecution: PlayBookExecution;
   PlayBookExecutionStep: PlayBookExecutionStep;
   Playbook: BasicStoreEntityPlaybook;
@@ -37285,6 +37308,24 @@ export type PlatformCriticalAlertDetailsResolvers<ContextType = any, ParentType 
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
+export type PlatformProtectedSensitiveConfigResolvers<ContextType = any, ParentType extends ResolversParentTypes['PlatformProtectedSensitiveConfig'] = ResolversParentTypes['PlatformProtectedSensitiveConfig']> = ResolversObject<{
+  ce_ee_toggle?: Resolver<ResolversTypes['PlatformProtectedSubConfig'], ParentType, ContextType>;
+  enabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  file_indexing?: Resolver<ResolversTypes['PlatformProtectedSubConfig'], ParentType, ContextType>;
+  groups?: Resolver<ResolversTypes['PlatformProtectedSubConfig'], ParentType, ContextType>;
+  markings?: Resolver<ResolversTypes['PlatformProtectedSubConfig'], ParentType, ContextType>;
+  platform_organization?: Resolver<ResolversTypes['PlatformProtectedSubConfig'], ParentType, ContextType>;
+  roles?: Resolver<ResolversTypes['PlatformProtectedSubConfig'], ParentType, ContextType>;
+  rules?: Resolver<ResolversTypes['PlatformProtectedSubConfig'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type PlatformProtectedSubConfigResolvers<ContextType = any, ParentType extends ResolversParentTypes['PlatformProtectedSubConfig'] = ResolversParentTypes['PlatformProtectedSubConfig']> = ResolversObject<{
+  enabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  protected_ids?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
 export type PlayBookExecutionResolvers<ContextType = any, ParentType extends ResolversParentTypes['PlayBookExecution'] = ResolversParentTypes['PlayBookExecution']> = ResolversObject<{
   execution_start?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
@@ -38389,6 +38430,7 @@ export type SettingsResolvers<ContextType = any, ParentType extends ResolversPar
   platform_openerm_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_openmtd_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_organization?: Resolver<Maybe<ResolversTypes['Organization']>, ParentType, ContextType>;
+  platform_protected_sensitive_config?: Resolver<ResolversTypes['PlatformProtectedSensitiveConfig'], ParentType, ContextType>;
   platform_providers?: Resolver<Array<ResolversTypes['Provider']>, ParentType, ContextType>;
   platform_reference_attachment?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   platform_session_idle_timeout?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
@@ -41008,6 +41050,8 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   PhoneNumber?: PhoneNumberResolvers<ContextType>;
   PlatformCriticalAlert?: PlatformCriticalAlertResolvers<ContextType>;
   PlatformCriticalAlertDetails?: PlatformCriticalAlertDetailsResolvers<ContextType>;
+  PlatformProtectedSensitiveConfig?: PlatformProtectedSensitiveConfigResolvers<ContextType>;
+  PlatformProtectedSubConfig?: PlatformProtectedSubConfigResolvers<ContextType>;
   PlayBookExecution?: PlayBookExecutionResolvers<ContextType>;
   PlayBookExecutionStep?: PlayBookExecutionStepResolvers<ContextType>;
   Playbook?: PlaybookResolvers<ContextType>;

@@ -137,12 +137,12 @@ const RoleEditionCapabilitiesComponent: FunctionComponent<RoleEditionCapabilitie
     // And invalid me ?? or invalidSession
   };
 
-  const { isSensitiveModificationEnabled } = useSensitiveModifications();
+  const { isSensitive } = useSensitiveModifications('roles');
 
   if (capabilities && capabilities.edges) {
     return (
       <List dense={true}>
-        {isSensitiveModificationEnabled && (
+        {isSensitive && (
           <ListItem
             key="sensitive"
             divider={true}

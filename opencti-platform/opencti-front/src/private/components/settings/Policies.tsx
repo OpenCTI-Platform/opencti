@@ -127,7 +127,7 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
   queryRef,
 }) => {
   const isEnterpriseEdition = useEnterpriseEdition();
-  const { isSensitiveModificationEnabled, isAllowed } = useSensitiveModifications();
+  const { isSensitive, isAllowed } = useSensitiveModifications('platform_organization');
   const [openPlatformOrganizationChanges, setOpenPlatformOrganizationChanges] = useState<boolean>(false);
 
   const data = usePreloadedQuery(policiesQuery, queryRef);
@@ -213,7 +213,7 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                           <EETooltip>
                             <ObjectOrganizationField
                               name="platform_organization"
-                              disabled={disabled || !isEnterpriseEdition || (isSensitiveModificationEnabled && !isAllowed)}
+                              disabled={disabled || !isEnterpriseEdition || (isSensitive && !isAllowed)}
                               label={'Platform organization'}
                               onChange={() => setOpenPlatformOrganizationChanges(true)}
                               style={{ width: '100%', marginTop: 20 }}
