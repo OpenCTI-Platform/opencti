@@ -1,14 +1,15 @@
 #!/bin/sh
 
-if [[ -z "$1" ]] || [[ -z "$2" ]]
+if [[ -z "$1" ]] || [[ -z "$2" ]] || [[ -z "$3" ]]
 then
-    echo "[CLONE-DEPS] This scripts $0 requires 2 paramaters: branch_name:$1, workspace:$2 (optional: PR_number:$3)"
+    echo "[CLONE-DEPS] This scripts $0 requires 3 parameters: branch_name:$1, pr_target_branch: $2, workspace:$3 (optional: PR_number:$4)"
     exit 0
 fi
 
 PR_BRANCH_NAME=$1
-WORKSPACE=$2
-PR_NUMBER=$3
+PR_TARGET_BRANCH=$2
+WORKSPACE=$3
+PR_NUMBER=$4
 
 
 CLI_PYTHON_DIR="${WORKSPACE}/client-python"
@@ -33,7 +34,7 @@ clone_for_pr_build() {
         # ------
         # For client-python, maybe one day we will refactor to a function.
         echo "[CLONE-DEPS][CLIENT-PYTHON] Multi repository PR, looking for client-python related branch"
-        gh repo clone https://github.com/OpenCTI-Platform/client-python ${CLI_PYTHON_DIR}
+        gh repo clone https://github.com/OpenCTI-Platform/client-python ${CLI_PYTHON_DIR} -- --branch ${PR_TARGET_BRANCH}  --depth=1
         cd ${CLI_PYTHON_DIR}
 
         # search for the first opencti PR that matches OPENCTI_BRANCH
@@ -51,14 +52,14 @@ clone_for_pr_build() {
             gh pr checkout ${CLI_PYTHON_PR_NUMBER}
             pip install -e .
         else
-            echo "[CLONE-DEPS][CLIENT-PYTHON] No PR found in client-python side, keeping client-python:master"
-            # Repository already clone on master branch
+            echo "[CLONE-DEPS][CLIENT-PYTHON] No PR found in client-python side, keeping client-python:${PR_TARGET_BRANCH}"
+            # Repository already clone on PR_TARGET_BRANCH branch
         fi
 
         # ------
         # For connector, maybe one day we will refactor to a function.
         echo "[CLONE-DEPS][CONNECTOR] Multi repository PR, looking for connectors related branch"
-        gh repo clone https://github.com/OpenCTI-Platform/connectors ${CONNECTOR_DIR}
+        gh repo clone https://github.com/OpenCTI-Platform/connectors ${CONNECTOR_DIR}  -- --branch ${PR_TARGET_BRANCH}  --depth=1
         cd ${CONNECTOR_DIR}
 
         # search for the first opencti PR that matches OPENCTI_BRANCH
@@ -75,14 +76,14 @@ clone_for_pr_build() {
             echo "[CLONE-DEPS][CONNECTOR] Found a PR in connectors with number ${CONNECTOR_PR_NUMBER}, using it."
             gh pr checkout ${CONNECTOR_PR_NUMBER}
         else
-            echo "[CLONE-DEPS][CONNECTOR] No PR found in connectors side, keeping connector:master"
-            # Repository already clone on master branch
+            echo "[CLONE-DEPS][CONNECTOR] No PR found in connectors side, keeping connector:${PR_TARGET_BRANCH}"
+            # Repository already clone on PR_TARGET_BRANCH branch
         fi
         
     else
-        echo "[CLONE-DEPS] NOT multi repo, cloning client-python:master and connector:master"
-        gh repo clone https://github.com/OpenCTI-Platform/client-python ${CLI_PYTHON_DIR}
-        gh repo clone https://github.com/OpenCTI-Platform/connectors ${CONNECTOR_DIR}
+        echo "[CLONE-DEPS] NOT multi repo, cloning client-python:${PR_TARGET_BRANCH} and connector:${PR_TARGET_BRANCH}"
+        gh repo clone https://github.com/OpenCTI-Platform/client-python ${CLI_PYTHON_DIR} -- --branch ${PR_TARGET_BRANCH}  --depth=1
+        gh repo clone https://github.com/OpenCTI-Platform/connectors ${CONNECTOR_DIR} -- --branch ${PR_TARGET_BRANCH}  --depth=1
     fi
 }
 
@@ -92,7 +93,7 @@ clone_for_push_build() {
     then
         CLIENT_PYTHON_BRANCH=${PR_BRANCH_NAME}
     else
-        CLIENT_PYTHON_BRANCH=$([[ "$(echo "$(git ls-remote --heads https://github.com/OpenCTI-Platform/client-python.git refs/heads/opencti/$PR_BRANCH_NAME)")" != '' ]] && echo opencti/$PR_BRANCH_NAME || echo 'master')
+        CLIENT_PYTHON_BRANCH=$([[ "$(echo "$(git ls-remote --heads https://github.com/OpenCTI-Platform/client-python.git refs/heads/opencti/$PR_BRANCH_NAME)")" != '' ]] && echo opencti/$PR_BRANCH_NAME || echo ${PR_TARGET_BRANCH})
     fi
     git clone -b $CLIENT_PYTHON_BRANCH https://github.com/OpenCTI-Platform/client-python.git ${CLI_PYTHON_DIR}
 
@@ -101,13 +102,13 @@ clone_for_push_build() {
     then
         CONNECTOR_BRANCH=${PR_BRANCH_NAME}
     else
-        CONNECTOR_BRANCH=$([[ "$(echo "$(git ls-remote --heads https://github.com/OpenCTI-Platform/connectors.git refs/heads/opencti/$PR_BRANCH_NAME)")" != '' ]] && echo opencti/$PR_BRANCH_NAME || echo 'master')
+        CONNECTOR_BRANCH=$([[ "$(echo "$(git ls-remote --heads https://github.com/OpenCTI-Platform/connectors.git refs/heads/opencti/$PR_BRANCH_NAME)")" != '' ]] && echo opencti/$PR_BRANCH_NAME || echo ${PR_TARGET_BRANCH})
     fi
 
     git clone -b $CONNECTOR_BRANCH https://github.com/OpenCTI-Platform/connectors.git ${CONNECTOR_DIR}
 }
 
-echo "[CLONE-DEPS] START; with PR_BRANCH_NAME=${PR_BRANCH_NAME}, PR_NUMBER=${PR_NUMBER}, OPENCTI_DIR=${OPENCTI_DIR}."
+echo "[CLONE-DEPS] START; with PR_BRANCH_NAME=${PR_BRANCH_NAME},PR_TARGET_BRANCH=${PR_TARGET_BRANCH}, PR_NUMBER=${PR_NUMBER}, OPENCTI_DIR=${OPENCTI_DIR}."
 if [[ -z ${PR_NUMBER} ]] || [[ ${PR_NUMBER} == "" ]]
 then
     # No PR number from Drone = "Push build". And it's only for repository branch (not fork)
