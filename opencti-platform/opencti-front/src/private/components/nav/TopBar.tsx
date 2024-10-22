@@ -16,7 +16,7 @@ import { usePage } from 'use-analytics';
 import Popover from '@mui/material/Popover';
 import Box from '@mui/material/Box';
 import { OPEN_BAR_WIDTH, SMALL_BAR_WIDTH } from '@components/nav/LeftBar';
-import DraftContextBanner from '@components/drafts/DraftContextBanner';
+import DraftContextBanner, { getDraftModeColor } from '@components/drafts/DraftContextBanner';
 import { useFormatter } from '../../../components/i18n';
 import SearchInput from '../../../components/SearchInput';
 import { APP_BASE_PATH, fileUri, MESSAGING$ } from '../../../relay/environment';
@@ -74,7 +74,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
     width: '30%',
   },
   barRight: {
-    right: theme.spacing(2),
+    marginRight: theme.spacing(2),
     height: '100%',
     display: 'flex',
     alignItems: 'center',
@@ -226,6 +226,9 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
   };
   // global search keyword
   const keyword = decodeSearchKeyword(location.pathname.match(/(?:\/dashboard\/search\/(?:knowledge|files)\/(.*))/)?.[1] ?? '');
+  // draft
+  const draftModeEnabled = isDraftFeatureEnabled && me.draftContext;
+  const draftModeColor = getDraftModeColor(theme);
   return (
     <AppBar
       position="fixed"
@@ -240,6 +243,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
           alignItems: 'center',
           marginTop: bannerHeightNumber + settingsMessagesBannerHeight,
           padding: 0,
+          borderBottom: draftModeEnabled ? `1px solid ${draftModeColor}` : 'initial',
         }}
       >
         <div className={classes.logoContainer} style={navOpen ? { width: OPEN_BAR_WIDTH } : {}}>
@@ -262,11 +266,12 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
             />
           </div>
         )}
-        {isDraftFeatureEnabled && me.draftContext && (
+        {draftModeEnabled && (
           <DraftContextBanner/>
         )}
         <div className={classes.barRight}>
           <div className={classes.barRightContainer}>
+            {!draftModeEnabled && (
             <Security needs={[KNOWLEDGE]}>
               <>
                 <Tooltip title={t_i18n('Notifications')}>
@@ -299,6 +304,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
                 </Tooltip>
               </>
             </Security>
+            )}
             <IconButton
               color="inherit"
               size="medium"
