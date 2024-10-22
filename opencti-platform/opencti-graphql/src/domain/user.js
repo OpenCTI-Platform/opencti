@@ -31,7 +31,7 @@ import {
   listEntitiesThroughRelationsPaginated,
   storeLoadById,
 } from '../database/middleware-loader';
-import { delEditContext, delUserContext, notify, setEditContext } from '../database/redis';
+import { clearSessions, delEditContext, notify, setEditContext } from '../database/redis';
 import { findSessionsForUsers, killUserSessions, markSessionForRefresh } from '../database/session';
 import { buildPagination, isEmptyField, isNotEmptyField, READ_INDEX_INTERNAL_OBJECTS, READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
 import { extractEntityRepresentativeName } from '../database/entity-representative';
@@ -101,6 +101,10 @@ export const usersSessionRefresh = async (userIds) => {
 
 export const userSessionRefresh = async (userId) => {
   return usersSessionRefresh([userId]);
+};
+
+export const cleanAllSessions = async () => {
+  return clearSessions();
 };
 
 export const userWithOrigin = (req, user) => {
@@ -1199,7 +1203,6 @@ export const otpUserLogin = async (req, user, { code }) => {
 };
 
 const regenerateUserSession = async (user, req, res) => {
-  await delUserContext(user);
   return new Promise((resolve) => {
     res.clearCookie(OPENCTI_SESSION);
     req.session.regenerate(() => {
