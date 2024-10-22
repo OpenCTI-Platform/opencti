@@ -1,3 +1,5 @@
+import { renderToString } from 'react-dom/server';
+import React from 'react';
 import useBuildListOutcome from './stix_core_objects/useBuildListOutcome';
 import useDonutOutcome from './stix_relationships/useDonutOutcome';
 import { fetchQuery } from '../../../relay/environment';
@@ -24,17 +26,18 @@ const useContentFromTemplate = () => {
     let { content } = template;
 
     // attribute widgets
-    for (const attributeWidget of resolved_widgets_attributes) {
-      if (attributeWidget.template_widget_name && attributeWidget.data) {
-        let attributeData;
-        if (attributeWidget.data.length === 1) {
-          attributeData = attributeWidget.data[0];
+    for (const { data, displayStyle, template_widget_name } of resolved_widgets_attributes) {
+      let attributeData = '';
+      if (data.length === 1) {
+        [attributeData] = data;
+      } else if (data.length > 1) {
+        if (displayStyle === 'list') {
+          attributeData = renderToString(<ul>{data.map((el) => <li key={el}>{el}</li>)}</ul>);
+        } else {
+          attributeData = data.join(', ');
         }
-        if (attributeWidget.data.length > 1) {
-          attributeData = JSON.stringify(attributeWidget.data);
-        }
-        content = content.replace(`$${attributeWidget.template_widget_name}`, attributeData);
       }
+      content = content.replace(`$${template_widget_name}`, attributeData);
     }
 
     // other widgets
@@ -43,11 +46,7 @@ const useContentFromTemplate = () => {
       const widget = JSON.parse(templateWidget.widget);
       if (widget.type === 'list') {
         // eslint-disable-next-line no-await-in-loop
-        outcome = await buildListOutcome(
-          containerId,
-          widget,
-          maxContentMarkings,
-        );
+        outcome = await buildListOutcome(containerId, widget, maxContentMarkings);
       } else if (widget.type === 'donut') {
         // eslint-disable-next-line no-await-in-loop
         outcome = await buildDonutOutcome(containerId, widget, maxContentMarkings);
