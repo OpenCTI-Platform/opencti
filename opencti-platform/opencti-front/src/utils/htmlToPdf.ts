@@ -165,13 +165,13 @@ export const htmlToPdfReport = (stixCoreObject: any, content: string, templateNa
     styles: {
       headerTitle: { fontSize: 22, bold: true },
       headerSubtitle: { fontSize: 18, marginLeft: 40 },
-      headerDate: { fontSize: 16, bold: true, opacity: 0.7, marginTop: 10 },
+      headerDate: { fontSize: 14, bold: true, opacity: 0.7, marginTop: 10 },
       headerFooter: { opacity: 0.5 },
     },
     ...pdfMakeObject,
     content: [
       {
-        absolutePosition: { x: 50, y: 120 },
+        absolutePosition: { x: 50, y: 80 },
         color: 'white',
         columns: [
           {
@@ -182,7 +182,7 @@ export const htmlToPdfReport = (stixCoreObject: any, content: string, templateNa
                 style: 'headerTitle',
               },
               {
-                text: date,
+                text: `Report created: ${date}`,
                 style: 'headerDate',
               },
             ],
@@ -202,26 +202,17 @@ export const htmlToPdfReport = (stixCoreObject: any, content: string, templateNa
       ...(pdfMakeObject.content as Content[]),
     ],
     background(currentPage, pageSize) {
-      if (currentPage > 1) return [];
       return {
-        canvas: [
-          {
+        canvas: currentPage > 1
+          ? []
+          : [{
             type: 'rect',
             x: 0,
             y: 0,
             w: pageSize.width,
-            h: pageSize.height,
-            color: '#f8f8f8',
-          },
-          {
-            type: 'rect',
-            x: 0,
-            y: 0,
-            w: pageSize.width,
-            h: pageSize.height / 2,
+            h: pageSize.height / 3,
             color: '#0019ce',
-          },
-        ],
+          }],
       };
     },
     header(currentPage) {
