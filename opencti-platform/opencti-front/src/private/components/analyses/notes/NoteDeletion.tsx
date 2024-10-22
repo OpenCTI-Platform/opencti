@@ -72,7 +72,7 @@ const NoteDeletion: FunctionComponent<NoteDeletionProps> = ({
     });
   };
   return (
-    <React.Fragment>
+    <>
       <Button
         color="error"
         variant="contained"
@@ -102,7 +102,7 @@ const NoteDeletion: FunctionComponent<NoteDeletionProps> = ({
           </Button>
         </DialogActions>
       </Dialog>
-    </React.Fragment>
+    </>
   );
 };
 

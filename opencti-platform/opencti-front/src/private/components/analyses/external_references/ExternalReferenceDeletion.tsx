@@ -79,7 +79,7 @@ ExternalReferenceDeletionProps
     });
   };
   return (
-    <React.Fragment>
+    <>
       <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
         <Button
           color="error"
@@ -134,7 +134,7 @@ ExternalReferenceDeletionProps
           </Button>
         </DialogActions>
       </Dialog>
-    </React.Fragment>
+    </>
   );
 };
 

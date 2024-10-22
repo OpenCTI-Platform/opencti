@@ -290,7 +290,7 @@ const NoteEditionOverviewComponent: FunctionComponent<NoteEditionOverviewProps> 
           />
           {isFABReplaced && <NoteDeletion
             id={note.id}
-          />}
+                            />}
         </Form>
       )}
     </Formik>
