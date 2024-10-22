@@ -2,7 +2,7 @@ import useBuildListOutcome from './stix_core_objects/useBuildListOutcome';
 import useDonutOutcome from './stix_relationships/useDonutOutcome';
 import { fetchQuery } from '../../../relay/environment';
 import { templateAndUtilsContainerQuery } from './TemplateAndUtils';
-import { TemplateAndUtilsContainerQuery } from './__generated__/TemplateAndUtilsContainerQuery.graphql';
+import { TemplateAndUtilsContainerQuery$data } from './__generated__/TemplateAndUtilsContainerQuery.graphql';
 
 const useContentFromTemplate = () => {
   const { buildDonutOutcome } = useDonutOutcome();
@@ -14,8 +14,13 @@ const useContentFromTemplate = () => {
     maxContentMarkings: string[],
   ) => {
     const variables = { id: containerId, templateId: templateName };
-    const data = await fetchQuery<TemplateAndUtilsContainerQuery>(templateAndUtilsContainerQuery, variables).toPromise();
-    const { template, template_widgets, resolved_widgets_attributes } = data.container.templateAndUtils;
+    const { container } = await fetchQuery(templateAndUtilsContainerQuery, variables).toPromise() as TemplateAndUtilsContainerQuery$data;
+
+    if (!container || !container.templateAndUtils) {
+      throw Error('No template found');
+    }
+
+    const { template, template_widgets, resolved_widgets_attributes } = container.templateAndUtils;
     let { content } = template;
 
     // attribute widgets
