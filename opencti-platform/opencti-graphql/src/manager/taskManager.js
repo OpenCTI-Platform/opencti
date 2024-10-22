@@ -555,12 +555,15 @@ export const taskHandler = async () => {
   try {
     // Lock the manager
     lock = await lockResource([TASK_MANAGER_KEY], { retryCount: 0 });
+    logApp.info('[OPENCTI-MODULE][TASK-MANAGER] Starting task handler');
     running = true;
+    const startingTime = new Date().getMilliseconds();
     const context = executionContext('task_manager', SYSTEM_USER);
     const task = await findTaskToExecute(context);
     // region Task checking
     if (!task) {
       // Nothing to execute.
+      logApp.info('[OPENCTI-MODULE][TASK-MANAGER] No task to execute found, stopping.');
       return;
     }
     const isQueryTask = task.type === TASK_TYPE_QUERY;
@@ -576,6 +579,7 @@ export const taskHandler = async () => {
     // Fetch the user responsible for the task
     const rawUser = await resolveUserByIdFromCache(context, task.initiator_id);
     const user = { ...rawUser, origin: { user_id: rawUser.id, referer: 'background_task' } };
+    logApp.info(`[OPENCTI-MODULE][TASK-MANAGER] Executing job using userId:${rawUser.id}, for task ${task.internal_id}`);
     let jobToExecute;
     if (isQueryTask) {
       jobToExecute = await computeQueryTaskElements(context, user, task);
@@ -588,6 +592,7 @@ export const taskHandler = async () => {
     }
     // Process the elements (empty = end of execution)
     const processingElements = jobToExecute.elements;
+    logApp.info(`[OPENCTI-MODULE][TASK-MANAGER] Found ${processingElements.length} element(s) to process.`);
     if (processingElements.length > 0) {
       lock.signal.throwIfAborted();
       const errors = await executeProcessing(context, user, jobToExecute, task.scope);
@@ -601,7 +606,10 @@ export const taskHandler = async () => {
       task_processed_number: processedNumber,
       completed: processingElements.length < MAX_TASK_ELEMENTS,
     };
+    logApp.info('[OPENCTI-MODULE][TASK-MANAGER] Elements processing done, store task status.', { patch });
     await updateTask(context, task.id, patch);
+    const totalTime = new Date().getMilliseconds() - startingTime;
+    logApp.info(`[OPENCTI-MODULE][TASK-MANAGER] Task manager done in ${totalTime} ms`);
   } catch (e) {
     if (e.name === TYPE_LOCK_ERROR) {
       logApp.debug('[OPENCTI-MODULE] Task manager already in progress by another API');
@@ -618,7 +626,7 @@ const initTaskManager = () => {
   let scheduler;
   return {
     start: async () => {
-      logApp.info('[OPENCTI-MODULE] Running task manager');
+      logApp.info('[OPENCTI-MODULE][TASK-MANAGER] Running task manager');
       scheduler = setIntervalAsync(async () => {
         await taskHandler();
       }, SCHEDULE_TIME);
@@ -631,7 +639,7 @@ const initTaskManager = () => {
       };
     },
     shutdown: async () => {
-      logApp.info('[OPENCTI-MODULE] Stopping task manager');
+      logApp.info('[OPENCTI-MODULE][TASK-MANAGER] Stopping task manager');
       if (scheduler) {
         return clearIntervalAsync(scheduler);
       }
