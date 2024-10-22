@@ -67,7 +67,6 @@ export const checkIpAddressLists = async (ipToTest: string, exclusionList: Exclu
   const binary = isIpv4 ? convertIpv4ToBinary(ipToTest) : convertIpv6ToBinary(ipToTest);
 
   let startProcessingTime = new Date().getTime();
-
   for (let i = 0; i < exclusionList.length; i += 1) {
     const { list, name } = exclusionList[i];
 

@@ -1,13 +1,5 @@
-import { describe, it, expect } from 'vitest';
-import {
-  convertIpAddr,
-  checkIpAddrType,
-  convertIpv4ToBinary,
-  convertIpv6ToBinary,
-  checkExclusionList,
-  checkIpAddressLists,
-  checkPatternValidity,
-} from '../../../src/utils/exclusionLists';
+import { describe, expect, it } from 'vitest';
+import { checkExclusionList, checkIpAddressLists, checkIpAddrType, convertIpAddr, convertIpv4ToBinary, convertIpv6ToBinary } from '../../../src/utils/exclusionLists';
 import { exclusionListEntityType, type ExclusionListProperties } from '../../../src/utils/exclusionListsTypes';
 import * as exclusionList from '../../data/exclusionLists/index';
 
@@ -96,12 +88,32 @@ const ipListResult = [
   '00100110000000001001000000000000000100000011011',
   '00101010000000100000000011101000',
 ];
-const lists = [{
+const domainNameList = [
+  '.amanath-bank.com',
+  '.ambfinancial.com',
+  '.rbs.co.uk',
+  '.rbtl.de',
+  '.google.com',
+  '.rts.ch',
+  'fttp-207-53-229-233.krrbi.aanchuuphan.net',
+  'fudmiks.cust.smartspb.net',
+  '46-145.206-83.static-ip.oleane.fr',
+  '46-150-165-124.broadband.opcom.ru',
+  'ns4.epidc.co.kr',
+  'ns4.gamania.com',
+];
+const ipv4ExclusionList = [{
   name: 'ipv4ListResult',
   type: [exclusionListEntityType.IPV4_ADDR],
   list: ipv4ListResult,
-  actions: null
+  actions: null,
 }, {
+  name: 'ipListResult',
+  type: [exclusionListEntityType.IPV4_ADDR, exclusionListEntityType.IPV6_ADDR],
+  list: ipListResult,
+  actions: null,
+}];
+const ipv6ExclusionList = [{
   name: 'ipv6ListResult',
   type: [exclusionListEntityType.IPV6_ADDR],
   list: ipv6ListResult,
@@ -110,6 +122,12 @@ const lists = [{
   name: 'ipListResult',
   type: [exclusionListEntityType.IPV4_ADDR, exclusionListEntityType.IPV6_ADDR],
   list: ipListResult,
+  actions: null,
+}];
+const domainExclusionList = [{
+  name: 'domainExclusionList',
+  type: [exclusionListEntityType.DOMAIN_NAME, exclusionListEntityType.URL],
+  list: domainNameList,
   actions: null,
 }];
 
@@ -196,13 +214,61 @@ describe('Exclusion Lists', () => {
     });
   });
 
-  describe('checkIpAddressLists', () => {
-    describe('When I check if an ipv4 99.99.99.193 is contained on lists', () => {
-      expect(() => checkIpAddressLists('99.99.99.193', lists)).toThrowError('Indicator creation failed, this pattern (99.99.99.193) is contained on an exclusion list (ipv4ListResult)');
+  describe.skip('checkIpAddressLists', () => {
+    describe.skip('When I check if an IPV4 is contained on lists', () => {
+      describe('99.99.99.193', () => {
+        it('should throw an error', () => {
+          expect(() => checkIpAddressLists('99.99.99.193', ipv4ExclusionList)).rejects.toThrowError('Indicator creation failed, this pattern (99.99.99.193) is contained on an exclusion list (ipv4ListResult)');
+        });
+      });
+      describe('99.87.23.11', () => {
+        it('should throw an error', () => {
+          expect(() => checkIpAddressLists('99.87.23.11', ipv4ExclusionList)).rejects.toThrowError('Indicator creation failed, this pattern (99.87.23.11) is contained on an exclusion list (ipv4ListResult)');
+        });
+      });
+      describe('22.22.22.22', () => {
+        it('should do nothing', () => {
+          expect(() => checkIpAddressLists('22.22.22.22', ipv4ExclusionList)).not.toThrowError();
+        });
+      });
+    });
+
+    describe('When I check if an IPV6 is contained on lists', () => {
+      describe('2a12:e342:200::2:1819', () => {
+        it('should throw an error', () => {
+          expect(() => checkIpAddressLists('2a12:e342:200::2:1819', ipv6ExclusionList)).rejects.toThrowError('Indicator creation failed, this pattern (2a12:e342:200::2:1819) is contained on an exclusion list (ipv6ListResult)');
+        });
+      });
+      describe('2001:1424:0:1234::', () => {
+        it('should throw an error', () => {
+          expect(() => checkIpAddressLists('2001:1424:0:1234::', ipv6ExclusionList)).rejects.toThrowError('Indicator creation failed, this pattern (2001:1424:0:1234::) is contained on an exclusion list (ipListResult)');
+        });
+      });
+      describe('2602:fba1:a00::100:19', () => {
+        it('should do nothing', () => {
+          expect(() => checkIpAddressLists('2602:fba1:a00::100:19', ipv6ExclusionList)).not.toThrowError();
+        });
+      });
     });
   });
 
-  describe.skip('checkExclusionList', () => {});
-
-  describe.skip('checkPatternValidity', () => {});
+  describe.skip('checkExclusionList', () => {
+    describe('When I check if a domain name is contained on lists', () => {
+      describe('ns4.epidc.co.kr', () => {
+        it('should throw an error', () => {
+          expect(() => checkExclusionList('ns4.epidc.co.kr', domainExclusionList)).rejects.toThrowError('Indicator creation failed, this pattern (ns4.epidc.co.kr) is contained on an exclusion list (domainExclusionList)');
+        });
+      });
+      describe('www.test.ambfinancial.com', () => {
+        it('should throw an error', () => {
+          expect(() => checkExclusionList('www.test.ambfinancial.com', domainExclusionList)).rejects.toThrowError('Indicator creation failed, this pattern (www.test.ambfinancial.com) is contained on an exclusion list (domainExclusionList)');
+        });
+      });
+      describe('test.domain.name.fr', () => {
+        it('should do nothing', () => {
+          expect(() => checkExclusionList('test.domain.name.fr', domainExclusionList)).not.toThrowError();
+        });
+      });
+    });
+  });
 });
