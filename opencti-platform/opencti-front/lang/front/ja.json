@@ -148,6 +148,7 @@
   "Also include first neighbours": "また、最初の隣人",
   "An analysis connector needs to be available to ask for a mapping suggestion.": "分析コネクターは、マッピングの提案を求めるために利用できる必要がある。",
   "An analysis is ongoing, waiting for results.": "分析が進行中で、結果を待っている。",
+  "An error occurred while trying to build content from template.": "テンプレートからコンテンツを構築しようとしてエラーが発生しました。",
   "An instance trigger on an entity X notifies the following events: update/deletion of X, creation/deletion of a relationship from/to X, creation/deletion of an entity that has X in its refs (for instance contains X, is shared with X, is created by X...), adding/removing X in the ref of an entity.": "エンティティ X のインスタンス トリガーは、次のイベントを通知します: X の更新/削除、X からの/へのリレーションシップの作成/削除、参照に X を持つエンティティの作成/削除 (たとえば、X を含む、X と共有されている、X によって作成されている...)、エンティティの参照で X を追加/削除します。",
   "An unknown error has occurred!  Please try again later.": "不明なエラーが発生しました。後でもう一度お試しください。",
   "An unknown error has occurred! Please try again later.": "不明なエラーが発生しました！後で再試行してください。",

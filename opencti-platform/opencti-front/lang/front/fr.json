@@ -148,6 +148,7 @@
   "Also include first neighbours": "Inclure également les premiers voisins",
   "An analysis connector needs to be available to ask for a mapping suggestion.": "Un connecteur d'analyse doit être disponible pour demander une suggestion de mappage.",
   "An analysis is ongoing, waiting for results.": "Une analyse est en cours, en attente de résultats.",
+  "An error occurred while trying to build content from template.": "Une erreur s'est produite lors de la création d'un contenu à partir d'un modèle.",
   "An instance trigger on an entity X notifies the following events: update/deletion of X, creation/deletion of a relationship from/to X, creation/deletion of an entity that has X in its refs (for instance contains X, is shared with X, is created by X...), adding/removing X in the ref of an entity.": "Un déclencheur d’instance sur une entité X notifie les événements suivants : mise à jour/suppression de X, création/suppression d’une relation de/vers X, création/suppression d’une entité qui a X dans ses refs (par exemple contient X, est partagée avec X, est créée par X...), ajout/suppression de X dans la ref d’une entité.",
   "An unknown error has occurred!  Please try again later.": "Une erreur est survenue ! Merci de rééssayer plus tard.",
   "An unknown error has occurred! Please try again later.": "Une erreur inconnue s'est produite ! Veuillez réessayer plus tard.",

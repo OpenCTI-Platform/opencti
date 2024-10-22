@@ -22,7 +22,7 @@ import StixCoreObjectContentFilesList from '@components/common/stix_core_objects
 import { useSettingsMessagesBannerHeight } from '@components/settings/settings_messages/SettingsMessagesBanner';
 import { useFormatter } from '../../../../components/i18n';
 import FileUploader from '../files/FileUploader';
-import { hardcodedTemplates, hardcodedTemplateWidgets, resolvedAttributesWidgets } from '../../../../utils/outcome_template/__template';
+import { hardcodedTemplates } from '../../../../utils/outcome_template/__template';
 import useContentFromTemplate from '../../../../utils/outcome_template/engine/useContentFromTemplate';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import type { Theme } from '../../../../components/Theme';
@@ -127,10 +127,6 @@ const StixCoreObjectContentFiles: FunctionComponent<StixCoreObjectContentFilesPr
 
   // TODO needed while hardcoded in frontend
   const allTemplates = hardcodedTemplates;
-  // TODO needed while hardcoded in frontend
-  const allTemplateWidgets = hardcodedTemplateWidgets;
-  // TODO needed while hardcoded in frontend
-  const allResolvedAttributesWidgets = resolvedAttributesWidgets;
 
   const handleOpenCreate = () => {
     setDisplayCreate(true);
@@ -193,30 +189,29 @@ const StixCoreObjectContentFiles: FunctionComponent<StixCoreObjectContentFilesPr
     const maxContentMarkings = (values.maxMarkings ?? []).map(({ value }) => value);
     const templateName = values.template;
 
-    // TODO needed while hardcoded in frontend
-    const widgets = allTemplateWidgets.filter((w) => template.used_widgets.includes(w.name));
-    // TODO needed while hardcoded in frontend
-    const resolvedAttributes = allResolvedAttributesWidgets.filter((w) => template.used_widgets.includes(w.template_widget_name));
+    try {
+      const templateContent = await buildContentFromTemplate(
+        stixCoreObjectId,
+        templateName,
+        maxContentMarkings,
+      );
+      const blob = new Blob([templateContent], { type });
+      const file = new File([blob], fileName, { type });
 
-    const templateContent = await buildContentFromTemplate(
-      stixCoreObjectId,
-      templateName,
-      maxContentMarkings,
-    );
-    const blob = new Blob([templateContent], { type });
-    const file = new File([blob], fileName, { type });
-
-    commitUploadFile({
-      variables: { file, id: stixCoreObjectId, fileMarkings, fromTemplate: true },
-      onCompleted: (result) => {
-        setSubmitting(false);
-        resetForm();
-        handleCloseCreateContentFromTemplate();
-        if (result.stixCoreObjectEdit?.importPush) {
-          onFileChange(result.stixCoreObjectEdit.importPush.id);
-        }
-      },
-    });
+      commitUploadFile({
+        variables: { file, id: stixCoreObjectId, fileMarkings, fromTemplate: true },
+        onCompleted: (result) => {
+          setSubmitting(false);
+          resetForm();
+          handleCloseCreateContentFromTemplate();
+          if (result.stixCoreObjectEdit?.importPush) {
+            onFileChange(result.stixCoreObjectEdit.importPush.id);
+          }
+        },
+      });
+    } catch (e) {
+      MESSAGING$.notifyError(t_i18n('An error occurred while trying to build content from template.'));
+    }
   };
 
   const filesList = [...files, ...exportFiles.map((n) => ({ ...n, perspective: 'export' }))]
