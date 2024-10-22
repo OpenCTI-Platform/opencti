@@ -4,7 +4,7 @@ import htmlToPdfmake from 'html-to-pdfmake';
 import pdfMake from 'pdfmake/build/pdfmake';
 import { Content, TDocumentDefinitions } from 'pdfmake/interfaces';
 import { APP_BASE_PATH } from '../relay/environment';
-import { truncate } from './String';
+import { capitalizeWords, truncate } from './String';
 import { dateFormat } from './Time';
 
 const CKEDITOR_CONTAINER_SELECTOR = '.ck-content.ck-editor__editable.ck-editor__editable_inline';
@@ -148,7 +148,7 @@ export const htmlToPdf = (fileName: string, content: string) => {
   return generatePdf(pdfMakeObject);
 };
 
-export const htmlToPdfReport = (stixCoreObject: any, content: string, templateName: string) => {
+export const htmlToPdfReport = (stixCoreObject: any, content: string, templateName: string, markings: string[]) => {
   let htmlData = removeUselessContent(content);
   htmlData = setImagesWidth(htmlData);
 
@@ -156,48 +156,54 @@ export const htmlToPdfReport = (stixCoreObject: any, content: string, templateNa
   const pdfMakeObject = htmlToPdfmake(htmlData, {
     imagesByReference: true,
     ignoreStyles: ['font-family'], // Ignoring fonts to force Roboto later.
+    defaultStyles: {
+      h2: { margin: [0, 20] },
+      h3: { margin: [0, 20] },
+    },
   }) as unknown as TDocumentDefinitions; // Because wrong type when using imagesByReference: true.
 
+  console.log(pdfMakeObject);
+
   const date = dateFormat(new Date()) ?? '';
+  const formattedTemplateName = truncate(capitalizeWords(templateName), 30, false);
 
   const docDefinition: TDocumentDefinitions = {
     pageMargins: [50, 70],
     styles: {
-      headerTitle: { fontSize: 22, bold: true },
-      headerSubtitle: { fontSize: 18, marginLeft: 40 },
-      headerDate: { fontSize: 14, bold: true, opacity: 0.7, marginTop: 10 },
+      firstPageTitle: { fontSize: 26, bold: true },
+      firstPageSubtitle: { fontSize: 20, marginTop: 6, marginLeft: 40 },
+      firstPageDate: { fontSize: 14, bold: true, opacity: 0.7, marginTop: 15 },
       headerFooter: { opacity: 0.5 },
     },
     ...pdfMakeObject,
     content: [
       {
-        absolutePosition: { x: 50, y: 80 },
+        absolutePosition: { x: 50, y: 60 },
         color: 'white',
         columns: [
           {
-            width: 200,
+            width: 250,
             stack: [
               {
-                text: templateName.toUpperCase(),
-                style: 'headerTitle',
+                text: formattedTemplateName,
+                style: 'firstPageTitle',
               },
               {
-                text: `Report created: ${date}`,
-                style: 'headerDate',
+                text: `Exported: ${date}`,
+                style: 'firstPageDate',
               },
             ],
-            style: 'headerTitle',
           },
           {
             text: stixCoreObject.name,
             alignment: 'right',
-            style: 'headerSubtitle',
+            style: 'firstPageSubtitle',
           },
         ],
       },
       {
         text: '',
-        pageBreak: 'after',
+        margin: [0, 240, 0, 0],
       },
       ...(pdfMakeObject.content as Content[]),
     ],
@@ -217,27 +223,36 @@ export const htmlToPdfReport = (stixCoreObject: any, content: string, templateNa
     },
     header(currentPage) {
       if (currentPage === 1) return [];
-      return [
-        {
-          style: 'headerFooter',
-          text: truncate(stixCoreObject.name, 40, false),
-          alignment: 'left',
-          margin: [50, 30],
-        },
-      ];
-    },
-    footer(currentPage, pageCount) {
-      if (currentPage === 1) return [];
       return {
         style: 'headerFooter',
-        margin: [50, 30],
+        margin: [50, 40, 50, 0],
         columns: [
           {
-            text: `${truncate(templateName, 30, false)}`,
+            text: truncate(stixCoreObject.name, 20, false),
             alignment: 'left',
           },
           {
+            text: markings.join(', '),
+            alignment: 'center',
+          },
+          {
             text: date,
+            alignment: 'right',
+          },
+        ],
+      };
+    },
+    footer(currentPage, pageCount) {
+      return {
+        style: 'headerFooter',
+        margin: [50, 40, 50, 0],
+        columns: [
+          {
+            text: formattedTemplateName,
+            alignment: 'left',
+          },
+          {
+            text: markings.join(', '),
             alignment: 'center',
           },
           {
@@ -249,7 +264,7 @@ export const htmlToPdfReport = (stixCoreObject: any, content: string, templateNa
     },
   };
 
-  console.log(docDefinition);
+  // console.log(docDefinition);
 
   return generatePdf(docDefinition);
 };
