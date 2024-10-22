@@ -18,7 +18,6 @@ echo "CLI_PYTHON_DIR=${CLI_PYTHON_DIR}"
 echo "CONNECTOR_DIR=${CONNECTOR_DIR}"
 
 clone_for_pr_build() {
-    echo "[CLONE-DEPS] CLONING with PR_BRANCH_NAME=${PR_BRANCH_NAME},PR_TARGET_BRANCH=${PR_TARGET_BRANCH}, PR_NUMBER=${PR_NUMBER}, OPENCTI_DIR=${OPENCTI_DIR}."
     cd ${WORKSPACE}
     export GH_TOKEN="${GITHUB_TOKEN}"
 
@@ -88,29 +87,6 @@ clone_for_pr_build() {
     fi
 }
 
-clone_for_push_build() {
-    echo "[CLONE-DEPS][CLIENT-PYTHON] Build from a commit, checking if a dedicated branch is required."
-    gh pr view ${PR_BRANCH_NAME} | tail -n 1
-
-    if [[ "$(echo "$(git ls-remote --heads https://github.com/OpenCTI-Platform/client-python.git refs/heads/$PR_BRANCH_NAME)")" != '' ]]
-    then
-        CLIENT_PYTHON_BRANCH=${PR_BRANCH_NAME}
-    else
-        CLIENT_PYTHON_BRANCH=$([[ "$(echo "$(git ls-remote --heads https://github.com/OpenCTI-Platform/client-python.git refs/heads/opencti/$PR_BRANCH_NAME)")" != '' ]] && echo opencti/$PR_BRANCH_NAME || echo 'master')
-    fi
-    git clone -b $CLIENT_PYTHON_BRANCH https://github.com/OpenCTI-Platform/client-python.git ${CLI_PYTHON_DIR}
-
-    echo "[CLONE-DEPS][CONNECTOR] Build from a commit, checking if a dedicated branch is required."
-    if [[ "$(echo "$(git ls-remote --heads https://github.com/OpenCTI-Platform/connectors.git refs/heads/$PR_BRANCH_NAME)")" != '' ]]
-    then
-        CONNECTOR_BRANCH=${PR_BRANCH_NAME}
-    else
-        CONNECTOR_BRANCH=$([[ "$(echo "$(git ls-remote --heads https://github.com/OpenCTI-Platform/connectors.git refs/heads/opencti/$PR_BRANCH_NAME)")" != '' ]] && echo opencti/$PR_BRANCH_NAME || echo 'master')
-    fi
-
-    git clone -b $CONNECTOR_BRANCH https://github.com/OpenCTI-Platform/connectors.git ${CONNECTOR_DIR}
-}
-
 echo "[CLONE-DEPS] START; with PR_BRANCH_NAME=${PR_BRANCH_NAME},PR_TARGET_BRANCH=${PR_TARGET_BRANCH}, PR_NUMBER=${PR_NUMBER}, OPENCTI_DIR=${OPENCTI_DIR}."
 if [[ -z ${PR_NUMBER} ]] || [[ ${PR_NUMBER} == "" ]]
 then
@@ -118,10 +94,8 @@ then
     # Using github cli to get PR number anyway
     PR_NUMBER=$(gh pr view ${PR_BRANCH_NAME} --json number --jq '.number')
     PR_TARGET_BRANCH=$(gh pr view ${PR_BRANCH_NAME} --json baseRefName --jq '.baseRefName')
+    echo "[CLONE-DEPS] Got data from github cli, continue with: PR_TARGET_BRANCH=${PR_TARGET_BRANCH}, PR_NUMBER=${PR_NUMBER}."
     clone_for_pr_build
-
-    # echo "[CLONE-DEPS] No PR number from Drone = "Push build"; it's only for repository branch (not fork)."
-    # clone_for_push_build
 else
     # PR build is trigger from Pull Request coming both from branch and forks.
     # We need to have this clone accross repository that works for forks (community PR)
