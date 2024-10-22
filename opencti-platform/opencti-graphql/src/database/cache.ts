@@ -13,6 +13,7 @@ import { convertStoreToStix } from './stix-converter';
 import { ENTITY_TYPE_PLAYBOOK } from '../modules/playbook/playbook-types';
 import { type BasicStoreEntityPublicDashboard, ENTITY_TYPE_PUBLIC_DASHBOARD } from '../modules/publicDashboard/publicDashboard-types';
 import { wait } from './utils';
+import { exclusionListEntityType } from '../utils/exclusionListsTypes';
 
 const STORE_ENTITIES_LINKS: Record<string, string[]> = {
   // Filters must be reset depending on stream and triggers modifications
@@ -25,9 +26,9 @@ const STORE_ENTITIES_LINKS: Record<string, string[]> = {
   [ENTITY_TYPE_GROUP]: [ENTITY_TYPE_USER],
 };
 
-const STORE_EXCLUSION_LIST = [];
+const STORE_EXCLUSION_LIST: ExclusionListProperties[] = [];
 
-export const getExclusionListsByTypeFromCache = (exclusionListType: string): ExclusionListProperties[] => {
+export const getExclusionListsByTypeFromCache = (exclusionListType: exclusionListEntityType): ExclusionListProperties[] => {
   return STORE_EXCLUSION_LIST.filter((list) => list.type.includes(exclusionListType));
 };
 
