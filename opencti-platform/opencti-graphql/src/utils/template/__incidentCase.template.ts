@@ -2,10 +2,10 @@ import type { Template } from '../../generated/graphql';
 
 const content = `
 <body>
-  <h1>Incident Response Report: $containerName</h1>
+  <h2>Incident Response Report: $containerName</h2>
   
-  <h2>1. Details</h2>
-  <table>
+  <h3>1. Details</h3>
+  <table data-pdfmake="{'widths':['*','*']}">
     <tr>
       <td><strong>Creation date</strong></td>
       <td>$containerCreationDate</td>
@@ -36,10 +36,10 @@ const content = `
     </tr>
   </table>
   
-  <h2>2. Executive Summary</h2>
+  <h3>2. Executive Summary</h3>
   <p>$containerDescription</p>
   
-  <h2>3. Incident Analysis</h2>
+  <h3>3. Incident Analysis</h3>
   <blockquote>
     <p>To be completed by the analyst. This section should clearly describe:</p>
     <ul>
@@ -50,24 +50,24 @@ const content = `
     </ul>
   </blockquote>
   
-  <h2>4. Incident Response Tasks/Actions</h2>
+  <h3>4. Incident Response Tasks/Actions</h3>
   <div>$incidentTasksActions</div>
   
-  <h2>5. Recommendations</h2>
+  <h3>5. Recommendations</h3>
   <blockquote>
     <p>To be completed by the analyst. The recommendations section details the actions necessary to prevent similar incidents in the future.</p>
   </blockquote>
   
-  <h2>6. Indicators of Compromise (IoCs)</h2>
+  <h3>6. Indicators of Compromise (IoCs)</h3>
   <div>$incidentIOC</div>
   
-  <h2>7. Observables</h2>
+  <h3>7. Observables</h3>
   <div>$containerObservables</div>
   
-  <h2>8. Tactics, Techniques, and Procedures (TTPs)</h2>
+  <h3>8. Tactics, Techniques, and Procedures (TTPs)</h3>
   <div>$incidentTTP</div>
   
-  <h2>9. References</h2>
+  <h3>9. References</h3>
   <div>$containerReferences</div>
 </body>
 `;

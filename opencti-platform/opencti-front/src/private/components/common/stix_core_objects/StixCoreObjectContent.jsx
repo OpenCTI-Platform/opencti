@@ -429,8 +429,10 @@ class StixCoreObjectContentComponent extends Component {
     const { stixCoreObject } = this.props;
     if (currentFileId) {
       if (currentFileId.startsWith('fromTemplate')) {
+        const file = stixCoreObject.contentsFromTemplate.edges.find((e) => e.node.id === currentFileId);
         const name = currentFileId.split('/').pop().split('.')[0];
-        htmlToPdfReport(stixCoreObject, currentContent, name).download(`${name}.pdf`);
+        const markings = file?.node.objectMarking.map((m) => m.representative.main) ?? [];
+        htmlToPdfReport(stixCoreObject, currentContent, name, markings).download(`${name}.pdf`);
       } else {
         const fragment = (currentFileId ?? stixCoreObject.name).split('/');
         const currentName = R.last(fragment);
@@ -774,36 +776,42 @@ const StixCoreObjectContent = createRefetchContainer(
         }
         ... on Container {
           contentsFromTemplate(first: 500) @connection(key: "Pagination_contentsFromTemplate") {
-              edges {
-                  node {
-                      id
-                      name
-                      uploadStatus
-                      lastModified
-                      lastModifiedSinceMin
-                      metaData {
-                          mimetype
-                          list_filters
-                          file_markings
-                          messages {
-                              timestamp
-                              message
-                          }
-                          errors {
-                              timestamp
-                              message
-                          }
-                      }
-                      metaData {
-                          mimetype
-                      }
+            edges {
+              node {
+                id
+                name
+                uploadStatus
+                lastModified
+                lastModifiedSinceMin
+                objectMarking {
+                  id
+                  representative {
+                    main
+                  }
+                }
+                  metaData {
+                    mimetype
+                    list_filters
+                    file_markings
+                    messages {
+                      timestamp
+                      message
+                    }
+                    errors {
+                      timestamp
+                      message
+                    }
+                  }
+                  metaData {
+                    mimetype
                   }
               }
+            }
           }
           templates {
-              name
-              content
-              used_template_widgets_names
+            name
+            content
+            used_template_widgets_names
           }
         }
         externalReferences {
