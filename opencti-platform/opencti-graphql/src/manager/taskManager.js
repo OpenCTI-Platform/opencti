@@ -579,7 +579,7 @@ export const taskHandler = async () => {
     // Fetch the user responsible for the task
     const rawUser = await resolveUserByIdFromCache(context, task.initiator_id);
     const user = { ...rawUser, origin: { user_id: rawUser.id, referer: 'background_task' } };
-    logApp.info(`[OPENCTI-MODULE][TASK-MANAGER] Executing job using userId:${rawUser.id}`);
+    logApp.info(`[OPENCTI-MODULE][TASK-MANAGER] Executing job using userId:${rawUser.id}, for task ${task.internal_id}`);
     let jobToExecute;
     if (isQueryTask) {
       jobToExecute = await computeQueryTaskElements(context, user, task);
