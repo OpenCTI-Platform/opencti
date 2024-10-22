@@ -425,30 +425,38 @@ const StixSightingRelationshipEditionOverviewComponent: FunctionComponent<Omit<S
                 }
                 disabled={inferred}
               />
-              {enableReferences && (
-                <CommitMessage
-                  submitForm={submitForm}
-                  disabled={isSubmitting || !isValid || !dirty}
-                  setFieldValue={setFieldValue}
-                  open={false}
-                  values={values.references}
-                  id={stixSightingRelationship.id}
-                  noStoreUpdate={noStoreUpdate}
-                />
-              )}
+              <div style={{
+                display: 'flex',
+                alignItems: 'flex-end',
+                justifyContent: 'flex-end',
+                gap: '10px',
+              }}
+              >
+                {enableReferences && (
+                  <CommitMessage
+                    submitForm={submitForm}
+                    disabled={isSubmitting || !isValid || !dirty}
+                    setFieldValue={setFieldValue}
+                    open={false}
+                    values={values.references}
+                    id={stixSightingRelationship.id}
+                    noStoreUpdate={noStoreUpdate}
+                  />
+                )}
+                {typeof handleDelete === 'function' && (
+                  <Button
+                    variant="contained"
+                    onClick={() => handleDelete()}
+                    classes={{ root: classes.button }}
+                    disabled={inferred}
+                  >
+                    {t_i18n('Delete')}
+                  </Button>
+                )}
+              </div>
             </Form>
           )}
         </Formik>
-        {typeof handleDelete === 'function' && (
-          <Button
-            variant="contained"
-            onClick={() => handleDelete()}
-            classes={{ root: classes.button }}
-            disabled={inferred}
-          >
-            {t_i18n('Delete')}
-          </Button>
-        )}
       </div>
     </>
   );
