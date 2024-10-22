@@ -94,6 +94,15 @@ then
     # Using github cli to get PR number anyway
     PR_NUMBER=$(gh pr view ${PR_BRANCH_NAME} --json number --jq '.number')
     PR_TARGET_BRANCH=$(gh pr view ${PR_BRANCH_NAME} --json baseRefName --jq '.baseRefName')
+
+    if [[ -z ${PR_NUMBER} ]] || [[ ${PR_NUMBER} == "" ]]
+    then
+        echo "[CLONE-DEPS] PR is not created on github yet, retry in 5s"
+        sleep 5
+        PR_NUMBER=$(gh pr view ${PR_BRANCH_NAME} --json number --jq '.number')
+        PR_TARGET_BRANCH=$(gh pr view ${PR_BRANCH_NAME} --json baseRefName --jq '.baseRefName')
+    fi
+
     echo "[CLONE-DEPS] Got data from github cli, continue with: PR_TARGET_BRANCH=${PR_TARGET_BRANCH}, PR_NUMBER=${PR_NUMBER}."
     clone_for_pr_build
 else
