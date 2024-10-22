@@ -336,6 +336,16 @@ export const indicatorEditField = async (context: AuthContext, user: AuthUser, i
       finalInput.push({ key: 'valid_until', value: [newValidUntilDate.toISOString()] });
     }
   }
+  // check indicator pattern syntax
+  const patternEditInput = input.find((e) => e.key === 'pattern');
+  if (patternEditInput) {
+    const patternType = indicator.pattern_type.toLowerCase();
+    const formattedPattern = cleanupIndicatorPattern(patternType, patternEditInput.value[0]);
+    const check = await checkIndicatorSyntax(context, user, patternType, formattedPattern);
+    if (check === false) {
+      throw FunctionalError(`Indicator of type ${indicator.pattern_type} is not correctly formatted.`);
+    }
+  }
   logApp.info('indicatorEditField finalInput', { finalInput });
   return stixDomainObjectEditField(context, user, id, finalInput, opts);
 };
