@@ -3,9 +3,9 @@ import { FunctionalError } from '../config/errors';
 import { getExclusionListsByTypeFromCache } from '../database/cache';
 import { type ExtractedObservableValues, type ExclusionListProperties, exclusionListEntityType } from './exclusionListsTypes';
 
-export const getIsRange = (value) => value.indexOf('/') !== -1;
+export const getIsRange = (value: string) => value.indexOf('/') !== -1;
 
-export const checkIpAddrType = (ipAddr) => {
+export const checkIpAddrType = (ipAddr: string) => {
   const isIpv4 = ipAddr.split('.').length === 4;
   const isIpv6 = ipAddr.indexOf(':') !== -1;
   return { isIpv4, isIpv6 };
@@ -50,7 +50,7 @@ const throwExclusionListError = (value: string, listName: string) => {
   throw FunctionalError(`Indicator creation failed, this pattern (${value}) is contained on an exclusion list (${listName})`, { value });
 };
 
-export const convertIpAddr = (list) => {
+export const convertIpAddr = (list: string[]) => {
   return list.map((value) => {
     const ipAddress = value.split('/')[0];
     const { isIpv4, isIpv6 } = checkIpAddrType(ipAddress);
