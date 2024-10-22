@@ -22,7 +22,7 @@ import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import CircularProgress from '@mui/material/CircularProgress';
 import { makeStyles, useTheme } from '@mui/styles';
-import Chip from '@mui/material/Chip';
+import { DraftChip } from '../draft/DraftChip';
 import { stixCoreObjectQuickSubscriptionContentQuery } from '../stix_core_objects/stixCoreObjectTriggersUtils';
 import StixCoreObjectAskAI from '../stix_core_objects/StixCoreObjectAskAI';
 import { useSettingsMessagesBannerHeight } from '../../settings/settings_messages/SettingsMessagesBanner';
@@ -800,16 +800,7 @@ const ContainerHeader = (props) => {
             </Typography>
           </Tooltip>
           {container.draftVersion && (
-            <Chip
-              style={{
-                color: theme.palette.warning.main,
-                borderColor: theme.palette.warning.main,
-                textTransform: 'uppercase',
-                borderRadius: theme.borderRadius,
-              }}
-              variant="outlined"
-              label={t_i18n('Draft')}
-            />
+            <DraftChip />
           )}
         </div>
         )}

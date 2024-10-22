@@ -98,14 +98,14 @@ const Drafts: React.FC = () => {
     filters,
   } = viewStorage;
 
-  const contextFilters = useBuildEntityTypeBasedFilterContext('Draft', filters);
+  const contextFilters = useBuildEntityTypeBasedFilterContext('DraftWorkspace', filters);
   const queryPaginationOptions = {
     ...paginationOptions,
     filters: contextFilters,
   } as unknown as DraftsLinesPaginationQuery$variables;
   const queryRef = useQueryLoading<DraftsLinesPaginationQuery>(
     draftsLinesQuery,
-    paginationOptions,
+    queryPaginationOptions,
   );
 
   const preloadedPaginationProps = {

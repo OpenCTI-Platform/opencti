@@ -60,7 +60,7 @@ const DraftCreationForm: React.FC<DraftFormProps> = ({ updater, onCompleted, onR
       },
       onError: (error) => {
         handleErrorInForm(error, setErrors);
-        setErrors(error);
+        setSubmitting(false);
       },
       onCompleted: () => {
         setSubmitting(false);

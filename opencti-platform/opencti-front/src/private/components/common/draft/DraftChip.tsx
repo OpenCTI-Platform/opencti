@@ -1,0 +1,40 @@
+import React from 'react';
+import { useTheme } from '@mui/styles';
+import Tooltip from '@mui/material/Tooltip';
+import { SimplePaletteColorOptions } from '@mui/material';
+import type { Theme } from '../../../../components/Theme';
+import { useFormatter } from '../../../../components/i18n';
+
+export const getDraftModeColor = (theme: Theme) => {
+  const draftModeColor = (theme.palette.warning as SimplePaletteColorOptions)?.main ?? theme.palette.primary.main;
+  return draftModeColor;
+};
+
+export const DraftChip = ({ style }: { style?: React.CSSProperties }) => {
+  const { t_i18n } = useFormatter();
+  const theme = useTheme<Theme>();
+  const draftColor = getDraftModeColor(theme);
+  return (
+    <div
+      style={{
+        fontSize: 'xx-small',
+        textTransform: 'uppercase',
+        fontWeight: 500,
+        height: 14,
+        display: 'inline-flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginTop: theme.spacing(0.25),
+        marginLeft: theme.spacing(0.5),
+        padding: `${theme.spacing(1)} ${theme.spacing(0.5)}`,
+        borderRadius: theme.borderRadius,
+        border: `1px solid ${draftColor}`,
+        color: draftColor,
+        backgroundColor: 'transparent',
+        ...style,
+      }}
+    >
+      {t_i18n('Draft')}
+    </div>
+  );
+};

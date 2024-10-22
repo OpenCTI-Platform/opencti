@@ -2,9 +2,8 @@ import React from 'react';
 import { graphql } from 'react-relay';
 import { useNavigate } from 'react-router-dom';
 import Button from '@mui/material/Button';
-import Chip from '@mui/material/Chip';
-import { SimplePaletteColorOptions } from '@mui/material';
 import { useTheme } from '@mui/styles';
+import DraftBlock from '@components/common/draft/DraftBlock';
 import { useFormatter } from '../../../components/i18n';
 import type { Theme } from '../../../components/Theme';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
@@ -25,11 +24,6 @@ export const draftContextBannerMutation = graphql`
     }
 `;
 
-export const getDraftModeColor = (theme: Theme) => {
-  const draftModeColor = (theme.palette.warning as SimplePaletteColorOptions)?.main ?? theme.palette.primary.main;
-  return draftModeColor;
-};
-
 const DraftContextBanner = () => {
   const { t_i18n } = useFormatter();
   const [commit] = useApiMutation(draftContextBannerMutation);
@@ -37,8 +31,6 @@ const DraftContextBanner = () => {
   const { me } = useAuth();
   const navigate = useNavigate();
   const currentDraftContextName = me.draftContext ? me.draftContext.name : '';
-
-  const draftModeColor = getDraftModeColor(theme);
 
   const handleExitDraft = () => {
     commit({
@@ -55,22 +47,13 @@ const DraftContextBanner = () => {
     <div style={{ padding: '0 12px' }}>
       <div style={{ display: 'flex', width: '100%', alignItems: 'center' }}>
         <div style={{ padding: '0 12px' }}>
-          <Chip
-            style={{
-              color: draftModeColor,
-              borderColor: draftModeColor,
-              textTransform: 'uppercase',
-              borderRadius: theme.borderRadius,
-            }}
-            variant="outlined"
-            label={`${t_i18n('Draft Mode')} - ${truncate(currentDraftContextName, 20)}`}
-          />
+          <DraftBlock body={truncate(currentDraftContextName, 40)} />
         </div>
         <div>
           <Button
             variant="contained"
             color="primary"
-            style={{ width: '100%', height: 32 }}
+            style={{ width: '100%' }}
             onClick={handleExitDraft}
           >
             {t_i18n('Approve draft')}
@@ -79,7 +62,8 @@ const DraftContextBanner = () => {
         <div style={{ padding: '0 12px' }}>
           <Button
             color="primary"
-            style={{ width: '100%', height: 32 }}
+            variant="outlined"
+            style={{ width: '100%' }}
             onClick={handleExitDraft}
           >
             {t_i18n('Exit draft')}
