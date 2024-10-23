@@ -1,7 +1,7 @@
 import { graphql } from 'react-relay';
 
 // eslint-disable-next-line import/prefer-default-export
-export const templateAndUtilsContainerQuery = graphql`
+const templateAndUtilsContainerQuery = graphql`
   query TemplateAndUtilsContainerQuery($id: String!, $templateId: String!) {
     container(id: $id) {
       id
@@ -17,12 +17,8 @@ export const templateAndUtilsContainerQuery = graphql`
           name
           widget
         }
-        resolved_widgets_attributes {
-          template_widget_name
-          data
-          displayStyle
-        }
       }
     }
   }
 `;
+export default templateAndUtilsContainerQuery;

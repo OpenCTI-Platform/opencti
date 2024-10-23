@@ -26,8 +26,6 @@ import { paginatedForPathWithEnrichment } from '../modules/internal/document/doc
 import { isEnterpriseEdition } from '../utils/ee';
 import { usedTemplates } from '../utils/template/__template';
 import { hardcodedTemplateWidgets } from '../utils/template/__widget';
-import { hardcodedResolvedAttributesWidgets } from '../utils/template/__resolvedAttributesWidgets';
-
 export const findById = async (context, user, containerId) => {
   return storeLoadById(context, user, containerId, ENTITY_TYPE_CONTAINER);
 };
@@ -269,8 +267,6 @@ export const getTemplateAndUtils = (context, user, containerId, templateId) => {
   const { template_widgets_names } = template;
   // fetch the widgets used in the template (hardcoded for the moment)
   const template_widgets = hardcodedTemplateWidgets.filter((w) => template_widgets_names.includes(w.name));
-  // resolve widget attributes // TODO in frontend
-  const resolved_widgets_attributes = hardcodedResolvedAttributesWidgets;
   // return template and the associated utils
-  return { template, template_widgets, resolved_widgets_attributes };
+  return { template, template_widgets };
 };

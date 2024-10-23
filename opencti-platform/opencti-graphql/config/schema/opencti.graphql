@@ -875,7 +875,6 @@ type ResolvedWidgetAttribute {
 type TemplateAndUtils {
   template: Template!,
   template_widgets: [TemplateWidget!]!,
-  resolved_widgets_attributes: [ResolvedWidgetAttribute!]!
 }
 
 type IndexedFile {
