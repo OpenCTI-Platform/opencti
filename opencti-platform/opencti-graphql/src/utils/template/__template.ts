@@ -21,11 +21,11 @@ const templateAttribute: Template = {
   name: 'template with attributes',
   content: `<body>
     <h1> Main title </h1>
-    <p> Report name: $reportName</p>
+    <p> Report name: $containerName</p>
     <p> This report has been published $reportPublicationDate, and has labels: $reportLabels</p>
     </body>
     </html>`,
-  used_template_widgets_names: ['reportName', 'reportPublicationDate', 'reportLabels'],
+  used_template_widgets_names: ['containerName', 'reportPublicationDate', 'containerLabels'],
 };
 
 const templateList: Template = {

@@ -861,6 +861,7 @@ type Template {
 }
 type TemplateWidget {
   name: String!
+  description: String
   widget: String!
 }
 type ResolvedWidgetAttribute {

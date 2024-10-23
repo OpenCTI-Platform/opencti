@@ -26570,6 +26570,7 @@ export type TemplateAndUtils = {
 
 export type TemplateWidget = {
   __typename?: 'TemplateWidget';
+  description?: Maybe<Scalars['String']['output']>;
   name: Scalars['String']['output'];
   widget: Scalars['String']['output'];
 };
@@ -39733,6 +39734,7 @@ export type TemplateAndUtilsResolvers<ContextType = any, ParentType extends Reso
 }>;
 
 export type TemplateWidgetResolvers<ContextType = any, ParentType extends ResolversParentTypes['TemplateWidget'] = ResolversParentTypes['TemplateWidget']> = ResolversObject<{
+  description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   widget?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;

@@ -3,7 +3,7 @@ import type { FilterGroup, TemplateWidget } from '../../generated/graphql';
 // hardcoded widgets
 
 const widgetContainerCreationDate: TemplateWidget = {
-  name: 'Container Creation Date',
+  name: 'containerCreationDate',
   widget: JSON.stringify({
     type: 'attribute',
     id: 'widgetContainerCreationDate',
@@ -15,7 +15,7 @@ const widgetContainerCreationDate: TemplateWidget = {
 };
 
 const widgetContainerDescription: TemplateWidget = {
-  name: 'Container Description',
+  name: 'containerDescription',
   widget: JSON.stringify({
     type: 'attribute',
     id: 'widgetContainerDescription',
@@ -27,7 +27,7 @@ const widgetContainerDescription: TemplateWidget = {
 };
 
 const widgetContainerLabels: TemplateWidget = {
-  name: 'Container Labels',
+  name: 'containerLabels',
   widget: JSON.stringify({
     type: 'attribute',
     id: 'widgetContainerLabels',
@@ -39,7 +39,7 @@ const widgetContainerLabels: TemplateWidget = {
 };
 
 const widgetContainerMarkings: TemplateWidget = {
-  name: 'Container Markings',
+  name: 'containerMarkings',
   widget: JSON.stringify({
     type: 'attribute',
     id: 'widgetContainerMarkings',
@@ -51,7 +51,7 @@ const widgetContainerMarkings: TemplateWidget = {
 };
 
 const widgetContainerModificationDate: TemplateWidget = {
-  name: 'Container Modification Date',
+  name: 'containerModificationDate',
   widget: JSON.stringify({
     type: 'attribute',
     id: 'widgetContainerModificationDate',
@@ -63,7 +63,7 @@ const widgetContainerModificationDate: TemplateWidget = {
 };
 
 const widgetContainerName: TemplateWidget = {
-  name: 'Container Name',
+  name: 'containerName',
   widget: JSON.stringify({
     type: 'attribute',
     id: 'widgetContainerName',
@@ -75,7 +75,7 @@ const widgetContainerName: TemplateWidget = {
 };
 
 const widgetContainerIndicators: TemplateWidget = {
-  name: 'Container Indicators',
+  name: 'containerIndicators',
   widget: JSON.stringify({
     type: 'list',
     id: 'widgetContainerIndicators',
@@ -96,8 +96,30 @@ const widgetContainerIndicators: TemplateWidget = {
   }),
 };
 
+const widgetContainerObservables: TemplateWidget = {
+  name: 'containerObservables',
+  widget: JSON.stringify({
+    type: 'list',
+    id: 'widgetContainerIndicators',
+    perspective: 'entities',
+    dataSelection: [
+      {
+        perspective: 'entities',
+        filters: {
+          mode: 'and',
+          filters: [
+            { key: 'entity_type', values: ['Stix-Cyber-Observable'] },
+            { key: 'objects', values: ['CONTAINER_ID'] },
+          ],
+          filterGroups: [],
+        } as FilterGroup,
+      },
+    ],
+  }),
+};
+
 const widgetContainerReferences: TemplateWidget = {
-  name: 'Container References',
+  name: 'containerReferences',
   widget: JSON.stringify({
     type: 'attribute',
     id: 'widgetContainerReferences',
@@ -108,6 +130,7 @@ const widgetContainerReferences: TemplateWidget = {
 
 const widgetLocationsList: TemplateWidget = {
   name: 'locationsList',
+  description: 'List of the locations contained in a container',
   widget: JSON.stringify({
     id: 'widgetList_id',
     type: 'list',
@@ -153,7 +176,7 @@ const widgetDonut: TemplateWidget = {
 };
 
 const widgetIncidentIOC: TemplateWidget = {
-  name: 'Incident IOCs',
+  name: 'incidentIOC',
   widget: JSON.stringify({
     type: 'list',
     id: 'widgetIncidentIOC',
@@ -175,7 +198,7 @@ const widgetIncidentIOC: TemplateWidget = {
 };
 
 const widgetIncidentPriority: TemplateWidget = {
-  name: 'Incident Priority',
+  name: 'incidentPriority',
   widget: JSON.stringify({
     type: 'attribute',
     id: 'widgetIncidentPriority',
@@ -187,7 +210,7 @@ const widgetIncidentPriority: TemplateWidget = {
 };
 
 const widgetIncidentSeverity: TemplateWidget = {
-  name: 'Incident Severity',
+  name: 'incidentSeverity',
   widget: JSON.stringify({
     type: 'attribute',
     id: 'widgetIncidentSeverity',
@@ -199,7 +222,7 @@ const widgetIncidentSeverity: TemplateWidget = {
 };
 
 const widgetIncidentTasksActions: TemplateWidget = {
-  name: 'Incident Tasks and Actions',
+  name: 'incidentTasksAndActions',
   widget: JSON.stringify({
     type: 'list',
     id: 'widgetIncidentTasksActions',
@@ -221,7 +244,7 @@ const widgetIncidentTasksActions: TemplateWidget = {
 };
 
 const widgetIncidentTTP: TemplateWidget = {
-  name: 'Incident TTPs',
+  name: 'incidentTTP',
   widget: JSON.stringify({
     type: 'list',
     id: 'widgetIncidentTTP',
@@ -243,7 +266,7 @@ const widgetIncidentTTP: TemplateWidget = {
 };
 
 const widgetIncidentType: TemplateWidget = {
-  name: 'Incident Type',
+  name: 'incidentType',
   widget: JSON.stringify({
     type: 'attribute',
     id: 'widgetIncidentType',
@@ -262,6 +285,7 @@ export const hardcodedTemplateWidgets: TemplateWidget[] = [
   widgetContainerModificationDate,
   widgetContainerName,
   widgetContainerIndicators,
+  widgetContainerObservables,
   widgetContainerReferences,
   widgetLocationsList,
   widgetDonut,

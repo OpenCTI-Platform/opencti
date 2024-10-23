@@ -51,7 +51,7 @@ const content = `
   </blockquote>
   
   <h3>4. Incident Response Tasks/Actions</h3>
-  <div>$incidentTasksActions</div>
+  <div>$incidentTasksAndActions</div>
   
   <h3>5. Recommendations</h3>
   <blockquote>
@@ -87,7 +87,7 @@ export const templateIncidentCase: Template = {
     'incidentIOC',
     'incidentPriority',
     'incidentSeverity',
-    'incidentTasksActions',
+    'incidentTasksAndActions',
     'incidentTTP',
     'incidentType',
   ],
