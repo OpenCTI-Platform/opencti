@@ -10,6 +10,7 @@ const widgetContainerCreationDate: TemplateWidget = {
     perspective: null,
     dataSelection: [{
       columns: [{ label: 'creationDate', attribute: 'created_at', displayStyle: 'text' }],
+      instance_id: 'CONTAINER_ID',
     }],
   }),
 };
@@ -22,6 +23,7 @@ const widgetContainerDescription: TemplateWidget = {
     perspective: null,
     dataSelection: [{
       columns: [{ label: 'Description', attribute: 'description' }],
+      instance_id: 'CONTAINER_ID',
     }],
   }),
 };
@@ -33,7 +35,8 @@ const widgetContainerLabels: TemplateWidget = {
     id: 'widgetContainerLabels',
     perspective: null,
     dataSelection: [{
-      columns: [{ label: 'Labels', attribute: 'objectLabel' }],
+      columns: [{ label: 'Labels', attribute: 'objectLabel.value' }],
+      instance_id: 'CONTAINER_ID',
     }],
   }),
 };
@@ -45,7 +48,8 @@ const widgetContainerMarkings: TemplateWidget = {
     id: 'widgetContainerMarkings',
     perspective: null,
     dataSelection: [{
-      columns: [{ label: 'Markings', attribute: 'objectMarking' }],
+      columns: [{ label: 'Markings', attribute: 'objectMarking.definition' }],
+      instance_id: 'CONTAINER_ID',
     }],
   }),
 };
@@ -58,6 +62,7 @@ const widgetContainerModificationDate: TemplateWidget = {
     perspective: null,
     dataSelection: [{
       columns: [{ label: 'ModificationDate', attribute: 'modified' }],
+      instance_id: 'CONTAINER_ID',
     }],
   }),
 };
@@ -70,6 +75,7 @@ const widgetContainerName: TemplateWidget = {
     perspective: null,
     dataSelection: [{
       columns: [{ label: 'Name', attribute: 'name' }],
+      instance_id: 'CONTAINER_ID',
     }],
   }),
 };
@@ -82,6 +88,7 @@ const widgetReportPublicationDate: TemplateWidget = {
     perspective: null,
     dataSelection: [{
       columns: [{ label: 'Publication date', attribute: 'published' }],
+      instance_id: 'CONTAINER_ID',
     }],
   }),
 };
@@ -226,7 +233,8 @@ const widgetIncidentPriority: TemplateWidget = {
     id: 'widgetIncidentPriority',
     perspective: null,
     dataSelection: [{
-      attribute: 'priority',
+      columns: [{ label: 'Priority', attribute: 'priority' }],
+      instance_id: 'CONTAINER_ID',
     }],
   }),
 };
@@ -238,7 +246,8 @@ const widgetIncidentSeverity: TemplateWidget = {
     id: 'widgetIncidentSeverity',
     perspective: null,
     dataSelection: [{
-      attribute: 'severity',
+      columns: [{ label: 'Severity', attribute: 'severity' }],
+      instance_id: 'CONTAINER_ID',
     }],
   }),
 };
@@ -304,7 +313,8 @@ const widgetIncidentType: TemplateWidget = {
     id: 'widgetIncidentType',
     perspective: null,
     dataSelection: [{
-      attribute: 'incident_type',
+      columns: [{ label: 'Incident type', attribute: 'incident_type' }],
+      instance_id: 'CONTAINER_ID',
     }],
   }),
 };
