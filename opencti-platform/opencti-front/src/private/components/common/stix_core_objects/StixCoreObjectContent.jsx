@@ -449,8 +449,6 @@ class StixCoreObjectContentComponent extends Component {
     const contentsFromTemplate = getContentsFromTemplate(stixCoreObject);
     const currentUrl = currentFileId
       && `${APP_BASE_PATH}/storage/view/${encodeURIComponent(currentFileId)}`;
-    const currentGetUrl = currentFileId
-      && `${APP_BASE_PATH}/storage/get/${encodeURIComponent(currentFileId)}`;
     const currentFile = currentFileId
       && [...files, ...exportFiles, ...contentsFromTemplate].find((n) => n.id === currentFileId);
     const currentFileType = currentFile && currentFile.metaData.mimetype;
@@ -487,8 +485,6 @@ class StixCoreObjectContentComponent extends Component {
             {currentFileType === 'text/plain' && (
               <>
                 <StixCoreObjectContentBar
-                  directDownload={currentGetUrl}
-                  handleDownloadPdf={this.handleDownloadPdf.bind(this)}
                   navOpen={navOpen}
                   handleSave={this.saveFile.bind(this)}
                   changed={changed}
@@ -524,8 +520,6 @@ class StixCoreObjectContentComponent extends Component {
             {(currentFileType === 'text/html') && (
               <>
                 <StixCoreObjectContentBar
-                  directDownload={currentGetUrl}
-                  handleDownloadPdf={this.handleDownloadPdf.bind(this)}
                   handleSave={() => (this.saveFile())}
                   changed={changed}
                   navOpen={navOpen}
@@ -558,8 +552,6 @@ class StixCoreObjectContentComponent extends Component {
             {currentFileType === 'text/markdown' && (
               <>
                 <StixCoreObjectContentBar
-                  directDownload={currentGetUrl}
-                  handleDownloadPdf={this.handleDownloadPdf.bind(this)}
                   navOpen={navOpen}
                   handleSave={this.saveFile.bind(this)}
                   changed={changed}
@@ -608,7 +600,6 @@ class StixCoreObjectContentComponent extends Component {
                 <StixCoreObjectContentBar
                   handleZoomIn={this.handleZoomIn.bind(this)}
                   handleZoomOut={this.handleZoomOut.bind(this)}
-                  directDownload={currentGetUrl}
                   currentZoom={this.state.pdfViewerZoom}
                   navOpen={navOpen}
                 />
