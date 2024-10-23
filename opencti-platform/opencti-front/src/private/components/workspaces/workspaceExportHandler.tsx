@@ -24,8 +24,8 @@ const handleExportJson = (workspace: workspaceToExport) => {
       if (result.workspace) {
         const blob = new Blob([result.workspace.toConfigurationExport], { type: 'text/json' });
         const [day, month, year] = new Date().toLocaleDateString('fr-FR').split('/');
-        const fileName = `${year}${month}${day}_octi_dashboard_${workspace.name}`;
-        fileDownload(blob, fileName, 'application/json');
+        const fileName = `${year}${month}${day}_octi_dashboard_${workspace.name}.json`;
+        fileDownload(blob, fileName);
       }
     });
 };
