@@ -24,7 +24,6 @@ export const csvMapperToFormData = (
     id: csvMapper.id,
     name: csvMapper.name,
     has_header: csvMapper.has_header,
-    has_entity_dynamic_mapping: csvMapper.has_entity_dynamic_mapping ?? undefined,
     separator: csvMapper.separator,
     skip_line_char: csvMapper.skipLineChar ?? undefined,
     entity_representations: csvMapper.representations.flatMap((rep) => {
@@ -52,7 +51,6 @@ export const formDataToCsvMapper = (
     id: data.id,
     name: data.name ?? '',
     has_header: data.has_header,
-    has_entity_dynamic_mapping: data.has_entity_dynamic_mapping,
     separator: data.separator,
     skipLineChar: data.skip_line_char ?? null,
     representations: [

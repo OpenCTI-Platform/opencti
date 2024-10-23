@@ -8,7 +8,6 @@ const convertCsvMapperToStix = (instance: StoreEntityCsvMapper): StixCsvMapper =
     ...stixObject,
     name: instance.name,
     has_header: instance.has_header,
-    has_entity_dynamic_mapping: instance.has_entity_dynamic_mapping,
     separator: instance.separator,
     representations: instance.representations,
     extensions: {

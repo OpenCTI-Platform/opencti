@@ -1,12 +1,12 @@
-import { type CsvMapperParsed, CsvMapperRepresentationType, Operator } from '../../../../src/modules/internal/csvMapper/csvMapper-types';
+import { type CsvMapperParsed, CsvMapperRepresentationType } from '../../../../src/modules/internal/csvMapper/csvMapper-types';
 import { ENTITY_IPV4_ADDR, ENTITY_URL } from '../../../../src/schema/stixCyberObservable';
 import { ENTITY_TYPE_IDENTITY_INDIVIDUAL } from '../../../../src/schema/stixDomainObject';
+import { CsvMapperOperator } from '../../../../src/generated/graphql';
 
 export const csvMapperDynamicIpAndUrl: Partial<CsvMapperParsed> = {
   id: 'dyn-mapper-url-ip',
   has_header: true,
   separator: ';',
-  has_entity_dynamic_mapping: true,
   representations: [
     {
       id: 'representationIP',
@@ -15,7 +15,7 @@ export const csvMapperDynamicIpAndUrl: Partial<CsvMapperParsed> = {
         entity_type: ENTITY_IPV4_ADDR,
         column_based: {
           column_reference: 'E',
-          operator: Operator.Eq,
+          operator: CsvMapperOperator.Eq,
           value: 'IPv4-Addr'
         }
       },
@@ -40,7 +40,7 @@ export const csvMapperDynamicIpAndUrl: Partial<CsvMapperParsed> = {
         entity_type: ENTITY_URL,
         column_based: {
           column_reference: 'E',
-          operator: Operator.Eq,
+          operator: CsvMapperOperator.Eq,
           value: 'Url'
         }
       },

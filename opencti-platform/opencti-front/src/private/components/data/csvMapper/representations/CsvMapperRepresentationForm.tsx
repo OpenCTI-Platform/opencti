@@ -185,7 +185,6 @@ CsvMapperRepresentationFormProps
               {field.name.startsWith('entity_representation') && (
               <Field
                 component={CsvMapperConditionalEntityMapping}
-                name={'entity_conditional_mapping'}
                 handleRepresentationErrors={handleRepresentationErrors}
                 representation={value}
                 representationName={name}

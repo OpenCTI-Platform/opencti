@@ -10,7 +10,7 @@ import { handleInnerType } from '../domain/stixDomainObject';
 import { extractValueFromCsv } from './csv-helper';
 import { isStixRelationshipExceptRef } from '../schema/stixRelationship';
 import type { AttributeColumn, CsvMapperParsed, CsvMapperRepresentation, CsvMapperRepresentationAttribute } from '../modules/internal/csvMapper/csvMapper-types';
-import { CsvMapperRepresentationType, Operator } from '../modules/internal/csvMapper/csvMapper-types';
+import { CsvMapperRepresentationType } from '../modules/internal/csvMapper/csvMapper-types';
 import { getHashesNames, isValidRepresentationType } from '../modules/internal/csvMapper/csvMapper-utils';
 import { fillDefaultValues, getAttributesConfiguration, getEntitySettingFromCache } from '../modules/entitySetting/entitySetting-utils';
 import type { AuthContext, AuthUser } from '../types/user';
@@ -19,6 +19,7 @@ import { internalFindByIdsMapped } from '../database/middleware-loader';
 import type { BasicStoreObject } from '../types/store';
 import { INPUT_MARKINGS } from '../schema/general';
 import type { BasicStoreEntityEntitySetting } from '../modules/entitySetting/entitySetting-types';
+import { CsvMapperOperator } from '../generated/graphql';
 
 export type InputType = string | string[] | boolean | number | Record<string, any>;
 const USER_CHOICE_MARKING_CONFIG = 'user-choice';
@@ -98,9 +99,10 @@ const isValidTarget = (record: string[], representation: CsvMapperRepresentation
   const columnBased = representation.target.column_based;
   if (columnBased && columnBased.column_reference) {
     const recordValue = extractValueFromCsv(record, columnBased.column_reference);
-    if (columnBased.operator === Operator.Eq) {
+    if (columnBased.operator === CsvMapperOperator.Eq) {
       return recordValue === columnBased.value;
-    } if (columnBased.operator === Operator.Neq) {
+    }
+    if (columnBased.operator === CsvMapperOperator.NotEq) {
       return recordValue !== columnBased.value;
     }
     return false;

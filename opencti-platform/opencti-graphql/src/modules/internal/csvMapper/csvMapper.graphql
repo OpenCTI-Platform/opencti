@@ -25,13 +25,13 @@ type CsvMapperRepresentationAttribute {
   default_values: [DefaultValue!]
 }
 
-enum Operator {
+enum CsvMapperOperator {
   eq
-  neq
+  not_eq
 }
 type CsvMapperRepresentationTargetColumn {
   column_reference: String
-  operator: Operator
+  operator: CsvMapperOperator
   value: String
 }
 type CsvMapperRepresentationTarget {
@@ -62,7 +62,6 @@ type CsvMapper implements InternalObject & BasicObject {
   has_header: Boolean! @auth
   separator: String! @auth
   skipLineChar: String @auth
-  has_entity_dynamic_mapping: Boolean @auth
   representations: [CsvMapperRepresentation!]! @auth
   errors: String
 }
@@ -151,7 +150,7 @@ input CsvMapperRepresentationAttributeInput {
 
 input CsvMapperRepresentationTargetColumnInput {
   column_reference: String
-  operator: Operator
+  operator: CsvMapperOperator
   value: String
 }
 input CsvMapperRepresentationTargetInput {
@@ -173,7 +172,6 @@ input CsvMapperAddInput {
   separator: String!
   representations: String!
   skipLineChar: String
-  has_entity_dynamic_mapping: Boolean!
 }
 
 type Mutation {

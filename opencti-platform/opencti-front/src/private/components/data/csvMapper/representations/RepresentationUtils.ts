@@ -65,7 +65,12 @@ export const csvMapperRepresentationToFormData = (
     id: representation.id,
     type: representation.type,
     target_type: representation.target.entity_type,
-    // has_entity_dynamic_mapping: representation.target.column_based?.column_reference !== null,
+    column_based: representation.target.column_based?.column_reference ? {
+      enabled: true,
+      column_reference: representation.target.column_based.column_reference,
+      operator: representation.target.column_based.operator,
+      value: representation.target.column_based.value,
+    } : { enabled: false, column_reference: null, operator: null, value: null },
     attributes: representation.attributes.reduce((acc, attribute) => {
       const schemaAttribute = entitySchemaAttributes.find((attr) => attr.name === attribute.key);
       return {
@@ -95,11 +100,11 @@ export const formDataToCsvMapperRepresentation = (
     type: data.type as CsvMapperRepresentationType,
     target: {
       entity_type: data.target_type ?? '',
-      column_based: {
-        column_reference: data.column_based?.column_reference,
-        operator: data.column_based?.operator,
-        value: data.column_based?.value,
-      },
+      column_based: data.column_based?.enabled ? {
+        column_reference: data.column_based.column_reference,
+        operator: data.column_based.operator,
+        value: data.column_based.value,
+      } : null,
     },
     attributes: (Object.entries(data.attributes)).flatMap(([name, attribute]) => {
       const mapperAttribute = formDataToCsvMapperAttribute(attribute, name);

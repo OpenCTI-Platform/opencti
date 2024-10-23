@@ -54,7 +54,7 @@ const csvMapperValidation = (t_i18n: (s: string) => string) => Yup.object().shap
   has_header: Yup.boolean().required(t_i18n('This field is required')),
   separator: Yup.string().trim().required(t_i18n('This field is required')),
   skipLineChar: Yup.string().max(1),
-  has_entity_dynamic_mapping: Yup.boolean().required(t_i18n('This field is required')),
+  // has_entity_dynamic_mapping: Yup.boolean().required(t_i18n('This field is required')),
 });
 
 interface CsvMapperFormProps {
@@ -167,7 +167,6 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({ csvMapper, onSub
     errors = { ...errors, [key]: value };
     setHasError(Object.values(errors).filter((v) => v).length > 0);
   };
-
   return (
     <>
       <Formik<CsvMapperFormData>

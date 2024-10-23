@@ -11,14 +11,15 @@ export interface CsvMapperRepresentationFormData {
   id: string
   type: string
   target_type?: string
-  column_based?: { [key: string]: CsvMapperColumnBasedFormData }
+  column_based?: CsvMapperColumnBasedFormData
   attributes: {
     [key: string]: CsvMapperRepresentationAttributeFormData
   }
 }
 
 export interface CsvMapperColumnBasedFormData {
-  column_reference: string
-  operator: Operator
-  value: string
+  enabled: boolean
+  column_reference?: string
+  operator?: 'eq' | 'not_eq'
+  value?: string
 }
