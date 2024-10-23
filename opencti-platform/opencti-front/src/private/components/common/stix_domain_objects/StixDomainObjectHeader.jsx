@@ -172,6 +172,13 @@ export const stixDomainObjectMutation = graphql`
             entity_type
           }
         }
+        ... on MalwareAnalysis {
+          objectAssignee {
+            id
+            name
+            entity_type
+          }
+        }
         ... on CaseIncident {
           objectAssignee {
             id
