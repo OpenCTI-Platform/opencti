@@ -36,7 +36,6 @@ const ContentTemplateForm = ({
   templates,
 }: ContentTemplateFormProps) => {
   const { t_i18n } = useFormatter();
-  console.log('templates', templates);
 
   const validation = () => Yup.object().shape({
     name: Yup.string().required(t_i18n('This field is required')),

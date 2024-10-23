@@ -186,7 +186,6 @@ const StixCoreObjectContentFiles: FunctionComponent<StixCoreObjectContentFilesPr
 
     const fileMarkings = values.fileMarkings.map(({ value }) => value);
     const maxContentMarkings = (values.maxMarkings ?? []).map(({ value }) => value);
-    console.log('values', values);
     const templateId = values.template.value as string;
 
     try {
