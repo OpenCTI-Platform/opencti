@@ -2,7 +2,7 @@ import Tooltip from '@mui/material/Tooltip';
 import { ListItemButton, ListItemIcon, IconButton, List, ListItemText, ListItemSecondaryAction } from '@mui/material';
 import moment from 'moment/moment';
 import { MoreVert } from '@mui/icons-material';
-import React, { useState, MouseEvent } from 'react';
+import React, { useState, MouseEvent, Fragment } from 'react';
 import { FileOutline, FilePdfBox, LanguageHtml5, LanguageMarkdownOutline, NoteTextOutline } from 'mdi-material-ui';
 import { FileLineDeleteMutation as deleteMutation } from '@components/common/files/FileLine';
 import { FileLineDeleteMutation } from '@components/common/files/__generated__/FileLineDeleteMutation.graphql';
@@ -88,8 +88,8 @@ const StixCoreObjectContentFilesList = ({
   return (
     <List>
       {files.map((file) => (
-        <>
-          <Tooltip key={file.id} title={`${file.name} (${file.metaData?.mimetype ?? ''})`}>
+        <Fragment key={file.id}>
+          <Tooltip title={`${file.name} (${file.metaData?.mimetype ?? ''})`}>
             <ListItemButton
               dense={true}
               divider={true}
@@ -144,7 +144,7 @@ const StixCoreObjectContentFilesList = ({
               {t_i18n('Delete')}
             </MenuItem>
           </Menu>
-        </>
+        </Fragment>
       ))}
     </List>
   );
