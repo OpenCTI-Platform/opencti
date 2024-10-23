@@ -97,7 +97,6 @@ CsvMapperRepresentationFormProps
       ...value,
       attributes: {},
       target_type: option?.value ?? undefined,
-      column_based: {},
     };
     await setFieldValue(name, newValue);
   };
@@ -188,6 +187,7 @@ CsvMapperRepresentationFormProps
                 handleRepresentationErrors={handleRepresentationErrors}
                 representation={value}
                 representationName={name}
+                handleErrors={handleErrors}
               />
               )}
               <CsvMapperRepresentationAttributesForm

@@ -14,6 +14,7 @@ interface CsvMapperConditionalEntityMappingProps
   extends FieldProps<CsvMapperColumnBasedFormData> {
   representation: CsvMapperRepresentationFormData;
   representationName: string;
+  handleErrors: (key: string, value: string | null) => void;
 }
 const CsvMapperConditionalEntityMapping: FunctionComponent<
 CsvMapperConditionalEntityMappingProps
@@ -26,17 +27,16 @@ CsvMapperConditionalEntityMappingProps
 
   const { setFieldValue } = form;
 
-  const handleToggleSelect = async (isDynamic: boolean) => {
-    console.log('DYNAMIC', isDynamic);
-    await setFieldValue(`${representationName}.column_based.enabled`, !!isDynamic);
-  };
-
   const handleColumnSelect = async (column: string | null) => {
     await setFieldValue(`${representationName}.column_based.column_reference`, column);
   };
 
   const handleOperatorSelect = async (operator: { label: string, value: string } | null) => {
     await setFieldValue(`${representationName}.column_based.operator`, operator?.value);
+  };
+
+  const handleToggleSelect = async (isDynamic: boolean) => {
+    await setFieldValue(`${representationName}.column_based.enabled`, isDynamic);
   };
 
   return (
@@ -72,9 +72,16 @@ CsvMapperConditionalEntityMappingProps
           autoHighlight
           options={columnOptions}
           disabled={!representation.column_based?.enabled}
-          value={representation.column_based?.column_reference}
+          value={
+              representation.column_based?.enabled
+                ? representation.column_based?.column_reference
+                : null
+          }
           onChange={(_, val) => handleColumnSelect(val)}
-          sx={{ width: '180px', marginLeft: '95px' }}
+          sx={{
+            width: '180px',
+            marginLeft: '95px',
+          }}
           renderInput={(params) => (
             <MuiTextField
               {...params}
@@ -91,7 +98,11 @@ CsvMapperConditionalEntityMappingProps
           autoHighlight
           options={operatorOptions}
           disabled={!representation.column_based?.enabled}
-          value={operatorOptions.find((opt) => (opt.value === representation.column_based?.operator)) ?? undefined}
+          value={
+              representation.column_based?.enabled
+                ? (operatorOptions.find((opt) => (opt.value === representation.column_based?.operator)) ?? undefined)
+                : null
+          }
           onChange={(_, val) => handleOperatorSelect(val)}
           sx={{ width: '150px', marginLeft: '5px' }}
           renderInput={(params) => (
@@ -107,7 +118,11 @@ CsvMapperConditionalEntityMappingProps
           <Field
             component={TextField}
             label={t_i18n('Value')}
-            name={`${representationName}.column_based.value`}
+            name={
+                representation.column_based?.enabled
+                  ? `${representationName}.column_based.value`
+                  : `${representationName}.column_based.value` === null
+            }
             variant="standard"
             disabled={!representation.column_based?.enabled}
           />
