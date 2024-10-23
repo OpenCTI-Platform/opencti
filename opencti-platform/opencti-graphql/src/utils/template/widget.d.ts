@@ -1,5 +1,11 @@
 import type { FilterGroup } from '../../generated/graphql';
 
+interface WidgetColumn {
+  attribute: string
+  displayStyle?: string
+  label?: string
+}
+
 interface WidgetDataSelection {
   label?: string
   number?: number
@@ -13,6 +19,7 @@ interface WidgetDataSelection {
   filters?: FilterGroup
   dynamicFrom?: FilterGroup
   dynamicTo?: FilterGroup
+  columns: WidgetColumn[]
 }
 
 interface WidgetParameters {

@@ -1,5 +1,11 @@
 import { FilterGroup } from '../filters/filtersHelpers-types';
 
+interface WidgetColumn {
+  attribute: string
+  displayStyle?: string
+  label?: string
+}
+
 interface WidgetDataSelection {
   label?: string
   number?: number
@@ -9,10 +15,11 @@ interface WidgetDataSelection {
   centerLng?: number
   zoom?: number
   isTo?: boolean
-  perspective: 'entities' | 'relationships' | 'audits' | null
+  perspective?: 'entities' | 'relationships' | 'audits' | null
   filters?: FilterGroup
   dynamicFrom?: FilterGroup
   dynamicTo?: FilterGroup
+  columns: WidgetColumn[]
 }
 
 interface WidgetParameters {

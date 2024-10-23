@@ -859,10 +859,11 @@ type Template {
   description: String
   filters: String
   content: String!
-  used_template_widgets_names: [String!]!
+  template_widgets_names: [String!]!
 }
 type TemplateWidget {
   name: String!
+  description: String
   widget: String!
 }
 type ResolvedWidgetAttribute {
