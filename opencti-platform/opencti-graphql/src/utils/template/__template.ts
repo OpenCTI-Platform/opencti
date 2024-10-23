@@ -6,6 +6,7 @@ import { templateIncidentCase } from './__incidentCase.template';
 
 const templateText: Template = {
   name: 'template with simple text',
+  id: 'templateText-id',
   content: '<body>\n'
     + '<h1> Main title </h1>\n'
     + '<p> Some content </p>\n'
@@ -19,10 +20,11 @@ const templateText: Template = {
 
 const templateAttribute: Template = {
   name: 'template with attributes',
+  id: 'templateAttribute-id',
   content: `<body>
     <h1> Main title </h1>
     <p> Report name: $containerName</p>
-    <p> This report has been published $reportPublicationDate, and has labels: $reportLabels</p>
+    <p> This report has been published $reportPublicationDate, and has labels: $containerLabels</p>
     </body>
     </html>`,
   template_widgets_names: ['containerName', 'reportPublicationDate', 'containerLabels'],
@@ -30,6 +32,7 @@ const templateAttribute: Template = {
 
 const templateList: Template = {
   name: 'template list: list of locations contained in the report',
+  id: 'templateList-id',
   content: '<body>\n'
     + '<h1> Main title </h1>\n'
     + '<p> Locations contained in the report: $locationsList</p>\n'
@@ -40,6 +43,7 @@ const templateList: Template = {
 
 const templateGraph: Template = {
   name: 'template graph (donut)',
+  id: 'templateGraph-id',
   template_widgets_names: ['widgetGraph'],
   content: `
   <div style="width: 600px">

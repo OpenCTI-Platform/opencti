@@ -12,10 +12,10 @@ const useContentFromTemplate = () => {
 
   const buildContentFromTemplate = async (
     containerId: string,
-    templateName: string,
+    templateId: string,
     maxContentMarkings: string[],
   ) => {
-    const variables = { id: containerId, templateId: templateName };
+    const variables = { id: containerId, templateId };
     const { container } = await fetchQuery(templateAndUtilsContainerQuery, variables).toPromise() as TemplateAndUtilsContainerQuery$data;
 
     if (!container || !container.templateAndUtils) {

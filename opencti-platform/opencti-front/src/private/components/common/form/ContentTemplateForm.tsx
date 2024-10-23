@@ -36,10 +36,11 @@ const ContentTemplateForm = ({
   templates,
 }: ContentTemplateFormProps) => {
   const { t_i18n } = useFormatter();
+  console.log('templates', templates);
 
   const validation = () => Yup.object().shape({
     name: Yup.string().required(t_i18n('This field is required')),
-    template: Yup.string().required(t_i18n('This field is required')),
+    template: Yup.object().required(t_i18n('This field is required')),
     type: Yup.string().required(t_i18n('This field is required')),
   });
 
@@ -81,7 +82,18 @@ const ContentTemplateForm = ({
                 name='template'
                 fullWidth={true}
                 style={fieldSpacingContainerStyle}
-                options={templates.map((t) => t.name)}
+                options={templates.map((t) => ({
+                  value: t.id,
+                  label: t.name,
+                }))}
+                renderOption={(
+                  props: React.HTMLAttributes<HTMLLIElement>,
+                  option: Option,
+                ) => (
+                  <li {...props}>
+                    <div>{option.label}</div>
+                  </li>
+                )}
                 textfieldprops={{ label: t_i18n('Template') }}
                 optionLength={80}
               />
