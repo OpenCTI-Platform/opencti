@@ -3,7 +3,7 @@ import React from 'react';
 import { fetchQuery } from '../../../../relay/environment';
 import { StixCoreObjectsAttributesQuery$data } from './__generated__/stixCoreObjectsAttributesQuery.graphql';
 import { TemplateWidget } from '../../template';
-import { stixCoreObjectsAttributesQuery } from './StixCoreObjectsAttributes';
+import stixCoreObjectsAttributesQuery from './StixCoreObjectsAttributes';
 
 const buildAttributesOutcome = async (containerId: string, templateWidgets: TemplateWidget[]) => {
   // if (templateWidgets.some((w) => w.widget.dataSelection[0].instance_id !== 'CONTAINER_ID')) {

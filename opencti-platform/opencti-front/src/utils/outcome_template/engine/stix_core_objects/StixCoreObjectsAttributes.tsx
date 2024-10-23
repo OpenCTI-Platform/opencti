@@ -1,6 +1,6 @@
 import { graphql } from 'react-relay';
 
-export const stixCoreObjectsAttributesQuery = graphql`
+const stixCoreObjectsAttributesQuery = graphql`
     query StixCoreObjectsAttributesQuery($id: String!) {
         stixCoreObject(id: $id) {
             id
@@ -237,3 +237,5 @@ export const stixCoreObjectsAttributesQuery = graphql`
         }
     }
 `;
+
+export default stixCoreObjectsAttributesQuery;

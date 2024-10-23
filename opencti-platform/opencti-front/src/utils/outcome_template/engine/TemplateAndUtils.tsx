@@ -1,7 +1,7 @@
 import { graphql } from 'react-relay';
 
 // eslint-disable-next-line import/prefer-default-export
-export const templateAndUtilsContainerQuery = graphql`
+const templateAndUtilsContainerQuery = graphql`
   query TemplateAndUtilsContainerQuery($id: String!, $templateId: String!) {
     container(id: $id) {
       id
@@ -21,3 +21,4 @@ export const templateAndUtilsContainerQuery = graphql`
     }
   }
 `;
+export default templateAndUtilsContainerQuery;
