@@ -809,6 +809,7 @@ const StixCoreObjectContent = createRefetchContainer(
             }
           }
           templates {
+            id
             name
             content
             template_widgets_names

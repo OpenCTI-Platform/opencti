@@ -265,11 +265,11 @@ export const getTemplates = (context, user, containerId) => {
 
 export const getTemplateAndUtils = (context, user, containerId, templateId) => {
   // fetch template (hardcoded for the moment)
-  const template = usedTemplates.find((t) => t.name === templateId);
+  const template = usedTemplates.find((t) => t.id === templateId);
   const { template_widgets_names } = template;
   // fetch the widgets used in the template (hardcoded for the moment)
   const template_widgets = hardcodedTemplateWidgets.filter((w) => template_widgets_names.includes(w.name));
-  // resolve widget attributes // TODO
+  // resolve widget attributes // TODO in frontend
   const resolved_widgets_attributes = hardcodedResolvedAttributesWidgets;
   // return template and the associated utils
   return { template, template_widgets, resolved_widgets_attributes };

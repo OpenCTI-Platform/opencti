@@ -186,12 +186,13 @@ const StixCoreObjectContentFiles: FunctionComponent<StixCoreObjectContentFilesPr
 
     const fileMarkings = values.fileMarkings.map(({ value }) => value);
     const maxContentMarkings = (values.maxMarkings ?? []).map(({ value }) => value);
-    const templateName = values.template;
+    console.log('values', values);
+    const templateId = values.template.value as string;
 
     try {
       const templateContent = await buildContentFromTemplate(
         stixCoreObjectId,
-        templateName,
+        templateId,
         maxContentMarkings,
       );
       const blob = new Blob([templateContent], { type });

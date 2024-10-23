@@ -905,6 +905,7 @@ type FileConnection {
 }
 
 type Template {
+  id: ID!
   name: String!
   description: String
   filters: String

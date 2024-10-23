@@ -74,6 +74,7 @@ const content = `
 
 export const templateIncidentCase: Template = {
   name: 'Incident Response Report',
+  id: 'templateIncidentCase-id',
   content,
   template_widgets_names: [
     'containerName',
