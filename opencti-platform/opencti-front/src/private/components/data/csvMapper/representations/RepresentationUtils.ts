@@ -23,7 +23,6 @@ export const representationInitialization = (
     type,
     attributes: {},
     target_type: '',
-    column_based: {},
   };
 };
 
@@ -70,7 +69,7 @@ export const csvMapperRepresentationToFormData = (
       column_reference: representation.target.column_based.column_reference,
       operator: representation.target.column_based.operator,
       value: representation.target.column_based.value,
-    } : { enabled: false, column_reference: null, operator: null, value: null },
+    } : null,
     attributes: representation.attributes.reduce((acc, attribute) => {
       const schemaAttribute = entitySchemaAttributes.find((attr) => attr.name === attribute.key);
       return {

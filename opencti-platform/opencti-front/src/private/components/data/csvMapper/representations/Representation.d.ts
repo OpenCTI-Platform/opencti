@@ -1,5 +1,5 @@
 import { CsvMapperRepresentationAttributeEdit, CsvMapperRepresentationAttributeFormData } from '@components/data/csvMapper/representations/attributes/Attribute';
-import { CsvMapperEditionContainerFragment_csvMapper$data } from '@components/data/csvMapper/__generated__/CsvMapperEditionContainerFragment_csvMapper.graphql';
+import { CsvMapperEditionContainerFragment_csvMapper$data, CsvMapperOperator } from '@components/data/csvMapper/__generated__/CsvMapperEditionContainerFragment_csvMapper.graphql';
 
 export type CsvMapperRepresentation = CsvMapperEditionContainerFragment_csvMapper$data['representations'][number];
 
@@ -20,6 +20,6 @@ export interface CsvMapperRepresentationFormData {
 export interface CsvMapperColumnBasedFormData {
   enabled: boolean
   column_reference?: string
-  operator?: 'eq' | 'not_eq'
+  operator?: CsvMapperOperator
   value?: string
 }
