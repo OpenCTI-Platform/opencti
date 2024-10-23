@@ -74,6 +74,18 @@ const widgetContainerName: TemplateWidget = {
   }),
 };
 
+const widgetReportPublicationDate: TemplateWidget = {
+  name: 'reportPublicationDate',
+  widget: JSON.stringify({
+    type: 'attribute',
+    id: 'widgetReportPublicationDate',
+    perspective: null,
+    dataSelection: [{
+      columns: [{ label: 'Publication date', attribute: 'published' }],
+    }],
+  }),
+};
+
 const widgetContainerIndicators: TemplateWidget = {
   name: 'containerIndicators',
   widget: JSON.stringify({
@@ -302,6 +314,7 @@ export const hardcodedTemplateWidgets: TemplateWidget[] = [
   widgetContainerDescription,
   widgetContainerLabels,
   widgetContainerMarkings,
+  widgetReportPublicationDate,
   widgetContainerModificationDate,
   widgetContainerName,
   widgetContainerIndicators,

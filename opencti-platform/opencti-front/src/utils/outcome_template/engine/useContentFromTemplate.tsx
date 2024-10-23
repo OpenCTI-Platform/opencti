@@ -1,10 +1,9 @@
-import { renderToString } from 'react-dom/server';
-import React from 'react';
 import useBuildListOutcome from './stix_core_objects/useBuildListOutcome';
 import useDonutOutcome from './stix_relationships/useDonutOutcome';
 import { fetchQuery } from '../../../relay/environment';
 import { templateAndUtilsContainerQuery } from './TemplateAndUtils';
 import { TemplateAndUtilsContainerQuery$data } from './__generated__/TemplateAndUtilsContainerQuery.graphql';
+import buildAttributesOutcome from './stix_core_objects/buildAttributesOutcome';
 
 const useContentFromTemplate = () => {
   const { buildDonutOutcome } = useDonutOutcome();
@@ -22,26 +21,22 @@ const useContentFromTemplate = () => {
       throw Error('No template found');
     }
 
-    const { template, template_widgets, resolved_widgets_attributes } = container.templateAndUtils;
+    const { template, template_widgets } = container.templateAndUtils;
     let { content } = template;
+    const templateWidgets = template_widgets.map((tw) => ({ ...tw, widget: JSON.parse(tw.widget) }));
 
     // attribute widgets
-    for (const { data, displayStyle, template_widget_name } of resolved_widgets_attributes) {
-      let attributeData = '';
-      if (data.length === 1) {
-        [attributeData] = data;
-      } else if (data.length > 1) {
-        if (displayStyle === 'list') {
-          attributeData = renderToString(<ul>{data.map((el) => <li key={el}>{el}</li>)}</ul>);
-        } else {
-          attributeData = data.join(', ');
-        }
-      }
-      content = content.replace(`$${template_widget_name}`, attributeData);
+    const attributeWidgets = templateWidgets
+      .filter((tw) => tw.widget.type === 'attribute');
+    if (attributeWidgets.length > 0) {
+      const attributeWidgetsOutcome = await buildAttributesOutcome(containerId, attributeWidgets);
+      attributeWidgetsOutcome.forEach((attributeOutcome) => {
+        content = content.replace(`$${attributeOutcome.variableName}`, attributeOutcome.attributeData);
+      });
     }
 
     // other widgets
-    for (const templateWidget of template_widgets) {
+    for (const templateWidget of templateWidgets) {
       let outcome = '';
       const widget = JSON.parse(templateWidget.widget);
       if (widget.type === 'list') {
