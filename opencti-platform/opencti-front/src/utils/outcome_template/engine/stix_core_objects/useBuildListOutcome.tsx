@@ -28,22 +28,33 @@ const useBuildListOutcome = () => {
 
     const data = await fetchQuery(stixCoreObjectsListQuery, variables).toPromise() as StixCoreObjectsListQuery$data;
     const nodes = (data.stixCoreObjects?.edges ?? []).map((n) => n.node) ?? [];
+    const columns = selection.columns ?? [
+      { label: 'Entity type', attribute: 'entity_type' },
+      { label: 'Representative', attribute: 'representative.main' },
+      { label: 'Creation date', attribute: 'created_at' },
+    ];
 
     return renderToString(
       <table>
         <thead>
           <tr>
-            <th>Entity type</th>
-            <th>Representative</th>
-            <th>Creation date</th>
+            {columns.map((col) => (
+              <th key={col.attribute}>{col.label}</th>
+            ))}
           </tr>
         </thead>
         <tbody>
           {nodes.map((n) => (
             <tr key={n.id}>
-              <td>{n.entity_type}</td>
-              <td>{n.representative.main}</td>
-              <td>{n.created_at}</td>
+              {columns.map((col) => {
+                const splittedAttribute = col.attribute.split('.');
+                const displayedAttribute = splittedAttribute.length === 1
+                  ? n[col.attribute]
+                  : n[splittedAttribute[0]][splittedAttribute[1]];
+                return (
+                  <td key={`${n.id}-${col.attribute}`}>{displayedAttribute}</td>
+                );
+              })}
             </tr>
           ))}
         </tbody>
