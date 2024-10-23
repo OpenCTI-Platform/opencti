@@ -147,13 +147,16 @@ const widgetContainerObservables: TemplateWidget = {
   }),
 };
 
-const widgetContainerReferences: TemplateWidget = { // TODO : list
+const widgetContainerReferences: TemplateWidget = { // TODO
   name: 'containerReferences',
   widget: JSON.stringify({
     type: 'attribute',
     id: 'widgetContainerReferences',
     perspective: null,
-    dataSelection: [],
+    dataSelection: [{
+      columns: [{ label: 'External references', attribute: 'externalReferences.edges.node.external_id', displayStyle: 'list' }],
+      instance_id: 'CONTAINER_ID',
+    }],
   }),
 };
 

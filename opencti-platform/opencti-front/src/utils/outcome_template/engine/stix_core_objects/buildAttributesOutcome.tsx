@@ -16,12 +16,13 @@ const fetchAttributeFromData = (stixCoreObject, splittedAttribute: string[]) => 
 };
 
 const buildAttributesOutcome = async (containerId: string, templateWidgets: TemplateWidget[]) => {
-  // if (templateWidgets.some((w) => w.widget.dataSelection[0].instance_id !== 'CONTAINER_ID')) {
-  //   throw Error('The attribute widget should refers to the container');
-  // }
+  if (templateWidgets.some((w) => w.widget.dataSelection[0].instance_id !== 'CONTAINER_ID')) {
+    throw Error('The attribute widget should refers to the container');
+  }
   const widgetsInfo = templateWidgets.map((w) => ({
     variableName: w.name,
     attribute: w.widget.dataSelection[0].columns[0].attribute,
+    displayStyle: w.widget.dataSelection[0].columns[0].displayStyle,
   }));
   const data = await fetchQuery(stixCoreObjectsAttributesQuery, { id: containerId }).toPromise() as StixCoreObjectsAttributesQuery$data;
   const attributeWidgetsOutcome = widgetsInfo.map((col) => {
