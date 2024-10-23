@@ -2,10 +2,8 @@ import React from 'react';
 import { graphql } from 'react-relay';
 import { useNavigate } from 'react-router-dom';
 import Button from '@mui/material/Button';
-import { useTheme } from '@mui/styles';
 import DraftBlock from '@components/common/draft/DraftBlock';
 import { useFormatter } from '../../../components/i18n';
-import type { Theme } from '../../../components/Theme';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
 import useAuth from '../../../utils/hooks/useAuth';
 import { truncate } from '../../../utils/String';
@@ -27,7 +25,6 @@ export const draftContextBannerMutation = graphql`
 const DraftContextBanner = () => {
   const { t_i18n } = useFormatter();
   const [commit] = useApiMutation(draftContextBannerMutation);
-  const theme = useTheme<Theme>();
   const { me } = useAuth();
   const navigate = useNavigate();
   const currentDraftContextName = me.draftContext ? me.draftContext.name : '';

@@ -1,13 +1,11 @@
 import React from 'react';
 import { useTheme } from '@mui/styles';
-import Tooltip from '@mui/material/Tooltip';
 import { SimplePaletteColorOptions } from '@mui/material';
 import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 
 export const getDraftModeColor = (theme: Theme) => {
-  const draftModeColor = (theme.palette.warning as SimplePaletteColorOptions)?.main ?? theme.palette.primary.main;
-  return draftModeColor;
+  return (theme.palette.warning as SimplePaletteColorOptions)?.main ?? theme.palette.primary.main;
 };
 
 export const DraftChip = ({ style }: { style?: React.CSSProperties }) => {
