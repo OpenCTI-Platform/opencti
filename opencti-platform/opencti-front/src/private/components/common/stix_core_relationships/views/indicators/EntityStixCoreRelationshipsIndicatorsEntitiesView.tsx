@@ -218,7 +218,7 @@ const EntityStixCoreRelationshipsIndicatorsEntitiesView: FunctionComponent<Entit
           'Be careful, you are about to delete the selected entities (not the relationships)',
         )}
       />
-      {isFABReplaced && (
+      {!isFABReplaced && (
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <StixCoreRelationshipCreationFromEntity
             entityId={entityId}

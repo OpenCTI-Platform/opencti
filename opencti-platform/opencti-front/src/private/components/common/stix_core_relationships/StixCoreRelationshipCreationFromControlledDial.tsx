@@ -1,6 +1,6 @@
 import React, { FunctionComponent, useContext, useEffect, useState } from 'react';
 import { Button, CircularProgress, Fab, Typography } from '@mui/material';
-import { Add, ChevronRightOutlined } from '@mui/icons-material';
+import { ChevronRightOutlined } from '@mui/icons-material';
 import { v4 as uuid } from 'uuid';
 import { ConnectionHandler, RecordSourceSelectorProxy } from 'relay-runtime';
 import { FormikConfig } from 'formik';
@@ -19,7 +19,7 @@ import { commitMutation, handleErrorInForm, QueryRenderer } from '../../../../re
 import { StixCoreRelationshipCreationFromEntityQuery$data } from './__generated__/StixCoreRelationshipCreationFromEntityQuery.graphql';
 import StixCyberObservableCreation from '../../observations/stix_cyber_observables/StixCyberObservableCreation';
 import StixDomainObjectCreation from '../stix_domain_objects/StixDomainObjectCreation';
-import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
+import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../../components/i18n';
 import { CreateRelationshipContext } from '../menus/CreateRelationshipContextProvider';
 import { computeTargetStixCyberObservableTypes, computeTargetStixDomainObjectTypes } from '../../../../utils/stixTypeUtils';
@@ -59,7 +59,7 @@ export const CreateRelationshipControlledDial = ({ onOpen }: {
         fontSize: 'small',
       }}
     >
-      {t_i18n('Create Relationship')} <Add />
+      {t_i18n('Create Relationship')}
     </Button>
   );
 };
@@ -105,7 +105,8 @@ export const Header: FunctionComponent<HeaderProps> = ({
   };
   const searchPaginationOptions = {
     search: '',
-    filters: useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, entityTypes),
+    // filters: useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, entityTypes),
+    filters: useBuildEntityTypeBasedFilterContext(entityTypes, filters),
     orderBy: '_score',
     orderMode: 'desc',
   };
@@ -125,7 +126,7 @@ export const Header: FunctionComponent<HeaderProps> = ({
           {showSDOCreation && (
             <Button
               onClick={handleOpenCreateEntity}
-              variant='contained'
+              variant='outlined'
               disableElevation
               size='small'
               aria-label={t_i18n('Create an entity')}
@@ -135,13 +136,13 @@ export const Header: FunctionComponent<HeaderProps> = ({
                 fontSize: 'small',
               }}
             >
-              {t_i18n('Create an entity')} <Add />
+              {t_i18n('Create an entity')}
             </Button>
           )}
           {showSCOCreation && (
             <Button
               onClick={handleOpenCreateObservable}
-              variant='contained'
+              variant='outlined'
               disableElevation
               size='small'
               aria-label={t_i18n('Create an observable')}
@@ -151,7 +152,7 @@ export const Header: FunctionComponent<HeaderProps> = ({
                 fontSize: 'small',
               }}
             >
-              {t_i18n('Create an observable')} <Add />
+              {t_i18n('Create an observable')}
             </Button>
           )}
           <StixDomainObjectCreation
@@ -168,7 +169,7 @@ export const Header: FunctionComponent<HeaderProps> = ({
             defaultMarkingDefinitions={undefined}
             stixDomainObjectTypes={entityTypes}
             onCompleted={undefined}
-            isFromBulkRelation={false}
+            isFromBulkRelation={undefined}
           />
           <StixCyberObservableCreation
             display={true}
@@ -180,7 +181,7 @@ export const Header: FunctionComponent<HeaderProps> = ({
             open={openCreateObservable}
             handleClose={handleCloseCreateObservable}
             type={undefined}
-            isFromBulkRelation={false}
+            isFromBulkRelation={undefined}
             onCompleted={undefined}
           />
         </div>
@@ -253,7 +254,10 @@ const SelectEntity = ({
       }],
     }
     : emptyFilterGroup;
-  const virtualEntityTypes = stixCoreObjectTypes ?? ['Stix-Domain-Object', 'Stix-Cyber-Observable'];
+  let virtualEntityTypes = stixCoreObjectTypes;
+  if (virtualEntityTypes === undefined || virtualEntityTypes.length < 1) {
+    virtualEntityTypes = ['Stix-Domain-Object', 'Stix-Cyber-Observable'];
+  }
   const getLocalStorageKey = (entityId: string) => `${entityId}_stixCoreRelationshipCreationFromEntity`;
 
   const [sortBy, setSortBy] = useState('_score');
@@ -335,6 +339,14 @@ const SelectEntity = ({
 
   const [tableRootRef, setTableRootRef] = useState<HTMLDivElement | null>(null);
 
+  const initialValues = {
+    searchTerm: '',
+    sortBy: 'created',
+    orderAsc: false,
+    openExports: false,
+    filters: emptyFilterGroup,
+  };
+
   return (
     <div
       data-testid="stixCoreRelationshipCreationFromEntity-component"
@@ -349,6 +361,8 @@ const SelectEntity = ({
             {queryRef && (
               <div style={{ height: '100%' }} ref={setTableRootRef}>
                 <DataTable
+                  selectOnLineClick
+                  disableNavigation
                   disableToolBar
                   disableSelectAll
                   rootRef={tableRootRef ?? undefined}
@@ -357,7 +371,7 @@ const SelectEntity = ({
                   resolvePath={(data: StixCoreRelationshipCreationFromEntityStixCoreObjectsLines_data$data) => data.stixCoreObjects?.edges?.map((n) => n?.node)}
                   storageKey={getLocalStorageKey(entity_id)}
                   lineFragment={stixCoreRelationshipCreationFromEntityStixCoreObjectsLineFragment}
-                  initialValues={{}}
+                  initialValues={initialValues}
                   toolbarFilters={contextFilters}
                   preloadedPaginationProps={preloadedPaginationProps}
                   entityTypes={virtualEntityTypes}
@@ -598,45 +612,50 @@ const StixCoreRelationshipCreationFromControlledDial: FunctionComponent<StixCore
         minHeight: '100vh',
       }}
     >
-      <QueryRenderer
-        query={stixCoreRelationshipCreationFromEntityQuery}
-        variables={{ id }}
-        render={({ props }: { props: StixCoreRelationshipCreationFromEntityQuery$data }) => {
-          if (props?.stixCoreObject) {
-            const { name, entity_type, observable_value } = props.stixCoreObject;
-            return <div style={{
-              display: 'flex',
-              flexDirection: 'column',
-              height: '100%',
-            }}
-                   >
-              {step === 0 && (
-                <SelectEntity
-                  name={name ?? observable_value}
-                  entity_id={id}
-                  entity_type={entity_type}
-                  allowedRelationshipTypes={allowedRelationshipTypes}
-                  setTargetEntities={setTargetEntities}
-                  targetEntities={targetEntities}
-                  handleNextStep={() => setStep(1)}
-                />
-              )}
-              {step === 1 && (
-                <RenderForm
-                  sourceEntity={props.stixCoreObject}
-                  targetEntities={targetEntities}
-                  handleClose={reset}
-                  allowedRelationshipTypes={allowedRelationshipTypes}
-                  isReversable={isReversable}
-                  defaultStartTime={defaultStartTime}
-                  defaultStopTime={defaultStopTime}
-                />
-              )}
-            </div>;
-          }
-          return renderLoader();
-        }}
-      />
+      {({ onClose }) => (
+        <QueryRenderer
+          query={stixCoreRelationshipCreationFromEntityQuery}
+          variables={{ id }}
+          render={({ props }: { props: StixCoreRelationshipCreationFromEntityQuery$data }) => {
+            if (props?.stixCoreObject) {
+              const { name, entity_type, observable_value } = props.stixCoreObject;
+              return <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                height: '100%',
+              }}
+                     >
+                {step === 0 && (
+                  <SelectEntity
+                    name={name ?? observable_value}
+                    entity_id={id}
+                    entity_type={entity_type}
+                    allowedRelationshipTypes={allowedRelationshipTypes}
+                    setTargetEntities={setTargetEntities}
+                    targetEntities={targetEntities}
+                    handleNextStep={() => setStep(1)}
+                  />
+                )}
+                {step === 1 && (
+                  <RenderForm
+                    sourceEntity={props.stixCoreObject}
+                    targetEntities={targetEntities}
+                    handleClose={() => {
+                      reset();
+                      onClose();
+                    }}
+                    allowedRelationshipTypes={allowedRelationshipTypes}
+                    isReversable={isReversable}
+                    defaultStartTime={defaultStartTime}
+                    defaultStopTime={defaultStopTime}
+                  />
+                )}
+              </div>;
+            }
+            return renderLoader();
+          }}
+        />
+      )}
     </Drawer>
   );
 };
