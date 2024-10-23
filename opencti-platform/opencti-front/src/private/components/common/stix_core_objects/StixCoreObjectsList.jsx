@@ -86,6 +86,7 @@ export const stixCoreObjectsListQuery = graphql`
           ... on Indicator {
             name
             description
+            indicator_types
           }
           ... on Infrastructure {
             name
@@ -165,6 +166,7 @@ export const stixCoreObjectsListQuery = graphql`
           ... on Task {
             name
             description
+            due_date
           }
           ... on StixCyberObservable {
             observable_value
