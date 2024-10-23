@@ -811,7 +811,7 @@ const StixCoreObjectContent = createRefetchContainer(
           templates {
             name
             content
-            used_template_widgets_names
+            template_widgets_names
           }
         }
         externalReferences {

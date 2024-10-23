@@ -8,7 +8,7 @@ export const templateAndUtilsContainerQuery = graphql`
       templateAndUtils(templateId: $templateId) {
         template {
           name
-          used_template_widgets_names
+          template_widgets_names
           content
           filters
         }

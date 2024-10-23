@@ -26558,7 +26558,7 @@ export type Template = {
   description?: Maybe<Scalars['String']['output']>;
   filters?: Maybe<Scalars['String']['output']>;
   name: Scalars['String']['output'];
-  used_template_widgets_names: Array<Scalars['String']['output']>;
+  template_widgets_names: Array<Scalars['String']['output']>;
 };
 
 export type TemplateAndUtils = {
@@ -39722,7 +39722,7 @@ export type TemplateResolvers<ContextType = any, ParentType extends ResolversPar
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   filters?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  used_template_widgets_names?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  template_widgets_names?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 

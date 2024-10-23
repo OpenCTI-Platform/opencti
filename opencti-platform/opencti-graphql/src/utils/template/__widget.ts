@@ -9,7 +9,7 @@ const widgetContainerCreationDate: TemplateWidget = {
     id: 'widgetContainerCreationDate',
     perspective: null,
     dataSelection: [{
-      attribute: 'created_at',
+      columns: [{ label: 'creationDate', attribute: 'created_at', displayStyle: 'text' }],
     }],
   }),
 };
@@ -21,7 +21,7 @@ const widgetContainerDescription: TemplateWidget = {
     id: 'widgetContainerDescription',
     perspective: null,
     dataSelection: [{
-      attribute: 'description',
+      columns: [{ label: 'Description', attribute: 'description' }],
     }],
   }),
 };
@@ -33,7 +33,7 @@ const widgetContainerLabels: TemplateWidget = {
     id: 'widgetContainerLabels',
     perspective: null,
     dataSelection: [{
-      attribute: 'objectLabel.value',
+      columns: [{ label: 'Labels', attribute: 'objectLabel' }],
     }],
   }),
 };
@@ -45,7 +45,7 @@ const widgetContainerMarkings: TemplateWidget = {
     id: 'widgetContainerMarkings',
     perspective: null,
     dataSelection: [{
-      attribute: 'objectMarking.definition',
+      columns: [{ label: 'Markings', attribute: 'objectMarking' }],
     }],
   }),
 };
@@ -57,7 +57,7 @@ const widgetContainerModificationDate: TemplateWidget = {
     id: 'widgetContainerModificationDate',
     perspective: null,
     dataSelection: [{
-      attribute: 'modified',
+      columns: [{ label: 'ModificationDate', attribute: 'modified' }],
     }],
   }),
 };
@@ -69,7 +69,7 @@ const widgetContainerName: TemplateWidget = {
     id: 'widgetContainerName',
     perspective: null,
     dataSelection: [{
-      attribute: 'name',
+      columns: [{ label: 'Name', attribute: 'name' }],
     }],
   }),
 };
@@ -91,6 +91,11 @@ const widgetContainerIndicators: TemplateWidget = {
           ],
           filterGroups: [],
         } as FilterGroup,
+        columns: [
+          { label: 'Representative', attribute: 'representative.main' },
+          { label: 'Entity type', attribute: 'entity_type' },
+          { label: 'Creation Date', attribute: 'created_at' }
+        ],
       },
     ],
   }),
@@ -113,6 +118,11 @@ const widgetContainerObservables: TemplateWidget = {
           ],
           filterGroups: [],
         } as FilterGroup,
+        columns: [
+          { label: 'Representative', attribute: 'representative.main' },
+          { label: 'Entity type', attribute: 'entity_type' },
+          { label: 'Creation Date', attribute: 'created_at' }
+        ],
       },
     ],
   }),

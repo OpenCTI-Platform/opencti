@@ -14,7 +14,7 @@ const templateText: Template = {
     + '<p> A paragraph content </p> \n'
     + '</body> \n'
     + '</html>',
-  used_template_widgets_names: [],
+  template_widgets_names: [],
 };
 
 const templateAttribute: Template = {
@@ -25,7 +25,7 @@ const templateAttribute: Template = {
     <p> This report has been published $reportPublicationDate, and has labels: $reportLabels</p>
     </body>
     </html>`,
-  used_template_widgets_names: ['containerName', 'reportPublicationDate', 'containerLabels'],
+  template_widgets_names: ['containerName', 'reportPublicationDate', 'containerLabels'],
 };
 
 const templateList: Template = {
@@ -35,12 +35,12 @@ const templateList: Template = {
     + '<p> Locations contained in the report: $locationsList</p>\n'
     + '</body> \n'
     + '</html>',
-  used_template_widgets_names: ['locationsList'],
+  template_widgets_names: ['locationsList'],
 };
 
 const templateGraph: Template = {
   name: 'template graph (donut)',
-  used_template_widgets_names: ['widgetGraph'],
+  template_widgets_names: ['widgetGraph'],
   content: `
   <div style="width: 600px">
     <h1>Template graph</h1>

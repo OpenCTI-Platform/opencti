@@ -75,7 +75,7 @@ const content = `
 export const templateIncidentCase: Template = {
   name: 'Incident Response Report',
   content,
-  used_template_widgets_names: [
+  template_widgets_names: [
     'containerName',
     'containerCreationDate',
     'containerDescription',
