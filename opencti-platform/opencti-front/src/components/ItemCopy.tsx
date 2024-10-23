@@ -52,17 +52,20 @@ const useStyles = makeStyles<Theme>((theme) => ({
 
 interface ItemCopyProps {
   content: string;
+  value?: string;
   variant?: 'default' | 'inLine' | 'wrap';
   limit?: number;
 }
 
 const ItemCopy: FunctionComponent<ItemCopyProps> = ({
   content,
+  value,
   variant = 'default',
   limit = null,
 }) => {
   const { t_i18n } = useFormatter();
   const classes = useStyles();
+  const textToCopy = value || content;
 
   const classNameVariant = () => {
     if (variant === 'inLine') return classes.containerInline;
@@ -78,7 +81,7 @@ const ItemCopy: FunctionComponent<ItemCopyProps> = ({
         onClick={(event) => {
           event.stopPropagation();
           event.preventDefault();
-          copyToClipboard(t_i18n, content);
+          copyToClipboard(t_i18n, textToCopy);
         }}
       >
         <ContentCopyOutlined

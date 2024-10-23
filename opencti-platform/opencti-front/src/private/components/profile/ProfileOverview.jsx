@@ -11,13 +11,14 @@ import Paper from '@mui/material/Paper';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import { Link } from 'react-router-dom';
-import { LockOutlined, NoEncryptionOutlined } from '@mui/icons-material';
+import { LockOutlined, NoEncryptionOutlined, Visibility, VisibilityOff } from '@mui/icons-material';
 import Alert from '@mui/material/Alert';
 import DialogContent from '@mui/material/DialogContent';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import { useTheme } from '@mui/styles';
 import { ListItem, ListItemText, Switch } from '@mui/material';
+import IconButton from '@mui/material/IconButton';
 import NotifierField from '../common/form/NotifierField';
 import inject18n, { useFormatter } from '../../../components/i18n';
 import TextField from '../../../components/TextField';
@@ -33,7 +34,7 @@ import OtpInputField, { OTP_CODE_SIZE } from '../../../public/components/OtpInpu
 import ItemCopy from '../../../components/ItemCopy';
 import { availableLanguage } from '../../../components/AppIntlProvider';
 
-const styles = () => ({
+const styles = (theme) => ({
   container: {
     width: 900,
     margin: '0 auto',
@@ -49,6 +50,10 @@ const styles = () => ({
   },
   switchField: {
     padding: '20px 0 0',
+  },
+  icon: {
+    cursor: 'pointer',
+    color: theme.palette.primary.main,
   },
 });
 
@@ -216,6 +221,7 @@ const ProfileOverviewComponent = (props) => {
   const { external, otp_activated: useOtp } = me;
   const objectOrganization = convertOrganizations(me);
   const [display2FA, setDisplay2FA] = useState(false);
+  const [showToken, setShowToken] = useState(false);
   const fieldNames = [
     'name',
     'description',
@@ -277,6 +283,14 @@ const ProfileOverviewComponent = (props) => {
       },
     });
   };
+
+  const toggleTokenVisibility = () => {
+    setShowToken(!showToken);
+  };
+  const maskToken = (api_token) => {
+    return '•'.repeat(api_token.length);
+  };
+
   return (
     <div className={classes.container}>
       <Dialog
@@ -580,11 +594,39 @@ const ProfileOverviewComponent = (props) => {
           >
             {t('API key')}
           </Typography>
-          <pre><ItemCopy content={me.api_token} /></pre>
+          <pre
+            style={{
+              margin: 0,
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              width: '100%',
+            }}
+          >
+            <span
+              style={{
+                flexGrow: 1,
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+              }}
+            >
+              <ItemCopy
+                content={showToken ? me.api_token : maskToken(me.api_token)}
+                value={me.api_token}
+              />
+            </span>
+            <IconButton
+              className={classes.icon}
+              onClick={toggleTokenVisibility} aria-label={showToken ? t('Hide') : t('Show')}
+            >
+              {showToken ? <VisibilityOff/> : <Visibility/>}
+            </IconButton>
+          </pre>
           {me.id !== OPENCTI_ADMIN_UUID && (
-            <Button variant="contained" color="primary" onClick={renewToken}>
-              {t('Renew')}
-            </Button>
+          <Button variant="contained" color="primary" onClick={renewToken}>
+            {t('Renew')}
+          </Button>
           )}
           <Typography
             variant="h4"
@@ -593,10 +635,27 @@ const ProfileOverviewComponent = (props) => {
           >
             {t('Required headers')}
           </Typography>
-          <pre>
-            Content-Type: application/json
-            <br />
-            Authorization: Bearer {me.api_token}
+          <pre
+            style={{
+              margin: 0,
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              width: '100%',
+            }}
+          >
+            <span style={{ flexGrow: 1 }}>
+              Content-Type: application/json
+              <br/>
+              Authorization: Bearer {showToken ? me.api_token : maskToken(me.api_token)}
+            </span>
+            <IconButton
+              className={classes.icon}
+              onClick={toggleTokenVisibility}
+              aria-label={showToken ? t('Hide') : t('Show')}
+            >
+              {showToken ? <VisibilityOff/> : <Visibility/>}
+            </IconButton>
           </pre>
           <Button
             variant="contained"
