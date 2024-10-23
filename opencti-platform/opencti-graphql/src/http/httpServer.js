@@ -123,10 +123,10 @@ const createHttpServer = async () => {
         executeContext.previousStandard = req.headers['previous-standard']; // Previous standard id
         executeContext.synchronizedUpsert = req.headers['synchronized-upsert'] === 'true'; // If full sync needs to be done
         try {
-          const user = await authenticateUserFromRequest(executeContext, req, res);
-          if (user) {
-            executeContext.user = userWithOrigin(req, user);
-          }
+          executeContext.draftId = req.headers['opencti-draft-id'];
+        const user = await authenticateUserFromRequest(executeContext, req, res);
+        if (user) {
+          executeContext.user = userWithOrigin(req, user);}
         } catch (error) {
           logApp.error(error);
         }

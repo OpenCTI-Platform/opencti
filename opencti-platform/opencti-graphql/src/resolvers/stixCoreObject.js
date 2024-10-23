@@ -92,6 +92,7 @@ const stixCoreObjectResolvers = {
       /* v8 ignore next */
       return 'Unknown';
     },
+    inDraft: (stixCoreObject, _) => stixCoreObject._index.includes('draft_workspace'),
     toStix: (stixCoreObject, _, context) => stixLoadByIdStringify(context, context.user, stixCoreObject.id),
     editContext: (stixCoreObject) => fetchEditContext(stixCoreObject.id),
     // region batch loaded through rel de-normalization. Cant be ordered of filtered

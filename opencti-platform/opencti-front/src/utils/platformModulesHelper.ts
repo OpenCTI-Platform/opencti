@@ -5,6 +5,7 @@ export const DISABLE_MANAGER_MESSAGE = 'To use this feature, your platform admin
 export const RUNTIME_SORTING = 'RUNTIME_SORTING';
 
 export const SUBSCRIPTION_MANAGER = 'SUBSCRIPTION_MANAGER';
+export const DRAFT_RULE_ENGINE = 'DRAFT_RULE_ENGINE';
 export const RULE_ENGINE = 'RULE_ENGINE';
 export const HISTORY_MANAGER = 'HISTORY_MANAGER';
 export const TASK_MANAGER = 'TASK_MANAGER';
@@ -70,6 +71,7 @@ const platformModuleHelper = (
   isModuleWarning: (id: string) => isModuleWarning(settings, id),
   isFeatureEnable: (id: string) => isFeatureEnable(settings, id),
   isRuleEngineEnable: () => isModuleEnable(settings, RULE_ENGINE),
+  isDraftRuleEngineEnable: () => isModuleEnable(settings, DRAFT_RULE_ENGINE),
   isRuntimeFieldEnable: () => isFeatureEnable(settings, RUNTIME_SORTING),
   isTasksManagerEnable: () => isModuleEnable(settings, TASK_MANAGER),
   isSyncManagerEnable: () => isModuleEnable(settings, SYNC_MANAGER),

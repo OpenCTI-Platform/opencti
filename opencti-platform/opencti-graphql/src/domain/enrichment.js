@@ -10,10 +10,12 @@ import { isStixMatchFilterGroup } from '../utils/filtering/filtering-stix/stix-f
 import { isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
 import { SYSTEM_USER } from '../utils/access';
 import { convertStoreToStix } from '../database/stix-converter';
+import { inDraftContext } from '../database/engine';
 
 export const createEntityAutoEnrichment = async (context, user, element, scope) => {
-  if (!isStixObject(element.entity_type)) {
-    return null; // we only enrich stix core objects
+  const draftContext = inDraftContext(context, user);
+  if (!isStixObject(element.entity_type) || draftContext) {
+    return null; // we only enrich stix core objects, and we disable enrichment in draft context
   }
   const elementStandardId = element.standard_id;
   // Get the list of compatible connectors

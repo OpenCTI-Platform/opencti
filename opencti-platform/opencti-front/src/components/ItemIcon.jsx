@@ -64,6 +64,7 @@ import {
   TaskAlt,
   AutoAwesomeMotion,
   ViewStreamTwoTone,
+  ArchitectureOutlined,
   BackupTableOutlined,
 } from '@mui/icons-material';
 import {
@@ -151,6 +152,8 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
       return <StreamOutlined style={style} fontSize={fontSize} role="img" />;
     case 'settings':
       return <SettingsOutlined style={style} fontSize={fontSize} role="img" />;
+    case 'draft':
+      return <ArchitectureOutlined style={style} fontSize={fontSize} role="img" />;
     case 'taxiicollection':
       return (
         <DatabaseExportOutline style={style} fontSize={fontSize} role="img" />
@@ -532,6 +535,8 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
       return <UpcomingOutlined style={style} fontSize={fontSize} role="img" />;
     case 'synchronizer':
       return <ViewStreamTwoTone style={style} fontSize={fontSize} role="img" />;
+    case 'workspace_context':
+      return <ArchitectureOutlined style={style} fontSize={fontSize} role="img" />;
     case 'default':
       return <CircleOutlined style={style} fontSize={fontSize} role="img" />;
     default:

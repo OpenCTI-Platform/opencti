@@ -10,6 +10,7 @@ import Drawer from '@mui/material/Drawer';
 import Tooltip, { tooltipClasses } from '@mui/material/Tooltip';
 import {
   AccountBalanceOutlined,
+  ArchitectureOutlined,
   AssignmentOutlined,
   BiotechOutlined,
   BugReportOutlined,
@@ -247,6 +248,7 @@ const LeftBar = () => {
     locations: useRef(null),
     dashboards: useRef(null),
     investigations: useRef(null),
+    drafts: useRef(null),
     data: useRef(null),
     settings: useRef(null),
   };
@@ -843,6 +845,27 @@ const LeftBar = () => {
                     <ListItemText
                       classes={{ primary: classes.menuItemText }}
                       primary={t_i18n('Investigations')}
+                    />
+                  )}
+                </MenuItem>
+              </StyledTooltip>
+            </Security>
+            <Security needs={[KNOWLEDGE]}>
+              <StyledTooltip title={!navOpen && t_i18n('Drafts')} placement="right">
+                <MenuItem
+                  component={Link}
+                  to="/dashboard/drafts"
+                  selected={!navOpen && location.pathname.includes('/dashboard/drafts')}
+                  dense={true}
+                  classes={{ root: classes.menuItem }}
+                >
+                  <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
+                    <ArchitectureOutlined />
+                  </ListItemIcon>
+                  {navOpen && (
+                    <ListItemText
+                      classes={{ primary: classes.menuItemText }}
+                      primary={t_i18n('Drafts')}
                     />
                   )}
                 </MenuItem>
