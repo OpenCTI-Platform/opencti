@@ -75,16 +75,6 @@ export const stixDomainObjectMutation = graphql`
         references: $references
       ) {
         x_opencti_stix_ids
-        objectAssignee {
-          id
-          name
-          entity_type
-        }
-        objectParticipant {
-          id
-          name
-          entity_type
-        }
         ... on AttackPattern {
           aliases
         }
@@ -150,6 +140,16 @@ export const stixDomainObjectMutation = graphql`
         }
         ... on Incident {
           aliases
+          objectAssignee {
+            id
+            name
+            entity_type
+          }
+          objectParticipant {
+            id
+            name
+            entity_type
+          }
         }
         ... on Vulnerability {
           x_opencti_aliases
@@ -159,6 +159,73 @@ export const stixDomainObjectMutation = graphql`
         }
         ... on DataSource {
           aliases
+        }
+        ... on Report {
+          objectAssignee {
+            id
+            name
+            entity_type
+          }
+          objectParticipant {
+            id
+            name
+            entity_type
+          }
+        }
+        ... on CaseIncident {
+          objectAssignee {
+            id
+            name
+            entity_type
+          }
+          objectParticipant {
+            id
+            name
+            entity_type
+          }
+        }
+        ... on CaseRfi {
+          objectAssignee {
+            id
+            name
+            entity_type
+          }
+          objectParticipant {
+            id
+            name
+            entity_type
+          }
+        }
+        ... on CaseRft {
+          objectAssignee {
+            id
+            name
+            entity_type
+          }
+          objectParticipant {
+            id
+            name
+            entity_type
+          }
+        }
+        ... on Task {
+          objectAssignee {
+            id
+            name
+            entity_type
+          }
+          objectParticipant {
+            id
+            name
+            entity_type
+          }
+        }
+        ... on Feedback {
+          objectAssignee {
+            id
+            name
+            entity_type
+          }
         }
       }
     }
