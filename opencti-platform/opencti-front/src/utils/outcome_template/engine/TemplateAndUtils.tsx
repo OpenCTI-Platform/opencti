@@ -17,11 +17,6 @@ export const templateAndUtilsContainerQuery = graphql`
           name
           widget
         }
-        resolved_widgets_attributes {
-          template_widget_name
-          data
-          displayStyle
-        }
       }
     }
   }

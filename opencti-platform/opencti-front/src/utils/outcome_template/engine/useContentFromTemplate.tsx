@@ -38,7 +38,7 @@ const useContentFromTemplate = () => {
     // other widgets
     for (const templateWidget of templateWidgets) {
       let outcome = '';
-      const widget = JSON.parse(templateWidget.widget);
+      const { widget } = templateWidget;
       if (widget.type === 'list') {
         // eslint-disable-next-line no-await-in-loop
         outcome = await buildListOutcome(containerId, widget, maxContentMarkings);

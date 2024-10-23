@@ -13,25 +13,21 @@ const buildAttributesOutcome = async (containerId: string, templateWidgets: Temp
     variableName: w.name,
     attribute: w.widget.dataSelection[0].columns[0].attribute,
   }));
-  console.log('info', widgetsInfo);
   const data = await fetchQuery(stixCoreObjectsAttributesQuery, { id: containerId }).toPromise() as StixCoreObjectsAttributesQuery$data;
   const attributeWidgetsOutcome = widgetsInfo.map((col) => {
     const { attribute } = col;
     const splittedAttribute = col.attribute.split('.');
     const result = splittedAttribute.length === 1 ? data.stixCoreObject?.[attribute] : data.stixCoreObject?.[attribute[0]]?.[attribute[1]];
     let attributeData = '';
-    if (result.length === 1) {
-      [attributeData] = result;
-    } else if (result.length > 1) {
-      if (attributeData === 'list') {
-        attributeData = renderToString(<ul>{result.map((el) => <li key={el}>{el}</li>)}</ul>);
-      } else {
-        attributeData = result.join(', ');
-      }
+    if (!Array.isArray(result)) {
+      attributeData = result;
+    } else if (col.displayStyle && col.displayStyle === 'list') {
+      attributeData = renderToString(<ul>{result.map((el) => <li key={el}>{el}</li>)}</ul>);
+    } else {
+      attributeData = result.join(', ');
     }
     return { variableName: col.variableName, attributeData };
   });
-
   return attributeWidgetsOutcome;
 };
 

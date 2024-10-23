@@ -27,7 +27,7 @@ const templateAttribute: Template = {
     <p> This report has been published $reportPublicationDate, and has labels: $containerLabels</p>
     </body>
     </html>`,
-  template_widgets_names: ['containerName', 'reportPublicationDate', 'containerLabels'],
+  template_widgets_names: ['containerName', 'reportPublicationDate'],
 };
 
 const templateList: Template = {

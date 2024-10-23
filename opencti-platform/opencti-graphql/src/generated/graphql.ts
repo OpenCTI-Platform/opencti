@@ -26564,7 +26564,6 @@ export type Template = {
 
 export type TemplateAndUtils = {
   __typename?: 'TemplateAndUtils';
-  resolved_widgets_attributes: Array<ResolvedWidgetAttribute>;
   template: Template;
   template_widgets: Array<TemplateWidget>;
 };
@@ -39729,7 +39728,6 @@ export type TemplateResolvers<ContextType = any, ParentType extends ResolversPar
 }>;
 
 export type TemplateAndUtilsResolvers<ContextType = any, ParentType extends ResolversParentTypes['TemplateAndUtils'] = ResolversParentTypes['TemplateAndUtils']> = ResolversObject<{
-  resolved_widgets_attributes?: Resolver<Array<ResolversTypes['ResolvedWidgetAttribute']>, ParentType, ContextType>;
   template?: Resolver<ResolversTypes['Template'], ParentType, ContextType>;
   template_widgets?: Resolver<Array<ResolversTypes['TemplateWidget']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
