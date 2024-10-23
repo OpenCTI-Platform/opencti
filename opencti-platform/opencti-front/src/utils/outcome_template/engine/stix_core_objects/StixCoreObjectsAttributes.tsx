@@ -186,6 +186,10 @@ const stixCoreObjectsAttributesQuery = graphql`
                 last_seen
                 description
             }
+            ... on CaseIncident {
+                priority
+                severity
+            }
             ... on StixCyberObservable {
                 observable_value
                 x_opencti_description
