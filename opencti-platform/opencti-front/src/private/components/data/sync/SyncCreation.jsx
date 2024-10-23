@@ -251,6 +251,7 @@ const SyncCreation = ({ paginationOptions }) => {
                     component={TextField}
                     variant="standard"
                     name="token"
+                    type="password"
                     label={t_i18n('Remote OpenCTI token')}
                     fullWidth={true}
                     disabled={streams.length > 0}
