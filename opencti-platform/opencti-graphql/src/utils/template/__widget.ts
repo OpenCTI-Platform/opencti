@@ -92,9 +92,9 @@ const widgetContainerIndicators: TemplateWidget = {
           filterGroups: [],
         } as FilterGroup,
         columns: [
-          { label: 'Representative', attribute: 'representative.main' },
-          { label: 'Entity type', attribute: 'entity_type' },
-          { label: 'Creation Date', attribute: 'created_at' }
+          { label: 'Indicator type', attribute: 'indicator_types' },
+          { label: 'Indicator', attribute: 'representative.main' },
+          { label: 'Description', attribute: 'description' }
         ],
       },
     ],
@@ -119,16 +119,16 @@ const widgetContainerObservables: TemplateWidget = {
           filterGroups: [],
         } as FilterGroup,
         columns: [
-          { label: 'Representative', attribute: 'representative.main' },
-          { label: 'Entity type', attribute: 'entity_type' },
-          { label: 'Creation Date', attribute: 'created_at' }
+          { label: 'Observable type', attribute: 'entity_type' },
+          { label: 'Value', attribute: 'representative.main' },
+          { label: 'Description', attribute: 'description' }
         ],
       },
     ],
   }),
 };
 
-const widgetContainerReferences: TemplateWidget = {
+const widgetContainerReferences: TemplateWidget = { // TODO : list
   name: 'containerReferences',
   widget: JSON.stringify({
     type: 'attribute',
@@ -248,6 +248,11 @@ const widgetIncidentTasksActions: TemplateWidget = {
           ],
           filterGroups: [],
         } as FilterGroup,
+        columns: [
+          { label: 'Task', attribute: 'representative.main' },
+          { label: 'Due date (UTC)', attribute: 'due_date' },
+          { label: 'Status', attribute: 'status' },
+        ],
       },
     ],
   }),
@@ -270,6 +275,11 @@ const widgetIncidentTTP: TemplateWidget = {
           ],
           filterGroups: [],
         } as FilterGroup,
+        columns: [
+          { label: 'Techinque ID', attribute: 'x_mitre_id' },
+          { label: 'Technique', attribute: 'representative.main' },
+          { label: 'Description', attribute: 'description' },
+        ],
       },
     ],
   }),
