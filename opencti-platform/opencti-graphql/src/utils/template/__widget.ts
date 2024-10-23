@@ -265,7 +265,7 @@ const widgetIncidentTTP: TemplateWidget = {
         filters: {
           mode: 'and',
           filters: [
-            { key: 'entity_type', values: ['Indicator'] },
+            { key: 'entity_type', values: ['Attack-Pattern'] },
             { key: 'objects', values: ['CONTAINER_ID'] },
           ],
           filterGroups: [],
