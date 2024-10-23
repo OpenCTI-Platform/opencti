@@ -37,6 +37,7 @@ import { USER_CHOICE_MARKING_CONFIG } from '../../../../utils/csvMapperUtils';
 import { convertMapper, convertUser } from '../../../../utils/edition';
 import { BASIC_AUTH, CERT_AUTH, extractCA, extractCert, extractKey, extractPassword, extractUsername } from '../../../../utils/ingestionAuthentificationUtils';
 import useAuth from '../../../../utils/hooks/useAuth';
+import ToggleVisibilityField from '../../../../components/ToggleVisibilityField';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -240,6 +241,7 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
     ca: '',
     markings: [],
   };
+
   return (
     <Formik<IngestionCsvAddInput>
       initialValues={initialValues}
@@ -344,62 +346,50 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
             </MenuItem>
           </Field>
           {values.authentication_type === 'basic' && (
-            <>
-              <Field
-                component={TextField}
-                variant="standard"
-                name="username"
-                label={t_i18n('Username')}
-                fullWidth={true}
-                style={fieldSpacingContainerStyle}
-              />
-              <Field
-                component={TextField}
-                variant="standard"
-                name="password"
-                label={t_i18n('Password')}
-                fullWidth={true}
-                style={fieldSpacingContainerStyle}
-              />
-            </>
-          )}
-          {values.authentication_type === 'bearer' && (
+          <>
             <Field
               component={TextField}
               variant="standard"
-              name="authentication_value"
-              label={t_i18n('Token')}
+              name="username"
+              label={t_i18n('Username')}
               fullWidth={true}
               style={fieldSpacingContainerStyle}
             />
+            <ToggleVisibilityField
+              name="password"
+              label={t_i18n('Password')}
+            />
+          </>
+          )}
+          {values.authentication_type === 'bearer' && (
+            <ToggleVisibilityField
+              name="authentication_value"
+              label={t_i18n('Token')}
+            />
           )}
           {values.authentication_type === 'certificate' && (
-            <>
-              <Field
-                component={TextField}
-                variant="standard"
-                name="cert"
-                label={t_i18n('Certificate (base64)')}
-                fullWidth={true}
-                style={fieldSpacingContainerStyle}
-              />
-              <Field
-                component={TextField}
-                variant="standard"
-                name="key"
-                label={t_i18n('Key (base64)')}
-                fullWidth={true}
-                style={fieldSpacingContainerStyle}
-              />
-              <Field
-                component={TextField}
-                variant="standard"
-                name="ca"
-                label={t_i18n('CA certificate (base64)')}
-                fullWidth={true}
-                style={fieldSpacingContainerStyle}
-              />
-            </>
+          <>
+            <Field
+              component={TextField}
+              variant="standard"
+              name="cert"
+              label={t_i18n('Certificate (base64)')}
+              fullWidth={true}
+              style={fieldSpacingContainerStyle}
+            />
+            <ToggleVisibilityField
+              name="key"
+              label={t_i18n('Key (base64)')}
+            />
+            <Field
+              component={TextField}
+              variant="standard"
+              name="ca"
+              label={t_i18n('CA certificate (base64)')}
+              fullWidth={true}
+              style={fieldSpacingContainerStyle}
+            />
+          </>
           )}
           <Box sx={{ width: '100%', marginTop: 5 }}>
             <Alert
