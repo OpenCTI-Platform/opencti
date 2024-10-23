@@ -5,7 +5,6 @@ import type { AttributeDefinition, AttrType, ComplexAttributeWithMappings, Mappi
 import { shortStringFormats } from './attribute-definition';
 import { getParentTypes } from './schemaUtils';
 import { isFeatureEnabled } from '../config/conf';
-import { uniq } from 'ramda';
 
 export const depsKeysRegister = {
   deps: [] as { src: string, types?: string[] }[],
