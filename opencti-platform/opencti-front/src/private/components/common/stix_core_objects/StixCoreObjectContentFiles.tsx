@@ -305,7 +305,6 @@ const StixCoreObjectContentFiles: FunctionComponent<StixCoreObjectContentFilesPr
               currentFileId={currentFileId}
               handleSelectFile={handleSelectFile}
               onFileChange={onFileChange}
-              canDownload={false}
             />
           )}
         </ContentBloc>

@@ -44,7 +44,6 @@ interface StixCoreObjectContentFilesListProps {
   currentFileId: string,
   handleSelectFile: (fileId: string) => void,
   onFileChange: (fileName?: string, isDeleted?: boolean) => void,
-  canDownload?: boolean
 }
 
 const StixCoreObjectContentFilesList = ({
@@ -52,7 +51,6 @@ const StixCoreObjectContentFilesList = ({
   currentFileId,
   handleSelectFile,
   onFileChange,
-  canDownload = true,
 }: StixCoreObjectContentFilesListProps) => {
   const { fld, t_i18n } = useFormatter();
   const [deleting, setDeleting] = useState<string | null>(null);
@@ -136,11 +134,10 @@ const StixCoreObjectContentFilesList = ({
               to={`${APP_BASE_PATH}/storage/get/${encodeURIComponent(file.id)}`}
               target="_blank"
               rel="noopener noreferrer"
-              disabled={!canDownload}
             >
               {t_i18n('Download file')}
             </MenuItem>
-            <MenuItem onClick={() => downloadPdf(file.id)} disabled={!canDownload}>
+            <MenuItem onClick={() => downloadPdf(file.id)}>
               {t_i18n('Download in PDF')}
             </MenuItem>
             <MenuItem onClick={() => submitDelete(file.id)}>
