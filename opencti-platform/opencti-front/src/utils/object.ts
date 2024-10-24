@@ -5,21 +5,18 @@
  * @param path The path to access the property.
  * @returns The value of the property.
  */
-export function getObjectProperty(object: object, path = ''): unknown {
-  return path.split('.').reduce(
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    (o, x) => (o === undefined ? o : o[x]),
-    object,
-  );
+function getObjectProperty<T extends object>(object: T, path = ''): unknown {
+  const splitPath = path.split('.');
+  const property = object[splitPath.shift() as keyof T];
+
+  // If at the end of the path, stop recursion.
+  if (splitPath.length === 0) return property;
+  // If not at the end of the path but the value is not an object, error.
+  if (typeof property !== 'object' || property === null) throw Error('Ínvalid path, a subpart is not an object');
+  // Continue deeper, if array, need to continue for each element of the array.
+  return Array.isArray(property)
+    ? property.map((el) => getObjectProperty(el, splitPath.join('.')))
+    : getObjectProperty(property, splitPath.join('.'));
 }
 
-export const fetchAttributeFromData = (object: unknown, splittedAttribute: string[]): unknown => {
-  if (splittedAttribute.length === 1) {
-    return object?.[splittedAttribute[0]];
-  }
-  const subObject = object?.[splittedAttribute[0]];
-  return Array.isArray(subObject)
-    ? subObject.map((o) => fetchAttributeFromData(o, splittedAttribute.slice(1)))
-    : fetchAttributeFromData(subObject, splittedAttribute.slice(1));
-};
+export default getObjectProperty;
