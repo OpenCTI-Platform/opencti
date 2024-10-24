@@ -101,30 +101,30 @@ const TaskFilterValue = ({
                     ? convertOperatorToIcon(currentFilter.operator ?? 'eq')
                     : currentFilter.values.length > 0 && ': '}
                   {currentFilter.values.map((o) => {
-                      const localFilterMode = t_i18n(
-                        (currentFilter.mode ?? 'or').toUpperCase(),
-                      );
-                      return (
-                        <Tooltip
-                          key={o}
-                          title={
-                            <FilterValuesContent
-                              filterKey={currentFilter.key}
-                              id={o}
-                              value={filtersRepresentativesMap.get(o)?.value ?? o}
-                              isFilterTooltip={true}
-                              filterOperator={currentFilter.operator}
-                            />
+                    const localFilterMode = t_i18n(
+                      (currentFilter.mode ?? 'or').toUpperCase(),
+                    );
+                    return (
+                      <Tooltip
+                        key={o}
+                        title={
+                          <FilterValuesContent
+                            filterKey={currentFilter.key}
+                            id={o}
+                            value={filtersRepresentativesMap.get(o)?.value ?? o}
+                            isFilterTooltip={true}
+                            filterOperator={currentFilter.operator}
+                          />
                           }
-                        >
-                          <span key={o}>
-                            <FilterValuesContent
-                              filterKey={currentFilter.key}
-                              id={o}
-                              value={filtersRepresentativesMap.get(o)?.value ?? o}
-                              filterOperator={currentFilter.operator}
-                            />
-                            {R.last(currentFilter.values) !== o && (
+                      >
+                        <span key={o}>
+                          <FilterValuesContent
+                            filterKey={currentFilter.key}
+                            id={o}
+                            value={filtersRepresentativesMap.get(o)?.value ?? o}
+                            filterOperator={currentFilter.operator}
+                          />
+                          {R.last(currentFilter.values) !== o && (
                             <code>{localFilterMode}</code>
                           )}{' '}
                         </span>
