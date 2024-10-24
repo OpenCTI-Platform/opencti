@@ -19,7 +19,7 @@ interface WidgetDataSelection {
   filters?: FilterGroup
   dynamicFrom?: FilterGroup
   dynamicTo?: FilterGroup
-  columns: WidgetColumn[]
+  columns?: WidgetColumn[]
 }
 
 interface WidgetParameters {
