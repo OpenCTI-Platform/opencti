@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent, ReactNode, useState } from 'react';
 import List from '@mui/material/List';
 import ListItemText from '@mui/material/ListItemText';
 import Drawer from '@mui/material/Drawer';
@@ -10,7 +10,6 @@ import { AddOutlined } from '@mui/icons-material';
 import { graphql } from 'react-relay';
 import ListItemButton from '@mui/material/ListItemButton';
 import Typography from '@mui/material/Typography';
-import makeStyles from '@mui/styles/makeStyles';
 import EEChip from '@components/common/entreprise_edition/EEChip';
 import { StixCoreObjectContent_stixCoreObject$data } from '@components/common/stix_core_objects/__generated__/StixCoreObjectContent_stixCoreObject.graphql';
 import { FormikConfig } from 'formik/dist/types';
@@ -20,30 +19,37 @@ import {
 } from '@components/common/stix_core_objects/__generated__/StixCoreObjectContentFilesUploadStixCoreObjectMutation.graphql';
 import CreateFileForm, { CreateFileFormInputs } from '@components/common/form/CreateFileForm';
 import StixCoreObjectContentFilesList from '@components/common/stix_core_objects/StixCoreObjectContentFilesList';
+import { useSettingsMessagesBannerHeight } from '@components/settings/settings_messages/SettingsMessagesBanner';
 import { useFormatter } from '../../../../components/i18n';
 import FileUploader from '../files/FileUploader';
 import { resolvedAttributesWidgets, templateAttribute, templateGraph, templateList, templateText, usedTemplateWidgets } from '../../../../utils/outcome_template/__template';
 import useContentFromTemplate from '../../../../utils/outcome_template/engine/useContentFromTemplate';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import type { Template } from '../../../../utils/outcome_template/template';
-import type { Theme } from '../../../../components/Theme';
 import { isNilField } from '../../../../utils/utils';
 import useHelper from '../../../../utils/hooks/useHelper';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { MESSAGING$ } from '../../../../relay/environment';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  drawerPaper: {
-    minHeight: '100vh',
-    width: 350,
-    padding: '10px 0 20px 0',
-    position: 'fixed',
-    zIndex: 1100,
-  },
-  toolbar: theme.mixins.toolbar,
-}));
+interface ContentBlocProps {
+  title: ReactNode
+  children: ReactNode
+  actions?: ReactNode
+}
+
+const ContentBloc = ({ title, actions, children }:ContentBlocProps) => {
+  return (
+    <div style={{ marginBottom: '24px' }}>
+      <div style={{ padding: '0 16px', display: 'flex', alignItems: 'center' }}>
+        <Typography variant="body2" style={{ display: 'flex', alignItems: 'center', flex: 1 }}>
+          {title}
+        </Typography>
+        <div>{actions}</div>
+      </div>
+      {children}
+    </div>
+  );
+};
 
 export const stixCoreObjectContentFilesUploadStixCoreObjectMutation = graphql`
   mutation StixCoreObjectContentFilesUploadStixCoreObjectMutation(
@@ -86,7 +92,6 @@ interface StixCoreObjectContentFilesProps {
   contentSelected: boolean,
   currentFileId: string,
   onFileChange: (fileName?: string, isDeleted?: boolean) => void,
-  settingsMessagesBannerHeight?: number,
   exportFiles: NonNullable<StixCoreObjectContent_stixCoreObject$data['exportFiles']>['edges'][number]['node'][],
   contentsFromTemplate: NonNullable<StixCoreObjectContent_stixCoreObject$data['contentsFromTemplate']>['edges'][number]['node'][],
   hasOutcomesTemplate?: boolean,
@@ -101,17 +106,16 @@ const StixCoreObjectContentFiles: FunctionComponent<StixCoreObjectContentFilesPr
   contentSelected,
   currentFileId,
   onFileChange,
-  settingsMessagesBannerHeight,
   exportFiles,
   contentsFromTemplate,
   hasOutcomesTemplate,
 }) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
   const { buildContentFromTemplate } = useContentFromTemplate();
   const isEnterpriseEdition = useEnterpriseEdition();
   const { isFeatureEnable } = useHelper();
   const isContentFromTemplateEnabled = isFeatureEnable('CONTENT_FROM_TEMPLATE');
+  const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
 
   const [commitUploadFile] = useApiMutation<StixCoreObjectContentFilesUploadStixCoreObjectMutation>(
     stixCoreObjectContentFilesUploadStixCoreObjectMutation,
@@ -221,14 +225,19 @@ const StixCoreObjectContentFiles: FunctionComponent<StixCoreObjectContentFilesPr
       variant="permanent"
       anchor="right"
       elevation={1}
-      sx={{ zIndex: 1202 }}
-      classes={{ paper: classes.drawerPaper }}
+      sx={{
+        zIndex: 1100,
+        width: 350,
+        '& .MuiDrawer-paper': {
+          width: 350,
+          padding: '10px 0 20px 0',
+          paddingTop: `calc(16px + 64px + ${settingsMessagesBannerHeight ?? 0}px)`, // 16 for margin, 64 for top bar,
+        },
+      }}
     >
-      <div className={classes.toolbar} />
       {!isNilField(content) && (
-        <>
-          <Typography variant="body2" style={{ margin: '5px 0 0 15px' }}>{t_i18n('Mappable content')}</Typography>
-          <List style={{ marginBottom: 30, marginTop: settingsMessagesBannerHeight }}>
+        <ContentBloc title={t_i18n('Mappable content')}>
+          <List>
             <ListItemButton
               dense={true}
               divider={true}
@@ -239,26 +248,17 @@ const StixCoreObjectContentFiles: FunctionComponent<StixCoreObjectContentFilesPr
                 <FileOutline fontSize="small" />
               </ListItemIcon>
               <ListItemText
-                sx={{
-                  '.MuiListItemText-secondary': {
-                    whiteSpace: 'pre-line',
-                  },
-                }}
                 primary={t_i18n('Description & Main content')}
-                secondary={<div>
-                  {t_i18n('Description and content of the entity')}
-                </div>}
+                secondary={t_i18n('Description and content of the entity')}
               />
             </ListItemButton>
           </List>
-        </>
+        </ContentBloc>
       )}
 
-      <div>
-        <Typography variant="body2" style={{ margin: '5px 0 0 15px', float: 'left' }}>
-          {t_i18n('Files')}
-        </Typography>
-        <div style={{ float: 'right', display: 'flex', margin: '-4px 15px 0 0' }}>
+      <ContentBloc
+        title={t_i18n('Files')}
+        actions={(<>
           <FileUploader
             entityId={stixCoreObjectId}
             onUploadSuccess={onFileChange}
@@ -273,45 +273,41 @@ const StixCoreObjectContentFiles: FunctionComponent<StixCoreObjectContentFilesPr
           >
             <AddOutlined />
           </IconButton>
-        </div>
-      </div>
-
-      <StixCoreObjectContentFilesList
-        files={filesList}
-        currentFileId={currentFileId}
-        handleSelectFile={handleSelectFile}
-        onFileChange={onFileChange}
-      />
-
-      {isContentFromTemplateEnabled && hasOutcomesTemplate && (
-        <div>
-          <Typography variant="body2" style={{ margin: '5px 0 0 15px', float: 'left' }}>
-            {t_i18n('Content from template')}
-          </Typography>
-          {!isEnterpriseEdition ? <EEChip/> : (
-            <div style={{ float: 'right', display: 'flex', margin: '-4px 15px 0 0' }}>
-              <Tooltip title={t_i18n('Create an outcome based on a template')}>
-                <IconButton
-                  onClick={handleOpenCreateContentFromTemplate}
-                  color="primary"
-                  size="small"
-                  aria-label={t_i18n('Create an outcome based on a template')}
-                >
-                  <AddOutlined/>
-                </IconButton>
-              </Tooltip>
-            </div>
-          )}
-        </div>
-      )}
-
-      {isEnterpriseEdition && isContentFromTemplateEnabled && hasOutcomesTemplate && (
+        </>)}
+      >
         <StixCoreObjectContentFilesList
-          files={contentsFromTemplate}
+          files={filesList}
           currentFileId={currentFileId}
           handleSelectFile={handleSelectFile}
           onFileChange={onFileChange}
         />
+      </ContentBloc>
+
+      {isContentFromTemplateEnabled && hasOutcomesTemplate && (
+        <ContentBloc
+          title={<>{t_i18n('Content from template')} {!isEnterpriseEdition && <EEChip />}</>}
+          actions={isEnterpriseEdition && (
+            <Tooltip title={t_i18n('Create an outcome based on a template')}>
+              <IconButton
+                onClick={handleOpenCreateContentFromTemplate}
+                color="primary"
+                size="small"
+                aria-label={t_i18n('Create an outcome based on a template')}
+              >
+                <AddOutlined/>
+              </IconButton>
+            </Tooltip>
+          )}
+        >
+          {isEnterpriseEdition && (
+            <StixCoreObjectContentFilesList
+              files={contentsFromTemplate}
+              currentFileId={currentFileId}
+              handleSelectFile={handleSelectFile}
+              onFileChange={onFileChange}
+            />
+          )}
+        </ContentBloc>
       )}
 
       <CreateFileForm

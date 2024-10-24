@@ -1,11 +1,8 @@
 import React, { FunctionComponent } from 'react';
 import IconButton from '@mui/material/IconButton';
-import { CloudDownloadOutlined, ZoomInOutlined, ZoomOutOutlined, SaveOutlined } from '@mui/icons-material';
+import { ZoomInOutlined, ZoomOutOutlined, SaveOutlined } from '@mui/icons-material';
 import Drawer from '@mui/material/Drawer';
 import Slide, { SlideProps } from '@mui/material/Slide';
-import { Link } from 'react-router-dom';
-import { FilePdfBox } from 'mdi-material-ui';
-import Tooltip from '@mui/material/Tooltip';
 import makeStyles from '@mui/styles/makeStyles';
 import { createStyles } from '@mui/styles';
 import FormGroup from '@mui/material/FormGroup';
@@ -35,9 +32,6 @@ interface StixCoreObjectContentBarProps {
   handleZoomIn?: () => void;
   handleZoomOut?: () => void;
   currentZoom?: number;
-  handleDownload?: () => void;
-  directDownload: string;
-  handleDownloadPdf?: () => void;
   handleSave?: () => void;
   changed?: boolean;
   navOpen: boolean;
@@ -49,9 +43,6 @@ StixCoreObjectContentBarProps
   handleZoomIn,
   handleZoomOut,
   currentZoom,
-  handleDownload,
-  directDownload,
-  handleDownloadPdf,
   handleSave,
   changed,
   navOpen,
@@ -129,46 +120,6 @@ StixCoreObjectContentBarProps
             >
               <ZoomInOutlined />
             </IconButton>
-          )}
-        </div>
-        <div
-          style={{
-            float: 'right',
-            display: 'flex',
-            height: '100%',
-            marginRight: 380,
-          }}
-        >
-          {handleDownloadPdf && (
-            <Tooltip title={t_i18n('Download in pdf')}>
-              <IconButton
-                color="primary"
-                onClick={handleDownloadPdf}
-                size="large"
-              >
-                <FilePdfBox />
-              </IconButton>
-            </Tooltip>
-          )}
-          {directDownload ? (
-            <Tooltip title={t_i18n('Download this file')}>
-              <IconButton
-                color="primary"
-                component={Link}
-                to={directDownload}
-                target="_blank"
-                rel="noopener noreferrer"
-                size="large"
-              >
-                <CloudDownloadOutlined />
-              </IconButton>
-            </Tooltip>
-          ) : (
-            <Tooltip title={t_i18n('Download this file')}>
-              <IconButton color="primary" onClick={handleDownload} size="large">
-                <CloudDownloadOutlined />
-              </IconButton>
-            </Tooltip>
           )}
         </div>
       </div>
