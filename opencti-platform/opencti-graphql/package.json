@@ -99,7 +99,7 @@
     "express-rate-limit": "7.4.0",
     "express-session": "1.18.0",
     "fast-json-patch": "3.1.1",
-    "file-type": "19.5.0",
+    "file-type": "19.6.0",
     "github-api": "3.4.0",
     "graphql": "16.9.0",
     "graphql-constraint-directive": "5.4.3",
