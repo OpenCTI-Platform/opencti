@@ -12,6 +12,7 @@ import { AlreadyDeletedError, DatabaseError } from '../config/errors';
 import { addFilter } from '../utils/filtering/filtering-utils';
 import { IMPORT_CSV_CONNECTOR, IMPORT_CSV_CONNECTOR_ID } from '../connector/importCsv/importCsv';
 import { RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
+import { DRAFT_VALIDATION_CONNECTOR, DRAFT_VALIDATION_CONNECTOR_ID } from '../modules/draftWorkspace/draftWorkspace-connector';
 
 export const workToExportFile = (work) => {
   const lastModifiedSinceMin = sinceNowInMinutes(work.updated_at);
@@ -118,6 +119,8 @@ export const deleteWorkForConnector = async (context, user, connectorId) => {
   let connector;
   if (connectorId === IMPORT_CSV_CONNECTOR_ID) {
     connector = IMPORT_CSV_CONNECTOR;
+  } else if (connectorId === DRAFT_VALIDATION_CONNECTOR_ID) {
+    connector = DRAFT_VALIDATION_CONNECTOR;
   } else {
     connector = await elLoadById(context, user, connectorId, { type: ENTITY_TYPE_CONNECTOR });
   }

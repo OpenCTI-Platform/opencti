@@ -1,9 +1,12 @@
+import * as R from 'ramda';
 import { isInternalObject } from '../schema/internalObject';
 import { isInternalRelationship } from '../schema/internalRelationship';
 import { getDraftContext } from '../utils/draftContext';
 import { INDEX_DRAFT_OBJECTS, READ_INDEX_DRAFT_OBJECTS } from './utils';
 import { FunctionalError } from '../config/errors';
 import { iAttributes, modified, updatedAt } from '../schema/attribute-definition';
+import { isMultipleAttribute } from '../schema/schema-attributes';
+import { mergeDeepRightAll } from '../utils/format';
 
 export const DRAFT_OPERATION_CREATE = 'create';
 export const DRAFT_OPERATION_UPDATE = 'update';
@@ -45,13 +48,27 @@ export const isDraftSupportedEntity = (element) => {
   return !isInternalObject(element.entity_type) && !isInternalRelationship(element.entity_type);
 };
 
+const updatedInputsToData = (instance, inputs) => {
+  const inputPairs = R.map((input) => {
+    const { key, value } = input;
+    let val = value;
+    if (!isMultipleAttribute(instance.entity_type, key) && val) {
+      val = R.head(value);
+    }
+    return { [key]: val };
+  }, inputs);
+  return mergeDeepRightAll(...inputPairs);
+};
+
 const IGNORED_INPUTS = [iAttributes.name, modified.name, updatedAt.name];
 const computeDraftUpdatePatch = (element, inputs) => {
   let currentDraftPatch = element.draft_change?.draft_update_patch ?? [];
-  inputs.filter((i) => !IGNORED_INPUTS.includes(i.key)).forEach((input) => {
-    const inputPatch = { op: input.operation ?? 'replace', path: input.key, value: input.value };
-    if (currentDraftPatch.some((currentDraftOperation) => currentDraftOperation.path === input.key)) {
-      currentDraftPatch = [...currentDraftPatch.filter((currentDraftOperation) => currentDraftOperation.path !== input.key), inputPatch];
+  const updatedInputs = updatedInputsToData(element, inputs);
+  Object.keys(updatedInputs).filter((k) => !IGNORED_INPUTS.includes(k)).forEach((key) => {
+    const value = updatedInputs[key];
+    const inputPatch = { op: 'replace', path: key, value };
+    if (currentDraftPatch.some((currentDraftOperation) => currentDraftOperation.path === inputPatch.path)) {
+      currentDraftPatch = [...currentDraftPatch.filter((currentDraftOperation) => currentDraftOperation.path !== inputPatch.path), inputPatch];
     } else {
       currentDraftPatch = [...currentDraftPatch, inputPatch];
     }
