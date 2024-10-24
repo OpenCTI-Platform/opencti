@@ -18,6 +18,8 @@ import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySet
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
+import useHelper from '../../../../utils/hooks/useHelper';
+import NarrativeDeletion from './NarrativeDeletion';
 
 const narrativeMutationFieldPatch = graphql`
   mutation NarrativeEditionOverviewFieldPatchMutation(
@@ -81,7 +83,8 @@ const narrativeMutationRelationDelete = graphql`
 const NarrativeEditionOverviewComponent = (props) => {
   const { narrative, enableReferences, context, handleClose } = props;
   const { t_i18n } = useFormatter();
-
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const basicShape = {
     name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
     description: Yup.string().nullable(),
@@ -257,16 +260,23 @@ const NarrativeEditionOverviewComponent = (props) => {
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
           />
-          {enableReferences && (
-            <CommitMessage
-              submitForm={submitForm}
-              disabled={isSubmitting || !isValid || !dirty}
-              setFieldValue={setFieldValue}
-              open={false}
-              values={values.references}
-              id={narrative.id}
-            />
-          )}
+          <div style={{ display: 'flex', justifyContent: 'space-between', flex: 1 }}>
+            {isFABReplaced
+              ? <NarrativeDeletion
+                  id={narrative.id}
+                />
+              : <div />}
+            {enableReferences && (
+              <CommitMessage
+                submitForm={submitForm}
+                disabled={isSubmitting || !isValid || !dirty}
+                setFieldValue={setFieldValue}
+                open={false}
+                values={values.references}
+                id={narrative.id}
+              />
+            )}
+          </div>
         </Form>
       )}
     </Formik>

@@ -13,7 +13,7 @@ import useHelper from '../../../../utils/hooks/useHelper';
 const AttackPatternEditionContainer = (props) => {
   const { t_i18n } = useFormatter();
   const { isFeatureEnable } = useHelper();
-  const FABReplaced = isFeatureEnable('FAB_REPLACEMENT');
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   const { handleClose, attackPattern, open, controlledDial } = props;
   const { editContext } = attackPattern;
@@ -27,9 +27,9 @@ const AttackPatternEditionContainer = (props) => {
       title={t_i18n('Update an attack pattern')}
       open={open}
       onClose={handleClose}
-      variant={!FABReplaced && open == null ? DrawerVariant.update : undefined}
+      variant={!isFABReplaced && open == null ? DrawerVariant.update : undefined}
       context={editContext}
-      controlledDial={FABReplaced ? controlledDial : undefined}
+      controlledDial={isFABReplaced ? controlledDial : undefined}
     >
       <>
         <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>

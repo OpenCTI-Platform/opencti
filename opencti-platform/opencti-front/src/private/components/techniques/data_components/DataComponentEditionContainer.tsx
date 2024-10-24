@@ -35,18 +35,18 @@ const DataComponentEditionContainer: FunctionComponent<DataComponentEditionConta
 }) => {
   const { t_i18n } = useFormatter();
   const { isFeatureEnable } = useHelper();
-  const FABReplaced = isFeatureEnable('FAB_REPLACEMENT');
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const { dataComponent } = usePreloadedQuery(dataComponentEditionQuery, queryRef);
 
   if (dataComponent) {
     return (
       <Drawer
         title={t_i18n('Update a data component')}
-        variant={!FABReplaced && open == null ? DrawerVariant.update : undefined}
+        variant={!isFABReplaced && open == null ? DrawerVariant.update : undefined}
         context={dataComponent.editContext}
         onClose={handleClose}
         open={open}
-        controlledDial={FABReplaced ? controlledDial : undefined}
+        controlledDial={isFABReplaced ? controlledDial : undefined}
       >
         {({ onClose }) => (
           <DataComponentEditionOverview
