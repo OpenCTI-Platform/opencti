@@ -72,6 +72,10 @@ const useStyles = makeStyles<Theme>((theme) => ({
   icon: {
     cursor: 'pointer',
     color: theme.palette.primary.main,
+    padding: '0px 8px 0px 8px',
+    '&:hover': {
+      backgroundColor: 'transparent',
+    },
   },
 }));
 
@@ -387,14 +391,7 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                     width: '100%',
                   }}
                 >
-                  <span
-                    style={{
-                      flexGrow: 1,
-                      whiteSpace: 'nowrap',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                    }}
-                  >
+                  <span style={{ flexGrow: 1 }}>
                     <ItemCopy
                       content={showToken ? user.api_token : maskToken(user.api_token)}
                       value={user.api_token}

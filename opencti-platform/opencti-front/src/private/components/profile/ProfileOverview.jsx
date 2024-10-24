@@ -54,6 +54,10 @@ const styles = (theme) => ({
   icon: {
     cursor: 'pointer',
     color: theme.palette.primary.main,
+    padding: '0px 8px 0px 8px',
+    '&:hover': {
+      backgroundColor: 'transparent',
+    },
   },
 });
 
@@ -603,14 +607,7 @@ const ProfileOverviewComponent = (props) => {
               width: '100%',
             }}
           >
-            <span
-              style={{
-                flexGrow: 1,
-                whiteSpace: 'nowrap',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-              }}
-            >
+            <span style={{ flexGrow: 1 }}>
               <ItemCopy
                 content={showToken ? me.api_token : maskToken(me.api_token)}
                 value={me.api_token}
@@ -644,13 +641,27 @@ const ProfileOverviewComponent = (props) => {
               width: '100%',
             }}
           >
-            <span style={{ flexGrow: 1 }}>
-              Content-Type: application/json
-              <br/>
-              Authorization: Bearer {showToken ? me.api_token : maskToken(me.api_token)}
+            <span
+              style={{
+                flexGrow: 1,
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <ItemCopy
+                content={
+                  <>
+                    Content-Type: application/json
+                    <br/>
+                    Authorization: Bearer {showToken ? me.api_token : maskToken(me.api_token)}
+                  </>
+                  }
+                value={`Content-Type: application/json\nAuthorization: Bearer ${me.api_token}`}
+              />
             </span>
             <IconButton
               className={classes.icon}
+              style={{ position: 'relative', top: '-8px' }}
               onClick={toggleTokenVisibility}
               aria-label={showToken ? t('Hide') : t('Show')}
             >
