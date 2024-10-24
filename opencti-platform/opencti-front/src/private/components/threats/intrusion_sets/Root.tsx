@@ -149,7 +149,7 @@ const RootIntrusionSet = ({ intrusionSetId, queryRef }: RootIntrusionSetProps) =
             <StixDomainObjectHeader
               entityType="Intrusion-Set"
               stixDomainObject={intrusionSet}
-              PopoverComponent={<IntrusionSetPopover />}
+              PopoverComponent={<IntrusionSetPopover id={intrusionSet.id}/>}
               EditComponent={isFABReplaced && (
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <IntrusionSetEdition intrusionSetId={intrusionSet.id} />
