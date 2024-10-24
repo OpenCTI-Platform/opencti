@@ -880,6 +880,7 @@ export const nodePaint = (
   colors,
   { label, img, x, y, numberOfConnectedElement },
   color,
+  labelColor,
   ctx,
   selected = false,
   inferred = false,
@@ -906,7 +907,9 @@ export const nodePaint = (
   ctx.font = '4px IBM Plex Sans';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
+  ctx.fillStyle = disabled ? colors.disabled : labelColor;
   ctx.fillText(label, x, y + 9);
+  ctx.fillStyle = disabled ? colors.disabled : color;
 
   const validConnectedElements = numberOfConnectedElement === undefined || numberOfConnectedElement > 0;
   if (showNbConnectedElements && validConnectedElements) {

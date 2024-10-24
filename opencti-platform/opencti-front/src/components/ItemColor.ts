@@ -1,47 +1,19 @@
-/* eslint-disable no-bitwise */
 import { useTheme } from '@mui/material';
-import invert from 'invert-color';
-
-export const stringToColour = (str, reversed = false) => {
-  if (!str) {
-    return '#5d4037';
-  }
-  if (str === 'true') {
-    if (reversed) {
-      return '#bf360c';
-    }
-    return '#2e7d32';
-  }
-  if (str === 'false') {
-    if (reversed) {
-      return '#2e7d32';
-    }
-    return '#bf360c';
-  }
-  let hash = 0;
-  for (let i = 0; i < str.length; i += 1) {
-    hash = str.charCodeAt(i) + ((hash << 5) - hash);
-  }
-  let colour = '#';
-  for (let i = 0; i < 3; i += 1) {
-    const value = (hash >> (i * 8)) & 0xff;
-    colour += `00${value.toString(16)}`.substr(-2);
-  }
-  return colour;
-};
-/* eslint-enable no-bitwise */
+import useAuth from '../utils/hooks/useAuth';
+import { stringToColour } from '../utils/Colors';
 
 /**
- * Old itemColor function to get a color from an item's entity type
- * Only use in class components, and use ItemColor for functional components
- * @param {string} type
- * @param {boolean} dark
- * @param {boolean} reversed
- * @param {boolean} monochrome_labels
- * @returns
- * @deprecated
+ * itemColor function that uses hooks to determine monochrome label and theme mode
+ * Can only be used in functional components
+ * @param type type of the entity
+ * @param reversed is the relation reversed
+ * @returns color hexcode
  */
-export const itemColor = (type, dark = false, reversed = false, monochrome_labels = false) => {
+const itemColor = (type: string, reversed = false) => {
+  const { me: { monochrome_labels } } = useAuth();
+  const theme = useTheme();
+  const dark = theme.palette.mode === 'dark';
+
   if (monochrome_labels) {
     switch (type) {
       // Analyses
@@ -560,8 +532,6 @@ export const itemColor = (type, dark = false, reversed = false, monochrome_label
     case 'subtechnique-of':
     case 'numberOfConnectedElement':
     case 'known-as':
-    case 'reports-to':
-    case 'supports':
       if (dark) {
         return '#616161';
       }
@@ -571,59 +541,4 @@ export const itemColor = (type, dark = false, reversed = false, monochrome_label
   }
 };
 
-export const hexToRGB = (hex, transp = 0.1) => {
-  const r = parseInt(hex.slice(1, 3), 16);
-  const g = parseInt(hex.slice(3, 5), 16);
-  const b = parseInt(hex.slice(5, 7), 16);
-  return `rgb(${r}, ${g}, ${b}, ${transp})`;
-};
-
-const numberToHex = (c) => {
-  const hex = c.toString(16);
-  return hex.length === 1 ? `0${hex}` : hex;
-};
-const rgbToHex = (r, g, b) => {
-  return `#${numberToHex(r)}${numberToHex(g)}${numberToHex(b)}`;
-};
-
-const generateGreenToRedColor = (n) => {
-  const red = (n > 50 ? 1 - 2 * ((n - 50) / 100.0) : 1.0) * 255;
-  const green = (n > 50 ? 1.0 : (2 * n) / 100.0) * 255;
-  const blue = 50;
-  return rgbToHex(Math.round(red), Math.round(green), Math.round(blue));
-};
-
-export const generateGreenToRedColors = (size) => {
-  const theme = useTheme();
-  if (theme.palette.mode === 'light' && size === 5) {
-    return ['#218500', '#628000', '#946f00', '#db3700', '#eb002f'];
-  }
-  const fact = 100 / size;
-  const ns = Array.from(Array(size).keys()).map((idx) => idx * fact);
-  return ns.map((n) => generateGreenToRedColor(n));
-};
-
-export const parseRGBtoHex = (rgb) => {
-  const [r, g, b] = rgb.replace(/[^\d,]/g, '').split(',');
-  return rgbToHex(parseInt(r, 10), parseInt(g, 10), parseInt(b, 10));
-};
-
-const adjustColor = (color, amount = 1) => {
-  return `#${color
-    .replace(/^#/, '')
-    .replace(/../g, (c) => `0${Math.min(255, Math.max(0, parseInt(c, 16) + amount)).toString(
-      16,
-    )}`.substr(-2))}`;
-};
-
-export const generateBannerMessageColors = (color) => {
-  let messageColor;
-  if (color && /^#[0-9A-F]{6}$/i.test(color)) {
-    messageColor = hexToRGB(adjustColor(color, 50), 0.9);
-  }
-  return {
-    backgroundColor: messageColor ?? '#ffecb3',
-    borderLeft: `8px solid ${messageColor ? color : '#ffc107'}`,
-    color: messageColor ? invert(color, true) : '#663c00',
-  };
-};
+export default itemColor;

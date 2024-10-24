@@ -16,8 +16,8 @@ import DataTable from '../../../components/dataGrid/DataTable';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
 import ItemIcon from '../../../components/ItemIcon';
-import { itemColor } from '../../../utils/Colors';
 import ItemEntityType from '../../../components/ItemEntityType';
+import itemColor from '../../../components/ItemColor';
 
 const LOCAL_STORAGE_KEY = 'relationships';
 

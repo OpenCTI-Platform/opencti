@@ -6,13 +6,12 @@ import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { stixCyberObservableEditionOverviewFocus } from './StixCyberObservableEditionOverview';
 import useHelper from '../../../../utils/hooks/useHelper';
 import { useFormatter } from '../../../../components/i18n';
-import ThemeDark from '../../../../components/ThemeDark';
-import ThemeLight from '../../../../components/ThemeLight';
 import { QueryRenderer } from '../../../../relay/environment';
 import StixCyberObservableEditionContainer from './StixCyberObservableEditionContainer';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import EditEntityControlledDial from '../../../../components/EditEntityControlledDial';
 import { StixCyberObservableEditionContainerQuery$data } from './__generated__/StixCyberObservableEditionContainerQuery.graphql';
+import type { Theme } from '../../../../components/Theme';
 
 export const stixCyberObservableEditionQuery = graphql`
   query StixCyberObservableEditionContainerQuery($id: String!) {
@@ -39,10 +38,7 @@ const StixCyberObservableEdition: FunctionComponent<StixCyberObservableEditionPr
   const [commit] = useApiMutation(stixCyberObservableEditionOverviewFocus);
   const { isFeatureEnable } = useHelper();
   const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
-  const { palette: { mode } } = useTheme();
-  const theme = mode === 'dark'
-    ? ThemeDark()
-    : ThemeLight();
+  const theme = useTheme<Theme>();
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => {
