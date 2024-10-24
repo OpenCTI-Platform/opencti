@@ -47,7 +47,7 @@ import { parseDomain } from '../../../../utils/Graph';
 import { INVESTIGATION_INUPDATE } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import { truncate } from '../../../../utils/String';
-import { dateFormat } from '../../../../utils/Time';
+import { dateFormat, now, validStartTimeForRelationCreation } from '../../../../utils/Time';
 import StixCoreRelationshipCreation from '../../common/stix_core_relationships/StixCoreRelationshipCreation';
 import StixCoreRelationshipEdition from '../../common/stix_core_relationships/StixCoreRelationshipEdition';
 import StixDomainObjectEdition from '../../common/stix_domain_objects/StixDomainObjectEdition';
@@ -918,8 +918,8 @@ class InvestigationGraphBar extends Component {
                           open={openCreatedRelation}
                           fromObjects={relationFromObjects}
                           toObjects={relationToObjects}
-                          startTime={lastLinkFirstSeen || null}
-                          stopTime={lastLinkLastSeen || null}
+                          startTime={lastLinkFirstSeen || validStartTimeForRelationCreation(now())}
+                          stopTime={lastLinkLastSeen || now()}
                           confidence={50}
                           handleClose={this.handleCloseCreateRelationship.bind(
                             this,
