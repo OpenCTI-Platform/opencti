@@ -204,6 +204,7 @@ import { buildEntityData, buildInnerRelation, buildRelationData } from './data-b
 import { deleteAllObjectFiles, moveAllFilesFromEntityToAnother, uploadToStorage } from './file-storage-helper';
 import { storeFileConverter } from './file-storage';
 import { getDraftContext } from '../utils/draftContext';
+import { getDraftChanges, isDraftSupportedEntity } from './draft-utils';
 
 // region global variables
 const MAX_BATCH_SIZE = 300;
@@ -340,7 +341,7 @@ const loadElementMetaDependencies = async (context, user, elements, args = {}) =
   return loadedElementMap;
 };
 
-const loadElementsWithDependencies = async (context, user, elements, opts = {}) => {
+export const loadElementsWithDependencies = async (context, user, elements, opts = {}) => {
   const elementsToDeps = [...elements];
   let fromAndToPromise = Promise.resolve();
   const targetsToResolved = [];
@@ -2135,6 +2136,9 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
     // Impacting information
     if (impactedInputs.length > 0) {
       const updateAsInstance = partialInstanceWithInputs(updatedInstance, impactedInputs);
+      if (getDraftContext(context, user) && isDraftSupportedEntity(initial)) {
+        updateAsInstance.draft_change = getDraftChanges(initial, impactedInputs);
+      }
       await elUpdateElement(context, user, updateAsInstance);
     }
     if (relationsToDelete.length > 0) {

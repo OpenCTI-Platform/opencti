@@ -119,6 +119,7 @@ const createHttpServer = async () => {
         executeContext.req = req;
         executeContext.res = res;
         executeContext.workId = req.headers['opencti-work-id']; // Api call comes from a worker processing
+        executeContext.draft_context = req.headers['opencti-draft-id']; // Api call is to be made is specific draft context
         executeContext.eventId = req.headers['opencti-event-id']; // Api call is due to listening event
         executeContext.previousStandard = req.headers['previous-standard']; // Previous standard id
         executeContext.synchronizedUpsert = req.headers['synchronized-upsert'] === 'true'; // If full sync needs to be done

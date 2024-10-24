@@ -34,6 +34,7 @@ import clusterManager from './manager/clusterManager';
 import activityListener from './manager/activityListener';
 import activityManager from './manager/activityManager';
 import supportPackageListener from './listener/supportPackageListener';
+import draftValidationConnector from './modules/draftWorkspace/draftWorkspace-connector';
 
 export const startModules = async () => {
   // region API initialization
@@ -64,6 +65,9 @@ export const startModules = async () => {
   } else {
     logApp.info('[OPENCTI-MODULE] Connector built in manager not started (disabled by configuration)');
   }
+  // endregion
+  // region draft validation built in connector
+  await draftValidationConnector.start();
   // endregion
   // region Task manager
   if (ENABLED_TASK_SCHEDULER) {
@@ -161,6 +165,9 @@ export const shutdownModules = async () => {
   if (ENABLED_IMPORT_CSV_BUILT_IN_CONNECTOR) {
     stoppingPromises.push(importCsvConnector.shutdown());
   }
+  // endregion
+  // region draft validation built in connector
+  stoppingPromises.push(draftValidationConnector.shutdown());
   // endregion
   // region Task manager
   if (ENABLED_TASK_SCHEDULER) {

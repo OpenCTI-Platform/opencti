@@ -7,7 +7,7 @@ import { type BasicStoreEntityDraftWorkspace, ENTITY_TYPE_DRAFT_WORKSPACE, type 
 import { elDeleteDraftContextFromUsers, elDeleteDraftElements } from '../../database/draft-engine';
 import { READ_INDEX_DRAFT_OBJECTS, READ_INDEX_INTERNAL_OBJECTS } from '../../database/utils';
 import { FunctionalError, UnsupportedError } from '../../config/errors';
-import { deleteElementById } from '../../database/middleware';
+import { deleteElementById, loadElementsWithDependencies, stixLoadByIds } from '../../database/middleware';
 import type { BasicStoreEntity } from '../../types/store';
 import { ABSTRACT_STIX_CORE_OBJECT } from '../../schema/general';
 import { isStixCoreObject } from '../../schema/stixCoreObject';
@@ -15,6 +15,14 @@ import { isFeatureEnabled } from '../../config/conf';
 import { getDraftContext } from '../../utils/draftContext';
 import { ENTITY_TYPE_USER } from '../../schema/internalObject';
 import { usersSessionRefresh } from '../../domain/user';
+import { elList, elLoadById } from '../../database/engine';
+import { isStixRefRelationship } from '../../schema/stixRefRelationship';
+import { buildStixBundle, convertStoreToStix } from '../../database/stix-converter';
+import { pushToWorkerForConnector } from '../../database/rabbitmq';
+import { SYSTEM_USER } from '../../utils/access';
+import { DRAFT_OPERATION_CREATE, DRAFT_OPERATION_DELETE, DRAFT_OPERATION_UPDATE } from '../../database/draft-utils';
+import { createWork, updateExpectationsNumber } from '../../domain/work';
+import { DRAFT_VALIDATION_CONNECTOR } from './draftWorkspace-connector';
 
 export const findById = (context: AuthContext, user: AuthUser, id: string) => {
   return storeLoadById<BasicStoreEntityDraftWorkspace>(context, user, id, ENTITY_TYPE_DRAFT_WORKSPACE);
@@ -75,4 +83,52 @@ export const deleteDraftWorkspace = async (context: AuthContext, user: AuthUser,
   await deleteElementById(context, user, id, ENTITY_TYPE_DRAFT_WORKSPACE);
 
   return id;
+};
+
+export const validateDraftWorkspace = async (context: AuthContext, user: AuthUser, draft_id: string) => {
+  const contextInDraft = { ...context, draft_context: draft_id };
+  const contextOutOfDraft = { ...context, draft_context: '' };
+  const draftEntities = await elList(contextInDraft, user, READ_INDEX_DRAFT_OBJECTS);
+
+  const draftEntitiesMinusRefRel = draftEntities.filter((e) => !isStixRefRelationship(e.entity_type));
+
+  const createEntities = draftEntitiesMinusRefRel.filter((e) => e.draft_change?.draft_operation === DRAFT_OPERATION_CREATE);
+  const createEntitiesIds = createEntities.map((e) => e.internal_id);
+  const createStixEntities = await stixLoadByIds(contextInDraft, user, createEntitiesIds, { draftID: user.draft_context });
+
+  const deletedEntities = draftEntitiesMinusRefRel.filter((e) => e.draft_change?.draft_operation === DRAFT_OPERATION_DELETE);
+  const deleteEntitiesIds = deletedEntities.map((e) => e.internal_id);
+  const deleteStixEntities = await stixLoadByIds(contextInDraft, user, deleteEntitiesIds);
+  const deleteStixEntitiesModified = deleteStixEntities.map((d: any) => ({ ...d, opencti_operation: 'delete' }));
+
+  const updatedEntities = draftEntitiesMinusRefRel.filter((e) => e.draft_change?.draft_operation === DRAFT_OPERATION_UPDATE
+      && e.draft_change.draft_update_patch && e.draft_change.draft_update_patch.length > 0);
+  const convertUpdatedEntityToStix = async (updatedDraftEntity: any) => {
+    const element = await elLoadById(contextOutOfDraft, user, updatedDraftEntity.internal_id, { withoutRels: true, connectionFormat: false }) as any;
+    if (!element) return element;
+
+    for (let i = 0; i < updatedDraftEntity.draft_change.draft_update_patch.length; i += 1) {
+      const { path, value } = updatedDraftEntity.draft_change.draft_update_patch[i];
+      element[path] = value;
+    }
+    const elementsWithDeps = await loadElementsWithDependencies(contextInDraft, user, [element]);
+    if (elementsWithDeps.length === 0) return null;
+    const elementWithDep = elementsWithDeps[0];
+    return convertStoreToStix(elementWithDep);
+  };
+  const updateStixEntities = await Promise.all(updatedEntities.map(async (e) => convertUpdatedEntityToStix(e)).filter((e) => e));
+
+  const stixBundle = buildStixBundle([...createStixEntities, ...deleteStixEntitiesModified, ...updateStixEntities]);
+  const jsonBundle = JSON.stringify(stixBundle);
+  const content = Buffer.from(jsonBundle, 'utf-8').toString('base64');
+
+  const work: any = await createWork(context, SYSTEM_USER, DRAFT_VALIDATION_CONNECTOR, `Draft validation (${draft_id})`, DRAFT_VALIDATION_CONNECTOR.internal_id, { receivedTime: now() });
+  if (stixBundle.objects.length === 1) {
+    // Only add explicit expectation if the worker will not split anything
+    await updateExpectationsNumber(contextOutOfDraft, context.user, work.id, stixBundle.objects.length);
+  }
+  await pushToWorkerForConnector(DRAFT_VALIDATION_CONNECTOR.id, { type: 'bundle', applicant_id: user.internal_id, content, update: true, work_id: work.id });
+  // await deleteDraftWorkspace({ ...context, draft_context: '' }, user, draft_id);
+
+  return jsonBundle;
 };
