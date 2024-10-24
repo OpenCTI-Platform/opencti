@@ -5,10 +5,10 @@ import { createInternalObject } from '../../domain/internalObject';
 import { now } from '../../utils/format';
 import { type BasicStoreEntityDraftWorkspace, ENTITY_TYPE_DRAFT_WORKSPACE, type StoreEntityDraftWorkspace } from './draftWorkspace-types';
 import { elDeleteDraftContextFromUsers, elDeleteDraftElements } from '../../database/draft-engine';
-import { READ_INDEX_DRAFT_OBJECTS, READ_INDEX_INTERNAL_OBJECTS } from '../../database/utils';
+import { isDraftIndex, READ_INDEX_DRAFT_OBJECTS, READ_INDEX_INTERNAL_OBJECTS } from '../../database/utils';
 import { FunctionalError, UnsupportedError } from '../../config/errors';
 import { deleteElementById } from '../../database/middleware';
-import type { BasicStoreEntity } from '../../types/store';
+import type { BasicStoreCommon, BasicStoreEntity } from '../../types/store';
 import { ABSTRACT_STIX_CORE_OBJECT } from '../../schema/general';
 import { isStixCoreObject } from '../../schema/stixCoreObject';
 import { isFeatureEnabled } from '../../config/conf';
@@ -26,14 +26,16 @@ export const findAll = (context: AuthContext, user: AuthUser, args: QueryDraftWo
 
 export const listDraftObjects = (context: AuthContext, user: AuthUser, args: QueryDraftWorkspaceEntitiesArgs) => {
   let types: string[] = [];
-  if (args && args.types) {
+  const { draftId, ...listArgs } = args;
+  if (args.types) {
     types = args.types.filter((t) => t && isStixCoreObject(t)) as string[];
   }
   if (types.length === 0) {
     types.push(ABSTRACT_STIX_CORE_OBJECT);
   }
-  const newArgs: EntityOptions<BasicStoreEntity> = { ...args, types, indices: [READ_INDEX_DRAFT_OBJECTS] };
-  return listEntitiesPaginated<BasicStoreEntity>(context, user, types, newArgs);
+  const newArgs: EntityOptions<BasicStoreEntity> = { ...listArgs, types, indices: [READ_INDEX_DRAFT_OBJECTS] };
+  const draftContext = { ...context, draft_context: draftId };
+  return listEntitiesPaginated<BasicStoreEntity>(draftContext, user, types, newArgs);
 };
 
 export const addDraftWorkspace = async (context: AuthContext, user: AuthUser, input: DraftWorkspaceAddInput) => {
@@ -75,4 +77,16 @@ export const deleteDraftWorkspace = async (context: AuthContext, user: AuthUser,
   await deleteElementById(context, user, id, ENTITY_TYPE_DRAFT_WORKSPACE);
 
   return id;
+};
+
+export const buildDraftVersion = (object: BasicStoreCommon) => {
+  if (!isDraftIndex(object._index)) {
+    return null;
+  }
+
+  if (!object.draft_ids || object.draft_ids.length === 0) {
+    throw FunctionalError('Cannot find draft ids on draft entity', { id: object.id });
+  }
+
+  return { draft_id: object.draft_ids[0], draft_operation: 'create' };
 };

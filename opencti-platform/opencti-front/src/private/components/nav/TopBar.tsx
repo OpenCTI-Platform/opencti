@@ -16,6 +16,8 @@ import { usePage } from 'use-analytics';
 import Popover from '@mui/material/Popover';
 import Box from '@mui/material/Box';
 import { OPEN_BAR_WIDTH, SMALL_BAR_WIDTH } from '@components/nav/LeftBar';
+import DraftContextBanner from '@components/drafts/DraftContextBanner';
+import { getDraftModeColor } from '@components/common/draft/DraftChip';
 import { useFormatter } from '../../../components/i18n';
 import SearchInput from '../../../components/SearchInput';
 import { APP_BASE_PATH, fileUri, MESSAGING$ } from '../../../relay/environment';
@@ -38,6 +40,7 @@ import oermLight from '../../../static/images/xtm/oerm_light.png';
 import omtdDark from '../../../static/images/xtm/omtd_dark.png';
 import omtdLight from '../../../static/images/xtm/omtd_light.png';
 import { isNotEmptyField } from '../../../utils/utils';
+import useHelper from '../../../utils/hooks/useHelper';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -72,9 +75,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
     width: '30%',
   },
   barRight: {
-    position: 'absolute',
-    top: 0,
-    right: theme.spacing(2),
+    marginRight: theme.spacing(2),
     height: '100%',
     display: 'flex',
     alignItems: 'center',
@@ -134,6 +135,8 @@ const topBarQuery = graphql`
 const TopBarComponent: FunctionComponent<TopBarProps> = ({
   queryRef,
 }) => {
+  const { isFeatureEnable } = useHelper();
+  const isDraftFeatureEnabled = isFeatureEnable('DRAFT_WORKSPACE');
   const theme = useTheme<Theme>();
   const navigate = useNavigate();
   const location = useLocation();
@@ -142,6 +145,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
   const {
     bannerSettings: { bannerHeightNumber },
     settings: { platform_openbas_url: openBASUrl },
+    me,
   } = useAuth();
   const hasKnowledgeAccess = useGranted([KNOWLEDGE]);
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
@@ -223,6 +227,9 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
   };
   // global search keyword
   const keyword = decodeSearchKeyword(location.pathname.match(/(?:\/dashboard\/search\/(?:knowledge|files)\/(.*))/)?.[1] ?? '');
+  // draft
+  const draftModeEnabled = isDraftFeatureEnabled && me.draftContext;
+  const draftModeColor = getDraftModeColor(theme);
   return (
     <AppBar
       position="fixed"
@@ -233,9 +240,11 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
       {/* Header and Footer Banners containing classification level of system */}
       <Toolbar
         style={{
+          display: 'flex',
           alignItems: 'center',
           marginTop: bannerHeightNumber + settingsMessagesBannerHeight,
           padding: 0,
+          borderBottom: draftModeEnabled ? `1px solid ${draftModeColor}` : 'initial',
         }}
       >
         <div className={classes.logoContainer} style={navOpen ? { width: OPEN_BAR_WIDTH } : {}}>
@@ -247,17 +256,23 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
             />
           </Link>
         </div>
-        {hasKnowledgeAccess && <div className={classes.menuContainer} style={{ marginLeft: theme.spacing(3) }}>
-          <SearchInput
-            onSubmit={handleSearch}
-            keyword={keyword}
-            variant="topBar"
-            placeholder={`${t_i18n('Search the platform')}...`}
-            fullWidth={true}
-          />
-        </div>}
+        {hasKnowledgeAccess && (
+          <div className={classes.menuContainer} style={{ flex: 1, marginLeft: theme.spacing(3) }}>
+            <SearchInput
+              onSubmit={handleSearch}
+              keyword={keyword}
+              variant="topBar"
+              placeholder={`${t_i18n('Search the platform')}...`}
+              fullWidth={true}
+            />
+          </div>
+        )}
+        {draftModeEnabled && (
+          <DraftContextBanner/>
+        )}
         <div className={classes.barRight}>
           <div className={classes.barRightContainer}>
+            {!draftModeEnabled && (
             <Security needs={[KNOWLEDGE]}>
               <>
                 <Tooltip title={t_i18n('Notifications')}>
@@ -290,6 +305,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
                 </Tooltip>
               </>
             </Security>
+            )}
             <IconButton
               color="inherit"
               size="medium"

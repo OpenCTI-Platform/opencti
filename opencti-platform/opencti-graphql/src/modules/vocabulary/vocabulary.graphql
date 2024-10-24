@@ -72,6 +72,7 @@ type Vocabulary implements BasicObject & StixObject & StixMetaObject {
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   # inferences
   x_opencti_inferences: [Inference]
   # StixMetaObject
