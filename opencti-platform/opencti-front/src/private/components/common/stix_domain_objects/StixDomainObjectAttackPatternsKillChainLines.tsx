@@ -139,7 +139,7 @@ const StixDomainObjectAttackPatternsKillChainLines: FunctionComponent<StixDomain
               <Collapse
                 in={expandedLines[element.id] !== false}
               >
-                <List>
+                <>
                   {(element.attackPatterns ?? []).map(
                     (attackPattern) => {
                       const link = `/dashboard/techniques/attack_patterns/${attackPattern.id}`;
@@ -149,27 +149,29 @@ const StixDomainObjectAttackPatternsKillChainLines: FunctionComponent<StixDomain
                             classes={{ root: classes.nested }}
                             divider={true}
                             dense={true}
-                            component={coursesOfAction ? 'ul' : Link}
-                            to={coursesOfAction ? undefined : link}
                             onClick={
                                 coursesOfAction
                                   ? () => handleToggleLine(attackPattern.id)
                                   : undefined
                               }
                           >
-                            <ListItemIcon>
-                              <LockPattern color="primary" role="img" />
-                            </ListItemIcon>
-                            <ListItemText
-                              primary={
-                                <span>
-                                  <strong>
-                                    {attackPattern.x_mitre_id}
-                                  </strong>{' '}
-                                  - {attackPattern.name}
-                                </span>
+                            <ListItem
+                              to={coursesOfAction ? undefined : link}
+                              component={coursesOfAction ? 'ul' : Link}
+                            >
+                              <ListItemIcon>
+                                <LockPattern color="primary" role="img"/>
+                              </ListItemIcon>
+                              <ListItemText
+                                primary={
+                                  <span>
+                                    <strong>
+                                      {attackPattern.x_mitre_id}
+                                    </strong>{' '}
+                                    - {attackPattern.name}
+                                  </span>
                                 }
-                              secondary={
+                                secondary={
                                   attackPattern.description
                                   && attackPattern.description.length > 0 ? (
                                     <MarkdownDisplay
@@ -181,16 +183,17 @@ const StixDomainObjectAttackPatternsKillChainLines: FunctionComponent<StixDomain
                                       t_i18n('No description of this usage')
                                     )
                                 }
-                            />
-                            <ItemMarkings
-                              variant="inList"
-                              markingDefinitions={
+                              />
+                              <ItemMarkings
+                                variant="inList"
+                                markingDefinitions={
                                   attackPattern.objectMarking ?? []
                                 }
-                              limit={1}
-                            />
+                                limit={1}
+                              />
+                            </ListItem>
                             <div className={classes.nested} >
-                              <ListItemSecondaryAction>
+                              <ListItemSecondaryAction classes={{ root: classes.itemIconDisabled }}>
                                 {coursesOfAction ? (
                                   <IconButton
                                     onClick={() => handleToggleLine(attackPattern.id)}
@@ -271,7 +274,7 @@ const StixDomainObjectAttackPatternsKillChainLines: FunctionComponent<StixDomain
                       );
                     },
                   )}
-                </List>
+                </>
               </Collapse>
             </div>
           ))}
