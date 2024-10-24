@@ -44,6 +44,8 @@ const initImportCsvConnector = () => {
     const applicantUser = await resolveUserByIdFromCache(context, applicantId) as AuthUser;
     const entityId = messageParsed.event.entity_id;
     const entity = entityId ? await storeLoadByIdWithRefs(context, applicantUser, entityId) : undefined;
+
+    logApp.info('ANGIE - consumeQueueCallback', { fileId, entityId, messageParsed });
     let parsedConfiguration;
     try {
       parsedConfiguration = JSON.parse(messageParsed.configuration);
@@ -78,7 +80,7 @@ const initImportCsvConnector = () => {
                 mimetype: 'application/json',
               };
               await uploadToStorage(context, applicantUser, 'import/pending', file, { entity });
-              await reportExpectation(context, applicantUser, workId);
+              await reportExpectation(context, applicantUser, workId, {});
             } else {
               await updateExpectationsNumber(context, applicantUser, workId, bundle.objects.length);
               const content = Buffer.from(JSON.stringify(bundle), 'utf-8').toString('base64');

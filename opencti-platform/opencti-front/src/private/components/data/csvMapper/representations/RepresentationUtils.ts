@@ -1,6 +1,11 @@
 import { v4 as uuid } from 'uuid';
 import { CsvMapperRepresentationType } from '@components/data/csvMapper/__generated__/CsvMapperEditionContainerFragment_csvMapper.graphql';
-import { CsvMapperRepresentation, CsvMapperRepresentationEdit, CsvMapperRepresentationFormData } from '@components/data/csvMapper/representations/Representation';
+import {
+  CsvMapperColumnBasedFormData,
+  CsvMapperRepresentation,
+  CsvMapperRepresentationEdit,
+  CsvMapperRepresentationFormData,
+} from '@components/data/csvMapper/representations/Representation';
 import { csvMapperAttributeToFormData, formDataToCsvMapperAttribute } from '@components/data/csvMapper/representations/attributes/AttributeUtils';
 import {
   CsvMapperRepresentationAttributesForm_allSchemaAttributes$data,
@@ -51,15 +56,20 @@ export const csvMapperRepresentationToFormData = (
   representation: CsvMapperRepresentation,
   schemaAttributes: CsvMapperRepresentationAttributesForm_allSchemaAttributes$data['csvMapperSchemaAttributes'],
   computeDefaultValues: ReturnType<typeof useComputeDefaultValues>,
-): CsvMapperRepresentationFormData => {
+): CsvMapperRepresentationFormData | CsvMapperColumnBasedFormData => {
   const entitySchemaAttributes = schemaAttributes.find(
     (schema) => schema.name === representation.target.entity_type,
   )?.attributes ?? [];
-
   return {
     id: representation.id,
     type: representation.type,
     target_type: representation.target.entity_type,
+    column_based: representation.target.column_based?.column_reference ? {
+      enabled: true,
+      column_reference: representation.target.column_based.column_reference,
+      operator: representation.target.column_based.operator,
+      value: representation.target.column_based.value,
+    } : null,
     attributes: representation.attributes.reduce((acc, attribute) => {
       const schemaAttribute = entitySchemaAttributes.find((attr) => attr.name === attribute.key);
       return {
@@ -89,6 +99,11 @@ export const formDataToCsvMapperRepresentation = (
     type: data.type as CsvMapperRepresentationType,
     target: {
       entity_type: data.target_type ?? '',
+      column_based: data.column_based?.enabled ? {
+        column_reference: data.column_based.column_reference,
+        operator: data.column_based.operator,
+        value: data.column_based.value,
+      } : null,
     },
     attributes: (Object.entries(data.attributes)).flatMap(([name, attribute]) => {
       const mapperAttribute = formDataToCsvMapperAttribute(attribute, name);

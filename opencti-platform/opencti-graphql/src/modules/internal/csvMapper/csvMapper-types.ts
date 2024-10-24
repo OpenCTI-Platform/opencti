@@ -1,6 +1,7 @@
-import type { StoreEntity, BasicStoreEntity } from '../../../types/store';
+import type { BasicStoreEntity, StoreEntity } from '../../../types/store';
 import type { StixObject, StixOpenctiExtensionSDO } from '../../../types/stix-common';
 import { STIX_EXT_OCTI } from '../../../types/stix-extensions';
+import type { CsvMapperOperator } from '../../../generated/graphql';
 
 export const ENTITY_TYPE_CSV_MAPPER = 'CsvMapper';
 
@@ -29,13 +30,10 @@ export interface CsvMapperRepresentationAttribute {
   default_values?: string[]
   ref?: AttributeRef
 }
-export enum Operator {
-  Eq = 'eq',
-  Neq = 'neq'
-}
+
 interface CsvMapperRepresentationTargetColumn {
   column_reference?: string
-  operator?: Operator
+  operator?: CsvMapperOperator
   value?: string
 }
 interface CsvMapperRepresentationTarget {
