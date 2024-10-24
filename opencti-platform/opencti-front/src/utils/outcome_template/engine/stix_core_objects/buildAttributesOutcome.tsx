@@ -1,9 +1,9 @@
 import { renderToString } from 'react-dom/server';
 import React from 'react';
 import { fetchQuery } from '../../../../relay/environment';
-import { StixCoreObjectsAttributesQuery$data } from './__generated__/stixCoreObjectsAttributesQuery.graphql';
+import { StixCoreObjectsAttributesQuery$data } from './__generated__/StixCoreObjectsAttributesQuery.graphql';
 import type { TemplateWidget } from '../../template';
-import stixCoreObjectsAttributesQuery from './stixCoreObjectsAttributesQuery';
+import stixCoreObjectsAttributesQuery from './StixCoreObjectsAttributesQuery';
 import { fetchAttributeFromData } from '../../../object';
 
 const buildAttributesOutcome = async (containerId: string, templateWidgets: TemplateWidget[]) => {
