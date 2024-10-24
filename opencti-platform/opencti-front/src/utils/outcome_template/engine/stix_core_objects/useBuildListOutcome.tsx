@@ -6,7 +6,7 @@ import { useBuildFiltersForTemplateWidgets } from '../../../filters/filtersUtils
 import type { Widget } from '../../../widget/widget';
 import { fetchQuery } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
-import getObjectProperty from '../../../object';
+import { getObjectProperty } from '../../../object';
 
 const useBuildListOutcome = () => {
   const { t_i18n } = useFormatter();

@@ -20,6 +20,7 @@ interface WidgetDataSelection {
   dynamicFrom?: FilterGroup
   dynamicTo?: FilterGroup
   columns?: WidgetColumn[]
+  instance_id?: string
 }
 
 interface WidgetParameters {
