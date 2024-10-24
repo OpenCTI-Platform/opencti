@@ -46,7 +46,7 @@ const ConnectorWorksErrorLine: FunctionComponent<ConnectorWorksErrorLineProps> =
         <TableCell>{error.isParsed ? error.parsedError.message : error.rawError.message}</TableCell>
         <TableCell>
           {error.isParsed ? (
-            <a href={`/dashboard/id/${error.parsedError.entity.id}`} target="_blank" rel="noreferrer">[{error.parsedError.entity.type}] {error.parsedError.entity.name}</a>
+            <a href={`/dashboard/id/${error.parsedError.entity.id}`} target="_blank" rel="noreferrer">[{error.parsedError.entity.entity_type}] {error.parsedError.entity.representative?.main}</a>
           ) : (
             truncate(error.rawError.source, 50)
           )}
