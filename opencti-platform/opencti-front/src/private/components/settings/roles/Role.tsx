@@ -86,7 +86,7 @@ const Role = ({
       .filter((n) => n !== null && n !== undefined);
   };
   const role = useFragment<Role_role$key>(roleFragment, roleData);
-  const { isAllowed, isSensitive } = useSensitiveModifications(role.standard_id);
+  const { isAllowed, isSensitive } = useSensitiveModifications('role', role.standard_id);
   const queryRef = useQueryLoading<RoleEditionCapabilitiesLinesSearchQuery>(
     roleEditionCapabilitiesLinesSearch,
   );

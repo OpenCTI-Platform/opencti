@@ -126,7 +126,7 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
   const { t_i18n } = useFormatter();
 
   const group = useFragment<Group_group$key>(groupFragment, groupData);
-  const { isAllowed } = useSensitiveModifications(group.standard_id);
+  const { isAllowed } = useSensitiveModifications('group', group.standard_id);
 
   const markingsSort = R.sortWith([
     R.ascend(R.propOr('TLP', 'definition_type')),

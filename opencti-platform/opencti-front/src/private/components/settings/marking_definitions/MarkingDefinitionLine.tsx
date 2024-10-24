@@ -48,7 +48,7 @@ const MarkingDefinitionLineComponent: React.FC<MarkingDefinitionLineProps> = (pr
 
   const { fd } = useFormatter();
   const { dataColumns, node } = props;
-  const { isSensitive, isAllowed } = useSensitiveModifications(node.standard_id);
+  const { isSensitive, isAllowed } = useSensitiveModifications('marking', node.standard_id);
 
   return (
     <ListItem
