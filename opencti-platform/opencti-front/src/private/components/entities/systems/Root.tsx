@@ -1,4 +1,4 @@
-import React, {useMemo, Suspense, useState, useEffect} from 'react';
+import React, { useMemo, Suspense, useState, useEffect } from 'react';
 import { Route, Routes, Link, Navigate, useLocation, useParams, useNavigate } from 'react-router-dom';
 import { graphql, useSubscription, usePreloadedQuery, PreloadedQuery } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
