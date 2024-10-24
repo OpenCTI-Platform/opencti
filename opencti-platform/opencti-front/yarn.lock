@@ -3182,9 +3182,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@google-cloud/translate@npm:8.3.0":
-  version: 8.3.0
-  resolution: "@google-cloud/translate@npm:8.3.0"
+"@google-cloud/translate@npm:8.5.0":
+  version: 8.5.0
+  resolution: "@google-cloud/translate@npm:8.5.0"
   dependencies:
     "@google-cloud/common": "npm:^5.0.0"
     "@google-cloud/promisify": "npm:^4.0.0"
@@ -3192,7 +3192,7 @@ __metadata:
     extend: "npm:^3.0.2"
     google-gax: "npm:^4.0.3"
     is-html: "npm:^2.0.0"
-  checksum: 10/cab44a00d6eea30146fc745ef898dff851062016a8654c842c5341cd1fcde9800e274184135af3e443fb7d5e015fca54405496b4c7faf2614af02c3fb5c2ee3d
+  checksum: 10/40d6ef77e8c548e18d0e64ffa3bf5f02d532fe2084f07b49af22c5c3e69dd60d898ccea1d827fa26a58eed3504eb52b9f83417ab493eead3ddf296592b1241b6
   languageName: node
   linkType: hard
 
@@ -7223,17 +7223,6 @@ __metadata:
   version: 4.10.0
   resolution: "axe-core@npm:4.10.0"
   checksum: 10/6158489a7a704edc98bd30ed56243b8280c5203c60e095a2feb5bff95d9bf2ef10becfe359b1cbc8601338418999c26cf4eee704181dedbcb487f4d63a06d8d5
-  languageName: node
-  linkType: hard
-
-"axios@npm:1.7.3":
-  version: 1.7.3
-  resolution: "axios@npm:1.7.3"
-  dependencies:
-    follow-redirects: "npm:^1.15.6"
-    form-data: "npm:^4.0.0"
-    proxy-from-env: "npm:^1.1.0"
-  checksum: 10/7f92af205705a8fb4a9d35666b663729507657f252a1d39d83582590119941872d49078017cf992e32f47aa3b7317f5439f77be772a173dac2ae0fedd38f43ae
   languageName: node
   linkType: hard
 
@@ -12192,12 +12181,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"i18n-auto-translation@npm:1.6.2":
-  version: 1.6.2
-  resolution: "i18n-auto-translation@npm:1.6.2"
+"i18n-auto-translation@npm:1.8.2":
+  version: 1.8.2
+  resolution: "i18n-auto-translation@npm:1.8.2"
   dependencies:
-    "@google-cloud/translate": "npm:8.3.0"
-    axios: "npm:1.7.3"
+    "@google-cloud/translate": "npm:8.5.0"
+    axios: "npm:1.7.7"
     deep-object-diff: "npm:1.1.9"
     glob: "npm:11.0.0"
     html-entities: "npm:2.5.2"
@@ -12205,7 +12194,7 @@ __metadata:
     yargs: "npm:17.7.2"
   bin:
     i18n-auto-translation: dist/index.js
-  checksum: 10/a7152060067549bc54f9fcb87edb6c0146f44939032804c30cd2995c169ab2a91db1ca932166bfae0e5d376455c949923f5b764e15d71dea7755d7e6c2e000c6
+  checksum: 10/97b37718697555c21de55490e11196ad5f45c426555106f3f80c8749cff40799c94c5c5999994c86b05daf89e4bca9a9ffd62779ed3bd7e3bf1eef3e49439f53
   languageName: node
   linkType: hard
 
@@ -15658,7 +15647,7 @@ __metadata:
     html-to-image: "npm:1.11.11"
     html-to-pdfmake: "npm:2.5.13"
     http-proxy-middleware: "npm:3.0.3"
-    i18n-auto-translation: "npm:1.6.2"
+    i18n-auto-translation: "npm:1.8.2"
     invert-color: "npm:2.0.0"
     js-base64: "npm:3.7.7"
     js-file-download: "npm:0.4.12"
