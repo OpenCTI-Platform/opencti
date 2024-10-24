@@ -11,7 +11,7 @@ steps:
     commands:
       - apk add git github-cli
       - chmod 777 scripts/*
-      - ./scripts/clone-dependencies.sh ${DRONE_SOURCE_BRANCH} $(pwd) ${DRONE_PULL_REQUEST}
+      - ./scripts/clone-dependencies.sh "${DRONE_SOURCE_BRANCH}" "${DRONE_TARGET_BRANCH}" "$(pwd)" "${DRONE_PULL_REQUEST}"
       - ls -lart
       - cd "$DRONE_WORKSPACE/client-python"
       - echo "[INFO] using client-python on branch $(git branch --show-current)"
