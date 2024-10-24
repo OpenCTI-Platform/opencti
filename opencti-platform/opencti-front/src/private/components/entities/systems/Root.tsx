@@ -30,6 +30,8 @@ import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import SystemEdition from './SystemEdition';
 import useHelper from '../../../../utils/hooks/useHelper';
+import CreateRelationshipContextProvider from '../../common/menus/CreateRelationshipContextProvider';
+import CreateRelationshipButtonComponent from '../../common/menus/CreateRelationshipButtonComponent';
 
 const subscription = graphql`
   subscription RootSystemsSubscription($id: ID!) {
@@ -125,7 +127,7 @@ const RootSystem = ({ systemId, queryRef }: RootSystemProps) => {
   const link = `/dashboard/entities/systems/${systemId}/knowledge`;
   const paddingRight = getPaddingRight(location.pathname, systemId, '/dashboard/entities/systems');
   return (
-    <>
+    <CreateRelationshipContextProvider>
       {system ? (
         <>
           <Routes>
@@ -171,6 +173,7 @@ const RootSystem = ({ systemId, queryRef }: RootSystemProps) => {
                   <SystemEdition systemId={system.id} />
                 </Security>
               )}
+              RelateComponent={CreateRelationshipButtonComponent}
               onViewAs={handleChangeViewAs}
               viewAs={viewAs}
             />
@@ -321,7 +324,7 @@ const RootSystem = ({ systemId, queryRef }: RootSystemProps) => {
       ) : (
         <ErrorNotFound />
       )}
-    </>
+    </CreateRelationshipContextProvider>
   );
 };
 const Root = () => {
