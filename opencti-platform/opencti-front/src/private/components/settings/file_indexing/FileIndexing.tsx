@@ -27,6 +27,7 @@ import { FileIndexingConfigurationQuery } from './__generated__/FileIndexingConf
 import { TEN_SECONDS } from '../../../../utils/Time';
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
+import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
 
 const interval$ = interval(TEN_SECONDS);
 
@@ -74,6 +75,8 @@ const FileIndexingComponent: FunctionComponent<FileIndexingComponentProps> = ({
 }) => {
   const isEnterpriseEdition = useEnterpriseEdition();
   const { t_i18n } = useFormatter();
+  const { setTitle } = useConnectedDocumentModifier();
+  setTitle(t_i18n('File Indexing | Settings'));
   const { platformModuleHelpers } = useAuth();
   const isModuleWarning = platformModuleHelpers.isModuleWarning(FILE_INDEX_MANAGER);
   const { managerConfigurationByManagerId } = usePreloadedQuery<FileIndexingConfigurationQuery>(

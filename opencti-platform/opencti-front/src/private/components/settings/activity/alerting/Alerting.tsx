@@ -16,6 +16,7 @@ import type { Theme } from '../../../../../components/Theme';
 import { emptyFilterGroup } from '../../../../../utils/filters/filtersUtils';
 import Breadcrumbs from '../../../../../components/Breadcrumbs';
 import { useFormatter } from '../../../../../components/i18n';
+import useConnectedDocumentModifier from '../../../../../utils/hooks/useConnectedDocumentModifier';
 
 export const LOCAL_STORAGE_KEY_DATA_SOURCES = 'alerting';
 const nbOfRowsToLoad = 50;
@@ -131,6 +132,8 @@ const AlertingLines: FunctionComponent<AlertingLinesProps> = ({
 
 const Alerting: FunctionComponent = () => {
   const { t_i18n } = useFormatter();
+  const { setTitle } = useConnectedDocumentModifier();
+  setTitle(t_i18n('Activity: Alerting | Settings'));
   const classes = useStyles();
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<AlertingPaginationQuery$variables>(
     LOCAL_STORAGE_KEY_DATA_SOURCES,

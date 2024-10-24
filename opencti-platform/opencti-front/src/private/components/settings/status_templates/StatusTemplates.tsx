@@ -10,6 +10,7 @@ import { StatusTemplatesLinesPaginationQuery, StatusTemplatesLinesPaginationQuer
 import LabelsVocabulariesMenu from '../LabelsVocabulariesMenu';
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
+import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -24,6 +25,8 @@ const LOCAL_STORAGE_KEY = 'status-templates';
 
 const StatusTemplates = () => {
   const { t_i18n } = useFormatter();
+  const { setTitle } = useConnectedDocumentModifier();
+  setTitle(t_i18n('Taxonomies: Status Templates | Settings'));
   const classes = useStyles();
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<StatusTemplatesLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY,
