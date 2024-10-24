@@ -3,7 +3,7 @@ import useDonutOutcome from './stix_relationships/useDonutOutcome';
 import { fetchQuery } from '../../../relay/environment';
 import { TemplateAndUtilsContainerQuery$data } from './__generated__/TemplateAndUtilsContainerQuery.graphql';
 import buildAttributesOutcome from './stix_core_objects/buildAttributesOutcome';
-import templateAndUtilsContainerQuery from './templateAndUtilsContainerQuery';
+import templateAndUtilsContainerQuery from './TemplateAndUtilsContainerQuery';
 
 const useContentFromTemplate = () => {
   const { buildDonutOutcome } = useDonutOutcome();
