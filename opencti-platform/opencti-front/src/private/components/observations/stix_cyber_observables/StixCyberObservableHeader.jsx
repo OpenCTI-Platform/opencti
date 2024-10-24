@@ -4,12 +4,14 @@ import Typography from '@mui/material/Typography';
 import makeStyles from '@mui/styles/makeStyles';
 import StixCoreObjectContainer from '../../common/stix_core_objects/StixCoreObjectContainer';
 import StixCyberObservablePopover from './StixCyberObservablePopover';
+import StixCyberObservablePopoverFABReplaced from './StixCyberObservablePopoverFABReplaced';
 import { truncate } from '../../../../utils/String';
 import StixCoreObjectEnrichment from '../../common/stix_core_objects/StixCoreObjectEnrichment';
 import StixCoreObjectSharing from '../../common/stix_core_objects/StixCoreObjectSharing';
 import useGranted, { KNOWLEDGE_KNENRICHMENT, KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import StixCyberObservableEdition from './StixCyberObservableEdition';
 import Security from '../../../../utils/Security';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -31,6 +33,8 @@ const StixCyberObservableHeaderComponent = ({
   isArtifact,
   disableSharing,
 }) => {
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const classes = useStyles();
   const isKnowledgeUpdater = useGranted([KNOWLEDGE_KNUPDATE]);
   const isKnowledgeEnricher = useGranted([KNOWLEDGE_KNENRICHMENT]);
@@ -57,10 +61,16 @@ const StixCyberObservableHeaderComponent = ({
           {isKnowledgeEnricher && (
             <StixCoreObjectEnrichment stixCoreObjectId={stixCyberObservable.id} />
           )}
-          <StixCyberObservablePopover
+          {isFABReplaced && (<StixCyberObservablePopoverFABReplaced
             stixCyberObservableId={stixCyberObservable.id}
             isArtifact={isArtifact}
-          />
+                             />
+          )}
+          {!isFABReplaced && (<StixCyberObservablePopover
+            stixCyberObservableId={stixCyberObservable.id}
+            isArtifact={isArtifact}
+                              />
+          )}
           <Security needs={[KNOWLEDGE_KNUPDATE]}>
             <StixCyberObservableEdition
               stixCyberObservableId={stixCyberObservable.id}
