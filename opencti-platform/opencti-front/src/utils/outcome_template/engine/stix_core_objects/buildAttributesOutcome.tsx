@@ -4,7 +4,7 @@ import { fetchQuery } from '../../../../relay/environment';
 import { StixCoreObjectsAttributesQuery$data } from './__generated__/StixCoreObjectsAttributesQuery.graphql';
 import type { TemplateWidget } from '../../template';
 import stixCoreObjectsAttributesQuery from './StixCoreObjectsAttributesQuery';
-import { fetchAttributeFromData } from '../../../object';
+import getObjectProperty from '../../../object';
 
 const buildAttributesOutcome = async (containerId: string, templateWidgets: TemplateWidget[]) => {
   if (templateWidgets.some((w) => w.widget.dataSelection[0].instance_id !== 'CONTAINER_ID')) {
@@ -17,8 +17,7 @@ const buildAttributesOutcome = async (containerId: string, templateWidgets: Temp
   const data = await fetchQuery(stixCoreObjectsAttributesQuery, { id: containerId }).toPromise() as StixCoreObjectsAttributesQuery$data;
   const attributeWidgetsOutcome = widgetsInfo.map(({ variableName, columns }) => {
     const attributesData = (columns ?? []).map((col) => {
-      const splittedAttribute = col.attribute.split('.');
-      const result = fetchAttributeFromData(data.stixCoreObject, splittedAttribute);
+      const result = getObjectProperty(data.stixCoreObject ?? {}, col.attribute);
       let attributeData;
       if (!Array.isArray(result)) {
         attributeData = result;
