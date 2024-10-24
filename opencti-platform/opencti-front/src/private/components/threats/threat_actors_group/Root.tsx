@@ -147,7 +147,7 @@ const RootThreatActorGroup = ({ queryRef, threatActorGroupId }: RootThreatActorG
             <StixDomainObjectHeader
               entityType="Threat-Actor-Group"
               stixDomainObject={threatActorGroup}
-              PopoverComponent={<ThreatActorGroupPopover />}
+              PopoverComponent={<ThreatActorGroupPopover id={threatActorGroup.id} />}
               EditComponent={isFABReplaced && (
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <ThreatActorGroupEdition threatActorGroupId={threatActorGroup.id} />

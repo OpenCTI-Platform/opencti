@@ -143,7 +143,7 @@ const RootCampaign = ({ campaignId, queryRef }: RootCampaignProps) => {
             <StixDomainObjectHeader
               entityType="Campaign"
               stixDomainObject={campaign}
-              PopoverComponent={<CampaignPopover />}
+              PopoverComponent={<CampaignPopover id={campaign.id}/>}
               EditComponent={isFABReplaced && (
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <CampaignEdition campaignId={campaign.id} />
