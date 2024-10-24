@@ -1,25 +1,24 @@
-import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
+import React, { useState } from 'react';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Button from '@mui/material/Button';
+import ToggleButton from '@mui/material/ToggleButton';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import MoreVert from '@mui/icons-material/MoreVert';
 import { graphql } from 'react-relay';
-import ToggleButton from '@mui/material/ToggleButton';
+import { useNavigate } from 'react-router-dom';
+import { useFormatter } from '../../../../components/i18n';
 import StixCoreObjectEnrichment from '../../common/stix_core_objects/StixCoreObjectEnrichment';
-import inject18n from '../../../../components/i18n';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
-import { toolEditionQuery } from './ToolEdition';
 import ToolEditionContainer from './ToolEditionContainer';
 import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNENRICHMENT, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
+import { KNOWLEDGE_KNENRICHMENT, KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import Transition from '../../../../components/Transition';
-import withRouter from '../../../../utils/compat_router/withRouter';
+import useHelper from '../../../../utils/hooks/useHelper';
+import { toolEditionQuery } from './ToolEdition';
 
 const ToolPopoverDeletionMutation = graphql`
   mutation ToolPopoverDeletionMutation($id: ID!) {
@@ -29,125 +28,88 @@ const ToolPopoverDeletionMutation = graphql`
   }
 `;
 
-class ToolPopover extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      anchorEl: null,
-      displayDelete: false,
-      displayEdit: false,
-      displayEnrichment: false,
-      deleting: false,
-    };
-  }
-
-  handleOpen(event) {
-    this.setState({ anchorEl: event.currentTarget });
-  }
-
-  handleClose() {
-    this.setState({ anchorEl: null });
-  }
-
-  handleOpenDelete() {
-    this.setState({ displayDelete: true });
-    this.handleClose();
-  }
-
-  handleCloseDelete() {
-    this.setState({ displayDelete: false });
-  }
-
-  submitDelete() {
-    this.setState({ deleting: true });
+const ToolPopover = ({ id }) => {
+  const navigate = useNavigate();
+  const { t_i18n } = useFormatter();
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [displayDelete, setDisplayDelete] = useState(false);
+  const [displayEdit, setDisplayEdit] = useState(false);
+  const [displayEnrichment, setDisplayEnrichment] = useState(false);
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
+  const [deleting, setDeleting] = useState(false);
+  const handleOpen = (event) => setAnchorEl(event.currentTarget);
+  const handleClose = () => setAnchorEl(null);
+  const handleOpenDelete = () => {
+    setDisplayDelete(true);
+    handleClose();
+  };
+  const handleCloseDelete = () => setDisplayDelete(false);
+  const submitDelete = () => {
+    setDeleting(true);
     commitMutation({
       mutation: ToolPopoverDeletionMutation,
-      variables: {
-        id: this.props.id,
-      },
+      variables: { id },
       onCompleted: () => {
-        this.setState({ deleting: false });
-        this.handleClose();
-        this.props.navigate('/dashboard/arsenal/tools');
+        setDeleting(false);
+        handleClose();
+        navigate('/dashboard/arsenal/tools');
       },
     });
-  }
-
-  handleOpenEdit() {
-    this.setState({ displayEdit: true });
-    this.handleClose();
-  }
-
-  handleCloseEdit() {
-    this.setState({ displayEdit: false });
-  }
-
-  handleOpenEnrichment() {
-    this.setState({ displayEnrichment: true });
-    this.handleClose();
-  }
-
-  handleCloseEnrichment() {
-    this.setState({ displayEnrichment: false });
-  }
-
-  render() {
-    const { t, id } = this.props;
-    return (
+  };
+  const handleOpenEdit = () => {
+    setDisplayEdit(true);
+    handleClose();
+  };
+  const handleCloseEdit = () => setDisplayEdit(false);
+  const handleOpenEnrichment = () => {
+    setDisplayEnrichment(true);
+    handleClose();
+  };
+  const handleCloseEnrichment = () => {
+    setDisplayEnrichment(false);
+  };
+  return isFABReplaced
+    ? (<></>)
+    : (
       <>
         <ToggleButton
           value="popover"
           size="small"
-
-          onClick={this.handleOpen.bind(this)}
+          onClick={handleOpen}
         >
           <MoreVert fontSize="small" color="primary" />
         </ToggleButton>
-        <Menu
-          anchorEl={this.state.anchorEl}
-          open={Boolean(this.state.anchorEl)}
-          onClose={this.handleClose.bind(this)}
-        >
-          <MenuItem onClick={this.handleOpenEdit.bind(this)}>
-            {t('Update')}
-          </MenuItem>
+        <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
+          <Security needs={[KNOWLEDGE_KNUPDATE]}>
+            <MenuItem onClick={handleOpenEdit}>{t_i18n('Update')}</MenuItem>
+          </Security>
           <Security needs={[KNOWLEDGE_KNENRICHMENT]}>
-            <MenuItem onClick={this.handleOpenEnrichment.bind(this)}>
-              {t('Enrich')}
-            </MenuItem>
+            <MenuItem onClick={handleOpenEnrichment}>{t_i18n('Enrich')}</MenuItem>
           </Security>
           <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
-            <MenuItem onClick={this.handleOpenDelete.bind(this)}>
-              {t('Delete')}
-            </MenuItem>
+            <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
           </Security>
         </Menu>
-        <StixCoreObjectEnrichment stixCoreObjectId={id} open={this.state.displayEnrichment} handleClose={this.handleCloseEnrichment.bind(this)} />
+        <StixCoreObjectEnrichment stixCoreObjectId={id} open={displayEnrichment} handleClose={handleCloseEnrichment} />
         <Dialog
+          open={displayDelete}
           PaperProps={{ elevation: 1 }}
-          open={this.state.displayDelete}
           keepMounted={true}
           TransitionComponent={Transition}
-          onClose={this.handleCloseDelete.bind(this)}
+          onClose={handleCloseDelete}
         >
           <DialogContent>
             <DialogContentText>
-              {t('Do you want to delete this tool?')}
+              {t_i18n('Do you want to delete this tool?')}
             </DialogContentText>
           </DialogContent>
           <DialogActions>
-            <Button
-              onClick={this.handleCloseDelete.bind(this)}
-              disabled={this.state.deleting}
-            >
-              {t('Cancel')}
+            <Button onClick={handleCloseDelete} disabled={deleting}>
+              {t_i18n('Cancel')}
             </Button>
-            <Button
-              color="secondary"
-              onClick={this.submitDelete.bind(this)}
-              disabled={this.state.deleting}
-            >
-              {t('Delete')}
+            <Button color="secondary" onClick={submitDelete} disabled={deleting}>
+              {t_i18n('Delete')}
             </Button>
           </DialogActions>
         </Dialog>
@@ -159,8 +121,8 @@ class ToolPopover extends Component {
               return (
                 <ToolEditionContainer
                   tool={props.tool}
-                  open={this.state.displayEdit}
-                  handleClose={this.handleCloseEdit.bind(this)}
+                  handleClose={handleCloseEdit}
+                  open={displayEdit}
                 />
               );
             }
@@ -169,13 +131,6 @@ class ToolPopover extends Component {
         />
       </>
     );
-  }
-}
-
-ToolPopover.propTypes = {
-  id: PropTypes.string,
-  t: PropTypes.func,
-  navigate: PropTypes.func,
 };
 
-export default compose(inject18n, withRouter)(ToolPopover);
+export default ToolPopover;
