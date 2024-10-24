@@ -1,7 +1,7 @@
 import sys
 
 import eql
-import plyara
+import yara
 from parsuricata import parse_rules
 from sigma.parser.collection import SigmaCollectionParser
 from snort.snort_parser import Parser
@@ -21,9 +21,8 @@ def check_indicator(pattern_type, indicator_value):  # pylint: disable=too-many-
         return {"status": "success", "data": result}
 
     if pattern_type == "yara":
-        parser = plyara.Plyara()
         try:
-            parser.parse_string(indicator_value)
+            yara.compile(source=indicator_value)
             result = True
         except:  # pylint: disable=bare-except
             result = False
