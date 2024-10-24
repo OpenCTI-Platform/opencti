@@ -29,7 +29,7 @@ import type { Template } from '../../../../utils/outcome_template/template';
 import { isNilField } from '../../../../utils/utils';
 import useHelper from '../../../../utils/hooks/useHelper';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import { Template } from '../../../../utils/outcome_template/template';
+import type { Template } from '../../../../utils/outcome_template/template';
 import { MESSAGING$ } from '../../../../relay/environment';
 
 interface ContentBlocProps {
@@ -186,7 +186,9 @@ const StixCoreObjectContentFiles: FunctionComponent<StixCoreObjectContentFilesPr
 
     const fileMarkings = values.fileMarkings.map(({ value }) => value);
     const maxContentMarkings = (values.maxMarkings ?? []).map(({ value }) => value);
-    const templateId = values.template.value as string;
+    const templateId = values.template?.value;
+
+    if (!templateId) return;
 
     try {
       const templateContent = await buildContentFromTemplate(

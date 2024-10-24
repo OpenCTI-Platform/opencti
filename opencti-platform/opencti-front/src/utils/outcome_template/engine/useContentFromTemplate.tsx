@@ -3,7 +3,7 @@ import useDonutOutcome from './stix_relationships/useDonutOutcome';
 import { fetchQuery } from '../../../relay/environment';
 import { TemplateAndUtilsContainerQuery$data } from './__generated__/TemplateAndUtilsContainerQuery.graphql';
 import buildAttributesOutcome from './stix_core_objects/buildAttributesOutcome';
-import templateAndUtilsContainerQuery from './TemplateAndUtils';
+import templateAndUtilsContainerQuery from './templateAndUtilsContainerQuery';
 
 const useContentFromTemplate = () => {
   const { buildDonutOutcome } = useDonutOutcome();
@@ -26,8 +26,7 @@ const useContentFromTemplate = () => {
     const templateWidgets = template_widgets.map((tw) => ({ ...tw, widget: JSON.parse(tw.widget) }));
 
     // attribute widgets
-    const attributeWidgets = templateWidgets
-      .filter((tw) => tw.widget.type === 'attribute');
+    const attributeWidgets = templateWidgets.filter((tw) => tw.widget.type === 'attribute');
     if (attributeWidgets.length > 0) {
       const attributeWidgetsOutcome = await buildAttributesOutcome(containerId, attributeWidgets);
       attributeWidgetsOutcome.forEach((attributeOutcome) => {

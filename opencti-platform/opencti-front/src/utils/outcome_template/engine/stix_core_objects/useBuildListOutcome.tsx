@@ -5,8 +5,11 @@ import { renderToString } from 'react-dom/server';
 import { useBuildFiltersForTemplateWidgets } from '../../../filters/filtersUtils';
 import type { Widget } from '../../../widget/widget';
 import { fetchQuery } from '../../../../relay/environment';
+import { useFormatter } from '../../../../components/i18n';
+import getObjectProperty from '../../../object';
 
 const useBuildListOutcome = () => {
+  const { t_i18n } = useFormatter();
   const { buildFiltersForTemplateWidgets } = useBuildFiltersForTemplateWidgets();
 
   const buildListOutcome = async (containerId: string, widget: Widget, maxContentMarkings: string[]) => {
@@ -29,9 +32,9 @@ const useBuildListOutcome = () => {
     const data = await fetchQuery(stixCoreObjectsListQuery, variables).toPromise() as StixCoreObjectsListQuery$data;
     const nodes = (data.stixCoreObjects?.edges ?? []).map((n) => n.node) ?? [];
     const columns = selection.columns ?? [
-      { label: 'Entity type', attribute: 'entity_type' },
-      { label: 'Representative', attribute: 'representative.main' },
-      { label: 'Creation date', attribute: 'created_at' },
+      { label: t_i18n('Entity type'), attribute: 'entity_type' },
+      { label: t_i18n('Representative'), attribute: 'representative.main' },
+      { label: t_i18n('Creation date'), attribute: 'created_at' },
     ];
 
     return renderToString(
@@ -47,13 +50,8 @@ const useBuildListOutcome = () => {
           {nodes.map((n) => (
             <tr key={n.id}>
               {columns.map((col) => {
-                const splittedAttribute = col.attribute.split('.');
-                const displayedAttribute = splittedAttribute.length === 1
-                  ? n[col.attribute]
-                  : n[splittedAttribute[0]][splittedAttribute[1]];
-                return (
-                  <td key={`${n.id}-${col.attribute}`}>{displayedAttribute}</td>
-                );
+                const attribute = JSON.stringify(getObjectProperty(n, col.attribute));
+                return <td key={`${n.id}-${col.attribute}`}>{attribute}</td>;
               })}
             </tr>
           ))}

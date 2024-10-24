@@ -10,11 +10,11 @@ import AutocompleteField from '../../../../components/AutocompleteField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import SelectField from '../../../../components/fields/SelectField';
 import { useFormatter } from '../../../../components/i18n';
-import { Template } from '../../../../utils/outcome_template/template';
+import type { Template } from '../../../../utils/outcome_template/template';
 
 export interface ContentTemplateFormInputs {
   name: string
-  template: string
+  template: Option | null
   type: string
   fileMarkings: Option[]
   maxMarkings: Option[]
@@ -45,11 +45,16 @@ const ContentTemplateForm = ({
 
   const initialValues: ContentTemplateFormInputs = {
     name: '',
-    template: '',
+    template: null,
     type: 'text/html',
     fileMarkings: [],
     maxMarkings: [],
   };
+
+  const templateOptions = templates.map((t) => ({
+    value: t.id,
+    label: t.name,
+  }));
 
   return (
     <Formik<ContentTemplateFormInputs>
@@ -81,18 +86,11 @@ const ContentTemplateForm = ({
                 name='template'
                 fullWidth={true}
                 style={fieldSpacingContainerStyle}
-                options={templates.map((t) => ({
-                  value: t.id,
-                  label: t.name,
-                }))}
+                options={templateOptions}
                 renderOption={(
                   props: React.HTMLAttributes<HTMLLIElement>,
                   option: Option,
-                ) => (
-                  <li {...props}>
-                    <div>{option.label}</div>
-                  </li>
-                )}
+                ) => <li {...props}>{option.label}</li>}
                 textfieldprops={{ label: t_i18n('Template') }}
                 optionLength={80}
               />

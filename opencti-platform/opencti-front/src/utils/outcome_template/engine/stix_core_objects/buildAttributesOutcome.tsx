@@ -3,7 +3,7 @@ import React from 'react';
 import { fetchQuery } from '../../../../relay/environment';
 import { StixCoreObjectsAttributesQuery$data } from './__generated__/stixCoreObjectsAttributesQuery.graphql';
 import { TemplateWidget } from '../../template';
-import stixCoreObjectsAttributesQuery from './StixCoreObjectsAttributes';
+import stixCoreObjectsAttributesQuery from './stixCoreObjectsAttributesQuery';
 
 const fetchAttributeFromData = (stixCoreObject, splittedAttribute: string[]) => {
   if (splittedAttribute.length === 1) {
