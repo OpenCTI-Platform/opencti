@@ -46,7 +46,7 @@ import CommitMessage from '../../common/form/CommitMessage';
 import StixNestedRefRelationshipCreationFromKnowledgeGraph from '../../common/stix_nested_ref_relationships/StixNestedRefRelationshipCreationFromKnowledgeGraph';
 import inject18n from '../../../../components/i18n';
 import StixCoreRelationshipCreation from '../../common/stix_core_relationships/StixCoreRelationshipCreation';
-import { dateFormat } from '../../../../utils/Time';
+import { dateFormat, now, validStartTimeForRelationCreation } from '../../../../utils/Time';
 import { truncate } from '../../../../utils/String';
 import StixCoreRelationshipEdition from '../../common/stix_core_relationships/StixCoreRelationshipEdition';
 import StixDomainObjectEdition from '../../common/stix_domain_objects/StixDomainObjectEdition';
@@ -986,10 +986,10 @@ class GroupingKnowledgeGraphBar extends Component {
                         fromObjects={relationFromObjects}
                         toObjects={relationToObjects}
                         startTime={
-                          lastLinkFirstSeen || dateFormat(grouping.published)
+                          lastLinkFirstSeen || validStartTimeForRelationCreation(now())
                         }
                         stopTime={
-                          lastLinkLastSeen || dateFormat(grouping.published)
+                          lastLinkLastSeen || now()
                         }
                         confidence={grouping.confidence}
                         handleClose={this.handleCloseCreateRelationship.bind(

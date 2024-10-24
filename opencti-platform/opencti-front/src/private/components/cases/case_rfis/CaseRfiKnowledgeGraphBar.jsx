@@ -46,7 +46,7 @@ import StixNestedRefRelationshipCreationFromKnowledgeGraph from '../../common/st
 import CommitMessage from '../../common/form/CommitMessage';
 import inject18n from '../../../../components/i18n';
 import StixCoreRelationshipCreation from '../../common/stix_core_relationships/StixCoreRelationshipCreation';
-import { dateFormat } from '../../../../utils/Time';
+import { dateFormat, now, validStartTimeForRelationCreation } from '../../../../utils/Time';
 import { truncate } from '../../../../utils/String';
 import StixCoreRelationshipEdition from '../../common/stix_core_relationships/StixCoreRelationshipEdition';
 import StixDomainObjectEdition from '../../common/stix_domain_objects/StixDomainObjectEdition';
@@ -989,10 +989,10 @@ class CaseRfiKnowledgeGraphBar extends Component {
                         fromObjects={relationFromObjects}
                         toObjects={relationToObjects}
                         startTime={
-                          lastLinkFirstSeen || dateFormat(caseData.published)
+                          lastLinkFirstSeen || validStartTimeForRelationCreation(now())
                         }
                         stopTime={
-                          lastLinkLastSeen || dateFormat(caseData.published)
+                          lastLinkLastSeen || now()
                         }
                         confidence={caseData.confidence}
                         handleClose={this.handleCloseCreateRelationship.bind(
