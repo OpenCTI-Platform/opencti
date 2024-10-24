@@ -198,6 +198,7 @@ const IngestionTaxiiCreation = (props) => {
                     component={TextField}
                     variant="standard"
                     name="password"
+                    type="password"
                     label={t('Password')}
                     fullWidth={true}
                     style={fieldSpacingContainerStyle}
@@ -209,6 +210,7 @@ const IngestionTaxiiCreation = (props) => {
                   component={TextField}
                   variant="standard"
                   name="authentication_value"
+                  type="password"
                   label={t('Token')}
                   fullWidth={true}
                   style={fieldSpacingContainerStyle}
@@ -228,6 +230,7 @@ const IngestionTaxiiCreation = (props) => {
                     component={TextField}
                     variant="standard"
                     name="key"
+                    type="password"
                     label={t('Key (base64)')}
                     fullWidth={true}
                     style={fieldSpacingContainerStyle}

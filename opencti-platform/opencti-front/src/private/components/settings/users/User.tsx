@@ -3,7 +3,7 @@ import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
-import { DeleteForeverOutlined, DeleteOutlined } from '@mui/icons-material';
+import { DeleteForeverOutlined, DeleteOutlined, Visibility, VisibilityOff } from '@mui/icons-material';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
@@ -49,6 +49,7 @@ import Security from '../../../../utils/Security';
 import useAuth from '../../../../utils/hooks/useAuth';
 import type { Theme } from '../../../../components/Theme';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import ItemCopy from '../../../../components/ItemCopy';
 
 const startDate = yearsAgo(1);
 const endDate = now();
@@ -67,6 +68,14 @@ const useStyles = makeStyles<Theme>((theme) => ({
     marginTop: theme.spacing(1),
     padding: '15px',
     borderRadius: 4,
+  },
+  icon: {
+    cursor: 'pointer',
+    color: theme.palette.primary.main,
+    padding: '0px 8px 0px 8px',
+    '&:hover': {
+      backgroundColor: 'transparent',
+    },
   },
 }));
 
@@ -220,6 +229,7 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
   const { t_i18n, nsdt, fsd, fldt } = useFormatter();
   const { me } = useAuth();
   const theme = useTheme<Theme>();
+  const [showToken, setShowToken] = useState(false);
   const [displayKillSession, setDisplayKillSession] = useState<boolean>(false);
   const [displayKillSessions, setDisplayKillSessions] = useState<boolean>(false);
   const [killing, setKilling] = useState<boolean>(false);
@@ -313,6 +323,14 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
   } else if (isGrantedToAudit && isGrantedToKnowledge) {
     historyTypes = ['History', 'Activity'];
   }
+
+  const toggleTokenVisibility = () => {
+    setShowToken(!showToken);
+  };
+  const maskToken = (api_token: string) => {
+    return '•'.repeat(api_token.length);
+  };
+
   return (
     <>
       <Grid
@@ -364,7 +382,28 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                 <Typography variant="h3" gutterBottom={true}>
                   {t_i18n('Token')}
                 </Typography>
-                <pre style={{ margin: 0 }}>{user.api_token}</pre>
+                <pre
+                  style={{
+                    margin: 0,
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    width: '100%',
+                  }}
+                >
+                  <span style={{ flexGrow: 1 }}>
+                    <ItemCopy
+                      content={showToken ? user.api_token : maskToken(user.api_token)}
+                      value={user.api_token}
+                    />
+                  </span>
+                  <IconButton
+                    className={classes.icon}
+                    onClick={toggleTokenVisibility} aria-label={showToken ? t_i18n('Hide') : t_i18n('Show')}
+                  >
+                    {showToken ? <VisibilityOff/> : <Visibility/>}
+                  </IconButton>
+                </pre>
               </Grid>
               <Grid item xs={6}>
                 <Typography variant="h3" gutterBottom={true}>
