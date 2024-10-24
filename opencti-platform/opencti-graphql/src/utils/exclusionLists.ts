@@ -1,6 +1,5 @@
 import { MAX_EVENT_LOOP_PROCESSING_TIME } from '../database/utils';
 import { FunctionalError } from '../config/errors';
-import { getExclusionListsByTypeFromCache } from '../database/cache';
 import { type ExtractedObservableValues, type ExclusionListProperties, exclusionListEntityType } from './exclusionListsTypes';
 
 export const getIsRange = (value: string) => value.indexOf('/') !== -1;
@@ -103,19 +102,6 @@ export const checkExclusionList = async (valueToTest: string, exclusionList: Exc
           setImmediate(resolve);
         });
       }
-    }
-  }
-};
-
-export const checkPatternValidity = async (extractedObservableValues: ExtractedObservableValues[]) => {
-  for (let i = 0; i < extractedObservableValues.length; i += 1) {
-    const { type, value } = extractedObservableValues[i];
-    const selectedExclusionLists = getExclusionListsByTypeFromCache(type);
-    if (!selectedExclusionLists.length) return;
-    if (type === exclusionListEntityType.IPV4_ADDR || type === exclusionListEntityType.IPV6_ADDR) {
-      await checkIpAddressLists(value, selectedExclusionLists);
-    } else {
-      await checkExclusionList(value, selectedExclusionLists);
     }
   }
 };

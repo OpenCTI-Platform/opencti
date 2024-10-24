@@ -26,12 +26,6 @@ const STORE_ENTITIES_LINKS: Record<string, string[]> = {
   [ENTITY_TYPE_GROUP]: [ENTITY_TYPE_USER],
 };
 
-const STORE_EXCLUSION_LIST: ExclusionListProperties[] = [];
-
-export const getExclusionListsByTypeFromCache = (exclusionListType: exclusionListEntityType): ExclusionListProperties[] => {
-  return STORE_EXCLUSION_LIST.filter((list) => list.type.includes(exclusionListType));
-};
-
 const cache: any = {};
 
 const buildStoreEntityMap = <T extends BasicStoreIdentifier>(entities: Array<T>) => {
