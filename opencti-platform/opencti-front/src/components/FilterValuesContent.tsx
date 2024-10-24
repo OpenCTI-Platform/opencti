@@ -23,20 +23,21 @@ interface FilterValuesContentProps {
   filterKey: string;
   id: string | null;
   value?: string | null;
-  filterDefinition?: FilterDefinition
+  filterDefinition?: FilterDefinition;
+  filterOperator?: string;
 }
 
 const FilterValuesContent: FunctionComponent<
 FilterValuesContentProps
-> = ({ redirection, isFilterTooltip, filterKey, id, value, filterDefinition }) => {
+> = ({ redirection, isFilterTooltip, filterKey, id, value, filterDefinition, filterOperator }) => {
   const { t_i18n } = useFormatter();
   const { stixCoreObjectTypes } = useAttributes();
   const completedStixCoreObjectTypes = stixCoreObjectTypes.concat(['Stix-Core-Object', 'Stix-Cyber-Observable']);
 
   const filterType = filterDefinition?.type;
   const displayedValue = isFilterTooltip
-    ? filterValue(filterKey, value, filterType)
-    : truncate(filterValue(filterKey, value, filterType), 15);
+    ? filterValue(filterKey, value, filterType, filterOperator)
+    : truncate(filterValue(filterKey, value, filterType, filterOperator), 15);
   if (displayedValue === null) {
     return (
       <>

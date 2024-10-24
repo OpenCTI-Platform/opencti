@@ -118,6 +118,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
           id={id}
           value={filtersRepresentativesMap.get(id) ? filtersRepresentativesMap.get(id)?.value : id}
           filterDefinition={filterDefinition}
+          filterOperator={filterOperator}
         />
         {filterKey !== 'regardingOf' && last(filterValues) !== id && (
           <div

@@ -113,6 +113,7 @@ const TaskFilterValue = ({
                             id={o}
                             value={filtersRepresentativesMap.get(o)?.value ?? o}
                             isFilterTooltip={true}
+                            filterOperator={currentFilter.operator}
                           />
                           }
                       >
@@ -121,6 +122,7 @@ const TaskFilterValue = ({
                             filterKey={currentFilter.key}
                             id={o}
                             value={filtersRepresentativesMap.get(o)?.value ?? o}
+                            filterOperator={currentFilter.operator}
                           />
                           {R.last(currentFilter.values) !== o && (
                             <code>{localFilterMode}</code>

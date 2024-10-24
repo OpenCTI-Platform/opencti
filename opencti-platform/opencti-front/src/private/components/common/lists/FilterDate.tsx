@@ -46,9 +46,11 @@ const FilterDate: FunctionComponent<FilterDateProps> = ({
 
   const handleAcceptDate = (date: Date | null) => {
     if (date && date.toISOString()) {
+      // set new input values
       const newInputValue = { key: filterKey, values: [date.toString()], operator };
       const newInputValues = inputValues.filter((f) => f.key !== filterKey || (operator && f.operator !== operator));
       setInputValues([...newInputValues, newInputValue]);
+      // add the filter
       defaultHandleAddFilter(filterKey, date.toISOString(), operator);
     }
   };
