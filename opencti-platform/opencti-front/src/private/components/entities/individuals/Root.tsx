@@ -1,4 +1,4 @@
-import React, { useMemo, Suspense, useState } from 'react';
+import React, {useMemo, Suspense, useState, useEffect} from 'react';
 import { Route, Routes, Link, Navigate, useLocation, useParams, useNavigate } from 'react-router-dom';
 import { graphql, useSubscription, usePreloadedQuery, PreloadedQuery } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
@@ -106,7 +106,7 @@ const RootIndividual = ({ individualId, queryRef }: RootIndividualProps) => {
       navigate,
       location,
       LOCAL_STORAGE_KEY,
-      viewAs,
+      { viewAs },
     );
   };
 
@@ -114,6 +114,10 @@ const RootIndividual = ({ individualId, queryRef }: RootIndividualProps) => {
     setViewAs(event.target.value);
     saveView();
   };
+
+  useEffect(() => {
+    saveView();
+  }, [viewAs]);
 
   const { t_i18n } = useFormatter();
   useSubscription<RootIndicatorSubscription>(subConfig);

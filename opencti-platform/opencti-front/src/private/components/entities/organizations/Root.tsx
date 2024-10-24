@@ -1,4 +1,4 @@
-import React, { useMemo, Suspense, useState } from 'react';
+import React, { useMemo, Suspense, useState, useEffect } from 'react';
 import { Route, Routes, Link, Navigate, useLocation, useParams, useNavigate } from 'react-router-dom';
 import { graphql, useSubscription, usePreloadedQuery, PreloadedQuery } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
@@ -104,7 +104,7 @@ const RootOrganization = ({ organizationId, queryRef }: RootOrganizationProps) =
       navigate,
       location,
       LOCAL_STORAGE_KEY,
-      viewAs,
+      { viewAs },
     );
   };
 
@@ -112,6 +112,10 @@ const RootOrganization = ({ organizationId, queryRef }: RootOrganizationProps) =
     setViewAs(event.target.value);
     saveView();
   };
+
+  useEffect(() => {
+    saveView();
+  }, [viewAs]);
 
   const { t_i18n } = useFormatter();
   useSubscription<RootOrganizationSubscription>(subConfig);
