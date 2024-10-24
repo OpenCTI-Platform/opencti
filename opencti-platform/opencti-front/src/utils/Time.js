@@ -82,6 +82,12 @@ export const dateFormat = (data, specificFormat = null) => {
     : '';
 };
 
+export const validStartTimeForRelationCreation = (time) => {
+  const date = new Date(time);
+  date.setMinutes(date.getMinutes() - 1);
+  return date.toISOString();
+};
+
 export const formatTimeForToday = (time) => {
   const today = dateFormat(new Date(), 'YYYY-MM-DD');
   return `${today}T${time}`;
