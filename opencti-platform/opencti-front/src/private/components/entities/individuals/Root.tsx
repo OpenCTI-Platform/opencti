@@ -172,7 +172,7 @@ const RootIndividual = ({ individualId, queryRef }: RootIndividualProps) => {
               stixDomainObject={individual}
               isOpenctiAlias={true}
               enableQuickSubscription={true}
-              PopoverComponent={<IndividualPopover />}
+              PopoverComponent={<IndividualPopover id={individual.id}/>}
               EditComponent={!individual.isUser && isFABReplaced && (
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <IndividualEdition individualId={individual.id} />

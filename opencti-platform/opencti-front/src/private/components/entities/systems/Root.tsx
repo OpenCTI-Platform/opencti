@@ -166,7 +166,7 @@ const RootSystem = ({ systemId, queryRef }: RootSystemProps) => {
               isOpenctiAlias={true}
               enableQuickSubscription={true}
               enableEnricher={true}
-              PopoverComponent={<SystemPopover />}
+              PopoverComponent={<SystemPopover id={system.id}/>}
               EditComponent={isFABReplaced && (
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <SystemEdition systemId={system.id} />

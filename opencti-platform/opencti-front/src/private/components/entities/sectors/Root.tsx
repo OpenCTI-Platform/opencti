@@ -141,7 +141,7 @@ const RootSector = ({ sectorId, queryRef }: RootSectorProps) => {
               stixDomainObject={sector}
               isOpenctiAlias={true}
               enableQuickSubscription={true}
-              PopoverComponent={<SectorPopover />}
+              PopoverComponent={<SectorPopover id={sector.id}/>}
               EditComponent={isFABReplaced && (
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <SectorEdition sectorId={sector.id} />
