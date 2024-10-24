@@ -1,7 +1,6 @@
-import type { Widget } from '../widget/widget';
+import type { Widget } from './widget';
 
 export interface Template {
-  id: string
   name: string
   description?: string
   content: string

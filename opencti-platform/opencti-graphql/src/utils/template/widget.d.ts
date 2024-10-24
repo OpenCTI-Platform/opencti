@@ -1,4 +1,4 @@
-import { FilterGroup } from '../filters/filtersHelpers-types';
+import type { FilterGroup } from '../../generated/graphql';
 
 interface WidgetColumn {
   attribute: string

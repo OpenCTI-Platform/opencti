@@ -24,7 +24,8 @@ import { isFeatureEnabled } from '../config/conf';
 import { ENTITY_TYPE_CONTAINER_FEEDBACK } from '../modules/case/feedback/feedback-types';
 import { paginatedForPathWithEnrichment } from '../modules/internal/document/document-domain';
 import { isEnterpriseEdition } from '../utils/ee';
-
+import { usedTemplates } from '../utils/template/__template';
+import { hardcodedTemplateWidgets } from '../utils/template/__widget';
 export const findById = async (context, user, containerId) => {
   return storeLoadById(context, user, containerId, ENTITY_TYPE_CONTAINER);
 };
@@ -254,4 +255,18 @@ export const getContentsFromTemplate = async (context, user, container, args) =>
   const { first, prefixMimeType } = args;
   const opts = { first, prefixMimeTypes: prefixMimeType ? [prefixMimeType] : null, entity_id: container.id, entity_type: container.entity_type };
   return paginatedForPathWithEnrichment(context, context.user, `fromTemplate/${container.entity_type}/${container.id}`, container.id, opts);
+};
+
+export const getTemplates = (context, user, containerId) => {
+  return usedTemplates;
+};
+
+export const getTemplateAndUtils = (context, user, containerId, templateId) => {
+  // fetch template (hardcoded for the moment)
+  const template = usedTemplates.find((t) => t.id === templateId);
+  const { template_widgets_names } = template;
+  // fetch the widgets used in the template (hardcoded for the moment)
+  const template_widgets = hardcodedTemplateWidgets.filter((w) => template_widgets_names.includes(w.name));
+  // return template and the associated utils
+  return { template, template_widgets };
 };
