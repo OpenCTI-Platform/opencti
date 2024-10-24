@@ -50,16 +50,16 @@ const TextField = (props) => {
       error={!isNil(meta.error)}
       helperText={
         // eslint-disable-next-line no-nested-ternary
-        (detectDuplicate && meta.value?.length > 2) && (isNil(meta.error) || !meta.touched) ? (
-          <StixDomainObjectDetectDuplicate
-            types={detectDuplicate}
-            value={meta.value}
-          />
-        ) : meta.error ? (
-          meta.error
-        ) : (
-          props.helperText
-        )
+          detectDuplicate && (isNil(meta.error) || !meta.touched) ? (
+            <StixDomainObjectDetectDuplicate
+              types={detectDuplicate}
+              value={meta.value}
+            />
+          ) : meta.error ? (
+            meta.error
+          ) : (
+            props.helperText
+          )
       }
       onChange={internalOnChange}
       onFocus={internalOnFocus}

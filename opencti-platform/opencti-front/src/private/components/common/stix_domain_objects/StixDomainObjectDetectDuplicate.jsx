@@ -50,7 +50,7 @@ class StixDomainObjectDetectDuplicate extends Component {
 
   componentDidUpdate(prevProps) {
     if (this.props.value !== prevProps.value) {
-      if (this.props.value.length > 2) {
+      if (this.props.value.length >= 2) {
         fetchQuery(stixDomainObjectsLinesSearchQuery, {
           types: this.props.types,
           search: `"${this.props.value}"`,
@@ -82,7 +82,7 @@ class StixDomainObjectDetectDuplicate extends Component {
 
   render() {
     const { potentialDuplicates } = this.state;
-    const { t, classes } = this.props;
+    const { t, classes, value } = this.props;
     return (
       <span
         className={
@@ -91,7 +91,7 @@ class StixDomainObjectDetectDuplicate extends Component {
             : classes.noDuplicate
         }
       >
-        {potentialDuplicates.length === 0
+        {value && potentialDuplicates.length === 0
           ? t('No potential duplicate entities has been found.')
           : ''}
         {potentialDuplicates.length === 1 ? (
