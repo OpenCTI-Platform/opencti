@@ -24,8 +24,6 @@ import { useFormatter } from '../../../../components/i18n';
 import FileUploader from '../files/FileUploader';
 import useContentFromTemplate from '../../../../utils/outcome_template/engine/useContentFromTemplate';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
-import type { Theme } from '../../../../components/Theme';
-import type { Template } from '../../../../utils/outcome_template/template';
 import { isNilField } from '../../../../utils/utils';
 import useHelper from '../../../../utils/hooks/useHelper';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
