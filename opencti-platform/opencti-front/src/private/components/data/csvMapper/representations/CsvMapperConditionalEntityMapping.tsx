@@ -88,6 +88,17 @@ CsvMapperConditionalEntityMappingProps
               label={t_i18n('Column index')}
               variant="outlined"
               size="small"
+              InputProps={{
+                ...params.InputProps,
+                sx: {
+                  '& fieldset': {
+                    borderColor: (representation.column_based?.column_reference === null)
+                      ? 'rgb(244, 67, 54)'
+                      : '',
+                  },
+                },
+              }}
+                // error={!representation.column_based?.column_reference && representation.column_based}
             />
           )}
         />
@@ -104,13 +115,26 @@ CsvMapperConditionalEntityMappingProps
                 : null
           }
           onChange={(_, val) => handleOperatorSelect(val)}
-          sx={{ width: '150px', marginLeft: '5px' }}
+          sx={{
+            width: '150px',
+            marginLeft: '5px',
+          }}
           renderInput={(params) => (
             <MuiTextField
               {...params}
               label={t_i18n('Operator')}
               variant="outlined"
               size="small"
+              InputProps={{
+                ...params.InputProps,
+                sx: {
+                  '& fieldset': {
+                    borderColor: (!representation.column_based?.operator)
+                      ? 'rgb(244, 67, 54)'
+                      : '',
+                  },
+                },
+              }}
             />
           )}
         />
@@ -125,6 +149,16 @@ CsvMapperConditionalEntityMappingProps
             }
             variant="standard"
             disabled={!representation.column_based?.enabled}
+              // InputProps={{
+              //   sx: {
+              //     '& .MuiInput-underline:before': {
+              //       borderBottomColor: errors ? 'rgb(244, 67, 54)' : '',
+              //     },
+              //     '& .MuiInput-underline:after': {
+              //       borderBottomColor: errors ? 'rgb(244, 67, 54)' : '',
+              //     },
+              //   },
+              // }}
           />
         </div>
       </div>
