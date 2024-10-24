@@ -6,7 +6,7 @@ import * as exclusionList from '../../data/exclusionLists/index';
 const STORE_EXCLUSION_LIST = [
   exclusionList.vpnIpv4List,
   exclusionList.vpnIpv6List,
-  exclusionList.publicDnsHostNameList, // test
+  exclusionList.publicDnsHostNameList,
   exclusionList.publicDnsV4List,
   exclusionList.publicDnsV6List,
   exclusionList.openaiGptBotList,
@@ -132,7 +132,7 @@ const domainExclusionList = [{
 }];
 
 describe('Exclusion Lists', () => {
-  describe.skip('checkIpAddrType', () => {
+  describe('checkIpAddrType', () => {
     describe('When I check an ipv4 : 75.126.95.138', () => {
       it('should return ipv4 as true and ipv6 as false', () => {
         const { isIpv4, isIpv6 } = checkIpAddrType('75.126.95.138');
@@ -150,7 +150,7 @@ describe('Exclusion Lists', () => {
     });
   });
 
-  describe.skip('convertIpv4ToBinary', () => {
+  describe('convertIpv4ToBinary', () => {
     describe('When I convert a complete IPV4 : 75.126.95.138', () => {
       it('should return a complete binary', () => {
         const result = convertIpv4ToBinary('75.126.95.138', false);
@@ -167,7 +167,7 @@ describe('Exclusion Lists', () => {
     });
   });
 
-  describe.skip('convertIpv6ToBinary', () => {
+  describe('convertIpv6ToBinary', () => {
     describe('When I convert a complete IPV6 : 2001:19f0:7402:1574:5400:2ff:fe66:2cff', () => {
       it('should return a complete binary', () => {
         const result = convertIpv6ToBinary('2001:19f0:7402:1574:5400:2ff:fe66:2cff', false);
@@ -191,7 +191,7 @@ describe('Exclusion Lists', () => {
     });
   });
 
-  describe.skip('convertIpAddr', () => {
+  describe('convertIpAddr', () => {
     describe('When I have a list of Ipv4', () => {
       it('should return a converted array of binary', () => {
         const result = convertIpAddr(ipv4ListToTest);
@@ -214,8 +214,8 @@ describe('Exclusion Lists', () => {
     });
   });
 
-  describe.skip('checkIpAddressLists', () => {
-    describe.skip('When I check if an IPV4 is contained on lists', () => {
+  describe('checkIpAddressLists', () => {
+    describe('When I check if an IPV4 is contained on lists', () => {
       describe('99.99.99.193', () => {
         it('should throw an error', () => {
           expect(() => checkIpAddressLists('99.99.99.193', ipv4ExclusionList)).rejects.toThrowError('Indicator creation failed, this pattern (99.99.99.193) is contained on an exclusion list (ipv4ListResult)');
@@ -252,7 +252,7 @@ describe('Exclusion Lists', () => {
     });
   });
 
-  describe.skip('checkExclusionList', () => {
+  describe('checkExclusionList', () => {
     describe('When I check if a domain name is contained on lists', () => {
       describe('ns4.epidc.co.kr', () => {
         it('should throw an error', () => {
