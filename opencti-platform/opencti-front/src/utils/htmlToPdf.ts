@@ -152,6 +152,8 @@ export const htmlToPdfReport = (stixCoreObject: any, content: string, templateNa
   let htmlData = removeUselessContent(content);
   htmlData = setImagesWidth(htmlData);
 
+  //
+
   // Transform html string into a JS object that lib pdfmake can understand.
   const pdfMakeObject = htmlToPdfmake(htmlData, {
     imagesByReference: true,
