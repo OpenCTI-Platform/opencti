@@ -5,7 +5,7 @@
  * @param path The path to access the property.
  * @returns The value of the property.
  */
-function getObjectProperty(object: object, path = ''): unknown {
+export function getObjectProperty(object: object, path = ''): unknown {
   return path.split('.').reduce(
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
@@ -14,4 +14,12 @@ function getObjectProperty(object: object, path = ''): unknown {
   );
 }
 
-export default getObjectProperty;
+export const fetchAttributeFromData = (object: unknown, splittedAttribute: string[]): unknown => {
+  if (splittedAttribute.length === 1) {
+    return object?.[splittedAttribute[0]];
+  }
+  const subObject = object?.[splittedAttribute[0]];
+  return Array.isArray(subObject)
+    ? subObject.map((o) => fetchAttributeFromData(o, splittedAttribute.slice(1)))
+    : fetchAttributeFromData(subObject, splittedAttribute.slice(1));
+};
