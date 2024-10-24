@@ -11,8 +11,3 @@ export type ExclusionListProperties = {
   list: string[];
   actions: null;
 };
-
-export type ExtractedObservableValues = {
-  type: exclusionListEntityType;
-  value: string;
-};

@@ -1,6 +1,6 @@
 import { MAX_EVENT_LOOP_PROCESSING_TIME } from '../database/utils';
 import { FunctionalError } from '../config/errors';
-import { type ExtractedObservableValues, type ExclusionListProperties, exclusionListEntityType } from './exclusionListsTypes';
+import { type ExclusionListProperties } from './exclusionListsTypes';
 
 export const getIsRange = (value: string) => value.indexOf('/') !== -1;
 

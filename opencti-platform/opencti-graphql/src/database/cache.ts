@@ -1,5 +1,4 @@
 import { SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION } from '@opentelemetry/semantic-conventions';
-import type { ExclusionListProperties } from '../utils/exclusionListsTypes';
 import type { BasicStoreIdentifier, StoreEntity, StoreRelation } from '../types/store';
 import { logApp } from '../config/conf';
 import { UnsupportedError } from '../config/errors';
@@ -13,7 +12,6 @@ import { convertStoreToStix } from './stix-converter';
 import { ENTITY_TYPE_PLAYBOOK } from '../modules/playbook/playbook-types';
 import { type BasicStoreEntityPublicDashboard, ENTITY_TYPE_PUBLIC_DASHBOARD } from '../modules/publicDashboard/publicDashboard-types';
 import { wait } from './utils';
-import { exclusionListEntityType } from '../utils/exclusionListsTypes';
 
 const STORE_ENTITIES_LINKS: Record<string, string[]> = {
   // Filters must be reset depending on stream and triggers modifications
