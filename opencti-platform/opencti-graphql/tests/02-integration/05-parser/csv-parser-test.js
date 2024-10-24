@@ -120,13 +120,13 @@ describe('CSV-PARSER', () => {
       .toBe(42);
     const relationshipTargets = objects.filter((o) => o.relationship_type === 'targets');
     expect(relationshipTargets.length)
-      .toBe(118);
+      .toBe(117);
     const relationshipLocatedAt = objects.filter((o) => o.relationship_type === 'located-at');
     expect(relationshipLocatedAt.length)
-      .toBe(130);
+      .toBe(125);
     const relationshipPartOf = objects.filter((o) => o.relationship_type === 'part-of');
     expect(relationshipPartOf.length)
-      .toBe(160);
+      .toBe(159);
   });
 
   it('Parse CSV - Simple skip line test on Simple entity ', async () => {

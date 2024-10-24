@@ -22,6 +22,9 @@ describe('Stix opencti converter', () => {
   const rawDataCompare = async (rawId, standardId) => {
     let rawData = dataMap.get(rawId);
     const stixData = await stixLoadById(testContext, ADMIN_USER, rawId);
+    if (!stixData) {
+      throw new Error(`rawDataCompare cCant read id ${rawId}`);
+    }
     let remainingData = { ...stixData };
     if (stixData.extensions[STIX_EXT_OCTI].type === ENTITY_TYPE_CONTAINER_OBSERVED_DATA) {
       rawData = R.dissoc('objects', rawData);
