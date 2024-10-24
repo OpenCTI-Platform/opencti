@@ -133,7 +133,7 @@ const RootNarrative = ({ narrativeId, queryRef }: RootNarrativeProps) => {
             <StixDomainObjectHeader
               entityType="Narrative"
               stixDomainObject={narrative}
-              PopoverComponent={<NarrativePopover />}
+              PopoverComponent={<NarrativePopover id={narrative.id}/>}
               EditComponent={isFABReplaced && (
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <NarrativeEdition narrativeId={narrative.id} />

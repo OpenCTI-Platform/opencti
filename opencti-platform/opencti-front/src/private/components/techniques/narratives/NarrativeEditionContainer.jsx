@@ -9,7 +9,7 @@ import useHelper from '../../../../utils/hooks/useHelper';
 const NarrativeEditionContainer = (props) => {
   const { t_i18n } = useFormatter();
   const { isFeatureEnable } = useHelper();
-  const FABReplaced = isFeatureEnable('FAB_REPLACEMENT');
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   const { handleClose, narrative, open, controlledDial } = props;
   const { editContext } = narrative;
@@ -19,9 +19,9 @@ const NarrativeEditionContainer = (props) => {
       title={t_i18n('Update a narrative')}
       open={open}
       onClose={handleClose}
-      variant={!FABReplaced && open == null ? DrawerVariant.update : undefined}
+      variant={!isFABReplaced && open == null ? DrawerVariant.update : undefined}
       context={editContext}
-      controlledDial={FABReplaced ? controlledDial : undefined}
+      controlledDial={isFABReplaced ? controlledDial : undefined}
     >
       <NarrativeEditionOverview
         narrative={narrative}
