@@ -33,6 +33,7 @@ type DataTableComponentProps = Pick<DataTableProps,
 | 'disableSelectAll'
 | 'selectOnLineClick'
 | 'onLineClick'
+| 'canToggleLine'
 | 'disableLineSelection'>;
 
 const DataTableComponent = ({
@@ -59,6 +60,7 @@ const DataTableComponent = ({
   disableSelectAll,
   selectOnLineClick,
   onLineClick,
+  canToggleLine = true,
 }: DataTableComponentProps) => {
   const columnsLocalStorage = useDataTableLocalStorage<LocalStorageColumns>(`${storageKey}_columns`, {}, true);
   const [localStorageColumns] = columnsLocalStorage;
@@ -75,7 +77,7 @@ const DataTableComponent = ({
   } = paginationLocalStorage;
 
   const columnsInitialState = [
-    ...(!disableLineSelection ? [{ id: 'select', visible: true } as DataTableColumn] : []),
+    ...(canToggleLine && !disableLineSelection ? [{ id: 'select', visible: true } as DataTableColumn] : []),
     ...Object.entries(dataColumns).map(([key, column], index) => {
       const currentColumn = localStorageColumns?.[key];
       return R.mergeDeepRight(defaultColumnsMap.get(key) as DataTableColumn, {
