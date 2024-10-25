@@ -1919,7 +1919,7 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
     if (aliasedInputs.length > 0) {
       const aliases = R.uniq(aliasedInputs.map((a) => a.value).flat().filter((a) => isNotEmptyField(a)).map((a) => a.trim()));
       const aliasesIds = generateAliasesId(aliases, initial);
-      const existingEntities = await internalFindByIds(context, user, aliasesIds, { type: initial.entity_type });
+      const existingEntities = await internalFindByIds(context, SYSTEM_USER, aliasesIds, { type: initial.entity_type });
       const differentEntities = R.filter((e) => e.internal_id !== initial.internal_id, existingEntities);
       if (differentEntities.length > 0) {
         throw FunctionalError('This update will produce a duplicate', {
@@ -1956,10 +1956,10 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
     let existingEntityPromise = Promise.resolve(undefined);
     let existingByHashedPromise = Promise.resolve([]);
     if (eventualNewStandardId) {
-      existingEntityPromise = internalLoadById(context, user, eventualNewStandardId, { type: initial.entity_type });
+      existingEntityPromise = internalLoadById(context, SYSTEM_USER, eventualNewStandardId, { type: initial.entity_type });
     }
     if (isStixCyberObservableHashedObservable(initial.entity_type)) {
-      existingByHashedPromise = listEntitiesByHashes(context, user, initial.entity_type, updated.hashes)
+      existingByHashedPromise = listEntitiesByHashes(context, SYSTEM_USER, initial.entity_type, updated.hashes)
         .then((entities) => entities.filter((e) => e.id !== initial.internal_id));
     }
     const [existingEntity, existingByHashed] = await Promise.all([existingEntityPromise, existingByHashedPromise]);
