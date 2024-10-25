@@ -24,7 +24,7 @@ import { isFeatureEnabled } from '../config/conf';
 import { ENTITY_TYPE_CONTAINER_FEEDBACK } from '../modules/case/feedback/feedback-types';
 import { paginatedForPathWithEnrichment } from '../modules/internal/document/document-domain';
 import { isEnterpriseEdition } from '../utils/ee';
-import { usedTemplates } from '../utils/template/__template';
+import { usedTemplatesByEntityType } from '../utils/template/__template';
 import { hardcodedTemplateWidgets } from '../utils/template/__widget';
 
 export const findById = async (context, user, containerId) => {
@@ -258,13 +258,25 @@ export const getContentsFromTemplate = async (context, user, container, args) =>
   return paginatedForPathWithEnrichment(context, context.user, `fromTemplate/${container.entity_type}/${container.id}`, container.id, opts);
 };
 
-export const getTemplates = (context, user, containerId) => {
-  return usedTemplates;
+export const getTemplates = async (context, user, container) => {
+  const isEE = await isEnterpriseEdition(context);
+  const isContentFromTemplateEnabled = isFeatureEnabled('CONTENT_FROM_TEMPLATE');
+  if (!isEE || !isContentFromTemplateEnabled) {
+    return null;
+  }
+  const entityType = container.entity_type;
+  return usedTemplatesByEntityType[entityType] ?? [];
 };
 
-export const getTemplateAndUtils = (context, user, containerId, templateId) => {
+export const getTemplateAndUtils = async (context, user, container, templateId) => {
+  // check feature is enabled
+  const isEE = await isEnterpriseEdition(context);
+  const isContentFromTemplateEnabled = isFeatureEnabled('CONTENT_FROM_TEMPLATE');
+  if (!isEE || !isContentFromTemplateEnabled) {
+    return null;
+  }
   // fetch template (hardcoded for the moment)
-  const template = usedTemplates.find((t) => t.id === templateId);
+  const template = (usedTemplatesByEntityType[container.entity_type] ?? []).find((t) => t.id === templateId);
   const { template_widgets_names } = template;
   // fetch the widgets used in the template (hardcoded for the moment)
   const template_widgets = hardcodedTemplateWidgets

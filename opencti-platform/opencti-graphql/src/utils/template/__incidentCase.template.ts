@@ -72,7 +72,7 @@ const content = `
 </body>
 `;
 
-export const templateIncidentCase: Template = {
+export const templateIncidentResponse: Template = {
   name: 'Incident Response Report',
   id: 'templateIncidentCase-id',
   content,

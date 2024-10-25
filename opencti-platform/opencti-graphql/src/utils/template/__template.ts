@@ -1,6 +1,6 @@
 // text //
 import type { Template } from '../../generated/graphql';
-import { templateIncidentCase } from './__incidentCase.template';
+import { templateIncidentResponse } from './__incidentCase.template';
 
 // templates //
 
@@ -53,4 +53,8 @@ const templateGraph: Template = {
   `,
 };
 
-export const usedTemplates: Template[] = [templateText, templateAttribute, templateList, templateGraph, templateIncidentCase];
+export const usedTemplatesByEntityType = {
+  Report: [templateText, templateAttribute, templateList, templateGraph],
+  Grouping: [templateText, templateGraph],
+  'Case-Incident': [templateIncidentResponse],
+};

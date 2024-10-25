@@ -52,8 +52,8 @@ const containerResolvers = {
     objects: (container, args, context) => objects(context, context.user, container.id, args),
     relatedContainers: (container, args, context) => relatedContainers(context, context.user, container.id, args),
     contentsFromTemplate: (container, { first, prefixMimeType }, context) => getContentsFromTemplate(context, context.user, container, { first, prefixMimeType }),
-    templates: (container, _, context) => getTemplates(context, context.user, container.id),
-    templateAndUtils: (container, args, context) => getTemplateAndUtils(context, context.user, container.id, args.templateId),
+    templates: (container, _, context) => getTemplates(context, context.user, container),
+    templateAndUtils: (container, args, context) => getTemplateAndUtils(context, context.user, container, args.templateId),
   },
   // TODO Reactivate after official release of graphQL 17
   // StixObjectOrStixRelationshipRefConnection: {
