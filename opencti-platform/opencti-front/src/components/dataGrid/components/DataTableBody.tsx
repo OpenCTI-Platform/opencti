@@ -28,12 +28,8 @@ const useStyles = makeStyles<MuiTheme, { columnSizeVars: ColumnSizeVars }>(() =>
 
 const DataTableBody = ({
   columns,
-  redirectionMode,
-  storageHelpers,
   settingsMessagesBannerHeight = 0,
   hasFilterComponent,
-  sortBy,
-  orderAsc,
   dataTableToolBarComponent,
   pageStart,
   pageSize,
@@ -248,8 +244,6 @@ const DataTableBody = ({
         <DataTableHeaders
           containerRef={containerRef}
           effectiveColumns={effectiveColumns}
-          sortBy={sortBy}
-          orderAsc={orderAsc}
           dataTableToolBarComponent={dataTableToolBarComponent}
         />
       )}
@@ -265,8 +259,6 @@ const DataTableBody = ({
                 <DataTableLine
                   key={row.id}
                   row={row}
-                  redirectionMode={redirectionMode}
-                  storageHelpers={storageHelpers}
                   effectiveColumns={effectiveColumns}
                   index={index}
                   onToggleShiftEntity={onToggleShiftEntity}

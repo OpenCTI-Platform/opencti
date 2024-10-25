@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import type { Dispatch, MutableRefObject, ReactNode, RefObject, SetStateAction } from 'react';
+import type { Dispatch, MutableRefObject, ReactNode, SetStateAction } from 'react';
 import React from 'react';
 import { GraphQLTaggedNode } from 'react-relay';
 import { PopoverProps } from '@mui/material/Popover/Popover';
@@ -139,16 +139,11 @@ export interface DataTableProps {
 
 export interface DataTableBodyProps {
   columns: DataTableColumns
-  redirectionMode: DataTableProps['redirectionMode']
-  storageHelpers: DataTableProps['storageHelpers']
   hasFilterComponent: boolean
   dataTableToolBarComponent?: ReactNode
-  sortBy: DataTableProps['sortBy']
-  orderAsc: DataTableProps['orderAsc']
   settingsMessagesBannerHeight?: DataTableProps['settingsMessagesBannerHeight']
   pageSize: number
   pageStart: number
-  dataTableHeaderRef: RefObject<HTMLDivElement>
   reset: boolean,
   setReset: Dispatch<SetStateAction<boolean>>
   hideHeaders: DataTableProps['hideHeaders']
@@ -178,8 +173,6 @@ export interface DataTableFiltersProps {
 export interface DataTableHeadersProps {
   containerRef?: MutableRefObject<HTMLDivElement | null>
   effectiveColumns: DataTableColumns
-  sortBy: DataTableProps['sortBy']
-  orderAsc: DataTableProps['orderAsc']
   dataTableToolBarComponent: ReactNode
 }
 
@@ -196,9 +189,7 @@ export interface DataTableHeaderProps {
 
 export interface DataTableLineProps {
   row: any
-  redirectionMode?: string | undefined
   effectiveColumns: DataTableColumns
-  storageHelpers: DataTableProps['storageHelpers']
   index: number
   onToggleShiftEntity: (currentIndex: number, currentEntity: { id: string }, event?: React.MouseEvent) => void
 }
@@ -206,5 +197,4 @@ export interface DataTableLineProps {
 export interface DataTableCellProps {
   cell: DataTableColumn
   data: any
-  storageHelpers: DataTableProps['storageHelpers']
 }

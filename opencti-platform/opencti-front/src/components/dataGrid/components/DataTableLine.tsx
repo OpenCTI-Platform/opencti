@@ -101,8 +101,6 @@ const DataTableCell = ({
 
 const DataTableLine = ({
   row,
-  redirectionMode,
-  storageHelpers,
   effectiveColumns,
   index,
   onToggleShiftEntity,
@@ -118,6 +116,9 @@ const DataTableLine = ({
     onLineClick,
     selectOnLineClick,
     variant,
+    useDataTablePaginationLocalStorage: {
+      viewStorage: { redirectionMode },
+    },
   } = useDataTableContext();
   const data = useLineData(row);
 
@@ -194,7 +195,6 @@ const DataTableLine = ({
               width: 'calc(var(--col-select-size) * 1px)',
             }}
           >
-
             <Checkbox
               onClick={handleSelectLine}
               checked={
@@ -210,7 +210,6 @@ const DataTableLine = ({
             key={column.id}
             cell={column}
             data={data}
-            storageHelpers={storageHelpers}
           />
         ))}
       </a>

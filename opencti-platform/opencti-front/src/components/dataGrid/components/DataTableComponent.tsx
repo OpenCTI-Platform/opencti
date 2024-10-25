@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import * as R from 'ramda';
 import { DataTableLinesDummy } from './DataTableLine';
 import DataTableBody from './DataTableBody';
@@ -67,12 +67,7 @@ const DataTableComponent = ({
 
   const paginationLocalStorage = useDataTablePaginationLocalStorage(storageKey, initialValues, variant !== DataTableVariant.default);
   const {
-    viewStorage: {
-      redirectionMode,
-      sortBy,
-      orderAsc,
-      pageSize,
-    },
+    viewStorage: { pageSize },
     helpers,
   } = paginationLocalStorage;
 
@@ -122,8 +117,6 @@ const DataTableComponent = ({
     return page ? (page - 1) * currentPageSize : 0;
   }, [page, currentPageSize]);
 
-  const dataTableHeaderRef = useRef<HTMLDivElement | null>(null);
-
   const [reset, setReset] = useState(false);
 
   return (
@@ -161,17 +154,13 @@ const DataTableComponent = ({
         setPage,
       }}
     >
-      <div ref={dataTableHeaderRef}>
-        {filtersComponent}
-      </div>
+      <div>{filtersComponent}</div>
       <>
         <React.Suspense
           fallback={(
             <div style={{ ...temporaryColumnsSize, width: '100%' }}>
               <DataTableHeaders
                 effectiveColumns={columns}
-                sortBy={sortBy}
-                orderAsc={orderAsc}
                 dataTableToolBarComponent={dataTableToolBarComponent}
               />
               {<DataTableLinesDummy number={Math.max(currentPageSize, 25)} />}
@@ -180,16 +169,11 @@ const DataTableComponent = ({
         >
           <DataTableBody
             columns={columns.filter(({ visible }) => visible)}
-            redirectionMode={redirectionMode}
-            storageHelpers={helpers}
             settingsMessagesBannerHeight={settingsMessagesBannerHeight}
             hasFilterComponent={!!filtersComponent}
-            sortBy={sortBy}
-            orderAsc={orderAsc}
             dataTableToolBarComponent={dataTableToolBarComponent}
             pageStart={pageStart}
             pageSize={currentPageSize}
-            dataTableHeaderRef={dataTableHeaderRef}
             reset={reset}
             setReset={setReset}
             hideHeaders={hideHeaders}

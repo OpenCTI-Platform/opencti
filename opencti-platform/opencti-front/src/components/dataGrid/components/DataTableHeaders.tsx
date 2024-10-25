@@ -15,30 +15,28 @@ const DataTableHeaders: FunctionComponent<DataTableHeadersProps> = ({
   containerRef,
   effectiveColumns,
   dataTableToolBarComponent,
-  sortBy,
-  orderAsc,
 }) => {
   const theme = useTheme<Theme>();
   const {
     columns,
     setColumns,
-    useDataTableToggle,
+    useDataTableToggle: {
+      selectAll,
+      numberOfSelectedElements,
+      handleToggleSelectAll,
+      selectedElements,
+    },
     useDataTableColumnsLocalStorage,
-    formatter,
+    formatter: { t_i18n },
     availableFilterKeys,
     onAddFilter,
     onSort,
     disableToolBar,
     disableSelectAll,
+    useDataTablePaginationLocalStorage: {
+      viewStorage: { sortBy, orderAsc },
+    },
   } = useDataTableContext();
-  const { t_i18n } = formatter;
-
-  const {
-    selectAll,
-    numberOfSelectedElements,
-    handleToggleSelectAll,
-    selectedElements,
-  } = useDataTableToggle;
 
   const [_, setLocalStorageColumns] = useDataTableColumnsLocalStorage;
 
