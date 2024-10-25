@@ -5057,10 +5057,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@xmldom/xmldom@npm:0.9.4":
-  version: 0.9.4
-  resolution: "@xmldom/xmldom@npm:0.9.4"
-  checksum: 10/59558699092509a6a8f2e291b669364c5967ca33a2ed4829febbd256943f50c1f61f26571bdd2a75856645d9698e598bc4f7b53f2c8544d7cdcecb7f9ac1bec5
+"@xmldom/xmldom@npm:0.8.10":
+  version: 0.8.10
+  resolution: "@xmldom/xmldom@npm:0.8.10"
+  checksum: 10/62400bc5e0e75b90650e33a5ceeb8d94829dd11f9b260962b71a784cd014ddccec3e603fe788af9c1e839fa4648d8c521ebd80d8b752878d3a40edabc9ce7ccf
   languageName: node
   linkType: hard
 
