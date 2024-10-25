@@ -56,7 +56,7 @@ const CaseRfiDeletion = ({ id }: { id: string }) => {
   };
 
   return (
-    <React.Fragment>
+    <>
       <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
         <Button
           color="error"
@@ -88,7 +88,7 @@ const CaseRfiDeletion = ({ id }: { id: string }) => {
           </Button>
         </DialogActions>
       </Dialog>
-    </React.Fragment>
+    </>
   );
 };
 
