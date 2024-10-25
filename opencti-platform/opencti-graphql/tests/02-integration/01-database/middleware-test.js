@@ -1403,7 +1403,7 @@ describe('Elements deduplication behaviors', () => {
       name: group1Name,
       objectMarking: [WHITE_TLP.standard_id],
     };
-    await createThreat(sourceGroup1);
+    const group1 = await createThreat(sourceGroup1);
     // group 2
     const sourceGroup2 = {
       name: group2Name,
@@ -1411,10 +1411,15 @@ describe('Elements deduplication behaviors', () => {
     };
     const group2 = await createThreat(sourceGroup2);
 
+    // Update should be prevented by deduplication
     const inputUpdate = { key: 'name', value: [group1Name] };
     const update = () => updateAttribute(testContext, WHITE_USER, group2.id, ENTITY_TYPE_THREAT_ACTOR_GROUP, [inputUpdate]);
     await expect(update()).rejects.toEqual(
       new GraphQLError('This update will produce a duplicate')
     );
+
+    // Cleanup
+    await deleteElementById(testContext, ADMIN_USER, group1.id, ENTITY_TYPE_THREAT_ACTOR_GROUP);
+    await deleteElementById(testContext, ADMIN_USER, group2.id, ENTITY_TYPE_THREAT_ACTOR_GROUP);
   });
 });
