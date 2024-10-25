@@ -50,6 +50,15 @@ const READ_PLAYBOOK = gql`
   }
 `;
 
+const UPDATE_PLAYBOOK = gql`
+  mutation playbookFieldPatchEdit($id: ID!, $input: [EditInput!]!) {
+    playbookFieldPatch(id: $id, input: $input) {
+      id
+      name
+    }
+  }
+`;
+
 const DELETE_PLAYBOOK = gql`
   mutation playbookDelete($id: ID!) {
     playbookDelete(id:$id)
@@ -84,6 +93,18 @@ describe('Playbook resolver standard behavior', () => {
     const queryResult = await adminQueryWithSuccess({ query: READ_PLAYBOOK, variables: { id: playbookId } });
     expect(queryResult.data?.playbook.name).toEqual(playbookName);
     expect(queryResult.data?.playbook.playbook_running).toEqual(false);
+  });
+  it('should update playbook', async () => {
+    const queryResult = await adminQueryWithSuccess({
+      query: UPDATE_PLAYBOOK,
+      variables: {
+        id: playbookId,
+        input: [
+          { key: 'name', value: ['Playbook1 - updated'] },
+        ]
+      }
+    });
+    expect(queryResult.data?.playbookFieldPatch.name).toEqual('Playbook1 - updated');
   });
   it('should remove playbook', async () => {
     const queryResult = await adminQueryWithSuccess({
