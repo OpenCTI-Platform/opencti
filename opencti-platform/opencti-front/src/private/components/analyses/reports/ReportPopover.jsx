@@ -10,7 +10,7 @@ import ReportEditionContainer from './ReportEditionContainer';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNENRICHMENT, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import { QueryRenderer } from '../../../../relay/environment';
-import ReportPopoverDeletion from './ReportPopoverDeletion';
+import ReportDeletion from './ReportDeletion';
 import useHelper from '../../../../utils/hooks/useHelper';
 
 const ReportPopover = ({ id }) => {
@@ -66,7 +66,7 @@ const ReportPopover = ({ id }) => {
           </Security>
         </Menu>
         <StixCoreObjectEnrichment stixCoreObjectId={id} open={displayEnrichment} handleClose={handleCloseEnrichment} />
-        <ReportPopoverDeletion
+        <ReportDeletion
           reportId={id}
           displayDelete={displayDelete}
           handleClose={handleClose}
