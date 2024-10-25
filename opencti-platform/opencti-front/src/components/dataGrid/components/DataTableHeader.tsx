@@ -6,8 +6,8 @@ import makeStyles from '@mui/styles/makeStyles';
 import { createStyles } from '@mui/styles';
 import { Theme as MuiTheme } from '@mui/material/styles/createTheme';
 import Tooltip from '@mui/material/Tooltip';
-import { useDataTableContext } from '../dataTableUtils';
 import { DataTableColumn, DataTableHeaderProps, DataTableVariant, LocalStorageColumns } from '../dataTableTypes';
+import { useDataTableContext } from './DataTableContext';
 
 export const SELECT_COLUMN_SIZE = 42;
 
@@ -78,11 +78,10 @@ const DataTableHeader: FunctionComponent<DataTableHeaderProps> = ({
     onSort,
     variant,
     formatter: { t_i18n },
-    useDataTableLocalStorage,
-    storageKey,
+    useDataTableColumnsLocalStorage,
   } = useDataTableContext();
 
-  const [_, setLocalStorageColumns] = useDataTableLocalStorage<LocalStorageColumns>(`${storageKey}_columns`, {}, true);
+  const [_, setLocalStorageColumns] = useDataTableColumnsLocalStorage;
 
   return (
     <div
@@ -164,8 +163,7 @@ const DataTableHeader: FunctionComponent<DataTableHeaderProps> = ({
 
               if (clientDiff > 0) {
                 if (otherColumn) {
-                  const otherColumnNewSize = (otherColumn.size ?? 0) - lastX - currentSize + clientWidth;
-                  otherColumn.size = otherColumnNewSize;
+                  otherColumn.size = (otherColumn.size ?? 0) - lastX - currentSize + clientWidth;
                 }
               }
 

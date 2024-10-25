@@ -49,34 +49,15 @@ export interface DataTableContextProps {
   setColumns: Dispatch<SetStateAction<DataTableColumns>>
   resolvePath: (data: any) => any
   redirectionModeEnabled?: boolean
-  toolbarFilters?: FilterGroup
-  useLineData: (row: any) => any
-  useDataTable: (args: any) => any
-  useDataCellHelpers: (cell: DataTableColumn) => any
-  useDataTableToggle: (key: string) => {
-    selectedElements: Record<string, any>
-    deSelectedElements: Record<string, any>
-    selectAll: boolean
-    numberOfSelectedElements: number
-    onToggleEntity: (
-      entity: any,
-      _?: React.MouseEvent,
-      forceRemove?: any[],
-    ) => void
-    handleClearSelectedElements: () => void
-    handleToggleSelectAll: () => void
-    setSelectedElements: (selectedElements: Record<string, any>) => void
-  } | Record<string, any>
-  useComputeLink: (entity: any) => string
-  useDataTableLocalStorage: <T extends LocalStorage = LocalStorage>(
-    key: string,
-    initialValues?: T,
-    ignoreUri?: boolean,
-    ignoreDispatch?: boolean,
-  ) => [T, Dispatch<SetStateAction<T>>]
-  onAddFilter: (key: string) => void
+  useLineData: DataTableProps['useLineData']
+  useDataTable: ReturnType<DataTableProps['useDataTable']>
+  useDataCellHelpers: DataTableProps['useDataCellHelpers']
+  useDataTableToggle: ReturnType<DataTableProps['useDataTableToggle']>
+  useComputeLink: DataTableProps['useComputeLink']
+  useDataTableColumnsLocalStorage: ReturnType<DataTableProps['useDataTableColumnsLocalStorage']>
+  onAddFilter: DataTableProps['onAddFilter']
   onSort: (sortBy: string, orderAsc: boolean) => void
-  formatter: Record<string, (args: any) => any>
+  formatter: DataTableProps['formatter']
   variant: DataTableVariant
   actions?: DataTableProps['actions']
   rootRef?: DataTableProps['rootRef']
@@ -110,15 +91,29 @@ export interface DataTableProps {
   filtersComponent?: ReactNode
   dataTableToolBarComponent?: ReactNode
   numberOfElements?: NumberOfElements
-  onAddFilter?: DataTableContextProps['onAddFilter']
+  onAddFilter: (key: string) => void
   onSort?: (sortBy: string, orderAsc: boolean) => void
-  formatter: DataTableContextProps['formatter']
-  useDataTableLocalStorage: DataTableContextProps['useDataTableLocalStorage']
-  useComputeLink: DataTableContextProps['useComputeLink']
-  useDataTableToggle: DataTableContextProps['useDataTableToggle']
-  useLineData: DataTableContextProps['useLineData']
-  useDataTable: DataTableContextProps['useDataTable']
-  useDataCellHelpers: DataTableContextProps['useDataCellHelpers']
+  formatter: Record<string, (args: any) => any>
+  useDataTableColumnsLocalStorage: (
+    key: string,
+    initialValues?: LocalStorageColumns,
+    ignoreUri?: boolean,
+    ignoreDispatch?: boolean,
+  ) => [LocalStorageColumns, Dispatch<SetStateAction<LocalStorageColumns>>]
+  useComputeLink: (entity: any) => string
+  useDataTableToggle: (key: string) => {
+    selectedElements: Record<string, any>
+    deSelectedElements: Record<string, any>
+    selectAll: boolean
+    numberOfSelectedElements: number
+    onToggleEntity: (entity: any, _?: React.MouseEvent, forceRemove?: any[]) => void
+    handleClearSelectedElements: () => void
+    handleToggleSelectAll: () => void
+    setSelectedElements: (selectedElements: Record<string, any>) => void
+  }
+  useLineData: (row: any) => any
+  useDataTable: (args: any) => any
+  useDataCellHelpers: (cell: DataTableColumn) => any
   sortBy?: string | undefined
   orderAsc?: boolean | undefined
   variant?: DataTableVariant
@@ -144,7 +139,6 @@ export interface DataTableBodyProps {
   sortBy: DataTableProps['sortBy']
   orderAsc: DataTableProps['orderAsc']
   settingsMessagesBannerHeight?: DataTableProps['settingsMessagesBannerHeight']
-  dataQueryArgs: DataTableProps['dataQueryArgs']
   pageSize: number
   pageStart: number
   dataTableHeaderRef: RefObject<HTMLDivElement>

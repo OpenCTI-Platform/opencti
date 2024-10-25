@@ -1,10 +1,9 @@
 import React from 'react';
 import type { DataTableProps } from './dataTableTypes';
 import { DataTableVariant } from './dataTableTypes';
-import { useComputeLink, useDataCellHelpers, useDataTableLocalStorage } from './dataTableHooks';
+import { useComputeLink, useDataCellHelpers, useDataTableToggle } from './dataTableHooks';
 import DataTableComponent from './components/DataTableComponent';
 import { useFormatter } from '../i18n';
-import { numberFormat } from '../../utils/Number';
 
 type OCTIDataTableProps = Pick<DataTableProps, 'dataColumns'
 | 'storageKey'
@@ -28,24 +27,23 @@ const DataTableWithoutFragment = (props: OCTIDataTableProps) => {
   const {
     data,
     variant = DataTableVariant.default,
-    globalCount,
+    storageKey,
   } = props;
 
   return (
     <DataTableComponent
-      numberOfElements={numberFormat(globalCount)}
+      {...props}
       useDataTable={() => ({ data })}
       useLineData={(line) => line}
       dataQueryArgs={(line: never) => line}
       formatter={formatter}
       resolvePath={(a) => a}
-      useDataTableLocalStorage={useDataTableLocalStorage}
-      useDataTableToggle={() => ({})}
+      onAddFilter={() => {}}
+      useDataTableToggle={useDataTableToggle(storageKey)}
       initialValues={{}}
       useComputeLink={useComputeLink}
       useDataCellHelpers={useDataCellHelpers({}, variant)}
       variant={variant}
-      {...props}
     />
   );
 };

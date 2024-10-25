@@ -2,10 +2,50 @@ import React, { useMemo, useRef, useState } from 'react';
 import * as R from 'ramda';
 import { DataTableLinesDummy } from './DataTableLine';
 import DataTableBody from './DataTableBody';
-import { DataTableContext, defaultColumnsMap } from '../dataTableUtils';
+import { defaultColumnsMap } from '../dataTableUtils';
 import { DataTableColumn, DataTableColumns, DataTableContextProps, DataTableProps, DataTableVariant, LocalStorageColumns } from '../dataTableTypes';
 import DataTableHeaders from './DataTableHeaders';
 import { SELECT_COLUMN_SIZE } from './DataTableHeader';
+import { DataTableProvider } from './DataTableContext';
+import { useDataTableLocalStorage } from '../dataTableHooks';
+
+type DataTableComponentProps = Pick<DataTableProps,
+| 'dataColumns'
+| 'settingsMessagesBannerHeight'
+| 'storageHelpers'
+| 'filtersComponent'
+| 'redirectionMode'
+| 'hideHeaders'
+| 'sortBy'
+| 'orderAsc'
+| 'dataTableToolBarComponent'
+| 'pageSize'
+| 'variant'
+| 'actions'
+| 'availableFilterKeys'
+| 'initialValues'
+| 'disableNavigation'
+| 'storageKey'
+| 'lineFragment'
+| 'dataQueryArgs'
+| 'resolvePath'
+| 'redirectionModeEnabled'
+| 'useLineData'
+| 'useDataTable'
+| 'useDataCellHelpers'
+| 'useComputeLink'
+| 'formatter'
+| 'onAddFilter'
+| 'onSort'
+| 'rootRef'
+| 'createButton'
+| 'disableToolBar'
+| 'disableSelectAll'
+| 'selectOnLineClick'
+| 'onLineClick'
+| 'disableLineSelection'>
+& Pick<DataTableContextProps,
+| 'useDataTableToggle'>;
 
 const DataTableComponent = ({
   dataColumns,
@@ -13,7 +53,6 @@ const DataTableComponent = ({
   storageKey,
   initialValues,
   availableFilterKeys,
-  toolbarFilters,
   dataQueryArgs,
   redirectionModeEnabled = false,
   useLineData,
@@ -21,7 +60,6 @@ const DataTableComponent = ({
   useDataCellHelpers,
   useDataTableToggle,
   useComputeLink,
-  useDataTableLocalStorage,
   formatter,
   settingsMessagesBannerHeight,
   storageHelpers,
@@ -44,12 +82,12 @@ const DataTableComponent = ({
   disableSelectAll,
   selectOnLineClick,
   onLineClick,
-}: DataTableProps) => {
-  const [localStorageColumns] = useDataTableLocalStorage<LocalStorageColumns>(`${storageKey}_columns`, {}, true);
-  const toggleHelper = useDataTableToggle(storageKey);
+}: DataTableComponentProps) => {
+  const columnsLocalStorage = useDataTableLocalStorage<LocalStorageColumns>(`${storageKey}_columns`, {}, true);
+  const [localStorageColumns] = columnsLocalStorage;
 
   const columnsInitialState = [
-    ...((toggleHelper.onToggleEntity && !disableLineSelection) ? [{ id: 'select', visible: true } as DataTableColumn] : []),
+    ...(!disableLineSelection ? [{ id: 'select', visible: true } as DataTableColumn] : []),
     ...Object.entries(dataColumns).map(([key, column], index) => {
       const currentColumn = localStorageColumns?.[key];
       return R.mergeDeepRight(defaultColumnsMap.get(key) as DataTableColumn, {
@@ -99,8 +137,8 @@ const DataTableComponent = ({
   const [reset, setReset] = useState(false);
 
   return (
-    <DataTableContext.Provider
-      value={{
+    <DataTableProvider
+      initialValue={{
         storageKey,
         columns,
         availableFilterKeys,
@@ -110,15 +148,14 @@ const DataTableComponent = ({
         resetColumns: () => setReset(true),
         resolvePath,
         redirectionModeEnabled,
-        toolbarFilters,
         useLineData,
-        useDataTable,
+        useDataTable: useDataTable(dataQueryArgs),
         useDataCellHelpers,
         useDataTableToggle,
         useComputeLink,
-        useDataTableLocalStorage,
+        useDataTableColumnsLocalStorage: columnsLocalStorage,
         onAddFilter,
-        onSort,
+        onSort: onSort || (() => {}),
         formatter,
         variant,
         rootRef,
@@ -131,7 +168,7 @@ const DataTableComponent = ({
         onLineClick,
         page,
         setPage,
-      } as DataTableContextProps}
+      }}
     >
       <div ref={dataTableHeaderRef}>
         {filtersComponent}
@@ -151,7 +188,6 @@ const DataTableComponent = ({
           )}
         >
           <DataTableBody
-            dataQueryArgs={dataQueryArgs}
             columns={columns.filter(({ visible }) => visible)}
             redirectionMode={redirectionMode}
             storageHelpers={storageHelpers}
@@ -169,7 +205,7 @@ const DataTableComponent = ({
           />
         </React.Suspense>
       </>
-    </DataTableContext.Provider>
+    </DataTableProvider>
   );
 };
 

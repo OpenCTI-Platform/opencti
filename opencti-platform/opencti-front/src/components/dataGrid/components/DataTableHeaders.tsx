@@ -8,8 +8,8 @@ import { PopoverProps } from '@mui/material/Popover/Popover';
 import { useTheme } from '@mui/styles';
 import { DataTableColumn, DataTableColumns, DataTableHeadersProps, LocalStorageColumns } from '../dataTableTypes';
 import DataTableHeader from './DataTableHeader';
-import { useDataTableContext } from '../dataTableUtils';
 import type { Theme } from '../../Theme';
+import { useDataTableContext } from './DataTableContext';
 
 const DataTableHeaders: FunctionComponent<DataTableHeadersProps> = ({
   containerRef,
@@ -20,11 +20,10 @@ const DataTableHeaders: FunctionComponent<DataTableHeadersProps> = ({
 }) => {
   const theme = useTheme<Theme>();
   const {
-    storageKey,
     columns,
     setColumns,
     useDataTableToggle,
-    useDataTableLocalStorage,
+    useDataTableColumnsLocalStorage,
     formatter,
     availableFilterKeys,
     onAddFilter,
@@ -39,9 +38,9 @@ const DataTableHeaders: FunctionComponent<DataTableHeadersProps> = ({
     numberOfSelectedElements,
     handleToggleSelectAll,
     selectedElements,
-  } = useDataTableToggle(storageKey);
+  } = useDataTableToggle;
 
-  const [_, setLocalStorageColumns] = useDataTableLocalStorage<LocalStorageColumns>(`${storageKey}_columns`, {}, true, true);
+  const [_, setLocalStorageColumns] = useDataTableColumnsLocalStorage;
 
   const [activeColumn, setActiveColumn] = useState<DataTableColumn | undefined>();
   const [anchorEl, setAnchorEl] = useState<PopoverProps['anchorEl']>(null);

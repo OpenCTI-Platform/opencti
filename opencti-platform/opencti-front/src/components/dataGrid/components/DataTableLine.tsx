@@ -6,11 +6,11 @@ import { KeyboardArrowRightOutlined } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
 import { createStyles } from '@mui/styles';
 import { useNavigate } from 'react-router-dom';
-import { useDataTableContext } from '../dataTableUtils';
 import type { DataTableCellProps, DataTableLineProps } from '../dataTableTypes';
 import { DataTableColumn, DataTableVariant } from '../dataTableTypes';
 import type { Theme } from '../../Theme';
 import { getMainRepresentative } from '../../../utils/defaultRepresentatives';
+import { useDataTableContext } from './DataTableContext';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -110,7 +110,6 @@ const DataTableLine = ({
   const navigate = useNavigate();
 
   const {
-    storageKey,
     useLineData,
     useDataTableToggle,
     useComputeLink,
@@ -137,7 +136,7 @@ const DataTableLine = ({
     deSelectedElements,
     selectedElements,
     onToggleEntity,
-  } = useDataTableToggle(storageKey);
+  } = useDataTableToggle;
 
   const startsWithSelect = effectiveColumns.at(0)?.id === 'select';
   const endWithNavigate = effectiveColumns.at(-1)?.id === 'navigate';

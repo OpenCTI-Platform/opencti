@@ -9,10 +9,10 @@ import { TableTuneIcon } from 'filigran-icon';
 import { useTheme } from '@mui/styles';
 import { Theme } from '@mui/material/styles/createTheme';
 import { useFormatter } from '../i18n';
-import { DataTableVariant, LocalStorageColumns } from './dataTableTypes';
+import { DataTableVariant } from './dataTableTypes';
 import { NumberOfElements, usePaginationLocalStorage } from '../../utils/hooks/useLocalStorage';
-import { useDataTableContext } from './dataTableUtils';
 import NestedMenuButton from '../nestedMenu/NestedMenuButton';
+import { useDataTableContext } from './components/DataTableContext';
 
 const DataTablePagination = ({
   page,
@@ -31,7 +31,7 @@ const DataTablePagination = ({
     initialValues,
     variant,
     resetColumns,
-    useDataTableLocalStorage,
+    useDataTableColumnsLocalStorage,
   } = useDataTableContext();
 
   const {
@@ -61,7 +61,7 @@ const DataTablePagination = ({
     }
   }, [page, pageSize]);
 
-  const [_, setLocalStorageColumns] = useDataTableLocalStorage<LocalStorageColumns>(`${storageKey}_columns`, {}, true, true);
+  const [_, setLocalStorageColumns] = useDataTableColumnsLocalStorage;
 
   const resetTable = () => {
     setLocalStorageColumns({});

@@ -4,12 +4,11 @@ import { createStyles } from '@mui/styles';
 import { Theme as MuiTheme } from '@mui/material/styles/createTheme';
 import * as R from 'ramda';
 import DataTableHeaders from './DataTableHeaders';
-import { useDataTableContext } from '../dataTableUtils';
 import { ColumnSizeVars, DataTableBodyProps, DataTableLineProps, DataTableVariant, LocalStorageColumns } from '../dataTableTypes';
 import DataTableLine, { DataTableLinesDummy } from './DataTableLine';
 import { SELECT_COLUMN_SIZE } from './DataTableHeader';
-import { useDataTableToggle } from '../dataTableHooks';
 import { throttle } from '../../../utils/utils';
+import { useDataTableContext } from './DataTableContext';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -36,7 +35,6 @@ const DataTableBody = ({
   sortBy,
   orderAsc,
   dataTableToolBarComponent,
-  dataQueryArgs,
   pageStart,
   pageSize,
   setReset,
@@ -45,16 +43,16 @@ const DataTableBody = ({
 }: DataTableBodyProps) => {
   const {
     rootRef,
-    storageKey,
     setColumns,
-    useDataTableLocalStorage,
+    useDataTableColumnsLocalStorage,
     variant,
     useDataTable,
     resolvePath,
+    useDataTableToggle,
     actions,
   } = useDataTableContext();
 
-  const { data: queryData, isLoading, loadMore, hasMore } = useDataTable(dataQueryArgs);
+  const { data: queryData, isLoading, loadMore, hasMore } = useDataTable;
 
   const resolvedData = useMemo(() => {
     if (!queryData) {
@@ -77,7 +75,7 @@ const DataTableBody = ({
   const [computeState, setComputeState] = useState<HTMLDivElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
 
-  const [localStorageColumns, setLocalStorageColumns] = useDataTableLocalStorage<LocalStorageColumns>(`${storageKey}_columns`, {}, true);
+  const [localStorageColumns, setLocalStorageColumns] = useDataTableColumnsLocalStorage;
 
   const startsWithSelect = columns.at(0)?.id === 'select';
   const endsWithNavigate = columns.at(-1)?.id === 'navigate';
@@ -178,7 +176,7 @@ const DataTableBody = ({
   const {
     selectedElements,
     onToggleEntity,
-  } = useDataTableToggle(storageKey);
+  } = useDataTableToggle;
   const onToggleShiftEntity: DataTableLineProps['onToggleShiftEntity'] = (currentIndex, currentEntity, event) => {
     if (selectedElements && !R.isEmpty(selectedElements)) {
       // Find the indexes of the first and last selected entities

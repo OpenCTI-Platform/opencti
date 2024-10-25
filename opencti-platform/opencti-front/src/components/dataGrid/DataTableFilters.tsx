@@ -22,7 +22,6 @@ import { Theme } from '@mui/material/styles/createTheme';
 import FilterIconButton from '../FilterIconButton';
 import { useFormatter } from '../i18n';
 import { DataTableDisplayFiltersProps, DataTableFiltersProps, DataTableVariant } from './dataTableTypes';
-import { useDataTableContext } from './dataTableUtils';
 import { usePaginationLocalStorage } from '../../utils/hooks/useLocalStorage';
 import { export_max_size } from '../../utils/utils';
 import useEntityToggle from '../../utils/hooks/useEntityToggle';
@@ -32,6 +31,7 @@ import { ExportContext } from '../../utils/ExportContextProvider';
 import Transition from '../Transition';
 import DataTablePagination from './DataTablePagination';
 import { isFilterGroupNotEmpty } from '../../utils/filters/filtersUtils';
+import { useDataTableContext } from './components/DataTableContext';
 
 export const DataTableDisplayFilters = ({
   availableFilterKeys,
