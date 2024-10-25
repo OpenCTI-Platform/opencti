@@ -28,7 +28,7 @@ const buildAttributesOutcome = async (containerId: string, templateWidgets: Temp
       }
       return attributeData;
     });
-    return { variableName, attributeData: attributesData.length === 1 ? attributesData[0] : attributesData.join(', ') };
+    return { variableName, attributeData: attributesData.length === 1 ? attributesData[0] ?? '' : attributesData.join(', ') };
   });
   return attributeWidgetsOutcome;
 };

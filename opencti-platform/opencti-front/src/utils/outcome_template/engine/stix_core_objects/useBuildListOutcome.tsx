@@ -50,8 +50,9 @@ const useBuildListOutcome = () => {
           {nodes.map((n) => (
             <tr key={n.id}>
               {columns.map((col) => {
-                const attribute = JSON.stringify(getObjectProperty(n, col.attribute));
-                return <td key={`${n.id}-${col.attribute}`}>{attribute}</td>;
+                const property = getObjectProperty(n, col.attribute) ?? '';
+                const displayedAttribute = typeof property === 'string' ? property : JSON.stringify(property);
+                return <td key={`${n.id}-${col.attribute}`}>{displayedAttribute}</td>;
               })}
             </tr>
           ))}
