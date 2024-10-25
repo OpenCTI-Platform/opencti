@@ -107,6 +107,8 @@ const UPDATE_QUERY = gql`
     indicatorFieldPatch(id: $id, input: $input) {
       id
       name
+      standard_id
+      pattern
     }
   }
 `;
@@ -114,7 +116,7 @@ const UPDATE_QUERY = gql`
 describe('Indicator resolver standard behavior', () => {
   let firstIndicatorInternalId: string;
   let secondIndicatorInternalId: string;
-  const indicatorStixId = 'indicator--f6ad652c-166a-43e6-98b8-8ff078e2349f';
+  let indicatorStixId = 'indicator--f6ad652c-166a-43e6-98b8-8ff078e2349f';
   const indicatorForTestName = 'Indicator in indicator-test';
 
   it('should indicator created', async () => {
@@ -242,6 +244,16 @@ describe('Indicator resolver standard behavior', () => {
       variables: { id: firstIndicatorInternalId, input: { key: 'name', value: ['Indicator - test'] } },
     });
     expect(queryResult.data?.indicatorFieldPatch.name).toEqual('Indicator - test');
+  });
+  it('should update indicator pattern, causing change in stix id', async () => {
+    const queryResult = await queryAsAdminWithSuccess({
+      query: UPDATE_QUERY,
+      variables: { id: firstIndicatorInternalId, input: { key: 'pattern', value: ["[domain-name:value = 'www.newvalue.com']"] } },
+    });
+    const newIndicator = queryResult.data?.indicatorFieldPatch;
+    expect(newIndicator?.pattern).toEqual("[domain-name:value = 'www.newvalue.com']");
+    expect(newIndicator?.standard_id).not.toEqual(indicatorStixId);
+    indicatorStixId = newIndicator?.standard_id; // update id for next tests
   });
   it('should context patch indicator', async () => {
     const CONTEXT_PATCH_QUERY = gql`
