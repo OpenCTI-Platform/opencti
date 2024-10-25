@@ -2,7 +2,7 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import React, { useMemo } from 'react';
-import { Route, Routes, useParams, Link, useLocation, Navigate } from 'react-router-dom';
+import { Link, Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom';
 import { graphql, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import Box from '@mui/material/Box';
@@ -100,7 +100,7 @@ const RootCountryComponent = ({ queryRef, countryId }) => {
       overflow: 'auto',
       height: '100%',
       marginRight: '-20px',
-      paddingRight: '10px',
+      paddingRight: '20px',
       boxSizing: 'content-box',
     }}
     >

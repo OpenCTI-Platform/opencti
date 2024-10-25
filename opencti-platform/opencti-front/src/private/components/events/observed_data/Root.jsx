@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Route, Routes, Link } from 'react-router-dom';
+import { Link, Route, Routes } from 'react-router-dom';
 import { graphql } from 'react-relay';
 import * as R from 'ramda';
 import Box from '@mui/material/Box';
@@ -91,7 +91,7 @@ class RootObservedData extends Component {
         overflow: 'auto',
         height: '100%',
         marginRight: '-20px',
-        paddingRight: '10px',
+        paddingRight: '20px',
         boxSizing: 'content-box',
       }}
       >

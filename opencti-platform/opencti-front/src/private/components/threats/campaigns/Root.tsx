@@ -1,6 +1,6 @@
 import React, { Suspense, useMemo } from 'react';
-import { Route, Routes, Link, Navigate, useParams, useLocation } from 'react-router-dom';
-import { graphql, PreloadedQuery, useSubscription, usePreloadedQuery } from 'react-relay';
+import { Link, Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom';
+import { graphql, PreloadedQuery, usePreloadedQuery, useSubscription } from 'react-relay';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
@@ -107,7 +107,7 @@ const RootCampaign = ({ campaignId, queryRef }: RootCampaignProps) => {
       overflow: 'auto',
       height: '100%',
       marginRight: '-20px',
-      paddingRight: '10px',
+      paddingRight: '20px',
       boxSizing: 'content-box',
     }}
     >

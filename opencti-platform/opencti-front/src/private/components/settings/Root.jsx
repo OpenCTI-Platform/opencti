@@ -1,16 +1,16 @@
-import React, { Suspense, lazy } from 'react';
+import React, { lazy, Suspense } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import useGranted, {
   isOnlyOrganizationAdmin,
-  VIRTUAL_ORGANIZATION_ADMIN,
+  SETTINGS_FILEINDEXING,
+  SETTINGS_SECURITYACTIVITY,
   SETTINGS_SETACCESSES,
   SETTINGS_SETCUSTOMIZATION,
   SETTINGS_SETLABELS,
   SETTINGS_SETMARKINGS,
-  SETTINGS_SECURITYACTIVITY,
-  SETTINGS_FILEINDEXING,
-  SETTINGS_SUPPORT,
   SETTINGS_SETPARAMETERS,
+  SETTINGS_SUPPORT,
+  VIRTUAL_ORGANIZATION_ADMIN,
 } from '../../../utils/hooks/useGranted';
 import Loader from '../../../components/Loader';
 
@@ -73,7 +73,7 @@ const Root = () => {
       overflow: 'auto',
       height: '100%',
       marginRight: '-20px',
-      paddingRight: '10px',
+      paddingRight: '20px',
       boxSizing: 'content-box',
     }}
     >

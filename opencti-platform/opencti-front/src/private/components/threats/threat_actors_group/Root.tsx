@@ -1,6 +1,6 @@
 import React, { Suspense, useMemo } from 'react';
-import { Route, Routes, Link, Navigate, useLocation, useParams } from 'react-router-dom';
-import { graphql, useSubscription, usePreloadedQuery, PreloadedQuery } from 'react-relay';
+import { Link, Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom';
+import { graphql, PreloadedQuery, usePreloadedQuery, useSubscription } from 'react-relay';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
@@ -109,7 +109,7 @@ const RootThreatActorGroup = ({ queryRef, threatActorGroupId }: RootThreatActorG
       overflow: 'auto',
       height: '100%',
       marginRight: '-20px',
-      paddingRight: '10px',
+      paddingRight: '20px',
       boxSizing: 'content-box',
     }}
     >

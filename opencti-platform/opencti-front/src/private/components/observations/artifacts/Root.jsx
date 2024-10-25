@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Route, Routes, Link } from 'react-router-dom';
+import { Link, Route, Routes } from 'react-router-dom';
 import { graphql } from 'react-relay';
 import * as R from 'ramda';
 import Box from '@mui/material/Box';
@@ -92,7 +92,7 @@ class RootArtifact extends Component {
         overflow: 'auto',
         height: '100%',
         marginRight: '-20px',
-        paddingRight: '10px',
+        paddingRight: '20px',
         boxSizing: 'content-box',
       }}
       >
@@ -205,15 +205,15 @@ class RootArtifact extends Component {
                             noRightBar={true}
                             noPadding={true}
                             stixCoreObjectTypes={[
-                                'Region',
-                                'Country',
-                                'City',
-                                'Position',
-                                'Sector',
-                                'Organization',
-                                'Individual',
-                                'System',
-                              ]}
+                              'Region',
+                              'Country',
+                              'City',
+                              'Position',
+                              'Sector',
+                              'Organization',
+                              'Individual',
+                              'System',
+                            ]}
                           />
                         )}
                       />

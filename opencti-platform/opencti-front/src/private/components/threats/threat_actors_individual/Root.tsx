@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { Link, Route, Routes, useParams, useLocation, Navigate } from 'react-router-dom';
+import { Link, Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom';
 import { graphql, PreloadedQuery, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import Box from '@mui/material/Box';
@@ -120,7 +120,7 @@ const RootThreatActorIndividualComponent = ({
       overflow: 'auto',
       height: '100%',
       marginRight: '-20px',
-      paddingRight: '10px',
+      paddingRight: '20px',
       boxSizing: 'content-box',
     }}
     >

@@ -1,6 +1,6 @@
-import React, { useMemo, Suspense, useState } from 'react';
-import { Route, Routes, Link, Navigate, useLocation, useParams, useNavigate } from 'react-router-dom';
-import { graphql, useSubscription, usePreloadedQuery, PreloadedQuery } from 'react-relay';
+import React, { Suspense, useMemo, useState } from 'react';
+import { Link, Navigate, Route, Routes, useLocation, useNavigate, useParams } from 'react-router-dom';
+import { graphql, PreloadedQuery, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
@@ -131,7 +131,7 @@ const RootOrganization = ({ organizationId, queryRef }: RootOrganizationProps) =
       overflow: 'auto',
       height: '100%',
       marginRight: '-20px',
-      paddingRight: '10px',
+      paddingRight: '20px',
       boxSizing: 'content-box',
     }}
     >

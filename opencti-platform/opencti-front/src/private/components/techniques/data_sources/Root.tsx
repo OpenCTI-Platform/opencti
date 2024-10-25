@@ -3,7 +3,7 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import React, { useMemo } from 'react';
-import { Link, Route, Routes, useParams, useLocation } from 'react-router-dom';
+import { Link, Route, Routes, useLocation, useParams } from 'react-router-dom';
 import { graphql, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import Tabs from '@mui/material/Tabs';
@@ -91,7 +91,7 @@ const RootDataSourceComponent = ({ queryRef, dataSourceId }) => {
       overflow: 'auto',
       height: '100%',
       marginRight: '-20px',
-      paddingRight: '10px',
+      paddingRight: '20px',
       boxSizing: 'content-box',
     }}
     >

@@ -77,7 +77,7 @@ const RootNote = () => {
       overflow: 'auto',
       height: '100%',
       marginRight: '-20px',
-      paddingRight: '10px',
+      paddingRight: '20px',
       boxSizing: 'content-box',
     }}
     >
@@ -104,8 +104,8 @@ const RootNote = () => {
                         PopoverComponent={<NotePopover note={note}/>}
                         EditComponent={
                           <CollaborativeSecurity data={note} needs={[KNOWLEDGE_KNUPDATE]}>
-                              <NoteEdition noteId={note.id}/>
-                            </CollaborativeSecurity>
+                            <NoteEdition noteId={note.id}/>
+                          </CollaborativeSecurity>
                         }
                         redirectToContent={false}
                         disableAuthorizedMembers={true}

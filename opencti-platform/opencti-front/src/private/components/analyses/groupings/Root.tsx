@@ -26,7 +26,7 @@ import StixCoreObjectFilesAndHistory from '../../common/stix_core_objects/StixCo
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
-import useGranted, { KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE, KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import useGranted, { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE } from '../../../../utils/hooks/useGranted';
 import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 import GroupingEdition from './GroupingEdition';
 import { useGetCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
@@ -101,7 +101,7 @@ const RootGrouping = () => {
       overflow: 'auto',
       height: '100%',
       marginRight: '-20px',
-      paddingRight: '10px',
+      paddingRight: '20px',
       boxSizing: 'content-box',
     }}
     >
