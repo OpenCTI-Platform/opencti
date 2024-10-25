@@ -88,25 +88,25 @@ interface ConnectorWorksComponentProps {
 const examples: WorkMessages = [
   {
     timestamp: '2024-10-11T20:10:06.788Z',
-    message: 'Sample',
+    message: 'This message can\'t be parsed',
     sequence: null,
     source: '{"type": "relationship", "spec_version": "2.1", "id": "relationship--799f653d-da5c-53ac-86d2-2046f1c93378", "created_by_ref": "identity--180d3ffd-a014-54ff-a817-211dddd29059", "created": "2024-10-11T17:19:43.689008Z", "modified": "2024-10-11T17:19:43.689008Z", "relationship_type": "originates-from", "source_ref": "intrusion-set--826cb3d9-0de3-5af7-9e95-f64fa12501a0", "target_ref": "location--efa1b9b0-dc59-5bad-baa2-4fc495e55fcc", "object_marking_refs": ["marking-definition--f88d31f6-486f-44da-b317-01333bde0b82"], "nb_deps": 1, "x_opencti_granted_refs": null, "x_opencti_workflow_id": null}',
   },
   {
     timestamp: '2024-10-11T20:10:06.700Z',
-    message: '{\'name\': \'INTERNAL_SERVER_ERROR\', \'error_message\': \'Sample with parse\'}',
+    message: '{\'name\': \'INTERNAL_SERVER_ERROR\', \'error_message\': \'CRITICAL: Full parsed with Report\'}',
     sequence: null,
     source: '{"type": "report", "spec_version": "2.1", "id": "report--423ae31f-5344-55de-970b-cc902b3d3336"}',
   },
   {
-    timestamp: '2024-10-11T20:10:06.788Z',
-    message: '{\'name\': \'UNSUPPORTED_ERROR\', \'error_message\': \'Input resolve refs expect single value\'}',
+    timestamp: '2024-10-11T20:10:06.708Z',
+    message: '{\'name\': \'UNSUPPORTED_ERROR\', \'error_message\': \'CRITICAL: Full parsed with Relationship\'}',
     sequence: null,
     source: '{"type": "relationship", "spec_version": "2.1", "id": "relationship--3bb06e4f-0702-40da-a7db-3ae8e887c2d1", "created_by_ref": "identity--180d3ffd-a014-54ff-a817-211dddd29059", "created": "2024-10-11T17:19:43.689008Z", "modified": "2024-10-11T17:19:43.689008Z", "relationship_type": "originates-from", "source_ref": "intrusion-set--826cb3d9-0de3-5af7-9e95-f64fa12501a0", "target_ref": "location--efa1b9b0-dc59-5bad-baa2-4fc495e55fcc", "object_marking_refs": ["marking-definition--f88d31f6-486f-44da-b317-01333bde0b82"], "nb_deps": 1, "x_opencti_granted_refs": null, "x_opencti_workflow_id": null}',
   },
   {
     timestamp: '2024-10-11T08:18:52.589Z',
-    message: 'IpInfo Rate limit exceeded',
+    message: 'Simple without information, can\'t be parsed',
     sequence: null,
     source: null,
   },
@@ -120,19 +120,19 @@ const examples: WorkMessages = [
     timestamp: '2024-07-19T08:39:04.041Z',
     message: '{\'name\': \'MISSING_REFERENCE_ERROR\', \'error_message\': \'Element(s) not found\', \'http_status\': 404, \'genre\': \'BUSINESS\', \'unresolvedIds\': [\'text--fb495702-27c9-5767-a620-364dd8a16c53\']}',
     sequence: null,
-    source: '{"type": "relationship", "spec_version": "2.1", "id": "relationship--b23c3199-cbae-570d-8986-d39841f1ddbd", "created_by_ref": "identity--d10c6f1c-e3ee-588c-a846-31612bc780ec", "created": "2024-07-19T08:36:38.533026Z", "modified": "2024-07-19T08:36:38.533026Z", "relationship_type": "related-to", "source_ref": "text--fb495702-27c9-5767-a620-364dd8a16c53", "target_ref": "file--42e66cd1-b2cc-53c3-b857-fbd6fd7e0daa", "nb_deps": 1, "x_opencti_granted_refs": null, "x_opencti_workflow_id": null}',
+    source: '{"type": "relationship", "spec_version": "2.1", "id": "relationship--b23c3199-cbae-570d-8986-d39841f1ddbd", "created_by_ref": "identity--d10c6f1c-e3ee-588c-a846-31612bc780ec", "created": "2024-07-19T08:36:38.533026Z", "modified": "2024-07-19T08:36:38.533026Z", "relationship_type": "related-to", "nb_deps": 1, "x_opencti_granted_refs": null, "x_opencti_workflow_id": null}',
   },
   {
     timestamp: '2024-07-19T08:39:04.882Z',
     message: '{\'name\': \'MISSING_REFERENCE_ERROR\', \'error_message\': \'Element(s) not found\', \'http_status\': 404, \'genre\': \'BUSINESS\', \'unresolvedIds\': [\'text--54faee67-326a-55f9-86c9-da1bc8d26acf\']}',
     sequence: null,
-    source: '{"type": "relationship", "spec_version": "2.1", "id": "relationship--af088183-2210-5ec9-8cd3-c724194354aa", "created_by_ref": "identity--d10c6f1c-e3ee-588c-a846-31612bc780ec", "created": "2024-07-19T08:36:38.536841Z", "modified": "2024-07-19T08:36:38.536841Z", "relationship_type": "related-to", "source_ref": "text--54faee67-326a-55f9-86c9-da1bc8d26acf", "target_ref": "file--92dd0ab7-e092-57df-831f-fb79a2ef4a85", "nb_deps": 1, "x_opencti_granted_refs": null, "x_opencti_workflow_id": null}',
+    source: '{"type": "relationship", "spec_version": "2.1", "id": "relationship--af088183-2210-5ec9-8cd3-c724194354aa", "created_by_ref": "identity--d10c6f1c-e3ee-588c-a846-31612bc780ec", "created": "2024-07-19T08:36:38.536841Z", "modified": "2024-07-19T08:36:38.536841Z", "relationship_type": "related-to", "source_ref": "text--54faee67-326a-55f9-86c9-da1bc8d26acf", "nb_deps": 1, "x_opencti_granted_refs": null, "x_opencti_workflow_id": null}',
   },
   {
     timestamp: '2024-07-19T08:39:07.083Z',
     message: '{\'name\': \'MISSING_REFERENCE_ERROR\', \'error_message\': \'Element(s) not found\', \'http_status\': 404, \'genre\': \'BUSINESS\', \'unresolvedIds\': [\'text--6dbfdffd-026f-5673-b10c-a78781f6b85a\']}',
     sequence: null,
-    source: '{"type": "relationship", "spec_version": "2.1", "id": "relationship--d94573ea-c703-5639-a039-3c5526f97bcd", "created_by_ref": "identity--d10c6f1c-e3ee-588c-a846-31612bc780ec", "created": "2024-07-19T08:36:38.54045Z", "modified": "2024-07-19T08:36:38.54045Z", "relationship_type": "related-to", "source_ref": "text--6dbfdffd-026f-5673-b10c-a78781f6b85a", "target_ref": "file--835a6f4d-c9b7-51af-aebf-1514a6b2bc34", "nb_deps": 1, "x_opencti_granted_refs": null, "x_opencti_workflow_id": null}',
+    source: '{"type": "relationship", "spec_version": "2.1", "id": "relationship--d94573ea-c703-5639-a039-3c5526f97bcd", "created_by_ref": "identity--d10c6f1c-e3ee-588c-a846-31612bc780ec", "created": "2024-07-19T08:36:38.54045Z", "modified": "2024-07-19T08:36:38.54045Z", "relationship_type": "related-to", "target_ref": "file--835a6f4d-c9b7-51af-aebf-1514a6b2bc34", "nb_deps": 1, "x_opencti_granted_refs": null, "x_opencti_workflow_id": null}',
   },
   {
     timestamp: '2024-10-07T07:53:40.704Z',
@@ -340,7 +340,7 @@ const ConnectorWorksComponent: FunctionComponent<ConnectorWorksComponentProps> =
             <Tab label={`${t_i18n('All')} (${errors.length})`} value="All" />
           </Tabs>
           <TableContainer component={Paper}>
-            <Table aria-label="simple table">
+            <Table aria-label="errors table" size="small">
               <TableHead>
                 <TableRow>
                   <TableCell>{t_i18n('Timestamp')}</TableCell>

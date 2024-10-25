@@ -79,7 +79,7 @@ const parseWorkErrorsQuery = graphql`
   }
 `;
 
-type ResolvedEntity = NonNullable<NonNullable<NonNullable<parseWorkErrorsQuery$data['stixObjectOrStixRelationships']>['edges']>[number]>['node'];
+export type ResolvedEntity = NonNullable<NonNullable<NonNullable<parseWorkErrorsQuery$data['stixObjectOrStixRelationships']>['edges']>[number]>['node'];
 
 type ErrorLevel = 'Critical' | 'Warning' | 'Unclassified';
 
@@ -133,16 +133,29 @@ const parseWorkErrors = async (errorsList: WorkMessages): Promise<ParsedWorkMess
       const source = JSON.parse(error.source ?? '');
       const message = JSON.parse((error.message ?? '').replace(/'/g, '"'));
       const entityId = source.id;
+      const fromId = source.source_ref;
+      const toId = source.target_ref;
+
+      ids.push(entityId);
+      if (fromId) ids.push(fromId);
+      if (toId) ids.push(toId);
+
       const parsedError = {
         category: message.name,
         message: message.error_message,
         entity: {
           standard_id: entityId,
           representative: { main: getMainRepresentative(source, entityId) },
-          entity_type: source.type,
+          from: fromId ? {
+            standard_id: fromId,
+            representative: { main: fromId },
+          } : undefined,
+          to: toId ? {
+            standard_id: toId,
+            representative: { main: toId },
+          } : undefined,
         },
       };
-      ids.push(entityId);
       return {
         isParsed: true,
         level: getLevel(message.name ?? ''),
@@ -174,6 +187,8 @@ const parseWorkErrors = async (errorsList: WorkMessages): Promise<ParsedWorkMess
       if (findEntity) error.parsedError.entity = findEntity;
     }
   });
+
+  console.log(parsedList);
 
   return parsedList;
 };

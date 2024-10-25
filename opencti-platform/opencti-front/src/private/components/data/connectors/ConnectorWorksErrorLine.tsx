@@ -10,11 +10,15 @@ import Dialog from '@mui/material/Dialog';
 import IconButton from '@mui/material/IconButton';
 import { InfoOutlined } from '@mui/icons-material';
 import Tooltip from '@mui/material/Tooltip';
-import { ParsedWorkMessage } from '@components/data/connectors/parseWorkErrors';
+import { ParsedWorkMessage, ResolvedEntity } from '@components/data/connectors/parseWorkErrors';
 import ItemCopy from '../../../../components/ItemCopy';
 import Transition from '../../../../components/Transition';
 import { useFormatter } from '../../../../components/i18n';
 import { truncate } from '../../../../utils/String';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import Typography from '@mui/material/Typography';
+import ItemEntityType from '../../../../components/ItemEntityType';
 
 interface ConnectorWorksErrorLineProps {
   error: ParsedWorkMessage;
@@ -23,6 +27,7 @@ interface ConnectorWorksErrorLineProps {
 const ConnectorWorksErrorLine: FunctionComponent<ConnectorWorksErrorLineProps> = ({ error }) => {
   const { t_i18n, nsdt } = useFormatter();
   const [openModalErrorDetails, setOpenModalErrorDetails] = useState<boolean>(false);
+  const truncateLimit = 80;
 
   const handleToggleModalError = () => {
     setOpenModalErrorDetails(!openModalErrorDetails);
@@ -31,6 +36,26 @@ const ConnectorWorksErrorLine: FunctionComponent<ConnectorWorksErrorLineProps> =
   if (!error.rawError) {
     return null;
   }
+
+  const entityListItem = (entity: ResolvedEntity, label: string) => {
+    const name = ` ${entity.representative?.main ?? 'Unknown'}`;
+    return (
+      <ListItem disableGutters={true}>
+        <div>
+          <Typography variant="h3" gutterBottom={true}>{t_i18n(label)}</Typography>
+          {entity.entity_type ? (
+            <Tooltip title={name}>
+              <a href={`/dashboard/id/${entity.id}`} target="_blank" rel="noreferrer">
+                [{entity.entity_type}] {truncate(name, truncateLimit)}
+              </a>
+            </Tooltip>
+          ) : (
+            <div>{name}</div>
+          )}
+        </div>
+      </ListItem>
+    );
+  };
 
   return (
     <>
@@ -45,11 +70,19 @@ const ConnectorWorksErrorLine: FunctionComponent<ConnectorWorksErrorLineProps> =
         </TableCell>
         <TableCell>{error.isParsed ? error.parsedError.message : error.rawError.message}</TableCell>
         <TableCell>
-          {error.isParsed ? (
-            <a href={`/dashboard/id/${error.parsedError.entity.id}`} target="_blank" rel="noreferrer">[{error.parsedError.entity.entity_type}] {error.parsedError.entity.representative?.main}</a>
-          ) : (
-            truncate(error.rawError.source, 50)
-          )}
+          <List dense={true}>
+            {error.isParsed ? (
+              entityListItem(error.parsedError.entity, 'Entity')
+            ) : (
+              truncate(error.rawError.source, truncateLimit)
+            )}
+            {error.isParsed && error.parsedError.entity.from && (
+              entityListItem(error.parsedError.entity.from, 'From')
+            )}
+            {error.isParsed && error.parsedError.entity.to && (
+              entityListItem(error.parsedError.entity.to, 'To')
+            )}
+          </List>
         </TableCell>
         <TableCell>
           <Tooltip title={t_i18n('Details')}>
