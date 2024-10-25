@@ -28,8 +28,9 @@ const useContentFromTemplate = () => {
     // attribute widgets
     const attributeWidgets = templateWidgets.filter((tw) => tw.widget.type === 'attribute');
     if (attributeWidgets.length > 0) {
-      const attributeWidgetsOutcome = await buildAttributesOutcome(containerId, attributeWidgets);
-      attributeWidgetsOutcome.forEach((attributeOutcome) => {
+      const attributeWidgetsOutcomesPromises = attributeWidgets.map((aw) => buildAttributesOutcome(containerId, aw));
+      const attributeWidgetsOutcomes = await Promise.all(attributeWidgetsOutcomesPromises);
+      attributeWidgetsOutcomes.flat().forEach((attributeOutcome) => {
         content = content.replace(`$${attributeOutcome.variableName}`, attributeOutcome.attributeData);
       });
     }

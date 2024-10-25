@@ -91,5 +91,6 @@ export const templateIncidentCase: Template = {
     'incidentTasksAndActions',
     'incidentTTP',
     'incidentType',
+    'widgetIncidentResponseMultiAttributes', // built-in, automatically added
   ],
 };

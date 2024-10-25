@@ -2,109 +2,46 @@ import type { FilterGroup, TemplateWidget } from '../../generated/graphql';
 
 // hardcoded widgets
 
-const widgetContainerCreationDate: TemplateWidget = {
-  name: 'containerCreationDate',
+const widgetReportMultiAttributes: TemplateWidget = {
+  name: 'widgetReportMultiAttributes',
   widget: JSON.stringify({
     type: 'attribute',
     id: 'widgetContainerCreationDate',
     perspective: null,
     dataSelection: [{
-      columns: [{ label: 'creationDate', attribute: 'created_at', displayStyle: 'text' }],
-      instance_id: 'CONTAINER_ID',
-    }],
-  }),
-};
-
-const widgetContainerDescription: TemplateWidget = {
-  name: 'containerDescription',
-  widget: JSON.stringify({
-    type: 'attribute',
-    id: 'widgetContainerDescription',
-    perspective: null,
-    dataSelection: [{
-      columns: [{ label: 'Description', attribute: 'description' }],
-      instance_id: 'CONTAINER_ID',
-    }],
-  }),
-};
-
-const widgetContainerLabels: TemplateWidget = {
-  name: 'containerLabels',
-  widget: JSON.stringify({
-    type: 'attribute',
-    id: 'widgetContainerLabels',
-    perspective: null,
-    dataSelection: [{
-      columns: [{ label: 'Labels', attribute: 'objectLabel.value' }],
-      instance_id: 'CONTAINER_ID',
-    }],
-  }),
-};
-
-const widgetContainerMarkings: TemplateWidget = {
-  name: 'containerMarkings',
-  widget: JSON.stringify({
-    type: 'attribute',
-    id: 'widgetContainerMarkings',
-    perspective: null,
-    dataSelection: [{
-      columns: [{ label: 'Markings', attribute: 'objectMarking.definition' }],
-      instance_id: 'CONTAINER_ID',
-    }],
-  }),
-};
-
-const widgetContainerModificationDate: TemplateWidget = {
-  name: 'containerModificationDate',
-  widget: JSON.stringify({
-    type: 'attribute',
-    id: 'widgetContainerModificationDate',
-    perspective: null,
-    dataSelection: [{
-      columns: [{ label: 'ModificationDate', attribute: 'modified' }],
-      instance_id: 'CONTAINER_ID',
-    }],
-  }),
-};
-
-const widgetContainerName: TemplateWidget = {
-  name: 'containerName',
-  widget: JSON.stringify({
-    type: 'attribute',
-    id: 'widgetContainerName',
-    perspective: null,
-    dataSelection: [{
-      columns: [{ label: 'Name', attribute: 'name' }],
-      instance_id: 'CONTAINER_ID',
-    }],
-  }),
-};
-
-const widgetreportDates: TemplateWidget = {
-  name: 'reportDates',
-  widget: JSON.stringify({
-    type: 'attribute',
-    id: 'widgetContainerName',
-    perspective: null,
-    dataSelection: [{
       columns: [
-        { label: 'Creation date', attribute: 'created_at' },
-        { label: 'Modification date', attribute: 'modified' },
-        { label: 'Publication date', attribute: 'published' },
+        { label: 'creationDate', attribute: 'created_at', displayStyle: 'text', variableName: 'containerCreationDate' },
+        { label: 'Description', attribute: 'description', variableName: 'containerDescription' },
+        { label: 'Labels', attribute: 'objectLabel.value', variableName: 'containerLabels' },
+        { label: 'Markings', attribute: 'objectMarking.definition', variableName: 'containerMarkings' },
+        { label: 'ModificationDate', attribute: 'modified', variableName: 'containerModificationDate' },
+        { label: 'Name', attribute: 'name', variableName: 'containerName' },
+        { label: 'Publication date', attribute: 'published', variableName: 'reportPublicationDate' },
+        { label: 'External references', attribute: 'externalReferences.edges.node.external_id', displayStyle: 'list', variableName: 'containerReferences' },
       ],
       instance_id: 'CONTAINER_ID',
     }],
   }),
 };
 
-const widgetReportPublicationDate: TemplateWidget = {
-  name: 'reportPublicationDate',
+const widgetIncidentResponseMultiAttributes: TemplateWidget = {
+  name: 'widgetIncidentResponseMultiAttributes',
   widget: JSON.stringify({
     type: 'attribute',
-    id: 'widgetReportPublicationDate',
+    id: 'widgetContainerCreationDate',
     perspective: null,
     dataSelection: [{
-      columns: [{ label: 'Publication date', attribute: 'published' }],
+      columns: [
+        { label: 'creationDate', attribute: 'created_at', displayStyle: 'text', variableName: 'containerCreationDate' },
+        { label: 'Description', attribute: 'description', variableName: 'containerDescription' },
+        { label: 'Labels', attribute: 'objectLabel.value', variableName: 'containerLabels' },
+        { label: 'Markings', attribute: 'objectMarking.definition', variableName: 'containerMarkings' },
+        { label: 'ModificationDate', attribute: 'modified', variableName: 'containerModificationDate' },
+        { label: 'External references', attribute: 'externalReferences.edges.node.external_id', displayStyle: 'list', variableName: 'containerReferences' },
+        { label: 'Priority', attribute: 'priority', variableName: 'incidentPriority' },
+        { label: 'Severity', attribute: 'severity', variableName: 'incidentSeverity' },
+        { label: 'Incident type', attribute: 'incident_type', variableName: 'incidentType' },
+      ],
       instance_id: 'CONTAINER_ID',
     }],
   }),
@@ -122,8 +59,8 @@ const widgetContainerIndicators: TemplateWidget = {
         filters: {
           mode: 'and',
           filters: [
-            { key: 'entity_type', values: ['Indicator'] },
-            { key: 'objects', values: ['CONTAINER_ID'] },
+            { key: ['entity_type'], values: ['Indicator'] },
+            { key: ['objects'], values: ['CONTAINER_ID'] },
           ],
           filterGroups: [],
         } as FilterGroup,
@@ -149,8 +86,8 @@ const widgetContainerObservables: TemplateWidget = {
         filters: {
           mode: 'and',
           filters: [
-            { key: 'entity_type', values: ['Stix-Cyber-Observable'] },
-            { key: 'objects', values: ['CONTAINER_ID'] },
+            { key: ['entity_type'], values: ['Stix-Cyber-Observable'] },
+            { key: ['objects'], values: ['CONTAINER_ID'] },
           ],
           filterGroups: [],
         } as FilterGroup,
@@ -161,19 +98,6 @@ const widgetContainerObservables: TemplateWidget = {
         ],
       },
     ],
-  }),
-};
-
-const widgetContainerReferences: TemplateWidget = { // TODO
-  name: 'containerReferences',
-  widget: JSON.stringify({
-    type: 'attribute',
-    id: 'widgetContainerReferences',
-    perspective: null,
-    dataSelection: [{
-      columns: [{ label: 'External references', attribute: 'externalReferences.edges.node.external_id', displayStyle: 'list' }],
-      instance_id: 'CONTAINER_ID',
-    }],
   }),
 };
 
@@ -193,8 +117,8 @@ const widgetLocationsList: TemplateWidget = {
         filters: {
           mode: 'and',
           filters: [
-            { key: 'entity_type', values: ['Country', 'City', 'Region', 'Position', 'Administrative-Area'] },
-            { key: 'objects', values: ['CONTAINER_ID'] },
+            { key: ['entity_type'], values: ['Country', 'City', 'Region', 'Position', 'Administrative-Area'] },
+            { key: ['objects'], values: ['CONTAINER_ID'] },
           ],
           filterGroups: [],
         } as FilterGroup,
@@ -236,39 +160,13 @@ const widgetIncidentIOC: TemplateWidget = {
         filters: {
           mode: 'and',
           filters: [
-            { key: 'entity_type', values: ['Indicator'] },
-            { key: 'objects', values: ['CONTAINER_ID'] },
+            { key: ['entity_type'], values: ['Indicator'] },
+            { key: ['objects'], values: ['CONTAINER_ID'] },
           ],
           filterGroups: [],
         } as FilterGroup,
       },
     ],
-  }),
-};
-
-const widgetIncidentPriority: TemplateWidget = {
-  name: 'incidentPriority',
-  widget: JSON.stringify({
-    type: 'attribute',
-    id: 'widgetIncidentPriority',
-    perspective: null,
-    dataSelection: [{
-      columns: [{ label: 'Priority', attribute: 'priority' }],
-      instance_id: 'CONTAINER_ID',
-    }],
-  }),
-};
-
-const widgetIncidentSeverity: TemplateWidget = {
-  name: 'incidentSeverity',
-  widget: JSON.stringify({
-    type: 'attribute',
-    id: 'widgetIncidentSeverity',
-    perspective: null,
-    dataSelection: [{
-      columns: [{ label: 'Severity', attribute: 'severity' }],
-      instance_id: 'CONTAINER_ID',
-    }],
   }),
 };
 
@@ -284,8 +182,8 @@ const widgetIncidentTasksActions: TemplateWidget = {
         filters: {
           mode: 'and',
           filters: [
-            { key: 'entity_type', values: ['Task'] },
-            { key: 'objects', values: ['CONTAINER_ID'] },
+            { key: ['entity_type'], values: ['Task'] },
+            { key: ['objects'], values: ['CONTAINER_ID'] },
           ],
           filterGroups: [],
         } as FilterGroup,
@@ -311,8 +209,8 @@ const widgetIncidentTTP: TemplateWidget = {
         filters: {
           mode: 'and',
           filters: [
-            { key: 'entity_type', values: ['Attack-Pattern'] },
-            { key: 'objects', values: ['CONTAINER_ID'] },
+            { key: ['entity_type'], values: ['Attack-Pattern'] },
+            { key: ['objects'], values: ['CONTAINER_ID'] },
           ],
           filterGroups: [],
         } as FilterGroup,
@@ -326,37 +224,14 @@ const widgetIncidentTTP: TemplateWidget = {
   }),
 };
 
-const widgetIncidentType: TemplateWidget = {
-  name: 'incidentType',
-  widget: JSON.stringify({
-    type: 'attribute',
-    id: 'widgetIncidentType',
-    perspective: null,
-    dataSelection: [{
-      columns: [{ label: 'Incident type', attribute: 'incident_type' }],
-      instance_id: 'CONTAINER_ID',
-    }],
-  }),
-};
-
 export const hardcodedTemplateWidgets: TemplateWidget[] = [
-  widgetContainerCreationDate,
-  widgetContainerDescription,
-  widgetContainerLabels,
-  widgetContainerMarkings,
-  widgetReportPublicationDate,
-  widgetreportDates,
-  widgetContainerModificationDate,
-  widgetContainerName,
+  widgetReportMultiAttributes,
+  widgetIncidentResponseMultiAttributes,
   widgetContainerIndicators,
   widgetContainerObservables,
-  widgetContainerReferences,
   widgetLocationsList,
   widgetDonut,
   widgetIncidentIOC,
-  widgetIncidentPriority,
-  widgetIncidentSeverity,
   widgetIncidentTasksActions,
   widgetIncidentTTP,
-  widgetIncidentType,
 ];

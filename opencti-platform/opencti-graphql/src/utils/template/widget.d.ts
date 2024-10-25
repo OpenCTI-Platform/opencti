@@ -4,6 +4,7 @@ interface WidgetColumn {
   attribute: string
   displayStyle?: string
   label?: string
+  variableName?: string
 }
 
 interface WidgetDataSelection {
