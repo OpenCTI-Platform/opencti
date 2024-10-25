@@ -3,49 +3,37 @@ import * as R from 'ramda';
 import { DataTableLinesDummy } from './DataTableLine';
 import DataTableBody from './DataTableBody';
 import { defaultColumnsMap } from '../dataTableUtils';
-import { DataTableColumn, DataTableColumns, DataTableContextProps, DataTableProps, DataTableVariant, LocalStorageColumns } from '../dataTableTypes';
+import { DataTableColumn, DataTableColumns, DataTableProps, DataTableVariant, LocalStorageColumns } from '../dataTableTypes';
 import DataTableHeaders from './DataTableHeaders';
 import { SELECT_COLUMN_SIZE } from './DataTableHeader';
 import { DataTableProvider } from './DataTableContext';
-import { useDataTableLocalStorage } from '../dataTableHooks';
+import { useComputeLink, useDataCellHelpers, useDataTableFormatter, useDataTableLocalStorage, useDataTablePaginationLocalStorage, useDataTableToggle } from '../dataTableHooks';
+import { getDefaultFilterObject } from '../../../utils/filters/filtersUtils';
 
 type DataTableComponentProps = Pick<DataTableProps,
 | 'dataColumns'
 | 'settingsMessagesBannerHeight'
-| 'storageHelpers'
 | 'filtersComponent'
-| 'redirectionMode'
 | 'hideHeaders'
-| 'sortBy'
-| 'orderAsc'
 | 'dataTableToolBarComponent'
-| 'pageSize'
 | 'variant'
 | 'actions'
 | 'availableFilterKeys'
 | 'initialValues'
 | 'disableNavigation'
 | 'storageKey'
-| 'lineFragment'
 | 'dataQueryArgs'
 | 'resolvePath'
 | 'redirectionModeEnabled'
 | 'useLineData'
 | 'useDataTable'
-| 'useDataCellHelpers'
-| 'useComputeLink'
-| 'formatter'
-| 'onAddFilter'
-| 'onSort'
 | 'rootRef'
 | 'createButton'
 | 'disableToolBar'
 | 'disableSelectAll'
 | 'selectOnLineClick'
 | 'onLineClick'
-| 'disableLineSelection'>
-& Pick<DataTableContextProps,
-| 'useDataTableToggle'>;
+| 'disableLineSelection'>;
 
 const DataTableComponent = ({
   dataColumns,
@@ -57,25 +45,14 @@ const DataTableComponent = ({
   redirectionModeEnabled = false,
   useLineData,
   useDataTable,
-  useDataCellHelpers,
-  useDataTableToggle,
-  useComputeLink,
-  formatter,
   settingsMessagesBannerHeight,
-  storageHelpers,
   filtersComponent,
-  redirectionMode,
   hideHeaders,
-  onAddFilter,
-  onSort,
-  sortBy,
-  orderAsc,
   dataTableToolBarComponent,
   variant = DataTableVariant.default,
   rootRef,
   actions,
   createButton,
-  pageSize,
   disableNavigation,
   disableLineSelection,
   disableToolBar,
@@ -85,6 +62,17 @@ const DataTableComponent = ({
 }: DataTableComponentProps) => {
   const columnsLocalStorage = useDataTableLocalStorage<LocalStorageColumns>(`${storageKey}_columns`, {}, true);
   const [localStorageColumns] = columnsLocalStorage;
+
+  const paginationLocalStorage = useDataTablePaginationLocalStorage(storageKey, initialValues, variant !== DataTableVariant.default);
+  const {
+    viewStorage: {
+      redirectionMode,
+      sortBy,
+      orderAsc,
+      pageSize,
+    },
+    helpers,
+  } = paginationLocalStorage;
 
   const columnsInitialState = [
     ...(!disableLineSelection ? [{ id: 'select', visible: true } as DataTableColumn] : []),
@@ -150,13 +138,14 @@ const DataTableComponent = ({
         redirectionModeEnabled,
         useLineData,
         useDataTable: useDataTable(dataQueryArgs),
-        useDataCellHelpers,
-        useDataTableToggle,
+        useDataCellHelpers: useDataCellHelpers(helpers, variant),
+        useDataTableToggle: useDataTableToggle(storageKey),
         useComputeLink,
         useDataTableColumnsLocalStorage: columnsLocalStorage,
-        onAddFilter,
-        onSort: onSort || (() => {}),
-        formatter,
+        useDataTablePaginationLocalStorage: paginationLocalStorage,
+        onAddFilter: (id) => helpers.handleAddFilterWithEmptyValue(getDefaultFilterObject(id)),
+        onSort: helpers.handleSort,
+        formatter: useDataTableFormatter(),
         variant,
         rootRef,
         actions,
@@ -190,7 +179,7 @@ const DataTableComponent = ({
           <DataTableBody
             columns={columns.filter(({ visible }) => visible)}
             redirectionMode={redirectionMode}
-            storageHelpers={storageHelpers}
+            storageHelpers={helpers}
             settingsMessagesBannerHeight={settingsMessagesBannerHeight}
             hasFilterComponent={!!filtersComponent}
             sortBy={sortBy}

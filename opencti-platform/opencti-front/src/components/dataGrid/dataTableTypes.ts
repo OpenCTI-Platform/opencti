@@ -4,7 +4,7 @@ import React from 'react';
 import { GraphQLTaggedNode } from 'react-relay';
 import { PopoverProps } from '@mui/material/Popover/Popover';
 import type { LocalStorage } from '../../utils/hooks/useLocalStorageModel';
-import { NumberOfElements, UseLocalStorageHelpers } from '../../utils/hooks/useLocalStorage';
+import { NumberOfElements, PaginationLocalStorage, UseLocalStorageHelpers } from '../../utils/hooks/useLocalStorage';
 import { FilterGroup } from '../../utils/filters/filtersHelpers-types';
 
 export type ColumnSizeVars = Record<string, number>;
@@ -55,6 +55,7 @@ export interface DataTableContextProps {
   useDataTableToggle: ReturnType<DataTableProps['useDataTableToggle']>
   useComputeLink: DataTableProps['useComputeLink']
   useDataTableColumnsLocalStorage: ReturnType<DataTableProps['useDataTableColumnsLocalStorage']>
+  useDataTablePaginationLocalStorage: ReturnType<DataTableProps['useDataTablePaginationLocalStorage']>
   onAddFilter: DataTableProps['onAddFilter']
   onSort: (sortBy: string, orderAsc: boolean) => void
   formatter: DataTableProps['formatter']
@@ -100,6 +101,11 @@ export interface DataTableProps {
     ignoreUri?: boolean,
     ignoreDispatch?: boolean,
   ) => [LocalStorageColumns, Dispatch<SetStateAction<LocalStorageColumns>>]
+  useDataTablePaginationLocalStorage: <T>(
+    key: string,
+    initialValue: LocalStorage,
+    ignoreUri?: boolean,
+  ) => PaginationLocalStorage<T>
   useComputeLink: (entity: any) => string
   useDataTableToggle: (key: string) => {
     selectedElements: Record<string, any>

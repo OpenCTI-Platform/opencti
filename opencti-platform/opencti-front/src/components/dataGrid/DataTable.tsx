@@ -7,19 +7,16 @@ import { GraphQLTaggedNode } from 'react-relay';
 import { useTheme } from '@mui/styles';
 import DataTableFilters, { DataTableDisplayFilters } from './DataTableFilters';
 import SearchInput from '../SearchInput';
-import { DataTableProps, DataTableVariant } from './dataTableTypes';
-import { usePaginationLocalStorage } from '../../utils/hooks/useLocalStorage';
+import { DataTableProps } from './dataTableTypes';
 import useAuth from '../../utils/hooks/useAuth';
-import { useComputeLink, useDataCellHelpers, useDataTable, useDataTableToggle, useLineData } from './dataTableHooks';
+import { useDataTable, useLineData } from './dataTableHooks';
 import DataTableComponent from './components/DataTableComponent';
-import { useFormatter } from '../i18n';
 import { SELECT_COLUMN_SIZE } from './components/DataTableHeader';
 import { UsePreloadedPaginationFragment } from '../../utils/hooks/usePreloadedPaginationFragment';
 import { FilterIconButtonProps } from '../FilterIconButton';
 import { isNotEmptyField } from '../../utils/utils';
 import type { Theme } from '../Theme';
 import { useDataTableContext } from './components/DataTableContext';
-import { getDefaultFilterObject } from '../../utils/filters/filtersUtils';
 
 type DataTableInternalFiltersProps = Pick<DataTableProps,
 | 'additionalFilterKeys'
@@ -51,16 +48,13 @@ const DataTableInternalFilters = ({
   const theme = useTheme<Theme>();
 
   const {
-    storageKey,
-    initialValues,
     availableFilterKeys,
+    useDataTablePaginationLocalStorage: {
+      viewStorage: { searchTerm },
+      helpers,
+      paginationOptions,
+    },
   } = useDataTableContext();
-
-  const {
-    viewStorage: { searchTerm },
-    helpers,
-    paginationOptions,
-  } = usePaginationLocalStorage(storageKey, initialValues);
 
   const computedEntityTypes = entityTypes ?? (exportContext?.entity_type ? [exportContext.entity_type] : []);
 
@@ -123,8 +117,6 @@ const DataTableInternalToolbar = ({
   const theme = useTheme<Theme>();
 
   const {
-    storageKey,
-    initialValues,
     useDataTableToggle: {
       selectedElements,
       deSelectedElements,
@@ -132,11 +124,10 @@ const DataTableInternalToolbar = ({
       selectAll,
       handleClearSelectedElements,
     },
+    useDataTablePaginationLocalStorage: {
+      viewStorage: { searchTerm },
+    },
   } = useDataTableContext();
-
-  const {
-    viewStorage: { searchTerm },
-  } = usePaginationLocalStorage(storageKey, initialValues);
 
   return (
     <div
@@ -177,6 +168,7 @@ type OCTIDataTableProps = Pick<DataTableProps,
 | 'disableToolBar'
 | 'disableSelectAll'
 | 'selectOnLineClick'
+| 'createButton'
 | 'entityTypes'> & {
   lineFragment: GraphQLTaggedNode
   preloadedPaginationProps: UsePreloadedPaginationFragment<OperationType>,
@@ -187,11 +179,8 @@ type OCTIDataTableProps = Pick<DataTableProps,
 
 const DataTable = (props: OCTIDataTableProps) => {
   const { schema } = useAuth();
-  const formatter = useFormatter();
 
   const {
-    storageKey,
-    initialValues,
     availableFilterKeys: defaultAvailableFilterKeys,
     globalSearch,
     searchContextFinal,
@@ -205,7 +194,6 @@ const DataTable = (props: OCTIDataTableProps) => {
     entityTypes,
     toolbarFilters,
     handleCopy,
-    variant = DataTableVariant.default,
     additionalHeaderButtons,
     currentView,
     hideSearch,
@@ -213,15 +201,6 @@ const DataTable = (props: OCTIDataTableProps) => {
     taskScope,
   } = props;
 
-  const {
-    viewStorage: {
-      redirectionMode,
-      sortBy,
-      orderAsc,
-      pageSize,
-    },
-    helpers,
-  } = usePaginationLocalStorage(storageKey, initialValues);
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
 
   const computedEntityTypes = entityTypes ?? (exportContext?.entity_type ? [exportContext.entity_type] : []);
@@ -245,18 +224,7 @@ const DataTable = (props: OCTIDataTableProps) => {
       dataQueryArgs={{ ...dataQueryArgs }}
       useLineData={useLineData(lineFragment)}
       useDataTable={useDataTable}
-      useDataCellHelpers={useDataCellHelpers(helpers, variant)}
-      useDataTableToggle={useDataTableToggle(storageKey)}
-      useComputeLink={useComputeLink}
-      onAddFilter={(id) => helpers.handleAddFilterWithEmptyValue(getDefaultFilterObject(id))}
-      formatter={formatter}
       settingsMessagesBannerHeight={settingsMessagesBannerHeight}
-      storageHelpers={helpers}
-      redirectionMode={redirectionMode}
-      onSort={helpers.handleSort}
-      sortBy={sortBy}
-      orderAsc={orderAsc}
-      pageSize={pageSize}
       filtersComponent={(
         <DataTableInternalFilters
           entityTypes={entityTypes}
