@@ -101,13 +101,20 @@ const RootChannel = ({ queryRef, channelId }: RootChannelProps) => {
   const paddingRight = getPaddingRight(location.pathname, channelId, '/dashboard/arsenal/channels');
   const link = `/dashboard/arsenal/channels/${channelId}/knowledge`;
   return (
-    <>
+    <div style={{
+      overflow: 'auto',
+      height: '100%',
+      marginRight: '-20px',
+      paddingRight: '10px',
+      boxSizing: 'content-box',
+    }}
+    >
       {channel ? (
         <>
           <Routes>
             <Route
               path="/knowledge/*"
-              element= {
+              element={
                 <StixCoreObjectKnowledgeBar
                   stixCoreObjectLink={link}
                   availableSections={[
@@ -139,10 +146,10 @@ const RootChannel = ({ queryRef, channelId }: RootChannelProps) => {
             <StixDomainObjectHeader
               entityType="Channel"
               stixDomainObject={channel}
-              PopoverComponent={<ChannelPopover />}
+              PopoverComponent={<ChannelPopover/>}
               EditComponent={isFABReplaced && (
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                  <ChannelEdition channelId={channel.id} />
+                  <ChannelEdition channelId={channel.id}/>
                 </Security>
               )}
               enableQuickSubscription={true}
@@ -199,7 +206,7 @@ const RootChannel = ({ queryRef, channelId }: RootChannelProps) => {
               <Route
                 path="/"
                 element={(
-                  <Channel channelData={channel} />
+                  <Channel channelData={channel}/>
                 )}
               />
               <Route
@@ -215,7 +222,7 @@ const RootChannel = ({ queryRef, channelId }: RootChannelProps) => {
                 path="/knowledge/*"
                 element={
                   <div key={forceUpdate}>
-                    <ChannelKnowledge channel={channel} />
+                    <ChannelKnowledge channel={channel}/>
                   </div>
                 }
               />
@@ -237,7 +244,7 @@ const RootChannel = ({ queryRef, channelId }: RootChannelProps) => {
               />
               <Route
                 path="/files"
-                element={ (
+                element={(
                   <FileManager
                     id={channelId}
                     connectorsImport={connectorsForImport}
@@ -248,7 +255,7 @@ const RootChannel = ({ queryRef, channelId }: RootChannelProps) => {
               />
               <Route
                 path="/history"
-                element={ (
+                element={(
                   <StixCoreObjectHistory
                     stixCoreObjectId={channelId}
                   />
@@ -258,9 +265,9 @@ const RootChannel = ({ queryRef, channelId }: RootChannelProps) => {
           </div>
         </>
       ) : (
-        <ErrorNotFound />
+        <ErrorNotFound/>
       )}
-    </>
+    </div>
   );
 };
 

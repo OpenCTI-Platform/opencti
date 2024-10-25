@@ -116,7 +116,14 @@ const RootThreatActorIndividualComponent = ({
   const paddingRight = getPaddingRight(location.pathname, threatActorIndividualId, '/dashboard/threats/threat_actors_individual');
   const link = `/dashboard/threats/threat_actors_individual/${threatActorIndividualId}/knowledge`;
   return (
-    <>
+    <div style={{
+      overflow: 'auto',
+      height: '100%',
+      marginRight: '-20px',
+      paddingRight: '10px',
+      boxSizing: 'content-box',
+    }}
+    >
       {threatActorIndividual ? (
         <>
           <Routes>
@@ -146,7 +153,7 @@ const RootThreatActorIndividualComponent = ({
                   ]}
                   stixCoreObjectsDistribution={threatActorIndividual.stixCoreObjectsDistribution}
                 />
-             }
+              }
             />
           </Routes>
           <div style={{ paddingRight }}>
@@ -220,27 +227,27 @@ const RootThreatActorIndividualComponent = ({
                 />
               </Tabs>
               {isOverview && (
-                <StixCoreObjectSimulationResult id={threatActorIndividual.id} type="threat" />
+                <StixCoreObjectSimulationResult id={threatActorIndividual.id} type="threat"/>
               )}
             </Box>
             <Routes>
               <Route
                 path="/"
                 element={
-                  <ThreatActorIndividual threatActorIndividualData={threatActorIndividual} />
+                  <ThreatActorIndividual threatActorIndividualData={threatActorIndividual}/>
                 }
               />
               <Route
                 path="/knowledge"
                 element={
-                  <Navigate to={`/dashboard/threats/threat_actors_individual/${threatActorIndividual.id}/knowledge/overview`} replace={true} />
+                  <Navigate to={`/dashboard/threats/threat_actors_individual/${threatActorIndividual.id}/knowledge/overview`} replace={true}/>
                 }
               />
               <Route
                 path="/knowledge/*"
                 element={
                   <div key={forceUpdate}>
-                    <ThreatActorIndividualKnowledge threatActorIndividualData={threatActorIndividual} />
+                    <ThreatActorIndividualKnowledge threatActorIndividualData={threatActorIndividual}/>
                   </div>
                 }
               />
@@ -255,7 +262,7 @@ const RootThreatActorIndividualComponent = ({
               <Route
                 path="/analyses"
                 element={
-                  <StixCoreObjectOrStixCoreRelationshipContainers stixDomainObjectOrStixCoreRelationship={threatActorIndividual} />
+                  <StixCoreObjectOrStixCoreRelationshipContainers stixDomainObjectOrStixCoreRelationship={threatActorIndividual}/>
                 }
               />
               <Route
@@ -272,16 +279,16 @@ const RootThreatActorIndividualComponent = ({
               <Route
                 path="/history"
                 element={
-                  <StixCoreObjectHistory stixCoreObjectId={threatActorIndividualId} />
+                  <StixCoreObjectHistory stixCoreObjectId={threatActorIndividualId}/>
                 }
               />
             </Routes>
           </div>
         </>
       ) : (
-        <ErrorNotFound />
+        <ErrorNotFound/>
       )}
-    </>
+    </div>
   );
 };
 

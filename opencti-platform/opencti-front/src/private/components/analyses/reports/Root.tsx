@@ -96,7 +96,14 @@ const RootReport = () => {
   useSubscription(subConfig);
 
   return (
-    <>
+    <div style={{
+      overflow: 'auto',
+      height: '100%',
+      marginRight: '-20px',
+      paddingRight: '10px',
+      boxSizing: 'content-box',
+    }}
+    >
       <QueryRenderer
         query={reportQuery}
         variables={{ id: reportId }}
@@ -259,7 +266,7 @@ const RootReport = () => {
           return <Loader />;
         }}
       />
-    </>
+    </div>
   );
 };
 

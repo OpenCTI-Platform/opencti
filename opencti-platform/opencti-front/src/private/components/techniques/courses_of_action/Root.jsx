@@ -87,7 +87,14 @@ class RootCourseOfAction extends Component {
     } = this.props;
 
     return (
-      <div>
+      <div style={{
+        overflow: 'auto',
+        height: '100%',
+        marginRight: '-20px',
+        paddingRight: '10px',
+        boxSizing: 'content-box',
+      }}
+      >
         <QueryRenderer
           query={courseOfActionQuery}
           variables={{ id: courseOfActionId }}
@@ -110,7 +117,7 @@ class RootCourseOfAction extends Component {
                       PopoverComponent={<CourseOfActionPopover/>}
                       EditComponent={(
                         <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                          <CourseOfActionEdition courseOfActionId={courseOfAction.id} />
+                          <CourseOfActionEdition courseOfActionId={courseOfAction.id}/>
                         </Security>
                       )}
                       isOpenctiAlias={true}
@@ -193,9 +200,9 @@ class RootCourseOfAction extends Component {
                   </div>
                 );
               }
-              return <ErrorNotFound />;
+              return <ErrorNotFound/>;
             }
-            return <Loader />;
+            return <Loader/>;
           }}
         />
       </div>

@@ -127,7 +127,14 @@ const RootOrganization = ({ organizationId, queryRef }: RootOrganizationProps) =
   const link = `/dashboard/entities/organizations/${organizationId}/knowledge`;
   const paddingRight = getPaddingRight(location.pathname, organizationId, '/dashboard/entities/organizations', viewAs === 'knowledge');
   return (
-    <>
+    <div style={{
+      overflow: 'auto',
+      height: '100%',
+      marginRight: '-20px',
+      paddingRight: '10px',
+      boxSizing: 'content-box',
+    }}
+    >
       {organization ? (
         <>
           <Routes>
@@ -171,10 +178,10 @@ const RootOrganization = ({ organizationId, queryRef }: RootOrganizationProps) =
               stixDomainObject={organization}
               isOpenctiAlias={true}
               enableQuickSubscription={true}
-              PopoverComponent={<OrganizationPopover />}
+              PopoverComponent={<OrganizationPopover/>}
               EditComponent={isFABReplaced && (
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                  <OrganizationEdition organizationId={organization.id} />
+                  <OrganizationEdition organizationId={organization.id}/>
                 </Security>
               )}
               onViewAs={handleChangeViewAs}
@@ -326,9 +333,9 @@ const RootOrganization = ({ organizationId, queryRef }: RootOrganizationProps) =
           </div>
         </>
       ) : (
-        <ErrorNotFound />
+        <ErrorNotFound/>
       )}
-    </>
+    </div>
   );
 };
 const Root = () => {

@@ -56,7 +56,7 @@ const Index = ({ settings }: IndexProps) => {
       duration: theme.transitions.duration.enteringScreen,
     }),
     overflowY: 'hidden',
-    minHeight: '100vh',
+    height: '100vh',
     paddingTop: `calc( 16px + 64px + ${settingsMessagesBannerHeight ?? 0}px)`, // 24 for margin, 48 for top bar
   };
   // Change the theme body attribute when the mode changes in

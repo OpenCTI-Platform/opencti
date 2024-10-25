@@ -96,7 +96,14 @@ const RootCountryComponent = ({ queryRef, countryId }) => {
   const link = `/dashboard/locations/countries/${countryId}/knowledge`;
   const paddingRight = getPaddingRight(location.pathname, country?.id, '/dashboard/locations/countries');
   return (
-    <>
+    <div style={{
+      overflow: 'auto',
+      height: '100%',
+      marginRight: '-20px',
+      paddingRight: '10px',
+      boxSizing: 'content-box',
+    }}
+    >
       {country ? (
         <>
           <Routes>
@@ -136,10 +143,10 @@ const RootCountryComponent = ({ queryRef, countryId }) => {
               entityType="Country"
               disableSharing={true}
               stixDomainObject={country}
-              PopoverComponent={<CountryPopover id={country.id} />}
+              PopoverComponent={<CountryPopover id={country.id}/>}
               EditComponent={isFABReplaced && (
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                  <CountryEdition countryId={country.id} />
+                  <CountryEdition countryId={country.id}/>
                 </Security>
               )}
               enableQuickSubscription={true}
@@ -202,19 +209,19 @@ const RootCountryComponent = ({ queryRef, countryId }) => {
             <Routes>
               <Route
                 path="/"
-                element={<Country countryData={country} />}
+                element={<Country countryData={country}/>}
               />
               <Route
                 path="/knowledge"
                 element={
-                  <Navigate to={`/dashboard/locations/countries/${countryId}/knowledge/overview`} replace={true} />
-              }
+                  <Navigate to={`/dashboard/locations/countries/${countryId}/knowledge/overview`} replace={true}/>
+                }
               />
               <Route
                 path="/knowledge/*"
                 element={
                   <div key={forceUpdate}>
-                    <CountryKnowledge countryData={country} />
+                    <CountryKnowledge countryData={country}/>
                   </div>
                 }
               />
@@ -224,7 +231,7 @@ const RootCountryComponent = ({ queryRef, countryId }) => {
                   <StixCoreObjectContentRoot
                     stixCoreObject={country}
                   />
-              }
+                }
               />
               <Route
                 path="/analyses"
@@ -232,7 +239,7 @@ const RootCountryComponent = ({ queryRef, countryId }) => {
                   <StixCoreObjectOrStixCoreRelationshipContainers
                     stixDomainObjectOrStixCoreRelationship={country}
                   />
-              }
+                }
               />
               <Route
                 path="/sightings"
@@ -243,7 +250,7 @@ const RootCountryComponent = ({ queryRef, countryId }) => {
                     noPadding={true}
                     isTo={true}
                   />
-              }
+                }
               />
               <Route
                 path="/files"
@@ -254,21 +261,21 @@ const RootCountryComponent = ({ queryRef, countryId }) => {
                     connectorsExport={connectorsForExport}
                     entity={country}
                   />
-              }
+                }
               />
               <Route
                 path="/history"
                 element={
-                  <StixCoreObjectHistory stixCoreObjectId={countryId} />
-              }
+                  <StixCoreObjectHistory stixCoreObjectId={countryId}/>
+                }
               />
             </Routes>
           </div>
         </>
       ) : (
-        <ErrorNotFound />
+        <ErrorNotFound/>
       )}
-    </>
+    </div>
   );
 };
 

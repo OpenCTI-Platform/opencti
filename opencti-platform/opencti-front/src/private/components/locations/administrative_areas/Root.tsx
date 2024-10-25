@@ -96,7 +96,14 @@ const RootAdministrativeAreaComponent = ({ queryRef, administrativeAreaId }) => 
   const link = `/dashboard/locations/administrative_areas/${administrativeAreaId}/knowledge`;
   const paddingRight = getPaddingRight(location.pathname, administrativeArea?.id, '/dashboard/locations/administrative_areas');
   return (
-    <>
+    <div style={{
+      overflow: 'auto',
+      height: '100%',
+      marginRight: '-20px',
+      paddingRight: '10px',
+      boxSizing: 'content-box',
+    }}
+    >
       {administrativeArea ? (
         <>
           <Routes>
@@ -137,8 +144,8 @@ const RootAdministrativeAreaComponent = ({ queryRef, administrativeAreaId }) => 
               disableSharing={true}
               stixDomainObject={administrativeArea}
               PopoverComponent={
-                <AdministrativeAreaPopover id={administrativeArea.id} />
-            }
+                <AdministrativeAreaPopover id={administrativeArea.id}/>
+              }
               EditComponent={isFABReplaced && (
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <AdministrativeAreaEdition
@@ -207,14 +214,14 @@ const RootAdministrativeAreaComponent = ({ queryRef, administrativeAreaId }) => 
               <Route
                 path="/"
                 element={
-                  <AdministrativeArea administrativeAreaData={administrativeArea} />
-              }
+                  <AdministrativeArea administrativeAreaData={administrativeArea}/>
+                }
               />
               <Route
                 path="/knowledge"
                 element={
-                  <Navigate to={`/dashboard/locations/administrative_areas/${administrativeArea.id}/knowledge/overview`} replace={true} />
-              }
+                  <Navigate to={`/dashboard/locations/administrative_areas/${administrativeArea.id}/knowledge/overview`} replace={true}/>
+                }
               />
               <Route
                 path="/content/*"
@@ -222,21 +229,21 @@ const RootAdministrativeAreaComponent = ({ queryRef, administrativeAreaId }) => 
                   <StixCoreObjectContentRoot
                     stixCoreObject={administrativeArea}
                   />
-              }
+                }
               />
               <Route
                 path="/knowledge/*"
                 element={
                   <div key={forceUpdate}>
-                    <AdministrativeAreaKnowledge administrativeAreaData={administrativeArea} />
+                    <AdministrativeAreaKnowledge administrativeAreaData={administrativeArea}/>
                   </div>
                 }
               />
               <Route
                 path="/analyses"
                 element={
-                  <StixCoreObjectOrStixCoreRelationshipContainers stixDomainObjectOrStixCoreRelationship={administrativeArea} />
-              }
+                  <StixCoreObjectOrStixCoreRelationshipContainers stixDomainObjectOrStixCoreRelationship={administrativeArea}/>
+                }
               />
               <Route
                 path="/sightings"
@@ -247,7 +254,7 @@ const RootAdministrativeAreaComponent = ({ queryRef, administrativeAreaId }) => 
                     noPadding={true}
                     isTo={true}
                   />
-              }
+                }
               />
               <Route
                 path="/files"
@@ -258,21 +265,21 @@ const RootAdministrativeAreaComponent = ({ queryRef, administrativeAreaId }) => 
                     connectorsExport={connectorsForExport}
                     entity={administrativeArea}
                   />
-              }
+                }
               />
               <Route
                 path="/history"
                 element={
-                  <StixCoreObjectHistory stixCoreObjectId={administrativeAreaId} />
-              }
+                  <StixCoreObjectHistory stixCoreObjectId={administrativeAreaId}/>
+                }
               />
             </Routes>
           </div>
         </>
       ) : (
-        <ErrorNotFound />
+        <ErrorNotFound/>
       )}
-    </>
+    </div>
   );
 };
 

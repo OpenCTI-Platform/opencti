@@ -101,7 +101,14 @@ const RootAttackPattern = ({ attackPatternId, queryRef }: RootAttackPatternProps
   const link = `/dashboard/techniques/attack_patterns/${attackPatternId}/knowledge`;
 
   return (
-    <>
+    <div style={{
+      overflow: 'auto',
+      height: '100%',
+      marginRight: '-20px',
+      paddingRight: '10px',
+      boxSizing: 'content-box',
+    }}
+    >
       {attackPattern ? (
         <>
           <Routes>
@@ -137,10 +144,10 @@ const RootAttackPattern = ({ attackPatternId, queryRef }: RootAttackPatternProps
             <StixDomainObjectHeader
               entityType="Attack-Pattern"
               stixDomainObject={attackPattern}
-              PopoverComponent={<AttackPatternPopover />}
+              PopoverComponent={<AttackPatternPopover/>}
               EditComponent={isFABReplaced && (
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                  <AttackPatternEdition attackPatternId={attackPattern.id} />
+                  <AttackPatternEdition attackPatternId={attackPattern.id}/>
                 </Security>
               )}
             />
@@ -196,20 +203,20 @@ const RootAttackPattern = ({ attackPatternId, queryRef }: RootAttackPatternProps
               <Route
                 path="/"
                 element={
-                  <AttackPattern attackPatternData={attackPattern} />
+                  <AttackPattern attackPatternData={attackPattern}/>
                 }
               />
               <Route
                 path="/knowledge"
                 element={
-                  <Navigate to={`/dashboard/techniques/attack_patterns/${attackPatternId}/knowledge/overview`} replace={true} />
+                  <Navigate to={`/dashboard/techniques/attack_patterns/${attackPatternId}/knowledge/overview`} replace={true}/>
                 }
               />
               <Route
                 path="/knowledge/*"
                 element={
                   <div key={forceUpdate}>
-                    <AttackPatternKnowledge attackPattern={attackPattern} />
+                    <AttackPatternKnowledge attackPattern={attackPattern}/>
                   </div>
                 }
               />
@@ -224,7 +231,7 @@ const RootAttackPattern = ({ attackPatternId, queryRef }: RootAttackPatternProps
               <Route
                 path="/analyses"
                 element={
-                  <StixCoreObjectOrStixCoreRelationshipContainers stixDomainObjectOrStixCoreRelationship={attackPattern} />
+                  <StixCoreObjectOrStixCoreRelationshipContainers stixDomainObjectOrStixCoreRelationship={attackPattern}/>
                 }
               />
               <Route
@@ -241,16 +248,16 @@ const RootAttackPattern = ({ attackPatternId, queryRef }: RootAttackPatternProps
               <Route
                 path="/history"
                 element={
-                  <StixCoreObjectHistory stixCoreObjectId={attackPatternId} />
+                  <StixCoreObjectHistory stixCoreObjectId={attackPatternId}/>
                 }
               />
             </Routes>
           </div>
         </>
       ) : (
-        <ErrorNotFound />
+        <ErrorNotFound/>
       )}
-    </>
+    </div>
   );
 };
 const Root = () => {

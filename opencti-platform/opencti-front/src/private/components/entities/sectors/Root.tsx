@@ -102,7 +102,14 @@ const RootSector = ({ sectorId, queryRef }: RootSectorProps) => {
   const paddingRight = getPaddingRight(location.pathname, sectorId, '/dashboard/entities/sectors');
   const link = `/dashboard/entities/sectors/${sectorId}/knowledge`;
   return (
-    <>
+    <div style={{
+      overflow: 'auto',
+      height: '100%',
+      marginRight: '-20px',
+      paddingRight: '10px',
+      boxSizing: 'content-box',
+    }}
+    >
       {sector ? (
         <>
           <Routes>
@@ -141,10 +148,10 @@ const RootSector = ({ sectorId, queryRef }: RootSectorProps) => {
               stixDomainObject={sector}
               isOpenctiAlias={true}
               enableQuickSubscription={true}
-              PopoverComponent={<SectorPopover />}
+              PopoverComponent={<SectorPopover/>}
               EditComponent={isFABReplaced && (
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                  <SectorEdition sectorId={sector.id} />
+                  <SectorEdition sectorId={sector.id}/>
                 </Security>
               )}
             />
@@ -206,7 +213,7 @@ const RootSector = ({ sectorId, queryRef }: RootSectorProps) => {
               <Route
                 path="/"
                 element={(
-                  <Sector sectorData={sector} />
+                  <Sector sectorData={sector}/>
                 )}
               />
               <Route
@@ -222,7 +229,7 @@ const RootSector = ({ sectorId, queryRef }: RootSectorProps) => {
                 path="/knowledge/*"
                 element={(
                   <div key={forceUpdate}>
-                    <SectorKnowledge sector={sector} />
+                    <SectorKnowledge sector={sector}/>
                   </div>
                 )}
               />
@@ -236,7 +243,7 @@ const RootSector = ({ sectorId, queryRef }: RootSectorProps) => {
               />
               <Route
                 path="/analyses"
-                element={ (
+                element={(
                   <StixCoreObjectOrStixCoreRelationshipContainers
                     stixDomainObjectOrStixCoreRelationship={sector}
                   />
@@ -244,7 +251,7 @@ const RootSector = ({ sectorId, queryRef }: RootSectorProps) => {
               />
               <Route
                 path="/sightings"
-                element={ (
+                element={(
                   <EntityStixSightingRelationships
                     entityId={sector.id}
                     entityLink={link}
@@ -286,9 +293,9 @@ const RootSector = ({ sectorId, queryRef }: RootSectorProps) => {
           </div>
         </>
       ) : (
-        <ErrorNotFound />
+        <ErrorNotFound/>
       )}
-    </>
+    </div>
   );
 };
 const Root = () => {

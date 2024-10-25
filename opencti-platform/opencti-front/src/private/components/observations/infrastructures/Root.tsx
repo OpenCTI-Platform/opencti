@@ -94,7 +94,14 @@ const RootInfrastructureComponent = ({ queryRef, infrastructureId }) => {
     return 0;
   };
   return (
-    <>
+    <div style={{
+      overflow: 'auto',
+      height: '100%',
+      marginRight: '-20px',
+      paddingRight: '10px',
+      boxSizing: 'content-box',
+    }}
+    >
       {infrastructure ? (
         <div
           style={{ paddingRight: paddingRightValue() }}
@@ -111,7 +118,7 @@ const RootInfrastructureComponent = ({ queryRef, infrastructureId }) => {
             PopoverComponent={InfrastructurePopover}
             EditComponent={isFABReplaced && (
               <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                <InfrastructureEdition infrastructureId={infrastructure.id} />
+                <InfrastructureEdition infrastructureId={infrastructure.id}/>
               </Security>
             )}
             enableQuickSubscription={true}
@@ -219,7 +226,7 @@ const RootInfrastructureComponent = ({ queryRef, infrastructureId }) => {
       ) : (
         <ErrorNotFound/>
       )}
-    </>
+    </div>
   );
 };
 

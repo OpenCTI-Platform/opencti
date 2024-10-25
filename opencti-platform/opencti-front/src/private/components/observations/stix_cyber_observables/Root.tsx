@@ -93,7 +93,14 @@ const RootStixCyberObservable = ({ observableId, queryRef }: RootStixCyberObserv
   const link = `/dashboard/observations/observables/${observableId}/knowledge`;
 
   return (
-    <>
+    <div style={{
+      overflow: 'auto',
+      height: '100%',
+      marginRight: '-20px',
+      paddingRight: '10px',
+      boxSizing: 'content-box',
+    }}
+    >
       {stixCyberObservable ? (
         <div style={{ paddingRight }}>
           <Breadcrumbs elements={[
@@ -193,7 +200,7 @@ const RootStixCyberObservable = ({ observableId, queryRef }: RootStixCyberObserv
               element={
                 <StixCoreObjectOrStixCoreRelationshipContainers
                   stixDomainObjectOrStixCoreRelationship={
-                    stixCyberObservable
+                      stixCyberObservable
                   }
                 />
               }
@@ -258,9 +265,9 @@ const RootStixCyberObservable = ({ observableId, queryRef }: RootStixCyberObserv
           </Routes>
         </div>
       ) : (
-        <ErrorNotFound />
+        <ErrorNotFound/>
       )}
-    </>
+    </div>
   );
 };
 

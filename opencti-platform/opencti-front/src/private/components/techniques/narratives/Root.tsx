@@ -100,7 +100,14 @@ const RootNarrative = ({ narrativeId, queryRef }: RootNarrativeProps) => {
   const paddingRight = getPaddingRight(location.pathname, narrativeId, '/dashboard/techniques/narratives');
   const link = `/dashboard/techniques/narratives/${narrativeId}/knowledge`;
   return (
-    <>
+    <div style={{
+      overflow: 'auto',
+      height: '100%',
+      marginRight: '-20px',
+      paddingRight: '10px',
+      boxSizing: 'content-box',
+    }}
+    >
       {narrative ? (
         <>
           <Routes>
@@ -123,7 +130,7 @@ const RootNarrative = ({ narrativeId, queryRef }: RootNarrativeProps) => {
               }
             />
           </Routes>
-          <div style={{ paddingRight }} >
+          <div style={{ paddingRight }}>
             <Breadcrumbs elements={[
               { label: t_i18n('Techniques') },
               { label: t_i18n('Narratives'), link: '/dashboard/techniques/narratives' },
@@ -133,10 +140,10 @@ const RootNarrative = ({ narrativeId, queryRef }: RootNarrativeProps) => {
             <StixDomainObjectHeader
               entityType="Narrative"
               stixDomainObject={narrative}
-              PopoverComponent={<NarrativePopover />}
+              PopoverComponent={<NarrativePopover/>}
               EditComponent={isFABReplaced && (
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                  <NarrativeEdition narrativeId={narrative.id} />
+                  <NarrativeEdition narrativeId={narrative.id}/>
                 </Security>
               )}
             />
@@ -192,20 +199,20 @@ const RootNarrative = ({ narrativeId, queryRef }: RootNarrativeProps) => {
               <Route
                 path="/"
                 element={
-                  <Narrative narrativeData={narrative} />
+                  <Narrative narrativeData={narrative}/>
                 }
               />
               <Route
                 path="/knowledge"
                 element={
-                  <Navigate to={`/dashboard/techniques/narratives/${narrativeId}/knowledge/overview`} replace={true} />
+                  <Navigate to={`/dashboard/techniques/narratives/${narrativeId}/knowledge/overview`} replace={true}/>
                 }
               />
               <Route
                 path="/knowledge/*"
                 element={
                   <div key={forceUpdate}>
-                    <NarrativeKnowledge narrative={narrative} />
+                    <NarrativeKnowledge narrative={narrative}/>
                   </div>
                 }
               />
@@ -220,7 +227,7 @@ const RootNarrative = ({ narrativeId, queryRef }: RootNarrativeProps) => {
               <Route
                 path="/analyses"
                 element={
-                  <StixCoreObjectOrStixCoreRelationshipContainers stixDomainObjectOrStixCoreRelationship={narrative} />
+                  <StixCoreObjectOrStixCoreRelationshipContainers stixDomainObjectOrStixCoreRelationship={narrative}/>
                 }
               />
               <Route
@@ -237,16 +244,16 @@ const RootNarrative = ({ narrativeId, queryRef }: RootNarrativeProps) => {
               <Route
                 path="/history"
                 element={
-                  <StixCoreObjectHistory stixCoreObjectId={narrativeId} />
+                  <StixCoreObjectHistory stixCoreObjectId={narrativeId}/>
                 }
               />
             </Routes>
           </div>
         </>
       ) : (
-        <ErrorNotFound />
+        <ErrorNotFound/>
       )}
-    </>
+    </div>
   );
 };
 

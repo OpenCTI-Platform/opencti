@@ -97,7 +97,14 @@ const RootGrouping = () => {
   useSubscription(subConfig);
 
   return (
-    <>
+    <div style={{
+      overflow: 'auto',
+      height: '100%',
+      marginRight: '-20px',
+      paddingRight: '10px',
+      boxSizing: 'content-box',
+    }}
+    >
       <QueryRenderer
         query={groupingQuery}
         variables={{ id: groupingId }}
@@ -258,7 +265,7 @@ const RootGrouping = () => {
           return <Loader />;
         }}
       />
-    </>
+    </div>
   );
 };
 

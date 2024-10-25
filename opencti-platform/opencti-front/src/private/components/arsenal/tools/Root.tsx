@@ -103,7 +103,14 @@ const RootTool = ({ queryRef, toolId }: RootToolProps) => {
   const paddingRight = getPaddingRight(location.pathname, toolId, '/dashboard/arsenal/tools');
   const link = `/dashboard/arsenal/tools/${toolId}/knowledge`;
   return (
-    <>
+    <div style={{
+      overflow: 'auto',
+      height: '100%',
+      marginRight: '-20px',
+      paddingRight: '10px',
+      boxSizing: 'content-box',
+    }}
+    >
       {tool ? (
         <>
           <Routes>
@@ -140,10 +147,10 @@ const RootTool = ({ queryRef, toolId }: RootToolProps) => {
             <StixDomainObjectHeader
               entityType="Tool"
               stixDomainObject={tool}
-              PopoverComponent={<ToolPopover />}
+              PopoverComponent={<ToolPopover/>}
               EditComponent={isFABReplaced && (
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                  <ToolEdition toolId={tool.id} />
+                  <ToolEdition toolId={tool.id}/>
                 </Security>
               )}
               enableQuickSubscription={true}
@@ -199,8 +206,8 @@ const RootTool = ({ queryRef, toolId }: RootToolProps) => {
             <Routes>
               <Route
                 path="/"
-                element={ (
-                  <Tool toolData={tool} />
+                element={(
+                  <Tool toolData={tool}/>
                 )}
               />
               <Route
@@ -216,7 +223,7 @@ const RootTool = ({ queryRef, toolId }: RootToolProps) => {
                 path="/knowledge/*"
                 element={
                   <div key={forceUpdate}>
-                    <ToolKnowledge tool={tool} />
+                    <ToolKnowledge tool={tool}/>
                   </div>
                 }
               />
@@ -249,7 +256,7 @@ const RootTool = ({ queryRef, toolId }: RootToolProps) => {
               />
               <Route
                 path="/history"
-                element={ (
+                element={(
                   <StixCoreObjectHistory
                     stixCoreObjectId={toolId}
                   />
@@ -259,9 +266,9 @@ const RootTool = ({ queryRef, toolId }: RootToolProps) => {
           </div>
         </>
       ) : (
-        <ErrorNotFound />
+        <ErrorNotFound/>
       )}
-    </>
+    </div>
   );
 };
 

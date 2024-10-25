@@ -88,7 +88,14 @@ const RootTaskComponent = ({ queryRef, taskId }) => {
   } = usePreloadedQuery<RootTaskQuery>(TaskQuery, queryRef);
   const paddingRight = getPaddingRight(location.pathname, data?.id, '/dashboard/cases/tasks');
   return (
-    <>
+    <div style={{
+      overflow: 'auto',
+      height: '100%',
+      marginRight: '-20px',
+      paddingRight: '10px',
+      boxSizing: 'content-box',
+    }}
+    >
       {data ? (
         <div style={{ paddingRight }}>
           <Breadcrumbs elements={[
@@ -182,7 +189,7 @@ const RootTaskComponent = ({ queryRef, taskId }) => {
       ) : (
         <ErrorNotFound />
       )}
-    </>
+    </div>
   );
 };
 

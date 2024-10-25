@@ -100,7 +100,14 @@ const RootEvent = ({ eventId, queryRef }: RootEventProps) => {
   const link = `/dashboard/entities/events/${eventId}/knowledge`;
   const paddingRight = getPaddingRight(location.pathname, eventId, '/dashboard/entities/events');
   return (
-    <>
+    <div style={{
+      overflow: 'auto',
+      height: '100%',
+      marginRight: '-20px',
+      paddingRight: '10px',
+      boxSizing: 'content-box',
+    }}
+    >
       {event ? (
         <>
           <Routes>
@@ -137,10 +144,10 @@ const RootEvent = ({ eventId, queryRef }: RootEventProps) => {
               entityType="Event"
               stixDomainObject={event}
               enableQuickSubscription={true}
-              PopoverComponent={<EventPopover />}
+              PopoverComponent={<EventPopover/>}
               EditComponent={isFABReplaced && (
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                  <EventEdition eventId={event.id} />
+                  <EventEdition eventId={event.id}/>
                 </Security>
               )}
             />
@@ -202,7 +209,7 @@ const RootEvent = ({ eventId, queryRef }: RootEventProps) => {
               <Route
                 path="/"
                 element={
-                  <Event eventData={event} />
+                  <Event eventData={event}/>
                 }
               />
               <Route
@@ -218,7 +225,7 @@ const RootEvent = ({ eventId, queryRef }: RootEventProps) => {
                 path="/knowledge/*"
                 element={
                   <div key={forceUpdate}>
-                    <EventKnowledge event={event} />
+                    <EventKnowledge event={event}/>
                   </div>
                 }
               />
@@ -261,7 +268,7 @@ const RootEvent = ({ eventId, queryRef }: RootEventProps) => {
               />
               <Route
                 path="/files"
-                element={ (
+                element={(
                   <FileManager
                     id={eventId}
                     connectorsImport={connectorsForImport}
@@ -272,7 +279,7 @@ const RootEvent = ({ eventId, queryRef }: RootEventProps) => {
               />
               <Route
                 path="/history"
-                element={ (
+                element={(
                   <StixCoreObjectHistory
                     stixCoreObjectId={eventId}
                   />
@@ -282,9 +289,9 @@ const RootEvent = ({ eventId, queryRef }: RootEventProps) => {
           </div>
         </>
       ) : (
-        <ErrorNotFound />
+        <ErrorNotFound/>
       )}
-    </>
+    </div>
   );
 };
 const Root = () => {

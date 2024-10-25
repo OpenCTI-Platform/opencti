@@ -108,7 +108,14 @@ const RootIntrusionSet = ({ intrusionSetId, queryRef }: RootIntrusionSetProps) =
   const paddingRight = getPaddingRight(location.pathname, intrusionSetId, '/dashboard/threats/intrusion_sets');
   const link = `/dashboard/threats/intrusion_sets/${intrusionSetId}/knowledge`;
   return (
-    <>
+    <div style={{
+      overflow: 'auto',
+      height: '100%',
+      marginRight: '-20px',
+      paddingRight: '10px',
+      boxSizing: 'content-box',
+    }}
+    >
       {intrusionSet ? (
         <>
           <Routes>
@@ -149,10 +156,10 @@ const RootIntrusionSet = ({ intrusionSetId, queryRef }: RootIntrusionSetProps) =
             <StixDomainObjectHeader
               entityType="Intrusion-Set"
               stixDomainObject={intrusionSet}
-              PopoverComponent={<IntrusionSetPopover />}
+              PopoverComponent={<IntrusionSetPopover/>}
               EditComponent={isFABReplaced && (
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                  <IntrusionSetEdition intrusionSetId={intrusionSet.id} />
+                  <IntrusionSetEdition intrusionSetId={intrusionSet.id}/>
                 </Security>
               )}
               enableQuickSubscription={true}
@@ -209,27 +216,27 @@ const RootIntrusionSet = ({ intrusionSetId, queryRef }: RootIntrusionSetProps) =
                 />
               </Tabs>
               {isOverview && (
-                <StixCoreObjectSimulationResult id={intrusionSet.id} type="threat" />
+                <StixCoreObjectSimulationResult id={intrusionSet.id} type="threat"/>
               )}
             </Box>
             <Routes>
               <Route
                 path="/"
                 element={
-                  <IntrusionSet intrusionSetData={intrusionSet} />
+                  <IntrusionSet intrusionSetData={intrusionSet}/>
                 }
               />
               <Route
                 path="/knowledge"
                 element={
-                  <Navigate to={`/dashboard/threats/intrusion_sets/${intrusionSetId}/knowledge/overview`} replace={true} />
+                  <Navigate to={`/dashboard/threats/intrusion_sets/${intrusionSetId}/knowledge/overview`} replace={true}/>
                 }
               />
               <Route
                 path="/knowledge/*"
                 element={
                   <div key={forceUpdate}>
-                    <IntrusionSetKnowledge intrusionSet={intrusionSet} />
+                    <IntrusionSetKnowledge intrusionSet={intrusionSet}/>
                   </div>
                 }
               />
@@ -244,7 +251,7 @@ const RootIntrusionSet = ({ intrusionSetId, queryRef }: RootIntrusionSetProps) =
               <Route
                 path="/analyses"
                 element={
-                  <StixCoreObjectOrStixCoreRelationshipContainers stixDomainObjectOrStixCoreRelationship={intrusionSet} />
+                  <StixCoreObjectOrStixCoreRelationshipContainers stixDomainObjectOrStixCoreRelationship={intrusionSet}/>
                 }
               />
               <Route
@@ -261,16 +268,16 @@ const RootIntrusionSet = ({ intrusionSetId, queryRef }: RootIntrusionSetProps) =
               <Route
                 path="/history"
                 element={
-                  <StixCoreObjectHistory stixCoreObjectId={intrusionSetId} />
+                  <StixCoreObjectHistory stixCoreObjectId={intrusionSetId}/>
                 }
               />
             </Routes>
           </div>
         </>
       ) : (
-        <ErrorNotFound />
+        <ErrorNotFound/>
       )}
-    </>
+    </div>
   );
 };
 

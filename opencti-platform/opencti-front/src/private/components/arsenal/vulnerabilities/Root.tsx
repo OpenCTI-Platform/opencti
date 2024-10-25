@@ -101,7 +101,14 @@ const RootVulnerability = ({ queryRef, vulnerabilityId }: RootVulnerabilityProps
   const paddingRight = getPaddingRight(location.pathname, vulnerabilityId, '/dashboard/arsenal/vulnerabilities');
   const link = `/dashboard/arsenal/vulnerabilities/${vulnerabilityId}/knowledge`;
   return (
-    <>
+    <div style={{
+      overflow: 'auto',
+      height: '100%',
+      marginRight: '-20px',
+      paddingRight: '10px',
+      boxSizing: 'content-box',
+    }}
+    >
       {vulnerability ? (
         <>
           <Routes>
@@ -126,7 +133,7 @@ const RootVulnerability = ({ queryRef, vulnerabilityId }: RootVulnerabilityProps
                   ]}
                   stixCoreObjectsDistribution={vulnerability.stixCoreObjectsDistribution}
                 />
-                                  }
+              }
             />
           </Routes>
           <div style={{ paddingRight }}>
@@ -139,10 +146,10 @@ const RootVulnerability = ({ queryRef, vulnerabilityId }: RootVulnerabilityProps
             <StixDomainObjectHeader
               entityType="Vulnerability"
               stixDomainObject={vulnerability}
-              PopoverComponent={<VulnerabilityPopover id={vulnerabilityId} />}
+              PopoverComponent={<VulnerabilityPopover id={vulnerabilityId}/>}
               EditComponent={isFABReplaced && (
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                  <VulnerabilityEdition vulnerabilityId={vulnerabilityId} />
+                  <VulnerabilityEdition vulnerabilityId={vulnerabilityId}/>
                 </Security>
               )}
               enableQuickSubscription={true}
@@ -261,9 +268,9 @@ const RootVulnerability = ({ queryRef, vulnerabilityId }: RootVulnerabilityProps
           </div>
         </>
       ) : (
-        <ErrorNotFound />
+        <ErrorNotFound/>
       )}
-    </>
+    </div>
   );
 };
 

@@ -103,7 +103,15 @@ const RootCaseRftComponent = ({ queryRef, caseId }) => {
   const paddingRight = getPaddingRight(location.pathname, caseData.id, '/dashboard/cases/rfts', false);
   const currentAccessRight = useGetCurrentUserAccessRight(caseData.currentUserAccessRight);
   return (
-    <div style={{ paddingRight }}>
+    <div style={{
+      paddingRight,
+      overflow: 'auto',
+      height: '100%',
+      marginRight: '-20px',
+      paddingRight: '10px',
+      boxSizing: 'content-box',
+    }}
+    >
       <Breadcrumbs elements={[
         { label: t_i18n('Cases') },
         { label: t_i18n('Requests for takedown'), link: '/dashboard/cases/rfts' },
@@ -114,9 +122,9 @@ const RootCaseRftComponent = ({ queryRef, caseId }) => {
         container={caseData}
         PopoverComponent={<CaseRftPopover id={caseData.id} />}
         EditComponent={isFABReplaced && (
-        <Security needs={[KNOWLEDGE_KNUPDATE]} hasAccess={currentAccessRight.canEdit}>
-          <CaseRftEdition caseId={caseData.id} />
-        </Security>
+          <Security needs={[KNOWLEDGE_KNUPDATE]} hasAccess={currentAccessRight.canEdit}>
+            <CaseRftEdition caseId={caseData.id} />
+          </Security>
         )}
         enableQuickSubscription={true}
         enableAskAi={true}

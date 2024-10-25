@@ -97,7 +97,14 @@ const RootIndicator = ({ indicatorId, queryRef }: RootIndicatorProps) => {
   const link = `/dashboard/observations/indicators/${indicatorId}/knowledge`;
   const paddingRight = getPaddingRight(location.pathname, indicatorId, '/dashboard/observations/indicators', false);
   return (
-    <>
+    <div style={{
+      overflow: 'auto',
+      height: '100%',
+      marginRight: '-20px',
+      paddingRight: '10px',
+      boxSizing: 'content-box',
+    }}
+    >
       {indicator ? (
         <div style={{ paddingRight }}>
           <Breadcrumbs elements={[
@@ -112,7 +119,7 @@ const RootIndicator = ({ indicatorId, queryRef }: RootIndicatorProps) => {
             PopoverComponent={<IndicatorPopover/>}
             EditComponent={isFABReplaced && (
               <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                <IndicatorEdition indicatorId={indicator.id} />
+                <IndicatorEdition indicatorId={indicator.id}/>
               </Security>
             )}
             noAliases={true}
@@ -264,9 +271,9 @@ const RootIndicator = ({ indicatorId, queryRef }: RootIndicatorProps) => {
           </Routes>
         </div>
       ) : (
-        <ErrorNotFound />
+        <ErrorNotFound/>
       )}
-    </>
+    </div>
   );
 };
 

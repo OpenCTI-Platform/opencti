@@ -87,7 +87,14 @@ class RootObservedData extends Component {
       params: { observedDataId },
     } = this.props;
     return (
-      <>
+      <div style={{
+        overflow: 'auto',
+        height: '100%',
+        marginRight: '-20px',
+        paddingRight: '10px',
+        boxSizing: 'content-box',
+      }}
+      >
         <QueryRenderer
           query={observedDataQuery}
           variables={{ id: observedDataId }}
@@ -122,13 +129,13 @@ class RootObservedData extends Component {
                   />
                   <ContainerHeader
                     container={observedData}
-                    PopoverComponent={<ObservedDataPopover />}
+                    PopoverComponent={<ObservedDataPopover/>}
                     EditComponent={(
                       <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                        <ObservedDataEdition observedDataId={observedData.id} />
+                        <ObservedDataEdition observedDataId={observedData.id}/>
                       </Security>
                     )}
-                    redirectToContent = {false}
+                    redirectToContent={false}
                     disableAuthorizedMembers={true}
                   />
                   <Box
@@ -140,7 +147,7 @@ class RootObservedData extends Component {
                   >
                     <Tabs
                       value={
-                        location.pathname
+                          location.pathname
                       }
                     >
                       <Tab
@@ -179,19 +186,19 @@ class RootObservedData extends Component {
                     <Route
                       path="/"
                       element={
-                        <ObservedData observedDataData={props.observedData} />
+                        <ObservedData observedDataData={props.observedData}/>
                       }
                     />
                     <Route
                       path="/entities"
                       element={
-                        <ContainerStixDomainObjects container={props.observedData} />
+                        <ContainerStixDomainObjects container={props.observedData}/>
                       }
                     />
                     <Route
                       path="/observables"
                       element={
-                        <ContainerStixCyberObservables container={props.observedData} />
+                        <ContainerStixCyberObservables container={props.observedData}/>
                       }
                     />
                     <Route
@@ -208,7 +215,7 @@ class RootObservedData extends Component {
                     <Route
                       path="/history"
                       element={
-                        <StixCoreObjectHistory stixCoreObjectId={observedDataId} />
+                        <StixCoreObjectHistory stixCoreObjectId={observedDataId}/>
                       }
                     />
                     <Route
@@ -223,10 +230,10 @@ class RootObservedData extends Component {
                 </div>
               );
             }
-            return <Loader />;
+            return <Loader/>;
           }}
         />
-      </>
+      </div>
     );
   }
 }

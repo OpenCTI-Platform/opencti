@@ -86,7 +86,14 @@ const RootDataComponent = () => {
   const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const { t_i18n } = useFormatter();
   return (
-    <>
+    <div style={{
+      overflow: 'auto',
+      height: '100%',
+      marginRight: '-20px',
+      paddingRight: '10px',
+      boxSizing: 'content-box',
+    }}
+    >
       <QueryRenderer
         query={dataComponentQuery}
         variables={{ id: dataComponentId }}
@@ -111,7 +118,7 @@ const RootDataComponent = () => {
                     }
                     EditComponent={isFABReplaced && (
                       <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                        <DataComponentEdition dataComponentId={dataComponent.id} />
+                        <DataComponentEdition dataComponentId={dataComponent.id}/>
                       </Security>
                     )}
                     noAliases={true}
@@ -194,12 +201,12 @@ const RootDataComponent = () => {
                 </div>
               );
             }
-            return <ErrorNotFound />;
+            return <ErrorNotFound/>;
           }
-          return <Loader />;
+          return <Loader/>;
         }}
       />
-    </>
+    </div>
   );
 };
 

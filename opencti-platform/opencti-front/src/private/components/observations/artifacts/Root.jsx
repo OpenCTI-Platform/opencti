@@ -88,7 +88,14 @@ class RootArtifact extends Component {
     } = this.props;
     const link = `/dashboard/observations/artifacts/${observableId}/knowledge`;
     return (
-      <>
+      <div style={{
+        overflow: 'auto',
+        height: '100%',
+        marginRight: '-20px',
+        paddingRight: '10px',
+        boxSizing: 'content-box',
+      }}
+      >
         <QueryRenderer
           query={rootArtifactQuery}
           variables={{ id: observableId, relationship_type: 'indicates' }}
@@ -170,7 +177,7 @@ class RootArtifact extends Component {
                           <StixCyberObservable
                             stixCyberObservableData={stixCyberObservable}
                           />
-                                )}
+                        )}
                       />
                       <Route
                         path="/knowledge"
@@ -179,7 +186,7 @@ class RootArtifact extends Component {
                             stixCyberObservable={stixCyberObservable}
                             connectorsForImport={props.connectorsForImport}
                           />
-                                }
+                        }
                       />
                       <Route
                         path="/content/*"
@@ -187,7 +194,7 @@ class RootArtifact extends Component {
                           <StixCoreObjectContentRoot
                             stixCoreObject={stixCyberObservable}
                           />
-                                }
+                        }
                       />
                       <Route
                         path="/sightings"
@@ -198,17 +205,17 @@ class RootArtifact extends Component {
                             noRightBar={true}
                             noPadding={true}
                             stixCoreObjectTypes={[
-                              'Region',
-                              'Country',
-                              'City',
-                              'Position',
-                              'Sector',
-                              'Organization',
-                              'Individual',
-                              'System',
-                            ]}
+                                'Region',
+                                'Country',
+                                'City',
+                                'Position',
+                                'Sector',
+                                'Organization',
+                                'Individual',
+                                'System',
+                              ]}
                           />
-                                )}
+                        )}
                       />
                       <Route
                         path="/files"
@@ -221,7 +228,7 @@ class RootArtifact extends Component {
                             isArtifact={true}
                             directDownload={true}
                           />
-                                )}
+                        )}
                       />
                       <Route
                         path="/history"
@@ -229,7 +236,7 @@ class RootArtifact extends Component {
                           <StixCoreObjectHistory
                             stixCoreObjectId={observableId}
                           />
-                                )}
+                        )}
                       />
                       <Route
                         path="/knowledge/relations/:relationId"
@@ -237,7 +244,7 @@ class RootArtifact extends Component {
                           <StixCoreRelationship
                             entityId={observableId}
                           />
-                                )}
+                        )}
                       />
                       <Route
                         path="/knowledge/sightings/:sightingId"
@@ -246,18 +253,18 @@ class RootArtifact extends Component {
                             entityId={observableId}
                             paddingRight
                           />
-                                )}
+                        )}
                       />
                     </Routes>
                   </div>
                 );
               }
-              return <ErrorNotFound />;
+              return <ErrorNotFound/>;
             }
-            return <Loader />;
+            return <Loader/>;
           }}
         />
-      </>
+      </div>
     );
   }
 }

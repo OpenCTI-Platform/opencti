@@ -52,6 +52,7 @@ const RootDashboard = () => {
         marginRight: -20,
         paddingRight: 20,
         paddingTop: 5,
+        maxHeight: '100%',
       }}
     >
       <QueryRenderer

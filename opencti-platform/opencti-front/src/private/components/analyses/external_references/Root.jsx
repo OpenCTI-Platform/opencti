@@ -42,7 +42,14 @@ const RootExternalReference = () => {
   useSubscription(subConfig);
 
   return (
-    <div>
+    <div style={{
+      overflow: 'auto',
+      height: '100%',
+      marginRight: '-20px',
+      paddingRight: '10px',
+      boxSizing: 'content-box',
+    }}
+    >
       <QueryRenderer
         query={externalReferenceQuery}
         variables={{ id: externalReferenceId }}

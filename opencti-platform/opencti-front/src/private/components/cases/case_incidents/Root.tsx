@@ -109,7 +109,16 @@ const RootCaseIncidentComponent = ({ queryRef, caseId }) => {
 
   const currentAccessRight = useGetCurrentUserAccessRight(caseData.currentUserAccessRight);
   return (
-    <div style={{ paddingRight }} data-testid="incident-details-page">
+    <div style={{
+      paddingRight,
+      overflow: 'auto',
+      height: '100%',
+      marginRight: '-20px',
+      paddingRight: '10px',
+      boxSizing: 'content-box',
+    }}
+      data-testid="incident-details-page"
+    >
       <Breadcrumbs elements={[
         { label: t_i18n('Cases') },
         { label: t_i18n('Incident responses'), link: '/dashboard/cases/incidents' },

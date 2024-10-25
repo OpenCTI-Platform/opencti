@@ -125,7 +125,14 @@ const RootSystem = ({ systemId, queryRef }: RootSystemProps) => {
   const link = `/dashboard/entities/systems/${systemId}/knowledge`;
   const paddingRight = getPaddingRight(location.pathname, systemId, '/dashboard/entities/systems');
   return (
-    <>
+    <div style={{
+      overflow: 'auto',
+      height: '100%',
+      marginRight: '-20px',
+      paddingRight: '10px',
+      boxSizing: 'content-box',
+    }}
+    >
       {system ? (
         <>
           <Routes>
@@ -165,10 +172,10 @@ const RootSystem = ({ systemId, queryRef }: RootSystemProps) => {
               stixDomainObject={system}
               isOpenctiAlias={true}
               enableQuickSubscription={true}
-              PopoverComponent={<SystemPopover />}
+              PopoverComponent={<SystemPopover/>}
               EditComponent={isFABReplaced && (
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                  <SystemEdition systemId={system.id} />
+                  <SystemEdition systemId={system.id}/>
                 </Security>
               )}
               onViewAs={handleChangeViewAs}
@@ -319,9 +326,9 @@ const RootSystem = ({ systemId, queryRef }: RootSystemProps) => {
           </div>
         </>
       ) : (
-        <ErrorNotFound />
+        <ErrorNotFound/>
       )}
-    </>
+    </div>
   );
 };
 const Root = () => {

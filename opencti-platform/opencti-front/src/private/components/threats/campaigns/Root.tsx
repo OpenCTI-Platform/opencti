@@ -103,7 +103,14 @@ const RootCampaign = ({ campaignId, queryRef }: RootCampaignProps) => {
   const isOverview = location.pathname === `/dashboard/threats/campaigns/${campaignId}`;
   const paddingRight = getPaddingRight(location.pathname, campaignId, '/dashboard/threats/campaigns');
   return (
-    <>
+    <div style={{
+      overflow: 'auto',
+      height: '100%',
+      marginRight: '-20px',
+      paddingRight: '10px',
+      boxSizing: 'content-box',
+    }}
+    >
       {campaign ? (
         <>
           <Routes>
@@ -143,10 +150,10 @@ const RootCampaign = ({ campaignId, queryRef }: RootCampaignProps) => {
             <StixDomainObjectHeader
               entityType="Campaign"
               stixDomainObject={campaign}
-              PopoverComponent={<CampaignPopover />}
+              PopoverComponent={<CampaignPopover/>}
               EditComponent={isFABReplaced && (
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                  <CampaignEdition campaignId={campaign.id} />
+                  <CampaignEdition campaignId={campaign.id}/>
                 </Security>
               )}
               enableQuickSubscription={true}
@@ -202,27 +209,27 @@ const RootCampaign = ({ campaignId, queryRef }: RootCampaignProps) => {
                 />
               </Tabs>
               {isOverview && (
-                <StixCoreObjectSimulationResult id={campaign.id} type="threat" />
+                <StixCoreObjectSimulationResult id={campaign.id} type="threat"/>
               )}
             </Box>
             <Routes>
               <Route
                 path="/"
                 element={
-                  <Campaign campaignData={campaign} />
+                  <Campaign campaignData={campaign}/>
                 }
               />
               <Route
                 path="/knowledge"
                 element={
-                  <Navigate to={`/dashboard/threats/campaigns/${campaignId}/knowledge/overview`} replace={true} />
+                  <Navigate to={`/dashboard/threats/campaigns/${campaignId}/knowledge/overview`} replace={true}/>
                 }
               />
               <Route
                 path="/knowledge/*"
                 element={
                   <div key={forceUpdate}>
-                    <CampaignKnowledge campaign={campaign} />
+                    <CampaignKnowledge campaign={campaign}/>
                   </div>
                 }
               />
@@ -237,7 +244,7 @@ const RootCampaign = ({ campaignId, queryRef }: RootCampaignProps) => {
               <Route
                 path="/analyses"
                 element={
-                  <StixCoreObjectOrStixCoreRelationshipContainers stixDomainObjectOrStixCoreRelationship={campaign} />
+                  <StixCoreObjectOrStixCoreRelationshipContainers stixDomainObjectOrStixCoreRelationship={campaign}/>
                 }
               />
               <Route
@@ -254,16 +261,16 @@ const RootCampaign = ({ campaignId, queryRef }: RootCampaignProps) => {
               <Route
                 path="/history"
                 element={
-                  <StixCoreObjectHistory stixCoreObjectId={campaignId} />
+                  <StixCoreObjectHistory stixCoreObjectId={campaignId}/>
                 }
               />
             </Routes>
           </div>
         </>
       ) : (
-        <ErrorNotFound />
+        <ErrorNotFound/>
       )}
-    </>
+    </div>
   );
 };
 

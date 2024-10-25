@@ -104,7 +104,15 @@ const RootCaseRfiComponent = ({ queryRef, caseId }) => {
   const paddingRight = getPaddingRight(location.pathname, caseData.id, '/dashboard/cases/rfis', false);
   const currentAccessRight = useGetCurrentUserAccessRight(caseData.currentUserAccessRight);
   return (
-    <div style={{ paddingRight }}>
+    <div style={{
+      paddingRight,
+      overflow: 'auto',
+      height: '100%',
+      marginRight: '-20px',
+      paddingRight: '10px',
+      boxSizing: 'content-box',
+    }}
+    >
       <Breadcrumbs elements={[
         { label: t_i18n('Cases') },
         { label: t_i18n('Requests for information'), link: '/dashboard/cases/rfis' },
@@ -115,9 +123,9 @@ const RootCaseRfiComponent = ({ queryRef, caseId }) => {
         container={caseData}
         PopoverComponent={<CaseRfiPopover id={caseData.id} />}
         EditComponent={isFABReplaced && (
-        <Security needs={[KNOWLEDGE_KNUPDATE]} hasAccess={currentAccessRight.canEdit}>
-          <CaseRfiEdition caseId={caseData.id} />
-        </Security>
+          <Security needs={[KNOWLEDGE_KNUPDATE]} hasAccess={currentAccessRight.canEdit}>
+            <CaseRfiEdition caseId={caseData.id} />
+          </Security>
         )}
         enableQuickSubscription={true}
         enableAskAi={true}

@@ -105,7 +105,14 @@ const RootThreatActorGroup = ({ queryRef, threatActorGroupId }: RootThreatActorG
   const paddingRight = getPaddingRight(location.pathname, threatActorGroupId, '/dashboard/threats/threat_actors_group');
   const link = `/dashboard/threats/threat_actors_group/${threatActorGroupId}/knowledge`;
   return (
-    <>
+    <div style={{
+      overflow: 'auto',
+      height: '100%',
+      marginRight: '-20px',
+      paddingRight: '10px',
+      boxSizing: 'content-box',
+    }}
+    >
       {threatActorGroup ? (
         <>
           <Routes>
@@ -147,10 +154,10 @@ const RootThreatActorGroup = ({ queryRef, threatActorGroupId }: RootThreatActorG
             <StixDomainObjectHeader
               entityType="Threat-Actor-Group"
               stixDomainObject={threatActorGroup}
-              PopoverComponent={<ThreatActorGroupPopover />}
+              PopoverComponent={<ThreatActorGroupPopover/>}
               EditComponent={isFABReplaced && (
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                  <ThreatActorGroupEdition threatActorGroupId={threatActorGroup.id} />
+                  <ThreatActorGroupEdition threatActorGroupId={threatActorGroup.id}/>
                 </Security>
               )}
               enableQuickSubscription={true}
@@ -206,27 +213,27 @@ const RootThreatActorGroup = ({ queryRef, threatActorGroupId }: RootThreatActorG
                 />
               </Tabs>
               {isOverview && (
-                <StixCoreObjectSimulationResult id={threatActorGroup.id} type="threat" />
+                <StixCoreObjectSimulationResult id={threatActorGroup.id} type="threat"/>
               )}
             </Box>
             <Routes>
               <Route
                 path="/"
                 element={
-                  <ThreatActorGroup threatActorGroupData={threatActorGroup} />
+                  <ThreatActorGroup threatActorGroupData={threatActorGroup}/>
                 }
               />
               <Route
                 path="/knowledge"
                 element={
-                  <Navigate to={`/dashboard/threats/threat_actors_group/${threatActorGroupId}/knowledge/overview`} replace={true} />
+                  <Navigate to={`/dashboard/threats/threat_actors_group/${threatActorGroupId}/knowledge/overview`} replace={true}/>
                 }
               />
               <Route
                 path="/knowledge/*"
                 element={
                   <div key={forceUpdate}>
-                    <ThreatActorGroupKnowledge threatActorGroup={threatActorGroup} />
+                    <ThreatActorGroupKnowledge threatActorGroup={threatActorGroup}/>
                   </div>
                 }
               />
@@ -241,7 +248,7 @@ const RootThreatActorGroup = ({ queryRef, threatActorGroupId }: RootThreatActorG
               <Route
                 path="/analyses"
                 element={
-                  <StixCoreObjectOrStixCoreRelationshipContainers stixDomainObjectOrStixCoreRelationship={threatActorGroup} />
+                  <StixCoreObjectOrStixCoreRelationshipContainers stixDomainObjectOrStixCoreRelationship={threatActorGroup}/>
                 }
               />
               <Route
@@ -258,16 +265,16 @@ const RootThreatActorGroup = ({ queryRef, threatActorGroupId }: RootThreatActorG
               <Route
                 path="/history"
                 element={
-                  <StixCoreObjectHistory stixCoreObjectId={threatActorGroupId} />
+                  <StixCoreObjectHistory stixCoreObjectId={threatActorGroupId}/>
                 }
               />
             </Routes>
           </div>
         </>
       ) : (
-        <ErrorNotFound />
+        <ErrorNotFound/>
       )}
-    </>
+    </div>
   );
 };
 

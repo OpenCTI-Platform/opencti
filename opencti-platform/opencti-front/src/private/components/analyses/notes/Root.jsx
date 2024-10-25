@@ -73,7 +73,14 @@ const RootNote = () => {
   const { t_i18n } = useFormatter();
   useSubscription(subConfig);
   return (
-    <>
+    <div style={{
+      overflow: 'auto',
+      height: '100%',
+      marginRight: '-20px',
+      paddingRight: '10px',
+      boxSizing: 'content-box',
+    }}
+    >
       <QueryRenderer
         query={noteQuery}
         variables={{ id: noteId }}
@@ -97,8 +104,8 @@ const RootNote = () => {
                         PopoverComponent={<NotePopover note={note}/>}
                         EditComponent={
                           <CollaborativeSecurity data={note} needs={[KNOWLEDGE_KNUPDATE]}>
-                            <NoteEdition noteId={note.id}/>
-                          </CollaborativeSecurity>
+                              <NoteEdition noteId={note.id}/>
+                            </CollaborativeSecurity>
                         }
                         redirectToContent={false}
                         disableAuthorizedMembers={true}
@@ -172,7 +179,7 @@ const RootNote = () => {
           return <Loader/>;
         }}
       />
-    </>
+    </div>
   );
 };
 

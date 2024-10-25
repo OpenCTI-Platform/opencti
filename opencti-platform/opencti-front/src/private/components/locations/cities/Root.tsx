@@ -94,7 +94,14 @@ const RootCityComponent = ({ queryRef, cityId }) => {
   const link = `/dashboard/locations/cities/${cityId}/knowledge`;
   const paddingRight = getPaddingRight(location.pathname, city?.id, '/dashboard/locations/cities');
   return (
-    <>
+    <div style={{
+      overflow: 'auto',
+      height: '100%',
+      marginRight: '-20px',
+      paddingRight: '10px',
+      boxSizing: 'content-box',
+    }}
+    >
       {city ? (
         <>
           <Routes>
@@ -134,10 +141,10 @@ const RootCityComponent = ({ queryRef, cityId }) => {
               entityType="City"
               disableSharing={true}
               stixDomainObject={city}
-              PopoverComponent={<CityPopover id={city.id} />}
+              PopoverComponent={<CityPopover id={city.id}/>}
               EditComponent={isFABReplaced && (
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                  <CityEdition cityId={city.id} />
+                  <CityEdition cityId={city.id}/>
                 </Security>
               )}
               enableQuickSubscription={true}
@@ -200,19 +207,19 @@ const RootCityComponent = ({ queryRef, cityId }) => {
             <Routes>
               <Route
                 path="/"
-                element={<City cityData={city} />}
+                element={<City cityData={city}/>}
               />
               <Route
                 path="/knowledge"
                 element={
-                  <Navigate to={`/dashboard/locations/cities/${cityId}/knowledge/overview`} replace={true} />
-              }
+                  <Navigate to={`/dashboard/locations/cities/${cityId}/knowledge/overview`} replace={true}/>
+                }
               />
               <Route
                 path="/knowledge/*"
                 element={
                   <div key={forceUpdate}>
-                    <CityKnowledge cityData={city} />
+                    <CityKnowledge cityData={city}/>
                   </div>
                 }
               />
@@ -222,13 +229,13 @@ const RootCityComponent = ({ queryRef, cityId }) => {
                   <StixCoreObjectContentRoot
                     stixCoreObject={city}
                   />
-              }
+                }
               />
               <Route
                 path="/analyses"
                 element={
-                  <StixCoreObjectOrStixCoreRelationshipContainers stixDomainObjectOrStixCoreRelationship={city} />
-              }
+                  <StixCoreObjectOrStixCoreRelationshipContainers stixDomainObjectOrStixCoreRelationship={city}/>
+                }
               />
               <Route
                 path="/sightings"
@@ -239,7 +246,7 @@ const RootCityComponent = ({ queryRef, cityId }) => {
                     noPadding={true}
                     isTo={true}
                   />
-              }
+                }
               />
               <Route
                 path="/files"
@@ -250,21 +257,21 @@ const RootCityComponent = ({ queryRef, cityId }) => {
                     connectorsExport={connectorsForExport}
                     entity={city}
                   />
-              }
+                }
               />
               <Route
                 path="/history"
                 element={
-                  <StixCoreObjectHistory stixCoreObjectId={cityId} />
-              }
+                  <StixCoreObjectHistory stixCoreObjectId={cityId}/>
+                }
               />
             </Routes>
           </div>
         </>
       ) : (
-        <ErrorNotFound />
+        <ErrorNotFound/>
       )}
-    </>
+    </div>
   );
 };
 

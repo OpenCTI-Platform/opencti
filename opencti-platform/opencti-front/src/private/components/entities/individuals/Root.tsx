@@ -133,7 +133,14 @@ const RootIndividual = ({ individualId, queryRef }: RootIndividualProps) => {
   }
 
   return (
-    <>
+    <div style={{
+      overflow: 'auto',
+      height: '100%',
+      marginRight: '-20px',
+      paddingRight: '10px',
+      boxSizing: 'content-box',
+    }}
+    >
       {individual ? (
         <>
           <Routes>
@@ -172,10 +179,10 @@ const RootIndividual = ({ individualId, queryRef }: RootIndividualProps) => {
               stixDomainObject={individual}
               isOpenctiAlias={true}
               enableQuickSubscription={true}
-              PopoverComponent={<IndividualPopover />}
+              PopoverComponent={<IndividualPopover/>}
               EditComponent={!individual.isUser && isFABReplaced && (
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                  <IndividualEdition individualId={individual.id} />
+                  <IndividualEdition individualId={individual.id}/>
                 </Security>
               )}
               onViewAs={handleChangeViewAs}
@@ -326,9 +333,9 @@ const RootIndividual = ({ individualId, queryRef }: RootIndividualProps) => {
           </div>
         </>
       ) : (
-        <ErrorNotFound />
+        <ErrorNotFound/>
       )}
-    </>
+    </div>
   );
 };
 const Root = () => {

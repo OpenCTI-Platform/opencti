@@ -103,7 +103,14 @@ const RootIncidentComponent = ({ queryRef }) => {
     return 0;
   };
   return (
-    <>
+    <div style={{
+      overflow: 'auto',
+      height: '100%',
+      marginRight: '-20px',
+      paddingRight: '10px',
+      boxSizing: 'content-box',
+    }}
+    >
       {incident ? (
         <>
           <Routes>
@@ -143,7 +150,7 @@ const RootIncidentComponent = ({ queryRef }) => {
               PopoverComponent={IncidentPopover}
               EditComponent={isFABReplaced && (
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                  <IncidentEdition incidentId={incident.id} />
+                  <IncidentEdition incidentId={incident.id}/>
                 </Security>
               )}
               enableQuickSubscription={true}
@@ -199,13 +206,13 @@ const RootIncidentComponent = ({ queryRef }) => {
                 />
               </Tabs>
               {isOverview && (
-                <StixCoreObjectSimulationResult id={incident.id} type="threat" />
+                <StixCoreObjectSimulationResult id={incident.id} type="threat"/>
               )}
             </Box>
             <Routes>
               <Route
                 path="/"
-                element={<Incident incidentData={incident} />}
+                element={<Incident incidentData={incident}/>}
               />
               <Route
                 path="/knowledge"
@@ -220,7 +227,7 @@ const RootIncidentComponent = ({ queryRef }) => {
                 path="/knowledge/*"
                 element={
                   <div key={forceUpdate}>
-                    <IncidentKnowledge incidentData={incident} />
+                    <IncidentKnowledge incidentData={incident}/>
                   </div>
                 }
               />
@@ -263,9 +270,9 @@ const RootIncidentComponent = ({ queryRef }) => {
           </div>
         </>
       ) : (
-        <ErrorNotFound />
+        <ErrorNotFound/>
       )}
-    </>
+    </div>
   );
 };
 

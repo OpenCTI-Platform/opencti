@@ -97,7 +97,14 @@ const RootRegionComponent = ({ queryRef, regionId }) => {
   const link = `/dashboard/locations/regions/${regionId}/knowledge`;
   const paddingRight = getPaddingRight(location.pathname, region?.id, '/dashboard/locations/regions');
   return (
-    <>
+    <div style={{
+      overflow: 'auto',
+      height: '100%',
+      marginRight: '-20px',
+      paddingRight: '10px',
+      boxSizing: 'content-box',
+    }}
+    >
       {region ? (
         <>
           <Routes>
@@ -138,10 +145,10 @@ const RootRegionComponent = ({ queryRef, regionId }) => {
               entityType="Region"
               disableSharing={true}
               stixDomainObject={region}
-              PopoverComponent={<RegionPopover id={region.id} />}
+              PopoverComponent={<RegionPopover id={region.id}/>}
               EditComponent={isFABReplaced && (
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                  <RegionEdition regionId={region.id} />
+                  <RegionEdition regionId={region.id}/>
                 </Security>
               )}
               enableQuickSubscription={true}
@@ -204,19 +211,19 @@ const RootRegionComponent = ({ queryRef, regionId }) => {
             <Routes>
               <Route
                 path="/"
-                element={<Region regionData={region} />}
+                element={<Region regionData={region}/>}
               />
               <Route
                 path="/knowledge"
                 element={
-                  <Navigate to={`/dashboard/locations/regions/${regionId}/knowledge/overview`} replace={true} />
-              }
+                  <Navigate to={`/dashboard/locations/regions/${regionId}/knowledge/overview`} replace={true}/>
+                }
               />
               <Route
                 path="/knowledge/*"
                 element={
                   <div key={forceUpdate}>
-                    <RegionKnowledge regionData={region} />
+                    <RegionKnowledge regionData={region}/>
                   </div>
                 }
               />
@@ -226,13 +233,13 @@ const RootRegionComponent = ({ queryRef, regionId }) => {
                   <StixCoreObjectContentRoot
                     stixCoreObject={region}
                   />
-              }
+                }
               />
               <Route
                 path="/analyses"
                 element={
-                  <StixCoreObjectOrStixCoreRelationshipContainers stixDomainObjectOrStixCoreRelationship={region} />
-              }
+                  <StixCoreObjectOrStixCoreRelationshipContainers stixDomainObjectOrStixCoreRelationship={region}/>
+                }
               />
               <Route
                 path="/sightings"
@@ -243,7 +250,7 @@ const RootRegionComponent = ({ queryRef, regionId }) => {
                     noPadding={true}
                     isTo={true}
                   />
-              }
+                }
               />
               <Route
                 path="/files"
@@ -254,21 +261,21 @@ const RootRegionComponent = ({ queryRef, regionId }) => {
                     connectorsExport={connectorsForExport}
                     entity={region}
                   />
-              }
+                }
               />
               <Route
                 path="/history"
                 element={
-                  <StixCoreObjectHistory stixCoreObjectId={regionId} />
-              }
+                  <StixCoreObjectHistory stixCoreObjectId={regionId}/>
+                }
               />
             </Routes>
           </div>
         </>
       ) : (
-        <ErrorNotFound />
+        <ErrorNotFound/>
       )}
-    </>
+    </div>
   );
 };
 

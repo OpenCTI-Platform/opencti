@@ -87,7 +87,14 @@ const RootDataSourceComponent = ({ queryRef, dataSourceId }) => {
   const { dataSource, connectorsForImport, connectorsForExport, settings } = data;
   const paddingRight = getPaddingRight(location.pathname, dataSource?.id, '/dashboard/techniques/data_sources', false);
   return (
-    <>
+    <div style={{
+      overflow: 'auto',
+      height: '100%',
+      marginRight: '-20px',
+      paddingRight: '10px',
+      boxSizing: 'content-box',
+    }}
+    >
       {dataSource ? (
         <div style={{ paddingRight }}>
           <Breadcrumbs elements={[
@@ -103,7 +110,7 @@ const RootDataSourceComponent = ({ queryRef, dataSourceId }) => {
             PopoverComponent={<DataSourcePopover id={dataSource.id}/>}
             EditComponent={isFABReplaced && (
               <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                <DataSourceEdition dataSourceId={dataSource.id} />
+                <DataSourceEdition dataSourceId={dataSource.id}/>
               </Security>
             )}
           />
@@ -187,7 +194,7 @@ const RootDataSourceComponent = ({ queryRef, dataSourceId }) => {
       ) : (
         <ErrorNotFound/>
       )}
-    </>
+    </div>
   );
 };
 

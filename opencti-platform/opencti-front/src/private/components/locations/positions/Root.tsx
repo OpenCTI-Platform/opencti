@@ -101,7 +101,14 @@ const RootPosition = ({ positionId, queryRef }: RootPositionProps) => {
   const paddingRight = getPaddingRight(location.pathname, positionId, '/dashboard/locations/positions');
 
   return (
-    <>
+    <div style={{
+      overflow: 'auto',
+      height: '100%',
+      marginRight: '-20px',
+      paddingRight: '10px',
+      boxSizing: 'content-box',
+    }}
+    >
       {position ? (
         <>
           <Routes>
@@ -141,10 +148,10 @@ const RootPosition = ({ positionId, queryRef }: RootPositionProps) => {
               entityType="Position"
               disableSharing={true}
               stixDomainObject={position}
-              PopoverComponent={<PositionPopover id={position.id} />}
+              PopoverComponent={<PositionPopover id={position.id}/>}
               EditComponent={isFABReplaced && (
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                  <PositionEdition positionId={position.id} />
+                  <PositionEdition positionId={position.id}/>
                 </Security>
               )}
               enableQuickSubscription={true}
@@ -208,20 +215,20 @@ const RootPosition = ({ positionId, queryRef }: RootPositionProps) => {
               <Route
                 path="/"
                 element={
-                  <Position position={position} />
+                  <Position position={position}/>
                 }
               />
               <Route
                 path="/knowledge"
                 element={
-                  <Navigate to={`/dashboard/locations/positions/${positionId}/knowledge/overview`} replace={true} />
+                  <Navigate to={`/dashboard/locations/positions/${positionId}/knowledge/overview`} replace={true}/>
                 }
               />
               <Route
                 path="/knowledge/*"
                 element={
                   <div key={forceUpdate}>
-                    <PositionKnowledge position={position} />
+                    <PositionKnowledge position={position}/>
                   </div>
                 }
               />
@@ -236,7 +243,7 @@ const RootPosition = ({ positionId, queryRef }: RootPositionProps) => {
               <Route
                 path="/analyses"
                 element={
-                  <StixCoreObjectOrStixCoreRelationshipContainers stixDomainObjectOrStixCoreRelationship={position} />
+                  <StixCoreObjectOrStixCoreRelationshipContainers stixDomainObjectOrStixCoreRelationship={position}/>
                 }
               />
               <Route
@@ -274,16 +281,16 @@ const RootPosition = ({ positionId, queryRef }: RootPositionProps) => {
               <Route
                 path="/history"
                 element={
-                  <StixCoreObjectHistory stixCoreObjectId={positionId} />
+                  <StixCoreObjectHistory stixCoreObjectId={positionId}/>
                 }
               />
             </Routes>
           </div>
         </>
       ) : (
-        <ErrorNotFound />
+        <ErrorNotFound/>
       )}
-    </>
+    </div>
   );
 };
 const Root = () => {
