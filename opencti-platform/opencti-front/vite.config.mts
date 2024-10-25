@@ -2,7 +2,7 @@ import { createLogger, defineConfig, transformWithEsbuild } from 'vite';
 import react from '@vitejs/plugin-react';
 import * as path from 'node:path';
 import relay from 'vite-plugin-relay';
-import { viteStaticCopy } from 'vite-plugin-static-copy'
+import { viteStaticCopy } from 'vite-plugin-static-copy';
 
 // to avoid multiple reload when discovering new dependencies after a going on a lazy (not precedently) loaded route we pre optmize these dependencies
 const depsToOptimize = [
@@ -146,17 +146,25 @@ const depsToOptimize = [
   "@mui/lab/LoadingButton",
   "@mui/material/Breadcrumbs",
   "classnames",
-  "react-draggable"
-]
+  "react-draggable",
+  "ckeditor5",
+  "ckeditor5/translations/de",
+  "ckeditor5/translations/en",
+  "ckeditor5/translations/es",
+  "ckeditor5/translations/fr",
+  "ckeditor5/translations/ja",
+  "ckeditor5/translations/ko",
+  "ckeditor5/translations/zh",
+];
 
-const logger = createLogger()
-const loggerError = logger.error
+const logger = createLogger();
+const loggerError = logger.error;
 
 logger.error = (msg, options) => {
   // Ignore jsx syntax error as it taken into account in a custom plugin
   if (msg.includes('The JSX syntax extension is not currently enabled')) return
   loggerError(msg, options)
-}
+};
 
 const basePath = "";
 
@@ -164,7 +172,7 @@ const backProxy = (ws = false) => ({
   target: process.env.BACK_END_URL ?? 'http://localhost:4000',
   changeOrigin: true,
   ws,
-})
+});
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -181,10 +189,7 @@ export default defineConfig({
   },
 
   optimizeDeps: {
-    include: [
-      ...depsToOptimize,
-      'ckeditor5-custom-build/build/ckeditor',
-    ],
+    include: depsToOptimize,
   },
 
   customLogger: logger,
