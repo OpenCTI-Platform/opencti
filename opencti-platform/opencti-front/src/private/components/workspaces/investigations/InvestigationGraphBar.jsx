@@ -47,7 +47,7 @@ import { parseDomain } from '../../../../utils/Graph';
 import { INVESTIGATION_INUPDATE } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import { truncate } from '../../../../utils/String';
-import { dateFormat, now, validStartTimeForRelationCreation } from '../../../../utils/Time';
+import { dateFormat, minutesBefore, now } from '../../../../utils/Time';
 import StixCoreRelationshipCreation from '../../common/stix_core_relationships/StixCoreRelationshipCreation';
 import StixCoreRelationshipEdition from '../../common/stix_core_relationships/StixCoreRelationshipEdition';
 import StixDomainObjectEdition from '../../common/stix_domain_objects/StixDomainObjectEdition';
@@ -357,6 +357,8 @@ class InvestigationGraphBar extends Component {
     const stixCoreObjectOrRelationshipId = (selectedNodes[0]?.id ?? null) || (selectedLinks[0]?.id ?? null);
 
     const isRollBackToLastPreExpansionStateDisabled = !getPreExpansionStateList();
+
+    const defaultTime = now();
 
     return (
       <UserContext.Consumer>
@@ -918,8 +920,8 @@ class InvestigationGraphBar extends Component {
                           open={openCreatedRelation}
                           fromObjects={relationFromObjects}
                           toObjects={relationToObjects}
-                          startTime={lastLinkFirstSeen || validStartTimeForRelationCreation(now())}
-                          stopTime={lastLinkLastSeen || now()}
+                          startTime={lastLinkFirstSeen || minutesBefore(1, defaultTime)}
+                          stopTime={lastLinkLastSeen || defaultTime}
                           confidence={50}
                           handleClose={this.handleCloseCreateRelationship.bind(
                             this,
