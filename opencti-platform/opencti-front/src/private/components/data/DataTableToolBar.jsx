@@ -772,53 +772,33 @@ class DataTableToolBar extends Component {
   renderFieldOptions(i, selectedTypes, entityTypeFilterValues, isAdmin) {
     const { t } = this.props;
     const { actionsInputs } = this.state;
-    const disabled = R.isNil(actionsInputs[i]?.type) || R.isEmpty(actionsInputs[i]?.type);
+    const disabled = actionsInputs[i]?.type == null || actionsInputs[i]?.type === '';
 
     const checkTypes = (typesList) => selectedTypes.every((type) => typesList.includes(type))
       && entityTypeFilterValues.every((type) => typesList.includes(type));
 
-    const dynamicOptions = [
-      checkTypes(typesWithSeverity) && { label: t('Severity'), value: 'case_severity_ov' },
-      checkTypes(typesWithPriority) && { label: t('Priority'), value: 'case_priority_ov' },
-      checkTypes(typesWithIncidentResponseType) && { label: t('Incident response type'), value: 'incident_response_types_ov' },
-      checkTypes(typesWithRfiTypes) && { label: t('Request for information type'), value: 'request_for_information_types_ov' },
-      checkTypes(typesWithRftTypes) && { label: t('Request for takedown type'), value: 'request_for_takedown_types_ov' },
-      checkTypes(typesWithAssignee) && { label: t('Assignees'), value: 'object-assignee' },
-      checkTypes(typesWithParticipant) && { label: t('Participant'), value: 'object-participant' },
-      (actionsInputs[i]?.type === 'REPLACE' && checkTypes(typesWithScore)) && { label: t('Score'), value: 'x_opencti_score' },
-      (actionsInputs[i]?.type === 'REPLACE' && selectedTypes.length === 1 && !typesWithoutStatus.includes(selectedTypes[0]))
-      && { label: t('Status'), value: 'x_opencti_workflow_id' },
+    const options = [
+      { label: t('Marking definitions'), value: 'object-marking' },
+      { label: t('Labels'), value: 'object-label' },
+      actionsInputs[i]?.type === 'ADD' && { label: t('In containers'), value: 'container-object' },
+      (actionsInputs[i]?.type === 'ADD' || actionsInputs[i]?.type === 'REMOVE') && { label: t('External references'), value: 'external-reference' },
+      actionsInputs[i]?.type === 'REPLACE' && { label: t('Author'), value: 'created-by' },
+      actionsInputs[i]?.type === 'REPLACE' && { label: t('Confidence'), value: 'confidence' },
+      actionsInputs[i]?.type === 'REPLACE' && { label: t('Description'), value: 'description' },
+      ...(actionsInputs[i]?.type === 'REPLACE' || actionsInputs[i]?.type === 'REMOVE' ? [
+        checkTypes(typesWithSeverity) && { label: t('Severity'), value: 'case_severity_ov' },
+        checkTypes(typesWithPriority) && { label: t('Priority'), value: 'case_priority_ov' },
+        checkTypes(typesWithIncidentResponseType) && { label: t('Incident response type'), value: 'incident_response_types_ov' },
+        checkTypes(typesWithRfiTypes) && { label: t('Request for information type'), value: 'request_for_information_types_ov' },
+        checkTypes(typesWithRftTypes) && { label: t('Request for takedown type'), value: 'request_for_takedown_types_ov' },
+        checkTypes(typesWithAssignee) && { label: t('Assignees'), value: 'object-assignee' },
+        checkTypes(isAdmin) && { label: t('Creator'), value: 'creator_id' },
+        checkTypes(typesWithParticipant) && { label: t('Participant'), value: 'object-participant' },
+        checkTypes(typesWithScore) && { label: t('Score'), value: 'x_opencti_score' },
+        selectedTypes.length === 1 && !typesWithoutStatus.includes(selectedTypes[0]) && { label: t('Status'), value: 'x_opencti_workflow_id' },
+      ] : []),
     ].filter(Boolean);
 
-    let options = [];
-
-    if (actionsInputs[i]?.type === 'ADD') {
-      options = [
-        { label: t('Marking definitions'), value: 'object-marking' },
-        { label: t('Labels'), value: 'object-label' },
-        { label: t('External references'), value: 'external-reference' },
-        { label: t('In containers'), value: 'container-object' },
-      ];
-      if (isAdmin) {
-        options.push({ label: t('Creator'), value: 'creator_id' });
-      }
-    } else if (actionsInputs[i]?.type === 'REPLACE') {
-      options = [
-        { label: t('Marking definitions'), value: 'object-marking' },
-        { label: t('Labels'), value: 'object-label' },
-        { label: t('Author'), value: 'created-by' },
-        { label: t('Confidence'), value: 'confidence' },
-        { label: t('Description'), value: 'description' },
-        ...dynamicOptions,
-      ];
-    } else if (actionsInputs[i]?.type === 'REMOVE') {
-      options = [
-        { label: t('Marking definitions'), value: 'object-marking' },
-        { label: t('Labels'), value: 'object-label' },
-        { label: t('External references'), value: 'external-reference' },
-        ...dynamicOptions,
-      ];
-    }
     const sortedOptions = options.sort((a, b) => a.label.localeCompare(b.label));
 
     return (
