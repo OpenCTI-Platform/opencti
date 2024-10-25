@@ -3,6 +3,7 @@ import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import { GenericContext } from '@components/common/model/GenericContextModel';
+import useHelper from 'src/utils/hooks/useHelper';
 import { useFormatter } from '../../../../components/i18n';
 import MarkdownField from '../../../../components/fields/MarkdownField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
@@ -22,6 +23,7 @@ import { NoteEditionOverview_note$data } from './__generated__/NoteEditionOvervi
 import SliderField from '../../../../components/fields/SliderField';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
+import NoteDeletion from './NoteDeletion';
 import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 
 export const noteMutationFieldPatch = graphql`
@@ -85,9 +87,7 @@ interface NoteEditionOverviewProps {
 
 const NOTE_TYPE = 'Note';
 
-const NoteEditionOverviewComponent: FunctionComponent<
-NoteEditionOverviewProps
-> = ({ note, context }) => {
+const NoteEditionOverviewComponent: FunctionComponent<NoteEditionOverviewProps> = ({ note, context }) => {
   const { t_i18n } = useFormatter();
 
   const userIsKnowledgeEditor = useGranted([KNOWLEDGE_KNUPDATE]);
@@ -152,6 +152,9 @@ NoteEditionOverviewProps
     x_opencti_workflow_id: convertStatus(t_i18n, note) as Option,
   };
 
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
+
   return (
     <Formik
       enableReinitialize={true}
@@ -159,7 +162,7 @@ NoteEditionOverviewProps
       validationSchema={noteValidator}
       validateOnChange={true}
       validateOnBlur={true}
-      onSubmit={() => {}}
+      onSubmit={() => { }}
     >
       {({ setFieldValue }) => (
         <Form style={{ margin: '20px 0 20px 0' }}>
@@ -174,7 +177,7 @@ NoteEditionOverviewProps
               variant: 'standard',
               fullWidth: true,
               helperText: (
-                <SubscriptionFocus context={context} fieldName="created"/>
+                <SubscriptionFocus context={context} fieldName="created" />
               ),
               required: mandatoryAttributes.includes('created'),
             }}
@@ -285,6 +288,9 @@ NoteEditionOverviewProps
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
           />
+          {isFABReplaced && <NoteDeletion
+            id={note.id}
+                            />}
         </Form>
       )}
     </Formik>
