@@ -10,7 +10,7 @@ import { Link } from 'react-router-dom';
 import makeStyles from '@mui/styles/makeStyles';
 import { GroupLine_node$data } from '@components/settings/groups/__generated__/GroupLine_node.graphql';
 import Tooltip from '@mui/material/Tooltip';
-import DangerZoneChip from '@components/common/dangerZone/DangerZoneChip';
+import DangerZoneChip from '@components/common/danger_zone/DangerZoneChip';
 import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import type { Theme } from '../../../../components/Theme';

@@ -21,7 +21,7 @@ import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import DialogTitle from '@mui/material/DialogTitle';
-import DangerZoneBlock from '@components/common/dangerZone/DangerZoneBlock';
+import DangerZoneBlock from '../common/danger_zone/DangerZoneBlock';
 import AccessesMenu from './AccessesMenu';
 import ObjectOrganizationField from '../common/form/ObjectOrganizationField';
 import { useFormatter } from '../../../components/i18n';

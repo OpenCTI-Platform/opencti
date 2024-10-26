@@ -6,7 +6,7 @@ import ListItemText from '@mui/material/ListItemText';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import { MoreVert } from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
-import DangerZoneChip from '@components/common/dangerZone/DangerZoneChip';
+import DangerZoneChip from '@components/common/danger_zone/DangerZoneChip';
 import makeStyles from '@mui/styles/makeStyles';
 import { MarkingDefinitionLine_node$data } from '@components/settings/marking_definitions/__generated__/MarkingDefinitionLine_node.graphql';
 import { useFormatter } from '../../../../components/i18n';

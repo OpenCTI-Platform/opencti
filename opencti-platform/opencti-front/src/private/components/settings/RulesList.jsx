@@ -20,7 +20,7 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import FormGroup from '@mui/material/FormGroup';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
-import DangerZoneBlock from '../common/dangerZone/DangerZoneBlock';
+import DangerZoneBlock from '../common/danger_zone/DangerZoneBlock';
 import Chart from '../common/charts/Chart';
 import { FIVE_SECONDS, parse } from '../../../utils/Time';
 import { useFormatter } from '../../../components/i18n';

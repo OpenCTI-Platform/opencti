@@ -15,7 +15,7 @@ import { groupsSearchQuery } from '../Groups';
 import { QueryRenderer } from '../../../../relay/environment';
 import ItemIcon from '../../../../components/ItemIcon';
 import useSensitiveModifications from '../../../../utils/hooks/useSensitiveModifications';
-import DangerZoneChip from '../../common/dangerZone/DangerZoneChip';
+import DangerZoneChip from '../../common/danger_zone/DangerZoneChip';
 
 const styles = (theme) => ({
   item: {
