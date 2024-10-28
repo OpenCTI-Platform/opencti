@@ -20,6 +20,7 @@ import Box from '@mui/material/Box';
 import Alert from '@mui/material/Alert';
 import Drawer from '../../common/drawer/Drawer';
 import ObjectMembersField from '../../common/form/ObjectMembersField';
+import ObjectOrganizationField from '../../common/form/ObjectOrganizationField';
 import CreatedByField from '../../common/form/CreatedByField';
 import Filters from '../../common/lists/Filters';
 import FilterIconButton from '../../../../components/FilterIconButton';
@@ -455,6 +456,18 @@ const PlaybookAddComponentsContent = ({
                         style={{ marginTop: 20 }}
                         multiple={true}
                         name="authorized_members"
+                      />
+                    );
+                  }
+                  if (k === 'organizations') {
+                    return (
+                      <ObjectOrganizationField
+                        key={k}
+                        name="organizations"
+                        style={{ marginTop: 20, width: '100%' }}
+                        label={t_i18n('Target organizations')}
+                        multiple={true}
+                        alert={false}
                       />
                     );
                   }
