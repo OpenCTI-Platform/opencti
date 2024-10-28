@@ -335,11 +335,12 @@ const CityEditionOverview: FunctionComponent<CityEditionOverviewProps> = ({
             onChange={editor.changeMarking}
           />
           <div style={{ display: 'flex', justifyContent: 'space-between', flex: 1 }}>
-            {isFABReplaced && (
-              <CityDeletion
-                id={city.id}
-              />
-            )}
+            {isFABReplaced
+              ? <CityDeletion
+                  id={city.id}
+                />
+              : <div/>
+              }
             {enableReferences && (
               <CommitMessage
                 submitForm={submitForm}

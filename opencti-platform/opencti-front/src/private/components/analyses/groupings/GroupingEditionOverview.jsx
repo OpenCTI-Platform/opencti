@@ -293,11 +293,12 @@ const GroupingEditionOverviewComponent = (props) => {
               onChange={editor.changeMarking}
             />
             <div style={{ display: 'flex', justifyContent: 'space-between', flex: 1 }}>
-              {isFABReplaced && (
-                <GroupingDeletion
-                  groupingId={grouping.id}
-                />
-              )}
+              {isFABReplaced
+                ? <GroupingDeletion
+                    groupingId={grouping.id}
+                  />
+                : <div/>
+              }
               {enableReferences && (
                 <CommitMessage
                   submitForm={submitForm}

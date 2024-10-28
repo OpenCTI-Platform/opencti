@@ -352,11 +352,11 @@ const ReportEditionOverviewComponent = (props) => {
             required={mandatoryAttributes.includes('objectMarking')}
           />
           <div style={{ display: 'flex', justifyContent: 'space-between', flex: 1 }}>
-            {isFABReplaced && (
-            <ReportDeletion
-              reportId={report.id}
-            />
-            )}
+            {isFABReplaced
+              ? <ReportDeletion
+                  reportId={report.id}
+                />
+              : <div/>}
             {enableReferences && (
             <CommitMessage
               submitForm={submitForm}

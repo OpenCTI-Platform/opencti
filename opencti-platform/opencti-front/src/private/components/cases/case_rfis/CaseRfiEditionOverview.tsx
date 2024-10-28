@@ -402,9 +402,10 @@ const CaseRfiEditionOverview: FunctionComponent<CaseRfiEditionOverviewProps> = (
             onChange={editor.changeMarking}
           />
           <div style={{ display: 'flex', justifyContent: 'space-between', flex: 1 }}>
-            {isFABReplaced && (
-              <CaseRfiDeletion id={caseData.id}/>
-            )}
+            {isFABReplaced
+              ? <CaseRfiDeletion id={caseData.id}/>
+              : <div/>
+              }
             {enableReferences && (
               <CommitMessage
                 submitForm={submitForm}

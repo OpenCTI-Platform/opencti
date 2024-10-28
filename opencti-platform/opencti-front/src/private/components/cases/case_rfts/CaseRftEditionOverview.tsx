@@ -403,9 +403,10 @@ const CaseRftEditionOverview: FunctionComponent<CaseRftEditionOverviewProps> = (
             onChange={editor.changeMarking}
           />
           <div style={{ display: 'flex', justifyContent: 'space-between', flex: 1 }}>
-            {isFABReplaced && (
-              <CaseRftDeletion id={caseData.id}/>
-            )}
+            {isFABReplaced
+              ? <CaseRftDeletion id={caseData.id}/>
+              : <div/>
+              }
             {enableReferences && (
               <CommitMessage
                 submitForm={submitForm}

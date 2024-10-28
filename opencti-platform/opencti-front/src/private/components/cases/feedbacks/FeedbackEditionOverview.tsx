@@ -338,11 +338,12 @@ FeedbackEditionOverviewProps
             onChange={editor.changeMarking}
           />
           <div style={{ display: 'flex', justifyContent: 'space-between', flex: 1 }}>
-            {isFABReplaced && (
-              <FeedbackDeletion
-                id={feedbackData.id}
-              />
-            )}
+            {isFABReplaced
+              ? <FeedbackDeletion
+                  id={feedbackData.id}
+                />
+              : <div/>
+              }
             {enableReferences && (
               <CommitMessage
                 submitForm={submitForm}

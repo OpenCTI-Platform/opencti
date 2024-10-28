@@ -408,9 +408,10 @@ const CaseIncidentEditionOverview: FunctionComponent<CaseIncidentEditionOverview
             onChange={editor.changeMarking}
           />
           <div style={{ display: 'flex', justifyContent: 'space-between', flex: 1 }}>
-            {isFABReplaced && (
-              <CaseIncidentDeletion id={caseData.id}/>
-            )}
+            {isFABReplaced
+              ? <CaseIncidentDeletion id={caseData.id}/>
+              : <div/>
+              }
             {enableReferences && (
               <CommitMessage
                 submitForm={submitForm}

@@ -303,11 +303,12 @@ CountryEditionOverviewProps
             onChange={editor.changeMarking}
           />
           <div style={{ display: 'flex', justifyContent: 'space-between', flex: 1 }}>
-            {isFABReplaced && (
-              <CountryDeletion
-                id={country.id}
-              />
-            )}
+            {isFABReplaced
+              ? <CountryDeletion
+                  id={country.id}
+                />
+              : <div/>
+              }
             {enableReferences && (
               <CommitMessage
                 submitForm={submitForm}

@@ -327,11 +327,12 @@ const PositionEditionOverviewComponent = (props) => {
             onChange={editor.changeMarking}
           />
           <div style={{ display: 'flex', justifyContent: 'space-between', flex: 1 }}>
-            {isFABReplaced && (
-              <PositionDeletion
-                positionId={position.id}
-              />
-            )}
+            {isFABReplaced
+              ? <PositionDeletion
+                  positionId={position.id}
+                />
+              : <div/>
+              }
             {enableReferences && (
               <CommitMessage
                 submitForm={submitForm}

@@ -303,11 +303,12 @@ RegionEdititionOverviewProps
             onChange={editor.changeMarking}
           />
           <div style={{ display: 'flex', justifyContent: 'space-between', flex: 1 }}>
-            {isFABReplaced && (
-              <RegionDeletion
-                id={region.id}
-              />
-            )}
+            {isFABReplaced
+              ? <RegionDeletion
+                  id={region.id}
+                />
+              : <div/>
+              }
             {enableReferences && (
               <CommitMessage
                 submitForm={submitForm}
