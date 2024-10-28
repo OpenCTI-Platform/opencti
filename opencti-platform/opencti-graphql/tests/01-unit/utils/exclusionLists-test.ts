@@ -1,32 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { checkExclusionList, checkIpAddressLists, checkIpAddrType, convertIpAddr, convertIpv4ToBinary, convertIpv6ToBinary } from '../../../src/utils/exclusionLists';
-import { exclusionListEntityType, type ExclusionListProperties } from '../../../src/utils/exclusionListsTypes';
-import * as exclusionList from '../../data/exclusionLists/index';
-
-const STORE_EXCLUSION_LIST = [
-  exclusionList.vpnIpv4List,
-  exclusionList.vpnIpv6List,
-  exclusionList.publicDnsHostNameList,
-  exclusionList.publicDnsV4List,
-  exclusionList.publicDnsV6List,
-  exclusionList.openaiGptBotList,
-  exclusionList.captivePortalsList,
-  exclusionList.bankWebsiteList,
-  exclusionList.googleBotList,
-];
-
-const STORE_EXCLUSION_LIST_BINARY = [];
-
-export const convertAndFillExclusionList = () => {
-  STORE_EXCLUSION_LIST.forEach((item: ExclusionListProperties) => {
-    if (item.type.includes(exclusionListEntityType.IPV4_ADDR) || item.type.includes(exclusionListEntityType.IPV6_ADDR)) {
-      const newList = convertIpAddr(item.list);
-      STORE_EXCLUSION_LIST_BINARY.push({ ...item, list: newList });
-      return;
-    }
-    STORE_EXCLUSION_LIST_BINARY.push(item);
-  });
-};
+import { exclusionListEntityType } from '../../../src/utils/exclusionListsTypes';
 
 const ipv4ListToTest = [
   '99.93.60.129',
@@ -217,36 +191,61 @@ describe('Exclusion Lists', () => {
   describe('checkIpAddressLists', () => {
     describe('When I check if an IPV4 is contained on lists', () => {
       describe('99.99.99.193', () => {
-        it('should throw an error', () => {
-          expect(() => checkIpAddressLists('99.99.99.193', ipv4ExclusionList)).rejects.toThrowError('Indicator creation failed, this pattern (99.99.99.193) is contained on an exclusion list (ipv4ListResult)');
+        it('should throw an error', async () => {
+          const result = await checkIpAddressLists('99.99.99.193', ipv4ExclusionList);
+          expect(result).not.toBe(null);
+          const { value, listName } = result;
+          console.log('result ', result);
+          expect(value).toBe('99.99.99.193');
+          expect(listName).toBe('ipv4ListResult');
+          // expect(() => checkIpAddressLists('99.99.99.193', ipv4ExclusionList)).rejects.toThrowError('Indicator creation failed, this pattern (99.99.99.193) is contained on an exclusion list (ipv4ListResult)');
         });
       });
       describe('99.87.23.11', () => {
-        it('should throw an error', () => {
-          expect(() => checkIpAddressLists('99.87.23.11', ipv4ExclusionList)).rejects.toThrowError('Indicator creation failed, this pattern (99.87.23.11) is contained on an exclusion list (ipv4ListResult)');
+        it('should throw an error', async () => {
+          const result = await checkIpAddressLists('99.87.23.11', ipv4ExclusionList);
+          expect(result).not.toBe(null);
+          const { value, listName } = result;
+          expect(value).toBe('99.87.23.11');
+          expect(listName).toBe('ipv4ListResult');
+          // expect(() => checkIpAddressLists('99.87.23.11', ipv4ExclusionList)).rejects.toThrowError('Indicator creation failed, this pattern (99.87.23.11) is contained on an exclusion list (ipv4ListResult)');
         });
       });
       describe('22.22.22.22', () => {
-        it('should do nothing', () => {
-          expect(() => checkIpAddressLists('22.22.22.22', ipv4ExclusionList)).not.toThrowError();
+        it('should do nothing', async () => {
+          const result = await checkIpAddressLists('22.22.22.22', ipv4ExclusionList);
+          expect(result).toBe(null);
+          // expect(() => checkIpAddressLists('22.22.22.22', ipv4ExclusionList)).not.toThrowError();
         });
       });
     });
 
     describe('When I check if an IPV6 is contained on lists', () => {
       describe('2a12:e342:200::2:1819', () => {
-        it('should throw an error', () => {
-          expect(() => checkIpAddressLists('2a12:e342:200::2:1819', ipv6ExclusionList)).rejects.toThrowError('Indicator creation failed, this pattern (2a12:e342:200::2:1819) is contained on an exclusion list (ipv6ListResult)');
+        it('should throw an error', async () => {
+          const result = await checkIpAddressLists('2a12:e342:200::2:1819', ipv6ExclusionList);
+          expect(result).not.toBe(null);
+          const { value, listName } = result;
+          expect(value).toBe('2a12:e342:200::2:1819');
+          expect(listName).toBe('ipv6ListResult');
+          // expect(() => checkIpAddressLists('2a12:e342:200::2:1819', ipv6ExclusionList)).rejects.toThrowError('Indicator creation failed, this pattern (2a12:e342:200::2:1819) is contained on an exclusion list (ipv6ListResult)');
         });
       });
       describe('2001:1424:0:1234::', () => {
-        it('should throw an error', () => {
-          expect(() => checkIpAddressLists('2001:1424:0:1234::', ipv6ExclusionList)).rejects.toThrowError('Indicator creation failed, this pattern (2001:1424:0:1234::) is contained on an exclusion list (ipListResult)');
+        it('should throw an error', async () => {
+          const result = await checkIpAddressLists('2001:1424:0:1234::', ipv6ExclusionList);
+          expect(result).not.toBe(null);
+          const { value, listName } = result;
+          expect(value).toBe('2001:1424:0:1234::');
+          expect(listName).toBe('ipListResult');
+          // expect(() => checkIpAddressLists('2001:1424:0:1234::', ipv6ExclusionList)).rejects.toThrowError('Indicator creation failed, this pattern (2001:1424:0:1234::) is contained on an exclusion list (ipListResult)');
         });
       });
       describe('2602:fba1:a00::100:19', () => {
-        it('should do nothing', () => {
-          expect(() => checkIpAddressLists('2602:fba1:a00::100:19', ipv6ExclusionList)).not.toThrowError();
+        it('should do nothing', async () => {
+          const result = await checkExclusionList('2602:fba1:a00::100:19', ipv6ExclusionList);
+          expect(result).toBe(null);
+          // expect(() => checkIpAddressLists('2602:fba1:a00::100:19', ipv6ExclusionList)).not.toThrowError();
         });
       });
     });
@@ -255,18 +254,30 @@ describe('Exclusion Lists', () => {
   describe('checkExclusionList', () => {
     describe('When I check if a domain name is contained on lists', () => {
       describe('ns4.epidc.co.kr', () => {
-        it('should throw an error', () => {
-          expect(() => checkExclusionList('ns4.epidc.co.kr', domainExclusionList)).rejects.toThrowError('Indicator creation failed, this pattern (ns4.epidc.co.kr) is contained on an exclusion list (domainExclusionList)');
+        it('should throw an error', async () => {
+          const result = await checkExclusionList('ns4.epidc.co.kr', domainExclusionList);
+          expect(result).not.toBe(null);
+          const { value, listName } = result;
+          expect(value).toBe('ns4.epidc.co.kr');
+          expect(listName).toBe('domainExclusionList');
+          // expect(() => checkExclusionList('ns4.epidc.co.kr', domainExclusionList)).rejects.toThrowError('Indicator creation failed, this pattern (ns4.epidc.co.kr) is contained on an exclusion list (domainExclusionList)');
         });
       });
       describe('www.test.ambfinancial.com', () => {
-        it('should throw an error', () => {
-          expect(() => checkExclusionList('www.test.ambfinancial.com', domainExclusionList)).rejects.toThrowError('Indicator creation failed, this pattern (www.test.ambfinancial.com) is contained on an exclusion list (domainExclusionList)');
+        it('should throw an error', async () => {
+          const result = await checkExclusionList('www.test.ambfinancial.com', domainExclusionList);
+          expect(result).not.toBe(null);
+          const { value, listName } = result;
+          expect(value).toBe('www.test.ambfinancial.com');
+          expect(listName).toBe('domainExclusionList');
+          // expect(() => checkExclusionList('www.test.ambfinancial.com', domainExclusionList)).rejects.toThrowError('Indicator creation failed, this pattern (www.test.ambfinancial.com) is contained on an exclusion list (domainExclusionList)');
         });
       });
       describe('test.domain.name.fr', () => {
-        it('should do nothing', () => {
-          expect(() => checkExclusionList('test.domain.name.fr', domainExclusionList)).not.toThrowError();
+        it('should do nothing', async () => {
+          const result = await checkExclusionList('test.domain.name.fr', domainExclusionList);
+          expect(result).toBe(null);
+          // expect(() => checkExclusionList('test.domain.name.fr', domainExclusionList)).not.toThrowError();
         });
       });
     });

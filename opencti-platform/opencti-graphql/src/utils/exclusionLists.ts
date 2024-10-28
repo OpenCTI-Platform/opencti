@@ -1,5 +1,4 @@
 import { MAX_EVENT_LOOP_PROCESSING_TIME } from '../database/utils';
-import { FunctionalError } from '../config/errors';
 import { type ExclusionListProperties } from './exclusionListsTypes';
 
 export const getIsRange = (value: string) => value.indexOf('/') !== -1;
@@ -45,10 +44,6 @@ export const convertIpv4ToBinary = (ipv4: string, isRange?: boolean, range?: num
   return binary;
 };
 
-const throwExclusionListError = (value: string, listName: string) => {
-  throw FunctionalError(`Indicator creation failed, this pattern (${value}) is contained on an exclusion list (${listName})`, { value });
-};
-
 export const convertIpAddr = (list: string[]) => {
   return list.map((value) => {
     const ipAddress = value.split('/')[0];
@@ -71,7 +66,7 @@ export const checkIpAddressLists = async (ipToTest: string, exclusionList: Exclu
 
     for (let j = 0; j < list.length; j += 1) {
       if (binary.startsWith(list[j])) {
-        throwExclusionListError(ipToTest, name);
+        return { value: ipToTest, listName: name };
       }
 
       if (new Date().getTime() - startProcessingTime > MAX_EVENT_LOOP_PROCESSING_TIME) {
@@ -82,6 +77,7 @@ export const checkIpAddressLists = async (ipToTest: string, exclusionList: Exclu
       }
     }
   }
+  return null;
 };
 
 export const checkExclusionList = async (valueToTest: string, exclusionList: ExclusionListProperties[]) => {
@@ -93,7 +89,7 @@ export const checkExclusionList = async (valueToTest: string, exclusionList: Exc
     for (let j = 0; j < list.length; j += 1) {
       const isWildCard = list[j].startsWith('.');
       if ((isWildCard && valueToTest.endsWith(list[j])) || valueToTest === list[j]) {
-        throwExclusionListError(valueToTest, name);
+        return { value: valueToTest, listName: name };
       }
 
       if (new Date().getTime() - startProcessingTime > MAX_EVENT_LOOP_PROCESSING_TIME) {
@@ -104,4 +100,5 @@ export const checkExclusionList = async (valueToTest: string, exclusionList: Exc
       }
     }
   }
+  return null;
 };
