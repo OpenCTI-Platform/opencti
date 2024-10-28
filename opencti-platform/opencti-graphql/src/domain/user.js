@@ -1078,11 +1078,12 @@ export const loginFromProvider = async (userInfo, opts = {}) => {
   if (isEmptyField(email)) {
     throw ForbiddenAccess('User email not provided');
   }
-  const name = isEmptyField(providedName) ? email : providedName;
-  const user = await elLoadBy(context, SYSTEM_USER, 'user_email', email, ENTITY_TYPE_USER);
+  const userEmail = email.toLowerCase();
+  const name = isEmptyField(providedName) ? userEmail : providedName;
+  const user = await elLoadBy(context, SYSTEM_USER, 'user_email', userEmail, ENTITY_TYPE_USER);
   if (!user) {
     // If user doesn't exist, create it. Providers are trusted
-    const newUser = { name, firstname, lastname, user_email: email.toLowerCase(), external: true };
+    const newUser = { name, firstname, lastname, user_email: userEmail, external: true };
     return addUser(context, SYSTEM_USER, newUser).then(() => {
       // After user creation, reapply login to manage roles and groups
       return loginFromProvider(userInfo, opts);
