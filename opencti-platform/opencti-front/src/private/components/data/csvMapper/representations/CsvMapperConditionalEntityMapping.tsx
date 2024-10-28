@@ -98,7 +98,6 @@ CsvMapperConditionalEntityMappingProps
                   },
                 },
               }}
-                // error={!representation.column_based?.column_reference && representation.column_based}
             />
           )}
         />
@@ -145,20 +144,11 @@ CsvMapperConditionalEntityMappingProps
             name={
                 representation.column_based?.enabled
                   ? `${representationName}.column_based.value`
-                  : `${representationName}.column_based.value` === null
+                  : null
             }
             variant="standard"
             disabled={!representation.column_based?.enabled}
-              // InputProps={{
-              //   sx: {
-              //     '& .MuiInput-underline:before': {
-              //       borderBottomColor: errors ? 'rgb(244, 67, 54)' : '',
-              //     },
-              //     '& .MuiInput-underline:after': {
-              //       borderBottomColor: errors ? 'rgb(244, 67, 54)' : '',
-              //     },
-              //   },
-              // }}
+            error={!representation.column_based?.value && representation.column_based?.enabled}
           />
         </div>
       </div>
