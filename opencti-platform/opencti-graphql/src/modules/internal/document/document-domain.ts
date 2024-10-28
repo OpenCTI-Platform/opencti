@@ -24,6 +24,7 @@ import { buildRefRelationKey } from '../../../schema/general';
 export const SUPPORT_STORAGE_PATH = 'support';
 export const IMPORT_STORAGE_PATH = 'import';
 export const EXPORT_STORAGE_PATH = 'export';
+export const FROM_TEMPLATE_STORAGE_PATH = 'fromTemplate';
 
 export const DELETABLE_FILE_STATUSES = ['complete', 'timeout'];
 export const UPLOAD_STATUS_VALUES = Object.values(State);
