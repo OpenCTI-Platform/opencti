@@ -465,7 +465,7 @@ const PlaybookAddComponentsContent = ({
                         key={k}
                         name="organizations"
                         style={{ marginTop: 20, width: '100%' }}
-                        label={t_i18n('Target organizations')}
+                        label={'Target organizations'}
                         multiple={true}
                         alert={false}
                       />
