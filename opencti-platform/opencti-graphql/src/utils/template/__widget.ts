@@ -32,6 +32,7 @@ const widgetIncidentResponseMultiAttributes: TemplateWidget = {
     perspective: null,
     dataSelection: [{
       columns: [
+        { label: 'Name', attribute: 'name', variableName: 'containerName' },
         { label: 'creationDate', attribute: 'created_at', displayStyle: 'text', variableName: 'containerCreationDate' },
         { label: 'Description', attribute: 'description', variableName: 'containerDescription' },
         { label: 'Labels', attribute: 'objectLabel.value', variableName: 'containerLabels' },
