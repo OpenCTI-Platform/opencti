@@ -6,11 +6,11 @@ import WidgetNumber from './WidgetNumber';
 
 describe('Component: WidgetNumber', () => {
   it('should display the given number', () => {
-    // testRender(<WidgetNumber total={999111} value={111} />);
-    //
-    // const total = screen.queryByText('999111');
-    // const diff = screen.queryByText('999000');
-    // expect(total).toBeInTheDocument();
-    // expect(diff).toBeInTheDocument();
+    testRender(<WidgetNumber total={999111} value={111} />);
+
+    const total = screen.queryByText('999.11K');
+    const diff = screen.queryByText('999000');
+    expect(total).toBeInTheDocument();
+    expect(diff).toBeInTheDocument();
   });
 });
