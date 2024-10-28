@@ -182,8 +182,8 @@ const WorkspaceHeader = ({
         const toStixBundleData = data?.workspace?.toStixReportBundle;
         if (toStixBundleData) {
           const blob = new Blob([toStixBundleData], { type: 'text/json' });
-          const fileName = `${nowUTC()}_(export-stix-report)_${workspace.name}`;
-          fileDownload(blob, fileName, 'application/json');
+          const fileName = `${nowUTC()}_(export-stix-report)_${workspace.name}.json`;
+          fileDownload(blob, fileName);
         }
       });
   };
