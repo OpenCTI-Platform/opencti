@@ -5,6 +5,7 @@ import { StixCoreObjectsAttributesQuery$data } from './__generated__/StixCoreObj
 import type { TemplateWidget } from '../../template';
 import stixCoreObjectsAttributesQuery from './StixCoreObjectsAttributesQuery';
 import getObjectProperty from '../../../object';
+import { dateFormat, isDate } from '../../../Time';
 
 const useBuildAttributesOutcome = () => {
   const buildAttributesOutcome = async (containerId: string, templateWidget: TemplateWidget) => {
@@ -15,24 +16,30 @@ const useBuildAttributesOutcome = () => {
     const queryVariables = { id: instanceId === 'CONTAINER_ID' ? containerId : instanceId };
     const columns = templateWidget.widget.dataSelection[0].columns ?? [];
     const data = await fetchQuery(stixCoreObjectsAttributesQuery, queryVariables).toPromise() as StixCoreObjectsAttributesQuery$data;
-    const attributeOutcomes = columns.map((col) => {
+
+    const format = (val: unknown) => {
+      let value = typeof val === 'string' ? val : JSON.stringify(val);
+      if (isDate(value)) value = dateFormat(new Date(value)) ?? '';
+      return value;
+    };
+
+    return columns.map((col) => {
       const result = getObjectProperty(data.stixCoreObject ?? {}, col.attribute) ?? '';
       let attributeData: string;
       if (Array.isArray(result)) {
         if (col.displayStyle && col.displayStyle === 'list') {
-          attributeData = renderToString(<ul>{result.map((el) => <li key={el}>{el}</li>)}</ul>);
+          attributeData = renderToString(<ul>{result.map((el) => <li key={el}>{format(el)}</li>)}</ul>);
         } else {
-          attributeData = result.join(', ');
+          attributeData = result.map(format).join(', ');
         }
       } else {
-        attributeData = typeof result === 'string' ? result : result.toString();
+        attributeData = format(result);
       }
       return {
         variableName: col.variableName,
         attributeData,
       };
     });
-    return attributeOutcomes;
   };
   return { buildAttributesOutcome };
 };

@@ -70,6 +70,7 @@ const StixCoreObjectContentFilesList = ({
   const [commitDelete] = useApiMutation<FileLineDeleteMutation>(deleteMutation);
 
   const submitDelete = (fileId: string) => {
+    setAnchorEl(null);
     setDeleting(fileId);
     commitDelete({
       variables: { fileName: fileId },
@@ -81,6 +82,7 @@ const StixCoreObjectContentFilesList = ({
   };
 
   const downloadPdf = async (file: ContentFile) => {
+    setAnchorEl(null);
     const { id } = file;
     const url = `${APP_BASE_PATH}/storage/view/${encodeURIComponent(id)}`;
 
@@ -146,6 +148,7 @@ const StixCoreObjectContentFilesList = ({
             <MenuItem
               component={Link}
               to={`${APP_BASE_PATH}/storage/get/${encodeURIComponent(file.id)}`}
+              onClick={() => setAnchorEl(null)}
               target="_blank"
               rel="noopener noreferrer"
             >

@@ -7,13 +7,13 @@ import { templateIncidentResponse } from './__incidentCase.template';
 const templateText: Template = {
   name: 'template with simple text',
   id: 'templateText-id',
-  content: '<body>\n'
+  content: '<div>\n'
     + '<h1> Main title </h1>\n'
     + '<p> Some content </p>\n'
     + '<h2> Subtitle 2 </h2>\n'
     + '<h3> Subtitle 3 </h3>\n'
     + '<p> A paragraph content </p> \n'
-    + '</body> \n'
+    + '</div> \n'
     + '</html>',
   template_widgets_names: [],
 };
@@ -21,11 +21,11 @@ const templateText: Template = {
 const templateAttribute: Template = {
   name: 'template with attributes',
   id: 'templateAttribute-id',
-  content: `<body>
+  content: `<div>
     <h1> Main title </h1>
     <p> Report name: $containerName</p>
     <p> This report has been published $reportPublicationDate, and has labels: $containerLabels</p>
-    </body>
+    </div>
     </html>`,
   template_widgets_names: ['containerName', 'reportPublicationDate', 'containerLabels', 'widgetReportMultiAttributes'],
 };
@@ -33,10 +33,10 @@ const templateAttribute: Template = {
 const templateList: Template = {
   name: 'template list: list of locations contained in the report',
   id: 'templateList-id',
-  content: '<body>\n'
+  content: '<div>\n'
     + '<h1> Main title </h1>\n'
     + '<p> Locations contained in the report: $locationsList</p>\n'
-    + '</body> \n'
+    + '</div> \n'
     + '</html>',
   template_widgets_names: ['locationsList'],
 };

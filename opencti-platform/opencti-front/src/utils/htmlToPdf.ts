@@ -124,6 +124,29 @@ const generatePdf = (pdfMakeObject: TDocumentDefinitions, checkOrientation = fal
 };
 
 /**
+ * Take tables and add an attribute to make them full width in PDF.
+ *
+ * @param content The html content in string.
+ * @returns Same content but with new attribute on tables.
+ */
+const setTableFullWidth = (content: string) => {
+  const container = document.createElement('div');
+  container.innerHTML = content;
+  container.querySelectorAll('table').forEach((table) => {
+    const header = table.querySelector('thead tr');
+    const body = table.querySelector('tbody tr');
+    const element = header ?? body;
+    if (element) {
+      const nbColumns = element.querySelectorAll(header ? 'th' : 'td').length;
+      if (nbColumns) {
+        table.setAttribute('data-pdfmake', `{'widths':[${Array(nbColumns).fill("'*'").join()}]}`);
+      }
+    }
+  });
+  return container.innerHTML;
+};
+
+/**
  * Transform html file into a PDF that can be downloaded.
  *
  * @param fileName name of the file to transform.
@@ -151,8 +174,7 @@ export const htmlToPdf = (fileName: string, content: string) => {
 export const htmlToPdfReport = (stixCoreObject: any, content: string, templateName: string, markings: string[]) => {
   let htmlData = removeUselessContent(content);
   htmlData = setImagesWidth(htmlData);
-
-  //
+  htmlData = setTableFullWidth(htmlData);
 
   // Transform html string into a JS object that lib pdfmake can understand.
   const pdfMakeObject = htmlToPdfmake(htmlData, {

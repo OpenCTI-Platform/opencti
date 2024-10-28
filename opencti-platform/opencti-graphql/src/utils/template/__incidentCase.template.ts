@@ -1,39 +1,41 @@
 import type { Template } from '../../generated/graphql';
 
 const content = `
-<body>
+<div>
   <h2>Incident Response Report: $containerName</h2>
   
   <h3>1. Details</h3>
-  <table data-pdfmake="{'widths':['*','*']}">
-    <tr>
-      <td><strong>Creation date</strong></td>
-      <td>$containerCreationDate</td>
-    </tr>
-    <tr>
-      <td><strong>Last modified date</strong></td>
-      <td>$containerModificationDate</td>
-    </tr>
-    <tr>
-      <td><strong>Priority</strong></td>
-      <td>$incidentPriority</td>
-    </tr>
-    <tr>
-      <td><strong>Severity</strong></td>
-      <td>$incidentSeverity</td>
-    </tr>
-    <tr>
-      <td><strong>Incident response type</strong></td>
-      <td>$incidentType</td>
-    </tr>
-    <tr>
-      <td><strong>Labels</strong></td>
-      <td>$containerLabels</td>
-    </tr>
-    <tr>
-      <td><strong>Markings</strong></td>
-      <td>$containerMarkings</td>
-    </tr>
+  <table>
+    <tbody>
+      <tr>
+        <td><strong>Creation date</strong></td>
+        <td>$containerCreationDate</td>
+      </tr>
+      <tr>
+        <td><strong>Last modified date</strong></td>
+        <td>$containerModificationDate</td>
+      </tr>
+      <tr>
+        <td><strong>Priority</strong></td>
+        <td>$incidentPriority</td>
+      </tr>
+      <tr>
+        <td><strong>Severity</strong></td>
+        <td>$incidentSeverity</td>
+      </tr>
+      <tr>
+        <td><strong>Incident response type</strong></td>
+        <td>$incidentType</td>
+      </tr>
+      <tr>
+        <td><strong>Labels</strong></td>
+        <td>$containerLabels</td>
+      </tr>
+      <tr>
+        <td><strong>Markings</strong></td>
+        <td>$containerMarkings</td>
+      </tr>
+    </tbody>
   </table>
   
   <h3>2. Executive Summary</h3>
@@ -69,7 +71,7 @@ const content = `
   
   <h3>9. References</h3>
   <div>$containerReferences</div>
-</body>
+</div>
 `;
 
 export const templateIncidentResponse: Template = {
