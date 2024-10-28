@@ -28,8 +28,8 @@ const handleWidgetExportJson = (id: string, widget: widgetToExport) => {
         const [day, month, year] = new Date()
           .toLocaleDateString('fr-FR')
           .split('/');
-        const fileName = `${year}${month}${day}_octi_widget_${widget.type}`;
-        fileDownload(blob, fileName, 'application/json');
+        const fileName = `${year}${month}${day}_octi_widget_${widget.type}.json`;
+        fileDownload(blob, fileName);
       }
     });
 };
