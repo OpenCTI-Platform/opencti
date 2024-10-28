@@ -98,7 +98,7 @@ services:
       - apk add build-base git libffi-dev cargo github-cli
       - chmod 777 scripts/*
       - echo "DRONE_SOURCE_BRANCH:${DRONE_SOURCE_BRANCH}, DRONE_PULL_REQUEST:${DRONE_PULL_REQUEST}"
-      - ./scripts/clone-opencti.sh "${DRONE_SOURCE_BRANCH}" "$(pwd)" "${DRONE_PULL_REQUEST}"
+      - ./scripts/clone-opencti.sh "${DRONE_SOURCE_BRANCH}" "${DRONE_TARGET_BRANCH}" "$(pwd)" "${DRONE_PULL_REQUEST}"
       - ls -lart
       - cd opencti/opencti-platform/opencti-graphql
       - yarn install
