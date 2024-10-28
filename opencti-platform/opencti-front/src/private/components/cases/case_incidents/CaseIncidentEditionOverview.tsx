@@ -407,19 +407,21 @@ const CaseIncidentEditionOverview: FunctionComponent<CaseIncidentEditionOverview
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
           />
-          {enableReferences && (
-            <CommitMessage
-              submitForm={submitForm}
-              disabled={isSubmitting || !isValid || !dirty}
-              setFieldValue={setFieldValue}
-              open={false}
-              values={values.references}
-              id={caseData.id}
-            />
-          )}
-          {isFABReplaced && (
-            <CaseIncidentDeletion id={caseData.id} />
-          )}
+          <div style={{ display: 'flex', justifyContent: 'space-between', flex: 1 }}>
+            {isFABReplaced && (
+              <CaseIncidentDeletion id={caseData.id}/>
+            )}
+            {enableReferences && (
+              <CommitMessage
+                submitForm={submitForm}
+                disabled={isSubmitting || !isValid || !dirty}
+                setFieldValue={setFieldValue}
+                open={false}
+                values={values.references}
+                id={caseData.id}
+              />
+            )}
+          </div>
         </Form>
       )}
     </Formik>

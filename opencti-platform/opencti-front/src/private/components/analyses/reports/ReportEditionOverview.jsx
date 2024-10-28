@@ -3,6 +3,7 @@ import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import * as R from 'ramda';
+import ReportDeletion from './ReportDeletion';
 import { buildDate, parse } from '../../../../utils/Time';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
@@ -23,6 +24,7 @@ import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import ObjectParticipantField from '../../common/form/ObjectParticipantField';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 export const reportMutationFieldPatch = graphql`
   mutation ReportEditionOverviewFieldPatchMutation(
@@ -89,6 +91,8 @@ const REPORT_TYPE = 'Report';
 const ReportEditionOverviewComponent = (props) => {
   const { report, enableReferences, context, handleClose } = props;
   const { t_i18n } = useFormatter();
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   const { mandatoryAttributes } = useIsMandatoryAttribute(REPORT_TYPE);
   const basicShape = yupShapeConditionalRequired({
@@ -347,7 +351,13 @@ const ReportEditionOverviewComponent = (props) => {
             onChange={editor.changeMarking}
             required={mandatoryAttributes.includes('objectMarking')}
           />
-          {enableReferences && (
+          <div style={{ display: 'flex', justifyContent: 'space-between', flex: 1 }}>
+            {isFABReplaced && (
+            <ReportDeletion
+              reportId={report.id}
+            />
+            )}
+            {enableReferences && (
             <CommitMessage
               submitForm={submitForm}
               disabled={isSubmitting || !isValid || !dirty}
@@ -356,7 +366,8 @@ const ReportEditionOverviewComponent = (props) => {
               values={values.references}
               id={report.id}
             />
-          )}
+            )}
+          </div>
         </Form>
       )}
     </Formik>

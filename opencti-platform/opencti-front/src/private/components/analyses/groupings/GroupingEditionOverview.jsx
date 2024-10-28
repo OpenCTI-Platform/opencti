@@ -3,6 +3,7 @@ import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import * as R from 'ramda';
+import GroupingDeletion from './GroupingDeletion';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
@@ -19,6 +20,7 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 export const groupingMutationFieldPatch = graphql`
   mutation GroupingEditionOverviewFieldPatchMutation(
@@ -85,6 +87,8 @@ const GROUPING_TYPE = 'Grouping';
 const GroupingEditionOverviewComponent = (props) => {
   const { grouping, enableReferences, context, handleClose } = props;
   const { t_i18n } = useFormatter();
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   const { mandatoryAttributes } = useIsMandatoryAttribute(GROUPING_TYPE);
 
@@ -288,16 +292,23 @@ const GroupingEditionOverviewComponent = (props) => {
               setFieldValue={setFieldValue}
               onChange={editor.changeMarking}
             />
-            {enableReferences && (
-              <CommitMessage
-                submitForm={submitForm}
-                disabled={isSubmitting || !isValid || !dirty}
-                setFieldValue={setFieldValue}
-                open={false}
-                values={values.references}
-                id={grouping.id}
-              />
-            )}
+            <div style={{ display: 'flex', justifyContent: 'space-between', flex: 1 }}>
+              {isFABReplaced && (
+                <GroupingDeletion
+                  groupingId={grouping.id}
+                />
+              )}
+              {enableReferences && (
+                <CommitMessage
+                  submitForm={submitForm}
+                  disabled={isSubmitting || !isValid || !dirty}
+                  setFieldValue={setFieldValue}
+                  open={false}
+                  values={values.references}
+                  id={grouping.id}
+                />
+              )}
+            </div>
           </Form>
         </div>
       )}

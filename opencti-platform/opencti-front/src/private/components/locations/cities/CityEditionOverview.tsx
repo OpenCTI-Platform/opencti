@@ -334,21 +334,23 @@ const CityEditionOverview: FunctionComponent<CityEditionOverviewProps> = ({
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
           />
-          {enableReferences && (
-            <CommitMessage
-              submitForm={submitForm}
-              disabled={isSubmitting || !isValid || !dirty}
-              setFieldValue={setFieldValue}
-              open={false}
-              values={values.references}
-              id={city.id}
-            />
-          )}
-          {isFABReplaced && (
-            <CityDeletion
-              id={city.id}
-            />
-          )}
+          <div style={{ display: 'flex', justifyContent: 'space-between', flex: 1 }}>
+            {isFABReplaced && (
+              <CityDeletion
+                id={city.id}
+              />
+            )}
+            {enableReferences && (
+              <CommitMessage
+                submitForm={submitForm}
+                disabled={isSubmitting || !isValid || !dirty}
+                setFieldValue={setFieldValue}
+                open={false}
+                values={values.references}
+                id={city.id}
+              />
+            )}
+          </div>
         </Form>
       )}
     </Formik>

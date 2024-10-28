@@ -347,21 +347,23 @@ AdministrativeAreaEditionOverviewProps
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
           />
-          {enableReferences && (
-            <CommitMessage
-              submitForm={submitForm}
-              disabled={isSubmitting || !isValid || !dirty}
-              setFieldValue={setFieldValue}
-              open={false}
-              values={values.references}
-              id={administrativeArea.id}
-            />
-          )}
-          {isFABReplaced && (
-            <AdministrativeAreaDeletion
-              id={administrativeArea.id}
-            />
-          )}
+          <div style={{ display: 'flex', justifyContent: 'space-between', flex: 1 }}>
+            {isFABReplaced && (
+              <AdministrativeAreaDeletion
+                id={administrativeArea.id}
+              />
+            )}
+            {enableReferences && (
+              <CommitMessage
+                submitForm={submitForm}
+                disabled={isSubmitting || !isValid || !dirty}
+                setFieldValue={setFieldValue}
+                open={false}
+                values={values.references}
+                id={administrativeArea.id}
+              />
+            )}
+          </div>
         </Form>
       )}
     </Formik>

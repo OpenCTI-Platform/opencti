@@ -272,7 +272,7 @@ const CaseRfiEditionOverview: FunctionComponent<CaseRfiEditionOverviewProps> = (
         dirty,
       }) => (
         <Form style={{ margin: '20px 0 20px 0' }}>
-          <AlertConfidenceForEntity entity={caseData} />
+          <AlertConfidenceForEntity entity={caseData}/>
           <Field
             component={TextField}
             variant="standard"
@@ -401,19 +401,21 @@ const CaseRfiEditionOverview: FunctionComponent<CaseRfiEditionOverviewProps> = (
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
           />
-          {enableReferences && (
-            <CommitMessage
-              submitForm={submitForm}
-              disabled={isSubmitting || !isValid || !dirty}
-              setFieldValue={setFieldValue}
-              open={false}
-              values={values.references}
-              id={caseData.id}
-            />
-          )}
-          {isFABReplaced && (
-            <CaseRfiDeletion id={caseData.id} />
-          )}
+          <div style={{ display: 'flex', justifyContent: 'space-between', flex: 1 }}>
+            {isFABReplaced && (
+              <CaseRfiDeletion id={caseData.id}/>
+            )}
+            {enableReferences && (
+              <CommitMessage
+                submitForm={submitForm}
+                disabled={isSubmitting || !isValid || !dirty}
+                setFieldValue={setFieldValue}
+                open={false}
+                values={values.references}
+                id={caseData.id}
+              />
+            )}
+          </div>
         </Form>
       )}
     </Formik>

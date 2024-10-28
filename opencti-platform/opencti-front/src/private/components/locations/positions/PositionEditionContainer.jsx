@@ -5,7 +5,6 @@ import PositionEditionOverview from './PositionEditionOverview';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 import Drawer, { DrawerVariant } from '../../common/drawer/Drawer';
 import useHelper from '../../../../utils/hooks/useHelper';
-import PositionDeletion from './PositionDeletion';
 
 const PositionEditionContainer = (props) => {
   const { t_i18n } = useFormatter();
@@ -29,11 +28,6 @@ const PositionEditionContainer = (props) => {
           context={editContext}
           handleClose={handleClose}
         />
-        {isFABReplaced && (
-          <PositionDeletion
-            positionId={position.id}
-          />
-        )}
       </>
     </Drawer>
   );

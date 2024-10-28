@@ -337,21 +337,23 @@ FeedbackEditionOverviewProps
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
           />
-          {enableReferences && (
-            <CommitMessage
-              submitForm={submitForm}
-              disabled={isSubmitting || !isValid || !dirty}
-              setFieldValue={setFieldValue}
-              open={false}
-              values={values.references}
-              id={feedbackData.id}
-            />
-          )}
-          {isFABReplaced && (
-            <FeedbackDeletion
-              id={feedbackData.id}
-            />
-          )}
+          <div style={{ display: 'flex', justifyContent: 'space-between', flex: 1 }}>
+            {isFABReplaced && (
+              <FeedbackDeletion
+                id={feedbackData.id}
+              />
+            )}
+            {enableReferences && (
+              <CommitMessage
+                submitForm={submitForm}
+                disabled={isSubmitting || !isValid || !dirty}
+                setFieldValue={setFieldValue}
+                open={false}
+                values={values.references}
+                id={feedbackData.id}
+              />
+            )}
+          </div>
         </Form>
       )}
     </Formik>
