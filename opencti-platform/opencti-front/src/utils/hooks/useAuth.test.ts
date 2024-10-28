@@ -22,7 +22,7 @@ describe('Hook: useAuth', () => {
         },
       },
     );
-    expect(call).toThrowError('Invalid user coxt !');
+    expect(call).toThrowError('Invalid user context !');
   });
 
   // TODO other throws
