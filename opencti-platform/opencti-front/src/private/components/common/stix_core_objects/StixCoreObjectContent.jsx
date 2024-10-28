@@ -468,6 +468,7 @@ class StixCoreObjectContentComponent extends Component {
       <div className={classes.container} data-testid='sco-content-page'>
         <StixCoreObjectContentFiles
           stixCoreObjectId={stixCoreObject.id}
+          stixCoreObjectName={stixCoreObject.name}
           content={isContentCompatible ? stixCoreObject.contentField ?? '' : null}
           contentSelected={contentSelected}
           files={files}

@@ -46,7 +46,8 @@ export interface ContentFile {
 }
 
 interface StixCoreObjectContentFilesListProps {
-  files: ContentFile[]
+  files: ContentFile[],
+  stixCoreObjectName: string,
   currentFileId: string,
   handleSelectFile: (fileId: string) => void,
   onFileChange: (fileName?: string, isDeleted?: boolean) => void,
@@ -55,6 +56,7 @@ interface StixCoreObjectContentFilesListProps {
 const StixCoreObjectContentFilesList = ({
   files,
   currentFileId,
+  stixCoreObjectName,
   handleSelectFile,
   onFileChange,
 }: StixCoreObjectContentFilesListProps) => {
@@ -88,11 +90,11 @@ const StixCoreObjectContentFilesList = ({
 
     try {
       const { data } = await axios.get(url);
-      const currentName = id.split('/').pop() ?? '';
+      const currentName = (id.split('/').pop() ?? '').split('.')[0];
 
       if (id.startsWith('fromTemplate')) {
         const markings = file?.objectMarking?.map((m) => m.representative.main) ?? [];
-        htmlToPdfReport({ name: 'hello' }, data, currentName, markings).download(`${currentName}.pdf`);
+        htmlToPdfReport(stixCoreObjectName, data, currentName, markings).download(`${currentName}.pdf`);
       } else {
         htmlToPdf(id, data).download(`${currentName}.pdf`);
       }

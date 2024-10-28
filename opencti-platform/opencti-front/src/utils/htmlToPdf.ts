@@ -171,7 +171,7 @@ export const htmlToPdf = (fileName: string, content: string) => {
   return generatePdf(pdfMakeObject);
 };
 
-export const htmlToPdfReport = (stixCoreObject: any, content: string, templateName: string, markings: string[]) => {
+export const htmlToPdfReport = (reportName: string, content: string, templateName: string, markings: string[]) => {
   let htmlData = removeUselessContent(content);
   htmlData = setImagesWidth(htmlData);
   htmlData = setTableFullWidth(htmlData);
@@ -219,7 +219,7 @@ export const htmlToPdfReport = (stixCoreObject: any, content: string, templateNa
             ],
           },
           {
-            text: stixCoreObject.name,
+            text: reportName,
             alignment: 'right',
             style: 'firstPageSubtitle',
           },
@@ -252,7 +252,7 @@ export const htmlToPdfReport = (stixCoreObject: any, content: string, templateNa
         margin: [50, 40, 50, 0],
         columns: [
           {
-            text: truncate(stixCoreObject.name, 20, false),
+            text: truncate(reportName, 20, false),
             alignment: 'left',
           },
           {
