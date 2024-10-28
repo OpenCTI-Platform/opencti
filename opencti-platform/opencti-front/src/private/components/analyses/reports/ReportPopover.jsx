@@ -3,6 +3,7 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import MoreVert from '@mui/icons-material/MoreVert';
 import ToggleButton from '@mui/material/ToggleButton';
+import ReportPopoverDeletion from './ReportPopoverDeletion';
 import StixCoreObjectEnrichment from '../../common/stix_core_objects/StixCoreObjectEnrichment';
 import { useFormatter } from '../../../../components/i18n';
 import { reportEditionQuery } from './ReportEdition';
@@ -10,7 +11,6 @@ import ReportEditionContainer from './ReportEditionContainer';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNENRICHMENT, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import { QueryRenderer } from '../../../../relay/environment';
-import ReportDeletion from './ReportDeletion';
 import useHelper from '../../../../utils/hooks/useHelper';
 
 const ReportPopover = ({ id }) => {
@@ -66,7 +66,7 @@ const ReportPopover = ({ id }) => {
           </Security>
         </Menu>
         <StixCoreObjectEnrichment stixCoreObjectId={id} open={displayEnrichment} handleClose={handleCloseEnrichment} />
-        <ReportDeletion
+        <ReportPopoverDeletion
           reportId={id}
           displayDelete={displayDelete}
           handleClose={handleClose}

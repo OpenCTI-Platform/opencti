@@ -5,7 +5,6 @@ import { useFormatter } from '../../../../components/i18n';
 import ReportEditionOverview from './ReportEditionOverview';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 import Drawer, { DrawerVariant } from '../../common/drawer/Drawer';
-import ReportDeletion from './ReportDeletion';
 
 const ReportEditionContainer = (props) => {
   const { t_i18n } = useFormatter();
@@ -31,11 +30,6 @@ const ReportEditionContainer = (props) => {
           context={editContext}
           handleClose={handleClose}
         />
-        {isFABReplaced && (
-          <ReportDeletion
-            reportId={report.id}
-          />
-        )}
       </>
     </Drawer>
   );

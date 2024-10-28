@@ -302,21 +302,24 @@ RegionEdititionOverviewProps
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
           />
-          {enableReferences && (
-            <CommitMessage
-              submitForm={submitForm}
-              disabled={isSubmitting || !isValid || !dirty}
-              setFieldValue={setFieldValue}
-              open={false}
-              values={values.references}
-              id={region.id}
-            />
-          )}
-          {isFABReplaced && (
-            <RegionDeletion
-              id={region.id}
-            />
-          )}
+          <div style={{ display: 'flex', justifyContent: 'space-between', flex: 1 }}>
+            {isFABReplaced
+              ? <RegionDeletion
+                  id={region.id}
+                />
+              : <div/>
+              }
+            {enableReferences && (
+              <CommitMessage
+                submitForm={submitForm}
+                disabled={isSubmitting || !isValid || !dirty}
+                setFieldValue={setFieldValue}
+                open={false}
+                values={values.references}
+                id={region.id}
+              />
+            )}
+          </div>
         </Form>
       )}
     </Formik>
