@@ -194,20 +194,20 @@ describe('Exclusion Lists', () => {
         it('should throw an error', async () => {
           const result = await checkIpAddressLists('99.99.99.193', ipv4ExclusionList);
           expect(result).not.toBe(null);
-          const { value, listName } = result;
-          expect(value).toBe('99.99.99.193');
-          expect(listName).toBe('ipv4ListResult');
+          expect(result?.value).toBe('99.99.99.193');
+          expect(result?.listName).toBe('ipv4ListResult');
         });
       });
+
       describe('99.87.23.11', () => {
         it('should throw an error', async () => {
           const result = await checkIpAddressLists('99.87.23.11', ipv4ExclusionList);
           expect(result).not.toBe(null);
-          const { value, listName } = result;
-          expect(value).toBe('99.87.23.11');
-          expect(listName).toBe('ipv4ListResult');
+          expect(result?.value).toBe('99.87.23.11');
+          expect(result?.listName).toBe('ipv4ListResult');
         });
       });
+
       describe('22.22.22.22', () => {
         it('should do nothing', async () => {
           const result = await checkIpAddressLists('22.22.22.22', ipv4ExclusionList);
@@ -221,20 +221,21 @@ describe('Exclusion Lists', () => {
         it('should throw an error', async () => {
           const result = await checkIpAddressLists('2a12:e342:200::2:1819', ipv6ExclusionList);
           expect(result).not.toBe(null);
-          const { value, listName } = result;
-          expect(value).toBe('2a12:e342:200::2:1819');
-          expect(listName).toBe('ipv6ListResult');
+          expect(result?.value).toBe('2a12:e342:200::2:1819');
+          expect(result?.listName).toBe('ipv6ListResult');
         });
       });
+
       describe('2001:1424:0:1234::', () => {
         it('should throw an error', async () => {
           const result = await checkIpAddressLists('2001:1424:0:1234::', ipv6ExclusionList);
           expect(result).not.toBe(null);
           const { value, listName } = result;
-          expect(value).toBe('2001:1424:0:1234::');
-          expect(listName).toBe('ipListResult');
+          expect(result?.value).toBe('2001:1424:0:1234::');
+          expect(result?.listName).toBe('ipListResult');
         });
       });
+
       describe('2602:fba1:a00::100:19', () => {
         it('should do nothing', async () => {
           const result = await checkExclusionList('2602:fba1:a00::100:19', ipv6ExclusionList);
@@ -250,20 +251,20 @@ describe('Exclusion Lists', () => {
         it('should throw an error', async () => {
           const result = await checkExclusionList('ns4.epidc.co.kr', domainExclusionList);
           expect(result).not.toBe(null);
-          const { value, listName } = result;
-          expect(value).toBe('ns4.epidc.co.kr');
-          expect(listName).toBe('domainExclusionList');
+          expect(result?.value).toBe('ns4.epidc.co.kr');
+          expect(result?.listName).toBe('domainExclusionList');
         });
       });
+
       describe('www.test.ambfinancial.com', () => {
         it('should throw an error', async () => {
           const result = await checkExclusionList('www.test.ambfinancial.com', domainExclusionList);
           expect(result).not.toBe(null);
-          const { value, listName } = result;
-          expect(value).toBe('www.test.ambfinancial.com');
-          expect(listName).toBe('domainExclusionList');
+          expect(result?.value).toBe('www.test.ambfinancial.com');
+          expect(result?.listName).toBe('domainExclusionList');
         });
       });
+
       describe('test.domain.name.fr', () => {
         it('should do nothing', async () => {
           const result = await checkExclusionList('test.domain.name.fr', domainExclusionList);
