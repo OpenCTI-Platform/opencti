@@ -230,7 +230,6 @@ describe('Exclusion Lists', () => {
         it('should throw an error', async () => {
           const result = await checkIpAddressLists('2001:1424:0:1234::', ipv6ExclusionList);
           expect(result).not.toBe(null);
-          const { value, listName } = result;
           expect(result?.value).toBe('2001:1424:0:1234::');
           expect(result?.listName).toBe('ipListResult');
         });
