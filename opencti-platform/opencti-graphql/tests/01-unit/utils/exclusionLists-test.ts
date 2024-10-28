@@ -212,7 +212,6 @@ describe('Exclusion Lists', () => {
         it('should do nothing', async () => {
           const result = await checkIpAddressLists('22.22.22.22', ipv4ExclusionList);
           expect(result).toBe(null);
-          // expect(() => checkIpAddressLists('22.22.22.22', ipv4ExclusionList)).not.toThrowError();
         });
       });
     });
