@@ -11,14 +11,12 @@ import IconButton from '@mui/material/IconButton';
 import { InfoOutlined } from '@mui/icons-material';
 import Tooltip from '@mui/material/Tooltip';
 import { ParsedWorkMessage, ResolvedEntity } from '@components/data/connectors/parseWorkErrors';
+import Typography from '@mui/material/Typography';
+import Paper from '@mui/material/Paper';
 import ItemCopy from '../../../../components/ItemCopy';
 import Transition from '../../../../components/Transition';
 import { useFormatter } from '../../../../components/i18n';
 import { truncate } from '../../../../utils/String';
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import Typography from '@mui/material/Typography';
-import ItemEntityType from '../../../../components/ItemEntityType';
 
 interface ConnectorWorksErrorLineProps {
   error: ParsedWorkMessage;
@@ -37,23 +35,20 @@ const ConnectorWorksErrorLine: FunctionComponent<ConnectorWorksErrorLineProps> =
     return null;
   }
 
-  const entityListItem = (entity: ResolvedEntity, label: string) => {
-    const name = ` ${entity.representative?.main ?? 'Unknown'}`;
+  const entityListItem = (entity: ResolvedEntity) => {
+    const name = entity.representative?.main;
     return (
-      <ListItem disableGutters={true}>
-        <div>
-          <Typography variant="h3" gutterBottom={true}>{t_i18n(label)}</Typography>
-          {entity.entity_type ? (
-            <Tooltip title={name}>
-              <a href={`/dashboard/id/${entity.id}`} target="_blank" rel="noreferrer">
-                [{entity.entity_type}] {truncate(name, truncateLimit)}
-              </a>
-            </Tooltip>
-          ) : (
-            <div>{name}</div>
-          )}
-        </div>
-      </ListItem>
+      <div>
+        {entity.entity_type ? (
+          <Tooltip title={name}>
+            <a href={`/dashboard/id/${entity.id}`} target="_blank" rel="noreferrer">
+              [{entity.entity_type}] {truncate(name, truncateLimit)}
+            </a>
+          </Tooltip>
+        ) : (
+          <div>{entity.standard_id}</div>
+        )}
+      </div>
     );
   };
 
@@ -70,19 +65,11 @@ const ConnectorWorksErrorLine: FunctionComponent<ConnectorWorksErrorLineProps> =
         </TableCell>
         <TableCell>{error.isParsed ? error.parsedError.message : error.rawError.message}</TableCell>
         <TableCell>
-          <List dense={true}>
-            {error.isParsed ? (
-              entityListItem(error.parsedError.entity, 'Entity')
-            ) : (
-              truncate(error.rawError.source, truncateLimit)
-            )}
-            {error.isParsed && error.parsedError.entity.from && (
-              entityListItem(error.parsedError.entity.from, 'From')
-            )}
-            {error.isParsed && error.parsedError.entity.to && (
-              entityListItem(error.parsedError.entity.to, 'To')
-            )}
-          </List>
+          {error.isParsed ? (
+            entityListItem(error.parsedError.entity)
+          ) : (
+            truncate(error.rawError.source, truncateLimit)
+          )}
         </TableCell>
         <TableCell>
           <Tooltip title={t_i18n('Details')}>
@@ -103,12 +90,60 @@ const ConnectorWorksErrorLine: FunctionComponent<ConnectorWorksErrorLineProps> =
         TransitionComponent={Transition}
         onClose={handleToggleModalError}
       >
-        <DialogTitle>{t_i18n('Error')}</DialogTitle>
-        <DialogContent>
+        <DialogTitle>{t_i18n('Details')}</DialogTitle>
+        <DialogContent sx={{ minWidth: '500px' }}>
           <DialogContentText>
-            <pre><ItemCopy content={error.rawError.timestamp ?? '-'} /></pre>
-            <pre><ItemCopy content={error.rawError.message ?? '-'} variant={'wrap'} /></pre>
-            <pre><ItemCopy content={error.rawError.source ?? '-'} variant={'wrap'} /></pre>
+            <Typography variant="h4" gutterBottom={true}>
+              {t_i18n('Entities')}
+            </Typography>
+            <Paper
+              style={{
+                padding: '15px',
+                borderRadius: 4,
+                marginBottom: '15px',
+              }}
+              variant="outlined"
+            >
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: 15 }}>
+                <div>
+                  <Typography variant="h3" gutterBottom={true}>{t_i18n('Entity')}</Typography>
+                  {error.isParsed ? entityListItem(error.parsedError.entity) : '-'}
+                </div>
+                <div>
+                  <Typography variant="h3" gutterBottom={true}>{t_i18n('From')}</Typography>
+                  {error.isParsed && error.parsedError.entity.from ? entityListItem(error.parsedError.entity.from) : '-'}
+                </div>
+                <div>
+                  <Typography variant="h3" gutterBottom={true}>{t_i18n('To')}</Typography>
+                  {error.isParsed && error.parsedError.entity.to ? entityListItem(error.parsedError.entity.to) : '-'}
+                </div>
+              </div>
+            </Paper>
+            <Typography variant="h4" gutterBottom={true}>
+              {t_i18n('Error')}
+            </Typography>
+            <Paper
+              style={{
+                padding: '15px',
+                borderRadius: 4,
+              }}
+              variant="outlined"
+            >
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: 15 }}>
+                <div>
+                  <Typography variant="h3" gutterBottom={true}>{t_i18n('Timestamp')}</Typography>
+                  <pre><ItemCopy content={error.rawError.timestamp ?? '-'} /></pre>
+                </div>
+                <div>
+                  <Typography variant="h3" gutterBottom={true}>{t_i18n('Message')}</Typography>
+                  <pre><ItemCopy content={error.rawError.message ?? '-'} variant={'wrap'} /></pre>
+                </div>
+                <div>
+                  <Typography variant="h3" gutterBottom={true}>{t_i18n('Source')}</Typography>
+                  <pre><ItemCopy content={error.rawError.source ?? '-'} variant={'wrap'} /></pre>
+                </div>
+              </div>
+            </Paper>
           </DialogContentText>
         </DialogContent>
         <DialogActions>

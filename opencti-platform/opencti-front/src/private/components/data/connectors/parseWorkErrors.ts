@@ -1,8 +1,8 @@
+import { fetchQuery, graphql } from 'react-relay';
+import { parseWorkErrorsQuery$data } from '@components/data/connectors/__generated__/parseWorkErrorsQuery.graphql';
 import { WorkMessages } from './ConnectorWorks';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
-import { fetchQuery, graphql } from 'react-relay';
 import { environment } from '../../../../relay/environment';
-import { parseWorkErrorsQuery$data } from '@components/data/connectors/__generated__/parseWorkErrorsQuery.graphql';
 
 const parseWorkErrorsQuery = graphql`
   query parseWorkErrorsQuery($ids: [Any!]!) {
@@ -148,14 +148,13 @@ const parseWorkErrors = async (errorsList: WorkMessages): Promise<ParsedWorkMess
           representative: { main: getMainRepresentative(source, entityId) },
           from: fromId ? {
             standard_id: fromId,
-            representative: { main: fromId },
           } : undefined,
           to: toId ? {
             standard_id: toId,
-            representative: { main: toId },
           } : undefined,
         },
       };
+
       return {
         isParsed: true,
         level: getLevel(message.name ?? ''),
@@ -174,7 +173,7 @@ const parseWorkErrors = async (errorsList: WorkMessages): Promise<ParsedWorkMess
   const entities = await fetchQuery(
     environment,
     parseWorkErrorsQuery,
-    { ids }
+    { ids },
   )
     .toPromise()
     .then((data) => {
@@ -183,12 +182,13 @@ const parseWorkErrors = async (errorsList: WorkMessages): Promise<ParsedWorkMess
 
   parsedList.map((error) => {
     if (error.isParsed) {
+      const err = error;
       const findEntity = entities.find((entity) => entity?.standard_id === error.parsedError.entity.standard_id);
-      if (findEntity) error.parsedError.entity = findEntity;
+      if (findEntity) err.parsedError.entity = findEntity;
+      return err;
     }
+    return error;
   });
-
-  console.log(parsedList);
 
   return parsedList;
 };

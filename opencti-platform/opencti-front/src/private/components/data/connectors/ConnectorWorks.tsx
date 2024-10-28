@@ -106,7 +106,7 @@ const examples: WorkMessages = [
   },
   {
     timestamp: '2024-10-11T08:18:52.589Z',
-    message: 'Simple without information, can\'t be parsed',
+    message: 'Without information, can\'t be parsed',
     sequence: null,
     source: null,
   },
@@ -333,14 +333,14 @@ const ConnectorWorksComponent: FunctionComponent<ConnectorWorksComponentProps> =
         onClose={handleCloseDrawerErrors}
       >
         <>
-          <Alert severity="info">{t_i18n('This page lists only the first 100 errors returned by the connector to ensure readability and efficient troubleshooting')}</Alert>
+          <Alert severity="info">{t_i18n('This page lists only the first 100 errors returned by the connector to ensure readability')}</Alert>
           <Tabs value={tabValue} onChange={(_, newValue) => setTabValue(newValue)}>
             <Tab label={`${t_i18n('Critical')} (${criticals.length})`} value="Critical" />
             <Tab label={`${t_i18n('Warning')} (${warnings.length})`} value="Warning" />
             <Tab label={`${t_i18n('All')} (${errors.length})`} value="All" />
           </Tabs>
           <TableContainer component={Paper}>
-            <Table aria-label="errors table" size="small">
+            <Table aria-label="errors table">
               <TableHead>
                 <TableRow>
                   <TableCell>{t_i18n('Timestamp')}</TableCell>
