@@ -2,12 +2,13 @@ import useBuildListOutcome from './stix_core_objects/useBuildListOutcome';
 import useDonutOutcome from './stix_relationships/useDonutOutcome';
 import { fetchQuery } from '../../../relay/environment';
 import { TemplateAndUtilsContainerQuery$data } from './__generated__/TemplateAndUtilsContainerQuery.graphql';
-import buildAttributesOutcome from './stix_core_objects/buildAttributesOutcome';
 import templateAndUtilsContainerQuery from './TemplateAndUtilsContainerQuery';
+import useBuildAttributesOutcome from './stix_core_objects/useBuildAttributesOutcome';
 
 const useContentFromTemplate = () => {
   const { buildDonutOutcome } = useDonutOutcome();
   const { buildListOutcome } = useBuildListOutcome();
+  const { buildAttributesOutcome } = useBuildAttributesOutcome();
 
   const buildContentFromTemplate = async (
     containerId: string,
