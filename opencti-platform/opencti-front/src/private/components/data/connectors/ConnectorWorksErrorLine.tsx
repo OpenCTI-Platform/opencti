@@ -46,7 +46,7 @@ const ConnectorWorksErrorLine: FunctionComponent<ConnectorWorksErrorLineProps> =
             </a>
           </Tooltip>
         ) : (
-          <div>{entity.standard_id}</div>
+          <pre><ItemCopy content={entity.standard_id ?? '-'} variant={'wrap'} /></pre>
         )}
       </div>
     );
@@ -93,40 +93,39 @@ const ConnectorWorksErrorLine: FunctionComponent<ConnectorWorksErrorLineProps> =
         <DialogTitle>{t_i18n('Details')}</DialogTitle>
         <DialogContent sx={{ minWidth: '500px' }}>
           <DialogContentText>
-            <Typography variant="h4" gutterBottom={true}>
-              {t_i18n('Entities')}
-            </Typography>
+            {error.isParsed && (
+              <>
+                <Typography variant="h4" gutterBottom={true}>{t_i18n('Source')}</Typography>
+                <Paper
+                  style={{ padding: '15px', borderRadius: 4, marginBottom: '15px' }}
+                  variant="outlined"
+                >
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: 15 }}>
+                    {error.parsedError.entity && (
+                      <div>
+                        <Typography variant="h3" gutterBottom={true}>{t_i18n('Entity')}</Typography>
+                        {entityListItem(error.parsedError.entity)}
+                      </div>
+                    )}
+                    {error.parsedError.entity.from && (
+                      <div>
+                        <Typography variant="h3" gutterBottom={true}>{t_i18n('From')}</Typography>
+                        {entityListItem(error.parsedError.entity.from)}
+                      </div>
+                    )}
+                    {error.parsedError.entity.to && (
+                      <div>
+                        <Typography variant="h3" gutterBottom={true}>{t_i18n('To')}</Typography>
+                        {entityListItem(error.parsedError.entity.to)}
+                      </div>
+                    )}
+                  </div>
+                </Paper>
+              </>
+            )}
+            <Typography variant="h4" gutterBottom={true}>{t_i18n('Error')}</Typography>
             <Paper
-              style={{
-                padding: '15px',
-                borderRadius: 4,
-                marginBottom: '15px',
-              }}
-              variant="outlined"
-            >
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: 15 }}>
-                <div>
-                  <Typography variant="h3" gutterBottom={true}>{t_i18n('Entity')}</Typography>
-                  {error.isParsed ? entityListItem(error.parsedError.entity) : '-'}
-                </div>
-                <div>
-                  <Typography variant="h3" gutterBottom={true}>{t_i18n('From')}</Typography>
-                  {error.isParsed && error.parsedError.entity.from ? entityListItem(error.parsedError.entity.from) : '-'}
-                </div>
-                <div>
-                  <Typography variant="h3" gutterBottom={true}>{t_i18n('To')}</Typography>
-                  {error.isParsed && error.parsedError.entity.to ? entityListItem(error.parsedError.entity.to) : '-'}
-                </div>
-              </div>
-            </Paper>
-            <Typography variant="h4" gutterBottom={true}>
-              {t_i18n('Error')}
-            </Typography>
-            <Paper
-              style={{
-                padding: '15px',
-                borderRadius: 4,
-              }}
+              style={{ padding: '15px', borderRadius: 4 }}
               variant="outlined"
             >
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: 15 }}>
