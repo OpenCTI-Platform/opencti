@@ -45,28 +45,6 @@ const stixCoreObjectsAttributesQuery = graphql`
                     }
                 }
             }
-            reports(first: 10) {
-                edges {
-                    node {
-                        id
-                        entity_type
-                        name
-                        description
-                        published
-                        report_types
-                        createdBy {
-                            ... on Identity {
-                                id
-                                name
-                                entity_type
-                            }
-                        }
-                    }
-                }
-                pageInfo {
-                    globalCount
-                }
-            }
             ... on StixDomainObject {
                 modified
                 created
