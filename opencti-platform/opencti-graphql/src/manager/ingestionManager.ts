@@ -438,6 +438,41 @@ const taxiiExecutor = async (context: AuthContext) => {
 // endregion
 
 // region Csv ingestion
+export const processCsvLines = async (
+  context: AuthContext,
+  ingestion: BasicStoreEntityIngestionCsv,
+  csvMapperParsed: CsvMapperParsed,
+  csvLines: string[],
+  addedLast: string | undefined | null
+) => {
+  const linesContent = csvLines.join('');
+  const hashedIncomingData = hashSHA256(linesContent);
+  const isUnchangedData = compareHashSHA256(linesContent, ingestion.current_state_hash ?? '');
+  if (isUnchangedData) {
+    logApp.info(`[OPENCTI-MODULE] INGESTION - Unchanged data for csv ingest: ${ingestion.name}`);
+    await updateBuiltInConnectorInfo(context, ingestion.user_id, ingestion.id);
+  } else {
+    const ingestionUser = await findUserById(context, context.user ?? SYSTEM_USER, ingestion.user_id) ?? SYSTEM_USER;
+    if (csvMapperParsed.has_header) {
+      csvLines.shift(); // remove first line
+    }
+    logApp.info(`[OPENCTI-MODULE] INGESTION - ingesting ${csvLines.length} csv lines`);
+    const allBundles = await bundleAllowUpsertProcess(context, ingestionUser, csvLines, csvMapperParsed, {});
+    for (let i = 0; i < allBundles.length; i += 1) {
+      const bundle = allBundles[i].build();
+      if (bundle.objects.length > 0) {
+        logApp.info(`[OPENCTI-MODULE] INGESTION - push bundle with ${bundle.objects.length} objects`);
+        await pushBundleToConnectorQueue(context, ingestion, bundle);
+      }
+    }
+
+    logApp.info(`[OPENCTI-MODULE] INGESTION - Processing: ${allBundles.length} bundles.`);
+    const state = { current_state_hash: hashedIncomingData, added_after_start: utcDate(addedLast) };
+    await patchCsvIngestion(context, SYSTEM_USER, ingestion.internal_id, state);
+    await updateBuiltInConnectorInfo(context, ingestion.user_id, ingestion.id, { state });
+  }
+};
+
 const csvDataHandler = async (context: AuthContext, ingestion: BasicStoreEntityIngestionCsv) => {
   const user = context.user ?? SYSTEM_USER;
   const csvMapper = await findById(context, user, ingestion.csv_mapper_id);
@@ -446,28 +481,7 @@ const csvDataHandler = async (context: AuthContext, ingestion: BasicStoreEntityI
 
   try {
     const { csvLines, addedLast } = await fetchCsvFromUrl(csvMapperParsed, ingestion);
-    const linesContent = csvLines.join('');
-    const hashedIncomingData = hashSHA256(linesContent);
-    const isUnchangedData = compareHashSHA256(linesContent, ingestion.current_state_hash ?? '');
-    if (isUnchangedData) {
-      logApp.info(`[OPENCTI-MODULE] INGESTION - Unchanged data for csv ingest: ${ingestion.name}`);
-      await updateBuiltInConnectorInfo(context, ingestion.user_id, ingestion.id);
-    } else {
-      const ingestionUser = await findUserById(context, context.user ?? SYSTEM_USER, ingestion.user_id) ?? SYSTEM_USER;
-      const allBundles = await bundleAllowUpsertProcess(context, ingestionUser, csvLines, csvMapperParsed, {});
-      for (let i = 0; i < allBundles.length; i += 1) {
-        const bundle = allBundles[i].build();
-        if (bundle.objects.length > 0) {
-          logApp.info(`[OPENCTI-MODULE] INGESTION - push bundle with ${bundle.objects.length} objects`);
-          await pushBundleToConnectorQueue(context, ingestion, bundle);
-        }
-      }
-
-      logApp.info(`[OPENCTI-MODULE] INGESTION - Processing: ${allBundles.length} bundles.`);
-      const state = { current_state_hash: hashedIncomingData, added_after_start: utcDate(addedLast) };
-      await patchCsvIngestion(context, SYSTEM_USER, ingestion.internal_id, state);
-      await updateBuiltInConnectorInfo(context, ingestion.user_id, ingestion.id, { state });
-    }
+    await processCsvLines(context, ingestion, csvMapperParsed, csvLines, addedLast);
   } catch (e: any) {
     logApp.error(`[OPENCTI-MODULE] INGESTION - Error trying to fetch csv feed for: ${ingestion.name}`);
     logApp.error(e, { ingestion });

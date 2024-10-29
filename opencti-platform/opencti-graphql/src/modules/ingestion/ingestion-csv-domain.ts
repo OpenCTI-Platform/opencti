@@ -155,7 +155,9 @@ export const testCsvIngestionMapping = async (context: AuthContext, user: AuthUs
     authentication_value: input.authentication_value
   } as BasicStoreEntityIngestionCsv;
   const { csvLines } = await fetchCsvFromUrl(parsedMapper, ingestion, { limit: 50 });
-
+  if (parsedMapper.has_header) {
+    csvLines.shift();
+  }
   const allObjects = await bundleObjects(context, user, csvLines, parsedMapper); // pass ingestion creator user
 
   return {

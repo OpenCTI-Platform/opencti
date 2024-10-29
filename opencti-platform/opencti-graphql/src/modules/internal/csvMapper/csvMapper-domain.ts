@@ -32,7 +32,9 @@ export const csvMapperTest = async (context: AuthContext, user: AuthUser, config
   const csvMapper = parseCsvMapper(parsedConfiguration);
   const { createReadStream } = await fileUpload;
   const csvLines = await parseReadableToLines(createReadStream(), 100);
-
+  if (csvMapper.has_header) {
+    csvLines.shift();
+  }
   const allObjects = await bundleObjects(context, user, csvLines, csvMapper);
   return {
     objects: JSON.stringify(allObjects, null, 2),
