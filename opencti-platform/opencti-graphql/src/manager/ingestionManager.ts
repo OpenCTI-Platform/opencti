@@ -8,7 +8,7 @@ import type { SetIntervalAsyncTimer } from 'set-interval-async/fixed';
 import type { Moment } from 'moment';
 import { lockResource } from '../database/redis';
 import conf, { booleanConf, logApp } from '../config/conf';
-import { TYPE_LOCK_ERROR, UnknownError, UnsupportedError } from '../config/errors';
+import { TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { type GetHttpClient, getHttpClient, OpenCTIHeaders } from '../utils/http-client';
 import { isEmptyField, isNotEmptyField } from '../database/utils';
@@ -23,9 +23,8 @@ import type { BasicStoreEntityIngestionCsv, BasicStoreEntityIngestionRss, BasicS
 import { findAllTaxiiIngestions, patchTaxiiIngestion } from '../modules/ingestion/ingestion-taxii-domain';
 import { ConnectorType, IngestionAuthType, TaxiiVersion } from '../generated/graphql';
 import { fetchCsvFromUrl, findAllCsvIngestions, patchCsvIngestion } from '../modules/ingestion/ingestion-csv-domain';
-import type { CsvMapperParsed } from '../modules/internal/csvMapper/csvMapper-types';
 import { findById } from '../modules/internal/csvMapper/csvMapper-domain';
-import { bundleProcess } from '../parser/csv-bundler';
+import { bundleAllowUpsertProcess } from '../parser/csv-bundler';
 import { createWork, updateExpectationsNumber } from '../domain/work';
 import { parseCsvMapper } from '../modules/internal/csvMapper/csvMapper-utils';
 import { findById as findUserById } from '../domain/user';
@@ -439,19 +438,6 @@ const taxiiExecutor = async (context: AuthContext) => {
 // endregion
 
 // region Csv ingestion
-const csvDataToObjects = async (csvLines: string[], ingestion: BasicStoreEntityIngestionCsv, csvMapper: CsvMapperParsed, context: AuthContext) => {
-  const ingestionUser = await findUserById(context, context.user ?? SYSTEM_USER, ingestion.user_id) ?? SYSTEM_USER;
-  const { objects } = await bundleProcess(context, ingestionUser, csvLines, csvMapper);
-  if (objects === undefined) {
-    logApp.error(`[OPENCTI-MODULE] INGESTION - Undefined bundle objects for csv ingest: ${ingestion.name}`);
-    const error = UnknownError('Undefined CSV objects', { data: csvLines });
-    logApp.error(error, { name: ingestion.name, context: 'CSV transform' });
-  } else {
-    logApp.info(`[OPENCTI-MODULE] INGESTION - CSV ingestion execution for: ${ingestion.name} with: ${objects.length} items`);
-  }
-  return objects;
-};
-
 const csvDataHandler = async (context: AuthContext, ingestion: BasicStoreEntityIngestionCsv) => {
   const user = context.user ?? SYSTEM_USER;
   const csvMapper = await findById(context, user, ingestion.csv_mapper_id);
@@ -467,12 +453,17 @@ const csvDataHandler = async (context: AuthContext, ingestion: BasicStoreEntityI
       logApp.info(`[OPENCTI-MODULE] INGESTION - Unchanged data for csv ingest: ${ingestion.name}`);
       await updateBuiltInConnectorInfo(context, ingestion.user_id, ingestion.id);
     } else {
-      const objects = await csvDataToObjects(csvLines, ingestion, csvMapperParsed, context);
-      logApp.info(`[OPENCTI-MODULE] INGESTION - Processing: ${objects.length} csv lines to bundle.`);
-      const bundle: StixBundle = { type: 'bundle', spec_version: '2.1', id: `bundle--${uuidv4()}`, objects };
-      // Push the bundle to absorption queue
-      await pushBundleToConnectorQueue(context, ingestion, bundle);
-      // Update the state
+      const ingestionUser = await findUserById(context, context.user ?? SYSTEM_USER, ingestion.user_id) ?? SYSTEM_USER;
+      const allBundles = await bundleAllowUpsertProcess(context, ingestionUser, csvLines, csvMapperParsed, {});
+      for (let i = 0; i < allBundles.length; i += 1) {
+        const bundle = allBundles[i].build();
+        if (bundle.objects.length > 0) {
+          logApp.info(`[OPENCTI-MODULE] INGESTION - push bundle with ${bundle.objects.length} objects`);
+          await pushBundleToConnectorQueue(context, ingestion, bundle);
+        }
+      }
+
+      logApp.info(`[OPENCTI-MODULE] INGESTION - Processing: ${allBundles.length} bundles.`);
       const state = { current_state_hash: hashedIncomingData, added_after_start: utcDate(addedLast) };
       await patchCsvIngestion(context, SYSTEM_USER, ingestion.internal_id, state);
       await updateBuiltInConnectorInfo(context, ingestion.user_id, ingestion.id, { state });

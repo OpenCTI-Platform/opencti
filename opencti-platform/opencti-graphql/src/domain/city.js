@@ -1,5 +1,5 @@
 import { createEntity } from '../database/middleware';
-import { BUS_TOPICS, logApp } from '../config/conf';
+import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ENTITY_TYPE_LOCATION_CITY, ENTITY_TYPE_LOCATION_COUNTRY } from '../schema/stixDomainObject';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../schema/general';

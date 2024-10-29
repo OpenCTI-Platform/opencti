@@ -26,9 +26,9 @@ describe('Verify internal importCsv connector', () => {
         applicant_id: ADMIN_USER.id
       },
       event: {
-        file_id: 'import/global/csv-file-cities-for-importCsv-connector.csv',
+        file_id: 'import/global/csv-file-cities-for-importcsv-connector.csv',
         file_mime: 'text/csv',
-        file_fetch: '/storage/get/import/global/csv-file-cities-for-importCsv-connector.csv',
+        file_fetch: '/storage/get/import/global/csv-file-cities-for-importcsv-connector.csv',
       },
       configuration: JSON.stringify(csvMapperMockSimpleCities),
     };

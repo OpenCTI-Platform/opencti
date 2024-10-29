@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 import { createEntity } from '../database/middleware';
 import { listEntities, storeLoadById } from '../database/middleware-loader';
-import { BUS_TOPICS, logApp } from '../config/conf';
+import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ABSTRACT_STIX_DOMAIN_OBJECT, ENTITY_TYPE_LOCATION } from '../schema/general';
 import { isStixDomainObjectLocation } from '../schema/stixDomainObject';

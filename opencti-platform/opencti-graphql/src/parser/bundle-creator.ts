@@ -15,12 +15,24 @@ export const canAddObjectToBundle = (objectsToAdd: StixObject[], bundles: StixOb
     const currentToCheck = objectsToAdd[i];
     const existingObjectWithDifferentContent = bundles.find((item: StixObject) => {
       if (item.id === currentToCheck.id && item.type === currentToCheck.type) {
-        return JSON.stringify(item) !== JSON.stringify(currentToCheck);
+        const itemForJson = { ...item, converter_csv: null, extensions: null };
+        const currentToCheckForJson = { ...currentToCheck, converter_csv: null, extensions: null };
+
+        const one = JSON.stringify(itemForJson);
+        const two = JSON.stringify(currentToCheckForJson);
+
+        /* if (one !== two) {
+          logApp.info(`ANGIE - ${one} !== ${two} ? ${one !== two}`);
+        } */
+        return one !== two;
       }
+      // console.log('existingObjectWithDifferentContent = false');
       return false;
     });
     canAdd = canAdd && !existingObjectWithDifferentContent;
+    // console.log(`Can add 2 = ${canAdd}`);
   }
+  // console.log(`Can add 3 = ${canAdd}`);
   return canAdd;
 };
 

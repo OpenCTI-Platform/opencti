@@ -18,6 +18,7 @@ export const csvMapperTest = async (context: AuthContext, user: AuthUser, config
   }
   const csvMapper = parseCsvMapper(parsedConfiguration);
   const csvLines = await parseReadableToLines(Readable.from([content]), 100);
+  // it's fine to use deprecated bundleProcess in deprecated code.
   const bundle = await bundleProcess(context, user, csvLines, csvMapper);
   return {
     objects: JSON.stringify(bundle.objects, null, 2),

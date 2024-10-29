@@ -1,5 +1,5 @@
 insee_code,city_code,zip_code,label,latitude,longitude,department_name,department_number,region_name,region_geojson_name,label,color
-25620,ville du pont,25650,ville du pont,46.999873398,6.498147193,doubs,25,bourgogne-franche-comté,Bourgogne-Franche-Comté,label1,#ffffff
+25620,ville du pont,25650,ville du pont,46.999873398,6.498147193,doubs,25,bourgogne-franche-comté,Bourgogne-Franche-Comté,first,#ffffff
 25620,ville du pont,25650,ville du pont,46.999873398,6.498147193,doubs,25,bourgogne-franche-comté,Bourgogne-Franche-Comté,label2,#000000
 25624,villers grelot,25640,villers grelot,47.361512085,6.235167025,doubs,25,bourgogne-franche-comté,Bourgogne-Franche-Comté,label1,#ffffff
 25615,villars les blamont,25310,villars les blamont,47.368383721,6.871414913,doubs,25,bourgogne-franche-comté,Bourgogne-Franche-Comté,label1,#ffffff
@@ -14,4 +14,4 @@ insee_code,city_code,zip_code,label,latitude,longitude,department_name,departmen
 02125,brumetz,02810,brumetz,49.110351585,3.153350725,aisne,02,hauts-de-france,Hauts-de-France,label1,#ffffff
 02126,brunehamel,02360,brunehamel,49.771382057,4.186261479,aisne,02,hauts-de-france,Hauts-de-France,label1,#ffffff
 02131,bucy le long,02880,bucy le long,49.387973822,3.398519722,aisne,02,hauts-de-france,Hauts-de-France,label1,#ffffff
-02131,bucy le long,02880,bucy le long,49.387973822,3.398519722,aisne,02,hauts-de-france,Hauts-de-France,label2,#000000
+02131,bucy le long,02880,bucy le long,49.387973822,3.398519722,aisne,02,hauts-de-france,Hauts-de-France,last,#000000

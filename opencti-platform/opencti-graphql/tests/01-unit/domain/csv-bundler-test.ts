@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { bundleProcess, bundleAllowUpsertProcess } from '../../../src/parser/csv-bundler';
+import { bundleAllowUpsertProcess } from '../../../src/parser/csv-bundler';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import {
   indicatorsWithExternalReferencesCsvContent,
@@ -22,12 +22,14 @@ import type { StixLocation } from '../../../src/types/stix-sdo';
 describe('CSV bundler', () => {
   describe('Embedded properties', () => {
     it('Should list external references', async () => {
-      const indicatorsWithExternalReferencesActualBundle = await bundleProcess(
+      const allBundleBuilder = await bundleAllowUpsertProcess(
         testContext,
         ADMIN_USER,
         indicatorsWithExternalReferencesCsvContent,
         indicatorsWithExternalReferencesCsvMapper as CsvMapperParsed
       );
+      expect(allBundleBuilder.length).toBe(1);
+      const indicatorsWithExternalReferencesActualBundle = allBundleBuilder[0].build();
       const { id: _expectedId, ...expectedRest } = indicatorsWithExternalReferencesExpectedBundle;
       const indicatorsWithExternalReferencesExpectedBundleWithoutId = { ...expectedRest };
       const { id: _actualId, ...actualRest } = indicatorsWithExternalReferencesActualBundle;
@@ -39,12 +41,14 @@ describe('CSV bundler', () => {
       );
     });
     it('Should list labels', async () => {
-      const indicatorsWithLabelsActualBundle = await bundleProcess(
+      const allBundleBuilder = await bundleAllowUpsertProcess(
         testContext,
         ADMIN_USER,
         indicatorsWithLabelsCsvContent,
         indicatorsWithLabelsCsvMapper as CsvMapperParsed
       );
+      expect(allBundleBuilder.length).toBe(1);
+      const indicatorsWithLabelsActualBundle = allBundleBuilder[0].build();
       const { id: _expectedId, ...expectedRest } = indicatorsWithLabelsExpectedBundle;
       const indicatorsWithLabelsExpectedBundleWithoutId = { ...expectedRest };
       const { id: _actualId, ...actualRest } = indicatorsWithLabelsActualBundle;
@@ -56,12 +60,13 @@ describe('CSV bundler', () => {
       );
     });
     it('Should list kill chain phases', async () => {
-      const indicatorsWithKillChainPhasesActualBundle = await bundleProcess(
+      const allBundleBuilder = await bundleAllowUpsertProcess(
         testContext,
         ADMIN_USER,
         indicatorsWithKillChainPhasesCsvContent,
         indicatorsWithKillChainPhasesCsvMapper as CsvMapperParsed
       );
+      const indicatorsWithKillChainPhasesActualBundle = allBundleBuilder[0].build();
       const { id: _expectedId, ...expectedRest } = indicatorsWithKillChainPhasesExpectedBundle;
       const indicatorsWithKillChainPhasesExpectedBundleWithoutId = { ...expectedRest };
       const { id: _actualId, ...actualRest } = indicatorsWithKillChainPhasesActualBundle;

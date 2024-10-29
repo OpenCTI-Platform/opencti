@@ -3,7 +3,7 @@ import { internalFindByIdsMapped, listAllEntities, listEntitiesPaginated, storeL
 import { type BasicStoreEntityCsvMapper, ENTITY_TYPE_CSV_MAPPER, type StoreEntityCsvMapper } from './csvMapper-types';
 import { type CsvMapperAddInput, type EditInput, FilterMode, type QueryCsvMappersArgs } from '../../../generated/graphql';
 import { createInternalObject, deleteInternalObject, editInternalObject } from '../../../domain/internalObject';
-import { bundleProcess } from '../../../parser/csv-bundler';
+import { bundleObjects } from '../../../parser/csv-bundler';
 import { type CsvMapperSchemaAttribute, type CsvMapperSchemaAttributes, parseCsvMapper, parseCsvMapperWithDefaultValues, validateCsvMapper } from './csvMapper-utils';
 import { schemaAttributesDefinition } from '../../../schema/schema-attributes';
 import { schemaRelationsRefDefinition } from '../../../schema/schema-relationsRef';
@@ -32,11 +32,12 @@ export const csvMapperTest = async (context: AuthContext, user: AuthUser, config
   const csvMapper = parseCsvMapper(parsedConfiguration);
   const { createReadStream } = await fileUpload;
   const csvLines = await parseReadableToLines(createReadStream(), 100);
-  const bundle = await bundleProcess(context, user, csvLines, csvMapper);
+
+  const allObjects = await bundleObjects(context, user, csvLines, csvMapper);
   return {
-    objects: JSON.stringify(bundle.objects, null, 2),
-    nbRelationships: bundle.objects.filter((object) => object.type === 'relationship').length,
-    nbEntities: bundle.objects.filter((object) => object.type !== 'relationship').length,
+    objects: JSON.stringify(allObjects, null, 2),
+    nbRelationships: allObjects.filter((object) => object.type === 'relationship').length,
+    nbEntities: allObjects.filter((object) => object.type !== 'relationship').length,
   };
 };
 

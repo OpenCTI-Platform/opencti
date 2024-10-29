@@ -8,13 +8,14 @@ import { notify } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import { type BasicStoreEntityCsvMapper, type CsvMapperParsed, ENTITY_TYPE_CSV_MAPPER } from '../internal/csvMapper/csvMapper-types';
-import { bundleProcess } from '../../parser/csv-bundler';
+import { bundleObjects } from '../../parser/csv-bundler';
 import { findById as findCsvMapperById } from '../internal/csvMapper/csvMapper-domain';
 import { parseCsvMapper } from '../internal/csvMapper/csvMapper-utils';
 import { type GetHttpClient, getHttpClient, OpenCTIHeaders } from '../../utils/http-client';
 import { verifyIngestionAuthenticationContent } from './ingestion-common';
 import { IngestionAuthType } from '../../generated/graphql';
 import { registerConnectorForIngestion, unregisterConnectorForIngestion } from '../../domain/connector';
+import type { StixObject } from '../../types/stix-common';
 
 export const findById = (context: AuthContext, user: AuthUser, ingestionId: string) => {
   return storeLoadById<BasicStoreEntityIngestionCsv>(context, user, ingestionId, ENTITY_TYPE_INGESTION_CSV);
@@ -154,10 +155,12 @@ export const testCsvIngestionMapping = async (context: AuthContext, user: AuthUs
     authentication_value: input.authentication_value
   } as BasicStoreEntityIngestionCsv;
   const { csvLines } = await fetchCsvFromUrl(parsedMapper, ingestion, { limit: 50 });
-  const bundle = await bundleProcess(context, user, csvLines, parsedMapper); // pass ingestion creator user
+
+  const allObjects = await bundleObjects(context, user, csvLines, parsedMapper); // pass ingestion creator user
+
   return {
-    objects: JSON.stringify(bundle.objects, null, 2),
-    nbRelationships: bundle.objects.filter((object) => object.type === 'relationship').length,
-    nbEntities: bundle.objects.filter((object) => object.type !== 'relationship').length,
+    objects: JSON.stringify(allObjects, null, 2),
+    nbRelationships: allObjects.filter((object: StixObject) => object.type === 'relationship').length,
+    nbEntities: allObjects.filter((object: StixObject) => object.type !== 'relationship').length,
   };
 };
