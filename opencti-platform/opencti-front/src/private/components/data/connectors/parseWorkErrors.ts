@@ -130,7 +130,8 @@ const parseWorkErrors = async (errorsList: WorkMessages): Promise<ParsedWorkMess
     if (!error) return [];
     // Try/Catch to prevent JSON.parse Exception
     try {
-      const source = JSON.parse(error.source ?? '');
+      const parsedSource = JSON.parse(error.source ?? '');
+      const source = parsedSource.type === 'bundle' ? parsedSource.objects[0] : parsedSource;
       const message = JSON.parse((error.message ?? '').replace(/'/g, '"'));
       const entityId = source.id;
       const fromId = source.source_ref;
@@ -183,8 +184,16 @@ const parseWorkErrors = async (errorsList: WorkMessages): Promise<ParsedWorkMess
   parsedList.map((error) => {
     if (error.isParsed) {
       const err = error;
-      const findEntity = entities.find((entity) => entity?.standard_id === error.parsedError.entity.standard_id);
-      if (findEntity) err.parsedError.entity = findEntity;
+      entities.forEach((entity) => {
+        if (!entity) return;
+        if (entity.standard_id === error.parsedError.entity.standard_id) {
+          err.parsedError.entity = entity;
+        } else if (entity.standard_id === error.parsedError.entity.from?.standard_id) {
+          err.parsedError.entity = { ...error.parsedError.entity, from: entity };
+        } else if (entity.standard_id === error.parsedError.entity.to?.standard_id) {
+          err.parsedError.entity = { ...error.parsedError.entity, to: entity };
+        }
+      });
       return err;
     }
     return error;
