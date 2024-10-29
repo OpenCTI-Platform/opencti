@@ -1,4 +1,4 @@
-import type { Widget } from '../widget/widget';
+import type { Widget, WidgetFromBackend } from '../widget/widget';
 
 export interface Template {
   id: string
@@ -13,8 +13,7 @@ export interface TemplateWidget {
   widget: Widget
 }
 
-export interface ResolvedAttributesWidget {
-  template_widget_name: string,
-  displayStyle?: string,
-  data: string[],
+export interface TemplateWidgetFromBackend {
+  name: string
+  widget: WidgetFromBackend
 }

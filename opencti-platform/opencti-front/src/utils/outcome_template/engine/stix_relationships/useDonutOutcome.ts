@@ -3,7 +3,7 @@ import { useTheme } from '@mui/styles';
 import { ApexOptions } from 'apexcharts';
 import { StixRelationshipsDonutDistributionQuery$data } from '@components/common/stix_relationships/__generated__/StixRelationshipsDonutDistributionQuery.graphql';
 import { useBuildFiltersForTemplateWidgets } from '../../../filters/filtersUtils';
-import type { Widget } from '../../../widget/widget';
+import type { WidgetFromBackend } from '../../../widget/widget';
 import { fetchQuery } from '../../../../relay/environment';
 import type { Theme } from '../../../../components/Theme';
 import useDistributionGraphData from '../../../hooks/useDistributionGraphData';
@@ -15,7 +15,11 @@ const useDonutOutcome = () => {
   const { buildWidgetLabelsOption } = useDistributionGraphData();
   const { buildFiltersForTemplateWidgets } = useBuildFiltersForTemplateWidgets();
 
-  const buildDonutOutcome = async (containerId: string, widget: Widget, maxContentMarkings: string[]) => {
+  const buildDonutOutcome = async (
+    containerId: string,
+    widget: WidgetFromBackend,
+    maxContentMarkings: string[],
+  ) => {
     const [selection] = widget.dataSelection;
 
     const filters = buildFiltersForTemplateWidgets(containerId, selection.filters, maxContentMarkings);

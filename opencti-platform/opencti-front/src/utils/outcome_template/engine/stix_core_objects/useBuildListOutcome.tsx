@@ -3,16 +3,20 @@ import { StixCoreObjectsListQuery$data } from '@components/common/stix_core_obje
 import React from 'react';
 import { renderToString } from 'react-dom/server';
 import { useBuildFiltersForTemplateWidgets } from '../../../filters/filtersUtils';
-import type { Widget } from '../../../widget/widget';
 import { fetchQuery } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import getObjectProperty from '../../../object';
+import type { WidgetFromBackend } from '../../../widget/widget';
 
 const useBuildListOutcome = () => {
   const { t_i18n } = useFormatter();
   const { buildFiltersForTemplateWidgets } = useBuildFiltersForTemplateWidgets();
 
-  const buildListOutcome = async (containerId: string, widget: Widget, maxContentMarkings: string[]) => {
+  const buildListOutcome = async (
+    containerId: string,
+    widget: WidgetFromBackend,
+    maxContentMarkings: string[],
+  ) => {
     const [selection] = widget.dataSelection;
     const dataSelectionTypes = ['Stix-Core-Object'];
     const dateAttribute = selection.date_attribute && selection.date_attribute.length > 0

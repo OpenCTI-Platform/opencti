@@ -297,13 +297,13 @@ export const useBuildFiltersForTemplateWidgets = () => {
 
   const buildFiltersForTemplateWidgets = (
     containerId: string,
-    inputFilters: FilterGroup | undefined,
+    inputFilters: string | undefined | null,
     maxContentMarkingsIds: string[],
   ) => {
-    let filters = inputFilters;
+    let filters;
     // 01. replace CONTAINER_ID
     if (inputFilters) {
-      const filtersWithId = JSON.stringify(inputFilters).replace('CONTAINER_ID', containerId);
+      const filtersWithId = inputFilters.replace('CONTAINER_ID', containerId);
       filters = JSON.parse(filtersWithId);
     }
     // 02. restrict markings

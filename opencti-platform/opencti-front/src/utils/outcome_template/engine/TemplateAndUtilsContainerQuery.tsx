@@ -14,7 +14,32 @@ const templateAndUtilsContainerQuery = graphql`
         }
         template_widgets {
           name
-          widget
+          widget {
+              id
+              type
+              perspective
+              dataSelection {
+                  label
+                  number
+                  attribute
+                  date_attribute
+                  centerLat
+                  centerLng
+                  zoom
+                  isTo
+                  perspective
+                  filters
+                  dynamicFrom
+                  dynamicTo
+                  columns {
+                      attribute
+                      displayStyle
+                      variableName
+                      label
+                  }
+                  instance_id
+              }
+          }
         }
       }
     }

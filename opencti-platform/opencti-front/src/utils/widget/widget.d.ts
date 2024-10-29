@@ -1,4 +1,5 @@
 import { FilterGroup } from '../filters/filtersHelpers-types';
+import { TemplateAndUtilsContainerQuery$data, WidgetPerspective } from '../outcome_template/engine/__generated__/TemplateAndUtilsContainerQuery.graphql';
 
 interface WidgetColumn {
   attribute: string
@@ -16,7 +17,7 @@ interface WidgetDataSelection {
   centerLng?: number
   zoom?: number
   isTo?: boolean
-  perspective?: 'entities' | 'relationships' | 'audits' | null
+  perspective?: WidgetPerspective
   filters?: FilterGroup
   dynamicFrom?: FilterGroup
   dynamicTo?: FilterGroup
@@ -45,8 +46,10 @@ interface WidgetLayout {
 export interface Widget {
   id: string;
   type: string;
-  perspective: 'entities' | 'relationships' | 'audits' | null
+  perspective?: WidgetPerspective
   dataSelection: WidgetDataSelection[]
   parameters?: WidgetParameters
   layout?: WidgetLayout
 }
+
+export type WidgetFromBackend = NonNullable<NonNullable<NonNullable<TemplateAndUtilsContainerQuery$data['container']>['templateAndUtils']>['template_widgets']>[0]['widget'];

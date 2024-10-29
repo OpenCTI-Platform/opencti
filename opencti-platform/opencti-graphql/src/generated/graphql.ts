@@ -22592,13 +22592,6 @@ export type ResolvedInstanceFilter = {
   value?: Maybe<Scalars['String']['output']>;
 };
 
-export type ResolvedWidgetAttribute = {
-  __typename?: 'ResolvedWidgetAttribute';
-  data: Array<Scalars['String']['output']>;
-  displayStyle?: Maybe<Scalars['String']['output']>;
-  template_widget_name: Scalars['String']['output'];
-};
-
 export type RetentionRule = {
   __typename?: 'RetentionRule';
   filters: Scalars['String']['output'];
@@ -26609,7 +26602,7 @@ export type TemplateWidget = {
   __typename?: 'TemplateWidget';
   description?: Maybe<Scalars['String']['output']>;
   name: Scalars['String']['output'];
-  widget: Scalars['String']['output'];
+  widget: Widget;
 };
 
 export type Text = BasicObject & StixCoreObject & StixCyberObservable & StixObject & {
@@ -29433,6 +29426,68 @@ export type VulnerabilityEditMutationsRelationDeleteArgs = {
   toId: Scalars['StixRef']['input'];
 };
 
+export type Widget = {
+  __typename?: 'Widget';
+  dataSelection: Array<WidgetDataSelection>;
+  id: Scalars['String']['output'];
+  layout?: Maybe<WidgetLayout>;
+  parameters?: Maybe<WidgetParameters>;
+  perspective?: Maybe<WidgetPerspective>;
+  type: Scalars['String']['output'];
+};
+
+export type WidgetColumn = {
+  __typename?: 'WidgetColumn';
+  attribute: Scalars['String']['output'];
+  displayStyle?: Maybe<Scalars['String']['output']>;
+  label?: Maybe<Scalars['String']['output']>;
+  variableName?: Maybe<Scalars['String']['output']>;
+};
+
+export type WidgetDataSelection = {
+  __typename?: 'WidgetDataSelection';
+  attribute?: Maybe<Scalars['String']['output']>;
+  centerLat?: Maybe<Scalars['Float']['output']>;
+  centerLng?: Maybe<Scalars['Float']['output']>;
+  columns?: Maybe<Array<WidgetColumn>>;
+  date_attribute?: Maybe<Scalars['String']['output']>;
+  dynamicFrom?: Maybe<Scalars['String']['output']>;
+  dynamicTo?: Maybe<Scalars['String']['output']>;
+  filters?: Maybe<Scalars['String']['output']>;
+  instance_id?: Maybe<Scalars['String']['output']>;
+  isTo?: Maybe<Scalars['Boolean']['output']>;
+  label?: Maybe<Scalars['String']['output']>;
+  number?: Maybe<Scalars['Int']['output']>;
+  perspective?: Maybe<WidgetPerspective>;
+  zoom?: Maybe<Scalars['Float']['output']>;
+};
+
+export type WidgetLayout = {
+  __typename?: 'WidgetLayout';
+  h?: Maybe<Scalars['Float']['output']>;
+  i?: Maybe<Scalars['Float']['output']>;
+  moved?: Maybe<Scalars['Boolean']['output']>;
+  static?: Maybe<Scalars['Boolean']['output']>;
+  w?: Maybe<Scalars['Float']['output']>;
+  x?: Maybe<Scalars['Float']['output']>;
+  y?: Maybe<Scalars['Float']['output']>;
+};
+
+export type WidgetParameters = {
+  __typename?: 'WidgetParameters';
+  distributed?: Maybe<Scalars['Boolean']['output']>;
+  interval?: Maybe<Scalars['String']['output']>;
+  legend?: Maybe<Scalars['Boolean']['output']>;
+  stacked?: Maybe<Scalars['Boolean']['output']>;
+  title?: Maybe<Scalars['String']['output']>;
+};
+
+export enum WidgetPerspective {
+  Audits = 'audits',
+  Entities = 'entities',
+  Relationships = 'relationships'
+}
+
 export type WindowsRegistryKey = BasicObject & StixCoreObject & StixCyberObservable & StixObject & {
   __typename?: 'WindowsRegistryKey';
   attribute_key?: Maybe<Scalars['String']['output']>;
@@ -30915,7 +30970,6 @@ export type ResolversTypes = ResolversObject<{
   Representative: ResolverTypeWrapper<Representative>;
   RepresentativeWithId: ResolverTypeWrapper<RepresentativeWithId>;
   ResolvedInstanceFilter: ResolverTypeWrapper<ResolvedInstanceFilter>;
-  ResolvedWidgetAttribute: ResolverTypeWrapper<ResolvedWidgetAttribute>;
   RetentionRule: ResolverTypeWrapper<RetentionRule>;
   RetentionRuleAddInput: RetentionRuleAddInput;
   RetentionRuleConnection: ResolverTypeWrapper<RetentionRuleConnection>;
@@ -31164,6 +31218,12 @@ export type ResolversTypes = ResolversObject<{
   VulnerabilityConnection: ResolverTypeWrapper<Omit<VulnerabilityConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['VulnerabilityEdge']>>> }>;
   VulnerabilityEdge: ResolverTypeWrapper<Omit<VulnerabilityEdge, 'node'> & { node: ResolversTypes['Vulnerability'] }>;
   VulnerabilityEditMutations: ResolverTypeWrapper<Omit<VulnerabilityEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['Vulnerability']>, contextPatch?: Maybe<ResolversTypes['Vulnerability']>, fieldPatch?: Maybe<ResolversTypes['Vulnerability']>, relationAdd?: Maybe<ResolversTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversTypes['Vulnerability']> }>;
+  Widget: ResolverTypeWrapper<Widget>;
+  WidgetColumn: ResolverTypeWrapper<WidgetColumn>;
+  WidgetDataSelection: ResolverTypeWrapper<WidgetDataSelection>;
+  WidgetLayout: ResolverTypeWrapper<WidgetLayout>;
+  WidgetParameters: ResolverTypeWrapper<WidgetParameters>;
+  WidgetPerspective: WidgetPerspective;
   WindowsRegistryKey: ResolverTypeWrapper<Omit<WindowsRegistryKey, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversTypes['Connector']>>>, containers?: Maybe<ResolversTypes['ContainerConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversTypes['Work']>>>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversTypes['Label']>>, objectMarking?: Maybe<Array<ResolversTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversTypes['Organization']>>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversTypes['Inference']>>> }>;
   WindowsRegistryKeyAddInput: WindowsRegistryKeyAddInput;
   WindowsRegistryValueType: ResolverTypeWrapper<Omit<WindowsRegistryValueType, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversTypes['Connector']>>>, containers?: Maybe<ResolversTypes['ContainerConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversTypes['Work']>>>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversTypes['Label']>>, objectMarking?: Maybe<Array<ResolversTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversTypes['Organization']>>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversTypes['Inference']>>> }>;
@@ -31676,7 +31736,6 @@ export type ResolversParentTypes = ResolversObject<{
   Representative: Representative;
   RepresentativeWithId: RepresentativeWithId;
   ResolvedInstanceFilter: ResolvedInstanceFilter;
-  ResolvedWidgetAttribute: ResolvedWidgetAttribute;
   RetentionRule: RetentionRule;
   RetentionRuleAddInput: RetentionRuleAddInput;
   RetentionRuleConnection: RetentionRuleConnection;
@@ -31882,6 +31941,11 @@ export type ResolversParentTypes = ResolversObject<{
   VulnerabilityConnection: Omit<VulnerabilityConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['VulnerabilityEdge']>>> };
   VulnerabilityEdge: Omit<VulnerabilityEdge, 'node'> & { node: ResolversParentTypes['Vulnerability'] };
   VulnerabilityEditMutations: Omit<VulnerabilityEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['Vulnerability']>, contextPatch?: Maybe<ResolversParentTypes['Vulnerability']>, fieldPatch?: Maybe<ResolversParentTypes['Vulnerability']>, relationAdd?: Maybe<ResolversParentTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversParentTypes['Vulnerability']> };
+  Widget: Widget;
+  WidgetColumn: WidgetColumn;
+  WidgetDataSelection: WidgetDataSelection;
+  WidgetLayout: WidgetLayout;
+  WidgetParameters: WidgetParameters;
   WindowsRegistryKey: Omit<WindowsRegistryKey, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversParentTypes['Connector']>>>, containers?: Maybe<ResolversParentTypes['ContainerConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversParentTypes['Work']>>>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversParentTypes['Label']>>, objectMarking?: Maybe<Array<ResolversParentTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversParentTypes['Organization']>>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversParentTypes['Inference']>>> };
   WindowsRegistryKeyAddInput: WindowsRegistryKeyAddInput;
   WindowsRegistryValueType: Omit<WindowsRegistryValueType, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversParentTypes['Connector']>>>, containers?: Maybe<ResolversParentTypes['ContainerConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversParentTypes['Work']>>>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversParentTypes['Label']>>, objectMarking?: Maybe<Array<ResolversParentTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversParentTypes['Organization']>>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversParentTypes['Inference']>>> };
@@ -38338,13 +38402,6 @@ export type ResolvedInstanceFilterResolvers<ContextType = any, ParentType extend
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
-export type ResolvedWidgetAttributeResolvers<ContextType = any, ParentType extends ResolversParentTypes['ResolvedWidgetAttribute'] = ResolversParentTypes['ResolvedWidgetAttribute']> = ResolversObject<{
-  data?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
-  displayStyle?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  template_widget_name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-}>;
-
 export type RetentionRuleResolvers<ContextType = any, ParentType extends ResolversParentTypes['RetentionRule'] = ResolversParentTypes['RetentionRule']> = ResolversObject<{
   filters?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
@@ -39801,7 +39858,7 @@ export type TemplateAndUtilsResolvers<ContextType = any, ParentType extends Reso
 export type TemplateWidgetResolvers<ContextType = any, ParentType extends ResolversParentTypes['TemplateWidget'] = ResolversParentTypes['TemplateWidget']> = ResolversObject<{
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  widget?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  widget?: Resolver<ResolversTypes['Widget'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -40657,6 +40714,62 @@ export type VulnerabilityEditMutationsResolvers<ContextType = any, ParentType ex
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
+export type WidgetResolvers<ContextType = any, ParentType extends ResolversParentTypes['Widget'] = ResolversParentTypes['Widget']> = ResolversObject<{
+  dataSelection?: Resolver<Array<ResolversTypes['WidgetDataSelection']>, ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  layout?: Resolver<Maybe<ResolversTypes['WidgetLayout']>, ParentType, ContextType>;
+  parameters?: Resolver<Maybe<ResolversTypes['WidgetParameters']>, ParentType, ContextType>;
+  perspective?: Resolver<Maybe<ResolversTypes['WidgetPerspective']>, ParentType, ContextType>;
+  type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type WidgetColumnResolvers<ContextType = any, ParentType extends ResolversParentTypes['WidgetColumn'] = ResolversParentTypes['WidgetColumn']> = ResolversObject<{
+  attribute?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  displayStyle?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  label?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  variableName?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type WidgetDataSelectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['WidgetDataSelection'] = ResolversParentTypes['WidgetDataSelection']> = ResolversObject<{
+  attribute?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  centerLat?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
+  centerLng?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
+  columns?: Resolver<Maybe<Array<ResolversTypes['WidgetColumn']>>, ParentType, ContextType>;
+  date_attribute?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  dynamicFrom?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  dynamicTo?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  filters?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  instance_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  isTo?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  label?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  number?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  perspective?: Resolver<Maybe<ResolversTypes['WidgetPerspective']>, ParentType, ContextType>;
+  zoom?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type WidgetLayoutResolvers<ContextType = any, ParentType extends ResolversParentTypes['WidgetLayout'] = ResolversParentTypes['WidgetLayout']> = ResolversObject<{
+  h?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
+  i?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
+  moved?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  static?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  w?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
+  x?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
+  y?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type WidgetParametersResolvers<ContextType = any, ParentType extends ResolversParentTypes['WidgetParameters'] = ResolversParentTypes['WidgetParameters']> = ResolversObject<{
+  distributed?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  interval?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  legend?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  stacked?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  title?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
 export type WindowsRegistryKeyResolvers<ContextType = any, ParentType extends ResolversParentTypes['WindowsRegistryKey'] = ResolversParentTypes['WindowsRegistryKey']> = ResolversObject<{
   attribute_key?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   cases?: Resolver<Maybe<ResolversTypes['CaseConnection']>, ParentType, ContextType, Partial<WindowsRegistryKeyCasesArgs>>;
@@ -41288,7 +41401,6 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   Representative?: RepresentativeResolvers<ContextType>;
   RepresentativeWithId?: RepresentativeWithIdResolvers<ContextType>;
   ResolvedInstanceFilter?: ResolvedInstanceFilterResolvers<ContextType>;
-  ResolvedWidgetAttribute?: ResolvedWidgetAttributeResolvers<ContextType>;
   RetentionRule?: RetentionRuleResolvers<ContextType>;
   RetentionRuleConnection?: RetentionRuleConnectionResolvers<ContextType>;
   RetentionRuleEdge?: RetentionRuleEdgeResolvers<ContextType>;
@@ -41443,6 +41555,11 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   VulnerabilityConnection?: VulnerabilityConnectionResolvers<ContextType>;
   VulnerabilityEdge?: VulnerabilityEdgeResolvers<ContextType>;
   VulnerabilityEditMutations?: VulnerabilityEditMutationsResolvers<ContextType>;
+  Widget?: WidgetResolvers<ContextType>;
+  WidgetColumn?: WidgetColumnResolvers<ContextType>;
+  WidgetDataSelection?: WidgetDataSelectionResolvers<ContextType>;
+  WidgetLayout?: WidgetLayoutResolvers<ContextType>;
+  WidgetParameters?: WidgetParametersResolvers<ContextType>;
   WindowsRegistryKey?: WindowsRegistryKeyResolvers<ContextType>;
   WindowsRegistryValueType?: WindowsRegistryValueTypeResolvers<ContextType>;
   Work?: WorkResolvers<ContextType>;

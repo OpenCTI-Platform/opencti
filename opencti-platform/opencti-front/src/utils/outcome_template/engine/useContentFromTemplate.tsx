@@ -15,6 +15,7 @@ const useContentFromTemplate = () => {
     templateId: string,
     maxContentMarkings: string[],
   ) => {
+    // fetch template and useful widgets
     const variables = { id: containerId, templateId };
     const { container } = await fetchQuery(templateAndUtilsContainerQuery, variables).toPromise() as TemplateAndUtilsContainerQuery$data;
 
@@ -24,10 +25,9 @@ const useContentFromTemplate = () => {
 
     const { template, template_widgets } = container.templateAndUtils;
     let { content } = template;
-    const templateWidgets = template_widgets.map((tw) => ({ ...tw, widget: JSON.parse(tw.widget) }));
 
     // attribute widgets
-    const attributeWidgets = templateWidgets.filter((tw) => tw.widget.type === 'attribute');
+    const attributeWidgets = template_widgets.filter((tw) => tw.widget.type === 'attribute');
     if (attributeWidgets.length > 0) {
       const attributeWidgetsOutcomesPromises = attributeWidgets.map((aw) => buildAttributesOutcome(containerId, aw));
       const attributeWidgetsOutcomes = await Promise.all(attributeWidgetsOutcomesPromises);
@@ -37,7 +37,7 @@ const useContentFromTemplate = () => {
     }
 
     // other widgets
-    for (const templateWidget of templateWidgets) {
+    for (const templateWidget of template_widgets) {
       let outcome = '';
       const { widget } = templateWidget;
       if (widget.type === 'list') {

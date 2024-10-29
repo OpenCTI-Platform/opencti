@@ -854,6 +854,57 @@ type FileConnection {
   edges: [FileEdge!]!
 }
 
+enum WidgetPerspective {
+  entities
+  relationships
+  audits
+}
+type WidgetColumn {
+  attribute: String!
+  displayStyle: String
+  label: String
+  variableName: String
+}
+type WidgetDataSelection {
+  label: String
+  number: Int
+  attribute: String
+  date_attribute: String
+  centerLat: Float
+  centerLng: Float
+  zoom: Float
+  isTo: Boolean
+  perspective: WidgetPerspective
+  filters: String
+  dynamicFrom: String
+  dynamicTo: String
+  columns: [WidgetColumn!]
+  instance_id: String
+}
+type WidgetParameters {
+  title: String
+  interval: String
+  stacked: Boolean
+  legend: Boolean
+  distributed: Boolean
+}
+type WidgetLayout {
+  w: Float
+  h: Float
+  x: Float
+  y: Float
+  i: Float
+  moved: Boolean
+  static: Boolean
+}
+type Widget {
+  id: String!
+  type: String!
+  perspective: WidgetPerspective
+  dataSelection: [WidgetDataSelection!]!
+  parameters: WidgetParameters
+  layout: WidgetLayout
+}
 type Template {
   id: ID!
   name: String!
@@ -865,12 +916,7 @@ type Template {
 type TemplateWidget {
   name: String!
   description: String
-  widget: String!
-}
-type ResolvedWidgetAttribute {
-  template_widget_name: String!
-  data: [String!]!
-  displayStyle: String
+  widget: Widget!
 }
 type TemplateAndUtils {
   template: Template!,

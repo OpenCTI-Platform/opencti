@@ -2,13 +2,16 @@ import { renderToString } from 'react-dom/server';
 import React from 'react';
 import { fetchQuery } from '../../../../relay/environment';
 import { StixCoreObjectsAttributesQuery$data } from './__generated__/StixCoreObjectsAttributesQuery.graphql';
-import type { TemplateWidget } from '../../template';
+import type { TemplateWidgetFromBackend } from '../../template';
 import stixCoreObjectsAttributesQuery from './StixCoreObjectsAttributesQuery';
 import getObjectProperty from '../../../object';
 import { dateFormat, isDate } from '../../../Time';
 
 const useBuildAttributesOutcome = () => {
-  const buildAttributesOutcome = async (containerId: string, templateWidget: TemplateWidget) => {
+  const buildAttributesOutcome = async (
+    containerId: string,
+    templateWidget: TemplateWidgetFromBackend,
+  ) => {
     const instanceId = templateWidget.widget.dataSelection[0].instance_id;
     if (!instanceId) {
       throw Error('The attribute widget should refers to an instance');
