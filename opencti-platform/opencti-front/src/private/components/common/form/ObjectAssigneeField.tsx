@@ -67,6 +67,7 @@ interface ObjectAssigneeFieldProps {
   helpertext?: unknown;
   label?: string,
   disabled?: boolean,
+  required?: boolean,
 }
 const ObjectAssigneeField: FunctionComponent<ObjectAssigneeFieldProps> = ({
   name,
@@ -75,6 +76,7 @@ const ObjectAssigneeField: FunctionComponent<ObjectAssigneeFieldProps> = ({
   onChange,
   helpertext,
   disabled,
+  required = false,
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
@@ -111,12 +113,14 @@ const ObjectAssigneeField: FunctionComponent<ObjectAssigneeFieldProps> = ({
       style={style}
       name={name}
       disabled={disabled}
+      required={required}
       multiple={true}
       textfieldprops={{
         variant: 'standard',
         label: label ?? t_i18n('Assignee(s)'),
         helperText: helpertext,
         onFocus: searchAssignees,
+        required,
       }}
       noOptionsText={t_i18n('No available options')}
       options={assignees}

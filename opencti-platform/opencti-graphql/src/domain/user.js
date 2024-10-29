@@ -418,9 +418,16 @@ export const roleEditContext = async (context, user, roleId, input) => {
   });
 };
 
+const isUserAdministratingOrga = (user, organizationId) => {
+  return user.administrated_organizations.some(({ id }) => id === organizationId);
+};
+
 export const assignOrganizationToUser = async (context, user, userId, organizationId) => {
   if (isOnlyOrgaAdmin(user)) {
-    throw ForbiddenAccess();
+    // When user is organization admin, we make sure she is also admin of organization added
+    if (!isUserAdministratingOrga(user, organizationId)) {
+      throw ForbiddenAccess();
+    }
   }
   const targetUser = await findById(context, user, userId);
   if (!targetUser) {
@@ -1020,7 +1027,10 @@ export const userIdDeleteRelation = async (context, user, userId, toId, relation
 
 export const userDeleteOrganizationRelation = async (context, user, userId, toId) => {
   if (isOnlyOrgaAdmin(user)) {
-    throw ForbiddenAccess();
+    // When user is organization admin, we make sure she is also admin of organization removed
+    if (!isUserAdministratingOrga(user, toId)) {
+      throw ForbiddenAccess();
+    }
   }
   const targetUser = await findById(context, user, userId);
   if (!targetUser) {
@@ -1082,11 +1092,12 @@ export const loginFromProvider = async (userInfo, opts = {}) => {
   if (isEmptyField(email)) {
     throw ForbiddenAccess('User email not provided');
   }
-  const name = isEmptyField(providedName) ? email : providedName;
-  const user = await elLoadBy(context, SYSTEM_USER, 'user_email', email, ENTITY_TYPE_USER);
+  const userEmail = email.toLowerCase();
+  const name = isEmptyField(providedName) ? userEmail : providedName;
+  const user = await elLoadBy(context, SYSTEM_USER, 'user_email', userEmail, ENTITY_TYPE_USER);
   if (!user) {
     // If user doesn't exist, create it. Providers are trusted
-    const newUser = { name, firstname, lastname, user_email: email.toLowerCase(), external: true };
+    const newUser = { name, firstname, lastname, user_email: userEmail, external: true };
     return addUser(context, SYSTEM_USER, newUser).then(() => {
       // After user creation, reapply login to manage roles and groups
       return loginFromProvider(userInfo, opts);
@@ -1398,15 +1409,35 @@ export const resolveUserById = async (context, id) => {
   return buildCompleteUser(context, client);
 };
 
-const resolveUserByToken = async (context, tokenValue) => {
+export const resolveUserByToken = async (context, tokenValue) => {
   const client = await elLoadBy(context, SYSTEM_USER, 'api_token', tokenValue, ENTITY_TYPE_USER);
   return buildCompleteUser(context, client);
 };
 
 export const userRenewToken = async (context, user, userId) => {
+  if (userId === OPENCTI_ADMIN_UUID) {
+    throw FunctionalError('Cannot renew token of admin user defined in configuration, please change configuration instead.');
+  }
+
+  const userData = await storeLoadById(context, user, userId, ENTITY_TYPE_USER);
+  if (!userData) {
+    throw FunctionalError(`Cannot renew token, ${userId} user cannot be found.`);
+  }
   const patch = { api_token: uuid() };
   await patchAttribute(context, user, userId, ENTITY_TYPE_USER, patch);
-  return storeLoadById(context, user, userId, ENTITY_TYPE_USER);
+  const result = storeLoadById(context, user, userId, ENTITY_TYPE_USER);
+
+  const actionEmail = ENABLED_DEMO_MODE ? REDACTED_USER.user_email : userData.user_email;
+  await publishUserAction({
+    user,
+    event_type: 'mutation',
+    event_scope: 'update',
+    event_access: 'administration',
+    message: `renew token of user \`${actionEmail}\``,
+    context_data: { id: userId, entity_type: ENTITY_TYPE_USER }
+  });
+
+  return result;
 };
 
 /**

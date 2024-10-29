@@ -2,7 +2,7 @@ import React, { FunctionComponent } from 'react';
 import { Link } from 'react-router-dom';
 import Typography from '@mui/material/Typography';
 import { useTheme } from '@mui/styles';
-import DangerZoneChip from '@components/common/dangerZone/DangerZoneChip';
+import DangerZoneChip from '@components/common/danger_zone/DangerZoneChip';
 import { truncate } from '../utils/String';
 import type { Theme } from './Theme';
 

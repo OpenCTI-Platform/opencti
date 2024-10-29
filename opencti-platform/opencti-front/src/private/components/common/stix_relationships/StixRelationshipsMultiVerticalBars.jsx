@@ -6,8 +6,8 @@ import { monthsAgo, now } from '../../../../utils/Time';
 import { buildFiltersAndOptionsForWidgets } from '../../../../utils/filters/filtersUtils';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
-import WidgetLoader from '../../../../components/dashboard/WidgetLoader';
 import WidgetVerticalBars from '../../../../components/dashboard/WidgetVerticalBars';
+import Loader, { LoaderVariant } from '../../../../components/Loader';
 
 const stixRelationshipsMultiVerticalBarsTimeSeriesQuery = graphql`
   query StixRelationshipsMultiVerticalBarsTimeSeriesQuery(
@@ -91,7 +91,7 @@ const StixRelationshipsMultiVerticalBars = ({
           if (props) {
             return <WidgetNoData />;
           }
-          return <WidgetLoader />;
+          return <Loader variant={LoaderVariant.inElement} />;
         }}
       />
     );

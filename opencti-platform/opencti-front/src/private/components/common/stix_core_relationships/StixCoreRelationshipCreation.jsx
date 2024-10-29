@@ -246,9 +246,9 @@ class StixCoreRelationshipCreation extends Component {
     };
   }
 
-  onSubmit(values, { setSubmitting, resetForm }) {
-    R.forEach((fromObject) => {
-      R.forEach((toObject) => {
+  async onSubmit(values, { setSubmitting, resetForm }) {
+    for (const fromObject of this.props.fromObjects) {
+      for (const toObject of this.props.toObjects) {
         const finalValues = R.pipe(
           R.assoc('confidence', parseInt(values.confidence, 10)),
           R.assoc('fromId', fromObject.id),
@@ -263,7 +263,8 @@ class StixCoreRelationshipCreation extends Component {
             R.pluck('value', values.externalReferences),
           ),
         )(values);
-        commitMutation({
+        // eslint-disable-next-line no-await-in-loop
+        await commitMutation({
           mutation: stixCoreRelationshipCreationMutation,
           variables: {
             input: finalValues,
@@ -273,8 +274,8 @@ class StixCoreRelationshipCreation extends Component {
             this.props.handleResult(response.stixCoreRelationshipAdd);
           },
         });
-      }, this.props.toObjects);
-    }, this.props.fromObjects);
+      }
+    }
     setSubmitting(false);
     resetForm();
     this.handleClose();

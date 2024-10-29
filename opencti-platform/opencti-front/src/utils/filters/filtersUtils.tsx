@@ -129,6 +129,7 @@ export const isNumericFilter = (
   return filterType === 'integer' || filterType === 'float';
 };
 
+// return the values of the filters of a specific key among a filters list
 export const findFilterFromKey = (
   filters: Filter[],
   key: string,
@@ -147,15 +148,12 @@ export const findFilterFromKey = (
 export const findFiltersFromKeys = (
   filters: Filter[],
   keys: string[],
-  operator?: string,
+  operator = 'eq',
 ) => {
   const result = [];
   for (const filter of filters) {
     if (keys.includes(filter.key)) {
-      if (operator && filter.operator === operator) {
-        result.push(filter);
-      }
-      if (!operator) {
+      if (!filter.operator || filter.operator === operator) {
         result.push(filter);
       }
     }

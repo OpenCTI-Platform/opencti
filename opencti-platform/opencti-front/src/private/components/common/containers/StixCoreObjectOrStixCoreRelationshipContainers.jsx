@@ -54,9 +54,9 @@ const StixCoreObjectOrStixCoreRelationshipContainers = ({
   } = useAuth();
   const isRuntimeSort = isRuntimeFieldEnable() ?? false;
   const LOCAL_STORAGE_KEY = `containers${
-    stixDomainObjectOrStixCoreRelationship
-      ? `-${stixDomainObjectOrStixCoreRelationship.id}`
-      : `-${authorId}`
+    authorId
+      ? `-${authorId}`
+      : `-${stixDomainObjectOrStixCoreRelationship.id}`
   }`;
 
   const { viewStorage, paginationOptions, helpers } = usePaginationLocalStorage(
@@ -91,7 +91,7 @@ const StixCoreObjectOrStixCoreRelationshipContainers = ({
       { key: 'entity_type', operator: 'eq', mode: 'or', values: ['Container'] },
       ...(reportFilterClass ? [{ key: 'report_types', values: [reportFilterClass], operator: 'eq', mode: 'or' }] : []),
       ...(authorId ? [{ key: 'createdBy', values: [authorId], operator: 'eq', mode: 'or' }] : []),
-      ...(stixDomainObjectOrStixCoreRelationship?.id ? [{ key: 'objects', values: [stixDomainObjectOrStixCoreRelationship.id], operator: 'eq', mode: 'or' }] : []),
+      ...(!authorId && stixDomainObjectOrStixCoreRelationship?.id ? [{ key: 'objects', values: [stixDomainObjectOrStixCoreRelationship.id], operator: 'eq', mode: 'or' }] : []),
     ],
     filterGroups: userFilters && isFilterGroupNotEmpty(userFilters) ? [userFilters] : [],
   };
@@ -165,6 +165,7 @@ const StixCoreObjectOrStixCoreRelationshipContainers = ({
         filters={filters}
         paginationOptions={queryPaginationOptions}
         numberOfElements={numberOfElements}
+        setNumberOfElements={helpers.handleSetNumberOfElements}
         disableCards={true}
         enableGraph={true}
       >

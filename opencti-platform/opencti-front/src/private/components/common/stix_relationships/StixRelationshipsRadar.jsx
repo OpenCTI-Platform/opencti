@@ -5,8 +5,8 @@ import { useFormatter } from '../../../../components/i18n';
 import { buildFiltersAndOptionsForWidgets } from '../../../../utils/filters/filtersUtils';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
-import WidgetLoader from '../../../../components/dashboard/WidgetLoader';
 import WidgetRadar from '../../../../components/dashboard/WidgetRadar';
+import Loader, { LoaderVariant } from '../../../../components/Loader';
 
 const stixRelationshipsRadarsDistributionQuery = graphql`
   query StixRelationshipsRadarDistributionQuery(
@@ -158,7 +158,7 @@ const StixRelationshipsRadar = ({
           if (props) {
             return <WidgetNoData />;
           }
-          return <WidgetLoader />;
+          return <Loader variant={LoaderVariant.inElement} />;
         }}
       />
     );

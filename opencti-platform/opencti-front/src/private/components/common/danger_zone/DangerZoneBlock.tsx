@@ -1,7 +1,7 @@
 import { useTheme } from '@mui/styles';
 import Typography from '@mui/material/Typography';
 import React, { FunctionComponent, ReactElement, ReactNode } from 'react';
-import DangerZoneChip from '@components/common/dangerZone/DangerZoneChip';
+import DangerZoneChip from '@components/common/danger_zone/DangerZoneChip';
 import type { Theme } from '../../../../components/Theme';
 import { hexToRGB } from '../../../../utils/Colors';
 import { useFormatter } from '../../../../components/i18n';
@@ -39,6 +39,7 @@ const DangerZoneBlock: FunctionComponent<DangerZoneBlockProps> = ({ title, compo
           <Typography
             variant="h4"
             gutterBottom
+            style={sx?.title}
           >
             {currentTitle}
           </Typography>
@@ -57,6 +58,7 @@ const DangerZoneBlock: FunctionComponent<DangerZoneBlockProps> = ({ title, compo
         <Typography
           variant="h4"
           gutterBottom
+          style={sx?.title}
         >
           {currentTitle}
         </Typography>

@@ -23,12 +23,14 @@ const ReportEditionContainer = (props) => {
       context={editContext}
       controlledDial={isFABReplaced ? controlledDial : undefined}
     >
-      <ReportEditionOverview
-        report={report}
-        enableReferences={useIsEnforceReference('Report')}
-        context={editContext}
-        handleClose={handleClose}
-      />
+      <>
+        <ReportEditionOverview
+          report={report}
+          enableReferences={useIsEnforceReference('Report')}
+          context={editContext}
+          handleClose={handleClose}
+        />
+      </>
     </Drawer>
   );
 };

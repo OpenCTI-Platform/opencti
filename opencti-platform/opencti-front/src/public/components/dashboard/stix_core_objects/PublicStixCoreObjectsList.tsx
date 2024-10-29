@@ -6,9 +6,9 @@ import type { PublicWidgetContainerProps } from '../PublicWidgetContainerProps';
 import { useFormatter } from '../../../../components/i18n';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
-import WidgetLoader from '../../../../components/dashboard/WidgetLoader';
 import { PublicStixCoreObjectsListQuery } from './__generated__/PublicStixCoreObjectsListQuery.graphql';
 import { DataTableProps } from '../../../../components/dataGrid/dataTableTypes';
+import Loader, { LoaderVariant } from '../../../../components/Loader';
 
 const publicStixCoreObjectsListQuery = graphql`
   query PublicStixCoreObjectsListQuery(
@@ -267,7 +267,7 @@ const PublicStixCoreObjectsList = ({
       ref={rootRef}
     >
       {queryRef ? (
-        <React.Suspense fallback={<WidgetLoader />}>
+        <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
           <PublicStixCoreObjectsListComponent
             queryRef={queryRef}
             dateAttribute={dateAttribute}
@@ -276,7 +276,7 @@ const PublicStixCoreObjectsList = ({
           />
         </React.Suspense>
       ) : (
-        <WidgetLoader />
+        <Loader variant={LoaderVariant.inElement} />
       )}
     </WidgetContainer>
   );

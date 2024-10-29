@@ -804,6 +804,16 @@ const getRetroCompatibleMappings = () => {
         },
       },
     },
+    user_email: {
+      type: 'text',
+      fields: {
+        keyword: {
+          type: 'keyword',
+          normalizer: 'string_normalizer',
+          ignore_above: 512,
+        },
+      },
+    },
     name: {
       type: 'text',
       fields: {

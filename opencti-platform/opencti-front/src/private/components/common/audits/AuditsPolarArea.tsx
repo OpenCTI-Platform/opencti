@@ -18,7 +18,6 @@ import React, { CSSProperties } from 'react';
 import { AuditsPolarAreaDistributionQuery } from '@components/common/audits/__generated__/AuditsPolarAreaDistributionQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
-import WidgetLoader from '../../../../components/dashboard/WidgetLoader';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import WidgetPolarArea from '../../../../components/dashboard/WidgetPolarArea';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
@@ -26,6 +25,7 @@ import useGranted, { SETTINGS_SECURITYACTIVITY, SETTINGS_SETACCESSES, VIRTUAL_OR
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import WidgetAccessDenied from '../../../../components/dashboard/WidgetAccessDenied';
 import { DashboardWidgetDataSelection, DashboardWidgetParameters } from '../../../../utils/dashboard';
+import Loader, { LoaderVariant } from '../../../../components/Loader';
 
 const auditsPolarAreaDistributionQuery = graphql`
   query AuditsPolarAreaDistributionQuery(
@@ -165,7 +165,7 @@ const AuditsPolarAreaQueyRef = ({
       variant={variant}
     >
       {queryRef ? (
-        <React.Suspense fallback={<WidgetLoader />}>
+        <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
           <AuditsPolarAreaComponent
             queryRef={queryRef}
             dataSelection={dataSelection}
@@ -174,7 +174,7 @@ const AuditsPolarAreaQueyRef = ({
           />
         </React.Suspense>
       ) : (
-        <WidgetLoader />
+        <Loader variant={LoaderVariant.inElement} />
       )}
     </WidgetContainer>
   );

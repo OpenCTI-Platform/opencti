@@ -21,8 +21,8 @@ import useGranted, { SETTINGS_SECURITYACTIVITY, SETTINGS_SETACCESSES, VIRTUAL_OR
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
-import WidgetLoader from '../../../../components/dashboard/WidgetLoader';
 import WidgetRadar from '../../../../components/dashboard/WidgetRadar';
+import Loader, { LoaderVariant } from '../../../../components/Loader';
 
 const auditsRadarDistributionQuery = graphql`
   query AuditsRadarDistributionQuery(
@@ -155,7 +155,7 @@ const AuditsRadar = ({
           if (props) {
             return <WidgetNoData />;
           }
-          return <WidgetLoader />;
+          return <Loader variant={LoaderVariant.inElement} />;
         }}
       />
     );

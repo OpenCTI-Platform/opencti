@@ -9,7 +9,7 @@ import useHelper from '../../../../utils/hooks/useHelper';
 const PositionEditionContainer = (props) => {
   const { t_i18n } = useFormatter();
   const { isFeatureEnable } = useHelper();
-  const FABReplaced = isFeatureEnable('FAB_REPLACEMENT');
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const { handleClose, position, open, controlledDial } = props;
   const { editContext } = position;
   return (
@@ -17,16 +17,18 @@ const PositionEditionContainer = (props) => {
       title={t_i18n('Update a position')}
       open={open}
       onClose={handleClose}
-      variant={!FABReplaced && open == null ? DrawerVariant.update : undefined}
+      variant={!isFABReplaced && open == null ? DrawerVariant.update : undefined}
       context={editContext}
-      controlledDial={FABReplaced ? controlledDial : undefined}
+      controlledDial={isFABReplaced ? controlledDial : undefined}
     >
-      <PositionEditionOverview
-        position={position}
-        enableReferences={useIsEnforceReference('Position')}
-        context={editContext}
-        handleClose={handleClose}
-      />
+      <>
+        <PositionEditionOverview
+          position={position}
+          enableReferences={useIsEnforceReference('Position')}
+          context={editContext}
+          handleClose={handleClose}
+        />
+      </>
     </Drawer>
   );
 };

@@ -49,7 +49,7 @@ ExternalReferenceComponentProps
       <ExternalReferenceHeader
         externalReference={externalReference}
         PopoverComponent={
-          <ExternalReferencePopover id={externalReference.id} handleRemove={undefined} />
+          <ExternalReferencePopover id={externalReference.id} handleRemove={undefined} variant={'inLine'}/>
         }
         EditComponent={isFABReplaced && (
           <Security needs={[KNOWLEDGE_KNUPDATE]}>

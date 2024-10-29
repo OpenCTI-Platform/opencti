@@ -271,6 +271,7 @@ class StixSightingRelationshipExternalReferencesLinesContainer extends Component
                                   this,
                                   externalReferenceEdge,
                                 )}
+                                variant="inLine"
                               />
                             </Security>
                           </ListItemSecondaryAction>
@@ -326,6 +327,7 @@ class StixSightingRelationshipExternalReferencesLinesContainer extends Component
                                 this,
                                 externalReferenceEdge,
                               )}
+                              variant="inLine"
                             />
                           </Security>
                         </ListItemSecondaryAction>

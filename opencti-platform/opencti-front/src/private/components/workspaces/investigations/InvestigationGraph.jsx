@@ -60,6 +60,7 @@ const investigationGraphStixCoreObjectQuery = graphql`
       id
       entity_type
       parent_types
+      created_at
       createdBy {
         ... on Identity {
           id

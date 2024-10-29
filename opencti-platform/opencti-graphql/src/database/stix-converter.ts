@@ -139,6 +139,9 @@ export const convertTypeToStixType = (type: string): string => {
   if (isStixCoreRelationship(type)) {
     return 'relationship';
   }
+  if (isInternalRelationship(type)) {
+    return 'internal-relationship';
+  }
   if (isStixSightingRelationship(type)) {
     return 'sighting';
   }

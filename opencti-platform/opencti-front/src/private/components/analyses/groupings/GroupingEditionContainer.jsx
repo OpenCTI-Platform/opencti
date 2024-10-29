@@ -22,12 +22,14 @@ const GroupingEditionContainer = (props) => {
       context={editContext}
       controlledDial={isFABReplaced ? controlledDial : undefined}
     >
-      <GroupingEditionOverview
-        grouping={grouping}
-        enableReferences={useIsEnforceReference('Grouping')}
-        context={editContext}
-        handleClose={handleClose}
-      />
+      <>
+        <GroupingEditionOverview
+          grouping={grouping}
+          enableReferences={useIsEnforceReference('Grouping')}
+          context={editContext}
+          handleClose={handleClose}
+        />
+      </>
     </Drawer>
   );
 };

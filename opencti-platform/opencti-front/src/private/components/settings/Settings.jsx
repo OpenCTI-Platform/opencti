@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import * as R from 'ramda';
 import { graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
@@ -13,7 +13,13 @@ import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import { makeStyles, useTheme } from '@mui/styles';
 import Switch from '@mui/material/Switch';
-import DangerZoneBlock from '../common/dangerZone/DangerZoneBlock';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import Alert from '@mui/material/Alert';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DangerZoneBlock from '../common/danger_zone/DangerZoneBlock';
 import EEChip from '../common/entreprise_edition/EEChip';
 import EnterpriseEditionButton from '../common/entreprise_edition/EnterpriseEditionButton';
 import { SubscriptionFocus } from '../../../components/Subscription';
@@ -32,6 +38,7 @@ import ItemBoolean from '../../../components/ItemBoolean';
 import { availableLanguage } from '../../../components/AppIntlProvider';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import useSensitiveModifications from '../../../utils/hooks/useSensitiveModifications';
+import Transition from '../../../components/Transition';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -200,6 +207,7 @@ const Settings = () => {
   const theme = useTheme();
 
   const { isSensitiveModificationEnabled, isAllowed } = useSensitiveModifications();
+  const [openEEChanges, setOpenEEChanges] = useState(false);
 
   const { t_i18n } = useFormatter();
   const handleChangeFocus = (id, name) => {
@@ -431,19 +439,64 @@ const Settings = () => {
                           }}
                         >
                           {({ disabled }) => (
-                            <Button
-                              size="small"
-                              variant="outlined"
-                              color={isSensitiveModificationEnabled ? 'dangerZone' : 'primary'}
-                              onClick={() => handleSubmitField(id, 'enterprise_edition', '')}
-                              disabled={disabled}
-                              style={isSensitiveModificationEnabled ? {
-                                color: theme.palette.dangerZone.text.primary,
-                                borderColor: theme.palette.dangerZone.main,
-                              } : undefined}
-                            >
-                              {t_i18n('Disable Enterprise Edition')}
-                            </Button>
+                            <>
+                              <Button
+                                size="small"
+                                variant="outlined"
+                                color={isSensitiveModificationEnabled ? 'dangerZone' : 'primary'}
+                                onClick={() => setOpenEEChanges(true)}
+                                disabled={disabled}
+                                style={isSensitiveModificationEnabled ? {
+                                  color: theme.palette.dangerZone.text.primary,
+                                  borderColor: theme.palette.dangerZone.main,
+                                } : undefined}
+                              >
+                                {t_i18n('Disable Enterprise Edition')}
+                              </Button>
+                              <Dialog
+                                PaperProps={{ elevation: 1 }}
+                                open={openEEChanges}
+                                keepMounted
+                                TransitionComponent={Transition}
+                                onClose={() => setOpenEEChanges(false)}
+                              >
+                                <DialogTitle>{t_i18n('Disable Enterprise Edition')}</DialogTitle>
+                                <DialogContent>
+                                  <DialogContentText>
+                                    <Alert
+                                      severity="warning"
+                                      variant="outlined"
+                                      color="dangerZone"
+                                      style={{
+                                        borderColor: theme.palette.dangerZone.main,
+                                      }}
+                                    >
+                                      {t_i18n(
+                                        'You are about to disable the "Enterprise Edition" mode. Please note that this action will disable access to certain advanced features (Organization segregation, Automation, File indexing, Activity monitoring...). However, your existing data will remain intact and will not be lost.',
+                                      )}
+                                    </Alert>
+                                  </DialogContentText>
+                                </DialogContent>
+                                <DialogActions>
+                                  <Button
+                                    onClick={() => {
+                                      setOpenEEChanges(false);
+                                    }}
+                                  >
+                                    {t_i18n('Cancel')}
+                                  </Button>
+                                  <Button
+                                    color="secondary"
+                                    onClick={() => {
+                                      setOpenEEChanges(false);
+                                      handleSubmitField(id, 'enterprise_edition', '');
+                                    }}
+                                  >
+                                    {t_i18n('Validate')}
+                                  </Button>
+                                </DialogActions>
+                              </Dialog>
+                            </>
                           )}
                         </DangerZoneBlock>
                       )}

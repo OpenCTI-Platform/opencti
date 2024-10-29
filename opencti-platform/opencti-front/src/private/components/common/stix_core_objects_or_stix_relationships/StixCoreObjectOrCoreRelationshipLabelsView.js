@@ -35,6 +35,11 @@ const useStyles = makeStyles(() => ({
     margin: '0 7px 7px 0',
     borderRadius: 4,
   },
+  labelMore: {
+    margin: '0 7px 7px 0',
+    borderRadius: 4,
+    cursor: 'pointer',
+  },
   icon: {
     paddingTop: 4,
     display: 'inline-block',
@@ -69,6 +74,7 @@ const StixCoreObjectOrCoreRelationshipLabelsView = (props) => {
   const [stateLabels, setStateLabels] = useState([]);
   const [labelInput, setLabelInput] = useState('');
   const [labelToDelete, setLabelToDelete] = useState(null);
+  const [openLabels, setOpenLabels] = useState(false);
 
   const handleOpenAdd = () => setOpenAdd(true);
   const handleCloseAdd = () => setOpenAdd(false);
@@ -81,6 +87,8 @@ const StixCoreObjectOrCoreRelationshipLabelsView = (props) => {
     setLabelToDelete(label);
   };
   const handleCloseCommitDelete = () => setOpenCommitDelete(false);
+  const handleOpenLabels = () => setOpenLabels(true);
+  const handleCloseLabels = () => setOpenLabels(false);
 
   const searchLabels = (event) => {
     setLabelInput(event && event.target.value !== 0 ? event.target.value : '');
@@ -196,7 +204,63 @@ const StixCoreObjectOrCoreRelationshipLabelsView = (props) => {
                 />
               </Tooltip>
             ),
-            (labels ?? []),
+            (labels ? R.take(12, labels) : []),
+          )}
+          {labels && labels.length > 12 && (
+          <Tooltip title={t_i18n('See more')}>
+            <Chip
+              variant="outlined"
+              classes={{ root: classes.labelMore }}
+              label='...'
+              onClick={handleOpenLabels}
+            />
+          </Tooltip>
+          )}
+          {labels && labels.length > 12 && (
+          <Dialog
+            PaperProps={{ elevation: 1 }}
+            open={openLabels}
+            TransitionComponent={Transition}
+            onClose={handleCloseLabels}
+            fullWidth={true}
+            maxWidth="md"
+          >
+            <DialogTitle>{t_i18n('All labels')}</DialogTitle>
+            <DialogContent>
+              {map(
+                (label) => (
+                  <Tooltip title={label.value}>
+                    <Chip
+                      key={label.id}
+                      variant="outlined"
+                      classes={{ root: classes.label }}
+                      label={truncate(label.value, 25)}
+                      style={{
+                        color: label.color,
+                        borderColor: label.color,
+                        backgroundColor: hexToRGB(label.color),
+                      }}
+                      onDelete={canUpdateKnowledge ? () => (enableReferences
+                        ? handleOpenCommitDelete(label)
+                        : handleRemoveLabel(label.id)) : undefined}
+                      deleteIcon={
+                        <CancelOutlined
+                          className={classes.deleteIcon}
+                          style={{ color: label.color }}
+                        />
+                    }
+                    />
+                  </Tooltip>
+                ),
+                (labels ?? []),
+              )}
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={handleCloseLabels}>
+                {t_i18n('Close')}
+              </Button>
+            </DialogActions>
+          </Dialog>
           )}
         </FieldOrEmpty>
         {enableReferences && (

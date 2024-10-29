@@ -4,10 +4,10 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { PublicStixCoreObjectsNumberQuery } from './__generated__/PublicStixCoreObjectsNumberQuery.graphql';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import { useFormatter } from '../../../../components/i18n';
-import WidgetLoader from '../../../../components/dashboard/WidgetLoader';
 import WidgetNumber from '../../../../components/dashboard/WidgetNumber';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import type { PublicWidgetContainerProps } from '../PublicWidgetContainerProps';
+import Loader, { LoaderVariant } from '../../../../components/Loader';
 
 const publicStixCoreObjectsNumberQuery = graphql`
   query PublicStixCoreObjectsNumberQuery(
@@ -72,11 +72,11 @@ const PublicStixCoreObjectsNumber = ({
       variant="inLine"
     >
       {queryRef ? (
-        <React.Suspense fallback={<WidgetLoader />}>
+        <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
           <PublicStixCoreObjectsNumberComponent queryRef={queryRef} />
         </React.Suspense>
       ) : (
-        <WidgetLoader />
+        <Loader variant={LoaderVariant.inElement} />
       )}
     </WidgetContainer>
   );

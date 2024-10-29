@@ -20,6 +20,9 @@ export const ENTITY_TYPE_ACTIVITY = 'Activity';
 export const ENTITY_TYPE_WORK = 'work';
 export const ENTITY_TYPE_BACKGROUND_TASK = 'BackgroundTask';
 export const ENTITY_TYPE_RETENTION_RULE = 'RetentionRule';
+// FIXME: recommend 'Sync' be changed to 'Synchronizer' or vice versa
+//  this should be done for consistency across baseline.  GraphQL
+//  object is named 'Synchronizer'
 export const ENTITY_TYPE_SYNC = 'Sync';
 export const ENTITY_TYPE_TAXII_COLLECTION = 'TaxiiCollection';
 export const ENTITY_TYPE_INTERNAL_FILE = 'InternalFile';

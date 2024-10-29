@@ -1,7 +1,14 @@
 import { describe, it, expect } from 'vitest';
-import { getEntityTypeTwoFirstLevelsFilterValues, useBuildFilterKeysMapFromEntityType } from '../filters/filtersUtils';
+import {
+  getEntityTypeTwoFirstLevelsFilterValues,
+  useBuildFilterKeysMapFromEntityType,
+  emptyFilterGroup,
+  findFiltersFromKeys,
+  serializeFilterGroupForBackend,
+} from '../filters/filtersUtils';
 import { createMockUserContext, testRenderHook } from './test-render';
 import filterKeysSchema from './FilterUtilsConstants';
+import { FilterGroup } from '../filters/filtersHelpers-types';
 
 describe('Filters utils', () => {
   describe('useBuildFilterKeysMapFromEntityType', () => {
@@ -160,5 +167,88 @@ describe('Filters utils', () => {
       const result = getEntityTypeTwoFirstLevelsFilterValues(filters, ['Domain-Name', 'File'], ['Malware', 'Artifact', 'Country', 'City']);
       expect(result).toEqual(['Malware']);
     });
+  });
+});
+
+describe('Function findFilterFromKey: should return the filters of the specified keys among a filters list', () => {
+  it('findFilterFromKey without specifying an operator', () => {
+    const filtersList = [
+      { key: 'value', values: [], operator: 'nil' },
+      { key: 'name', values: ['name1', 'name2'], operator: 'eq' },
+    ];
+    const result = findFiltersFromKeys(filtersList, ['value']);
+    expect(result).toEqual([]);
+  });
+  it('findFilterFromKey with several results', () => {
+    const filtersList = [
+      { key: 'value', values: [], operator: 'nil' },
+      { key: 'name', values: ['name1', 'name2'], operator: 'eq' },
+      { key: 'name', values: ['name3'], operator: 'eq' },
+    ];
+    const result = findFiltersFromKeys(filtersList, ['name']);
+    expect(result).toEqual([{ key: 'name', values: ['name1', 'name2'], operator: 'eq' },
+      { key: 'name', values: ['name3'], operator: 'eq' }]);
+  });
+  it('findFilterFromKey with operator specified', () => {
+    const filtersList = [
+      { key: 'value', values: [], operator: 'nil' },
+      { key: 'name', values: ['name1', 'name2'], operator: 'eq' },
+    ];
+    const result = findFiltersFromKeys(filtersList, ['value'], 'nil');
+    expect(result).toEqual([{ key: 'value', values: [], operator: 'nil' }]);
+  });
+  it('findFilterFromKey with several keys', () => {
+    const filtersList = [
+      { key: 'value', values: ['value1'], operator: 'eq' },
+      { key: 'created_at', values: ['XX', 'YY'], mode: 'or' },
+      { key: 'created_at', values: ['ZZ'], operator: 'not_eq' },
+      { key: 'name', values: ['name1', 'name2'], operator: 'eq' },
+    ];
+    const result = findFiltersFromKeys(filtersList, ['value', 'test', 'created_at']);
+    expect(result).toEqual([{ key: 'value', values: ['value1'], operator: 'eq' },
+      { key: 'created_at', values: ['XX', 'YY'], mode: 'or' }]);
+  });
+});
+
+describe('Function serializeFilterGroupForBackend', () => {
+  it('serializeFilterGroupForBackend: empty filter group', () => {
+    const result = serializeFilterGroupForBackend(undefined);
+    expect(result).toEqual(JSON.stringify(emptyFilterGroup));
+  });
+  it('serializeFilterGroupForBackend: complex filters', () => {
+    const inputFilters = {
+      mode: 'or',
+      filters: [
+        { id: 'XX', key: ['value'], values: ['value1'], operator: 'eq' },
+        { key: 'name', values: ['name1, name2'] },
+      ],
+      filterGroups: [
+        {
+          mode: 'and',
+          filters: [
+            { id: 'YY', key: 'name', values: [], operator: 'nil' },
+          ],
+          filterGroups: [],
+        },
+      ],
+    };
+    const resultFilters = {
+      mode: 'or',
+      filters: [
+        { key: ['value'], values: ['value1'], operator: 'eq' },
+        { key: ['name'], values: ['name1, name2'] },
+      ],
+      filterGroups: [
+        {
+          mode: 'and',
+          filters: [
+            { key: ['name'], values: [], operator: 'nil' },
+          ],
+          filterGroups: [],
+        },
+      ],
+    };
+    const result = serializeFilterGroupForBackend(inputFilters as FilterGroup);
+    expect(result).toEqual(JSON.stringify(resultFilters));
   });
 });

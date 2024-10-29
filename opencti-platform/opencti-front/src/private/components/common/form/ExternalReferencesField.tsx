@@ -51,6 +51,7 @@ export type ExternalReferencesValues = {
 
 interface ExternalReferencesFieldProps {
   name: string;
+  label?: string;
   style?: { marginTop: number; width: string };
   onChange?: (name: string, values: Option[]) => void;
   setFieldValue: (
@@ -74,6 +75,7 @@ interface ExternalReferencesFieldProps {
   noStoreUpdate?: boolean;
   id?: string;
   dryrun?: boolean;
+  required?:boolean;
 }
 
 export const ExternalReferencesField: FunctionComponent<
@@ -88,6 +90,7 @@ ExternalReferencesFieldProps
   noStoreUpdate,
   id,
   dryrun,
+  required = false,
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
@@ -166,12 +169,14 @@ ExternalReferencesFieldProps
         component={AutocompleteField}
         style={style}
         name={name}
+        required={required}
         multiple={true}
         textfieldprops={{
           variant: 'standard',
           label: t_i18n('External references'),
           helperText: helpertext,
           onFocus: searchExternalReferences,
+          required,
         }}
         noOptionsText={t_i18n('No available options')}
         options={externalReferences}

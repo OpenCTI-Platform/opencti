@@ -1,6 +1,6 @@
 import { expect, it, describe } from 'vitest';
 import gql from 'graphql-tag';
-import { queryAsAdmin } from '../../utils/testQuery';
+import { adminQuery, queryAsAdmin } from '../../utils/testQuery';
 import { ENTITY_DOMAIN_NAME } from '../../../src/schema/stixCyberObservable';
 import { MARKING_TLP_GREEN } from '../../../src/schema/identifier';
 import type { BasicStoreEntityEdge } from '../../../src/types/store';
@@ -100,6 +100,15 @@ const CREATE_QUERY = gql`
             }
         }
     }
+`;
+
+const UPDATE_QUERY = gql`
+  mutation IndicatorFieldPatch($id: ID!, $input: [EditInput!]!) {
+    indicatorFieldPatch(id: $id, input: $input) {
+      id
+      name
+    }
+  }
 `;
 
 describe('Indicator resolver standard behavior', () => {
@@ -219,15 +228,15 @@ describe('Indicator resolver standard behavior', () => {
       expect(indicatorCreatedEarlier).toBeDefined();
     }
   });
+  it('should not update indicator with incorrectly formatted pattern', async () => {
+    const queryResult = await adminQuery({
+      query: UPDATE_QUERY,
+      variables: { id: firstIndicatorInternalId, input: { key: 'pattern', value: ["[domain-name:value &&& 'www.wrong.pattern']"] } },
+    });
+    expect(queryResult.errors).toBeDefined();
+    expect(queryResult.errors[0].message).toBe('Indicator of type stix is not correctly formatted.');
+  });
   it('should update indicator', async () => {
-    const UPDATE_QUERY = gql`
-        mutation IndicatorFieldPatch($id: ID!, $input: [EditInput!]!) {
-            indicatorFieldPatch(id: $id, input: $input) {
-                id
-                name
-            }
-        }
-    `;
     const queryResult = await queryAsAdminWithSuccess({
       query: UPDATE_QUERY,
       variables: { id: firstIndicatorInternalId, input: { key: 'name', value: ['Indicator - test'] } },
