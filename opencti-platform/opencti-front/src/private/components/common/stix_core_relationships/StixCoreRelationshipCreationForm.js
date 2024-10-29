@@ -22,6 +22,7 @@ import ItemIcon from '../../../../components/ItemIcon';
 import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
+import { minutesBefore, now } from '../../../../utils/Time';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -138,13 +139,15 @@ const StixCoreRelationshipCreationForm = ({
       ? 'related-to'
       : '';
 
+  const defaultTime = now();
+
   const initialValues = useDefaultValues(
     STIX_CORE_RELATIONSHIP_TYPE,
     {
       relationship_type: defaultRelationshipType,
       confidence: defaultConfidence,
-      start_time: !isNone(defaultStartTime) ? defaultStartTime : null,
-      stop_time: !isNone(defaultStopTime) ? defaultStopTime : null,
+      start_time: !isNone(defaultStartTime) ? defaultStartTime : minutesBefore(1, defaultTime),
+      stop_time: !isNone(defaultStopTime) ? defaultStopTime : defaultTime,
       description: '',
       killChainPhases: [],
       externalReferences: [],
