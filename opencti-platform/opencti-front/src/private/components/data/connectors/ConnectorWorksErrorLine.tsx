@@ -35,21 +35,22 @@ const ConnectorWorksErrorLine: FunctionComponent<ConnectorWorksErrorLineProps> =
     return null;
   }
 
-  const entityListItem = (entity: ResolvedEntity) => {
+  const displayEntityOrId = (entity: ResolvedEntity, isCopyable = false) => {
     const name = entity.representative?.main;
-    return (
-      <div>
-        {entity.entity_type ? (
-          <Tooltip title={name}>
-            <a href={`/dashboard/id/${entity.id}`} target="_blank" rel="noreferrer">
-              [{entity.entity_type}] {truncate(name, truncateLimit)}
-            </a>
-          </Tooltip>
-        ) : (
-          <pre><ItemCopy content={entity.standard_id ?? '-'} variant={'wrap'} /></pre>
-        )}
-      </div>
-    );
+
+    const displayStandardId = (isCopyable ? (
+      <pre><ItemCopy content={entity.standard_id ?? ''} variant={'wrap'} /></pre>
+    ) : (
+      <div>{entity.standard_id}</div>
+    ));
+
+    return entity.entity_type ? (
+      <Tooltip title={name}>
+        <a href={`/dashboard/id/${entity.id}`} target="_blank" rel="noreferrer">
+          [{entity.entity_type}] {truncate(name, truncateLimit)}
+        </a>
+      </Tooltip>
+    ) : displayStandardId;
   };
 
   return (
@@ -66,9 +67,11 @@ const ConnectorWorksErrorLine: FunctionComponent<ConnectorWorksErrorLineProps> =
         <TableCell>{error.isParsed ? error.parsedError.message : error.rawError.message}</TableCell>
         <TableCell>
           {error.isParsed ? (
-            entityListItem(error.parsedError.entity)
+            displayEntityOrId(error.parsedError.entity)
           ) : (
-            truncate(error.rawError.source, truncateLimit)
+            <Tooltip title={t_i18n('Click on details to see more information')}>
+              {truncate(error.rawError.source, truncateLimit)}
+            </Tooltip>
           )}
         </TableCell>
         <TableCell>
@@ -103,18 +106,18 @@ const ConnectorWorksErrorLine: FunctionComponent<ConnectorWorksErrorLineProps> =
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: 15 }}>
                     <div>
                       <Typography variant="h3" gutterBottom={true}>{t_i18n('Entity')}</Typography>
-                      {entityListItem(error.parsedError.entity)}
+                      {displayEntityOrId(error.parsedError.entity, true)}
                     </div>
                     {error.parsedError.entity.from && (
                       <div>
                         <Typography variant="h3" gutterBottom={true}>{t_i18n('From')}</Typography>
-                        {entityListItem(error.parsedError.entity.from)}
+                        {displayEntityOrId(error.parsedError.entity.from, true)}
                       </div>
                     )}
                     {error.parsedError.entity.to && (
                       <div>
                         <Typography variant="h3" gutterBottom={true}>{t_i18n('To')}</Typography>
-                        {entityListItem(error.parsedError.entity.to)}
+                        {displayEntityOrId(error.parsedError.entity.to, true)}
                       </div>
                     )}
                   </div>
