@@ -91,9 +91,6 @@ const computeDefaultValue = (
 const isValidTarget = (record: string[], representation: CsvMapperRepresentation) => {
   // Target type
   isValidRepresentationType(representation);
-
-  console.log('ANGIE - isValidTarget', { record, representation });
-
   // Column based
   // TODO verify that it's covering our needs
   const columnBased = representation.target.column_based;
@@ -424,6 +421,5 @@ export const mappingProcess = async (
       results.set(representation.id, input);
     }
   }
-  console.log('ANGIE, mappingProcess result:', results);
   return Array.from(results.values());
 };
