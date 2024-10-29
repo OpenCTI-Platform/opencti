@@ -101,12 +101,10 @@ const ConnectorWorksErrorLine: FunctionComponent<ConnectorWorksErrorLineProps> =
                   variant="outlined"
                 >
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: 15 }}>
-                    {error.parsedError.entity && (
-                      <div>
-                        <Typography variant="h3" gutterBottom={true}>{t_i18n('Entity')}</Typography>
-                        {entityListItem(error.parsedError.entity)}
-                      </div>
-                    )}
+                    <div>
+                      <Typography variant="h3" gutterBottom={true}>{t_i18n('Entity')}</Typography>
+                      {entityListItem(error.parsedError.entity)}
+                    </div>
                     {error.parsedError.entity.from && (
                       <div>
                         <Typography variant="h3" gutterBottom={true}>{t_i18n('From')}</Typography>
