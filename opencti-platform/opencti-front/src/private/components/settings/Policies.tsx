@@ -198,6 +198,7 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                 <Grid container={true} spacing={3}>
                   <Grid item xs={6}>
                     <DangerZoneBlock
+                      type={'platform_organization'}
                       title={(
                         <>
                           {t_i18n('Platform main organization')} <EEChip />

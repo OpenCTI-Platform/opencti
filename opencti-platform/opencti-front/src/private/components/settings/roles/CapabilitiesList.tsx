@@ -29,11 +29,11 @@ const CapabilitiesList: FunctionComponent<CapabilitiesListProps> = ({
     roleEditionCapabilitiesLinesSearch,
     queryRef,
   );
-  const { isSensitiveModificationEnabled } = useSensitiveModifications();
+  const { isSensitive } = useSensitiveModifications();
 
   return (
     <List>
-      {(isSensitiveModificationEnabled && role.can_manage_sensitive_config !== false) && (
+      {(isSensitive && role.can_manage_sensitive_config !== false) && (
         <ListItem
           key="sensitive"
           dense={true}

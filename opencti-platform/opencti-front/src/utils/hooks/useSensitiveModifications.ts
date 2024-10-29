@@ -3,26 +3,26 @@ import useHelper from './useHelper';
 
 const PROTECT_SENSITIVE_CHANGES_FF = 'PROTECT_SENSITIVE_CHANGES';
 
-const useSensitiveModifications = (type?: string, id?: string) => {
+export type SensitiveConfigType = 'ce_ee_toggle' | 'file_indexing' | 'groups' | 'markings' | 'platform_organization' | 'roles' | 'rules';
+
+const useSensitiveModifications = (type?: SensitiveConfigType, id?: string) => {
   const { me, settings } = useAuth();
   const sensitiveConfig = settings.platform_protected_sensitive_config;
 
   const { isFeatureEnable } = useHelper();
-  const isSensitiveConfigEnabled = sensitiveConfig.enabled;
-  const isSensitiveModificationEnabled = isFeatureEnable(PROTECT_SENSITIVE_CHANGES_FF) && isSensitiveConfigEnabled;
-  if (!isSensitiveModificationEnabled) {
+  const isSensitiveConfigEnabled = isFeatureEnable(PROTECT_SENSITIVE_CHANGES_FF) && sensitiveConfig.enabled;
+
+  if (!isSensitiveConfigEnabled) {
     return {
       isAllowed: true,
       isSensitive: false,
-      isSensitiveModificationEnabled,
     };
   }
+
   const isAllowed = me.can_manage_sensitive_config ?? true;
   let isSensitive = isSensitiveConfigEnabled;
 
-  if (type) {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
+  if (type && sensitiveConfig[type]) {
     const config = sensitiveConfig[type];
     const protectedIds = config.protected_ids ?? [];
     isSensitive = config.enabled && (!id || protectedIds.includes(id));
@@ -31,7 +31,6 @@ const useSensitiveModifications = (type?: string, id?: string) => {
   return {
     isAllowed,
     isSensitive,
-    isSensitiveModificationEnabled,
   };
 };
 

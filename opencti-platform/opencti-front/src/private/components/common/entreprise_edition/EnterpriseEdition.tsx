@@ -44,7 +44,7 @@ const EnterpriseEdition = ({ message, feature }: { message?: string, feature?: s
       >
         <AlertTitle style={{ marginBottom: 0, fontWeight: 400 }}>
           {t_i18n(message ?? 'You need to activate OpenCTI enterprise edition to use this feature.')}
-          <EnterpriseEditionButton disabled={!isAllowed} feature={feature} />
+          <EnterpriseEditionButton disabled={!isAllowed && isSensitive} feature={feature} />
         </AlertTitle>
       </Alert>
     </>

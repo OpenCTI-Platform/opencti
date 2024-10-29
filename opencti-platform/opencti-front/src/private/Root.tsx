@@ -10,13 +10,13 @@ import { FilterDefinition, UserContext } from '../utils/hooks/useAuth';
 import platformModuleHelper from '../utils/platformModulesHelper';
 import { ONE_SECOND } from '../utils/Time';
 import { isNotEmptyField } from '../utils/utils';
-import { RootPrivateQuery } from './__generated__/RootPrivateQuery.graphql';
 import Index from './Index';
 import useQueryLoading from '../utils/hooks/useQueryLoading';
 import Loader from '../components/Loader';
 import generateAnalyticsConfig from './Analytics';
-import { RootSettings$data, RootSettings$key } from './__generated__/RootSettings.graphql';
 import { RootMe_data$key } from './__generated__/RootMe_data.graphql';
+import { RootPrivateQuery } from './__generated__/RootPrivateQuery.graphql';
+import { RootSettings$data, RootSettings$key } from './__generated__/RootSettings.graphql';
 
 const rootSettingsFragment = graphql`
   fragment RootSettings on Settings {
@@ -88,15 +88,19 @@ const rootSettingsFragment = graphql`
       }
       rules {
         enabled
+        protected_ids
       }
       file_indexing {
         enabled
+        protected_ids
       }
       platform_organization {
         enabled
+        protected_ids
       }
       ce_ee_toggle {
         enabled
+        protected_ids
       }
     }
   }

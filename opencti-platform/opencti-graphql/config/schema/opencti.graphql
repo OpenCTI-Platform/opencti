@@ -1170,7 +1170,7 @@ type PlatformCriticalAlert {
 }
 type PlatformProtectedSubConfig {
   enabled: Boolean!
-  protected_ids: [String!]
+  protected_ids: [String!]!
 }
 
 type PlatformProtectedSensitiveConfig {

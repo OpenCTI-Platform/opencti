@@ -18251,7 +18251,7 @@ export type PlatformProtectedSensitiveConfig = {
 export type PlatformProtectedSubConfig = {
   __typename?: 'PlatformProtectedSubConfig';
   enabled: Scalars['Boolean']['output'];
-  protected_ids?: Maybe<Array<Scalars['String']['output']>>;
+  protected_ids: Array<Scalars['String']['output']>;
 };
 
 export type PlayBookExecution = {
@@ -37322,7 +37322,7 @@ export type PlatformProtectedSensitiveConfigResolvers<ContextType = any, ParentT
 
 export type PlatformProtectedSubConfigResolvers<ContextType = any, ParentType extends ResolversParentTypes['PlatformProtectedSubConfig'] = ResolversParentTypes['PlatformProtectedSubConfig']> = ResolversObject<{
   enabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
-  protected_ids?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
+  protected_ids?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 

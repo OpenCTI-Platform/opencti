@@ -97,15 +97,19 @@ export const getProtectedSensitiveConfig = async (context, user) => {
     },
     rules: {
       enabled: booleanConf('protected_sensitive_config:rules:enabled', false),
+      protected_ids: [],
     },
     ce_ee_toggle: {
       enabled: booleanConf('protected_sensitive_config:ce_ee_toggle:enabled', false),
+      protected_ids: [],
     },
     file_indexing: {
       enabled: booleanConf('protected_sensitive_config:file_indexing:enabled', false),
+      protected_ids: [],
     },
     platform_organization: {
       enabled: booleanConf('protected_sensitive_config:platform_organization:enabled', false),
+      protected_ids: [],
     }
   };
 };
