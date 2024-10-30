@@ -29,7 +29,7 @@ export const csvMapperToFormData = (
     entity_representations: csvMapper.representations.flatMap((rep) => {
       if (rep.type !== 'entity') return [];
       return csvMapperRepresentationToFormData(rep, schemaAttributes, computeDefaultValues);
-    }) ?? undefined,
+    }),
     relationship_representations: csvMapper.representations.flatMap((rep) => {
       if (rep.type !== 'relationship') return [];
       return csvMapperRepresentationToFormData(rep, schemaAttributes, computeDefaultValues);

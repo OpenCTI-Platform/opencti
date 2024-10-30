@@ -1,11 +1,6 @@
 import { v4 as uuid } from 'uuid';
 import { CsvMapperRepresentationType } from '@components/data/csvMapper/__generated__/CsvMapperEditionContainerFragment_csvMapper.graphql';
-import {
-  CsvMapperColumnBasedFormData,
-  CsvMapperRepresentation,
-  CsvMapperRepresentationEdit,
-  CsvMapperRepresentationFormData,
-} from '@components/data/csvMapper/representations/Representation';
+import { CsvMapperRepresentation, CsvMapperRepresentationEdit, CsvMapperRepresentationFormData } from '@components/data/csvMapper/representations/Representation';
 import { csvMapperAttributeToFormData, formDataToCsvMapperAttribute } from '@components/data/csvMapper/representations/attributes/AttributeUtils';
 import {
   CsvMapperRepresentationAttributesForm_allSchemaAttributes$data,
@@ -56,7 +51,7 @@ export const csvMapperRepresentationToFormData = (
   representation: CsvMapperRepresentation,
   schemaAttributes: CsvMapperRepresentationAttributesForm_allSchemaAttributes$data['csvMapperSchemaAttributes'],
   computeDefaultValues: ReturnType<typeof useComputeDefaultValues>,
-): CsvMapperRepresentationFormData | CsvMapperColumnBasedFormData => {
+): CsvMapperRepresentationFormData => {
   const entitySchemaAttributes = schemaAttributes.find(
     (schema) => schema.name === representation.target.entity_type,
   )?.attributes ?? [];
