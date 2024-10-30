@@ -38,6 +38,10 @@ const content = `
     </tbody>
   </table>
   
+  <div class="page-break" style="page-break-after:always;">
+    <span style="display:none;">&nbsp;</span>
+  </div>
+  
   <h3>2. Executive Summary</h3>
   <p>$containerDescription</p>
   
@@ -52,6 +56,10 @@ const content = `
     </ul>
   </blockquote>
   
+  <div class="page-break" style="page-break-after:always;">
+    <span style="display:none;">&nbsp;</span>
+  </div>
+  
   <h3>4. Incident Response Tasks/Actions</h3>
   <div>$incidentTasksAndActions</div>
   
@@ -63,11 +71,23 @@ const content = `
   <h3>6. Indicators of Compromise (IoCs)</h3>
   <div>$incidentIOC</div>
   
+  <div class="page-break" style="page-break-after:always;">
+    <span style="display:none;">&nbsp;</span>
+  </div>
+  
   <h3>7. Observables</h3>
   <div>$containerObservables</div>
   
+  <div class="page-break" style="page-break-after:always;">
+    <span style="display:none;">&nbsp;</span>
+  </div>
+  
   <h3>8. Tactics, Techniques, and Procedures (TTPs)</h3>
   <div>$incidentTTP</div>
+  
+  <div class="page-break" style="page-break-after:always;">
+    <span style="display:none;">&nbsp;</span>
+  </div>
   
   <h3>9. References</h3>
   <div>$containerReferences</div>

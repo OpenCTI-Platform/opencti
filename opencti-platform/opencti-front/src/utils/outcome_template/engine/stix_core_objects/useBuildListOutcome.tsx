@@ -55,8 +55,11 @@ const useBuildListOutcome = () => {
             <tr key={n.id}>
               {columns.map((col) => {
                 const property = getObjectProperty(n, col.attribute) ?? '';
-                const displayedAttribute = typeof property === 'string' ? property : JSON.stringify(property);
-                return <td key={`${n.id}-${col.attribute}`}>{displayedAttribute}</td>;
+                const strAttribute = typeof property === 'string' ? property : JSON.stringify(property);
+                // The trick here is to add a zero-width space every 10 chars to be able to make a
+                // multiline text even for values like long IDs without spaces.
+                const wrappableAttribute = (strAttribute.match(/.{1,10}/g) ?? []).join('\u{200B}');
+                return <td key={`${n.id}-${col.attribute}`}>{wrappableAttribute}</td>;
               })}
             </tr>
           ))}

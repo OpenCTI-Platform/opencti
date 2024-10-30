@@ -53,6 +53,7 @@ import {
   EditorConfig,
   ImageTextAlternative,
   PageBreak,
+  GeneralHtmlSupport,
 } from 'ckeditor5';
 import React from 'react';
 import { useIntl } from 'react-intl';
@@ -87,6 +88,12 @@ import ko from 'ckeditor5/translations/ko.js';
 import zh from 'ckeditor5/translations/zh.js';
 
 const CKEDITOR_DEFAULT_CONFIG: EditorConfig = {
+  htmlSupport: {
+    allow: [
+      { name: 'div', classes: true, styles: true },
+      { name: 'span', classes: true, styles: true },
+    ],
+  },
   translations: [de, en, es, fr, ja, ko, zh],
   plugins: [
     Alignment,
@@ -103,6 +110,7 @@ const CKEDITOR_DEFAULT_CONFIG: EditorConfig = {
     FontColor,
     FontFamily,
     FontSize,
+    GeneralHtmlSupport,
     Heading,
     Highlight,
     HorizontalLine,

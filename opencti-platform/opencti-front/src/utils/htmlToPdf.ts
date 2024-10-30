@@ -218,7 +218,8 @@ export const htmlToPdfReport = (reportName: string, content: string, templateNam
   }) as unknown as TDocumentDefinitions; // Because wrong type when using imagesByReference: true.
 
   const date = dateFormat(new Date()) ?? '';
-  const formattedTemplateName = truncate(capitalizeWords(templateName), 30, false);
+  const formattedTemplateName = capitalizeWords(templateName);
+  const truncatedTemplateName = truncate(formattedTemplateName, 25, false);
 
   const docDefinition: TDocumentDefinitions = {
     pageMargins: [50, 70],
@@ -301,7 +302,7 @@ export const htmlToPdfReport = (reportName: string, content: string, templateNam
         margin: [50, 40, 50, 0],
         columns: [
           {
-            text: formattedTemplateName,
+            text: truncatedTemplateName,
             alignment: 'left',
           },
           {
@@ -309,7 +310,7 @@ export const htmlToPdfReport = (reportName: string, content: string, templateNam
             alignment: 'center',
           },
           {
-            text: `Page ${currentPage} / ${pageCount}`,
+            text: `${currentPage} / ${pageCount}`,
             alignment: 'right',
           },
         ],
