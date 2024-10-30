@@ -23,7 +23,7 @@ import OpenVocabField from '../../common/form/OpenVocabField';
 import { isEmptyField } from '../../../../utils/utils';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
-import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
+import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 
 const threatActorIndividualEditionDemographicsFocus = graphql`
@@ -76,6 +76,8 @@ const threatActorIndividualEditionDemographicsFragment = graphql`
   }
 `;
 
+const THREAT_ACTOR_INDIVIDUAL_TYPE = 'Threat-Actor-Individual';
+
 interface ThreatActorIndividualEditionDemographicsComponentProps {
   threatActorIndividualRef: ThreatActorIndividualEditionDemographics_ThreatActorIndividual$key;
   enableReferences: boolean;
@@ -92,7 +94,9 @@ const ThreatActorIndividualEditionDemographicsComponent = ({
     threatActorIndividualEditionDemographicsFragment,
     threatActorIndividualRef,
   );
-  const basicShape = {
+
+  const { mandatoryAttributes } = useIsMandatoryAttribute(THREAT_ACTOR_INDIVIDUAL_TYPE);
+  const basicShape = yupShapeConditionalRequired({
     date_of_birth: Yup.date()
       .nullable()
       .typeError(t_i18n('The value must be a date (yyyy-MM-dd)')),
@@ -103,9 +107,9 @@ const ThreatActorIndividualEditionDemographicsComponent = ({
     job_title: Yup.string().nullable().max(250, t_i18n('The value is too long')),
     bornIn: Yup.object().nullable(),
     ethnicity: Yup.object().nullable(),
-  };
-  const threatActorIndividualValidator = useSchemaEditionValidation(
-    'Threat-Actor-Individual',
+  }, mandatoryAttributes);
+  const threatActorIndividualValidator = useDynamicSchemaEditionValidation(
+    mandatoryAttributes,
     basicShape,
   );
 
@@ -181,7 +185,9 @@ const ThreatActorIndividualEditionDemographicsComponent = ({
         enableReinitialize={true}
         initialValues={initialValues}
         validationSchema={threatActorIndividualValidator}
-        onSubmit={() => {}}
+        validateOnChange={true}
+        validateOnBlur={true}
+        onSubmit={() => { }}
       >
         {({ submitForm, isSubmitting, setFieldValue, isValid, dirty }) => (
           <div>
@@ -191,6 +197,7 @@ const ThreatActorIndividualEditionDemographicsComponent = ({
                 id="PlaceOfBirth"
                 name="bornIn"
                 label={t_i18n('Place of Birth')}
+                required={(mandatoryAttributes.includes('bornIn'))}
                 containerStyle={fieldSpacingContainerStyle}
                 onChange={(name, value) => {
                   setFieldValue(name, value);
@@ -201,6 +208,7 @@ const ThreatActorIndividualEditionDemographicsComponent = ({
                 id="Ethnicity"
                 name="ethnicity"
                 label={t_i18n('Ethnicity')}
+                required={(mandatoryAttributes.includes('ethnicity'))}
                 containerStyle={fieldSpacingContainerStyle}
                 onChange={(name, value) => {
                   setFieldValue(name, value);
@@ -229,6 +237,7 @@ const ThreatActorIndividualEditionDemographicsComponent = ({
               <OpenVocabField
                 name="marital_status"
                 label={t_i18n('Marital Status')}
+                required={(mandatoryAttributes.includes('marital_status'))}
                 type="marital_status_ov"
                 variant="edit"
                 onChange={(name, value) => setFieldValue(name, value)}
@@ -241,6 +250,7 @@ const ThreatActorIndividualEditionDemographicsComponent = ({
               <OpenVocabField
                 name="gender"
                 label={t_i18n('Gender')}
+                required={(mandatoryAttributes.includes('gender'))}
                 type="gender_ov"
                 variant="edit"
                 onChange={(name, value) => setFieldValue(name, value)}
@@ -255,6 +265,7 @@ const ThreatActorIndividualEditionDemographicsComponent = ({
                 name="job_title"
                 id="job_title"
                 label={t_i18n('Job Title')}
+                required={(mandatoryAttributes.includes('job_title'))}
                 fullWidth={true}
                 multiline={false}
                 rows="1"
