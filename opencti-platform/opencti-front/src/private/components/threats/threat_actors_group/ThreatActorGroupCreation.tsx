@@ -16,7 +16,7 @@ import ConfidenceField from '../../common/form/ConfidenceField';
 import { insertNode } from '../../../../utils/store';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
 import OpenVocabField from '../../common/form/OpenVocabField';
-import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
+import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import { Option } from '../../common/form/ReferenceField';
 import { ThreatActorsGroupCardsPaginationQuery$variables } from './__generated__/ThreatActorsGroupCardsPaginationQuery.graphql';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
@@ -49,6 +49,8 @@ const ThreatActorGroupMutation = graphql`
     }
   }
 `;
+
+const THREAT_ACTOR_GROUP_TYPE = 'Threat-Actor-Group';
 
 interface ThreatActorGroupAddInput {
   name: string;
@@ -90,14 +92,17 @@ ThreatActorGroupFormProps
   const { t_i18n } = useFormatter();
   const [progressBarOpen, setProgressBarOpen] = useState(false);
 
-  const basicShape = {
-    name: Yup.string().required(t_i18n('This field is required')),
+  const { mandatoryAttributes } = useIsMandatoryAttribute(
+    THREAT_ACTOR_GROUP_TYPE,
+  );
+  const basicShape = yupShapeConditionalRequired({
+    name: Yup.string(),
     threat_actor_types: Yup.array().nullable(),
     confidence: Yup.number().nullable(),
     description: Yup.string().nullable(),
-  };
-  const threatActorGroupValidator = useSchemaCreationValidation(
-    'Threat-Actor-Group',
+  }, mandatoryAttributes);
+  const threatActorGroupValidator = useDynamicSchemaCreationValidation(
+    mandatoryAttributes,
     basicShape,
   );
 
@@ -177,6 +182,8 @@ ThreatActorGroupFormProps
     <Formik<ThreatActorGroupAddInput>
       initialValues={initialValues}
       validationSchema={threatActorGroupValidator}
+      validateOnChange={false}
+      validateOnBlur={false}
       onSubmit={onSubmit}
       onReset={onReset}
     >
@@ -212,6 +219,7 @@ ThreatActorGroupFormProps
               component={BulkTextField}
               name="name"
               label={t_i18n('Name')}
+              required={(mandatoryAttributes.includes('name'))}
               fullWidth={true}
               askAi={true}
               detectDuplicate={[
@@ -225,6 +233,7 @@ ThreatActorGroupFormProps
               type="threat-actor-group-type-ov"
               name="threat_actor_types"
               label={t_i18n('Threat actor types')}
+              required={(mandatoryAttributes.includes('threat_actor_types'))}
               multiple={true}
               containerStyle={fieldSpacingContainerStyle}
               onChange={setFieldValue}
@@ -237,6 +246,7 @@ ThreatActorGroupFormProps
               component={MarkdownField}
               name="description"
               label={t_i18n('Description')}
+              required={(mandatoryAttributes.includes('description'))}
               fullWidth={true}
               multiline={true}
               rows="4"
@@ -245,22 +255,26 @@ ThreatActorGroupFormProps
             />
             <CreatedByField
               name="createdBy"
+              required={(mandatoryAttributes.includes('createdBy'))}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
             />
             <ObjectLabelField
               name="objectLabel"
+              required={(mandatoryAttributes.includes('objectLabel'))}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
               values={values.objectLabel}
             />
             <ObjectMarkingField
               name="objectMarking"
+              required={(mandatoryAttributes.includes('objectMarking'))}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
             />
             <ExternalReferencesField
               name="externalReferences"
+              required={(mandatoryAttributes.includes('externalReferences'))}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
               values={values.externalReferences}
