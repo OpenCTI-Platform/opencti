@@ -41,8 +41,12 @@ const isFeatureEnable = (
   id: string,
 ) => {
   const flags = settings.platform_feature_flags ?? [];
+  // config can target all FF available with special FF id "*"
+  if (flags.find((f) => f.id === '*' && f.enable)) {
+    return true;
+  }
   const feature = flags.find((f) => f.id === id);
-  return feature === undefined || feature.enable === true;
+  return feature !== undefined && feature.enable === true;
 };
 
 const isModuleEnable = (
