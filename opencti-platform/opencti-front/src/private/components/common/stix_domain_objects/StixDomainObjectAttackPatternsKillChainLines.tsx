@@ -18,7 +18,6 @@ import {
 import { StixDomainObjectAttackPatternsKillChainQuery$variables } from '@components/common/stix_domain_objects/__generated__/StixDomainObjectAttackPatternsKillChainQuery.graphql';
 import { Theme } from '@mui/material/styles/createTheme';
 import { ListItemButton } from '@mui/material';
-import StixCoreRelationshipPopover from '../stix_core_relationships/StixCoreRelationshipPopover';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 import { useFormatter } from '../../../../components/i18n';
@@ -204,11 +203,7 @@ const StixDomainObjectAttackPatternsKillChainLines: FunctionComponent<StixDomain
                                     )}
                                   </IconButton>
                                 ) : (
-                                  <StixCoreRelationshipPopover
-                                    stixCoreRelationshipId={attackPattern.id}
-                                    paginationOptions={paginationOptions}
-                                    onDelete={onDelete}
-                                  />
+                                  <></>
                                 )}
                               </ListItemSecondaryAction>
                             </div>
