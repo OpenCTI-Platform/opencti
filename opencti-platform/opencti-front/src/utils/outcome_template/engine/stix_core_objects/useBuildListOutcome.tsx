@@ -27,7 +27,7 @@ const useBuildListOutcome = () => {
 
     const variables = {
       types: dataSelectionTypes,
-      first: selection.number ?? 10,
+      first: selection.number ?? 1000,
       orderBy: dateAttribute,
       orderMode: 'desc',
       filters,
