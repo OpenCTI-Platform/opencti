@@ -49,8 +49,8 @@ import {
 import type { CyberObjectExtension, StixBundle, StixCoreObject, StixCyberObject, StixDomainObject, StixObject, StixOpenctiExtension } from '../../types/stix-common';
 import { STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from '../../types/stix-extensions';
 import { connectorsForPlaybook } from '../../database/repository';
-import { listAllRelations, storeLoadById } from '../../database/middleware-loader';
-import { type BasicStoreEntityOrganization, ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-types';
+import { internalFindByIds, listAllRelations, storeLoadById } from '../../database/middleware-loader';
+import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-types';
 import { getEntitiesListFromCache, getEntitiesMapFromCache } from '../../database/cache';
 import { createdBy, objectLabel, objectMarking } from '../../schema/stixRefRelationship';
 import { logApp } from '../../config/conf';
@@ -489,7 +489,7 @@ const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT: PlaybookComponent<ContainerWrapperCo
   }
 };
 
-interface SharingConfiguration {
+export interface SharingConfiguration {
   organizations: string[] | { label: string, value: string }[]
 }
 const PLAYBOOK_SHARING_COMPONENT_SCHEMA: JSONSchemaType<SharingConfiguration> = {
@@ -517,12 +517,17 @@ const PLAYBOOK_SHARING_COMPONENT: PlaybookComponent<SharingConfiguration> = {
   schema: async () => PLAYBOOK_SHARING_COMPONENT_SCHEMA,
   executor: async ({ dataInstanceId, playbookNode, bundle }) => {
     const context = executionContext('playbook_components');
-    const allOrganizations = await getEntitiesListFromCache<BasicStoreEntityOrganization>(context, SYSTEM_USER, ENTITY_TYPE_IDENTITY_ORGANIZATION);
     const { organizations } = playbookNode.configuration;
     const organizationsValues = organizations.map((o) => (typeof o !== 'string' ? o.value : o));
-    const organizationIds = allOrganizations
-      .filter((o) => (organizationsValues ?? []).includes(o.internal_id))
-      .map((o) => o.standard_id);
+    const organizationsByIds = await internalFindByIds(context, SYSTEM_USER, organizationsValues, {
+      type: ENTITY_TYPE_IDENTITY_ORGANIZATION,
+      baseData: true,
+      baseFields: ['standard_id']
+    });
+    if (organizationsByIds.length === 0) {
+      return { output_port: 'out', bundle }; // nothing to do since organizations are empty
+    }
+    const organizationIds = organizationsByIds.map((o) => o.standard_id);
     const baseData = bundle.objects.find((o) => o.id === dataInstanceId) as StixCoreObject;
     baseData.extensions[STIX_EXT_OCTI].granted_refs = [...(baseData.extensions[STIX_EXT_OCTI].granted_refs ?? []), ...organizationIds];
     return { output_port: 'out', bundle };

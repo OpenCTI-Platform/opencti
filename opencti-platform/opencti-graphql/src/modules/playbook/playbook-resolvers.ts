@@ -28,6 +28,7 @@ import {
   playbookDeleteNode,
   playbookDeleteLink,
   playbookUpdatePositions,
+  getPlaybookDefinition
 } from './playbook-domain';
 import { playbookStepExecution } from '../../manager/playbookManager';
 import { getLastPlaybookExecutions } from '../../database/redis';
@@ -42,6 +43,7 @@ const playbookResolvers: Resolvers = {
     playbookComponents: () => availableComponents(),
   },
   Playbook: {
+    playbook_definition: async (current, _, context) => getPlaybookDefinition(context, current),
     last_executions: async (current) => getLastPlaybookExecutions(current.id),
     queue_messages: async (current, _, context) => getConnectorQueueSize(context, context.user, current.id)
   },

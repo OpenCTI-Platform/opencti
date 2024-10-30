@@ -16,7 +16,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 import { v4 as uuidv4 } from 'uuid';
 import { BUS_TOPICS, logApp } from '../../config/conf';
 import { createEntity, deleteElementById, patchAttribute, updateAttribute } from '../../database/middleware';
-import { type EntityOptions, listAllEntities, listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
+import { type EntityOptions, internalFindByIds, listAllEntities, listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
 import { notify } from '../../database/redis';
 import type { DomainFindById } from '../../domain/domainTypes';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
@@ -24,8 +24,10 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import type { EditInput, FilterGroup, PlaybookAddInput, PlaybookAddLinkInput, PlaybookAddNodeInput, PositionInput } from '../../generated/graphql';
 import type { BasicStoreEntityPlaybook, ComponentDefinition, LinkDefinition, NodeDefinition } from './playbook-types';
 import { ENTITY_TYPE_PLAYBOOK } from './playbook-types';
-import { PLAYBOOK_COMPONENTS } from './playbook-components';
+import { PLAYBOOK_COMPONENTS, type SharingConfiguration } from './playbook-components';
 import { UnsupportedError } from '../../config/errors';
+import { type BasicStoreEntityOrganization, ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-types';
+import { SYSTEM_USER } from '../../utils/access';
 import { validateFilterGroupForStixMatch } from '../../utils/filtering/filtering-stix/stix-filtering';
 import { registerConnectorQueues, unregisterConnector } from '../../database/rabbitmq';
 
@@ -43,6 +45,38 @@ export const findAllPlaybooks = (context: AuthContext, user: AuthUser, opts: Ent
 
 export const availableComponents = () => {
   return Object.values(PLAYBOOK_COMPONENTS);
+};
+
+export const getPlaybookDefinition = async (context: AuthContext, playbook: BasicStoreEntityPlaybook) => {
+  if (playbook.playbook_definition && playbook.playbook_definition.includes('PLAYBOOK_SHARING_COMPONENT')) {
+    // parse playbook definition in case there is a sharing with organization component, in order to parse organizations to get their label
+    const definition = JSON.parse(playbook.playbook_definition ?? '{}') as ComponentDefinition;
+    const sharingComponent = definition.nodes.find((n) => n.component_id === 'PLAYBOOK_SHARING_COMPONENT');
+    if (sharingComponent && sharingComponent.configuration) {
+      const sharingConfiguration = JSON.parse(sharingComponent.configuration) as SharingConfiguration;
+      const organizationsIds = sharingConfiguration.organizations.filter((o) => typeof o === 'string');
+      if (organizationsIds.length === 0) {
+        return playbook.playbook_definition; // nothing to map, already mapped
+      }
+      const organizationsByIds = await internalFindByIds(context, SYSTEM_USER, organizationsIds, {
+        type: ENTITY_TYPE_IDENTITY_ORGANIZATION,
+        baseData: true,
+        baseFields: ['internal_id', 'name'],
+        toMap: true,
+      }) as unknown as { [k: string]: BasicStoreEntityOrganization };
+      const organizationsWithNames = [];
+      for (let i = 0; i < organizationsIds.length; i += 1) {
+        const orgId = organizationsIds[i];
+        if (organizationsByIds[orgId]) {
+          organizationsWithNames.push({ label: organizationsByIds[orgId].name, value: orgId });
+        }
+      }
+      sharingConfiguration.organizations = organizationsWithNames;
+      sharingComponent.configuration = JSON.stringify(sharingConfiguration);
+      return JSON.stringify(definition);
+    }
+  }
+  return playbook.playbook_definition;
 };
 
 export const playbookAddNode = async (context: AuthContext, user: AuthUser, id: string, input: PlaybookAddNodeInput) => {
