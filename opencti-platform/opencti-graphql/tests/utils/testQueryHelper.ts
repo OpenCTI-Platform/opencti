@@ -1,11 +1,13 @@
 import { expect } from 'vitest';
 import { print } from 'graphql/index';
 import type { AxiosInstance } from 'axios';
+import readline from 'node:readline';
 import { ADMIN_USER, adminQuery, createUnauthenticatedClient, executeInternalQuery, getOrganizationIdByName, type Organization, queryAsAdmin, testContext } from './testQuery';
 import { downloadFile, streamConverter } from '../../src/database/file-storage';
 import { logApp } from '../../src/config/conf';
 import { AUTH_REQUIRED, FORBIDDEN_ACCESS } from '../../src/config/errors';
 import { getSettings, settingsEditField } from '../../src/domain/settings';
+import { fileToReadStream } from '../../src/database/file-storage-helper';
 
 // Helper for test usage whit expect inside.
 // vitest cannot be an import of testQuery, so it must be a separate file.
@@ -128,6 +130,19 @@ export const requestFileFromStorageAsAdmin = async (storageId: string) => {
   const stream = await downloadFile(storageId);
   expect(stream, `No stream mean no file found in storage or error for ${storageId}`).not.toBeNull();
   return streamConverter(stream);
+};
+
+export const readCsvFromFileStream = async (filePath: string, fileName: string) => {
+  const file = fileToReadStream(filePath, fileName, fileName, 'text/csv');
+  const rl = readline.createInterface({ input: file.createReadStream(), crlfDelay: Infinity });
+
+  const csvLines: string[] = [];
+  // Need an async interator to prevent blocking
+  // eslint-disable-next-line no-restricted-syntax
+  for await (const line of rl) {
+    csvLines.push(line);
+  }
+  return csvLines;
 };
 
 /**

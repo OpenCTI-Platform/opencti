@@ -1,45 +1,58 @@
 import { describe, it, expect } from 'vitest';
-import { fileToReadStream, uploadToStorage } from '../../../src/database/file-storage-helper';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
-import { IMPORT_STORAGE_PATH } from '../../../src/modules/internal/document/document-domain';
-import { consumeQueueCallback } from '../../../src/connector/importCsv/importCsv-connector';
-import { csvMapperMockSimpleCities } from '../../data/importCsv-connector/csv-mapper-cities';
+import { type ConsumerOpts, processCSVforWorkers } from '../../../src/connector/importCsv/importCsv-connector';
+import { csvMapperMockSimpleCities } from './importCsv-connector/csv-mapper-cities';
 import { createWork, findById as findWorkById } from '../../../src/domain/work';
 import { IMPORT_CSV_CONNECTOR } from '../../../src/connector/importCsv/importCsv';
+import type { CsvMapperParsed } from '../../../src/modules/internal/csvMapper/csvMapper-types';
+import { resolveUserByIdFromCache } from '../../../src/domain/user';
+import type { AuthUser } from '../../../src/types/user';
+import conf from '../../../src/config/conf';
+import { IMPORT_STORAGE_PATH } from '../../../src/modules/internal/document/document-domain';
+import { fileToReadStream, uploadToStorage } from '../../../src/database/file-storage-helper';
 
 describe('Verify internal importCsv connector', () => {
   let work: any;
 
-  it('should upload csv file and create work that is use for this test', async () => {
-    const file = fileToReadStream('./tests/data/importCsv-connector', 'csv-file-cities-for-importCsv-connector.csv', 'csv-file-cities-for-importCsv-connector.csv', 'text/csv');
+  it('should import_csv_built_in_connector configuration be not changed on test', async () => {
+    // Small bulk size to validate that there is no regression when there is more data than bulk size.
+    expect(conf.get('import_csv_built_in_connector:bulk_creation_size'), 'Please be careful when changing bulk_creation_size  in tests config').toBe(5);
+  });
+
+  it('should upload csv and create work that is use for this test', async () => {
+    const file = fileToReadStream('./tests/02-integration/07-connector/importCsv-connector', 'csv-file-cities.csv', 'csv-file-cities.csv', 'text/csv');
     const uploadedFile = await uploadToStorage(testContext, ADMIN_USER, `${IMPORT_STORAGE_PATH}/global`, file, {});
     expect(uploadedFile).toBeDefined();
-    expect(uploadedFile.upload.id).toBe('import/global/csv-file-cities-for-importcsv-connector.csv');
+    expect(uploadedFile.upload.id).toBe('import/global/csv-file-cities.csv');
 
     work = await createWork(testContext, ADMIN_USER, IMPORT_CSV_CONNECTOR, '[File] Import csv for test', 'sourceTest');
   });
 
   it('should convert csv lines to bundle when line count < bulk_creation_size', async () => {
-    const messageContent = {
-      internal: {
-        work_id: work.id,
-        applicant_id: ADMIN_USER.id
-      },
-      event: {
-        file_id: 'import/global/csv-file-cities-for-importcsv-connector.csv',
-        file_mime: 'text/csv',
-        file_fetch: '/storage/get/import/global/csv-file-cities-for-importcsv-connector.csv',
-      },
-      configuration: JSON.stringify(csvMapperMockSimpleCities),
-    };
+    const user = await resolveUserByIdFromCache(testContext, ADMIN_USER.id) as AuthUser;
 
-    const message: string = JSON.stringify(messageContent);
-    await consumeQueueCallback(testContext, message);
-    // there is no worker so cannot do many expect.
-    // But at least it should not raise exceptions.
+    const mapperOpts: ConsumerOpts = {
+      applicantId: ADMIN_USER.id,
+      applicantUser: user,
+      csvMapper: csvMapperMockSimpleCities as CsvMapperParsed,
+      entity: undefined,
+      fileId: 'import/global/csv-file-cities.csv',
+      workId: work.id
+    };
+    const bundleCount = await processCSVforWorkers(testContext, mapperOpts);
+
+    // Bulk size = 5
+    //
+    // 3 first city line => same city on 2 first lines: 2 city + 'label1', 1 city + label2  = 5 objects
+    // next 5 lines => 1 skip line, 4 cities, 1 label = 5 objects
+    // next 5 lines => 5 cities + 1 label = 6 objects
+    // next 5 lines => 3 cities + 1 label ; + same city + 1 label => 6 objects (in 2 bundles)
+    expect(bundleCount).toBe(5 + 5 + 6 + 7);
 
     const workUpdated: any = await findWorkById(testContext, ADMIN_USER, work.id);
     expect(workUpdated).toBeDefined();
     expect(workUpdated.errors.length).toBe(0);
+
+    // Cannot validate data since there is no worker on tests.
   });
 });

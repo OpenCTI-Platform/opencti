@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest';
-import * as readline from 'node:readline';
 import { prepareTaxiiGetParam, processCsvLines, processTaxiiResponse, type TaxiiResponseData } from '../../../src/manager/ingestionManager';
 import { addIngestion as addTaxiiIngestion, findById as findTaxiiIngestionById, ingestionDelete, patchTaxiiIngestion } from '../../../src/modules/ingestion/ingestion-taxii-domain';
 import { type CsvMapperAddInput, IngestionAuthType, type IngestionCsvAddInput, type IngestionTaxiiAddInput, TaxiiVersion } from '../../../src/generated/graphql';
@@ -7,8 +6,10 @@ import type { StixReport } from '../../../src/types/stix-sdo';
 import { now } from '../../../src/utils/format';
 import { createCsvMapper } from '../../../src/modules/internal/csvMapper/csvMapper-domain';
 import { parseCsvMapper } from '../../../src/modules/internal/csvMapper/csvMapper-utils';
-import { csvMapperMockSimpleCities } from '../../data/importCsv-connector/csv-mapper-cities';
-import { fileToReadStream } from '../../../src/database/file-storage-helper';
+import { readCsvFromFileStream } from '../../utils/testQueryHelper';
+import { csvMapperMockCities } from './ingestionManager/csv-mapper-cities';
+import type { CsvMapperParsed } from '../../../src/modules/internal/csvMapper/csvMapper-types';
+import type { BasicStoreEntityIngestionCsv } from '../../../src/modules/ingestion/ingestion-types';
 
 describe('Verify taxii ingestion', () => {
   it('should Taxii server response with no pagination (no next, no more, no x-taxii-date-added-last)', async () => {
@@ -238,6 +239,10 @@ describe('Verify taxii ingestion - patch part', () => {
   it('should Taxii server response next as number be transform', async () => {
     // 1. Create ingestion in opencti
     const input : IngestionTaxiiAddInput = {
+
+  it('should prepare ingestion data', async () => {
+    const mapper = csvMapperMockCities as CsvMapperParsed;
+      skipLineChar: mapper.skipLineChar
       authentication_type: IngestionAuthType.None,
       collection: 'testcollection',
       ingestion_running: true,
@@ -258,23 +263,25 @@ describe('Verify taxii ingestion - patch part', () => {
     // Delete the ingest
     await ingestionDelete(testContext, ADMIN_USER, ingestion.internal_id);
 
-    const csvLines: string[] = [];
-    // Need an async interator to prevent blocking
-    // eslint-disable-next-line no-restricted-syntax
-    for await (const line of rl) {
-      csvLines.push(line);
-    }
-    const csvLinesClone = [...csvLines];
-    await processCsvLines(testContext, ingestionCsv, csvMapperParsed, csvLines, null);
+  it('should csv ingestion run', async () => {
+    const { isUnchangedData, objectsInBundleCount } = await processCsvLines(testContext, ingestionCsv, csvMapperParsed, [...csvLines], null);
+    expect(isUnchangedData).toBeFalsy();
 
-    const ingestionCsvafterFirstProcess = await findIngestionCsvById(testContext, ADMIN_USER, ingestionCsv.id);
+    // csv-file-cities.csv content:
+    // skip lines and header => 0 object
+    // 1 city +1 label => 2 objects
+    // skip line => 0 object
+    // 1 city +1 label => 2 objects
+    // 1 city (duplicate) +1 label => 2 objects
+    // 1 city +1 label => 2 objects
+    expect(objectsInBundleCount).toBe(8);
+  });
 
+  it('should same csv file ingestion be skipped', async () => {
     // Second time hash is the same so it should not process any objects
-    await processCsvLines(testContext, ingestionCsvafterFirstProcess, csvMapperParsed, csvLinesClone, null);
-    const ingestionCsvafterSecondProcess = await findIngestionCsvById(testContext, ADMIN_USER, ingestionCsvafterFirstProcess.id);
-
-    expect(ingestionCsvafterFirstProcess.current_state_hash).toBe(ingestionCsvafterSecondProcess.current_state_hash);
-
-    // Not much to expect, no exception at least.
+    const ingestionEntity = await findIngestionCsvById(testContext, ADMIN_USER, ingestionCsv.id);
+    const { isUnchangedData, objectsInBundleCount } = await processCsvLines(testContext, ingestionEntity, csvMapperParsed, [...csvLines], null);
+    expect(isUnchangedData).toBeTruthy();
+    expect(objectsInBundleCount).toBe(0);
   });
 });

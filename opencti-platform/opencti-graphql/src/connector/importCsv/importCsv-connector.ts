@@ -34,7 +34,7 @@ const connectorConfig: ConnectorConfig = {
 };
 const logPrefix = `[OPENCTI-MODULE] ${connectorConfig.name} `;
 
-interface ConsumerOpts {
+export interface ConsumerOpts {
   workId: string,
   applicantUser: AuthUser,
   applicantId: string,
@@ -49,17 +49,17 @@ interface ConsumerOpts {
  * @param csvLines
  * @param opts
  */
-const generateBundlesAndSendToWorkers = async (context: AuthContext, csvLines: string[], opts: ConsumerOpts) => {
-  let bundleCount = 0;
+export const generateBundlesAndSendToWorkers = async (context: AuthContext, csvLines: string[], opts: ConsumerOpts) => {
+  let objectsInBundleCount = 0;
   const { workId, applicantUser, applicantId, csvMapper, entity } = opts;
   const bundlesBuilder: BundleBuilder[] = await bundleAllowUpsertProcess(context, applicantUser, csvLines, csvMapper, { entity });
-  logApp.debug(`${logPrefix} preparing ${bundlesBuilder.length} bundles`);
+  logApp.info(`${logPrefix} preparing ${bundlesBuilder.length} bundles`);
   for (let i = 0; i < bundlesBuilder.length; i += 1) {
     const bundle = bundlesBuilder[i].build();
     const content = Buffer.from(JSON.stringify(bundle), 'utf-8').toString('base64');
     if (bundle.objects.length > 0) {
-      logApp.debug(`${logPrefix} push bundle with ${bundle.objects.length} objects`);
-      bundleCount += bundle.objects.length;
+      logApp.info(`${logPrefix} push bundle with ${bundle.objects.length} objects`);
+      objectsInBundleCount += bundle.objects.length;
       await pushToWorkerForConnector(connector.internal_id, {
         type: 'bundle',
         update: true,
@@ -69,7 +69,7 @@ const generateBundlesAndSendToWorkers = async (context: AuthContext, csvLines: s
       });
     }
   }
-  return bundleCount;
+  return objectsInBundleCount;
 };
 
 /** @deprecated Will be removed when workbench are replaced by draft */
@@ -106,19 +106,16 @@ const processCSVforWorkbench = async (context: AuthContext, opts: ConsumerOpts) 
   await updateProcessedTime(context, applicantUser, workId, '1 generated bundle for workbench validation.');
 };
 
-const processCSVforWorkers = async (context: AuthContext, opts: ConsumerOpts) => {
+export const processCSVforWorkers = async (context: AuthContext, opts: ConsumerOpts) => {
   const { workId, fileId, applicantUser } = opts;
 
   await validateCsvMapper(context, applicantUser, opts.csvMapper);
   const sanitizedMapper = sanitized(opts.csvMapper);
-
+  let removeHeaderIsRequired = sanitizedMapper.has_header;
   let bulkLineCursor = 0;
-  if (sanitizedMapper.has_header) {
-    bulkLineCursor = 1;
-  }
-
   let hasMoreBulk = true;
   let totalBundleCount = 0;
+
   const startDate2 = new Date().getTime();
   while (hasMoreBulk) {
     const stream: SdkStream<Readable> | null | undefined = await downloadFile(opts.fileId) as SdkStream<Readable> | null | undefined;
@@ -134,7 +131,19 @@ const processCSVforWorkers = async (context: AuthContext, opts: ConsumerOpts) =>
         // eslint-disable-next-line no-restricted-syntax
         for await (const line of rl) {
           if (startingLineNumber <= lineNumber && lineNumber < startingLineNumber + BULK_LINE_PARSING_NUMBER) {
-            lines.push(line);
+            // We are in the bulk window
+            if (removeHeaderIsRequired) {
+              // Manage header removal: if csv file start with skip char, need to skipline until header is there
+              if (sanitizedMapper.skipLineChar && sanitizedMapper.skipLineChar.length === 1) {
+                if (!line.startsWith(sanitizedMapper.skipLineChar)) {
+                  removeHeaderIsRequired = false;
+                }
+              } else {
+                removeHeaderIsRequired = false;
+              }
+            } else {
+              lines.push(line);
+            }
             bulkLineCursor += 1;
           }
           lineNumber += 1;
@@ -164,9 +173,10 @@ const processCSVforWorkers = async (context: AuthContext, opts: ConsumerOpts) =>
   }
   logApp.info(`${logPrefix} processing CSV ${opts.fileId} DONE in ${new Date().getTime() - startDate2} ms for ${totalBundleCount} bundles.`);
   await updateProcessedTime(context, applicantUser, workId, `${totalBundleCount} generated bundle(s) for worker import`);
+  return totalBundleCount;
 };
 
-export const consumeQueueCallback = async (context: AuthContext, message: string) => {
+const consumeQueueCallback = async (context: AuthContext, message: string) => {
   const messageParsed = JSON.parse(message);
   const workId = messageParsed.internal.work_id;
   const applicantId = messageParsed.internal.applicant_id ?? OPENCTI_SYSTEM_UUID;

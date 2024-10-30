@@ -1,6 +1,6 @@
-import { type CsvMapperParsed, CsvMapperRepresentationType } from '../../../src/modules/internal/csvMapper/csvMapper-types';
-import { ENTITY_TYPE_LOCATION_CITY } from '../../../src/schema/stixDomainObject';
-import { ENTITY_TYPE_LABEL } from '../../../src/schema/stixMetaObject';
+import { type CsvMapperParsed, CsvMapperRepresentationType } from '../../../../src/modules/internal/csvMapper/csvMapper-types';
+import { ENTITY_TYPE_LOCATION_CITY } from '../../../../src/schema/stixDomainObject';
+import { ENTITY_TYPE_LABEL } from '../../../../src/schema/stixMetaObject';
 
 export const csvMapperMockSimpleCities: Partial<CsvMapperParsed> = {
   id: 'mapper-mock-simple-cities',
@@ -8,6 +8,7 @@ export const csvMapperMockSimpleCities: Partial<CsvMapperParsed> = {
   separator: ',',
   entity_type: 'CsvMapper',
   name: 'CitiesCsvMapper',
+  skipLineChar: '#',
   representations: [
     {
       id: 'cityRepresentation',

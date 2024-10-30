@@ -24,7 +24,7 @@ import { findAllTaxiiIngestions, patchTaxiiIngestion } from '../modules/ingestio
 import { ConnectorType, IngestionAuthType, TaxiiVersion } from '../generated/graphql';
 import { fetchCsvFromUrl, findAllCsvIngestions, patchCsvIngestion } from '../modules/ingestion/ingestion-csv-domain';
 import { findById } from '../modules/internal/csvMapper/csvMapper-domain';
-import { bundleAllowUpsertProcess } from '../parser/csv-bundler';
+import { bundleAllowUpsertProcess, type BundleProcessOpts, removeHeader } from '../parser/csv-bundler';
 import { createWork, updateExpectationsNumber } from '../domain/work';
 import { parseCsvMapper } from '../modules/internal/csvMapper/csvMapper-utils';
 import { findById as findUserById } from '../domain/user';
@@ -35,13 +35,14 @@ import { ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
 import { connectorIdFromIngestId, queueDetails } from '../domain/connector';
 import { STIX_EXT_OCTI } from '../types/stix-extensions';
 import type { StixIndicator } from '../modules/indicator/indicator-types';
+import type { CsvMapperParsed } from '../modules/internal/csvMapper/csvMapper-types';
 
 // Ingestion manager responsible to cleanup old data
 // Each API will start is ingestion manager.
 // If the lock is free, every API as the right to take it.
 const SCHEDULE_TIME = conf.get('ingestion_manager:interval') || 30000;
 const INGESTION_MANAGER_KEY = conf.get('ingestion_manager:lock_key') || 'ingestion_manager_lock';
-// FIXME const CSV_MAX_BUNDLE_SIZE_GENERATION = conf.get('ingestion_manager:csv_max_bundle_generation') || 1000;
+const CSV_MAX_BUNDLE_SIZE_GENERATION = conf.get('ingestion_manager:csv_max_bundle_generation') || 1000;
 
 let running = false;
 
@@ -448,29 +449,35 @@ export const processCsvLines = async (
   const linesContent = csvLines.join('');
   const hashedIncomingData = hashSHA256(linesContent);
   const isUnchangedData = compareHashSHA256(linesContent, ingestion.current_state_hash ?? '');
+  let objectsInBundleCount = 0;
   if (isUnchangedData) {
     logApp.info(`[OPENCTI-MODULE] INGESTION - Unchanged data for csv ingest: ${ingestion.name}`);
     await updateBuiltInConnectorInfo(context, ingestion.user_id, ingestion.id);
   } else {
     const ingestionUser = await findUserById(context, context.user ?? SYSTEM_USER, ingestion.user_id) ?? SYSTEM_USER;
     if (csvMapperParsed.has_header) {
-      csvLines.shift(); // remove first line
+      removeHeader(csvLines, csvMapperParsed.skipLineChar);
     }
     logApp.info(`[OPENCTI-MODULE] INGESTION - ingesting ${csvLines.length} csv lines`);
-    const allBundles = await bundleAllowUpsertProcess(context, ingestionUser, csvLines, csvMapperParsed, {});
+    const opts : BundleProcessOpts = {
+      maxRecordNumber: CSV_MAX_BUNDLE_SIZE_GENERATION
+    };
+    const allBundles = await bundleAllowUpsertProcess(context, ingestionUser, csvLines, csvMapperParsed, opts);
     for (let i = 0; i < allBundles.length; i += 1) {
       const bundle = allBundles[i].build();
       if (bundle.objects.length > 0) {
-        logApp.info(`[OPENCTI-MODULE] INGESTION - push bundle with ${bundle.objects.length} objects`);
+        logApp.debug(`[OPENCTI-MODULE] INGESTION - push bundle with ${bundle.objects.length} objects`, { content: bundle.objects });
         await pushBundleToConnectorQueue(context, ingestion, bundle);
+        objectsInBundleCount += bundle.objects.length;
       }
     }
 
-    logApp.info(`[OPENCTI-MODULE] INGESTION - Processing: ${allBundles.length} bundles.`);
+    logApp.info(`[OPENCTI-MODULE] INGESTION - Sending: ${allBundles.length} bundles for ${objectsInBundleCount} objects.`);
     const state = { current_state_hash: hashedIncomingData, added_after_start: utcDate(addedLast) };
     await patchCsvIngestion(context, SYSTEM_USER, ingestion.internal_id, state);
     await updateBuiltInConnectorInfo(context, ingestion.user_id, ingestion.id, { state });
   }
+  return { isUnchangedData, objectsInBundleCount };
 };
 
 const csvDataHandler = async (context: AuthContext, ingestion: BasicStoreEntityIngestionCsv) => {

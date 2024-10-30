@@ -3,7 +3,7 @@ import { internalFindByIdsMapped, listAllEntities, listEntitiesPaginated, storeL
 import { type BasicStoreEntityCsvMapper, ENTITY_TYPE_CSV_MAPPER, type StoreEntityCsvMapper } from './csvMapper-types';
 import { type CsvMapperAddInput, type EditInput, FilterMode, type QueryCsvMappersArgs } from '../../../generated/graphql';
 import { createInternalObject, deleteInternalObject, editInternalObject } from '../../../domain/internalObject';
-import { bundleObjects } from '../../../parser/csv-bundler';
+import { bundleObjects, removeHeader } from '../../../parser/csv-bundler';
 import { type CsvMapperSchemaAttribute, type CsvMapperSchemaAttributes, parseCsvMapper, parseCsvMapperWithDefaultValues, validateCsvMapper } from './csvMapper-utils';
 import { schemaAttributesDefinition } from '../../../schema/schema-attributes';
 import { schemaRelationsRefDefinition } from '../../../schema/schema-relationsRef';
@@ -33,7 +33,7 @@ export const csvMapperTest = async (context: AuthContext, user: AuthUser, config
   const { createReadStream } = await fileUpload;
   const csvLines = await parseReadableToLines(createReadStream(), 100);
   if (csvMapper.has_header) {
-    csvLines.shift();
+    removeHeader(csvLines, csvMapper.skipLineChar);
   }
   const allObjects = await bundleObjects(context, user, csvLines, csvMapper);
   return {

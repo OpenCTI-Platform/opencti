@@ -17,7 +17,7 @@ import type { StixBundle, StixObject } from '../types/stix-common';
 
 const inlineEntityTypes = [ENTITY_TYPE_EXTERNAL_REFERENCE];
 
-interface BundleProcessOpts {
+export interface BundleProcessOpts {
   entity?: BasicStoreBase
   maxRecordNumber?: number
 }
@@ -113,6 +113,7 @@ export const bundleAllowUpsertProcess = async (
             stixObject.extensions[STIX_EXT_OCTI].converter_csv = record.join(mapper.separator);
             return stixObject;
           });
+
           // Add to bundle
           let added: boolean = false;
           let i = 0;
@@ -125,7 +126,6 @@ export const bundleAllowUpsertProcess = async (
           }
 
           if (!added) {
-            // console.log('Not added, add a new bundle');
             const nextBuilder = new BundleBuilder();
             nextBuilder.addObjects(stixObjects);
             allBundles.push(nextBuilder);
@@ -149,6 +149,26 @@ export const bundleAllowUpsertProcess = async (
   return allBundles;
 };
 
+/**
+ * Helper to remove csv file header,
+ * including when there is some comment before.
+ * @param csvLines
+ * @param skipLineChar
+ */
+export const removeHeader = (csvLines:string[], skipLineChar: string) => {
+  if (skipLineChar && skipLineChar.length === 1) {
+    let isACommentLine: boolean = true;
+    while (isACommentLine) {
+      const theLine = csvLines.shift();
+      if (!theLine?.startsWith(skipLineChar)) {
+        isACommentLine = false;
+      }
+    }
+  } else {
+    csvLines.shift();
+  }
+};
+
 export const bundleObjects = async (
   context: AuthContext,
   user: AuthUser,
@@ -157,10 +177,10 @@ export const bundleObjects = async (
   opts: BundleProcessOpts = {}
 ) => {
   const bundlesBuilder = await bundleAllowUpsertProcess(context, user, lines, mapper, opts);
-  const allObjects: StixObject[] = [];
+  let allObjects: StixObject[] = [];
   for (let i = 0; i < bundlesBuilder.length; i += 1) {
     const bundle: StixBundle = bundlesBuilder[i].build();
-    allObjects.push(...bundle.objects);
+    allObjects = allObjects.concat(bundle.objects);
   }
   return allObjects;
 };
@@ -172,5 +192,8 @@ export const bundleProcessFromFile = async (
   mapper: CsvMapperParsed
 ) => {
   const csvLines = await parseReadableToLines(fs.createReadStream(filePath));
+  if (mapper.has_header) {
+    removeHeader(csvLines, mapper.skipLineChar);
+  }
   return bundleObjects(context, user, csvLines, mapper, {});
 };
