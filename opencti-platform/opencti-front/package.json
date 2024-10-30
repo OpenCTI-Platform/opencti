@@ -46,6 +46,7 @@
     "invert-color": "2.0.0",
     "js-base64": "3.7.7",
     "js-file-download": "0.4.12",
+    "json5": "2.2.3",
     "leaflet": "1.9.4",
     "lodash": "4.17.21",
     "markdown-to-jsx": "7.5.0",
