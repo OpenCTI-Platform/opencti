@@ -46,7 +46,7 @@ CsvMapperConditionalEntityMappingProps
         type="checkbox"
         name={`${representationName}.column_based.enabled`}
         label={t_i18n('Entity dynamic mapping')}
-        onChange={(e: any) => handleToggleSelect(e.target.checked)}
+        onChange={(e: React.ChangeEvent<{ checked: boolean }>) => handleToggleSelect(e.target.checked)}
       />
       <Tooltip
         title={t_i18n(
