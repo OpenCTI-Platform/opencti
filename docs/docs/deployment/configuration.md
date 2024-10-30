@@ -238,6 +238,22 @@ Here are the configuration keys, for both containers (environment variables) and
 | ai:model        | AI__MODEL            |               | Model to be used for text generation (depending on type)  |
 | ai:model_images | AI__MODEL_IMAGES     |               | Model to be used for image generation (depending on type) |
 
+#### Protect Sensitive Configurations
+
+| Parameter                                                               | Environment variable                                      | Default value | Description                                          |
+|:------------------------------------------------------------------------|:----------------------------------------------------------|:--------------|:-----------------------------------------------------|
+| protected_sensitive_config:enabled                                      | PROTECT_SENSITIVE_CONFIG__ENABLED                         | false         | Enable Protect Sensitive Configurations              |
+| protected_sensitive_config:markings:enabled                             | PROTECT_SENSITIVE_CONFIG__MARKINGS__ENABLED               | true          | Protect Markings                                     |
+| protected_sensitive_config:markings:protected_definitions               | PROTECT_SENSITIVE_CONFIG__MARKINGS__PROTECTED_DEFINITIONS | ["TLP:CLEAR", "TLP:GREEN", "TLP:AMBER", "TLP:AMBER+STRICT", "TLP:RED", "PAP:CLEAR", "PAP:GREEN", "PAP:AMBER", "PAP:RED"]            | List of protected Markings definitions               |
+| protected_sensitive_config:groups:enabled                               | PROTECT_SENSITIVE_CONFIG__GROUPS__ENABLED                 | true          | Enabled Groups protection                            |
+| protected_sensitive_config:groups:protected_names                       | PROTECT_SENSITIVE_CONFIG__GROUPS__PROTECTED_NAMES         | ["Administrators", "Connectors", "Default"]               | List of protected Groups                             |
+| protected_sensitive_config:roles:enabled                                | PROTECT_SENSITIVE_CONFIG__ROLES__ENABLED                  | true          | Enabled Roles protection                             |
+| protected_sensitive_config:roles:protected_names                        | PROTECT_SENSITIVE_CONFIG__ROLES__PROTECTED_NAMES          | ["Administrators", "Connectors", "Default"]               | List of protected Roles                              |
+| protected_sensitive_config:rules:enabled                                | PROTECT_SENSITIVE_CONFIG__RULES__ENABLED                  | true          | Enabled Rules protection                             |
+| protected_sensitive_config:ce_ee_toggle:enabled                         | PROTECT_SENSITIVE_CONFIG__CE_EE_TOGGLE__ENABLED           | true          | Enabled Enterpise/Community Editon toggle protection |
+| protected_sensitive_config:file_indexing:enabled                        | PROTECT_SENSITIVE_CONFIG__FILE_INDEXING__ENABLED          | true          | Enabled File Indexing protection                     |
+| protected_sensitive_config:platform_organization:enabled                | PROTECT_SENSITIVE_CONFIG__PLATFORM_ORGANIZATION__ENABLED  | true          | Enabled main Platform Organization protection        |
+
 #### Using a credentials provider
 
 In some cases, it may not be possible to put directly dependencies credentials directly in environment variables or static configuration. The platform can then retrieve them from a credentials provider. Here is the list of supported providers:
