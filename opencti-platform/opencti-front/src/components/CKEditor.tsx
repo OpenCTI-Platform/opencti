@@ -52,6 +52,7 @@ import {
   ImageBlockEditing,
   EditorConfig,
   ImageTextAlternative,
+  PageBreak,
 } from 'ckeditor5';
 import React from 'react';
 import { useIntl } from 'react-intl';
@@ -121,6 +122,7 @@ const CKEDITOR_DEFAULT_CONFIG: EditorConfig = {
     List,
     ListProperties,
     Mention,
+    PageBreak,
     Paragraph,
     PasteFromOffice,
     RemoveFormat,
@@ -144,6 +146,7 @@ const CKEDITOR_DEFAULT_CONFIG: EditorConfig = {
       'fontFamily',
       'fontSize',
       'alignment',
+      'pageBreak',
       '|',
       'bold',
       'italic',

@@ -147,6 +147,22 @@ const setTableFullWidth = (content: string) => {
 };
 
 /**
+ * Convert ckeditor page breaks into ones for pdfmake.
+ *
+ * @param content The html content in string.
+ * @returns Same content but with page breaks.
+ */
+const addPageBreaks = (content: string) => {
+  const container = document.createElement('div');
+  container.innerHTML = content;
+  container.querySelectorAll('.page-break').forEach((pageBreak) => {
+    const pageBreakNext = pageBreak.nextElementSibling;
+    if (pageBreakNext) pageBreakNext.classList.add('pdf-pagebreak-before');
+  });
+  return container.innerHTML;
+};
+
+/**
  * Transform html file into a PDF that can be downloaded.
  *
  * @param fileName name of the file to transform.
@@ -171,10 +187,21 @@ export const htmlToPdf = (fileName: string, content: string) => {
   return generatePdf(pdfMakeObject);
 };
 
+/**
+ * Transform html file into a PDF that can be downloaded.
+ * /!\ Used for outcome templates reports.
+ *
+ * @param reportName Name the report outcome should have.
+ * @param content HTML content.
+ * @param templateName Name of the template used for PDF generation.
+ * @param markings Markings of the outcome report.
+ * @returns PDF object ready to be downloaded.
+ */
 export const htmlToPdfReport = (reportName: string, content: string, templateName: string, markings: string[]) => {
   let htmlData = removeUselessContent(content);
   htmlData = setImagesWidth(htmlData);
   htmlData = setTableFullWidth(htmlData);
+  htmlData = addPageBreaks(htmlData);
 
   // Transform html string into a JS object that lib pdfmake can understand.
   const pdfMakeObject = htmlToPdfmake(htmlData, {
@@ -185,8 +212,6 @@ export const htmlToPdfReport = (reportName: string, content: string, templateNam
       h3: { margin: [0, 20] },
     },
   }) as unknown as TDocumentDefinitions; // Because wrong type when using imagesByReference: true.
-
-  console.log(pdfMakeObject);
 
   const date = dateFormat(new Date()) ?? '';
   const formattedTemplateName = truncate(capitalizeWords(templateName), 30, false);
@@ -285,6 +310,11 @@ export const htmlToPdfReport = (reportName: string, content: string, templateNam
           },
         ],
       };
+    },
+    pageBreakBefore(currentNode) {
+      if (!currentNode.style) return false;
+      if (typeof currentNode.style !== 'string' || !Array.isArray(currentNode.style)) return false;
+      return currentNode.style.includes('pdf-pagebreak-before');
     },
   };
 
