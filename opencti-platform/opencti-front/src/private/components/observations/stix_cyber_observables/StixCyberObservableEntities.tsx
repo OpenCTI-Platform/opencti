@@ -105,7 +105,7 @@ const StixCyberObservableEntities: FunctionComponent<StixCyberObservableEntities
         {isFABReplaced
           ? (
             <StixCoreRelationshipCreationFromControlledDial
-              id={entityId}
+              entityId={entityId}
               defaultStartTime={defaultStartTime}
               defaultStopTime={defaultStopTime}
               controlledDial={({ onOpen }) => {
