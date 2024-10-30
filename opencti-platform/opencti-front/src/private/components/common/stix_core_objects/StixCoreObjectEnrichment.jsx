@@ -28,16 +28,17 @@ const StixCoreObjectEnrichment = (props) => {
 
   return (
     <>
-      {isFABReplaced && <Tooltip title={t('Enrichment')}>
-        <ToggleButton
-          onClick={handleOpenEnrichment}
-          value="enrich"
-          size="small"
-          style={{ marginRight: 3 }}
-        >
-          <CloudRefreshOutline fontSize="small" color="primary" />
-        </ToggleButton>
-      </Tooltip>}
+      {isFABReplaced && (
+        <Tooltip title={t('Enrichment')}>
+          <ToggleButton
+            onClick={handleOpenEnrichment}
+            value="enrich"
+            size="small"
+            style={{ marginRight: 3 }}
+          >
+            <CloudRefreshOutline fontSize="small" color="primary" />
+          </ToggleButton>
+        </Tooltip>)}
       {isFABReplaced && (
         <Drawer
           open={openDrawer}
