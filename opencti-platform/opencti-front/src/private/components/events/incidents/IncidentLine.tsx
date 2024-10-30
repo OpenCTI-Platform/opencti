@@ -11,6 +11,10 @@ export const incidentLineFragment = graphql`
     modified
     confidence
     entity_type
+    draftVersion {
+      draft_id
+      draft_operation
+    }
     objectAssignee {
       entity_type
       id

@@ -32,7 +32,7 @@ export interface DataTableColumn {
   label?: string
   size?: number
   percentWidth: number
-  render?: (v: any, helpers?: any) => ReactNode
+  render?: (v: any, helpers?: any, draftVersion?: boolean) => React.ReactNode
   visible?: boolean
   order: number
   lastX?: number

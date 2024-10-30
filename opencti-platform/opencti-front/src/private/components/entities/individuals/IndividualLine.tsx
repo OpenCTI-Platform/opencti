@@ -56,6 +56,10 @@ const individualLineFragment = graphql`
         name
         created
         modified
+        draftVersion {
+            draft_id
+            draft_operation
+        }
         objectMarking {
             id
             definition_type

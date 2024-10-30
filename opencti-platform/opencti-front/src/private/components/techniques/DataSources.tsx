@@ -27,6 +27,10 @@ const dataSourceLineFragment = graphql`
     x_mitre_platforms
     collection_layers
     confidence
+    draftVersion {
+      draft_id
+      draft_operation
+    }
     objectMarking {
       id
       definition_type

@@ -34,6 +34,10 @@ const caseIncidentFragment = graphql`
     created
     entity_type
     response_types
+    draftVersion {
+      draft_id
+      draft_operation
+    }
     objectAssignee {
       entity_type
       id

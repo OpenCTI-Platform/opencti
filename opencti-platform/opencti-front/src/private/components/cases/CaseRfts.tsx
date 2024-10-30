@@ -30,6 +30,10 @@ const caseFragment = graphql`
     takedown_types
     priority
     severity
+    draftVersion {
+      draft_id
+      draft_operation
+    }
     objectAssignee {
       entity_type
       id

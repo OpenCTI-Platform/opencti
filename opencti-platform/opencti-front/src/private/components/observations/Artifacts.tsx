@@ -26,6 +26,10 @@ const artifactLineFragment = graphql`
     parent_types
     observable_value
     created_at
+    draftVersion {
+      draft_id
+      draft_operation
+    }
     createdBy {
       ... on Identity {
         id

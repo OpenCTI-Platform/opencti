@@ -30,6 +30,10 @@ const infrastructureFragment = graphql`
     modified
     confidence
     infrastructure_types
+    draftVersion {
+      draft_id
+      draft_operation
+    }
     createdBy {
       ... on Identity {
         id

@@ -12,6 +12,10 @@ export const CampaignCardFragment = graphql`
     description
     created
     modified
+    draftVersion {
+      draft_id
+      draft_operation
+    }
     createdBy {
       id
       name

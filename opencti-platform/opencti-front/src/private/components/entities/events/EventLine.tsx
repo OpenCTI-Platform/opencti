@@ -52,6 +52,10 @@ const eventLineFragment = graphql`
         modified
         start_time
         stop_time
+        draftVersion {
+            draft_id
+            draft_operation
+        }
         objectMarking {
             id
             definition_type

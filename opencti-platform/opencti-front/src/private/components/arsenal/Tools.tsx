@@ -24,6 +24,10 @@ const toolLineFragment = graphql`
     created
     modified
     confidence
+    draftVersion {
+      draft_id
+      draft_operation
+    }
     objectMarking {
       id
       definition_type

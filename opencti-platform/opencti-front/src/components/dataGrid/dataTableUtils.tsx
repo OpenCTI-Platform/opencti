@@ -5,6 +5,7 @@ import StixCoreObjectLabels from '@components/common/stix_core_objects/StixCoreO
 import Tooltip from '@mui/material/Tooltip';
 import { Link } from 'react-router-dom';
 import { useTheme } from '@mui/styles';
+import { DraftChip } from '@components/common/draft/DraftChip';
 import type { DataTableColumn } from './dataTableTypes';
 import { DataTableProps, DataTableVariant } from './dataTableTypes';
 import ItemMarkings from '../ItemMarkings';
@@ -94,9 +95,14 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
-const defaultRender: DataTableColumn['render'] = (data, { column: { size } }) => (<Tooltip title={data}>
-  <div>{truncate(data, size * MAGICAL_SIZE)}</div>
-</Tooltip>);
+const defaultRender: DataTableColumn['render'] = (data, { column: { size } }, displayDraftChip = false) => {
+  return (<Tooltip title={data}>
+    <div>
+      {truncate(data, size * MAGICAL_SIZE)}
+      {displayDraftChip && (<DraftChip/>)}
+    </div>
+  </Tooltip>);
+};
 
 const defaultColumns: DataTableProps['dataColumns'] = {
   allowed_markings: {
@@ -152,8 +158,8 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Abstract',
     percentWidth: 25,
     isSortable: true,
-    render: ({ attribute_abstract, content }, helpers) => {
-      return defaultRender(attribute_abstract || content, helpers);
+    render: ({ attribute_abstract, content, draftVersion }, helpers) => {
+      return defaultRender(attribute_abstract || content, helpers, draftVersion);
     },
   },
   attribute_count: {
@@ -426,7 +432,10 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Name',
     percentWidth: 25,
     isSortable: true,
-    render: (data, helpers) => defaultRender(getMainRepresentative(data), helpers),
+    render: (data, helpers) => {
+      const displayDraftChip = !!data.draftVersion;
+      return defaultRender(getMainRepresentative(data), helpers, displayDraftChip);
+    },
   },
   note_types: {
     id: 'note_types',
@@ -522,16 +531,16 @@ const defaultColumns: DataTableProps['dataColumns'] = {
                     />
                   </Tooltip>
                   <div>
-                    {defaultRender(observable.observable_value, helpers)}
+                    {defaultRender(observable.observable_value, helpers, observable.draftVersion)}
                   </div>
                 </div>
               );
             }
           }
-          return defaultRender(observable.observable_value, helpers);
+          return defaultRender(observable.observable_value, helpers, observable.draftVersion);
         }
         default:
-          return defaultRender(observable.observable_value, helpers);
+          return defaultRender(observable.observable_value, helpers, observable.draftVersion);
       }
     },
   },
@@ -682,7 +691,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Result name',
     percentWidth: 15,
     isSortable: true,
-    render: ({ result_name }, helpers) => defaultRender(result_name, helpers),
+    render: ({ result_name, draftVersion }, helpers) => defaultRender(result_name, helpers, draftVersion),
   },
   secondary_motivations: {
     id: 'secondary_motivations',
@@ -724,7 +733,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Source name',
     percentWidth: 15,
     isSortable: true,
-    render: ({ source_name }, helpers) => defaultRender(source_name, helpers),
+    render: ({ source_name, draftVersion }, helpers) => defaultRender(source_name, helpers, draftVersion),
   },
   start_time: {
     id: 'start_time',
