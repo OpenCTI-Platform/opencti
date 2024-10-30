@@ -50,7 +50,7 @@ export const availableComponents = () => {
 export const getPlaybookDefinition = async (context: AuthContext, playbook: BasicStoreEntityPlaybook) => {
   if (playbook.playbook_definition && playbook.playbook_definition.includes('PLAYBOOK_SHARING_COMPONENT')) {
     // parse playbook definition in case there is a sharing with organization component, in order to parse organizations to get their label
-    const definition = JSON.parse(playbook.playbook_definition ?? '{}') as ComponentDefinition;
+    const definition = JSON.parse(playbook.playbook_definition) as ComponentDefinition;
     const sharingComponent = definition.nodes.find((n) => n.component_id === 'PLAYBOOK_SHARING_COMPONENT');
     if (sharingComponent && sharingComponent.configuration) {
       const sharingConfiguration = JSON.parse(sharingComponent.configuration) as SharingConfiguration;
