@@ -11,7 +11,7 @@ const CKEDITOR_CONTAINER_SELECTOR = '.ck-content.ck-editor__editable.ck-editor__
 const MAX_WIDTH_PORTRAIT = 680;
 
 /**
- * DO NOT EXPORT
+ * NOT MEANT FOR EXPORT
  *
  * Loop through elements inside CKEditor to determine if it is
  * necessary to generate a PDF in landscape or portrait.
@@ -37,7 +37,7 @@ const determineOrientation = () => {
 };
 
 /**
- * DO NOT EXPORT
+ * NOT MEANT FOR EXPORT
  *
  * @returns Roboto URLs for pdfmake.
  */
@@ -55,7 +55,7 @@ const robotoURLs = () => {
 };
 
 /**
- * DO NOT EXPORT
+ * NOT MEANT FOR EXPORT
  *
  * Find images and apply a width in pixels on it.
  * We have several cases that can happened:
@@ -93,7 +93,7 @@ const setImagesWidth = (content: string) => {
 };
 
 /**
- * DO NOT EXPORT
+ * NOT MEANT FOR EXPORT
  *
  * There are some tags we don't want in the generated PDF.
  *
@@ -107,7 +107,7 @@ const removeUselessContent = (content: string) => {
 };
 
 /**
- * DO NOT EXPORT
+ * NOT MEANT FOR EXPORT
  *
  * Generate a PDF that can be downloaded.
  *
@@ -124,6 +124,8 @@ const generatePdf = (pdfMakeObject: TDocumentDefinitions, checkOrientation = fal
 };
 
 /**
+ * NOT MEANT FOR EXPORT
+ *
  * Take tables and add an attribute to make them full width in PDF.
  *
  * @param content The html content in string.
@@ -147,6 +149,8 @@ const setTableFullWidth = (content: string) => {
 };
 
 /**
+ * NOT MEANT FOR EXPORT
+ *
  * Convert ckeditor page breaks into ones for pdfmake.
  *
  * @param content The html content in string.
@@ -313,7 +317,7 @@ export const htmlToPdfReport = (reportName: string, content: string, templateNam
     },
     pageBreakBefore(currentNode) {
       if (!currentNode.style) return false;
-      if (typeof currentNode.style !== 'string' || !Array.isArray(currentNode.style)) return false;
+      if (typeof currentNode.style !== 'string' && !Array.isArray(currentNode.style)) return false;
       return currentNode.style.includes('pdf-pagebreak-before');
     },
   };
