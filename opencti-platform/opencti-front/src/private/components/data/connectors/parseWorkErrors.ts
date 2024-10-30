@@ -1,5 +1,6 @@
 import { fetchQuery, graphql } from 'react-relay';
 import { parseWorkErrorsQuery$data } from '@components/data/connectors/__generated__/parseWorkErrorsQuery.graphql';
+import JSON5 from 'json5';
 import { WorkMessages } from './ConnectorWorks';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import { environment } from '../../../../relay/environment';
@@ -130,9 +131,9 @@ const parseWorkErrors = async (errorsList: WorkMessages): Promise<ParsedWorkMess
     if (!error) return [];
     // Try/Catch to prevent JSON.parse Exception
     try {
-      const parsedSource = JSON.parse(error.source ?? '');
+      const parsedSource = JSON5.parse(error.source ?? '');
       const source = parsedSource.type === 'bundle' ? parsedSource.objects[0] : parsedSource;
-      const message = JSON.parse((error.message ?? '').replace(/'/g, '"'));
+      const message = JSON5.parse((error.message ?? ''));
       const entityId = source.id;
       const fromId = source.source_ref;
       const toId = source.target_ref;
