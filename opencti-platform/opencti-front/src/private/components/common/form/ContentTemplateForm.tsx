@@ -51,7 +51,7 @@ const ContentTemplateForm = ({
     maxMarkings: [],
   };
 
-  const templateOptions = templates.map((t) => ({
+  const templateOptions = (templates ?? []).map((t) => ({
     value: t.id,
     label: t.name,
   }));
