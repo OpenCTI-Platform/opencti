@@ -42,7 +42,7 @@ const StixCoreObjectEnrichment = (props) => {
         open={openDrawer}
         onClose={() => { setOpenDrawer(false); setSearch(''); }}
         title={t('Enrichment connectors')}
-      >
+                        >
         <QueryRenderer
           query={stixCoreObjectEnrichmentLinesQuery}
           variables={{ id: stixCoreObjectId }}
@@ -80,7 +80,7 @@ const StixCoreObjectEnrichment = (props) => {
         open={open || handleOpenEnrichment}
         onClose={handleClose || handleCloseEnrichment}
         title={t('Enrichment connectors')}
-      >
+                         >
         <QueryRenderer
           query={stixCoreObjectEnrichmentLinesQuery}
           variables={{ id: stixCoreObjectId }}
