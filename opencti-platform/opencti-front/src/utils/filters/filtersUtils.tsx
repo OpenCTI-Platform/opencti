@@ -301,9 +301,9 @@ export const useBuildFiltersForTemplateWidgets = () => {
     maxContentMarkingsIds: string[],
   ) => {
     let filters;
-    // 01. replace CONTAINER_ID
+    // 01. replace SELF_ID
     if (inputFilters) {
-      const filtersWithId = inputFilters.replace('CONTAINER_ID', containerId);
+      const filtersWithId = inputFilters.replace('SELF_ID', containerId);
       filters = JSON.parse(filtersWithId);
     }
     // 02. restrict markings

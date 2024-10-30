@@ -16,7 +16,7 @@ const useBuildAttributesOutcome = () => {
     if (!instanceId) {
       throw Error('The attribute widget should refers to an instance');
     }
-    const queryVariables = { id: instanceId === 'CONTAINER_ID' ? containerId : instanceId };
+    const queryVariables = { id: instanceId === 'SELF_ID' ? containerId : instanceId };
     const columns = templateWidget.widget.dataSelection[0].columns ?? [];
     const data = await fetchQuery(stixCoreObjectsAttributesQuery, queryVariables).toPromise() as StixCoreObjectsAttributesQuery$data;
 

@@ -99,20 +99,10 @@ export const templateIncidentResponse: Template = {
   id: 'templateIncidentCase-id',
   content,
   template_widgets_names: [
-    'containerName',
-    'containerCreationDate',
-    'containerDescription',
-    'containerLabels',
-    'containerMarkings',
-    'containerModificationDate',
     'containerObservables',
-    'containerReferences',
     'incidentIOC',
-    'incidentPriority',
-    'incidentSeverity',
     'incidentTasksAndActions',
     'incidentTTP',
-    'incidentType',
-    'widgetIncidentResponseMultiAttributes', // built-in, automatically added
+    'widgetIncidentResponseMultiAttributes',
   ],
 };

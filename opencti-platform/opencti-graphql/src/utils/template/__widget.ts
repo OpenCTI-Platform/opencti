@@ -19,7 +19,7 @@ const widgetReportMultiAttributes: TemplateWidget = {
         { label: 'Publication date', attribute: 'published', variableName: 'reportPublicationDate' },
         { label: 'External references', attribute: 'externalReferences.edges.node.url', displayStyle: 'list', variableName: 'containerReferences' },
       ],
-      instance_id: 'CONTAINER_ID',
+      instance_id: 'SELF_ID',
     }],
   },
 };
@@ -43,7 +43,7 @@ const widgetIncidentResponseMultiAttributes: TemplateWidget = {
         { label: 'Severity', attribute: 'severity', variableName: 'incidentSeverity' },
         { label: 'Incident type', attribute: 'incident_type', variableName: 'incidentType' },
       ],
-      instance_id: 'CONTAINER_ID',
+      instance_id: 'SELF_ID',
     }],
   },
 };
@@ -61,7 +61,7 @@ const widgetContainerIndicators: TemplateWidget = {
           mode: 'and',
           filters: [
             { key: ['entity_type'], values: ['Indicator'] },
-            { key: ['objects'], values: ['CONTAINER_ID'] },
+            { key: ['objects'], values: ['SELF_ID'] },
           ],
           filterGroups: [],
         }),
@@ -76,7 +76,7 @@ const widgetContainerIndicators: TemplateWidget = {
 };
 
 const widgetContainerObservables: TemplateWidget = {
-  name: 'containerObservables',
+  name: 'containerObservables', // add an id
   widget: {
     type: 'list',
     id: 'widgetContainerIndicators',
@@ -88,7 +88,7 @@ const widgetContainerObservables: TemplateWidget = {
           mode: 'and',
           filters: [
             { key: ['entity_type'], values: ['Stix-Cyber-Observable'] },
-            { key: ['objects'], values: ['CONTAINER_ID'] },
+            { key: ['objects'], values: ['SELF_ID'] },
           ],
           filterGroups: [],
         }),
@@ -119,7 +119,7 @@ const widgetLocationsList: TemplateWidget = {
           mode: 'and',
           filters: [
             { key: ['entity_type'], values: ['Country', 'City', 'Region', 'Position', 'Administrative-Area'] },
-            { key: ['objects'], values: ['CONTAINER_ID'] },
+            { key: ['objects'], values: ['SELF_ID'] },
           ],
           filterGroups: [],
         }),
@@ -162,7 +162,7 @@ const widgetIncidentIOC: TemplateWidget = {
           mode: 'and',
           filters: [
             { key: ['entity_type'], values: ['Indicator'] },
-            { key: ['objects'], values: ['CONTAINER_ID'] },
+            { key: ['objects'], values: ['SELF_ID'] },
           ],
           filterGroups: [],
         }),
@@ -184,7 +184,7 @@ const widgetIncidentTasksActions: TemplateWidget = {
           mode: 'and',
           filters: [
             { key: ['entity_type'], values: ['Task'] },
-            { key: ['objects'], values: ['CONTAINER_ID'] },
+            { key: ['objects'], values: ['SELF_ID'] },
           ],
           filterGroups: [],
         }),
@@ -211,7 +211,7 @@ const widgetIncidentTTP: TemplateWidget = {
           mode: 'and',
           filters: [
             { key: ['entity_type'], values: ['Attack-Pattern'] },
-            { key: ['objects'], values: ['CONTAINER_ID'] },
+            { key: ['objects'], values: ['SELF_ID'] },
           ],
           filterGroups: [],
         }),

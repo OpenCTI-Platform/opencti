@@ -46,7 +46,7 @@ describe('Hook: useBuildAttributesOutcome', () => {
               { variableName: 'reportLabels', attribute: 'objectLabel.value' },
               { variableName: 'reportMarkings', attribute: 'objectMarking.definition', displayStyle: 'list' },
             ],
-            instance_id: 'CONTAINER_ID',
+            instance_id: 'SELF_ID',
           },
         ],
       },
