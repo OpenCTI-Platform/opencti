@@ -201,9 +201,12 @@ describe('CSV-PARSER with dynamic mapping (aka different entity on one file)', (
 
     const { objects } = bundle;
     expect(objects.length).toBe(7);
-    console.log('ANGIE - objects:', objects);
 
-    const firstFile = objects.filter((o) => o.type === 'File')[0] as StixFile;
+    const firstFile: StixFile = objects.filter((o) => o.type === 'file')[0] as StixFile;
+
     expect(firstFile.name).toBe('file1');
+    expect(firstFile.id).toBe('file--0e482844-d44d-582b-9f40-6e05aec3b39f');
+    expect(firstFile.type).toBe('file');
+    expect(Object.values(firstFile.hashes)[0]).toBe('D9F73A41BE35198AB3867A4D0C642642B54FB81B528124523D6CF506435A2264');
   });
 });
