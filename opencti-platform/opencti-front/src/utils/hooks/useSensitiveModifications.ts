@@ -20,7 +20,7 @@ const useSensitiveModifications = (type?: SensitiveConfigType, id?: string) => {
   }
 
   const isAllowed = me.can_manage_sensitive_config ?? true;
-  let isSensitive = isSensitiveConfigEnabled;
+  let isSensitive: boolean = isSensitiveConfigEnabled;
 
   if (type && sensitiveConfig[type]) {
     const config = sensitiveConfig[type];

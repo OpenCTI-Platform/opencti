@@ -1,4 +1,4 @@
-import React, { FunctionComponent } from 'react';
+import React, { Fragment, FunctionComponent } from 'react';
 import { Link } from 'react-router-dom';
 import Typography from '@mui/material/Typography';
 import { useTheme } from '@mui/styles';
@@ -42,17 +42,17 @@ const Breadcrumbs: FunctionComponent<BreadcrumbsProps> = ({ elements, isSensitiv
         }
         if (!element.link) {
           return (
-            <>
-              <Typography key={element.label} color="common.lightGrey">{truncate(element.label, 30, false)}</Typography>
+            <Fragment key={element.label}>
+              <Typography color="common.lightGrey">{truncate(element.label, 30, false)}</Typography>
               <SplitDiv show={index === elements.length - 1} />
-            </>
+            </Fragment>
           );
         }
         return (
-          <>
-            <Link key={element.label} to={element.link}>{truncate(element.label, 30, false)}</Link>
+          <Fragment key={element.label}>
+            <Link to={element.link}>{truncate(element.label, 30, false)}</Link>
             <SplitDiv show={index === elements.length - 1} />
-          </>
+          </Fragment>
         );
       })}
     </div>
