@@ -23,7 +23,6 @@ import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../..
 import { useFormatter } from '../../../../components/i18n';
 import { CreateRelationshipContext } from '../menus/CreateRelationshipContextProvider';
 import { computeTargetStixCyberObservableTypes, computeTargetStixDomainObjectTypes } from '../../../../utils/stixTypeUtils';
-import { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
 import { UserContext } from '../../../../utils/hooks/useAuth';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { StixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery$variables } from './__generated__/StixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery.graphql';
@@ -36,13 +35,13 @@ import { StixCoreRelationshipCreationFromEntityStixCoreObjectsLines_data$data } 
 import BulkRelationDialogContainer from '../bulk/dialog/BulkRelationDialogContainer';
 import { UsePreloadedPaginationFragment } from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import { PaginationOptions } from '../../../../components/list_lines';
-import { ModuleHelper } from '../../../../utils/platformModulesHelper';
-import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
+import { UseLocalStorageHelpers, usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import useEntityToggle from '../../../../utils/hooks/useEntityToggle';
 import StixCoreRelationshipCreationForm from './StixCoreRelationshipCreationForm';
 import { resolveRelationsTypes } from '../../../../utils/Relation';
 import { isNodeInConnection } from '../../../../utils/store';
 import { formatDate } from '../../../../utils/Time';
+import { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
 
 export const CreateRelationshipControlledDial = ({ onOpen }: {
   onOpen: () => void
@@ -66,11 +65,13 @@ export const CreateRelationshipControlledDial = ({ onOpen }: {
 
 interface HeaderProps {
   showCreates: boolean,
+  searchPaginationOptions?: any,
 }
 
 // Custom header prop for entity/observable creation buttons in initial step
 export const Header: FunctionComponent<HeaderProps> = ({
   showCreates,
+  searchPaginationOptions,
 }) => {
   const { t_i18n } = useFormatter();
 
@@ -92,24 +93,6 @@ export const Header: FunctionComponent<HeaderProps> = ({
     ...targetStixDomainObjectTypes,
     ...targetStixCyberObservableTypes,
   ];
-  const filters: FilterGroup = {
-    mode: 'and',
-    filterGroups: [],
-    filters: [{
-      id: uuid(),
-      key: 'entity_type',
-      values: entityTypes,
-      operator: 'eq',
-      mode: 'or',
-    }],
-  };
-  const searchPaginationOptions = {
-    search: '',
-    // filters: useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, entityTypes),
-    filters: useBuildEntityTypeBasedFilterContext(entityTypes, filters),
-    orderBy: '_score',
-    orderMode: 'desc',
-  };
 
   return (
     <div style={{
@@ -229,6 +212,11 @@ const SelectEntity = ({
   setTargetEntities,
   targetEntities,
   handleNextStep,
+  searchPaginationOptions,
+  localStorageKey,
+  helpers,
+  contextFilters,
+  virtualEntityTypes,
 }: {
   name?: string,
   entity_id: string,
@@ -237,46 +225,18 @@ const SelectEntity = ({
   setTargetEntities: React.Dispatch<TargetEntity[]>,
   targetEntities: TargetEntity[],
   handleNextStep: () => void,
+  searchPaginationOptions: PaginationOptions,
+  localStorageKey: string,
+  helpers: UseLocalStorageHelpers,
+  contextFilters: FilterGroup,
+  virtualEntityTypes: string[],
 }) => {
   const { t_i18n } = useFormatter();
-  const { state: { stixCoreObjectTypes } } = useContext(CreateRelationshipContext);
-
-  const typeFilters = (stixCoreObjectTypes ?? []).length > 0
-    ? {
-      mode: 'and',
-      filterGroups: [],
-      filters: [{
-        id: uuid(),
-        key: 'entity_type',
-        values: stixCoreObjectTypes ?? [],
-        operator: 'eq',
-        mode: 'or',
-      }],
-    }
-    : emptyFilterGroup;
-  let virtualEntityTypes = stixCoreObjectTypes;
-  if (virtualEntityTypes === undefined || virtualEntityTypes.length < 1) {
-    virtualEntityTypes = ['Stix-Domain-Object', 'Stix-Cyber-Observable'];
-  }
-  const getLocalStorageKey = (entityId: string) => `${entityId}_stixCoreRelationshipCreationFromEntity`;
-
-  const [sortBy, setSortBy] = useState('_score');
-  const [orderAsc, setOrderAsc] = useState(false);
-
-  const { viewStorage, helpers } = usePaginationLocalStorage<StixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery$variables>(
-    getLocalStorageKey(entity_id),
-    { filters: typeFilters },
-  );
-  const { searchTerm = '', orderAsc: storageOrderAsc, sortBy: storageSortBy, filters } = viewStorage;
-
-  useEffect(() => {
-    if (storageSortBy && (storageSortBy !== sortBy)) setSortBy(storageSortBy);
-    if (storageOrderAsc !== undefined && (storageOrderAsc !== orderAsc)) setOrderAsc(storageOrderAsc);
-  }, [storageOrderAsc, storageSortBy]);
+  const { platformModuleHelpers } = useContext(UserContext);
 
   const {
     selectedElements,
-  } = useEntityToggle(getLocalStorageKey(entity_id));
+  } = useEntityToggle(localStorageKey);
 
   useEffect(() => {
     const newTargetEntities: TargetEntity[] = Object.values(selectedElements).map((item) => ({
@@ -287,43 +247,34 @@ const SelectEntity = ({
     setTargetEntities(newTargetEntities);
   }, [selectedElements]);
 
-  const buildColumns = (platformModuleHelpers: ModuleHelper | undefined) => {
-    const isRuntimeSort = platformModuleHelpers?.isRuntimeFieldEnable();
-    return {
-      entity_type: {
-        label: 'Type',
-        percentWidth: 15,
-        isSortable: true,
-      },
-      value: {
-        label: 'Value',
-        percentWidth: 32,
-        isSortable: false,
-      },
-      createdBy: {
-        label: 'Author',
-        percentWidth: 15,
-        isSortable: isRuntimeSort,
-      },
-      objectLabel: {
-        label: 'Labels',
-        percentWidth: 22,
-        isSortable: false,
-      },
-      objectMarking: {
-        label: 'Marking',
-        percentWidth: 15,
-        isSortable: isRuntimeSort,
-      },
-    };
+  const isRuntimeSort = platformModuleHelpers?.isRuntimeFieldEnable();
+  const buildColumns = {
+    entity_type: {
+      label: 'Type',
+      percentWidth: 15,
+      isSortable: true,
+    },
+    value: {
+      label: 'Value',
+      percentWidth: 32,
+      isSortable: false,
+    },
+    createdBy: {
+      label: 'Author',
+      percentWidth: 15,
+      isSortable: isRuntimeSort,
+    },
+    objectLabel: {
+      label: 'Labels',
+      percentWidth: 22,
+      isSortable: false,
+    },
+    objectMarking: {
+      label: 'Marking',
+      percentWidth: 15,
+      isSortable: isRuntimeSort,
+    },
   };
-  const contextFilters = useBuildEntityTypeBasedFilterContext(virtualEntityTypes, filters);
-  const searchPaginationOptions: PaginationOptions = {
-    search: searchTerm,
-    filters: contextFilters,
-    orderBy: sortBy,
-    orderMode: orderAsc ? 'asc' : 'desc',
-  } as PaginationOptions;
   const queryRef = useQueryLoading<StixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQueryType>(
     stixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery,
     { ...searchPaginationOptions, count: 100 } as StixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery$variables,
@@ -355,45 +306,39 @@ const SelectEntity = ({
         width: '100%',
       }}
     >
-      <UserContext.Consumer>
-        {({ platformModuleHelpers }) => (
-          <>
-            {queryRef && (
-              <div style={{ height: '100%' }} ref={setTableRootRef}>
-                <DataTable
-                  selectOnLineClick
-                  disableNavigation
-                  disableToolBar
-                  disableSelectAll
-                  rootRef={tableRootRef ?? undefined}
-                  variant={DataTableVariant.inline}
-                  dataColumns={buildColumns(platformModuleHelpers)}
-                  resolvePath={(data: StixCoreRelationshipCreationFromEntityStixCoreObjectsLines_data$data) => data.stixCoreObjects?.edges?.map((n) => n?.node)}
-                  storageKey={getLocalStorageKey(entity_id)}
-                  lineFragment={stixCoreRelationshipCreationFromEntityStixCoreObjectsLineFragment}
-                  initialValues={initialValues}
-                  toolbarFilters={contextFilters}
-                  preloadedPaginationProps={preloadedPaginationProps}
-                  entityTypes={virtualEntityTypes}
-                  additionalHeaderButtons={[(
-                    <BulkRelationDialogContainer
-                      targetObjectTypes={['Stix-Domain-Object', 'Stix-Cyber-Observable']}
-                      paginationOptions={searchPaginationOptions}
-                      paginationKey="Pagination_stixCoreObjects"
-                      key="BulkRelationDialogContainer"
-                      stixDomainObjectId={entity_id}
-                      stixDomainObjectName={name}
-                      stixDomainObjectType={entity_type}
-                      defaultRelationshipType={allowedRelationshipTypes?.[0]}
-                      selectedEntities={targetEntities}
-                    />
-                  )]}
-                />
-              </div>
-            )}
-          </>
-        )}
-      </UserContext.Consumer>
+      {queryRef && (
+      <div style={{ height: '100%' }} ref={setTableRootRef}>
+        <DataTable
+          selectOnLineClick
+          disableNavigation
+          disableToolBar
+          disableSelectAll
+          rootRef={tableRootRef ?? undefined}
+          variant={DataTableVariant.inline}
+          dataColumns={buildColumns}
+          resolvePath={(data: StixCoreRelationshipCreationFromEntityStixCoreObjectsLines_data$data) => data.stixCoreObjects?.edges?.map((n) => n?.node)}
+          storageKey={localStorageKey}
+          lineFragment={stixCoreRelationshipCreationFromEntityStixCoreObjectsLineFragment}
+          initialValues={initialValues}
+          toolbarFilters={contextFilters}
+          preloadedPaginationProps={preloadedPaginationProps}
+          entityTypes={virtualEntityTypes}
+          additionalHeaderButtons={[(
+            <BulkRelationDialogContainer
+              targetObjectTypes={['Stix-Domain-Object', 'Stix-Cyber-Observable']}
+              paginationOptions={searchPaginationOptions}
+              paginationKey="Pagination_stixCoreObjects"
+              key="BulkRelationDialogContainer"
+              stixDomainObjectId={entity_id}
+              stixDomainObjectName={name}
+              stixDomainObjectType={entity_type}
+              defaultRelationshipType={allowedRelationshipTypes?.[0]}
+              selectedEntities={targetEntities}
+            />
+          )]}
+        />
+      </div>
+      )}
       <Fab
         variant="extended"
         size="small"
@@ -578,7 +523,7 @@ const RenderForm = ({
 };
 
 interface StixCoreRelationshipCreationFromControlledDialProps {
-  id: string,
+  entityId: string,
   allowedRelationshipTypes?: string[],
   isReversable?: boolean,
   defaultStartTime?: string,
@@ -587,7 +532,7 @@ interface StixCoreRelationshipCreationFromControlledDialProps {
 }
 
 const StixCoreRelationshipCreationFromControlledDial: FunctionComponent<StixCoreRelationshipCreationFromControlledDialProps> = ({
-  id,
+  entityId,
   allowedRelationshipTypes,
   isReversable = false,
   defaultStartTime,
@@ -596,6 +541,49 @@ const StixCoreRelationshipCreationFromControlledDial: FunctionComponent<StixCore
 }) => {
   const [step, setStep] = useState<number>(0);
   const [targetEntities, setTargetEntities] = useState<TargetEntity[]>([]);
+
+  const { state: { stixCoreObjectTypes } } = useContext(CreateRelationshipContext);
+
+  const typeFilters = (stixCoreObjectTypes ?? []).length > 0
+    ? {
+      mode: 'and',
+      filterGroups: [],
+      filters: [{
+        id: uuid(),
+        key: 'entity_type',
+        values: stixCoreObjectTypes ?? [],
+        operator: 'eq',
+        mode: 'or',
+      }],
+    }
+    : emptyFilterGroup;
+  let virtualEntityTypes = stixCoreObjectTypes;
+  if (virtualEntityTypes === undefined || virtualEntityTypes.length < 1) {
+    virtualEntityTypes = ['Stix-Domain-Object', 'Stix-Cyber-Observable'];
+  }
+  const localStorageKey = `${entityId}_stixCoreRelationshipCreationFromEntity`;
+
+  const [sortBy, setSortBy] = useState('_score');
+  const [orderAsc, setOrderAsc] = useState(false);
+
+  const { viewStorage, helpers } = usePaginationLocalStorage<StixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery$variables>(
+    localStorageKey,
+    { filters: typeFilters },
+  );
+  const { searchTerm = '', orderAsc: storageOrderAsc, sortBy: storageSortBy, filters } = viewStorage;
+
+  useEffect(() => {
+    if (storageSortBy && (storageSortBy !== sortBy)) setSortBy(storageSortBy);
+    if (storageOrderAsc !== undefined && (storageOrderAsc !== orderAsc)) setOrderAsc(storageOrderAsc);
+  }, [storageOrderAsc, storageSortBy]);
+
+  const contextFilters = useBuildEntityTypeBasedFilterContext(virtualEntityTypes, filters);
+  const searchPaginationOptions: PaginationOptions = {
+    search: searchTerm,
+    filters: contextFilters,
+    orderBy: sortBy,
+    orderMode: orderAsc ? 'asc' : 'desc',
+  } as PaginationOptions;
 
   const reset = () => {
     setStep(0);
@@ -607,7 +595,7 @@ const StixCoreRelationshipCreationFromControlledDial: FunctionComponent<StixCore
       title={''} // Defined in custom header prop
       controlledDial={controlledDial ?? CreateRelationshipControlledDial}
       onClose={reset}
-      header={<Header showCreates={step === 0} />}
+      header={<Header showCreates={step === 0} searchPaginationOptions={searchPaginationOptions} />}
       containerStyle={{
         minHeight: '100vh',
       }}
@@ -615,7 +603,7 @@ const StixCoreRelationshipCreationFromControlledDial: FunctionComponent<StixCore
       {({ onClose }) => (
         <QueryRenderer
           query={stixCoreRelationshipCreationFromEntityQuery}
-          variables={{ id }}
+          variables={{ id: entityId }}
           render={({ props }: { props: StixCoreRelationshipCreationFromEntityQuery$data }) => {
             if (props?.stixCoreObject) {
               const { name, entity_type, observable_value } = props.stixCoreObject;
@@ -628,12 +616,17 @@ const StixCoreRelationshipCreationFromControlledDial: FunctionComponent<StixCore
                 {step === 0 && (
                   <SelectEntity
                     name={name ?? observable_value}
-                    entity_id={id}
+                    entity_id={entityId}
                     entity_type={entity_type}
                     allowedRelationshipTypes={allowedRelationshipTypes}
                     setTargetEntities={setTargetEntities}
                     targetEntities={targetEntities}
                     handleNextStep={() => setStep(1)}
+                    searchPaginationOptions={searchPaginationOptions}
+                    localStorageKey={localStorageKey}
+                    helpers={helpers}
+                    contextFilters={contextFilters}
+                    virtualEntityTypes={virtualEntityTypes}
                   />
                 )}
                 {step === 1 && (
