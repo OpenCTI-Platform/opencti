@@ -44,8 +44,6 @@ interface StixDomainObjectAttackPatternsKillChainLinesProps {
 
 const StixDomainObjectAttackPatternsKillChainLines: FunctionComponent<StixDomainObjectAttackPatternsKillChainLinesProps> = ({
   data,
-  paginationOptions,
-  onDelete,
   searchTerm,
   coursesOfAction,
 }) => {
