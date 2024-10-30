@@ -1,5 +1,6 @@
-import { type CsvMapperParsed, CsvMapperRepresentationType, Operator } from '../../../../src/modules/internal/csvMapper/csvMapper-types';
+import { type CsvMapperParsed, CsvMapperRepresentationType } from '../../../../src/modules/internal/csvMapper/csvMapper-types';
 import { ENTITY_HASHED_OBSERVABLE_STIX_FILE } from '../../../../src/schema/stixCyberObservable';
+import { CsvMapperOperator } from '../../../../src/generated/graphql';
 
 export const csvMapperMockFileHashHack: Partial<CsvMapperParsed> = {
   id: 'mapper-mock-file-hash-hack',
@@ -13,7 +14,7 @@ export const csvMapperMockFileHashHack: Partial<CsvMapperParsed> = {
         entity_type: ENTITY_HASHED_OBSERVABLE_STIX_FILE,
         column_based: {
           column_reference: 'H',
-          operator: Operator.Eq,
+          operator: CsvMapperOperator.Eq,
           value: 'sha256'
         }
       },
@@ -39,7 +40,7 @@ export const csvMapperMockFileHashHack: Partial<CsvMapperParsed> = {
         entity_type: ENTITY_HASHED_OBSERVABLE_STIX_FILE,
         column_based: {
           column_reference: 'H',
-          operator: Operator.Eq,
+          operator: CsvMapperOperator.Eq,
           value: 'md5'
         }
       },

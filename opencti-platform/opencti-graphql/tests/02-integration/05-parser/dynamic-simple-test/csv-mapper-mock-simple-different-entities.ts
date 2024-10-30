@@ -1,6 +1,7 @@
 import { ENTITY_TYPE_THREAT_ACTOR_GROUP } from '../../../../src/schema/stixDomainObject';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../../src/modules/organization/organization-types';
-import { type CsvMapperParsed, CsvMapperRepresentationType, Operator } from '../../../../src/modules/internal/csvMapper/csvMapper-types';
+import { type CsvMapperParsed, CsvMapperRepresentationType } from '../../../../src/modules/internal/csvMapper/csvMapper-types';
+import { CsvMapperOperator } from '../../../../src/generated/graphql';
 
 export const csvMapperMockSimpleDifferentEntities: Partial<CsvMapperParsed> = {
   id: 'mapper-mock-simple-different-entities',
@@ -14,7 +15,7 @@ export const csvMapperMockSimpleDifferentEntities: Partial<CsvMapperParsed> = {
         entity_type: ENTITY_TYPE_THREAT_ACTOR_GROUP,
         column_based: {
           column_reference: 'B',
-          operator: Operator.Eq,
+          operator: CsvMapperOperator.Eq,
           value: 'threat-actor'
         }
       },
@@ -34,7 +35,7 @@ export const csvMapperMockSimpleDifferentEntities: Partial<CsvMapperParsed> = {
         entity_type: ENTITY_TYPE_IDENTITY_ORGANIZATION,
         column_based: {
           column_reference: 'B',
-          operator: Operator.Neq,
+          operator: CsvMapperOperator.NotEq,
           value: 'threat-actor'
         }
       },

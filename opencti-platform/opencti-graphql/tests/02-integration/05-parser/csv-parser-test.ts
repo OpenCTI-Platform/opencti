@@ -17,7 +17,7 @@ import type { CsvMapperParsed } from '../../../src/modules/internal/csvMapper/cs
 import type { StixIdentity, StixMalware, StixThreatActor } from '../../../src/types/stix-sdo';
 import type { StixRelation, StixSighting } from '../../../src/types/stix-sro';
 import { csvMapperDynamicIpAndUrl } from './dynamic-url-and-ip/mapper-url-ip';
-import type { StixIPv4Address, StixURL } from '../../../src/types/stix-sco';
+import type { StixFile, StixIPv4Address, StixURL } from '../../../src/types/stix-sco';
 import { csvMapperMockFileHashHack } from './dynamic-file-hash/csv-mapper-mock-file-hash-hack';
 
 describe('CSV-PARSER', () => {
@@ -200,8 +200,10 @@ describe('CSV-PARSER with dynamic mapping (aka different entity on one file)', (
     const bundle = await bundleProcess(testContext, ADMIN_USER, filePath, csvMapperMockFileHashHack as CsvMapperParsed);
 
     const { objects } = bundle;
-    expect(objects.length).toBe(7); // 76 lines + 1 individual
+    expect(objects.length).toBe(7);
     console.log('ANGIE - objects:', objects);
-    // TODO expect
+
+    const firstFile = objects.filter((o) => o.type === 'File')[0] as StixFile;
+    expect(firstFile.name).toBe('file1');
   });
 });
