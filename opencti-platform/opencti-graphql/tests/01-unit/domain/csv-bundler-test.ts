@@ -15,21 +15,26 @@ import {
 } from '../../data/csv-bundler/kill-chains-constants';
 import { citiesWithTwoLabelsCsvMapper } from '../../data/csv-bundler/cities-with-two-labels-constants';
 import { BundleBuilder, canAddObjectToBundle } from '../../../src/parser/bundle-creator';
-import type { StixObject } from '../../../src/types/stix-common';
+import type { StixBundle, StixObject } from '../../../src/types/stix-common';
 import type { StixLabel } from '../../../src/types/stix-smo';
 import type { StixLocation } from '../../../src/types/stix-sdo';
 
 describe('CSV bundler', () => {
   describe('Embedded properties', () => {
     it('Should list external references', async () => {
+      // because csv has_header=true is managed outside
+      const csvLines = indicatorsWithExternalReferencesCsvContent;
+      csvLines.shift();
+
       const allBundleBuilder = await bundleAllowUpsertProcess(
         testContext,
         ADMIN_USER,
-        indicatorsWithExternalReferencesCsvContent,
+        csvLines,
         indicatorsWithExternalReferencesCsvMapper as CsvMapperParsed
       );
       expect(allBundleBuilder.length).toBe(1);
-      const indicatorsWithExternalReferencesActualBundle = allBundleBuilder[0].build();
+      const indicatorsWithExternalReferencesActualBundle: StixBundle = allBundleBuilder[0].build();
+
       const { id: _expectedId, ...expectedRest } = indicatorsWithExternalReferencesExpectedBundle;
       const indicatorsWithExternalReferencesExpectedBundleWithoutId = { ...expectedRest };
       const { id: _actualId, ...actualRest } = indicatorsWithExternalReferencesActualBundle;
@@ -41,10 +46,13 @@ describe('CSV bundler', () => {
       );
     });
     it('Should list labels', async () => {
+      const csvLines = indicatorsWithLabelsCsvContent;
+      csvLines.shift();
+
       const allBundleBuilder = await bundleAllowUpsertProcess(
         testContext,
         ADMIN_USER,
-        indicatorsWithLabelsCsvContent,
+        csvLines,
         indicatorsWithLabelsCsvMapper as CsvMapperParsed
       );
       expect(allBundleBuilder.length).toBe(1);
@@ -60,10 +68,13 @@ describe('CSV bundler', () => {
       );
     });
     it('Should list kill chain phases', async () => {
+      const csvLines = indicatorsWithKillChainPhasesCsvContent;
+      csvLines.shift();
+
       const allBundleBuilder = await bundleAllowUpsertProcess(
         testContext,
         ADMIN_USER,
-        indicatorsWithKillChainPhasesCsvContent,
+        csvLines,
         indicatorsWithKillChainPhasesCsvMapper as CsvMapperParsed
       );
       const indicatorsWithKillChainPhasesActualBundle = allBundleBuilder[0].build();
@@ -80,7 +91,6 @@ describe('CSV bundler', () => {
     it('Should split same city with different label in 2 valid bundles', async () => {
       // duplicate should be removed, unless label are different.
       const citiesWithTwoLabels:string[] = [
-        'name,label,color',
         'Lyon,label1,#ffffff',
         'Lyon,label2,#000000',
         'Grenoble,label2,#000000',

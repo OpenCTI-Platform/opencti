@@ -118,7 +118,6 @@ export const bundleAllowUpsertProcess = async (
           let i = 0;
           while (!added && i < allBundles.length) {
             if (allBundles[i].canAddObjects(stixObjects)) {
-              // console.log('Found a bundle to add object');
               allBundles[0].addObjects(stixObjects);
               added = true;
             }

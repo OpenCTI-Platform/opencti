@@ -10,7 +10,7 @@ import { parseCsvMapper } from '../../../src/modules/internal/csvMapper/csvMappe
 import { csvMapperMockSimpleCities } from '../../data/importCsv-connector/csv-mapper-cities';
 import { fileToReadStream } from '../../../src/database/file-storage-helper';
 
-describe.skip('Verify taxii ingestion', () => {
+describe('Verify taxii ingestion', () => {
   it('should Taxii server response with no pagination (no next, no more, no x-taxii-date-added-last)', async () => {
     // 1. Create ingestion in opencti
     const input : IngestionTaxiiAddInput = {

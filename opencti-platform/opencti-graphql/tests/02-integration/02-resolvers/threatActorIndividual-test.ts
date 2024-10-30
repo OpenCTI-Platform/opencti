@@ -651,7 +651,7 @@ describe('Threat actor individual resolver standard behavior', () => {
     expect(threatActorIndividual).toBeDefined();
     expect(threatActorIndividual.weight).toHaveLength(0);
   });
-  it.skip('should fail update for invalid input', async () => {
+  it('should fail update for invalid input', async () => {
     const WEIGHT_EDIT = gql`
       mutation threatActorIndividualWeightEdit($id: ID!, $input: [EditInput]!) {
         threatActorIndividualFieldPatch(id:$id, input:$input) {

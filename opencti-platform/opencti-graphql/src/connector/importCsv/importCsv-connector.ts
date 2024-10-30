@@ -53,12 +53,12 @@ const generateBundlesAndSendToWorkers = async (context: AuthContext, csvLines: s
   let bundleCount = 0;
   const { workId, applicantUser, applicantId, csvMapper, entity } = opts;
   const bundlesBuilder: BundleBuilder[] = await bundleAllowUpsertProcess(context, applicantUser, csvLines, csvMapper, { entity });
-  logApp.info(`ANGIE - preparing ${bundlesBuilder.length} bundles`);
+  logApp.debug(`${logPrefix} preparing ${bundlesBuilder.length} bundles`);
   for (let i = 0; i < bundlesBuilder.length; i += 1) {
     const bundle = bundlesBuilder[i].build();
     const content = Buffer.from(JSON.stringify(bundle), 'utf-8').toString('base64');
     if (bundle.objects.length > 0) {
-      logApp.info(`ANGIE - push bundle with ${bundle.objects.length} objects`);
+      logApp.debug(`${logPrefix} push bundle with ${bundle.objects.length} objects`);
       bundleCount += bundle.objects.length;
       await pushToWorkerForConnector(connector.internal_id, {
         type: 'bundle',
@@ -121,7 +121,6 @@ const processCSVforWorkers = async (context: AuthContext, opts: ConsumerOpts) =>
   let totalBundleCount = 0;
   const startDate2 = new Date().getTime();
   while (hasMoreBulk) {
-    logApp.info('ANGIE - download file');
     const stream: SdkStream<Readable> | null | undefined = await downloadFile(opts.fileId) as SdkStream<Readable> | null | undefined;
     if (stream) {
       const lines: string[] = [];
@@ -130,25 +129,22 @@ const processCSVforWorkers = async (context: AuthContext, opts: ConsumerOpts) =>
       try {
         const startDate = new Date().getTime();
         const startingLineNumber = bulkLineCursor;
-        logApp.info(`ANGIE - reading line from ${bulkLineCursor} to ${BULK_LINE_PARSING_NUMBER + bulkLineCursor}`);
+        logApp.debug(`${logPrefix} reading line from ${bulkLineCursor} to ${BULK_LINE_PARSING_NUMBER + bulkLineCursor}`);
         // Need an async interator to prevent blocking
         // eslint-disable-next-line no-restricted-syntax
         for await (const line of rl) {
           if (startingLineNumber <= lineNumber && lineNumber < startingLineNumber + BULK_LINE_PARSING_NUMBER) {
-            // logApp.info(`ANGIE - keeping ${line}`);
             lines.push(line);
             bulkLineCursor += 1;
-          } else {
-            // logApp.info(`ANGIE - skipping ${line}`);
           }
           lineNumber += 1;
         }
         hasMoreBulk = bulkLineCursor < lineNumber;
-        logApp.info(`ANGIE - read lines end on ${new Date().getTime() - startDate} ms; hasMoreBulk=${hasMoreBulk}; lineNumber=${lineNumber}`);
+        logApp.debug(`${logPrefix} read lines end on ${new Date().getTime() - startDate} ms; hasMoreBulk=${hasMoreBulk}; lineNumber=${lineNumber}`);
 
         if (lines.length > 0) {
           try {
-            logApp.info(`ANGIE - generating bundle with ${lines.length} csv lines`);
+            logApp.debug(`${logPrefix} generating bundle with ${lines.length} csv lines`);
             const generatedBundleCount = await generateBundlesAndSendToWorkers(context, lines, opts);
             totalBundleCount += generatedBundleCount;
           } catch (error: any) {
