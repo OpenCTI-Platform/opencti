@@ -1,11 +1,13 @@
 import useBuildListOutcome from './stix_core_objects/useBuildListOutcome';
 import useDonutOutcome from './stix_relationships/useDonutOutcome';
-import { fetchQuery } from '../../../relay/environment';
+import { fetchQuery, MESSAGING$ } from '../../../relay/environment';
 import { TemplateAndUtilsContainerQuery$data } from './__generated__/TemplateAndUtilsContainerQuery.graphql';
 import templateAndUtilsContainerQuery from './TemplateAndUtilsContainerQuery';
 import useBuildAttributesOutcome from './stix_core_objects/useBuildAttributesOutcome';
+import { useFormatter } from '../../../components/i18n';
 
 const useContentFromTemplate = () => {
+  const { t_i18n } = useFormatter();
   const { buildDonutOutcome } = useDonutOutcome();
   const { buildListOutcome } = useBuildListOutcome();
   const { buildAttributesOutcome } = useBuildAttributesOutcome();
@@ -40,12 +42,18 @@ const useContentFromTemplate = () => {
     for (const templateWidget of template_widgets) {
       let outcome = '';
       const { widget } = templateWidget;
-      if (widget.type === 'list') {
-        // eslint-disable-next-line no-await-in-loop
-        outcome = await buildListOutcome(containerId, widget, maxContentMarkings);
-      } else if (widget.type === 'donut') {
-        // eslint-disable-next-line no-await-in-loop
-        outcome = await buildDonutOutcome(containerId, widget, maxContentMarkings);
+      try {
+        if (widget.type === 'list') {
+          // eslint-disable-next-line no-await-in-loop
+          outcome = await buildListOutcome(containerId, widget, maxContentMarkings);
+        } else if (widget.type === 'donut') {
+          // eslint-disable-next-line no-await-in-loop
+          outcome = await buildDonutOutcome(containerId, widget, maxContentMarkings);
+        }
+      } catch (error) {
+        const errorMessage = `${t_i18n('An error occured while retrieving data for this widget:')}${error ?? ''}`;
+        outcome = errorMessage;
+        MESSAGING$.notifyError('One of the widgets has not been resolved.');
       }
       content = content.replace(`$${templateWidget.name}`, outcome);
     }
