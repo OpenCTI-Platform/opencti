@@ -19,7 +19,7 @@ const CreateRelationshipButtonComponent: FunctionComponent<CreateRelationshipBut
   return (
     <Security needs={[KNOWLEDGE_KNUPDATE]}>
       <StixCoreRelationshipCreationFromControlledDial
-        id={id}
+        entityId={id}
         defaultStartTime={startTime}
         defaultStopTime={stopTime}
       />
