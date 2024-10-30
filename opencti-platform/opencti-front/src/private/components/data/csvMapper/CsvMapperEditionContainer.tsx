@@ -73,7 +73,6 @@ const CsvMapperEditionContainer: FunctionComponent<CsvMapperEditionProps> = ({
     csvMapperEditionContainerFragment,
     data.csvMapper,
   );
-  console.log('csvMapper', csvMapper?.representations);
   if (!csvMapper) {
     return <Loader variant={LoaderVariant.inline}/>;
   }

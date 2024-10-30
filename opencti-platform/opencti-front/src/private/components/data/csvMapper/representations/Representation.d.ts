@@ -11,7 +11,7 @@ export interface CsvMapperRepresentationFormData {
   id: string
   type: string
   target_type?: string
-  column_based?: CsvMapperColumnBasedFormData
+  column_based?: CsvMapperColumnBasedFormData | null
   attributes: {
     [key: string]: CsvMapperRepresentationAttributeFormData
   }
@@ -19,7 +19,7 @@ export interface CsvMapperRepresentationFormData {
 
 export interface CsvMapperColumnBasedFormData {
   enabled: boolean
-  column_reference?: string
-  operator?: CsvMapperOperator
-  value?: string
+  column_reference?: string | null
+  operator?: CsvMapperOperator | null
+  value?: string | null
 }
