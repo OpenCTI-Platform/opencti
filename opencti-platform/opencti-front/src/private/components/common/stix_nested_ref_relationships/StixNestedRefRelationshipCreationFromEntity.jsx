@@ -21,7 +21,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import { itemColor } from '../../../../utils/Colors';
-import { dayStartDate, parse } from '../../../../utils/Time';
+import { minutesBefore, now, parse } from '../../../../utils/Time';
 import ItemIcon from '../../../../components/ItemIcon';
 import SelectField from '../../../../components/fields/SelectField';
 import StixNestedRefRelationCreationFromEntityLines, { stixNestedRefRelationshipCreationFromEntityLinesQuery } from './StixNestedRefRelationshipCreationFromEntityLines';
@@ -701,10 +701,12 @@ const StixNestedRefRelationshipCreationFromEntity = ({
     // nested objects with different entity type will soon be implemented
     if (!isSameEntityType) relationshipTypes = [];
     const defaultRelationshipType = R.head(relationshipTypes);
+
+    const defaultTime = now();
     const initialValues = {
       relationship_type: defaultRelationshipType,
-      start_time: dayStartDate(),
-      stop_time: dayStartDate(),
+      start_time: minutesBefore(1, defaultTime),
+      stop_time: defaultTime,
     };
 
     return (
