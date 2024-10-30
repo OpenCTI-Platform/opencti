@@ -50,7 +50,7 @@ import StixNestedRefRelationshipCreationFromKnowledgeGraph from '../../common/st
 import CommitMessage from '../../common/form/CommitMessage';
 import inject18n from '../../../../components/i18n';
 import StixCoreRelationshipCreation from '../../common/stix_core_relationships/StixCoreRelationshipCreation';
-import { dateFormat } from '../../../../utils/Time';
+import { dateFormat, minutesBefore, now } from '../../../../utils/Time';
 import { truncate } from '../../../../utils/String';
 import StixCoreRelationshipEdition from '../../common/stix_core_relationships/StixCoreRelationshipEdition';
 import StixDomainObjectEdition from '../../common/stix_domain_objects/StixDomainObjectEdition';
@@ -487,6 +487,7 @@ class ReportKnowledgeGraphBar extends Component {
         : [selectedNodes[0]];
     }
     const stixCoreObjectOrRelationshipId = (selectedNodes[0]?.id ?? null) || (selectedLinks[0]?.id ?? null);
+    const defaultTime = now();
     return (
       <UserContext.Consumer>
         {({ bannerSettings }) => (
@@ -1055,10 +1056,10 @@ class ReportKnowledgeGraphBar extends Component {
                         fromObjects={relationFromObjects}
                         toObjects={relationToObjects}
                         startTime={
-                          lastLinkFirstSeen || dateFormat(report.published)
+                          lastLinkFirstSeen || minutesBefore(1, defaultTime)
                         }
                         stopTime={
-                          lastLinkLastSeen || dateFormat(report.published)
+                          lastLinkLastSeen || defaultTime
                         }
                         confidence={report.confidence}
                         handleClose={this.handleCloseCreateRelationship.bind(

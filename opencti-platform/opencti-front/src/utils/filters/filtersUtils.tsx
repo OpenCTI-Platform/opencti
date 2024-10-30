@@ -2,6 +2,7 @@ import * as R from 'ramda';
 import { v4 as uuid } from 'uuid';
 import { OptionValue } from '@components/common/lists/FilterAutocomplete';
 import React from 'react';
+import { subDays } from 'date-fns';
 import { useFormatter } from '../../components/i18n';
 import type { FilterGroup as GqlFilterGroup } from './__generated__/useSearchEntitiesStixCoreObjectsSearchQuery.graphql';
 import useAuth, { FilterDefinition } from '../hooks/useAuth';
@@ -322,7 +323,7 @@ export const useBuildFiltersForTemplateWidgets = () => {
 };
 
 // return the i18n label corresponding to a value
-export const filterValue = (filterKey: string, value?: string | null, filterType?: string) => {
+export const filterValue = (filterKey: string, value?: string | null, filterType?: string, filterOperator?: string) => {
   const { t_i18n, nsd } = useFormatter();
   if (filterKey === 'regardingOf') {
     return JSON.stringify(value);
@@ -346,6 +347,9 @@ export const filterValue = (filterKey: string, value?: string | null, filterType
       );
   }
   if (filterType === 'date') {
+    if (filterOperator && value && ['lte', 'gt'].includes(filterOperator)) {
+      return nsd(subDays(value, 1));
+    }
     return nsd(value);
   }
   if (filterKey === 'relationship_type' || filterKey === 'type') {
