@@ -170,7 +170,7 @@ export const controlUserConfidenceAgainstElement = <T extends ObjectWithConfiden
     if (noThrow) {
       return false;
     }
-    throw FunctionalError('User effective max confidence level is insufficient to update this element', { user_id: user.id, element_id: existingElement.id });
+    throw FunctionalError('User effective max confidence level is insufficient to update this element', { user_id: user.id, element_id: existingElement.id, doc_code: 'INSUFFICIENT_CONFIDENCE_LEVEL' });
   }
 
   return true; // ok

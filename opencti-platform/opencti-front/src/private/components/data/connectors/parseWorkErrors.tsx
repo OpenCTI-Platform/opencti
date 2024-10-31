@@ -89,6 +89,7 @@ export interface FullParsedWorkMessage {
   level: ErrorLevel,
   parsedError: {
     category: string,
+    doc_code: string,
     message: string,
     entity: ResolvedEntity,
   }
@@ -103,14 +104,26 @@ export interface PartialParsedWorkMessage {
 
 export type ParsedWorkMessage = FullParsedWorkMessage | PartialParsedWorkMessage;
 
-const criticalErrorTypes = [
+const criticalDocCodes = [
+  // Doc_code
+  'ELEMENT_ID_COLLISION',
+  // Name
   'MULTIPLE_REFERENCES_ERROR',
   'UNSUPPORTED_ERROR',
   'DATABASE_ERROR',
   'INTERNAL_SERVER_ERROR',
 ];
 
-const warningErrorTypes = [
+const warningDocCodes = [
+  // Doc_code
+  'INCORRECT_INDICATOR_FORMAT',
+  'INCORRECT_OBSERVABLE_FORMAT',
+  'RESTRICTED_ELEMENT',
+  'MULTIPLE_REFERENCES_FOUND',
+  'SELF_REFERENCING_RELATION',
+  'INSUFFICIENT_CONFIDENCE_LEVEL',
+  'ELEMENT_NOT_FOUND',
+  // Name
   'VALIDATION_ERROR',
   'MULTIPLE_ENTITIES_ERROR',
   'ACL_ERROR',
@@ -121,9 +134,9 @@ const warningErrorTypes = [
 const parseWorkErrors = async (errorsList: WorkMessages): Promise<ParsedWorkMessage[]> => {
   const ids: string[] = [];
 
-  const getLevel = (type: string): ErrorLevel => {
-    if (criticalErrorTypes.includes(type)) return 'Critical';
-    if (warningErrorTypes.includes(type)) return 'Warning';
+  const getLevel = (code: string): ErrorLevel => {
+    if (criticalDocCodes.includes(code)) return 'Critical';
+    if (warningDocCodes.includes(code)) return 'Warning';
     return 'Unclassified';
   };
 
@@ -144,6 +157,7 @@ const parseWorkErrors = async (errorsList: WorkMessages): Promise<ParsedWorkMess
 
       const parsedError = {
         category: message.name,
+        doc_code: message.doc_code ?? message.name,
         message: message.error_message,
         entity: {
           standard_id: entityId,
@@ -159,7 +173,7 @@ const parseWorkErrors = async (errorsList: WorkMessages): Promise<ParsedWorkMess
 
       return {
         isParsed: true,
-        level: getLevel(message.name ?? ''),
+        level: getLevel(message.doc_code ?? message.name ?? ''),
         parsedError,
         rawError: error,
       };

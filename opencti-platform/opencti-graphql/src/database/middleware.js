@@ -758,7 +758,7 @@ const inputResolveRefs = async (context, user, input, type, entitySetting) => {
         return { [k]: isMultiple ? val : R.head(val) };
       }
       if (!isMultiple) {
-        throw UnsupportedError('Input resolve refs expect single value', { key: k, values: val });
+        throw UnsupportedError('Input resolve refs expect single value', { key: k, values: val, doc_code: 'ELEMENT_ID_COLLISION' });
       }
       return { [k]: val };
     });
@@ -766,7 +766,7 @@ const inputResolveRefs = async (context, user, input, type, entitySetting) => {
     // In case of missing from / to, fail directly
     const expectedUnresolvedIds = unresolvedIds.filter((u) => u === input.fromId || u === input.toId);
     if (expectedUnresolvedIds.length > 0) {
-      throw MissingReferenceError({ unresolvedIds: expectedUnresolvedIds, ...extendedErrors({ input }) });
+      throw MissingReferenceError({ unresolvedIds: expectedUnresolvedIds, doc_code: 'ELEMENT_NOT_FOUND', ...extendedErrors({ input }) });
     }
     // In case of missing reference NOT from or to, we reject twice before accepting
     // TODO this retry must be removed in favor of reworking the workers synchronization
@@ -776,7 +776,7 @@ const inputResolveRefs = async (context, user, input, type, entitySetting) => {
     const defaultValues = attributesConfiguration?.map((attr) => attr.default_values).flat() ?? [];
     const expectedUnresolvedIdsNotDefault = optionalRefsUnresolvedIds.filter((id) => !defaultValues.includes(id));
     if (isNotEmptyField(retryNumber) && expectedUnresolvedIdsNotDefault.length > 0 && retryNumber <= 2) {
-      throw MissingReferenceError({ unresolvedIds: expectedUnresolvedIdsNotDefault, ...extendedErrors({ input }) });
+      throw MissingReferenceError({ unresolvedIds: expectedUnresolvedIdsNotDefault, doc_code: 'ELEMENT_NOT_FOUND', ...extendedErrors({ input }) });
     }
     const complete = { ...cleanedInput, entity_type: type };
     const inputResolved = R.mergeRight(complete, R.mergeAll(resolved));
@@ -803,7 +803,7 @@ const inputResolveRefs = async (context, user, input, type, entitySetting) => {
       const inputMarkingIds = inputResolved[INPUT_MARKINGS].map((marking) => marking.internal_id);
       const userMarkingIds = user.allowed_marking.map((marking) => marking.internal_id);
       if (!inputMarkingIds.every((v) => userMarkingIds.includes(v))) {
-        throw MissingReferenceError({ reason: 'User trying to create the data has missing markings' });
+        throw MissingReferenceError({ reason: 'User trying to create the data has missing markings', doc_code: 'ELEMENT_NOT_FOUND' });
       }
     }
     // Check if available created_by is a correct identity
@@ -2719,7 +2719,7 @@ export const createRelationRaw = async (context, user, rawInput, opts = {}) => {
   // Pre-check before inputs resolution
   if (fromId === toId) {
     /* v8 ignore next */
-    const errorData = { from: input.fromId, relationshipType };
+    const errorData = { from: input.fromId, relationshipType, doc_code: 'SELF_REFERENCING_RELATION' };
     throw UnsupportedError('Relation cant be created with the same source and target', errorData);
   }
   const entitySetting = await getEntitySettingFromCache(context, relationshipType);
@@ -2750,7 +2750,7 @@ export const createRelationRaw = async (context, user, rawInput, opts = {}) => {
       // In this case we need to revoke the fromId stixId of the relation
       // TODO Handle RELATION_REVOKED_BY special case
     }
-    const errorData = { from: input.fromId, to: input.toId, relationshipType };
+    const errorData = { from: input.fromId, to: input.toId, relationshipType, doc_code: 'SELF_REFERENCING_RELATION' };
     throw UnsupportedError('Relation cant be created with the same source and target', errorData);
   }
   // It's not possible to create a single ref relationship if one already exists
@@ -2971,13 +2971,13 @@ const createEntityRaw = async (context, user, rawInput, type, opts = {}) => {
       const entityIds = R.map((i) => i.standard_id, filteredEntities);
       // If nothing accessible for this user, throw ForbiddenAccess
       if (filteredEntities.length === 0) {
-        throw UnsupportedError('Restricted entity already exists');
+        throw UnsupportedError('Restricted entity already exists', { doc_code: 'RESTRICTED_ELEMENT' });
       }
       // If inferred entity
       if (fromRule) {
         // Entity reference must be uniq to be upserted
         if (filteredEntities.length > 1) {
-          throw UnsupportedError('Cant upsert inferred entity. Too many entities resolved', { input, entityIds });
+          throw UnsupportedError('Cant upsert inferred entity. Too many entities resolved', { input, entityIds, doc_code: 'MULTIPLE_REFERENCES_FOUND' });
         }
         // If upsert come from a rule, do a specific upsert.
         return await upsertEntityRule(context, user, R.head(filteredEntities), input, { ...opts, locks: participantIds });
