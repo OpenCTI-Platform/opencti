@@ -1,9 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { prepareTaxiiGetParam, processTaxiiResponse, type TaxiiResponseData } from '../../../src/manager/ingestionManager';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
-import { addIngestion as addTaxiiIngestion, findById as findTaxiiIngestionById } from '../../../src/modules/ingestion/ingestion-taxii-domain';
+import { addIngestion as addTaxiiIngestion, findById as findTaxiiIngestionById, patchTaxiiIngestion } from '../../../src/modules/ingestion/ingestion-taxii-domain';
 import { IngestionAuthType, type IngestionTaxiiAddInput, TaxiiVersion } from '../../../src/generated/graphql';
 import type { StixReport } from '../../../src/types/stix-sdo';
+import { now } from '../../../src/utils/format';
 
 describe('Verify taxii ingestion', () => {
   it('should Taxii server response with no pagination (no next, no more, no x-taxii-date-added-last)', async () => {
@@ -215,5 +216,28 @@ describe('Verify taxii ingestion', () => {
     const result = await findTaxiiIngestionById(testContext, ADMIN_USER, ingestionPaginatedWithStartDate.id);
     expect(result.current_state_cursor).toBeUndefined(); // previous value
     expect(result.added_after_start).toBe('2023-01-01T20:35:44.000Z'); // previous value
+  });
+});
+
+describe('Verify taxii ingestion - patch part', () => {
+  it('should Taxii server response next as number be transform', async () => {
+    // 1. Create ingestion in opencti
+    const input : IngestionTaxiiAddInput = {
+      authentication_type: IngestionAuthType.None,
+      collection: 'testcollection',
+      ingestion_running: true,
+      name: 'taxii ingestion for patch test',
+      uri: 'http://test.invalid',
+      version: TaxiiVersion.V21,
+    };
+    const ingestion = await addTaxiiIngestion(testContext, ADMIN_USER, input);
+    expect(ingestion.id).toBeDefined();
+    expect(ingestion.internal_id).toBeDefined();
+
+    const state = { current_state_cursor: 1234, last_execution_date: now() };
+    // @ts-expect-error it's what we want to test: number instead of string. Not sure how it happens with typescript ...
+    const result = await patchTaxiiIngestion(testContext, ADMIN_USER, ingestion.id, state);
+    expect(result.id).toBeDefined();
+    // should not throw exception "Unknown Error: Attribute must be a string"
   });
 });
