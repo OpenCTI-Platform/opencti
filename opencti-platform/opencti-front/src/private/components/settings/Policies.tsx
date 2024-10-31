@@ -38,7 +38,6 @@ import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
 import ItemBoolean from '../../../components/ItemBoolean';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
-import useSensitiveModifications from '../../../utils/hooks/useSensitiveModifications';
 import Transition from '../../../components/Transition';
 import type { Theme } from '../../../components/Theme';
 
@@ -127,7 +126,6 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
   queryRef,
 }) => {
   const isEnterpriseEdition = useEnterpriseEdition();
-  const { isSensitiveModificationEnabled, isAllowed } = useSensitiveModifications();
   const [openPlatformOrganizationChanges, setOpenPlatformOrganizationChanges] = useState<boolean>(false);
 
   const data = usePreloadedQuery(policiesQuery, queryRef);
@@ -198,6 +196,7 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                 <Grid container={true} spacing={3}>
                   <Grid item xs={6}>
                     <DangerZoneBlock
+                      type={'platform_organization'}
                       title={(
                         <>
                           {t_i18n('Platform main organization')} <EEChip />
@@ -213,7 +212,7 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                           <EETooltip>
                             <ObjectOrganizationField
                               name="platform_organization"
-                              disabled={disabled || !isEnterpriseEdition || (isSensitiveModificationEnabled && !isAllowed)}
+                              disabled={disabled || !isEnterpriseEdition}
                               label={'Platform organization'}
                               onChange={() => setOpenPlatformOrganizationChanges(true)}
                               style={{ width: '100%', marginTop: 20 }}

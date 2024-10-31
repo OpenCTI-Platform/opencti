@@ -87,7 +87,7 @@ const Role = ({
       .filter((n) => n !== null && n !== undefined);
   };
   const role = useFragment<Role_role$key>(roleFragment, roleData);
-  const { isAllowed, isSensitive } = useSensitiveModifications(role.standard_id);
+  const { isAllowed, isSensitive } = useSensitiveModifications('roles', role.standard_id);
   const queryRef = useQueryLoading<RoleEditionCapabilitiesLinesSearchQuery>(
     roleEditionCapabilitiesLinesSearch,
   );
@@ -103,7 +103,7 @@ const Role = ({
           {role.name}
         </Typography>
         <div className={classes.popover}>
-          <RolePopover roleId={role.id}disabled={!isAllowed} isSensitive={isSensitive} />
+          <RolePopover roleId={role.id} disabled={!isAllowed && isSensitive} isSensitive={isSensitive} />
         </div>
         <div className="clearfix"/>
       </div>

@@ -5,26 +5,27 @@ import DangerZoneChip from '@components/common/danger_zone/DangerZoneChip';
 import type { Theme } from '../../../../components/Theme';
 import { hexToRGB } from '../../../../utils/Colors';
 import { useFormatter } from '../../../../components/i18n';
-import useSensitiveModifications from '../../../../utils/hooks/useSensitiveModifications';
+import useSensitiveModifications, { SensitiveConfigType } from '../../../../utils/hooks/useSensitiveModifications';
 
 interface DangerZoneBlockProps {
   title?: ReactNode
-  component?: ((props: { disabled?: boolean, isSensitiveModificationEnabled?: boolean, style?: React.CSSProperties }) => ReactElement) | ReactNode
-  children?: ((props: { disabled?: boolean, isSensitiveModificationEnabled?: boolean, style?: React.CSSProperties }) => ReactElement) | ReactNode
+  component?: ((props: { disabled?: boolean, style?: React.CSSProperties }) => ReactElement) | ReactNode
+  children?: ((props: { disabled?: boolean, style?: React.CSSProperties }) => ReactElement) | ReactNode
   sx?: Record<string, React.CSSProperties>
+  type?: SensitiveConfigType
 }
 
-const DangerZoneBlock: FunctionComponent<DangerZoneBlockProps> = ({ title, component, children, sx }) => {
+const DangerZoneBlock: FunctionComponent<DangerZoneBlockProps> = ({ title, component, children, sx, type }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
 
   const {
-    isSensitiveModificationEnabled,
+    isSensitive,
     isAllowed,
-  } = useSensitiveModifications();
+  } = useSensitiveModifications(type);
 
   let currentTitle = title;
-  if (isSensitiveModificationEnabled) {
+  if (isSensitive) {
     currentTitle = (
       <>
         {title}<DangerZoneChip style={{ marginTop: 0 }} />
@@ -44,10 +45,9 @@ const DangerZoneBlock: FunctionComponent<DangerZoneBlockProps> = ({ title, compo
             {currentTitle}
           </Typography>
           {component({
-            disabled: isSensitiveModificationEnabled && !isAllowed,
-            isSensitiveModificationEnabled,
+            disabled: isSensitive && !isAllowed,
             style: {
-              borderColor: isSensitiveModificationEnabled ? hexToRGB(theme.palette.dangerZone.main, 0.5) : undefined,
+              borderColor: isSensitive ? hexToRGB(theme.palette.dangerZone.main, 0.5) : undefined,
             },
           })}
         </>
@@ -63,10 +63,9 @@ const DangerZoneBlock: FunctionComponent<DangerZoneBlockProps> = ({ title, compo
           {currentTitle}
         </Typography>
         {React.cloneElement(component as ReactElement, {
-          disabled: isSensitiveModificationEnabled && !isAllowed,
-          isSensitiveModificationEnabled,
+          disabled: isSensitive && !isAllowed,
           style: {
-            borderColor: isSensitiveModificationEnabled ? hexToRGB(theme.palette.dangerZone.main, 0.5) : undefined,
+            borderColor: isSensitive ? hexToRGB(theme.palette.dangerZone.main, 0.5) : undefined,
           },
         })}
       </>
@@ -75,12 +74,12 @@ const DangerZoneBlock: FunctionComponent<DangerZoneBlockProps> = ({ title, compo
 
   let child;
   if (typeof children === 'function') {
-    child = children({ disabled: !isAllowed, isSensitiveModificationEnabled });
+    child = children({ disabled: !isAllowed });
   } else {
-    child = React.cloneElement(children as ReactElement, { disabled: !isAllowed, isSensitiveModificationEnabled });
+    child = React.cloneElement(children as ReactElement, { disabled: !isAllowed, isSensitive });
   }
 
-  if (!isSensitiveModificationEnabled) {
+  if (!isSensitive) {
     return child;
   }
 

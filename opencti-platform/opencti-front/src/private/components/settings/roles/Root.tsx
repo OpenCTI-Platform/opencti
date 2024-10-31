@@ -37,7 +37,7 @@ const RootRoleComponent: FunctionComponent<RootRoleComponentProps> = ({ queryRef
   const { role } = data;
   const { t_i18n } = useFormatter();
 
-  const { isSensitive } = useSensitiveModifications(role?.standard_id);
+  const { isSensitive } = useSensitiveModifications('roles', role?.standard_id);
 
   const groupsQueryRef = useQueryLoading<GroupsSearchQuery>(
     groupsSearchQuery,

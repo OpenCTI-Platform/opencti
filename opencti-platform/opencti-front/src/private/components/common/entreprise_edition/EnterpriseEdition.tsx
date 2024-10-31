@@ -25,7 +25,7 @@ import type { Theme } from '../../../../components/Theme';
 const EnterpriseEdition = ({ message, feature }: { message?: string, feature?: string }) => {
   const theme = useTheme<Theme>();
 
-  const { isSensitiveModificationEnabled, isAllowed } = useSensitiveModifications();
+  const { isSensitive, isAllowed } = useSensitiveModifications('ce_ee_toggle');
 
   const { t_i18n } = useFormatter();
   return (
@@ -38,13 +38,13 @@ const EnterpriseEdition = ({ message, feature }: { message?: string, feature?: s
           position: 'relative',
           width: '100%',
           marginBottom: 20,
-          borderColor: isSensitiveModificationEnabled ? theme.palette.dangerZone.main : theme.palette.ee.main,
+          borderColor: isSensitive ? theme.palette.dangerZone.main : theme.palette.ee.main,
           color: theme.palette.text?.primary,
         }}
       >
         <AlertTitle style={{ marginBottom: 0, fontWeight: 400 }}>
           {t_i18n(message ?? 'You need to activate OpenCTI enterprise edition to use this feature.')}
-          <EnterpriseEditionButton disabled={!isAllowed} feature={feature} />
+          <EnterpriseEditionButton disabled={!isAllowed && isSensitive} feature={feature} />
         </AlertTitle>
       </Alert>
     </>

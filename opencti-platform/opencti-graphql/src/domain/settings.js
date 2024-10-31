@@ -2,21 +2,22 @@ import { getHeapStatistics } from 'node:v8';
 import nconf from 'nconf';
 import * as R from 'ramda';
 import { createEntity, listAllThings, loadEntity, patchAttribute, updateAttribute } from '../database/middleware';
-import conf, { ACCOUNT_STATUSES, BUS_TOPICS, DISABLED_FEATURE_FLAGS, ENABLED_DEMO_MODE, getBaseUrl, PLATFORM_VERSION } from '../config/conf';
+import conf, { ACCOUNT_STATUSES, booleanConf, BUS_TOPICS, DISABLED_FEATURE_FLAGS, ENABLED_DEMO_MODE, getBaseUrl, PLATFORM_VERSION } from '../config/conf';
 import { delEditContext, getClusterInstances, getRedisVersion, notify, setEditContext } from '../database/redis';
 import { isRuntimeSortEnable, searchEngineVersion } from '../database/engine';
 import { getRabbitMQVersion } from '../database/rabbitmq';
-import { ENTITY_TYPE_GROUP, ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
+import { ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE, ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { isUserHasCapability, SETTINGS_SET_ACCESSES, SYSTEM_USER } from '../utils/access';
 import { storeLoadById } from '../database/middleware-loader';
 import { INTERNAL_SECURITY_PROVIDER, PROVIDERS } from '../config/providers';
 import { publishUserAction } from '../listener/UserActionListener';
-import { getEntityFromCache } from '../database/cache';
+import { getEntitiesListFromCache, getEntityFromCache } from '../database/cache';
 import { now } from '../utils/format';
-import { generateInternalId } from '../schema/identifier';
+import { generateInternalId, generateStandardId } from '../schema/identifier';
 import { UnsupportedError } from '../config/errors';
 import { markAllSessionsForRefresh } from '../database/session';
 import { isEmptyField, isNotEmptyField } from '../database/utils';
+import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 
 export const getMemoryStatistics = () => {
   return { ...process.memoryUsage(), ...getHeapStatistics() };
@@ -62,6 +63,57 @@ const getAIEndpointType = () => {
   }
   return 'Custom';
 };
+
+const getProtectedMarkingsIdsByNames = async (context, user, names) => {
+  if (!names || names.length === 0) {
+    return [];
+  }
+  const entities = await getEntitiesListFromCache(context, user, ENTITY_TYPE_MARKING_DEFINITION);
+  const filteredEntities = entities.filter((entity) => names.includes(entity.definition));
+  return filteredEntities.map((entity) => entity.standard_id);
+};
+
+const getStandardIdsByNames = (entityType, names) => {
+  if (!names || names.length === 0) {
+    return [];
+  }
+  return names.map((name) => generateStandardId(entityType, { name }));
+};
+
+export const getProtectedSensitiveConfig = async (context, user) => {
+  return {
+    enabled: booleanConf('protected_sensitive_config:enabled', false),
+    markings: {
+      enabled: booleanConf('protected_sensitive_config:markings:enabled', false),
+      protected_ids: await getProtectedMarkingsIdsByNames(context, user, nconf.get('protected_sensitive_config:markings:protected_definitions') ?? []),
+    },
+    groups: {
+      enabled: booleanConf('protected_sensitive_config:groups:enabled', false),
+      protected_ids: getStandardIdsByNames(ENTITY_TYPE_GROUP, nconf.get('protected_sensitive_config:groups:protected_names') ?? []),
+    },
+    roles: {
+      enabled: booleanConf('protected_sensitive_config:roles:enabled', false),
+      protected_ids: getStandardIdsByNames(ENTITY_TYPE_ROLE, nconf.get('protected_sensitive_config:roles:protected_names') ?? []),
+    },
+    rules: {
+      enabled: booleanConf('protected_sensitive_config:rules:enabled', false),
+      protected_ids: [],
+    },
+    ce_ee_toggle: {
+      enabled: booleanConf('protected_sensitive_config:ce_ee_toggle:enabled', false),
+      protected_ids: [],
+    },
+    file_indexing: {
+      enabled: booleanConf('protected_sensitive_config:file_indexing:enabled', false),
+      protected_ids: [],
+    },
+    platform_organization: {
+      enabled: booleanConf('protected_sensitive_config:platform_organization:enabled', false),
+      protected_ids: [],
+    }
+  };
+};
+
 export const getSettings = async (context) => {
   const platformSettings = await loadEntity(context, SYSTEM_USER, [ENTITY_TYPE_SETTINGS]);
   const clusterInfo = await getClusterInformation();

@@ -266,6 +266,7 @@ const FileIndexingMonitoringComponent: FunctionComponent<FileIndexingMonitoringC
         </Grid>
         <Grid item xs={4}>
           <DangerZoneBlock
+            type={'file_indexing'}
             title={t_i18n('Control')}
             component={({ disabled, style }) => (
               <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined" style={style}>

@@ -52,7 +52,7 @@ const GroupLineComponent: React.FC<GroupLineProps> = (props) => {
 
   const { fd, t_i18n } = useFormatter();
   const { dataColumns, node } = props;
-  const { isSensitive } = useSensitiveModifications(node.standard_id);
+  const { isSensitive } = useSensitiveModifications('groups', node.standard_id);
 
   return (
     <ListItem

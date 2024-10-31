@@ -243,11 +243,17 @@ const createBasicRolesAndCapabilities = async (context) => {
   await createCapabilities(context, CAPABILITIES);
 
   // Create Default(s) Role and Group
-  const defaultRole = await addRole(context, SYSTEM_USER, {
+  let defaultRoleInput = await addRole(context, SYSTEM_USER, {
     name: ROLE_DEFAULT,
     description: 'Default role associated to the default group',
     capabilities: [KNOWLEDGE_CAPABILITY],
   });
+  if (isFeatureEnabled((PROTECT_SENSITIVE_CHANGES_FF))) {
+    defaultRoleInput = {
+      ...defaultRoleInput,
+      can_manage_sensitive_config: false
+    };
+  }
 
   const defaultGroup = await addGroup(context, SYSTEM_USER, {
     name: GROUP_DEFAULT,
@@ -255,7 +261,7 @@ const createBasicRolesAndCapabilities = async (context) => {
     default_assignation: true,
   });
   const defaultRoleRelationInput = {
-    toId: defaultRole.id,
+    toId: defaultRoleInput.id,
     relationship_type: 'has-role',
   };
   await groupAddRelation(context, SYSTEM_USER, defaultGroup.id, defaultRoleRelationInput);
