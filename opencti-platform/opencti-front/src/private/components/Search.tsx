@@ -278,6 +278,7 @@ const Search = () => {
           storageKey={LOCAL_STORAGE_KEY}
           initialValues={initialValues}
           toolbarFilters={contextFilters}
+          globalSearch={searchTerm}
           lineFragment={searchLineFragment}
           preloadedPaginationProps={preloadedPaginationOptions}
           exportContext={{ entity_type: 'Stix-Core-Object' }}
