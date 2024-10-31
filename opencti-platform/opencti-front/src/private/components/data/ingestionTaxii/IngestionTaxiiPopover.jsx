@@ -35,6 +35,14 @@ const ingestionTaxiiPopoverDeletionMutation = graphql`
   }
 `;
 
+const ingestionTaxiiPopoverResetStateMutation = graphql`
+    mutation IngestionTaxiiPopoverResetStateMutation($id: ID!) {
+        ingestionTaxiiResetState(id: $id) {
+            id
+        }
+    }
+`;
+
 const ingestionTaxiiEditionQuery = graphql`
   query IngestionTaxiiPopoverEditionQuery($id: String!) {
     ingestionTaxii(id: $id) {
@@ -61,6 +69,8 @@ class IngestionTaxiiPopover extends Component {
       starting: false,
       displayStop: false,
       stopping: false,
+      displayResetState: false,
+      resetingState: false,
     };
   }
 
@@ -88,6 +98,15 @@ class IngestionTaxiiPopover extends Component {
 
   handleCloseDelete() {
     this.setState({ displayDelete: false });
+  }
+
+  handleOpenResetState() {
+    this.setState({ displayResetState: true });
+    this.handleClose();
+  }
+
+  handleCloseResetState() {
+    this.setState({ displayResetState: false });
   }
 
   handleOpenStart() {
@@ -126,6 +145,20 @@ class IngestionTaxiiPopover extends Component {
       onCompleted: () => {
         this.setState({ deleting: false });
         this.handleCloseDelete();
+      },
+    });
+  }
+
+  submitResetState() {
+    this.setState({ resetingState: true });
+    commitMutation({
+      mutation: ingestionTaxiiPopoverResetStateMutation,
+      variables: {
+        id: this.props.ingestionTaxiiId,
+      },
+      onCompleted: () => {
+        this.setState({ resetingState: false });
+        this.handleCloseResetState();
       },
     });
   }
@@ -194,6 +227,9 @@ class IngestionTaxiiPopover extends Component {
           <MenuItem onClick={this.handleOpenDelete.bind(this)}>
             {t('Delete')}
           </MenuItem>
+          <MenuItem onClick={this.handleOpenResetState.bind(this)}>
+            {t('Reset state')}
+          </MenuItem>
         </Menu>
         <QueryRenderer
           query={ingestionTaxiiEditionQuery}
@@ -236,6 +272,34 @@ class IngestionTaxiiPopover extends Component {
               disabled={this.state.deleting}
             >
               {t('Delete')}
+            </Button>
+          </DialogActions>
+        </Dialog>
+        <Dialog
+          PaperProps={{ elevation: 1 }}
+          open={this.state.displayResetState}
+          keepMounted={true}
+          TransitionComponent={Transition}
+          onClose={this.handleCloseResetState.bind(this)}
+        >
+          <DialogContent>
+            <DialogContentText>
+              {t('Do you want to reset the state of this TAXII ingester? It will restart ingestion from the beginning.')}
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button
+              onClick={this.handleCloseResetState.bind(this)}
+              disabled={this.state.resetingState}
+            >
+              {t('Cancel')}
+            </Button>
+            <Button
+              color="secondary"
+              onClick={this.submitResetState.bind(this)}
+              disabled={this.state.resetingState}
+            >
+              {t('Reset state')}
             </Button>
           </DialogActions>
         </Dialog>

@@ -8,6 +8,7 @@ import {
   findById,
   findCsvMapperForIngestionById,
   ingestionCsvEditField,
+  ingestionCsvResetState,
   testCsvIngestionMapping
 } from './ingestion-csv-domain';
 
@@ -28,6 +29,9 @@ const ingestionCsvResolvers: Resolvers = {
     },
     ingestionCsvAdd: (_, { input }, context) => {
       return addIngestionCsv(context, context.user, input);
+    },
+    ingestionCsvResetState: (_, { id }, context) => {
+      return ingestionCsvResetState(context, context.user, id);
     },
     ingestionCsvDelete: (_, { id }, context) => {
       return deleteIngestionCsv(context, context.user, id);

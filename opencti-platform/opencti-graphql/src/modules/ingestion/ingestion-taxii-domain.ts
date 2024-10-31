@@ -71,6 +71,7 @@ export const ingestionEditField = async (context: AuthContext, user: AuthUser, i
       verifyIngestionAuthenticationContent(ingestionConfiguration.authentication_type, authenticationValueField.value[0]);
     }
   }
+
   const { element } = await updateAttribute(context, user, ingestionId, ENTITY_TYPE_INGESTION_TAXII, input);
   await registerConnectorForIngestion(context, {
     id: element.id,
@@ -79,6 +80,11 @@ export const ingestionEditField = async (context: AuthContext, user: AuthUser, i
     is_running: element.ingestion_running ?? false,
     connector_user_id: element.user_id
   });
+
+  if (input.some(((editInput) => editInput.key === 'added_after_start'))) {
+    await patchTaxiiIngestion(context, user, ingestionId, { current_state_cursor: undefined });
+  }
+
   await publishUserAction({
     user,
     event_type: 'mutation',
@@ -102,4 +108,18 @@ export const ingestionDelete = async (context: AuthContext, user: AuthUser, inge
     context_data: { id: ingestionId, entity_type: ENTITY_TYPE_INGESTION_TAXII, input: deleted }
   });
   return ingestionId;
+};
+
+export const ingestionTaxiiResetState = async (context: AuthContext, user: AuthUser, ingestionId: string) => {
+  const ingestionUpdated = await patchTaxiiIngestion(context, user, ingestionId, { current_state_cursor: undefined });
+
+  await publishUserAction({
+    user,
+    event_type: 'mutation',
+    event_scope: 'update',
+    event_access: 'administration',
+    message: `reset state of taxii ingestion \`${ingestionUpdated.name}\``,
+    context_data: { id: ingestionId, entity_type: ENTITY_TYPE_INGESTION_TAXII, input: ingestionUpdated }
+  });
+  return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, ingestionUpdated, user);
 };
