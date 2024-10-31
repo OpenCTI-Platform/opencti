@@ -214,7 +214,7 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                           <EETooltip>
                             <ObjectOrganizationField
                               name="platform_organization"
-                              disabled={disabled || !isEnterpriseEdition || (isSensitive && !isAllowed)}
+                              disabled={disabled || !isEnterpriseEdition}
                               label={'Platform organization'}
                               onChange={() => setOpenPlatformOrganizationChanges(true)}
                               style={{ width: '100%', marginTop: 20 }}

@@ -439,14 +439,14 @@ const Settings = () => {
                             title: { position: 'absolute', zIndex: 2, left: 4, top: 9, fontSize: 8 },
                           }}
                         >
-                          {() => (
+                          {({ disabled }) => (
                             <>
                               <Button
                                 size="small"
                                 variant="outlined"
                                 color={isSensitive ? 'dangerZone' : 'primary'}
                                 onClick={() => setOpenEEChanges(true)}
-                                disabled={isSensitive && !isAllowed}
+                                disabled={disabled}
                                 style={isSensitive
                                   ? {
                                     color: isAllowed ? theme.palette.dangerZone.text.primary : theme.palette.dangerZone.text.nullable,
