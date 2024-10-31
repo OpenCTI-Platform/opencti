@@ -16634,7 +16634,7 @@ __metadata:
     react-material-ui-carousel: "npm:3.4.2"
     react-mde: "npm:11.5.0"
     react-otp-input: "npm:3.1.1"
-    react-pdf: "npm:9.0.0"
+    react-pdf: "npm:9.1.1"
     react-rectangle-selection: "npm:1.0.4"
     react-relay: "npm:17.0.0"
     react-relay-network-modern: "npm:6.2.2"
@@ -16942,9 +16942,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pdfjs-dist@npm:4.3.136":
-  version: 4.3.136
-  resolution: "pdfjs-dist@npm:4.3.136"
+"pdfjs-dist@npm:4.4.168":
+  version: 4.4.168
+  resolution: "pdfjs-dist@npm:4.4.168"
   dependencies:
     canvas: "npm:^2.11.2"
     path2d: "npm:^0.2.0"
@@ -16953,7 +16953,7 @@ __metadata:
       optional: true
     path2d:
       optional: true
-  checksum: 10/5511a54a0811c93c6d0517d3bd7ee1df5ffc00577d8b27054956d3775bb9a8a75427ad878c4b13fdda830aabf17e2807667b957e499848bb5968caaba4254d46
+  checksum: 10/4fbff214db0b744259c56e2e334e8145981f08251174f8159f32be311c0d87bba3c9c9722c2ce730d0ac1cdc32d00d5668e64db1f860e6f84fc22787c8f12e69
   languageName: node
   linkType: hard
 
@@ -18147,16 +18147,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-pdf@npm:9.0.0":
-  version: 9.0.0
-  resolution: "react-pdf@npm:9.0.0"
+"react-pdf@npm:9.1.1":
+  version: 9.1.1
+  resolution: "react-pdf@npm:9.1.1"
   dependencies:
     clsx: "npm:^2.0.0"
     dequal: "npm:^2.0.3"
     make-cancellable-promise: "npm:^1.3.1"
     make-event-props: "npm:^1.6.0"
     merge-refs: "npm:^1.3.0"
-    pdfjs-dist: "npm:4.3.136"
+    pdfjs-dist: "npm:4.4.168"
     tiny-invariant: "npm:^1.0.0"
     warning: "npm:^4.0.0"
   peerDependencies:
@@ -18166,7 +18166,7 @@ __metadata:
   peerDependenciesMeta:
     "@types/react":
       optional: true
-  checksum: 10/b0eb3277286c4a8d98fff5ab53dad6838fb8aae89895fc2877e9e897770bcbfe5a30680c3cacbfc2c5e40c0a87e7c9739f4e2c7cff982300a718e9addc2d4d98
+  checksum: 10/9ec41f4be1643092920ab3951af69eabbc2969a59807047bff25c9fa9e3520e41a13e56e26a5696e077ba650399e7e2efb395b4a1ff5626539eaa3265df776de
   languageName: node
   linkType: hard
 
