@@ -7,7 +7,7 @@ import { defaultProvider } from '@aws-sdk/credential-provider-node';
 import { getDefaultRoleAssumerWithWebIdentity } from '@aws-sdk/client-sts';
 import mime from 'mime-types';
 import { CopyObjectCommand } from '@aws-sdk/client-s3';
-import conf, { booleanConf, ENABLED_FILE_INDEX_MANAGER, logApp, logS3Debug } from '../config/conf';
+import conf, { booleanConf, ENABLED_FILE_INDEX_MANAGER, isFeatureEnabled, logApp, logS3Debug } from '../config/conf';
 import { now, sinceNowInMinutes, truncate, utcDate } from '../utils/format';
 import { DatabaseError, FunctionalError, UnsupportedError } from '../config/errors';
 import { createWork, deleteWorkForFile } from '../domain/work';
@@ -396,7 +396,8 @@ export const loadedFilesListing = async (context, user, directory, opts = {}) =>
 };
 
 export const uploadJobImport = async (context, user, fileId, fileMime, entityId, opts = {}) => {
-  const { manual = false, connectorId = null, configuration = null, bypassValidation = false } = opts;
+  const { manual = false, connectorId = null, configuration = null, bypassValidation = false, validationMode = 'draft' } = opts;
+  const validationModeToUse = isFeatureEnabled('DRAFT_WORKSPACE') ? validationMode : 'workbench';
   let connectors = await connectorsForImport(context, user, fileMime, true, !manual);
   if (connectorId) {
     connectors = R.filter((n) => n.id === connectorId, connectors);
@@ -423,7 +424,8 @@ export const uploadJobImport = async (context, user, fileId, fileMime, entityId,
           file_id: fileId,
           file_mime: fileMime,
           file_fetch: `/storage/get/${fileId}`, // Path to get the file
-          entity_id: entityId, // Context of the upload
+          entity_id: entityId, // Context of the upload*
+          validation_mode: validationModeToUse,
           bypass_validation: bypassValidation, // Force no validation
         },
         configuration: connectorConfiguration

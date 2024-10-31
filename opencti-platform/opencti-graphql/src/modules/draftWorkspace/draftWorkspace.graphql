@@ -6,6 +6,7 @@ type DraftWorkspace implements InternalObject & BasicObject {
     parent_types: [String!]!
     # DraftWorkspace
     name: String!
+    entity_id: String
 }
 
 # Ordering
@@ -48,6 +49,7 @@ type Query {
 
 input DraftWorkspaceAddInput {
     name: String!
+    entity_id: String
 }
 
 type Mutation {

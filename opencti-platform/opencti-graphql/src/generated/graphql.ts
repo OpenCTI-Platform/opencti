@@ -6401,6 +6401,7 @@ export type DomainNameAddInput = {
 
 export type DraftWorkspace = BasicObject & InternalObject & {
   __typename?: 'DraftWorkspace';
+  entity_id?: Maybe<Scalars['String']['output']>;
   entity_type: Scalars['String']['output'];
   id: Scalars['ID']['output'];
   name: Scalars['String']['output'];
@@ -6409,6 +6410,7 @@ export type DraftWorkspace = BasicObject & InternalObject & {
 };
 
 export type DraftWorkspaceAddInput = {
+  entity_id?: InputMaybe<Scalars['String']['input']>;
   name: Scalars['String']['input'];
 };
 
@@ -33884,6 +33886,7 @@ export type DomainNameResolvers<ContextType = any, ParentType extends ResolversP
 }>;
 
 export type DraftWorkspaceResolvers<ContextType = any, ParentType extends ResolversParentTypes['DraftWorkspace'] = ResolversParentTypes['DraftWorkspace']> = ResolversObject<{
+  entity_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;

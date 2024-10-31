@@ -19,7 +19,8 @@ const DRAFT_WORKSPACE_DEFINITION: ModuleDefinition<StoreEntityDraftWorkspace, St
   },
   attributes: [
     { ...createdAt },
-    { name: 'name', label: 'Draft name', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true }
+    { name: 'name', label: 'Draft name', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'entity_id', label: 'Related entity', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
   ],
   relations: [],
   relationsRefs: [],

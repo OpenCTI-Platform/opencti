@@ -12014,6 +12014,7 @@ type DraftWorkspace implements InternalObject & BasicObject {
   standard_id: String!
   parent_types: [String!]!
   name: String!
+  entity_id: String
 }
 
 enum DraftWorkspacesOrdering {
@@ -12032,4 +12033,5 @@ type DraftWorkspaceEdge {
 
 input DraftWorkspaceAddInput {
   name: String!
+  entity_id: String
 }
