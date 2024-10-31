@@ -1,86 +1,11 @@
-import { fetchQuery, graphql } from 'react-relay';
-import { parseWorkErrorsQuery$data } from '@components/data/connectors/__generated__/parseWorkErrorsQuery.graphql';
+import { ParseWorkErrorsQuerySearchQuery$data } from '@components/data/connectors/__generated__/ParseWorkErrorsQuerySearchQuery.graphql';
 import JSON5 from 'json5';
+import { parseWorkErrorsQuery } from '@components/data/connectors/ParseWorkErrorsQuery';
 import { WorkMessages } from './ConnectorWorks';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
-import { environment } from '../../../../relay/environment';
+import { fetchQuery } from '../../../../relay/environment';
 
-const parseWorkErrorsQuery = graphql`
-  query parseWorkErrorsQuery($ids: [Any!]!) {
-    stixObjectOrStixRelationships(
-      filters: {
-        mode: or
-        filterGroups: []
-        filters: [
-          {
-            key: "standard_id"
-            values: $ids
-            mode: or
-          }
-        ]
-      }
-    ) {
-      edges {
-        node {
-          ... on StixCoreObject {
-            id
-            standard_id
-            entity_type
-            representative {
-              main
-            }
-          }
-          ... on StixRelationship {
-            id
-            standard_id
-            entity_type
-            representative {
-              main
-            }
-            from {
-              ... on StixCoreObject {
-                id
-                standard_id
-                entity_type
-                representative {
-                  main
-                }
-              }
-              ... on StixRelationship {
-                id
-                standard_id
-                entity_type
-                representative {
-                  main
-                }
-              }
-            }
-            to {
-              ... on StixCoreObject {
-                id
-                standard_id
-                entity_type
-                representative {
-                  main
-                }
-              }
-              ... on StixRelationship {
-                id
-                standard_id
-                entity_type
-                representative {
-                  main
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-`;
-
-export type ResolvedEntity = NonNullable<NonNullable<NonNullable<parseWorkErrorsQuery$data['stixObjectOrStixRelationships']>['edges']>[number]>['node'];
+export type ResolvedEntity = NonNullable<NonNullable<NonNullable<ParseWorkErrorsQuerySearchQuery$data['stixObjectOrStixRelationships']>['edges']>[number]>['node'];
 
 type ErrorLevel = 'Critical' | 'Warning' | 'Unclassified';
 
@@ -173,13 +98,12 @@ const parseWorkErrors = async (errorsList: WorkMessages): Promise<ParsedWorkMess
   });
 
   const entities = await fetchQuery(
-    environment,
     parseWorkErrorsQuery,
     { ids },
   )
     .toPromise()
     .then((data) => {
-      return ((data as parseWorkErrorsQuery$data)?.stixObjectOrStixRelationships?.edges ?? []).map((n) => n?.node);
+      return ((data as ParseWorkErrorsQuerySearchQuery$data)?.stixObjectOrStixRelationships?.edges ?? []).map((n) => n?.node);
     });
 
   parsedList.map((error) => {
