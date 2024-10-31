@@ -258,7 +258,7 @@ const handleAttributes = (
     } else if (refDef || ['from', 'to'].includes(attribute.key)) {
       handleBasedOnAttribute(attribute, input, refDef, otherEntities, refEntities);
     } else {
-      throw UnsupportedError(`Unknown schema for attribute: ${attribute.key}`, { attribute });
+      throw UnsupportedError('Unknown schema for attribute:', { attribute });
     }
   });
 };

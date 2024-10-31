@@ -45,7 +45,6 @@ const initImportCsvConnector = () => {
     const entityId = messageParsed.event.entity_id;
     const entity = entityId ? await storeLoadByIdWithRefs(context, applicantUser, entityId) : undefined;
 
-    logApp.info('ANGIE - consumeQueueCallback', { fileId, entityId, messageParsed });
     let parsedConfiguration;
     try {
       parsedConfiguration = JSON.parse(messageParsed.configuration);
