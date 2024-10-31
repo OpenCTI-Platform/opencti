@@ -9,18 +9,16 @@ import mime from 'mime-types';
 import { CopyObjectCommand } from '@aws-sdk/client-s3';
 import conf, { booleanConf, ENABLED_FILE_INDEX_MANAGER, logApp, logS3Debug } from '../config/conf';
 import { now, sinceNowInMinutes, truncate, utcDate } from '../utils/format';
-import { DatabaseError, ForbiddenAccess, FunctionalError, UnsupportedError } from '../config/errors';
+import { DatabaseError, FunctionalError, UnsupportedError } from '../config/errors';
 import { createWork, deleteWorkForFile } from '../domain/work';
 import { isNotEmptyField } from './utils';
 import { connectorsForImport } from './repository';
 import { pushToConnector } from './rabbitmq';
 import { elDeleteFilesByIds } from './file-search';
 import { isAttachmentProcessorEnabled } from './engine';
-import { deleteDocumentIndex, findById as documentFindById, indexFileToDocument, SUPPORT_STORAGE_PATH } from '../modules/internal/document/document-domain';
+import { deleteDocumentIndex, findById as documentFindById, indexFileToDocument } from '../modules/internal/document/document-domain';
 import { controlUserConfidenceAgainstElement } from '../utils/confidence-level';
 import { enrichWithRemoteCredentials } from '../config/credentials';
-import { isUserHasCapability, SETTINGS_SUPPORT } from '../utils/access';
-import { internalLoadById } from './middleware-loader';
 
 // Minio configuration
 const clientEndpoint = conf.get('minio:endpoint');
@@ -257,16 +255,11 @@ export const getFileSize = async (user, fileS3Path) => {
  * Get file metadata from database, or else from S3.
  */
 export const loadFile = async (context, user, fileS3Path, opts = {}) => {
-  const { dontThrow = false } = opts;
-
-  // Check if user as enough capability to get support packages
-  if (fileS3Path && (fileS3Path.startsWith(SUPPORT_STORAGE_PATH) && !isUserHasCapability(user, SETTINGS_SUPPORT))) {
-    throw ForbiddenAccess('Access to this file is restricted', { file: fileS3Path });
-  }
-
   const fileInformationFromDB = await documentFindById(context, user, fileS3Path);
+  const { dontThrow = false } = opts;
   try {
     let metaData; let name; let size; let lastModified; let lastModifiedSinceMin;
+
     // Try first to get metadata from elastic
     if (fileInformationFromDB) {
       metaData = fileInformationFromDB.metaData;
@@ -283,6 +276,7 @@ export const loadFile = async (context, user, fileS3Path, opts = {}) => {
       size = object.ContentLength;
       lastModified = object.LastModified;
       lastModifiedSinceMin = sinceNowInMinutes(object.LastModified);
+
       if (object.Metadata) {
         metaData = {
           version: object.Metadata.version,
@@ -306,14 +300,6 @@ export const loadFile = async (context, user, fileS3Path, opts = {}) => {
         const mimeTypeResolved = guessMimeType(fileS3Path);
         metaData = { mimetype: mimeTypeResolved };
         name = getFileName(fileS3Path);
-      }
-    }
-
-    // If metadata contains an entity_id, we need to check if the user has real access to this instance
-    if (metaData?.entity_id) {
-      const instance = await internalLoadById(context, user, metaData?.entity_id);
-      if (!instance) {
-        throw ForbiddenAccess('Access to this file is restricted');
       }
     }
 
