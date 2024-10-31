@@ -38,7 +38,6 @@ import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
 import ItemBoolean from '../../../components/ItemBoolean';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
-import useSensitiveModifications from '../../../utils/hooks/useSensitiveModifications';
 import Transition from '../../../components/Transition';
 import type { Theme } from '../../../components/Theme';
 
@@ -127,7 +126,6 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
   queryRef,
 }) => {
   const isEnterpriseEdition = useEnterpriseEdition();
-  const { isSensitive, isAllowed } = useSensitiveModifications('platform_organization');
   const [openPlatformOrganizationChanges, setOpenPlatformOrganizationChanges] = useState<boolean>(false);
 
   const data = usePreloadedQuery(policiesQuery, queryRef);
