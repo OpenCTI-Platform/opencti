@@ -45,6 +45,7 @@ type OCTIDataTableProps = Pick<DataTableProps, 'dataColumns'
   availableRelationFilterTypes?: FilterIconButtonProps['availableRelationFilterTypes']
   availableEntityTypes?: string[]
   availableRelationshipTypes?: string[]
+  globalSearch?: string;
   searchContextFinal?: { entityTypes: string[]; elementId?: string[] }
   exportContext?: { entity_type: string, entity_id?: string }
   additionalHeaderButtons?: ReactNode[]
@@ -64,6 +65,7 @@ const DataTable = (props: OCTIDataTableProps) => {
     storageKey,
     initialValues,
     availableFilterKeys: defaultAvailableFilterKeys,
+    globalSearch,
     searchContextFinal,
     availableEntityTypes,
     availableRelationshipTypes,
@@ -198,7 +200,7 @@ const DataTable = (props: OCTIDataTableProps) => {
             deSelectedElements={deSelectedElements}
             numberOfSelectedElements={numberOfSelectedElements}
             selectAll={selectAll}
-            search={searchTerm}
+            search={searchTerm ?? globalSearch}
             filters={toolbarFilters}
             handleClearSelectedElements={handleClearSelectedElements}
             taskScope={taskScope}
