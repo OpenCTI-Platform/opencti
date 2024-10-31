@@ -181,7 +181,6 @@ describe('CSV-PARSER with dynamic mapping (aka different entity on one file)', (
 
     const { objects } = bundle;
     expect(objects.length).toBe(77); // 76 lines + 1 individual
-    // console.log('ANGIE - objects:', objects);
     const firstUrl: StixURL = objects.filter((o) => o.type === 'url')[0] as StixURL;
     const firstIp: StixIPv4Address = objects.filter((o) => o.type === 'ipv4-addr')[0] as StixIPv4Address;
     const firstIdentity: StixIdentity = objects.filter((o) => o.type === 'identity')[0] as StixIdentity;

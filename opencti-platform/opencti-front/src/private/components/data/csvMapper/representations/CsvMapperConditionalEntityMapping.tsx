@@ -146,7 +146,7 @@ CsvMapperConditionalEntityMappingProps
                   ? `${representationName}.column_based.value`
                   : null
             }
-            variant="standard"
+            variant='standard'
             disabled={!representation.column_based?.enabled}
             error={!representation.column_based?.value && representation.column_based?.enabled}
           />
