@@ -49,21 +49,14 @@ import {
 import type { CyberObjectExtension, StixBundle, StixCoreObject, StixCyberObject, StixDomainObject, StixObject, StixOpenctiExtension } from '../../types/stix-common';
 import { STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from '../../types/stix-extensions';
 import { connectorsForPlaybook } from '../../database/repository';
-import { listAllEntities, listAllRelations, storeLoadById } from '../../database/middleware-loader';
-import type { BasicStoreEntityOrganization } from '../organization/organization-types';
+import { internalFindByIds, listAllRelations, storeLoadById } from '../../database/middleware-loader';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-types';
 import { getEntitiesListFromCache, getEntitiesMapFromCache } from '../../database/cache';
 import { createdBy, objectLabel, objectMarking } from '../../schema/stixRefRelationship';
 import { logApp } from '../../config/conf';
 import { FunctionalError } from '../../config/errors';
 import { extractStixRepresentative } from '../../database/stix-representative';
-import {
-  isEmptyField,
-  isNotEmptyField,
-  READ_ENTITIES_INDICES_WITHOUT_INFERRED,
-  READ_RELATIONSHIPS_INDICES,
-  READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED
-} from '../../database/utils';
+import { isEmptyField, isNotEmptyField, READ_RELATIONSHIPS_INDICES, READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED } from '../../database/utils';
 import { schemaAttributesDefinition } from '../../schema/schema-attributes';
 import { schemaRelationsRefDefinition } from '../../schema/schema-relationsRef';
 import { stixLoadByIds } from '../../database/middleware';
@@ -496,8 +489,8 @@ const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT: PlaybookComponent<ContainerWrapperCo
   }
 };
 
-interface SharingConfiguration {
-  organizations: string[]
+export interface SharingConfiguration {
+  organizations: string[] | { label: string, value: string }[]
 }
 const PLAYBOOK_SHARING_COMPONENT_SCHEMA: JSONSchemaType<SharingConfiguration> = {
   type: 'object',
@@ -521,25 +514,20 @@ const PLAYBOOK_SHARING_COMPONENT: PlaybookComponent<SharingConfiguration> = {
   is_internal: true,
   ports: [{ id: 'out', type: 'out' }],
   configuration_schema: PLAYBOOK_SHARING_COMPONENT_SCHEMA,
-  schema: async () => {
-    const context = executionContext('playbook_components');
-    const organizations = await listAllEntities(
-      context,
-      SYSTEM_USER,
-      [ENTITY_TYPE_IDENTITY_ORGANIZATION],
-      { connectionFormat: false, indices: READ_ENTITIES_INDICES_WITHOUT_INFERRED }
-    );
-    const elements = organizations.map((c) => ({ const: c.id, title: c.name }));
-    const schemaElement = { properties: { organizations: { items: { oneOf: elements } } } };
-    return R.mergeDeepRight<JSONSchemaType<SharingConfiguration>, any>(PLAYBOOK_SHARING_COMPONENT_SCHEMA, schemaElement);
-  },
+  schema: async () => PLAYBOOK_SHARING_COMPONENT_SCHEMA,
   executor: async ({ dataInstanceId, playbookNode, bundle }) => {
     const context = executionContext('playbook_components');
-    const allOrganizations = await getEntitiesListFromCache<BasicStoreEntityOrganization>(context, SYSTEM_USER, ENTITY_TYPE_IDENTITY_ORGANIZATION);
     const { organizations } = playbookNode.configuration;
-    const organizationIds = allOrganizations
-      .filter((o) => (organizations ?? []).includes(o.internal_id))
-      .map((o) => o.standard_id);
+    const organizationsValues = organizations.map((o) => (typeof o !== 'string' ? o.value : o));
+    const organizationsByIds = await internalFindByIds(context, SYSTEM_USER, organizationsValues, {
+      type: ENTITY_TYPE_IDENTITY_ORGANIZATION,
+      baseData: true,
+      baseFields: ['standard_id']
+    });
+    if (organizationsByIds.length === 0) {
+      return { output_port: 'out', bundle }; // nothing to do since organizations are empty
+    }
+    const organizationIds = organizationsByIds.map((o) => o.standard_id);
     const baseData = bundle.objects.find((o) => o.id === dataInstanceId) as StixCoreObject;
     baseData.extensions[STIX_EXT_OCTI].granted_refs = [...(baseData.extensions[STIX_EXT_OCTI].granted_refs ?? []), ...organizationIds];
     return { output_port: 'out', bundle };
