@@ -94,7 +94,7 @@ const createBroadcastClient = (channel) => {
 const authenticate = async (req, res, next) => {
   try {
     const executeContext = executionContext('stream_authenticate');
-    const auth = await authenticateUserFromRequest(executeContext, req, res);
+    const auth = await authenticateUserFromRequest(executeContext, req);
     if (auth) {
       req.userId = auth.id;
       req.user = auth;
@@ -177,7 +177,7 @@ const computeUserAndCollection = async (req, res, { context, user, id }) => {
 
 const authenticateForPublic = async (req, res, next) => {
   const context = executionContext('stream_authenticate');
-  const auth = await authenticateUserFromRequest(context, req, res);
+  const auth = await authenticateUserFromRequest(context, req);
   const user = auth ?? SYSTEM_USER;
   req.userId = user.id;
   req.user = user;
