@@ -12,7 +12,6 @@ import {
   ENABLED_DEMO_MODE,
   isFeatureEnabled,
   logApp,
-  OPENCTI_SESSION,
   PLATFORM_VERSION
 } from '../config/conf';
 import { AuthenticationFailure, DatabaseError, ForbiddenAccess, FunctionalError, UnsupportedError } from '../config/errors';
@@ -31,7 +30,7 @@ import {
   listEntitiesThroughRelationsPaginated,
   storeLoadById,
 } from '../database/middleware-loader';
-import { delEditContext, delUserContext, notify, setEditContext } from '../database/redis';
+import { delEditContext, notify, setEditContext } from '../database/redis';
 import { findSessionsForUsers, killUserSessions, markSessionForRefresh } from '../database/session';
 import { buildPagination, isEmptyField, isNotEmptyField, READ_INDEX_INTERNAL_OBJECTS, READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
 import { extractEntityRepresentativeName } from '../database/entity-representative';
@@ -78,8 +77,6 @@ import { UnitSystem } from '../generated/graphql';
 
 const BEARER = 'Bearer ';
 const BASIC = 'Basic ';
-export const AUTH_BEARER = 'Bearer';
-const AUTH_BASIC = 'BasicAuth';
 export const TAXIIAPI = 'TAXIIAPI';
 const PLATFORM_ORGANIZATION = 'settings_platform_organization';
 export const MEMBERS_ENTITY_TYPES = [ENTITY_TYPE_USER, ENTITY_TYPE_IDENTITY_ORGANIZATION, ENTITY_TYPE_GROUP];
@@ -1246,16 +1243,6 @@ export const otpUserLogin = async (req, user, { code }) => {
   return isValidated;
 };
 
-const regenerateUserSession = async (user, req, res) => {
-  await delUserContext(user);
-  return new Promise((resolve) => {
-    res.clearCookie(OPENCTI_SESSION);
-    req.session.regenerate(() => {
-      resolve(user.id);
-    });
-  });
-};
-
 const buildSessionUser = (origin, impersonate, provider, settings) => {
   const user = impersonate ?? origin;
   const sessionUser = {
@@ -1266,8 +1253,8 @@ const buildSessionUser = (origin, impersonate, provider, settings) => {
     api_token: user.api_token,
     internal_id: user.internal_id,
     user_email: user.user_email,
-    otp_activated: user.otp_activated || provider === AUTH_BEARER,
-    otp_validated: user.otp_validated || (!user.otp_activated && !settings.otp_mandatory) || provider === AUTH_BEARER, // 2FA is implicitly validated when login from token
+    otp_activated: user.otp_activated,
+    otp_validated: user.otp_validated || (!user.otp_activated && !settings.otp_mandatory),
     otp_secret: user.otp_secret,
     otp_mandatory: settings.otp_mandatory,
     name: user.name,
