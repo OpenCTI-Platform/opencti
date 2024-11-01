@@ -21,7 +21,7 @@ import { buildDate, parse } from '../../../../utils/Time';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useFormatter } from '../../../../components/i18n';
-import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
+import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 
@@ -75,6 +75,8 @@ const indicatorMutationRelationDelete = graphql`
   }
 `;
 
+const INDICATOR_TYPE = 'Indicator';
+
 const IndicatorEditionOverviewComponent = ({
   indicator,
   handleClose,
@@ -83,11 +85,12 @@ const IndicatorEditionOverviewComponent = ({
 }) => {
   const { t_i18n } = useFormatter();
 
-  const basicShape = {
-    name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
+  const { mandatoryAttributes } = useIsMandatoryAttribute(INDICATOR_TYPE);
+  const basicShape = yupShapeConditionalRequired({
+    name: Yup.string().trim().min(2),
     indicator_types: Yup.array(),
     confidence: Yup.number(),
-    pattern: Yup.string().trim().required(t_i18n('This field is required')),
+    pattern: Yup.string().trim(),
     valid_from: Yup.date()
       .nullable()
       .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
@@ -104,9 +107,9 @@ const IndicatorEditionOverviewComponent = ({
     x_opencti_detection: Yup.boolean(),
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
-  };
-  const indicatorValidator = useSchemaEditionValidation(
-    'Indicator',
+  }, mandatoryAttributes);
+  const indicatorValidator = useDynamicSchemaEditionValidation(
+    mandatoryAttributes,
     basicShape,
   );
 
@@ -214,6 +217,8 @@ const IndicatorEditionOverviewComponent = ({
       enableReinitialize={true}
       initialValues={initialValues}
       validationSchema={indicatorValidator}
+      validateOnChange={true}
+      validateOnBlur={true}
       onSubmit={onSubmit}
     >
       {({
@@ -231,6 +236,7 @@ const IndicatorEditionOverviewComponent = ({
             variant="standard"
             name="name"
             label={t_i18n('Name')}
+            required={(mandatoryAttributes.includes('name'))}
             fullWidth={true}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
@@ -242,6 +248,7 @@ const IndicatorEditionOverviewComponent = ({
             label={t_i18n('Indicator types')}
             type="indicator-type-ov"
             name="indicator_types"
+            required={(mandatoryAttributes.includes('indicator_types'))}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
             onChange={(name, value) => setFieldValue(name, value)}
@@ -263,6 +270,7 @@ const IndicatorEditionOverviewComponent = ({
             variant="standard"
             name="pattern"
             label={t_i18n('Indicator pattern')}
+            required={(mandatoryAttributes.includes('pattern'))}
             fullWidth={true}
             multiline={true}
             rows="4"
@@ -280,6 +288,7 @@ const IndicatorEditionOverviewComponent = ({
             onSubmit={handleSubmitField}
             textFieldProps={{
               label: t_i18n('Valid from'),
+              required: (mandatoryAttributes.includes('valid_from')),
               variant: 'standard',
               fullWidth: true,
               style: { marginTop: 20 },
@@ -295,6 +304,7 @@ const IndicatorEditionOverviewComponent = ({
             onSubmit={handleSubmitField}
             textFieldProps={{
               label: t_i18n('Valid until'),
+              required: (mandatoryAttributes.includes('valid_until')),
               variant: 'standard',
               fullWidth: true,
               style: { marginTop: 20 },
@@ -307,6 +317,7 @@ const IndicatorEditionOverviewComponent = ({
             label={t_i18n('Platforms')}
             type="platforms_ov"
             name="x_mitre_platforms"
+            required={(mandatoryAttributes.includes('x_mitre_platforms'))}
             variant={'edit'}
             onSubmit={handleSubmitField}
             onChange={(name, value) => setFieldValue(name, value)}
@@ -318,6 +329,7 @@ const IndicatorEditionOverviewComponent = ({
             component={TextField}
             variant="standard"
             name="x_opencti_score"
+            required={(mandatoryAttributes.includes('x_opencti_score'))}
             label={t_i18n('Score')}
             type="number"
             fullWidth={true}
@@ -335,6 +347,7 @@ const IndicatorEditionOverviewComponent = ({
             component={MarkdownField}
             name="description"
             label={t_i18n('Description')}
+            required={(mandatoryAttributes.includes('description'))}
             fullWidth={true}
             multiline={true}
             rows="4"
@@ -347,6 +360,7 @@ const IndicatorEditionOverviewComponent = ({
           />
           <KillChainPhasesField
             name="killChainPhases"
+            required={(mandatoryAttributes.includes('killChainPhases'))}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
             helpertext={
@@ -375,6 +389,7 @@ const IndicatorEditionOverviewComponent = ({
           )}
           <CreatedByField
             name="createdBy"
+            required={(mandatoryAttributes.includes('createdBy'))}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
             helpertext={
@@ -384,6 +399,7 @@ const IndicatorEditionOverviewComponent = ({
           />
           <ObjectMarkingField
             name="objectMarking"
+            required={(mandatoryAttributes.includes('objectMarking'))}
             style={fieldSpacingContainerStyle}
             helpertext={
               <SubscriptionFocus context={context} fieldname="objectMarking" />
@@ -396,6 +412,7 @@ const IndicatorEditionOverviewComponent = ({
             type="checkbox"
             name="x_opencti_detection"
             label={t_i18n('Detection')}
+            required={(mandatoryAttributes.includes('x_opencti_detection'))}
             containerstyle={{ marginTop: 20 }}
             onChange={handleSubmitField}
             helperText={
