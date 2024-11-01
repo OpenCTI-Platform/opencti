@@ -1201,7 +1201,7 @@ export const userAddIndividual = async (context, user) => {
   // We need to bypass validation here has we maybe not setup all require fields
   const individual = await addIndividual(context, user, individualInput, { bypassValidation: true });
   // Need to check that in the future, seems that the queryAsAdmin in test fails without that
-  if (context.req?.session) {
+  if (context.req?.session.user) {
     context.req.session.user.individual_id = individual.id;
   }
   await userSessionRefresh(user.internal_id);
