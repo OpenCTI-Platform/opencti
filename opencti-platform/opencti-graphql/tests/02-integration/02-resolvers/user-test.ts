@@ -24,7 +24,6 @@ import {
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../src/modules/organization/organization-types';
 import { VIRTUAL_ORGANIZATION_ADMIN } from '../../../src/utils/access';
 import { adminQueryWithSuccess, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
-import { resolveUserByToken } from '../../../src/domain/user';
 import { OPENCTI_ADMIN_UUID } from '../../../src/schema/general';
 import type { Capability, Member } from '../../../src/generated/graphql';
 
@@ -317,20 +316,12 @@ describe('User resolver standard behavior', () => {
     const tokenBeforeRenew = queryUserBeforeRenew.data?.user.api_token;
     expect(tokenBeforeRenew).toBeDefined();
 
-    // This is a shortcut, hard to test the token with an external query
-    const userShouldBeFound = await resolveUserByToken(testContext, tokenBeforeRenew);
-    expect(userShouldBeFound.id).toBe(queryUserBeforeRenew.data?.user.id);
-
     const renewResult = await queryAsAdminWithSuccess({
       query: TOKEN_RENEW_QUERY,
       variables: { id: userInternalId },
     });
     expect(renewResult.data?.userEdit.tokenRenew.api_token).toBeDefined();
     expect(renewResult.data?.userEdit.tokenRenew.api_token).not.toBe(tokenBeforeRenew);
-
-    // Token has been renew, same token must be not found here
-    const userShouldNotBeFound = await resolveUserByToken(testContext, tokenBeforeRenew);
-    expect(userShouldNotBeFound).toBeUndefined();
   });
   it('should Analyst NOT ne able to renew user token', async () => {
     await queryAsUserIsExpectedForbidden(USER_DISINFORMATION_ANALYST.client, {

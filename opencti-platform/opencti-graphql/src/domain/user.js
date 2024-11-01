@@ -1436,9 +1436,23 @@ export const resolveUserById = async (context, id) => {
   return buildCompleteUser(context, client);
 };
 
-export const resolveUserByToken = async (context, tokenValue) => {
-  const client = await elLoadBy(context, SYSTEM_USER, 'api_token', tokenValue, ENTITY_TYPE_USER);
-  return buildCompleteUser(context, client);
+export const authenticateUserByToken = async (context, req, tokenValue) => {
+  const platformUsers = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
+  if (platformUsers.has(tokenValue)) {
+    const tokenUser = platformUsers.get(tokenValue);
+    const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+    validateUser(tokenUser, settings);
+    const applicantId = req.headers['opencti-applicant-id'];
+    if (applicantId && isBypassUser(tokenUser)) {
+      const applicantUser = platformUsers.get(applicantId);
+      if (applicantUser) {
+        return applicantUser;
+      }
+      throw FunctionalError(`Cant impersonate applicant ${applicantId}`);
+    }
+    return tokenUser;
+  }
+  throw FunctionalError(`Cant identify with ${tokenValue}`);
 };
 
 export const userRenewToken = async (context, user, userId) => {
@@ -1490,7 +1504,7 @@ const validateUser = (user, settings) => {
   }
 };
 
-export const internalAuthenticateUser = async (context, req, user, provider, { token, previousSession, isSessionRefresh }) => {
+export const internalAuthenticateUser = async (context, req, user, provider, { useSession, token, previousSession, isSessionRefresh }) => {
   let impersonate;
   const logged = await buildCompleteUser(context, user);
   const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
@@ -1507,14 +1521,18 @@ export const internalAuthenticateUser = async (context, req, user, provider, { t
     }
   }
   const sessionUser = buildSessionUser(logged, impersonate, provider, settings);
-  // If previous session stored, some specific attributes needs to follow
-  if (previousSession) {
-    sessionUser.otp_validated = previousSession.otp_validated;
-    sessionUser.impersonate = previousSession.impersonate;
-    sessionUser.impersonate_user_id = previousSession.impersonate_user_id;
-  }
   const userOrigin = userWithOrigin(req, sessionUser);
-  if (isEmptyField(user.stateless_session) || user.stateless_session === false) {
+  if (useSession) {
+    // If previous session stored, some specific attributes needs to follow
+    if (previousSession) {
+      sessionUser.otp_validated = previousSession.otp_validated;
+      sessionUser.impersonate = previousSession.impersonate;
+      sessionUser.impersonate_user_id = previousSession.impersonate_user_id;
+    }
+    req.session.user = sessionUser;
+    req.session.session_provider = { provider, token };
+    req.session.session_refresh = false;
+    req.session.save();
     if (!isSessionRefresh) {
       await publishUserAction({
         user: userOrigin,
@@ -1524,10 +1542,6 @@ export const internalAuthenticateUser = async (context, req, user, provider, { t
         context_data: { provider }
       });
     }
-    req.session.user = sessionUser;
-    req.session.session_provider = { provider, token };
-    req.session.session_refresh = false;
-    req.session.save();
   }
   return userOrigin;
 };
@@ -1538,75 +1552,22 @@ export const authenticateUser = async (context, req, user, provider, opts = {}) 
 };
 
 export const HEADERS_AUTHENTICATORS = [];
-export const authenticateUserFromRequest = async (context, req, res, isSessionRefresh = false) => {
+export const authenticateUserFromRequest = async (context, req) => {
   const auth = req.session?.user;
   // If user already have a session
-  if (auth && !isSessionRefresh) {
+  if (auth) {
     // User already identified, we need to enforce the session validity
     const { provider, token } = req.session.session_provider;
-    // For bearer, validate that the bearer is the same as the session
-    if (provider === AUTH_BEARER) {
-      const currentToken = extractTokenFromBearer(req.headers.authorization);
-      if (currentToken !== token) {
-        // Session doesn't match, kill the current session and try to re auth
-        await regenerateUserSession(auth, req, res);
-        return await authenticateUserFromRequest(context, req, res);
-      }
-    }
-    // For basic auth, validate that user and password match the session
-    if (provider === AUTH_BASIC) {
-      const { username, password } = extractInfoFromBasicAuth(req.headers.authorization);
-      const sameUsername = username === auth.user_email;
-      const sessionPassword = auth.session_password;
-      const passwordCompare = isNotEmptyField(password) && isNotEmptyField(sessionPassword);
-      const samePassword = passwordCompare && bcrypt.compareSync(password, sessionPassword);
-      if (!sameUsername || !samePassword) {
-        // Session doesn't match, kill the current session and try to re auth
-        await regenerateUserSession(auth, req, res);
-        return await authenticateUserFromRequest(context, req, res);
-      }
-    }
-    // Other providers doesn't need specific validation, session management is enough
-    // For impersonate auth, the applicant id must match the session
-    const applicantId = req.headers['opencti-applicant-id'];
-    const isNotSameUser = auth.id !== applicantId;
-    const isImpersonateChange = auth.impersonate && isNotSameUser;
-    const isNowImpersonate = isNotSameUser && !auth.impersonate && isBypassUser(auth) && applicantId;
-    if (isImpersonateChange || isNowImpersonate) {
-      // Impersonate doesn't match, kill the current session and try to re auth
-      return await authenticateUserFromRequest(context, req, res, true);
-    }
     // If session is marked for refresh, reload the user data in the session
     // If session is old by a past application version, make a refresh
     if (auth.session_version !== PLATFORM_VERSION || req.session.session_refresh) {
-      const refreshOpts = { token, previousSession: auth, isSessionRefresh: true };
+      const refreshOpts = { token, previousSession: auth, useSession: true, isSessionRefresh: true };
       const user = await internalLoadById(context, SYSTEM_USER, auth.impersonate_user_id ?? auth.id);
       return await internalAuthenticateUser(context, req, user, provider, refreshOpts);
     }
-    // If everything ok, return the authenticated user.
     return userWithOrigin(req, auth);
   }
-  // If user not identified, try to extract token from bearer
-  let loginProvider = AUTH_BEARER;
-  let tokenUUID = extractTokenFromBearer(req.headers.authorization);
-  // If no bearer specified, try with basic auth
-  if (!tokenUUID) {
-    loginProvider = AUTH_BASIC;
-    tokenUUID = await extractTokenFromBasicAuth(req.headers.authorization);
-  }
-  // Get user from the token if found
-  if (tokenUUID) {
-    try {
-      const user = await resolveUserByToken(context, tokenUUID);
-      if (user) {
-        const opts = { token: tokenUUID, isSessionRefresh };
-        return await authenticateUser(context, req, user, loginProvider, opts);
-      }
-    } catch (err) {
-      logApp.error('Error resolving user by token', { cause: err });
-    }
-  }
-  // If user still not identified, try headers authentication
+  // If user not identified, try headers authentication
   if (HEADERS_AUTHENTICATORS.length > 0) {
     for (let i = 0; i < HEADERS_AUTHENTICATORS.length; i += 1) {
       const headProvider = HEADERS_AUTHENTICATORS[i];
@@ -1614,6 +1575,20 @@ export const authenticateUserFromRequest = async (context, req, res, isSessionRe
       if (user) {
         return await authenticateUser(context, req, user, headProvider.provider);
       }
+    }
+  }
+  // If user not identified, try to extract token from bearer
+  let tokenUUID = extractTokenFromBearer(req.headers.authorization);
+  // If no bearer specified, try with basic auth
+  if (!tokenUUID) {
+    tokenUUID = await extractTokenFromBasicAuth(req.headers.authorization);
+  }
+  // Get user from the token if found
+  if (tokenUUID) {
+    try {
+      return await authenticateUserByToken(context, req, tokenUUID);
+    } catch (err) {
+      logApp.error('Error resolving user by token', { cause: err });
     }
   }
   // No auth, return undefined
