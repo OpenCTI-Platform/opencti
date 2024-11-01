@@ -9,7 +9,7 @@ import mime from 'mime-types';
 import { CopyObjectCommand } from '@aws-sdk/client-s3';
 import conf, { booleanConf, ENABLED_FILE_INDEX_MANAGER, logApp, logS3Debug } from '../config/conf';
 import { now, sinceNowInMinutes, truncate, utcDate } from '../utils/format';
-import { DatabaseError, ForbiddenAccess, FunctionalError, UnsupportedError } from '../config/errors';
+import { DatabaseError, FunctionalError, UnsupportedError } from '../config/errors';
 import { createWork, deleteWorkForFile } from '../domain/work';
 import { isNotEmptyField } from './utils';
 import { connectorsForImport } from './repository';
@@ -260,19 +260,19 @@ export const loadFile = async (context, user, fileS3Path, opts = {}) => {
   try {
     // 01. Check if user as enough capability to get support packages
     if (fileS3Path && (fileS3Path.startsWith(SUPPORT_STORAGE_PATH) && !isUserHasCapability(user, SETTINGS_SUPPORT))) {
-      throw ForbiddenAccess('Access to this file is restricted', { filename: fileS3Path });
+      throw FunctionalError('File not found or restricted', { filename: fileS3Path });
     }
     // 02. Check if the referenced document is accessible
     const document = await documentFindById(context, user, fileS3Path);
     if (!document) {
-      throw ForbiddenAccess('Access to this file is restricted', { filename: fileS3Path });
+      throw FunctionalError('File not found or restricted', { filename: fileS3Path });
     }
     // 03. Check if metadata contains an entity_id, we need to check if the user has real access to this instance
     const { metaData, name, size, lastModified, lastModifiedSinceMin } = document;
     if (metaData.entity_id) {
       const instance = await internalLoadById(context, user, metaData.entity_id, { type: metaData.entity_type });
       if (!instance) {
-        throw ForbiddenAccess('Access to this file is restricted', { filename: fileS3Path });
+        throw FunctionalError('File not found or restricted', { filename: fileS3Path });
       }
     }
     // All good, return the file
@@ -287,7 +287,6 @@ export const loadFile = async (context, user, fileS3Path, opts = {}) => {
       metaData
     };
   } catch (err) {
-    logApp.error('[FILE STORAGE] Load file from storage fail', { cause: err, user_id: user.id, filename: fileS3Path });
     if (opts.dontThrow) {
       return undefined;
     }
