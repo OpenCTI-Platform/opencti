@@ -1,30 +1,29 @@
-import React, { FunctionComponent, useState } from 'react';
-import { createFragmentContainer, graphql } from 'react-relay';
-import { Field, Form, Formik } from 'formik';
+import React, {FunctionComponent} from 'react';
+import {createFragmentContainer, graphql} from 'react-relay';
+import {Field, Form, Formik} from 'formik';
 import * as R from 'ramda';
 import * as Yup from 'yup';
 import MenuItem from '@mui/material/MenuItem';
 import FormHelperText from '@mui/material/FormHelperText';
-import { UserEditionOverview_user$data } from '@components/settings/users/edition/__generated__/UserEditionOverview_user.graphql';
-import Typography from '@mui/material/Typography';
-import AccordionDetails from '@mui/material/AccordionDetails';
-import Alert from '@mui/material/Alert';
-import { useTheme } from '@mui/styles';
+import {
+    UserEditionOverview_user$data
+} from '@components/settings/users/edition/__generated__/UserEditionOverview_user.graphql';
+import {useTheme} from '@mui/styles';
 import TextField from '../../../../../components/TextField';
 import SelectField from '../../../../../components/fields/SelectField';
-import { SubscriptionFocus } from '../../../../../components/Subscription';
+import {SubscriptionFocus} from '../../../../../components/Subscription';
 import MarkdownField from '../../../../../components/fields/MarkdownField';
 import ObjectOrganizationField from '../../../common/form/ObjectOrganizationField';
-import { useFormatter } from '../../../../../components/i18n';
+
+import {useFormatter} from '../../../../../components/i18n';
 import DateTimePickerField from '../../../../../components/DateTimePickerField';
-import { fieldSpacingContainerStyle } from '../../../../../utils/field';
+import {fieldSpacingContainerStyle} from '../../../../../utils/field';
 import useAuth from '../../../../../utils/hooks/useAuth';
-import { isOnlyOrganizationAdmin } from '../../../../../utils/hooks/useGranted';
+import {isOnlyOrganizationAdmin} from '../../../../../utils/hooks/useGranted';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
-import { Accordion, AccordionSummary } from '../../../../../components/Accordion';
-import SwitchField from '../../../../../components/fields/SwitchField';
 import PasswordTextField from '../../../../../components/PasswordTextField';
-import type { Theme } from '../../../../../components/Theme';
+import type {Theme} from '../../../../../components/Theme';
+
 
 export const userMutationFieldPatch = graphql`
   mutation UserEditionOverviewFieldPatchMutation(
