@@ -53,6 +53,7 @@ import {
   RELATION_OBJECT_LABEL,
   RELATION_OBJECT_MARKING,
   RELATION_OBJECT_PARTICIPANT,
+  STIX_REF_RELATIONSHIP_TYPES
 } from '../schema/stixRefRelationship';
 import {
   ABSTRACT_BASIC_RELATIONSHIP,
@@ -1463,7 +1464,8 @@ export const elConvertHits = async (data, opts = {}) => {
   return convertedHits;
 };
 
-const computeQueryIndices = (indices, types) => {
+export const computeQueryIndices = (indices, typeOrTypes) => {
+  const types = (Array.isArray(typeOrTypes) || isEmptyField(typeOrTypes)) ? typeOrTypes : [typeOrTypes];
   // If indices are explicitly defined, just rely on the definition
   if (isEmptyField(indices)) {
     // If not and have no clue about the expected types, ask for all indices.
@@ -1485,11 +1487,13 @@ const computeQueryIndices = (indices, types) => {
           return READ_ENTITIES_INDICES;
         }
         // For relationships
-        if (isBasicRelationship(findType)) {
+        if (isBasicRelationship(findType) || STIX_REF_RELATIONSHIP_TYPES.includes(findType)) {
           if (isInternalRelationship(findType)) return [READ_INDEX_INFERRED_RELATIONSHIPS, READ_INDEX_INTERNAL_RELATIONSHIPS];
           if (isStixSightingRelationship(findType)) return [READ_INDEX_INFERRED_RELATIONSHIPS, READ_INDEX_STIX_SIGHTING_RELATIONSHIPS];
           if (isStixCoreRelationship(findType)) return [READ_INDEX_INFERRED_RELATIONSHIPS, READ_INDEX_STIX_CORE_RELATIONSHIPS];
-          if (isStixRefRelationship(findType)) return [READ_INDEX_INFERRED_RELATIONSHIPS, READ_INDEX_STIX_META_RELATIONSHIPS, READ_INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS];
+          if (isStixRefRelationship(findType) || STIX_REF_RELATIONSHIP_TYPES.includes(findType)) {
+            return [READ_INDEX_INFERRED_RELATIONSHIPS, READ_INDEX_STIX_META_RELATIONSHIPS, READ_INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS];
+          }
           if (isStixRelationship(findType)) {
             return [READ_INDEX_INFERRED_RELATIONSHIPS, READ_INDEX_STIX_CORE_RELATIONSHIPS, READ_INDEX_STIX_SIGHTING_RELATIONSHIPS, READ_INDEX_STIX_META_RELATIONSHIPS,
               READ_INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS];
@@ -1516,7 +1520,7 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
   const { withoutRels = false, toMap = false, mapWithAllIds = false, type = null } = opts;
   const { orderBy = 'created_at', orderMode = 'asc' } = opts;
   const idsArray = Array.isArray(ids) ? ids : [ids];
-  const types = (Array.isArray(type) || !type) ? type : [type];
+  const types = (Array.isArray(type) || isEmptyField(type)) ? type : [type];
   const processIds = R.filter((id) => isNotEmptyField(id), idsArray);
   if (processIds.length === 0) {
     return toMap ? {} : [];

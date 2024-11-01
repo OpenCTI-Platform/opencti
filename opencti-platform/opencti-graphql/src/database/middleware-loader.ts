@@ -7,11 +7,11 @@ import {
   isNotEmptyField,
   READ_DATA_INDICES,
   READ_DATA_INDICES_WITHOUT_INFERRED,
-  READ_ENTITIES_INDICES,
   READ_RELATIONSHIPS_INDICES,
   READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED
 } from './utils';
 import {
+  computeQueryIndices,
   elAggregationNestedTermsWithFilter,
   elAggregationsList,
   elCount,
@@ -292,26 +292,29 @@ export const buildRelationsFilter = <T extends BasicStoreCommon>(relationTypes: 
 
 export const listRelations = async <T extends StoreProxyRelation>(context: AuthContext, user: AuthUser, type: string | Array<string>,
   args: RelationOptions<T> = {}): Promise<Array<T>> => {
-  const { indices = READ_RELATIONSHIPS_INDICES } = args;
+  const { indices } = args;
+  const computedIndices = computeQueryIndices(indices, type);
   const paginateArgs = buildRelationsFilter(type, args);
-  return elPaginate(context, user, indices, paginateArgs);
+  return elPaginate(context, user, computedIndices, paginateArgs);
 };
 
 export const listRelationsPaginated = async <T extends BasicStoreRelation>(context: AuthContext, user: AuthUser, type: string | Array<string>,
   args: RelationOptions<T> = {}): Promise<StoreRelationConnection<T>> => {
-  const { indices = READ_RELATIONSHIPS_INDICES, connectionFormat } = args;
+  const { indices, connectionFormat } = args;
+  const computedIndices = computeQueryIndices(indices, type);
   if (connectionFormat === false) {
     throw UnsupportedError('List connection require connectionFormat option to true');
   }
   const paginateArgs = buildRelationsFilter(type, args);
-  return elPaginate(context, user, indices, paginateArgs);
+  return elPaginate(context, user, computedIndices, paginateArgs);
 };
 
 export const listAllRelations = async <T extends StoreProxyRelation>(context: AuthContext, user: AuthUser, type: string | Array<string>,
   args: RelationOptions<T> = {}): Promise<Array<T>> => {
-  const { indices = READ_RELATIONSHIPS_INDICES } = args;
+  const { indices } = args;
+  const computedIndices = computeQueryIndices(indices, type);
   const paginateArgs = buildRelationsFilter(type, args);
-  return elList(context, user, indices, paginateArgs);
+  return elList(context, user, computedIndices, paginateArgs);
 };
 
 export const buildAggregationRelationFilter = <T extends BasicStoreCommon>(relationshipTypes: string | Array<string>, args: RelationFilters<T>) => {
@@ -350,19 +353,17 @@ export const listAllEntitiesForFilter = async (context: AuthContext, user: AuthU
 };
 
 export const listEntities: InternalListEntities = async (context, user, entityTypes, args = {}) => {
-  const { indices = READ_ENTITIES_INDICES } = args;
-  // TODO Reactivate this test after global migration to typescript
-  // if (connectionFormat !== false) {
-  //   throw UnsupportedError('List connection require connectionFormat option to false');
-  // }
+  const { indices } = args;
+  const computedIndices = computeQueryIndices(indices, entityTypes);
   const paginateArgs = buildEntityFilters(entityTypes, args);
-  return elPaginate(context, user, indices, paginateArgs);
+  return elPaginate(context, user, computedIndices, paginateArgs);
 };
 export const listAllEntities = async <T extends BasicStoreEntity>(context: AuthContext, user: AuthUser, entityTypes: Array<string>,
   args: EntityOptions<T> = {}): Promise<Array<T>> => {
-  const { indices = READ_ENTITIES_INDICES } = args;
+  const { indices } = args;
+  const computedIndices = computeQueryIndices(indices, entityTypes);
   const paginateArgs = buildEntityFilters(entityTypes, args);
-  return elList(context, user, indices, paginateArgs);
+  return elList(context, user, computedIndices, paginateArgs);
 };
 
 export interface ListAllEntitiesThroughRelation {
@@ -417,7 +418,8 @@ export const listAllEntitiesThroughRelations = async <T extends BasicStoreCommon
   });
   // region Resolved all targets for all relations
   const targetIds = R.uniq(relations.map((s) => s[`${opposite}Id`]));
-  return await elFindByIds(context, user, targetIds) as unknown as Array<T>;
+  const targetTypes = R.uniq(relations.map((s) => s[`${opposite}Type`]));
+  return await elFindByIds(context, user, targetIds, { type: targetTypes }) as unknown as Array<T>;
 };
 
 interface ListAllOpts {
@@ -452,18 +454,20 @@ export const listAllFromEntitiesThroughRelations = async <T extends BasicStoreEn
 
 export const listEntitiesPaginated = async <T extends BasicStoreEntity>(context: AuthContext, user: AuthUser, entityTypes: Array<string>,
   args: EntityOptions<T> = {}): Promise<StoreEntityConnection<T>> => {
-  const { indices = READ_ENTITIES_INDICES, connectionFormat } = args;
+  const { indices, connectionFormat } = args;
   if (connectionFormat === false) {
     throw UnsupportedError('List connection require connectionFormat option to true');
   }
+  const computedIndices = computeQueryIndices(indices, entityTypes);
   const paginateArgs = buildEntityFilters(entityTypes, args);
-  return elPaginate(context, user, indices, paginateArgs);
+  return elPaginate(context, user, computedIndices, paginateArgs);
 };
 
 export const listEntitiesThroughRelationsPaginated = async <T extends BasicStoreCommon>(context: AuthContext, user: AuthUser, connectedEntityId: string,
   relationType: string, entityType: string | string[], reverse_relation: boolean, args: EntityOptions<T> = {}): Promise<StoreCommonConnection<T>> => {
   const entityTypes = Array.isArray(entityType) ? entityType : [entityType];
-  const { indices = READ_ENTITIES_INDICES, connectionFormat } = args;
+  const { indices, connectionFormat } = args;
+  const computedIndices = computeQueryIndices(indices, entityTypes);
   if (connectionFormat === false) {
     throw UnsupportedError('List connected entities paginated require connectionFormat option to true');
   }
@@ -490,7 +494,7 @@ export const listEntitiesThroughRelationsPaginated = async <T extends BasicStore
     orderMode: args.orderMode ?? OrderingMode.Desc,
     filters: connectedFilters
   });
-  const entityPagination = await elPaginate(context, user, indices, { ...paginateArgs }) as StoreCommonConnection<T>;
+  const entityPagination = await elPaginate(context, user, computedIndices, { ...paginateArgs }) as StoreCommonConnection<T>;
   if (entityPagination.edges.length === 0) {
     // no result, just return entityPagination, there is no relationships to find
     return entityPagination;

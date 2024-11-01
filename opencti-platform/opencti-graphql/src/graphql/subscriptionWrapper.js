@@ -72,9 +72,9 @@ export const subscribeToAiEvents = async (context, id, topics) => {
  * @returns {Promise<AsyncIterable<any>>}
  */
 export const subscribeToInstanceEvents = async (parent, context, id, topics, opts = {}) => {
-  const { preFn, cleanFn, notifySelf = false } = opts;
+  const { preFn, cleanFn, notifySelf = false, type } = opts;
   if (preFn) preFn();
-  const item = await internalLoadById(context, context.user, id, { baseData: true });
+  const item = await internalLoadById(context, context.user, id, { baseData: true, type });
   if (!item) throw ForbiddenAccess('You are not allowed to listen this.');
   const filtering = withFilter(
     () => pubSubAsyncIterator(topics),
