@@ -1099,8 +1099,8 @@ export const loginFromProvider = async (userInfo, opts = {}) => {
     const userGroups = await listAllToEntitiesThroughRelations(context, SYSTEM_USER, user.id, RELATION_MEMBER_OF, ENTITY_TYPE_GROUP);
     const deleteGroups = userGroups.filter((o) => !providerGroups.includes(o.name));
     for (let index = 0; index < deleteGroups.length; index += 1) {
-      const userGroup = userGroups[index];
-      await userDeleteRelation(context, SYSTEM_USER, user, userGroup.id, RELATION_MEMBER_OF);
+      const deleteGroup = deleteGroups[index];
+      await userDeleteRelation(context, SYSTEM_USER, user, deleteGroup.id, RELATION_MEMBER_OF);
     }
     // 02 - Create groups from providers
     const createGroups = providerGroups.filter((n) => !userGroups.map((o) => o.name).includes(n));
