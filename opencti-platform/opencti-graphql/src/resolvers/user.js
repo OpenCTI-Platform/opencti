@@ -166,7 +166,7 @@ const userResolvers = {
         // As soon as credential is validated, stop looking for another provider
         if (user) {
           const context = executionContext(`${provider}_strategy`);
-          loggedUser = await authenticateUser(context, req, user, provider);
+          loggedUser = await authenticateUser(context, req, user, provider, { useSession: true });
           break;
         }
       }
