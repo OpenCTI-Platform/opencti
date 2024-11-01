@@ -40,7 +40,7 @@ const initHttpRollingFeeds = (app: Express.Application) => {
     res.set({ 'content-type': 'text/plain; charset=utf-8' });
     try {
       const context = executionContext('rolling_feeds');
-      const authUser = await authenticateUserFromRequest(context, req, res);
+      const authUser = await authenticateUserFromRequest(context, req);
       const feed = await findFeed(context, SYSTEM_USER, id);
       // The feed doesn't exist at all
       if (!feed) {
