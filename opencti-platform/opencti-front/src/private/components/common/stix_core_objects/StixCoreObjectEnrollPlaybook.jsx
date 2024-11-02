@@ -1,56 +1,48 @@
 import React, { useState } from 'react';
 import * as R from 'ramda';
-import { CloudRefreshOutline } from 'mdi-material-ui';
 import Tooltip from '@mui/material/Tooltip';
 import ToggleButton from '@mui/material/ToggleButton';
+import { PrecisionManufacturingOutlined } from '@mui/icons-material';
 import Drawer from '../drawer/Drawer';
 import { QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
-import StixCoreObjectEnrichmentLines, { stixCoreObjectEnrichmentLinesQuery } from './StixCoreObjectEnrichmentLines';
+import StixCoreObjectEnrollPlaybookLines, { stixCoreObjectEnrollPlaybookLinesQuery } from './StixCoreObjectEnrollPlaybookLines';
 
-const StixCoreObjectEnrichment = (props) => {
+const StixCoreObjectEnrollPlaybook = (props) => {
   const { t, stixCoreObjectId, handleClose, open } = props;
   const [openDrawer, setOpenDrawer] = useState(false);
-  const handleOpenEnrichment = () => {
+  const handleOpenEnrollPlaybook = () => {
     setOpenDrawer(true);
   };
-  const handleCloseEnrichment = () => {
+  const handleCloseEnrollPlaybook = () => {
     setOpenDrawer(false);
   };
-
   return (
     <>
       {!handleClose && (
-        <Tooltip title={t('Enrichment')}>
+        <Tooltip title={t('Enroll in playbook')}>
           <ToggleButton
-            onClick={handleOpenEnrichment}
+            onClick={handleOpenEnrollPlaybook}
             value="enrich"
             size="small"
             style={{ marginRight: 3 }}
           >
-            <CloudRefreshOutline fontSize="small" color="primary" />
+            <PrecisionManufacturingOutlined fontSize="small" color="primary" />
           </ToggleButton>
         </Tooltip>
       )}
       <Drawer
         open={open || openDrawer}
-        onClose={handleClose || handleCloseEnrichment}
-        title={t('Enrichment connectors')}
+        onClose={handleClose || handleCloseEnrollPlaybook}
+        title={t('Available playbooks')}
       >
         <QueryRenderer
-          query={stixCoreObjectEnrichmentLinesQuery}
+          query={stixCoreObjectEnrollPlaybookLinesQuery}
           variables={{ id: stixCoreObjectId }}
           render={({ props: queryProps }) => {
-            if (
-              queryProps
-              && queryProps.stixCoreObject
-              && queryProps.connectorsForImport
-            ) {
+            if (queryProps && queryProps.playbooksForEntity) {
               return (
-                <StixCoreObjectEnrichmentLines
-                  stixCoreObject={queryProps.stixCoreObject}
-                  connectorsForImport={queryProps.connectorsForImport}
-                />
+                <StixCoreObjectEnrollPlaybookLines id={stixCoreObjectId} playbooksForEntity={queryProps.playbooksForEntity} />
               );
             }
             return <div />;
@@ -61,4 +53,4 @@ const StixCoreObjectEnrichment = (props) => {
   );
 };
 
-export default R.compose(inject18n)(StixCoreObjectEnrichment);
+export default R.compose(inject18n)(StixCoreObjectEnrollPlaybook);

@@ -7858,6 +7858,7 @@ type Query {
   playbook(id: String!): Playbook
   playbooks(first: Int, after: ID, orderBy: PlaybooksOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): PlaybookConnection
   playbookComponents: [PlaybookComponent]!
+  playbooksForEntity(id: String!): [Playbook]
   ingestionRss(id: String!): IngestionRss
   ingestionRsss(first: Int, after: ID, orderBy: IngestionRssOrdering, orderMode: OrderingMode, filters: FilterGroup, includeAuthorities: Boolean, search: String): IngestionRssConnection
   ingestionTaxii(id: String!): IngestionTaxii
@@ -8652,6 +8653,7 @@ type Mutation {
   playbookUpdatePositions(id: ID!, positions: String!): ID
   playbookFieldPatch(id: ID!, input: [EditInput!]!, commitMessage: String, references: [String]): Playbook
   playbookStepExecution(execution_id: ID!, event_id: ID!, execution_start: DateTime!, data_instance_id: ID!, playbook_id: ID!, previous_step_id: ID!, step_id: ID!, previous_bundle: String!, bundle: String!): Boolean
+  playbookExecute(id: ID!, entityId: String!): Boolean
   ingestionRssAdd(input: IngestionRssAddInput!): IngestionRss
   ingestionRssDelete(id: ID!): ID
   ingestionRssFieldPatch(id: ID!, input: [EditInput!]!): IngestionRss

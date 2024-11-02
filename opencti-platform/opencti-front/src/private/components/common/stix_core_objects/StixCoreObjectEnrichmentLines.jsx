@@ -4,7 +4,7 @@ import * as R from 'ramda';
 import { graphql, createRefetchContainer } from 'react-relay';
 import Tooltip from '@mui/material/Tooltip';
 import IconButton from '@mui/material/IconButton';
-import { CheckCircle, Delete, Extension, Refresh, Warning } from '@mui/icons-material';
+import { CheckCircleOutlined, DeleteOutlined, ExtensionOutlined, RefreshOutlined, WarningOutlined } from '@mui/icons-material';
 import CircularProgress from '@mui/material/CircularProgress';
 import withStyles from '@mui/styles/withStyles';
 import ListItem from '@mui/material/ListItem';
@@ -63,13 +63,8 @@ const stixCoreObjectEnrichmentLinesAskJob = graphql`
 
 const styles = (theme) => ({
   noResult: {
-    top: 10,
-    left: 16,
-    right: 0,
-    position: 'absolute',
     color: theme.palette.text.primary,
     fontSize: 15,
-    zIndex: -5,
   },
   gridContainer: {
     marginBottom: 20,
@@ -173,7 +168,7 @@ const StixCoreObjectEnrichment = ({
                       color: connector.active ? '#4caf50' : '#f44336',
                     }}
                   >
-                    <Extension />
+                    <ExtensionOutlined />
                   </ListItemIcon>
                 </Tooltip>
                 <ListItemText primary={connector.name} />
@@ -190,7 +185,7 @@ const StixCoreObjectEnrichment = ({
                         }
                         size="large"
                       >
-                        <Refresh />
+                        <RefreshOutlined />
                       </IconButton>
                     </Tooltip>
                   </ListItemSecondaryAction>
@@ -231,7 +226,7 @@ const StixCoreObjectEnrichment = ({
                       >
                         <ListItemIcon>
                           {isFail && (
-                            <Warning
+                            <WarningOutlined
                               style={{
                                 fontSize: 15,
                                 color: '#f44336',
@@ -239,7 +234,7 @@ const StixCoreObjectEnrichment = ({
                             />
                           )}
                           {!isFail && work.status === 'complete' && (
-                            <CheckCircle
+                            <CheckCircleOutlined
                               style={{
                                 fontSize: 15,
                                 color: '#4caf50',
@@ -262,7 +257,7 @@ const StixCoreObjectEnrichment = ({
                               onClick={() => deleteWork(work.id)}
                               size="large"
                             >
-                              <Delete />
+                              <DeleteOutlined />
                             </IconButton>
                           </ListItemSecondaryAction>
                         </Security>

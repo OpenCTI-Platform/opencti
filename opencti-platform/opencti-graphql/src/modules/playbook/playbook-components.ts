@@ -166,6 +166,31 @@ const PLAYBOOK_INTERNAL_DATA_STREAM: PlaybookComponent<StreamConfiguration> = {
   }
 };
 
+export interface ManualTriggerConfiguration {
+  filters: string
+}
+const PLAYBOOK_INTERNAL_MANUAL_TRIGGER_SCHEMA: JSONSchemaType<ManualTriggerConfiguration> = {
+  type: 'object',
+  properties: {
+    filters: { type: 'string' },
+  },
+  required: [],
+};
+const PLAYBOOK_INTERNAL_MANUAL_TRIGGER: PlaybookComponent<ManualTriggerConfiguration> = {
+  id: 'PLAYBOOK_INTERNAL_MANUAL_TRIGGER',
+  name: 'Available for manual enrollment / trigger',
+  description: 'To be used in manual enrollment / trigger',
+  icon: 'trigger',
+  is_entry_point: true,
+  is_internal: true,
+  ports: [{ id: 'out', type: 'out' }],
+  configuration_schema: PLAYBOOK_INTERNAL_MANUAL_TRIGGER_SCHEMA,
+  schema: async () => PLAYBOOK_INTERNAL_MANUAL_TRIGGER_SCHEMA,
+  executor: async ({ bundle }) => {
+    return ({ output_port: 'out', bundle, forceBundleTracking: true });
+  }
+};
+
 export interface CronConfiguration {
   period: 'day' | 'hour' | 'minute' | 'month' | 'week',
   triggerTime: string
@@ -1300,6 +1325,7 @@ const PLAYBOOK_CREATE_OBSERVABLE_COMPONENT: PlaybookComponent<CreateObservableCo
 
 // @ts-expect-error TODO improve playbook types to avoid this
 export const PLAYBOOK_COMPONENTS: { [k: string]: PlaybookComponent<object> } = {
+  [PLAYBOOK_INTERNAL_MANUAL_TRIGGER.id]: PLAYBOOK_INTERNAL_MANUAL_TRIGGER,
   [PLAYBOOK_INTERNAL_DATA_STREAM.id]: PLAYBOOK_INTERNAL_DATA_STREAM,
   [PLAYBOOK_INTERNAL_DATA_CRON.id]: PLAYBOOK_INTERNAL_DATA_CRON,
   [PLAYBOOK_LOGGER_COMPONENT.id]: PLAYBOOK_LOGGER_COMPONENT,
