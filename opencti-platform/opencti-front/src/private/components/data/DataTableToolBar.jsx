@@ -59,6 +59,7 @@ import Grid from '@mui/material/Grid';
 import Avatar from '@mui/material/Avatar';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
+import { usersLinesSearchQuery } from '../settings/users/UsersLines';
 import PromoteDrawer from './drawers/PromoteDrawer';
 import TasksFilterValueContainer from '../../../components/TasksFilterValueContainer';
 import inject18n from '../../../components/i18n';
@@ -70,12 +71,14 @@ import { identitySearchIdentitiesSearchQuery } from '../common/identities/Identi
 import { labelsSearchQuery } from '../settings/LabelsQuery';
 import Security from '../../../utils/Security';
 import {
+  BYPASS,
   EXPLORE_EXUPDATE_EXDELETE,
   EXPLORE_EXUPDATE_PUBLISH,
   INVESTIGATION_INUPDATE_INDELETE,
   KNOWLEDGE_KNUPDATE,
   KNOWLEDGE_KNUPDATE_KNDELETE,
   KNOWLEDGE_KNUPDATE_KNORGARESTRICT,
+  SETTINGS_SETACCESSES,
 } from '../../../utils/hooks/useGranted';
 import { UserContext } from '../../../utils/hooks/useAuth';
 import { statusFieldStatusesSearchQuery } from '../common/form/StatusField';
@@ -299,6 +302,7 @@ class DataTableToolBar extends Component {
       markingDefinitions: [],
       labels: [],
       identities: [],
+      users: [],
       containers: [],
       organizations: [],
       statuses: [],
@@ -722,7 +726,7 @@ class DataTableToolBar extends Component {
     }
   }
 
-  renderFieldOptions(i, selectedTypes, entityTypeFilterValues) {
+  renderFieldOptions(i, selectedTypes, entityTypeFilterValues, isAdmin) {
     const { t } = this.props;
     const { actionsInputs } = this.state;
     const disabled = R.isNil(actionsInputs[i]?.type) || R.isEmpty(actionsInputs[i]?.type);
@@ -738,6 +742,9 @@ class DataTableToolBar extends Component {
         { label: t('External references'), value: 'external-reference' },
         { label: t('In containers'), value: 'container-object' },
       ];
+      if (isAdmin) {
+        options.push({ label: t('Creator'), value: 'creator_id' });
+      }
     } else if (actionsInputs[i]?.type === 'REPLACE') {
       options = [
         { label: t('Marking definitions'), value: 'object-marking' },
@@ -746,6 +753,9 @@ class DataTableToolBar extends Component {
         { label: t('Confidence'), value: 'confidence' },
         { label: t('Description'), value: 'description' },
       ];
+      if (isAdmin) {
+        options.push({ label: t('Creator'), value: 'creator_id' });
+      }
       if (typesHaveScore) {
         options.push({ label: t('Score'), value: 'x_opencti_score' });
       }
@@ -980,6 +990,35 @@ class DataTableToolBar extends Component {
           .sort((a, b) => a.label.localeCompare(b.label))
           .sort((a, b) => a.order - b.order);
         this.setState({ statuses: R.union(this.state.statuses, statuses) });
+      });
+  }
+
+  searchUsers(i, event, newValue) {
+    if (!event) return;
+    const { actionsInputs } = this.state;
+    actionsInputs[i] = R.assoc(
+      'inputValue',
+      newValue && newValue.length > 0 ? newValue : '',
+      actionsInputs[i],
+    );
+    this.setState({ actionsInputs });
+    fetchQuery(usersLinesSearchQuery, {
+      search: newValue && newValue.length > 0 ? newValue : '',
+      first: 100,
+    })
+      .toPromise()
+      .then((data) => {
+        const users = (data?.users?.edges ?? [])
+          .map((n) => ({
+            label: n.node.name,
+            value: n.node.id,
+            type: n.node.entity_type,
+          }))
+          .sort((a, b) => a.label.localeCompare(b.label))
+          .sort((a, b) => a.type.localeCompare(b.type));
+        this.setState({
+          users: R.union(this.state.users, users),
+        });
       });
   }
 
@@ -1243,6 +1282,41 @@ class DataTableToolBar extends Component {
             )}
           />
         );
+      case 'creator_id':
+        return (
+          <Autocomplete
+            disabled={disabled}
+            size="small"
+            fullWidth={true}
+            selectOnFocus={true}
+            autoHighlight={true}
+            getOptionLabel={(option) => (option.label ? option.label : '')}
+            value={actionsInputs[i]?.values || []}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                variant="standard"
+                label={t('Values')}
+                fullWidth={true}
+                onFocus={this.searchUsers.bind(this, i)}
+                style={{ marginTop: 3 }}
+              />
+            )}
+            noOptionsText={t('No available options')}
+            options={this.state.users}
+            onInputChange={this.searchUsers.bind(this, i)}
+            inputValue={actionsInputs[i]?.inputValue || ''}
+            onChange={this.handleChangeActionInputValues.bind(this, i)}
+            renderOption={(props, option) => (
+              <li {...props}>
+                <div className={classes.icon}>
+                  <ItemIcon type={option.type} />
+                </div>
+                <div className={classes.text}>{option.label}</div>
+              </li>
+            )}
+          />
+        );
       case 'x_opencti_score':
       case 'confidence':
         return (
@@ -1322,7 +1396,8 @@ class DataTableToolBar extends Component {
 
     return (
       <UserContext.Consumer>
-        {({ schema, settings }) => {
+        {({ schema, settings, me }) => {
+          const isAdmin = me.capabilities.map((o) => o.name).filter((o) => [SETTINGS_SETACCESSES, BYPASS].includes(o)).length > 0;
           const stixCyberObservableSubTypes = schema.scos.map((sco) => sco.id);
           const stixDomainObjectSubTypes = schema.sdos.map((sdo) => sdo.id);
           const { entityTypeFilterValues, selectedElementsList, selectedTypes } = this.getSelectedTypes(stixCyberObservableSubTypes, stixDomainObjectSubTypes);
@@ -1416,14 +1491,14 @@ class DataTableToolBar extends Component {
           // endregion
           return (
             <>
-              <Toolbar style={{ minHeight: 40, display: 'flex', justifyContent: 'space-between', height: '100%', paddingRight: 12, paddingLeft: 12 }} data-testid='opencti-toolbar'>
+              <Toolbar style={{ minHeight: 40, display: 'flex', justifyContent: 'space-between', height: '100%', paddingRight: 12, paddingLeft: 8 }} data-testid='opencti-toolbar'>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                   <Typography
                     className={classes.title}
                     color="inherit"
                     variant="subtitle1"
                   >
-                    {`${numberOfSelectedElements} ${t('selected')}`}{' '}
+                    <strong>{numberOfSelectedElements}</strong> {t('selected')}{' '}
                   </Typography>
                   <IconButton
                     aria-label="clear"
@@ -1913,7 +1988,7 @@ class DataTableToolBar extends Component {
                           <Grid item xs={3}>
                             <FormControl className={classes.formControl}>
                               <InputLabel>{t('Field')}</InputLabel>
-                              {this.renderFieldOptions(i, selectedTypes, entityTypeFilterValues)}
+                              {this.renderFieldOptions(i, selectedTypes, entityTypeFilterValues, isAdmin)}
                             </FormControl>
                           </Grid>
                           <Grid item xs={6}>
