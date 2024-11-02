@@ -19238,6 +19238,7 @@ export type Query = {
   synchronizerFetch?: Maybe<Array<Maybe<RemoteStreamCollection>>>;
   synchronizers?: Maybe<SynchronizerConnection>;
   system?: Maybe<System>;
+  systemMembers?: Maybe<MemberConnection>;
   systems?: Maybe<SystemConnection>;
   task?: Maybe<Task>;
   taskContainsStixObjectOrStixRelationship?: Maybe<Scalars['Boolean']['output']>;
@@ -37895,6 +37896,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   synchronizerFetch?: Resolver<Maybe<Array<Maybe<ResolversTypes['RemoteStreamCollection']>>>, ParentType, ContextType, Partial<QuerySynchronizerFetchArgs>>;
   synchronizers?: Resolver<Maybe<ResolversTypes['SynchronizerConnection']>, ParentType, ContextType, Partial<QuerySynchronizersArgs>>;
   system?: Resolver<Maybe<ResolversTypes['System']>, ParentType, ContextType, Partial<QuerySystemArgs>>;
+  systemMembers?: Resolver<Maybe<ResolversTypes['MemberConnection']>, ParentType, ContextType>;
   systems?: Resolver<Maybe<ResolversTypes['SystemConnection']>, ParentType, ContextType, Partial<QuerySystemsArgs>>;
   task?: Resolver<Maybe<ResolversTypes['Task']>, ParentType, ContextType, RequireFields<QueryTaskArgs, 'id'>>;
   taskContainsStixObjectOrStixRelationship?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<QueryTaskContainsStixObjectOrStixRelationshipArgs, 'id' | 'stixObjectOrStixRelationshipId'>>;

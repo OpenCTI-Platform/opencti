@@ -22,6 +22,15 @@ export const objectAssigneeFieldMembersSearchQuery = graphql`
         }
       }
     }
+    systemMembers {
+      edges {
+        node {
+          id
+          entity_type
+          name
+        }
+      }
+    }
   }
 `;
 

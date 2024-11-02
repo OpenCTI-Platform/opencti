@@ -204,6 +204,11 @@ export const findAllMembers = (context, user, args) => {
   return listEntities(context, user, types, args);
 };
 
+export const findAllSystemMembers = () => {
+  const members = R.values(INTERNAL_USERS);
+  return buildPagination(0, null, members.map((r) => ({ node: r })), members.length);
+};
+
 // build only a creator object with what we need to expose of users
 const buildCreatorUser = (user) => {
   if (!user) {
