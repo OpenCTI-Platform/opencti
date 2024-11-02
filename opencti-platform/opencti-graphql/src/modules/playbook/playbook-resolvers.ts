@@ -28,7 +28,6 @@ import {
   playbookDeleteNode,
   playbookDeleteLink,
   playbookUpdatePositions,
-  getPlaybookDefinition,
   findPlaybooksForEntity
 } from './playbook-domain';
 import { executePlaybookOnEntity, playbookStepExecution } from '../../manager/playbookManager';

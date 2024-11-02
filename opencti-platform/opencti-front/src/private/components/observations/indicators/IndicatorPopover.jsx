@@ -11,6 +11,7 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import MoreVert from '@mui/icons-material/MoreVert';
 import { graphql } from 'react-relay';
+import StixCoreObjectEnrollPlaybook from '../../common/stix_core_objects/StixCoreObjectEnrollPlaybook';
 import withRouter from '../../../../utils/compat_router/withRouter';
 import StixCoreObjectEnrichment from '../../common/stix_core_objects/StixCoreObjectEnrichment';
 import inject18n from '../../../../components/i18n';
@@ -35,6 +36,7 @@ class IndicatorPopover extends Component {
       displayDelete: false,
       displayEdit: false,
       displayEnrichment: false,
+      displayEnroll: false,
       deleting: false,
     };
   }
@@ -89,6 +91,15 @@ class IndicatorPopover extends Component {
     this.setState({ displayEnrichment: false });
   }
 
+  handleOpenEnroll() {
+    this.setState({ displayEnroll: true });
+    this.handleClose();
+  }
+
+  handleCloseEnroll() {
+    this.setState({ displayEnroll: false });
+  }
+
   render() {
     const { t, id } = this.props;
     return (
@@ -114,6 +125,11 @@ class IndicatorPopover extends Component {
               {t('Enrich')}
             </MenuItem>
           </Security>
+          <Security needs={[KNOWLEDGE_KNENRICHMENT]}>
+            <MenuItem onClick={this.handleOpenEnroll.bind(this)}>
+              {t('Enroll in playbook')}
+            </MenuItem>
+          </Security>
           <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
             <MenuItem onClick={this.handleOpenDelete.bind(this)}>
               {t('Delete')}
@@ -121,6 +137,7 @@ class IndicatorPopover extends Component {
           </Security>
         </Menu>
         <StixCoreObjectEnrichment stixCoreObjectId={id} open={this.state.displayEnrichment} handleClose={this.handleCloseEnrichment.bind(this)} />
+        <StixCoreObjectEnrollPlaybook stixCoreObjectId={id} open={this.state.displayEnroll} handleClose={this.handleCloseEnroll.bind(this)} />
         <Dialog
           open={this.state.displayDelete}
           PaperProps={{ elevation: 1 }}

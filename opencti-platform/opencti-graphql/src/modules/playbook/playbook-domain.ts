@@ -24,12 +24,12 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import type { EditInput, FilterGroup, PlaybookAddInput, PlaybookAddLinkInput, PlaybookAddNodeInput, PositionInput } from '../../generated/graphql';
 import type { BasicStoreEntityPlaybook, ComponentDefinition, LinkDefinition, NodeDefinition } from './playbook-types';
 import { ENTITY_TYPE_PLAYBOOK } from './playbook-types';
-import { PLAYBOOK_COMPONENTS, type SharingConfiguration, type StreamConfiguration } from './playbook-components';
+import { PLAYBOOK_COMPONENTS, type StreamConfiguration } from './playbook-components';
 import { UnsupportedError } from '../../config/errors';
 import { isStixMatchFilterGroup, validateFilterGroupForStixMatch } from '../../utils/filtering/filtering-stix/stix-filtering';
 import { registerConnectorQueues, unregisterConnector } from '../../database/rabbitmq';
 import { getEntitiesListFromCache } from '../../database/cache';
-import { buildPagination } from '../../database/utils';
+import { SYSTEM_USER } from '../../utils/access';
 
 export const findById: DomainFindById<BasicStoreEntityPlaybook> = (context: AuthContext, user: AuthUser, playbookId: string) => {
   return storeLoadById(context, user, playbookId, ENTITY_TYPE_PLAYBOOK);
@@ -82,11 +82,11 @@ export const playbookAddNode = async (context: AuthContext, user: AuthUser, id: 
   const definition = JSON.parse(playbook.playbook_definition ?? '{}') as ComponentDefinition;
   const relatedComponent = PLAYBOOK_COMPONENTS[input.component_id];
   if (!relatedComponent) {
-    throw UnsupportedError('Playbook related component not found');
+    throw UnsupportedError('Playbook related component not found', { input });
   }
   const existingEntryPoint = definition.nodes.find((n) => PLAYBOOK_COMPONENTS[n.component_id]?.is_entry_point);
   if (relatedComponent.is_entry_point && existingEntryPoint) {
-    throw UnsupportedError('Playbook multiple entrypoint is not supported');
+    throw UnsupportedError('Playbook multiple entrypoint is not supported', { input });
   }
   const nodeId = uuidv4();
   definition.nodes.push({

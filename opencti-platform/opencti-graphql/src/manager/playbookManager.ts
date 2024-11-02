@@ -321,39 +321,42 @@ export const executePlaybookOnEntity = async (context: AuthContext, id: string, 
   if (playbook && playbook.playbook_definition) {
     const def = JSON.parse(playbook.playbook_definition) as ComponentDefinition;
     const instance = def.nodes.find((n) => n.id === playbook.playbook_start);
-    const connector = PLAYBOOK_COMPONENTS[instance.component_id];
-    const data = await stixLoadById(context, RETENTION_MANAGER_USER, entityId);
-    if (data) {
-      try {
-        const eventId = `${utcDate().toDate().getTime()}-0`;
-        const nextStep = { component: connector, instance };
-        const bundle: StixBundle = {
-          id: uuidv4(),
-          spec_version: STIX_SPEC_VERSION,
-          type: 'bundle',
-          objects: [data]
-        };
-        await playbookExecutor({
-          eventId,
-          // Basic
-          executionId: uuidv4(),
-          playbookId: playbook.id,
-          dataInstanceId: data.id,
-          definition: def,
-          // Steps
-          previousStep: null,
-          nextStep,
-          // Data
-          previousStepBundle: null,
-          bundle,
-        });
-        return true;
-      } catch (e) {
-        logApp.error(e, { id: entityId, manager: 'PLAYBOOK_MANAGER' });
-        return false;
+    if (instance) {
+      const connector = PLAYBOOK_COMPONENTS[instance.component_id];
+      const data = await stixLoadById(context, RETENTION_MANAGER_USER, entityId);
+      if (data) {
+        try {
+          const eventId = `${utcDate().toDate().getTime()}-0`;
+          const nextStep = { component: connector, instance };
+          const bundle: StixBundle = {
+            id: uuidv4(),
+            spec_version: STIX_SPEC_VERSION,
+            type: 'bundle',
+            objects: [data]
+          };
+          await playbookExecutor({
+            eventId,
+            // Basic
+            executionId: uuidv4(),
+            playbookId: playbook.id,
+            dataInstanceId: data.id,
+            definition: def,
+            // Steps
+            previousStep: null,
+            nextStep,
+            // Data
+            previousStepBundle: null,
+            bundle,
+          });
+          return true;
+        } catch (e) {
+          logApp.error(e, { id: entityId, manager: 'PLAYBOOK_MANAGER' });
+          return false;
+        }
       }
     }
   }
+  return false;
 };
 
 const initPlaybookManager = () => {
