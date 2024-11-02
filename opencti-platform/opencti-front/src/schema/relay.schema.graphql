@@ -7613,6 +7613,7 @@ type Query {
   assignees(entityTypes: [String!]): AssigneeConnection
   participants(entityTypes: [String!]): ParticipantConnection
   members(first: Int, search: String, filters: FilterGroup, filterMode: FilterMode, entityTypes: [MemberType!]): MemberConnection
+  systemMembers: MemberConnection
   users(first: Int, after: ID, orderBy: UsersOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, toStix: Boolean): UserConnection
   sessions: [UserSession]
   role(id: String!): Role

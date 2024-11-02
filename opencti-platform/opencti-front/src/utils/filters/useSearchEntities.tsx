@@ -494,6 +494,16 @@ const useSearchEntities = ({
             group: n?.node.entity_type,
           }));
           unionSetEntities(key, membersEntities);
+          const membersSystems = (
+            (data as ObjectAssigneeFieldMembersSearchQuery$data)?.systemMembers
+              ?.edges ?? []
+          ).map((n) => ({
+            label: n?.node.name,
+            value: n?.node.id,
+            type: n?.node.entity_type,
+            group: n?.node.entity_type,
+          }));
+          unionSetEntities(key, membersSystems);
         });
     };
 
