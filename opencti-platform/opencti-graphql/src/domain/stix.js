@@ -36,6 +36,7 @@ import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { checkUserCanShareMarkings } from './user';
 import { ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
 import { getDraftContext } from '../utils/draftContext';
+import { SYSTEM_USER } from '../utils/access';
 
 export const stixDelete = async (context, user, id) => {
   const element = await internalLoadById(context, user, id);
@@ -181,9 +182,7 @@ export const askEntityExport = async (context, user, format, entity, type, conte
     const fileNamePart = `${entity.entity_type}-${entity.name || observableValue(entity)}_${type}.${mime.extension(format) ? mime.extension(format) : specialTypesExtensions[format] ?? 'unknown'}`;
     return `${now()}_${fileNameMarkingLevels || 'TLP:ALL'}_(${connector.name})_${fileNamePart}`;
   };
-
   const markingList = await getEntitiesListFromCache(context, user, ENTITY_TYPE_MARKING_DEFINITION);
-
   const { markingFilter, mainFilter } = await getExportFilter(user, { markingList, contentMaxMarkings, objectIdsList: [entity.id] });
 
   const baseEvent = {
@@ -222,7 +221,7 @@ export const askEntityExport = async (context, user, format, entity, type, conte
       return work;
     }, connectors)
   );
-  const contextData = completeContextDataForEntity(baseEvent, entity);
+  const contextData = completeContextDataForEntity(baseEvent, entity, markingList);
   await publishUserAction({
     user,
     event_access: 'extended',

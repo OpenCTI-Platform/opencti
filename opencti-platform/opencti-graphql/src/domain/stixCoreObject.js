@@ -44,7 +44,7 @@ import { extractEntityRepresentativeName } from '../database/entity-representati
 import { addFilter, findFiltersFromKey } from '../utils/filtering/filtering-utils';
 import { INSTANCE_REGARDING_OF } from '../utils/filtering/filtering-constants';
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../modules/grouping/grouping-types';
-import { getEntitiesMapFromCache } from '../database/cache';
+import { getEntitiesListFromCache, getEntitiesMapFromCache } from '../database/cache';
 import { isUserCanAccessStoreElement, SYSTEM_USER, validateUserAccessOperation } from '../utils/access';
 import { uploadToStorage } from '../database/file-storage-helper';
 import { connectorsForAnalysis } from '../database/repository';
@@ -225,7 +225,8 @@ export const askElementEnrichmentForConnector = async (context, user, enrichedId
     entity_name: extractEntityRepresentativeName(element),
     entity_type: element.entity_type
   };
-  const contextData = completeContextDataForEntity(baseData, element);
+  const markingDefinitions = await getEntitiesListFromCache(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
+  const contextData = completeContextDataForEntity(baseData, element, markingDefinitions);
   await publishUserAction({
     user,
     event_access: 'extended',
@@ -443,7 +444,7 @@ const askFieldsAnalysisForConnector = async (context, user, analyzedId, contentS
     };
 
     await pushToConnector(connector.internal_id, message);
-    await publishAnalysisAction(user, analyzedId, connector, element);
+    await publishAnalysisAction(context, user, analyzedId, connector, element);
     return work;
   }
   throw new Error('No connector found for analysis');
@@ -480,7 +481,7 @@ const askFileAnalysisForConnector = async (context, user, analyzedId, contentSou
     };
 
     await pushToConnector(connector.internal_id, message);
-    await publishAnalysisAction(user, analyzedId, connector, element);
+    await publishAnalysisAction(context, user, analyzedId, connector, element);
     return work;
   }
   throw new Error('No connector found for analysis');
@@ -490,7 +491,8 @@ const getAnalysisFileName = (contentSource, contentType) => {
   return `${contentType}_analysis_${contentSource}.analysis`;
 };
 
-const publishAnalysisAction = async (user, analyzedId, connector, element) => {
+const publishAnalysisAction = async (context, user, analyzedId, connector, element) => {
+  const markingDefinitions = await getEntitiesListFromCache(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
   const baseData = {
     id: analyzedId,
     connector_id: connector.id,
@@ -498,7 +500,7 @@ const publishAnalysisAction = async (user, analyzedId, connector, element) => {
     entity_name: extractEntityRepresentativeName(element),
     entity_type: element.entity_type
   };
-  const contextData = completeContextDataForEntity(baseData, element);
+  const contextData = completeContextDataForEntity(baseData, element, markingDefinitions);
   await publishUserAction({
     user,
     event_access: 'extended',

@@ -33,6 +33,7 @@ import type {
   BasicStoreRelation,
   StoreCommonConnection,
   StoreEntityConnection,
+  StoreMarkingDefinition,
   StoreProxyRelation,
   StoreRelationConnection
 } from '../types/store';
@@ -42,6 +43,9 @@ import { ASSIGNEE_FILTER, CREATOR_FILTER, INSTANCE_REGARDING_OF, PARTICIPANT_FIL
 import { completeContextDataForEntity, publishUserAction } from '../listener/UserActionListener';
 import type { UserReadActionContextData } from '../listener/UserActionListener';
 import { extractEntityRepresentativeName } from './entity-representative';
+import { getEntitiesListFromCache } from './cache';
+import { SYSTEM_USER } from '../utils/access';
+import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 
 export interface FiltersWithNested extends Filter {
   nested?: Array<{
@@ -662,9 +666,10 @@ export const storeLoadById = async <T extends BasicStoreCommon>(context: AuthCon
     throw FunctionalError('You need to specify a type when loading a element');
   }
   const data = await internalLoadById<T>(context, user, id, { type });
+  const markingDefinitions = await getEntitiesListFromCache(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION) as StoreMarkingDefinition[];
   if (data) {
     const baseData = { id, entity_name: extractEntityRepresentativeName(data), entity_type: data.entity_type };
-    const contextData: UserReadActionContextData = completeContextDataForEntity(baseData, data);
+    const contextData: UserReadActionContextData = completeContextDataForEntity(baseData, data, markingDefinitions);
     await publishUserAction({
       user,
       event_type: 'read',

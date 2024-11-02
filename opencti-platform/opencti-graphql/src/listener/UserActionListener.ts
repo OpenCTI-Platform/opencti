@@ -1,8 +1,9 @@
 import type { AuthUser } from '../types/user';
-import type { BasicStoreCommon, BasicStoreObject } from '../types/store';
+import type { BasicStoreCommon, BasicStoreObject, StoreMarkingDefinition } from '../types/store';
 import { extractEntityRepresentativeName } from '../database/entity-representative';
 import { RELATION_CREATED_BY, RELATION_GRANTED_TO, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
 import { ENTITY_TYPE_WORKSPACE } from '../modules/workspace/workspace-types';
+import { getMarkingDefinitionsLabels } from '../domain/markingDefinition';
 
 interface BasicUserAction {
   user: AuthUser
@@ -30,6 +31,7 @@ export interface ElementContextData {
   creator_ids?: string[]
   granted_refs_ids?: string[]
   object_marking_refs_ids?: string[]
+  object_marking_refs_definitions?: string[]
   created_by_ref_id?: string
   workspace_type?: string
   labels_ids?: string[]
@@ -164,7 +166,11 @@ export const publishUserAction = async (userAction: UserAction) => {
   return Promise.all(actionPromises);
 };
 
-export const completeContextDataForEntity = <T extends BasicStoreCommon, C extends ElementContextData>(inputContextData: C, data: T) => {
+export const completeContextDataForEntity = <T extends BasicStoreCommon, C extends ElementContextData, >(
+  inputContextData: C,
+  data: T,
+  markingDefinitions: StoreMarkingDefinition[] = []
+) => {
   const contextData = { ...inputContextData };
   if (data) {
     if (data.creator_id) {
@@ -175,6 +181,7 @@ export const completeContextDataForEntity = <T extends BasicStoreCommon, C exten
     }
     if (data[RELATION_OBJECT_MARKING]) {
       contextData.object_marking_refs_ids = data[RELATION_OBJECT_MARKING];
+      contextData.object_marking_refs_definitions = getMarkingDefinitionsLabels(markingDefinitions, data[RELATION_OBJECT_MARKING]);
     }
     if (data[RELATION_CREATED_BY]) {
       contextData.created_by_ref_id = data[RELATION_CREATED_BY];

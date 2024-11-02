@@ -717,13 +717,24 @@ const denormalizeRelationsMappingGenerator = () => {
   const schemaProperties = {};
   for (let attrIndex = 0; attrIndex < databaseRelationshipsName.length; attrIndex += 1) {
     const relName = databaseRelationshipsName[attrIndex];
-    schemaProperties[`rel_${relName}`] = {
-      dynamic: 'strict',
-      properties: {
-        internal_id: shortMapping,
-        inferred_id: shortMapping,
-      }
-    };
+    if (relName === RELATION_OBJECT_MARKING) {
+      schemaProperties[`rel_${relName}`] = {
+        dynamic: 'strict',
+        properties: {
+          internal_id: shortMapping,
+          inferred_id: shortMapping,
+          definition: shortMapping,
+        }
+      };
+    } else {
+      schemaProperties[`rel_${relName}`] = {
+        dynamic: 'strict',
+        properties: {
+          internal_id: shortMapping,
+          inferred_id: shortMapping,
+        }
+      };
+    }
   }
   return schemaProperties;
 };

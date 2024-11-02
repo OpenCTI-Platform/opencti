@@ -17,7 +17,7 @@ import { controlUserConfidenceAgainstElement } from '../utils/confidence-level';
 import { uploadToStorage } from '../database/file-storage-helper';
 import { extractContentFrom } from '../utils/fileToContent';
 import { stixLoadById } from '../database/middleware';
-import { getEntitiesMapFromCache } from '../database/cache';
+import { getEntitiesListFromCache, getEntitiesMapFromCache } from '../database/cache';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { FilterMode, OrderingMode } from '../generated/graphql';
 import { telemetry } from '../config/tracing';
@@ -86,6 +86,7 @@ export const askJobImport = async (context, user, args) => {
     controlUserConfidenceAgainstElement(user, entity);
   }
   const connectors = await uploadJobImport(context, user, file.id, file.metaData.mimetype, entityId, opts);
+  const markingDefinitions = await getEntitiesListFromCache(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
   const entityName = entityId ? extractEntityRepresentativeName(entity) : 'global';
   const entityType = entityId ? entity.entity_type : 'global';
   const baseData = {
@@ -97,7 +98,7 @@ export const askJobImport = async (context, user, args) => {
     entity_name: entityName,
     entity_type: entityType
   };
-  const contextData = completeContextDataForEntity(baseData, entity);
+  const contextData = completeContextDataForEntity(baseData, entity, markingDefinitions);
   await publishUserAction({
     user,
     event_access: 'extended',

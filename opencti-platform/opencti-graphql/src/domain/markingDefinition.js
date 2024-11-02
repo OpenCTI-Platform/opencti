@@ -8,6 +8,7 @@ import { ENTITY_TYPE_GROUP } from '../schema/internalObject';
 import { SYSTEM_USER } from '../utils/access';
 import { RELATION_ACCESSES_TO } from '../schema/internalRelationship';
 import { groupAddRelation, groupEditField } from './group';
+import { getEntitiesListFromCache } from '../database/cache';
 
 export const findById = (context, user, markingDefinitionId) => {
   return storeLoadById(context, user, markingDefinitionId, ENTITY_TYPE_MARKING_DEFINITION);
@@ -87,4 +88,11 @@ export const markingDefinitionEditContext = async (context, user, markingDefinit
   return storeLoadById(context, user, markingDefinitionId, ENTITY_TYPE_MARKING_DEFINITION).then((markingDefinition) => {
     return notify(BUS_TOPICS[ENTITY_TYPE_MARKING_DEFINITION].EDIT_TOPIC, markingDefinition, user);
   });
+};
+
+export const getMarkingDefinitionsLabels = (markingDefinitions, markingDefinitionIds) => {
+  if (markingDefinitionIds && markingDefinitionIds.length > 0 && markingDefinitions && markingDefinitions.length > 0) {
+    return markingDefinitions.filter((n) => markingDefinitionIds.includes(n.id)).map((n) => n.definition);
+  }
+  return [];
 };

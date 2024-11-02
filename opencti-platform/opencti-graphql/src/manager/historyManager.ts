@@ -65,6 +65,9 @@ const eventsApplyHandler = async (context: AuthContext, events: Array<SseEvent<S
     const eventMarkingRefs = (stix.object_marking_refs ?? [])
       .map((stixId) => markingsById.get(stixId)?.internal_id)
       .filter((o) => isNotEmptyField(o)) as string[];
+    const eventMarkingDefinitions = (stix.object_marking_refs ?? [])
+      .map((stixId) => markingsById.get(stixId)?.definition)
+      .filter((o) => isNotEmptyField(o)) as string[];
     const eventGrantedRefs = (stix.extensions[STIX_EXT_OCTI].granted_refs ?? [])
       .map((stixId) => organizationsById.get(stixId)?.internal_id)
       .filter((o) => isNotEmptyField(o));
@@ -106,7 +109,6 @@ const eventsApplyHandler = async (context: AuthContext, events: Array<SseEvent<S
     }
     const activityDate = utcDate(eventDate).toDate();
     const standardId = generateStandardId(ENTITY_TYPE_HISTORY, { internal_id: event.id }) as StixId;
-
     return {
       _index: INDEX_HISTORY,
       internal_id: event.id,
@@ -125,7 +127,8 @@ const eventsApplyHandler = async (context: AuthContext, events: Array<SseEvent<S
       context_data: contextData,
       authorized_members: stix.extensions[STIX_EXT_OCTI].authorized_members,
       'rel_object-marking.internal_id': R.uniq(eventMarkingRefs),
-      'rel_granted.internal_id': R.uniq(eventGrantedRefs)
+      'rel_object-marking.definition': R.uniq(eventMarkingDefinitions),
+      'rel_granted.internal_id': R.uniq(eventGrantedRefs),
     };
   });
   // Bulk the history data insertions

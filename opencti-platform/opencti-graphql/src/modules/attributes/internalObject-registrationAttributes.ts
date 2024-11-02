@@ -118,6 +118,7 @@ const HistoryDefinition: AttributeDefinition[] = [
       { name: 'connector_name', label: 'Connector name', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: true },
       { name: 'marking_definition_ids', label: 'Marking definition', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: false },
       { name: 'object_marking_refs_ids', label: 'Marking definition', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: false },
+      { name: 'object_marking_refs_definitions', label: 'Marking definition labels', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: false },
       { name: 'connector_id', label: 'Source connector', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: false },
       { name: 'from_id', label: 'Source entity', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: false },
       { name: 'to_id', label: 'Target entity', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: false },
