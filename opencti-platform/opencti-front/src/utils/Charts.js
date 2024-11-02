@@ -584,8 +584,8 @@ export const radarChartOptions = (
     width: '100%',
     height: '100%',
     events: {
-      click: handleClick,
-      markerClick: handleClick,
+      click: () => handleClick(),
+      markerClick: () => handleClick(),
     },
   },
   theme: {
