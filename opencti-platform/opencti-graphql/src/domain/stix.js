@@ -36,7 +36,6 @@ import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { checkUserCanShareMarkings } from './user';
 import { ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
 import { getDraftContext } from '../utils/draftContext';
-import { SYSTEM_USER } from '../utils/access';
 
 export const stixDelete = async (context, user, id) => {
   const element = await internalLoadById(context, user, id);
