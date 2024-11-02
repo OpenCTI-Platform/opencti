@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import * as R from 'ramda';
 import { createFragmentContainer, graphql } from 'react-relay';
 import RGL, { WidthProvider } from 'react-grid-layout';
@@ -62,8 +62,8 @@ import AuditsWordCloud from '../../common/audits/AuditsWordCloud';
 import { ErrorBoundary } from '../../Error';
 import {
   deserializeDashboardManifestForFrontend,
-  useRemoveIdAndIncorrectKeysFromFilterGroupObject,
   serializeDashboardManifestForBackend,
+  useRemoveIdAndIncorrectKeysFromFilterGroupObject,
 } from '../../../../utils/filters/filtersUtils';
 
 // Deprecated - https://mui.com/system/styles/basics/
@@ -793,7 +793,6 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
       className={classes.container}
       id="container"
       style={{
-        paddingBottom: noToolbar ? 0 : 50,
         marginTop: noToolbar ? -20 : 10,
       }}
     >

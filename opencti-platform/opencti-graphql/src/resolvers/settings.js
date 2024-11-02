@@ -73,7 +73,7 @@ const settingsResolvers = {
         const preFn = () => settingsEditContext(context, context.user, id);
         const cleanFn = () => settingsCleanContext(context, context.user, id);
         const bus = BUS_TOPICS[ENTITY_TYPE_SETTINGS];
-        return subscribeToInstanceEvents(_, context, id, [bus.EDIT_TOPIC], { preFn, cleanFn });
+        return subscribeToInstanceEvents(_, context, id, [bus.EDIT_TOPIC], { type: ENTITY_TYPE_SETTINGS, preFn, cleanFn });
       },
     },
     settingsMessages: {

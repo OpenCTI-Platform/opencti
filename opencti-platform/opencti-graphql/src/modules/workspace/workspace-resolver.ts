@@ -79,7 +79,7 @@ const workspaceResolvers: Resolvers = {
       resolve: /* v8 ignore next */ (payload: any) => payload.instance,
       subscribe: /* v8 ignore next */ (_, { id }, context) => {
         const bus = BUS_TOPICS[ENTITY_TYPE_WORKSPACE];
-        return subscribeToInstanceEvents(_, context, id, [bus.EDIT_TOPIC]);
+        return subscribeToInstanceEvents(_, context, id, [bus.EDIT_TOPIC], { type: ENTITY_TYPE_WORKSPACE });
       },
     },
   },

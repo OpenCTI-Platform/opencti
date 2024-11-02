@@ -28,7 +28,7 @@ const labelResolvers = {
         const preFn = () => labelEditContext(context, context.user, id);
         const cleanFn = () => labelCleanContext(context, context.user, id);
         const bus = BUS_TOPICS[ENTITY_TYPE_LABEL];
-        return subscribeToInstanceEvents(_, context, id, [bus.EDIT_TOPIC], { preFn, cleanFn });
+        return subscribeToInstanceEvents(_, context, id, [bus.EDIT_TOPIC], { type: ENTITY_TYPE_LABEL, preFn, cleanFn });
       },
     },
   },

@@ -81,10 +81,19 @@ export const findById = async (context, user, stixCoreObjectId) => {
 };
 
 export const batchInternalRels = async (context, user, elements, opts = {}) => {
-  const relIds = elements.map(({ element, definition }) => element[definition.databaseName]).flat().filter((id) => isNotEmptyField(id));
+  const relIds = new Set();
+  const relTypes = new Set();
+  for (let index = 0; index < elements.length; index += 1) {
+    const { element, definition } = elements[index];
+    if (isNotEmptyField(element[definition.databaseName])) {
+      const ids = Array.isArray(element[definition.databaseName]) ? element[definition.databaseName] : [element[definition.databaseName]];
+      ids.filter((id) => isNotEmptyField(id)).forEach(relIds.add, relIds);
+      definition.toTypes.forEach(relTypes.add, relTypes);
+    }
+  }
   // Get all rel resolutions with system user
   // The visibility will be restricted in the data preparation
-  const resolvedElements = await internalFindByIds(context, SYSTEM_USER, relIds, { toMap: true });
+  const resolvedElements = await internalFindByIds(context, SYSTEM_USER, Array.from(relIds), { type: Array.from(relTypes), toMap: true });
   return await Promise.all(elements.map(async ({ element, definition }) => {
     const relId = element[definition.databaseName];
     if (definition.multiple) {
