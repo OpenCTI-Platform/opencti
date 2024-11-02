@@ -52,7 +52,7 @@ const OpinionComponent = ({ opinion, enableReferences }) => {
           <OpinionDetails opinion={opinion} />
         </Grid>
         <Grid item xs={6}>
-          <StixDomainObjectOverview stixDomainObject={opinion} />
+          <StixDomainObjectOverview stixDomainObject={opinion} displayOpinions={false} />
         </Grid>
         <Grid item xs={12}>
           <ContainerStixObjectsOrStixRelationships

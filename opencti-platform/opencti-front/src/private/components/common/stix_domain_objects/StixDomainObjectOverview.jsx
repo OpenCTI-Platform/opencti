@@ -70,6 +70,7 @@ const StixDomainObjectOverview = ({
   displayParticipants,
   displayConfidence = true,
   displayReliability = true,
+  displayOpinions = true,
 }) => {
   const classes = useStyles();
   const { t_i18n, fldt } = useFormatter();
@@ -239,11 +240,11 @@ const StixDomainObjectOverview = ({
                 )}
               </Grid>
             )}
-            <StixCoreObjectOpinions stixCoreObjectId={stixDomainObject.id} />
+            {displayOpinions && <StixCoreObjectOpinions stixCoreObjectId={stixDomainObject.id} />}
             <Typography
               variant="h3"
               gutterBottom={true}
-              style={{ marginTop: -40 }}
+              style={{ marginTop: 20 }}
             >
               {t_i18n('Original creation date')}
             </Typography>

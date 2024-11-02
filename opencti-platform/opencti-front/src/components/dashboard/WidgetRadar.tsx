@@ -36,7 +36,7 @@ const WidgetRadar = ({
   const labels = buildWidgetLabelsOption(data, groupBy);
   return (
     <Chart
-      options={radarChartOptions(theme, labels, simpleNumberFormat, [], true, false) as ApexOptions}
+      options={radarChartOptions(theme, labels, simpleNumberFormat, [], true) as ApexOptions}
       series={chartData}
       type="radar"
       width="100%"

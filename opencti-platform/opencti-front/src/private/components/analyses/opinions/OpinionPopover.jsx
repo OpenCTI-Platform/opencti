@@ -7,10 +7,10 @@ import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
-import Slide from '@mui/material/Slide';
 import MoreVert from '@mui/icons-material/MoreVert';
 import { graphql } from 'react-relay';
 import ToggleButton from '@mui/material/ToggleButton';
+import IconButton from '@mui/material/IconButton';
 import { useFormatter } from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
 import { opinionEditionQuery } from './OpinionEdition';
@@ -18,11 +18,7 @@ import { CollaborativeSecurity } from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import OpinionEditionContainer from './OpinionEditionContainer';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-
-const Transition = React.forwardRef((props, ref) => (
-  <Slide direction="up" ref={ref} {...props} />
-));
-Transition.displayName = 'TransitionSlide';
+import Transition from '../../../../components/Transition';
 
 const OpinionPopoverDeletionMutation = graphql`
   mutation OpinionPopoverDeletionMutation($id: ID!) {
@@ -32,7 +28,7 @@ const OpinionPopoverDeletionMutation = graphql`
   }
 `;
 
-const OpinionPopover = (data) => {
+const OpinionPopover = ({ opinion, variant = 'overview' }) => {
   const navigate = useNavigate();
   const { t_i18n } = useFormatter();
   const [anchorEl, setAnchorEl] = useState(null);
@@ -50,11 +46,13 @@ const OpinionPopover = (data) => {
   const submitDelete = () => {
     setDeleting(true);
     commit({
-      variables: { id: data.id },
+      variables: { id: opinion.id },
       onCompleted: () => {
         setDeleting(false);
         handleClose();
-        navigate('/dashboard/analyses/opinions');
+        if (variant !== 'inList') {
+          navigate('/dashboard/analyses/opinions');
+        }
       },
     });
   };
@@ -65,17 +63,29 @@ const OpinionPopover = (data) => {
   const handleCloseEdit = () => setDisplayEdit(false);
   return (
     <>
-      <ToggleButton
-        value="popover"
-        size="small"
-        onClick={handleOpen}
-      >
-        <MoreVert fontSize="small" color="primary" />
-      </ToggleButton>
+      {variant === 'inList' ? (
+        <IconButton
+          onClick={handleOpen}
+          aria-haspopup="true"
+          size="large"
+          style={{ marginTop: 3 }}
+          color="primary"
+        >
+          <MoreVert />
+        </IconButton>
+      ) : (
+        <ToggleButton
+          value="popover"
+          size="small"
+          onClick={handleOpen}
+        >
+          <MoreVert fontSize="small" color="primary" />
+        </ToggleButton>
+      )}
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
-        <MenuItem onClick={handleOpenEdit}>{t_i18n('Update')}</MenuItem>
+        {variant !== 'inList' && <MenuItem onClick={handleOpenEdit}>{t_i18n('Update')}</MenuItem>}
         <CollaborativeSecurity
-          data={data.opinion}
+          data={opinion}
           needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}
         >
           <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
@@ -89,7 +99,7 @@ const OpinionPopover = (data) => {
       >
         <DialogContent>
           <DialogContentText>
-            {t_i18n('Do you want to delete this opinions?')}
+            {t_i18n('Do you want to delete this opinion?')}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
@@ -101,22 +111,24 @@ const OpinionPopover = (data) => {
           </Button>
         </DialogActions>
       </Dialog>
-      <QueryRenderer
-        query={opinionEditionQuery}
-        variables={{ id: data.id }}
-        render={({ props }) => {
-          if (props) {
-            return (
-              <OpinionEditionContainer
-                opinion={props.opinion}
-                handleClose={handleCloseEdit}
-                open={displayEdit}
-              />
-            );
-          }
-          return <div />;
-        }}
-      />
+      {variant !== 'inList' && (
+        <QueryRenderer
+          query={opinionEditionQuery}
+          variables={{ id: opinion.id }}
+          render={({ props }) => {
+            if (props) {
+              return (
+                <OpinionEditionContainer
+                  opinion={props.opinion}
+                  handleClose={handleCloseEdit}
+                  open={displayEdit}
+                />
+              );
+            }
+            return <div />;
+          }}
+        />
+      )}
     </>
   );
 };
