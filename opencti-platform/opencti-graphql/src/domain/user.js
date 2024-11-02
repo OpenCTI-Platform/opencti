@@ -77,6 +77,8 @@ import { UnitSystem } from '../generated/graphql';
 
 const BEARER = 'Bearer ';
 const BASIC = 'Basic ';
+const AUTH_BEARER = 'Bearer';
+const AUTH_BASIC = 'BasicAuth';
 export const TAXIIAPI = 'TAXIIAPI';
 const PLATFORM_ORGANIZATION = 'settings_platform_organization';
 export const MEMBERS_ENTITY_TYPES = [ENTITY_TYPE_USER, ENTITY_TYPE_IDENTITY_ORGANIZATION, ENTITY_TYPE_GROUP];
@@ -1423,21 +1425,21 @@ export const resolveUserById = async (context, id) => {
   return buildCompleteUser(context, client);
 };
 
-export const authenticateUserByToken = async (context, req, tokenValue) => {
+export const authenticateUserByToken = async (context, req, tokenValue, provider) => {
   const platformUsers = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
   if (platformUsers.has(tokenValue)) {
-    const tokenUser = platformUsers.get(tokenValue);
+    const logged = platformUsers.get(tokenValue);
     const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
-    validateUser(tokenUser, settings);
+    validateUser(logged, settings);
     const applicantId = req.headers['opencti-applicant-id'];
-    if (applicantId && isBypassUser(tokenUser)) {
-      const applicantUser = platformUsers.get(applicantId);
-      if (applicantUser) {
-        return applicantUser;
+    if (applicantId && isBypassUser(logged)) {
+      const impersonate = platformUsers.get(applicantId);
+      if (impersonate) {
+        return buildSessionUser(logged, impersonate, provider, settings);
       }
       throw FunctionalError(`Cant impersonate applicant ${applicantId}`);
     }
-    return tokenUser;
+    return buildSessionUser(logged, undefined, provider, settings);
   }
   throw FunctionalError(`Cant identify with ${tokenValue}`);
 };
@@ -1565,15 +1567,17 @@ export const authenticateUserFromRequest = async (context, req) => {
     }
   }
   // If user not identified, try to extract token from bearer
+  let loginProvider = AUTH_BEARER;
   let tokenUUID = extractTokenFromBearer(req.headers.authorization);
   // If no bearer specified, try with basic auth
   if (!tokenUUID) {
+    loginProvider = AUTH_BASIC;
     tokenUUID = await extractTokenFromBasicAuth(req.headers.authorization);
   }
   // Get user from the token if found
   if (tokenUUID) {
     try {
-      return await authenticateUserByToken(context, req, tokenUUID);
+      return await authenticateUserByToken(context, req, tokenUUID, loginProvider);
     } catch (err) {
       logApp.error('Error resolving user by token', { cause: err });
     }
