@@ -147,7 +147,7 @@ export const creators: AttributeDefinition = {
   label: 'Creators',
   type: 'string',
   format: 'id',
-  update: false,
+  update: true,
   entityTypes: [ENTITY_TYPE_USER],
   mandatoryType: 'no',
   editDefault: false,
