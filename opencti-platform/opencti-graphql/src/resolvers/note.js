@@ -106,8 +106,17 @@ const noteResolvers = {
       return addNote(context, user, noteToCreate);
     },
     // For knowledge
-    noteAdd: (_, { input }, context) => {
-      return addNote(context, context.user, input);
+    noteAdd: async (_, { input }, context) => {
+      const { user } = context;
+      const noteToCreate = { ...input };
+      if (!noteToCreate.createdBy) {
+        noteToCreate.createdBy = user.individual_id;
+        if (noteToCreate.createdBy === undefined) {
+          const individual = await userAddIndividual(context, user);
+          noteToCreate.createdBy = individual.id;
+        }
+      }
+      return addNote(context, context.user, noteToCreate);
     },
   },
 };

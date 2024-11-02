@@ -108,8 +108,17 @@ const opinionResolvers = {
       return addOpinion(context, user, opinionToCreate);
     },
     // For knowledge
-    opinionAdd: (_, { input }, context) => {
-      return addOpinion(context, context.user, input);
+    opinionAdd: async (_, { input }, context) => {
+      const { user } = context;
+      const opinionToCreate = { ...input };
+      if (!opinionToCreate.createdBy) {
+        opinionToCreate.createdBy = user.individual_id;
+        if (opinionToCreate.createdBy === undefined) {
+          const individual = await userAddIndividual(context, user);
+          opinionToCreate.createdBy = individual.id;
+        }
+      }
+      return addOpinion(context, context.user, opinionToCreate);
     },
   },
 };
