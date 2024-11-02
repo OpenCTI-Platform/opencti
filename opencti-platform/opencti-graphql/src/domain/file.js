@@ -86,7 +86,6 @@ export const askJobImport = async (context, user, args) => {
     controlUserConfidenceAgainstElement(user, entity);
   }
   const connectors = await uploadJobImport(context, user, file.id, file.metaData.mimetype, entityId, opts);
-  const markingDefinitions = await getEntitiesListFromCache(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
   const entityName = entityId ? extractEntityRepresentativeName(entity) : 'global';
   const entityType = entityId ? entity.entity_type : 'global';
   const baseData = {
@@ -98,7 +97,7 @@ export const askJobImport = async (context, user, args) => {
     entity_name: entityName,
     entity_type: entityType
   };
-  const contextData = completeContextDataForEntity(baseData, entity, markingDefinitions);
+  const contextData = completeContextDataForEntity(baseData, entity);
   await publishUserAction({
     user,
     event_access: 'extended',

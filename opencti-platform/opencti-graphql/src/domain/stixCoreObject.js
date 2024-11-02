@@ -225,8 +225,7 @@ export const askElementEnrichmentForConnector = async (context, user, enrichedId
     entity_name: extractEntityRepresentativeName(element),
     entity_type: element.entity_type
   };
-  const markingDefinitions = await getEntitiesListFromCache(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
-  const contextData = completeContextDataForEntity(baseData, element, markingDefinitions);
+  const contextData = completeContextDataForEntity(baseData, element);
   await publishUserAction({
     user,
     event_access: 'extended',
@@ -492,7 +491,6 @@ const getAnalysisFileName = (contentSource, contentType) => {
 };
 
 const publishAnalysisAction = async (context, user, analyzedId, connector, element) => {
-  const markingDefinitions = await getEntitiesListFromCache(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
   const baseData = {
     id: analyzedId,
     connector_id: connector.id,
@@ -500,7 +498,7 @@ const publishAnalysisAction = async (context, user, analyzedId, connector, eleme
     entity_name: extractEntityRepresentativeName(element),
     entity_type: element.entity_type
   };
-  const contextData = completeContextDataForEntity(baseData, element, markingDefinitions);
+  const contextData = completeContextDataForEntity(baseData, element);
   await publishUserAction({
     user,
     event_access: 'extended',

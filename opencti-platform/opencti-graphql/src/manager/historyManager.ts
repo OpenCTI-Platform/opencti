@@ -65,9 +65,6 @@ const eventsApplyHandler = async (context: AuthContext, events: Array<SseEvent<S
     const eventMarkingRefs = (stix.object_marking_refs ?? [])
       .map((stixId) => markingsById.get(stixId)?.internal_id)
       .filter((o) => isNotEmptyField(o)) as string[];
-    const eventMarkingDefinitions = (stix.object_marking_refs ?? [])
-      .map((stixId) => markingsById.get(stixId)?.definition)
-      .filter((o) => isNotEmptyField(o)) as string[];
     const eventGrantedRefs = (stix.extensions[STIX_EXT_OCTI].granted_refs ?? [])
       .map((stixId) => organizationsById.get(stixId)?.internal_id)
       .filter((o) => isNotEmptyField(o));
@@ -126,7 +123,7 @@ const eventsApplyHandler = async (context: AuthContext, events: Array<SseEvent<S
       timestamp: eventDate,
       context_data: contextData,
       authorized_members: stix.extensions[STIX_EXT_OCTI].authorized_members,
-      markings: R.uniq(eventMarkingDefinitions),
+      marking_definitions: R.uniq(eventMarkingRefs).map((n) => markingsById.get(n)?.definition),
       'rel_object-marking.internal_id': R.uniq(eventMarkingRefs),
       'rel_granted.internal_id': R.uniq(eventGrantedRefs),
     };

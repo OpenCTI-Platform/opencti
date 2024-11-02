@@ -220,7 +220,7 @@ export const askEntityExport = async (context, user, format, entity, type, conte
       return work;
     }, connectors)
   );
-  const contextData = completeContextDataForEntity(baseEvent, entity, markingList);
+  const contextData = completeContextDataForEntity(baseEvent, entity);
   await publishUserAction({
     user,
     event_access: 'extended',

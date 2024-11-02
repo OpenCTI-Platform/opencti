@@ -666,10 +666,9 @@ export const storeLoadById = async <T extends BasicStoreCommon>(context: AuthCon
     throw FunctionalError('You need to specify a type when loading a element');
   }
   const data = await internalLoadById<T>(context, user, id, { type });
-  const markingDefinitions = await getEntitiesListFromCache(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION) as StoreMarkingDefinition[];
   if (data) {
     const baseData = { id, entity_name: extractEntityRepresentativeName(data), entity_type: data.entity_type };
-    const contextData: UserReadActionContextData = completeContextDataForEntity(baseData, data, markingDefinitions);
+    const contextData: UserReadActionContextData = completeContextDataForEntity(baseData, data);
     await publishUserAction({
       user,
       event_type: 'read',

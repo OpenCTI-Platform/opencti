@@ -34,6 +34,7 @@ import type { BasicStoreSettings } from '../types/settings';
 import type { ActivityNotificationEvent, NotificationUser, ResolvedLive, ResolvedTrigger } from './notificationManager';
 import { convertToNotificationUser, EVENT_NOTIFICATION_VERSION, getNotifications } from './notificationManager';
 import { isActivityEventMatchFilterGroup } from '../utils/filtering/filtering-activity-event/activity-event-filtering';
+import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 
 const ACTIVITY_ENGINE_KEY = conf.get('activity_manager:lock_key');
 const SCHEDULE_TIME = 10000;
@@ -78,6 +79,7 @@ const alertingTriggers = async (context: AuthContext, events: Array<SseEvent<Act
 };
 
 const historyIndexing = async (context: AuthContext, events: Array<SseEvent<ActivityStreamEvent>>) => {
+  const markingDefinitions = await getEntitiesMapFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
   const historyElements = events.filter((e) => !e.data.prevent_indexing)
     .map((event: SseEvent<ActivityStreamEvent>) => {
       const [time] = event.id.split('-');
@@ -103,9 +105,9 @@ const historyIndexing = async (context: AuthContext, events: Array<SseEvent<Acti
         applicant_id: event.data.origin?.applicant_id,
         timestamp: eventDate,
         context_data: contextData,
+        marking_definitions: (event.data.data.object_marking_refs_ids ?? []).map((n) => markingDefinitions.get(n)?.definition),
         'rel_object-marking.internal_id': event.data.data.object_marking_refs_ids,
         'rel_granted.internal_id': event.data.data.granted_refs_ids,
-        markings: event.data.data.markings,
       };
     });
   // Bulk the history data insertions
