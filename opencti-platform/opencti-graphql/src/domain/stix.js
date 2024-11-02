@@ -181,9 +181,7 @@ export const askEntityExport = async (context, user, format, entity, type, conte
     const fileNamePart = `${entity.entity_type}-${entity.name || observableValue(entity)}_${type}.${mime.extension(format) ? mime.extension(format) : specialTypesExtensions[format] ?? 'unknown'}`;
     return `${now()}_${fileNameMarkingLevels || 'TLP:ALL'}_(${connector.name})_${fileNamePart}`;
   };
-
   const markingList = await getEntitiesListFromCache(context, user, ENTITY_TYPE_MARKING_DEFINITION);
-
   const { markingFilter, mainFilter } = await getExportFilter(user, { markingList, contentMaxMarkings, objectIdsList: [entity.id] });
 
   const baseEvent = {

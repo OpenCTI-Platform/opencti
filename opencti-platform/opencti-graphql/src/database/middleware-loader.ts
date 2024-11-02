@@ -39,8 +39,8 @@ import type {
 import { FunctionalError, UnsupportedError } from '../config/errors';
 import { type Filter, type FilterGroup, FilterMode, FilterOperator, type InputMaybe, OrderingMode } from '../generated/graphql';
 import { ASSIGNEE_FILTER, CREATOR_FILTER, INSTANCE_REGARDING_OF, PARTICIPANT_FILTER } from '../utils/filtering/filtering-constants';
-import { completeContextDataForEntity, publishUserAction } from '../listener/UserActionListener';
 import type { UserReadActionContextData } from '../listener/UserActionListener';
+import { completeContextDataForEntity, publishUserAction } from '../listener/UserActionListener';
 import { extractEntityRepresentativeName } from './entity-representative';
 
 export interface FiltersWithNested extends Filter {

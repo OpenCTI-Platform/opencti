@@ -84,6 +84,7 @@ const HistoryDefinition: AttributeDefinition[] = [
     isFilterable: false
   },
   { name: 'timestamp', label: 'Timestamp', type: 'date', editDefault: false, mandatoryType: 'internal', multiple: false, upsert: false, isFilterable: true },
+  { name: 'marking_definitions', label: 'Marking definitions', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: false },
   {
     name: 'context_data',
     label: 'Context data',

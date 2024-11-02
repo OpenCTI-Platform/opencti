@@ -30,7 +30,7 @@ import { createWork, worksForSource, workToExportFile } from './work';
 import { pushToConnector } from '../database/rabbitmq';
 import { now } from '../utils/format';
 import { ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
-import { deleteFile, loadFile, getFileContent, storeFileConverter } from '../database/file-storage';
+import { deleteFile, getFileContent, loadFile, storeFileConverter } from '../database/file-storage';
 import { findById as documentFindById, paginatedForPathWithEnrichment } from '../modules/internal/document/document-domain';
 import { elCount, elFindByIds, elUpdateElement } from '../database/engine';
 import { generateStandardId, getInstanceIds } from '../schema/identifier';
