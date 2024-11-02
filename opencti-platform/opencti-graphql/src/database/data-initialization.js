@@ -247,7 +247,7 @@ const createBasicRolesAndCapabilities = async (context) => {
   let defaultRoleInput = await addRole(context, SYSTEM_USER, {
     name: ROLE_DEFAULT,
     description: 'Default role associated to the default group',
-    capabilities: [KNOWLEDGE_CAPABILITY, KNOWLEDGE_FRONTEND_EXPORT],
+    capabilities: [KNOWLEDGE_CAPABILITY],
   });
   if (isFeatureEnabled((PROTECT_SENSITIVE_CHANGES_FF))) {
     defaultRoleInput = {
