@@ -6,24 +6,24 @@ import ToggleButton from '@mui/material/ToggleButton';
 import Drawer from '../drawer/Drawer';
 import { QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
-import StixCoreObjectEnrichmentLines, { stixCoreObjectEnrichmentLinesQuery } from './StixCoreObjectEnrichmentLines';
+import StixCoreObjectEnrollPlaybookLines, { stixCoreObjectEnrollPlaybookLinesQuery } from './StixCoreObjectEnrollPlaybookLines';
 
-const StixCoreObjectEnrichment = (props) => {
+const StixCoreObjectEnrollPlaybook = (props) => {
   const { t, stixCoreObjectId, handleClose, open } = props;
   const [openDrawer, setOpenDrawer] = useState(false);
-  const handleOpenEnrichment = () => {
+  const handleOpenEnrollPlaybook = () => {
     setOpenDrawer(true);
   };
-  const handleCloseEnrichment = () => {
+  const handleCloseEnrollPlaybook = () => {
     setOpenDrawer(false);
   };
 
   return (
     <>
       {!handleClose && (
-        <Tooltip title={t('Enrichment')}>
+        <Tooltip title={t('EnrollPlaybook')}>
           <ToggleButton
-            onClick={handleOpenEnrichment}
+            onClick={handleOpenEnrollPlaybook}
             value="enrich"
             size="small"
             style={{ marginRight: 3 }}
@@ -34,11 +34,11 @@ const StixCoreObjectEnrichment = (props) => {
       )}
       <Drawer
         open={open || openDrawer}
-        onClose={handleClose || handleCloseEnrichment}
-        title={t('Enrichment connectors')}
+        onClose={handleClose || handleCloseEnrollPlaybook}
+        title={t('EnrollPlaybook connectors')}
       >
         <QueryRenderer
-          query={stixCoreObjectEnrichmentLinesQuery}
+          query={stixCoreObjectEnrollPlaybookLinesQuery}
           variables={{ id: stixCoreObjectId }}
           render={({ props: queryProps }) => {
             if (
@@ -47,7 +47,7 @@ const StixCoreObjectEnrichment = (props) => {
               && queryProps.connectorsForImport
             ) {
               return (
-                <StixCoreObjectEnrichmentLines
+                <StixCoreObjectEnrollPlaybookLines
                   stixCoreObject={queryProps.stixCoreObject}
                   connectorsForImport={queryProps.connectorsForImport}
                 />
@@ -61,4 +61,4 @@ const StixCoreObjectEnrichment = (props) => {
   );
 };
 
-export default R.compose(inject18n)(StixCoreObjectEnrichment);
+export default R.compose(inject18n)(StixCoreObjectEnrollPlaybook);

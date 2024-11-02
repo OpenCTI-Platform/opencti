@@ -13420,6 +13420,7 @@ export type Mutation = {
   playbookDelete?: Maybe<Scalars['ID']['output']>;
   playbookDeleteLink?: Maybe<Playbook>;
   playbookDeleteNode?: Maybe<Playbook>;
+  playbookExecute?: Maybe<Scalars['Boolean']['output']>;
   playbookFieldPatch?: Maybe<Playbook>;
   playbookInsertNode: PlaybookInsertResult;
   playbookReplaceNode: Scalars['String']['output'];
@@ -14745,6 +14746,12 @@ export type MutationPlaybookDeleteLinkArgs = {
 export type MutationPlaybookDeleteNodeArgs = {
   id: Scalars['ID']['input'];
   nodeId: Scalars['ID']['input'];
+};
+
+
+export type MutationPlaybookExecuteArgs = {
+  entityId: Scalars['String']['input'];
+  id: Scalars['ID']['input'];
 };
 
 
@@ -19125,6 +19132,7 @@ export type Query = {
   playbook?: Maybe<Playbook>;
   playbookComponents: Array<Maybe<PlaybookComponent>>;
   playbooks?: Maybe<PlaybookConnection>;
+  playbooksForEntity?: Maybe<Array<Maybe<Playbook>>>;
   position?: Maybe<Position>;
   positions?: Maybe<PositionConnection>;
   publicBookmarks?: Maybe<StixDomainObjectConnection>;
@@ -20521,6 +20529,11 @@ export type QueryPlaybooksArgs = {
   orderBy?: InputMaybe<PlaybooksOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type QueryPlaybooksForEntityArgs = {
+  id: Scalars['String']['input'];
 };
 
 
@@ -36362,6 +36375,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   playbookDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationPlaybookDeleteArgs, 'id'>>;
   playbookDeleteLink?: Resolver<Maybe<ResolversTypes['Playbook']>, ParentType, ContextType, RequireFields<MutationPlaybookDeleteLinkArgs, 'id' | 'linkId'>>;
   playbookDeleteNode?: Resolver<Maybe<ResolversTypes['Playbook']>, ParentType, ContextType, RequireFields<MutationPlaybookDeleteNodeArgs, 'id' | 'nodeId'>>;
+  playbookExecute?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationPlaybookExecuteArgs, 'entityId' | 'id'>>;
   playbookFieldPatch?: Resolver<Maybe<ResolversTypes['Playbook']>, ParentType, ContextType, RequireFields<MutationPlaybookFieldPatchArgs, 'id' | 'input'>>;
   playbookInsertNode?: Resolver<ResolversTypes['PlaybookInsertResult'], ParentType, ContextType, RequireFields<MutationPlaybookInsertNodeArgs, 'childNodeId' | 'id' | 'input' | 'parentNodeId' | 'parentPortId'>>;
   playbookReplaceNode?: Resolver<ResolversTypes['String'], ParentType, ContextType, RequireFields<MutationPlaybookReplaceNodeArgs, 'id' | 'input' | 'nodeId'>>;
@@ -37775,6 +37789,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   playbook?: Resolver<Maybe<ResolversTypes['Playbook']>, ParentType, ContextType, RequireFields<QueryPlaybookArgs, 'id'>>;
   playbookComponents?: Resolver<Array<Maybe<ResolversTypes['PlaybookComponent']>>, ParentType, ContextType>;
   playbooks?: Resolver<Maybe<ResolversTypes['PlaybookConnection']>, ParentType, ContextType, Partial<QueryPlaybooksArgs>>;
+  playbooksForEntity?: Resolver<Maybe<Array<Maybe<ResolversTypes['Playbook']>>>, ParentType, ContextType, RequireFields<QueryPlaybooksForEntityArgs, 'id'>>;
   position?: Resolver<Maybe<ResolversTypes['Position']>, ParentType, ContextType, RequireFields<QueryPositionArgs, 'id'>>;
   positions?: Resolver<Maybe<ResolversTypes['PositionConnection']>, ParentType, ContextType, Partial<QueryPositionsArgs>>;
   publicBookmarks?: Resolver<Maybe<ResolversTypes['StixDomainObjectConnection']>, ParentType, ContextType, RequireFields<QueryPublicBookmarksArgs, 'uriKey' | 'widgetId'>>;

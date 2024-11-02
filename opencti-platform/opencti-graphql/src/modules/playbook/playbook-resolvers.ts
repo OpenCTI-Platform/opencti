@@ -28,8 +28,10 @@ import {
   playbookDeleteNode,
   playbookDeleteLink,
   playbookUpdatePositions,
+  getPlaybookDefinition,
+  findPlaybooksForEntity
 } from './playbook-domain';
-import { playbookStepExecution } from '../../manager/playbookManager';
+import { executePlaybookOnEntity, playbookStepExecution } from '../../manager/playbookManager';
 import { getLastPlaybookExecutions } from '../../database/redis';
 import { getConnectorQueueSize } from '../../database/rabbitmq';
 
@@ -37,6 +39,7 @@ const playbookResolvers: Resolvers = {
   Query: {
     playbook: (_, { id }, context) => findById(context, context.user, id),
     playbooks: (_, args, context) => findAll(context, context.user, args),
+    playbooksForEntity: (_, { id }, context) => findPlaybooksForEntity(context, context.user, id),
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     playbookComponents: () => availableComponents(),
@@ -67,6 +70,7 @@ const playbookResolvers: Resolvers = {
     playbookUpdatePositions: (_, { id, positions }, context) => playbookUpdatePositions(context, context.user, id, positions),
     playbookFieldPatch: (_, { id, input }, context) => playbookEdit(context, context.user, id, input),
     playbookStepExecution: (_, args, context) => playbookStepExecution(context, context.user, args),
+    playbookExecute: (_, { id, entityId }, context) => executePlaybookOnEntity(context, id, entityId),
   },
 };
 

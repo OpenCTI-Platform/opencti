@@ -63,13 +63,8 @@ const stixCoreObjectEnrichmentLinesAskJob = graphql`
 
 const styles = (theme) => ({
   noResult: {
-    top: 10,
-    left: 16,
-    right: 0,
-    position: 'absolute',
     color: theme.palette.text.primary,
     fontSize: 15,
-    zIndex: -5,
   },
   gridContainer: {
     marginBottom: 20,

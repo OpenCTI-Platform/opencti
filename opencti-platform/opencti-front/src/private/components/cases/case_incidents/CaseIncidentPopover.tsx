@@ -11,11 +11,12 @@ import MoreVert from '@mui/icons-material/MoreVert';
 import { graphql } from 'react-relay';
 import { useNavigate } from 'react-router-dom';
 import { PopoverProps } from '@mui/material/Popover';
+import StixCoreObjectEnrichment from '@components/common/stix_core_objects/StixCoreObjectEnrichment';
 import { useFormatter } from '../../../../components/i18n';
 import Security from '../../../../utils/Security';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Transition from '../../../../components/Transition';
-import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
+import { KNOWLEDGE_KNENRICHMENT, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import useDeletion from '../../../../utils/hooks/useDeletion';
 import CaseIncidentEditionContainer, { caseIncidentEditionQuery } from './CaseIncidentEditionContainer';
 import { CaseIncidentEditionContainerCaseQuery } from './__generated__/CaseIncidentEditionContainerCaseQuery.graphql';
@@ -33,6 +34,7 @@ const CaseIncidentPopover = ({ id }: { id: string }) => {
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = useState<PopoverProps['anchorEl']>();
   const [displayEdit, setDisplayEdit] = useState<boolean>(false);
+  const [displayEnrichment, setDisplayEnrichment] = useState<boolean>(false);
   const [commit] = useApiMutation(caseIncidentPopoverDeletionMutation);
   const queryRef = useQueryLoading<CaseIncidentEditionContainerCaseQuery>(
     caseIncidentEditionQuery,
@@ -52,6 +54,13 @@ const CaseIncidentPopover = ({ id }: { id: string }) => {
   };
   const handleCloseEdit = () => {
     setDisplayEdit(false);
+  };
+  const handleOpenEnrichment = () => {
+    setDisplayEnrichment(true);
+    handleClose();
+  };
+  const handleCloseEnrichment = () => {
+    setDisplayEnrichment(false);
   };
   const {
     deleting,
@@ -87,10 +96,16 @@ const CaseIncidentPopover = ({ id }: { id: string }) => {
         </ToggleButton>
         <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
           <MenuItem onClick={handleOpenEdit}>{t_i18n('Update')}</MenuItem>
+          <Security needs={[KNOWLEDGE_KNENRICHMENT]}>
+            <MenuItem onClick={handleOpenEnrichment}>
+              {t_i18n('Enrich')}
+            </MenuItem>
+          </Security>
           <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
             <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
           </Security>
         </Menu>
+        <StixCoreObjectEnrichment stixCoreObjectId={id} open={displayEnrichment} handleClose={handleCloseEnrichment} />
         <Dialog
           PaperProps={{ elevation: 1 }}
           open={displayDelete}
