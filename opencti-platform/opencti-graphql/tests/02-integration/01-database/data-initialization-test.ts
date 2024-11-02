@@ -1,13 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { listAllEntities } from '../../../src/database/middleware-loader';
-import {ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE} from '../../../src/schema/internalObject';
+import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE } from '../../../src/schema/internalObject';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import type { BasicStoreEntity } from '../../../src/types/store';
 
 describe('Data initialization test', () => {
   it('should create all capabilities', async () => {
     const capabilities = await listAllEntities<BasicStoreEntity>(testContext, ADMIN_USER, [ENTITY_TYPE_CAPABILITY]);
-    expect(capabilities.length).toEqual(38);
+    expect(capabilities.length).toEqual(39);
     const capabilitiesNames = capabilities.map((capa) => capa.name).sort();
     const allExpectedNames = [
       'BYPASS',
@@ -56,7 +56,7 @@ describe('Data initialization test', () => {
     const allRoles = await listAllEntities<BasicStoreEntity>(testContext, ADMIN_USER, [ENTITY_TYPE_ROLE]);
     const allRolesNames = allRoles.map((role) => role.name).sort();
     const allExpectedRoles = ['Administrator', 'Connector', 'Default'];
-    for (let i = 0; i < allExpectedRoles.length; i = i+1) {
+    for (let i = 0; i < allExpectedRoles.length; i += 1) {
       expect(allRolesNames, `${allExpectedRoles[i]} Role is missing from initialization`).toContain(allExpectedRoles[i]);
     }
   });
@@ -65,7 +65,7 @@ describe('Data initialization test', () => {
     const allGroups = await listAllEntities<BasicStoreEntity>(testContext, ADMIN_USER, [ENTITY_TYPE_GROUP]);
     const allGroupsNames = allGroups.map((group) => group.name).sort();
     const allExpectedGroups = ['Administrators', 'Connectors', 'Default'];
-    for (let i = 0; i < allExpectedGroups.length; i = i+1) {
+    for (let i = 0; i < allExpectedGroups.length; i += 1) {
       expect(allGroupsNames, `${allExpectedGroups[i]} Group is missing from initialization`).toContain(allExpectedGroups[i]);
     }
   });
