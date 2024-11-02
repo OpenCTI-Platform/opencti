@@ -9,7 +9,6 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Dialog from '@mui/material/Dialog';
 import Tooltip from '@mui/material/Tooltip';
-import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import ToggleButton from '@mui/material/ToggleButton';
 import themeLight from './ThemeLight';
 import themeDark from './ThemeDark';
@@ -176,71 +175,74 @@ class ExportButtons extends Component {
     } = this.props;
     return (
       <div className={classes.exportButtons} id="export-buttons">
-        <ToggleButtonGroup size="small" color="secondary" exclusive={true}>
-          {handleDashboardDuplication && variant === 'dashboard' && (
-            <Tooltip title={t('Duplicate the dashboard')}>
-              <ToggleButton
-                size="small"
-                value="duplicate-dashboard"
-                onClick={handleDashboardDuplication.bind(this)}
-              >
-                <ContentCopyOutlined fontSize="small" color="primary" />
-              </ToggleButton>
-            </Tooltip>
-          )}
-          <Security needs={[KNOWLEDGE_KNFRONTENDEXPORT]}>
-            <Tooltip title={t('Export to image')}>
-              <ToggleButton onClick={this.handleOpenImage.bind(this)} value={'Export-to-image'} >
-                <ImageOutlined fontSize="small" color="primary" />
-              </ToggleButton>
-            </Tooltip>
-          </Security>
-          <Security needs={[KNOWLEDGE_KNFRONTENDEXPORT]}>
-            <Tooltip title={t('Export to PDF')}>
-              <ToggleButton onClick={this.handleOpenPdf.bind(this)} value={'Export-to-PDF'} >
-                <FilePdfBox fontSize="small" color="primary" />
-              </ToggleButton>
-            </Tooltip>
-          </Security>
-          {type === 'dashboard' && handleExportDashboard && (
-            <Tooltip title={t('Export')}>
-              <ToggleButton
-                onClick={handleExportDashboard.bind(this)}
-                value={'Export-to-JSON'}
-              >
-                <FileExportOutline fontSize="small" color="primary" />
-              </ToggleButton>
-            </Tooltip>
-          )}
-          {investigationAddFromContainer && (
-            <Tooltip title={t('Start an investigation')}>
-              <ToggleButton
-                value={'Start-an-investigation'}
-                onClick={investigationAddFromContainer.bind(
-                  this,
-                  containerId,
-                  navigate,
-                )}
-              >
-                <ExploreOutlined fontSize="small" color="primary" />
-              </ToggleButton>
-            </Tooltip>
-          )}
-          {type === 'investigation' && (
-            <Tooltip title={t('Download as STIX report')}>
-              <ToggleButton onClick={handleDownloadAsStixReport.bind(this)} value={'Download-as-STIX-report'}>
-                <GetAppOutlined fontSize="small" color="primary" />
-              </ToggleButton>
-            </Tooltip>
-          )}
-          {csvData && (
-            <Tooltip title={t('Export to CSV')}>
-              <ToggleButton onClick={() => this.csvLink.current.link.click()} value={'Export-to-CSV'}>
-                <FileDelimitedOutline fontSize="small" color="primary" />
-              </ToggleButton>
-            </Tooltip>
-          )}
-        </ToggleButtonGroup>
+        {handleDashboardDuplication && variant === 'dashboard' && (
+        <Tooltip title={t('Duplicate the dashboard')}>
+          <ToggleButton
+            size="small"
+            value="duplicate-dashboard"
+            onClick={handleDashboardDuplication.bind(this)}
+            style={{ marginRight: 3 }}
+          >
+            <ContentCopyOutlined fontSize="small" color="primary" />
+          </ToggleButton>
+        </Tooltip>
+        )}
+        <Security needs={[KNOWLEDGE_KNFRONTENDEXPORT]}>
+          <Tooltip title={t('Export to image')}>
+            <ToggleButton size="small" onClick={this.handleOpenImage.bind(this)} value={'Export-to-image'} style={{ marginRight: 3 }}>
+              <ImageOutlined fontSize="small" color="primary" />
+            </ToggleButton>
+          </Tooltip>
+        </Security>
+        <Security needs={[KNOWLEDGE_KNFRONTENDEXPORT]}>
+          <Tooltip title={t('Export to PDF')}>
+            <ToggleButton size="small" onClick={this.handleOpenPdf.bind(this)} value={'Export-to-PDF'} style={{ marginRight: 3 }}>
+              <FilePdfBox fontSize="small" color="primary" />
+            </ToggleButton>
+          </Tooltip>
+        </Security>
+        {type === 'dashboard' && handleExportDashboard && (
+        <Tooltip title={t('Export')}>
+          <ToggleButton
+            size="small"
+            onClick={handleExportDashboard.bind(this)}
+            value={'Export-to-JSON'}
+            style={{ marginRight: 3 }}
+          >
+            <FileExportOutline fontSize="small" color="primary" />
+          </ToggleButton>
+        </Tooltip>
+        )}
+        {investigationAddFromContainer && (
+        <Tooltip title={t('Start an investigation')}>
+          <ToggleButton
+            size="small"
+            value={'Start-an-investigation'}
+            onClick={investigationAddFromContainer.bind(
+              this,
+              containerId,
+              navigate,
+            )}
+            style={{ marginRight: 3 }}
+          >
+            <ExploreOutlined fontSize="small" color="primary" />
+          </ToggleButton>
+        </Tooltip>
+        )}
+        {type === 'investigation' && (
+        <Tooltip title={t('Download as STIX report')}>
+          <ToggleButton size="small" onClick={handleDownloadAsStixReport.bind(this)} value={'Download-as-STIX-report'} style={{ marginRight: 3 }}>
+            <GetAppOutlined fontSize="small" color="primary" />
+          </ToggleButton>
+        </Tooltip>
+        )}
+        {csvData && (
+        <Tooltip title={t('Export to CSV')}>
+          <ToggleButton size="small" onClick={() => this.csvLink.current.link.click()} value={'Export-to-CSV'} style={{ marginRight: 3 }}>
+            <FileDelimitedOutline fontSize="small" color="primary" />
+          </ToggleButton>
+        </Tooltip>
+        )}
         <Menu
           anchorEl={anchorElImage}
           open={Boolean(anchorElImage)}
