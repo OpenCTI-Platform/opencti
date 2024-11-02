@@ -26,7 +26,7 @@ describe('User Action listening', () => {
       entity_name: 'data_name',
       entity_type: 'Report',
     };
-    const completedContextData = completeContextDataForEntity(contextData, data) as UserReadActionContextData;
+    const completedContextData = completeContextDataForEntity(contextData, data, []) as UserReadActionContextData;
     expect(completedContextData.id).toEqual(contextData.id);
     expect(completedContextData.entity_type).toEqual(contextData.entity_type);
     expect(completedContextData.creator_ids?.length).toEqual(1);
