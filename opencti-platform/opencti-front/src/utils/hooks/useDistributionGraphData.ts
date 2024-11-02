@@ -120,6 +120,24 @@ const useDistributionGraphData = () => {
     });
   };
 
+  /**
+   * Build from query data the labels to use in the graph.
+   * @param distributionData
+   * @param groupBy
+   */
+  const buildWidgetWordCloudOption = (distributionData: DistributionQueryData, groupBy: string) => {
+    return distributionData.map((n) => {
+      if (!n) return { text: 'Unknown', value: 0 };
+      if (isFieldForIdentifier(groupBy)) {
+        return { text: getMainRepresentative(n.entity), value: n.value ?? 0 };
+      }
+      if (groupBy === 'entity_type' && t_i18n(`entity_${n.label}`) !== `entity_${n.label}`) {
+        return { text: t_i18n(`entity_${n.label}`), value: n.value ?? 0 };
+      }
+      return { text: n.label, value: n.value ?? 0 };
+    });
+  };
+
   const buildWidgetColorsOptions = (distributionData: DistributionQueryData, groupBy: string) => {
     if (
       !distributionData.at(0)?.entity?.color
@@ -138,6 +156,7 @@ const useDistributionGraphData = () => {
     buildWidgetProps,
     buildWidgetLabelsOption,
     buildWidgetColorsOptions,
+    buildWidgetWordCloudOption,
   };
 };
 

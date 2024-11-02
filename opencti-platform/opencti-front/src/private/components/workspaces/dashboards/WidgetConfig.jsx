@@ -18,7 +18,17 @@ import CardContent from '@mui/material/CardContent';
 import Button from '@mui/material/Button';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
-import { AddOutlined, CancelOutlined, CloudUploadOutlined, FormatShapesOutlined, LibraryBooksOutlined, MapOutlined, PieChartOutlined, WidgetsOutlined } from '@mui/icons-material';
+import {
+  AddOutlined,
+  CancelOutlined,
+  CloudUploadOutlined,
+  FormatShapesOutlined,
+  LibraryBooksOutlined,
+  MapOutlined,
+  PieChartOutlined,
+  ViewQuiltOutlined,
+  WidgetsOutlined,
+} from '@mui/icons-material';
 import {
   AlignHorizontalLeft,
   ChartAreasplineVariant,
@@ -314,6 +324,16 @@ const visualizationTypes = [
     isEntities: true,
     isAudits: false,
   },
+  {
+    key: 'wordcloud',
+    name: 'Word Cloud',
+    dataSelectionLimit: 1,
+    category: 'distribution',
+    availableParameters: ['attribute'],
+    isRelationships: true,
+    isEntities: true,
+    isAudits: true,
+  },
 ];
 const indexedVisualizationTypes = R.indexBy(R.prop('key'), visualizationTypes);
 
@@ -584,6 +604,8 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
         return <ChartTree fontSize="large" color="primary"/>;
       case 'bookmark':
         return <StarSettingsOutline fontSize="large" color="primary"/>;
+      case 'wordcloud':
+        return <ViewQuiltOutlined fontSize="large" color="primary"/>;
       default:
         return 'Go away';
     }

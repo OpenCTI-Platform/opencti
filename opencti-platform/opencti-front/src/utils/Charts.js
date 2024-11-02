@@ -2,7 +2,7 @@ import * as C from '@mui/material/colors';
 import { resolveLink } from './Entity';
 import { truncate } from './String';
 
-const colors = (temp) => [
+export const colors = (temp) => [
   C.red[temp],
   C.purple[temp],
   C.pink[temp],

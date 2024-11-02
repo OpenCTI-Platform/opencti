@@ -81,6 +81,7 @@
     "react-syntax-highlighter": "15.5.0",
     "react-timeline-range-slider": "1.4.1",
     "react-virtualized": "9.22.5",
+    "react-wordcloud": "1.2.7",
     "reactflow": "11.11.4",
     "recharts": "2.12.7",
     "relay-runtime": "17.0.0",
