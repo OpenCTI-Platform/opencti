@@ -15,7 +15,7 @@ import {
   PLATFORM_VERSION
 } from '../config/conf';
 import { AuthenticationFailure, DatabaseError, ForbiddenAccess, FunctionalError, UnsupportedError } from '../config/errors';
-import { getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache, resetCacheForEntity } from '../database/cache';
+import { getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache } from '../database/cache';
 import { elLoadBy, elRawDeleteByQuery } from '../database/engine';
 import { createEntity, createRelation, deleteElementById, deleteRelationsByFromAndTo, patchAttribute, updateAttribute, updatedInputsToData } from '../database/middleware';
 import {
@@ -444,7 +444,6 @@ export const assignOrganizationToUser = async (context, user, userId, organizati
   if (!targetUser) {
     throw FunctionalError('Cannot add the relation, User cannot be found.');
   }
-
   const input = { fromId: userId, toId: organizationId, relationship_type: RELATION_PARTICIPATE_TO };
   const created = await createRelation(context, user, input);
   const actionEmail = ENABLED_DEMO_MODE ? REDACTED_USER.user_email : created.from.user_email;
@@ -456,9 +455,7 @@ export const assignOrganizationToUser = async (context, user, userId, organizati
     message: `adds ${created.toType} \`${extractEntityRepresentativeName(created.to)}\` to user \`${actionEmail}\``,
     context_data: { id: userId, entity_type: ENTITY_TYPE_USER, input }
   });
-
   await userSessionRefresh(userId);
-  resetCacheForEntity(ENTITY_TYPE_SETTINGS);
   return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, targetUser, user);
 };
 
@@ -469,6 +466,10 @@ export const assignOrganizationNameToUser = async (context, user, userId, organi
 };
 
 export const assignGroupToUser = async (context, user, userId, groupName) => {
+  const targetUser = await findById(context, user, userId);
+  if (!targetUser) {
+    throw FunctionalError('Cannot add the relation, User cannot be found.');
+  }
   // No need for audit log here, only use for provider login
   const generateToId = generateStandardId(ENTITY_TYPE_GROUP, { name: groupName });
   const assignInput = {
@@ -478,6 +479,7 @@ export const assignGroupToUser = async (context, user, userId, groupName) => {
   };
   const rel = await createRelation(context, user, assignInput);
   await userSessionRefresh(userId);
+  await notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, targetUser, user);
   return rel;
 };
 
@@ -764,6 +766,7 @@ export const userEditField = async (context, user, userId, rawInputs) => {
     context_data: { id: userId, entity_type: ENTITY_TYPE_USER, input }
   };
   await publishUserAction(userAction);
+  await userSessionRefresh(userId);
   return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, element, user);
 };
 
@@ -1020,7 +1023,7 @@ export const userAddRelation = async (context, user, userId, input) => {
     context_data: { id: userId, entity_type: ENTITY_TYPE_USER, input: finalInput }
   });
   await userSessionRefresh(userId);
-  return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, relationData, user);
+  return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, userData, user);
 };
 
 export const userDeleteRelation = async (context, user, targetUser, toId, relationshipType) => {
@@ -1085,7 +1088,6 @@ export const userDeleteOrganizationRelation = async (context, user, userId, toId
     context_data: { id: userId, entity_type: ENTITY_TYPE_USER, input }
   });
   await userSessionRefresh(userId);
-  resetCacheForEntity(ENTITY_TYPE_SETTINGS);
   return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, targetUser, user);
 };
 
@@ -1199,14 +1201,12 @@ export const otpUserGeneration = (user) => {
 };
 
 export const userAddIndividual = async (context, user) => {
-  const individualInput = { name: user.name, contact_information: user.user_email };
+  const targetUser = await findById(context, user, user.id);
+  const individualInput = { name: targetUser.name, contact_information: targetUser.user_email };
   // We need to bypass validation here has we maybe not setup all require fields
-  const individual = await addIndividual(context, user, individualInput, { bypassValidation: true });
-  // Need to check that in the future, seems that the queryAsAdmin in test fails without that
-  if (context.req?.session.user) {
-    context.req.session.user.individual_id = individual.id;
-  }
-  await userSessionRefresh(user.internal_id);
+  const individual = await addIndividual(context, targetUser, individualInput, { bypassValidation: true });
+  await userSessionRefresh(targetUser.internal_id);
+  await notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, targetUser, user);
   return individual;
 };
 
@@ -1277,7 +1277,6 @@ const buildSessionUser = (origin, impersonate, provider, settings) => {
     group_ids: user.groups?.map((g) => g.internal_id) ?? [],
     organizations: user.organizations ?? [],
     administrated_organizations: user.administrated_organizations ?? [],
-    inside_platform_organization: user.inside_platform_organization,
     allowed_marking: user.allowed_marking.map((m) => ({
       id: m.id,
       standard_id: m.standard_id,
@@ -1435,11 +1434,13 @@ export const authenticateUserByToken = async (context, req, tokenValue, provider
     if (applicantId && isBypassUser(logged)) {
       const impersonate = platformUsers.get(applicantId);
       if (impersonate) {
-        return buildSessionUser(logged, impersonate, provider, settings);
+        const sessionUser = buildSessionUser(logged, impersonate, provider, settings);
+        return userWithOrigin(req, sessionUser);
       }
       throw FunctionalError(`Cant impersonate applicant ${applicantId}`);
     }
-    return buildSessionUser(logged, undefined, provider, settings);
+    const sessionUser = buildSessionUser(logged, undefined, provider, settings);
+    return userWithOrigin(req, sessionUser);
   }
   throw FunctionalError(`Cant identify with ${tokenValue}`);
 };

@@ -18,16 +18,17 @@ import {
 } from '../schema/stixRefRelationship';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
-import { ENTITY_TYPE_STATUS, isDatedInternalObject } from '../schema/internalObject';
+import { ENTITY_TYPE_SETTINGS, ENTITY_TYPE_STATUS, isDatedInternalObject } from '../schema/internalObject';
 import { isStixObject } from '../schema/stixCoreObject';
 import { isStixMetaObject } from '../schema/stixMetaObject';
 import { isStixDomainObject, isStixObjectAliased, resolveAliasesField, STIX_ORGANIZATIONS_RESTRICTED, STIX_ORGANIZATIONS_UNRESTRICTED } from '../schema/stixDomainObject';
-import { getEntitiesListFromCache } from './cache';
-import { isUserHasCapability, KNOWLEDGE_ORGANIZATION_RESTRICT } from '../utils/access';
+import { getEntitiesListFromCache, getEntityFromCache } from './cache';
+import { isUserHasCapability, isUserInsidePlatformOrganization, KNOWLEDGE_ORGANIZATION_RESTRICT } from '../utils/access';
 import { cleanMarkings } from '../utils/markingDefinition-utils';
 
 export const buildEntityData = async (context, user, input, type, opts = {}) => {
   const { fromRule } = opts;
+  const settings = await getEntityFromCache(context, user, ENTITY_TYPE_SETTINGS);
   const internalId = input.internal_id || generateInternalId();
   const standardId = input.standard_id || generateStandardId(type, input);
   // Complete with identifiers
@@ -120,7 +121,7 @@ export const buildEntityData = async (context, user, input, type, opts = {}) => 
         if (isUserHasCapability(user, KNOWLEDGE_ORGANIZATION_RESTRICT) && input[inputField]
             && (!Array.isArray(input[inputField]) || input[inputField].length > 0)) {
           relToCreate.push(...buildInnerRelation(data, input[inputField], RELATION_GRANTED_TO));
-        } else if (!user.inside_platform_organization) {
+        } else if (!isUserInsidePlatformOrganization(settings, user)) {
           // If user is not part of the platform organization, put its own organizations
           relToCreate.push(...buildInnerRelation(data, user.organizations, RELATION_GRANTED_TO));
         }
@@ -158,6 +159,7 @@ export const buildEntityData = async (context, user, input, type, opts = {}) => 
 
 export const buildRelationData = async (context, user, input, opts = {}) => {
   const { fromRule } = opts;
+  const settings = await getEntityFromCache(context, user, ENTITY_TYPE_SETTINGS);
   const { from, to, relationship_type: relationshipType } = input;
   // 01. Generate the ID
   const internalId = input.internal_id || generateInternalId();
@@ -272,7 +274,7 @@ export const buildRelationData = async (context, user, input, opts = {}) => {
     if (isUserHasCapability(user, KNOWLEDGE_ORGANIZATION_RESTRICT) && input[INPUT_GRANTED_REFS]
         && (!Array.isArray(input[INPUT_GRANTED_REFS]) || input[INPUT_GRANTED_REFS].length > 0)) {
       relToCreate.push(...buildInnerRelation(data, input[INPUT_GRANTED_REFS], RELATION_GRANTED_TO));
-    } else if (!user.inside_platform_organization) {
+    } else if (!isUserInsidePlatformOrganization(settings, user)) {
       // If user is not part of the platform organization, put its own organizations
       relToCreate.push(...buildInnerRelation(data, user.organizations, RELATION_GRANTED_TO));
     }
