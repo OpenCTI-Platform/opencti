@@ -3,7 +3,6 @@ import type { BasicStoreCommon, BasicStoreObject, StoreMarkingDefinition } from 
 import { extractEntityRepresentativeName } from '../database/entity-representative';
 import { RELATION_CREATED_BY, RELATION_GRANTED_TO, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
 import { ENTITY_TYPE_WORKSPACE } from '../modules/workspace/workspace-types';
-import { getMarkingDefinitionsLabels } from '../domain/markingDefinition';
 
 interface BasicUserAction {
   user: AuthUser
@@ -181,7 +180,7 @@ export const completeContextDataForEntity = <T extends BasicStoreCommon, C exten
     }
     if (data[RELATION_OBJECT_MARKING]) {
       contextData.object_marking_refs_ids = data[RELATION_OBJECT_MARKING];
-      contextData.object_marking_refs_definitions = getMarkingDefinitionsLabels(markingDefinitions, data[RELATION_OBJECT_MARKING]);
+      contextData.object_marking_refs_definitions = markingDefinitions.filter((n) => (data[RELATION_OBJECT_MARKING] ?? []).includes(n.id)).map((n) => n.definition);
     }
     if (data[RELATION_CREATED_BY]) {
       contextData.created_by_ref_id = data[RELATION_CREATED_BY];

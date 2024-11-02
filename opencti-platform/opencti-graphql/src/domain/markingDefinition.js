@@ -88,10 +88,3 @@ export const markingDefinitionEditContext = async (context, user, markingDefinit
     return notify(BUS_TOPICS[ENTITY_TYPE_MARKING_DEFINITION].EDIT_TOPIC, markingDefinition, user);
   });
 };
-
-export const getMarkingDefinitionsLabels = (markingDefinitions, markingDefinitionIds) => {
-  if (markingDefinitionIds && markingDefinitionIds.length > 0 && markingDefinitions && markingDefinitions.length > 0) {
-    return markingDefinitions.filter((n) => markingDefinitionIds.includes(n.id)).map((n) => n.definition);
-  }
-  return [];
-};
