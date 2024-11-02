@@ -173,7 +173,7 @@ const PLAYBOOK_INTERNAL_MANUAL_TRIGGER: PlaybookComponent<ManualTriggerConfigura
   id: 'PLAYBOOK_INTERNAL_MANUAL_TRIGGER',
   name: 'Available for manual enrollment / trigger',
   description: 'To be used in manual enrollment / trigger',
-  icon: 'trigger',
+  icon: 'manual',
   is_entry_point: true,
   is_internal: true,
   ports: [{ id: 'out', type: 'out' }],

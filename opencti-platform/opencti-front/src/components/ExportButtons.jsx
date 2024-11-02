@@ -18,6 +18,8 @@ import { exportImage, exportPdf } from '../utils/Image';
 import inject18n from './i18n';
 import Loader from './Loader';
 import withRouter from '../utils/compat_router/withRouter';
+import { KNOWLEDGE_KNFRONTENDEXPORT } from '../utils/hooks/useGranted';
+import Security from '../utils/Security';
 
 const styles = () => ({
   exportButtons: {
@@ -186,16 +188,20 @@ class ExportButtons extends Component {
               </ToggleButton>
             </Tooltip>
           )}
-          <Tooltip title={t('Export to image')}>
-            <ToggleButton onClick={this.handleOpenImage.bind(this)} value={'Export-to-image'} >
-              <ImageOutlined fontSize="small" color="primary" />
-            </ToggleButton>
-          </Tooltip>
-          <Tooltip title={t('Export to PDF')}>
-            <ToggleButton onClick={this.handleOpenPdf.bind(this)} value={'Export-to-PDF'} >
-              <FilePdfBox fontSize="small" color="primary" />
-            </ToggleButton>
-          </Tooltip>
+          <Security needs={[KNOWLEDGE_KNFRONTENDEXPORT]}>
+            <Tooltip title={t('Export to image')}>
+              <ToggleButton onClick={this.handleOpenImage.bind(this)} value={'Export-to-image'} >
+                <ImageOutlined fontSize="small" color="primary" />
+              </ToggleButton>
+            </Tooltip>
+          </Security>
+          <Security needs={[KNOWLEDGE_KNFRONTENDEXPORT]}>
+            <Tooltip title={t('Export to PDF')}>
+              <ToggleButton onClick={this.handleOpenPdf.bind(this)} value={'Export-to-PDF'} >
+                <FilePdfBox fontSize="small" color="primary" />
+              </ToggleButton>
+            </Tooltip>
+          </Security>
           {type === 'dashboard' && handleExportDashboard && (
             <Tooltip title={t('Export')}>
               <ToggleButton
