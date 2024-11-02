@@ -104,8 +104,8 @@ const historyIndexing = async (context: AuthContext, events: Array<SseEvent<Acti
         timestamp: eventDate,
         context_data: contextData,
         'rel_object-marking.internal_id': event.data.data.object_marking_refs_ids,
-        'rel_object-marking.definition': event.data.data.object_marking_refs_definitions,
         'rel_granted.internal_id': event.data.data.granted_refs_ids,
+        markings: event.data.data.markings,
       };
     });
   // Bulk the history data insertions

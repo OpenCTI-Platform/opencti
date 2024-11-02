@@ -30,10 +30,10 @@ export interface ElementContextData {
   creator_ids?: string[]
   granted_refs_ids?: string[]
   object_marking_refs_ids?: string[]
-  object_marking_refs_definitions?: string[]
   created_by_ref_id?: string
   workspace_type?: string
   labels_ids?: string[]
+  markings?: string[]
 }
 export interface UserAnalyzeActionContextData extends ElementContextData {
   connector_id: string
@@ -168,7 +168,7 @@ export const publishUserAction = async (userAction: UserAction) => {
 export const completeContextDataForEntity = <T extends BasicStoreCommon, C extends ElementContextData, >(
   inputContextData: C,
   data: T,
-  markingDefinitions: StoreMarkingDefinition[] = []
+  markingDefinitions: StoreMarkingDefinition[]
 ) => {
   const contextData = { ...inputContextData };
   if (data) {
@@ -180,7 +180,7 @@ export const completeContextDataForEntity = <T extends BasicStoreCommon, C exten
     }
     if (data[RELATION_OBJECT_MARKING]) {
       contextData.object_marking_refs_ids = data[RELATION_OBJECT_MARKING];
-      contextData.object_marking_refs_definitions = markingDefinitions.filter((n) => (data[RELATION_OBJECT_MARKING] ?? []).includes(n.id)).map((n) => n.definition);
+      contextData.markings = markingDefinitions.filter((n) => (data[RELATION_OBJECT_MARKING] ?? []).includes(n.id)).map((n) => n.definition);
     }
     if (data[RELATION_CREATED_BY]) {
       contextData.created_by_ref_id = data[RELATION_CREATED_BY];
@@ -203,5 +203,5 @@ export const buildContextDataForFile = (entity: BasicStoreObject, path: string, 
     entity_type: entity?.entity_type ?? 'global',
     file_name: filename,
   };
-  return completeContextDataForEntity(baseData, entity);
+  return completeContextDataForEntity(baseData, entity, []);
 };

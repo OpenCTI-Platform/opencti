@@ -126,8 +126,8 @@ const eventsApplyHandler = async (context: AuthContext, events: Array<SseEvent<S
       timestamp: eventDate,
       context_data: contextData,
       authorized_members: stix.extensions[STIX_EXT_OCTI].authorized_members,
+      markings: R.uniq(eventMarkingDefinitions),
       'rel_object-marking.internal_id': R.uniq(eventMarkingRefs),
-      'rel_object-marking.definition': R.uniq(eventMarkingDefinitions),
       'rel_granted.internal_id': R.uniq(eventGrantedRefs),
     };
   });
