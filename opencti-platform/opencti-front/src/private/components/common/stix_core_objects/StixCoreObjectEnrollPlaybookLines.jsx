@@ -81,7 +81,7 @@ const StixCoreObjectEnrollPlaybook = ({
                 <ListItem
                   divider={true}
                   classes={{ root: classes.item }}
-                  button={true}
+                  button={false}
                 >
                   <ListItemIcon classes={{ root: classes.itemIcon }}>
                     <ItemIcon type="Playbook" />

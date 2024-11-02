@@ -49,7 +49,7 @@ import StixCoreObjectEnrichment from '../stix_core_objects/StixCoreObjectEnrichm
 // Do not use it for new code.
 const useStyles = makeStyles((theme) => ({
   modes: {
-    margin: `0 ${theme.spacing(2)}`,
+    marginLeft: theme.spacing(2),
   },
   actionButtons: {
     display: 'flex',
@@ -925,7 +925,7 @@ const ContainerHeader = (props) => {
                     const appliedSuggestions = getAppliedSuggestions();
                     if (userIsKnowledgeEditor) {
                       return (
-                        <>
+                        <div style={{ marginLeft: theme.spacing(2) }}>
                           <Tooltip title={t_i18n('Open the suggestions')}>
                             <ToggleButton
                               onClick={() => setDisplaySuggestions(true)}
@@ -1059,7 +1059,7 @@ const ContainerHeader = (props) => {
                               </Button>
                             </DialogActions>
                           </Dialog>
-                        </>
+                        </div>
                       );
                     }
                   }

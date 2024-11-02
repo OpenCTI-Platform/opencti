@@ -65,6 +65,7 @@ import {
   AutoAwesomeMotion,
   ViewStreamTwoTone,
   BackupTableOutlined,
+  PlayCircleOutlined,
 } from '@mui/icons-material';
 import {
   ArchiveOutline,
@@ -364,6 +365,10 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
     case 'notification':
       return (
         <NotificationsOutlined style={style} fontSize={fontSize} role="img" />
+      );
+    case 'manual':
+      return (
+        <PlayCircleOutlined style={style} fontSize={fontSize} role="img" />
       );
     case 'managerconfiguration':
       return (
