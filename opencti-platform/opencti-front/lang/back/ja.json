@@ -129,6 +129,8 @@
   "Context": "コンテキスト",
   "Context data": "コンテキストデータ",
   "Contextual only": "コンテキストのみ",
+  "Copy confidence level to OpenCTI scores for indicators": "指標の信頼度をOpenCTIのスコアにコピーする",
+  "Copy OpenCTI scores to confidence level for indicators": "OpenCTIのスコアを指標の信頼度にコピーする",
   "Count": "偽陽性",
   "CPE": "CPE",
   "Created": "情報タイプ",

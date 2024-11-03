@@ -48,6 +48,7 @@ export interface BasicStoreEntityIngestionTaxii extends BasicStoreEntity {
   uri: string
   version: string
   collection: string
+  confidence_to_score: boolean
   authentication_type: IngestionAuthType.None | IngestionAuthType.Basic | IngestionAuthType.Bearer | IngestionAuthType.Certificate
   authentication_value: string
   user_id: string | undefined
@@ -62,6 +63,7 @@ export interface StoreEntityIngestionTaxii extends StoreEntity {
   name: string
   description: string
   uri: string
+  confidence_to_score: boolean
   current_state_cursor: string | undefined
   ingestion_running: boolean
   taxii_more: boolean
@@ -73,6 +75,7 @@ export interface StixIngestionTaxii extends StixObject {
   description: string
   uri: string
   ingestion_running: boolean
+  confidence_to_score: boolean
   extensions: {
     [STIX_EXT_OCTI]: StixOpenctiExtensionSDO
   }

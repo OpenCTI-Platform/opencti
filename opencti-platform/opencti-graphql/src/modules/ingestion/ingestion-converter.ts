@@ -1,6 +1,6 @@
 import { STIX_EXT_OCTI } from '../../types/stix-extensions';
 import { buildStixObject, cleanObject } from '../../database/stix-converter';
-import type { StixIngestionCsv, StixIngestionRss, StixIngestionTaxii, StoreEntityIngestionCsv, StoreEntityIngestionRss } from './ingestion-types';
+import type { StixIngestionCsv, StixIngestionRss, StixIngestionTaxii, StoreEntityIngestionCsv, StoreEntityIngestionRss, StoreEntityIngestionTaxii } from './ingestion-types';
 
 export const convertIngestionRssToStix = (instance: StoreEntityIngestionRss): StixIngestionRss => {
   const stixObject = buildStixObject(instance);
@@ -20,7 +20,7 @@ export const convertIngestionRssToStix = (instance: StoreEntityIngestionRss): St
   };
 };
 
-export const convertIngestionTaxiiToStix = (instance: StoreEntityIngestionRss): StixIngestionTaxii => {
+export const convertIngestionTaxiiToStix = (instance: StoreEntityIngestionTaxii): StixIngestionTaxii => {
   const stixObject = buildStixObject(instance);
   return {
     ...stixObject,
@@ -28,6 +28,7 @@ export const convertIngestionTaxiiToStix = (instance: StoreEntityIngestionRss): 
     description: instance.description,
     uri: instance.uri,
     ingestion_running: instance.ingestion_running,
+    confidence_to_score: instance.confidence_to_score,
     extensions: {
       [STIX_EXT_OCTI]: cleanObject({
         ...stixObject.extensions[STIX_EXT_OCTI],

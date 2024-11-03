@@ -129,6 +129,8 @@
   "Context": "Contexto",
   "Context data": "Datos contextuales",
   "Contextual only": "Sólo contextual",
+  "Copy confidence level to OpenCTI scores for indicators": "Copiar el nivel de confianza a las puntuaciones OpenCTI para los indicadores",
+  "Copy OpenCTI scores to confidence level for indicators": "Copiar las puntuaciones de OpenCTI en el nivel de confianza de los indicadores",
   "Count": "Cuenta",
   "CPE": "CPE",
   "Created": "Creado",

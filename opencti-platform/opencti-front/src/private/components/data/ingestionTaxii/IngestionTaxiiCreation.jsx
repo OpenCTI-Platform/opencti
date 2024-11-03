@@ -17,6 +17,7 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { insertNode } from '../../../../utils/store';
 import SelectField from '../../../../components/fields/SelectField';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
+import SwitchField from '../../../../components/fields/SwitchField';
 
 const styles = (theme) => ({
   buttons: {
@@ -53,6 +54,7 @@ const ingestionTaxiiCreationValidation = (t) => Yup.object().shape({
   added_after_start: Yup.date()
     .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
     .nullable(),
+  confidence_to_score: Yup.bool().nullable(),
 });
 
 const IngestionTaxiiCreation = (props) => {
@@ -70,6 +72,7 @@ const IngestionTaxiiCreation = (props) => {
       authentication_value: authentifcationValueResolved,
       added_after_start: values.added_after_start,
       user_id: values.user_id?.value,
+      confidence_to_score: values.confidence_to_score,
     };
     commitMutation({
       mutation: IngestionTaxiiCreationMutation,
@@ -113,6 +116,7 @@ const IngestionTaxiiCreation = (props) => {
             cert: '',
             key: '',
             ca: '',
+            confidence_to_score: false,
           }}
           validationSchema={ingestionTaxiiCreationValidation(t)}
           onSubmit={onSubmit}
@@ -259,6 +263,13 @@ const IngestionTaxiiCreation = (props) => {
                   fullWidth: true,
                   style: { marginTop: 20 },
                 }}
+              />
+              <Field
+                component={SwitchField}
+                type="checkbox"
+                name="confidence_to_score"
+                label={t('Copy confidence level to OpenCTI scores for indicators')}
+                containerstyle={fieldSpacingContainerStyle}
               />
               <div className={classes.buttons}>
                 <Button

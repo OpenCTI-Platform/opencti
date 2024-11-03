@@ -129,6 +129,8 @@
   "Context": "上下文",
   "Context data": "上下文数据",
   "Contextual only": "仅根据上下文",
+  "Copy confidence level to OpenCTI scores for indicators": "将置信度复制到指标的 OpenCTI 分数",
+  "Copy OpenCTI scores to confidence level for indicators": "将 OpenCTI 分数复制到指标的置信度",
   "Count": "计数",
   "CPE": "用户端设备",
   "Created": "创建",

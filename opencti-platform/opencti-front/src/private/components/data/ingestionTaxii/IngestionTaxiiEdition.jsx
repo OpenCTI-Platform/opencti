@@ -15,6 +15,7 @@ import SelectField from '../../../../components/fields/SelectField';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import Drawer from '../../common/drawer/Drawer';
 import { BASIC_AUTH, BEARER_AUTH, CERT_AUTH, extractCA, extractCert, extractKey, extractPassword, extractUsername } from '../../../../utils/ingestionAuthentificationUtils';
+import SwitchField from '../../../../components/fields/SwitchField';
 
 export const ingestionTaxiiMutationFieldPatch = graphql`
   mutation IngestionTaxiiEditionFieldPatchMutation(
@@ -44,6 +45,7 @@ const ingestionTaxiiValidation = (t) => Yup.object().shape({
   added_after_start: Yup.date()
     .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
     .nullable(),
+  confidence_to_score: Yup.bool().nullable(),
 });
 
 const IngestionTaxiiEditionContainer = ({
@@ -149,6 +151,7 @@ const IngestionTaxiiEditionContainer = ({
       'ca',
       'user_id',
       'added_after_start',
+      'confidence_to_score',
     ]),
   )(ingestionTaxii);
 
@@ -297,6 +300,13 @@ const IngestionTaxiiEditionContainer = ({
                 />
               </>
             )}
+            <CreatorField
+              name="user_id"
+              label={t('User responsible for data creation (empty = System)')}
+              onChange={handleSubmitField}
+              containerStyle={fieldSpacingContainerStyle}
+              showConfidence
+            />
             <Field
               component={DateTimePickerField}
               name="added_after_start"
@@ -309,12 +319,12 @@ const IngestionTaxiiEditionContainer = ({
                 style: { marginTop: 20 },
               }}
             />
-            <CreatorField
-              name="user_id"
-              label={t('User responsible for data creation (empty = System)')}
-              onChange={handleSubmitField}
-              containerStyle={fieldSpacingContainerStyle}
-              showConfidence
+            <Field
+              component={SwitchField}
+              type="checkbox"
+              name="confidence_to_score"
+              label={t('Copy confidence level to OpenCTI scores for indicators')}
+              containerstyle={fieldSpacingContainerStyle}
             />
           </Form>
         )}

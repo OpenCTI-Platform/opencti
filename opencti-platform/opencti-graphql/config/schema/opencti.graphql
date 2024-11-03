@@ -501,6 +501,7 @@ type TaxiiCollection {
   description: String
   filters: String
   include_inferences: Boolean
+  score_to_confidence: Boolean
   taxii_public: Boolean
   authorized_members: [MemberAccess!] @auth(for: [TAXIIAPI_SETCOLLECTIONS])
 }
@@ -520,6 +521,7 @@ input TaxiiCollectionAddInput {
   taxii_public: Boolean
   authorized_members: [MemberAccessInput!]
   include_inferences: Boolean
+  score_to_confidence: Boolean
 }
 enum TaxiiCollectionOrdering {
   name
