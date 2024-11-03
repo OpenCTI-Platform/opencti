@@ -46,11 +46,12 @@ const INGESTION_DEFINITION: ModuleDefinition<StoreEntityIngestionTaxii, StixInge
     { name: 'report_types', label: 'Report types', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: true, upsert: true, isFilterable: true },
     { name: 'created_by_ref', label: 'Created by', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true, isFilterable: false },
     { name: 'object_marking_refs', label: 'Marking', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true, isFilterable: false },
-    { name: 'added_after_start', label: 'Added after', type: 'date', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true, isFilterable: true },
+    { name: 'added_after_start', label: 'Added after', type: 'date', mandatoryType: 'no', editDefault: true, multiple: false, upsert: true, isFilterable: true },
     { name: 'current_state_cursor', label: 'Current state cursor', type: 'string', format: 'short', mandatoryType: 'no', editDefault: true, multiple: false, upsert: true, isFilterable: true },
     { name: 'ingestion_running', label: 'Ingestion running', type: 'boolean', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true, isFilterable: true },
     { name: 'taxii_more', label: 'Taxii response more value', type: 'boolean', mandatoryType: 'no', editDefault: true, multiple: false, upsert: true, isFilterable: true },
     { name: 'last_execution_date', label: 'Last execution date', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'confidence_to_score', label: 'Copy confidence level to OpenCTI scores for indicators', type: 'boolean', mandatoryType: 'no', editDefault: true, multiple: false, upsert: false, isFilterable: false },
   ],
   relations: [],
   representative: (stix: StixIngestionTaxii) => {

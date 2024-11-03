@@ -34,6 +34,8 @@ import type { StixBundle, StixObject } from '../types/stix-common';
 import { patchAttribute } from '../database/middleware';
 import { ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
 import { connectorIdFromIngestId, queueDetails } from '../domain/connector';
+import { STIX_EXT_OCTI } from '../types/stix-extensions';
+import type { StixIndicator } from '../modules/indicator/indicator-types';
 
 // Ingestion manager responsible to cleanup old data
 // Each API will start is ingestion manager.
@@ -335,7 +337,30 @@ export const processTaxiiResponse = async (context: AuthContext, ingestion: Basi
   const { data, addedLastHeader } = taxiResponse;
   if (data.objects && data.objects.length > 0) {
     logApp.info(`[OPENCTI-MODULE] Taxii ingestion execution for ${data.objects.length} items, sending stix bundle to workers.`, { ingestionId: ingestion.id });
-    const bundle: StixBundle = { type: 'bundle', spec_version: '2.1', id: `bundle--${uuidv4()}`, objects: taxiResponse.data.objects };
+    let { objects } = data;
+    if (ingestion.confidence_to_score === true) {
+      objects = objects.map((o) => {
+        if (o.type === 'indicator') {
+          const indicator = o as StixIndicator;
+          if (isNotEmptyField(indicator.confidence)) {
+            if (indicator.extensions && indicator.extensions[STIX_EXT_OCTI]) {
+              indicator.extensions[STIX_EXT_OCTI].score = indicator.confidence;
+            } else if (indicator.extensions) {
+              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+              // @ts-expect-error
+              indicator.extensions[STIX_EXT_OCTI] = { score: indicator.confidence };
+            } else {
+              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+              // @ts-expect-error
+              indicator.extensions = { [STIX_EXT_OCTI]: { score: indicator.confidence } };
+            }
+            return indicator;
+          }
+        }
+        return o;
+      });
+    }
+    const bundle: StixBundle = { type: 'bundle', spec_version: '2.1', id: `bundle--${uuidv4()}`, objects };
     // Push the bundle to absorption queue
     await pushBundleToConnectorQueue(context, ingestion, bundle);
     const more = data.more || false;

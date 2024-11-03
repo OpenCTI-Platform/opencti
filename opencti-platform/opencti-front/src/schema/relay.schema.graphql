@@ -526,6 +526,7 @@ type TaxiiCollection {
   description: String
   filters: String
   include_inferences: Boolean
+  score_to_confidence: Boolean
   taxii_public: Boolean
   authorized_members: [MemberAccess!]
 }
@@ -547,6 +548,7 @@ input TaxiiCollectionAddInput {
   taxii_public: Boolean
   authorized_members: [MemberAccessInput!]
   include_inferences: Boolean
+  score_to_confidence: Boolean
 }
 
 enum TaxiiCollectionOrdering {
@@ -11210,6 +11212,7 @@ type IngestionTaxii implements InternalObject & BasicObject {
   added_after_start: DateTime
   ingestion_running: Boolean
   last_execution_date: DateTime
+  confidence_to_score: Boolean
 }
 
 enum IngestionTaxiiOrdering {
@@ -11241,6 +11244,7 @@ input IngestionTaxiiAddInput {
   collection: String!
   added_after_start: DateTime
   ingestion_running: Boolean
+  confidence_to_score: Boolean
   user_id: String
 }
 

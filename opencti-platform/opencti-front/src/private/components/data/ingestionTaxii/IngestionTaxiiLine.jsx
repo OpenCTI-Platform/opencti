@@ -159,6 +159,7 @@ const IngestionTaxiiLineFragment = createFragmentContainer(
         added_after_start
         current_state_cursor
         last_execution_date
+        confidence_to_score
       }
     `,
   },

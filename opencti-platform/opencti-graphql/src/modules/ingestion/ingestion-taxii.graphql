@@ -31,6 +31,7 @@ type IngestionTaxii implements InternalObject & BasicObject {
     added_after_start: DateTime
     ingestion_running: Boolean
     last_execution_date: DateTime
+    confidence_to_score: Boolean
 }
 enum IngestionTaxiiOrdering {
     name
@@ -74,6 +75,7 @@ input IngestionTaxiiAddInput {
     collection: String! @constraint(minLength: 5)
     added_after_start: DateTime
     ingestion_running: Boolean
+    confidence_to_score: Boolean
     user_id: String
 }
 

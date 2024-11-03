@@ -10854,6 +10854,7 @@ export type IngestionTaxii = BasicObject & InternalObject & {
   authentication_type: IngestionAuthType;
   authentication_value?: Maybe<Scalars['String']['output']>;
   collection: Scalars['String']['output'];
+  confidence_to_score?: Maybe<Scalars['Boolean']['output']>;
   created_at?: Maybe<Scalars['DateTime']['output']>;
   current_state_cursor?: Maybe<Scalars['String']['output']>;
   description?: Maybe<Scalars['String']['output']>;
@@ -10876,6 +10877,7 @@ export type IngestionTaxiiAddInput = {
   authentication_type: IngestionAuthType;
   authentication_value?: InputMaybe<Scalars['String']['input']>;
   collection: Scalars['String']['input'];
+  confidence_to_score?: InputMaybe<Scalars['Boolean']['input']>;
   description?: InputMaybe<Scalars['String']['input']>;
   ingestion_running?: InputMaybe<Scalars['Boolean']['input']>;
   name: Scalars['String']['input'];
@@ -26447,6 +26449,7 @@ export type TaxiiCollection = {
   id: Scalars['ID']['output'];
   include_inferences?: Maybe<Scalars['Boolean']['output']>;
   name?: Maybe<Scalars['String']['output']>;
+  score_to_confidence?: Maybe<Scalars['Boolean']['output']>;
   taxii_public?: Maybe<Scalars['Boolean']['output']>;
 };
 
@@ -26456,6 +26459,7 @@ export type TaxiiCollectionAddInput = {
   filters?: InputMaybe<Scalars['String']['input']>;
   include_inferences?: InputMaybe<Scalars['Boolean']['input']>;
   name: Scalars['String']['input'];
+  score_to_confidence?: InputMaybe<Scalars['Boolean']['input']>;
   taxii_public?: InputMaybe<Scalars['Boolean']['input']>;
 };
 
@@ -35271,6 +35275,7 @@ export type IngestionTaxiiResolvers<ContextType = any, ParentType extends Resolv
   authentication_type?: Resolver<ResolversTypes['IngestionAuthType'], ParentType, ContextType>;
   authentication_value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   collection?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  confidence_to_score?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   created_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   current_state_cursor?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -39601,6 +39606,7 @@ export type TaxiiCollectionResolvers<ContextType = any, ParentType extends Resol
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   include_inferences?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  score_to_confidence?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   taxii_public?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
