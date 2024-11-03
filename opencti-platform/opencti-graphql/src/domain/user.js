@@ -1432,7 +1432,7 @@ export const authenticateUserByToken = async (context, req, tokenValue, provider
     validateUser(logged, settings);
     const applicantId = req.headers['opencti-applicant-id'];
     if (applicantId && isBypassUser(logged)) {
-      const impersonate = platformUsers.get(applicantId);
+      const impersonate = platformUsers.get(applicantId) || INTERNAL_USERS[applicantId];
       if (impersonate) {
         const sessionUser = buildSessionUser(logged, impersonate, provider, settings);
         return userWithOrigin(req, sessionUser);
