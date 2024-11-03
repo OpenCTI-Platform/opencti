@@ -7,6 +7,7 @@ interface ProgressBarProps {
   value: number
   title: string
   label?: string
+  variant?: 'determinate' | 'indeterminate' | 'buffer' | 'query'
   onClose: () => void
   children?: ReactNode
 }
@@ -18,6 +19,7 @@ const ProgressBar = ({
   label,
   onClose,
   children,
+  variant = 'buffer',
 }: ProgressBarProps) => {
   const { t_i18n } = useFormatter();
 
@@ -26,7 +28,7 @@ const ProgressBar = ({
       <DialogTitle>{title}</DialogTitle>
       <DialogContent>
         <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-          <LinearProgress style={{ flex: 1 }} variant="buffer" value={value} valueBuffer={value + 10} />
+          <LinearProgress style={{ flex: 1 }} variant={variant} value={value} valueBuffer={value + 10} />
           {label && <Typography style={{ flexShrink: 0 }}>{label}</Typography>}
         </div>
         {children}

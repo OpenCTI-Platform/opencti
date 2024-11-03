@@ -19,6 +19,7 @@ import { truncate } from '../../../../utils/String';
 import StixCoreRelationshipCreationForm from './StixCoreRelationshipCreationForm';
 import { resolveRelationsTypes } from '../../../../utils/Relation';
 import { UserContext } from '../../../../utils/hooks/useAuth';
+import ProgressBar from '../../../../components/ProgressBar';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -237,16 +238,43 @@ export const stixCoreRelationshipCreationMutation = graphql`
   }
 `;
 
+const commitWithPromise = (values) => new Promise((resolve, reject) => {
+  commitMutation({
+    mutation: stixCoreRelationshipCreationMutation,
+    variables: {
+      input: values,
+    },
+    onError: (error) => {
+      reject(error);
+    },
+    onCompleted: (response) => {
+      resolve(response.stixCoreRelationshipAdd);
+    },
+  });
+});
+
 class StixCoreRelationshipCreation extends Component {
   constructor(props) {
     super(props);
     this.state = {
       step: 0,
       existingRelations: [],
+      displayProgress: false,
+      progress: 0,
     };
   }
 
-  async onSubmit(values, { setSubmitting, resetForm }) {
+  handleCloseProgressBar() {
+    this.setState({ displayProgress: false });
+  }
+
+  async onSubmit(values, { resetForm }) {
+    this.setState({ displayProgress: true });
+    this.handleClose();
+    resetForm();
+    let latestResponse;
+    let current = 1;
+    const total = this.props.fromObjects.length * this.props.toObjects.length;
     for (const fromObject of this.props.fromObjects) {
       for (const toObject of this.props.toObjects) {
         const finalValues = R.pipe(
@@ -264,21 +292,14 @@ class StixCoreRelationshipCreation extends Component {
           ),
         )(values);
         // eslint-disable-next-line no-await-in-loop
-        await commitMutation({
-          mutation: stixCoreRelationshipCreationMutation,
-          variables: {
-            input: finalValues,
-          },
-          setSubmitting,
-          onCompleted: (response) => {
-            this.props.handleResult(response.stixCoreRelationshipAdd);
-          },
-        });
+        latestResponse = await commitWithPromise(finalValues, this.props.handleResult);
+        this.props.handleResult(latestResponse, true);
+        current += 1;
+        this.setState({ progress: Math.round((current * 100) / total) });
       }
     }
-    setSubmitting(false);
-    resetForm();
-    this.handleClose();
+    this.props.handleResult(latestResponse);
+    this.setState({ progress: 0, displayProgress: false });
   }
 
   componentDidUpdate(prevProps) {
@@ -625,26 +646,35 @@ class StixCoreRelationshipCreation extends Component {
   }
 
   render() {
-    const { open, fromObject, toObjects, classes } = this.props;
-    const { step } = this.state;
+    const { open, fromObject, toObjects, classes, t } = this.props;
+    const { step, displayProgress, progress } = this.state;
     return (
-      <Drawer
-        open={open}
-        anchor="right"
-        elevation={1}
-        sx={{ zIndex: 1202 }}
-        classes={{ paper: classes.drawerPaper }}
-        onClose={this.handleClose.bind(this)}
-      >
-        {step === 0
+      <>
+        <Drawer
+          open={open}
+          anchor="right"
+          elevation={1}
+          sx={{ zIndex: 1202 }}
+          classes={{ paper: classes.drawerPaper }}
+          onClose={this.handleClose.bind(this)}
+        >
+          {step === 0
         || step === undefined
         || fromObject === null
         || toObjects === null
-          ? this.renderLoader()
-          : ''}
-        {step === 1 ? this.renderSelectRelation() : ''}
-        {step === 2 ? this.renderForm() : ''}
-      </Drawer>
+            ? this.renderLoader()
+            : ''}
+          {step === 1 ? this.renderSelectRelation() : ''}
+          {step === 2 ? this.renderForm() : ''}
+        </Drawer>
+        <ProgressBar
+          title={t('Create multiple relationships')}
+          open={displayProgress}
+          value={progress}
+          onClose={this.handleCloseProgressBar.bind(this)}
+          variant='determinate'
+        />
+      </>
     );
   }
 }
