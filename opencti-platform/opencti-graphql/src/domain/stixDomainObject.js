@@ -40,6 +40,7 @@ import { usersSessionRefresh } from './user';
 import { addFilter } from '../utils/filtering/filtering-utils';
 import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
 import { validateMarking } from '../utils/access';
+import { resetCacheForEntity } from '../database/cache';
 
 export const findAll = async (context, user, args) => {
   let types = [];
@@ -233,6 +234,8 @@ export const stixDomainObjectEditField = async (context, user, stixObjectId, inp
       const grantedGroupsInput = input.find((i) => i.key === 'grantable_groups');
       if (grantedGroupsInput) {
         await usersSessionRefresh(updatedElem.authorized_authorities);
+        // TODO INVALIDATE CACHE???!!!!
+        resetCacheForEntity(ENTITY_TYPE_USER);
       }
     }
     return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].EDIT_TOPIC, updatedElem, user);
