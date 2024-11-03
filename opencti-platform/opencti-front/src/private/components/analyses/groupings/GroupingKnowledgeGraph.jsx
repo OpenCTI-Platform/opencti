@@ -548,7 +548,7 @@ class GroupingKnowledgeGraphComponent extends Component {
     );
   }
 
-  async handleAddRelation(stixCoreRelationship) {
+  async handleAddRelation(stixCoreRelationship, skipReload = false) {
     const input = {
       toId: stixCoreRelationship.id,
       relationship_type: 'object',
@@ -560,27 +560,29 @@ class GroupingKnowledgeGraphComponent extends Component {
         input,
       },
       onCompleted: async () => {
-        this.graphObjects = [...this.graphObjects, stixCoreRelationship];
-        this.graphData = buildGraphData(
-          this.graphObjects,
-          decodeGraphData(this.props.grouping.x_opencti_graph_data),
-          this.props.t,
-        );
-        await this.resetAllFilters();
-        const selectedTimeRangeInterval = computeTimeRangeInterval(
-          this.graphObjects,
-        );
-        this.setState({
-          selectedTimeRangeInterval,
-          graphData: applyFilters(
-            this.graphData,
-            this.state.stixCoreObjectsTypes,
-            this.state.markedBy,
-            this.state.createdBy,
-            ignoredStixCoreObjectsTypes,
+        if (!skipReload) {
+          this.graphObjects = [...this.graphObjects, stixCoreRelationship];
+          this.graphData = buildGraphData(
+            this.graphObjects,
+            decodeGraphData(this.props.grouping.x_opencti_graph_data),
+            this.props.t,
+          );
+          await this.resetAllFilters();
+          const selectedTimeRangeInterval = computeTimeRangeInterval(
+            this.graphObjects,
+          );
+          this.setState({
             selectedTimeRangeInterval,
-          ),
-        });
+            graphData: applyFilters(
+              this.graphData,
+              this.state.stixCoreObjectsTypes,
+              this.state.markedBy,
+              this.state.createdBy,
+              ignoredStixCoreObjectsTypes,
+              selectedTimeRangeInterval,
+            ),
+          });
+        }
       },
     });
   }
