@@ -61,7 +61,7 @@ const StixCoreObjectOpinionsList: FunctionComponent<StixCoreObjectOpinionsListPr
   return (
     <Dialog
       PaperProps={{ elevation: 1 }}
-      open={open}
+      open={opinions && (opinions.edges ?? []).length > 0 ? open : false}
       onClose={handleClose}
       fullWidth={true}
       maxWidth="md"

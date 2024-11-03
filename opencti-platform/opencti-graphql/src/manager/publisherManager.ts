@@ -85,9 +85,9 @@ export const internalProcessNotification = async (
         return { error: err };
       });
     } else if (notifier_connector_id === NOTIFIER_CONNECTOR_EMAIL) {
-      const { title, template } = JSON.parse(configuration ?? '{}') as NOTIFIER_CONNECTOR_EMAIL_INTERFACE;
+      const { title, template, url_suffix: urlSuffix } = JSON.parse(configuration ?? '{}') as NOTIFIER_CONNECTOR_EMAIL_INTERFACE;
       const generatedTitle = ejs.render(title, templateData);
-      const generatedEmail = ejs.render(template, templateData);
+      const generatedEmail = ejs.render(template, { ...templateData, url_suffix: urlSuffix });
       const mail = { from: settings.platform_email, to: user.user_email, subject: generatedTitle, html: generatedEmail };
       await sendMail(mail).catch((err) => {
         logApp.error(err, { manager: 'PUBLISHER_MANAGER' });
@@ -100,6 +100,7 @@ export const internalProcessNotification = async (
         logo,
         footer,
         background_color: bgColor,
+        url_suffix: urlSuffix,
       } = JSON.parse(configuration ?? '{}') as NOTIFIER_CONNECTOR_SIMPLIFIED_EMAIL_INTERFACE;
 
       const finalTemplateData = {
@@ -108,6 +109,7 @@ export const internalProcessNotification = async (
         logo,
         footer,
         background_color: bgColor,
+        url_suffix: urlSuffix,
       };
 
       const generatedTitle = ejs.render(title, finalTemplateData);
