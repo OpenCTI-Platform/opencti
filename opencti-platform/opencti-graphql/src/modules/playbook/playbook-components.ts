@@ -35,7 +35,7 @@ import type { BasicStoreCommon, BasicStoreRelation, StoreCommon, StoreRelation }
 import { generateInternalId, generateStandardId, idGenFromData } from '../../schema/identifier';
 import { now, observableValue, utcDate } from '../../utils/format';
 import type { StixCampaign, StixContainer, StixIncident, StixInfrastructure, StixMalware, StixReport, StixThreatActor } from '../../types/stix-sdo';
-import { generateInternalType, getParentTypes } from '../../schema/schemaUtils';
+import { convertStixToInternalTypes, generateInternalType, getParentTypes } from '../../schema/schemaUtils';
 import {
   ENTITY_TYPE_ATTACK_PATTERN,
   ENTITY_TYPE_CAMPAIGN,
@@ -82,6 +82,7 @@ import { EditOperation } from '../../generated/graphql';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
 import { schemaTypesDefinition } from '../../schema/schema-types';
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../grouping/grouping-types';
+import { generateCreateMessage } from '../../database/generate-message';
 
 const extractBundleBaseElement = (instanceId: string, bundle: StixBundle): StixObject => {
   const baseData = bundle.objects.find((o) => o.id === instanceId);
@@ -946,7 +947,7 @@ const PLAYBOOK_NOTIFIER_COMPONENT: PlaybookComponent<NotifierConfiguration> = {
           notification_id: playbookNode.id,
           instance: stixObject,
           type: 'create', // TODO Improve that with type event follow up
-          message: `\`${playbookNode.name}\``
+          message: generateCreateMessage({ ...stixObject, entity_type: convertStixToInternalTypes(stixObject.type) }) === '-' ? playbookNode.name : generateCreateMessage({ ...stixObject, entity_type: convertStixToInternalTypes(stixObject.type) }),
         }))
       };
       notificationsCall.push(storeNotificationEvent(context, notificationEvent));

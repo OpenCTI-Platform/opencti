@@ -125,20 +125,20 @@ const StixCoreObjectOpinionsComponent: FunctionComponent<StixCoreObjectOpinionsP
       )}
       <div style={{ height, cursor: 'pointer' }}>
         {distributionQueryRef && (
-        <React.Suspense
-          fallback={
-            <div style={{ height }}>
-              <Loader variant={LoaderVariant.inElement} />
-            </div>
-          }
-        >
-          <StixCoreObjectOpinionsRadar
-            queryRef={distributionQueryRef}
-            height={height}
-            opinionOptions={opinionOptions}
-            handleOpen={handleOpen}
-          />
-        </React.Suspense>
+          <React.Suspense
+            fallback={
+              <div style={{ height }}>
+                <Loader variant={LoaderVariant.inElement} />
+              </div>
+            }
+          >
+            <StixCoreObjectOpinionsRadar
+              queryRef={distributionQueryRef}
+              height={height}
+              opinionOptions={opinionOptions}
+              handleOpen={handleOpen}
+            />
+          </React.Suspense>
         )}
       </div>
     </>
