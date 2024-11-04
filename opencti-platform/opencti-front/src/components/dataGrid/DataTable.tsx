@@ -107,12 +107,14 @@ type DataTableInternalToolbarProps = Pick<DataTableProps,
 | 'handleCopy'
 > & {
   taskScope?: string
+  globalSearch?: string;
 };
 
 const DataTableInternalToolbar = ({
   taskScope,
   handleCopy,
   toolbarFilters,
+  globalSearch,
 }: DataTableInternalToolbarProps) => {
   const theme = useTheme<Theme>();
 
@@ -141,7 +143,7 @@ const DataTableInternalToolbar = ({
         deSelectedElements={deSelectedElements}
         numberOfSelectedElements={numberOfSelectedElements}
         selectAll={selectAll}
-        search={searchTerm}
+        search={searchTerm ?? globalSearch}
         filters={toolbarFilters}
         handleClearSelectedElements={handleClearSelectedElements}
         taskScope={taskScope}
@@ -245,6 +247,7 @@ const DataTable = (props: OCTIDataTableProps) => {
           handleCopy={handleCopy}
           taskScope={taskScope}
           toolbarFilters={toolbarFilters}
+          globalSearch={globalSearch}
         />
       )}
     />
