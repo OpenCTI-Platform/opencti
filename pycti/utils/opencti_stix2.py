@@ -2390,7 +2390,7 @@ class OpenCTIStix2:
                 if item["opencti_operation"] == "delete":
                     delete_id = item["id"]
                     self.opencti.stix.delete(id=delete_id)
-                if item["opencti_operation"] == "merge":
+                elif item["opencti_operation"] == "merge":
                     target_id = item["merge_target_id"]
                     source_ids = item["merge_source_ids"]
                     self.opencti.stix.merge(id=target_id, object_ids=source_ids)
@@ -2429,7 +2429,6 @@ class OpenCTIStix2:
                                     item, observed_data_ref, to_id, update
                                 )
                 # endregion
-
             elif item["type"] == "label":
                 stix_ids = self.opencti.get_attribute_in_extension("stix_ids", item)
                 self.opencti.label.create(
