@@ -95,23 +95,24 @@ const ObjectParticipantField: FunctionComponent<ObjectParticipantFieldProps> = (
         const newParticipants = (
           (data as ObjectParticipantFieldMembersSearchQuery$data)?.members?.edges ?? []
         ).map((n) => {
-          const group = n.node.id === me?.id ? t_i18n('User') : t_i18n('All');
+          const group = n.node.id === me?.id ? t_i18n('Current User') : t_i18n('All');
           return {
             label: n.node.name,
             value: n.node.id,
             type: n.node.entity_type,
             group,
           };
-        }).sort((a, b) => {
+        });
+        // Add current user if is not in the only first results displayed
+        const isMeDisplayed = newParticipants.find((participant) => participant.value === me?.id);
+        if (me && !isMeDisplayed) newParticipants.unshift({ label: me.name, value: me.id, type: 'User', group: t_i18n('Current User') });
+        newParticipants.sort((a, b) => {
           // Display first the current user
           if (a.value === me?.id) return -1;
           if (b.value === me?.id) return 1;
           // Sort by alphabetic order
           return a.label.localeCompare(b.label);
         });
-        // Add current user if is not in the only first results displayed
-        const isMeDisplayed = newParticipants.find((participant) => participant.value === me?.id);
-        if (me && !isMeDisplayed) newParticipants.unshift({ label: me.name, value: me.id, type: 'User', group: t_i18n('User') });
         setParticipants(newParticipants);
       });
   };
