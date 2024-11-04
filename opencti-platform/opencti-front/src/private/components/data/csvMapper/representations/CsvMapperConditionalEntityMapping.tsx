@@ -24,8 +24,8 @@ CsvMapperConditionalEntityMappingProps
   const operatorOptions = [
     { label: t_i18n('Equal'), value: ('eq') },
     { label: t_i18n('Not equal'), value: 'not_eq' }];
-
   const { setFieldValue } = form;
+  const textFieldName = representation.column_based?.enabled && (`${representationName}.column_based.value`);
 
   const handleColumnSelect = async (column: string | null) => {
     await setFieldValue(`${representationName}.column_based.column_reference`, column);
@@ -92,7 +92,7 @@ CsvMapperConditionalEntityMappingProps
                 ...params.InputProps,
                 sx: {
                   '& fieldset': {
-                    borderColor: (representation.column_based?.column_reference === null)
+                    borderColor: (!representation.column_based?.column_reference)
                       ? 'rgb(244, 67, 54)'
                       : '',
                   },
@@ -141,11 +141,7 @@ CsvMapperConditionalEntityMappingProps
           <Field
             component={TextField}
             label={t_i18n('Value')}
-            name={
-                representation.column_based?.enabled
-                  ? `${representationName}.column_based.value`
-                  : null
-            }
+            name={textFieldName}
             variant='standard'
             disabled={!representation.column_based?.enabled}
             error={!representation.column_based?.value && representation.column_based?.enabled}
