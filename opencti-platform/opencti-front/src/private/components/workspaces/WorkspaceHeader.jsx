@@ -57,16 +57,16 @@ const useStyles = makeStyles(() => ({
     marginTop: '-13px',
   },
   manageAccess: {
-    margin: '-8px 4px 0 0',
+    margin: '-5px 4px 0 0',
     float: 'right',
   },
   turnToReportOrCase: {
-    margin: '-8px 4px 0 0',
+    margin: '-5px 4px 0 0',
     float: 'right',
   },
   export: {
     float: 'right',
-    margin: '-8px 0 0 0',
+    margin: '-5px 0 0 0',
     display: 'flex',
   },
   tags: {
@@ -74,7 +74,7 @@ const useStyles = makeStyles(() => ({
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'end',
-    marginTop: '-8px',
+    marginTop: '-5px',
   },
   tag: {
     marginRight: 7,
@@ -211,7 +211,7 @@ const WorkspaceHeader = ({
             classes={{ root: classes.title }}
             style={{ marginRight: canEdit ? 0 : 10 }}
           >
-            {truncate(workspace.name, 80)}
+            {truncate(workspace.name, 40)}
           </Typography>
         </Tooltip>
         <Security needs={[EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE]} hasAccess={canEdit}>
@@ -360,7 +360,7 @@ const WorkspaceHeader = ({
         )}
         {isFeatureEnable('PUBLIC_DASHBOARD') && variant === 'dashboard' && (
           <Security needs={[EXPLORE_EXUPDATE_PUBLISH]} hasAccess={canManage}>
-            <div style={{ margin: '-8px 0 0 4px', float: 'right' }}>
+            <div style={{ margin: '-5px 0 0 4px', float: 'right' }}>
               <WorkspaceShareButton workspaceId={workspace.id} />
             </div>
           </Security>
