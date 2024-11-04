@@ -104,6 +104,9 @@ const ObjectParticipantField: FunctionComponent<ObjectParticipantFieldProps> = (
           // Sort by alphabetic order
           return a.label.localeCompare(b.label);
         });
+        // Add current user if is not in the only first results displayed
+        const isMeDisplayed = newParticipants.find((participant) => participant.value === me?.id);
+        if (me && !isMeDisplayed) newParticipants.unshift({ label: me.name, value: me.id, type: 'User' });
         setParticipants(newParticipants);
       });
   };
