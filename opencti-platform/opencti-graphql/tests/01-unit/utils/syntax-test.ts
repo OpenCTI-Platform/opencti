@@ -15,6 +15,7 @@ describe('Regex Pattern Tests', () => {
     expect('test._mysubdomain.mydomain.com').toMatch(domainChecker);
     expect('test_mysubdomain.domain.io').toMatch(domainChecker);
     expect('invalid_domain.12_3').not.toMatch(domainChecker);
+    expect('invalid_domain').not.toMatch(domainChecker);
   });
 
   it('should match a valid hostname pattern', () => {
