@@ -61,7 +61,7 @@ const content = `
   </div>
   
   <h3>4. Incident Response Tasks/Actions</h3>
-  <div>$incidentTasksAndActions</div>
+  <div>$incidentTasksAndActionsId</div>
   
   <h3>5. Recommendations</h3>
   <blockquote>
@@ -69,21 +69,21 @@ const content = `
   </blockquote>
   
   <h3>6. Indicators of Compromise (IoCs)</h3>
-  <div>$incidentIOC</div>
+  <div>$incidentIOCId</div>
   
   <div class="page-break" style="page-break-after:always;">
     <span style="display:none;">&nbsp;</span>
   </div>
   
   <h3>7. Observables</h3>
-  <div>$containerObservables</div>
+  <div>$containerObservablesId</div>
   
   <div class="page-break" style="page-break-after:always;">
     <span style="display:none;">&nbsp;</span>
   </div>
   
   <h3>8. Tactics, Techniques, and Procedures (TTPs)</h3>
-  <div>$incidentTTP</div>
+  <div>$attackPatternsId</div>
   
   <div class="page-break" style="page-break-after:always;">
     <span style="display:none;">&nbsp;</span>
@@ -99,10 +99,10 @@ export const templateIncidentResponse: Template = {
   id: 'templateIncidentCase-id',
   content,
   template_widgets_ids: [
-    'containerObservables-id',
-    'incidentIOC-id',
-    'incidentTasksAndActions-id',
-    'incidentTTP-id',
-    'widgetIncidentResponseMultiAttributes-id',
+    'containerObservablesId',
+    'incidentIOCId',
+    'incidentTasksAndActionsId',
+    'attackPatternsId',
+    'widgetIncidentResponseMultiAttributesId',
   ],
 };

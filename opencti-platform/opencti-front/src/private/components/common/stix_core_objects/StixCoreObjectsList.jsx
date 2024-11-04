@@ -87,6 +87,8 @@ export const stixCoreObjectsListQuery = graphql`
             name
             description
             indicator_types
+            pattern
+            pattern_type
           }
           ... on Infrastructure {
             name

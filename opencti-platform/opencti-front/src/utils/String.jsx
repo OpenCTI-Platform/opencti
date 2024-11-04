@@ -4,6 +4,8 @@ import { Base64 } from 'js-base64';
 import Tooltip from '@mui/material/Tooltip';
 import { APP_BASE_PATH } from '../relay/environment';
 import { isNotEmptyField } from './utils';
+import { dateFormat, isDate } from "./Time";
+import { renderToString } from "react-dom/server";
 
 export const truncate = (str, limit, truncateSpaces = true) => {
   if (str === undefined || str === null || str.length <= limit) {
@@ -135,3 +137,24 @@ export const splitMultilines = (str) => (str ?? '')
   .split(/\r?\n/)
   .filter((v) => !!v)
   .map((s) => s.trim());
+
+
+const format = (val) => {
+  let value = typeof val === 'string' ? val : JSON.stringify(val);
+  if (isDate(value)) value = dateFormat(new Date(value)) ?? '';
+  return value;
+};
+
+export const buildReadableAttribute = (result, displayInfo = {}) => {
+  let attributeData;
+  if (Array.isArray(result)) {
+    if (displayInfo.displayStyle && displayInfo.displayStyle === 'list') {
+      attributeData = renderToString(<ul>{result.map((el) => <li key={el}>{format(el)}</li>)}</ul>);
+    } else {
+      attributeData = result.map(format).join(', ');
+    }
+  } else {
+    attributeData = format(result);
+  }
+  return attributeData;
+}

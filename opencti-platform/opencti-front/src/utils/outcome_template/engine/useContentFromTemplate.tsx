@@ -55,7 +55,7 @@ const useContentFromTemplate = () => {
         outcome = errorMessage;
         MESSAGING$.notifyError('One of the widgets has not been resolved.');
       }
-      content = content.replace(`$${templateWidget.name}`, outcome);
+      content = content.replace(`$${templateWidget.id}`, outcome);
     }
 
     return content;

@@ -7,6 +7,7 @@ import { fetchQuery } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import getObjectProperty from '../../../object';
 import type { WidgetFromBackend } from '../../../widget/widget';
+import { buildReadableAttribute } from '../../../String';
 
 const useBuildListOutcome = () => {
   const { t_i18n } = useFormatter();
@@ -54,8 +55,13 @@ const useBuildListOutcome = () => {
           {nodes.map((n) => (
             <tr key={n.id}>
               {columns.map((col) => {
-                const property = getObjectProperty(n, col.attribute) ?? '';
-                const strAttribute = typeof property === 'string' ? property : JSON.stringify(property);
+                let property;
+                try {
+                  property = getObjectProperty(n, col.attribute) ?? '';
+                } catch (e) {
+                  property = '';
+                }
+                const strAttribute = buildReadableAttribute(property, col);
                 // The trick here is to add a zero-width space every 10 chars to be able to make a
                 // multiline text even for values like long IDs without spaces.
                 const wrappableAttribute = (strAttribute.match(/.{1,10}/g) ?? []).join('\u{200B}');

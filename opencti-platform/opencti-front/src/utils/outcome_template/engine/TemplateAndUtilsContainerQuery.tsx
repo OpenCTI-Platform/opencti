@@ -14,6 +14,7 @@ const templateAndUtilsContainerQuery = graphql`
         }
         template_widgets {
           name
+          id
           widget {
               id
               type

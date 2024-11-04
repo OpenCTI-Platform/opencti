@@ -1,6 +1,7 @@
 // text //
 import type { Template } from '../../generated/graphql';
 import { templateIncidentResponse } from './__incidentCase.template';
+import { generateTemplateExecutiveSummary } from './__executiveSummary.template';
 
 // templates //
 
@@ -27,7 +28,7 @@ const templateAttribute: Template = {
     <p> This report has been published $reportPublicationDate, and has labels: $containerLabels </p>
     </div>
     </html>`,
-  template_widgets_ids: ['widgetReportMultiAttributes-id'],
+  template_widgets_ids: ['widgetReportMultiAttributesId'],
 };
 
 const templateList: Template = {
@@ -35,16 +36,16 @@ const templateList: Template = {
   id: 'templateList-id',
   content: '<div>\n'
     + '<h1> Main title </h1>\n'
-    + '<p> Locations contained in the report: $locationsList</p>\n'
+    + '<p> Locations contained in the report: $locationsListId</p>\n'
     + '</div> \n'
     + '</html>',
-  template_widgets_ids: ['locationsList-id'],
+  template_widgets_ids: ['locationsListId'],
 };
 
 const templateGraph: Template = {
   name: 'template graph (donut)',
   id: 'templateGraph-id',
-  template_widgets_ids: ['widgetGraph-id'],
+  template_widgets_ids: ['widgetGraphId'],
   content: `
   <div style="width: 600px">
     <h1>Template graph</h1>
@@ -54,7 +55,9 @@ const templateGraph: Template = {
 };
 
 export const usedTemplatesByEntityType = {
-  Report: [templateText, templateAttribute, templateList, templateGraph],
-  Grouping: [templateText, templateGraph],
-  'Case-Incident': [templateIncidentResponse],
+  Report: [templateText, templateAttribute, templateList, templateGraph, generateTemplateExecutiveSummary('Report')],
+  Grouping: [templateText, templateGraph, generateTemplateExecutiveSummary('Grouping')],
+  'Case-Incident': [templateIncidentResponse, generateTemplateExecutiveSummary('Case-Incident')],
+  'Case-Rfi': [generateTemplateExecutiveSummary('Case-Rfi')],
+  'Case-Rft': [generateTemplateExecutiveSummary('Case-Rft')],
 };

@@ -79,10 +79,13 @@ const stixCoreObjectsAttributesQuery = graphql`
                 name
                 published
                 description
+                report_types
+                x_opencti_reliability
             }
             ... on Grouping {
                 name
                 description
+                context
             }
             ... on Individual {
                 name
@@ -167,6 +170,17 @@ const stixCoreObjectsAttributesQuery = graphql`
             ... on CaseIncident {
                 priority
                 severity
+                response_types
+            }
+            ... on CaseRfi {
+                severity
+                priority
+                information_types
+            }
+            ... on CaseRft {
+                severity
+                priority
+                takedown_types
             }
             ... on StixCyberObservable {
                 observable_value

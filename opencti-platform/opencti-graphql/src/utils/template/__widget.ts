@@ -2,24 +2,86 @@ import { type TemplateWidget, WidgetPerspective } from '../../generated/graphql'
 
 // hardcoded widgets
 
+const containerColumns = [
+  { label: 'Creation date', attribute: 'created_at', displayStyle: 'text', variableName: 'containerCreationDate' },
+  { label: 'Description', attribute: 'description', variableName: 'containerDescription' },
+  { label: 'Labels', attribute: 'objectLabel.value', variableName: 'containerLabels' },
+  { label: 'Markings', attribute: 'objectMarking.definition', variableName: 'containerMarkings' },
+  { label: 'Modification date', attribute: 'modified', variableName: 'containerModificationDate' },
+  { label: 'Name', attribute: 'name', variableName: 'containerName' },
+  { label: 'Author', attribute: 'createdBy.name', variableName: 'containerAuthor' },
+  { label: 'Reliability', attribute: 'reliability', variableName: 'containerReliability' },
+  { label: 'Confidence level', attribute: 'confidence', variableName: 'containerConfidenceLevel' },
+  { label: 'External references', attribute: 'externalReferences.edges.node.url', displayStyle: 'list', variableName: 'containerReferences' },
+];
+
 const widgetReportMultiAttributes: TemplateWidget = {
   name: 'widgetReportMultiAttributes',
-  id: 'widgetReportMultiAttributes-id',
+  id: 'widgetReportMultiAttributesId',
   description: 'This is a multi attributes widget.',
   widget: {
     type: 'attribute',
-    id: 'widgetContainerCreationDate',
+    id: 'widgetMultiAttributes',
     perspective: null,
     dataSelection: [{
       columns: [
-        { label: 'creationDate', attribute: 'created_at', displayStyle: 'text', variableName: 'containerCreationDate' },
-        { label: 'Description', attribute: 'description', variableName: 'containerDescription' },
-        { label: 'Labels', attribute: 'objectLabel.value', variableName: 'containerLabels' },
-        { label: 'Markings', attribute: 'objectMarking.definition', variableName: 'containerMarkings' },
-        { label: 'ModificationDate', attribute: 'modified', variableName: 'containerModificationDate' },
-        { label: 'Name', attribute: 'name', variableName: 'containerName' },
+        ...containerColumns,
         { label: 'Publication date', attribute: 'published', variableName: 'reportPublicationDate' },
-        { label: 'External references', attribute: 'externalReferences.edges.node.url', displayStyle: 'list', variableName: 'containerReferences' },
+        { label: 'Report types', attribute: 'report_types', variableName: 'types' },
+      ],
+      instance_id: 'SELF_ID',
+    }],
+  },
+};
+
+const widgetGroupingMultiAttributes: TemplateWidget = {
+  name: 'widgetGroupingMultiAttributes',
+  id: 'widgetGroupingMultiAttributesId',
+  description: 'This is a multi attributes widget.',
+  widget: {
+    type: 'attribute',
+    id: 'widgetMultiAttributes',
+    perspective: null,
+    dataSelection: [{
+      columns: [
+        ...containerColumns,
+        { label: 'Grouping types', attribute: 'context', variableName: 'context' },
+      ],
+      instance_id: 'SELF_ID',
+    }],
+  },
+};
+
+const widgetRFIMultiAttributes: TemplateWidget = {
+  name: 'widgetRFIMultiAttributes',
+  id: 'widgetRFIMultiAttributesId',
+  description: 'This is a multi attributes widget.',
+  widget: {
+    type: 'attribute',
+    id: 'widgetMultiAttributes',
+    perspective: null,
+    dataSelection: [{
+      columns: [
+        ...containerColumns,
+        { label: 'Information types', attribute: 'information_types', variableName: 'types' },
+      ],
+      instance_id: 'SELF_ID',
+    }],
+  },
+};
+
+const widgetRFTMultiAttributes: TemplateWidget = {
+  name: 'widgetRFTMultiAttributes',
+  id: 'widgetRFTMultiAttributesId',
+  description: 'This is a multi attributes widget.',
+  widget: {
+    type: 'attribute',
+    id: 'widgetMultiAttributes',
+    perspective: null,
+    dataSelection: [{
+      columns: [
+        ...containerColumns,
+        { label: 'Takedown types', attribute: 'takedown_types', variableName: 'types' },
       ],
       instance_id: 'SELF_ID',
     }],
@@ -28,60 +90,26 @@ const widgetReportMultiAttributes: TemplateWidget = {
 
 const widgetIncidentResponseMultiAttributes: TemplateWidget = {
   name: 'widgetIncidentResponseMultiAttributes',
-  id: 'widgetIncidentResponseMultiAttributes-id',
+  id: 'widgetIncidentResponseMultiAttributesId',
   widget: {
     type: 'attribute',
-    id: 'widgetContainerCreationDate',
+    id: 'widgetMultiAttributes',
     perspective: null,
     dataSelection: [{
       columns: [
-        { label: 'Name', attribute: 'name', variableName: 'containerName' },
-        { label: 'creationDate', attribute: 'created_at', displayStyle: 'text', variableName: 'containerCreationDate' },
-        { label: 'Description', attribute: 'description', variableName: 'containerDescription' },
-        { label: 'Labels', attribute: 'objectLabel.value', variableName: 'containerLabels' },
-        { label: 'Markings', attribute: 'objectMarking.definition', variableName: 'containerMarkings' },
-        { label: 'ModificationDate', attribute: 'modified', variableName: 'containerModificationDate' },
-        { label: 'External references', attribute: 'externalReferences.edges.node.url', displayStyle: 'list', variableName: 'containerReferences' },
+        ...containerColumns,
         { label: 'Priority', attribute: 'priority', variableName: 'incidentPriority' },
         { label: 'Severity', attribute: 'severity', variableName: 'incidentSeverity' },
-        { label: 'Incident type', attribute: 'incident_type', variableName: 'incidentType' },
+        { label: 'Incident type', attribute: 'response_types', variableName: 'incidentType' },
       ],
       instance_id: 'SELF_ID',
     }],
   },
 };
 
-const widgetContainerIndicators: TemplateWidget = {
-  name: 'containerIndicators',
-  id: 'containerIndicators-id',
-  widget: {
-    type: 'list',
-    id: 'widgetContainerIndicators',
-    perspective: WidgetPerspective.Entities,
-    dataSelection: [
-      {
-        perspective: WidgetPerspective.Entities,
-        filters: JSON.stringify({
-          mode: 'and',
-          filters: [
-            { key: ['entity_type'], values: ['Indicator'] },
-            { key: ['objects'], values: ['SELF_ID'] },
-          ],
-          filterGroups: [],
-        }),
-        columns: [
-          { label: 'Indicator type', attribute: 'indicator_types' },
-          { label: 'Indicator', attribute: 'representative.main' },
-          { label: 'Description', attribute: 'description' }
-        ],
-      },
-    ],
-  },
-};
-
 const widgetContainerObservables: TemplateWidget = {
   name: 'containerObservables',
-  id: 'containerObservables-id',
+  id: 'containerObservablesId',
   widget: {
     type: 'list',
     id: 'widgetContainerIndicators',
@@ -109,7 +137,7 @@ const widgetContainerObservables: TemplateWidget = {
 
 const widgetLocationsList: TemplateWidget = {
   name: 'locationsList',
-  id: 'locationsList-id',
+  id: 'locationsListId',
   description: 'List of the locations contained in a container',
   widget: {
     id: 'widgetList_id',
@@ -136,7 +164,7 @@ const widgetLocationsList: TemplateWidget = {
 
 const widgetDonut: TemplateWidget = {
   name: 'widgetGraph',
-  id: 'widgetGraph-id',
+  id: 'widgetGraphId',
   widget: {
     id: 'e1853ae4-f947-4cf6-beca-f2ea6dc564d9',
     type: 'donut',
@@ -158,7 +186,7 @@ const widgetDonut: TemplateWidget = {
 
 const widgetIncidentIOC: TemplateWidget = {
   name: 'incidentIOC',
-  id: 'incidentIOC-id',
+  id: 'incidentIOCId',
   widget: {
     type: 'list',
     id: 'widgetIncidentIOC',
@@ -179,9 +207,37 @@ const widgetIncidentIOC: TemplateWidget = {
   },
 };
 
+const widgetIndicators: TemplateWidget = {
+  name: 'indicators',
+  id: 'indicatorsId',
+  widget: {
+    type: 'list',
+    id: 'widgetIndicators',
+    perspective: WidgetPerspective.Entities,
+    dataSelection: [
+      {
+        perspective: WidgetPerspective.Entities,
+        filters: JSON.stringify({
+          mode: 'and',
+          filters: [
+            { key: ['entity_type'], values: ['Indicator'] },
+            { key: ['objects'], values: ['SELF_ID'] },
+          ],
+          filterGroups: [],
+        }),
+        columns: [
+          { label: 'Indicator types', attribute: 'indicator_types' },
+          { label: 'Indicator pattern', attribute: 'pattern' },
+          { label: 'Description', attribute: 'description' },
+        ],
+      },
+    ],
+  },
+};
+
 const widgetIncidentTasksActions: TemplateWidget = {
   name: 'incidentTasksAndActions',
-  id: 'incidentTasksAndActions-id',
+  id: 'incidentTasksAndActionsId',
   widget: {
     type: 'list',
     id: 'widgetIncidentTasksActions',
@@ -207,12 +263,12 @@ const widgetIncidentTasksActions: TemplateWidget = {
   },
 };
 
-const widgetIncidentTTP: TemplateWidget = {
-  name: 'incidentTTP',
-  id: 'incidentTTP-id',
+const widgetAttackPatterns: TemplateWidget = {
+  name: 'attackPatterns',
+  id: 'attackPatternsId',
   widget: {
     type: 'list',
-    id: 'widgetIncidentTTP',
+    id: 'widgetAttackPatterns',
     perspective: WidgetPerspective.Entities,
     dataSelection: [
       {
@@ -235,14 +291,104 @@ const widgetIncidentTTP: TemplateWidget = {
   },
 };
 
+const widgetThreats: TemplateWidget = {
+  name: 'threats',
+  id: 'threatsId',
+  widget: {
+    type: 'list',
+    id: 'widgetThreats',
+    perspective: WidgetPerspective.Entities,
+    dataSelection: [
+      {
+        perspective: WidgetPerspective.Entities,
+        filters: JSON.stringify({
+          mode: 'and',
+          filters: [
+            { key: ['entity_type'], values: ['Threat-Actor-Group', 'Threat-Actor-Individual', 'Intrusion-Set'] },
+            { key: ['objects'], values: ['SELF_ID'] },
+          ],
+          filterGroups: [],
+        }),
+        columns: [
+          { label: 'Type', attribute: 'entity_type' },
+          { label: 'Name', attribute: 'name' },
+          { label: 'Alias', attribute: 'alias' },
+        ],
+      },
+    ],
+  },
+};
+
+const widgetVictims: TemplateWidget = {
+  name: 'victims',
+  id: 'victimsId',
+  widget: {
+    type: 'list',
+    id: 'widgetVictims',
+    perspective: WidgetPerspective.Entities,
+    dataSelection: [
+      {
+        perspective: WidgetPerspective.Entities,
+        filters: JSON.stringify({
+          mode: 'and',
+          filters: [
+            { key: ['entity_type'], values: ['Sector', 'Individual', 'Organization'] },
+            { key: ['objects'], values: ['SELF_ID'] },
+          ],
+          filterGroups: [],
+        }),
+        columns: [
+          { label: 'Type', attribute: 'entity_type' },
+          { label: 'Name', attribute: 'name' },
+          { label: 'Alias', attribute: 'alias' },
+        ],
+      },
+    ],
+  },
+};
+
+const widgetAllEntitiesAndObservables: TemplateWidget = {
+  name: 'allEntitiesAndObservables',
+  id: 'allEntitiesAndObservablesId',
+  widget: {
+    type: 'list',
+    id: 'widgetAllEntitiesAndObservables',
+    perspective: WidgetPerspective.Entities,
+    dataSelection: [
+      {
+        perspective: WidgetPerspective.Entities,
+        filters: JSON.stringify({
+          mode: 'and',
+          filters: [
+            { key: ['entity_type'], values: ['Stix-Core-Object', 'Stix-Cyber-Observable'] },
+            { key: ['objects'], values: ['SELF_ID'] },
+          ],
+          filterGroups: [],
+        }),
+        columns: [
+          { label: 'Type', attribute: 'entity_type' },
+          { label: 'Representative', attribute: 'representative.main' },
+          { label: 'Description', attribute: 'description' },
+        ],
+      },
+    ],
+  },
+};
+
 export const hardcodedTemplateWidgets: TemplateWidget[] = [
   widgetReportMultiAttributes,
   widgetIncidentResponseMultiAttributes,
-  widgetContainerIndicators,
+  widgetGroupingMultiAttributes,
+  widgetRFIMultiAttributes,
+  widgetRFTMultiAttributes,
   widgetContainerObservables,
   widgetLocationsList,
   widgetDonut,
   widgetIncidentIOC,
+  widgetIndicators,
   widgetIncidentTasksActions,
-  widgetIncidentTTP,
+  widgetAttackPatterns,
+  widgetThreats,
+  widgetVictims,
+  widgetAllEntitiesAndObservables,
 ];
