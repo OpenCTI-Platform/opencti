@@ -188,7 +188,7 @@ const StixDomainObjectAttackPatternsKillChainLines: FunctionComponent<StixDomain
                             />
                             <div className={classes.nested} >
                               <ListItemSecondaryAction>
-                                {coursesOfAction ? (
+                                {coursesOfAction && (
                                   <IconButton
                                     onClick={() => handleToggleLine(attackPattern.id)}
                                     aria-haspopup="true"
@@ -200,8 +200,6 @@ const StixDomainObjectAttackPatternsKillChainLines: FunctionComponent<StixDomain
                                       <ExpandLess />
                                     )}
                                   </IconButton>
-                                ) : (
-                                  <></>
                                 )}
                               </ListItemSecondaryAction>
                             </div>
