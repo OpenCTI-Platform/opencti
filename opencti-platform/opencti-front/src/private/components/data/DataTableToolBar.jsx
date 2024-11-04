@@ -785,7 +785,9 @@ class DataTableToolBar extends Component {
       actionsInputs[i]?.type === 'REPLACE' && { label: t('Author'), value: 'created-by' },
       actionsInputs[i]?.type === 'REPLACE' && { label: t('Confidence'), value: 'confidence' },
       actionsInputs[i]?.type === 'REPLACE' && { label: t('Description'), value: 'description' },
-      ...(actionsInputs[i]?.type === 'REPLACE' || actionsInputs[i]?.type === 'REMOVE' ? [
+      ((actionsInputs[i]?.type === 'REPLACE' || actionsInputs[i]?.type === 'REMOVE') && checkTypes(typesWithAssignee)) && { label: t('Assignees'), value: 'object-assignee' },
+      ((actionsInputs[i]?.type === 'REPLACE' || actionsInputs[i]?.type === 'REMOVE') && checkTypes(typesWithParticipant)) && { label: t('Participant'), value: 'object-participant' },
+      ...(actionsInputs[i]?.type === 'REPLACE' ? [
         checkTypes(typesWithSeverity) && { label: t('Severity'), value: 'case_severity_ov' },
         checkTypes(typesWithPriority) && { label: t('Priority'), value: 'case_priority_ov' },
         checkTypes(typesWithIncidentResponseType) && { label: t('Incident response type'), value: 'incident_response_types_ov' },
