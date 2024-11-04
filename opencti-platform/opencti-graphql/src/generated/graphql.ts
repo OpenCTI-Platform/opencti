@@ -5188,7 +5188,6 @@ export type CsvMapper = BasicObject & InternalObject & {
   __typename?: 'CsvMapper';
   entity_type: Scalars['String']['output'];
   errors?: Maybe<Scalars['String']['output']>;
-    has_entity_dynamic_mapping?: Maybe<Scalars['Boolean']['output']>;
   has_header: Scalars['Boolean']['output'];
   id: Scalars['ID']['output'];
   name: Scalars['String']['output'];
@@ -5200,7 +5199,6 @@ export type CsvMapper = BasicObject & InternalObject & {
 };
 
 export type CsvMapperAddInput = {
-    has_entity_dynamic_mapping: Scalars['Boolean']['input'];
   has_header: Scalars['Boolean']['input'];
   name: Scalars['String']['input'];
   representations: Scalars['String']['input'];
@@ -5219,6 +5217,11 @@ export type CsvMapperEdge = {
   cursor: Scalars['String']['output'];
   node: CsvMapper;
 };
+
+export enum CsvMapperOperator {
+    Eq = 'eq',
+    NotEq = 'not_eq'
+}
 
 export enum CsvMapperOrdering {
   Score = '_score',
@@ -5269,13 +5272,13 @@ export type CsvMapperRepresentationTarget = {
 export type CsvMapperRepresentationTargetColumn = {
   __typename?: 'CsvMapperRepresentationTargetColumn';
   column_reference?: Maybe<Scalars['String']['output']>;
-  operator?: Maybe<Operator>;
+    operator?: Maybe<CsvMapperOperator>;
   value?: Maybe<Scalars['String']['output']>;
 };
 
 export type CsvMapperRepresentationTargetColumnInput = {
   column_reference?: InputMaybe<Scalars['String']['input']>;
-  operator?: InputMaybe<Operator>;
+    operator?: InputMaybe<CsvMapperOperator>;
   value?: InputMaybe<Scalars['String']['input']>;
 };
 
@@ -16971,11 +16974,6 @@ export type OpenCtiFile = {
   name: Scalars['String']['output'];
   order?: Maybe<Scalars['Int']['output']>;
 };
-
-export enum Operator {
-  Eq = 'eq',
-  Neq = 'neq'
-}
 
 export type Opinion = BasicObject & Container & StixCoreObject & StixDomainObject & StixObject & {
   __typename?: 'Opinion';
@@ -30390,6 +30388,7 @@ export type ResolversTypes = ResolversObject<{
   CsvMapperAddInput: CsvMapperAddInput;
   CsvMapperConnection: ResolverTypeWrapper<Omit<CsvMapperConnection, 'edges'> & { edges: Array<ResolversTypes['CsvMapperEdge']> }>;
   CsvMapperEdge: ResolverTypeWrapper<Omit<CsvMapperEdge, 'node'> & { node: ResolversTypes['CsvMapper'] }>;
+    CsvMapperOperator: CsvMapperOperator;
   CsvMapperOrdering: CsvMapperOrdering;
   CsvMapperRepresentation: ResolverTypeWrapper<CsvMapperRepresentation>;
   CsvMapperRepresentationAttribute: ResolverTypeWrapper<CsvMapperRepresentationAttribute>;
@@ -30717,7 +30716,6 @@ export type ResolversTypes = ResolversObject<{
   ObservedDataEditMutations: ResolverTypeWrapper<Omit<ObservedDataEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['ObservedData']>, contextPatch?: Maybe<ResolversTypes['ObservedData']>, fieldPatch?: Maybe<ResolversTypes['ObservedData']>, relationAdd?: Maybe<ResolversTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversTypes['ObservedData']> }>;
   ObservedDatasOrdering: ObservedDatasOrdering;
   OpenCtiFile: ResolverTypeWrapper<OpenCtiFile>;
-  Operator: Operator;
   Opinion: ResolverTypeWrapper<Omit<Opinion, 'authorized_members' | 'avatar' | 'cases' | 'connectors' | 'containers' | 'contentsFromTemplate' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'objects' | 'observedData' | 'opinions' | 'pendingFiles' | 'relatedContainers' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { authorized_members?: Maybe<Array<ResolversTypes['MemberAccess']>>, avatar?: Maybe<ResolversTypes['OpenCtiFile']>, cases?: Maybe<ResolversTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversTypes['Connector']>>>, containers?: Maybe<ResolversTypes['ContainerConnection']>, contentsFromTemplate?: Maybe<ResolversTypes['FileConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, jobs?: Maybe<Array<Maybe<ResolversTypes['Work']>>>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversTypes['Label']>>, objectMarking?: Maybe<Array<ResolversTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversTypes['Organization']>>, objects?: Maybe<ResolversTypes['StixObjectOrStixRelationshipRefConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, relatedContainers?: Maybe<ResolversTypes['ContainerConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversTypes['Inference']>>> }>;
   OpinionAddInput: OpinionAddInput;
   OpinionConnection: ResolverTypeWrapper<Omit<OpinionConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['OpinionEdge']>>> }>;
@@ -33406,7 +33404,6 @@ export type CryptographicKeyResolvers<ContextType = any, ParentType extends Reso
 export type CsvMapperResolvers<ContextType = any, ParentType extends ResolversParentTypes['CsvMapper'] = ResolversParentTypes['CsvMapper']> = ResolversObject<{
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   errors?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-    has_entity_dynamic_mapping?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   has_header?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -33457,7 +33454,7 @@ export type CsvMapperRepresentationTargetResolvers<ContextType = any, ParentType
 
 export type CsvMapperRepresentationTargetColumnResolvers<ContextType = any, ParentType extends ResolversParentTypes['CsvMapperRepresentationTargetColumn'] = ResolversParentTypes['CsvMapperRepresentationTargetColumn']> = ResolversObject<{
   column_reference?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  operator?: Resolver<Maybe<ResolversTypes['Operator']>, ParentType, ContextType>;
+    operator?: Resolver<Maybe<ResolversTypes['CsvMapperOperator']>, ParentType, ContextType>;
   value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
