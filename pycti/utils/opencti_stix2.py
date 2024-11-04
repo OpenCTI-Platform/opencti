@@ -2390,7 +2390,7 @@ class OpenCTIStix2:
                 if item["opencti_operation"] == "delete":
                     delete_id = item["id"]
                     self.opencti.stix.delete(id=delete_id)
-                if item["opencti_operation"] == "merge":
+                elif item["opencti_operation"] == "merge":
                     target_id = item["merge_target_id"]
                     source_ids = item["merge_source_ids"]
                     self.opencti.stix.merge(id=target_id, object_ids=source_ids)
