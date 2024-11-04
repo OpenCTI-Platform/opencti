@@ -59,6 +59,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
 
 interface OptionParticipant extends Option {
   type: string;
+  group: string;
 }
 interface ObjectParticipantFieldProps {
   name: string;
@@ -93,11 +94,19 @@ const ObjectParticipantField: FunctionComponent<ObjectParticipantFieldProps> = (
       .then((data) => {
         const newParticipants = (
           (data as ObjectParticipantFieldMembersSearchQuery$data)?.members?.edges ?? []
-        ).map((n) => ({
-          label: n.node.name,
-          value: n.node.id,
-          type: n.node.entity_type,
-        })).sort((a, b) => {
+        ).map((n) => {
+          const group = n.node.id === me?.id ? t_i18n('Current User') : t_i18n('All');
+          return {
+            label: n.node.name,
+            value: n.node.id,
+            type: n.node.entity_type,
+            group,
+          };
+        });
+        // Add current user if is not in the only first results displayed
+        const isMeDisplayed = newParticipants.find((participant) => participant.value === me?.id);
+        if (me && !isMeDisplayed) newParticipants.unshift({ label: me.name, value: me.id, type: 'User', group: t_i18n('Current User') });
+        newParticipants.sort((a, b) => {
           // Display first the current user
           if (a.value === me?.id) return -1;
           if (b.value === me?.id) return 1;
@@ -115,6 +124,7 @@ const ObjectParticipantField: FunctionComponent<ObjectParticipantFieldProps> = (
       required={required}
       disabled={disabled}
       multiple={true}
+      groupBy={(option: OptionParticipant) => option.group}
       textfieldprops={{
         variant: 'standard',
         label: label ?? t_i18n('Participant(s)'),

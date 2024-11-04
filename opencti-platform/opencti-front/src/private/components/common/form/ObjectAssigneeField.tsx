@@ -68,6 +68,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
 
 interface OptionAssignee extends Option {
   type: string;
+  group: string;
 }
 interface ObjectAssigneeFieldProps {
   name: string;
@@ -102,11 +103,19 @@ const ObjectAssigneeField: FunctionComponent<ObjectAssigneeFieldProps> = ({
       .then((data) => {
         const newAssignees = (
           (data as ObjectAssigneeFieldMembersSearchQuery$data)?.members?.edges ?? []
-        ).map((n) => ({
-          label: n.node.name,
-          value: n.node.id,
-          type: n.node.entity_type,
-        })).sort((a, b) => {
+        ).map((n) => {
+          const group = n.node.id === me?.id ? t_i18n('Current User') : t_i18n('All');
+          return {
+            label: n.node.name,
+            value: n.node.id,
+            type: n.node.entity_type,
+            group,
+          };
+        });
+        // Add current user if is not in the only first results displayed
+        const isMeDisplayed = newAssignees.find((assignee) => assignee.value === me?.id);
+        if (me && !isMeDisplayed) newAssignees.unshift({ label: me.name, value: me.id, type: 'User', group: t_i18n('Current User') });
+        newAssignees.sort((a, b) => {
           // Display first the current user
           if (a.value === me?.id) return -1;
           if (b.value === me?.id) return 1;
@@ -124,6 +133,7 @@ const ObjectAssigneeField: FunctionComponent<ObjectAssigneeFieldProps> = ({
       disabled={disabled}
       required={required}
       multiple={true}
+      groupBy={(option: OptionAssignee) => option.group}
       textfieldprops={{
         variant: 'standard',
         label: label ?? t_i18n('Assignee(s)'),
