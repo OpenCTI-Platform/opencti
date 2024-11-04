@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { prepareTaxiiGetParam, processTaxiiResponse, type TaxiiResponseData } from '../../../src/manager/ingestionManager';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
-import { addIngestion as addTaxiiIngestion, findById as findTaxiiIngestionById, patchTaxiiIngestion } from '../../../src/modules/ingestion/ingestion-taxii-domain';
+import { addIngestion as addTaxiiIngestion, findById as findTaxiiIngestionById, ingestionDelete, patchTaxiiIngestion } from '../../../src/modules/ingestion/ingestion-taxii-domain';
 import { IngestionAuthType, type IngestionTaxiiAddInput, TaxiiVersion } from '../../../src/generated/graphql';
 import type { StixReport } from '../../../src/types/stix-sdo';
 import { now } from '../../../src/utils/format';
@@ -20,7 +20,6 @@ describe('Verify taxii ingestion', () => {
     const ingestionNotPagination = await addTaxiiIngestion(testContext, ADMIN_USER, input);
     expect(ingestionNotPagination.id).toBeDefined();
     expect(ingestionNotPagination.internal_id).toBeDefined();
-
     // 2. Check parameter send to taxii server
     const expectedParams = prepareTaxiiGetParam(ingestionNotPagination);
     expect(expectedParams.next).toBeUndefined();
@@ -47,6 +46,9 @@ describe('Verify taxii ingestion', () => {
     const result = await findTaxiiIngestionById(testContext, ADMIN_USER, ingestionNotPagination.id);
     expect(result.current_state_cursor).toBeUndefined();
     expect(result.added_after_start).toBeDefined();
+
+    // Delete the ingest
+    await ingestionDelete(testContext, ADMIN_USER, ingestionNotPagination.internal_id);
   });
 
   it('should taxii server response with data and next page and start date', async () => {
@@ -117,6 +119,9 @@ describe('Verify taxii ingestion', () => {
     const result = await findTaxiiIngestionById(testContext, ADMIN_USER, taxiiEntityAfterfirstRequest.id);
     expect(result.current_state_cursor, 'Since more is false, next value should be reset').toBeUndefined();
     expect(result.added_after_start).toBe('2024-03-01T20:35:44.000Z');
+
+    // Delete the ingest
+    await ingestionDelete(testContext, ADMIN_USER, ingestionPaginatedWithStartDate.internal_id);
   });
 
   it('should taxii server response with no start date, and next page', async () => {
@@ -186,6 +191,9 @@ describe('Verify taxii ingestion', () => {
     const result = await findTaxiiIngestionById(testContext, ADMIN_USER, taxiiEntityAfterFirstCall.id);
     expect(result.current_state_cursor, 'Since more is false, next value should be reset').toBeUndefined();
     expect(result.added_after_start).toBe('2024-03-01T20:44:44.000Z');
+
+    // Delete the ingest
+    await ingestionDelete(testContext, ADMIN_USER, ingestionPaginatedWithNoStartDate.internal_id);
   });
 
   it('should store nothing when no data', async () => {
@@ -216,6 +224,9 @@ describe('Verify taxii ingestion', () => {
     const result = await findTaxiiIngestionById(testContext, ADMIN_USER, ingestionPaginatedWithStartDate.id);
     expect(result.current_state_cursor).toBeUndefined(); // previous value
     expect(result.added_after_start).toBe('2023-01-01T20:35:44.000Z'); // previous value
+
+    // Delete the ingest
+    await ingestionDelete(testContext, ADMIN_USER, ingestionPaginatedWithStartDate.internal_id);
   });
 });
 
@@ -239,5 +250,8 @@ describe('Verify taxii ingestion - patch part', () => {
     const result = await patchTaxiiIngestion(testContext, ADMIN_USER, ingestion.id, state);
     expect(result.id).toBeDefined();
     // should not throw exception "Unknown Error: Attribute must be a string"
+
+    // Delete the ingest
+    await ingestionDelete(testContext, ADMIN_USER, ingestion.internal_id);
   });
 });

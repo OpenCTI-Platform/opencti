@@ -29,6 +29,7 @@ describe('TaskManager executeReplace tests ', () => {
     it('REPLACE report marking with different marking', async () => {
       const reportInput = {
         name: 'test report marking with different marking',
+        published: '2022-10-06T22:00:00.000Z',
         objectMarking: [MARKING_TLP_CLEAR],
       };
       const report = await addReport(adminContext, adminContext.user, reportInput);
@@ -57,6 +58,7 @@ describe('TaskManager executeReplace tests ', () => {
     it('REPLACE report marking with same marking', async () => {
       const reportInput = {
         name: 'test report marking with same marking',
+        published: '2022-10-06T22:00:00.000Z',
         objectMarking: [MARKING_TLP_CLEAR],
       };
       const report = await addReport(adminContext, adminContext.user, reportInput);
@@ -85,6 +87,7 @@ describe('TaskManager executeReplace tests ', () => {
     it('REPLACE report without marking with marking', async () => {
       const reportInput = {
         name: 'test report no marking with marking',
+        published: '2022-10-06T22:00:00.000Z',
         objectMarking: [],
       };
       const report = await addReport(adminContext, adminContext.user, reportInput);
@@ -124,6 +127,7 @@ describe('TaskManager executeReplace tests ', () => {
     it('REPLACE report author with different author', async () => {
       const reportInput = {
         name: 'test replace report author with different author',
+        published: '2022-10-06T22:00:00.000Z',
         createdBy: TEST_ORGANIZATION.id,
       };
       const report = await addReport(adminContext, adminContext.user, reportInput);
@@ -147,6 +151,7 @@ describe('TaskManager executeReplace tests ', () => {
     it('REPLACE report author with same author', async () => {
       const reportInput = {
         name: 'test replace report author with same author',
+        published: '2022-10-06T22:00:00.000Z',
         createdBy: TEST_ORGANIZATION.id,
       };
       const report = await addReport(adminContext, adminContext.user, reportInput);
@@ -172,6 +177,7 @@ describe('TaskManager executeReplace tests ', () => {
     it('REPLACE report without author with author', async () => {
       const reportInput = {
         name: 'test replace report without author with author',
+        published: '2022-10-06T22:00:00.000Z',
         createdBy: '',
       };
       const report = await addReport(adminContext, adminContext.user, reportInput);
@@ -202,6 +208,7 @@ describe('TaskManager executeReplace tests ', () => {
     it('REPLACE report description with different description', async () => {
       const reportInput = {
         name: 'test replace report description with different description',
+        published: '2022-10-06T22:00:00.000Z',
         description: 'description',
       };
       const report = await addReport(adminContext, adminContext.user, reportInput);
@@ -229,6 +236,7 @@ describe('TaskManager executeReplace tests ', () => {
     it('REPLACE report description with same description', async () => {
       const reportInput = {
         name: 'test replace report description with same description',
+        published: '2022-10-06T22:00:00.000Z',
         description: 'description',
       };
       const report = await addReport(adminContext, adminContext.user, reportInput);
@@ -255,6 +263,7 @@ describe('TaskManager executeReplace tests ', () => {
     it('REPLACE report without description with description', async () => {
       const reportInput = {
         name: 'test replace report without description with description',
+        published: '2022-10-06T22:00:00.000Z',
         description: '',
       };
       const report = await addReport(adminContext, adminContext.user, reportInput);

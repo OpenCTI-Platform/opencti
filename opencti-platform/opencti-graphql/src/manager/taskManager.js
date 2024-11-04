@@ -555,7 +555,7 @@ export const taskHandler = async () => {
   try {
     // Lock the manager
     lock = await lockResource([TASK_MANAGER_KEY], { retryCount: 0 });
-    logApp.info('[OPENCTI-MODULE][TASK-MANAGER] Starting task handler');
+    logApp.debug('[OPENCTI-MODULE][TASK-MANAGER] Starting task handler');
     running = true;
     const startingTime = new Date().getMilliseconds();
     const context = executionContext('task_manager', SYSTEM_USER);
@@ -579,7 +579,7 @@ export const taskHandler = async () => {
     // Fetch the user responsible for the task
     const rawUser = await resolveUserByIdFromCache(context, task.initiator_id);
     const user = { ...rawUser, origin: { user_id: rawUser.id, referer: 'background_task' } };
-    logApp.info(`[OPENCTI-MODULE][TASK-MANAGER] Executing job using userId:${rawUser.id}, for task ${task.internal_id}`);
+    logApp.debug(`[OPENCTI-MODULE][TASK-MANAGER] Executing job using userId:${rawUser.id}, for task ${task.internal_id}`);
     let jobToExecute;
     if (isQueryTask) {
       jobToExecute = await computeQueryTaskElements(context, user, task);
@@ -592,7 +592,7 @@ export const taskHandler = async () => {
     }
     // Process the elements (empty = end of execution)
     const processingElements = jobToExecute.elements;
-    logApp.info(`[OPENCTI-MODULE][TASK-MANAGER] Found ${processingElements.length} element(s) to process.`);
+    logApp.debug(`[OPENCTI-MODULE][TASK-MANAGER] Found ${processingElements.length} element(s) to process.`);
     if (processingElements.length > 0) {
       lock.signal.throwIfAborted();
       const errors = await executeProcessing(context, user, jobToExecute, task.scope);
@@ -606,7 +606,7 @@ export const taskHandler = async () => {
       task_processed_number: processedNumber,
       completed: processingElements.length < MAX_TASK_ELEMENTS,
     };
-    logApp.info('[OPENCTI-MODULE][TASK-MANAGER] Elements processing done, store task status.', { patch });
+    logApp.debug('[OPENCTI-MODULE][TASK-MANAGER] Elements processing done, store task status.', { patch });
     await updateTask(context, task.id, patch);
     const totalTime = new Date().getMilliseconds() - startingTime;
     logApp.info(`[OPENCTI-MODULE][TASK-MANAGER] Task manager done in ${totalTime} ms`);
