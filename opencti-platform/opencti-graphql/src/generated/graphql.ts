@@ -26589,7 +26589,7 @@ export type Template = {
   filters?: Maybe<Scalars['String']['output']>;
   id: Scalars['ID']['output'];
   name: Scalars['String']['output'];
-  template_widgets_names: Array<Scalars['String']['output']>;
+  template_widgets_ids: Array<Scalars['String']['output']>;
 };
 
 export type TemplateAndUtils = {
@@ -26601,6 +26601,7 @@ export type TemplateAndUtils = {
 export type TemplateWidget = {
   __typename?: 'TemplateWidget';
   description?: Maybe<Scalars['String']['output']>;
+  id: Scalars['ID']['output'];
   name: Scalars['String']['output'];
   widget: Widget;
 };
@@ -39845,7 +39846,7 @@ export type TemplateResolvers<ContextType = any, ParentType extends ResolversPar
   filters?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  template_widgets_names?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  template_widgets_ids?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -39857,6 +39858,7 @@ export type TemplateAndUtilsResolvers<ContextType = any, ParentType extends Reso
 
 export type TemplateWidgetResolvers<ContextType = any, ParentType extends ResolversParentTypes['TemplateWidget'] = ResolversParentTypes['TemplateWidget']> = ResolversObject<{
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   widget?: Resolver<ResolversTypes['Widget'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;

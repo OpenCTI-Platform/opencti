@@ -8,7 +8,7 @@ const templateAndUtilsContainerQuery = graphql`
         template {
           id
           name
-          template_widgets_names
+          template_widgets_ids
           content
           filters
         }

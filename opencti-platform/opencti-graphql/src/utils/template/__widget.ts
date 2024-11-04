@@ -4,6 +4,8 @@ import { type TemplateWidget, WidgetPerspective } from '../../generated/graphql'
 
 const widgetReportMultiAttributes: TemplateWidget = {
   name: 'widgetReportMultiAttributes',
+  id: 'widgetReportMultiAttributes-id',
+  description: 'This is a multi attributes widget.',
   widget: {
     type: 'attribute',
     id: 'widgetContainerCreationDate',
@@ -26,6 +28,7 @@ const widgetReportMultiAttributes: TemplateWidget = {
 
 const widgetIncidentResponseMultiAttributes: TemplateWidget = {
   name: 'widgetIncidentResponseMultiAttributes',
+  id: 'widgetIncidentResponseMultiAttributes-id',
   widget: {
     type: 'attribute',
     id: 'widgetContainerCreationDate',
@@ -50,6 +53,7 @@ const widgetIncidentResponseMultiAttributes: TemplateWidget = {
 
 const widgetContainerIndicators: TemplateWidget = {
   name: 'containerIndicators',
+  id: 'containerIndicators-id',
   widget: {
     type: 'list',
     id: 'widgetContainerIndicators',
@@ -76,7 +80,8 @@ const widgetContainerIndicators: TemplateWidget = {
 };
 
 const widgetContainerObservables: TemplateWidget = {
-  name: 'containerObservables', // add an id
+  name: 'containerObservables',
+  id: 'containerObservables-id',
   widget: {
     type: 'list',
     id: 'widgetContainerIndicators',
@@ -104,6 +109,7 @@ const widgetContainerObservables: TemplateWidget = {
 
 const widgetLocationsList: TemplateWidget = {
   name: 'locationsList',
+  id: 'locationsList-id',
   description: 'List of the locations contained in a container',
   widget: {
     id: 'widgetList_id',
@@ -130,6 +136,7 @@ const widgetLocationsList: TemplateWidget = {
 
 const widgetDonut: TemplateWidget = {
   name: 'widgetGraph',
+  id: 'widgetGraph-id',
   widget: {
     id: 'e1853ae4-f947-4cf6-beca-f2ea6dc564d9',
     type: 'donut',
@@ -151,6 +158,7 @@ const widgetDonut: TemplateWidget = {
 
 const widgetIncidentIOC: TemplateWidget = {
   name: 'incidentIOC',
+  id: 'incidentIOC-id',
   widget: {
     type: 'list',
     id: 'widgetIncidentIOC',
@@ -173,6 +181,7 @@ const widgetIncidentIOC: TemplateWidget = {
 
 const widgetIncidentTasksActions: TemplateWidget = {
   name: 'incidentTasksAndActions',
+  id: 'incidentTasksAndActions-id',
   widget: {
     type: 'list',
     id: 'widgetIncidentTasksActions',
@@ -200,6 +209,7 @@ const widgetIncidentTasksActions: TemplateWidget = {
 
 const widgetIncidentTTP: TemplateWidget = {
   name: 'incidentTTP',
+  id: 'incidentTTP-id',
   widget: {
     type: 'list',
     id: 'widgetIncidentTTP',

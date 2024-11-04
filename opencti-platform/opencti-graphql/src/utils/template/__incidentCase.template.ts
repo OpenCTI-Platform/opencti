@@ -98,11 +98,11 @@ export const templateIncidentResponse: Template = {
   name: 'Incident Response Report',
   id: 'templateIncidentCase-id',
   content,
-  template_widgets_names: [
-    'containerObservables',
-    'incidentIOC',
-    'incidentTasksAndActions',
-    'incidentTTP',
-    'widgetIncidentResponseMultiAttributes',
+  template_widgets_ids: [
+    'containerObservables-id',
+    'incidentIOC-id',
+    'incidentTasksAndActions-id',
+    'incidentTTP-id',
+    'widgetIncidentResponseMultiAttributes-id',
   ],
 };

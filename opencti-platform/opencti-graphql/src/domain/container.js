@@ -277,10 +277,10 @@ export const getTemplateAndUtils = async (context, user, container, templateId) 
   }
   // fetch template (hardcoded for the moment)
   const template = (usedTemplatesByEntityType[container.entity_type] ?? []).find((t) => t.id === templateId);
-  const { template_widgets_names } = template;
+  const { template_widgets_ids } = template;
   // fetch the widgets used in the template (hardcoded for the moment)
   const template_widgets = hardcodedTemplateWidgets
-    .filter((w) => template_widgets_names.includes(w.name));
+    .filter((w) => template_widgets_ids.includes(w.id));
   // return template and the associated utils
   return { template, template_widgets };
 };
