@@ -883,6 +883,7 @@ type WidgetDataSelection {
 }
 type WidgetParameters {
   title: String
+  description: String
   interval: String
   stacked: Boolean
   legend: Boolean
@@ -898,7 +899,7 @@ type WidgetLayout {
   static: Boolean
 }
 type Widget {
-  id: String!
+  id: ID!
   type: String!
   perspective: WidgetPerspective
   dataSelection: [WidgetDataSelection!]!
@@ -913,15 +914,9 @@ type Template {
   content: String!
   template_widgets_ids: [String!]!
 }
-type TemplateWidget {
-  id: ID!
-  name: String!
-  description: String
-  widget: Widget!
-}
 type TemplateAndUtils {
   template: Template!,
-  template_widgets: [TemplateWidget!]!,
+  template_widgets: [Widget!]!,
 }
 
 type IndexedFile {

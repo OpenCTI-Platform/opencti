@@ -1,4 +1,4 @@
-import { type TemplateWidget, WidgetPerspective } from '../../generated/graphql';
+import { type Widget, WidgetPerspective } from '../../generated/graphql';
 
 // hardcoded widgets
 
@@ -15,367 +15,343 @@ const containerColumns = [
   { label: 'External references', attribute: 'externalReferences.edges.node.url', displayStyle: 'list', variableName: 'containerReferences' },
 ];
 
-const widgetReportMultiAttributes: TemplateWidget = {
-  name: 'widgetReportMultiAttributes',
+const widgetReportMultiAttributes: Widget = {
+  type: 'attribute',
   id: 'widgetReportMultiAttributesId',
-  description: 'This is a multi attributes widget.',
-  widget: {
-    type: 'attribute',
-    id: 'widgetMultiAttributes',
-    perspective: null,
-    dataSelection: [{
-      columns: [
-        ...containerColumns,
-        { label: 'Publication date', attribute: 'published', variableName: 'reportPublicationDate' },
-        { label: 'Report types', attribute: 'report_types', variableName: 'types' },
-      ],
-      instance_id: 'SELF_ID',
-    }],
-  },
+  perspective: null,
+  dataSelection: [{
+    columns: [
+      ...containerColumns,
+      { label: 'Publication date', attribute: 'published', variableName: 'reportPublicationDate' },
+      { label: 'Report types', attribute: 'report_types', variableName: 'types' },
+    ],
+    instance_id: 'SELF_ID',
+  }],
+  parameters: {
+    title: 'widgetReportMultiAttributes',
+    description: 'This is a multi attributes widget.',
+  }
 };
 
-const widgetGroupingMultiAttributes: TemplateWidget = {
-  name: 'widgetGroupingMultiAttributes',
+const widgetGroupingMultiAttributes: Widget = {
+  type: 'attribute',
   id: 'widgetGroupingMultiAttributesId',
-  description: 'This is a multi attributes widget.',
-  widget: {
-    type: 'attribute',
-    id: 'widgetMultiAttributes',
-    perspective: null,
-    dataSelection: [{
-      columns: [
-        ...containerColumns,
-        { label: 'Grouping types', attribute: 'context', variableName: 'context' },
-      ],
-      instance_id: 'SELF_ID',
-    }],
-  },
+  perspective: null,
+  dataSelection: [{
+    columns: [
+      ...containerColumns,
+      { label: 'Grouping types', attribute: 'context', variableName: 'context' },
+    ],
+    instance_id: 'SELF_ID',
+  }],
+  parameters: {
+    title: 'widgetGroupingMultiAttributes',
+    description: 'This is a multi attributes widget.',
+  }
 };
 
-const widgetRFIMultiAttributes: TemplateWidget = {
-  name: 'widgetRFIMultiAttributes',
+const widgetRFIMultiAttributes: Widget = {
+  type: 'attribute',
   id: 'widgetRFIMultiAttributesId',
-  description: 'This is a multi attributes widget.',
-  widget: {
-    type: 'attribute',
-    id: 'widgetMultiAttributes',
-    perspective: null,
-    dataSelection: [{
-      columns: [
-        ...containerColumns,
-        { label: 'Information types', attribute: 'information_types', variableName: 'types' },
-      ],
-      instance_id: 'SELF_ID',
-    }],
-  },
+  perspective: null,
+  dataSelection: [{
+    columns: [
+      ...containerColumns,
+      { label: 'Information types', attribute: 'information_types', variableName: 'types' },
+    ],
+    instance_id: 'SELF_ID',
+  }],
+  parameters: {
+    title: 'widgetRFIMultiAttributes',
+    description: 'This is a multi attributes widget.',
+  }
 };
 
-const widgetRFTMultiAttributes: TemplateWidget = {
-  name: 'widgetRFTMultiAttributes',
+const widgetRFTMultiAttributes: Widget = {
+  type: 'attribute',
   id: 'widgetRFTMultiAttributesId',
-  description: 'This is a multi attributes widget.',
-  widget: {
-    type: 'attribute',
-    id: 'widgetMultiAttributes',
-    perspective: null,
-    dataSelection: [{
-      columns: [
-        ...containerColumns,
-        { label: 'Takedown types', attribute: 'takedown_types', variableName: 'types' },
-      ],
-      instance_id: 'SELF_ID',
-    }],
-  },
+  perspective: null,
+  dataSelection: [{
+    columns: [
+      ...containerColumns,
+      { label: 'Takedown types', attribute: 'takedown_types', variableName: 'types' },
+    ],
+    instance_id: 'SELF_ID',
+  }],
+  parameters: {
+    title: 'widgetRFTMultiAttributes',
+    description: 'This is a multi attributes widget.',
+  }
 };
 
-const widgetIncidentResponseMultiAttributes: TemplateWidget = {
-  name: 'widgetIncidentResponseMultiAttributes',
+const widgetIncidentResponseMultiAttributes: Widget = {
+  type: 'attribute',
   id: 'widgetIncidentResponseMultiAttributesId',
-  widget: {
-    type: 'attribute',
-    id: 'widgetMultiAttributes',
-    perspective: null,
-    dataSelection: [{
-      columns: [
-        ...containerColumns,
-        { label: 'Priority', attribute: 'priority', variableName: 'incidentPriority' },
-        { label: 'Severity', attribute: 'severity', variableName: 'incidentSeverity' },
-        { label: 'Incident type', attribute: 'response_types', variableName: 'incidentType' },
-      ],
-      instance_id: 'SELF_ID',
-    }],
-  },
+  perspective: null,
+  dataSelection: [{
+    columns: [
+      ...containerColumns,
+      { label: 'Priority', attribute: 'priority', variableName: 'incidentPriority' },
+      { label: 'Severity', attribute: 'severity', variableName: 'incidentSeverity' },
+      { label: 'Incident type', attribute: 'response_types', variableName: 'incidentType' },
+    ],
+    instance_id: 'SELF_ID',
+  }],
+  parameters: {
+    title: 'widgetIncidentResponseMultiAttributes',
+  }
 };
 
-const widgetContainerObservables: TemplateWidget = {
-  name: 'containerObservables',
+const widgetContainerObservables: Widget = {
+  type: 'list',
   id: 'containerObservablesId',
-  widget: {
-    type: 'list',
-    id: 'widgetContainerIndicators',
-    perspective: WidgetPerspective.Entities,
-    dataSelection: [
-      {
-        perspective: WidgetPerspective.Entities,
-        filters: JSON.stringify({
-          mode: 'and',
-          filters: [
-            { key: ['entity_type'], values: ['Stix-Cyber-Observable'] },
-            { key: ['objects'], values: ['SELF_ID'] },
-          ],
-          filterGroups: [],
-        }),
-        columns: [
-          { label: 'Observable type', attribute: 'entity_type' },
-          { label: 'Value', attribute: 'representative.main' },
-          { label: 'Description', attribute: 'description' }
+  perspective: WidgetPerspective.Entities,
+  dataSelection: [
+    {
+      perspective: WidgetPerspective.Entities,
+      filters: JSON.stringify({
+        mode: 'and',
+        filters: [
+          { key: ['entity_type'], values: ['Stix-Cyber-Observable'] },
+          { key: ['objects'], values: ['SELF_ID'] },
         ],
-      },
-    ],
-  },
+        filterGroups: [],
+      }),
+      columns: [
+        { label: 'Observable type', attribute: 'entity_type' },
+        { label: 'Value', attribute: 'representative.main' },
+        { label: 'Description', attribute: 'description' }
+      ],
+    },
+  ],
+  parameters: {
+    title: 'containerObservables',
+  }
 };
 
-const widgetLocationsList: TemplateWidget = {
-  name: 'locationsList',
+const widgetLocationsList: Widget = {
   id: 'locationsListId',
-  description: 'List of the locations contained in a container',
-  widget: {
-    id: 'widgetList_id',
-    type: 'list',
-    perspective: WidgetPerspective.Entities,
-    parameters: {
-      title: 'Locations contained in the report',
+  type: 'list',
+  perspective: WidgetPerspective.Entities,
+  dataSelection: [
+    {
+      perspective: WidgetPerspective.Entities,
+      filters: JSON.stringify({
+        mode: 'and',
+        filters: [
+          { key: ['entity_type'], values: ['Country', 'City', 'Region', 'Position', 'Administrative-Area'] },
+          { key: ['objects'], values: ['SELF_ID'] },
+        ],
+        filterGroups: [],
+      }),
     },
-    dataSelection: [
-      {
-        perspective: WidgetPerspective.Entities,
-        filters: JSON.stringify({
-          mode: 'and',
-          filters: [
-            { key: ['entity_type'], values: ['Country', 'City', 'Region', 'Position', 'Administrative-Area'] },
-            { key: ['objects'], values: ['SELF_ID'] },
-          ],
-          filterGroups: [],
-        }),
-      },
-    ],
-  },
+  ],
+  parameters: {
+    title: 'Locations contained in the report',
+    description: 'List of the locations contained in a container',
+  }
 };
 
-const widgetDonut: TemplateWidget = {
-  name: 'widgetGraph',
+const widgetDonut: Widget = {
   id: 'widgetGraphId',
-  widget: {
-    id: 'e1853ae4-f947-4cf6-beca-f2ea6dc564d9',
-    type: 'donut',
-    perspective: WidgetPerspective.Relationships,
-    dataSelection: [
-      {
-        attribute: 'entity_type',
-        date_attribute: 'created_at',
-        perspective: WidgetPerspective.Relationships,
-        isTo: false,
-        number: 100,
-      },
-    ],
-    parameters: {
-      title: 'pouet',
+  type: 'donut',
+  perspective: WidgetPerspective.Relationships,
+  dataSelection: [
+    {
+      attribute: 'entity_type',
+      date_attribute: 'created_at',
+      perspective: WidgetPerspective.Relationships,
+      isTo: false,
+      number: 100,
     },
+  ],
+  parameters: {
+    title: 'widgetGraph',
   },
 };
 
-const widgetIncidentIOC: TemplateWidget = {
-  name: 'incidentIOC',
+const widgetIncidentIOC: Widget = {
+  type: 'list',
   id: 'incidentIOCId',
-  widget: {
-    type: 'list',
-    id: 'widgetIncidentIOC',
-    perspective: WidgetPerspective.Entities,
-    dataSelection: [
-      {
-        perspective: WidgetPerspective.Entities,
-        filters: JSON.stringify({
-          mode: 'and',
-          filters: [
-            { key: ['entity_type'], values: ['Indicator'] },
-            { key: ['objects'], values: ['SELF_ID'] },
-          ],
-          filterGroups: [],
-        }),
-      },
-    ],
-  },
+  perspective: WidgetPerspective.Entities,
+  dataSelection: [
+    {
+      perspective: WidgetPerspective.Entities,
+      filters: JSON.stringify({
+        mode: 'and',
+        filters: [
+          { key: ['entity_type'], values: ['Indicator'] },
+          { key: ['objects'], values: ['SELF_ID'] },
+        ],
+        filterGroups: [],
+      }),
+    },
+  ],
+  parameters: {
+    title: 'incidentIOC',
+  }
 };
 
-const widgetIndicators: TemplateWidget = {
-  name: 'indicators',
+const widgetIndicators: Widget = {
+  type: 'list',
   id: 'indicatorsId',
-  widget: {
-    type: 'list',
-    id: 'widgetIndicators',
-    perspective: WidgetPerspective.Entities,
-    dataSelection: [
-      {
-        perspective: WidgetPerspective.Entities,
-        filters: JSON.stringify({
-          mode: 'and',
-          filters: [
-            { key: ['entity_type'], values: ['Indicator'] },
-            { key: ['objects'], values: ['SELF_ID'] },
-          ],
-          filterGroups: [],
-        }),
-        columns: [
-          { label: 'Indicator types', attribute: 'indicator_types' },
-          { label: 'Indicator pattern', attribute: 'pattern' },
-          { label: 'Description', attribute: 'description' },
+  perspective: WidgetPerspective.Entities,
+  dataSelection: [
+    {
+      perspective: WidgetPerspective.Entities,
+      filters: JSON.stringify({
+        mode: 'and',
+        filters: [
+          { key: ['entity_type'], values: ['Indicator'] },
+          { key: ['objects'], values: ['SELF_ID'] },
         ],
-      },
-    ],
-  },
+        filterGroups: [],
+      }),
+      columns: [
+        { label: 'Indicator types', attribute: 'indicator_types' },
+        { label: 'Indicator pattern', attribute: 'pattern' },
+        { label: 'Description', attribute: 'description' },
+      ],
+    },
+  ],
+  parameters: {
+    title: 'indicators',
+  }
 };
 
-const widgetIncidentTasksActions: TemplateWidget = {
-  name: 'incidentTasksAndActions',
+const widgetIncidentTasksActions: Widget = {
+  type: 'list',
   id: 'incidentTasksAndActionsId',
-  widget: {
-    type: 'list',
-    id: 'widgetIncidentTasksActions',
-    perspective: WidgetPerspective.Entities,
-    dataSelection: [
-      {
-        perspective: WidgetPerspective.Entities,
-        filters: JSON.stringify({
-          mode: 'and',
-          filters: [
-            { key: ['entity_type'], values: ['Task'] },
-            { key: ['objects'], values: ['SELF_ID'] },
-          ],
-          filterGroups: [],
-        }),
-        columns: [
-          { label: 'Task', attribute: 'representative.main' },
-          { label: 'Due date (UTC)', attribute: 'due_date' },
-          { label: 'Status', attribute: 'status' },
+  perspective: WidgetPerspective.Entities,
+  dataSelection: [
+    {
+      perspective: WidgetPerspective.Entities,
+      filters: JSON.stringify({
+        mode: 'and',
+        filters: [
+          { key: ['entity_type'], values: ['Task'] },
+          { key: ['objects'], values: ['SELF_ID'] },
         ],
-      },
-    ],
-  },
+        filterGroups: [],
+      }),
+      columns: [
+        { label: 'Task', attribute: 'representative.main' },
+        { label: 'Due date (UTC)', attribute: 'due_date' },
+        { label: 'Status', attribute: 'status' },
+      ],
+    },
+  ],
+  parameters: {
+    title: 'incidentTasksAndActions',
+  }
 };
 
-const widgetAttackPatterns: TemplateWidget = {
-  name: 'attackPatterns',
+const widgetAttackPatterns: Widget = {
+  type: 'list',
   id: 'attackPatternsId',
-  widget: {
-    type: 'list',
-    id: 'widgetAttackPatterns',
-    perspective: WidgetPerspective.Entities,
-    dataSelection: [
-      {
-        perspective: WidgetPerspective.Entities,
-        filters: JSON.stringify({
-          mode: 'and',
-          filters: [
-            { key: ['entity_type'], values: ['Attack-Pattern'] },
-            { key: ['objects'], values: ['SELF_ID'] },
-          ],
-          filterGroups: [],
-        }),
-        columns: [
-          { label: 'Techinque ID', attribute: 'x_mitre_id' },
-          { label: 'Technique', attribute: 'representative.main' },
-          { label: 'Description', attribute: 'description' },
+  perspective: WidgetPerspective.Entities,
+  dataSelection: [
+    {
+      perspective: WidgetPerspective.Entities,
+      filters: JSON.stringify({
+        mode: 'and',
+        filters: [
+          { key: ['entity_type'], values: ['Attack-Pattern'] },
+          { key: ['objects'], values: ['SELF_ID'] },
         ],
-      },
-    ],
-  },
+        filterGroups: [],
+      }),
+      columns: [
+        { label: 'Techinque ID', attribute: 'x_mitre_id' },
+        { label: 'Technique', attribute: 'representative.main' },
+        { label: 'Description', attribute: 'description' },
+      ],
+    },
+  ],
+  parameters: {
+    title: 'attackPatterns',
+  }
 };
 
-const widgetThreats: TemplateWidget = {
-  name: 'threats',
+const widgetThreats: Widget = {
+  type: 'list',
   id: 'threatsId',
-  widget: {
-    type: 'list',
-    id: 'widgetThreats',
-    perspective: WidgetPerspective.Entities,
-    dataSelection: [
-      {
-        perspective: WidgetPerspective.Entities,
-        filters: JSON.stringify({
-          mode: 'and',
-          filters: [
-            { key: ['entity_type'], values: ['Threat-Actor-Group', 'Threat-Actor-Individual', 'Intrusion-Set'] },
-            { key: ['objects'], values: ['SELF_ID'] },
-          ],
-          filterGroups: [],
-        }),
-        columns: [
-          { label: 'Type', attribute: 'entity_type' },
-          { label: 'Name', attribute: 'name' },
-          { label: 'Alias', attribute: 'alias' },
+  perspective: WidgetPerspective.Entities,
+  dataSelection: [
+    {
+      perspective: WidgetPerspective.Entities,
+      filters: JSON.stringify({
+        mode: 'and',
+        filters: [
+          { key: ['entity_type'], values: ['Threat-Actor-Group', 'Threat-Actor-Individual', 'Intrusion-Set'] },
+          { key: ['objects'], values: ['SELF_ID'] },
         ],
-      },
-    ],
-  },
+        filterGroups: [],
+      }),
+      columns: [
+        { label: 'Type', attribute: 'entity_type' },
+        { label: 'Name', attribute: 'name' },
+        { label: 'Alias', attribute: 'alias' },
+      ],
+    },
+  ],
+  parameters: {
+    title: 'threats',
+  }
 };
 
-const widgetVictims: TemplateWidget = {
-  name: 'victims',
+const widgetVictims: Widget = {
+  type: 'list',
   id: 'victimsId',
-  widget: {
-    type: 'list',
-    id: 'widgetVictims',
-    perspective: WidgetPerspective.Entities,
-    dataSelection: [
-      {
-        perspective: WidgetPerspective.Entities,
-        filters: JSON.stringify({
-          mode: 'and',
-          filters: [
-            { key: ['entity_type'], values: ['Sector', 'Individual', 'Organization'] },
-            { key: ['objects'], values: ['SELF_ID'] },
-          ],
-          filterGroups: [],
-        }),
-        columns: [
-          { label: 'Type', attribute: 'entity_type' },
-          { label: 'Name', attribute: 'name' },
-          { label: 'Alias', attribute: 'alias' },
+  perspective: WidgetPerspective.Entities,
+  dataSelection: [
+    {
+      perspective: WidgetPerspective.Entities,
+      filters: JSON.stringify({
+        mode: 'and',
+        filters: [
+          { key: ['entity_type'], values: ['Sector', 'Individual', 'Organization'] },
+          { key: ['objects'], values: ['SELF_ID'] },
         ],
-      },
-    ],
-  },
+        filterGroups: [],
+      }),
+      columns: [
+        { label: 'Type', attribute: 'entity_type' },
+        { label: 'Name', attribute: 'name' },
+        { label: 'Alias', attribute: 'alias' },
+      ],
+    },
+  ],
 };
 
-const widgetAllEntitiesAndObservables: TemplateWidget = {
-  name: 'allEntitiesAndObservables',
+const widgetAllEntitiesAndObservables: Widget = {
+  type: 'list',
   id: 'allEntitiesAndObservablesId',
-  widget: {
-    type: 'list',
-    id: 'widgetAllEntitiesAndObservables',
-    perspective: WidgetPerspective.Entities,
-    dataSelection: [
-      {
-        perspective: WidgetPerspective.Entities,
-        filters: JSON.stringify({
-          mode: 'and',
-          filters: [
-            { key: ['entity_type'], values: ['Stix-Core-Object', 'Stix-Cyber-Observable'] },
-            { key: ['objects'], values: ['SELF_ID'] },
-          ],
-          filterGroups: [],
-        }),
-        columns: [
-          { label: 'Type', attribute: 'entity_type' },
-          { label: 'Representative', attribute: 'representative.main' },
-          { label: 'Description', attribute: 'description' },
+  perspective: WidgetPerspective.Entities,
+  dataSelection: [
+    {
+      perspective: WidgetPerspective.Entities,
+      filters: JSON.stringify({
+        mode: 'and',
+        filters: [
+          { key: ['entity_type'], values: ['Stix-Core-Object', 'Stix-Cyber-Observable'] },
+          { key: ['objects'], values: ['SELF_ID'] },
         ],
-      },
-    ],
-  },
+        filterGroups: [],
+      }),
+      columns: [
+        { label: 'Type', attribute: 'entity_type' },
+        { label: 'Representative', attribute: 'representative.main' },
+        { label: 'Description', attribute: 'description' },
+      ],
+    },
+  ],
+  parameters: {
+    title: 'allEntitiesAndObservables',
+  }
 };
 
-export const hardcodedTemplateWidgets: TemplateWidget[] = [
+export const hardcodedTemplateWidgets: Widget[] = [
   widgetReportMultiAttributes,
   widgetIncidentResponseMultiAttributes,
   widgetGroupingMultiAttributes,

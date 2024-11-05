@@ -33,9 +33,7 @@ const useContentFromTemplate = () => {
     const { template, template_widgets } = container.templateAndUtils;
     let { content } = template;
 
-    for (const templateWidget of template_widgets) {
-      const { widget } = templateWidget;
-
+    for (const widget of template_widgets) {
       // attribute widgets
       if (widget.type === 'attribute') {
         // eslint-disable-next-line no-await-in-loop
@@ -73,7 +71,7 @@ const useContentFromTemplate = () => {
           outcome = `${t_i18n('An error occured while retrieving data for this widget:')}${error ?? ''}`;
           MESSAGING$.notifyError('One of the widgets has not been resolved.');
         }
-        content = content.replace(`$${templateWidget.id}`, outcome);
+        content = content.replace(`$${widget.id}`, outcome);
       }
     }
 

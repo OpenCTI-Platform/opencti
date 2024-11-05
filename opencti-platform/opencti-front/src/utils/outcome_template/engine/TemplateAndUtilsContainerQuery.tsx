@@ -13,33 +13,33 @@ const templateAndUtilsContainerQuery = graphql`
           filters
         }
         template_widgets {
-          name
           id
-          widget {
-              id
-              type
+          type
+          perspective
+          parameters {
+              title
+              description
+          }
+          dataSelection {
+              label
+              number
+              attribute
+              date_attribute
+              centerLat
+              centerLng
+              zoom
+              isTo
               perspective
-              dataSelection {
-                  label
-                  number
+              filters
+              dynamicFrom
+              dynamicTo
+              columns {
                   attribute
-                  date_attribute
-                  centerLat
-                  centerLng
-                  zoom
-                  isTo
-                  perspective
-                  filters
-                  dynamicFrom
-                  dynamicTo
-                  columns {
-                      attribute
-                      displayStyle
-                      variableName
-                      label
-                  }
-                  instance_id
+                  displayStyle
+                  variableName
+                  label
               }
+              instance_id
           }
         }
       }
