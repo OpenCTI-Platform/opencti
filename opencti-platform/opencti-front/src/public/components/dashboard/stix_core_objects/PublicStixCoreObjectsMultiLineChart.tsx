@@ -72,8 +72,8 @@ const PublicStixCoreObjectsMultiLineChartComponent = ({
 const PublicStixCoreObjectsMultiLineChart = ({
   uriKey,
   widget,
-  startDate = monthsAgo(12),
-  endDate = now(),
+  startDate,
+  endDate,
   title,
 }: PublicWidgetContainerProps) => {
   const { t_i18n } = useFormatter();
@@ -83,8 +83,8 @@ const PublicStixCoreObjectsMultiLineChart = ({
     {
       uriKey,
       widgetId: id,
-      startDate,
-      endDate,
+      startDate: startDate ?? monthsAgo(12),
+      endDate: endDate ?? now(),
     },
   );
 
