@@ -6,7 +6,7 @@ import { useBuildFiltersForTemplateWidgets } from '../../../filters/filtersUtils
 import { fetchQuery } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import getObjectProperty from '../../../object';
-import type { WidgetFromBackend } from '../../../widget/widget';
+import type { Widget } from '../../../widget/widget';
 import { buildReadableAttribute } from '../../../String';
 
 const useBuildListOutcome = () => {
@@ -14,21 +14,14 @@ const useBuildListOutcome = () => {
   const { buildFiltersForTemplateWidgets } = useBuildFiltersForTemplateWidgets();
 
   const buildListOutcome = async (
-    containerId: string,
-    widget: WidgetFromBackend,
     maxContentMarkings: string[],
+    dataSelection: Pick<Widget['dataSelection'][0], 'date_attribute' | 'filters' | 'number' | 'columns'>,
   ) => {
-    const [selection] = widget.dataSelection;
-    const dataSelectionTypes = ['Stix-Core-Object'];
-    const dateAttribute = selection.date_attribute && selection.date_attribute.length > 0
-      ? selection.date_attribute
-      : 'created_at';
-
-    const filters = buildFiltersForTemplateWidgets(containerId, selection.filters, maxContentMarkings);
-
+    const dateAttribute = dataSelection.date_attribute || 'created_at';
+    const filters = buildFiltersForTemplateWidgets(dataSelection.filters, maxContentMarkings);
     const variables = {
-      types: dataSelectionTypes,
-      first: selection.number ?? 1000,
+      types: ['Stix-Core-Object'],
+      first: dataSelection.number ?? 1000,
       orderBy: dateAttribute,
       orderMode: 'desc',
       filters,
@@ -36,7 +29,7 @@ const useBuildListOutcome = () => {
 
     const data = await fetchQuery(stixCoreObjectsListQuery, variables).toPromise() as StixCoreObjectsListQuery$data;
     const nodes = (data.stixCoreObjects?.edges ?? []).map((n) => n.node) ?? [];
-    const columns = selection.columns ?? [
+    const columns = dataSelection.columns ?? [
       { label: t_i18n('Entity type'), attribute: 'entity_type' },
       { label: t_i18n('Representative'), attribute: 'representative.main' },
       { label: t_i18n('Creation date'), attribute: 'created_at' },
@@ -57,7 +50,7 @@ const useBuildListOutcome = () => {
               {columns.map((col) => {
                 let property;
                 try {
-                  property = getObjectProperty(n, col.attribute) ?? '';
+                  property = getObjectProperty(n, col.attribute ?? '') ?? '';
                 } catch (e) {
                   property = '';
                 }

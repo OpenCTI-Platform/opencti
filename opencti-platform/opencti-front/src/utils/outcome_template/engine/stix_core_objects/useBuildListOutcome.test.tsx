@@ -3,7 +3,6 @@ import { MockPayloadGenerator } from 'relay-test-utils';
 import { fetchQuery } from 'react-relay';
 import { testRenderHook } from '../../../tests/test-render';
 import useBuildListOutcome from './useBuildListOutcome';
-import type { Widget } from '../../../widget/widget';
 import * as env from '../../../../relay/environment';
 
 /**
@@ -42,11 +41,10 @@ describe('Hook: useBuildListOutcome', () => {
       });
     });
 
-    const widget = { dataSelection: [{}] } as unknown as Widget;
-    const listOutcome = await buildListOutcome('superid', widget, []);
+    const listOutcome = await buildListOutcome([], {});
 
-    expect(listOutcome).toContain('<tr><td>Malware</td><td>Vador</td><td>2024-05-21T08:20:59.859Z</td></tr>');
-    expect(listOutcome).toContain('<tr><td>Malware</td><td>Joker</td><td>2024-05-25T08:20:34.859Z</td></tr>');
-    expect(listOutcome).toContain('<tr><td>Location</td><td>Annecy</td><td>2023-05-25T08:20:34.859Z</td></tr>');
+    expect(listOutcome).toContain('<tr><td>Malware</td><td>Vador</td><td>2024-05-21</td></tr>');
+    expect(listOutcome).toContain('<tr><td>Malware</td><td>Joker</td><td>2024-05-25</td></tr>');
+    expect(listOutcome).toContain('<tr><td>Location</td><td>Annecy</td><td>2023-05-25</td></tr>');
   });
 });

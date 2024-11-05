@@ -3,12 +3,12 @@ import { useTheme } from '@mui/styles';
 import { ApexOptions } from 'apexcharts';
 import { StixRelationshipsDonutDistributionQuery$data } from '@components/common/stix_relationships/__generated__/StixRelationshipsDonutDistributionQuery.graphql';
 import { useBuildFiltersForTemplateWidgets } from '../../../filters/filtersUtils';
-import type { WidgetFromBackend } from '../../../widget/widget';
 import { fetchQuery } from '../../../../relay/environment';
 import type { Theme } from '../../../../components/Theme';
 import useDistributionGraphData from '../../../hooks/useDistributionGraphData';
 import { donutChartOptions } from '../../../Charts';
 import chartDataURI from '../apexchartUtils';
+import type { Widget } from '../../../widget/widget';
 
 const useDonutOutcome = () => {
   const theme = useTheme<Theme>();
@@ -16,23 +16,20 @@ const useDonutOutcome = () => {
   const { buildFiltersForTemplateWidgets } = useBuildFiltersForTemplateWidgets();
 
   const buildDonutOutcome = async (
-    containerId: string,
-    widget: WidgetFromBackend,
+    dataSelection: Widget['dataSelection'][0],
     maxContentMarkings: string[],
   ) => {
-    const [selection] = widget.dataSelection;
-
-    const filters = buildFiltersForTemplateWidgets(containerId, selection.filters, maxContentMarkings);
-    const finalField = selection.attribute || 'entity_type';
+    const filters = buildFiltersForTemplateWidgets(dataSelection.filters, maxContentMarkings);
+    const finalField = dataSelection.attribute || 'entity_type';
     const variables = {
       field: finalField,
       operation: 'count',
-      dateAttribute: selection.date_attribute ?? 'created_at',
-      limit: selection.number ?? 10,
+      dateAttribute: dataSelection.date_attribute ?? 'created_at',
+      limit: dataSelection.number ?? 10,
       filters,
-      isTo: selection.isTo,
-      dynamicFrom: selection.dynamicFrom,
-      dynamicTo: selection.dynamicTo,
+      isTo: dataSelection.isTo,
+      dynamicFrom: dataSelection.dynamicFrom,
+      dynamicTo: dataSelection.dynamicTo,
     };
     const { stixRelationshipsDistribution: data } = await fetchQuery(
       stixRelationshipsDonutsDistributionQuery,

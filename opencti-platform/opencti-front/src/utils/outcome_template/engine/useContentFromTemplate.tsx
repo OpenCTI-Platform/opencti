@@ -19,7 +19,10 @@ const useContentFromTemplate = () => {
   ) => {
     // fetch template and useful widgets
     const variables = { id: containerId, templateId };
-    const { container } = await fetchQuery(templateAndUtilsContainerQuery, variables).toPromise() as TemplateAndUtilsContainerQuery$data;
+    const { container } = await fetchQuery(
+      templateAndUtilsContainerQuery,
+      variables,
+    ).toPromise() as TemplateAndUtilsContainerQuery$data;
 
     if (!container || !container.templateAndUtils) {
       throw Error('No template found');
@@ -28,34 +31,42 @@ const useContentFromTemplate = () => {
     const { template, template_widgets } = container.templateAndUtils;
     let { content } = template;
 
-    // attribute widgets
-    const attributeWidgets = template_widgets.filter((tw) => tw.widget.type === 'attribute');
-    if (attributeWidgets.length > 0) {
-      const attributeWidgetsOutcomesPromises = attributeWidgets.map((aw) => buildAttributesOutcome(containerId, aw));
-      const attributeWidgetsOutcomes = await Promise.all(attributeWidgetsOutcomesPromises);
-      attributeWidgetsOutcomes.flat().forEach((attributeOutcome) => {
-        content = content.replace(`$${attributeOutcome.variableName}`, attributeOutcome.attributeData);
-      });
-    }
-
-    // other widgets
     for (const templateWidget of template_widgets) {
-      let outcome = '';
       const { widget } = templateWidget;
-      try {
-        if (widget.type === 'list') {
-          // eslint-disable-next-line no-await-in-loop
-          outcome = await buildListOutcome(containerId, widget, maxContentMarkings);
-        } else if (widget.type === 'donut') {
-          // eslint-disable-next-line no-await-in-loop
-          outcome = await buildDonutOutcome(containerId, widget, maxContentMarkings);
+
+      // attribute widgets
+      if (widget.type === 'attribute') {
+        // eslint-disable-next-line no-await-in-loop
+        const attributesOutcomes = await buildAttributesOutcome(
+          containerId,
+          widget.dataSelection[0],
+        );
+        for (const outcome of attributesOutcomes) {
+          content = content.replace(`$${outcome.variableName}`, outcome.attributeData);
         }
-      } catch (error) {
-        const errorMessage = `${t_i18n('An error occured while retrieving data for this widget:')}${error ?? ''}`;
-        outcome = errorMessage;
-        MESSAGING$.notifyError('One of the widgets has not been resolved.');
+      // other widgets
+      } else {
+        let outcome = '';
+        try {
+          if (widget.type === 'list') {
+            // eslint-disable-next-line no-await-in-loop
+            outcome = await buildListOutcome(
+              maxContentMarkings,
+              {
+                ...widget.dataSelection[0],
+                filters: JSON.parse(widget.dataSelection[0]?.filters ?? '{}'),
+              },
+            );
+          } else if (widget.type === 'donut') {
+            // eslint-disable-next-line no-await-in-loop
+            outcome = await buildDonutOutcome(widget, maxContentMarkings);
+          }
+        } catch (error) {
+          outcome = `${t_i18n('An error occured while retrieving data for this widget:')}${error ?? ''}`;
+          MESSAGING$.notifyError('One of the widgets has not been resolved.');
+        }
+        content = content.replace(`$${templateWidget.id}`, outcome);
       }
-      content = content.replace(`$${templateWidget.id}`, outcome);
     }
 
     return content;

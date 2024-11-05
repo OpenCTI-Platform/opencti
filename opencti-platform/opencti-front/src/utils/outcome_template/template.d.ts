@@ -1,4 +1,4 @@
-import type { Widget, WidgetFromBackend } from '../widget/widget';
+import type { Widget } from '../widget/widget';
 
 export interface Template {
   id: string
@@ -11,9 +11,4 @@ export interface Template {
 export interface TemplateWidget {
   name: string
   widget: Widget
-}
-
-export interface TemplateWidgetFromBackend {
-  name: string
-  widget: WidgetFromBackend
 }
