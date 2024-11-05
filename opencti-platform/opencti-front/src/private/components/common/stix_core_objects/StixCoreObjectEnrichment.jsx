@@ -3,14 +3,20 @@ import * as R from 'ramda';
 import { CloudRefreshOutline } from 'mdi-material-ui';
 import Tooltip from '@mui/material/Tooltip';
 import ToggleButton from '@mui/material/ToggleButton';
+import useHelper from '../../../../utils/hooks/useHelper';
 import Drawer from '../drawer/Drawer';
 import { QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import StixCoreObjectEnrichmentLines, { stixCoreObjectEnrichmentLinesQuery } from './StixCoreObjectEnrichmentLines';
 
 const StixCoreObjectEnrichment = (props) => {
+  // this component can be controlled with props open and handleClose
   const { t, stixCoreObjectId, handleClose, open } = props;
+  // otherwise, a button + internal state allow to open and close
   const [openDrawer, setOpenDrawer] = useState(false);
+
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   const handleOpenEnrichment = () => {
     if (props.closeMenu) {
@@ -25,41 +31,86 @@ const StixCoreObjectEnrichment = (props) => {
 
   return (
     <>
-      <Tooltip title={t('Enrichment')}>
-        <ToggleButton
-          onClick={handleOpenEnrichment}
-          value="enrich"
-          size="small"
-          style={{ marginRight: 3 }}
+      {isFABReplaced && (
+        <Tooltip title={t('Enrichment')}>
+          <ToggleButton
+            onClick={handleOpenEnrichment}
+            value="enrich"
+            size="small"
+            style={{ marginRight: 3 }}
+          >
+            <CloudRefreshOutline fontSize="small" color="primary" />
+          </ToggleButton>
+        </Tooltip>
+      )}
+      {isFABReplaced && (
+        <Drawer
+          open={open || openDrawer}
+          onClose={handleCloseEnrichment}
+          title={t('Enrichment connectors')}
         >
-          <CloudRefreshOutline fontSize="small" color="primary" />
-        </ToggleButton>
-      </Tooltip>
-      <Drawer
-        open={open || openDrawer}
-        onClose={handleClose || handleCloseEnrichment}
-        title={t('Enrichment connectors')}
-      >
-        <QueryRenderer
-          query={stixCoreObjectEnrichmentLinesQuery}
-          variables={{ id: stixCoreObjectId }}
-          render={({ props: queryProps }) => {
-            if (
-              queryProps
-              && queryProps.stixCoreObject
-              && queryProps.connectorsForImport
-            ) {
-              return (
-                <StixCoreObjectEnrichmentLines
-                  stixCoreObject={queryProps.stixCoreObject}
-                  connectorsForImport={queryProps.connectorsForImport}
-                />
-              );
-            }
-            return <div />;
-          }}
-        />
-      </Drawer>
+          <QueryRenderer
+            query={stixCoreObjectEnrichmentLinesQuery}
+            variables={{ id: stixCoreObjectId }}
+            render={({ props: queryProps }) => {
+              if (
+                queryProps
+                && queryProps.stixCoreObject
+                && queryProps.connectorsForImport
+              ) {
+                return (
+                  <StixCoreObjectEnrichmentLines
+                    stixCoreObject={queryProps.stixCoreObject}
+                    connectorsForImport={queryProps.connectorsForImport}
+                  />
+                );
+              }
+              return <div />;
+            }}
+          />
+        </Drawer>
+      )}
+
+      {/* display the button only if the component is uncontrolled */}
+      {!isFABReplaced && !handleClose && (
+        <Tooltip title={t('Enrichment')}>
+          <ToggleButton
+            onClick={handleOpenEnrichment}
+            value="enrich"
+            size="small"
+            style={{ marginRight: 3 }}
+          >
+            <CloudRefreshOutline fontSize="small" color="primary" />
+          </ToggleButton>
+        </Tooltip>
+      )}
+      {!isFABReplaced && (
+        <Drawer
+          open={open || openDrawer}
+          onClose={handleClose || handleCloseEnrichment}
+          title={t('Enrichment connectors')}
+        >
+          <QueryRenderer
+            query={stixCoreObjectEnrichmentLinesQuery}
+            variables={{ id: stixCoreObjectId }}
+            render={({ props: queryProps }) => {
+              if (
+                queryProps
+                && queryProps.stixCoreObject
+                && queryProps.connectorsForImport
+              ) {
+                return (
+                  <StixCoreObjectEnrichmentLines
+                    stixCoreObject={queryProps.stixCoreObject}
+                    connectorsForImport={queryProps.connectorsForImport}
+                  />
+                );
+              }
+              return <div />;
+            }}
+          />
+        </Drawer>
+      )}
     </>
   );
 };
