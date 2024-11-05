@@ -14,7 +14,6 @@ import { CsvMapperFormData } from '@components/data/csvMapper/CsvMapper';
 import classNames from 'classnames';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import { formDataToCsvMapper } from '@components/data/csvMapper/CsvMapperUtils';
-import { alphabet } from '@components/data/csvMapper/representations/attributes/AttributeUtils';
 import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
@@ -68,7 +67,6 @@ interface CsvMapperFormProps {
 const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({ csvMapper, onSubmit, isDuplicated }) => {
   const { t_i18n } = useFormatter();
   const classes = useStyles();
-  const options = alphabet(26);
 
   // accordion state
   const [open, setOpen] = useState(false);
@@ -282,7 +280,6 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({ csvMapper, onSub
                           handleRepresentationErrors={handleRepresentationErrors}
                           prefixLabel="entity_"
                           onDelete={() => arrayHelpers.remove(idx)}
-                          options={options}
                         />
                       </div>
                     ))}
@@ -321,7 +318,6 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({ csvMapper, onSub
                           handleRepresentationErrors={handleRepresentationErrors}
                           prefixLabel="relationship_"
                           onDelete={() => arrayHelpers.remove(idx)}
-                          options={options}
                         />
                       </div>
                     ))}
