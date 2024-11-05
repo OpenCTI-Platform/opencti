@@ -11,7 +11,7 @@ import { Option } from './ReferenceField';
 import { ObjectParticipantFieldMembersSearchQuery$data } from './__generated__/ObjectParticipantFieldMembersSearchQuery.graphql';
 import { UserContext } from '../../../../utils/hooks/useAuth';
 
-const objectParticipantFieldMembersSearchQuery = graphql`
+export const objectParticipantFieldMembersSearchQuery = graphql`
   query ObjectParticipantFieldMembersSearchQuery($search: String, $first: Int, $entityTypes: [MemberType!]) {
     members(search: $search, first: $first, entityTypes: $entityTypes) {
       edges {
