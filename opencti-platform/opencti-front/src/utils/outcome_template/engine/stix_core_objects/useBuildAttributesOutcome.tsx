@@ -1,9 +1,9 @@
 import { fetchQuery } from '../../../../relay/environment';
 import { StixCoreObjectsAttributesQuery$data } from './__generated__/StixCoreObjectsAttributesQuery.graphql';
 import stixCoreObjectsAttributesQuery from './StixCoreObjectsAttributesQuery';
-import getObjectProperty from '../../../object';
 import type { Widget } from '../../../widget/widget';
 import useBuildReadableAttribute from '../../../hooks/useBuildReadableAttribute';
+import getObjectPropertyWithoutEmptyValues from '../../../object';
 
 const useBuildAttributesOutcome = () => {
   const { buildReadableAttribute } = useBuildReadableAttribute();
@@ -21,7 +21,7 @@ const useBuildAttributesOutcome = () => {
     return (columns ?? []).map((col) => {
       let result;
       try {
-        result = getObjectProperty(data.stixCoreObject ?? {}, col.attribute ?? '') ?? '';
+        result = getObjectPropertyWithoutEmptyValues(data.stixCoreObject ?? {}, col.attribute ?? '');
       } catch (e) {
         result = '';
       }

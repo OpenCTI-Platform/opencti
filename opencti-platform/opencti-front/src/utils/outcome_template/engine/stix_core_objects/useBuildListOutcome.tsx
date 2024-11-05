@@ -4,9 +4,9 @@ import React from 'react';
 import { renderToString } from 'react-dom/server';
 import { fetchQuery } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
-import getObjectProperty from '../../../object';
 import type { Widget } from '../../../widget/widget';
 import useBuildReadableAttribute from '../../../hooks/useBuildReadableAttribute';
+import getObjectPropertyWithoutEmptyValues from '../../../object';
 
 const useBuildListOutcome = () => {
   const { t_i18n } = useFormatter();
@@ -47,7 +47,7 @@ const useBuildListOutcome = () => {
               {columns.map((col) => {
                 let property;
                 try {
-                  property = getObjectProperty(n, col.attribute ?? '') ?? '';
+                  property = getObjectPropertyWithoutEmptyValues(n, col.attribute ?? '');
                 } catch (e) {
                   property = '';
                 }

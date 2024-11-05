@@ -20,4 +20,21 @@ function getObjectProperty<T extends object>(object: T, path = ''): unknown {
     : getObjectProperty(property, splitPath.join('.'));
 }
 
-export default getObjectProperty;
+/**
+ * Same as getObjectProperty but
+ * - return '' if the value is null/undefined
+ * - remove the null/undefined values from the array if the result is an array
+ *
+ * @param object The object to manipulate.
+ * @param path The path to access the property.
+ * @returns The value of the property.
+ */
+function getObjectPropertyWithoutEmptyValues<T extends object>(object: T, path = ''): unknown {
+  const property = getObjectProperty(object, path);
+  if (Array.isArray(property)) {
+    return property.filter((p) => !!p);
+  }
+  return property ?? '';
+}
+
+export default getObjectPropertyWithoutEmptyValues;
