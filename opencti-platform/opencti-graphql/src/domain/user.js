@@ -60,6 +60,7 @@ import {
   SETTINGS_SET_ACCESSES,
   SYSTEM_USER,
   VIRTUAL_ORGANIZATION_ADMIN,
+  INTERNAL_USERS_WITHOUT_REDACTED
 } from '../utils/access';
 import { ASSIGNEE_FILTER, CREATOR_FILTER, PARTICIPANT_FILTER } from '../utils/filtering/filtering-constants';
 import { now, utcDate } from '../utils/format';
@@ -205,7 +206,7 @@ export const findAllMembers = (context, user, args) => {
 };
 
 export const findAllSystemMembers = () => {
-  const members = R.values(INTERNAL_USERS);
+  const members = R.values(INTERNAL_USERS_WITHOUT_REDACTED);
   return buildPagination(0, null, members.map((r) => ({ node: r })), members.length);
 };
 

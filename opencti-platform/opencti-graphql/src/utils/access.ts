@@ -382,6 +382,14 @@ export const INTERNAL_USERS = {
   [REDACTED_USER.id]: REDACTED_USER
 };
 
+export const INTERNAL_USERS_WITHOUT_REDACTED = {
+  [SYSTEM_USER.id]: SYSTEM_USER,
+  [RETENTION_MANAGER_USER.id]: RETENTION_MANAGER_USER,
+  [RULE_MANAGER_USER.id]: RULE_MANAGER_USER,
+  [AUTOMATION_MANAGER_USER.id]: AUTOMATION_MANAGER_USER,
+  [DECAY_MANAGER_USER.id]: DECAY_MANAGER_USER,
+};
+
 export const isBypassUser = (user: AuthUser): boolean => {
   return R.find((s) => s.name === BYPASS, user.capabilities || []) !== undefined;
 };

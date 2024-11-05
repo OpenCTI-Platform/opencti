@@ -10,6 +10,7 @@ import { extractEntityRepresentativeName } from '../database/entity-representati
 import { findById as findStatusById } from './status';
 import { schemaAttributesDefinition } from '../schema/schema-attributes';
 import type { BasicStoreEntity } from '../types/store';
+import { INTERNAL_USERS } from '../utils/access';
 
 interface FilterRepresentative {
   id: string
@@ -32,6 +33,16 @@ export const findFiltersRepresentatives = async (context: AuthContext, user: Aut
   const otherIds = extractFilterGroupValues(inputFilters, keysToResolve, true);
   // resolve the ids
   const resolvedEntities = await storeLoadByIds<BasicStoreEntity>(context, user, idsToResolve, ABSTRACT_BASIC_OBJECT);
+  const internalUsersIds = Object.keys(INTERNAL_USERS);
+  if (idsToResolve.filter((e) => internalUsersIds.includes(e)).length > 0) {
+    for (let index = 0; index < idsToResolve.length; index += 1) {
+      if (internalUsersIds.includes(idsToResolve[index])) {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-expect-error
+        resolvedEntities[index] = INTERNAL_USERS[idsToResolve[index]] ?? undefined;
+      }
+    }
+  }
   // resolve status ids differently
   for (let index = 0; index < resolvedEntities.length; index += 1) {
     let entity = resolvedEntities[index];
