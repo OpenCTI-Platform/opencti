@@ -315,6 +315,7 @@ export const useBuildFiltersForTemplateWidgets = () => {
     }
     return filters;
   };
+
   return { buildFiltersForTemplateWidgets };
 };
 

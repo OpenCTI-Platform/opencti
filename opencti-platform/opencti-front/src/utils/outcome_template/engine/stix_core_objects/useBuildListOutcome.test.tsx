@@ -1,9 +1,10 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeAll, afterAll } from 'vitest';
 import { MockPayloadGenerator } from 'relay-test-utils';
 import { fetchQuery } from 'react-relay';
 import { testRenderHook } from '../../../tests/test-render';
 import useBuildListOutcome from './useBuildListOutcome';
 import * as env from '../../../../relay/environment';
+import * as filterUtils from '../../../filters/filtersUtils';
 
 /**
  * Utils function to generate fake data for our test.
@@ -20,6 +21,15 @@ const edgeSCO = (id: string, entity_type: string, main: string, created_at: stri
 });
 
 describe('Hook: useBuildListOutcome', () => {
+  beforeAll(() => {
+    vi.spyOn(filterUtils, 'useBuildFilterKeysMapFromEntityType').mockImplementation(() => {
+      return new Map().set('created_at', { type: 'date' });
+    });
+  });
+  afterAll(() => {
+    vi.restoreAllMocks();
+  });
+
   it('should have a table containing data from query', async () => {
     const { hook, relayEnv } = testRenderHook(() => useBuildListOutcome());
     // We want fetchQuery function to use the test env of Relay.

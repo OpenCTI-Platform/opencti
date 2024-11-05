@@ -1,11 +1,19 @@
-import { describe, expect, it, vi } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { fetchQuery } from 'react-relay';
 import { MockPayloadGenerator } from 'relay-test-utils';
 import { testRenderHook } from '../../../tests/test-render';
 import * as env from '../../../../relay/environment';
 import useBuildAttributesOutcome from './useBuildAttributesOutcome';
+import * as filterUtils from '../../../filters/filtersUtils';
 
 describe('Hook: useBuildAttributesOutcome', () => {
+  beforeAll(() => {
+    vi.spyOn(filterUtils, 'useBuildFilterKeysMapFromEntityType').mockImplementation(() => new Map());
+  });
+  afterAll(() => {
+    vi.restoreAllMocks();
+  });
+
   it('should throw an error if no instance ID is given', () => {
     const { hook, relayEnv } = testRenderHook(() => useBuildAttributesOutcome());
     // We want fetchQuery function to use the test env of Relay.

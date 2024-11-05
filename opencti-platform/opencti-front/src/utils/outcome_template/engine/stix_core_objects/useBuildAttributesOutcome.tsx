@@ -7,6 +7,7 @@ import getObjectPropertyWithoutEmptyValues from '../../../object';
 
 const useBuildAttributesOutcome = () => {
   const { buildReadableAttribute } = useBuildReadableAttribute();
+
   const buildAttributesOutcome = async (
     containerId: string,
     dataSelection: Pick<Widget['dataSelection'][0], 'instance_id' | 'columns'>,
@@ -32,6 +33,7 @@ const useBuildAttributesOutcome = () => {
       };
     });
   };
+
   return { buildAttributesOutcome };
 };
 

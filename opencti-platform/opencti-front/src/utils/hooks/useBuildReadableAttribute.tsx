@@ -12,26 +12,35 @@ const buildStringAttribute = (val: unknown, isDateAttribute: boolean) => {
 
 const useBuildReadableAttribute = () => {
   const stixCoreObjectsAttributesMap = useBuildFilterKeysMapFromEntityType(['Stix-Core-Object']);
-  const buildReadableAttribute = (result: unknown, displayInfo: WidgetColumn) => {
-    const { attribute } = displayInfo;
+
+  const buildReadableAttribute = (attributeData: unknown, displayInfo: WidgetColumn) => {
+    const { attribute, displayStyle } = displayInfo;
     let isDateAttribute = false;
+
     if (attribute) {
       const attributeDefinition = stixCoreObjectsAttributesMap.get(attribute);
       isDateAttribute = attributeDefinition?.type === 'date';
     }
 
-    let attributeData;
-    if (Array.isArray(result)) {
-      if (displayInfo.displayStyle && displayInfo.displayStyle === 'list') {
-        attributeData = renderToString(<ul>{result.map((el) => <li key={el}>{buildStringAttribute(el, isDateAttribute)}</li>)}</ul>);
+    let readableAttribute;
+    if (Array.isArray(attributeData)) {
+      if (displayStyle && displayStyle === 'list') {
+        readableAttribute = renderToString(
+          <ul>
+            {attributeData.map((el) => (
+              <li key={el}>{buildStringAttribute(el, isDateAttribute)}</li>
+            ))}
+          </ul>,
+        );
       } else {
-        attributeData = result.map((r) => buildStringAttribute(r, isDateAttribute)).join(', ');
+        readableAttribute = attributeData.map((r) => buildStringAttribute(r, isDateAttribute)).join(', ');
       }
     } else {
-      attributeData = buildStringAttribute(result, isDateAttribute);
+      readableAttribute = buildStringAttribute(attributeData, isDateAttribute);
     }
-    return attributeData;
+    return readableAttribute;
   };
+
   return { buildReadableAttribute };
 };
 

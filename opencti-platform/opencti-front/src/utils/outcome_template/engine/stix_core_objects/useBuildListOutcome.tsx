@@ -63,6 +63,7 @@ const useBuildListOutcome = () => {
       </table>,
     );
   };
+
   return { buildListOutcome };
 };
 

@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeAll, afterAll } from 'vitest';
 import { fetchQuery } from 'react-relay';
 import { MockPayloadGenerator } from 'relay-test-utils';
 import { testRenderHook } from '../../tests/test-render';
@@ -6,9 +6,10 @@ import useContentFromTemplate from './useContentFromTemplate';
 import * as env from '../../../relay/environment';
 import * as useBuildAttributesOutcome from './stix_core_objects/useBuildAttributesOutcome';
 import * as useBuildListOutcome from './stix_core_objects/useBuildListOutcome';
+import * as filterUtils from '../../filters/filtersUtils';
 
 describe('Hook: useContentFromTemplate', () => {
-  it('should replace attribute widgets with the associated data', async () => {
+  beforeAll(() => {
     vi.spyOn(useBuildAttributesOutcome, 'default').mockImplementation(() => ({
       buildAttributesOutcome: async () => {
         return [
@@ -17,7 +18,22 @@ describe('Hook: useContentFromTemplate', () => {
         ];
       },
     }));
+    vi.spyOn(useBuildListOutcome, 'default').mockImplementation(() => ({
+      buildListOutcome: async () => {
+        return 'my super list of elements';
+      },
+    }));
+    vi.spyOn(filterUtils, 'useBuildFiltersForTemplateWidgets').mockImplementation(() => ({
+      buildFiltersForTemplateWidgets() {
+        return undefined;
+      },
+    }));
+  });
+  afterAll(() => {
+    vi.restoreAllMocks();
+  });
 
+  it('should replace attribute widgets with the associated data', async () => {
     const { hook, relayEnv } = testRenderHook(() => useContentFromTemplate());
     // We want fetchQuery function to use the test env of Relay.
     vi.spyOn(env, 'fetchQuery').mockImplementation((q, a) => fetchQuery(relayEnv, q, a));
@@ -31,10 +47,11 @@ describe('Hook: useContentFromTemplate', () => {
             template: {
               id: 'testTemplate',
               name: 'Test template',
-              template_widgets_ids: ['containerName', 'containerType'],
+              template_widgets_ids: ['myAttributes'],
               content: 'Hello, I am container $containerName of type $containerType',
             },
             template_widgets: [{
+              id: 'myAttributes',
               type: 'attribute',
               dataSelection: [{}],
             }],
@@ -48,12 +65,6 @@ describe('Hook: useContentFromTemplate', () => {
   });
 
   it('should replace attribute lists with corresponding data', async () => {
-    vi.spyOn(useBuildListOutcome, 'default').mockImplementation(() => ({
-      buildListOutcome: async () => {
-        return 'my super list of elements';
-      },
-    }));
-
     const { hook, relayEnv } = testRenderHook(() => useContentFromTemplate());
     // We want fetchQuery function to use the test env of Relay.
     vi.spyOn(env, 'fetchQuery').mockImplementation((q, a) => fetchQuery(relayEnv, q, a));
