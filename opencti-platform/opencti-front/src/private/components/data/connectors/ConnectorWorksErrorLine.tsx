@@ -64,13 +64,13 @@ const ConnectorWorksErrorLine: FunctionComponent<ConnectorWorksErrorLineProps> =
             <a href={'https://docs.opencti.io/latest/deployment/troubleshooting'} target="_blank" rel="noreferrer">{t_i18n('Unknown')}</a>
           )}
         </TableCell>
-        <TableCell>{error.isParsed ? error.parsedError.message : error.rawError.message}</TableCell>
+        <TableCell>{error.isParsed ? error.parsedError.message : error.rawError.message ?? '-'}</TableCell>
         <TableCell>
           {error.isParsed ? (
             displayEntityOrId(error.parsedError.entity)
           ) : (
             <Tooltip title={t_i18n('Click on details to see more information')}>
-              {truncate(error.rawError.source, truncateLimit)}
+              {truncate(error.rawError.source ?? '-', truncateLimit)}
             </Tooltip>
           )}
         </TableCell>

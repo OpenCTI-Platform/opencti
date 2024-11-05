@@ -186,6 +186,8 @@ const parseWorkErrors = async (errorsList: WorkMessages): Promise<ParsedWorkMess
     }
   });
 
+  if (ids.length < 1) return parsedList;
+  // else : try to resolve entities
   const entities = await fetchQuery(
     environment,
     parseWorkErrorsQuery,
