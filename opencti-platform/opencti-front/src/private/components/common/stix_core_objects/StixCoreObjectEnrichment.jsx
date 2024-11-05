@@ -31,7 +31,7 @@ const StixCoreObjectEnrichment = (props) => {
 
   return (
     <>
-      {isFABReplaced && (
+      {(isFABReplaced || !handleClose) && (
         <Tooltip title={t('Enrichment')}>
           <ToggleButton
             onClick={handleOpenEnrichment}
@@ -43,20 +43,6 @@ const StixCoreObjectEnrichment = (props) => {
           </ToggleButton>
         </Tooltip>
       )}
-      {/* display the button only if the component is uncontrolled */}
-      {!isFABReplaced && !handleClose && (
-        <Tooltip title={t('Enrichment')}>
-          <ToggleButton
-            onClick={handleOpenEnrichment}
-            value="enrich"
-            size="small"
-            style={{ marginRight: 3 }}
-          >
-            <CloudRefreshOutline fontSize="small" color="primary" />
-          </ToggleButton>
-        </Tooltip>
-      )}
-
       <Drawer
         open={open || openDrawer}
         onClose={handleClose || handleCloseEnrichment}
