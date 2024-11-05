@@ -186,7 +186,6 @@ CsvMapperRepresentationFormProps
                 component={CsvMapperConditionalEntityMapping}
                 representation={value}
                 representationName={name}
-                handleErrors={handleErrors}
               />
               )}
               <CsvMapperRepresentationAttributesForm

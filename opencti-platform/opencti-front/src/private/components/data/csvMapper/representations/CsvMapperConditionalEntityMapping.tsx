@@ -14,7 +14,6 @@ interface CsvMapperConditionalEntityMappingProps
   extends FieldProps<CsvMapperColumnBasedFormData> {
   representation: CsvMapperRepresentationFormData;
   representationName: string;
-  handleErrors: (key: string, value: string | null) => void;
 }
 const CsvMapperConditionalEntityMapping: FunctionComponent<
 CsvMapperConditionalEntityMappingProps
