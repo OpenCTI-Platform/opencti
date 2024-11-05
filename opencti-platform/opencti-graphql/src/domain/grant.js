@@ -1,4 +1,4 @@
-import { assoc, dissoc, pipe } from 'ramda';
+import { assoc, dissoc, pipe, uniq } from 'ramda';
 import nconf from 'nconf';
 import { createEntity, createRelation } from '../database/middleware';
 import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE } from '../schema/internalObject';
@@ -14,7 +14,7 @@ export const addCapability = async (context, user, capability) => {
 };
 
 export const addRole = async (context, user, role) => {
-  const capabilities = role.capabilities ?? [];
+  const capabilities = uniq(role.capabilities ?? []);
   const roleToCreate = pipe(
     assoc('description', role.description ? role.description : ''),
     dissoc('capabilities'),
@@ -32,11 +32,11 @@ export const addRole = async (context, user, role) => {
     };
   }
   const { element, isCreation } = await createEntity(context, user, completeRoleToCreate, ENTITY_TYPE_ROLE, { complete: true });
-  const relationPromises = capabilities.map(async (capabilityName) => {
-    const generateToId = generateStandardId(ENTITY_TYPE_CAPABILITY, { name: capabilityName });
-    return createRelation(context, user, { fromId: element.id, toId: generateToId, relationship_type: RELATION_HAS_CAPABILITY });
-  });
-  await Promise.all(relationPromises);
+  for (let index = 0; index < capabilities.length; index += 1) {
+    const capability = capabilities[index];
+    const generateToId = generateStandardId(ENTITY_TYPE_CAPABILITY, { name: capability });
+    await createRelation(context, user, { fromId: element.id, toId: generateToId, relationship_type: RELATION_HAS_CAPABILITY });
+  }
   if (isCreation) {
     await publishUserAction({
       user,
