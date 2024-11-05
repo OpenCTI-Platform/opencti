@@ -10,6 +10,7 @@ import {
   findGrantableGroups,
   organizationAdminAdd,
   organizationAdminRemove,
+  organizationDelete,
   organizationMembersPaginated,
   organizationSectorsPaginated,
   parentOrganizationsPaginated
@@ -17,7 +18,6 @@ import {
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
-  stixDomainObjectDelete,
   stixDomainObjectDeleteRelation,
   stixDomainObjectEditContext,
   stixDomainObjectEditField
@@ -46,7 +46,7 @@ const organizationResolvers: Resolvers = {
   },
   Mutation: {
     organizationAdd: (_, { input }, context) => addOrganization(context, context.user, input),
-    organizationDelete: (_, { id }, context) => stixDomainObjectDelete(context, context.user, id),
+    organizationDelete: (_, { id }, context) => organizationDelete(context, context.user, id),
     organizationFieldPatch: (_, { id, input, commitMessage, references }, context) => {
       return stixDomainObjectEditField(context, context.user, id, input, { commitMessage, references });
     },

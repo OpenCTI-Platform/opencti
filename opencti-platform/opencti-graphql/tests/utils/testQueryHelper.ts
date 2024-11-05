@@ -71,6 +71,19 @@ export const queryAsUserIsExpectedForbidden = async (client: AxiosInstance, requ
 };
 
 /**
+ * Execute the query as some User (see testQuery.ts), and verify that error is thrown.
+ * @param client
+ * @param request
+ */
+export const queryAsUserIsExpectedError = async (client: AxiosInstance, request: any, message?: string, errorName?: string) => {
+  const queryResult = await executeInternalQuery(client, print(request.query), request.variables);
+  logApp.info('queryAsUserIsExpectedError=> queryResult:', queryResult);
+  expect(queryResult.errors, 'error is expected.').toBeDefined();
+  expect(queryResult.errors?.length, message ?? `error is expected, but got ${queryResult.errors?.length} errors`).toBe(1);
+  expect(queryResult.errors[0].extensions.code, `error is expected but got ${queryResult.errors[0].name}`).toBe(errorName);
+};
+
+/**
  * Call a graphQL request with no authentication / no login and verify that access is forbidden.
  * @param request
  */
