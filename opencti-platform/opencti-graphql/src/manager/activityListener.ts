@@ -43,7 +43,7 @@ export interface ActivityStreamEvent {
   message: string
   status: 'error' | 'success'
   origin: Partial<UserOrigin>
-  data: Partial<{ id: string, object_marking_refs_ids?: string[], granted_refs_ids?: string[], markings?: string[] }>
+  data: Partial<{ id: string, object_marking_refs_ids?: string[], granted_refs_ids?: string[], marking_definitions?: string[] }>
 }
 
 const initActivityManager = () => {

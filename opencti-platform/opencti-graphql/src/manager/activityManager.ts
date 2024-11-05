@@ -85,6 +85,9 @@ const historyIndexing = async (context: AuthContext, events: Array<SseEvent<Acti
       const [time] = event.id.split('-');
       const eventDate = utcDate(parseInt(time, 10)).toISOString();
       const contextData = { ...event.data.data, message: event.data.message };
+      if ((event.data.data.object_marking_refs_ids ?? []).length > 0) {
+        contextData.marking_definitions = (event.data.data.object_marking_refs_ids ?? []).map((n) => markingDefinitions.get(n)?.definition ?? 'Unknown');
+      }
       const activityDate = utcDate(eventDate).toDate();
       const isAdminEvent = event.data.event_access === 'administration';
       return {
@@ -105,7 +108,6 @@ const historyIndexing = async (context: AuthContext, events: Array<SseEvent<Acti
         applicant_id: event.data.origin?.applicant_id,
         timestamp: eventDate,
         context_data: contextData,
-        marking_definitions: (event.data.data.object_marking_refs_ids ?? []).map((n) => markingDefinitions.get(n)?.definition),
         'rel_object-marking.internal_id': event.data.data.object_marking_refs_ids,
         'rel_granted.internal_id': event.data.data.granted_refs_ids,
       };

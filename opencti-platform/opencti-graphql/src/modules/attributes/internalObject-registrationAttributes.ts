@@ -84,7 +84,6 @@ const HistoryDefinition: AttributeDefinition[] = [
     isFilterable: false
   },
   { name: 'timestamp', label: 'Timestamp', type: 'date', editDefault: false, mandatoryType: 'internal', multiple: false, upsert: false, isFilterable: true },
-  { name: 'marking_definitions', label: 'Marking definitions', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: false },
   {
     name: 'context_data',
     label: 'Context data',
@@ -134,6 +133,7 @@ const HistoryDefinition: AttributeDefinition[] = [
       { name: 'list_params', label: 'List of parameters', type: 'object', format: 'flat', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: false },
       { name: 'input', label: 'Input', type: 'object', format: 'flat', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: false },
       { name: 'external_references', label: 'External references', type: 'object', format: 'flat', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: false },
+      { name: 'marking_definitions', label: 'Marking definitions', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: false },
     ]
   },
   { ...creators, isFilterable: false },
