@@ -1,4 +1,4 @@
-import { createEntity, patchAttribute } from '../../database/middleware';
+import { createEntity, deleteElementById, patchAttribute } from '../../database/middleware';
 import {
   type EntityOptions,
   internalFindByIds,
@@ -10,17 +10,20 @@ import {
 } from '../../database/middleware-loader';
 import { BUS_TOPICS } from '../../config/conf';
 import { notify } from '../../database/redis';
+import { getEntityFromCache } from '../../database/cache';
+import { READ_INDEX_INTERNAL_OBJECTS } from '../../database/utils';
 import { ENTITY_TYPE_IDENTITY_SECTOR } from '../../schema/stixDomainObject';
 import { RELATION_PART_OF } from '../../schema/stixCoreRelationship';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
 import { RELATION_PARTICIPATE_TO } from '../../schema/internalRelationship';
-import { ENTITY_TYPE_USER } from '../../schema/internalObject';
+import { ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER } from '../../schema/internalObject';
 import { type BasicStoreEntityOrganization, ENTITY_TYPE_IDENTITY_ORGANIZATION } from './organization-types';
 import type { AuthContext, AuthUser } from '../../types/user';
 import type { BasicObject, OrganizationAddInput, ResolversTypes } from '../../generated/graphql';
-import { FunctionalError } from '../../config/errors';
-import { isUserHasCapability, SETTINGS_SET_ACCESSES } from '../../utils/access';
+import { AlreadyDeletedError, FunctionalError } from '../../config/errors';
+import { isUserHasCapability, SETTINGS_SET_ACCESSES, SYSTEM_USER } from '../../utils/access';
 import { publishUserAction } from '../../listener/UserActionListener';
+import type { BasicStoreSettings } from '../../types/settings';
 import type { BasicStoreCommon, BasicStoreEntity } from '../../types/store';
 import { userSessionRefresh } from '../../domain/user';
 
@@ -132,6 +135,35 @@ export const parentOrganizationsPaginated = async <T extends BasicStoreCommon> (
 export const childOrganizationsPaginated = async <T extends BasicStoreCommon> (context: AuthContext, user: AuthUser, organizationId: string,
   args: EntityOptions<T>) => {
   return listEntitiesThroughRelationsPaginated<T>(context, user, organizationId, RELATION_PART_OF, ENTITY_TYPE_IDENTITY_ORGANIZATION, true, args);
+};
+
+export const organizationDelete = async (context: AuthContext, user: AuthUser, organizationId: string) => {
+  const organization = await findById(context, user, organizationId);
+  if (!organization) {
+    throw AlreadyDeletedError({ organizationId });
+  }
+  const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+  if (organization.id === settings.platform_organization) {
+    throw FunctionalError('Cannot delete the platform organization.');
+  }
+  if (organization.authorized_authorities && organization.authorized_authorities.length > 0) {
+    if (isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
+      throw FunctionalError('Cannot delete the organization that has an administrator.');
+    }
+    // no information leakage about the organization administrators or members
+    throw FunctionalError('Cannot delete the organization.');
+  }
+  const members = await organizationMembersPaginated(context, user, organization.id, { first: 1, indices: [READ_INDEX_INTERNAL_OBJECTS] });
+  if (members.pageInfo.globalCount > 0) {
+    if (isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
+      throw FunctionalError('Cannot delete the organization that has members.');
+    }
+    // no information leakage about the organization administrators or members
+    throw FunctionalError('Cannot delete the organization.');
+  }
+  await deleteElementById(context, user, organizationId, ENTITY_TYPE_IDENTITY_ORGANIZATION);
+  await notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].DELETE_TOPIC, organizationId, user);
+  return organizationId;
 };
 
 // endregion
