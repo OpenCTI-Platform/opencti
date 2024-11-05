@@ -334,7 +334,7 @@ export const executePlaybookOnEntity = async (context: AuthContext, id: string, 
             type: 'bundle',
             objects: [data]
           };
-          await playbookExecutor({
+          playbookExecutor({
             eventId,
             // Basic
             executionId: uuidv4(),
@@ -347,7 +347,7 @@ export const executePlaybookOnEntity = async (context: AuthContext, id: string, 
             // Data
             previousStepBundle: null,
             bundle,
-          });
+          }).catch((reason) => logApp.error(reason, { id: entityId, manager: 'PLAYBOOK_MANAGER' }));
           return true;
         } catch (e) {
           logApp.error(e, { id: entityId, manager: 'PLAYBOOK_MANAGER' });
