@@ -85,7 +85,10 @@ describe('Component: ContentTemplateForm', () => {
     expect(onSubmit).toHaveBeenCalledWith(
       {
         name: 'Super template',
-        template: 'template 2',
+        template: {
+          label: 'template 2',
+          value: 'template 2',
+        },
         type: 'text/html',
         fileMarkings: [],
         maxMarkings: [],

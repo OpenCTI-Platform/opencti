@@ -26,20 +26,18 @@ describe('Hook: useContentFromTemplate', () => {
     // Fake data returned by the query.
     relayEnv.mock.queueOperationResolver((op) => {
       return MockPayloadGenerator.generate(op, {
-        Template() {
+        TemplateAndUtils() {
           return {
-            id: 'testTemplate',
-            name: 'Test template',
-            used_widgets: ['containerName', 'containerType'],
-            content: 'Hello, I am container $containerName of type $containerType',
-          };
-        },
-        TemplateWidget() {
-          return {
-            widget: {
+            template: {
+              id: 'testTemplate',
+              name: 'Test template',
+              template_widgets_ids: ['containerName', 'containerType'],
+              content: 'Hello, I am container $containerName of type $containerType',
+            },
+            template_widgets: [{
               type: 'attribute',
               dataSelection: [{}],
-            },
+            }],
           };
         },
       });
@@ -64,23 +62,21 @@ describe('Hook: useContentFromTemplate', () => {
     // Fake data returned by the query.
     relayEnv.mock.queueOperationResolver((op) => {
       return MockPayloadGenerator.generate(op, {
-        Template() {
+        TemplateAndUtils() {
           return {
-            id: 'testTemplate',
-            name: 'Test template',
-            used_widgets: ['containerList'],
-            content: 'Hello, I have: $containerList',
-          };
-        },
-        TemplateWidget() {
-          return {
-            name: 'containerList',
-            widget: {
+            template: {
+              id: 'testTemplate',
+              name: 'Test template',
+              template_widgets_ids: ['containerList'],
+              content: 'Hello, I have: $containerList',
+            },
+            template_widgets: [{
+              id: 'containerList',
               type: 'list',
               dataSelection: [{
                 filters: null,
               }],
-            },
+            }],
           };
         },
       });

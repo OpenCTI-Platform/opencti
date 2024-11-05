@@ -68,7 +68,7 @@ const useContentFromTemplate = () => {
             });
           }
         } catch (error) {
-          outcome = `${t_i18n('An error occured while retrieving data for this widget:')}${error ?? ''}`;
+          outcome = `${t_i18n('An error occurred while retrieving data for this widget:')}${error ?? ''}`;
           MESSAGING$.notifyError('One of the widgets has not been resolved.');
         }
         content = content.replace(`$${widget.id}`, outcome);

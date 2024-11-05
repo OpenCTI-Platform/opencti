@@ -301,7 +301,14 @@ export const useBuildFiltersForTemplateWidgets = () => {
     maxContentMarkingsIds: string[],
   ) => {
     // replace SELF_ID
-    let filters = inputFilters ? JSON.parse(inputFilters.replace('SELF_ID', containerId)) : undefined;
+    let filters;
+    if (inputFilters) {
+      try {
+        filters = JSON.parse(inputFilters.replace('SELF_ID', containerId));
+      } catch (e) {
+        filters = undefined;
+      }
+    }
     // restrict markings
     const maxContentMarkings = allowedMarkings.filter((m) => maxContentMarkingsIds.includes(m.id));
     const notAllowedMarkingIds = allowedMarkings
