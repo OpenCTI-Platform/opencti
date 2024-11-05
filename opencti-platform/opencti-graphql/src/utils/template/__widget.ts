@@ -94,7 +94,7 @@ const widgetIncidentResponseMultiAttributes: Widget = {
       ...containerColumns,
       { label: 'Priority', attribute: 'priority', variableName: 'incidentPriority' },
       { label: 'Severity', attribute: 'severity', variableName: 'incidentSeverity' },
-      { label: 'Incident type', attribute: 'response_types', variableName: 'incidentType' },
+      { label: 'Incident type', attribute: 'response_types', variableName: 'types' },
     ],
     instance_id: 'SELF_ID',
   }],

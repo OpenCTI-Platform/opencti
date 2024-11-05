@@ -88,11 +88,19 @@ const executiveSummaryContent = (containerType: string) => {
       </blockquote>
       <div>$attackPatternsId</div>
       
+      <div class="page-break" style="page-break-after:always;">
+        <span style="display:none;">&nbsp;</span>
+      </div>
+      
       <h3>All entities & observables</h3>
       <blockquote>
         <p>This section is meant to help you draft your final outcome. It gathers all entities & observables in your container. <strong>REMOVE THE TABLE ONCE DONE</strong></p>
       </blockquote>
       <div>$allEntitiesAndObservablesId</div>
+      
+      <div class="page-break" style="page-break-after:always;">
+        <span style="display:none;">&nbsp;</span>
+      </div>
       
       <h3>IoCs</h3>
       <blockquote>

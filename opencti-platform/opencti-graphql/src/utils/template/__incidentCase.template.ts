@@ -25,7 +25,7 @@ const content = `
       </tr>
       <tr>
         <td><strong>Incident response type</strong></td>
-        <td>$incidentType</td>
+        <td>$types</td>
       </tr>
       <tr>
         <td><strong>Labels</strong></td>
