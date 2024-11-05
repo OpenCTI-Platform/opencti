@@ -43,34 +43,6 @@ const StixCoreObjectEnrichment = (props) => {
           </ToggleButton>
         </Tooltip>
       )}
-      {isFABReplaced && (
-        <Drawer
-          open={open || openDrawer}
-          onClose={handleCloseEnrichment}
-          title={t('Enrichment connectors')}
-        >
-          <QueryRenderer
-            query={stixCoreObjectEnrichmentLinesQuery}
-            variables={{ id: stixCoreObjectId }}
-            render={({ props: queryProps }) => {
-              if (
-                queryProps
-                && queryProps.stixCoreObject
-                && queryProps.connectorsForImport
-              ) {
-                return (
-                  <StixCoreObjectEnrichmentLines
-                    stixCoreObject={queryProps.stixCoreObject}
-                    connectorsForImport={queryProps.connectorsForImport}
-                  />
-                );
-              }
-              return <div />;
-            }}
-          />
-        </Drawer>
-      )}
-
       {/* display the button only if the component is uncontrolled */}
       {!isFABReplaced && !handleClose && (
         <Tooltip title={t('Enrichment')}>
@@ -84,33 +56,32 @@ const StixCoreObjectEnrichment = (props) => {
           </ToggleButton>
         </Tooltip>
       )}
-      {!isFABReplaced && (
-        <Drawer
-          open={open || openDrawer}
-          onClose={handleClose || handleCloseEnrichment}
-          title={t('Enrichment connectors')}
-        >
-          <QueryRenderer
-            query={stixCoreObjectEnrichmentLinesQuery}
-            variables={{ id: stixCoreObjectId }}
-            render={({ props: queryProps }) => {
-              if (
-                queryProps
+
+      <Drawer
+        open={open || openDrawer}
+        onClose={handleClose || handleCloseEnrichment}
+        title={t('Enrichment connectors')}
+      >
+        <QueryRenderer
+          query={stixCoreObjectEnrichmentLinesQuery}
+          variables={{ id: stixCoreObjectId }}
+          render={({ props: queryProps }) => {
+            if (
+              queryProps
                 && queryProps.stixCoreObject
                 && queryProps.connectorsForImport
-              ) {
-                return (
-                  <StixCoreObjectEnrichmentLines
-                    stixCoreObject={queryProps.stixCoreObject}
-                    connectorsForImport={queryProps.connectorsForImport}
-                  />
-                );
-              }
-              return <div />;
-            }}
-          />
-        </Drawer>
-      )}
+            ) {
+              return (
+                <StixCoreObjectEnrichmentLines
+                  stixCoreObject={queryProps.stixCoreObject}
+                  connectorsForImport={queryProps.connectorsForImport}
+                />
+              );
+            }
+            return <div />;
+          }}
+        />
+      </Drawer>
     </>
   );
 };
