@@ -296,10 +296,12 @@ export const useBuildFiltersForTemplateWidgets = () => {
   const maxShareableMarkings = me.max_shareable_marking ?? [];
 
   const buildFiltersForTemplateWidgets = (
-    inputFilters: FilterGroup | undefined | null,
+    inputFilters: string | undefined | null,
+    containerId: string,
     maxContentMarkingsIds: string[],
   ) => {
-    let filters = inputFilters ?? undefined;
+    // replace SELF_ID
+    let filters = inputFilters ? JSON.parse(inputFilters.replace('SELF_ID', containerId)) : undefined;
     // restrict markings
     const maxContentMarkings = allowedMarkings.filter((m) => maxContentMarkingsIds.includes(m.id));
     const notAllowedMarkingIds = allowedMarkings

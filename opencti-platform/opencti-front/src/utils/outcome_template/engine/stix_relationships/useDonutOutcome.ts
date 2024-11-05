@@ -2,7 +2,6 @@ import { stixRelationshipsDonutsDistributionQuery } from '@components/common/sti
 import { useTheme } from '@mui/styles';
 import { ApexOptions } from 'apexcharts';
 import { StixRelationshipsDonutDistributionQuery$data } from '@components/common/stix_relationships/__generated__/StixRelationshipsDonutDistributionQuery.graphql';
-import { useBuildFiltersForTemplateWidgets } from '../../../filters/filtersUtils';
 import { fetchQuery } from '../../../../relay/environment';
 import type { Theme } from '../../../../components/Theme';
 import useDistributionGraphData from '../../../hooks/useDistributionGraphData';
@@ -13,20 +12,18 @@ import type { Widget } from '../../../widget/widget';
 const useDonutOutcome = () => {
   const theme = useTheme<Theme>();
   const { buildWidgetLabelsOption } = useDistributionGraphData();
-  const { buildFiltersForTemplateWidgets } = useBuildFiltersForTemplateWidgets();
 
   const buildDonutOutcome = async (
-    dataSelection: Widget['dataSelection'][0],
-    maxContentMarkings: string[],
+    dataSelection: Pick<Widget['dataSelection'][0], 'date_attribute' | 'filters' | 'number' | 'columns' | 'attribute' | 'isTo' | 'dynamicTo' | 'dynamicFrom'>,
   ) => {
-    const filters = buildFiltersForTemplateWidgets(dataSelection.filters, maxContentMarkings);
+    console.log('dataSelection', dataSelection);
     const finalField = dataSelection.attribute || 'entity_type';
     const variables = {
       field: finalField,
       operation: 'count',
       dateAttribute: dataSelection.date_attribute ?? 'created_at',
       limit: dataSelection.number ?? 10,
-      filters,
+      filters: dataSelection.filters,
       isTo: dataSelection.isTo,
       dynamicFrom: dataSelection.dynamicFrom,
       dynamicTo: dataSelection.dynamicTo,

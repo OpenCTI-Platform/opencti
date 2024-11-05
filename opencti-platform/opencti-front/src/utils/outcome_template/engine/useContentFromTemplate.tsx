@@ -5,12 +5,14 @@ import { TemplateAndUtilsContainerQuery$data } from './__generated__/TemplateAnd
 import templateAndUtilsContainerQuery from './TemplateAndUtilsContainerQuery';
 import useBuildAttributesOutcome from './stix_core_objects/useBuildAttributesOutcome';
 import { useFormatter } from '../../../components/i18n';
+import { useBuildFiltersForTemplateWidgets } from '../../filters/filtersUtils';
 
 const useContentFromTemplate = () => {
   const { t_i18n } = useFormatter();
   const { buildDonutOutcome } = useDonutOutcome();
   const { buildListOutcome } = useBuildListOutcome();
   const { buildAttributesOutcome } = useBuildAttributesOutcome();
+  const { buildFiltersForTemplateWidgets } = useBuildFiltersForTemplateWidgets();
 
   const buildContentFromTemplate = async (
     containerId: string,
@@ -47,19 +49,22 @@ const useContentFromTemplate = () => {
       // other widgets
       } else {
         let outcome = '';
+        const filters = buildFiltersForTemplateWidgets(widget.dataSelection[0]?.filters ?? undefined, containerId, maxContentMarkings);
         try {
           if (widget.type === 'list') {
             // eslint-disable-next-line no-await-in-loop
             outcome = await buildListOutcome(
-              maxContentMarkings,
               {
                 ...widget.dataSelection[0],
-                filters: JSON.parse(widget.dataSelection[0]?.filters ?? '{}'),
+                filters,
               },
             );
           } else if (widget.type === 'donut') {
             // eslint-disable-next-line no-await-in-loop
-            outcome = await buildDonutOutcome(widget, maxContentMarkings);
+            outcome = await buildDonutOutcome({
+              ...widget.dataSelection[0],
+              filters,
+            });
           }
         } catch (error) {
           outcome = `${t_i18n('An error occured while retrieving data for this widget:')}${error ?? ''}`;

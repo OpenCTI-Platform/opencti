@@ -2,7 +2,6 @@ import { stixCoreObjectsListQuery } from '@components/common/stix_core_objects/S
 import { StixCoreObjectsListQuery$data } from '@components/common/stix_core_objects/__generated__/StixCoreObjectsListQuery.graphql';
 import React from 'react';
 import { renderToString } from 'react-dom/server';
-import { useBuildFiltersForTemplateWidgets } from '../../../filters/filtersUtils';
 import { fetchQuery } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import getObjectProperty from '../../../object';
@@ -11,20 +10,17 @@ import { buildReadableAttribute } from '../../../String';
 
 const useBuildListOutcome = () => {
   const { t_i18n } = useFormatter();
-  const { buildFiltersForTemplateWidgets } = useBuildFiltersForTemplateWidgets();
 
   const buildListOutcome = async (
-    maxContentMarkings: string[],
     dataSelection: Pick<Widget['dataSelection'][0], 'date_attribute' | 'filters' | 'number' | 'columns'>,
   ) => {
     const dateAttribute = dataSelection.date_attribute || 'created_at';
-    const filters = buildFiltersForTemplateWidgets(dataSelection.filters, maxContentMarkings);
     const variables = {
       types: ['Stix-Core-Object'],
       first: dataSelection.number ?? 1000,
       orderBy: dateAttribute,
       orderMode: 'desc',
-      filters,
+      filters: dataSelection.filters,
     };
 
     const data = await fetchQuery(stixCoreObjectsListQuery, variables).toPromise() as StixCoreObjectsListQuery$data;
