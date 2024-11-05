@@ -2,10 +2,11 @@ import { fetchQuery } from '../../../../relay/environment';
 import { StixCoreObjectsAttributesQuery$data } from './__generated__/StixCoreObjectsAttributesQuery.graphql';
 import stixCoreObjectsAttributesQuery from './StixCoreObjectsAttributesQuery';
 import getObjectProperty from '../../../object';
-import { buildReadableAttribute } from '../../../String';
 import type { Widget } from '../../../widget/widget';
+import useBuildReadableAttribute from '../../../hooks/useBuildReadableAttribute';
 
 const useBuildAttributesOutcome = () => {
+  const { buildReadableAttribute } = useBuildReadableAttribute();
   const buildAttributesOutcome = async (
     containerId: string,
     dataSelection: Pick<Widget['dataSelection'][0], 'instance_id' | 'columns'>,

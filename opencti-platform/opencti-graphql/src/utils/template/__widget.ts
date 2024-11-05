@@ -7,7 +7,7 @@ const containerColumns = [
   { label: 'Description', attribute: 'description', variableName: 'containerDescription' },
   { label: 'Labels', attribute: 'objectLabel.value', variableName: 'containerLabels' },
   { label: 'Markings', attribute: 'objectMarking.definition', variableName: 'containerMarkings' },
-  { label: 'Modification date', attribute: 'modified', variableName: 'containerModificationDate' },
+  { label: 'Modification date', attribute: 'updated_at', variableName: 'containerModificationDate' },
   { label: 'Name', attribute: 'name', variableName: 'containerName' },
   { label: 'Author', attribute: 'createdBy.name', variableName: 'containerAuthor' },
   { label: 'Confidence level', attribute: 'confidence', variableName: 'containerConfidenceLevel' },

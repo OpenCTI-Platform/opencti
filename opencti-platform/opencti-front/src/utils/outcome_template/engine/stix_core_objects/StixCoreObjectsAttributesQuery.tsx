@@ -7,6 +7,7 @@ const stixCoreObjectsAttributesQuery = graphql`
             entity_type
             parent_types
             created_at
+            updated_at
             createdBy {
                 ... on Identity {
                     id

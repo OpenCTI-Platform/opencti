@@ -6,10 +6,11 @@ import { fetchQuery } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import getObjectProperty from '../../../object';
 import type { Widget } from '../../../widget/widget';
-import { buildReadableAttribute } from '../../../String';
+import useBuildReadableAttribute from '../../../hooks/useBuildReadableAttribute';
 
 const useBuildListOutcome = () => {
   const { t_i18n } = useFormatter();
+  const { buildReadableAttribute } = useBuildReadableAttribute();
 
   const buildListOutcome = async (
     dataSelection: Pick<Widget['dataSelection'][0], 'date_attribute' | 'filters' | 'number' | 'columns'>,
