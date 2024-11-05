@@ -1,5 +1,4 @@
 import * as s3 from '@aws-sdk/client-s3';
-import { CopyObjectCommand } from '@aws-sdk/client-s3';
 import * as R from 'ramda';
 import path from 'node:path';
 import { Upload } from '@aws-sdk/lib-storage';
@@ -7,6 +6,7 @@ import { Promise as BluePromise } from 'bluebird';
 import { defaultProvider } from '@aws-sdk/credential-provider-node';
 import { getDefaultRoleAssumerWithWebIdentity } from '@aws-sdk/client-sts';
 import mime from 'mime-types';
+import { CopyObjectCommand } from '@aws-sdk/client-s3';
 import conf, { booleanConf, ENABLED_FILE_INDEX_MANAGER, logApp, logS3Debug } from '../config/conf';
 import { now, sinceNowInMinutes, truncate, utcDate } from '../utils/format';
 import { DatabaseError, FunctionalError, UnsupportedError } from '../config/errors';

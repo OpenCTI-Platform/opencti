@@ -23,7 +23,7 @@ import type { BasicStoreEntityMalwareAnalysis } from '../modules/malwareAnalysis
 import type { BasicStoreEntityManagerConfiguration } from '../modules/managerConfiguration/managerConfiguration-types';
 import type { BasicStoreEntityNotifier } from '../modules/notifier/notifier-types';
 import type { BasicStoreEntityThreatActorIndividual } from '../modules/threatActorIndividual/threatActorIndividual-types';
-import type { BasicStoreEntityIngestionCsv, BasicStoreEntityIngestionRss, BasicStoreEntityIngestionTaxii } from '../modules/ingestion/ingestion-types';
+import type { BasicStoreEntityIngestionRss, BasicStoreEntityIngestionTaxii, BasicStoreEntityIngestionCsv } from '../modules/ingestion/ingestion-types';
 import type { BasicStoreEntityIndicator } from '../modules/indicator/indicator-types';
 import type { BasicStoreEntityDecayRule } from '../modules/decayRule/decayRule-types';
 import type { BasicStoreEntityOrganization } from '../modules/organization/organization-types';
@@ -32,7 +32,6 @@ import type { BasicStoreEntityPlaybook } from '../modules/playbook/playbook-type
 import type { BasicStoreEntityPublicDashboard } from '../modules/publicDashboard/publicDashboard-types';
 import type { BasicStoreEntityDeleteOperation } from '../modules/deleteOperation/deleteOperation-types';
 import type { BasicStoreEntitySupportPackage } from '../modules/support/support-types';
-
 export type Maybe<T> = T | null | undefined;
 export type InputMaybe<T> = T | null;
 export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
@@ -5219,8 +5218,8 @@ export type CsvMapperEdge = {
 };
 
 export enum CsvMapperOperator {
-    Eq = 'eq',
-    NotEq = 'not_eq'
+  Eq = 'eq',
+  NotEq = 'not_eq'
 }
 
 export enum CsvMapperOrdering {
@@ -5272,13 +5271,13 @@ export type CsvMapperRepresentationTarget = {
 export type CsvMapperRepresentationTargetColumn = {
   __typename?: 'CsvMapperRepresentationTargetColumn';
   column_reference?: Maybe<Scalars['String']['output']>;
-    operator?: Maybe<CsvMapperOperator>;
+  operator?: Maybe<CsvMapperOperator>;
   value?: Maybe<Scalars['String']['output']>;
 };
 
 export type CsvMapperRepresentationTargetColumnInput = {
   column_reference?: InputMaybe<Scalars['String']['input']>;
-    operator?: InputMaybe<CsvMapperOperator>;
+  operator?: InputMaybe<CsvMapperOperator>;
   value?: InputMaybe<Scalars['String']['input']>;
 };
 
@@ -30388,7 +30387,7 @@ export type ResolversTypes = ResolversObject<{
   CsvMapperAddInput: CsvMapperAddInput;
   CsvMapperConnection: ResolverTypeWrapper<Omit<CsvMapperConnection, 'edges'> & { edges: Array<ResolversTypes['CsvMapperEdge']> }>;
   CsvMapperEdge: ResolverTypeWrapper<Omit<CsvMapperEdge, 'node'> & { node: ResolversTypes['CsvMapper'] }>;
-    CsvMapperOperator: CsvMapperOperator;
+  CsvMapperOperator: CsvMapperOperator;
   CsvMapperOrdering: CsvMapperOrdering;
   CsvMapperRepresentation: ResolverTypeWrapper<CsvMapperRepresentation>;
   CsvMapperRepresentationAttribute: ResolverTypeWrapper<CsvMapperRepresentationAttribute>;
@@ -33454,7 +33453,7 @@ export type CsvMapperRepresentationTargetResolvers<ContextType = any, ParentType
 
 export type CsvMapperRepresentationTargetColumnResolvers<ContextType = any, ParentType extends ResolversParentTypes['CsvMapperRepresentationTargetColumn'] = ResolversParentTypes['CsvMapperRepresentationTargetColumn']> = ResolversObject<{
   column_reference?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-    operator?: Resolver<Maybe<ResolversTypes['CsvMapperOperator']>, ParentType, ContextType>;
+  operator?: Resolver<Maybe<ResolversTypes['CsvMapperOperator']>, ParentType, ContextType>;
   value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;

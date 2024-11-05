@@ -11,6 +11,7 @@ import { isStixDomainObjectContainer } from '../schema/stixDomainObject';
 import { objects } from '../schema/stixRefRelationship';
 import { isEmptyField } from '../database/utils';
 import { logApp } from '../config/conf';
+import { UnknownError } from '../config/errors';
 import { STIX_EXT_OCTI } from '../types/stix-extensions';
 
 const inlineEntityTypes = [ENTITY_TYPE_EXTERNAL_REFERENCE];
@@ -56,8 +57,7 @@ export const bundleProcess = async (
           // Add to bundle
           bundleBuilder.addObjects(stixObjects);
         } catch (e) {
-          logApp.info('Record that generated following error', { record });
-          logApp.error(e);
+          logApp.error(UnknownError('Error CSV mapping record', { cause: e }));
         }
       }
     })));
