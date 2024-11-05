@@ -64,7 +64,7 @@ import {
 } from '../utils/access';
 import { ASSIGNEE_FILTER, CREATOR_FILTER, PARTICIPANT_FILTER } from '../utils/filtering/filtering-constants';
 import { now, utcDate } from '../utils/format';
-import { addGroup, PROTECT_SENSITIVE_CHANGES_FF } from './grant';
+import { addGroup } from './grant';
 import { defaultMarkingDefinitionsFromGroups, findAll as findGroups } from './group';
 import { addIndividual } from './individual';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
@@ -1376,10 +1376,7 @@ export const buildCompleteUser = async (context, client) => {
   const no_creators = groups.filter((g) => g.no_creators).length === groups.length;
   const restrict_delete = !isByPass && groups.filter((g) => g.restrict_delete).length === groups.length;
 
-  let canManageSensitiveConfig = null;
-  if (isFeatureEnabled(PROTECT_SENSITIVE_CHANGES_FF)) {
-    canManageSensitiveConfig = { can_manage_sensitive_config: isSensitiveChangesAllowed(client.id, roles) };
-  }
+  const canManageSensitiveConfig = { can_manage_sensitive_config: isSensitiveChangesAllowed(client.id, roles) };
 
   return {
     ...client,
