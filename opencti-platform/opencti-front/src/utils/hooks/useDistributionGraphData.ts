@@ -2,6 +2,7 @@ import { useTheme } from '@mui/material/styles';
 import { useFormatter } from '../../components/i18n';
 import { getMainRepresentative, isFieldForIdentifier } from '../defaultRepresentatives';
 import { itemColor } from '../Colors';
+import type { Widget } from '../widget/widget';
 
 // common type compatible with all distribution queries
 type DistributionNode = {
@@ -24,17 +25,14 @@ type DistributionNode = {
 
 export type DistributionQueryData = ReadonlyArray<DistributionNode | null | undefined>;
 
-type Selection = {
-  attribute?: string,
-  label?: string,
-};
+type Selection = Widget['dataSelection'][0];
 
 const useDistributionGraphData = () => {
   const { t_i18n } = useFormatter();
   const theme = useTheme();
 
   const getColorFromDistributionNode = (n: DistributionNode, selection: Selection) => {
-    let color = isFieldForIdentifier(selection.attribute)
+    let color = isFieldForIdentifier(selection.attribute ?? undefined)
       ? itemColor(n.entity?.entity_type)
       : itemColor(n.label);
     if (n.entity?.color) {
@@ -62,7 +60,7 @@ const useDistributionGraphData = () => {
     return distributionData.map((n) => {
       if (!n) return { x: 'Unknown', y: 'Unknown' };
       let { label } = n;
-      if (isFieldForIdentifier(selection.attribute)) {
+      if (isFieldForIdentifier(selection.attribute ?? undefined)) {
         label = getMainRepresentative(n.entity) || n.label;
       } else if (selection.attribute === 'entity_type' && t_i18n(`entity_${n.label}`) !== `entity_${n.label}`) {
         label = t_i18n(`entity_${n.label}`);

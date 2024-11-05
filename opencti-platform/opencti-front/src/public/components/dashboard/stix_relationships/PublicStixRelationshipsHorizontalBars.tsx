@@ -96,7 +96,7 @@ const PublicStixRelationshipsHorizontalBarsComponent = ({
     return (
       <WidgetHorizontalBars
         series={series}
-        distributed={parameters.distributed}
+        distributed={!!parameters?.distributed}
         withExport={false}
         readonly={true}
         redirectionUtils={redirectionUtils}
@@ -127,7 +127,7 @@ const PublicStixRelationshipsHorizontalBars = ({
 
   return (
     <WidgetContainer
-      title={parameters.title ?? title ?? t_i18n('Distribution of entities')}
+      title={parameters?.title ?? title ?? t_i18n('Distribution of entities')}
       variant="inLine"
     >
       {queryRef ? (
