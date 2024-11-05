@@ -434,7 +434,7 @@ class StixCoreObjectContentComponent extends Component {
         const markings = file?.node.objectMarking.map((m) => m.representative.main) ?? [];
         htmlToPdfReport(stixCoreObject, currentContent, name, markings).download(`${name}.pdf`);
       } else {
-        const fragment = (currentFileId ?? stixCoreObject.name).split('/');
+        const fragment = stixCoreObject.name.split('/');
         const currentName = R.last(fragment);
         htmlToPdf(currentFileId, currentContent).download(`${currentName}.pdf`);
       }

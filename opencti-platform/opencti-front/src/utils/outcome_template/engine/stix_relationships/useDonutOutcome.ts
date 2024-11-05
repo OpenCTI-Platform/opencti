@@ -16,7 +16,6 @@ const useDonutOutcome = () => {
   const buildDonutOutcome = async (
     dataSelection: Pick<Widget['dataSelection'][0], 'date_attribute' | 'filters' | 'number' | 'columns' | 'attribute' | 'isTo' | 'dynamicTo' | 'dynamicFrom'>,
   ) => {
-    console.log('dataSelection', dataSelection);
     const finalField = dataSelection.attribute || 'entity_type';
     const variables = {
       field: finalField,

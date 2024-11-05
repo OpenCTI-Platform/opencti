@@ -93,7 +93,7 @@ const StixCoreObjectContentFilesList = ({
       const currentName = (id.split('/').pop() ?? '').split('.')[0];
 
       if (id.startsWith('fromTemplate')) {
-        const markings = file?.objectMarking?.map((m) => m.representative.main) ?? [];
+        const markings = file.objectMarking?.map((m) => m.representative.main) ?? [];
         htmlToPdfReport(stixCoreObjectName, data, currentName, markings).download(`${currentName}.pdf`);
       } else {
         htmlToPdf(id, data).download(`${currentName}.pdf`);

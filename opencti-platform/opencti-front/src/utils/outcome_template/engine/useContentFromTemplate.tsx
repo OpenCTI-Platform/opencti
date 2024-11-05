@@ -60,10 +60,13 @@ const useContentFromTemplate = () => {
               },
             );
           } else if (widget.type === 'donut') {
+            const { dynamicFrom, dynamicTo } = widget.dataSelection[0];
             // eslint-disable-next-line no-await-in-loop
             outcome = await buildDonutOutcome({
               ...widget.dataSelection[0],
               filters,
+              dynamicFrom: dynamicFrom ? JSON.parse(dynamicFrom) : undefined,
+              dynamicTo: dynamicTo ? JSON.parse(dynamicTo) : undefined,
             });
           }
         } catch (error) {

@@ -2,10 +2,10 @@ import * as R from 'ramda';
 import React from 'react';
 import { Base64 } from 'js-base64';
 import Tooltip from '@mui/material/Tooltip';
+import { renderToString } from 'react-dom/server';
 import { APP_BASE_PATH } from '../relay/environment';
 import { isNotEmptyField } from './utils';
-import { dateFormat, isDate } from "./Time";
-import { renderToString } from "react-dom/server";
+import { dateFormat, isDate } from './Time';
 
 export const truncate = (str, limit, truncateSpaces = true) => {
   if (str === undefined || str === null || str.length <= limit) {
@@ -138,7 +138,6 @@ export const splitMultilines = (str) => (str ?? '')
   .filter((v) => !!v)
   .map((s) => s.trim());
 
-
 const format = (val) => {
   let value = typeof val === 'string' ? val : JSON.stringify(val);
   if (isDate(value)) value = dateFormat(new Date(value)) ?? '';
@@ -157,4 +156,4 @@ export const buildReadableAttribute = (result, displayInfo = {}) => {
     attributeData = format(result);
   }
   return attributeData;
-}
+};

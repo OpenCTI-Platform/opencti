@@ -41,7 +41,7 @@ describe('Hook: useBuildListOutcome', () => {
       });
     });
 
-    const listOutcome = await buildListOutcome([], {});
+    const listOutcome = await buildListOutcome({});
 
     expect(listOutcome).toContain('<tr><td>Malware</td><td>Vador</td><td>2024-05-21</td></tr>');
     expect(listOutcome).toContain('<tr><td>Malware</td><td>Joker</td><td>2024-05-25</td></tr>');
