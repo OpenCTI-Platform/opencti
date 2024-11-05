@@ -25,7 +25,6 @@ CsvMapperConditionalEntityMappingProps
     { label: t_i18n('Equal'), value: ('eq') },
     { label: t_i18n('Not equal'), value: 'not_eq' }];
   const { setFieldValue } = form;
-  const textFieldName = representation.column_based?.enabled && (`${representationName}.column_based.value`);
 
   const handleColumnSelect = async (column: string | null) => {
     await setFieldValue(`${representationName}.column_based.column_reference`, column);
@@ -35,10 +34,6 @@ CsvMapperConditionalEntityMappingProps
     await setFieldValue(`${representationName}.column_based.operator`, operator?.value);
   };
 
-  const handleToggleSelect = async (isDynamic: boolean) => {
-    await setFieldValue(`${representationName}.column_based.enabled`, isDynamic);
-  };
-
   return (
     <div style={{ display: 'flex', alignItems: 'center' }}>
       <Field
@@ -46,7 +41,6 @@ CsvMapperConditionalEntityMappingProps
         type="checkbox"
         name={`${representationName}.column_based.enabled`}
         label={t_i18n('Entity dynamic mapping')}
-        onChange={(e: React.ChangeEvent<{ checked: boolean }>) => handleToggleSelect(e.target.checked)}
       />
       <Tooltip
         title={t_i18n(
@@ -141,7 +135,7 @@ CsvMapperConditionalEntityMappingProps
           <Field
             component={TextField}
             label={t_i18n('Value')}
-            name={textFieldName}
+            name={`${representationName}.column_based.value`}
             variant='standard'
             disabled={!representation.column_based?.enabled}
             error={!representation.column_based?.value && representation.column_based?.enabled}
