@@ -263,7 +263,7 @@ const widgetAttackPatterns: Widget = {
         filterGroups: [],
       }),
       columns: [
-        { label: 'Techinque ID', attribute: 'x_mitre_id' },
+        { label: 'Technique ID', attribute: 'x_mitre_id' },
         { label: 'Technique', attribute: 'representative.main' },
         { label: 'Description', attribute: 'description' },
       ],
