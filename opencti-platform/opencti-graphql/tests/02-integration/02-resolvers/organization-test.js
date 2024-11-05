@@ -1,6 +1,7 @@
 import { expect, it, describe } from 'vitest';
 import gql from 'graphql-tag';
-import { ADMIN_USER, testContext, queryAsAdmin } from '../../utils/testQuery';
+import { ADMIN_USER, testContext, queryAsAdmin, USER_EDITOR, TEST_ORGANIZATION, USER_SECURITY } from '../../utils/testQuery';
+import { queryAsUserIsExpectedError } from '../../utils/testQueryHelper';
 import { elLoadById } from '../../../src/database/engine';
 
 const LIST_QUERY = gql`
@@ -57,6 +58,12 @@ const READ_QUERY = gql`
       }
       toStix
     }
+  }
+`;
+
+const DELETE_QUERY = gql`
+  mutation organizationDelete($id: ID!) {
+    organizationDelete(id: $id)
   }
 `;
 
@@ -226,11 +233,6 @@ describe('Organization resolver standard behavior', () => {
     expect(queryResult.data.organizationRelationDelete.objectMarking.length).toEqual(0);
   });
   it('should organization deleted', async () => {
-    const DELETE_QUERY = gql`
-      mutation organizationDelete($id: ID!) {
-        organizationDelete(id: $id)
-      }
-    `;
     // Delete the organization
     await queryAsAdmin({
       query: DELETE_QUERY,
@@ -240,5 +242,16 @@ describe('Organization resolver standard behavior', () => {
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: organizationStixId } });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.organization).toBeNull();
+  });
+  it('should not delete organization if it has members', async () => {
+    await queryAsUserIsExpectedError(USER_EDITOR.client, {
+      query: DELETE_QUERY,
+      variables: { id: TEST_ORGANIZATION.id },
+    }, 'Cannot delete the organization.', 'FUNCTIONAL_ERROR');
+
+    await queryAsUserIsExpectedError(USER_SECURITY.client, {
+      query: DELETE_QUERY,
+      variables: { id: TEST_ORGANIZATION.id },
+    }, 'Cannot delete the organization that has members.', 'FUNCTIONAL_ERROR');
   });
 });
