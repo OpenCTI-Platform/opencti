@@ -780,11 +780,11 @@ class DataTableToolBar extends Component {
     const options = [
       { label: t('Marking definitions'), value: 'object-marking' },
       { label: t('Labels'), value: 'object-label' },
+      checkTypes(typesWithAssignee) && { label: t('Assignees'), value: 'object-assignee' },
+      checkTypes(typesWithParticipant) && { label: t('Participant'), value: 'object-participant' },
       actionsInputs[i]?.type === 'ADD' && { label: t('In containers'), value: 'container-object' },
       ((actionsInputs[i]?.type === 'ADD' && isAdmin) || (actionsInputs[i]?.type === 'REPLACE' && isAdmin)) && { label: t('Creator'), value: 'creator_id' },
       (actionsInputs[i]?.type === 'ADD' || actionsInputs[i]?.type === 'REMOVE') && { label: t('External references'), value: 'external-reference' },
-      ((actionsInputs[i]?.type === 'REPLACE' || actionsInputs[i]?.type === 'REMOVE') && checkTypes(typesWithAssignee)) && { label: t('Assignees'), value: 'object-assignee' },
-      ((actionsInputs[i]?.type === 'REPLACE' || actionsInputs[i]?.type === 'REMOVE') && checkTypes(typesWithParticipant)) && { label: t('Participant'), value: 'object-participant' },
       ...(actionsInputs[i]?.type === 'REPLACE' ? [
         { label: t('Author'), value: 'created-by' },
         { label: t('Confidence'), value: 'confidence' },
