@@ -10,8 +10,8 @@ const containerColumns = [
   { label: 'Modification date', attribute: 'modified', variableName: 'containerModificationDate' },
   { label: 'Name', attribute: 'name', variableName: 'containerName' },
   { label: 'Author', attribute: 'createdBy.name', variableName: 'containerAuthor' },
-  { label: 'Reliability', attribute: 'reliability', variableName: 'containerReliability' },
   { label: 'Confidence level', attribute: 'confidence', variableName: 'containerConfidenceLevel' },
+  { label: 'Reliability (of author)', attribute: 'createdBy.x_opencti_reliability', variableName: 'containerReliabilityOfAuthor' },
   { label: 'External references', attribute: 'externalReferences.edges.node.url', displayStyle: 'list', variableName: 'containerReferences' },
 ];
 
@@ -23,6 +23,7 @@ const widgetReportMultiAttributes: Widget = {
     columns: [
       ...containerColumns,
       { label: 'Publication date', attribute: 'published', variableName: 'reportPublicationDate' },
+      { label: 'Reliability (self)', attribute: 'x_opencti_reliability', variableName: 'reportReliability' },
       { label: 'Report types', attribute: 'report_types', variableName: 'types' },
     ],
     instance_id: 'SELF_ID',

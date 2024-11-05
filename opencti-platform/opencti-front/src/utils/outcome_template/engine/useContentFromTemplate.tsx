@@ -42,7 +42,7 @@ const useContentFromTemplate = () => {
           widget.dataSelection[0],
         );
         for (const outcome of attributesOutcomes) {
-          content = content.replace(`$${outcome.variableName}`, outcome.attributeData);
+          content = content.replaceAll(`$${outcome.variableName}`, outcome.attributeData);
         }
       // other widgets
       } else {

@@ -5,6 +5,12 @@ const executiveSummaryContent = (containerType: string) => {
     typeLabel = 'Context';
     typeWidget = '$context';
   }
+  const reliabilityForReport = containerType === 'Report'
+    ? `<tr>
+      <td><strong>Self reliability</strong></td>
+  <td>$reportReliability</td>
+  </tr>`
+    : '';
   return `
     <div>
       <h2>Executive report</h2>
@@ -24,9 +30,10 @@ const executiveSummaryContent = (containerType: string) => {
             <td><strong>${typeLabel}</strong></td>
             <td>${typeWidget}</td>
           </tr>
+          ${reliabilityForReport}
           <tr>
-            <td><strong>Reliability</strong></td>
-            <td>$containerReliability</td>
+            <td><strong>Author reliability</strong></td>
+            <td>$containerReliabilityOfAuthor</td>
           </tr>
           <tr>
             <td><strong>Confidence level</strong></td>
