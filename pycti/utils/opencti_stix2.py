@@ -2429,7 +2429,6 @@ class OpenCTIStix2:
                                     item, observed_data_ref, to_id, update
                                 )
                 # endregion
-
             elif item["type"] == "label":
                 stix_ids = self.opencti.get_attribute_in_extension("stix_ids", item)
                 self.opencti.label.create(
