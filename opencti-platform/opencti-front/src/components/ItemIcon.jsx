@@ -66,6 +66,7 @@ import {
   ViewStreamTwoTone,
   BackupTableOutlined,
   PlayCircleOutlined,
+  ArchitectureOutlined,
 } from '@mui/icons-material';
 import {
   ArchiveOutline,

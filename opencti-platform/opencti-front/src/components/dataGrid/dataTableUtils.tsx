@@ -23,6 +23,7 @@ import ItemOpenVocab from '../ItemOpenVocab';
 import ItemBoolean from '../ItemBoolean';
 import ItemSeverity from '../ItemSeverity';
 import { APP_BASE_PATH } from '../../relay/environment';
+import ItemOperations from '../ItemOperations';
 
 const MAGICAL_SIZE = 0.113;
 
@@ -962,6 +963,17 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     percentWidth: 10,
     isSortable: true,
     render: ({ valid_until }, { nsdt }) => <Tooltip title={nsdt(valid_until)}>{nsdt(valid_until)}</Tooltip>,
+  },
+  draftVersion: {
+    id: 'draftVersion',
+    label: 'Operations',
+    percentWidth: 10,
+    isSortable: false,
+    render: ({ draftVersion }) => (
+      <ItemOperations
+        draftOperation={draftVersion.draft_operation}
+      />
+    ),
   },
   opinions_metrics_mean: {
     id: 'opinions_metrics_mean',

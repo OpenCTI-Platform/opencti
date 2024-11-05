@@ -26,6 +26,9 @@ const draftEntitiesLineFragment = graphql`
         representative {
           main
         }
+        draftVersion {
+          draft_operation
+        }
         objectMarking {
             id
             definition
@@ -151,6 +154,10 @@ const DraftEntities = () => {
 
   const isRuntimeSort = isRuntimeFieldEnable() ?? false;
   const dataColumns: DataTableProps['dataColumns'] = {
+    draftVersion: {
+      isSortable: false,
+      percentWidth: 10,
+    },
     entity_type: {
       percentWidth: 12,
       isSortable: true,
