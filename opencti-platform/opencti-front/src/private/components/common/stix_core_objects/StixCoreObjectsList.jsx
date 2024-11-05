@@ -70,10 +70,12 @@ export const stixCoreObjectsListQuery = graphql`
           ... on Individual {
             name
             description
+            x_opencti_aliases
           }
           ... on Organization {
             name
             description
+            x_opencti_aliases
           }
           ... on Sector {
             name
@@ -82,6 +84,7 @@ export const stixCoreObjectsListQuery = graphql`
           ... on System {
             name
             description
+            x_opencti_aliases
           }
           ... on Indicator {
             name
@@ -97,6 +100,7 @@ export const stixCoreObjectsListQuery = graphql`
           ... on IntrusionSet {
             name
             description
+            aliases
           }
           ... on Position {
             name
@@ -128,6 +132,7 @@ export const stixCoreObjectsListQuery = graphql`
           ... on ThreatActor {
             name
             description
+            aliases
           }
           ... on Tool {
             name

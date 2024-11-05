@@ -292,7 +292,7 @@ const widgetThreats: Widget = {
       columns: [
         { label: 'Type', attribute: 'entity_type' },
         { label: 'Name', attribute: 'name' },
-        { label: 'Alias', attribute: 'alias' },
+        { label: 'Alias', attribute: 'aliases' },
       ],
     },
   ],
@@ -319,7 +319,7 @@ const widgetVictims: Widget = {
       columns: [
         { label: 'Type', attribute: 'entity_type' },
         { label: 'Name', attribute: 'name' },
-        { label: 'Alias', attribute: 'alias' },
+        { label: 'Alias', attribute: 'x_opencti_aliases' },
       ],
     },
   ],
