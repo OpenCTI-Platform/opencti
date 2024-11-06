@@ -467,7 +467,7 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
       </Grid>
       <GroupEdition
         groupId={group.id}
-        disabled={!isAllowed}
+        disabled={!isAllowed && isSensitive}
       />
     </div>
   );
