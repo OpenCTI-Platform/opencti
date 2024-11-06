@@ -8136,6 +8136,8 @@ type Query {
   deleteOperations(first: Int, after: ID, orderBy: DeleteOperationOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): DeleteOperationConnection
   supportPackage(id: String!): SupportPackage
   supportPackages(first: Int, after: ID, orderBy: SupportPackageOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): SupportPackageConnection
+  exclusionList(id: String!): ExclusionList
+  exclusionLists(first: Int, after: ID, orderBy: ExclusionListOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): ExclusionListConnection
   draftWorkspace(id: String!): DraftWorkspace
   draftWorkspaces(first: Int, after: ID, orderBy: DraftWorkspacesOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): DraftWorkspaceConnection
   draftWorkspaceEntities(draftId: String!, types: [String], first: Int, after: ID, orderBy: StixCoreObjectsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): StixCoreObjectConnection
@@ -8952,6 +8954,9 @@ type Mutation {
   supportPackageAdd(input: SupportPackageAddInput!): SupportPackage
   supportPackageForceZip(input: SupportPackageForceZipInput!): SupportPackage
   supportPackageDelete(id: ID!): ID
+  exclusionListContentAdd(input: ExclusionListContentAddInput!): ExclusionList
+  exclusionListFileAdd(input: ExclusionListFileAddInput!): ExclusionList
+  exclusionListDelete(id: ID!): ID
   draftWorkspaceAdd(input: DraftWorkspaceAddInput!): DraftWorkspace
   draftWorkspaceValidate(id: ID!): Work
   draftWorkspaceDelete(id: ID!): ID
@@ -12295,6 +12300,54 @@ input SupportPackageAddInput {
 
 input SupportPackageForceZipInput {
   id: String!
+}
+
+type ExclusionList implements InternalObject & BasicObject {
+  id: ID!
+  name: String!
+  description: String
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String]!
+  created_at: DateTime!
+  enabled: Boolean!
+  list_entity_types: [ExclusionListEntityTypes!]!
+  file_id: String!
+}
+
+type ExclusionListConnection {
+  pageInfo: PageInfo!
+  edges: [ExclusionListEdge!]
+}
+
+type ExclusionListEdge {
+  node: ExclusionList!
+}
+
+enum ExclusionListOrdering {
+  name
+  created_at
+}
+
+enum ExclusionListEntityTypes {
+  IPV4_ADDR
+  IPV6_ADDR
+  DOMAIN_NAME
+  URL
+}
+
+input ExclusionListContentAddInput {
+  name: String!
+  description: String
+  list_entity_types: [ExclusionListEntityTypes!]!
+  content: String!
+}
+
+input ExclusionListFileAddInput {
+  name: String!
+  description: String
+  list_entity_types: [ExclusionListEntityTypes!]!
+  file: Upload!
 }
 
 type DraftWorkspace implements InternalObject & BasicObject {

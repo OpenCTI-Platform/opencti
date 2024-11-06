@@ -32,6 +32,7 @@ import type { BasicStoreEntityPlaybook } from '../modules/playbook/playbook-type
 import type { BasicStoreEntityPublicDashboard } from '../modules/publicDashboard/publicDashboard-types';
 import type { BasicStoreEntityDeleteOperation } from '../modules/deleteOperation/deleteOperation-types';
 import type { BasicStoreEntitySupportPackage } from '../modules/support/support-types';
+import type { BasicStoreEntityExclusionList } from '../modules/exclusionList/exclusionList-types';
 import type { BasicStoreEntityDraftWorkspace } from '../modules/draftWorkspace/draftWorkspace-types';
 export type Maybe<T> = T | null | undefined;
 export type InputMaybe<T> = T | null;
@@ -7487,6 +7488,57 @@ export enum EventsOrdering {
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
+export type ExclusionList = BasicObject & InternalObject & {
+  __typename?: 'ExclusionList';
+  created_at: Scalars['DateTime']['output'];
+  description?: Maybe<Scalars['String']['output']>;
+  enabled: Scalars['Boolean']['output'];
+  entity_type: Scalars['String']['output'];
+  file_id: Scalars['String']['output'];
+  id: Scalars['ID']['output'];
+  list_entity_types: Array<ExclusionListEntityTypes>;
+  name: Scalars['String']['output'];
+  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  standard_id: Scalars['String']['output'];
+};
+
+export type ExclusionListConnection = {
+  __typename?: 'ExclusionListConnection';
+  edges?: Maybe<Array<ExclusionListEdge>>;
+  pageInfo: PageInfo;
+};
+
+export type ExclusionListContentAddInput = {
+  content: Scalars['String']['input'];
+  description?: InputMaybe<Scalars['String']['input']>;
+  list_entity_types: Array<ExclusionListEntityTypes>;
+  name: Scalars['String']['input'];
+};
+
+export type ExclusionListEdge = {
+  __typename?: 'ExclusionListEdge';
+  node: ExclusionList;
+};
+
+export enum ExclusionListEntityTypes {
+  DomainName = 'DOMAIN_NAME',
+  Ipv4Addr = 'IPV4_ADDR',
+  Ipv6Addr = 'IPV6_ADDR',
+  Url = 'URL'
+}
+
+export type ExclusionListFileAddInput = {
+  description?: InputMaybe<Scalars['String']['input']>;
+  file: Scalars['Upload']['input'];
+  list_entity_types: Array<ExclusionListEntityTypes>;
+  name: Scalars['String']['input'];
+};
+
+export enum ExclusionListOrdering {
+  CreatedAt = 'created_at',
+  Name = 'name'
+}
+
 export type ExportAskInput = {
   contentMaxMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   exportType: Scalars['String']['input'];
@@ -13472,6 +13524,9 @@ export type Mutation = {
   eventFieldPatch?: Maybe<Event>;
   eventRelationAdd?: Maybe<StixRefRelationship>;
   eventRelationDelete?: Maybe<Event>;
+  exclusionListContentAdd?: Maybe<ExclusionList>;
+  exclusionListDelete?: Maybe<Scalars['ID']['output']>;
+  exclusionListFileAdd?: Maybe<ExclusionList>;
   externalReferenceAdd?: Maybe<ExternalReference>;
   externalReferenceEdit?: Maybe<ExternalReferenceEditMutations>;
   feedAdd?: Maybe<Feed>;
@@ -14275,6 +14330,21 @@ export type MutationEventRelationDeleteArgs = {
   id: Scalars['ID']['input'];
   relationship_type: Scalars['String']['input'];
   toId: Scalars['StixRef']['input'];
+};
+
+
+export type MutationExclusionListContentAddArgs = {
+  input: ExclusionListContentAddInput;
+};
+
+
+export type MutationExclusionListDeleteArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type MutationExclusionListFileAddArgs = {
+  input: ExclusionListFileAddInput;
 };
 
 
@@ -19249,6 +19319,8 @@ export type Query = {
   entitySettings?: Maybe<EntitySettingConnection>;
   event?: Maybe<Event>;
   events?: Maybe<EventConnection>;
+  exclusionList?: Maybe<ExclusionList>;
+  exclusionLists?: Maybe<ExclusionListConnection>;
   externalReference?: Maybe<ExternalReference>;
   externalReferences?: Maybe<ExternalReferenceConnection>;
   feed?: Maybe<Feed>;
@@ -20001,6 +20073,21 @@ export type QueryEventsArgs = {
   filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<EventsOrdering>;
+  orderMode?: InputMaybe<OrderingMode>;
+  search?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type QueryExclusionListArgs = {
+  id: Scalars['String']['input'];
+};
+
+
+export type QueryExclusionListsArgs = {
+  after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<ExclusionListOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']['input']>;
 };
@@ -30859,6 +30946,13 @@ export type ResolversTypes = ResolversObject<{
   EventConnection: ResolverTypeWrapper<Omit<EventConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['EventEdge']>>> }>;
   EventEdge: ResolverTypeWrapper<Omit<EventEdge, 'node'> & { node: ResolversTypes['Event'] }>;
   EventsOrdering: EventsOrdering;
+  ExclusionList: ResolverTypeWrapper<BasicStoreEntityExclusionList>;
+  ExclusionListConnection: ResolverTypeWrapper<Omit<ExclusionListConnection, 'edges'> & { edges?: Maybe<Array<ResolversTypes['ExclusionListEdge']>> }>;
+  ExclusionListContentAddInput: ExclusionListContentAddInput;
+  ExclusionListEdge: ResolverTypeWrapper<Omit<ExclusionListEdge, 'node'> & { node: ResolversTypes['ExclusionList'] }>;
+  ExclusionListEntityTypes: ExclusionListEntityTypes;
+  ExclusionListFileAddInput: ExclusionListFileAddInput;
+  ExclusionListOrdering: ExclusionListOrdering;
   ExportAskInput: ExportAskInput;
   ExportContext: ExportContext;
   ExternalReference: ResolverTypeWrapper<Omit<ExternalReference, 'connectors' | 'exportFiles' | 'importFiles' | 'jobs' | 'pendingFiles' | 'references' | 'x_opencti_inferences'> & { connectors?: Maybe<Array<Maybe<ResolversTypes['Connector']>>>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, importFiles: ResolversTypes['FileConnection'], jobs?: Maybe<Array<Maybe<ResolversTypes['Work']>>>, pendingFiles: ResolversTypes['FileConnection'], references?: Maybe<ResolversTypes['StixObjectOrStixRelationshipConnection']>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversTypes['Inference']>>> }>;
@@ -31671,6 +31765,11 @@ export type ResolversParentTypes = ResolversObject<{
   EventAddInput: EventAddInput;
   EventConnection: Omit<EventConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['EventEdge']>>> };
   EventEdge: Omit<EventEdge, 'node'> & { node: ResolversParentTypes['Event'] };
+  ExclusionList: BasicStoreEntityExclusionList;
+  ExclusionListConnection: Omit<ExclusionListConnection, 'edges'> & { edges?: Maybe<Array<ResolversParentTypes['ExclusionListEdge']>> };
+  ExclusionListContentAddInput: ExclusionListContentAddInput;
+  ExclusionListEdge: Omit<ExclusionListEdge, 'node'> & { node: ResolversParentTypes['ExclusionList'] };
+  ExclusionListFileAddInput: ExclusionListFileAddInput;
   ExportAskInput: ExportAskInput;
   ExportContext: ExportContext;
   ExternalReference: Omit<ExternalReference, 'connectors' | 'exportFiles' | 'importFiles' | 'jobs' | 'pendingFiles' | 'references' | 'x_opencti_inferences'> & { connectors?: Maybe<Array<Maybe<ResolversParentTypes['Connector']>>>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, importFiles: ResolversParentTypes['FileConnection'], jobs?: Maybe<Array<Maybe<ResolversParentTypes['Work']>>>, pendingFiles: ResolversParentTypes['FileConnection'], references?: Maybe<ResolversParentTypes['StixObjectOrStixRelationshipConnection']>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversParentTypes['Inference']>>> };
@@ -32721,7 +32820,7 @@ export type BankAccountResolvers<ContextType = any, ParentType extends Resolvers
 }>;
 
 export type BasicObjectResolvers<ContextType = any, ParentType extends ResolversParentTypes['BasicObject'] = ResolversParentTypes['BasicObject']> = ResolversObject<{
-  __resolveType: TypeResolveFn<'AdministrativeArea' | 'Artifact' | 'AttackPattern' | 'AutonomousSystem' | 'BankAccount' | 'Campaign' | 'Capability' | 'CaseIncident' | 'CaseRfi' | 'CaseRft' | 'CaseTemplate' | 'Channel' | 'City' | 'Connector' | 'Country' | 'CourseOfAction' | 'Credential' | 'CryptocurrencyWallet' | 'CryptographicKey' | 'CsvMapper' | 'DataComponent' | 'DataSource' | 'DecayRule' | 'DeleteOperation' | 'Directory' | 'DomainName' | 'DraftWorkspace' | 'EmailAddr' | 'EmailMessage' | 'EmailMimePartType' | 'EntitySetting' | 'Event' | 'ExternalReference' | 'Feedback' | 'Group' | 'Grouping' | 'Hostname' | 'IPv4Addr' | 'IPv6Addr' | 'Incident' | 'Indicator' | 'Individual' | 'Infrastructure' | 'IngestionCsv' | 'IngestionRss' | 'IngestionTaxii' | 'IntrusionSet' | 'KillChainPhase' | 'Label' | 'Language' | 'MacAddr' | 'Malware' | 'MalwareAnalysis' | 'ManagerConfiguration' | 'MarkingDefinition' | 'MeUser' | 'MediaContent' | 'Mutex' | 'Narrative' | 'NetworkTraffic' | 'Note' | 'Notification' | 'Notifier' | 'ObservedData' | 'Opinion' | 'Organization' | 'PaymentCard' | 'Persona' | 'PhoneNumber' | 'Playbook' | 'Position' | 'Process' | 'PublicDashboard' | 'Region' | 'Report' | 'Role' | 'Sector' | 'Settings' | 'Software' | 'StixFile' | 'SupportPackage' | 'System' | 'Task' | 'TaskTemplate' | 'Text' | 'ThreatActorGroup' | 'ThreatActorIndividual' | 'Tool' | 'TrackingNumber' | 'Trigger' | 'Url' | 'User' | 'UserAccount' | 'UserAgent' | 'Vocabulary' | 'Vulnerability' | 'WindowsRegistryKey' | 'WindowsRegistryValueType' | 'Workspace' | 'X509Certificate', ParentType, ContextType>;
+  __resolveType: TypeResolveFn<'AdministrativeArea' | 'Artifact' | 'AttackPattern' | 'AutonomousSystem' | 'BankAccount' | 'Campaign' | 'Capability' | 'CaseIncident' | 'CaseRfi' | 'CaseRft' | 'CaseTemplate' | 'Channel' | 'City' | 'Connector' | 'Country' | 'CourseOfAction' | 'Credential' | 'CryptocurrencyWallet' | 'CryptographicKey' | 'CsvMapper' | 'DataComponent' | 'DataSource' | 'DecayRule' | 'DeleteOperation' | 'Directory' | 'DomainName' | 'DraftWorkspace' | 'EmailAddr' | 'EmailMessage' | 'EmailMimePartType' | 'EntitySetting' | 'Event' | 'ExclusionList' | 'ExternalReference' | 'Feedback' | 'Group' | 'Grouping' | 'Hostname' | 'IPv4Addr' | 'IPv6Addr' | 'Incident' | 'Indicator' | 'Individual' | 'Infrastructure' | 'IngestionCsv' | 'IngestionRss' | 'IngestionTaxii' | 'IntrusionSet' | 'KillChainPhase' | 'Label' | 'Language' | 'MacAddr' | 'Malware' | 'MalwareAnalysis' | 'ManagerConfiguration' | 'MarkingDefinition' | 'MeUser' | 'MediaContent' | 'Mutex' | 'Narrative' | 'NetworkTraffic' | 'Note' | 'Notification' | 'Notifier' | 'ObservedData' | 'Opinion' | 'Organization' | 'PaymentCard' | 'Persona' | 'PhoneNumber' | 'Playbook' | 'Position' | 'Process' | 'PublicDashboard' | 'Region' | 'Report' | 'Role' | 'Sector' | 'Settings' | 'Software' | 'StixFile' | 'SupportPackage' | 'System' | 'Task' | 'TaskTemplate' | 'Text' | 'ThreatActorGroup' | 'ThreatActorIndividual' | 'Tool' | 'TrackingNumber' | 'Trigger' | 'Url' | 'User' | 'UserAccount' | 'UserAgent' | 'Vocabulary' | 'Vulnerability' | 'WindowsRegistryKey' | 'WindowsRegistryValueType' | 'Workspace' | 'X509Certificate', ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
@@ -34657,6 +34756,31 @@ export type EventEdgeResolvers<ContextType = any, ParentType extends ResolversPa
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
+export type ExclusionListResolvers<ContextType = any, ParentType extends ResolversParentTypes['ExclusionList'] = ResolversParentTypes['ExclusionList']> = ResolversObject<{
+  created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  enabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  file_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  list_entity_types?: Resolver<Array<ResolversTypes['ExclusionListEntityTypes']>, ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type ExclusionListConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['ExclusionListConnection'] = ResolversParentTypes['ExclusionListConnection']> = ResolversObject<{
+  edges?: Resolver<Maybe<Array<ResolversTypes['ExclusionListEdge']>>, ParentType, ContextType>;
+  pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type ExclusionListEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['ExclusionListEdge'] = ResolversParentTypes['ExclusionListEdge']> = ResolversObject<{
+  node?: Resolver<ResolversTypes['ExclusionList'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
 export type ExternalReferenceResolvers<ContextType = any, ParentType extends ResolversParentTypes['ExternalReference'] = ResolversParentTypes['ExternalReference']> = ResolversObject<{
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<ExternalReferenceConnectorsArgs>>;
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -35809,7 +35933,7 @@ export type IngestionTaxiiEdgeResolvers<ContextType = any, ParentType extends Re
 }>;
 
 export type InternalObjectResolvers<ContextType = any, ParentType extends ResolversParentTypes['InternalObject'] = ResolversParentTypes['InternalObject']> = ResolversObject<{
-  __resolveType: TypeResolveFn<'Capability' | 'CaseTemplate' | 'Connector' | 'CsvMapper' | 'DecayRule' | 'DeleteOperation' | 'DraftWorkspace' | 'EntitySetting' | 'Group' | 'IngestionCsv' | 'IngestionRss' | 'IngestionTaxii' | 'ManagerConfiguration' | 'MeUser' | 'Notification' | 'Notifier' | 'Playbook' | 'PublicDashboard' | 'Role' | 'Settings' | 'SupportPackage' | 'TaskTemplate' | 'Trigger' | 'User' | 'Workspace', ParentType, ContextType>;
+  __resolveType: TypeResolveFn<'Capability' | 'CaseTemplate' | 'Connector' | 'CsvMapper' | 'DecayRule' | 'DeleteOperation' | 'DraftWorkspace' | 'EntitySetting' | 'ExclusionList' | 'Group' | 'IngestionCsv' | 'IngestionRss' | 'IngestionTaxii' | 'ManagerConfiguration' | 'MeUser' | 'Notification' | 'Notifier' | 'Playbook' | 'PublicDashboard' | 'Role' | 'Settings' | 'SupportPackage' | 'TaskTemplate' | 'Trigger' | 'User' | 'Workspace', ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
 }>;
@@ -36785,6 +36909,9 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   eventFieldPatch?: Resolver<Maybe<ResolversTypes['Event']>, ParentType, ContextType, RequireFields<MutationEventFieldPatchArgs, 'id' | 'input'>>;
   eventRelationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<MutationEventRelationAddArgs, 'id' | 'input'>>;
   eventRelationDelete?: Resolver<Maybe<ResolversTypes['Event']>, ParentType, ContextType, RequireFields<MutationEventRelationDeleteArgs, 'id' | 'relationship_type' | 'toId'>>;
+  exclusionListContentAdd?: Resolver<Maybe<ResolversTypes['ExclusionList']>, ParentType, ContextType, RequireFields<MutationExclusionListContentAddArgs, 'input'>>;
+  exclusionListDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationExclusionListDeleteArgs, 'id'>>;
+  exclusionListFileAdd?: Resolver<Maybe<ResolversTypes['ExclusionList']>, ParentType, ContextType, RequireFields<MutationExclusionListFileAddArgs, 'input'>>;
   externalReferenceAdd?: Resolver<Maybe<ResolversTypes['ExternalReference']>, ParentType, ContextType, RequireFields<MutationExternalReferenceAddArgs, 'input'>>;
   externalReferenceEdit?: Resolver<Maybe<ResolversTypes['ExternalReferenceEditMutations']>, ParentType, ContextType, RequireFields<MutationExternalReferenceEditArgs, 'id'>>;
   feedAdd?: Resolver<Maybe<ResolversTypes['Feed']>, ParentType, ContextType, RequireFields<MutationFeedAddArgs, 'input'>>;
@@ -38249,6 +38376,8 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   entitySettings?: Resolver<Maybe<ResolversTypes['EntitySettingConnection']>, ParentType, ContextType, Partial<QueryEntitySettingsArgs>>;
   event?: Resolver<Maybe<ResolversTypes['Event']>, ParentType, ContextType, RequireFields<QueryEventArgs, 'id'>>;
   events?: Resolver<Maybe<ResolversTypes['EventConnection']>, ParentType, ContextType, Partial<QueryEventsArgs>>;
+  exclusionList?: Resolver<Maybe<ResolversTypes['ExclusionList']>, ParentType, ContextType, RequireFields<QueryExclusionListArgs, 'id'>>;
+  exclusionLists?: Resolver<Maybe<ResolversTypes['ExclusionListConnection']>, ParentType, ContextType, Partial<QueryExclusionListsArgs>>;
   externalReference?: Resolver<Maybe<ResolversTypes['ExternalReference']>, ParentType, ContextType, RequireFields<QueryExternalReferenceArgs, 'id'>>;
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<QueryExternalReferencesArgs>>;
   feed?: Resolver<Maybe<ResolversTypes['Feed']>, ParentType, ContextType, RequireFields<QueryFeedArgs, 'id'>>;
@@ -41589,6 +41718,9 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   Event?: EventResolvers<ContextType>;
   EventConnection?: EventConnectionResolvers<ContextType>;
   EventEdge?: EventEdgeResolvers<ContextType>;
+  ExclusionList?: ExclusionListResolvers<ContextType>;
+  ExclusionListConnection?: ExclusionListConnectionResolvers<ContextType>;
+  ExclusionListEdge?: ExclusionListEdgeResolvers<ContextType>;
   ExternalReference?: ExternalReferenceResolvers<ContextType>;
   ExternalReferenceConnection?: ExternalReferenceConnectionResolvers<ContextType>;
   ExternalReferenceEdge?: ExternalReferenceEdgeResolvers<ContextType>;
