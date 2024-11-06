@@ -549,7 +549,7 @@ const RulesListComponent = ({ relay, data, keyword }) => {
                     <Paper
                       variant="outlined"
                       classes={{ root: classes.paper }}
-                      style={{ marginTop: 23 }}
+                      style={{ marginTop: 23, overflowX: 'auto' }}
                     >
                       <div className={classes.definition}>
                         <div className={classes.left}>
