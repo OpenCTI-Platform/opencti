@@ -53,8 +53,7 @@ const CaseIncidentDeletion = ({ id }: { id: string }) => {
         navigate('/dashboard/cases/incidents');
       },
       onError: (error) => {
-        const { errors } = (error as unknown as RelayError).res;
-        MESSAGING$.notifyError(errors.at(0)?.data.reason);
+        MESSAGING$.notifyRelayError(error as unknown as RelayError);
       },
     });
   };
