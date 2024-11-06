@@ -11,9 +11,11 @@ import { FormikConfig } from 'formik';
 import { formatDate } from 'src/utils/Time';
 import { useLazyLoadQuery } from 'react-relay';
 import { Fab } from '@mui/material';
+import CreateRelationshipControlledDial from '@components/common/stix_core_relationships/CreateRelationshipControlledDial';
+import CreateRelationshipHeader from '@components/common/stix_core_relationships/CreateRelationshipHeader';
 import { TargetEntity } from '../stix_core_relationships/StixCoreRelationshipCreationFromEntity';
 import Drawer from '../drawer/Drawer';
-import { CreateRelationshipControlledDial, Header, renderLoader } from '../stix_core_relationships/StixCoreRelationshipCreationFromControlledDial';
+import { renderLoader } from '../stix_core_relationships/StixCoreRelationshipCreationFromControlledDial';
 import { stixNestedRefRelationshipCreationFromEntityMutation, stixNestedRefRelationshipResolveTypes } from './StixNestedRefRelationshipCreationFromEntity';
 import { StixNestedRefRelationshipCreationFromEntityResolveQuery$data } from './__generated__/StixNestedRefRelationshipCreationFromEntityResolveQuery.graphql';
 import { CreateRelationshipContext } from '../menus/CreateRelationshipContextProvider';
@@ -383,7 +385,7 @@ StixNestedRefRelationshipCreationFromEntityFablessProps
       title={''} // Defined in custom header prop
       controlledDial={controlledDial ?? CreateRelationshipControlledDial}
       onClose={reset}
-      header={<Header showCreates={step === 0} />}
+      header={<CreateRelationshipHeader showCreates={step === 0} />}
     >
       <div style={{ minHeight: '100%' }}>
         {step === 0 && (
