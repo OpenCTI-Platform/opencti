@@ -83,7 +83,7 @@ const useStyles = makeStyles((theme) => ({
     marginLeft: theme.spacing(2),
   },
   header: {
-    backgroundColor: theme.palette.background.nav,
+    backgroundColor: theme.palette.mode === 'light' ? theme.palette.background.default : theme.palette.background.nav,
     padding: '10px 0',
     paddingLeft: '5px',
     display: 'flex',
@@ -930,7 +930,7 @@ const StixCyberObservableCreation = ({
             >
               <Close fontSize="small" color="primary" />
             </IconButton>
-            <Typography variant="h6">{t_i18n('Create an observable')}</Typography>
+            <Typography variant="subtitle2">{t_i18n('Create an observable')}</Typography>
             {!isFromBulkRelation && status.type
               ? <BulkTextModalButton
                   onClick={() => setBulkOpen(true)}
