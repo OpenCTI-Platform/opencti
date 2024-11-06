@@ -198,6 +198,7 @@ const CaseIncident: React.FC<CaseIncidentProps> = ({ caseIncidentData, enableRef
                         'Attack-Pattern',
                         'Identity',
                         'Location',
+                        'Vulnerability',
                       ]}
                       title={t_i18n('Other entities')}
                       enableReferences={enableReferences}
