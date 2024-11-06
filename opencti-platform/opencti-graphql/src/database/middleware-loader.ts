@@ -94,6 +94,7 @@ export interface EntityOptions<T extends BasicStoreCommon> extends EntityFilters
   ids?: Array<string>
   indices?: Array<string>
   includeAuthorities?: boolean | null
+  includeDeletedInDraft?: boolean | null
 }
 
 // relations
@@ -661,11 +662,11 @@ export const internalLoadById = async <T extends BasicStoreBase>(
   return await elLoadById(context, user, id, opts) as unknown as T;
 };
 
-export const storeLoadById = async <T extends BasicStoreCommon>(context: AuthContext, user: AuthUser, id: string, type: string): Promise<T> => {
+export const storeLoadById = async <T extends BasicStoreCommon>(context: AuthContext, user: AuthUser, id: string, type: string, opts = {}): Promise<T> => {
   if (R.isNil(type) || R.isEmpty(type)) {
     throw FunctionalError('You need to specify a type when loading a element');
   }
-  const data = await internalLoadById<T>(context, user, id, { type });
+  const data = await internalLoadById<T>(context, user, id, { ...opts, type });
   if (data) {
     const baseData = { id, entity_name: extractEntityRepresentativeName(data), entity_type: data.entity_type };
     const contextData: UserReadActionContextData = completeContextDataForEntity(baseData, data);

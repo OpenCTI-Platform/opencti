@@ -1,5 +1,5 @@
 import type { Resolvers } from '../../generated/graphql';
-import { findById, findAll, addDraftWorkspace, deleteDraftWorkspace, listDraftObjects } from './draftWorkspace-domain';
+import { findById, findAll, addDraftWorkspace, deleteDraftWorkspace, listDraftObjects, validateDraftWorkspace } from './draftWorkspace-domain';
 
 const draftWorkspaceResolvers: Resolvers = {
   Query: {
@@ -10,6 +10,9 @@ const draftWorkspaceResolvers: Resolvers = {
   Mutation: {
     draftWorkspaceAdd: (_, { input }, context) => {
       return addDraftWorkspace(context, context.user, input);
+    },
+    draftWorkspaceValidate: (_, { id }, context) => {
+      return validateDraftWorkspace(context, context.user, id);
     },
     draftWorkspaceDelete: (_, { id }, context) => {
       return deleteDraftWorkspace(context, context.user, id);

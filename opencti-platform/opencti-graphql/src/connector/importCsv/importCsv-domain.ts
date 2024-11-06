@@ -9,7 +9,7 @@ export const importCsvConnector = () => {
 
 export const importCsvConnectorRuntime = async (context: AuthContext, user: AuthUser) => {
   const connector = importCsvConnector();
-  const configurations = await connector.connector_schema_runtime_fn(context, user);
+  const configurations = connector.connector_schema_runtime_fn ? await connector.connector_schema_runtime_fn(context, user) : [];
   const configurationsFiltered: BasicStoreEntityCsvMapper[] = [];
   await Promise.all(configurations.map(async (c) => {
     const mapperErrors = await getCsvMapperErrorMessage(context, user, c);

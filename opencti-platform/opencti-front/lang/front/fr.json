@@ -1439,6 +1439,7 @@
   "INTERNAL_ENRICHMENT": "Enrichissement",
   "INTERNAL_EXPORT_FILE": "Export de fichiers",
   "INTERNAL_IMPORT_FILE": "Import de fichiers",
+  "INTERNAL_INGESTION": "L'ingestion de données",
   "Interval": "Intervalle",
   "Interval between injections (in minute)": "Intervalle entre les injections (en minute)",
   "Intrusion set": "Mode opératoire",

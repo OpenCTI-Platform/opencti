@@ -23,6 +23,7 @@ import {
   computeAverage,
   extractIdsFromStoreObject,
   fillTimeSeries,
+  INDEX_DRAFT_OBJECTS,
   INDEX_INFERRED_RELATIONSHIPS,
   inferIndexFromConceptType,
   isEmptyField,
@@ -204,6 +205,7 @@ import { buildEntityData, buildInnerRelation, buildRelationData } from './data-b
 import { deleteAllObjectFiles, moveAllFilesFromEntityToAnother, uploadToStorage } from './file-storage-helper';
 import { storeFileConverter } from './file-storage';
 import { getDraftContext } from '../utils/draftContext';
+import { getDraftChanges, isDraftSupportedEntity } from './draft-utils';
 
 // region global variables
 const MAX_BATCH_SIZE = 300;
@@ -340,7 +342,7 @@ const loadElementMetaDependencies = async (context, user, elements, args = {}) =
   return loadedElementMap;
 };
 
-const loadElementsWithDependencies = async (context, user, elements, opts = {}) => {
+export const loadElementsWithDependencies = async (context, user, elements, opts = {}) => {
   const elementsToDeps = [...elements];
   let fromAndToPromise = Promise.resolve();
   const targetsToResolved = [];
@@ -2135,6 +2137,9 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
     // Impacting information
     if (impactedInputs.length > 0) {
       const updateAsInstance = partialInstanceWithInputs(updatedInstance, impactedInputs);
+      if (getDraftContext(context, user) && isDraftSupportedEntity(initial)) {
+        updateAsInstance.draft_change = getDraftChanges(initial, impactedInputs);
+      }
       await elUpdateElement(context, user, updateAsInstance);
     }
     if (relationsToDelete.length > 0) {
@@ -3119,13 +3124,38 @@ export const createInferredEntity = async (context, input, ruleContent, type) =>
 // endregion
 
 // region mutation deletion
+
+// We need to add the ability to revert deleted entities when in draft:
+const draftInternalDeleteElement = async (context, user, draftElement) => {
+  let lock;
+  const participantIds = [draftElement.internal_id];
+  try {
+    // Try to get the lock in redis
+    lock = await lockResource(participantIds, { draftId: getDraftContext(context, user) });
+
+    await elDeleteElements(context, user, [draftElement]);
+  } catch (err) {
+    if (err.name === TYPE_LOCK_ERROR) {
+      throw LockTimeoutError({ participantIds });
+    }
+    throw err;
+  } finally {
+    if (lock) await lock.unlock();
+  }
+
+  return { element: draftElement, event: {} };
+};
+
 export const internalDeleteElementById = async (context, user, id, opts = {}) => {
   let lock;
   let event;
-  const element = await storeLoadByIdWithRefs(context, user, id);
+  const element = await storeLoadByIdWithRefs(context, user, id, { ...opts, includeDeletedInDraft: true });
   if (!element) {
     throw AlreadyDeletedError({ id });
   }
+
+  if (element._index.includes(INDEX_DRAFT_OBJECTS)) return draftInternalDeleteElement(context, user, element);
+
   // region confidence control
   controlUserConfidenceAgainstElement(user, element);
   // region restrict delete control

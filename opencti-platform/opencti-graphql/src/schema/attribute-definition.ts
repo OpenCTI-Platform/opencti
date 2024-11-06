@@ -109,6 +109,25 @@ export const draftIds: AttributeDefinition = {
   entityTypes: [ABSTRACT_BASIC_OBJECT, ABSTRACT_BASIC_RELATIONSHIP],
   featureFlag: 'DRAFT_WORKSPACE'
 };
+
+export const draftChange: AttributeDefinition = {
+  name: 'draft_change',
+  label: 'Draft change',
+  type: 'object',
+  format: 'standard',
+  update: false,
+  mandatoryType: 'no',
+  editDefault: false,
+  multiple: false,
+  upsert: false,
+  isFilterable: false,
+  featureFlag: 'DRAFT_WORKSPACE',
+  mappings: [
+    { name: 'draft_operation', label: 'Draft operation', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: false, upsert: true, isFilterable: false },
+    // draftUpdatePatch
+  ]
+};
+
 export const iAttributes: AttributeDefinition = {
   name: 'i_attributes',
   label: 'Attributes',

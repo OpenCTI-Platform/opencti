@@ -50,6 +50,7 @@ export const CONNECTOR_INTERNAL_IMPORT_FILE = 'INTERNAL_IMPORT_FILE'; // Files m
 export const CONNECTOR_INTERNAL_ANALYSIS = 'INTERNAL_ANALYSIS'; // Analysis to support (fields, file ...) -> import-
 export const CONNECTOR_INTERNAL_EXPORT_FILE = 'INTERNAL_EXPORT_FILE'; // Files mime types to generate (application/pdf, ...) -> export-
 export const CONNECTOR_INTERNAL_NOTIFICATION = 'INTERNAL_NOTIFICATION'; // Notifier connectors -> notifier-
+export const CONNECTOR_INTERNAL_INGESTION = 'INTERNAL_INGESTION'; // Currently only used for draft validation
 
 // General UUID
 export const OASIS_NAMESPACE = '00abedb4-aa42-466c-9c01-fed23315a9b7';

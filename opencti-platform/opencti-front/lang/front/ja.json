@@ -1439,6 +1439,7 @@
   "INTERNAL_ENRICHMENT": "データエンリッチメント",
   "INTERNAL_EXPORT_FILE": "ファイルエクスポート",
   "INTERNAL_IMPORT_FILE": "ファイルインポート",
+  "INTERNAL_INGESTION": "データの取り込み",
   "Interval": "インターバル",
   "Interval between injections (in minute)": "注入間隔（分）",
   "Intrusion set": "侵入セット",
