@@ -7,30 +7,42 @@ import { useFormatter } from '../../../components/i18n';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
 import useAuth from '../../../utils/hooks/useAuth';
 import { truncate } from '../../../utils/String';
+import { MESSAGING$ } from '../../../relay/environment';
 
 export const draftContextBannerMutation = graphql`
-    mutation DraftContextBannerMutation(
-        $input: [EditInput]!
-    ) {
-        meEdit(input: $input) {
-            name
-            draftContext {
-              id
-              name
-            }
-        }
+  mutation DraftContextBannerMutation(
+    $input: [EditInput]!
+  ) {
+    meEdit(input: $input) {
+      name
+      draftContext {
+        id
+        name
+      }
     }
+  }
+`;
+
+export const draftContextBannerValidateDraftMutation = graphql`
+  mutation DraftContextBannerValidateDraftMutation(
+    $id: ID!
+  ) {
+    draftWorkspaceValidate(id: $id) {
+      id
+    }
+  }
 `;
 
 const DraftContextBanner = () => {
   const { t_i18n } = useFormatter();
-  const [commit] = useApiMutation(draftContextBannerMutation);
+  const [commitExitDraft] = useApiMutation(draftContextBannerMutation);
+  const [commitValidateDraft] = useApiMutation(draftContextBannerValidateDraftMutation);
   const { me } = useAuth();
   const navigate = useNavigate();
   const currentDraftContextName = me.draftContext ? me.draftContext.name : '';
 
   const handleExitDraft = () => {
-    commit({
+    commitExitDraft({
       variables: {
         input: { key: 'draft_context', value: '' },
       },
@@ -38,6 +50,20 @@ const DraftContextBanner = () => {
         navigate('/');
       },
     });
+  };
+
+  const handleValidateDraft = () => {
+    if (me.draftContext) {
+      commitValidateDraft({
+        variables: {
+          id: me.draftContext.id,
+        },
+        onCompleted: () => {
+          MESSAGING$.notifySuccess('Draft validation in progress');
+          navigate('/');
+        },
+      });
+    }
   };
 
   return (
@@ -51,7 +77,7 @@ const DraftContextBanner = () => {
             variant="contained"
             color="primary"
             style={{ width: '100%' }}
-            onClick={handleExitDraft}
+            onClick={handleValidateDraft}
           >
             {t_i18n('Approve draft')}
           </Button>
