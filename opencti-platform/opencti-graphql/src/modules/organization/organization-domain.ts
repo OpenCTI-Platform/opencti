@@ -148,7 +148,7 @@ export const organizationDelete = async (context: AuthContext, user: AuthUser, o
   }
   if (organization.authorized_authorities && organization.authorized_authorities.length > 0) {
     if (isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
-      throw FunctionalError('Cannot delete the organization that has an administrator.');
+      throw FunctionalError('Cannot delete an organization that has an administrator.');
     }
     // no information leakage about the organization administrators or members
     throw FunctionalError('Cannot delete the organization.');
@@ -156,7 +156,7 @@ export const organizationDelete = async (context: AuthContext, user: AuthUser, o
   const members = await organizationMembersPaginated(context, user, organization.id, { first: 1, indices: [READ_INDEX_INTERNAL_OBJECTS] });
   if (members.pageInfo.globalCount > 0) {
     if (isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
-      throw FunctionalError('Cannot delete the organization that has members.');
+      throw FunctionalError('Cannot delete an organization that has members.');
     }
     // no information leakage about the organization administrators or members
     throw FunctionalError('Cannot delete the organization.');

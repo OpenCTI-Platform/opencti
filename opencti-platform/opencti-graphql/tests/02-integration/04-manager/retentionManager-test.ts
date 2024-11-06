@@ -325,6 +325,6 @@ describe('Retention Manager tests ', () => {
   });
   it('should not delete organization with members', async () => {
     await expect(() => deleteElement(context, 'knowledge', TEST_ORGANIZATION.id, ENTITY_TYPE_IDENTITY_ORGANIZATION))
-      .rejects.toThrowError('Cannot delete the organization that has members.');
+      .rejects.toThrowError('Cannot delete an organization that has members.');
   });
 });

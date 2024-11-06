@@ -82,8 +82,12 @@ export const queryAsUserIsExpectedError = async (client: AxiosInstance, request:
   logApp.info('queryAsUserIsExpectedError=> queryResult:', queryResult);
   expect(queryResult.errors, 'error is expected.').toBeDefined();
   expect(queryResult.errors?.length, `1 error is expected, but got ${queryResult.errors?.length} errors`).toBe(1);
-  expect(queryResult.errors[0].message, `error message: ${errorMessage} is expected, but got ${queryResult.errors[0].message}`).toBe(errorMessage);
-  expect(queryResult.errors[0].extensions.code, `error is expected but got ${queryResult.errors[0].name}`).toBe(errorName);
+  if (errorMessage) {
+    expect(queryResult.errors[0].message, `error message: ${errorMessage} is expected, but got ${queryResult.errors[0].message}`).toBe(errorMessage);
+  }
+  if (errorName) {
+    expect(queryResult.errors[0].extensions.code, `error is expected but got ${queryResult.errors[0].name}`).toBe(errorName);
+  }
 };
 
 /**

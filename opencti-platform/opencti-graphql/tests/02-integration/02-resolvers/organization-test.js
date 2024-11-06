@@ -252,6 +252,6 @@ describe('Organization resolver standard behavior', () => {
     await queryAsUserIsExpectedError(USER_SECURITY.client, {
       query: DELETE_QUERY,
       variables: { id: TEST_ORGANIZATION.id },
-    }, 'Cannot delete the organization that has members.', 'FUNCTIONAL_ERROR');
+    }, 'Cannot delete an organization that has members.', 'FUNCTIONAL_ERROR');
   });
 });
