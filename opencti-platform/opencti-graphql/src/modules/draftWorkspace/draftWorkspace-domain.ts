@@ -98,7 +98,7 @@ export const buildDraftVersion = (object: BasicStoreCommon) => {
     throw FunctionalError('Cannot find draft ids on draft entity', { id: object.id });
   }
 
-  return { draft_id: object.draft_ids[0], draft_operation: 'create' };
+  return { draft_id: object.draft_ids[0], draft_operation: object.draft_change?.draft_operation };
 };
 
 export const buildDraftValidationBundle = async (context: AuthContext, user: AuthUser, draft_id: string) => {

@@ -82,6 +82,10 @@ interface StoreFile {
   inCarousel?: boolean;
 }
 
+interface DraftChange {
+  draft_operation: string
+}
+
 interface BasicStoreIdentifier {
   id: string;
   internal_id: string;
@@ -105,6 +109,7 @@ interface BasicStoreBase extends BasicStoreIdentifier {
   creator_id?: string | string[];
   type?: string;
   draft_ids?: string[];
+  draft_change?: DraftChange;
   // representative
   representative: Representative
 }
