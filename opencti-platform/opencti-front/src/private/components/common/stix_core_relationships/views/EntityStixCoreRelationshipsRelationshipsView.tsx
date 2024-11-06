@@ -43,7 +43,7 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
   defaultStopTime,
   localStorage,
   relationshipTypes = [],
-  stixCoreObjectTypes = [],
+  stixCoreObjectTypes,
   role,
   isRelationReversed,
   allDirections,
@@ -171,10 +171,10 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
   setCreateRelationshipContext({
     stixCoreObjectTypes,
     relationshipTypes,
+    reversed: isRelationReversed,
   });
   useEffect(() => {
     setCreateRelationshipContext({
-      reversed: isRelationReversed,
       paginationOptions,
     });
   }, []);
