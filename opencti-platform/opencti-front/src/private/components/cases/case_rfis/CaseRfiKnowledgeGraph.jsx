@@ -1343,8 +1343,9 @@ class CaseRfiKnowledgeGraphComponent extends Component {
                       }}
                       onNodeDragEnd={(node) => {
                         if (this.selectedNodes.has(node)) {
+                          // finished moving a selected node
                           [...this.selectedNodes]
-                            .filter((selNode) => selNode !== node)
+                            .filter((selNode) => selNode !== node) // don't touch node being dragged
                             .forEach((selNode) => {
                               ['x', 'y'].forEach((coord) => {
                                 // eslint-disable-next-line no-param-reassign

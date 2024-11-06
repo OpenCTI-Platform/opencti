@@ -2402,15 +2402,15 @@ class InvestigationGraphComponent extends Component {
                       onNodeDrag={(node, translate) => {
                         if (this.selectedNodes.has(node)) {
                           [...this.selectedNodes]
-                              .filter((selNode) => selNode !== node)
-                              .forEach((selNode) => {
-                                ['x', 'y'].forEach((coord) => {
-                                  // eslint-disable-next-line no-param-reassign
-                                  selNode[coord] += translate[coord];
-                                  // eslint-disable-next-line no-param-reassign
-                                  selNode[`f${coord}`] = selNode[coord];
-                                });
+                            .filter((selNode) => selNode !== node)
+                            .forEach((selNode) => {
+                              ['x', 'y'].forEach((coord) => {
+                                // eslint-disable-next-line no-param-reassign
+                                selNode[coord] += translate[coord];
+                                // eslint-disable-next-line no-param-reassign
+                                selNode[`f${coord}`] = selNode[coord];
                               });
+                            });
                         }
                         // eslint-disable-next-line no-param-reassign
                         node.fx += translate.x;
@@ -2419,18 +2419,19 @@ class InvestigationGraphComponent extends Component {
                       }}
                       onNodeDragEnd={(node) => {
                         if (this.selectedNodes.has(node)) {
+                          // finished moving a selected node
                           [...this.selectedNodes]
-                              .filter((selNode) => selNode !== node)
-                              .forEach((selNode) => {
-                                ['x', 'y'].forEach((coord) => {
-                                  // eslint-disable-next-line no-param-reassign
-                                  selNode[`f${coord}`] = undefined;
-                                });
+                            .filter((selNode) => selNode !== node) // don't touch node being dragged
+                            .forEach((selNode) => {
+                              ['x', 'y'].forEach((coord) => {
                                 // eslint-disable-next-line no-param-reassign
-                                selNode.fx = selNode.x;
-                                // eslint-disable-next-line no-param-reassign
-                                selNode.fy = selNode.y;
+                                selNode[`f${coord}`] = undefined;
                               });
+                              // eslint-disable-next-line no-param-reassign
+                              selNode.fx = selNode.x;
+                              // eslint-disable-next-line no-param-reassign
+                              selNode.fy = selNode.y;
+                            });
                         }
                         // eslint-disable-next-line no-param-reassign
                         node.fx = node.x;
