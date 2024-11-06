@@ -168,10 +168,12 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
 
   const finalView = currentView || view;
 
+  setCreateRelationshipContext({
+    stixCoreObjectTypes,
+    relationshipTypes,
+  });
   useEffect(() => {
     setCreateRelationshipContext({
-      relationshipTypes,
-      stixCoreObjectTypes,
       reversed: isRelationReversed,
       paginationOptions,
     });
