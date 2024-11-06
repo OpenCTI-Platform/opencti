@@ -323,7 +323,5 @@ export const htmlToPdfReport = (reportName: string, content: string, templateNam
     },
   };
 
-  // console.log(docDefinition);
-
   return generatePdf(docDefinition);
 };

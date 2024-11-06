@@ -3,7 +3,7 @@ import { StixCoreObjectsAttributesQuery$data } from './__generated__/StixCoreObj
 import stixCoreObjectsAttributesQuery from './StixCoreObjectsAttributesQuery';
 import type { Widget } from '../../../widget/widget';
 import useBuildReadableAttribute from '../../../hooks/useBuildReadableAttribute';
-import getObjectPropertyWithoutEmptyValues from '../../../object';
+import { getObjectPropertyWithoutEmptyValues } from '../../../object';
 
 const useBuildAttributesOutcome = () => {
   const { buildReadableAttribute } = useBuildReadableAttribute();
@@ -17,7 +17,10 @@ const useBuildAttributesOutcome = () => {
       throw Error('The attribute widget should refers to an instance');
     }
     const queryVariables = { id: instance_id === 'SELF_ID' ? containerId : instance_id };
-    const data = await fetchQuery(stixCoreObjectsAttributesQuery, queryVariables).toPromise() as StixCoreObjectsAttributesQuery$data;
+    const data = await fetchQuery(
+      stixCoreObjectsAttributesQuery,
+      queryVariables,
+    ).toPromise() as StixCoreObjectsAttributesQuery$data;
 
     return (columns ?? []).map((col) => {
       let result;

@@ -6,7 +6,7 @@ import { fetchQuery } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import type { Widget } from '../../../widget/widget';
 import useBuildReadableAttribute from '../../../hooks/useBuildReadableAttribute';
-import getObjectPropertyWithoutEmptyValues from '../../../object';
+import { getObjectPropertyWithoutEmptyValues } from '../../../object';
 
 const useBuildListOutcome = () => {
   const { t_i18n } = useFormatter();

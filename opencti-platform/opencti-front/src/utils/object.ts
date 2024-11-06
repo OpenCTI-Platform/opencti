@@ -6,7 +6,7 @@
  * @param path The path to access the property.
  * @returns The value of the property.
  */
-function getObjectProperty<T extends object>(object: T, path = ''): unknown {
+export function getObjectProperty<T extends object>(object: T, path = ''): unknown {
   const splitPath = path.split('.');
   const property = object[splitPath.shift() as keyof T];
 
@@ -29,12 +29,10 @@ function getObjectProperty<T extends object>(object: T, path = ''): unknown {
  * @param path The path to access the property.
  * @returns The value of the property.
  */
-function getObjectPropertyWithoutEmptyValues<T extends object>(object: T, path = ''): unknown {
+export function getObjectPropertyWithoutEmptyValues<T extends object>(object: T, path = ''): unknown {
   const property = getObjectProperty(object, path);
   if (Array.isArray(property)) {
     return property.filter((p) => !!p);
   }
   return property ?? '';
 }
-
-export default getObjectPropertyWithoutEmptyValues;
