@@ -34,113 +34,116 @@ CsvMapperConditionalEntityMappingProps
   };
 
   return (
-    <div style={{ display: 'flex', alignItems: 'center' }}>
-      <Field
-        component={SwitchField}
-        type="checkbox"
-        name={`${representationName}.column_based.enabled`}
-        label={t_i18n('Entity dynamic mapping')}
-      />
-      <Tooltip
-        title={t_i18n(
-          'If this option is selected, we will dynamically map the column value that you provide to the entity.',
-        )}
-      >
-        <InformationOutline
-          fontSize="small"
-          color="primary"
-          style={{ cursor: 'default' }}
-        />
-      </Tooltip>
+    <div style={{
+      width: '100%',
+      display: 'grid',
+      gridTemplateColumns: '1.3fr 1fr 1fr 1fr',
+      alignItems: 'center',
+      margin: '20px 0px',
+      gap: '10px',
+    }}
+    >
       <div style={{
         display: 'flex',
-        justifyContent: 'space-between',
         alignItems: 'center',
       }}
       >
-        <MUIAutocomplete
-          selectOnFocus
-          openOnFocus
-          autoSelect={false}
-          autoHighlight
-          options={columnOptions}
-          disabled={!representation.column_based?.enabled}
-          value={
-              representation.column_based?.enabled
-                ? representation.column_based?.column_reference
-                : null
-          }
-          onChange={(_, val) => handleColumnSelect(val)}
-          sx={{
-            width: '180px',
-            marginLeft: '95px',
-          }}
-          renderInput={(params) => (
-            <MuiTextField
-              {...params}
-              label={t_i18n('Column index')}
-              variant="outlined"
-              size="small"
-              InputProps={{
-                ...params.InputProps,
-                sx: {
-                  '& fieldset': {
-                    borderColor: (!representation.column_based?.column_reference)
-                      ? 'rgb(244, 67, 54)'
-                      : '',
-                  },
-                },
-              }}
-            />
-          )}
+        <Field
+          component={SwitchField}
+          type="checkbox"
+          name={`${representationName}.column_based.enabled`}
+          label={t_i18n('Entity dynamic mapping')}
         />
-        <MUIAutocomplete<{ label: string, value: string }>
-          selectOnFocus
-          openOnFocus
-          autoSelect={false}
-          autoHighlight
-          options={operatorOptions}
-          disabled={!representation.column_based?.enabled}
-          value={
-              representation.column_based?.enabled
-                ? (operatorOptions.find((opt) => (opt.value === representation.column_based?.operator)) ?? undefined)
-                : null
-          }
-          onChange={(_, val) => handleOperatorSelect(val)}
-          sx={{
-            width: '150px',
-            marginLeft: '5px',
-          }}
-          renderInput={(params) => (
-            <MuiTextField
-              {...params}
-              label={t_i18n('Operator')}
-              variant="outlined"
-              size="small"
-              InputProps={{
-                ...params.InputProps,
-                sx: {
-                  '& fieldset': {
-                    borderColor: (!representation.column_based?.operator)
-                      ? 'rgb(244, 67, 54)'
-                      : '',
-                  },
-                },
-              }}
-            />
+        <Tooltip
+          title={t_i18n(
+            'If this option is selected, we will dynamically map the column value that you provide to the entity.',
           )}
-        />
-        <div style={{ width: '145px', marginLeft: '5px', marginBottom: '10px' }}>
-          <Field
-            component={TextField}
-            label={t_i18n('Value')}
-            name={`${representationName}.column_based.value`}
-            variant='standard'
-            disabled={!representation.column_based?.enabled}
-            error={!representation.column_based?.value && representation.column_based?.enabled}
-            value={representation.column_based?.enabled ? representation.column_based.value : ''}
+        >
+          <InformationOutline
+            fontSize="small"
+            color="primary"
+            style={{ cursor: 'default' }}
           />
-        </div>
+        </Tooltip>
+      </div>
+      <MUIAutocomplete
+        selectOnFocus
+        openOnFocus
+        autoSelect={false}
+        autoHighlight
+        options={columnOptions}
+        disabled={!representation.column_based?.enabled}
+        value={
+          representation.column_based?.enabled
+            ? representation.column_based?.column_reference
+            : null
+          }
+        onChange={(_, val) => handleColumnSelect(val)}
+        sx={{ width: '100%' }}
+        renderInput={(params) => (
+          <MuiTextField
+            {...params}
+            label={t_i18n('Column index')}
+            variant="outlined"
+            size="small"
+            InputProps={{
+              ...params.InputProps,
+              sx: {
+                '& fieldset': {
+                  borderColor: (!representation.column_based?.column_reference)
+                    ? 'rgb(244, 67, 54)'
+                    : '',
+                },
+              },
+            }}
+          />
+        )}
+      />
+      <MUIAutocomplete<{ label: string, value: string }>
+        selectOnFocus
+        openOnFocus
+        autoSelect={false}
+        autoHighlight
+        options={operatorOptions}
+        disabled={!representation.column_based?.enabled}
+        value={
+          representation.column_based?.enabled
+            ? (operatorOptions.find((opt) => (opt.value === representation.column_based?.operator)) ?? undefined)
+            : null
+          }
+        onChange={(_, val) => handleOperatorSelect(val)}
+        defaultValue={operatorOptions.find((opt) => opt.value === 'eq')}
+        sx={{ width: '100%' }}
+        renderInput={(params) => (
+          <MuiTextField
+            {...params}
+            label={t_i18n('Operator')}
+            variant="outlined"
+            size="small"
+            InputProps={{
+              ...params.InputProps,
+              sx: {
+                '& fieldset': {
+                  borderColor: (!representation.column_based?.operator)
+                    ? 'rgb(244, 67, 54)'
+                    : '',
+                },
+              },
+            }}
+          />
+        )}
+      />
+      <div style={{ marginBottom: '10px', marginRight: '10px' }}>
+        <Field
+          component={TextField}
+          label={t_i18n('Value')}
+          name={`${representationName}.column_based.value`}
+          variant='standard'
+          style={{ width: '100%' }}
+          disabled={!representation.column_based?.enabled}
+          error={!representation.column_based?.value && representation.column_based?.enabled}
+          value={representation.column_based?.enabled ? representation.column_based.value : ''}
+        />
       </div>
     </div>
   );
