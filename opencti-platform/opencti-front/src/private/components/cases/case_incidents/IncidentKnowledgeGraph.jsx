@@ -1327,24 +1327,29 @@ class IncidentKnowledgeGraphComponent extends Component {
                         if (this.selectedNodes.has(node)) {
                           [...this.selectedNodes]
                             .filter((selNode) => selNode !== node)
-                            // eslint-disable-next-line no-shadow
-                            .forEach((selNode) => ['x', 'y'].forEach(
-                              // eslint-disable-next-line no-param-reassign,no-return-assign
-                              (coord) => (selNode[`f${coord}`] = selNode[coord] + translate[coord]),
-                            ));
+                            .forEach((selNode) => {
+                              ['x', 'y'].forEach((coord) => {
+                                // eslint-disable-next-line no-param-reassign
+                                selNode[coord] += translate[coord];
+                                // eslint-disable-next-line no-param-reassign
+                                selNode[`f${coord}`] = selNode[coord];
+                              });
+                            });
                         }
+                        // eslint-disable-next-line no-param-reassign
+                        node.fx += translate.x;
+                        // eslint-disable-next-line no-param-reassign
+                        node.fy += translate.y;
                       }}
                       onNodeDragEnd={(node) => {
                         if (this.selectedNodes.has(node)) {
-                          // finished moving a selected node
                           [...this.selectedNodes]
-                            .filter((selNode) => selNode !== node) // don't touch node being dragged
-                            // eslint-disable-next-line no-shadow
+                            .filter((selNode) => selNode !== node)
                             .forEach((selNode) => {
-                              ['x', 'y'].forEach(
-                                // eslint-disable-next-line no-param-reassign,no-return-assign
-                                (coord) => (selNode[`f${coord}`] = undefined),
-                              );
+                              ['x', 'y'].forEach((coord) => {
+                                // eslint-disable-next-line no-param-reassign
+                                selNode[`f${coord}`] = undefined;
+                              });
                               // eslint-disable-next-line no-param-reassign
                               selNode.fx = selNode.x;
                               // eslint-disable-next-line no-param-reassign
