@@ -132,7 +132,7 @@ const DraftEntities = () => {
     filters,
   } = viewStorage;
 
-  const contextFilters = useBuildEntityTypeBasedFilterContext('Stix-Domain-Object', filters);
+  const contextFilters = useBuildEntityTypeBasedFilterContext('Stix-Core-Object', filters);
   const queryPaginationOptions = {
     ...paginationOptions,
     draftId,
@@ -167,11 +167,11 @@ const DraftEntities = () => {
       isSortable: true,
     },
     createdBy: {
-      percentWidth: 12,
+      percentWidth: 10,
       isSortable: isRuntimeSort,
     },
     creator: {
-      percentWidth: 12,
+      percentWidth: 10,
       isSortable: isRuntimeSort,
     },
     objectLabel: {
@@ -179,7 +179,7 @@ const DraftEntities = () => {
       isSortable: false,
     },
     created_at: {
-      percentWidth: 15,
+      percentWidth: 10,
       isSortable: true,
     },
     objectMarking: {
