@@ -576,8 +576,8 @@ class ReportKnowledgeGraphComponent extends Component {
         input,
       },
       onCompleted: async () => {
+        this.graphObjects = [...this.graphObjects, stixCoreRelationship];
         if (!skipReload) {
-          this.graphObjects = [...this.graphObjects, stixCoreRelationship];
           this.graphData = buildGraphData(
             this.graphObjects,
             decodeGraphData(this.props.report.x_opencti_graph_data),

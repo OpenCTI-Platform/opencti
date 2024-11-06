@@ -12792,6 +12792,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"highlightjs-vue@npm:^1.0.0":
+  version: 1.0.0
+  resolution: "highlightjs-vue@npm:1.0.0"
+  checksum: 10/44c9187a19fa3c7eac16bf1d327c03cb07c4b444f744624eaf873eb55e4e449a0bb6573b8ba5982006b65743707d6cad39cfc404f3fe5fb8aeb740a57ff6bc24
+  languageName: node
+  linkType: hard
+
 "hoist-non-react-statics@npm:^3.3.0, hoist-non-react-statics@npm:^3.3.1, hoist-non-react-statics@npm:^3.3.2":
   version: 3.3.2
   resolution: "hoist-non-react-statics@npm:3.3.2"
@@ -16493,7 +16500,7 @@ __metadata:
     react-draggable: "npm:4.4.6"
     react-force-graph-2d: "npm:1.25.6"
     react-force-graph-3d: "npm:1.24.4"
-    react-grid-layout: "npm:1.4.4"
+    react-grid-layout: "npm:1.5.0"
     react-intl: "npm:6.7.0"
     react-leaflet: "npm:4.2.1"
     react-markdown: "npm:9.0.1"
@@ -16505,7 +16512,7 @@ __metadata:
     react-relay: "npm:17.0.0"
     react-relay-network-modern: "npm:6.2.2"
     react-router-dom: "npm:6.26.2"
-    react-syntax-highlighter: "npm:15.5.0"
+    react-syntax-highlighter: "npm:15.6.1"
     react-test-renderer: "npm:18.3.1"
     react-timeline-range-slider: "npm:1.4.1"
     react-virtualized: "npm:9.22.5"
@@ -17837,9 +17844,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-grid-layout@npm:1.4.4":
-  version: 1.4.4
-  resolution: "react-grid-layout@npm:1.4.4"
+"react-grid-layout@npm:1.5.0":
+  version: 1.5.0
+  resolution: "react-grid-layout@npm:1.5.0"
   dependencies:
     clsx: "npm:^2.0.0"
     fast-equals: "npm:^4.0.3"
@@ -17850,7 +17857,7 @@ __metadata:
   peerDependencies:
     react: ">= 16.3.0"
     react-dom: ">= 16.3.0"
-  checksum: 10/43c9bc7e8ce5a902720ebe559b1551724615c617391b040a0a275597748e1927b293c5ddcb73053b1925909e1c293948b4969a35799d541bf9d8886e07ac0085
+  checksum: 10/c20cf0120b0aed06fad0e3f535df3cf35fc7c6e9aca4a7e64bc5f453dc7298e037cc71dc0934a4b89b9d5c024967cf55b9f630c5f44afc03f8a1c055a01bf3c0
   languageName: node
   linkType: hard
 
@@ -18236,18 +18243,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-syntax-highlighter@npm:15.5.0":
-  version: 15.5.0
-  resolution: "react-syntax-highlighter@npm:15.5.0"
+"react-syntax-highlighter@npm:15.6.1":
+  version: 15.6.1
+  resolution: "react-syntax-highlighter@npm:15.6.1"
   dependencies:
     "@babel/runtime": "npm:^7.3.1"
     highlight.js: "npm:^10.4.1"
+    highlightjs-vue: "npm:^1.0.0"
     lowlight: "npm:^1.17.0"
     prismjs: "npm:^1.27.0"
     refractor: "npm:^3.6.0"
   peerDependencies:
     react: ">= 0.14.0"
-  checksum: 10/14291a92672a79cf167e6cf2dba2547b920c24573729a95ae24035bece43f7e00e3429477be7b87455e8ce018682c8992545c405a915421eb772c5cd07c00576
+  checksum: 10/9a89c81f7dcc109b038dc2a73189fa1ea916e6485d8a39856ab3d01d2c753449b5ae1c0df9c9ee0ed5c8c9808a68422b19af9a168ec091a274bddc7ad092eb86
   languageName: node
   linkType: hard
 

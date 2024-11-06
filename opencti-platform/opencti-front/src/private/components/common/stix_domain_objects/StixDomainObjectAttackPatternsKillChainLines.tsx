@@ -17,7 +17,6 @@ import {
 import { StixDomainObjectAttackPatternsKillChainQuery$variables } from '@components/common/stix_domain_objects/__generated__/StixDomainObjectAttackPatternsKillChainQuery.graphql';
 import { ListItemButton } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
-import StixCoreRelationshipPopover from '../stix_core_relationships/StixCoreRelationshipPopover';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 import { useFormatter } from '../../../../components/i18n';
@@ -32,8 +31,6 @@ interface StixDomainObjectAttackPatternsKillChainLinesProps {
 
 const StixDomainObjectAttackPatternsKillChainLines: FunctionComponent<StixDomainObjectAttackPatternsKillChainLinesProps> = ({
   data,
-  paginationOptions,
-  onDelete,
   searchTerm,
   coursesOfAction,
 }) => {
@@ -209,7 +206,7 @@ const StixDomainObjectAttackPatternsKillChainLines: FunctionComponent<StixDomain
                               }}
                             >
                               <ListItemSecondaryAction>
-                                {coursesOfAction ? (
+                                {coursesOfAction && (
                                   <IconButton
                                     onClick={() => handleToggleLine(attackPattern.id)}
                                     aria-haspopup="true"
@@ -221,12 +218,6 @@ const StixDomainObjectAttackPatternsKillChainLines: FunctionComponent<StixDomain
                                       <ExpandLess />
                                     )}
                                   </IconButton>
-                                ) : (
-                                  <StixCoreRelationshipPopover
-                                    stixCoreRelationshipId={attackPattern.id}
-                                    paginationOptions={paginationOptions}
-                                    onDelete={onDelete}
-                                  />
                                 )}
                               </ListItemSecondaryAction>
                             </div>

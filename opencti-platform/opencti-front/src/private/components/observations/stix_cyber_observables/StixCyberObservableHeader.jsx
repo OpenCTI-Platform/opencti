@@ -55,7 +55,7 @@ const StixCyberObservableHeaderComponent = ({
             <StixCoreObjectContainer elementId={stixCyberObservable.id} />
           )}
           {isKnowledgeEnricher && (
-            <StixCoreObjectEnrichment stixCoreObjectId={stixCyberObservable.id} variant="button" />
+            <StixCoreObjectEnrichment stixCoreObjectId={stixCyberObservable.id} />
           )}
           <StixCyberObservablePopover
             stixCyberObservableId={stixCyberObservable.id}

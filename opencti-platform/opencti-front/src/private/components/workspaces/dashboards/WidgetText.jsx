@@ -20,7 +20,7 @@ const WidgetText = ({ variant, height = undefined, parameters = {} }) => {
     <WidgetContainer
       height={height}
       variant={variant}
-      withoutTitle={true}
+      title={parameters.title}
     >
       {renderContent()}
     </WidgetContainer>

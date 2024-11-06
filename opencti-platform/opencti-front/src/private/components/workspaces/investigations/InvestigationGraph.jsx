@@ -1469,16 +1469,16 @@ class InvestigationGraphComponent extends Component {
   async handleAddRelation(stixCoreRelationship, skipReload = false) {
     if (R.map((n) => n.id, this.graphObjects).includes(stixCoreRelationship.id)) return;
     this.graphObjects = [...this.graphObjects, stixCoreRelationship];
-    this.graphData = buildGraphData(
-      this.graphObjects,
-      decodeGraphData(this.props.workspace.graph_data),
-      this.props.t,
-    );
-    await this.resetAllFilters();
-    const selectedTimeRangeInterval = computeTimeRangeInterval(
-      this.graphObjects,
-    );
     if (!skipReload) {
+      this.graphData = buildGraphData(
+        this.graphObjects,
+        decodeGraphData(this.props.workspace.graph_data),
+        this.props.t,
+      );
+      await this.resetAllFilters();
+      const selectedTimeRangeInterval = computeTimeRangeInterval(
+        this.graphObjects,
+      );
       this.setState(
         {
           selectedTimeRangeInterval,

@@ -571,8 +571,8 @@ class GroupingKnowledgeGraphComponent extends Component {
         input,
       },
       onCompleted: async () => {
+        this.graphObjects = [...this.graphObjects, stixCoreRelationship];
         if (!skipReload) {
-          this.graphObjects = [...this.graphObjects, stixCoreRelationship];
           this.graphData = buildGraphData(
             this.graphObjects,
             decodeGraphData(this.props.grouping.x_opencti_graph_data),
