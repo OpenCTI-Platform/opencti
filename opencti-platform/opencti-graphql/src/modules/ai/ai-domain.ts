@@ -25,7 +25,16 @@ import { Format, Tone } from '../../generated/graphql';
 import { isEmptyField, isNotEmptyField } from '../../database/utils';
 import { FROM_START_STR, UNTIL_END_STR } from '../../utils/format';
 import { compute } from '../../database/ai-llm';
-import { RELATION_AMPLIFIES, RELATION_ATTRIBUTED_TO, RELATION_COMPROMISES, RELATION_COOPERATES_WITH, RELATION_HAS, RELATION_LOCATED_AT, RELATION_TARGETS, RELATION_USES } from '../../schema/stixCoreRelationship';
+import {
+  RELATION_AMPLIFIES,
+  RELATION_ATTRIBUTED_TO,
+  RELATION_COMPROMISES,
+  RELATION_COOPERATES_WITH,
+  RELATION_HAS,
+  RELATION_LOCATED_AT,
+  RELATION_TARGETS,
+  RELATION_USES
+} from '../../schema/stixCoreRelationship';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../../schema/stixDomainObject';
 import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../case/case-incident/case-incident-types';
 import { paginatedForPathWithEnrichment } from '../internal/document/document-domain';
@@ -242,7 +251,7 @@ export const summarizeFiles = async (context: AuthContext, user: AuthUser, args:
   const { id, elementId, paragraphs = 10, fileIds, tone = 'technical', format = 'HTML' } = args;
   const paragraphsNumber = !paragraphs || paragraphs > 20 ? 20 : paragraphs;
   const stixCoreObject = await storeLoadById(context, user, elementId, ABSTRACT_STIX_CORE_OBJECT) as BasicStoreEntity;
-  let finalFilesIds = fileIds;
+  let finalFilesIds = fileIds ?? [];
   if (isEmptyField(fileIds)) {
     // get content files
     const opts = {
@@ -255,7 +264,7 @@ export const summarizeFiles = async (context: AuthContext, user: AuthUser, args:
     finalFilesIds = importFiles.edges.map((n) => n.node.id);
     // get external ref files
     const refs = stixCoreObject[RELATION_EXTERNAL_REFERENCE] ?? [];
-    for (const ref of refs) {
+    refs.map(async (ref) => {
       const optsRef = {
         first: 20,
         prefixMimeTypes: undefined,
@@ -264,10 +273,8 @@ export const summarizeFiles = async (context: AuthContext, user: AuthUser, args:
       };
       const importRefFiles = await paginatedForPathWithEnrichment(context, user, `import/External-Reference/${ref}`, ref, optsRef);
       const refFilesIds = importRefFiles.edges.map((n) => n.node.id);
-      for (const refFileId of refFilesIds) {
-        finalFilesIds.push(refFileId);
-      }
-    }
+      refFilesIds.forEach((refFileId) => finalFilesIds.push(refFileId));
+    });
   }
   if (isEmptyField(finalFilesIds) || finalFilesIds?.length === 0) {
     return 'Unable to summarize files as no file is associated to this entity.';
