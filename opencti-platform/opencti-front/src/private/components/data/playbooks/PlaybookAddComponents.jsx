@@ -178,8 +178,8 @@ const PlaybookAddComponentsContent = ({
     const options = [
       { label: t_i18n('Marking definitions'), value: 'objectMarking', isMultiple: true },
       { label: t_i18n('Labels'), value: 'objectLabel', isMultiple: true },
-      (actionsInputs[i]?.op === 'add' || actionsInputs[i]?.op === 'replace') && { label: t_i18n('Assignee'), value: 'object-assignee', isMultiple: true },
-      (actionsInputs[i]?.op === 'add' || actionsInputs[i]?.op === 'replace') && { label: t_i18n('Participant'), value: 'object-participant', isMultiple: true },
+      (actionsInputs[i]?.op === 'add' || actionsInputs[i]?.op === 'replace') && { label: t_i18n('Assignees'), value: 'object-assignee', isMultiple: true },
+      (actionsInputs[i]?.op === 'add' || actionsInputs[i]?.op === 'replace') && { label: t_i18n('Participants'), value: 'object-participant', isMultiple: true },
       ...(actionsInputs[i]?.op === 'replace' ? [
         { label: t_i18n('Author'), value: 'createdBy', isMultiple: false },
         { label: t_i18n('Confidence'), value: 'confidence', isMultiple: false },
