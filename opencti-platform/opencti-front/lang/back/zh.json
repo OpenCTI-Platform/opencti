@@ -490,6 +490,7 @@
   "Observable content": "可观测内容",
   "Observable description": "可观察描述",
   "Observables": "可观测",
+  "Only alphanumeric characters are allowed for the value": "数值只允许使用字母数字字符",
   "OpenCTI version": "OpenCTI 版本",
   "Opened connection": "打开的连接",
   "Operating System": "操作系统",

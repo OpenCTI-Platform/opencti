@@ -490,6 +490,7 @@
   "Observable content": "観測可能な内容",
   "Observable description": "観測可能な記述",
   "Observables": "観測可能なもの",
+  "Only alphanumeric characters are allowed for the value": "値には英数字のみを使用できます。",
   "OpenCTI version": "OpenCTI バージョン",
   "Opened connection": "オープン接続",
   "Operating System": "インストールされているソフトウェア",

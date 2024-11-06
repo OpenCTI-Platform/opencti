@@ -490,6 +490,7 @@
   "Observable content": "Observierbarer Inhalt",
   "Observable description": "Observable Beschreibung",
   "Observables": "Observables",
+  "Only alphanumeric characters are allowed for the value": "Für den Wert sind nur alphanumerische Zeichen zulässig",
   "OpenCTI version": "OpenCTI-Version",
   "Opened connection": "Geöffnete Verbindung",
   "Operating System": "Betriebssystem",

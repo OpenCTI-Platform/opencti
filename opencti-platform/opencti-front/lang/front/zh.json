@@ -1929,6 +1929,7 @@
   "One keyword by line or separated by commas": "每行一个关键字或以逗号分隔",
   "One line confirm label next to confirm checkbox": "确认复选框旁边的一行确认标签",
   "one of the following requirements:": "以下要求之一：",
+  "Only alphanumeric characters are allowed for the value": "数值只允许使用字母数字字符",
   "Only contextual": "仅上下文",
   "Only successful tests allow the ingestion creation.": "只有成功的测试才允许创建摄取。",
   "Only successful tests allow the ingestion edition.": "只有成功的测试才允许摄取版本。",

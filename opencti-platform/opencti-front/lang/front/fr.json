@@ -1929,6 +1929,7 @@
   "One keyword by line or separated by commas": "Un mot-clé par ligne ou séparé par des virgules",
   "One line confirm label next to confirm checkbox": "Texte monoligne de confirmation à côté de la case à cocher de confirmation",
   "one of the following requirements:": "l'une des conditions suivantes :",
+  "Only alphanumeric characters are allowed for the value": "Seuls les caractères alphanumériques sont autorisés pour la valeur",
   "Only contextual": "Seulement contextuel",
   "Only successful tests allow the ingestion creation.": "Seuls les tests réussis permettent la création de l'ingestion.",
   "Only successful tests allow the ingestion edition.": "Seuls les tests réussis permettent l'édition de l'ingestion.",

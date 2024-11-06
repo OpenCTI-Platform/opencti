@@ -490,6 +490,7 @@
   "Observable content": "관찰 가능 내용",
   "Observable description": "관찰 가능 설명",
   "Observables": "관찰 가능 항목",
+  "Only alphanumeric characters are allowed for the value": "값에는 영숫자만 허용됩니다",
   "OpenCTI version": "OpenCTI 버전",
   "Opened connection": "열린 연결",
   "Operating System": "운영체제",
