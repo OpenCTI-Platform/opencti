@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import type { Dispatch, MutableRefObject, ReactNode, RefObject, SetStateAction } from 'react';
+import type { Dispatch, MutableRefObject, ReactNode, SetStateAction } from 'react';
 import React from 'react';
 import { GraphQLTaggedNode } from 'react-relay';
 import { PopoverProps } from '@mui/material/Popover/Popover';
 import type { LocalStorage } from '../../utils/hooks/useLocalStorageModel';
-import { NumberOfElements, UseLocalStorageHelpers } from '../../utils/hooks/useLocalStorage';
+import { NumberOfElements, PaginationLocalStorage, UseLocalStorageHelpers } from '../../utils/hooks/useLocalStorage';
 import { FilterGroup } from '../../utils/filters/filtersHelpers-types';
 
 export type ColumnSizeVars = Record<string, number>;
@@ -49,34 +49,16 @@ export interface DataTableContextProps {
   setColumns: Dispatch<SetStateAction<DataTableColumns>>
   resolvePath: (data: any) => any
   redirectionModeEnabled?: boolean
-  toolbarFilters?: FilterGroup
-  useLineData: (row: any) => any
-  useDataTable: (args: any) => any
-  useDataCellHelpers: (cell: DataTableColumn) => any
-  useDataTableToggle: (key: string) => {
-    selectedElements: Record<string, any>
-    deSelectedElements: Record<string, any>
-    selectAll: boolean
-    numberOfSelectedElements: number
-    onToggleEntity: (
-      entity: any,
-      _?: React.MouseEvent,
-      forceRemove?: any[],
-    ) => void
-    handleClearSelectedElements: () => void
-    handleToggleSelectAll: () => void
-    setSelectedElements: (selectedElements: Record<string, any>) => void
-  } | Record<string, any>
-  useComputeLink: (entity: any) => string
-  useDataTableLocalStorage: <T extends LocalStorage = LocalStorage>(
-    key: string,
-    initialValues?: T,
-    ignoreUri?: boolean,
-    ignoreDispatch?: boolean,
-  ) => [T, Dispatch<SetStateAction<T>>]
-  onAddFilter: (key: string) => void
+  useLineData: DataTableProps['useLineData']
+  useDataTable: ReturnType<DataTableProps['useDataTable']>
+  useDataCellHelpers: DataTableProps['useDataCellHelpers']
+  useDataTableToggle: ReturnType<DataTableProps['useDataTableToggle']>
+  useComputeLink: DataTableProps['useComputeLink']
+  useDataTableColumnsLocalStorage: ReturnType<DataTableProps['useDataTableColumnsLocalStorage']>
+  useDataTablePaginationLocalStorage: ReturnType<DataTableProps['useDataTablePaginationLocalStorage']>
+  onAddFilter: DataTableProps['onAddFilter']
   onSort: (sortBy: string, orderAsc: boolean) => void
-  formatter: Record<string, (args: any) => any>
+  formatter: DataTableProps['formatter']
   variant: DataTableVariant
   actions?: DataTableProps['actions']
   rootRef?: DataTableProps['rootRef']
@@ -110,15 +92,34 @@ export interface DataTableProps {
   filtersComponent?: ReactNode
   dataTableToolBarComponent?: ReactNode
   numberOfElements?: NumberOfElements
-  onAddFilter?: DataTableContextProps['onAddFilter']
+  onAddFilter: (key: string) => void
   onSort?: (sortBy: string, orderAsc: boolean) => void
-  formatter: DataTableContextProps['formatter']
-  useDataTableLocalStorage: DataTableContextProps['useDataTableLocalStorage']
-  useComputeLink: DataTableContextProps['useComputeLink']
-  useDataTableToggle: DataTableContextProps['useDataTableToggle']
-  useLineData: DataTableContextProps['useLineData']
-  useDataTable: DataTableContextProps['useDataTable']
-  useDataCellHelpers: DataTableContextProps['useDataCellHelpers']
+  formatter: Record<string, (args: any) => any>
+  useDataTableColumnsLocalStorage: (
+    key: string,
+    initialValues?: LocalStorageColumns,
+    ignoreUri?: boolean,
+    ignoreDispatch?: boolean,
+  ) => [LocalStorageColumns, Dispatch<SetStateAction<LocalStorageColumns>>]
+  useDataTablePaginationLocalStorage: <T>(
+    key: string,
+    initialValue: LocalStorage,
+    ignoreUri?: boolean,
+  ) => PaginationLocalStorage<T>
+  useComputeLink: (entity: any) => string
+  useDataTableToggle: (key: string) => {
+    selectedElements: Record<string, any>
+    deSelectedElements: Record<string, any>
+    selectAll: boolean
+    numberOfSelectedElements: number
+    onToggleEntity: (entity: any, _?: React.MouseEvent, forceRemove?: any[]) => void
+    handleClearSelectedElements: () => void
+    handleToggleSelectAll: () => void
+    setSelectedElements: (selectedElements: Record<string, any>) => void
+  }
+  useLineData: (row: any) => any
+  useDataTable: (args: any) => any
+  useDataCellHelpers: (cell: DataTableColumn) => any
   sortBy?: string | undefined
   orderAsc?: boolean | undefined
   variant?: DataTableVariant
@@ -133,21 +134,16 @@ export interface DataTableProps {
   selectOnLineClick?: boolean
   onLineClick?: (line: any) => void
   hideHeaders?: boolean
+  canToggleLine?: boolean
 }
 
 export interface DataTableBodyProps {
   columns: DataTableColumns
-  redirectionMode: DataTableProps['redirectionMode']
-  storageHelpers: DataTableProps['storageHelpers']
   hasFilterComponent: boolean
   dataTableToolBarComponent?: ReactNode
-  sortBy: DataTableProps['sortBy']
-  orderAsc: DataTableProps['orderAsc']
   settingsMessagesBannerHeight?: DataTableProps['settingsMessagesBannerHeight']
-  dataQueryArgs: DataTableProps['dataQueryArgs']
   pageSize: number
   pageStart: number
-  dataTableHeaderRef: RefObject<HTMLDivElement>
   reset: boolean,
   setReset: Dispatch<SetStateAction<boolean>>
   hideHeaders: DataTableProps['hideHeaders']
@@ -177,8 +173,6 @@ export interface DataTableFiltersProps {
 export interface DataTableHeadersProps {
   containerRef?: MutableRefObject<HTMLDivElement | null>
   effectiveColumns: DataTableColumns
-  sortBy: DataTableProps['sortBy']
-  orderAsc: DataTableProps['orderAsc']
   dataTableToolBarComponent: ReactNode
 }
 
@@ -195,9 +189,7 @@ export interface DataTableHeaderProps {
 
 export interface DataTableLineProps {
   row: any
-  redirectionMode?: string | undefined
   effectiveColumns: DataTableColumns
-  storageHelpers: DataTableProps['storageHelpers']
   index: number
   onToggleShiftEntity: (currentIndex: number, currentEntity: { id: string }, event?: React.MouseEvent) => void
 }
@@ -205,5 +197,4 @@ export interface DataTableLineProps {
 export interface DataTableCellProps {
   cell: DataTableColumn
   data: any
-  storageHelpers: DataTableProps['storageHelpers']
 }

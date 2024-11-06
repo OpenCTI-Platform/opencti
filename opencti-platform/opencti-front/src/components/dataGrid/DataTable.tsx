@@ -7,26 +7,157 @@ import { GraphQLTaggedNode } from 'react-relay';
 import { useTheme } from '@mui/styles';
 import DataTableFilters, { DataTableDisplayFilters } from './DataTableFilters';
 import SearchInput from '../SearchInput';
-import type { DataTableProps } from './dataTableTypes';
-import { DataTableVariant } from './dataTableTypes';
-import { usePaginationLocalStorage } from '../../utils/hooks/useLocalStorage';
+import { DataTableProps } from './dataTableTypes';
 import useAuth from '../../utils/hooks/useAuth';
-import { useComputeLink, useDataCellHelpers, useDataTable, useDataTableLocalStorage, useDataTableToggle, useLineData } from './dataTableHooks';
+import { useDataTable, useLineData } from './dataTableHooks';
 import DataTableComponent from './components/DataTableComponent';
-import { useFormatter } from '../i18n';
 import { SELECT_COLUMN_SIZE } from './components/DataTableHeader';
-import { getDefaultFilterObject } from '../../utils/filters/filtersUtils';
 import { UsePreloadedPaginationFragment } from '../../utils/hooks/usePreloadedPaginationFragment';
 import { FilterIconButtonProps } from '../FilterIconButton';
 import { isNotEmptyField } from '../../utils/utils';
 import type { Theme } from '../Theme';
+import { useDataTableContext } from './components/DataTableContext';
 
-type OCTIDataTableProps = Pick<DataTableProps, 'dataColumns'
+type DataTableInternalFiltersProps = Pick<DataTableProps,
+| 'additionalFilterKeys'
+| 'entityTypes'> & {
+  hideSearch?: boolean
+  hideFilters?: boolean
+  availableRelationFilterTypes?: FilterIconButtonProps['availableRelationFilterTypes']
+  availableEntityTypes?: string[]
+  availableRelationshipTypes?: string[]
+  searchContextFinal?: { entityTypes: string[]; elementId?: string[] }
+  additionalHeaderButtons?: ReactNode[]
+  currentView?: string
+  exportContext?: { entity_type: string, entity_id?: string }
+};
+
+const DataTableInternalFilters = ({
+  additionalFilterKeys,
+  entityTypes,
+  hideSearch,
+  hideFilters,
+  availableEntityTypes,
+  availableRelationFilterTypes,
+  availableRelationshipTypes,
+  searchContextFinal,
+  additionalHeaderButtons,
+  currentView,
+  exportContext,
+}: DataTableInternalFiltersProps) => {
+  const theme = useTheme<Theme>();
+
+  const {
+    availableFilterKeys,
+    useDataTablePaginationLocalStorage: {
+      viewStorage: { searchTerm },
+      helpers,
+      paginationOptions,
+    },
+  } = useDataTableContext();
+
+  const computedEntityTypes = entityTypes ?? (exportContext?.entity_type ? [exportContext.entity_type] : []);
+
+  return (
+    <>
+      <div
+        style={{
+          display: 'flex',
+          gap: theme.spacing(1),
+          marginBottom: theme.spacing(2),
+        }}
+      >
+        {!hideSearch && (
+          <SearchInput
+            variant={'small'}
+            onSubmit={helpers.handleSearch}
+            keyword={searchTerm}
+          />
+        )}
+        {!hideFilters && (
+          <DataTableFilters
+            availableFilterKeys={availableFilterKeys}
+            searchContextFinal={searchContextFinal}
+            availableEntityTypes={availableEntityTypes}
+            availableRelationshipTypes={availableRelationshipTypes}
+            availableRelationFilterTypes={availableRelationFilterTypes}
+            exportContext={exportContext}
+            paginationOptions={paginationOptions}
+            additionalHeaderButtons={additionalHeaderButtons}
+            currentView={currentView}
+          />
+        )}
+      </div>
+      {!hideFilters && (
+        <DataTableDisplayFilters
+          availableFilterKeys={availableFilterKeys}
+          availableRelationFilterTypes={availableRelationFilterTypes}
+          availableEntityTypes={availableEntityTypes}
+          additionalFilterKeys={additionalFilterKeys}
+          entityTypes={computedEntityTypes}
+          paginationOptions={paginationOptions}
+        />
+      )}
+    </>
+  );
+};
+
+type DataTableInternalToolbarProps = Pick<DataTableProps,
+| 'toolbarFilters'
+| 'handleCopy'
+> & {
+  taskScope?: string
+  globalSearch?: string;
+};
+
+const DataTableInternalToolbar = ({
+  taskScope,
+  handleCopy,
+  toolbarFilters,
+  globalSearch,
+}: DataTableInternalToolbarProps) => {
+  const theme = useTheme<Theme>();
+
+  const {
+    useDataTableToggle: {
+      selectedElements,
+      deSelectedElements,
+      numberOfSelectedElements,
+      selectAll,
+      handleClearSelectedElements,
+    },
+    useDataTablePaginationLocalStorage: {
+      viewStorage: { searchTerm },
+    },
+  } = useDataTableContext();
+
+  return (
+    <div
+      style={{
+        background: theme.palette.background.accent,
+        width: `calc(( var(--header-table-size) - ${SELECT_COLUMN_SIZE} ) * 1px)`,
+      }}
+    >
+      <DataTableToolBar
+        selectedElements={selectedElements}
+        deSelectedElements={deSelectedElements}
+        numberOfSelectedElements={numberOfSelectedElements}
+        selectAll={selectAll}
+        search={searchTerm ?? globalSearch}
+        filters={toolbarFilters}
+        handleClearSelectedElements={handleClearSelectedElements}
+        taskScope={taskScope}
+        handleCopy={handleCopy}
+      />
+    </div>
+  );
+};
+
+type OCTIDataTableProps = Pick<DataTableProps,
+| 'dataColumns'
 | 'resolvePath'
 | 'storageKey'
 | 'initialValues'
-| 'toolbarFilters'
-| 'handleCopy'
 | 'availableFilterKeys'
 | 'redirectionModeEnabled'
 | 'additionalFilterKeys'
@@ -39,31 +170,19 @@ type OCTIDataTableProps = Pick<DataTableProps, 'dataColumns'
 | 'disableToolBar'
 | 'disableSelectAll'
 | 'selectOnLineClick'
+| 'createButton'
 | 'entityTypes'> & {
   lineFragment: GraphQLTaggedNode
   preloadedPaginationProps: UsePreloadedPaginationFragment<OperationType>,
-  availableRelationFilterTypes?: FilterIconButtonProps['availableRelationFilterTypes']
-  availableEntityTypes?: string[]
-  availableRelationshipTypes?: string[]
-  globalSearch?: string;
-  searchContextFinal?: { entityTypes: string[]; elementId?: string[] }
   exportContext?: { entity_type: string, entity_id?: string }
-  additionalHeaderButtons?: ReactNode[]
+  globalSearch?: string;
   createButton?: ReactNode
-  currentView?: string
-  hideFilters?: boolean
-  hideSearch?: boolean
-  taskScope?: string
-};
+} & DataTableInternalFiltersProps & DataTableInternalToolbarProps;
 
 const DataTable = (props: OCTIDataTableProps) => {
   const { schema } = useAuth();
-  const formatter = useFormatter();
-  const theme = useTheme<Theme>();
 
   const {
-    storageKey,
-    initialValues,
     availableFilterKeys: defaultAvailableFilterKeys,
     globalSearch,
     searchContextFinal,
@@ -77,7 +196,6 @@ const DataTable = (props: OCTIDataTableProps) => {
     entityTypes,
     toolbarFilters,
     handleCopy,
-    variant = DataTableVariant.default,
     additionalHeaderButtons,
     currentView,
     hideSearch,
@@ -85,18 +203,6 @@ const DataTable = (props: OCTIDataTableProps) => {
     taskScope,
   } = props;
 
-  const {
-    viewStorage: {
-      searchTerm,
-      redirectionMode,
-      numberOfElements,
-      sortBy,
-      orderAsc,
-      pageSize,
-    },
-    helpers,
-    paginationOptions,
-  } = usePaginationLocalStorage(storageKey, initialValues);
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
 
   const computedEntityTypes = entityTypes ?? (exportContext?.entity_type ? [exportContext.entity_type] : []);
@@ -113,14 +219,6 @@ const DataTable = (props: OCTIDataTableProps) => {
     availableFilterKeys = availableFilterKeys.concat(additionalFilterKeys);
   }
 
-  const {
-    selectedElements,
-    deSelectedElements,
-    numberOfSelectedElements,
-    selectAll,
-    handleClearSelectedElements,
-  } = useDataTableToggle(storageKey);
-
   return (
     <DataTableComponent
       {...props}
@@ -128,85 +226,29 @@ const DataTable = (props: OCTIDataTableProps) => {
       dataQueryArgs={{ ...dataQueryArgs }}
       useLineData={useLineData(lineFragment)}
       useDataTable={useDataTable}
-      useDataCellHelpers={useDataCellHelpers(helpers, variant)}
-      useDataTableToggle={useDataTableToggle}
-      useComputeLink={useComputeLink}
-      useDataTableLocalStorage={useDataTableLocalStorage}
-      onAddFilter={(id) => helpers.handleAddFilterWithEmptyValue(getDefaultFilterObject(id))}
-      formatter={formatter}
       settingsMessagesBannerHeight={settingsMessagesBannerHeight}
-      storageHelpers={helpers}
-      redirectionMode={redirectionMode}
-      numberOfElements={numberOfElements}
-      onSort={helpers.handleSort}
-      sortBy={sortBy}
-      orderAsc={orderAsc}
-      pageSize={pageSize}
       filtersComponent={(
-        <>
-          <div
-            style={{
-              display: 'flex',
-              gap: theme.spacing(1),
-              marginBottom: theme.spacing(2),
-              // ...(variant !== DataTableVariant.default
-              //   // ? { margin: theme.spacing(1), marginLeft: 0 }
-              //   : {}
-              // ),
-            }}
-          >
-            {!hideSearch && (
-              <SearchInput
-                variant={'small'}
-                onSubmit={helpers.handleSearch}
-                keyword={searchTerm}
-              />
-            )}
-            {!hideFilters && (
-              <DataTableFilters
-                availableFilterKeys={availableFilterKeys}
-                searchContextFinal={searchContextFinal}
-                availableEntityTypes={availableEntityTypes}
-                availableRelationshipTypes={availableRelationshipTypes}
-                availableRelationFilterTypes={availableRelationFilterTypes}
-                exportContext={exportContext}
-                paginationOptions={paginationOptions}
-                additionalHeaderButtons={additionalHeaderButtons}
-                currentView={currentView}
-              />
-            )}
-          </div>
-          {!hideFilters && (
-            <DataTableDisplayFilters
-              availableFilterKeys={availableFilterKeys}
-              availableRelationFilterTypes={availableRelationFilterTypes}
-              availableEntityTypes={availableEntityTypes}
-              additionalFilterKeys={additionalFilterKeys}
-              entityTypes={computedEntityTypes}
-              paginationOptions={paginationOptions}
-            />
-          )}
-        </>
+        <DataTableInternalFilters
+          entityTypes={entityTypes}
+          additionalFilterKeys={additionalFilterKeys}
+          additionalHeaderButtons={additionalHeaderButtons}
+          availableEntityTypes={availableEntityTypes}
+          availableRelationFilterTypes={availableRelationFilterTypes}
+          hideFilters={hideFilters}
+          hideSearch={hideSearch}
+          availableRelationshipTypes={availableRelationshipTypes}
+          currentView={currentView}
+          exportContext={exportContext}
+          searchContextFinal={searchContextFinal}
+        />
       )}
       dataTableToolBarComponent={(
-        <div
-          style={{
-            background: theme.palette.background.accent,
-            width: `calc(( var(--header-table-size) - ${SELECT_COLUMN_SIZE} ) * 1px)`,
-          }}
-        >
-          <DataTableToolBar
-            selectedElements={selectedElements}
-            deSelectedElements={deSelectedElements}
-            numberOfSelectedElements={numberOfSelectedElements}
-            selectAll={selectAll}
-            search={searchTerm ?? globalSearch}
-            filters={toolbarFilters}
-            handleClearSelectedElements={handleClearSelectedElements}
-            taskScope={taskScope}
-            handleCopy={handleCopy}
-          />
-        </div>
+        <DataTableInternalToolbar
+          handleCopy={handleCopy}
+          taskScope={taskScope}
+          toolbarFilters={toolbarFilters}
+          globalSearch={globalSearch}
+        />
       )}
     />
   );
