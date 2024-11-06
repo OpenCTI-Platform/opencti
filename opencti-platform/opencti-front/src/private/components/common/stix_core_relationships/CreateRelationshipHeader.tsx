@@ -5,10 +5,11 @@ import StixDomainObjectCreation from '@components/common/stix_domain_objects/Sti
 import StixCyberObservableCreation from '@components/observations/stix_cyber_observables/StixCyberObservableCreation';
 import { computeTargetStixCyberObservableTypes, computeTargetStixDomainObjectTypes } from '../../../../utils/stixTypeUtils';
 import { useFormatter } from '../../../../components/i18n';
+import { PaginationOptions } from '../../../../components/list_lines';
 
 interface CreateRelationshipHeaderProps {
   showCreates: boolean,
-  searchPaginationOptions?: any,
+  searchPaginationOptions?: PaginationOptions,
 }
 
 // Custom header prop for entity/observable creation buttons in initial step
