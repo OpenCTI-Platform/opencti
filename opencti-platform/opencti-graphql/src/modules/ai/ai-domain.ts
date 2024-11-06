@@ -16,7 +16,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 import * as R from 'ramda';
 import { listAllToEntitiesThroughRelations, storeLoadById } from '../../database/middleware-loader';
 import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CORE_RELATIONSHIP, ENTITY_TYPE_CONTAINER } from '../../schema/general';
-import { RELATION_OBJECT } from '../../schema/stixRefRelationship';
+import { RELATION_EXTERNAL_REFERENCE, RELATION_OBJECT } from '../../schema/stixRefRelationship';
 import { extractEntityRepresentativeName, extractRepresentativeDescription } from '../../database/entity-representative';
 import type { AuthContext, AuthUser } from '../../types/user';
 import type { BasicStoreEntity, BasicStoreRelation } from '../../types/store';
@@ -25,16 +25,7 @@ import { Format, Tone } from '../../generated/graphql';
 import { isEmptyField, isNotEmptyField } from '../../database/utils';
 import { FROM_START_STR, UNTIL_END_STR } from '../../utils/format';
 import { compute } from '../../database/ai-llm';
-import {
-  RELATION_AMPLIFIES,
-  RELATION_ATTRIBUTED_TO,
-  RELATION_COMPROMISES,
-  RELATION_COOPERATES_WITH,
-  RELATION_HAS,
-  RELATION_LOCATED_AT,
-  RELATION_TARGETS,
-  RELATION_USES
-} from '../../schema/stixCoreRelationship';
+import { RELATION_AMPLIFIES, RELATION_ATTRIBUTED_TO, RELATION_COMPROMISES, RELATION_COOPERATES_WITH, RELATION_HAS, RELATION_LOCATED_AT, RELATION_TARGETS, RELATION_USES } from '../../schema/stixCoreRelationship';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../../schema/stixDomainObject';
 import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../case/case-incident/case-incident-types';
 import { paginatedForPathWithEnrichment } from '../internal/document/document-domain';
@@ -253,6 +244,7 @@ export const summarizeFiles = async (context: AuthContext, user: AuthUser, args:
   const stixCoreObject = await storeLoadById(context, user, elementId, ABSTRACT_STIX_CORE_OBJECT) as BasicStoreEntity;
   let finalFilesIds = fileIds;
   if (isEmptyField(fileIds)) {
+    // get content files
     const opts = {
       first: 20,
       prefixMimeTypes: undefined,
@@ -261,6 +253,21 @@ export const summarizeFiles = async (context: AuthContext, user: AuthUser, args:
     };
     const importFiles = await paginatedForPathWithEnrichment(context, user, `import/${stixCoreObject.entity_type}/${stixCoreObject.id}`, stixCoreObject.id, opts);
     finalFilesIds = importFiles.edges.map((n) => n.node.id);
+    // get external ref files
+    const refs = stixCoreObject[RELATION_EXTERNAL_REFERENCE] ?? [];
+    for (const ref of refs) {
+      const optsRef = {
+        first: 20,
+        prefixMimeTypes: undefined,
+        entity_id: ref,
+        entity_type: 'External-Reference'
+      };
+      const importRefFiles = await paginatedForPathWithEnrichment(context, user, `import/External-Reference/${ref}`, ref, optsRef);
+      const refFilesIds = importRefFiles.edges.map((n) => n.node.id);
+      for (const refFileId of refFilesIds) {
+        finalFilesIds.push(refFileId);
+      }
+    }
   }
   if (isEmptyField(finalFilesIds) || finalFilesIds?.length === 0) {
     return 'Unable to summarize files as no file is associated to this entity.';
