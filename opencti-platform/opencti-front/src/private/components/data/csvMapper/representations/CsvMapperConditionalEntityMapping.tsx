@@ -39,7 +39,7 @@ CsvMapperConditionalEntityMappingProps
       display: 'grid',
       gridTemplateColumns: '1.3fr 1fr 1fr 1fr',
       alignItems: 'center',
-      margin: '20px 0px',
+      margin: '30px 0px',
       gap: '10px',
     }}
     >
