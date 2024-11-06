@@ -14,6 +14,8 @@ describe('Regex Pattern Tests', () => {
     expect('løveskateboards.com').toMatch(domainChecker);
     expect('test._mysubdomain.mydomain.com').toMatch(domainChecker);
     expect('test_mysubdomain.domain.io').toMatch(domainChecker);
+    expect('test-test.com').toMatch(domainChecker);
+    expect('test-test.mytest.com').toMatch(domainChecker);
     expect('invalid_domain.12_3').not.toMatch(domainChecker);
     expect('invalid_domain').not.toMatch(domainChecker);
   });
