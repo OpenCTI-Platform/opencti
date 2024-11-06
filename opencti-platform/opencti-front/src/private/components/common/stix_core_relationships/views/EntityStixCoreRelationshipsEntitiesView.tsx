@@ -23,7 +23,7 @@ interface EntityStixCoreRelationshipsEntitiesViewProps {
   defaultStopTime: string;
   localStorage: PaginationLocalStorage<PaginationOptions>;
   relationshipTypes: string[];
-  stixCoreObjectTypes?: string[];
+  stixCoreObjectTypes: string[];
   isRelationReversed: boolean;
   currentView: string;
   enableNestedView?: boolean;
@@ -40,7 +40,7 @@ EntityStixCoreRelationshipsEntitiesViewProps
   defaultStopTime,
   localStorage,
   relationshipTypes,
-  stixCoreObjectTypes = ['Stix-Core-Object'],
+  stixCoreObjectTypes,
   isRelationReversed,
   currentView,
   enableNestedView,
@@ -161,10 +161,10 @@ EntityStixCoreRelationshipsEntitiesViewProps
     stixCoreObjectTypes,
     relationshipTypes,
     connectionKey: 'Pagination_stixCoreObjects',
+    reversed: isRelationReversed,
   });
   useEffect(() => {
     setCreateRelationshipContext({
-      reversed: isRelationReversed,
       paginationOptions,
     });
   }, []);

@@ -21,11 +21,11 @@ interface EntityStixCoreRelationshipsProps {
   defaultStartTime: string;
   defaultStopTime: string;
   relationshipTypes: string[];
-  stixCoreObjectTypes: string[];
+  stixCoreObjectTypes?: string[];
   currentView: string;
   enableNestedView?: boolean;
   enableContextualView: boolean;
-  isRelationReversed: boolean;
+  isRelationReversed?: boolean;
   allDirections?: boolean;
   role?: string;
   paddingRightButtonAdd?: number;
@@ -40,18 +40,18 @@ EntityStixCoreRelationshipsProps
   defaultStartTime,
   defaultStopTime,
   relationshipTypes,
-  stixCoreObjectTypes,
+  stixCoreObjectTypes = [],
   currentView,
   enableNestedView,
   enableContextualView,
-  isRelationReversed,
+  isRelationReversed = false,
   allDirections,
   role,
   paddingRightButtonAdd,
   handleChangeView,
 }) => {
   const classes = useStyles();
-  const LOCAL_STORAGE_KEY = `relationships-${entityId}-${stixCoreObjectTypes?.join(
+  const LOCAL_STORAGE_KEY = `relationships-${entityId}-${stixCoreObjectTypes.join(
     '-',
   )}-${relationshipTypes?.join('-')}`;
   const localStorage = usePaginationLocalStorage<PaginationOptions>(
