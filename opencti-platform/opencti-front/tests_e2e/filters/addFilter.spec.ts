@@ -13,7 +13,7 @@ test('Add filters with different operators', async ({ page }) => {
   await expect(page.getByRole('button', { name: 'Entity type = Artifact' })).toBeVisible();
   // Add different filters with different operators
   await page.goto('/dashboard/observations/observables');
-  filterUtils = new FiltersUtils(page);
+  filterUtils = new FiltersPageModel(page);
   await filterUtils.addFilterFromDate('Original creation date', '12', 'Lower than');
   await filterUtils.addFilterFromTextAndOperator('Value', 'Starts with', 'Empty');
   await filterUtils.addFilterFromTextAndOperator('Value', 'Starts with', 'Contains', 'content to test');
@@ -31,7 +31,7 @@ test('Add filters with different operators', async ({ page }) => {
   // Check added filter is present in background task
   reportPage = new ReportPage(page);
   await page.goto('/dashboard/analyses/reports');
-  filterUtils = new FiltersUtils(page);
+  filterUtils = new FiltersPageModel(page);
   await filterUtils.addFilterFromText('Modification date', '01/01/2020');
   await reportPage.selectAllReports(); // check all the reports
   await page.getByRole('button', { name: 'delete' }).click(); // delete them via the toolbar
