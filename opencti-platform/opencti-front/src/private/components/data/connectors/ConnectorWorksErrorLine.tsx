@@ -59,7 +59,7 @@ const ConnectorWorksErrorLine: FunctionComponent<ConnectorWorksErrorLineProps> =
         <TableCell>{nsdt(error.rawError.timestamp)}</TableCell>
         <TableCell>
           {error.isParsed && error.parsedError.doc_code ? (
-            <a href={`https://docs.opencti.io/latest/deployment/troubleshooting/#${error.parsedError.doc_code}`} target="_blank" rel="noreferrer">{error.parsedError.doc_code}</a>
+            <a href={`https://docs.opencti.io/latest/deployment/troubleshooting/#${error.parsedError.doc_code.toLowerCase()}`} target="_blank" rel="noreferrer">{error.parsedError.doc_code}</a>
           ) : (
             <a href={'https://docs.opencti.io/latest/deployment/troubleshooting'} target="_blank" rel="noreferrer">{t_i18n('Unknown')}</a>
           )}
