@@ -15,7 +15,7 @@ const executiveSummaryContent = (containerType: string) => {
     <div>
       <h2>Executive report</h2>
       
-      <h3>Details</h3>
+      <h3>1. Details</h3>
       <table>
         <tbody>
           <tr>
@@ -58,10 +58,10 @@ const executiveSummaryContent = (containerType: string) => {
         <span style="display:none;">&nbsp;</span>
       </div>
       
-      <h3>Executive Summary</h3>
+      <h3>2. Executive Summary</h3>
       <p>$containerDescription</p>
       
-      <h3>Key points</h3>
+      <h3>3. Key points</h3>
       <blockquote>
         <p>To be completed by the analyst. The key points section details:</p>
         <ul>
@@ -77,7 +77,7 @@ const executiveSummaryContent = (containerType: string) => {
         <span style="display:none;">&nbsp;</span>
       </div>
       
-      <h3>Assessment</h3>
+      <h3>4. Assessment</h3>
       <blockquote>
         <p>To be completed by the analyst. The assessment section details:</p>
         <ul>
@@ -92,7 +92,7 @@ const executiveSummaryContent = (containerType: string) => {
         <span style="display:none;">&nbsp;</span>
       </div>
       
-      <h3>All entities & observables</h3>
+      <h3>5. All entities & observables</h3>
       <blockquote>
         <p>This section is meant to help you draft your final outcome. It gathers all entities & observables in your container. <strong>REMOVE THE TABLE ONCE DONE</strong></p>
       </blockquote>
@@ -102,7 +102,7 @@ const executiveSummaryContent = (containerType: string) => {
         <span style="display:none;">&nbsp;</span>
       </div>
       
-      <h3>IoCs</h3>
+      <h3>6. IoCs</h3>
       <blockquote>
         <p>This section is meant to help you draft your final outcome. It gathers all indicators in your container. <strong>REMOVE THE TABLE ONCE DONE</strong></p>
       </blockquote>
@@ -112,7 +112,7 @@ const executiveSummaryContent = (containerType: string) => {
         <span style="display:none;">&nbsp;</span>
       </div>
       
-      <h3>Data sources</h3>
+      <h3>7. Data sources</h3>
       <div>$containerReferences</div>
       
       <div class="page-break" style="page-break-after:always;">
