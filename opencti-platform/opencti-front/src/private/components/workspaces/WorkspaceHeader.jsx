@@ -44,6 +44,7 @@ import WorkspaceManageAccessDialog from './WorkspaceManageAccessDialog';
 import Transition from '../../../components/Transition';
 import useHelper from '../../../utils/hooks/useHelper';
 import { useGetCurrentUserAccessRight } from '../../../utils/authorizedMembers';
+import { truncate } from '../../../utils/String';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -56,16 +57,16 @@ const useStyles = makeStyles(() => ({
     marginTop: '-13px',
   },
   manageAccess: {
-    margin: '-8px 4px 0 0',
+    margin: '-5px 4px 0 0',
     float: 'right',
   },
   turnToReportOrCase: {
-    margin: '-8px 4px 0 0',
+    margin: '-5px 4px 0 0',
     float: 'right',
   },
   export: {
     float: 'right',
-    margin: '-8px 0 0 0',
+    margin: '-5px 0 0 0',
     display: 'flex',
   },
   tags: {
@@ -73,7 +74,7 @@ const useStyles = makeStyles(() => ({
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'end',
-    marginTop: '-8px',
+    marginTop: '-5px',
   },
   tag: {
     marginRight: 7,
@@ -203,14 +204,16 @@ const WorkspaceHeader = ({
   return (
     <>
       <div style={{ margin: variant === 'dashboard' ? '0 20px 0 20px' : 0 }}>
-        <Typography
-          variant="h1"
-          gutterBottom={true}
-          classes={{ root: classes.title }}
-          style={{ marginRight: canEdit ? 0 : 10 }}
-        >
-          {workspace.name}
-        </Typography>
+        <Tooltip title={workspace.name}>
+          <Typography
+            variant="h1"
+            gutterBottom={true}
+            classes={{ root: classes.title }}
+            style={{ marginRight: canEdit ? 0 : 10 }}
+          >
+            {truncate(workspace.name, 40)}
+          </Typography>
+        </Tooltip>
         <Security needs={[EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE]} hasAccess={canEdit}>
           <div className={classes.popover}>
             <WorkspacePopover workspace={workspace} />
@@ -357,7 +360,7 @@ const WorkspaceHeader = ({
         )}
         {isFeatureEnable('PUBLIC_DASHBOARD') && variant === 'dashboard' && (
           <Security needs={[EXPLORE_EXUPDATE_PUBLISH]} hasAccess={canManage}>
-            <div style={{ margin: '-8px 0 0 4px', float: 'right' }}>
+            <div style={{ margin: '-5px 0 0 4px', float: 'right' }}>
               <WorkspaceShareButton workspaceId={workspace.id} />
             </div>
           </Security>
