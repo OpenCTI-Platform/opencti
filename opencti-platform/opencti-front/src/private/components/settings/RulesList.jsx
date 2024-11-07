@@ -459,7 +459,7 @@ const RulesListComponent = ({ relay, data, keyword }) => {
                     <DangerZoneBlock
                       type={'rules'}
                       title={t_i18n(rule.name)}
-                      sx={{ title: { textWrap: 'nowrap' } }}
+                      sx={{ title: { textWrap: 'nowrap', display: 'flex', alignItems: 'center' } }}
                       component={({ disabled, style }) => (
                         <Paper
                           variant="outlined"
@@ -549,7 +549,7 @@ const RulesListComponent = ({ relay, data, keyword }) => {
                     <Paper
                       variant="outlined"
                       classes={{ root: classes.paper }}
-                      style={{ marginTop: 25 }}
+                      style={{ marginTop: 23, overflowX: 'auto' }}
                     >
                       <div className={classes.definition}>
                         <div className={classes.left}>

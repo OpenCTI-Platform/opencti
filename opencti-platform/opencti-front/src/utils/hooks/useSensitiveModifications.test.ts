@@ -1,19 +1,7 @@
-import { describe, it, vi, expect, afterAll } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { UserContextType } from './useAuth';
 import { createMockUserContext, testRenderHook } from '../tests/test-render';
 import useSensitiveModifications from './useSensitiveModifications';
-
-let FEATURE_ENABLED = false;
-
-vi.mock('./useHelper.ts', () => {
-  return {
-    default: () => {
-      return {
-        isFeatureEnable: vi.fn().mockReturnValue(FEATURE_ENABLED),
-      };
-    },
-  };
-});
 
 describe('Hook: useSensitiveModifications', () => {
   const baseUserContext = {
@@ -21,22 +9,7 @@ describe('Hook: useSensitiveModifications', () => {
     settings: { platform_protected_sensitive_config: { enabled: true } },
   } as unknown as UserContextType;
 
-  afterAll(() => {
-    vi.restoreAllMocks();
-  });
-
-  it('should be allowed if sensitive feature disabled', () => {
-    const { hook } = testRenderHook(
-      () => useSensitiveModifications(),
-      { userContext: createMockUserContext(baseUserContext) },
-    );
-    const { isAllowed, isSensitive } = hook.result.current;
-    expect(isAllowed).toEqual(true);
-    expect(isSensitive).toEqual(false);
-  });
   it('should be allowed if sensitive config disabled', () => {
-    FEATURE_ENABLED = true;
-
     const { hook } = testRenderHook(
       () => useSensitiveModifications(),
       {
