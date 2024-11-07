@@ -32,6 +32,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { handleErrorInForm, MESSAGING$, QueryRenderer } from '../../../../relay/environment';
 import { resolveLink } from '../../../../utils/Entity';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 
 const stixCoreObjectFileExportQuery = graphql`
   query StixCoreObjectFileExportQuery {
@@ -54,6 +55,7 @@ interface StixCoreObjectFileExportComponentProps {
   id: string;
   type: string;
   redirectToContent?: boolean;
+  hasContentsFromTemplate?: boolean;
 }
 
 interface FormValues {
@@ -68,6 +70,7 @@ const StixCoreObjectFileExportComponent = ({
   id,
   type,
   redirectToContent,
+  hasContentsFromTemplate,
 }: StixCoreObjectFileExportComponentProps) => {
   const navigate = useNavigate();
   const { t_i18n } = useFormatter();
@@ -133,7 +136,7 @@ const StixCoreObjectFileExportComponent = ({
     && isExportActive('application/pdf')
     ? 'application/pdf'
     : '';
-  const isExportPossible = filter((x) => isExportActive(x ?? ''), exportScopes).length > 0;
+  const isExportPossible = filter((x) => isExportActive(x ?? ''), exportScopes).length > 0 || hasContentsFromTemplate;
   return (
     <>
       <Tooltip
@@ -284,10 +287,12 @@ const StixCoreObjectFileExport = ({
   id,
   type,
   redirectToContent,
+  hasContentsFromTemplate,
 }: {
   id: string;
   type: string;
   redirectToContent?: boolean;
+  hasContentsFromTemplate?: boolean;
 }) => {
   const queryRef = useQueryLoading<StixCoreObjectFileExportQuery>(
     stixCoreObjectFileExportQuery,
@@ -312,6 +317,7 @@ const StixCoreObjectFileExport = ({
             type={type}
             queryRef={queryRef}
             redirectToContent={redirectToContent}
+            hasContentsFromTemplate={hasContentsFromTemplate}
           />
         </React.Suspense>
       )}

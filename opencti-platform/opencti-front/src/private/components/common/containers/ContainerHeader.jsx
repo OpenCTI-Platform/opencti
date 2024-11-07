@@ -772,6 +772,7 @@ const ContainerHeader = (props) => {
   const canEdit = currentAccessRight.canEdit || !isAuthorizedMembersEnabled;
   const enableManageAuthorizedMembers = currentAccessRight.canManage && isAuthorizedMembersEnabled;
   const triggerData = useLazyLoadQuery(stixCoreObjectQuickSubscriptionContentQuery, { first: 20, ...triggersPaginationOptions });
+  const hasContentsFromTemplate = container.contentsFromTemplate?.edges.length > 0;
   return (
     <div
       style={containerStyle}
@@ -914,6 +915,7 @@ const ContainerHeader = (props) => {
                 id={container.id}
                 type={container.entity_type}
                 redirectToContent={!!redirectToContent}
+                hasContentsFromTemplate={hasContentsFromTemplate}
               />
             )}
             {enableSuggestions && (
@@ -1129,6 +1131,13 @@ export default createFragmentContainer(ContainerHeader, {
         id
         name
         entity_type
+      }
+      contentsFromTemplate(first: 500) {
+          edges {
+              node {
+                  id
+              }
+          }
       }
       currentUserAccessRight
       authorized_members {
