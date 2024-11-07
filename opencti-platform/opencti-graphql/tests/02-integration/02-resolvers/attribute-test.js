@@ -140,7 +140,7 @@ describe('Attribute resolver standard behavior', () => {
       variables: { elementType: RELATION_HOSTS }
     });
     attributes = queryResult.data.schemaAttributeNames.edges.map((edgeNode) => edgeNode.node);
-    expect(attributes.length).toEqual(25);
+    expect(attributes.length).toEqual(26);
     expect(attributes.map((node) => node.value).includes('x_opencti_workflow_id')).toBeTruthy(); // Direct attribute
 
     // Stix Ref Relationship
