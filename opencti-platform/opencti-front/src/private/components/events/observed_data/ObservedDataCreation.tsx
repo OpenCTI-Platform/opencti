@@ -22,7 +22,7 @@ import { insertNode } from '../../../../utils/store';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
+import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import type { Theme } from '../../../../components/Theme';
 import { Option } from '../../common/form/ReferenceField';
 import { ObservedDataCreationMutation, ObservedDataCreationMutation$variables } from './__generated__/ObservedDataCreationMutation.graphql';
@@ -99,19 +99,18 @@ ObservedDataFormProps
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
-  const basicShape = {
+  const { mandatoryAttributes } = useIsMandatoryAttribute(OBSERVED_DATA_TYPE);
+  const basicShape = yupShapeConditionalRequired({
     objects: Yup.array(),
     first_observed: Yup.date()
-      .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
-      .required(t_i18n('This field is required')),
+      .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
     last_observed: Yup.date()
-      .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
-      .required(t_i18n('This field is required')),
-    number_observed: Yup.number().required(t_i18n('This field is required')),
+      .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
+    number_observed: Yup.number(),
     confidence: Yup.number().nullable(),
-  };
-  const observedDataValidator = useSchemaCreationValidation(
-    OBSERVED_DATA_TYPE,
+  }, mandatoryAttributes);
+  const observedDataValidator = useDynamicSchemaCreationValidation(
+    mandatoryAttributes,
     basicShape,
   );
   const [commit] = useApiMutation<ObservedDataCreationMutation>(
@@ -173,6 +172,8 @@ ObservedDataFormProps
     <Formik<ObservedDataAddInput>
       initialValues={initialValues}
       validationSchema={observedDataValidator}
+      validateOnChange={false}
+      validateOnBlur={false}
       onSubmit={onSubmit}
       onReset={onReset}
     >
@@ -181,6 +182,7 @@ ObservedDataFormProps
           <StixCoreObjectsField
             name="objects"
             style={fieldSpacingContainerStyle}
+            required={(mandatoryAttributes.includes('objects'))}
             setFieldValue={setFieldValue}
             values={values.objects}
           />
@@ -189,6 +191,7 @@ ObservedDataFormProps
             name="first_observed"
             textFieldProps={{
               label: t_i18n('First observed'),
+              required: (mandatoryAttributes.includes('first_observed')),
               variant: 'standard',
               fullWidth: true,
               style: { ...fieldSpacingContainerStyle },
@@ -199,6 +202,7 @@ ObservedDataFormProps
             name="last_observed"
             textFieldProps={{
               label: t_i18n('Last observed'),
+              required: (mandatoryAttributes.includes('last_observed')),
               variant: 'standard',
               fullWidth: true,
               style: { ...fieldSpacingContainerStyle },
@@ -210,6 +214,7 @@ ObservedDataFormProps
             name="number_observed"
             type="number"
             label={t_i18n('Number observed')}
+            required={(mandatoryAttributes.includes('number_observed'))}
             fullWidth={true}
             style={fieldSpacingContainerStyle}
           />
@@ -219,22 +224,26 @@ ObservedDataFormProps
           />
           <CreatedByField
             name="createdBy"
+            required={(mandatoryAttributes.includes('createdBy'))}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
           />
           <ObjectLabelField
             name="objectLabel"
+            required={(mandatoryAttributes.includes('objectLabel'))}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
             values={values.objectLabel}
           />
           <ObjectMarkingField
             name="objectMarking"
+            required={(mandatoryAttributes.includes('objectMarking'))}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
           />
           <ExternalReferencesField
             name="externalReferences"
+            required={(mandatoryAttributes.includes('externalReferences'))}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
             values={values.externalReferences}
