@@ -669,6 +669,34 @@ class OpenCTIApiClient:
             self.app_logger.error("[upload] Missing parameter: file_name")
             return None
 
+    def create_draft(self, **kwargs):
+        """create a draft in OpenCTI API
+        :param `**kwargs`: arguments for file name creating draft (required: `draft_name`)
+        :return: returns the query response for the draft creation
+        :rtype: id
+        """
+
+        draft_name = kwargs.get("draft_name", None)
+        entity_id = kwargs.get("entity_id", None)
+
+        if draft_name is not None:
+            self.app_logger.info("Creating a draft.")
+            query = """
+                    mutation draftWorkspaceAdd($input: DraftWorkspaceAddInput!) {
+                        draftWorkspaceAdd(input: $input) {
+                            id
+                        }
+                    }
+                 """
+            queryResult = self.query(
+                query,
+                {"input": {"name": draft_name, "entity_id": entity_id}},
+            )
+            return queryResult["data"]["draftWorkspaceAdd"]["id"]
+        else:
+            self.app_logger.error("[create_draft] Missing parameter: draft_name")
+            return None
+
     def upload_pending_file(self, **kwargs):
         """upload a file to OpenCTI API
 
