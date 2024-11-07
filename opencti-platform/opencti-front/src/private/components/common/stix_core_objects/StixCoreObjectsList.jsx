@@ -31,6 +31,12 @@ export const stixCoreObjectsListQuery = graphql`
           representative {
             main
           }
+          opinions_metrics {
+            mean
+            min
+            max
+            total
+          }
           ... on StixDomainObject {
             created
             modified
@@ -92,6 +98,8 @@ export const stixCoreObjectsListQuery = graphql`
             indicator_types
             pattern
             pattern_type
+            valid_from
+            valid_until
           }
           ... on Infrastructure {
             name
@@ -227,6 +235,9 @@ const StixCoreObjectsList = ({
   const { t_i18n } = useFormatter();
   const selection = dataSelection[0];
   const dataSelectionTypes = ['Stix-Core-Object'];
+  const sortBy = selection.sort_by && selection.sort_by.length > 0
+    ? selection.sort_by
+    : 'created_at';
   const dateAttribute = selection.date_attribute && selection.date_attribute.length > 0
     ? selection.date_attribute
     : 'created_at';
@@ -246,8 +257,8 @@ const StixCoreObjectsList = ({
         variables={{
           types: dataSelectionTypes,
           first: selection.number ?? 10,
-          orderBy: dateAttribute,
-          orderMode: 'desc',
+          orderBy: sortBy,
+          orderMode: selection.sort_mode ?? 'asc',
           filters,
         }}
         render={({ props }) => {
@@ -264,6 +275,7 @@ const StixCoreObjectsList = ({
                 rootRef={rootRef.current ?? undefined}
                 widgetId={widgetId}
                 pageSize={selection.number ?? 10}
+                sortBy={sortBy}
               />
             );
           }

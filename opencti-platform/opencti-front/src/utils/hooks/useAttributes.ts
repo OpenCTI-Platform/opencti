@@ -68,6 +68,7 @@ const ignoredAttributesInDashboards = [
   'published',
   'content',
   'content_mapping',
+  'opinions_metrics',
 ];
 
 // TODO check the attribute type from backend

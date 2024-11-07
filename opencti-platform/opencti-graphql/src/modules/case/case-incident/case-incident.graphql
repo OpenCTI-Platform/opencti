@@ -84,6 +84,7 @@ type CaseIncident implements BasicObject & StixObject & StixCoreObject & StixDom
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # Stix Domain Object
   revoked: Boolean!
   confidence: Int

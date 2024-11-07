@@ -540,11 +540,11 @@ export const timeSeriesRelations = async (context, user, args) => {
 };
 export const distributionHistory = async (context, user, types, args) => {
   const { limit = 10, order = 'desc', field } = args;
-  if (field.includes('.') && (!field.endsWith('internal_id') && !field.includes('context_data'))) {
+  if (field.includes('.') && (!field.endsWith('internal_id') && !field.includes('context_data') && !field.includes('opinions_metrics'))) {
     throw FunctionalError('Distribution entities does not support relation aggregation field');
   }
   let finalField = field;
-  if (field.includes('.' && !field.includes('context_data'))) {
+  if (field.includes('.' && !field.includes('context_data') && !field.includes('opinions_metrics'))) {
     finalField = REL_INDEX_PREFIX + field;
   }
   if (field === 'name') {
@@ -576,11 +576,11 @@ export const distributionHistory = async (context, user, types, args) => {
 export const distributionEntities = async (context, user, types, args) => {
   const distributionArgs = buildEntityFilters(types, args);
   const { limit = 10, order = 'desc', field } = args;
-  if (field.includes('.') && !field.endsWith('internal_id')) {
+  if (field.includes('.') && !field.endsWith('internal_id') && !field.includes('opinions_metrics')) {
     throw FunctionalError('Distribution entities does not support relation aggregation field');
   }
   let finalField = field;
-  if (field.includes('.')) {
+  if (field.includes('.') && !field.includes('opinions_metrics')) {
     finalField = REL_INDEX_PREFIX + field;
   }
   if (field === 'name') {
@@ -1790,7 +1790,7 @@ const updateAttributeRaw = async (context, user, instance, inputs, opts = {}) =>
     if (ins) { // If update will really produce a data change
       impactedInputs.push(ins);
       // region Compute the update to push in the stream
-      if (!input.key.startsWith('i_') && input.key !== 'x_opencti_graph_data' && !input.key.startsWith('decay_')) {
+      if (!input.key.startsWith('i_') && input.key !== 'x_opencti_graph_data' && !input.key.startsWith('decay_') && input.key !== 'opinions_metrics') {
         const previous = getPreviousInstanceValue(input.key, instance);
         if (input.operation === UPDATE_OPERATION_ADD || input.operation === UPDATE_OPERATION_REMOVE) {
           // Check symmetric difference for add and remove

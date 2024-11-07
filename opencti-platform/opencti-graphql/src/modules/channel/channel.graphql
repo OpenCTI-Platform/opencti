@@ -84,6 +84,7 @@ type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainOb
         search: String
         filters: FilterGroup
     ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+    opinions_metrics: OpinionsMetrics
     # StixDomainObject
     revoked: Boolean!
     confidence: Int

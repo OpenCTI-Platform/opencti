@@ -84,6 +84,7 @@ type Event implements BasicObject & StixCoreObject & StixDomainObject & StixObje
         search: String
         filters: FilterGroup
     ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+    opinions_metrics: OpinionsMetrics
     # StixDomainObject
     revoked: Boolean!
     confidence: Int

@@ -15,6 +15,10 @@ import {
   MEMBERS_GROUP_FILTER,
   MEMBERS_ORGANIZATION_FILTER,
   MEMBERS_USER_FILTER,
+  OPINIONS_METRICS_MAX_FILTER,
+  OPINIONS_METRICS_MEAN_FILTER,
+  OPINIONS_METRICS_MIN_FILTER,
+  OPINIONS_METRICS_TOTAL_FILTER,
   SIGHTED_BY_FILTER,
   specialFilterKeys
 } from './filtering-constants';
@@ -173,6 +177,10 @@ export const replaceFilterKey = (filterGroup: FilterGroup, oldKey: string, newKe
 // the second element is the converted key used in backend
 const specialFilterKeysConvertor = new Map([
   [SIGHTED_BY_FILTER, buildRefRelationKey(STIX_SIGHTING_RELATIONSHIP)],
+  [OPINIONS_METRICS_MEAN_FILTER, 'opinions_metrics.mean'],
+  [OPINIONS_METRICS_MAX_FILTER, 'opinions_metrics.max'],
+  [OPINIONS_METRICS_MIN_FILTER, 'opinions_metrics.min'],
+  [OPINIONS_METRICS_TOTAL_FILTER, 'opinions_metrics.total'],
   [CONTEXT_ENTITY_ID_FILTER, 'context_data.id'],
   [CONTEXT_ENTITY_TYPE_FILTER, 'context_data.entity_type'],
   [CONTEXT_CREATOR_FILTER, 'context_data.creator_ids'],

@@ -241,6 +241,10 @@ export const schemaAttributesDefinition = {
   },
 
   isSpecificTypeAttribute(attributeName: string, ...attributeType: AttrType[]): boolean {
+    if (attributeName.includes('.') && schemaAttributesDefinition.getAttributeByName(attributeName.split('.')[0])) {
+      const { type } = schemaAttributesDefinition.getAttributeMappingFromPath(attributeName);
+      return attributeType.includes(type);
+    }
     usageProtection = true;
     return attributeType.reduce((r, fn) => this.attributesByTypes[fn].has(attributeName) || r, false);
   },
