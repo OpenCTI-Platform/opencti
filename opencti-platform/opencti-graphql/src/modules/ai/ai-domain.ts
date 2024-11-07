@@ -264,7 +264,7 @@ export const summarizeFiles = async (context: AuthContext, user: AuthUser, args:
     finalFilesIds = importFiles.edges.map((n) => n.node.id);
     // get external ref files
     const refs = stixCoreObject[RELATION_EXTERNAL_REFERENCE] ?? [];
-    refs.map(async (ref) => {
+    await Promise.all(refs.map(async (ref) => {
       const optsRef = {
         first: 20,
         prefixMimeTypes: undefined,
@@ -274,7 +274,7 @@ export const summarizeFiles = async (context: AuthContext, user: AuthUser, args:
       const importRefFiles = await paginatedForPathWithEnrichment(context, user, `import/External-Reference/${ref}`, ref, optsRef);
       const refFilesIds = importRefFiles.edges.map((n) => n.node.id);
       refFilesIds.forEach((refFileId) => finalFilesIds.push(refFileId));
-    });
+    }));
   }
   if (isEmptyField(finalFilesIds) || finalFilesIds?.length === 0) {
     return 'Unable to summarize files as no file is associated to this entity.';
