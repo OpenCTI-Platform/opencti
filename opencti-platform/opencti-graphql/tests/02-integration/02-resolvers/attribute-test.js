@@ -98,7 +98,7 @@ describe('Attribute resolver standard behavior', () => {
       variables: { elementType: ENTITY_TYPE_IDENTITY_INDIVIDUAL }
     });
     attributes = queryResult.data.schemaAttributeNames.edges.map((edgeNode) => edgeNode.node);
-    expect(attributes.length).toEqual(31);
+    expect(attributes.length).toEqual(32);
     expect(attributes.map((node) => node.value).includes('lang')).toBeTruthy(); // Inherit attribute
     expect(attributes.map((node) => node.value).includes('contact_information')).toBeTruthy(); // Inherit attribute
     expect(attributes.map((node) => node.value).includes('x_opencti_firstname')).toBeTruthy(); // Direct attribute
@@ -109,7 +109,7 @@ describe('Attribute resolver standard behavior', () => {
       variables: { elementType: ENTITY_TYPE_LOCATION_POSITION }
     });
     attributes = queryResult.data.schemaAttributeNames.edges.map((edgeNode) => edgeNode.node);
-    expect(attributes.length).toEqual(31);
+    expect(attributes.length).toEqual(32);
     expect(attributes.map((node) => node.value).includes('lang')).toBeTruthy(); // Inherit attribute
     expect(attributes.map((node) => node.value).includes('precision')).toBeTruthy(); // Inherit attribute
     expect(attributes.map((node) => node.value).includes('postal_code')).toBeTruthy(); // Direct attribute
