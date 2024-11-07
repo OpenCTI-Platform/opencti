@@ -874,7 +874,7 @@ const StixCyberObservableCreation = ({
                         </Button>
                         <Button
                           variant={contextual ? 'text' : 'contained'}
-                          color="primary"
+                          color="secondary"
                           onClick={submitForm}
                           disabled={isSubmitting}
                           classes={{ root: classes.button }}
