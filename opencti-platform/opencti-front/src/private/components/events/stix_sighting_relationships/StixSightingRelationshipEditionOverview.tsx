@@ -21,7 +21,7 @@ import StatusField from '../../common/form/StatusField';
 import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import { useIsEnforceReference, useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
+import { useIsEnforceReference, useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
 import { adaptFieldValue } from '../../../../utils/String';
 import { Option } from '../../common/form/ReferenceField';
@@ -175,6 +175,8 @@ export const stixSightingRelationshipEditionOverviewQuery = graphql`
   }
 `;
 
+const STIX_SIGHTING_TYPE = 'stix-sighting-relationship';
+
 interface StixSightingRelationshipEditionOverviewProps {
   handleClose: () => void;
   handleDelete: () => void;
@@ -205,23 +207,20 @@ const StixSightingRelationshipEditionOverviewComponent: FunctionComponent<Omit<S
   inferred,
   noStoreUpdate,
 }) => {
-  const stixSightingRelationshipType = 'stix-sighting-relationship';
-
   const { t_i18n } = useFormatter();
   const classes = useStyles();
-  const enableReferences = useIsEnforceReference(stixSightingRelationshipType);
+  const enableReferences = useIsEnforceReference(STIX_SIGHTING_TYPE);
 
   const { editContext } = stixSightingRelationship;
 
-  const basicShape = {
+  const { mandatoryAttributes } = useIsMandatoryAttribute(STIX_SIGHTING_TYPE);
+  const basicShape = yupShapeConditionalRequired({
     attribute_count: Yup.number()
       .typeError(t_i18n('The value must be a number'))
-      .integer(t_i18n('The value must be a number'))
-      .required(t_i18n('This field is required')),
+      .integer(t_i18n('The value must be a number')),
     confidence: Yup.number()
       .typeError(t_i18n('The value must be a number'))
-      .integer(t_i18n('The value must be a number'))
-      .required(t_i18n('This field is required')),
+      .integer(t_i18n('The value must be a number')),
     first_seen: Yup.date()
       .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
       .nullable(),
@@ -231,8 +230,8 @@ const StixSightingRelationshipEditionOverviewComponent: FunctionComponent<Omit<S
     description: Yup.string().nullable(),
     x_opencti_negative: Yup.boolean(),
     x_opencti_workflow_id: Yup.object(),
-  };
-  const stixSightingRelationshipValidator = useSchemaEditionValidation('stix-sighting-relationship', basicShape);
+  }, mandatoryAttributes);
+  const stixSightingRelationshipValidator = useDynamicSchemaEditionValidation(mandatoryAttributes, basicShape);
 
   const queries = {
     fieldPatch: stixSightingRelationshipMutationFieldPatch,
@@ -306,6 +305,8 @@ const StixSightingRelationshipEditionOverviewComponent: FunctionComponent<Omit<S
           enableReinitialize={true}
           initialValues={initialValues}
           validationSchema={stixSightingRelationshipValidator}
+          validateOnChange={true}
+          validateOnBlur={true}
           onSubmit={onSubmit}
         >
           {({ submitForm, isSubmitting, setFieldValue, values, isValid, dirty }) => (
@@ -316,6 +317,7 @@ const StixSightingRelationshipEditionOverviewComponent: FunctionComponent<Omit<S
                 variant="standard"
                 name="attribute_count"
                 label={t_i18n('Count')}
+                required={(mandatoryAttributes.includes('attribute_count'))}
                 fullWidth={true}
                 onFocus={editor.changeFocus}
                 onSubmit={editor.changeField}
@@ -331,7 +333,7 @@ const StixSightingRelationshipEditionOverviewComponent: FunctionComponent<Omit<S
                 editContext={editContext}
                 containerStyle={fieldSpacingContainerStyle}
                 disabled={inferred}
-                entityType={stixSightingRelationshipType}
+                entityType={STIX_SIGHTING_TYPE}
               />
               <Field
                 component={DateTimePickerField}
@@ -340,6 +342,7 @@ const StixSightingRelationshipEditionOverviewComponent: FunctionComponent<Omit<S
                 onChange={editor.changeField}
                 textFieldProps={{
                   label: t_i18n('First seen'),
+                  required: (mandatoryAttributes.includes('first_seen')),
                   variant: 'standard',
                   fullWidth: true,
                   style: { marginTop: 20 },
@@ -356,6 +359,7 @@ const StixSightingRelationshipEditionOverviewComponent: FunctionComponent<Omit<S
                 onChange={editor.changeField}
                 textFieldProps={{
                   label: t_i18n('Last seen'),
+                  required: (mandatoryAttributes.includes('last_seen')),
                   variant: 'standard',
                   fullWidth: true,
                   style: { marginTop: 20 },
@@ -369,6 +373,7 @@ const StixSightingRelationshipEditionOverviewComponent: FunctionComponent<Omit<S
                 component={MarkdownField}
                 name="description"
                 label={t_i18n('Description')}
+                required={(mandatoryAttributes.includes('description'))}
                 fullWidth={true}
                 multiline={true}
                 rows={4}
@@ -395,6 +400,7 @@ const StixSightingRelationshipEditionOverviewComponent: FunctionComponent<Omit<S
               )}
               <CreatedByField
                 name="createdBy"
+                required={(mandatoryAttributes.includes('createdBy'))}
                 style={fieldSpacingContainerStyle}
                 setFieldValue={setFieldValue}
                 helpertext={
@@ -405,6 +411,7 @@ const StixSightingRelationshipEditionOverviewComponent: FunctionComponent<Omit<S
               />
               <ObjectMarkingField
                 name="objectMarking"
+                required={(mandatoryAttributes.includes('objectMarking'))}
                 style={fieldSpacingContainerStyle}
                 helpertext={
                   <SubscriptionFocus context={editContext} fieldname="objectMarking" />
