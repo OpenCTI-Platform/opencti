@@ -4,7 +4,12 @@ import { UnsupportedError } from '../config/errors';
 export const buildElasticSortingForAttributeCriteria = (orderCriteria: string, orderMode: 'asc' | 'desc') => {
   let definition;
   if (orderCriteria.includes('.') && !orderCriteria.endsWith('*')) {
-    definition = schemaAttributesDefinition.getAttributeMappingFromPath(orderCriteria);
+    const attribute = schemaAttributesDefinition.getAttributeByName(orderCriteria.split('.')[0]);
+    if (attribute && attribute.type === 'object' && attribute.format === 'standard') {
+      definition = schemaAttributesDefinition.getAttributeMappingFromPath(orderCriteria);
+    } else {
+      definition = schemaAttributesDefinition.getAttributeByName(orderCriteria);
+    }
   } else {
     definition = schemaAttributesDefinition.getAttributeByName(orderCriteria);
   }

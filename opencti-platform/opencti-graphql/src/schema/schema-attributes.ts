@@ -241,9 +241,12 @@ export const schemaAttributesDefinition = {
   },
 
   isSpecificTypeAttribute(attributeName: string, ...attributeType: AttrType[]): boolean {
-    if (attributeName.includes('.') && !attributeName.endsWith('*') && schemaAttributesDefinition.getAttributeByName(attributeName.split('.')[0])) {
-      const { type } = schemaAttributesDefinition.getAttributeMappingFromPath(attributeName);
-      return attributeType.includes(type);
+    if (attributeName.includes('.') && !attributeName.endsWith('*')) {
+      const attribute = schemaAttributesDefinition.getAttributeByName(attributeName.split('.')[0]);
+      if (attribute && attribute.type === 'object' && attribute.format === 'standard') {
+        const { type } = schemaAttributesDefinition.getAttributeMappingFromPath(attributeName);
+        return attributeType.includes(type);
+      }
     }
     usageProtection = true;
     return attributeType.reduce((r, fn) => this.attributesByTypes[fn].has(attributeName) || r, false);
