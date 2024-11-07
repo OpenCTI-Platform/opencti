@@ -1,11 +1,5 @@
 import type { AuthContext, AuthUser } from '../../types/user';
-import {
-  type EntityOptions,
-  listAllEntities,
-  listEntitiesPaginated,
-  listRelationsPaginated,
-  storeLoadById
-} from '../../database/middleware-loader';
+import { type EntityOptions, listAllEntities, listEntitiesPaginated, listRelationsPaginated, storeLoadById } from '../../database/middleware-loader';
 import {
   type DraftWorkspaceAddInput,
   FilterMode,
@@ -20,7 +14,7 @@ import { elDeleteDraftContextFromUsers, elDeleteDraftElements } from '../../data
 import { isDraftIndex, READ_INDEX_DRAFT_OBJECTS, READ_INDEX_INTERNAL_OBJECTS } from '../../database/utils';
 import { FunctionalError, UnsupportedError } from '../../config/errors';
 import { deleteElementById, stixLoadByIds } from '../../database/middleware';
-import type {BasicStoreCommon, BasicStoreEntity, BasicStoreRelation} from '../../types/store';
+import type { BasicStoreCommon, BasicStoreEntity, BasicStoreRelation } from '../../types/store';
 import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CORE_RELATIONSHIP, ABSTRACT_STIX_REF_RELATIONSHIP } from '../../schema/general';
 import { isStixCoreObject } from '../../schema/stixCoreObject';
 import { BUS_TOPICS, isFeatureEnabled } from '../../config/conf';
@@ -36,9 +30,8 @@ import { createWork, updateExpectationsNumber } from '../../domain/work';
 import { DRAFT_VALIDATION_CONNECTOR } from './draftWorkspace-connector';
 import { isStixRefRelationship } from '../../schema/stixRefRelationship';
 import { notify } from '../../database/redis';
-import { isStixCoreRelationship } from '../../schema/stixCoreRelationship';
-import { isStixSightingRelationship, STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
-import { isStixRelationship, isStixRelationshipExceptRef } from '../../schema/stixRelationship';
+import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
+import { isStixRelationshipExceptRef } from '../../schema/stixRelationship';
 
 export const findById = (context: AuthContext, user: AuthUser, id: string) => {
   return storeLoadById<BasicStoreEntityDraftWorkspace>(context, user, id, ENTITY_TYPE_DRAFT_WORKSPACE);
