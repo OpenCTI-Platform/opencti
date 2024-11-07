@@ -45,11 +45,21 @@ type Query {
         types: [String]
         first: Int
         after: ID
-        orderBy: StixDomainObjectsOrdering
+        orderBy: StixCoreObjectsOrdering
         orderMode: OrderingMode
         filters: FilterGroup
         search: String
     ): StixCoreObjectConnection @auth(for: [KNOWLEDGE])
+    draftWorkspaceRelationships(
+        draftId: String!,
+        types: [String]
+        first: Int
+        after: ID
+        orderBy: StixRelationshipsOrdering
+        orderMode: OrderingMode
+        filters: FilterGroup
+        search: String
+    ): StixRelationshipConnection @auth(for: [KNOWLEDGE])
 }
 
 input DraftWorkspaceAddInput {

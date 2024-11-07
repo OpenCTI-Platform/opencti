@@ -49,7 +49,7 @@ const draftEntitiesLinesQuery = graphql`
         $search: String
         $count: Int!
         $cursor: ID
-        $orderBy: StixDomainObjectsOrdering
+        $orderBy: StixCoreObjectsOrdering
         $orderMode: OrderingMode
         $filters: FilterGroup
     ) {
@@ -75,7 +75,7 @@ export const draftEntitiesLinesFragment = graphql`
         search: { type: "String" }
         count: { type: "Int", defaultValue: 25 }
         cursor: { type: "ID" }
-        orderBy: { type: "StixDomainObjectsOrdering", defaultValue: name }
+        orderBy: { type: "StixCoreObjectsOrdering", defaultValue: name }
         orderMode: { type: "OrderingMode", defaultValue: asc }
         filters: { type: "FilterGroup" }
     )

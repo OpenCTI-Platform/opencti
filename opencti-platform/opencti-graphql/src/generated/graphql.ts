@@ -19240,6 +19240,7 @@ export type Query = {
   deleteOperations?: Maybe<DeleteOperationConnection>;
   draftWorkspace?: Maybe<DraftWorkspace>;
   draftWorkspaceEntities?: Maybe<StixCoreObjectConnection>;
+  draftWorkspaceRelationships?: Maybe<StixRelationshipConnection>;
   draftWorkspaces?: Maybe<DraftWorkspaceConnection>;
   elasticSearchMetrics?: Maybe<ElasticSearchMetrics>;
   enrichmentConnectors?: Maybe<Array<Maybe<Connector>>>;
@@ -19936,7 +19937,19 @@ export type QueryDraftWorkspaceEntitiesArgs = {
   draftId: Scalars['String']['input'];
   filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
-  orderBy?: InputMaybe<StixDomainObjectsOrdering>;
+  orderBy?: InputMaybe<StixCoreObjectsOrdering>;
+  orderMode?: InputMaybe<OrderingMode>;
+  search?: InputMaybe<Scalars['String']['input']>;
+  types?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+};
+
+
+export type QueryDraftWorkspaceRelationshipsArgs = {
+  after?: InputMaybe<Scalars['ID']['input']>;
+  draftId: Scalars['String']['input'];
+  filters?: InputMaybe<FilterGroup>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<StixRelationshipsOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']['input']>;
   types?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
@@ -38227,6 +38240,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   deleteOperations?: Resolver<Maybe<ResolversTypes['DeleteOperationConnection']>, ParentType, ContextType, Partial<QueryDeleteOperationsArgs>>;
   draftWorkspace?: Resolver<Maybe<ResolversTypes['DraftWorkspace']>, ParentType, ContextType, RequireFields<QueryDraftWorkspaceArgs, 'id'>>;
   draftWorkspaceEntities?: Resolver<Maybe<ResolversTypes['StixCoreObjectConnection']>, ParentType, ContextType, RequireFields<QueryDraftWorkspaceEntitiesArgs, 'draftId'>>;
+  draftWorkspaceRelationships?: Resolver<Maybe<ResolversTypes['StixRelationshipConnection']>, ParentType, ContextType, RequireFields<QueryDraftWorkspaceRelationshipsArgs, 'draftId'>>;
   draftWorkspaces?: Resolver<Maybe<ResolversTypes['DraftWorkspaceConnection']>, ParentType, ContextType, Partial<QueryDraftWorkspacesArgs>>;
   elasticSearchMetrics?: Resolver<Maybe<ResolversTypes['ElasticSearchMetrics']>, ParentType, ContextType>;
   enrichmentConnectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, RequireFields<QueryEnrichmentConnectorsArgs, 'type'>>;
