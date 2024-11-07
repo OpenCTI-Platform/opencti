@@ -25,7 +25,7 @@ interface ConnectorWorksErrorLineProps {
 const ConnectorWorksErrorLine: FunctionComponent<ConnectorWorksErrorLineProps> = ({ error }) => {
   const { t_i18n, nsdt } = useFormatter();
   const [openModalErrorDetails, setOpenModalErrorDetails] = useState<boolean>(false);
-  const truncateLimit = 80;
+  const truncateLimit = 60;
 
   const handleToggleModalError = () => {
     setOpenModalErrorDetails(!openModalErrorDetails);
@@ -58,19 +58,19 @@ const ConnectorWorksErrorLine: FunctionComponent<ConnectorWorksErrorLineProps> =
       <TableRow key={error.rawError.timestamp}>
         <TableCell>{nsdt(error.rawError.timestamp)}</TableCell>
         <TableCell>
-          {error.isParsed ? (
-            <a href={`https://docs.opencti.io/latest/deployment/troubleshooting/#${error.parsedError.category}`} target="_blank" rel="noreferrer">{error.parsedError.category}</a>
+          {error.isParsed && error.parsedError.doc_code ? (
+            <a href={`https://docs.opencti.io/latest/deployment/troubleshooting/#${error.parsedError.doc_code.toLowerCase()}`} target="_blank" rel="noreferrer">{error.parsedError.doc_code}</a>
           ) : (
             <a href={'https://docs.opencti.io/latest/deployment/troubleshooting'} target="_blank" rel="noreferrer">{t_i18n('Unknown')}</a>
           )}
         </TableCell>
-        <TableCell>{error.isParsed ? error.parsedError.message : error.rawError.message}</TableCell>
+        <TableCell>{error.isParsed ? error.parsedError.message : error.rawError.message ?? '-'}</TableCell>
         <TableCell>
           {error.isParsed ? (
             displayEntityOrId(error.parsedError.entity)
           ) : (
             <Tooltip title={t_i18n('Click on details to see more information')}>
-              {truncate(error.rawError.source, truncateLimit)}
+              {truncate(error.rawError.source ?? '-', truncateLimit)}
             </Tooltip>
           )}
         </TableCell>

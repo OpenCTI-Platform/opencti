@@ -258,7 +258,7 @@ const ConnectorWorksComponent: FunctionComponent<ConnectorWorksComponentProps> =
         onClose={handleCloseDrawerErrors}
       >
         <>
-          <Alert severity="info">{t_i18n('This page lists only the first 100 errors returned by the connector to ensure readability')}</Alert>
+          <Alert severity="info">{t_i18n('This page lists only the first 100 errors returned by the connector')}</Alert>
           <Tabs value={tabValue} onChange={(_, newValue) => setTabValue(newValue)}>
             <Tab label={`${t_i18n('Critical')} (${criticals.length})`} value="Critical" />
             <Tab label={`${t_i18n('Warning')} (${warnings.length})`} value="Warning" />

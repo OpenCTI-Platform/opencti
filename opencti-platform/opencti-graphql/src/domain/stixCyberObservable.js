@@ -226,7 +226,7 @@ export const addStixCyberObservable = async (context, user, input) => {
   // Check the consistency of the observable.
   const observableSyntaxResult = checkObservableSyntax(type, observableInput);
   if (observableSyntaxResult !== true) {
-    throw FunctionalError('Observable is not correctly formatted', { type, input: observableInput });
+    throw FunctionalError('Observable is not correctly formatted', { type, input: observableInput, doc_code: 'INCORRECT_OBSERVABLE_FORMAT' });
   }
   // If everything ok, create adapt/create the observable
   const created = await createEntity(context, user, observableInput, type);

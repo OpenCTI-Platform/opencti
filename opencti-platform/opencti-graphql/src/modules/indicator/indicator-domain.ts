@@ -226,7 +226,7 @@ export const addIndicator = async (context: AuthContext, user: AuthUser, indicat
   const formattedPattern = cleanupIndicatorPattern(patternType, indicator.pattern);
   const check = await checkIndicatorSyntax(context, user, patternType, formattedPattern);
   if (check === false) {
-    throw FunctionalError(`Indicator of type ${indicator.pattern_type} is not correctly formatted.`);
+    throw FunctionalError(`Indicator of type ${indicator.pattern_type} is not correctly formatted.`, { doc_code: 'INCORRECT_INDICATOR_FORMAT' });
   }
   const indicatorBaseScore = indicator.x_opencti_score ?? 50;
   const isDecayActivated = await isModuleActivated('INDICATOR_DECAY_MANAGER');

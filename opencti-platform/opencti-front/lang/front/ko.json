@@ -2696,7 +2696,7 @@
   "This operation cannot be undone.": "이 작업은 되돌릴 수 없습니다.",
   "This operations will only apply on labels or markings added in the context of this playbook such as enrichment or other knowledge manipulations but not if the labels or markings are already written in the platform.": "이 작업은 강화 또는 기타 지식 조작과 같은 플레이북 맥락에서 추가된 레이블 또는 마킹에만 적용되며, 레이블 또는 마킹이 이미 플랫폼에 작성된 경우에는 적용되지 않습니다.",
   "This page is not found on this OpenCTI application.": "이 페이지는 이 OpenCTI 애플리케이션에서 찾을 수 없습니다.",
-  "This page lists only the first 100 errors returned by the connector to ensure readability": "이 페이지에는 가독성을 위해 커넥터에서 반환된 처음 100개의 오류만 나열됩니다",
+  "This page lists only the first 100 errors returned by the connector": "이 페이지에는 커넥터에서 반환된 처음 100개의 오류만 나열됩니다",
   "This panel shows by default the latest created entities, use the search to find more.": "이 패널은 기본적으로 최근에 생성된 엔터티를 표시하며, 더 많은 엔터티를 찾기 위해 검색을 사용하십시오.",
   "This relation is inferred": "이 관계는 추론된 것입니다",
   "This report contains too many objects to be displayed as a graph. We are working on a new visualization which will allow large graph to be displayed in the future.": "이 보고서는 그래프로 표시하기에는 너무 많은 객체를 포함하고 있습니다. 우리는 향후 대형 그래프를 표시할 수 있는 새로운 시각화를 작업 중입니다.",
