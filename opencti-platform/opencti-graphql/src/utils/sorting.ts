@@ -3,7 +3,7 @@ import { UnsupportedError } from '../config/errors';
 
 export const buildElasticSortingForAttributeCriteria = (orderCriteria: string, orderMode: 'asc' | 'desc') => {
   let definition;
-  if (orderCriteria.includes('.')) {
+  if (orderCriteria.includes('.') && !orderCriteria.endsWith('*')) {
     definition = schemaAttributesDefinition.getAttributeMappingFromPath(orderCriteria);
   } else {
     definition = schemaAttributesDefinition.getAttributeByName(orderCriteria);
