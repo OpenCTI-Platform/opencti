@@ -109,6 +109,7 @@ import logoFiligranTextDark from '../../../static/images/logo_filigran_text_dark
 import logoFiligranTextLight from '../../../static/images/logo_filigran_text_light.png';
 import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
 import useDimensions from '../../../utils/hooks/useDimensions';
+import useHelper from '../../../utils/hooks/useHelper';
 
 export const SMALL_BAR_WIDTH = 55;
 export const OPEN_BAR_WIDTH = 180;
@@ -221,6 +222,8 @@ const LeftBar = () => {
     me: { submenu_auto_collapse, submenu_show_icons, draftContext },
     settings: { platform_whitemark },
   } = useAuth();
+  const { isFeatureEnable } = useHelper();
+  const isDraftFeatureEnabled = isFeatureEnable('DRAFT_WORKSPACE');
   const navigate = useNavigate();
   const isEnterpriseEdition = useEnterpriseEdition();
   const isGrantedToKnowledge = useGranted([KNOWLEDGE]);
@@ -857,27 +860,29 @@ const LeftBar = () => {
                 </StyledTooltip>
               )}
             </Security>
-            <Security needs={[KNOWLEDGE]}>
-              <StyledTooltip title={!navOpen && t_i18n('Drafts')} placement="right">
-                <MenuItem
-                  component={Link}
-                  to="/dashboard/drafts"
-                  selected={!navOpen && location.pathname.includes('/dashboard/drafts')}
-                  dense={true}
-                  classes={{ root: classes.menuItem }}
-                >
-                  <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
-                    <ArchitectureOutlined/>
-                  </ListItemIcon>
-                  {navOpen && (
-                  <ListItemText
-                    classes={{ primary: classes.menuItemText }}
-                    primary={t_i18n('Drafts')}
-                  />
-                  )}
-                </MenuItem>
-              </StyledTooltip>
-            </Security>
+            {isDraftFeatureEnabled && (
+              <Security needs={[KNOWLEDGE]}>
+                <StyledTooltip title={!navOpen && t_i18n('Drafts')} placement="right">
+                  <MenuItem
+                    component={Link}
+                    to="/dashboard/drafts"
+                    selected={!navOpen && location.pathname.includes('/dashboard/drafts')}
+                    dense={true}
+                    classes={{ root: classes.menuItem }}
+                  >
+                    <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
+                      <ArchitectureOutlined/>
+                    </ListItemIcon>
+                    {navOpen && (
+                    <ListItemText
+                      classes={{ primary: classes.menuItemText }}
+                      primary={t_i18n('Drafts')}
+                    />
+                    )}
+                  </MenuItem>
+                </StyledTooltip>
+              </Security>
+            )}
             <Security needs={[MODULES, KNOWLEDGE, TAXIIAPI, CSVMAPPERS, INGESTION]}>
               <MenuItem
                 ref={anchors.data}

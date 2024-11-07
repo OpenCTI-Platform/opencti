@@ -48,6 +48,8 @@ const Index = ({ settings }: IndexProps) => {
   const {
     bannerSettings: { bannerHeight },
   } = useAuth();
+  const { isFeatureEnable } = useHelper();
+  const isDraftFeatureEnabled = isFeatureEnable('DRAFT_WORKSPACE');
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
   const boxSx = {
     flexGrow: 1,
@@ -126,9 +128,11 @@ const Index = ({ settings }: IndexProps) => {
                     element={boundaryWrapper(RootTrash)}
                 />
             )}
-              <Route path="/drafts/*"
-                element={boundaryWrapper(RootDrafts)}
-              />
+              {isDraftFeatureEnabled && (
+                <Route path="/drafts/*"
+                  element={boundaryWrapper(RootDrafts)}
+                />
+              )}
               <Route
                 path="/workspaces/*"
                 element={boundaryWrapper(RootWorkspaces)}
