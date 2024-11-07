@@ -117,7 +117,7 @@ export const addOpinion = async (context, user, opinion) => {
 // endregion
 
 // region utils
-export const updateOpinionsMetrics = async (context, user, opinion) => {
+export const updateOpinionsMetrics = async (context, user, opinionId) => {
   const filtersForVocabs = {
     mode: 'and',
     filters: [{ key: 'category', values: ['opinion_ov'] }],
@@ -127,7 +127,7 @@ export const updateOpinionsMetrics = async (context, user, opinion) => {
   const indexedVocab = R.indexBy(R.prop('name'), vocabs);
   const filtersForObjects = {
     mode: 'and',
-    filters: [{ key: buildRefRelationKey(RELATION_OBJECT), values: [opinion.id] }],
+    filters: [{ key: buildRefRelationKey(RELATION_OBJECT), values: [opinionId] }],
     filterGroups: [],
   };
   const elements = await listAllThings(

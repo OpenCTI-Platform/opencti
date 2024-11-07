@@ -79,7 +79,7 @@ const opinionResolvers = {
         const isManager = isUserHasCapability(context.user, KNOWLEDGE_KNUPDATE);
         const availableInputs = isManager ? input : input.filter((i) => i.key !== 'createdBy');
         const opinion = await stixDomainObjectEditField(context, context.user, id, availableInputs, { commitMessage, references });
-        await updateOpinionsMetrics(context, context.user, opinion);
+        await updateOpinionsMetrics(context, context.user, id);
         return opinion;
       },
       contextPatch: async ({ input }) => {
@@ -92,15 +92,15 @@ const opinionResolvers = {
       },
       relationAdd: async ({ input }) => {
         await checkUserAccess(context, context.user, id);
-        const opinion = await stixDomainObjectAddRelation(context, context.user, id, input);
-        await updateOpinionsMetrics(context, context.user, opinion);
-        return opinion;
+        const rel = await stixDomainObjectAddRelation(context, context.user, id, input);
+        await updateOpinionsMetrics(context, context.user, id);
+        return rel;
       },
       relationDelete: async ({ toId, relationship_type: relationshipType }) => {
         await checkUserAccess(context, context.user, id);
-        const opinion = await stixDomainObjectDeleteRelation(context, context.user, id, toId, relationshipType);
-        await updateOpinionsMetrics(context, context.user, opinion);
-        return opinion;
+        const rel = await stixDomainObjectDeleteRelation(context, context.user, id, toId, relationshipType);
+        await updateOpinionsMetrics(context, context.user, id);
+        return rel;
       },
     }),
     // For collaborative creation
@@ -113,7 +113,7 @@ const opinionResolvers = {
         opinionToCreate.createdBy = individual.id;
       }
       const opinion = await addOpinion(context, user, opinionToCreate);
-      await updateOpinionsMetrics(context, user, opinion);
+      await updateOpinionsMetrics(context, user, opinion.id);
       return opinion;
     },
     // For knowledge
@@ -128,7 +128,7 @@ const opinionResolvers = {
         }
       }
       const opinion = await addOpinion(context, context.user, opinionToCreate);
-      await updateOpinionsMetrics(context, user, opinion);
+      await updateOpinionsMetrics(context, user, opinion.id);
       return opinion;
     },
   },
