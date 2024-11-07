@@ -222,12 +222,12 @@ export const askElementEnrichmentForConnector = async (context, user, enrichedId
     internal: {
       work_id: work.id, // Related action for history
       applicant_id: null, // No specific user asking for the import
+      draft_id: draftContext ?? null,
     },
     event: {
       event_type: CONNECTOR_INTERNAL_ENRICHMENT,
       entity_id: element.standard_id,
       entity_type: element.entity_type,
-      draft_id: draftContext ?? null,
     },
   };
   await pushToConnector(connector.internal_id, message);
