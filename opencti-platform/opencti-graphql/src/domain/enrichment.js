@@ -10,18 +10,22 @@ import { isStixMatchFilterGroup } from '../utils/filtering/filtering-stix/stix-f
 import { isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
 import { SYSTEM_USER } from '../utils/access';
 import { convertStoreToStix } from '../database/stix-converter';
+import { getDraftContext } from '../utils/draftContext';
 
 export const createEntityAutoEnrichment = async (context, user, element, scope) => {
   if (!isStixObject(element.entity_type)) {
     return null; // we only enrich stix core objects
   }
+  const draftContext = getDraftContext(context, user);
+  const contextOutOfDraft = { ...context, draft_context: '' };
   const elementStandardId = element.standard_id;
   // Get the list of compatible connectors
   const targetConnectors = await findConnectorsForElementEnrichment(context, user, element, scope);
   // Create a work for each connector
+  const workMessage = draftContext ? `Enrichment (${elementStandardId}) in draft ${draftContext}` : `Enrichment (${elementStandardId})`;
   const workList = await Promise.all(
     map((connector) => {
-      return createWork(context, user, connector, `Enrichment (${elementStandardId})`, elementStandardId).then((work) => {
+      return createWork(contextOutOfDraft, user, connector, workMessage, elementStandardId).then((work) => {
         return { connector, work };
       });
     }, targetConnectors)
@@ -34,6 +38,7 @@ export const createEntityAutoEnrichment = async (context, user, element, scope) 
         internal: {
           work_id: work.id, // Related action for history
           applicant_id: null, // No specific user asking for the import
+          draft_id: draftContext ?? null,
         },
         event: {
           event_type: CONNECTOR_INTERNAL_ENRICHMENT,

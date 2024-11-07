@@ -208,17 +208,21 @@ export const stixCoreObjectDelete = async (context, user, stixCoreObjectId) => {
 };
 
 export const askElementEnrichmentForConnector = async (context, user, enrichedId, connectorId) => {
-  if (getDraftContext(context, user)) throw new Error('Cannot ask for enrichment in draft');
   const connector = await storeLoadById(context, user, connectorId, ENTITY_TYPE_CONNECTOR);
   const element = await internalLoadById(context, user, enrichedId);
   if (!element) {
     throw FunctionalError('Cannot enrich the object, element cannot be found.');
   }
-  const work = await createWork(context, user, connector, 'Manual enrichment', element.standard_id);
+  // If we are in a draft, specify it in work message and send draft_id in message
+  const draftContext = getDraftContext(context, user);
+  const contextOutOfDraft = { ...context, draft_context: '' };
+  const workMessage = draftContext ? `Manual enrichment in draft ${draftContext}` : 'Manual enrichment';
+  const work = await createWork(contextOutOfDraft, user, connector, workMessage, element.standard_id);
   const message = {
     internal: {
       work_id: work.id, // Related action for history
       applicant_id: null, // No specific user asking for the import
+      draft_id: draftContext ?? null,
     },
     event: {
       event_type: CONNECTOR_INTERNAL_ENRICHMENT,

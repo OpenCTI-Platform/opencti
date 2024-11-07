@@ -10,6 +10,7 @@ const CREATE_DRAFT_WORKSPACE_QUERY = gql`
         draftWorkspaceAdd(input: $input) {
             id
             standard_id
+            entity_id
             name
         }
     }
@@ -38,6 +39,7 @@ const READ_DRAFT_WORKSPACE_QUERY = gql`
         draftWorkspace(id: $id) {
             id
             name
+            entity_id
         }
     }
 `;
@@ -62,6 +64,7 @@ const LIST_DRAFT_WORKSPACES_QUERY = gql`
                 node {
                     id
                     name
+                    entity_id
                 }
             }
         }
@@ -126,18 +129,22 @@ const modifyAdminDraftContext = async (draftId: string) => {
 describe('Drafts workspace resolver testing', () => {
   let addedDraftId = '';
   let addedDraftName = '';
+  let addedDraftEntityId = '';
 
   it('should create a draft', async () => {
     const draftName = 'testDraft';
+    const draftEntityId = 'testId';
     const createdDraft = await queryAsAdmin({
       query: CREATE_DRAFT_WORKSPACE_QUERY,
-      variables: { input: { name: draftName } },
+      variables: { input: { name: draftName, entity_id: draftEntityId } },
     });
 
     expect(createdDraft.data?.draftWorkspaceAdd).toBeDefined();
     expect(createdDraft.data?.draftWorkspaceAdd.name).toEqual(draftName);
+    expect(createdDraft.data?.draftWorkspaceAdd.entity_id).toEqual(draftEntityId);
     addedDraftId = createdDraft.data?.draftWorkspaceAdd.id;
     addedDraftName = createdDraft.data?.draftWorkspaceAdd.name;
+    addedDraftEntityId = createdDraft.data?.draftWorkspaceAdd.entity_id;
   });
 
   it('should retrieve a draft by internal id', async () => {
@@ -148,9 +155,10 @@ describe('Drafts workspace resolver testing', () => {
 
     expect(draftWorkspaceResult.data?.draftWorkspace).toBeDefined();
     expect(draftWorkspaceResult.data?.draftWorkspace.name).toEqual(addedDraftName);
+    expect(draftWorkspaceResult.data?.draftWorkspace.entity_id).toEqual(addedDraftEntityId);
   });
 
-  it('should list all drafts', async () => {
+  it('should list drafts without filters', async () => {
     const result = await queryAsAdmin({
       query: LIST_DRAFT_WORKSPACES_QUERY,
       variables: { first: 5 },
@@ -162,6 +170,50 @@ describe('Drafts workspace resolver testing', () => {
     expect(drafts.length).toEqual(1);
     expect(draft).toBeDefined();
     expect(draft.name).toEqual(addedDraftName);
+  });
+
+  it('should list draft with correct filter', async () => {
+    const filters = {
+      mode: 'and',
+      filters: [{
+        key: 'entity_id',
+        operator: 'eq',
+        values: [addedDraftEntityId],
+        mode: 'or',
+      }],
+      filterGroups: [],
+    };
+    const result = await queryAsAdmin({
+      query: LIST_DRAFT_WORKSPACES_QUERY,
+      variables: { first: 5, filters },
+    });
+    const drafts = result.data?.draftWorkspaces.edges;
+    expect(drafts).toBeDefined();
+    const draft = drafts ? drafts[0].node : undefined;
+
+    expect(drafts.length).toEqual(1);
+    expect(draft).toBeDefined();
+    expect(draft.name).toEqual(addedDraftName);
+  });
+
+  it('should not list draft with incorrect filter', async () => {
+    const filters = {
+      mode: 'and',
+      filters: [{
+        key: 'entity_id',
+        operator: 'eq',
+        values: ['incorrectId'],
+        mode: 'or',
+      }],
+      filterGroups: [],
+    };
+    const result = await queryAsAdmin({
+      query: LIST_DRAFT_WORKSPACES_QUERY,
+      variables: { first: 5, filters },
+    });
+    const drafts = result.data?.draftWorkspaces.edges;
+    expect(drafts).toBeDefined();
+    expect(drafts.length).toEqual(0);
   });
 
   // create entity in draft context and verify that entity doesn't exist in live context

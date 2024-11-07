@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
+import { ABSTRACT_INTERNAL_OBJECT, ABSTRACT_STIX_CORE_OBJECT } from '../../schema/general';
 import { type ModuleDefinition, registerDefinition } from '../../schema/module';
 import { createdAt } from '../../schema/attribute-definition';
 import { ENTITY_TYPE_DRAFT_WORKSPACE, type StixDraftWorkspace, type StoreEntityDraftWorkspace } from './draftWorkspace-types';
@@ -19,7 +19,8 @@ const DRAFT_WORKSPACE_DEFINITION: ModuleDefinition<StoreEntityDraftWorkspace, St
   },
   attributes: [
     { ...createdAt },
-    { name: 'name', label: 'Draft name', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true }
+    { name: 'name', label: 'Draft name', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'entity_id', label: 'Related entity', type: 'string', format: 'id', entityTypes: [ABSTRACT_STIX_CORE_OBJECT], mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
   ],
   relations: [],
   relationsRefs: [],
