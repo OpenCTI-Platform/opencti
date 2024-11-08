@@ -12,7 +12,7 @@ import { SubscriptionFocus } from '../../../../components/Subscription';
 import TextField from '../../../../components/TextField';
 import { convertAssignees, convertCreatedBy, convertMarkings, convertParticipants, convertStatus } from '../../../../utils/edition';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
+import { useSchemaEditionValidation, useIsMandatoryAttribute } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
 import { adaptFieldValue } from '../../../../utils/String';
 import CommitMessage from '../../common/form/CommitMessage';
@@ -165,6 +165,8 @@ interface CaseIncidentEditionFormValues {
   references: ExternalReferencesValues | undefined
 }
 
+const CASE_INCIDENT_TYPE = 'Case-Incident';
+
 const CaseIncidentEditionOverview: FunctionComponent<CaseIncidentEditionOverviewProps> = ({
   caseRef,
   context,
@@ -174,8 +176,12 @@ const CaseIncidentEditionOverview: FunctionComponent<CaseIncidentEditionOverview
   const { t_i18n } = useFormatter();
   const caseData = useFragment(caseIncidentEditionOverviewFragment, caseRef);
 
+  const { mandatoryAttributes } = useIsMandatoryAttribute(
+    CASE_INCIDENT_TYPE,
+  );
+
   const basicShape = {
-    name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
+    name: Yup.string().trim().min(2),
     severity: Yup.string().nullable(),
     priority: Yup.string().nullable(),
     response_types: Yup.array(),
@@ -184,7 +190,7 @@ const CaseIncidentEditionOverview: FunctionComponent<CaseIncidentEditionOverview
     rating: Yup.number().nullable(),
     confidence: Yup.number().nullable(),
   };
-  const caseIncidentValidator = useSchemaEditionValidation('Case-Incident', basicShape);
+  const caseIncidentValidator = useSchemaEditionValidation(CASE_INCIDENT_TYPE, basicShape);
 
   const queries = {
     fieldPatch: caseIncidentMutationFieldPatch,
@@ -280,6 +286,7 @@ const CaseIncidentEditionOverview: FunctionComponent<CaseIncidentEditionOverview
             variant="standard"
             name="name"
             label={t_i18n('Name')}
+            required={(mandatoryAttributes.includes('name'))}
             fullWidth={true}
             onFocus={editor.changeFocus}
             onSubmit={editor.changeField}
@@ -295,6 +302,7 @@ const CaseIncidentEditionOverview: FunctionComponent<CaseIncidentEditionOverview
             onSubmit={editor.changeField}
             textFieldProps={{
               label: t_i18n('Incident date'),
+              required: (mandatoryAttributes.includes('created')),
               variant: 'standard',
               fullWidth: true,
               helperText: (
@@ -308,6 +316,7 @@ const CaseIncidentEditionOverview: FunctionComponent<CaseIncidentEditionOverview
             label={t_i18n('Case severity')}
             type="case_severity_ov"
             name="severity"
+            required={(mandatoryAttributes.includes('severity'))}
             onSubmit={handleSubmitField}
             onChange={setFieldValue}
             variant="edit"
@@ -319,6 +328,7 @@ const CaseIncidentEditionOverview: FunctionComponent<CaseIncidentEditionOverview
             label={t_i18n('Case priority')}
             type="case_priority_ov"
             name="priority"
+            required={(mandatoryAttributes.includes('priority'))}
             onSubmit={handleSubmitField}
             onChange={setFieldValue}
             variant="edit"
@@ -330,6 +340,7 @@ const CaseIncidentEditionOverview: FunctionComponent<CaseIncidentEditionOverview
             label={t_i18n('Response type')}
             type="incident_response_types_ov"
             name="response_types"
+            required={(mandatoryAttributes.includes('response_types'))}
             onSubmit={handleSubmitField}
             onChange={setFieldValue}
             variant="edit"
@@ -349,6 +360,7 @@ const CaseIncidentEditionOverview: FunctionComponent<CaseIncidentEditionOverview
             component={MarkdownField}
             name="description"
             label={t_i18n('Description')}
+            required={(mandatoryAttributes.includes('description'))}
             fullWidth={true}
             multiline={true}
             rows="4"
@@ -362,6 +374,7 @@ const CaseIncidentEditionOverview: FunctionComponent<CaseIncidentEditionOverview
           />
           <ObjectAssigneeField
             name="objectAssignee"
+            required={(mandatoryAttributes.includes('objectAssignee'))}
             style={fieldSpacingContainerStyle}
             helpertext={
               <SubscriptionFocus context={context} fieldname="objectAssignee" />
@@ -370,6 +383,7 @@ const CaseIncidentEditionOverview: FunctionComponent<CaseIncidentEditionOverview
           />
           <ObjectParticipantField
             name="objectParticipant"
+            required={(mandatoryAttributes.includes('objectParticipant'))}
             style={fieldSpacingContainerStyle}
             onChange={editor.changeParticipant}
           />
@@ -391,6 +405,7 @@ const CaseIncidentEditionOverview: FunctionComponent<CaseIncidentEditionOverview
           )}
           <CreatedByField
             name="createdBy"
+            required={(mandatoryAttributes.includes('createdBy'))}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
             helpertext={
@@ -400,6 +415,7 @@ const CaseIncidentEditionOverview: FunctionComponent<CaseIncidentEditionOverview
           />
           <ObjectMarkingField
             name="objectMarking"
+            required={(mandatoryAttributes.includes('objectMarking'))}
             style={fieldSpacingContainerStyle}
             helpertext={
               <SubscriptionFocus context={context} fieldname="objectMarking" />

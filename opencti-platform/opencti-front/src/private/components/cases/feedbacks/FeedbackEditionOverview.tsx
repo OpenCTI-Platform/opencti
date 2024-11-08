@@ -22,7 +22,7 @@ import RatingField from '../../../../components/fields/RatingField';
 import CommitMessage from '../../common/form/CommitMessage';
 import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
 import ConfidenceField from '../../common/form/ConfidenceField';
-import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
+import { useSchemaEditionValidation, useIsMandatoryAttribute } from '../../../../utils/hooks/useEntitySettings';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 import FeedbackDeletion from './FeedbackDeletion';
 
@@ -147,20 +147,25 @@ interface FeedbackEditionFormValues {
   objectMarking?: Option[]
 }
 
+const FEEDBACK_TYPE = 'Feedback';
+
 const FeedbackEditionOverviewComponent: FunctionComponent<
 FeedbackEditionOverviewProps
 > = ({ feedbackRef, context, enableReferences = false, handleClose }) => {
   const { t_i18n } = useFormatter();
   const feedbackData = useFragment(feedbackEditionOverviewFragment, feedbackRef);
 
+  const { mandatoryAttributes } = useIsMandatoryAttribute(
+    FEEDBACK_TYPE,
+  );
   const basicShape = {
-    name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
+    name: Yup.string().trim().min(2),
     description: Yup.string().nullable(),
     x_opencti_workflow_id: Yup.object(),
     rating: Yup.number(),
     confidence: Yup.number(),
   };
-  const feedbackValidator = useSchemaEditionValidation('Feedback', basicShape);
+  const feedbackValidator = useSchemaEditionValidation(FEEDBACK_TYPE, basicShape);
 
   const queries = {
     fieldPatch: feedbackMutationFieldPatch,
@@ -257,6 +262,7 @@ FeedbackEditionOverviewProps
             variant="standard"
             name="name"
             label={t_i18n('Name')}
+            required={(mandatoryAttributes.includes('name'))}
             fullWidth={true}
             style={fieldSpacingContainerStyle}
             onFocus={editor.changeFocus}
@@ -269,6 +275,7 @@ FeedbackEditionOverviewProps
             component={MarkdownField}
             name="description"
             label={t_i18n('Description')}
+            required={(mandatoryAttributes.includes('description'))}
             fullWidth={true}
             multiline={true}
             rows="4"
@@ -289,6 +296,7 @@ FeedbackEditionOverviewProps
           />
           <RatingField
             label={t_i18n('Rating')}
+            required={(mandatoryAttributes.includes('rating'))}
             rating={feedbackData.rating}
             size="small"
             style={fieldSpacingContainerStyle}
@@ -297,6 +305,7 @@ FeedbackEditionOverviewProps
           />
           <ObjectAssigneeField
             name="objectAssignee"
+            required={(mandatoryAttributes.includes('objectAssignee'))}
             style={fieldSpacingContainerStyle}
             helpertext={
               <SubscriptionFocus context={context} fieldname="objectAssignee" />
@@ -321,6 +330,7 @@ FeedbackEditionOverviewProps
           )}
           <CreatedByField
             name="createdBy"
+            required={(mandatoryAttributes.includes('createdBy'))}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
             helpertext={
@@ -330,6 +340,7 @@ FeedbackEditionOverviewProps
           />
           <ObjectMarkingField
             name="objectMarking"
+            required={(mandatoryAttributes.includes('objectMarking'))}
             style={fieldSpacingContainerStyle}
             helpertext={
               <SubscriptionFocus context={context} fieldname="objectMarking" />
