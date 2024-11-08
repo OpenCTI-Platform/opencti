@@ -188,6 +188,17 @@ const CaseRfi: React.FC<CaseRfiProps> = ({ caseRfiData, enableReferences }) => {
                     <ContainerStixObjectsOrStixRelationships
                       isSupportParticipation={false}
                       container={caseRfi}
+                      types={[
+                        'Threat-Actor',
+                        'Intrusion-Set',
+                        'Campaign',
+                        'Malware',
+                        'Tool',
+                        'Attack-Pattern',
+                        'Identity',
+                        'Location',
+                        'Vulnerability',
+                      ]}
                       enableReferences={enableReferences}
                     />
                   </Grid>

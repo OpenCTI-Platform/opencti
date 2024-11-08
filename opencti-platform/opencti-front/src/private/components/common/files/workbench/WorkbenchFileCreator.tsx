@@ -94,9 +94,6 @@ const WorkbenchFileCreator: FunctionComponent<WorkbenchFileCreatorProps> = ({
   const [commitWorkbench] = useApiMutation<WorkbenchFileCreatorMutation>(
     workbenchFileCreatorMutation,
     undefined,
-    {
-      errorMessage: 'An error occurred while creating the workbench.',
-    },
   );
   const entityId = entity?.id;
   const onSubmitCreate: FormikConfig<WorkbenchFileCreatorFormValues>['onSubmit'] = (values, { setSubmitting, resetForm }) => {

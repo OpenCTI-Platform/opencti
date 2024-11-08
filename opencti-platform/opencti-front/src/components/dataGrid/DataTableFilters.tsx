@@ -22,8 +22,6 @@ import { Theme } from '@mui/material/styles/createTheme';
 import FilterIconButton from '../FilterIconButton';
 import { useFormatter } from '../i18n';
 import { DataTableDisplayFiltersProps, DataTableFiltersProps, DataTableVariant } from './dataTableTypes';
-import { useDataTableContext } from './dataTableUtils';
-import { usePaginationLocalStorage } from '../../utils/hooks/useLocalStorage';
 import { export_max_size } from '../../utils/utils';
 import useEntityToggle from '../../utils/hooks/useEntityToggle';
 import Security from '../../utils/Security';
@@ -32,6 +30,7 @@ import { ExportContext } from '../../utils/ExportContextProvider';
 import Transition from '../Transition';
 import DataTablePagination from './DataTablePagination';
 import { isFilterGroupNotEmpty } from '../../utils/filters/filtersUtils';
+import { useDataTableContext } from './components/DataTableContext';
 
 export const DataTableDisplayFilters = ({
   availableFilterKeys,
@@ -41,8 +40,12 @@ export const DataTableDisplayFilters = ({
   entityTypes,
 }: DataTableDisplayFiltersProps) => {
   const theme = useTheme<Theme>();
-  const { storageKey, initialValues, variant } = useDataTableContext();
-  const { helpers, viewStorage: { filters } } = usePaginationLocalStorage(storageKey, initialValues, variant !== DataTableVariant.default);
+  const {
+    useDataTablePaginationLocalStorage: {
+      helpers,
+      viewStorage: { filters },
+    },
+  } = useDataTableContext();
 
   if (!isFilterGroupNotEmpty(filters)) {
     return null;
@@ -86,17 +89,16 @@ const DataTableFilters = ({
 
   const {
     storageKey,
-    initialValues,
     redirectionModeEnabled,
     variant,
     createButton,
     page,
     setPage,
+    useDataTablePaginationLocalStorage: {
+      helpers,
+      viewStorage: { numberOfElements, openExports, redirectionMode },
+    },
   } = useDataTableContext();
-  const {
-    helpers,
-    viewStorage: { numberOfElements, openExports, redirectionMode },
-  } = usePaginationLocalStorage(storageKey, initialValues, variant !== DataTableVariant.default);
 
   const { selectedElements } = useEntityToggle(storageKey);
 

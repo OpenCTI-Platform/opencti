@@ -5,7 +5,7 @@ import StixCoreObjectLabels from '@components/common/stix_core_objects/StixCoreO
 import Tooltip from '@mui/material/Tooltip';
 import { Link } from 'react-router-dom';
 import { useTheme } from '@mui/styles';
-import type { DataTableColumn, DataTableContextProps } from './dataTableTypes';
+import type { DataTableColumn } from './dataTableTypes';
 import { DataTableProps, DataTableVariant } from './dataTableTypes';
 import ItemMarkings from '../ItemMarkings';
 import ItemStatus from '../ItemStatus';
@@ -44,10 +44,6 @@ export const textInTooltip: TextInTooltip = (val, helpers) => {
     </Tooltip>
   );
 };
-
-// TODO improve this with a proper context definition
-export const DataTableContext = React.createContext({});
-export const useDataTableContext = (): DataTableContextProps => React.useContext(DataTableContext) as DataTableContextProps;
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.

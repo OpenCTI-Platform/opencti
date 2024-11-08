@@ -143,6 +143,7 @@ export const deleteAllBucketContent = async (context: AuthContext, user: AuthUse
 
 /**
  * Move all file from source entity to target entity and then cleanup directories on S3.
+ * If a file with the same name exists both in source entity and target entity, the kept file is the one in target entity
  * @param context
  * @param user
  * @param sourceEntity
@@ -156,19 +157,24 @@ export const moveAllFilesFromEntityToAnother = async (context: AuthContext, user
       const sourcePath = `${ALL_MERGEABLE_FOLDERS[folderI]}/${sourceEntity.entity_type}/${sourceEntity.internal_id}`;
       const targetPath = `${ALL_MERGEABLE_FOLDERS[folderI]}/${targetEntity.entity_type}/${targetEntity.internal_id}`;
       const importFilesToMove = await allFilesForPaths(context, user, [sourcePath]);
+      const targetFiles = await allFilesForPaths(context, user, [targetPath]);
+      const targetFilesNames = targetFiles.map((f) => f.name);
 
       for (let fileI = 0; fileI < importFilesToMove.length; fileI += 1) {
         const sourceFileDocument = importFilesToMove[fileI];
-        const sourceFileS3Id = `${sourcePath}/${sourceFileDocument.name}`;
-        const targetFileS3Id = `${targetPath}/${sourceFileDocument.name}`;
-        logApp.info(`[FILE STORAGE] Moving from ${sourceFileS3Id} to: ${targetFileS3Id}`);
-        const copyProps = { sourceId: sourceFileS3Id, targetId: targetFileS3Id, sourceDocument: sourceFileDocument, targetEntityId: targetEntity.internal_id };
-        const newFile = await copyFile(context, copyProps);
-        if (newFile) {
-          const newFileForEntity = storeFileConverter(user, newFile);
-          updatedXOpenctiFiles.push(newFileForEntity);
+        const sourceFileName = sourceFileDocument.name;
+        if (!targetFilesNames.includes(sourceFileName)) { // move the file only if no files with this name already exist in target
+          const sourceFileS3Id = `${sourcePath}/${sourceFileName}`;
+          const targetFileS3Id = `${targetPath}/${sourceFileName}`;
+          logApp.info(`[FILE STORAGE] Moving from ${sourceFileS3Id} to: ${targetFileS3Id}`);
+          const copyProps = { sourceId: sourceFileS3Id, targetId: targetFileS3Id, sourceDocument: sourceFileDocument, targetEntityId: targetEntity.internal_id };
+          const newFile = await copyFile(context, copyProps);
+          if (newFile) {
+            const newFileForEntity = storeFileConverter(user, newFile);
+            updatedXOpenctiFiles.push(newFileForEntity);
 
-          await deleteFile(context, user, sourceFileS3Id); // TODO to be removed ? This will be done by merge delete no ?
+            await deleteFile(context, user, sourceFileS3Id); // TODO to be removed ? This will be done by merge delete no ?
+          }
         }
       }
     } catch (err) {

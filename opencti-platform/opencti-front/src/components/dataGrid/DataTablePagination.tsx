@@ -7,10 +7,9 @@ import { ButtonGroup } from '@mui/material';
 import Button from '@mui/material/Button';
 import { TableTuneIcon } from 'filigran-icon';
 import { useFormatter } from '../i18n';
-import { DataTableVariant, LocalStorageColumns } from './dataTableTypes';
-import { NumberOfElements, usePaginationLocalStorage } from '../../utils/hooks/useLocalStorage';
-import { useDataTableContext } from './dataTableUtils';
+import { NumberOfElements } from '../../utils/hooks/useLocalStorage';
 import NestedMenuButton from '../nestedMenu/NestedMenuButton';
+import { useDataTableContext } from './components/DataTableContext';
 
 const DataTablePagination = ({
   page,
@@ -24,17 +23,17 @@ const DataTablePagination = ({
   const { t_i18n } = useFormatter();
 
   const {
-    storageKey,
-    initialValues,
-    variant,
     resetColumns,
-    useDataTableLocalStorage,
+    useDataTableColumnsLocalStorage,
+    useDataTablePaginationLocalStorage: {
+      viewStorage: {
+        pageSize,
+        numberOfElements: storedNOE = { original: 0, number: 0, symbol: '' },
+      },
+      helpers,
+    },
   } = useDataTableContext();
 
-  const {
-    viewStorage: { pageSize, numberOfElements: storedNOE = { original: 0, number: 0, symbol: '' } },
-    helpers,
-  } = usePaginationLocalStorage(storageKey, initialValues, variant !== DataTableVariant.default);
   const numberOfElements = unstoreNOE ?? storedNOE;
 
   // if the number of elements object changes, it means we have changed the filter or search
@@ -58,7 +57,7 @@ const DataTablePagination = ({
     }
   }, [page, pageSize]);
 
-  const [_, setLocalStorageColumns] = useDataTableLocalStorage<LocalStorageColumns>(`${storageKey}_columns`, {}, true, true);
+  const [_, setLocalStorageColumns] = useDataTableColumnsLocalStorage;
 
   const resetTable = () => {
     setLocalStorageColumns({});

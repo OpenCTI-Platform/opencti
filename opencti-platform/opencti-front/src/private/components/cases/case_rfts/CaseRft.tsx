@@ -186,6 +186,17 @@ const CaseRft: React.FC<CaseRftProps> = ({ caseRftData, enableReferences }) => {
                     <ContainerStixObjectsOrStixRelationships
                       isSupportParticipation={false}
                       container={caseRft}
+                      types={[
+                        'Threat-Actor',
+                        'Intrusion-Set',
+                        'Campaign',
+                        'Malware',
+                        'Tool',
+                        'Attack-Pattern',
+                        'Identity',
+                        'Location',
+                        'Vulnerability',
+                      ]}
                       enableReferences={enableReferences}
                     />
                   </Grid>

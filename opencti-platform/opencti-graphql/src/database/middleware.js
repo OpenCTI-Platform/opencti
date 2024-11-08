@@ -1147,13 +1147,10 @@ const mergeEntitiesRaw = async (context, user, targetEntity, sourceEntities, tar
   // Merge files on S3 and update x_opencti_files path in source => it will be added to target by the merge operation.
   logApp.info('[OPENCTI] Copying files on S3 before merging x_opencti_files');
   const sourceEntitiesWithFiles = sourceEntities.filter((entity) => { return entity.x_opencti_files ? entity.x_opencti_files.length > 0 : true; });
-
   for (let i = 0; i < sourceEntitiesWithFiles.length; i += 1) {
-    const entity = sourceEntitiesWithFiles[i];
-    if (entity.x_opencti_files) {
-      if (sourceEntitiesWithFiles[i].x_opencti_files.length > 0) {
-        sourceEntitiesWithFiles[i].x_opencti_files = await moveAllFilesFromEntityToAnother(context, user, sourceEntitiesWithFiles[i], targetEntity);
-      }
+    const sourceEntity = sourceEntitiesWithFiles[i];
+    if (sourceEntity.x_opencti_files && sourceEntity.x_opencti_files.length > 0) {
+      sourceEntity.x_opencti_files = await moveAllFilesFromEntityToAnother(context, user, sourceEntity, targetEntity);
     }
   }
   logApp.info('[OPENCTI] Copy of files on S3 ended.');

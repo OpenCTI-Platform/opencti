@@ -564,6 +564,10 @@ const investigationGraphStixRelationshipsQuery = graphql`
             }
             ... on StixFile {
               observableName: name
+              hashes {
+                algorithm
+                hash
+              }
             }
             ... on StixMetaObject {
               created
@@ -769,6 +773,10 @@ const investigationGraphStixRelationshipsQuery = graphql`
             }
             ... on StixFile {
               observableName: name
+              hashes {
+                algorithm
+                hash
+              }
             }
             ... on StixMetaObject {
               created
