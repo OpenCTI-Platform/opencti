@@ -1355,14 +1355,17 @@ class ReportKnowledgeGraphComponent extends Component {
                         this.forceUpdate();
                       }}
                       onNodeDrag={(node, translate) => {
+                        const withForces = !this.state.modeFixed;
                         if (this.selectedNodes.has(node)) {
                           [...this.selectedNodes]
                             .filter((selNode) => selNode !== node)
-                            // eslint-disable-next-line no-shadow
-                            .forEach((selNode) => ['x', 'y'].forEach(
-                              // eslint-disable-next-line no-param-reassign,no-return-assign
-                              (coord) => (selNode[`f${coord}`] = selNode[coord] + translate[coord]),
-                            ));
+                            .forEach((selNode) => {
+                              ['x', 'y'].forEach((coord) => {
+                                const nodeKey = withForces ? `f${coord}` : coord;
+                                // eslint-disable-next-line no-param-reassign
+                                selNode[nodeKey] = selNode[coord] + translate[coord];
+                              });
+                            });
                         }
                       }}
                       onNodeDragEnd={(node) => {
