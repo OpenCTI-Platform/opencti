@@ -16,7 +16,7 @@ interface AttackPatternsMatrixProps {
   currentColorsReversed: boolean;
   hideBar: boolean;
   handleAdd: (entity: TargetEntity) => void;
-  selectedKillChain: string;
+  selectedKillChain?: string;
   hideSwitchKillChainNavOpen?: boolean;
 }
 const AttackPatternsMatrix: FunctionComponent<AttackPatternsMatrixProps> = ({

@@ -2,8 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
 import { propOr } from 'ramda';
-import { createFragmentContainer, graphql } from 'react-relay';
-import withStyles from '@mui/styles/withStyles';
+import { createFragmentContainer, createRefetchContainer, graphql, useFragment } from 'react-relay';
 import { Route, Routes } from 'react-router-dom';
 import { containerAddStixCoreObjectsLinesRelationAddMutation } from '../../common/containers/ContainerAddStixCoreObjectsLines';
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
@@ -20,17 +19,9 @@ import { constructHandleAddFilter, constructHandleRemoveFilter, emptyFilterGroup
 import ContentKnowledgeTimeLineBar from '../../common/containers/ContainertKnowledgeTimeLineBar';
 import investigationAddFromContainer from '../../../../utils/InvestigationUtils';
 import withRouter from '../../../../utils/compat_router/withRouter';
-import { insertNode } from '../../../../utils/store';
-
-const styles = () => ({
-  container: {
-    width: '100%',
-    height: '100%',
-  },
-});
 
 export const reportKnowledgeAttackPatternsGraphQuery = graphql`
-  query ReportKnowledgeAttackPatternsGraphQuery($id: String) {
+  query ReportKnowledgeAttackPatternsGraphQuery($id: String!) {
     report(id: $id) {
       id
       name
@@ -51,53 +42,118 @@ export const reportKnowledgeAttackPatternsGraphQuery = graphql`
         x_opencti_order
         x_opencti_color
       }
-      objects(all: true, types: ["Attack-Pattern"]) {
-        edges {
-          node {
-            ... on AttackPattern {
-              id
-              entity_type
-              parent_types
-              name
-              description
-              x_mitre_platforms
-              x_mitre_permissions_required
-              x_mitre_id
-              x_mitre_detection
-              isSubAttackPattern
-              parentAttackPatterns {
-                edges {
-                  node {
-                    id
-                    name
-                    description
-                    x_mitre_id
-                  }
-                }
-              }
-              subAttackPatterns {
-                edges {
-                  node {
-                    id
-                    name
-                    description
-                    x_mitre_id
-                  }
-                }
-              }
-              killChainPhases {
+      ...ReportKnowledge_fragment
+  }
+  }
+`;
+
+const ReportAttackPatternsFragment = graphql`
+fragment ReportKnowledge_fragment on Report {
+  objects(all: true, types: ["Attack-Pattern"]) {
+    edges {
+      node {
+        ... on AttackPattern {
+          id
+          entity_type
+          parent_types
+          name
+          description
+          x_mitre_platforms
+          x_mitre_permissions_required
+          x_mitre_id
+          x_mitre_detection
+          isSubAttackPattern
+          parentAttackPatterns {
+            edges {
+              node {
                 id
-                kill_chain_name
-                phase_name
-                x_opencti_order
+                name
+                description
+                x_mitre_id
               }
             }
+          }
+          subAttackPatterns {
+            edges {
+              node {
+                id
+                name
+                description
+                x_mitre_id
+              }
+            }
+          }
+          killChainPhases {
+            id
+            kill_chain_name
+            phase_name
+            x_opencti_order
           }
         }
       }
     }
   }
+}
 `;
+
+const AttackPatternMatrixComponent = (props) => {
+  const {
+    data,
+    report,
+    currentKillChain,
+    currentModeOnlyActive,
+    currentColorsReversed,
+    handleChangeKillChain,
+    handleToggleColorsReversed,
+    handleToggleModeOnlyActive,
+  } = props;
+  const attackPatternObjects = useFragment(ReportAttackPatternsFragment, data.report);
+  const attackPatterns = R.pipe(
+    R.map((n) => n.node),
+    R.filter((n) => n.entity_type === 'Attack-Pattern'),
+  )(attackPatternObjects.objects.edges);
+
+  const handleAddEntity = (entity) => {
+    const input = {
+      toId: entity.id,
+      relationship_type: 'object',
+    };
+    commitMutation({
+      mutation: containerAddStixCoreObjectsLinesRelationAddMutation,
+      variables: {
+        id: report.id,
+        input,
+      },
+      onCompleted: () => {
+        props.relay.refetch({ id: report.id });
+      },
+    });
+  };
+
+  return (
+    <AttackPatternsMatrix
+      entity={report}
+      attackPatterns={attackPatterns}
+      searchTerm=""
+      currentKillChain={currentKillChain}
+      currentModeOnlyActive={currentModeOnlyActive}
+      currentColorsReversed={currentColorsReversed}
+      handleChangeKillChain={handleChangeKillChain}
+      handleToggleColorsReversed={handleToggleColorsReversed}
+      handleToggleModeOnlyActive={handleToggleModeOnlyActive}
+      handleAdd={handleAddEntity}
+      hideBar={false}
+    />
+  );
+};
+
+const AttackPatternMatrixContainer = createRefetchContainer(
+  AttackPatternMatrixComponent,
+  {
+    data: ReportAttackPatternsFragment,
+  },
+  reportKnowledgeAttackPatternsGraphQuery,
+);
 
 class ReportKnowledgeComponent extends Component {
   constructor(props) {
@@ -216,35 +272,8 @@ class ReportKnowledgeComponent extends Component {
     this.setState({ timeLineSearchTerm: value }, () => this.saveView());
   }
 
-  handleAddEntity(entity) {
-    const input = {
-      toId: entity.id,
-      relationship_type: 'object',
-    };
-    commitMutation({
-      mutation: containerAddStixCoreObjectsLinesRelationAddMutation,
-      variables: {
-        id: this.props.report.id,
-        input,
-      },
-      updater: (store) => {
-        insertNode(
-          store,
-          'Pagination_objects',
-          undefined,
-          'containerEdit',
-          this.props.report.id,
-          'relationAdd',
-          { input },
-          'to',
-        );
-      },
-    });
-  }
-
   render() {
     const {
-      classes,
       report,
       location,
       params: { '*': mode },
@@ -281,7 +310,10 @@ class ReportKnowledgeComponent extends Component {
     };
     return (
       <div
-        className={classes.container}
+        style={{
+          width: '100%',
+          height: '100%',
+        }}
         id={location.pathname.includes('matrix') ? 'parent' : 'container'}
         data-testid='report-knowledge'
       >
@@ -394,22 +426,16 @@ class ReportKnowledgeComponent extends Component {
                 variables={{ id: report.id }}
                 render={({ props }) => {
                   if (props && props.report) {
-                    const attackPatterns = R.pipe(
-                      R.map((n) => n.node),
-                      R.filter((n) => n.entity_type === 'Attack-Pattern'),
-                    )(props.report.objects.edges);
                     return (
-                      <AttackPatternsMatrix
-                        entity={report}
-                        attackPatterns={attackPatterns}
-                        searchTerm=""
+                      <AttackPatternMatrixContainer
+                        data={props}
+                        report={report}
                         currentKillChain={currentKillChain}
                         currentModeOnlyActive={currentModeOnlyActive}
                         currentColorsReversed={currentColorsReversed}
                         handleChangeKillChain={this.handleChangeKillChain.bind(this)}
                         handleToggleColorsReversed={this.handleToggleColorsReversed.bind(this)}
                         handleToggleModeOnlyActive={this.handleToggleModeOnlyActive.bind(this)}
-                        handleAdd={this.handleAddEntity.bind(this)}
                       />
                     );
                   }
@@ -459,4 +485,4 @@ const ReportKnowledge = createFragmentContainer(ReportKnowledgeComponent, {
   `,
 });
 
-export default R.compose(withRouter, withStyles(styles))(ReportKnowledge);
+export default R.compose(withRouter)(ReportKnowledge);
