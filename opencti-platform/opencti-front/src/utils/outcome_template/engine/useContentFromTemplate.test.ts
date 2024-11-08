@@ -1,74 +1,99 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeAll, afterAll } from 'vitest';
 import { fetchQuery } from 'react-relay';
-import type { GraphQLTaggedNode, Variables } from 'relay-runtime';
 import { MockPayloadGenerator } from 'relay-test-utils';
 import { testRenderHook } from '../../tests/test-render';
 import useContentFromTemplate from './useContentFromTemplate';
 import * as env from '../../../relay/environment';
-import type { Widget } from '../../widget/widget';
+import * as useBuildAttributesOutcome from './stix_core_objects/useBuildAttributesOutcome';
+import * as useBuildListOutcome from './stix_core_objects/useBuildListOutcome';
+import * as filterUtils from '../../filters/filtersUtils';
 
 describe('Hook: useContentFromTemplate', () => {
-  it('should replace attribute widgets with the associated data', async () => {
-    const { hook } = testRenderHook(() => useContentFromTemplate());
-    const { buildContentFromTemplate } = hook.result.current;
-
-    const template = {
-      name: 'Test template',
-      used_widgets: ['containerName', 'containerType'],
-      content: 'Hello, I am container $containerName of type $containerType',
-    };
-    const attributes = [
-      { template_widget_name: 'containerName', data: 'Super report' },
-      { template_widget_name: 'containerType', data: 'Report' },
-    ];
-
-    const content = await buildContentFromTemplate('aaaID', template, [], attributes, []);
-    expect(content).toEqual('Hello, I am container Super report of type Report');
+  beforeAll(() => {
+    vi.spyOn(useBuildAttributesOutcome, 'default').mockImplementation(() => ({
+      buildAttributesOutcome: async () => {
+        return [
+          { variableName: 'containerName', attributeData: 'Super report' },
+          { variableName: 'containerType', attributeData: 'Report' },
+        ];
+      },
+    }));
+    vi.spyOn(useBuildListOutcome, 'default').mockImplementation(() => ({
+      buildListOutcome: async () => {
+        return 'my super list of elements';
+      },
+    }));
+    vi.spyOn(filterUtils, 'useBuildFiltersForTemplateWidgets').mockImplementation(() => ({
+      buildFiltersForTemplateWidgets() {
+        return undefined;
+      },
+    }));
+  });
+  afterAll(() => {
+    vi.restoreAllMocks();
   });
 
-  it('should replace attribute lists with corresponding data fetched', async () => {
+  it('should replace attribute widgets with the associated data', async () => {
     const { hook, relayEnv } = testRenderHook(() => useContentFromTemplate());
     // We want fetchQuery function to use the test env of Relay.
-    vi.spyOn(env, 'fetchQuery').mockImplementation((q: GraphQLTaggedNode, a: Variables) => fetchQuery(relayEnv, q, a));
+    vi.spyOn(env, 'fetchQuery').mockImplementation((q, a) => fetchQuery(relayEnv, q, a));
     const { buildContentFromTemplate } = hook.result.current;
 
     // Fake data returned by the query.
     relayEnv.mock.queueOperationResolver((op) => {
       return MockPayloadGenerator.generate(op, {
-        StixCoreObjectConnection() {
+        TemplateAndUtils() {
           return {
-            edges: [
-              {
-                node: {
-                  id: 'malware1',
-                  entity_type: 'Malware',
-                  created_at: '2022-07-12T08:20:59.859Z',
-                  representative: {
-                    main: 'PasGentil',
-                  },
-                },
-              },
-            ],
+            template: {
+              id: 'testTemplate',
+              name: 'Test template',
+              template_widgets_ids: ['myAttributes'],
+              content: 'Hello, I am container $containerName of type $containerType',
+            },
+            template_widgets: [{
+              id: 'myAttributes',
+              type: 'attribute',
+              dataSelection: [{}],
+            }],
           };
         },
       });
     });
 
-    const template = {
-      name: 'Test template',
-      used_widgets: ['containerName', 'containerEntities'],
-      content: 'Hello, I am container $containerName my entities are $containerEntities',
-    };
-    const attributes = [{
-      template_widget_name: 'containerName',
-      data: 'MyReport',
-    }];
-    const widgets = [{
-      name: 'containerEntities',
-      widget: { dataSelection: [{}], type: 'list' } as unknown as Widget,
-    }];
+    const content = await buildContentFromTemplate('aaaID', 'testTemplate', []);
+    expect(content).toEqual('Hello, I am container Super report of type Report');
+  });
 
-    const content = await buildContentFromTemplate('aaaID', template, widgets, attributes, []);
-    expect(content).toEqual('Hello, I am container MyReport my entities are <table><thead><tr><th>Entity type</th><th>Representative</th><th>Creation date</th></tr></thead><tbody><tr><td>Malware</td><td>PasGentil</td><td>2022-07-12T08:20:59.859Z</td></tr></tbody></table>');
+  it('should replace attribute lists with corresponding data', async () => {
+    const { hook, relayEnv } = testRenderHook(() => useContentFromTemplate());
+    // We want fetchQuery function to use the test env of Relay.
+    vi.spyOn(env, 'fetchQuery').mockImplementation((q, a) => fetchQuery(relayEnv, q, a));
+    const { buildContentFromTemplate } = hook.result.current;
+
+    // Fake data returned by the query.
+    relayEnv.mock.queueOperationResolver((op) => {
+      return MockPayloadGenerator.generate(op, {
+        TemplateAndUtils() {
+          return {
+            template: {
+              id: 'testTemplate',
+              name: 'Test template',
+              template_widgets_ids: ['containerList'],
+              content: 'Hello, I have: $containerList',
+            },
+            template_widgets: [{
+              id: 'containerList',
+              type: 'list',
+              dataSelection: [{
+                filters: null,
+              }],
+            }],
+          };
+        },
+      });
+    });
+
+    const content = await buildContentFromTemplate('aaaID', 'testTemplate', []);
+    expect(content).toEqual('Hello, I have: my super list of elements');
   });
 });

@@ -10,10 +10,11 @@ import AutocompleteField from '../../../../components/AutocompleteField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import SelectField from '../../../../components/fields/SelectField';
 import { useFormatter } from '../../../../components/i18n';
+import type { Template } from '../../../../utils/outcome_template/template';
 
 export interface ContentTemplateFormInputs {
   name: string
-  template: string
+  template: Option | null
   type: string
   fileMarkings: Option[]
   maxMarkings: Option[]
@@ -24,7 +25,7 @@ interface ContentTemplateFormProps {
   onClose: () => void
   onReset: () => void
   onSubmit: FormikConfig<ContentTemplateFormInputs>['onSubmit']
-  templates: string[]
+  templates: Template[]
 }
 
 const ContentTemplateForm = ({
@@ -38,17 +39,22 @@ const ContentTemplateForm = ({
 
   const validation = () => Yup.object().shape({
     name: Yup.string().required(t_i18n('This field is required')),
-    template: Yup.string().required(t_i18n('This field is required')),
+    template: Yup.object().required(t_i18n('This field is required')),
     type: Yup.string().required(t_i18n('This field is required')),
   });
 
   const initialValues: ContentTemplateFormInputs = {
     name: '',
-    template: '',
+    template: null,
     type: 'text/html',
     fileMarkings: [],
     maxMarkings: [],
   };
+
+  const templateOptions = (templates ?? []).map((t) => ({
+    value: t.id,
+    label: t.name,
+  }));
 
   return (
     <Formik<ContentTemplateFormInputs>
@@ -80,7 +86,11 @@ const ContentTemplateForm = ({
                 name='template'
                 fullWidth={true}
                 style={fieldSpacingContainerStyle}
-                options={templates}
+                options={templateOptions}
+                renderOption={(
+                  props: React.HTMLAttributes<HTMLLIElement>,
+                  option: Option,
+                ) => <li {...props}>{option.label}</li>}
                 textfieldprops={{ label: t_i18n('Template') }}
                 optionLength={80}
               />

@@ -1,26 +1,36 @@
 import { FilterGroup } from '../filters/filtersHelpers-types';
+import { WidgetPerspective } from '../outcome_template/engine/__generated__/TemplateAndUtilsContainerQuery.graphql';
+
+interface WidgetColumn {
+  attribute: string | null
+  displayStyle?: string | null
+  label?: string | null
+  variableName?: string | null
+}
 
 interface WidgetDataSelection {
-  label?: string
-  number?: number
-  attribute?: string
-  date_attribute?: string
-  centerLat?: number
-  centerLng?: number
-  zoom?: number
-  isTo?: boolean
-  perspective: 'entities' | 'relationships' | 'audits' | null
-  filters?: FilterGroup
-  dynamicFrom?: FilterGroup
-  dynamicTo?: FilterGroup
+  label?: string | null
+  number?: number | null
+  attribute?: string | null
+  date_attribute?: string | null
+  centerLat?: number | null
+  centerLng?: number | null
+  zoom?: number | null
+  isTo?: boolean | null
+  perspective?: WidgetPerspective | null
+  filters?: FilterGroup | null
+  dynamicFrom?: FilterGroup | null
+  dynamicTo?: FilterGroup | null
+  columns?: readonly WidgetColumn[] | null
+  instance_id?: string | null
 }
 
 interface WidgetParameters {
-  title?: string
-  interval?: string
-  stacked?: boolean
-  legend?: boolean
-  distributed?: boolean
+  title?: string | null
+  interval?: string | null
+  stacked?: boolean | null
+  legend?: boolean | null
+  distributed?: boolean | null
 }
 
 interface WidgetLayout {
@@ -36,8 +46,8 @@ interface WidgetLayout {
 export interface Widget {
   id: string;
   type: string;
-  perspective: 'entities' | 'relationships' | 'audits' | null
+  perspective?: WidgetPerspective
   dataSelection: WidgetDataSelection[]
-  parameters: WidgetParameters
+  parameters?: WidgetParameters
   layout?: WidgetLayout
 }

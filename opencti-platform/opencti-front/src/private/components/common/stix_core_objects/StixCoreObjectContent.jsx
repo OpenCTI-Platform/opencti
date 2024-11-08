@@ -24,7 +24,7 @@ import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 import withRouter from '../../../../utils/compat_router/withRouter';
 import CKEditor from '../../../../components/CKEditor';
-import htmlToPdf from '../../../../utils/htmlToPdf';
+import { htmlToPdf, htmlToPdfReport } from '../../../../utils/htmlToPdf';
 
 pdfjs.GlobalWorkerOptions.workerSrc = `${APP_BASE_PATH}/static/ext/pdf.worker.mjs`;
 
@@ -427,9 +427,18 @@ class StixCoreObjectContentComponent extends Component {
   async handleDownloadPdf() {
     const { currentFileId, currentContent } = this.state;
     const { stixCoreObject } = this.props;
-    const fragment = (currentFileId ?? stixCoreObject.name).split('/');
-    const currentName = R.last(fragment);
-    if (currentFileId) htmlToPdf(currentFileId, currentContent).download(`${currentName}.pdf`);
+    if (currentFileId) {
+      if (currentFileId.startsWith('fromTemplate')) {
+        const file = stixCoreObject.contentsFromTemplate.edges.find((e) => e.node.id === currentFileId);
+        const name = currentFileId.split('/').pop().split('.')[0];
+        const markings = file?.node.objectMarking.map((m) => m.representative.main) ?? [];
+        htmlToPdfReport(stixCoreObject, currentContent, name, markings).download(`${name}.pdf`);
+      } else {
+        const fragment = stixCoreObject.name.split('/');
+        const currentName = R.last(fragment);
+        htmlToPdf(currentFileId, currentContent).download(`${currentName}.pdf`);
+      }
+    }
   }
 
   render() {
@@ -459,6 +468,7 @@ class StixCoreObjectContentComponent extends Component {
       <div className={classes.container} data-testid='sco-content-page'>
         <StixCoreObjectContentFiles
           stixCoreObjectId={stixCoreObject.id}
+          stixCoreObjectName={stixCoreObject.name}
           content={isContentCompatible ? stixCoreObject.contentField ?? '' : null}
           contentSelected={contentSelected}
           files={files}
@@ -469,6 +479,7 @@ class StixCoreObjectContentComponent extends Component {
           onFileChange={this.handleFileChange.bind(this)}
           contentsFromTemplate={contentsFromTemplate}
           hasOutcomesTemplate={isContentCompatible}
+          templates={stixCoreObject.templates}
         />
         {isLoading ? (
           <Loader variant={LoaderVariant.inElement} />
@@ -764,35 +775,47 @@ const StixCoreObjectContent = createRefetchContainer(
             }
           }
         }
-          ... on Container {
-            contentsFromTemplate(first: 500) @connection(key: "Pagination_contentsFromTemplate") {
-                edges {
-                    node {
-                        id
-                        name
-                        uploadStatus
-                        lastModified
-                        lastModifiedSinceMin
-                        metaData {
-                            mimetype
-                            list_filters
-                            file_markings
-                            messages {
-                                timestamp
-                                message
-                            }
-                            errors {
-                                timestamp
-                                message
-                            }
-                        }
-                        metaData {
-                            mimetype
-                        }
-                    }
+        ... on Container {
+          contentsFromTemplate(first: 500) @connection(key: "Pagination_contentsFromTemplate") {
+            edges {
+              node {
+                id
+                name
+                uploadStatus
+                lastModified
+                lastModifiedSinceMin
+                objectMarking {
+                  id
+                  representative {
+                    main
+                  }
                 }
+                  metaData {
+                    mimetype
+                    list_filters
+                    file_markings
+                    messages {
+                      timestamp
+                      message
+                    }
+                    errors {
+                      timestamp
+                      message
+                    }
+                  }
+                  metaData {
+                    mimetype
+                  }
+              }
             }
           }
+          templates {
+            id
+            name
+            content
+            template_widgets_ids
+          }
+        }
         externalReferences {
           edges {
             node {

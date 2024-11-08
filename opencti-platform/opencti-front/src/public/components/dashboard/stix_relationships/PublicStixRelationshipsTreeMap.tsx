@@ -77,7 +77,7 @@ const PublicStixRelationshipsTreeMapComponent = ({
       <WidgetTree
         data={[...publicStixRelationshipsDistribution]}
         groupBy={dataSelection[0].attribute ?? 'entity_type'}
-        isDistributed={parameters.distributed}
+        isDistributed={!!parameters?.distributed}
         readonly={true}
         withExport={false}
       />
@@ -107,7 +107,7 @@ const PublicStixRelationshipsTreeMap = ({
 
   return (
     <WidgetContainer
-      title={parameters.title ?? title ?? t_i18n('Entities number')}
+      title={parameters?.title ?? title ?? t_i18n('Entities number')}
       variant="inLine"
     >
       {queryRef ? (

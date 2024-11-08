@@ -154,6 +154,10 @@ type Grouping implements BasicObject & StixObject & StixCoreObject & StixDomainO
         search: String
         filters: FilterGroup
     ): FileConnection
+    templates: [Template!]
+    templateAndUtils(
+        templateId: String!
+    ): TemplateAndUtils
     editContext: [EditUserContext!]
     connectors(onlyAlive: Boolean): [Connector]
     jobs(first: Int): [Work]

@@ -59,8 +59,8 @@ const PublicStixCoreObjectsMultiLineChartComponent = ({
             y: entry?.value,
           })),
         }))}
-        interval={parameters.interval}
-        hasLegend={parameters.legend}
+        interval={parameters?.interval}
+        hasLegend={!!parameters?.legend}
         withExport={false}
         readonly={true}
       />
@@ -90,7 +90,7 @@ const PublicStixCoreObjectsMultiLineChart = ({
 
   return (
     <WidgetContainer
-      title={parameters.title ?? title ?? t_i18n('Entities number')}
+      title={parameters?.title ?? title ?? t_i18n('Entities number')}
       variant="inLine"
     >
       {queryRef ? (

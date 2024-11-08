@@ -12,7 +12,7 @@ import axios from 'axios';
 import { Link } from 'react-router-dom';
 import { useFormatter } from '../../../../components/i18n';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import htmlToPdf from '../../../../utils/htmlToPdf';
+import { htmlToPdf, htmlToPdfReport } from '../../../../utils/htmlToPdf';
 import { APP_BASE_PATH, MESSAGING$ } from '../../../../relay/environment';
 
 const renderIcon = (mimeType: string) => {
@@ -37,10 +37,17 @@ export interface ContentFile {
   metaData: {
     mimetype: string | null | undefined
   } | null | undefined
+  objectMarking?: readonly {
+    readonly id: string;
+    readonly representative: {
+      readonly main: string;
+    };
+  }[];
 }
 
 interface StixCoreObjectContentFilesListProps {
-  files: ContentFile[]
+  files: ContentFile[],
+  stixCoreObjectName: string,
   currentFileId: string,
   handleSelectFile: (fileId: string) => void,
   onFileChange: (fileName?: string, isDeleted?: boolean) => void,
@@ -49,6 +56,7 @@ interface StixCoreObjectContentFilesListProps {
 const StixCoreObjectContentFilesList = ({
   files,
   currentFileId,
+  stixCoreObjectName,
   handleSelectFile,
   onFileChange,
 }: StixCoreObjectContentFilesListProps) => {
@@ -64,6 +72,7 @@ const StixCoreObjectContentFilesList = ({
   const [commitDelete] = useApiMutation<FileLineDeleteMutation>(deleteMutation);
 
   const submitDelete = (fileId: string) => {
+    setAnchorEl(null);
     setDeleting(fileId);
     commitDelete({
       variables: { fileName: fileId },
@@ -74,12 +83,21 @@ const StixCoreObjectContentFilesList = ({
     });
   };
 
-  const downloadPdf = async (fileId: string) => {
-    const url = `${APP_BASE_PATH}/storage/view/${encodeURIComponent(fileId)}`;
+  const downloadPdf = async (file: ContentFile) => {
+    setAnchorEl(null);
+    const { id } = file;
+    const url = `${APP_BASE_PATH}/storage/view/${encodeURIComponent(id)}`;
+
     try {
       const { data } = await axios.get(url);
-      const currentName = fileId.split('/').pop();
-      htmlToPdf(fileId, data).download(`${currentName}.pdf`);
+      const currentName = (id.split('/').pop() ?? '').split('.')[0];
+
+      if (id.startsWith('fromTemplate')) {
+        const markings = file.objectMarking?.map((m) => m.representative.main) ?? [];
+        htmlToPdfReport(stixCoreObjectName, data, currentName, markings).download(`${currentName}.pdf`);
+      } else {
+        htmlToPdf(id, data).download(`${currentName}.pdf`);
+      }
     } catch (e) {
       MESSAGING$.notifyError('pouet');
     }
@@ -132,12 +150,13 @@ const StixCoreObjectContentFilesList = ({
             <MenuItem
               component={Link}
               to={`${APP_BASE_PATH}/storage/get/${encodeURIComponent(file.id)}`}
+              onClick={() => setAnchorEl(null)}
               target="_blank"
               rel="noopener noreferrer"
             >
               {t_i18n('Download file')}
             </MenuItem>
-            <MenuItem onClick={() => downloadPdf(file.id)}>
+            <MenuItem onClick={() => downloadPdf(file)}>
               {t_i18n('Download in PDF')}
             </MenuItem>
             <MenuItem onClick={() => submitDelete(file.id)}>

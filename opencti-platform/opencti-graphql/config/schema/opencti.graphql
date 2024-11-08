@@ -854,6 +854,71 @@ type FileConnection {
   edges: [FileEdge!]!
 }
 
+enum WidgetPerspective {
+  entities
+  relationships
+  audits
+}
+type WidgetColumn {
+  attribute: String!
+  displayStyle: String
+  label: String
+  variableName: String
+}
+type WidgetDataSelection {
+  label: String
+  number: Int
+  attribute: String
+  date_attribute: String
+  centerLat: Float
+  centerLng: Float
+  zoom: Float
+  isTo: Boolean
+  perspective: WidgetPerspective
+  filters: String
+  dynamicFrom: String
+  dynamicTo: String
+  columns: [WidgetColumn!]
+  instance_id: String
+}
+type WidgetParameters {
+  title: String
+  description: String
+  interval: String
+  stacked: Boolean
+  legend: Boolean
+  distributed: Boolean
+}
+type WidgetLayout {
+  w: Float
+  h: Float
+  x: Float
+  y: Float
+  i: Float
+  moved: Boolean
+  static: Boolean
+}
+type Widget {
+  id: ID!
+  type: String!
+  perspective: WidgetPerspective
+  dataSelection: [WidgetDataSelection!]!
+  parameters: WidgetParameters
+  layout: WidgetLayout
+}
+type Template {
+  id: ID!
+  name: String!
+  description: String
+  filters: String
+  content: String!
+  template_widgets_ids: [String!]!
+}
+type TemplateAndUtils {
+  template: Template!,
+  template_widgets: [Widget!]!,
+}
+
 type IndexedFile {
   id: ID!
   name: String!
@@ -3095,6 +3160,10 @@ interface Container {
     search: String
     filters: FilterGroup
   ): FileConnection
+  templates: [Template!]
+  templateAndUtils(
+    templateId: String!
+  ): TemplateAndUtils
   # Technical
   creators: [Creator!]
   workflowEnabled: Boolean
@@ -3277,6 +3346,10 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
     search: String
     filters: FilterGroup
   ): FileConnection
+  templates: [Template!]
+  templateAndUtils(
+    templateId: String!
+  ): TemplateAndUtils
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -3505,6 +3578,10 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
     search: String
     filters: FilterGroup
   ): FileConnection
+  templates: [Template!]
+  templateAndUtils(
+    templateId: String!
+  ): TemplateAndUtils
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -3709,6 +3786,10 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
     search: String
     filters: FilterGroup
   ): FileConnection
+  templates: [Template!]
+  templateAndUtils(
+    templateId: String!
+  ): TemplateAndUtils
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -3937,6 +4018,10 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
     search: String
     filters: FilterGroup
   ): FileConnection
+  templates: [Template!]
+  templateAndUtils(
+    templateId: String!
+  ): TemplateAndUtils
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]

@@ -22,13 +22,12 @@ import StixCoreObjectContentFilesList from '@components/common/stix_core_objects
 import { useSettingsMessagesBannerHeight } from '@components/settings/settings_messages/SettingsMessagesBanner';
 import { useFormatter } from '../../../../components/i18n';
 import FileUploader from '../files/FileUploader';
-import { resolvedAttributesWidgets, templateAttribute, templateGraph, templateList, templateText, usedTemplateWidgets } from '../../../../utils/outcome_template/__template';
 import useContentFromTemplate from '../../../../utils/outcome_template/engine/useContentFromTemplate';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
-import type { Template } from '../../../../utils/outcome_template/template';
 import { isNilField } from '../../../../utils/utils';
 import useHelper from '../../../../utils/hooks/useHelper';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import type { Template } from '../../../../utils/outcome_template/template';
 import { MESSAGING$ } from '../../../../relay/environment';
 
 interface ContentBlocProps {
@@ -86,6 +85,7 @@ export const stixCoreObjectContentFilesUploadStixCoreObjectMutation = graphql`
 interface StixCoreObjectContentFilesProps {
   files: NonNullable<StixCoreObjectContent_stixCoreObject$data['importFiles']>['edges'][number]['node'][],
   stixCoreObjectId: string,
+  stixCoreObjectName: string,
   content: string | null,
   handleSelectFile: (fileId: string) => void,
   handleSelectContent: () => void,
@@ -95,11 +95,13 @@ interface StixCoreObjectContentFilesProps {
   exportFiles: NonNullable<StixCoreObjectContent_stixCoreObject$data['exportFiles']>['edges'][number]['node'][],
   contentsFromTemplate: NonNullable<StixCoreObjectContent_stixCoreObject$data['contentsFromTemplate']>['edges'][number]['node'][],
   hasOutcomesTemplate?: boolean,
+  templates: Template[],
 }
 
 const StixCoreObjectContentFiles: FunctionComponent<StixCoreObjectContentFilesProps> = ({
   files,
   stixCoreObjectId,
+  stixCoreObjectName,
   content,
   handleSelectFile,
   handleSelectContent,
@@ -109,6 +111,7 @@ const StixCoreObjectContentFiles: FunctionComponent<StixCoreObjectContentFilesPr
   exportFiles,
   contentsFromTemplate,
   hasOutcomesTemplate,
+  templates,
 }) => {
   const { t_i18n } = useFormatter();
   const { buildContentFromTemplate } = useContentFromTemplate();
@@ -123,10 +126,6 @@ const StixCoreObjectContentFiles: FunctionComponent<StixCoreObjectContentFilesPr
 
   const [displayCreate, setDisplayCreate] = useState(false);
   const [displayCreateContentFromTemplate, setDisplayCreateContentFromTemplate] = useState(false);
-
-  const hardcodedTemplates: Template[] = [templateGraph, templateList, templateAttribute, templateText];
-  const hardcodedUsedTemplateWidgets = usedTemplateWidgets;
-  const hardcodedResolvedAttributesWidgets = resolvedAttributesWidgets;
 
   const handleOpenCreate = () => {
     setDisplayCreate(true);
@@ -187,34 +186,33 @@ const StixCoreObjectContentFiles: FunctionComponent<StixCoreObjectContentFilesPr
 
     const fileMarkings = values.fileMarkings.map(({ value }) => value);
     const maxContentMarkings = (values.maxMarkings ?? []).map(({ value }) => value);
-    const template = hardcodedTemplates.find((t) => t.name === values.template);
+    const templateId = values.template?.value;
 
-    if (!template) {
-      MESSAGING$.notifyError(t_i18n('No template found for this name'));
-      return;
+    if (!templateId) return;
+
+    try {
+      const templateContent = await buildContentFromTemplate(
+        stixCoreObjectId,
+        templateId,
+        maxContentMarkings,
+      );
+      const blob = new Blob([templateContent], { type });
+      const file = new File([blob], fileName, { type });
+
+      commitUploadFile({
+        variables: { file, id: stixCoreObjectId, fileMarkings, fromTemplate: true },
+        onCompleted: (result) => {
+          setSubmitting(false);
+          resetForm();
+          handleCloseCreateContentFromTemplate();
+          if (result.stixCoreObjectEdit?.importPush) {
+            onFileChange(result.stixCoreObjectEdit.importPush.id);
+          }
+        },
+      });
+    } catch (e) {
+      MESSAGING$.notifyError(t_i18n('An error occurred while trying to build content from template.'));
     }
-
-    const templateContent = await buildContentFromTemplate(
-      stixCoreObjectId,
-      template,
-      hardcodedUsedTemplateWidgets,
-      hardcodedResolvedAttributesWidgets,
-      maxContentMarkings,
-    );
-    const blob = new Blob([templateContent], { type });
-    const file = new File([blob], fileName, { type });
-
-    commitUploadFile({
-      variables: { file, id: stixCoreObjectId, fileMarkings, fromTemplate: true },
-      onCompleted: (result) => {
-        setSubmitting(false);
-        resetForm();
-        handleCloseCreateContentFromTemplate();
-        if (result.stixCoreObjectEdit?.importPush) {
-          onFileChange(result.stixCoreObjectEdit.importPush.id);
-        }
-      },
-    });
   };
 
   const filesList = [...files, ...exportFiles.map((n) => ({ ...n, perspective: 'export' }))]
@@ -277,6 +275,7 @@ const StixCoreObjectContentFiles: FunctionComponent<StixCoreObjectContentFilesPr
       >
         <StixCoreObjectContentFilesList
           files={filesList}
+          stixCoreObjectName={stixCoreObjectName}
           currentFileId={currentFileId}
           handleSelectFile={handleSelectFile}
           onFileChange={onFileChange}
@@ -302,6 +301,7 @@ const StixCoreObjectContentFiles: FunctionComponent<StixCoreObjectContentFilesPr
           {isEnterpriseEdition && (
             <StixCoreObjectContentFilesList
               files={contentsFromTemplate}
+              stixCoreObjectName={stixCoreObjectName}
               currentFileId={currentFileId}
               handleSelectFile={handleSelectFile}
               onFileChange={onFileChange}
@@ -323,7 +323,7 @@ const StixCoreObjectContentFiles: FunctionComponent<StixCoreObjectContentFilesPr
           onClose={handleCloseCreateContentFromTemplate}
           onReset={handleCloseCreateContentFromTemplate}
           onSubmit={onSubmitContentFromTemplate}
-          templates={hardcodedTemplates.map((t) => t.name)}
+          templates={templates}
         />
       )}
     </Drawer>

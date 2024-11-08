@@ -5,7 +5,7 @@ import { copyFile, deleteFile, deleteFiles, loadedFilesListing, storeFileConvert
 import type { AuthContext, AuthUser } from '../types/user';
 import type { BasicStoreBase, BasicStoreEntity } from '../types/store';
 import { logApp } from '../config/conf';
-import { allFilesForPaths, EXPORT_STORAGE_PATH, IMPORT_STORAGE_PATH, SUPPORT_STORAGE_PATH } from '../modules/internal/document/document-domain';
+import { allFilesForPaths, EXPORT_STORAGE_PATH, FROM_TEMPLATE_STORAGE_PATH, IMPORT_STORAGE_PATH, SUPPORT_STORAGE_PATH } from '../modules/internal/document/document-domain';
 import { deleteWorkForSource } from '../domain/work';
 import { ENTITY_TYPE_SUPPORT_PACKAGE } from '../modules/support/support-types';
 import { getDraftContext } from '../utils/draftContext';
@@ -71,8 +71,8 @@ export const fileToReadStream = (localFilePath: string, localFileName: string, s
   return { createReadStream: () => Readable.from(buffer), filename: s3FileName, mimetype: mimeType };
 };
 
-export const ALL_ROOT_FOLDERS = [SUPPORT_STORAGE_PATH, IMPORT_STORAGE_PATH, EXPORT_STORAGE_PATH];
-export const ALL_MERGEABLE_FOLDERS = [IMPORT_STORAGE_PATH, EXPORT_STORAGE_PATH];
+export const ALL_ROOT_FOLDERS = [SUPPORT_STORAGE_PATH, IMPORT_STORAGE_PATH, EXPORT_STORAGE_PATH, FROM_TEMPLATE_STORAGE_PATH];
+export const ALL_MERGEABLE_FOLDERS = [IMPORT_STORAGE_PATH, EXPORT_STORAGE_PATH, FROM_TEMPLATE_STORAGE_PATH];
 /**
  * Delete all files in storage that relates to an element.
  * @param context
@@ -96,13 +96,19 @@ export const deleteAllObjectFiles = async (context: AuthContext, user: AuthUser,
     const exportFilesPromise = allFilesForPaths(context, user, [exportPath]);
     const exportWorkPromise = deleteWorkForSource(exportPath);
 
-    const [importFiles, exportFiles, _, __] = await Promise.all([
+    const fromTemplatePath = `${FROM_TEMPLATE_STORAGE_PATH}/${element.entity_type}/${element.internal_id}`;
+    const fromTemplateFilesPromise = allFilesForPaths(context, user, [fromTemplatePath]);
+    const fromTemplateWorkPromise = deleteWorkForSource(fromTemplatePath);
+
+    const [importFiles, exportFiles, fromTemplateFiles, _, __, ___] = await Promise.all([
       importFilesPromise,
       exportFilesPromise,
+      fromTemplateFilesPromise,
       importWorkPromise,
-      exportWorkPromise
+      exportWorkPromise,
+      fromTemplateWorkPromise,
     ]);
-    ids = [...importFiles, ...exportFiles].map((file) => file.id);
+    ids = [...importFiles, ...exportFiles, ...fromTemplateFiles].map((file) => file.id);
   }
   logApp.debug('[FILE STORAGE] deleting all files with ids:', { ids });
   return deleteFiles(context, user, ids);

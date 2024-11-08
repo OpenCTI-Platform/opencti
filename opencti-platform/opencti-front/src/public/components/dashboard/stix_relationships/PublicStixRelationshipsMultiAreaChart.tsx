@@ -59,9 +59,9 @@ const PublicStixRelationshipsMultiAreaChartComponent = ({
             y: entry?.value,
           })),
         }))}
-        interval={parameters.interval}
-        isStacked={parameters.stacked}
-        hasLegend={parameters.legend}
+        interval={parameters?.interval}
+        isStacked={!!parameters?.stacked}
+        hasLegend={!!parameters?.legend}
         withExport={false}
         readonly={true}
       />
@@ -91,7 +91,7 @@ const PublicStixRelationshipsMultiAreaChart = ({
 
   return (
     <WidgetContainer
-      title={parameters.title ?? title ?? t_i18n('Entities number')}
+      title={parameters?.title ?? title ?? t_i18n('Entities number')}
       variant="inLine"
     >
       {queryRef ? (

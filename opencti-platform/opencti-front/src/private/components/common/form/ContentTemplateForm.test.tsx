@@ -3,9 +3,14 @@ import React from 'react';
 import { screen } from '@testing-library/react';
 import ContentTemplateForm from './ContentTemplateForm';
 import testRender from '../../../../utils/tests/test-render';
+import type { Template } from '../../../../utils/outcome_template/template';
 
 describe('Component: ContentTemplateForm', () => {
-  const templates = ['template 1', 'template 2', 'template 3'];
+  const templates = [
+    { id: 'template 1', name: 'template 1' },
+    { id: 'template 2', name: 'template 2' },
+    { id: 'template 3', name: 'template 3' },
+  ] as Template[];
 
   it('should not be displayed if not opened', () => {
     testRender(
@@ -80,7 +85,10 @@ describe('Component: ContentTemplateForm', () => {
     expect(onSubmit).toHaveBeenCalledWith(
       {
         name: 'Super template',
-        template: 'template 2',
+        template: {
+          label: 'template 2',
+          value: 'template 2',
+        },
         type: 'text/html',
         fileMarkings: [],
         maxMarkings: [],

@@ -1,10 +1,10 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeAll, afterAll } from 'vitest';
 import { MockPayloadGenerator } from 'relay-test-utils';
 import { fetchQuery } from 'react-relay';
 import { testRenderHook } from '../../../tests/test-render';
 import useBuildListOutcome from './useBuildListOutcome';
-import type { Widget } from '../../../widget/widget';
 import * as env from '../../../../relay/environment';
+import * as filterUtils from '../../../filters/filtersUtils';
 
 /**
  * Utils function to generate fake data for our test.
@@ -21,6 +21,15 @@ const edgeSCO = (id: string, entity_type: string, main: string, created_at: stri
 });
 
 describe('Hook: useBuildListOutcome', () => {
+  beforeAll(() => {
+    vi.spyOn(filterUtils, 'useBuildFilterKeysMapFromEntityType').mockImplementation(() => {
+      return new Map().set('created_at', { type: 'date' });
+    });
+  });
+  afterAll(() => {
+    vi.restoreAllMocks();
+  });
+
   it('should have a table containing data from query', async () => {
     const { hook, relayEnv } = testRenderHook(() => useBuildListOutcome());
     // We want fetchQuery function to use the test env of Relay.
@@ -42,11 +51,10 @@ describe('Hook: useBuildListOutcome', () => {
       });
     });
 
-    const widget = { dataSelection: [{}] } as unknown as Widget;
-    const listOutcome = await buildListOutcome('superid', widget, []);
+    const listOutcome = await buildListOutcome({});
 
-    expect(listOutcome).toContain('<tr><td>Malware</td><td>Vador</td><td>2024-05-21T08:20:59.859Z</td></tr>');
-    expect(listOutcome).toContain('<tr><td>Malware</td><td>Joker</td><td>2024-05-25T08:20:34.859Z</td></tr>');
-    expect(listOutcome).toContain('<tr><td>Location</td><td>Annecy</td><td>2023-05-25T08:20:34.859Z</td></tr>');
+    expect(listOutcome).toContain('<tr><td>Malware</td><td>Vador</td><td>2024-05-21</td></tr>');
+    expect(listOutcome).toContain('<tr><td>Malware</td><td>Joker</td><td>2024-05-25</td></tr>');
+    expect(listOutcome).toContain('<tr><td>Location</td><td>Annecy</td><td>2023-05-25</td></tr>');
   });
 });

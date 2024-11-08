@@ -67,7 +67,7 @@ const PublicStixCoreObjectsMultiHeatMapComponent = ({
         })).sort((a, b) => b.name.localeCompare(a.name))}
         minValue={minValue}
         maxValue={maxValue}
-        isStacked={parameters.stacked}
+        isStacked={!!parameters?.stacked}
         withExport={false}
         readonly={true}
       />
@@ -97,7 +97,7 @@ const PublicStixCoreObjectsMultiHeatMap = ({
 
   return (
     <WidgetContainer
-      title={parameters.title ?? title ?? t_i18n('Entities number')}
+      title={parameters?.title ?? title ?? t_i18n('Entities number')}
       variant="inLine"
     >
       {queryRef ? (

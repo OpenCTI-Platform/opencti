@@ -1419,7 +1419,7 @@ const loadMergeEntitiesDependencies = async (context, user, entityIds) => {
 
 export const mergeEntities = async (context, user, targetEntityId, sourceEntityIds, opts = {}) => {
   // Pre-checks
-  if (R.includes(targetEntityId, sourceEntityIds)) {
+  if (sourceEntityIds.includes(targetEntityId)) {
     throw FunctionalError('Cannot merge entities, same ID detected in source and destination', {
       targetEntityId,
       sourceEntityIds,

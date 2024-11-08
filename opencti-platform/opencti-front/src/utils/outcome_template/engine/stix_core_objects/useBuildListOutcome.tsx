@@ -2,54 +2,68 @@ import { stixCoreObjectsListQuery } from '@components/common/stix_core_objects/S
 import { StixCoreObjectsListQuery$data } from '@components/common/stix_core_objects/__generated__/StixCoreObjectsListQuery.graphql';
 import React from 'react';
 import { renderToString } from 'react-dom/server';
-import { useBuildFiltersForTemplateWidgets } from '../../../filters/filtersUtils';
-import type { Widget } from '../../../widget/widget';
 import { fetchQuery } from '../../../../relay/environment';
+import { useFormatter } from '../../../../components/i18n';
+import type { Widget } from '../../../widget/widget';
+import useBuildReadableAttribute from '../../../hooks/useBuildReadableAttribute';
+import { getObjectPropertyWithoutEmptyValues } from '../../../object';
 
 const useBuildListOutcome = () => {
-  const { buildFiltersForTemplateWidgets } = useBuildFiltersForTemplateWidgets();
+  const { t_i18n } = useFormatter();
+  const { buildReadableAttribute } = useBuildReadableAttribute();
 
-  const buildListOutcome = async (containerId: string, widget: Widget, maxContentMarkings: string[]) => {
-    const [selection] = widget.dataSelection;
-    const dataSelectionTypes = ['Stix-Core-Object'];
-    const dateAttribute = selection.date_attribute && selection.date_attribute.length > 0
-      ? selection.date_attribute
-      : 'created_at';
-
-    const filters = buildFiltersForTemplateWidgets(containerId, selection.filters, maxContentMarkings);
-
+  const buildListOutcome = async (
+    dataSelection: Pick<Widget['dataSelection'][0], 'date_attribute' | 'filters' | 'number' | 'columns'>,
+  ) => {
+    const dateAttribute = dataSelection.date_attribute || 'created_at';
     const variables = {
-      types: dataSelectionTypes,
-      first: selection.number ?? 10,
+      types: ['Stix-Core-Object'],
+      first: dataSelection.number ?? 1000,
       orderBy: dateAttribute,
       orderMode: 'desc',
-      filters,
+      filters: dataSelection.filters,
     };
 
     const data = await fetchQuery(stixCoreObjectsListQuery, variables).toPromise() as StixCoreObjectsListQuery$data;
     const nodes = (data.stixCoreObjects?.edges ?? []).map((n) => n.node) ?? [];
+    const columns = dataSelection.columns ?? [
+      { label: t_i18n('Entity type'), attribute: 'entity_type' },
+      { label: t_i18n('Representative'), attribute: 'representative.main' },
+      { label: t_i18n('Creation date'), attribute: 'created_at' },
+    ];
 
     return renderToString(
       <table>
         <thead>
           <tr>
-            <th>Entity type</th>
-            <th>Representative</th>
-            <th>Creation date</th>
+            {columns.map((col) => (
+              <th key={col.attribute}>{col.label}</th>
+            ))}
           </tr>
         </thead>
         <tbody>
           {nodes.map((n) => (
             <tr key={n.id}>
-              <td>{n.entity_type}</td>
-              <td>{n.representative.main}</td>
-              <td>{n.created_at}</td>
+              {columns.map((col) => {
+                let property;
+                try {
+                  property = getObjectPropertyWithoutEmptyValues(n, col.attribute ?? '');
+                } catch (e) {
+                  property = '';
+                }
+                const strAttribute = buildReadableAttribute(property, col);
+                // The trick here is to add a zero-width space every 10 chars to be able to make a
+                // multiline text even for values like long IDs without spaces.
+                const wrappableAttribute = (strAttribute.match(/.{1,10}/g) ?? []).join('\u{200B}');
+                return <td key={`${n.id}-${col.attribute}`}>{wrappableAttribute}</td>;
+              })}
             </tr>
           ))}
         </tbody>
       </table>,
     );
   };
+
   return { buildListOutcome };
 };
 
