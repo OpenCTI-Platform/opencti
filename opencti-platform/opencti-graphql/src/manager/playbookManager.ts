@@ -27,7 +27,7 @@ import type { SseEvent, StreamDataEvent } from '../types/event';
 import type { StixBundle } from '../types/stix-common';
 import { utcDate } from '../utils/format';
 import { findById } from '../modules/playbook/playbook-domain';
-import type { CronConfiguration, StreamConfiguration } from '../modules/playbook/playbook-components';
+import { type CronConfiguration, PLAYBOOK_INTERNAL_DATA_CRON, type StreamConfiguration } from '../modules/playbook/playbook-components';
 import { PLAYBOOK_COMPONENTS } from '../modules/playbook/playbook-components';
 import type { BasicStoreEntityPlaybook, ComponentDefinition, PlaybookExecution, PlaybookExecutionStep } from '../modules/playbook/playbook-types';
 import { ENTITY_TYPE_PLAYBOOK } from '../modules/playbook/playbook-types';
@@ -391,7 +391,7 @@ const initPlaybookManager = () => {
         const def = JSON.parse(playbook.playbook_definition) as ComponentDefinition;
         // 01. Find the starting point of the playbook
         const instance = def.nodes.find((n) => n.id === playbook.playbook_start);
-        if (instance && instance.component_id === 'PLAYBOOK_INTERNAL_DATA_CRON') {
+        if (instance && instance.component_id === PLAYBOOK_INTERNAL_DATA_CRON.id) {
           const connector = PLAYBOOK_COMPONENTS[instance.component_id];
           const cronConfiguration = (JSON.parse(instance.configuration ?? '{}') as CronConfiguration);
           if (shouldTriggerNow(cronConfiguration, baseDate) && cronConfiguration.filters) {

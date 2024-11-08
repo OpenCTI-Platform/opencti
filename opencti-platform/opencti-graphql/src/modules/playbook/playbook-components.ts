@@ -175,7 +175,7 @@ const PLAYBOOK_INTERNAL_DATA_CRON_SCHEMA: JSONSchemaType<CronConfiguration> = {
   },
   required: ['period', 'triggerTime', 'onlyLast', 'filters'],
 };
-const PLAYBOOK_INTERNAL_DATA_CRON: PlaybookComponent<CronConfiguration> = {
+export const PLAYBOOK_INTERNAL_DATA_CRON: PlaybookComponent<CronConfiguration> = {
   id: 'PLAYBOOK_INTERNAL_DATA_CRON',
   name: 'Query knowledge on a regular basis',
   description: 'Query knowledge on the platform',
