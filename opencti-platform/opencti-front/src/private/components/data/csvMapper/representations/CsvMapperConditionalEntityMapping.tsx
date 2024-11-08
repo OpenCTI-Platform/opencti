@@ -24,6 +24,7 @@ CsvMapperConditionalEntityMappingProps
     { label: t_i18n('Equal'), value: ('eq') },
     { label: t_i18n('Not equal'), value: 'not_eq' }];
   const { setFieldValue } = form;
+  const columnBased = representation.column_based;
 
   const handleColumnSelect = async (column: string | null) => {
     await setFieldValue(`${representationName}.column_based.column_reference`, column);
@@ -72,10 +73,10 @@ CsvMapperConditionalEntityMappingProps
         autoSelect={false}
         autoHighlight
         options={columnOptions}
-        disabled={!representation.column_based?.enabled}
+        disabled={!columnBased?.enabled}
         value={
-          representation.column_based?.enabled
-            ? representation.column_based?.column_reference
+          columnBased?.enabled
+            ? columnBased?.column_reference
             : null
           }
         onChange={(_, val) => handleColumnSelect(val)}
@@ -90,7 +91,7 @@ CsvMapperConditionalEntityMappingProps
               ...params.InputProps,
               sx: {
                 '& fieldset': {
-                  borderColor: (!representation.column_based?.column_reference)
+                  borderColor: (!columnBased?.column_reference)
                     ? 'rgb(244, 67, 54)'
                     : '',
                 },
@@ -105,10 +106,10 @@ CsvMapperConditionalEntityMappingProps
         autoSelect={false}
         autoHighlight
         options={operatorOptions}
-        disabled={!representation.column_based?.enabled}
+        disabled={!columnBased?.enabled}
         value={
-          representation.column_based?.enabled
-            ? (operatorOptions.find((opt) => (opt.value === representation.column_based?.operator)) ?? undefined)
+          columnBased?.enabled
+            ? (operatorOptions.find((opt) => (opt.value === columnBased?.operator)) ?? undefined)
             : null
           }
         onChange={(_, val) => handleOperatorSelect(val)}
@@ -124,7 +125,7 @@ CsvMapperConditionalEntityMappingProps
               ...params.InputProps,
               sx: {
                 '& fieldset': {
-                  borderColor: (!representation.column_based?.operator)
+                  borderColor: (!columnBased?.operator)
                     ? 'rgb(244, 67, 54)'
                     : '',
                 },
@@ -141,8 +142,8 @@ CsvMapperConditionalEntityMappingProps
           variant='standard'
           style={{ width: '100%' }}
           disabled={!representation.column_based?.enabled}
-          error={!representation.column_based?.value && representation.column_based?.enabled}
-          value={representation.column_based?.enabled ? representation.column_based.value : ''}
+          error={!columnBased?.value && columnBased?.enabled}
+          value={columnBased?.enabled ? columnBased.value : ''}
         />
       </div>
     </div>

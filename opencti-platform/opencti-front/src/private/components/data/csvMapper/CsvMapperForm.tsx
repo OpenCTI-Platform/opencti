@@ -53,6 +53,13 @@ const csvMapperValidation = (t_i18n: (s: string) => string) => Yup.object().shap
   has_header: Yup.boolean().required(t_i18n('This field is required')),
   separator: Yup.string().trim().required(t_i18n('This field is required')),
   skipLineChar: Yup.string().max(1),
+  entity_representations: Yup.array().of(
+    Yup.object().shape({
+      column_based: Yup.object().shape({
+        value: Yup.string().matches(/^[^'"]*$/, t_i18n('Quote are not allowed for the value')),
+      }),
+    }),
+  ),
 });
 
 interface CsvMapperFormProps {
