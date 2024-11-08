@@ -56,7 +56,7 @@ const csvMapperValidation = (t_i18n: (s: string) => string) => Yup.object().shap
   entity_representations: Yup.array().of(
     Yup.object().shape({
       column_based: Yup.object().shape({
-        value: Yup.string().matches(/^[^'"]*$/, t_i18n('Quote are not allowed for the value')),
+        value: Yup.string().matches(/^[^'"]*$/, t_i18n('Quotes are not allowed for the value')),
       }),
     }),
   ),
