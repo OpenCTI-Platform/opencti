@@ -14,7 +14,7 @@ import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkdownField from '../../../../components/fields/MarkdownField';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
-import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
+import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import { insertNode } from '../../../../utils/store';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { IndividualCreationMutation, IndividualCreationMutation$variables } from './__generated__/IndividualCreationMutation.graphql';
@@ -87,17 +87,16 @@ export const IndividualCreationForm: FunctionComponent<IndividualFormProps> = ({
   const { t_i18n } = useFormatter();
   const [progressBarOpen, setProgressBarOpen] = useState(false);
 
-  const basicShape = {
-    name: Yup.string()
-      .min(2)
-      .required(t_i18n('This field is required')),
+  const { mandatoryAttributes } = useIsMandatoryAttribute(INDIVIDUAL_TYPE);
+  const basicShape = yupShapeConditionalRequired({
+    name: Yup.string().min(2),
     description: Yup.string()
       .nullable(),
     confidence: Yup.number().nullable(),
     x_opencti_reliability: Yup.string()
       .nullable(),
-  };
-  const individualValidator = useSchemaCreationValidation(INDIVIDUAL_TYPE, basicShape);
+  }, mandatoryAttributes);
+  const individualValidator = useDynamicSchemaCreationValidation(mandatoryAttributes, basicShape);
 
   const [commit] = useApiMutation<IndividualCreationMutation>(
     individualMutation,
@@ -179,6 +178,8 @@ export const IndividualCreationForm: FunctionComponent<IndividualFormProps> = ({
     <Formik<IndividualAddInput>
       initialValues={initialValues}
       validationSchema={individualValidator}
+      validateOnChange={false}
+      validateOnBlur={false}
       onSubmit={onSubmit}
       onReset={onReset}
     >
@@ -222,6 +223,7 @@ export const IndividualCreationForm: FunctionComponent<IndividualFormProps> = ({
               variant="standard"
               name="name"
               label={t_i18n('Name')}
+              required={(mandatoryAttributes.includes('name'))}
               fullWidth={true}
               detectDuplicate={['User']}
             />
@@ -229,6 +231,7 @@ export const IndividualCreationForm: FunctionComponent<IndividualFormProps> = ({
               component={MarkdownField}
               name="description"
               label={t_i18n('Description')}
+              required={(mandatoryAttributes.includes('description'))}
               fullWidth={true}
               multiline={true}
               rows="4"
@@ -242,28 +245,33 @@ export const IndividualCreationForm: FunctionComponent<IndividualFormProps> = ({
               label={t_i18n('Reliability')}
               type="reliability_ov"
               name="x_opencti_reliability"
+              required={(mandatoryAttributes.includes('x_opencti_reliability'))}
               containerStyle={fieldSpacingContainerStyle}
               multiple={false}
               onChange={setFieldValue}
             />
             <CreatedByField
               name="createdBy"
+              required={(mandatoryAttributes.includes('createdBy'))}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
             />
             <ObjectLabelField
               name="objectLabel"
+              required={(mandatoryAttributes.includes('objectLabel'))}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
               values={values.objectLabel}
             />
             <ObjectMarkingField
               name="objectMarking"
+              required={(mandatoryAttributes.includes('objectMarking'))}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
             />
             <ExternalReferencesField
               name="externalReferences"
+              required={(mandatoryAttributes.includes('externalReferences'))}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
               values={values.externalReferences}

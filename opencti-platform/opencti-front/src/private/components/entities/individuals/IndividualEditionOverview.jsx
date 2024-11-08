@@ -15,7 +15,7 @@ import { adaptFieldValue } from '../../../../utils/String';
 import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
 import StatusField from '../../common/form/StatusField';
 import OpenVocabField from '../../common/form/OpenVocabField';
-import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
+import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
@@ -83,19 +83,22 @@ const individualMutationRelationDelete = graphql`
   }
 `;
 
+const INDIVIDUAL_TYPE = 'Individual';
+
 const IndividualEditionOverviewComponent = (props) => {
   const { individual, enableReferences, context, handleClose } = props;
   const { t_i18n } = useFormatter();
-  const basicShape = {
-    name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
+  const { mandatoryAttributes } = useIsMandatoryAttribute(INDIVIDUAL_TYPE);
+  const basicShape = yupShapeConditionalRequired({
+    name: Yup.string().trim().min(2),
     description: Yup.string().nullable(),
     confidence: Yup.number().nullable(),
     contact_information: Yup.string().nullable(),
     x_opencti_reliability: Yup.string().nullable(),
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
-  };
-  const individualValidator = useSchemaEditionValidation('Individual', basicShape);
+  }, mandatoryAttributes);
+  const individualValidator = useDynamicSchemaEditionValidation(mandatoryAttributes, basicShape);
 
   const queries = {
     fieldPatch: individualMutationFieldPatch,
@@ -175,6 +178,8 @@ const IndividualEditionOverviewComponent = (props) => {
     <Formik enableReinitialize={true}
       initialValues={initialValues}
       validationSchema={individualValidator}
+      validateOnChange={true}
+      validateOnBlur={true}
       onSubmit={onSubmit}
     >
       {({
@@ -193,6 +198,7 @@ const IndividualEditionOverviewComponent = (props) => {
             name="name"
             disabled={external}
             label={t_i18n('Name')}
+            required={(mandatoryAttributes.includes('name'))}
             fullWidth={true}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
@@ -204,6 +210,7 @@ const IndividualEditionOverviewComponent = (props) => {
             component={MarkdownField}
             name="description"
             label={t_i18n('Description')}
+            required={(mandatoryAttributes.includes('description'))}
             fullWidth={true}
             multiline={true}
             rows="4"
@@ -227,6 +234,7 @@ const IndividualEditionOverviewComponent = (props) => {
             variant="standard"
             name="contact_information"
             label={t_i18n('Contact information')}
+            required={(mandatoryAttributes.includes('contact_information'))}
             fullWidth={true}
             multiline={true}
             rows="4"
@@ -241,6 +249,7 @@ const IndividualEditionOverviewComponent = (props) => {
             label={t_i18n('Reliability')}
             type="reliability_ov"
             name="x_opencti_reliability"
+            required={(mandatoryAttributes.includes('x_opencti_reliability'))}
             onChange={setFieldValue}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
@@ -264,6 +273,7 @@ const IndividualEditionOverviewComponent = (props) => {
           )}
           <CreatedByField
             name="createdBy"
+            required={(mandatoryAttributes.includes('createdBy'))}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
             helpertext={
@@ -273,6 +283,7 @@ const IndividualEditionOverviewComponent = (props) => {
           />
           <ObjectMarkingField
             name="objectMarking"
+            required={(mandatoryAttributes.includes('objectMarking'))}
             style={fieldSpacingContainerStyle}
             helpertext={
               <SubscriptionFocus context={context} fieldname="objectMarking" />

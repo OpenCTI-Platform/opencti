@@ -18,7 +18,7 @@ import { buildDate, parse } from '../../../../utils/Time';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
+import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 import EventDeletion from './EventDeletion';
@@ -75,11 +75,14 @@ const eventMutationRelationDelete = graphql`
   }
 `;
 
+const EVENT_TYPE = 'Event';
+
 const EventEditionOverviewComponent = (props) => {
   const { event, enableReferences, context, handleClose } = props;
   const { t_i18n } = useFormatter();
-  const basicShape = {
-    name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
+  const { mandatoryAttributes } = useIsMandatoryAttribute(EVENT_TYPE);
+  const basicShape = yupShapeConditionalRequired({
+    name: Yup.string().trim().min(2),
     description: Yup.string().nullable(),
     confidence: Yup.number().nullable(),
     event_types: Yup.array().nullable(),
@@ -90,8 +93,8 @@ const EventEditionOverviewComponent = (props) => {
       .nullable(),
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
-  };
-  const eventValidator = useSchemaEditionValidation('Event', basicShape);
+  }, mandatoryAttributes);
+  const eventValidator = useDynamicSchemaEditionValidation(mandatoryAttributes, basicShape);
 
   const queries = {
     fieldPatch: eventMutationFieldPatch,
@@ -173,6 +176,8 @@ const EventEditionOverviewComponent = (props) => {
       enableReinitialize={true}
       initialValues={initialValues}
       validationSchema={eventValidator}
+      validateOnChange={true}
+      validateOnBlur={true}
       onSubmit={onSubmit}
     >
       {({
@@ -190,6 +195,7 @@ const EventEditionOverviewComponent = (props) => {
             variant="standard"
             name="name"
             label={t_i18n('Name')}
+            required={(mandatoryAttributes.includes('name'))}
             fullWidth={true}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
@@ -201,6 +207,7 @@ const EventEditionOverviewComponent = (props) => {
             label={t_i18n('Event types')}
             type="event-type-ov"
             name="event_types"
+            required={(mandatoryAttributes.includes('event_types'))}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
             onChange={(name, value) => setFieldValue(name, value)}
@@ -213,6 +220,7 @@ const EventEditionOverviewComponent = (props) => {
             component={MarkdownField}
             name="description"
             label={t_i18n('Description')}
+            required={(mandatoryAttributes.includes('description'))}
             fullWidth={true}
             multiline={true}
             rows="4"
@@ -230,6 +238,7 @@ const EventEditionOverviewComponent = (props) => {
             onSubmit={handleSubmitField}
             textFieldProps={{
               label: t_i18n('Start date'),
+              required: (mandatoryAttributes.includes('start_time')),
               variant: 'standard',
               fullWidth: true,
               style: { marginTop: 20 },
@@ -245,6 +254,7 @@ const EventEditionOverviewComponent = (props) => {
             onSubmit={handleSubmitField}
             textFieldProps={{
               label: t_i18n('End date'),
+              required: (mandatoryAttributes.includes('stop_time')),
               variant: 'standard',
               fullWidth: true,
               style: { marginTop: 20 },
@@ -276,6 +286,7 @@ const EventEditionOverviewComponent = (props) => {
           )}
           <CreatedByField
             name="createdBy"
+            required={(mandatoryAttributes.includes('createdBy'))}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
             helpertext={
@@ -285,6 +296,7 @@ const EventEditionOverviewComponent = (props) => {
           />
           <ObjectMarkingField
             name="objectMarking"
+            required={(mandatoryAttributes.includes('objectMarking'))}
             style={fieldSpacingContainerStyle}
             helpertext={
               <SubscriptionFocus context={context} fieldname="objectMarking" />

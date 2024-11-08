@@ -18,7 +18,7 @@ import DateTimePickerField from '../../../../components/DateTimePickerField';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
-import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
+import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import { insertNode } from '../../../../utils/store';
 import { EventCreationMutation, EventCreationMutation$variables } from './__generated__/EventCreationMutation.graphql';
 import { EventsLinesPaginationQuery$variables } from './__generated__/EventsLinesPaginationQuery.graphql';
@@ -91,8 +91,9 @@ export const EventCreationForm: FunctionComponent<EventFormProps> = ({
   const { t_i18n } = useFormatter();
   const [progressBarOpen, setProgressBarOpen] = useState(false);
 
-  const basicShape = {
-    name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
+  const { mandatoryAttributes } = useIsMandatoryAttribute(EVENT_TYPE);
+  const basicShape = yupShapeConditionalRequired({
+    name: Yup.string().trim().min(2),
     description: Yup.string().nullable(),
     confidence: Yup.number().nullable(),
     event_types: Yup.array().nullable(),
@@ -103,8 +104,8 @@ export const EventCreationForm: FunctionComponent<EventFormProps> = ({
       .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
       .min(Yup.ref('start_time'), 'The end date can\'t be before start date')
       .nullable(),
-  };
-  const eventValidator = useSchemaCreationValidation(EVENT_TYPE, basicShape);
+  }, mandatoryAttributes);
+  const eventValidator = useDynamicSchemaCreationValidation(mandatoryAttributes, basicShape);
 
   const [commit] = useApiMutation<EventCreationMutation>(
     eventMutation,
@@ -186,6 +187,8 @@ export const EventCreationForm: FunctionComponent<EventFormProps> = ({
     <Formik<EventAddInput>
       initialValues={initialValues}
       validationSchema={eventValidator}
+      validateOnChange={false}
+      validateOnBlur={false}
       onSubmit={onSubmit}
       onReset={onReset}
     >
@@ -222,6 +225,7 @@ export const EventCreationForm: FunctionComponent<EventFormProps> = ({
               variant="standard"
               name="name"
               label={t_i18n('Name')}
+              required={(mandatoryAttributes.includes('name'))}
               fullWidth={true}
               detectDuplicate={['Event']}
             />
@@ -229,6 +233,7 @@ export const EventCreationForm: FunctionComponent<EventFormProps> = ({
               label={t_i18n('Event types')}
               type="event-type-ov"
               name="event_types"
+              required={(mandatoryAttributes.includes('event_types'))}
               containerStyle={fieldSpacingContainerStyle}
               multiple
               onChange={setFieldValue}
@@ -237,6 +242,7 @@ export const EventCreationForm: FunctionComponent<EventFormProps> = ({
               component={MarkdownField}
               name="description"
               label={t_i18n('Description')}
+              required={(mandatoryAttributes.includes('description'))}
               fullWidth={true}
               multiline={true}
               rows={4}
@@ -247,6 +253,7 @@ export const EventCreationForm: FunctionComponent<EventFormProps> = ({
               name="start_time"
               textFieldProps={{
                 label: t_i18n('Start date'),
+                required: (mandatoryAttributes.includes('start_time')),
                 variant: 'standard',
                 fullWidth: true,
                 style: { ...fieldSpacingContainerStyle },
@@ -257,6 +264,7 @@ export const EventCreationForm: FunctionComponent<EventFormProps> = ({
               name="stop_time"
               textFieldProps={{
                 label: t_i18n('End date'),
+                required: (mandatoryAttributes.includes('stop_time')),
                 variant: 'standard',
                 fullWidth: true,
                 style: { ...fieldSpacingContainerStyle },
@@ -268,22 +276,26 @@ export const EventCreationForm: FunctionComponent<EventFormProps> = ({
             />
             <CreatedByField
               name="createdBy"
+              required={(mandatoryAttributes.includes('createdBy'))}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
             />
             <ObjectLabelField
               name="objectLabel"
+              required={(mandatoryAttributes.includes('objectLabel'))}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
               values={values.objectLabel}
             />
             <ObjectMarkingField
               name="objectMarking"
+              required={(mandatoryAttributes.includes('objectMarking'))}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
             />
             <ExternalReferencesField
               name="externalReferences"
+              required={(mandatoryAttributes.includes('externalReferences'))}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
               values={values.externalReferences}
