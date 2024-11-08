@@ -92,7 +92,6 @@ const isValidTarget = (record: string[], representation: CsvMapperRepresentation
   // Target type
   isValidRepresentationType(representation);
   // Column based
-  // TODO verify that it's covering our needs
   const columnBased = representation.target.column_based;
   if (columnBased && columnBased.column_reference) {
     const recordValue = extractValueFromCsv(record, columnBased.column_reference);
