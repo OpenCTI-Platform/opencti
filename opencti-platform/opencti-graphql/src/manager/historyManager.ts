@@ -11,7 +11,7 @@ import type { SseEvent, StreamDataEvent, UpdateEvent } from '../types/event';
 import { utcDate } from '../utils/format';
 import { elIndexElements } from '../database/engine';
 import type { StixRelation, StixSighting } from '../types/stix-sro';
-import { listEntities } from '../database/middleware-loader';
+import { internalFindByIds, listEntities } from '../database/middleware-loader';
 import type { BasicRuleEntity, BasicStoreEntity } from '../types/store';
 import { BASE_TYPE_ENTITY, STIX_TYPE_RELATION, STIX_TYPE_SIGHTING } from '../schema/general';
 import { generateStandardId } from '../schema/identifier';
@@ -52,13 +52,38 @@ export interface HistoryData extends BasicStoreEntity {
   context_data: HistoryContext;
 }
 
+const resolveGrantedRefsIds = async (context: AuthContext, events: Array<SseEvent<StreamDataEvent>>) => {
+  const grantedRefsToResolve: StixId[] = [];
+  events.forEach((event) => {
+    const stix = event.data.data;
+    const eventGrantedRefsIds = (stix.extensions[STIX_EXT_OCTI].granted_refs_ids ?? []);
+    const eventGrantedRefsStandardIds = (stix.extensions[STIX_EXT_OCTI].granted_refs ?? []);
+    if (eventGrantedRefsIds.length === 0 && eventGrantedRefsStandardIds.length > 0) {
+      grantedRefsToResolve.push(...eventGrantedRefsStandardIds);
+    }
+  });
+  const organizationByIdsMap = new Map<StixId, string>();
+  if (grantedRefsToResolve.length === 0) {
+    return organizationByIdsMap; // nothing to resolve
+  }
+  const organizationsByIds = await internalFindByIds(context, SYSTEM_USER, R.uniq(grantedRefsToResolve), {
+    type: ENTITY_TYPE_IDENTITY_ORGANIZATION,
+    baseData: true,
+    baseFields: ['internal_id'],
+  });
+  organizationsByIds.forEach((o) => {
+    organizationByIdsMap.set(o.standard_id, o.internal_id);
+  });
+  return organizationByIdsMap;
+};
+
 const eventsApplyHandler = async (context: AuthContext, events: Array<SseEvent<StreamDataEvent>>) => {
   if (isEmptyField(events) || events.length === 0) {
     return;
   }
   const markingsById = await getEntitiesMapFromCache<BasicRuleEntity>(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
-  const organizationsById = await getEntitiesMapFromCache<BasicStoreEntity>(context, SYSTEM_USER, ENTITY_TYPE_IDENTITY_ORGANIZATION);
   // Build the history data
+  const grantedRefsResolved = await resolveGrantedRefsIds(context, events);
   const historyElements = events.map((event) => {
     const [time] = event.id.split('-');
     const eventDate = utcDate(parseInt(time, 10)).toISOString();
@@ -66,9 +91,13 @@ const eventsApplyHandler = async (context: AuthContext, events: Array<SseEvent<S
     const eventMarkingRefs = (stix.object_marking_refs ?? [])
       .map((stixId) => markingsById.get(stixId)?.internal_id)
       .filter((o) => isNotEmptyField(o)) as string[];
-    const eventGrantedRefs = (stix.extensions[STIX_EXT_OCTI].granted_refs ?? [])
-      .map((stixId) => organizationsById.get(stixId)?.internal_id)
-      .filter((o) => isNotEmptyField(o));
+    let eventGrantedRefsIds = (stix.extensions[STIX_EXT_OCTI].granted_refs_ids ?? []);
+    const eventGrantedRefsStandardIds = (stix.extensions[STIX_EXT_OCTI].granted_refs ?? []);
+    if (eventGrantedRefsIds.length === 0 && eventGrantedRefsStandardIds.length > 0) {
+      eventGrantedRefsIds = eventGrantedRefsStandardIds
+        .map((stixId) => grantedRefsResolved.get(stixId))
+        .filter((o) => isNotEmptyField(o));
+    }
     const contextData: HistoryContext = {
       id: stix.extensions[STIX_EXT_OCTI].id,
       message: event.data.message,
@@ -128,7 +157,7 @@ const eventsApplyHandler = async (context: AuthContext, events: Array<SseEvent<S
       context_data: contextData,
       authorized_members: stix.extensions[STIX_EXT_OCTI].authorized_members,
       'rel_object-marking.internal_id': R.uniq(eventMarkingRefs),
-      'rel_granted.internal_id': R.uniq(eventGrantedRefs),
+      'rel_granted.internal_id': R.uniq(eventGrantedRefsIds),
     };
   });
   // Bulk the history data insertions

@@ -33,7 +33,6 @@ import type { StixObject } from '../types/stix-common';
 import { STIX_EXT_OCTI } from '../types/stix-extensions';
 import type { BasicStoreRelation, BasicStreamEntity, BasicTriggerEntity, BasicWorkflowStatusEntity, BasicWorkflowTemplateEntity, StoreEntity, StoreRelation } from '../types/store';
 import { executionContext, SYSTEM_USER } from '../utils/access';
-import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
 import { ENTITY_TYPE_MANAGER_CONFIGURATION } from '../modules/managerConfiguration/managerConfiguration-types';
 import type { BasicStoreEntityPlaybook, ComponentDefinition } from '../modules/playbook/playbook-types';
 import { ENTITY_TYPE_PLAYBOOK } from '../modules/playbook/playbook-types';
@@ -101,12 +100,6 @@ const platformConnectors = (context: AuthContext) => {
     return findConnectors(context, SYSTEM_USER);
   };
   return { values: null, fn: reloadConnectors };
-};
-const platformOrganizations = (context: AuthContext) => {
-  const reloadOrganizations = () => {
-    return listAllEntities(context, SYSTEM_USER, [ENTITY_TYPE_IDENTITY_ORGANIZATION], { connectionFormat: false });
-  };
-  return { values: null, fn: reloadOrganizations };
 };
 const platformRules = (context: AuthContext) => {
   const reloadRules = () => {
@@ -237,7 +230,6 @@ const initCacheManager = () => {
     writeCacheForEntity(ENTITY_TYPE_PLAYBOOK, platformRunningPlaybooks(context));
     writeCacheForEntity(ENTITY_TYPE_RULE, platformRules(context));
     writeCacheForEntity(ENTITY_TYPE_DECAY_RULE, platformDecayRules(context));
-    writeCacheForEntity(ENTITY_TYPE_IDENTITY_ORGANIZATION, platformOrganizations(context));
     writeCacheForEntity(ENTITY_TYPE_RESOLVED_FILTERS, platformResolvedFilters(context));
     writeCacheForEntity(ENTITY_TYPE_STREAM_COLLECTION, platformStreams(context));
     writeCacheForEntity(ENTITY_TYPE_NOTIFIER, platformNotifiers(context));
