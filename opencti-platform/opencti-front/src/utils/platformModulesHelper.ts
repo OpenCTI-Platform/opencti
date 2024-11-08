@@ -45,8 +45,7 @@ const isFeatureEnable = (
   if (flags.find((f) => f.id === '*' && f.enable)) {
     return true;
   }
-  const feature = flags.find((f) => f.id === id);
-  return feature !== undefined && feature.enable === true;
+  return flags.some((flag) => flag.id === id && flag.enable);
 };
 
 const isModuleEnable = (
@@ -54,8 +53,7 @@ const isModuleEnable = (
   id: string,
 ) => {
   const modules = settings.platform_modules || [];
-  const module = modules.find((f) => f.id === id);
-  return module !== undefined && module.enable === true;
+  return modules.some((module) => module.id === id && module.enable);
 };
 
 const isModuleWarning = (
@@ -63,8 +61,7 @@ const isModuleWarning = (
   id: string,
 ) => {
   const modules = settings.platform_modules || [];
-  const module = modules.find((f) => f.id === id);
-  return module !== undefined && module.warning === true;
+  return modules.some((module) => module.id === id && module.warning);
 };
 
 const platformModuleHelper = (
