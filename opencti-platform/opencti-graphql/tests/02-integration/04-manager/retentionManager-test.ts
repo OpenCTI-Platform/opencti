@@ -1,10 +1,11 @@
 import { describe, expect, it, beforeAll, afterAll } from 'vitest';
 import gql from 'graphql-tag';
 import { Readable } from 'stream';
-import { ADMIN_USER, queryAsAdmin, testContext } from '../../utils/testQuery';
+import { ADMIN_USER, queryAsAdmin, TEST_ORGANIZATION, testContext } from '../../utils/testQuery';
 import { utcDate } from '../../../src/utils/format';
 import { deleteElement, getElementsToDelete } from '../../../src/manager/retentionManager';
 import { allFilesForPaths } from '../../../src/modules/internal/document/document-domain';
+import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../src/modules/organization/organization-types';
 import { uploadToStorage } from '../../../src/database/file-storage-helper';
 import { elLoadById, elRawUpdateByQuery } from '../../../src/database/engine';
 import { READ_INDEX_INTERNAL_OBJECTS, READ_INDEX_STIX_DOMAIN_OBJECTS } from '../../../src/database/utils';
@@ -321,5 +322,9 @@ describe('Retention Manager tests ', () => {
     await deleteElement(context, 'knowledge', report1Id, ENTITY_TYPE_CONTAINER_REPORT); // should delete report1
     const report1deleted = await elLoadById(testContext, ADMIN_USER, report1Id);
     expect(report1deleted).toBeUndefined();
+  });
+  it('should not delete organization with members', async () => {
+    await expect(() => deleteElement(context, 'knowledge', TEST_ORGANIZATION.id, ENTITY_TYPE_IDENTITY_ORGANIZATION))
+      .rejects.toThrowError('Cannot delete an organization that has members.');
   });
 });

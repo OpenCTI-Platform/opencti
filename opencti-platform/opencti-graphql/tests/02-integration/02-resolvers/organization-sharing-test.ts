@@ -12,7 +12,7 @@ import {
   testContext,
   USER_EDITOR
 } from '../../utils/testQuery';
-import { adminQueryWithSuccess, enableCEAndUnSetOrganization, enableEEAndSetOrganization, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
+import { adminQueryWithSuccess, enableCEAndUnSetOrganization, enableEEAndSetOrganization, queryAsUserIsExpectedError, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
 import { findById } from '../../../src/domain/report';
 import { execChildPython } from '../../../src/python/pythonBridge';
 import { taskHandler } from '../../../src/manager/taskManager';
@@ -84,6 +84,18 @@ describe('Organization sharing standard behavior for container', () => {
   });
   it('should platform organization sharing and EE activated', async () => {
     await enableEEAndSetOrganization(PLATFORM_ORGANIZATION);
+  });
+  it('should not delete organization if platform organization', async () => {
+    const DELETE_QUERY = gql`
+      mutation organizationDelete($id: ID!) {
+        organizationDelete(id: $id)
+      }
+    `;
+    // Delete the organization should fail with error
+    await queryAsUserIsExpectedError(USER_EDITOR.client, {
+      query: DELETE_QUERY,
+      variables: { id: PLATFORM_ORGANIZATION.id },
+    }, 'Cannot delete the platform organization.', 'FUNCTIONAL_ERROR');
   });
   it('should user from different organization not access the report', async () => {
     const queryResult = await queryAsUserWithSuccess(USER_EDITOR.client, {

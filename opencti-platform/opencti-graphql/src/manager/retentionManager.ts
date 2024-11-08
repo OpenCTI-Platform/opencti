@@ -16,6 +16,8 @@ import type { FileEdge, RetentionRule } from '../generated/graphql';
 import { RetentionRuleScope, RetentionUnit } from '../generated/graphql';
 import { deleteFile } from '../database/file-storage';
 import { DELETABLE_FILE_STATUSES, paginatedForPathWithEnrichment } from '../modules/internal/document/document-domain';
+import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
+import { organizationDelete } from '../modules/organization/organization-domain';
 import type { BasicStoreCommonEdge, StoreObject } from '../types/store';
 import { ALREADY_DELETED_ERROR } from '../config/errors';
 
@@ -33,7 +35,12 @@ export const RETENTION_UNIT_VALUES = Object.values(RetentionUnit);
 
 export const deleteElement = async (context: AuthContext, scope: string, nodeId: string, nodeEntityType?: string) => {
   if (scope === 'knowledge') {
-    await deleteElementById(context, RETENTION_MANAGER_USER, nodeId, nodeEntityType, { forceDelete: true });
+    if (nodeEntityType === ENTITY_TYPE_IDENTITY_ORGANIZATION) {
+      // call organizationDelete which will ensure protections (for platform organization & members)
+      await organizationDelete(context, RETENTION_MANAGER_USER, nodeId);
+    } else {
+      await deleteElementById(context, RETENTION_MANAGER_USER, nodeId, nodeEntityType, { forceDelete: true });
+    }
   } else if (scope === 'file' || scope === 'workbench') {
     await deleteFile(context, RETENTION_MANAGER_USER, nodeId);
   } else {
