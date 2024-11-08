@@ -16,7 +16,7 @@ import MarkdownField from '../../../../components/fields/MarkdownField';
 import TextField from '../../../../components/TextField';
 import type { Theme } from '../../../../components/Theme';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
+import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import { insertNode } from '../../../../utils/store';
 import CaseTemplateField from '../../common/form/CaseTemplateField';
 import ConfidenceField from '../../common/form/ConfidenceField';
@@ -108,13 +108,16 @@ export const CaseRftCreationForm: FunctionComponent<CaseRftFormProps> = ({
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
   const [mapAfter, setMapAfter] = useState<boolean>(false);
-  const basicShape = {
-    name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
+  const { mandatoryAttributes } = useIsMandatoryAttribute(
+    CASE_RFT_TYPE,
+  );
+  const basicShape = yupShapeConditionalRequired({
+    name: Yup.string().trim().min(2),
     description: Yup.string().nullable(),
     content: Yup.string().nullable(),
-  };
-  const caseRftValidator = useSchemaCreationValidation(
-    CASE_RFT_TYPE,
+  }, mandatoryAttributes);
+  const validator = useDynamicSchemaCreationValidation(
+    mandatoryAttributes,
     basicShape,
   );
   const [commit] = useApiMutation<CaseRftCreationCaseMutation>(
@@ -195,7 +198,7 @@ export const CaseRftCreationForm: FunctionComponent<CaseRftFormProps> = ({
   return (
     <Formik<FormikCaseRftAddInput>
       initialValues={initialValues}
-      validationSchema={caseRftValidator}
+      validationSchema={validator}
       onSubmit={onSubmit}
       onReset={onClose}
     >
@@ -205,6 +208,7 @@ export const CaseRftCreationForm: FunctionComponent<CaseRftFormProps> = ({
             component={TextField}
             variant="standard"
             name="name"
+            required={(mandatoryAttributes.includes('name'))}
             label={t_i18n('Name')}
             fullWidth={true}
             detectDuplicate={['Case-Rft']}
@@ -212,6 +216,7 @@ export const CaseRftCreationForm: FunctionComponent<CaseRftFormProps> = ({
           <Field
             component={DateTimePickerField}
             name="created"
+            required={(mandatoryAttributes.includes('created'))}
             textFieldProps={{
               label: t_i18n('Request For Takedown Date'),
               variant: 'standard',
@@ -223,6 +228,7 @@ export const CaseRftCreationForm: FunctionComponent<CaseRftFormProps> = ({
             label={t_i18n('Request for takedown type')}
             type="request_for_takedown_types_ov"
             name="takedown_types"
+            required={(mandatoryAttributes.includes('takedown_types'))}
             multiple
             onChange={setFieldValue}
             containerStyle={fieldSpacingContainerStyle}
@@ -231,6 +237,7 @@ export const CaseRftCreationForm: FunctionComponent<CaseRftFormProps> = ({
             label={t_i18n('Severity')}
             type="case_severity_ov"
             name="severity"
+            required={(mandatoryAttributes.includes('severity'))}
             onChange={(name, value) => setFieldValue(name, value)}
             containerStyle={fieldSpacingContainerStyle}
           />
@@ -238,6 +245,7 @@ export const CaseRftCreationForm: FunctionComponent<CaseRftFormProps> = ({
             label={t_i18n('Priority')}
             type="case_priority_ov"
             name="priority"
+            required={(mandatoryAttributes.includes('priority'))}
             onChange={(name, value) => setFieldValue(name, value)}
             containerStyle={fieldSpacingContainerStyle}
           />
@@ -253,6 +261,7 @@ export const CaseRftCreationForm: FunctionComponent<CaseRftFormProps> = ({
             component={MarkdownField}
             name="description"
             label={t_i18n('Description')}
+            required={(mandatoryAttributes.includes('description'))}
             fullWidth={true}
             multiline={true}
             rows="4"
@@ -262,6 +271,7 @@ export const CaseRftCreationForm: FunctionComponent<CaseRftFormProps> = ({
             component={RichTextField}
             name="content"
             label={t_i18n('Content')}
+            required={(mandatoryAttributes.includes('content'))}
             fullWidth={true}
             style={{
               ...fieldSpacingContainerStyle,
@@ -271,30 +281,36 @@ export const CaseRftCreationForm: FunctionComponent<CaseRftFormProps> = ({
           />
           <ObjectAssigneeField
             name="objectAssignee"
+            required={(mandatoryAttributes.includes('objectAssignee'))}
             style={fieldSpacingContainerStyle}
           />
           <ObjectParticipantField
             name="objectParticipant"
+            required={(mandatoryAttributes.includes('objectParticipant'))}
             style={fieldSpacingContainerStyle}
           />
           <CreatedByField
             name="createdBy"
+            required={(mandatoryAttributes.includes('createdBy'))}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
           />
           <ObjectLabelField
             name="objectLabel"
+            required={(mandatoryAttributes.includes('objectLabel'))}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
             values={values.objectLabel}
           />
           <ObjectMarkingField
             name="objectMarking"
+            required={(mandatoryAttributes.includes('objectMarking'))}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
           />
           <ExternalReferencesField
             name="externalReferences"
+            required={(mandatoryAttributes.includes('externalReferences'))}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
             values={values.externalReferences}
