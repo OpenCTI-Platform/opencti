@@ -1048,7 +1048,7 @@ class DataTableToolBar extends Component {
           vocabularies: R.assoc(
             category,
             R.union(prevState.vocabularies[category] || [], vocabularies),
-            prevState.vocabularies
+            prevState.vocabularies,
           ),
         }));
       });
