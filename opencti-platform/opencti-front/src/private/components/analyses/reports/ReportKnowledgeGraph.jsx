@@ -1357,8 +1357,7 @@ class ReportKnowledgeGraphComponent extends Component {
                       onNodeDrag={(node, translate) => {
                         const withForces = !this.state.modeFixed;
                         if (this.selectedNodes.has(node)) {
-                          const selectedNodesCopy = [...this.selectedNodes];
-                          selectedNodesCopy
+                          [...this.selectedNodes]
                             .filter((selNode) => selNode !== node)
                             .forEach((selNode) => {
                               ['x', 'y'].forEach((coord) => {
