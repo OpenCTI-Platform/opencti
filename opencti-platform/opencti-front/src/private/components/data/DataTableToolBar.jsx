@@ -1027,10 +1027,11 @@ class DataTableToolBar extends Component {
   searchVocabulary(i, category, event, newValue) {
     if (!event) return;
     const { actionsInputs } = this.state;
-    actionsInputs[i] = {
-      ...actionsInputs[i],
-      inputValue: newValue && newValue.length > 0 ? newValue : '',
-    };
+    actionsInputs[i] = R.assoc(
+      'inputValue',
+      newValue && newValue.length > 0 ? newValue : '',
+      actionsInputs[i],
+    );
     this.setState({ actionsInputs });
     fetchQuery(vocabularyQuery, {
       category,
@@ -1044,10 +1045,11 @@ class DataTableToolBar extends Component {
           value: n.node.id,
         }));
         this.setState((prevState) => ({
-          vocabularies: {
-            ...prevState.vocabularies,
-            [category]: [...new Set([...(prevState.vocabularies[category] || []), ...vocabularies])],
-          },
+          vocabularies: R.assoc(
+            category,
+            R.union(prevState.vocabularies[category] || [], vocabularies),
+            prevState.vocabularies
+          ),
         }));
       });
   }
@@ -1072,9 +1074,9 @@ class DataTableToolBar extends Component {
           value: n.node.id,
           type: n.node.entity_type,
         })).sort((a, b) => a.label.localeCompare(b.label));
-        this.setState((prevState) => ({
-          participants: [...new Set([...(prevState.participants || []), ...participants])],
-        }));
+        this.setState({
+          participants: R.union(this.state.participants, participants),
+        });
       });
   }
 
@@ -1102,9 +1104,9 @@ class DataTableToolBar extends Component {
             entity: n.node,
           })),
         )(data);
-        this.setState((prevState) => ({
-          assignees: [...new Set([...(prevState.assignees || []), ...assignees])],
-        }));
+        this.setState({
+          assignees: R.union(this.state.assignees, assignees),
+        });
       });
   }
 
