@@ -14,6 +14,10 @@ const MESSENGER$ = new Subject().pipe(debounce(() => timer(500)));
 export const MESSAGING$ = {
   messages: MESSENGER$,
   notifyError: (text) => MESSENGER$.next([{ type: 'error', text }]),
+  notifyRelayError: (error) => {
+    const message = (error.res.errors ?? []).map((e) => e.message).join('\r\n');
+    MESSENGER$.next([{ type: 'error', text: message }]);
+  },
   notifySuccess: (text) => MESSENGER$.next([{ type: 'message', text }]),
   toggleNav: new Subject(),
   redirect: new Subject(),

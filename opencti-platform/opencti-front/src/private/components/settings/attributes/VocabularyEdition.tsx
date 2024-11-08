@@ -81,8 +81,7 @@ const VocabularyEdition = ({
       commitUpdateMutation({
         variables: { id: vocab.id, input },
         onError: (error) => {
-          const { errors } = (error as unknown as RelayError).res;
-          MESSAGING$.notifyError(errors.at(0)?.data.reason);
+          MESSAGING$.notifyRelayError(error as unknown as RelayError);
           setSubmitting(false);
         },
         onCompleted: () => {

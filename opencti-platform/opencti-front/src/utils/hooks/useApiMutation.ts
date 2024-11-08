@@ -2,6 +2,7 @@ import { Disposable, GraphQLTaggedNode, IEnvironment, MutationConfig, MutationPa
 import { useMutation, UseMutationConfig } from 'react-relay';
 import { useCallback } from 'react';
 import { MESSAGING$, relayErrorHandling } from '../../relay/environment';
+import { RelayError } from '../../relay/relayTypes';
 
 /**
  * Hook wrapping Relay useMutation to automatically display an error popup with a message if the mutation fails
@@ -21,9 +22,11 @@ const useApiMutation = <T extends MutationParameters>(
       onError: (error: Error) => {
         if (args.onError) {
           args.onError(error);
-          MESSAGING$.notifyError(options?.errorMessage
-            ? options.errorMessage
-            : `${error}`);
+          if (options?.errorMessage) {
+            MESSAGING$.notifyError(options?.errorMessage);
+          } else {
+            MESSAGING$.notifyRelayError(error as unknown as RelayError);
+          }
         } else relayErrorHandling(error);
       },
       onCompleted: (response: T['response'], errors: PayloadError[] | null) => {
