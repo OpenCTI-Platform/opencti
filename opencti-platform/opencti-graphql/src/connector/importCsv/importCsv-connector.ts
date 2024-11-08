@@ -50,7 +50,7 @@ export interface ConsumerOpts {
  * @param opts
  */
 export const generateBundlesAndSendToWorkers = async (context: AuthContext, csvLines: string[], opts: ConsumerOpts) => {
-  let objectsInBundleCount = 0;
+  let objectsInBundlesCount = 0;
   const { workId, applicantUser, applicantId, csvMapper, entity } = opts;
   const bundlesBuilder: BundleBuilder[] = await bundleAllowUpsertProcess(context, applicantUser, csvLines, csvMapper, { entity });
   logApp.info(`${logPrefix} preparing ${bundlesBuilder.length} bundles`);
@@ -59,7 +59,7 @@ export const generateBundlesAndSendToWorkers = async (context: AuthContext, csvL
     const content = Buffer.from(JSON.stringify(bundle), 'utf-8').toString('base64');
     if (bundle.objects.length > 0) {
       logApp.info(`${logPrefix} push bundle with ${bundle.objects.length} objects`);
-      objectsInBundleCount += bundle.objects.length;
+      objectsInBundlesCount += bundle.objects.length;
       await pushToWorkerForConnector(connector.internal_id, {
         type: 'bundle',
         update: true,
@@ -69,7 +69,7 @@ export const generateBundlesAndSendToWorkers = async (context: AuthContext, csvL
       });
     }
   }
-  return objectsInBundleCount;
+  return { objectsInBundlesCount, bundleCount: bundlesBuilder.length };
 };
 
 /** @deprecated Will be removed when workbench are replaced by draft */
@@ -114,7 +114,8 @@ export const processCSVforWorkers = async (context: AuthContext, opts: ConsumerO
   let removeHeaderIsRequired = sanitizedMapper.has_header;
   let bulkLineCursor = 0;
   let hasMoreBulk = true;
-  let totalBundleCount = 0;
+  let totalObjectsCount = 0;
+  let totalBundlesCount = 0;
 
   const startDate2 = new Date().getTime();
   while (hasMoreBulk) {
@@ -154,8 +155,9 @@ export const processCSVforWorkers = async (context: AuthContext, opts: ConsumerO
         if (lines.length > 0) {
           try {
             logApp.debug(`${logPrefix} generating bundle with ${lines.length} csv lines`);
-            const generatedBundleCount = await generateBundlesAndSendToWorkers(context, lines, opts);
-            totalBundleCount += generatedBundleCount;
+            const { objectsInBundlesCount, bundleCount } = await generateBundlesAndSendToWorkers(context, lines, opts);
+            totalObjectsCount += objectsInBundlesCount;
+            totalBundlesCount += bundleCount;
           } catch (error: any) {
             const errorData = { error: error.message, source: `${fileId}, from ${lineNumber} and ${BULK_LINE_PARSING_NUMBER} following lines.` };
             logApp.error(error, { errorData });
@@ -171,9 +173,9 @@ export const processCSVforWorkers = async (context: AuthContext, opts: ConsumerO
       }
     }
   }
-  logApp.info(`${logPrefix} processing CSV ${opts.fileId} DONE in ${new Date().getTime() - startDate2} ms for ${totalBundleCount} bundles.`);
-  await updateProcessedTime(context, applicantUser, workId, `${totalBundleCount} generated bundle(s) for worker import`);
-  return totalBundleCount;
+  logApp.info(`${logPrefix} processing CSV ${opts.fileId} DONE in ${new Date().getTime() - startDate2} ms for ${totalObjectsCount} objets in ${totalBundlesCount} bundles.`);
+  await updateProcessedTime(context, applicantUser, workId, `${totalObjectsCount} objects send to worker for import in ${totalBundlesCount} bundles.`);
+  return totalObjectsCount;
 };
 
 const consumeQueueCallback = async (context: AuthContext, message: string) => {

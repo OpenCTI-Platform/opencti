@@ -204,6 +204,7 @@ export const createWork = async (context, user, connector, friendlyName, sourceI
 };
 
 export const reportExpectation = async (context, user, workId, errorData) => {
+  logApp.info('ANGIE - report expectation', { context, user, workId, errorData });
   const timestamp = now();
   const { isComplete, total } = await redisUpdateWorkFigures(workId);
   if (isComplete || errorData) {

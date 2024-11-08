@@ -99,6 +99,7 @@ export const bundleAllowUpsertProcess = async (
   const records = maxRecordNumber ? rawRecords.slice(0, maxRecordNumber) : rawRecords;
   const refEntities = await handleRefEntities(context, user, mapper);
   if (records) {
+    // TODO verify if this Promise.all is needed
     await Promise.all((records.map(async (record: string[]) => {
       const isEmptyLine = record.length === 1 && isEmptyField(record[0]);
       if (!isEmptyLine) {

@@ -39,7 +39,7 @@ describe('Verify internal importCsv connector', () => {
       fileId: 'import/global/csv-file-cities.csv',
       workId: work.id
     };
-    const bundleCount = await processCSVforWorkers(testContext, mapperOpts);
+    const totalObjectsCount = await processCSVforWorkers(testContext, mapperOpts);
 
     // Bulk size = 5
     //
@@ -47,7 +47,7 @@ describe('Verify internal importCsv connector', () => {
     // next 5 lines => 1 skip line, 4 cities, 1 label = 5 objects
     // next 5 lines => 5 cities + 1 label = 6 objects
     // next 5 lines => 3 cities + 1 label ; + same city + 1 label => 6 objects (in 2 bundles)
-    expect(bundleCount).toBe(5 + 5 + 6 + 6);
+    expect(totalObjectsCount).toBe(5 + 5 + 6 + 6);
 
     const workUpdated: any = await findWorkById(testContext, ADMIN_USER, work.id);
     expect(workUpdated).toBeDefined();

@@ -111,7 +111,7 @@ const FileWorkComponent = (props) => {
             if (!work.received_time) {
               statusText = ' (Pending)';
             } else if (tracking.import_expected_number > 0) {
-              statusText = ` (${tracking.import_processed_number}/${tracking.import_expected_number})`;
+              statusText = ` (${tracking.import_processed_number || 0}/${tracking.import_expected_number})`;
             }
             if (numberOfError > 0) {
               statusText += ` - [ ${numberOfError} error${
