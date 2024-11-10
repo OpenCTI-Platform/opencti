@@ -3230,12 +3230,17 @@ export const internalDeleteElementById = async (context, user, id, opts = {}) =>
       const isTrashableElement = !isInferredIndex(element._index)
         && (isStixCoreObject(element.entity_type) || isStixCoreRelationship(element.entity_type) || isStixSightingRelationship(element.entity_type));
       const forceDelete = !!opts.forceDelete || !isTrashableElement;
-      if (!forceDelete) {
-        // do not delete files if logical deletion enabled
-        // mark indexed files as removed to exclude them from search
-        await elUpdateRemovedFiles(element, true);
+      const isTrashEnabled = conf.get('app:trash:enabled');
+      if (isTrashEnabled) {
+        if (!forceDelete) {
+          // mark indexed files as removed to exclude them from search
+          await elUpdateRemovedFiles(element, true);
+        } else {
+          // if logical deletion is disabled for this element, delete permanently
+          await deleteAllObjectFiles(context, user, element);
+        }
       } else {
-        // if logical deletion is disabled, delete files as usual
+        // trash is disabled, delete permanently
         await deleteAllObjectFiles(context, user, element);
       }
       // Delete all linked elements

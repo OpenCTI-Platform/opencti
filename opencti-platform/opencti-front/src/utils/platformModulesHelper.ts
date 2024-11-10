@@ -32,7 +32,8 @@ export interface ModuleHelper {
   isFileIndexManagerEnable: () => boolean;
   isIndicatorDecayManagerEnable: () => boolean;
   isTelemetryManagerEnable: () => boolean;
-  isGarbageCollectionManagerEnable: () => boolean;
+  isTrashEnable: () => boolean;
+  getTrashRetentionDays: () => number,
   generateDisableMessage: (manager: string) => string;
 }
 
@@ -79,7 +80,8 @@ const platformModuleHelper = (
   isFileIndexManagerEnable: () => isModuleEnable(settings, FILE_INDEX_MANAGER),
   isIndicatorDecayManagerEnable: () => isModuleEnable(settings, INDICATOR_DECAY_MANAGER),
   isTelemetryManagerEnable: () => isModuleEnable(settings, TELEMETRY_MANAGER),
-  isGarbageCollectionManagerEnable: () => isModuleEnable(settings, GARBAGE_COLLECTION_MANAGER),
+  isTrashEnable: () => settings.platform_trash_enabled,
+  getTrashRetentionDays: () => settings.platform_trash_retention_days ?? 0,
   generateDisableMessage: (id: string) => (!isModuleEnable(settings, id) ? DISABLE_MANAGER_MESSAGE : ''),
 });
 

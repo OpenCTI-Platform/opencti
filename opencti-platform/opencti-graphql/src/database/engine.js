@@ -3739,7 +3739,7 @@ export const elDeleteElements = async (context, user, elements, opts = {}) => {
   // CURRENT LIMITATION: we only handle forceDelete when elDeleteElements is called with 1 element. This is because getRelationsToRemove returns all related relations without
   // linking the relations to a specific element, which we would need for the deleted_elements of deleteOperations. The difficulty in changing getRelationsToRemove is handling the
   // case where a relationship is linked to two elements given in elDeleteElements: how do we decide which element to link the relationship to?
-  if (!forceDelete && elements.length === 1) {
+  if (conf.get('app:trash:enabled') && !forceDelete && elements.length === 1) {
     // map of index => ids to save
     const idsByIndex = new Map();
     entitiesToDelete.forEach((element) => {

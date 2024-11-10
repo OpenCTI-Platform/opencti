@@ -72,6 +72,8 @@ const rootSettingsFragment = graphql`
     platform_ai_enabled
     platform_ai_type
     platform_ai_has_token
+    platform_trash_enabled
+    platform_trash_retention_days
     platform_protected_sensitive_config {
       enabled
       markings {

@@ -11,6 +11,7 @@ import Message from '../components/Message';
 import SystemBanners from '../public/components/SystemBanners';
 import TimeoutLock from './components/TimeoutLock';
 import useAuth from '../utils/hooks/useAuth';
+import useHelper from '../utils/hooks/useHelper';
 import SettingsMessagesBanner, { useSettingsMessagesBannerHeight } from './components/settings/settings_messages/SettingsMessagesBanner';
 import type { Theme } from '../components/Theme';
 import { RootSettings$data } from './__generated__/RootSettings.graphql';
@@ -42,6 +43,7 @@ interface IndexProps {
 
 const Index = ({ settings }: IndexProps) => {
   const theme = useTheme<Theme>();
+  const { isTrashEnable } = useHelper();
   const {
     bannerSettings: { bannerHeight },
   } = useAuth();
@@ -117,9 +119,12 @@ const Index = ({ settings }: IndexProps) => {
               <Route path="/data/*"
                 element={boundaryWrapper(RootData)}
               />
-              <Route path="/trash/*"
-                element={boundaryWrapper(RootTrash)}
-              />
+              { isTrashEnable() && (
+                <Route
+                  path="/trash/*"
+                  element={boundaryWrapper(RootTrash)}
+                />
+              )}
               <Route
                 path="/workspaces/*"
                 element={boundaryWrapper(RootWorkspaces)}

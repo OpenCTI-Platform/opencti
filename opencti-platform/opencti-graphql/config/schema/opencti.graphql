@@ -1307,6 +1307,8 @@ type Settings implements InternalObject & BasicObject {
   platform_reference_attachment: Boolean @auth
   platform_feature_flags: [Module!] @auth
   platform_critical_alerts: [PlatformCriticalAlert!]!
+  platform_trash_enabled: Boolean!
+  platform_trash_retention_days: Int
   platform_protected_sensitive_config: PlatformProtectedSensitiveConfig! @auth
   created_at: DateTime! @auth
   updated_at: DateTime! @auth
