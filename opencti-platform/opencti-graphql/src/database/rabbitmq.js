@@ -8,8 +8,9 @@ import { SYSTEM_USER } from '../utils/access';
 import { telemetry } from '../config/tracing';
 import { isEmptyField, RABBIT_QUEUE_PREFIX } from './utils';
 import { getHttpClient } from '../utils/http-client';
-import { listEntities } from './middleware-loader';
-import { ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
+import { listAllEntities } from './middleware-loader';
+import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_SYNC } from '../schema/internalObject';
+import { ENTITY_TYPE_PLAYBOOK } from '../modules/playbook/playbook-types';
 
 export const CONNECTOR_EXCHANGE = `${RABBIT_QUEUE_PREFIX}amqp.connector.exchange`;
 export const WORKER_EXCHANGE = `${RABBIT_QUEUE_PREFIX}amqp.worker.exchange`;
@@ -241,13 +242,28 @@ export const initializeInternalQueues = async () => {
   await registerConnectorQueues('sync', 'Internal sync manager', 'internal', 'sync');
 };
 
-export const initializeConnectorQueues = async (context, user) => {
+// This method reinitialize the expected queues in rabbitmq
+// Thanks to this approach if rabbitmq is destroyed, restarting the platform
+// will recreate everything needed by the queuing system.
+export const enforceQueuesConsistency = async (context, user) => {
   // List all current platform connectors and ensure queues are correctly setup
-  const connectors = await listEntities(context, user, [ENTITY_TYPE_CONNECTOR], { connectionFormat: false });
+  const connectors = await listAllEntities(context, user, [ENTITY_TYPE_CONNECTOR]);
   for (let index = 0; index < connectors.length; index += 1) {
     const connector = connectors[index];
     const scopes = connector.connector_scope ? connector.connector_scope.split(',') : [];
-    await registerConnectorQueues(connector.id, connector.name, connector.connector_type, scopes);
+    await registerConnectorQueues(connector.internal_id, connector.name, connector.connector_type, scopes);
+  }
+  // List all current platform playbooks and ensure queues are correctly setup
+  const playbooks = await listAllEntities(context, user, [ENTITY_TYPE_PLAYBOOK]);
+  for (let index = 0; index < playbooks.length; index += 1) {
+    const playbook = playbooks[index];
+    await registerConnectorQueues(playbook.internal_id, `Playbook ${playbook.internal_id} queue`, 'internal', ENTITY_TYPE_PLAYBOOK);
+  }
+  // List all current platform synchronizers (OpenCTI Streams) and ensure queues are correctly setup
+  const syncs = await listAllEntities(context, user, [ENTITY_TYPE_SYNC]);
+  for (let i = 0; i < syncs.length; i += 1) {
+    const sync = syncs[i];
+    await registerConnectorQueues(sync.internal_id, `Sync ${sync.internal_id} queue`, 'internal', ENTITY_TYPE_SYNC);
   }
 };
 
