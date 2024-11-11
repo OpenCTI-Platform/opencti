@@ -2222,7 +2222,7 @@ export const updateAttributeFromLoadedWithRefs = async (context, user, initial, 
 export const updateAttribute = async (context, user, id, type, inputs, opts = {}) => {
   const initial = await storeLoadByIdWithRefs(context, user, id, { ...opts, type });
   if (!initial) {
-    throw FunctionalError(`Cant find element to update ${id}`, { id, type });
+    throw FunctionalError('Cant find element to update', { id, type });
   }
   // Validate input attributes
   const entitySetting = await getEntitySettingFromCache(context, initial.entity_type);

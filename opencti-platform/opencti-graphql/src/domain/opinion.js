@@ -152,6 +152,7 @@ export const updateOpinionsMetrics = async (context, user, opinionId) => {
       total: opinionsNumbers.length,
     };
     const patch = { opinions_metrics: opinionsMetrics };
+    console.log(elements[i]);
     await patchAttribute(context, user, elements[i].id, elements[i].entity_type, patch);
   }
 };
