@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
-import { ADMIN_USER, adminQuery, editorQuery, participantQuery, testContext, USER_PARTICIPATE } from '../../utils/testQuery';
+import { ADMIN_USER, editorQuery, participantQuery, testContext, USER_PARTICIPATE } from '../../utils/testQuery';
 import { elLoadById } from '../../../src/database/engine';
 import { now } from '../../../src/utils/format';
 import { queryAsUserIsExpectedForbidden } from '../../utils/testQueryHelper';
@@ -131,7 +131,7 @@ describe('Opinion resolver standard behavior', () => {
         createdBy: 'identity--7b82b010-b1c0-4dae-981f-7756374a17df',
       },
     };
-    const opinion = await adminQuery({
+    const opinion = await editorQuery({
       query: CREATE_QUERY,
       variables: OPINION_TO_CREATE,
     });
