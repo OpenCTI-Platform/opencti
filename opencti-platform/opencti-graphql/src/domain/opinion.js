@@ -13,7 +13,6 @@ import { isStixId } from '../schema/schemaUtils';
 import { now } from '../utils/format';
 import { addFilter } from '../utils/filtering/filtering-utils';
 import { ENTITY_TYPE_VOCABULARY } from '../modules/vocabulary/vocabulary-types';
-import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 
 export const findById = (context, user, opinionId) => {
   return storeLoadById(context, user, opinionId, ENTITY_TYPE_CONTAINER_OPINION);
@@ -153,7 +152,6 @@ export const updateOpinionsMetrics = async (context, user, opinionId) => {
       total: opinionsNumbers.length,
     };
     const patch = { opinions_metrics: opinionsMetrics };
-    // eslint-disable-next-line max-len
     await patchAttribute(context, user, elements[i].internal_id, elements[i].entity_type, patch);
   }
 };
