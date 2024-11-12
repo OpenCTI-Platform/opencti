@@ -12,6 +12,7 @@ import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 import DataTable from '../../../components/dataGrid/DataTable';
 import useHelper from '../../../utils/hooks/useHelper';
+import useAuth from '../../../utils/hooks/useAuth';
 
 const DraftLineFragment = graphql`
     fragment Drafts_node on DraftWorkspace {
@@ -84,6 +85,7 @@ const LOCAL_STORAGE_KEY = 'draftWorkspaces';
 
 const Drafts: React.FC = () => {
   const { t_i18n } = useFormatter();
+  const { me } = useAuth();
   const { isFeatureEnable } = useHelper();
   const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const initialValues = {
@@ -150,12 +152,12 @@ const Drafts: React.FC = () => {
         lineFragment={DraftLineFragment}
         exportContext={{ entity_type: 'DraftWorkspace' }}
         redirectionModeEnabled
-        createButton={isFABReplaced && (
+        createButton={!me.draftContext && isFABReplaced && (
           <DraftCreation paginationOptions={queryPaginationOptions} />
         )}
       />
       )}
-      {!isFABReplaced && (
+      {!me.draftContext && !isFABReplaced && (
         <DraftCreation paginationOptions={queryPaginationOptions} />
       )}
     </span>
