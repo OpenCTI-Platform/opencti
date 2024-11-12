@@ -80,6 +80,7 @@ import { ENTITY_TYPE_INTERNAL_FILE } from '../schema/internalObject';
 import { deleteFile } from '../database/file-storage';
 import { checkUserIsAdminOnDashboard } from '../modules/publicDashboard/publicDashboard-utils';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
+import { getDraftContext } from '../utils/draftContext';
 
 // Task manager responsible to execute long manual tasks
 // Each API will start is task manager.
@@ -494,9 +495,11 @@ const executeProcessing = async (context, user, job, scope) => {
             await executeDelete(context, user, element, scope);
           }
           if (type === ACTION_TYPE_COMPLETE_DELETE) {
+            if (getDraftContext(context, user)) throw FunctionalError('Cannot execute complete delete task in draft');
             await executeCompleteDelete(context, user, element);
           }
           if (type === ACTION_TYPE_RESTORE) {
+            if (getDraftContext(context, user)) throw FunctionalError('Cannot execute restore task in draft');
             await executeRestore(context, user, element);
           }
           if (type === ACTION_TYPE_ADD) {
@@ -518,24 +521,31 @@ const executeProcessing = async (context, user, job, scope) => {
             await executeEnrichment(context, user, actionContext, element);
           }
           if (type === ACTION_TYPE_RULE_APPLY) {
+            if (getDraftContext(context, user)) throw FunctionalError('Cannot execute rule apply task in draft');
             await executeRuleApply(context, user, actionContext, element);
           }
           if (type === ACTION_TYPE_RULE_CLEAR) {
+            if (getDraftContext(context, user)) throw FunctionalError('Cannot execute rule clear task in draft');
             await executeRuleClean(context, user, actionContext, element);
           }
           if (type === ACTION_TYPE_RULE_ELEMENT_RESCAN) {
+            if (getDraftContext(context, user)) throw FunctionalError('Cannot execute rule element rescan task in draft');
             await executeRuleElementRescan(context, user, actionContext, element);
           }
           if (type === ACTION_TYPE_SHARE) {
+            if (getDraftContext(context, user)) throw FunctionalError('Cannot execute share task in draft');
             await executeShare(context, user, actionContext, element);
           }
           if (type === ACTION_TYPE_UNSHARE) {
+            if (getDraftContext(context, user)) throw FunctionalError('Cannot execute unshare task in draft');
             await executeUnshare(context, user, actionContext, element);
           }
           if (type === ACTION_TYPE_SHARE_MULTIPLE) {
+            if (getDraftContext(context, user)) throw FunctionalError('Cannot execute share multiple task in draft');
             await executeShareMultiple(context, user, actionContext, element);
           }
           if (type === ACTION_TYPE_UNSHARE_MULTIPLE) {
+            if (getDraftContext(context, user)) throw FunctionalError('Cannot execute unshare multiple task in draft');
             await executeUnshareMultiple(context, user, actionContext, element);
           }
         } catch (err) {
@@ -574,6 +584,8 @@ export const taskHandler = async () => {
       return;
     }
     // endregion
+    const draftID = task.draft_context ?? '';
+    const fullContext = { ...context, draft_context: draftID };
     const startPatch = { last_execution_date: now() };
     await updateTask(context, task.id, startPatch);
     // Fetch the user responsible for the task
@@ -582,20 +594,20 @@ export const taskHandler = async () => {
     logApp.debug(`[OPENCTI-MODULE][TASK-MANAGER] Executing job using userId:${rawUser.id}, for task ${task.internal_id}`);
     let jobToExecute;
     if (isQueryTask) {
-      jobToExecute = await computeQueryTaskElements(context, user, task);
+      jobToExecute = await computeQueryTaskElements(fullContext, user, task);
     }
     if (isListTask) {
-      jobToExecute = await computeListTaskElements(context, user, task);
+      jobToExecute = await computeListTaskElements(fullContext, user, task);
     }
     if (isRuleTask) {
-      jobToExecute = await computeRuleTaskElements(context, user, task);
+      jobToExecute = await computeRuleTaskElements(fullContext, user, task);
     }
     // Process the elements (empty = end of execution)
     const processingElements = jobToExecute.elements;
     logApp.debug(`[OPENCTI-MODULE][TASK-MANAGER] Found ${processingElements.length} element(s) to process.`);
     if (processingElements.length > 0) {
       lock.signal.throwIfAborted();
-      const errors = await executeProcessing(context, user, jobToExecute, task.scope);
+      const errors = await executeProcessing(fullContext, user, jobToExecute, task.scope);
       await appendTaskErrors(task, errors);
     }
     // Update the task
