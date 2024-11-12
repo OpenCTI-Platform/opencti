@@ -41,8 +41,11 @@ const isFeatureEnable = (
   id: string,
 ) => {
   const flags = settings.platform_feature_flags ?? [];
-  const feature = flags.find((f) => f.id === id);
-  return feature === undefined || feature.enable === true;
+  // config can target all FF available with special FF id "*"
+  if (flags.find((f) => f.id === '*' && f.enable)) {
+    return true;
+  }
+  return flags.some((flag) => flag.id === id && flag.enable);
 };
 
 const isModuleEnable = (
@@ -50,8 +53,7 @@ const isModuleEnable = (
   id: string,
 ) => {
   const modules = settings.platform_modules || [];
-  const module = modules.find((f) => f.id === id);
-  return module !== undefined && module.enable === true;
+  return modules.some((module) => module.id === id && module.enable);
 };
 
 const isModuleWarning = (
@@ -59,8 +61,7 @@ const isModuleWarning = (
   id: string,
 ) => {
   const modules = settings.platform_modules || [];
-  const module = modules.find((f) => f.id === id);
-  return module !== undefined && module.warning === true;
+  return modules.some((module) => module.id === id && module.warning);
 };
 
 const platformModuleHelper = (
