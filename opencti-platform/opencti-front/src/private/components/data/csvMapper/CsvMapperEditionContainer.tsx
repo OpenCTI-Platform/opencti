@@ -20,6 +20,11 @@ export const csvMapperEditionContainerFragment = graphql`
       type
       target {
         entity_type
+        column_based {
+          column_reference
+          operator
+          value
+        }
       }
       attributes {
         key
@@ -68,7 +73,6 @@ const CsvMapperEditionContainer: FunctionComponent<CsvMapperEditionProps> = ({
     csvMapperEditionContainerFragment,
     data.csvMapper,
   );
-
   if (!csvMapper) {
     return <Loader variant={LoaderVariant.inline}/>;
   }

@@ -47,7 +47,7 @@ const TextField = (props) => {
     <MuiTextField
       {...otherProps}
       value={value ?? ''}
-      error={!isNil(meta.error)}
+      error={!isNil(meta.error) || otherProps.error}
       helperText={
         // eslint-disable-next-line no-nested-ternary
           detectDuplicate && (isNil(meta.error) || !meta.touched) ? (

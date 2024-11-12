@@ -204,7 +204,7 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
   };
   const queryRef = useQueryLoading<CsvMapperFieldSearchQuery>(csvMapperQuery);
   const initialValues: IngestionCsvAddInput = isDuplicated && ingestionCsvData ? {
-    name: ingestionCsvData.name,
+    name: `${ingestionCsvData.name} - copy`,
     description: ingestionCsvData.description,
     uri: ingestionCsvData.uri,
     csv_mapper_id: convertMapper(ingestionCsvData, 'csvMapper'),

@@ -44,6 +44,7 @@ const initImportCsvConnector = () => {
     const applicantUser = await resolveUserByIdFromCache(context, applicantId) as AuthUser;
     const entityId = messageParsed.event.entity_id;
     const entity = entityId ? await storeLoadByIdWithRefs(context, applicantUser, entityId) : undefined;
+
     let parsedConfiguration;
     try {
       parsedConfiguration = JSON.parse(messageParsed.configuration);

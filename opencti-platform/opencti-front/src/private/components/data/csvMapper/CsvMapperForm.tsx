@@ -53,6 +53,13 @@ const csvMapperValidation = (t_i18n: (s: string) => string) => Yup.object().shap
   has_header: Yup.boolean().required(t_i18n('This field is required')),
   separator: Yup.string().trim().required(t_i18n('This field is required')),
   skipLineChar: Yup.string().max(1),
+  entity_representations: Yup.array().of(
+    Yup.object().shape({
+      column_based: Yup.object().shape({
+        value: Yup.string().matches(/^[^'"]*$/, t_i18n('Quotes are not allowed for the value')),
+      }),
+    }),
+  ),
 });
 
 interface CsvMapperFormProps {
@@ -67,8 +74,6 @@ interface CsvMapperFormProps {
 const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({ csvMapper, onSubmit, isDuplicated }) => {
   const { t_i18n } = useFormatter();
   const classes = useStyles();
-
-  // -- INIT --
 
   // accordion state
   const [open, setOpen] = useState(false);
@@ -164,7 +169,6 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({ csvMapper, onSub
     errors = { ...errors, [key]: value };
     setHasError(Object.values(errors).filter((v) => v).length > 0);
   };
-
   return (
     <>
       <Formik<CsvMapperFormData>
@@ -214,17 +218,17 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({ csvMapper, onSub
                   >
                     <FormControlLabel
                       value=","
-                      control={<Radio />}
+                      control={<Radio/>}
                       label={t_i18n('Comma')}
                     />
                     <FormControlLabel
                       value=";"
-                      control={<Radio />}
+                      control={<Radio/>}
                       label={t_i18n('Semicolon')}
                     />
                     <FormControlLabel
                       value={'|'}
-                      control={<Radio />}
+                      control={<Radio/>}
                       label={t_i18n('Pipe')}
                     />
                   </RadioGroup>

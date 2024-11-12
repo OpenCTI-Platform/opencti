@@ -11772,14 +11772,14 @@ type CsvMapperRepresentationAttribute {
   default_values: [DefaultValue!]
 }
 
-enum Operator {
+enum CsvMapperOperator {
   eq
-  neq
+  not_eq
 }
 
 type CsvMapperRepresentationTargetColumn {
   column_reference: String
-  operator: Operator
+  operator: CsvMapperOperator
   value: String
 }
 
@@ -11883,7 +11883,7 @@ input CsvMapperRepresentationAttributeInput {
 
 input CsvMapperRepresentationTargetColumnInput {
   column_reference: String
-  operator: Operator
+  operator: CsvMapperOperator
   value: String
 }
 
