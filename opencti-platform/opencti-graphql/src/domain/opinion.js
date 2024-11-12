@@ -154,7 +154,7 @@ export const updateOpinionsMetrics = async (context, user, opinionId) => {
     };
     const patch = { opinions_metrics: opinionsMetrics };
     // eslint-disable-next-line max-len
-    await patchAttribute(context, user, elements[i].internal_id, isStixCoreRelationship(elements[i].entity_type) ? ABSTRACT_STIX_CORE_RELATIONSHIP : ABSTRACT_STIX_CORE_OBJECT, patch);
+    await patchAttribute(context, user, elements[i].internal_id, elements[i].entity_type, patch);
   }
 };
 // endregion
