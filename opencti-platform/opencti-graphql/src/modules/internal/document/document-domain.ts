@@ -4,20 +4,17 @@ import moment from 'moment';
 import { generateFileIndexId } from '../../../schema/identifier';
 import { ENTITY_TYPE_INTERNAL_FILE } from '../../../schema/internalObject';
 import { elAggregationCount, elCount, elDeleteInstances, elIndex } from '../../../database/engine';
-import { INDEX_INTERNAL_OBJECTS, isEmptyField, isNotEmptyField, READ_INDEX_INTERNAL_OBJECTS } from '../../../database/utils';
+import { INDEX_INTERNAL_OBJECTS, isEmptyField, READ_INDEX_INTERNAL_OBJECTS } from '../../../database/utils';
 import { type EntityOptions, type FilterGroupWithNested, internalLoadById, listAllEntities, listEntitiesPaginated, storeLoadById } from '../../../database/middleware-loader';
 import type { AuthContext, AuthUser } from '../../../types/user';
 import { type DomainFindById } from '../../../domain/domainTypes';
 import type { BasicStoreEntityDocument } from './document-types';
-import type { BasicStoreCommon, BasicStoreObject } from '../../../types/store';
+import type { BasicStoreCommon } from '../../../types/store';
 import { type File, FilterMode, FilterOperator, OrderingMode, State } from '../../../generated/graphql';
 import { loadExportWorksAsProgressFiles } from '../../../domain/work';
 import { elSearchFiles } from '../../../database/file-search';
-import { isUserHasCapability, SETTINGS_SUPPORT, SYSTEM_USER } from '../../../utils/access';
+import { SYSTEM_USER } from '../../../utils/access';
 import { FROM_START_STR } from '../../../utils/format';
-import { buildContextDataForFile, publishUserAction } from '../../../listener/UserActionListener';
-import type { UserAction } from '../../../listener/UserActionListener';
-import { ForbiddenAccess } from '../../../config/errors';
 import { RELATION_OBJECT_MARKING } from '../../../schema/stixRefRelationship';
 import { buildRefRelationKey } from '../../../schema/general';
 
@@ -159,43 +156,6 @@ export const allFilesMimeTypeDistribution = async (context: AuthContext, user: A
     weightField: 'size',
     normalizeLabel: false,
   });
-};
-
-type CheckArgs = { entity_id?: string, filename: string, id: string };
-export const checkFileAccess = async (context: AuthContext, user: AuthUser, scope: string, args: CheckArgs) => {
-  const { entity_id, filename, id } = args;
-  // Checks for support/* files
-  if (id && (id.startsWith(SUPPORT_STORAGE_PATH) && !isUserHasCapability(user, SETTINGS_SUPPORT))) {
-    throw ForbiddenAccess('Access to this file is restricted', { id: entity_id, file: id });
-  }
-
-  // Checks for other files: import/*, export/*
-  if (isEmptyField(entity_id)) {
-    return true;
-  }
-  const userInstancePromise = internalLoadById(context, user, entity_id);
-  const systemInstancePromise = internalLoadById(context, SYSTEM_USER, entity_id);
-  const userFileInstancePromise = internalLoadById(context, user, id, { type: ENTITY_TYPE_INTERNAL_FILE });
-  const systemFileInstancePromise = internalLoadById(context, SYSTEM_USER, id, { type: ENTITY_TYPE_INTERNAL_FILE });
-  const [
-    instance,
-    systemInstance,
-    userFileInstance,
-    systemFileInstance,
-  ] = await Promise.all([userInstancePromise, systemInstancePromise, userFileInstancePromise, systemFileInstancePromise]);
-  if ((isEmptyField(instance) && isNotEmptyField(systemInstance)) || (isEmptyField(userFileInstance) && isNotEmptyField(systemFileInstance) && isNotEmptyField(filename))) {
-    const data = buildContextDataForFile(systemInstance as BasicStoreObject, id, filename);
-    await publishUserAction({
-      user,
-      event_type: 'file',
-      event_scope: scope,
-      event_access: 'extended',
-      status: 'error',
-      context_data: data
-    } as UserAction);
-    throw ForbiddenAccess('Access to this file is restricted', { id: entity_id, file: id });
-  }
-  return true;
 };
 
 // Get Files paginated with auto enrichment

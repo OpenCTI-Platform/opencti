@@ -16,9 +16,11 @@ import { connectorsForImport } from './repository';
 import { pushToConnector } from './rabbitmq';
 import { elDeleteFilesByIds } from './file-search';
 import { isAttachmentProcessorEnabled } from './engine';
-import { deleteDocumentIndex, findById as documentFindById, indexFileToDocument } from '../modules/internal/document/document-domain';
+import { deleteDocumentIndex, findById as documentFindById, indexFileToDocument, SUPPORT_STORAGE_PATH } from '../modules/internal/document/document-domain';
 import { controlUserConfidenceAgainstElement } from '../utils/confidence-level';
 import { enrichWithRemoteCredentials } from '../config/credentials';
+import { isUserHasCapability, SETTINGS_SUPPORT } from '../utils/access';
+import { internalLoadById } from './middleware-loader';
 
 // Minio configuration
 const clientEndpoint = conf.get('minio:endpoint');
@@ -255,54 +257,25 @@ export const getFileSize = async (user, fileS3Path) => {
  * Get file metadata from database, or else from S3.
  */
 export const loadFile = async (context, user, fileS3Path, opts = {}) => {
-  const fileInformationFromDB = await documentFindById(context, user, fileS3Path);
-  const { dontThrow = false } = opts;
   try {
-    let metaData; let name; let size; let lastModified; let lastModifiedSinceMin;
-
-    // Try first to get metadata from elastic
-    if (fileInformationFromDB) {
-      metaData = fileInformationFromDB.metaData;
-      name = fileInformationFromDB.name;
-      size = fileInformationFromDB.size;
-      lastModified = fileInformationFromDB.lastModified;
-      lastModifiedSinceMin = fileInformationFromDB.lastModifiedSinceMin;
-    } else {
-      // Else try to get them from S3 instead
-      const object = await s3Client.send(new s3.HeadObjectCommand({
-        Bucket: bucketName,
-        Key: fileS3Path
-      }));
-      size = object.ContentLength;
-      lastModified = object.LastModified;
-      lastModifiedSinceMin = sinceNowInMinutes(object.LastModified);
-
-      if (object.Metadata) {
-        metaData = {
-          version: object.Metadata.version,
-          description: object.Metadata.description,
-          list_filters: object.Metadata.list_filters,
-          filename: object.Metadata.filename,
-          mimetype: object.Metadata.mimetype,
-          labels_text: object.Metadata.labels_text,
-          labels: object.Metadata.labels_text ? object.Metadata.labels_text.split(';') : [],
-          encoding: object.Metadata.encoding,
-          creator_id: object.Metadata.creator_id,
-          entity_id: object.Metadata.entity_id,
-          external_reference_id: object.Metadata.external_reference_id,
-          messages: object.Metadata.messages,
-          errors: object.Metadata.errors,
-          inCarousel: object.Metadata.inCarousel,
-          order: object.Metadata.order
-        };
-        name = decodeURIComponent(object.Metadata.filename || 'unknown');
-      } else {
-        const mimeTypeResolved = guessMimeType(fileS3Path);
-        metaData = { mimetype: mimeTypeResolved };
-        name = getFileName(fileS3Path);
+    // 01. Check if user as enough capability to get support packages
+    if (fileS3Path && (fileS3Path.startsWith(SUPPORT_STORAGE_PATH) && !isUserHasCapability(user, SETTINGS_SUPPORT))) {
+      throw FunctionalError('File not found or restricted', { filename: fileS3Path });
+    }
+    // 02. Check if the referenced document is accessible
+    const document = await documentFindById(context, user, fileS3Path);
+    if (!document) {
+      throw FunctionalError('File not found or restricted', { filename: fileS3Path });
+    }
+    // 03. Check if metadata contains an entity_id, we need to check if the user has real access to this instance
+    const { metaData, name, size, lastModified, lastModifiedSinceMin } = document;
+    if (metaData.entity_id) {
+      const instance = await internalLoadById(context, user, metaData.entity_id, { type: metaData.entity_type });
+      if (!instance) {
+        throw FunctionalError('File not found or restricted', { filename: fileS3Path });
       }
     }
-
+    // All good, return the file
     return {
       id: fileS3Path,
       name,
@@ -314,11 +287,10 @@ export const loadFile = async (context, user, fileS3Path, opts = {}) => {
       metaData
     };
   } catch (err) {
-    if (dontThrow) {
-      logApp.error('[FILE STORAGE] Load file from storage fail', { cause: err, user_id: user.id, filename: fileS3Path });
+    if (opts.dontThrow) {
       return undefined;
     }
-    throw UnsupportedError('Load file from storage fail', { cause: err, user_id: user.id, filename: fileS3Path });
+    throw err;
   }
 };
 
