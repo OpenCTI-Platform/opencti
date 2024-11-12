@@ -119,6 +119,12 @@ export const processCSVforWorkers = async (context: AuthContext, opts: ConsumerO
 
   const startDate2 = new Date().getTime();
   while (hasMoreBulk) {
+    // The file cannot stay open too long, so until we reach end of file (hasMoreBulk==true) we:
+    // - read the file
+    // - takes the bulk count lines
+    // - ** close file
+    // - process the bulk count lines.
+
     const stream: SdkStream<Readable> | null | undefined = await downloadFile(opts.fileId) as SdkStream<Readable> | null | undefined;
     if (stream) {
       const lines: string[] = [];
@@ -149,6 +155,8 @@ export const processCSVforWorkers = async (context: AuthContext, opts: ConsumerO
           }
           lineNumber += 1;
         }
+        rl.close();
+
         hasMoreBulk = bulkLineCursor < lineNumber;
         logApp.debug(`${logPrefix} read lines end on ${new Date().getTime() - startDate} ms; hasMoreBulk=${hasMoreBulk}; lineNumber=${lineNumber}`);
 

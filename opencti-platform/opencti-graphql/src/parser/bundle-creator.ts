@@ -2,6 +2,7 @@ import { v4 as uuidv4 } from 'uuid';
 import * as R from 'ramda';
 import type { StixBundle, StixObject } from '../types/stix-common';
 import { STIX_SPEC_VERSION } from '../database/stix';
+import { STIX_EXT_OCTI } from '../types/stix-extensions';
 
 /**
  * Check if bundle object can be added to the current bundle or if a new bundle is required to use upsert feature.
@@ -16,8 +17,20 @@ export const canAddObjectToBundle = (objectsToAdd: StixObject[], bundles: StixOb
     const currentToCheck = objectsToAdd[i];
     const existingObjectWithDifferentContent = bundles.find((item: StixObject) => {
       if (item.id === currentToCheck.id && item.type === currentToCheck.type) {
-        const itemAsJson = JSON.stringify(item);
-        const currentAsJson = JSON.stringify(currentToCheck);
+        const itemClone = JSON.parse(JSON.stringify(item));
+        itemClone.converter_csv = undefined;
+        if (itemClone.extensions) {
+          itemClone.extensions[STIX_EXT_OCTI].converter_csv = undefined;
+        }
+
+        const currentToCheckClone = JSON.parse(JSON.stringify(currentToCheck));
+        currentToCheckClone.converter_csv = undefined;
+        if (currentToCheckClone.extensions) {
+          currentToCheckClone.extensions[STIX_EXT_OCTI].converter_csv = undefined;
+        }
+
+        const itemAsJson = JSON.stringify(itemClone);
+        const currentAsJson = JSON.stringify(currentToCheckClone);
         return itemAsJson !== currentAsJson;
       }
       return false;
