@@ -261,6 +261,7 @@ const StixDomainObjectHeader = (props) => {
     entityType, // Should migrate all the parent component to call the useIsEnforceReference as the top
     enableQuickSubscription,
     enableAskAi,
+    enableEnricher,
   } = props;
   const openAliasesCreate = false;
   const [openAlias, setOpenAlias] = useState(false);
@@ -595,7 +596,7 @@ const StixDomainObjectHeader = (props) => {
                 type={type}
               />
             )}
-            {isKnowledgeEnricher && (
+            {(enableEnricher && isKnowledgeEnricher) && (
               <StixCoreObjectEnrichment stixCoreObjectId={stixDomainObject.id} />
             )}
             {isKnowledgeUpdater && (
