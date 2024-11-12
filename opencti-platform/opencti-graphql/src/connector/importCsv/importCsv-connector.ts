@@ -7,7 +7,7 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import { consumeQueue, pushToWorkerForConnector, registerConnectorQueues } from '../../database/rabbitmq';
 import { downloadFile } from '../../database/file-storage';
 import { reportExpectation, updateExpectationsNumber, updateProcessedTime, updateReceivedTime } from '../../domain/work';
-import { bundleProcess, bundleAllowUpsertProcess } from '../../parser/csv-bundler';
+import { bundleAllowUpsertProcess, bundleProcess } from '../../parser/csv-bundler';
 import { OPENCTI_SYSTEM_UUID } from '../../schema/general';
 import { resolveUserByIdFromCache } from '../../domain/user';
 import { parseCsvMapper, sanitized, validateCsvMapper } from '../../modules/internal/csvMapper/csvMapper-utils';

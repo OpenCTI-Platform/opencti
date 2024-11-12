@@ -4,24 +4,17 @@ import { isNotEmptyField } from '../../../src/database/utils';
 import { csvMapperMockSimpleRelationship } from './simple-relationship-test/csv-mapper-mock-simple-relationship';
 import { csvMapperMockSimpleEntityWithRef } from './simple-entity-with-ref-test/csv-mapper-mock-simple-entity-with-ref';
 import { csvMapperMockRealUseCase } from './real-use-case/csv-mapper-mock-real-use-case';
-import { csvMapperMockSimpleDifferentEntities } from './dynamic-simple-test/csv-mapper-mock-simple-different-entities';
-import { csvMapperMockSimpleDifferentEntities } from '../../data/csv-mapper-mock-simple-different-entities';
 import { csvMapperMockSimpleSighting } from './simple-sighting-test/csv-mapper-mock-simple-sighting';
-import { bundleProcess } from '../../../src/parser/csv-bundler';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import { csvMapperMockSimpleSkipLine } from './simple-skip-line-test/csv-mapper-mock-simple-skip-line';
 import { csvMapperMalware } from './entities-with-booleans/mapper';
 
 import '../../../src/modules';
-import type { StixBundle } from '../../../src/types/stix-common';
 import type { CsvMapperParsed } from '../../../src/modules/internal/csvMapper/csvMapper-types';
-import type { StixIdentity, StixMalware, StixThreatActor } from '../../../src/types/stix-sdo';
+import type { StixIdentity, StixLocation, StixMalware, StixThreatActor } from '../../../src/types/stix-sdo';
 import type { StixRelation, StixSighting } from '../../../src/types/stix-sro';
-import { csvMapperDynamicIpAndUrl } from './dynamic-url-and-ip/mapper-url-ip';
-import type { StixDomainName, StixEmailAddress, StixFile, StixIPv4Address, StixIPv6Address, StixURL } from '../../../src/types/stix-sco';
-import { csvMapperMockFileHashHack } from './dynamic-file-hash/csv-mapper-mock-file-hash-hack';
-import { STIX_EXT_OCTI_SCO } from '../../../src/types/stix-extensions';
-import { csvMapperDynamicChar } from './dynamic-url-ip-character/csv-mapper-mock-url-ip-char';
+import { bundleProcessFromFile } from '../../../src/parser/csv-bundler';
+import { csvMapperMockSimpleDifferentEntities } from './dynamic-simple-test/csv-mapper-mock-simple-different-entities';
 
 describe('CSV-PARSER', () => {
   it('Parse CSV - Simple entity', async () => {
