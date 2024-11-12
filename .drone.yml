@@ -355,7 +355,7 @@ services:
       path: /tmp/e2e-start-platform/node_modules
     environment:
       APP__PORT: 4500
-      APP__ENABLED_DEV_FEATURES: '[*]'
+      APP__ENABLED_DEV_FEATURES: '["*"]'
       APP__ADMIN__PASSWORD: admin
       APP__ADMIN__TOKEN: bfa014e0-e02e-4aa6-a42b-603b19dcf159
       APP__APP_LOG__EXTENDED_ERROR_MESSAGE: true
