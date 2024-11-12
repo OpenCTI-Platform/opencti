@@ -4,6 +4,8 @@ import { DeleteOperationLineDummy } from '@components/trash/all/DeleteOperationL
 import ToolBar from '@components/data/ToolBar';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
+import { InformationOutline } from 'mdi-material-ui';
+import Tooltip from '@mui/material/Tooltip';
 import { DeleteOperationLine_node$data } from './all/__generated__/DeleteOperationLine_node.graphql';
 import ListLines from '../../../components/list_lines/ListLines';
 import ExportContextProvider from '../../../utils/ExportContextProvider';
@@ -162,19 +164,29 @@ const Trash: React.FC = () => {
   };
   return (
     <ExportContextProvider>
-      <Breadcrumbs elements={[{ label: t_i18n('Trash'), current: true }]} />
-      <Alert severity="info" variant="outlined" sx={{ marginTop: 2, marginBottom: 2 }}>
-        {t_i18n('Entities and relationships manually deleted from the platform will appear in this view, and can be restored.')}
-        <br/>
-        {t_i18n('Elements deleted by connectors or during platform synchronization are not put into the trash.')}
-        <br/>
-        { isModuleEnable(GARBAGE_COLLECTION_MANAGER) && (
-          t_i18n('', {
-            id: 'An element will persists in the trash for {period} before being permanently deleted.',
-            values: { period: <Box component="span" sx={{ color: 'warning.main' }}>{t_i18n('', { id: '{count} days', values: { count: getTrashRetentionDays() } })}</Box> },
-          })
-        )}
-      </Alert>
+      <Box sx={{ display: 'flex', gap: 1 }}>
+        <Breadcrumbs elements={[{ label: t_i18n('Trash'), current: true }]} />
+        <Tooltip
+          title={<>
+            {t_i18n('Entities and relationships manually deleted from the platform will appear in this view, and can be restored.')}
+            <br/>
+            {t_i18n('Elements deleted by connectors or during platform synchronization are not put into the trash.')}
+            <br/>
+            { isModuleEnable(GARBAGE_COLLECTION_MANAGER) && (
+              t_i18n('', {
+                id: 'An element will persists in the trash for {period} before being permanently deleted.',
+                values: { period: <Box component="span" sx={{ color: 'warning.main' }}>{t_i18n('', { id: '{count} days', values: { count: getTrashRetentionDays() } })}</Box> },
+              })
+            )}
+          </>}
+        >
+          <InformationOutline
+            fontSize="small"
+            color="primary"
+            style={{ cursor: 'default' }}
+          />
+        </Tooltip>
+      </Box>
       {renderLines()}
     </ExportContextProvider>
   );
