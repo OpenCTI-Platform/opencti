@@ -133,7 +133,7 @@ const DataTableHeader: FunctionComponent<DataTableHeaderProps> = ({
           </>
         )}
         <div className={classes.aligner} />
-        {variant !== DataTableVariant.inline && (
+        {variant !== DataTableVariant.inline && variant !== DataTableVariant.widget && (
           <SimpleDraggrable
             position={{ x: 3, y: 0 }}
             axis="x"

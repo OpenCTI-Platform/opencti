@@ -84,6 +84,7 @@ type CaseRft implements BasicObject & StixObject & StixCoreObject & StixDomainOb
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # Stix Domain Object
   revoked: Boolean!
   confidence: Int

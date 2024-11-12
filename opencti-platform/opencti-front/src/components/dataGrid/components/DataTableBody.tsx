@@ -240,7 +240,7 @@ const DataTableBody = ({
       className={classes.tableContainer}
       style={{ ...columnSizeVars }}
     >
-      {(variant !== DataTableVariant.widget && !hideHeaders) && (
+      {!hideHeaders && (
         <DataTableHeaders
           containerRef={containerRef}
           effectiveColumns={effectiveColumns}

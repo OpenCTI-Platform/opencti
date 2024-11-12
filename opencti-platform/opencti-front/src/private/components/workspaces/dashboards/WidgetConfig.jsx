@@ -928,23 +928,23 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
               return (
                 <div key={i}>
                   {(getCurrentCategory() === 'distribution'
-                    || getCurrentCategory() === 'list') && (
-                    <TextField
-                      label={t_i18n('Number of results')}
-                      fullWidth={true}
-                      type="number"
-                      value={dataSelection[i].number ?? 10}
-                      onChange={(event) => handleChangeDataValidationParameter(
-                        i,
-                        'number',
-                        event.target.value,
-                        true,
-                      )
-                        }
-                      style={{ marginTop: 20 }}
-                    />
+                        || getCurrentCategory() === 'list') && (
+                        <TextField
+                          label={t_i18n('Number of results')}
+                          fullWidth={true}
+                          type="number"
+                          value={dataSelection[i].number ?? 10}
+                          onChange={(event) => handleChangeDataValidationParameter(
+                            i,
+                            'number',
+                            event.target.value,
+                            true,
+                          )
+                            }
+                          style={{ marginTop: 20 }}
+                        />
                   )}
-                  {dataSelection[i].perspective !== 'audits' && (
+                  {getCurrentCategory() === 'list' && dataSelection[i].perspective === 'entities' && (
                   <div
                     style={{
                       display: 'flex',
@@ -952,215 +952,348 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
                       marginTop: 20,
                     }}
                   >
-                    <FormControl fullWidth={true} style={{ flex: 1 }}>
-                      <InputLabel id="relative" size="small">
-                        {isNotEmptyField(dataSelection[i].label)
-                          ? dataSelection[i].label
-                          : t_i18n('Date attribute')}
-                      </InputLabel>
+                    <FormControl
+                      className={classes.formControl}
+                      fullWidth={true}
+                      style={{ flex: 1 }}
+                    >
+                      <InputLabel>{t_i18n('Sort by')}</InputLabel>
                       <Select
-                        labelId="relative"
-                        size="small"
                         fullWidth={true}
-                        value={dataSelection[i].date_attribute ?? 'created_at'}
-                        onChange={(event) => handleChangeDataValidationParameter(i, 'date_attribute', event.target.value)}
+                        value={dataSelection[i].sort_by ?? 'created_at'}
+                        onChange={(event) => handleChangeDataValidationParameter(
+                          i,
+                          'sort_by',
+                          event.target.value,
+                        )
+                                }
                       >
-                        <MenuItem value="created_at">
-                          created_at ({t_i18n('Technical date')})
-                        </MenuItem>
-                        <MenuItem value="updated_at">
-                          updated_at ({t_i18n('Technical date')})
-                        </MenuItem>
-                        <MenuItem value="created">
-                          created ({t_i18n('Functional date')})
-                        </MenuItem>
-                        <MenuItem value="modified">
-                          modified ({t_i18n('Functional date')})
-                        </MenuItem>
-                        {getCurrentIsRelationships() && (
-                        <MenuItem value="start_time">
-                          start_time ({t_i18n('Functional date')})
-                        </MenuItem>
-                        )}
-                        {getCurrentIsRelationships() && (
-                        <MenuItem value="stop_time">
-                          stop_time ({t_i18n('Functional date')})
-                        </MenuItem>
-                        )}
-                        {getCurrentIsRelationships() && !isWidgetListOrTimeline() && (
-                        <MenuItem value="first_seen">
-                          first_seen ({t_i18n('Functional date')})
-                        </MenuItem>
-                        )}
-                        {getCurrentIsRelationships() && !isWidgetListOrTimeline() && (
-                        <MenuItem value="last_seen">
-                          last_seen ({t_i18n('Functional date')})
-                        </MenuItem>
-                        )}
+                        {[
+                          'created',
+                          'created_at',
+                          'modified',
+                          'updated_at',
+                          'name',
+                          'valid_from',
+                          'valid_until',
+                          'entity_type',
+                          'createdBy',
+                          'creator',
+                          'objectMarking',
+                          'observable_value',
+                          'value',
+                          'x_opencti_workflow_id',
+                          'opinions_metrics_mean',
+                          'opinions_metrics_max',
+                          'opinions_metrics_min',
+                          'opinions_metrics_total',
+                        ].map((value) => (
+                          <MenuItem
+                            key={value}
+                            value={value}
+                          >
+                            {t_i18n(capitalizeFirstLetter(value))}
+                          </MenuItem>
+                        ))}
                       </Select>
                     </FormControl>
                   </div>
                   )}
-                  {dataSelection[i].perspective === 'relationships'
-                    && type === 'map' && (
-                    <TextField
-                      label={t_i18n('Zoom')}
-                      fullWidth={true}
-                      value={dataSelection[i].zoom ?? 2}
-                      placeholder={t_i18n('Zoom')}
-                      onChange={(event) => handleChangeDataValidationParameter(
-                        i,
-                        'zoom',
-                        event.target.value,
-                      )
-                            }
-                      style={{ marginTop: 20 }}
-                    />
-                  )}
-                  {dataSelection[i].perspective === 'relationships'
-                    && type === 'map' && (
-                    <TextField
-                      label={t_i18n('Center latitude')}
-                      fullWidth={true}
-                      value={dataSelection[i].centerLat ?? 48.8566969}
-                      placeholder={t_i18n('Center latitude')}
-                      onChange={(event) => handleChangeDataValidationParameter(
-                        i,
-                        'centerLat',
-                        event.target.value,
-                      )
-                            }
-                      style={{ marginTop: 20 }}
-                    />
-                  )}
-                  {dataSelection[i].perspective === 'relationships'
-                    && type === 'map' && (
-                    <TextField
-                      label={t_i18n('Center longitude')}
-                      fullWidth={true}
-                      value={dataSelection[i].centerLng ?? 2.3514616}
-                      placeholder={t_i18n('Center longitude')}
-                      onChange={(event) => handleChangeDataValidationParameter(
-                        i,
-                        'centerLng',
-                        event.target.value,
-                      )
-                            }
-                      style={{ marginTop: 20 }}
-                    />
-                  )}
-                  {getCurrentAvailableParameters().includes('attribute') && (
-                  <div
-                    style={{ display: 'flex', width: '100%', marginTop: 20 }}
-                  >
-                    {dataSelection[i].perspective === 'relationships' && (
-                    <FormControl
-                      className={classes.formControl}
-                      fullWidth={true}
+                  {getCurrentCategory() === 'list' && (
+                    <div
                       style={{
-                        flex: 1,
-                        marginRight: 20,
+                        display: 'flex',
+                        width: '100%',
+                        marginTop: 20,
                       }}
                     >
-                      <InputLabel>{t_i18n('Attribute')}</InputLabel>
-                      <Select
-                        fullWidth={true}
-                        value={dataSelection[i].attribute}
-                        onChange={(event) => handleChangeDataValidationParameter(
-                          i,
-                          'attribute',
-                          event.target.value,
-                        )
-                        }
-                      >
-                        <MenuItem key="internal_id" value="internal_id">
-                          {t_i18n('Entity')}
-                        </MenuItem>
-                        <MenuItem key="entity_type" value="entity_type">
-                          {t_i18n('Entity type')}
-                        </MenuItem>
-                        <MenuItem key="relationship_type" value="relationship_type">
-                          {t_i18n('Relationship type')}
-                        </MenuItem>
-                        <MenuItem
-                          key="created-by.internal_id"
-                          value="created-by.internal_id"
+                      <FormControl fullWidth={true} style={{ flex: 1 }}>
+                        <InputLabel id="relative" size="small">
+                          {t_i18n('Sort mode')}
+                        </InputLabel>
+                        <Select
+                          labelId="relative"
+                          size="small"
+                          fullWidth={true}
+                          value={dataSelection[i].sort_mode ?? 'asc'}
+                          onChange={(event) => handleChangeDataValidationParameter(i, 'sort_mode', event.target.value)}
                         >
-                          {t_i18n('Author')}
-                        </MenuItem>
-                        <MenuItem
-                          key="object-marking.internal_id"
-                          value="object-marking.internal_id"
+                          <MenuItem value="asc">
+                            {t_i18n('Asc')}
+                          </MenuItem>
+                          <MenuItem value="desc">
+                            {t_i18n('Desc')}
+                          </MenuItem>
+                        </Select>
+                      </FormControl>
+                    </div>
+                  )}
+                  {dataSelection[i].perspective !== 'audits' && (
+                    <div
+                      style={{
+                        display: 'flex',
+                        width: '100%',
+                        marginTop: 20,
+                      }}
+                    >
+                      <FormControl fullWidth={true} style={{ flex: 1 }}>
+                        <InputLabel id="relative" size="small">
+                          {isNotEmptyField(dataSelection[i].label)
+                            ? dataSelection[i].label
+                            : t_i18n('Date attribute')}
+                        </InputLabel>
+                        <Select
+                          labelId="relative"
+                          size="small"
+                          fullWidth={true}
+                          value={dataSelection[i].date_attribute ?? 'created_at'}
+                          onChange={(event) => handleChangeDataValidationParameter(i, 'date_attribute', event.target.value)}
                         >
-                          {t_i18n('Marking definition')}
-                        </MenuItem>
-                        <MenuItem
-                          key="kill-chain-phase.internal_id"
-                          value="kill-chain-phase.internal_id"
-                        >
-                          {t_i18n('Kill chain phase')}
-                        </MenuItem>
-                        <MenuItem key="creator_id" value="creator_id">
-                          {t_i18n('Creator')}
-                        </MenuItem>
-                        <MenuItem key="x_opencti_workflow_id" value="x_opencti_workflow_id">
-                          {t_i18n('Status')}
-                        </MenuItem>
-                      </Select>
-                    </FormControl>
-                    )}
-                    {dataSelection[i].perspective === 'entities'
-                      && getCurrentSelectedEntityTypes(i).length > 0
-                      && (
+                          <MenuItem value="created_at">
+                            created_at ({t_i18n('Technical date')})
+                          </MenuItem>
+                          <MenuItem value="updated_at">
+                            updated_at ({t_i18n('Technical date')})
+                          </MenuItem>
+                          <MenuItem value="created">
+                            created ({t_i18n('Functional date')})
+                          </MenuItem>
+                          <MenuItem value="modified">
+                            modified ({t_i18n('Functional date')})
+                          </MenuItem>
+                          {getCurrentIsRelationships() && (
+                          <MenuItem value="start_time">
+                            start_time ({t_i18n('Functional date')})
+                          </MenuItem>
+                          )}
+                          {getCurrentIsRelationships() && (
+                          <MenuItem value="stop_time">
+                            stop_time ({t_i18n('Functional date')})
+                          </MenuItem>
+                          )}
+                          {getCurrentIsRelationships() && !isWidgetListOrTimeline() && (
+                          <MenuItem value="first_seen">
+                            first_seen ({t_i18n('Functional date')})
+                          </MenuItem>
+                          )}
+                          {getCurrentIsRelationships() && !isWidgetListOrTimeline() && (
+                          <MenuItem value="last_seen">
+                            last_seen ({t_i18n('Functional date')})
+                          </MenuItem>
+                          )}
+                        </Select>
+                      </FormControl>
+                    </div>
+                  )}
+                  {dataSelection[i].perspective === 'relationships'
+                        && type === 'map' && (
+                        <TextField
+                          label={t_i18n('Zoom')}
+                          fullWidth={true}
+                          value={dataSelection[i].zoom ?? 2}
+                          placeholder={t_i18n('Zoom')}
+                          onChange={(event) => handleChangeDataValidationParameter(
+                            i,
+                            'zoom',
+                            event.target.value,
+                          )
+                                }
+                          style={{ marginTop: 20 }}
+                        />
+                  )}
+                  {dataSelection[i].perspective === 'relationships'
+                        && type === 'map' && (
+                        <TextField
+                          label={t_i18n('Center latitude')}
+                          fullWidth={true}
+                          value={dataSelection[i].centerLat ?? 48.8566969}
+                          placeholder={t_i18n('Center latitude')}
+                          onChange={(event) => handleChangeDataValidationParameter(
+                            i,
+                            'centerLat',
+                            event.target.value,
+                          )
+                                }
+                          style={{ marginTop: 20 }}
+                        />
+                  )}
+                  {dataSelection[i].perspective === 'relationships'
+                        && type === 'map' && (
+                        <TextField
+                          label={t_i18n('Center longitude')}
+                          fullWidth={true}
+                          value={dataSelection[i].centerLng ?? 2.3514616}
+                          placeholder={t_i18n('Center longitude')}
+                          onChange={(event) => handleChangeDataValidationParameter(
+                            i,
+                            'centerLng',
+                            event.target.value,
+                          )
+                                }
+                          style={{ marginTop: 20 }}
+                        />
+                  )}
+                  {getCurrentAvailableParameters().includes('attribute') && (
+                    <div
+                      style={{ display: 'flex', width: '100%', marginTop: 20 }}
+                    >
+                      {dataSelection[i].perspective === 'relationships' && (
                       <FormControl
                         className={classes.formControl}
                         fullWidth={true}
                         style={{
                           flex: 1,
+                          marginRight: 20,
                         }}
                       >
                         <InputLabel>{t_i18n('Attribute')}</InputLabel>
-                        <QueryRenderer
-                          query={stixCyberObservablesLinesAttributesQuery}
-                          variables={{
-                            elementType: getCurrentSelectedEntityTypes(i),
-                          }}
-                          render={({ props: resultProps }) => {
-                            if (resultProps
-                              && resultProps.schemaAttributeNames
-                            ) {
-                              let attributesValues = (resultProps.schemaAttributeNames.edges)
-                                .map((n) => n.node.value)
-                                .filter(
-                                  (n) => !R.includes(
-                                    n,
-                                    ignoredAttributesInDashboards,
-                                  ) && !n.startsWith('i_'),
-                                );
-                              if (
-                                attributesValues.filter((n) => n === 'hashes').length > 0
-                              ) {
-                                attributesValues = [
-                                  ...attributesValues,
-                                  'hashes.MD5',
-                                  'hashes.SHA-1',
-                                  'hashes.SHA-256',
-                                  'hashes.SHA-512',
-                                ].filter((n) => n !== 'hashes').sort();
-                              }
-                              return (
+                        <Select
+                          fullWidth={true}
+                          value={dataSelection[i].attribute}
+                          onChange={(event) => handleChangeDataValidationParameter(
+                            i,
+                            'attribute',
+                            event.target.value,
+                          )
+                                    }
+                        >
+                          <MenuItem key="internal_id" value="internal_id">
+                            {t_i18n('Entity')}
+                          </MenuItem>
+                          <MenuItem key="entity_type" value="entity_type">
+                            {t_i18n('Entity type')}
+                          </MenuItem>
+                          <MenuItem key="relationship_type" value="relationship_type">
+                            {t_i18n('Relationship type')}
+                          </MenuItem>
+                          <MenuItem
+                            key="created-by.internal_id"
+                            value="created-by.internal_id"
+                          >
+                            {t_i18n('Author')}
+                          </MenuItem>
+                          <MenuItem
+                            key="object-marking.internal_id"
+                            value="object-marking.internal_id"
+                          >
+                            {t_i18n('Marking definition')}
+                          </MenuItem>
+                          <MenuItem
+                            key="kill-chain-phase.internal_id"
+                            value="kill-chain-phase.internal_id"
+                          >
+                            {t_i18n('Kill chain phase')}
+                          </MenuItem>
+                          <MenuItem key="creator_id" value="creator_id">
+                            {t_i18n('Creator')}
+                          </MenuItem>
+                          <MenuItem key="x_opencti_workflow_id" value="x_opencti_workflow_id">
+                            {t_i18n('Status')}
+                          </MenuItem>
+                        </Select>
+                      </FormControl>
+                      )}
+                      {dataSelection[i].perspective === 'entities'
+                              && getCurrentSelectedEntityTypes(i).length > 0
+                              && (
+                              <FormControl
+                                className={classes.formControl}
+                                fullWidth={true}
+                                style={{
+                                  flex: 1,
+                                }}
+                              >
+                                <InputLabel>{t_i18n('Attribute')}</InputLabel>
+                                <QueryRenderer
+                                  query={stixCyberObservablesLinesAttributesQuery}
+                                  variables={{
+                                    elementType: getCurrentSelectedEntityTypes(i),
+                                  }}
+                                  render={({ props: resultProps }) => {
+                                    if (resultProps
+                                              && resultProps.schemaAttributeNames
+                                    ) {
+                                      let attributesValues = (resultProps.schemaAttributeNames.edges)
+                                        .map((n) => n.node.value)
+                                        .filter(
+                                          (n) => !R.includes(
+                                            n,
+                                            ignoredAttributesInDashboards,
+                                          ) && !n.startsWith('i_'),
+                                        );
+                                      if (
+                                        attributesValues.filter((n) => n === 'hashes').length > 0
+                                      ) {
+                                        attributesValues = [
+                                          ...attributesValues,
+                                          'hashes.MD5',
+                                          'hashes.SHA-1',
+                                          'hashes.SHA-256',
+                                          'hashes.SHA-512',
+                                        ].filter((n) => n !== 'hashes').sort();
+                                      }
+                                      return (
+                                        <Select
+                                          fullWidth={true}
+                                          value={dataSelection[i].attribute}
+                                          onChange={(event) => handleChangeDataValidationParameter(
+                                            i,
+                                            'attribute',
+                                            event.target.value,
+                                          )
+                                                    }
+                                        >
+                                          {[
+                                            ...attributesValues,
+                                            'created-by.internal_id',
+                                            'object-label.internal_id',
+                                            'object-assignee.internal_id',
+                                            'object-marking.internal_id',
+                                            'kill-chain-phase.internal_id',
+                                            'x_opencti_workflow_id',
+                                          ].map((value) => (
+                                            <MenuItem
+                                              key={value}
+                                              value={value}
+                                            >
+                                              {t_i18n(
+                                                capitalizeFirstLetter(
+                                                  value,
+                                                ),
+                                              )}
+                                            </MenuItem>
+                                          ))}
+                                        </Select>
+                                      );
+                                    }
+                                    return <div/>;
+                                  }}
+                                />
+                              </FormControl>
+                              )}
+                      {dataSelection[i].perspective === 'entities'
+                              && getCurrentSelectedEntityTypes(i).length === 0 && (
+                              <FormControl
+                                className={classes.formControl}
+                                fullWidth={true}
+                                style={{
+                                  flex: 1,
+                                  marginRight: 20,
+                                }}
+                              >
+                                <InputLabel>{t_i18n('Attribute')}</InputLabel>
                                 <Select
                                   fullWidth={true}
-                                  value={dataSelection[i].attribute}
+                                  value={dataSelection[i].attribute ?? 'entity_type'}
                                   onChange={(event) => handleChangeDataValidationParameter(
                                     i,
                                     'attribute',
                                     event.target.value,
                                   )
-                                                  }
+                                        }
                                 >
                                   {[
-                                    ...attributesValues,
+                                    'entity_type',
                                     'created-by.internal_id',
                                     'object-label.internal_id',
                                     'object-assignee.internal_id',
@@ -1172,128 +1305,79 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
                                       key={value}
                                       value={value}
                                     >
-                                      {t_i18n(
-                                        capitalizeFirstLetter(
-                                          value,
-                                        ),
-                                      )}
+                                      {t_i18n(capitalizeFirstLetter(value))}
                                     </MenuItem>
                                   ))}
                                 </Select>
-                              );
-                            }
-                            return <div/>;
-                          }}
-                        />
+                              </FormControl>
+                      )}
+                      {dataSelection[i].perspective === 'audits' && (
+                      <FormControl
+                        className={classes.formControl}
+                        fullWidth={true}
+                        style={{
+                          flex: 1,
+                        }}
+                      >
+                        <InputLabel>{t_i18n('Attribute')}</InputLabel>
+                        <Select
+                          fullWidth={true}
+                          value={dataSelection[i].attribute ?? 'entity_type'}
+                          onChange={(event) => handleChangeDataValidationParameter(
+                            i,
+                            'attribute',
+                            event.target.value,
+                          )
+                                    }
+                        >
+                          {['entity_type',
+                            'context_data.id',
+                            'context_data.created_by_ref_id',
+                            'context_data.labels_ids',
+                            'context_data.object_marking_refs_ids',
+                            'context_data.creator_ids',
+                            'context_data.search',
+                            'event_type',
+                            'event_scope',
+                            'user_id',
+                            'group_ids',
+                            'organization_ids',
+                          ].map((value) => (
+                            <MenuItem
+                              key={value}
+                              value={value}
+                            >
+                              {t_i18n(capitalizeFirstLetter(value))}
+                            </MenuItem>
+                          ))}
+                        </Select>
                       </FormControl>
                       )}
-                    {dataSelection[i].perspective === 'entities'
-                      && getCurrentSelectedEntityTypes(i).length === 0 && (
-                        <FormControl
-                          className={classes.formControl}
-                          fullWidth={true}
-                          style={{
-                            flex: 1,
-                            marginRight: 20,
-                          }}
-                        >
-                          <InputLabel>{t_i18n('Attribute')}</InputLabel>
-                          <Select
-                            fullWidth={true}
-                            value={dataSelection[i].attribute ?? 'entity_type'}
-                            onChange={(event) => handleChangeDataValidationParameter(
-                              i,
-                              'attribute',
-                              event.target.value,
-                            )
-                          }
-                          >
-                            {[
-                              'entity_type',
-                              'created-by.internal_id',
-                              'object-label.internal_id',
-                              'object-assignee.internal_id',
-                              'object-marking.internal_id',
-                              'kill-chain-phase.internal_id',
-                              'x_opencti_workflow_id',
-                            ].map((value) => (
-                              <MenuItem
-                                key={value}
-                                value={value}
-                              >
-                                {t_i18n(capitalizeFirstLetter(value))}
-                              </MenuItem>
-                            ))}
-                          </Select>
-                        </FormControl>
-                    )}
-                    {dataSelection[i].perspective === 'audits' && (
-                    <FormControl
-                      className={classes.formControl}
-                      fullWidth={true}
-                      style={{
-                        flex: 1,
-                      }}
-                    >
-                      <InputLabel>{t_i18n('Attribute')}</InputLabel>
-                      <Select
-                        fullWidth={true}
-                        value={dataSelection[i].attribute ?? 'entity_type'}
-                        onChange={(event) => handleChangeDataValidationParameter(
-                          i,
-                          'attribute',
-                          event.target.value,
-                        )
-                        }
-                      >
-                        {['entity_type',
-                          'context_data.id',
-                          'context_data.created_by_ref_id',
-                          'context_data.labels_ids',
-                          'context_data.object_marking_refs_ids',
-                          'context_data.creator_ids',
-                          'context_data.search',
-                          'event_type',
-                          'event_scope',
-                          'user_id',
-                          'group_ids',
-                          'organization_ids',
-                        ].map((value) => (
-                          <MenuItem
-                            key={value}
-                            value={value}
-                          >
-                            {t_i18n(capitalizeFirstLetter(value))}
-                          </MenuItem>
-                        ))}
-                      </Select>
-                    </FormControl>
-                    )}
-                    {dataSelection[i].perspective === 'relationships' && (
-                    <FormControlLabel
-                      control={
-                        <Switch
-                          onChange={() => handleToggleDataValidationIsTo(i)}
-                          checked={!dataSelection[i].isTo}
-                        />
-                      }
-                      label={t_i18n('Display the source')}
-                    />
-                    )}
-                    {dataSelection[i].perspective === 'relationships' && (
-                    <Tooltip
-                      title={t_i18n(
-                        'Enable if the displayed data is the source of the relationships.',
-                      )}
-                    >
-                      <InformationOutline
-                        fontSize="small"
-                        color="primary"
-                        style={{ marginTop: 14 }}
+                      {dataSelection[i].perspective === 'relationships' && (
+                      <FormControlLabel
+                        control={
+                          <Switch
+                            onChange={() => handleToggleDataValidationIsTo(i)}
+                            checked={!dataSelection[i].isTo}
+                          />
+                                  }
+                        label={t_i18n('Display the source')}
                       />
-                    </Tooltip>
-                    )}
-                  </div>
+                      )}
+                      {dataSelection[i].perspective === 'relationships' && (
+                      <Tooltip
+                        title={t_i18n(
+                          'Enable if the displayed data is the source of the relationships.',
+                        )}
+                      >
+                        <InformationOutline
+                          fontSize="small"
+                          color="primary"
+                          style={{ marginTop: 14 }}
+                        />
+                      </Tooltip>
+                      )}
+                    </div>
                   )}
                 </div>
               );
@@ -1307,7 +1391,7 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
                 onChange={() => handleToggleParameter('stacked')}
                 checked={parameters.stacked}
               />
-            }
+                  }
             label={t_i18n('Stacked')}
           />
           )}
@@ -1318,7 +1402,7 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
                 onChange={() => handleToggleParameter('distributed')}
                 checked={parameters.distributed}
               />
-            }
+                  }
             label={t_i18n('Distributed')}
           />
           )}
@@ -1329,7 +1413,7 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
                 onChange={() => handleToggleParameter('legend')}
                 checked={parameters.legend}
               />
-            }
+                  }
             label={t_i18n('Display legend')}
           />
           )}
@@ -1355,24 +1439,26 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
     <>
       {!widget && (
         <>
-          <VisuallyHiddenInput type="file" accept={'application/JSON'} ref={inputRef} onChange={handleWidgetImport} />
+          <VisuallyHiddenInput type="file" accept={'application/JSON'} ref={inputRef}
+            onChange={handleWidgetImport}
+          />
           <Security needs={[EXPLORE_EXUPDATE]}>
             <SpeedDial
               className={classes.createButton}
               ariaLabel="Create"
-              icon={<SpeedDialIcon />}
+              icon={<SpeedDialIcon/>}
               FabProps={{ color: 'primary' }}
             >
               <SpeedDialAction
                 title={t_i18n('Create a widget')}
-                icon={<WidgetsOutlined />}
+                icon={<WidgetsOutlined/>}
                 tooltipTitle={t_i18n('Create a widget')}
                 onClick={() => setOpen(true)}
                 FabProps={{ classes: { root: classes.speedDialButton } }}
               />
               <SpeedDialAction
                 title={t_i18n('Import a widget')}
-                icon={<CloudUploadOutlined />}
+                icon={<CloudUploadOutlined/>}
                 tooltipTitle={t_i18n('Import a widget')}
                 onClick={() => inputRef.current?.click()}
                 FabProps={{ classes: { root: classes.speedDialButton } }}

@@ -352,6 +352,24 @@ export const errors: AttributeDefinition = {
   ]
 };
 
+export const opinionsMetrics: AttributeDefinition = {
+  name: 'opinions_metrics',
+  label: 'Opinion metrics',
+  type: 'object',
+  format: 'standard',
+  mandatoryType: 'no',
+  editDefault: false,
+  multiple: false,
+  upsert: true,
+  isFilterable: true,
+  mappings: [
+    { name: 'mean', label: 'Opinions mean', type: 'numeric', precision: 'float', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: true },
+    { name: 'max', label: 'Opinions max', type: 'numeric', precision: 'integer', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: true },
+    { name: 'min', label: 'Opinions min', type: 'numeric', precision: 'integer', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: true },
+    { name: 'total', label: 'Opinions total number', type: 'numeric', precision: 'integer', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: true },
+  ]
+};
+
 // -- STIX DOMAIN OBJECT --
 
 // IDS

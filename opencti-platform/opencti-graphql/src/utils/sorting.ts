@@ -2,7 +2,17 @@ import { isDateNumericOrBooleanAttribute, schemaAttributesDefinition } from '../
 import { UnsupportedError } from '../config/errors';
 
 export const buildElasticSortingForAttributeCriteria = (orderCriteria: string, orderMode: 'asc' | 'desc') => {
-  const definition = schemaAttributesDefinition.getAttributeByName(orderCriteria);
+  let definition;
+  if (orderCriteria.includes('.') && !orderCriteria.endsWith('*')) {
+    const attribute = schemaAttributesDefinition.getAttributeByName(orderCriteria.split('.')[0]);
+    if (attribute && attribute.type === 'object' && attribute.format === 'standard') {
+      definition = schemaAttributesDefinition.getAttributeMappingFromPath(orderCriteria);
+    } else {
+      definition = schemaAttributesDefinition.getAttributeByName(orderCriteria);
+    }
+  } else {
+    definition = schemaAttributesDefinition.getAttributeByName(orderCriteria);
+  }
 
   // criteria not in schema, attempt keyword sorting as a last resort
   if (!definition) {

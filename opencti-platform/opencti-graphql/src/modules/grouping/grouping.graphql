@@ -84,6 +84,7 @@ type Grouping implements BasicObject & StixObject & StixCoreObject & StixDomainO
         search: String
         filters: FilterGroup
     ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+    opinions_metrics: OpinionsMetrics
     # StixDomainObject
     revoked: Boolean!
     confidence: Int

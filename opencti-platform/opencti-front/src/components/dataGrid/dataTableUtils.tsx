@@ -954,6 +954,12 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     isSortable: true,
     render: ({ valid_until }, { nsdt }) => <Tooltip title={nsdt(valid_until)}>{nsdt(valid_until)}</Tooltip>,
   },
+  opinions_metrics_mean: {
+    id: 'opinions_metrics_mean',
+    label: 'Opinions mean',
+    percentWidth: 10,
+    render: ({ opinions_metrics }) => <span style={{ fontWeight: 700, fontSize: 15 }}>{opinions_metrics?.mean ?? '-'}</span>,
+  },
 };
 
 export const defaultColumnsMap = new Map<string, Partial<DataTableColumn>>(Object.entries(defaultColumns));

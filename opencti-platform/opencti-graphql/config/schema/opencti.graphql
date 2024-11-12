@@ -415,6 +415,12 @@ input StixCoreObjectsNumberParameters {
   filters: FilterGroup
   search: String
 }
+type OpinionsMetrics {
+  mean: Float
+  min: Int
+  max: Int
+  total: Int
+}
 
 ### INTERFACES & TYPES
 
@@ -2291,6 +2297,10 @@ enum StixCoreObjectsOrdering {
   observable_value
   subject
   value
+  opinions_metrics_mean
+  opinions_metrics_min
+  opinions_metrics_max
+  opinions_metrics_total
   _score
 }
 type StixCoreObjectConnection {
@@ -2410,6 +2420,7 @@ interface StixCoreObject {
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
+  opinions_metrics: OpinionsMetrics
 }
 
 ########## STIX DOMAIN OBJECT ENTITIES
@@ -2550,6 +2561,7 @@ interface StixDomainObject {
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixDomainObject
   revoked: Boolean!
   confidence: Int
@@ -2716,6 +2728,7 @@ type AttackPattern implements BasicObject & StixObject & StixCoreObject & StixDo
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixDomainObject
   revoked: Boolean!
   confidence: Int
@@ -2942,6 +2955,7 @@ type Campaign implements BasicObject & StixObject & StixCoreObject & StixDomainO
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixDomainObject
   revoked: Boolean!
   confidence: Int
@@ -3119,6 +3133,7 @@ interface Container {
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixDomainObject
   revoked: Boolean!
   confidence: Int
@@ -3278,6 +3293,7 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixDomainObject
   revoked: Boolean!
   confidence: Int
@@ -3511,6 +3527,7 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixDomainObject
   revoked: Boolean!
   confidence: Int
@@ -3720,6 +3737,7 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixDomainObject
   revoked: Boolean!
   confidence: Int
@@ -3948,6 +3966,7 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixDomainObject
   revoked: Boolean!
   confidence: Int
@@ -4165,6 +4184,7 @@ type CourseOfAction implements BasicObject & StixObject & StixCoreObject & StixD
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixDomainObject
   revoked: Boolean!
   confidence: Int
@@ -4341,6 +4361,7 @@ interface Identity {
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixDomainObject
   revoked: Boolean!
   confidence: Int
@@ -4513,6 +4534,7 @@ type Individual implements BasicObject & StixObject & StixCoreObject & StixDomai
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixDomainObject
   revoked: Boolean!
   confidence: Int
@@ -4696,6 +4718,7 @@ type Sector implements BasicObject & StixObject & StixCoreObject & StixDomainObj
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixDomainObject
   revoked: Boolean!
   confidence: Int
@@ -4874,6 +4897,7 @@ type System implements BasicObject & StixObject & StixCoreObject & StixDomainObj
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixDomainObject
   revoked: Boolean!
   confidence: Int
@@ -5061,6 +5085,7 @@ type Infrastructure implements BasicObject & StixObject & StixCoreObject & StixD
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixDomainObject
   revoked: Boolean!
   confidence: Int
@@ -5240,6 +5265,7 @@ type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDom
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixDomainObject
   revoked: Boolean!
   confidence: Int
@@ -5422,6 +5448,7 @@ interface Location {
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixDomainObject
   revoked: Boolean!
   confidence: Int
@@ -5595,6 +5622,7 @@ type Position implements BasicObject & StixObject & StixCoreObject & StixDomainO
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixDomainObject
   revoked: Boolean!
   confidence: Int
@@ -5776,6 +5804,7 @@ type City implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixDomainObject
   revoked: Boolean!
   confidence: Int
@@ -5951,6 +5980,7 @@ type Country implements BasicObject & StixObject & StixCoreObject & StixDomainOb
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixDomainObject
   revoked: Boolean!
   confidence: Int
@@ -6125,6 +6155,7 @@ type Region implements BasicObject & StixObject & StixCoreObject & StixDomainObj
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixDomainObject
   revoked: Boolean!
   confidence: Int
@@ -6308,6 +6339,7 @@ type Malware implements BasicObject & StixObject & StixCoreObject & StixDomainOb
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixDomainObject
   revoked: Boolean!
   confidence: Int
@@ -6501,6 +6533,7 @@ interface ThreatActor implements BasicObject & StixObject & StixCoreObject & Sti
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixDomainObject
   revoked: Boolean!
   confidence: Int
@@ -6651,6 +6684,7 @@ type ThreatActorGroup implements BasicObject & StixObject & StixCoreObject & Sti
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixDomainObject
   revoked: Boolean!
   confidence: Int
@@ -6843,6 +6877,7 @@ type Tool implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixDomainObject
   revoked: Boolean!
   confidence: Int
@@ -7021,6 +7056,7 @@ type Vulnerability implements BasicObject & StixObject & StixCoreObject & StixDo
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixDomainObject
   revoked: Boolean!
   confidence: Int
@@ -7216,6 +7252,7 @@ type Incident implements BasicObject & StixObject & StixCoreObject & StixDomainO
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixDomainObject
   revoked: Boolean!
   confidence: Int
@@ -7397,6 +7434,7 @@ interface StixCyberObservable {
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -7513,6 +7551,7 @@ type AutonomousSystem implements BasicObject & StixObject & StixCoreObject & Sti
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -7639,6 +7678,7 @@ type Directory implements BasicObject & StixObject & StixCoreObject & StixCyberO
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -7769,6 +7809,7 @@ type DomainName implements BasicObject & StixObject & StixCoreObject & StixCyber
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixCyberObservable
   observable_value: String!
   x_opencti_score: Int
@@ -7891,6 +7932,7 @@ type EmailAddr implements BasicObject & StixObject & StixCoreObject & StixCyberO
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -8015,6 +8057,7 @@ type EmailMessage implements BasicObject & StixObject & StixCoreObject & StixCyb
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -8149,6 +8192,7 @@ type EmailMimePartType implements BasicObject & StixObject & StixCoreObject & St
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -8291,6 +8335,7 @@ interface HashedObservable {
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -8409,6 +8454,7 @@ type Artifact implements BasicObject & StixObject & StixCoreObject & StixCyberOb
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -8544,6 +8590,7 @@ type StixFile implements BasicObject & StixObject & StixCoreObject & StixCyberOb
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -8688,6 +8735,7 @@ type X509Certificate implements BasicObject & StixObject & StixCoreObject & Stix
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -8867,6 +8915,7 @@ type IPv4Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -8992,6 +9041,7 @@ type IPv6Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -9115,6 +9165,7 @@ type MacAddr implements BasicObject & StixObject & StixCoreObject & StixCyberObs
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -9237,6 +9288,7 @@ type Mutex implements BasicObject & StixObject & StixCoreObject & StixCyberObser
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -9359,6 +9411,7 @@ type NetworkTraffic implements BasicObject & StixObject & StixCoreObject & StixC
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -9502,6 +9555,7 @@ type Process implements BasicObject & StixObject & StixCoreObject & StixCyberObs
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -9670,6 +9724,7 @@ type Software implements BasicObject & StixObject & StixCoreObject & StixCyberOb
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -9811,6 +9866,7 @@ type Url implements BasicObject & StixObject & StixCoreObject & StixCyberObserva
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -9933,6 +9989,7 @@ type UserAccount implements BasicObject & StixObject & StixCoreObject & StixCybe
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -10082,6 +10139,7 @@ type WindowsRegistryKey implements BasicObject & StixObject & StixCoreObject & S
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -10208,6 +10266,7 @@ type WindowsRegistryValueType implements BasicObject & StixObject & StixCoreObje
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -10334,6 +10393,7 @@ type CryptographicKey implements BasicObject & StixObject & StixCoreObject & Sti
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -10456,6 +10516,7 @@ type CryptocurrencyWallet implements BasicObject & StixObject & StixCoreObject &
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -10578,6 +10639,7 @@ type Hostname implements BasicObject & StixObject & StixCoreObject & StixCyberOb
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -10700,6 +10762,7 @@ type Text implements BasicObject & StixObject & StixCoreObject & StixCyberObserv
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -10822,6 +10885,7 @@ type UserAgent implements BasicObject & StixObject & StixCoreObject & StixCyberO
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -10945,6 +11009,7 @@ type BankAccount implements BasicObject & StixObject & StixCoreObject & StixCybe
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -11074,6 +11139,7 @@ type TrackingNumber implements BasicObject & StixObject & StixCoreObject & StixC
     filters: FilterGroup
     filterMode: FilterMode
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -11199,6 +11265,7 @@ type Credential implements BasicObject & StixObject & StixCoreObject & StixCyber
     filters: FilterGroup
     filterMode: FilterMode
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -11321,6 +11388,7 @@ type PhoneNumber implements BasicObject & StixObject & StixCoreObject & StixCybe
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -11443,6 +11511,7 @@ type PaymentCard implements BasicObject & StixObject & StixCoreObject & StixCybe
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -11571,6 +11640,7 @@ type MediaContent implements BasicObject & StixObject & StixCoreObject & StixCyb
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -11702,6 +11772,7 @@ type Persona implements BasicObject & StixObject & StixCoreObject & StixCyberObs
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String

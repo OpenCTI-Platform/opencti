@@ -85,6 +85,7 @@ type DataComponent implements BasicObject & StixObject & StixCoreObject & StixDo
         search: String
         filters: FilterGroup
     ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+    opinions_metrics: OpinionsMetrics
     # Stix Domain Object
     revoked: Boolean!
     confidence: Int

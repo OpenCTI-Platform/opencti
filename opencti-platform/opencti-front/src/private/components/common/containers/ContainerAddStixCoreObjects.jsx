@@ -412,7 +412,7 @@ const ContainerAddStixCoreObjects = (props) => {
     return (
       <Fab
         onClick={() => setOpen(true)}
-        color="secondary"
+        color="primary"
         aria-label="Add"
         className={withPadding ? classes.createButtonWithPadding : classes.createButton}
       >

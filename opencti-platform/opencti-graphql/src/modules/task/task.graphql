@@ -83,6 +83,7 @@ type Task implements Container & StixDomainObject & StixCoreObject & StixObject 
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixDomainObject
   revoked: Boolean!
   confidence: Int

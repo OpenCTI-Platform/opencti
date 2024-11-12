@@ -84,6 +84,7 @@ type Narrative implements BasicObject & StixCoreObject & StixDomainObject & Stix
         search: String
         filters: FilterGroup
     ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+    opinions_metrics: OpinionsMetrics
     # StixDomainObject
     revoked: Boolean!
     confidence: Int
