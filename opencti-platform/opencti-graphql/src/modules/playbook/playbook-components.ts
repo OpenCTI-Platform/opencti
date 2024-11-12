@@ -227,7 +227,7 @@ const PLAYBOOK_MATCHING_COMPONENT_SCHEMA: JSONSchemaType<MatchConfiguration> = {
   },
   required: ['filters'],
 };
-const PLAYBOOK_MATCHING_COMPONENT: PlaybookComponent<MatchConfiguration> = {
+export const PLAYBOOK_MATCHING_COMPONENT: PlaybookComponent<MatchConfiguration> = {
   id: 'PLAYBOOK_FILTERING_COMPONENT',
   name: 'Match knowledge',
   description: 'Match STIX data according to filter (pass if match)',
