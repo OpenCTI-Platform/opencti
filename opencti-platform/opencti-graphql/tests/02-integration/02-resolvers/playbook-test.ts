@@ -77,6 +77,13 @@ const DELETE_PLAYBOOK = gql`
 describe('Playbook resolver standard behavior', () => {
   let playbookId = '';
   const playbookName = 'Playbook1';
+  const emptyStringFilters = JSON.stringify({
+    mode: 'and',
+    filters: [
+      { key: ['entity_type'], values: ['Report'], operator: 'eq' },
+    ],
+    filterGroups: [],
+  });
   it('should list playbooks', async () => {
     const queryResult = await adminQueryWithSuccess({ query: LIST_PLAYBOOKS, variables: { first: 10 } });
     expect(queryResult.data?.playbooks.edges.length).toEqual(0);
@@ -116,13 +123,6 @@ describe('Playbook resolver standard behavior', () => {
     expect(queryResult.data?.playbookFieldPatch.name).toEqual('Playbook1 - updated');
   });
   it('should add entry node to a playbook', async () => {
-    const emptyStringFilters = JSON.stringify({
-      mode: 'and',
-      filters: [
-        { key: ['entity_type'], values: ['Report'], operator: 'eq' },
-      ],
-      filterGroups: [],
-    });
     const configuration = {
       filters: emptyStringFilters,
     };
@@ -131,8 +131,8 @@ describe('Playbook resolver standard behavior', () => {
       configuration: JSON.stringify(configuration),
       name: 'node1',
       position: {
-        x: 3,
-        y: 12,
+        x: 1,
+        y: 1,
       },
     };
     await adminQueryWithSuccess({
@@ -147,20 +147,40 @@ describe('Playbook resolver standard behavior', () => {
     expect(playbookNodes.length).toEqual(1);
     const node1 = playbookNodes[0];
     expect(node1.name).toEqual('node1');
-    expect(node1.position.x).toEqual(3);
+    expect(node1.position.x).toEqual(1);
     expect(JSON.parse(node1.configuration).filters).toEqual(emptyStringFilters);
   });
   it('should not add several entry nodes to a playbook', async () => {
-    const emptyStringFilters = JSON.stringify({
-      mode: 'and',
-      filters: [],
-      filterGroups: [],
-    });
     const configuration = {
       filters: emptyStringFilters,
     };
     const addNodeInput: PlaybookAddNodeInput = {
       component_id: PLAYBOOK_INTERNAL_DATA_CRON.id,
+      configuration: JSON.stringify(configuration),
+      name: 'node1',
+      position: {
+        x: 1,
+        y: 2,
+      },
+    };
+    await adminQueryWithError(
+      {
+        query: ADD_NODE_PLAYBOOK,
+        variables: {
+          id: playbookId,
+          input: addNodeInput,
+        }
+      },
+      'Playbook multiple entrypoint is not supported',
+      UNSUPPORTED_ERROR
+    );
+  });
+  it('should not add unknown component to a playbook', async () => {
+    const configuration = {
+      filters: emptyStringFilters,
+    };
+    const addNodeInput: PlaybookAddNodeInput = {
+      component_id: 'fake_component_id',
       configuration: JSON.stringify(configuration),
       name: 'node1',
       position: {
@@ -176,7 +196,7 @@ describe('Playbook resolver standard behavior', () => {
           input: addNodeInput,
         }
       },
-      'Playbook multiple entrypoint is not supported',
+      'Playbook related component not found',
       UNSUPPORTED_ERROR
     );
   });
