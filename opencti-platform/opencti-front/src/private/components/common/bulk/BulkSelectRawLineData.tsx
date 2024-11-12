@@ -131,6 +131,7 @@ const BulkSelectRawLineData : FunctionComponent<BulkSelectRawLineDataProps> = ({
       </Box>
       <Box sx={{ minWidth: `${matchHeaderWidth}px` }}>
         <Chip
+          style={{ borderRadius: '4px' }}
           label={getRelationMatchStatus()}
           color={getChipColor()}
         />

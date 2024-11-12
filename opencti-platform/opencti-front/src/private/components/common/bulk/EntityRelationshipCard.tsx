@@ -18,7 +18,7 @@ const EntityRelationshipCard : FunctionComponent<EntityRelationshipCardProps> = 
       <div style={{
         width: 180,
         height: 80,
-        borderRadius: 10,
+        borderRadius: 4,
         top: 10,
         right: 10,
         border: `1px solid ${itemColor(entityType)}`,
