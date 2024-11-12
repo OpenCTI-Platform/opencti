@@ -25,6 +25,7 @@ const ignoredAttributes = [
   'importFiles',
   'startup_info',
   'creator_id',
+  'opinions_metrics',
 ];
 
 const workbenchAttributes = [
@@ -48,6 +49,7 @@ const ignoredAttributesInFeeds = [
   'spec_version',
   'extensions',
   'importFiles',
+  'opinions_metrics',
 ];
 
 const ignoredAttributesInDashboards = [
