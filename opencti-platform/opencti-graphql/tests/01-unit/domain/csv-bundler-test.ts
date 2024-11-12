@@ -18,6 +18,7 @@ import { BundleBuilder, canAddObjectToBundle } from '../../../src/parser/bundle-
 import type { StixBundle, StixObject } from '../../../src/types/stix-common';
 import type { StixLabel } from '../../../src/types/stix-smo';
 import type { StixLocation } from '../../../src/types/stix-sdo';
+import { emailWithTwoDescCsvMapper } from '../../data/csv-bundler/email-with-two-descp-constants';
 
 describe('CSV bundler', () => {
   describe('Embedded properties', () => {
@@ -88,7 +89,7 @@ describe('CSV bundler', () => {
         indicatorsWithKillChainPhasesExpectedBundleWithoutId
       );
     });
-    it('Should split same city with different label in 2 valid bundles', async () => {
+    it('Should split same city with different label in 2 valid bundles (testing SDO)', async () => {
       // duplicate should be removed, unless label are different.
       const citiesWithTwoLabels:string[] = [
         'Lyon,label1,#ffffff',
@@ -110,6 +111,26 @@ describe('CSV bundler', () => {
 
       const secondBundle = bundleResult[1].build();
       expect(secondBundle.objects.length).toBe(2); // Only Lyon + label2
+    });
+    it('Should split same email address with different label in 2 valid bundles (testing SCO)', async () => {
+      // duplicate should be removed, unless descriptions are different.
+      const emailsWithTwoDescriptions:string[] = [
+        'ada.lovelace@opencti.io,First programmer ever',
+        'ada.lovelace@opencti.io,First programmer ever on top of Turing work.',
+      ];
+
+      const bundleResult: BundleBuilder[] = await bundleAllowUpsertProcess(
+        testContext,
+        ADMIN_USER,
+        emailsWithTwoDescriptions,
+        emailWithTwoDescCsvMapper as CsvMapperParsed
+      );
+
+      const firstBundle = bundleResult[0].build();
+      expect(firstBundle.objects.length).toBe(1);
+
+      const secondBundle = bundleResult[1].build();
+      expect(secondBundle.objects.length).toBe(1);
     });
   });
 

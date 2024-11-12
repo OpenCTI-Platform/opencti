@@ -174,7 +174,17 @@ export const processCSVforWorkers = async (context: AuthContext, opts: ConsumerO
     }
   }
   logApp.info(`${logPrefix} processing CSV ${opts.fileId} DONE in ${new Date().getTime() - startDate2} ms for ${totalObjectsCount} objets in ${totalBundlesCount} bundles.`);
-  await updateProcessedTime(context, applicantUser, workId, `${totalObjectsCount} objects send to worker for import in ${totalBundlesCount} bundles.`);
+
+  // expectation number is going to be increase when worker split bundle. So it's bundle count that should be reported here.
+  // TODO do we keep display of bundle count ? objects count ? none of them ? At the end total is totalObjectsCount + totalBundlesCount
+  if (totalBundlesCount > 0) {
+    // await updateExpectationsNumber(context, applicantUser, workId, 1); // If zero then job is marked as complete
+    await updateProcessedTime(context, applicantUser, workId, `${totalBundlesCount} bundle(s) send to worker for import.`);
+  } else {
+    await updateExpectationsNumber(context, applicantUser, workId, 0);
+    await updateProcessedTime(context, applicantUser, workId, 'No bundle send to worker for import.');
+  }
+
   return totalObjectsCount;
 };
 

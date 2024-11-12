@@ -5,7 +5,8 @@ import { STIX_SPEC_VERSION } from '../database/stix';
 
 /**
  * Check if bundle object can be added to the current bundle or if a new bundle is required to use upsert feature.
- * Same ids on the one bundle are removed from processing during worker split process.
+ * If there is the same stix id but with different content => it need to be in another bundle because
+ * Same stix id on the one bundle are removed from processing during worker split process (worker see them as duplicate).
  * @param objectsToAdd
  * @param bundles
  */
@@ -15,11 +16,8 @@ export const canAddObjectToBundle = (objectsToAdd: StixObject[], bundles: StixOb
     const currentToCheck = objectsToAdd[i];
     const existingObjectWithDifferentContent = bundles.find((item: StixObject) => {
       if (item.id === currentToCheck.id && item.type === currentToCheck.type) {
-        const itemForJson = { ...item, converter_csv: null, extensions: null };
-        const currentToCheckForJson = { ...currentToCheck, converter_csv: null, extensions: null };
-
-        const itemAsJson = JSON.stringify(itemForJson);
-        const currentAsJson = JSON.stringify(currentToCheckForJson);
+        const itemAsJson = JSON.stringify(item);
+        const currentAsJson = JSON.stringify(currentToCheck);
         return itemAsJson !== currentAsJson;
       }
       return false;

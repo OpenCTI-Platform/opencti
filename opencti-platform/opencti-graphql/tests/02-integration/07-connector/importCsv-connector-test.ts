@@ -16,7 +16,7 @@ describe('Verify internal importCsv connector', () => {
 
   it('should import_csv_built_in_connector configuration be not changed on test', async () => {
     // Small bulk size to validate that there is no regression when there is more data than bulk size.
-    expect(conf.get('import_csv_built_in_connector:bulk_creation_size'), 'Please be careful when changing bulk_creation_size  in tests config').toBe(5);
+    expect(conf.get('import_csv_built_in_connector:bulk_creation_size'), 'Please be careful when changing bulk_creation_size in tests config').toBe(5);
   });
 
   it('should upload csv and create work that is use for this test', async () => {

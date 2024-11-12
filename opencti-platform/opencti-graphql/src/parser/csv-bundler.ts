@@ -99,8 +99,8 @@ export const bundleAllowUpsertProcess = async (
   const records = maxRecordNumber ? rawRecords.slice(0, maxRecordNumber) : rawRecords;
   const refEntities = await handleRefEntities(context, user, mapper);
   if (records) {
-    // TODO verify if this Promise.all is needed
-    await Promise.all((records.map(async (record: string[]) => {
+    for (let rec = 0; rec < records.length; rec += 1) {
+      const record = records[rec];
       const isEmptyLine = record.length === 1 && isEmptyField(record[0]);
       if (!isEmptyLine) {
         try {
@@ -135,7 +135,7 @@ export const bundleAllowUpsertProcess = async (
           logApp.error(e);
         }
       }
-    })));
+    }
   }
   // Handle container
   if (entity && isStixDomainObjectContainer(entity.entity_type)) {
