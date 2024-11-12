@@ -222,6 +222,13 @@ const PlaybookAddComponentsContent = ({
   };
   const renderValuesOptions = (i, setFieldValue) => {
     const disabled = isEmptyField(actionsInputs[i]?.attribute);
+    const vocabCategories = {
+      severity: 'case_severity_ov',
+      priority: 'case_priority_ov',
+      response_types: 'incident_response_types_ov',
+      information_types: 'request_for_information_types_ov',
+      takedown_types: 'request_for_takedown_types_ov',
+    };
     switch (actionsInputs[i]?.attribute) {
       case 'objectMarking':
         return (
@@ -301,14 +308,6 @@ const PlaybookAddComponentsContent = ({
       case 'response_types':
       case 'information_types':
       case 'takedown_types': {
-        const vocabCategories = {
-          severity: 'case_severity_ov',
-          priority: 'case_priority_ov',
-          response_types: 'incident_response_types_ov',
-          information_types: 'request_for_information_types_ov',
-          takedown_types: 'request_for_takedown_types_ov',
-        };
-
         return (
           <OpenVocabField
             name={`actions-${i}-value`}
