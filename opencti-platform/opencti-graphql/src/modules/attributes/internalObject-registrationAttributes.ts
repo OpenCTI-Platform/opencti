@@ -1,5 +1,5 @@
 import * as R from 'ramda';
-import { type AttributeDefinition, authorizedMembers, createdAt, creators, errors, id, updatedAt } from '../../schema/attribute-definition';
+import { type AttributeDefinition, authorizedMembers, createdAt, creators, draftContext, errors, id, updatedAt } from '../../schema/attribute-definition';
 import { schemaAttributesDefinition } from '../../schema/schema-attributes';
 import {
   ENTITY_TYPE_ACTIVITY,
@@ -312,7 +312,7 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
     { name: 'otp_qr', label: 'OTP QR', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'otp_activated', label: '2FA state', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'default_dashboard', label: 'Default dashboard', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
-    { name: 'draft_context', label: 'Current draft context', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true, featureFlag: 'DRAFT_WORKSPACE' },
+    draftContext,
     { name: 'default_time_field', label: 'Default time field', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'account_status', label: 'Account status', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false, isFilterable: true },
     { name: 'account_lock_after_date', label: 'User account expiration date', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
@@ -496,6 +496,7 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
     { name: 'enable', label: 'Is enabled', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'completed', label: 'Completed', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'initiator_id', label: 'Initiator', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    draftContext,
     { name: 'task_filters', label: 'Task filters', type: 'string', format: 'json', mandatoryType: 'external', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'task_search', label: 'Search', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'task_position', label: 'Position', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
