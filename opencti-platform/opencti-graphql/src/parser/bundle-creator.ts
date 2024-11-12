@@ -47,10 +47,14 @@ export class BundleBuilder {
 
   objects: StixObject[];
 
+  // TODO
+  hashes: string[];
+
   constructor() {
     this.id = `bundle--${uuidv4()}`;
     this.type = 'bundle';
     this.objects = [];
+    this.hashes = [];
   }
 
   canAddObjects(objectsToCheck: StixObject[]) {

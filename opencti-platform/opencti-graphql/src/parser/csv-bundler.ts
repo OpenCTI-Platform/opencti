@@ -117,13 +117,13 @@ export const bundleAllowUpsertProcess = async (
 
           // Add to bundle
           let added: boolean = false;
-          let i = 0;
-          while (!added && i < allBundles.length) {
-            if (allBundles[i].canAddObjects(stixObjects)) {
+          let bundleIndex = 0;
+          while (!added && bundleIndex < allBundles.length) {
+            if (allBundles[bundleIndex].canAddObjects(stixObjects)) {
               allBundles[0].addObjects(stixObjects);
               added = true;
             }
-            i += 1;
+            bundleIndex += 1;
           }
 
           if (!added) {
