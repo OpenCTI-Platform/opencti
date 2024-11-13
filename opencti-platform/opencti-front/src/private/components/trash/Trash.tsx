@@ -2,7 +2,6 @@ import React from 'react';
 import DeleteOperationsLines, { deleteOperationsLinesQuery } from '@components/trash/all/DeleteOperationsLines';
 import { DeleteOperationLineDummy } from '@components/trash/all/DeleteOperationLine';
 import ToolBar from '@components/data/ToolBar';
-import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import { InformationOutline } from 'mdi-material-ui';
 import Tooltip from '@mui/material/Tooltip';
