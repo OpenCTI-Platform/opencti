@@ -200,11 +200,11 @@ const styles = (theme) => ({
   },
 });
 
-const notMergableTypes = ['Indicator', 'Note', 'Opinion', 'Label', 'Case-Template', 'Task', 'DeleteOperation', 'InternalFile', 'PublicDashboard', 'Workspace'];
-const notAddableTypes = ['Label', 'Vocabulary', 'Case-Template', 'DeleteOperation', 'InternalFile', 'PublicDashboard', 'Workspace'];
-const notUpdatableTypes = ['Label', 'Vocabulary', 'Case-Template', 'Task', 'DeleteOperation', 'InternalFile', 'PublicDashboard', 'Workspace'];
-const notScannableTypes = ['Label', 'Vocabulary', 'Case-Template', 'Task', 'DeleteOperation', 'InternalFile', 'PublicDashboard', 'Workspace'];
-const notEnrichableTypes = ['Label', 'Vocabulary', 'Case-Template', 'Task', 'DeleteOperation', 'InternalFile', 'PublicDashboard', 'Workspace'];
+const notMergableTypes = ['Indicator', 'Note', 'Opinion', 'Label', 'Case-Template', 'Task', 'DeleteOperation', 'InternalFile', 'PublicDashboard', 'Workspace', 'DraftWorkspace'];
+const notAddableTypes = ['Label', 'Vocabulary', 'Case-Template', 'DeleteOperation', 'InternalFile', 'PublicDashboard', 'Workspace', 'DraftWorkspace'];
+const notUpdatableTypes = ['Label', 'Vocabulary', 'Case-Template', 'Task', 'DeleteOperation', 'InternalFile', 'PublicDashboard', 'Workspace', 'DraftWorkspace'];
+const notScannableTypes = ['Label', 'Vocabulary', 'Case-Template', 'Task', 'DeleteOperation', 'InternalFile', 'PublicDashboard', 'Workspace', 'DraftWorkspace'];
+const notEnrichableTypes = ['Label', 'Vocabulary', 'Case-Template', 'Task', 'DeleteOperation', 'InternalFile', 'PublicDashboard', 'Workspace', 'DraftWorkspace'];
 const typesWithScore = ['Stix-Cyber-Observable', 'Indicator'];
 const typesWithSeverity = ['Case-Incident', 'Case-Rft', 'Case-Rfi'];
 const typesWithPriority = ['Case-Incident', 'Case-Rft', 'Case-Rfi'];
@@ -215,7 +215,7 @@ const typesWithRfiTypes = ['Case-Rfi'];
 const typesWithRftTypes = ['Case-Rft'];
 
 const typesWithoutStatus = ['Stix-Core-Object', 'Stix-Domain-Object', 'Stix-Cyber-Observable', 'Artifact', 'ExternalReference'];
-const notShareableTypes = ['Label', 'Vocabulary', 'Case-Template', 'DeleteOperation', 'InternalFile', 'PublicDashboard', 'Workspace'];
+const notShareableTypes = ['Label', 'Vocabulary', 'Case-Template', 'DeleteOperation', 'InternalFile', 'PublicDashboard', 'Workspace', 'DraftWorkspace'];
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />

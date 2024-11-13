@@ -220,6 +220,7 @@ const DraftEntities = () => {
           lineFragment={draftEntitiesLineFragment}
           exportContext={{ entity_type: 'Stix-Domain-Object' }}
           redirectionModeEnabled
+          disableSelectAll // TODO: To handle selectAll
         />
       )}
     </span>
