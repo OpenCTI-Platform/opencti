@@ -42,6 +42,7 @@ import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings
 import StixCoreObjectQuickSubscription from '../stix_core_objects/StixCoreObjectQuickSubscription';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import Transition from '../../../../components/Transition';
+import StixCoreObjectEnrichment from '../stix_core_objects/StixCoreObjectEnrichment';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -260,6 +261,7 @@ const StixDomainObjectHeader = (props) => {
     entityType, // Should migrate all the parent component to call the useIsEnforceReference as the top
     enableQuickSubscription,
     enableAskAi,
+    enableEnricher,
   } = props;
   const openAliasesCreate = false;
   const [openAlias, setOpenAlias] = useState(false);
@@ -594,7 +596,10 @@ const StixDomainObjectHeader = (props) => {
                 type={type}
               />
             )}
-            {(isKnowledgeUpdater || isKnowledgeEnricher) && (
+            {(enableEnricher && isKnowledgeEnricher) && (
+              <StixCoreObjectEnrichment stixCoreObjectId={stixDomainObject.id} />
+            )}
+            {isKnowledgeUpdater && (
               <div className={classes.popover}>
                 {/* TODO remove this when all components are pure function without compose() */}
                 {!React.isValidElement(PopoverComponent) ? (
