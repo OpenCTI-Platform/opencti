@@ -966,7 +966,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
   },
   draftVersion: {
     id: 'draftVersion',
-    label: 'Operations',
+    label: 'Operation',
     percentWidth: 10,
     isSortable: false,
     render: ({ draftVersion }) => (
