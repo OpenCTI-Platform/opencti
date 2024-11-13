@@ -105,10 +105,9 @@ const AttackPatternMatrixComponent = (props) => {
     handleToggleModeOnlyActive,
   } = props;
   const attackPatternObjects = useFragment(GroupingAttackPatternsFragment, data.grouping);
-  const attackPatterns = R.pipe(
-    R.map((n) => n.node),
-    R.filter((n) => n.entity_type === 'Attack-Pattern'),
-  )(attackPatternObjects.objects.edges);
+  const attackPatterns = (attackPatternObjects.objects.edges)
+    .map((n) => n.node)
+    .filter((n) => n.entity_type === 'Attack-Pattern');
 
   const handleAddEntity = (entity) => {
     const input = {
@@ -131,7 +130,6 @@ const AttackPatternMatrixComponent = (props) => {
     <AttackPatternsMatrix
       entity={grouping}
       attackPatterns={attackPatterns}
-      searchTerm=""
       currentKillChain={currentKillChain}
       currentModeOnlyActive={currentModeOnlyActive}
       currentColorsReversed={currentColorsReversed}
