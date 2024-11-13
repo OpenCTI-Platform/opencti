@@ -1323,7 +1323,7 @@ export const isSensitiveChangesAllowed = (userId, roles) => {
   if (userId === OPENCTI_ADMIN_UUID) {
     return true;
   }
-  return roles.some((role) => role.can_manage_sensitive_config === true);
+  return roles.some(({ can_manage_sensitive_config }) => can_manage_sensitive_config);
 };
 
 export const buildCompleteUser = async (context, client) => {
