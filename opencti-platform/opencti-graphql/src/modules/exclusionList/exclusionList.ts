@@ -63,7 +63,7 @@ const EXCLUSION_LIST_DEFINITION: ModuleDefinition<StoreEntityExclusionList, Stix
     },
     {
       name: 'file_id',
-      label: 'File ID',
+      label: 'File id',
       type: 'string',
       format: 'short',
       mandatoryType: 'internal',
