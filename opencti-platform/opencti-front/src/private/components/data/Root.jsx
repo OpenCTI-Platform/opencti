@@ -1,7 +1,7 @@
 import React, { Suspense, lazy } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { boundaryWrapper } from '../Error';
-import { KNOWLEDGE_KNUPDATE, MODULES, SETTINGS_SETACCESSES, INGESTION, CSVMAPPERS } from '../../../utils/hooks/useGranted';
+import useGranted, { KNOWLEDGE_KNUPDATE, MODULES, SETTINGS_SETACCESSES, INGESTION, CSVMAPPERS } from '../../../utils/hooks/useGranted';
 import Loader from '../../../components/Loader';
 
 const CsvMappers = lazy(() => import('./CsvMappers'));
@@ -23,6 +23,8 @@ const RootPlaybook = lazy(() => import('./playbooks/Root'));
 const RootImport = lazy(() => import('./import/Root'));
 
 const Root = () => {
+  const isConnectorReader = useGranted([MODULES]);
+
   return (
     <Suspense fallback={<Loader />}>
       <Routes>
@@ -54,7 +56,7 @@ const Root = () => {
                 </Security>
               )}
             >
-              <Navigate to="/dashboard/data/ingestion/sync" />
+              <Navigate to={isConnectorReader ? '/dashboard/data/ingestion/connectors' : '/dashboard/data/ingestion/sync'} />
             </Security>
           }
         />
