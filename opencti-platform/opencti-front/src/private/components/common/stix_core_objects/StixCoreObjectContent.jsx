@@ -420,7 +420,7 @@ class StixCoreObjectContentComponent extends Component {
     let htmlData = currentContent
       .replaceAll('id="undefined" ', '')
       .replaceAll(regex, '');
-    if (currentFileId.endsWith('.md')) {
+    if (currentFileId && currentFileId.endsWith('.md')) {
       htmlData = renderToString(compiler(htmlData, { wrapper: null }));
     }
     const ret = htmlToPdfmake(htmlData, {
