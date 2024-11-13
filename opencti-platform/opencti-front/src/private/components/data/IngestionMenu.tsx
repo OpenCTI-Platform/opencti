@@ -25,7 +25,7 @@ const IngestionMenu = () => {
   ];
   const entries: MenuEntry[] = isGrantedIngestion ? [...settingsEntries] : [];
   if (isConnectorReader) {
-    entries.push({
+    entries.unshift({
       path: '/dashboard/data/ingestion/connectors',
       label: 'Connectors',
     });
