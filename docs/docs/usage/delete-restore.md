@@ -44,6 +44,12 @@ From the Trash panel, it is also possible to delete permanently the object, its 
 
 Deleted objects are kept in trash during a fixed period of time (7 days by default), then they are permanently deleted by the [trash manager](../deployment/managers.md#trash-manager).
 
+## Configuration
+
+The trash system is enabled by default but can be disabled in the platform [configuration](configuration.md).
+
+The trash retention period can also be configured in the settings of the garbage collector manager, you can set any number of days in parameter `garbage_collection_manager:deleted_retention_days`.   
+
 ## Limitations
 
 When it comes to restoring a deleted object from the trash, the current implementation shows several limitations. 
@@ -60,3 +66,11 @@ If the missing dependency has been permanently deleted, the object cannot be rec
 In other words:
 * **no partial restore**: the object and _all_ its relationships must be restored in one pass
 * **no "cascading" restore**: restoring one object does not restore automatically all linked objects in the trash
+
+Please also note that attempting to restore a deeply nested object (for instance an entity with thousands of relationships) is a complex task that can take a lot of time, and put your platform under heavy stress. It is not recommended.
+
+!!! warning "Trash does not replace a good database backup strategy"
+
+    The trash system is designed to save some precious time when a user deleted knowledge from the platform by mistake.
+    It is not meant to be a complete backup system for your database.
+  
