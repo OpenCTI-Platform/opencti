@@ -80,7 +80,7 @@ export const initializeFileStorageClient = async () => {
     forcePathStyle: true,
     credentialDefaultProvider: await buildCredentialProvider(),
     logger: useAwsLogs ? logS3Debug : undefined,
-    tls: useSslConnection,
+    tls: useSslConnection
   });
 };
 
