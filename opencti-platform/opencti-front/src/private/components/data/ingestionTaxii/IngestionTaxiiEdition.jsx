@@ -16,6 +16,7 @@ import DateTimePickerField from '../../../../components/DateTimePickerField';
 import Drawer from '../../common/drawer/Drawer';
 import { BASIC_AUTH, BEARER_AUTH, CERT_AUTH, extractCA, extractCert, extractKey, extractPassword, extractUsername } from '../../../../utils/ingestionAuthentificationUtils';
 import SwitchField from '../../../../components/fields/SwitchField';
+import ToggleVisibilityField from '../../../../components/ToggleVisibilityField';
 
 export const ingestionTaxiiMutationFieldPatch = graphql`
   mutation IngestionTaxiiEditionFieldPatchMutation(
@@ -247,26 +248,18 @@ const IngestionTaxiiEditionContainer = ({
                   fullWidth={true}
                   style={fieldSpacingContainerStyle}
                 />
-                <Field
-                  component={TextField}
-                  variant="standard"
+                <ToggleVisibilityField
                   name="password"
                   label={t('Password')}
                   onSubmit={handleSubmitField}
-                  fullWidth={true}
-                  style={fieldSpacingContainerStyle}
                 />
               </>
             )}
             {values.authentication_type === BEARER_AUTH && (
-              <Field
-                component={TextField}
-                variant="standard"
+              <ToggleVisibilityField
                 name="authentication_value"
                 label={t('Token')}
                 onSubmit={handleSubmitField}
-                fullWidth={true}
-                style={fieldSpacingContainerStyle}
               />
             )}
             {values.authentication_type === CERT_AUTH && (
@@ -280,14 +273,10 @@ const IngestionTaxiiEditionContainer = ({
                   fullWidth={true}
                   style={fieldSpacingContainerStyle}
                 />
-                <Field
-                  component={TextField}
-                  variant="standard"
+                <ToggleVisibilityField
                   name="key"
                   label={t('Key (base64)')}
                   onSubmit={handleSubmitField}
-                  fullWidth={true}
-                  style={fieldSpacingContainerStyle}
                 />
                 <Field
                   component={TextField}

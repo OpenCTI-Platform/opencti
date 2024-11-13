@@ -33,6 +33,7 @@ import useAuth from '../../../../utils/hooks/useAuth';
 import useGranted, { SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN } from '../../../../utils/hooks/useGranted';
 import { USER_CHOICE_MARKING_CONFIG } from '../../../../utils/csvMapperUtils';
 import { BASIC_AUTH, BEARER_AUTH, CERT_AUTH, extractCA, extractCert, extractKey, extractPassword, extractUsername } from '../../../../utils/ingestionAuthentificationUtils';
+import ToggleVisibilityField from '../../../../components/ToggleVisibilityField';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -418,26 +419,18 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
                 fullWidth={true}
                 style={fieldSpacingContainerStyle}
               />
-              <Field
-                component={TextField}
-                variant="standard"
+              <ToggleVisibilityField
                 name="password"
                 label={t_i18n('Password')}
                 onSubmit={handleSubmitField}
-                fullWidth={true}
-                style={fieldSpacingContainerStyle}
               />
             </>
           )}
           {values.authentication_type === BEARER_AUTH && (
-            <Field
-              component={TextField}
-              variant="standard"
+            <ToggleVisibilityField
               name="authentication_value"
               label={t_i18n('Token')}
               onSubmit={handleSubmitField}
-              fullWidth={true}
-              style={fieldSpacingContainerStyle}
             />
           )}
           {values.authentication_type === CERT_AUTH && (
@@ -451,14 +444,10 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
                 fullWidth={true}
                 style={fieldSpacingContainerStyle}
               />
-              <Field
-                component={TextField}
-                variant="standard"
+              <ToggleVisibilityField
                 name="key"
                 label={t_i18n('Key (base64)')}
                 onSubmit={handleSubmitField}
-                fullWidth={true}
-                style={fieldSpacingContainerStyle}
               />
               <Field
                 component={TextField}

@@ -18,6 +18,7 @@ import { insertNode } from '../../../../utils/store';
 import SelectField from '../../../../components/fields/SelectField';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import SwitchField from '../../../../components/fields/SwitchField';
+import ToggleVisibilityField from '../../../../components/ToggleVisibilityField';
 
 const styles = (theme) => ({
   buttons: {
@@ -94,6 +95,7 @@ const IngestionTaxiiCreation = (props) => {
       },
     });
   };
+
   return (
     <Drawer
       title={t('Create a TAXII ingester')}
@@ -189,62 +191,50 @@ const IngestionTaxiiCreation = (props) => {
                 </MenuItem>
               </Field>
               {values.authentication_type === BASIC_AUTH && (
-                <>
-                  <Field
-                    component={TextField}
-                    variant="standard"
-                    name="username"
-                    label={t('Username')}
-                    fullWidth={true}
-                    style={fieldSpacingContainerStyle}
-                  />
-                  <Field
-                    component={TextField}
-                    variant="standard"
-                    name="password"
-                    label={t('Password')}
-                    fullWidth={true}
-                    style={fieldSpacingContainerStyle}
-                  />
-                </>
-              )}
-              {values.authentication_type === BEARER_AUTH && (
+              <>
                 <Field
                   component={TextField}
                   variant="standard"
-                  name="authentication_value"
-                  label={t('Token')}
+                  name="username"
+                  label={t('Username')}
                   fullWidth={true}
                   style={fieldSpacingContainerStyle}
                 />
+                <ToggleVisibilityField
+                  name="password"
+                  label={t('Password')}
+                />
+              </>
+              )}
+              {values.authentication_type === BEARER_AUTH && (
+              <ToggleVisibilityField
+                name="authentication_value"
+                label={t('Token')}
+              />
               )}
               {values.authentication_type === CERT_AUTH && (
-                <>
-                  <Field
-                    component={TextField}
-                    variant="standard"
-                    name="cert"
-                    label={t('Certificate (base64)')}
-                    fullWidth={true}
-                    style={fieldSpacingContainerStyle}
-                  />
-                  <Field
-                    component={TextField}
-                    variant="standard"
-                    name="key"
-                    label={t('Key (base64)')}
-                    fullWidth={true}
-                    style={fieldSpacingContainerStyle}
-                  />
-                  <Field
-                    component={TextField}
-                    variant="standard"
-                    name="ca"
-                    label={t('CA certificate (base64)')}
-                    fullWidth={true}
-                    style={fieldSpacingContainerStyle}
-                  />
-                </>
+              <>
+                <Field
+                  component={TextField}
+                  variant="standard"
+                  name="cert"
+                  label={t('Certificate (base64)')}
+                  fullWidth={true}
+                  style={fieldSpacingContainerStyle}
+                />
+                <ToggleVisibilityField
+                  name="key"
+                  label={t('Key (base64)')}
+                />
+                <Field
+                  component={TextField}
+                  variant="standard"
+                  name="ca"
+                  label={t('CA certificate (base64)')}
+                  fullWidth={true}
+                  style={fieldSpacingContainerStyle}
+                />
+              </>
               )}
               <CreatorField
                 name="user_id"
