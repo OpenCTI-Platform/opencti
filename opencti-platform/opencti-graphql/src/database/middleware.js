@@ -3231,18 +3231,14 @@ export const internalDeleteElementById = async (context, user, id, opts = {}) =>
         && (isStixCoreObject(element.entity_type) || isStixCoreRelationship(element.entity_type) || isStixSightingRelationship(element.entity_type));
       const forceDelete = !!opts.forceDelete || !isTrashableElement;
       const isTrashEnabled = conf.get('app:trash:enabled');
-      if (isTrashEnabled) {
-        if (!forceDelete) {
-          // mark indexed files as removed to exclude them from search
-          await elUpdateRemovedFiles(element, true);
-        } else {
-          // if logical deletion is disabled for this element, delete permanently
-          await deleteAllObjectFiles(context, user, element);
-        }
+      if (isTrashEnabled && !forceDelete) {
+        // mark indexed files as removed to exclude them from search
+        await elUpdateRemovedFiles(element, true);
       } else {
-        // trash is disabled, delete permanently
+        // if trash is disabled globally or for this element, delete permanently
         await deleteAllObjectFiles(context, user, element);
       }
+
       // Delete all linked elements
       await elDeleteElements(context, user, [element], { forceDelete });
       // Publish event in the stream

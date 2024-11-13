@@ -33,7 +33,6 @@ export interface ModuleHelper {
   isIndicatorDecayManagerEnable: () => boolean;
   isTelemetryManagerEnable: () => boolean;
   isTrashEnable: () => boolean;
-  getTrashRetentionDays: () => number,
   generateDisableMessage: (manager: string) => string;
 }
 
@@ -81,7 +80,6 @@ const platformModuleHelper = (
   isIndicatorDecayManagerEnable: () => isModuleEnable(settings, INDICATOR_DECAY_MANAGER),
   isTelemetryManagerEnable: () => isModuleEnable(settings, TELEMETRY_MANAGER),
   isTrashEnable: () => settings.platform_trash_enabled,
-  getTrashRetentionDays: () => settings.platform_trash_retention_days ?? 0,
   generateDisableMessage: (id: string) => (!isModuleEnable(settings, id) ? DISABLE_MANAGER_MESSAGE : ''),
 });
 

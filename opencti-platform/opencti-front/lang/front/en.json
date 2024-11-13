@@ -149,7 +149,7 @@
   "Also include first neighbours": "Also include first neighbours",
   "An analysis connector needs to be available to ask for a mapping suggestion.": "An analysis connector needs to be available to ask for a mapping suggestion.",
   "An analysis is ongoing, waiting for results.": "An analysis is ongoing, waiting for results.",
-  "An element will persists in the trash for {period} before being permanently deleted.": "An element will persists in the trash for {period} before being permanently deleted.",
+  "An element will persist in the trash for a fixed period of time before being permanently deleted, according to the garbage collection manager settings.": "An element will persists in the trash for a fixed period of time before being permanently deleted, according to the garbage collection manager settings.",
   "An error occurred while retrieving data for this widget:": "An error occurred while retrieving data for this widget:",
   "An error occurred while trying to build content from template.": "An error occurred while trying to build content from template.",
   "An instance trigger on an entity X notifies the following events: update/deletion of X, creation/deletion of a relationship from/to X, creation/deletion of an entity that has X in its refs (for instance contains X, is shared with X, is created by X...), adding/removing X in the ref of an entity.": "An instance trigger on an entity X notifies the following events: update/deletion of X, creation/deletion of a relationship from/to X, creation/deletion of an entity that has X in its refs (for instance contains X, is shared with X, is created by X...), adding/removing X in the ref of an entity.",

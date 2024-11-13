@@ -149,7 +149,7 @@
   "Also include first neighbours": "첫 번째 이웃도 포함",
   "An analysis connector needs to be available to ask for a mapping suggestion.": "매핑 제안을 요청하려면 분석 커넥터를 사용할 수 있어야 합니다.",
   "An analysis is ongoing, waiting for results.": "분석이 진행 중이며 결과를 기다리는 중입니다.",
-  "An element will persists in the trash for {period} before being permanently deleted.": "요소는 영구 삭제되기 전에 {period} 동안 휴지통에 보관됩니다.",
+  "An element will persist in the trash for a fixed period of time before being permanently deleted, according to the garbage collection manager settings.": "요소는 휴지통 관리자 설정에 따라 영구 삭제되기 전에 일정 기간 동안 휴지통에 남아있게 됩니다.",
   "An error occurred while retrieving data for this widget:": "이 위젯의 데이터를 검색하는 동안 오류가 발생했습니다:",
   "An error occurred while trying to build content from template.": "템플릿에서 콘텐츠를 작성하는 동안 오류가 발생했습니다.",
   "An instance trigger on an entity X notifies the following events: update/deletion of X, creation/deletion of a relationship from/to X, creation/deletion of an entity that has X in its refs (for instance contains X, is shared with X, is created by X...), adding/removing X in the ref of an entity.": "엔터티 X에 대한 인스턴스 트리거는 다음 이벤트를 알립니다: X의 업데이트/삭제, X로부터/로의 관계 생성/삭제, 참조에 X를 포함하는 엔터티의 생성/삭제 (예: X를 포함함, X와 공유됨, X에 의해 생성됨...), 엔터티의 참조에 X 추가/제거.",
