@@ -12,7 +12,7 @@ import { SubscriptionFocus } from '../../../../components/Subscription';
 import TextField from '../../../../components/TextField';
 import { convertAssignees, convertCreatedBy, convertMarkings, convertParticipants, convertStatus } from '../../../../utils/edition';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import { useSchemaEditionValidation, useIsMandatoryAttribute } from '../../../../utils/hooks/useEntitySettings';
+import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
 import { adaptFieldValue } from '../../../../utils/String';
 import CommitMessage from '../../common/form/CommitMessage';
@@ -179,7 +179,7 @@ const CaseRftEditionOverview: FunctionComponent<CaseRftEditionOverviewProps> = (
     CASE_RFT_TYPE,
   );
 
-  const basicShape = {
+  const basicShape = yupShapeConditionalRequired({
     name: Yup.string().trim().min(2),
     description: Yup.string().nullable(),
     takedown_types: Yup.array().nullable(),
@@ -188,8 +188,8 @@ const CaseRftEditionOverview: FunctionComponent<CaseRftEditionOverviewProps> = (
     x_opencti_workflow_id: Yup.object().nullable(),
     rating: Yup.number().nullable(),
     confidence: Yup.number().nullable(),
-  };
-  const caseValidator = useSchemaEditionValidation(CASE_RFT_TYPE, basicShape);
+  }, mandatoryAttributes);
+  const validator = useDynamicSchemaEditionValidation(mandatoryAttributes, basicShape);
 
   const queries = {
     fieldPatch: caseRftMutationFieldPatch,
@@ -197,7 +197,7 @@ const CaseRftEditionOverview: FunctionComponent<CaseRftEditionOverviewProps> = (
     relationDelete: caseRftMutationRelationDelete,
     editionFocus: caseRftEditionOverviewFocus,
   };
-  const editor = useFormEditor(caseData as GenericData, enableReferences, queries, caseValidator);
+  const editor = useFormEditor(caseData as GenericData, enableReferences, queries, validator);
 
   const onSubmit: FormikConfig<CaseRftEditionFormValues>['onSubmit'] = (values, { setSubmitting }) => {
     const { message, references, ...otherValues } = values;
@@ -231,7 +231,7 @@ const CaseRftEditionOverview: FunctionComponent<CaseRftEditionOverviewProps> = (
       if (['x_opencti_workflow_id'].includes(name)) {
         finalValue = (value as Option).value;
       }
-      caseValidator
+      validator
         .validateAt(name, { [name]: value })
         .then(() => {
           editor.fieldPatch({
@@ -266,7 +266,7 @@ const CaseRftEditionOverview: FunctionComponent<CaseRftEditionOverviewProps> = (
     <Formik
       enableReinitialize={true}
       initialValues={initialValues as never}
-      validationSchema={caseValidator}
+      validationSchema={validator}
       onSubmit={onSubmit}
     >
       {({

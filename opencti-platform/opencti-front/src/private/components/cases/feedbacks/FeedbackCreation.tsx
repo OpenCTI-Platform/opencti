@@ -15,7 +15,7 @@ import ConfidenceField from '../../common/form/ConfidenceField';
 import { Option } from '../../common/form/ReferenceField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import useGranted, { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
-import { useSchemaCreationValidation, useIsMandatoryAttribute } from '../../../../utils/hooks/useEntitySettings';
+import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import { FeedbackCreationMutation$variables } from './__generated__/FeedbackCreationMutation.graphql';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
@@ -73,12 +73,12 @@ const FeedbackCreation: FunctionComponent<{
   const { mandatoryAttributes } = useIsMandatoryAttribute(
     FEEDBACK_TYPE,
   );
-  const basicShape = {
+  const basicShape = yupShapeConditionalRequired({
     description: Yup.string().nullable(),
     confidence: Yup.number(),
     rating: Yup.number(),
-  };
-  const feedbackValidator = useSchemaCreationValidation(FEEDBACK_TYPE, basicShape);
+  }, mandatoryAttributes);
+  const validator = useDynamicSchemaCreationValidation(mandatoryAttributes, basicShape);
 
   const onSubmit: FormikConfig<FormikFeedbackAddInput>['onSubmit'] = (
     values,
@@ -128,7 +128,7 @@ const FeedbackCreation: FunctionComponent<{
     >
       <Formik<FormikFeedbackAddInput>
         initialValues={initialValues}
-        validationSchema={feedbackValidator}
+        validationSchema={validator}
         onSubmit={onSubmit}
         onReset={handleCloseDrawer}
       >

@@ -16,7 +16,7 @@ import MarkdownField from '../../../../components/fields/MarkdownField';
 import TextField from '../../../../components/TextField';
 import type { Theme } from '../../../../components/Theme';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import { useSchemaCreationValidation, useIsMandatoryAttribute } from '../../../../utils/hooks/useEntitySettings';
+import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import { insertNode } from '../../../../utils/store';
 import CaseTemplateField from '../../common/form/CaseTemplateField';
 import ConfidenceField from '../../common/form/ConfidenceField';
@@ -111,13 +111,13 @@ export const CaseRftCreationForm: FunctionComponent<CaseRftFormProps> = ({
   const { mandatoryAttributes } = useIsMandatoryAttribute(
     CASE_RFT_TYPE,
   );
-  const basicShape = {
+  const basicShape = yupShapeConditionalRequired({
     name: Yup.string().trim().min(2),
     description: Yup.string().nullable(),
     content: Yup.string().nullable(),
-  };
-  const caseRftValidator = useSchemaCreationValidation(
-    CASE_RFT_TYPE,
+  }, mandatoryAttributes);
+  const validator = useDynamicSchemaCreationValidation(
+    mandatoryAttributes,
     basicShape,
   );
   const [commit] = useApiMutation<CaseRftCreationCaseMutation>(
@@ -198,7 +198,7 @@ export const CaseRftCreationForm: FunctionComponent<CaseRftFormProps> = ({
   return (
     <Formik<FormikCaseRftAddInput>
       initialValues={initialValues}
-      validationSchema={caseRftValidator}
+      validationSchema={validator}
       onSubmit={onSubmit}
       onReset={onClose}
     >

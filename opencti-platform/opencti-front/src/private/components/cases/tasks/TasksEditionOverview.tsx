@@ -12,7 +12,7 @@ import { SubscriptionFocus } from '../../../../components/Subscription';
 import TextField from '../../../../components/TextField';
 import { convertAssignees, convertCreatedBy, convertMarkings, convertParticipants, convertStatus } from '../../../../utils/edition';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import { useSchemaEditionValidation, useIsMandatoryAttribute } from '../../../../utils/hooks/useEntitySettings';
+import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
 import { adaptFieldValue } from '../../../../utils/String';
 import CreatedByField from '../../common/form/CreatedByField';
@@ -162,12 +162,12 @@ const TasksEditionOverview: FunctionComponent<TasksEditionOverviewProps> = ({
   const { mandatoryAttributes } = useIsMandatoryAttribute(
     TASK_TYPE,
   );
-  const basicShape = {
+  const basicShape = yupShapeConditionalRequired({
     name: Yup.string().trim().min(2),
     description: Yup.string().nullable(),
     x_opencti_workflow_id: Yup.object().nullable(),
-  };
-  const taskValidator = useSchemaEditionValidation(TASK_TYPE, basicShape);
+  }, mandatoryAttributes);
+  const validator = useDynamicSchemaEditionValidation(mandatoryAttributes, basicShape);
 
   const queries = {
     fieldPatch: tasksMutationFieldPatch,
@@ -179,7 +179,7 @@ const TasksEditionOverview: FunctionComponent<TasksEditionOverviewProps> = ({
     taskData as GenericData,
     enableReferences,
     queries,
-    taskValidator,
+    validator,
   );
 
   const onSubmit: FormikConfig<TasksEditionFormValues>['onSubmit'] = (
@@ -228,7 +228,7 @@ const TasksEditionOverview: FunctionComponent<TasksEditionOverviewProps> = ({
     <Formik
       enableReinitialize={true}
       initialValues={initialValues as never}
-      validationSchema={taskValidator}
+      validationSchema={validator}
       onSubmit={onSubmit}
     >
       {({ setFieldValue }) => (

@@ -22,7 +22,7 @@ import RatingField from '../../../../components/fields/RatingField';
 import CommitMessage from '../../common/form/CommitMessage';
 import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
 import ConfidenceField from '../../common/form/ConfidenceField';
-import { useSchemaEditionValidation, useIsMandatoryAttribute } from '../../../../utils/hooks/useEntitySettings';
+import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 import FeedbackDeletion from './FeedbackDeletion';
 
@@ -158,14 +158,14 @@ FeedbackEditionOverviewProps
   const { mandatoryAttributes } = useIsMandatoryAttribute(
     FEEDBACK_TYPE,
   );
-  const basicShape = {
+  const basicShape = yupShapeConditionalRequired({
     name: Yup.string().trim().min(2),
     description: Yup.string().nullable(),
     x_opencti_workflow_id: Yup.object(),
     rating: Yup.number(),
     confidence: Yup.number(),
-  };
-  const feedbackValidator = useSchemaEditionValidation(FEEDBACK_TYPE, basicShape);
+  }, mandatoryAttributes);
+  const validator = useDynamicSchemaEditionValidation(mandatoryAttributes, basicShape);
 
   const queries = {
     fieldPatch: feedbackMutationFieldPatch,
@@ -173,7 +173,7 @@ FeedbackEditionOverviewProps
     relationDelete: feedbackMutationRelationDelete,
     editionFocus: feedbackEditionOverviewFocus,
   };
-  const editor = useFormEditor(feedbackData as GenericData, enableReferences, queries, feedbackValidator);
+  const editor = useFormEditor(feedbackData as GenericData, enableReferences, queries, validator);
 
   const onSubmit: FormikConfig<FeedbackEditionFormValues>['onSubmit'] = (
     values,
@@ -213,7 +213,7 @@ FeedbackEditionOverviewProps
       if (name === 'x_opencti_workflow_id') {
         finalValue = (value as Option).value;
       }
-      feedbackValidator
+      validator
         .validateAt(name, { [name]: value })
         .then(() => {
           editor.fieldPatch({
@@ -244,7 +244,7 @@ FeedbackEditionOverviewProps
     <Formik
       enableReinitialize={true}
       initialValues={initialValues}
-      validationSchema={feedbackValidator}
+      validationSchema={validator}
       onSubmit={onSubmit}
     >
       {({

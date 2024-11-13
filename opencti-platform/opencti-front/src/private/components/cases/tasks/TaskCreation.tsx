@@ -15,7 +15,7 @@ import TextField from '../../../../components/TextField';
 import type { Theme } from '../../../../components/Theme';
 import { handleErrorInForm } from '../../../../relay/environment';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import { useSchemaEditionValidation, useIsMandatoryAttribute } from '../../../../utils/hooks/useEntitySettings';
+import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
@@ -85,7 +85,7 @@ export const TaskCreationForm: FunctionComponent<TaskCreationProps> = ({
   const { mandatoryAttributes } = useIsMandatoryAttribute(
     TASK_TYPE,
   );
-  const basicShape = {
+  const basicShape = yupShapeConditionalRequired({
     name: Yup.string().trim().min(2),
     description: Yup.string().nullable().max(5000, t_i18n('The value is too long')),
     due_date: Yup.date().nullable(),
@@ -93,8 +93,8 @@ export const TaskCreationForm: FunctionComponent<TaskCreationProps> = ({
     objectMarking: Yup.array(),
     objectAssignee: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
-  };
-  const taskValidator = useSchemaEditionValidation(TASK_TYPE, basicShape);
+  }, mandatoryAttributes);
+  const validator = useDynamicSchemaEditionValidation(mandatoryAttributes, basicShape);
 
   const [commit] = useApiMutation<TaskCreationMutation>(
     taskAddMutation,
@@ -146,7 +146,7 @@ export const TaskCreationForm: FunctionComponent<TaskCreationProps> = ({
       initialValues={initialValues}
       onSubmit={onSubmit}
       onReset={onClose}
-      validationSchema={taskValidator}
+      validationSchema={validator}
     >
       {({ isSubmitting, handleReset, submitForm, setFieldValue }) => (
         <Form style={{ margin: '20px 0 20px 0' }}>

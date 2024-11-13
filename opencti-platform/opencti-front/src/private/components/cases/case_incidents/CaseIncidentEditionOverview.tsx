@@ -12,7 +12,7 @@ import { SubscriptionFocus } from '../../../../components/Subscription';
 import TextField from '../../../../components/TextField';
 import { convertAssignees, convertCreatedBy, convertMarkings, convertParticipants, convertStatus } from '../../../../utils/edition';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import { useSchemaEditionValidation, useIsMandatoryAttribute } from '../../../../utils/hooks/useEntitySettings';
+import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
 import { adaptFieldValue } from '../../../../utils/String';
 import CommitMessage from '../../common/form/CommitMessage';
@@ -180,7 +180,7 @@ const CaseIncidentEditionOverview: FunctionComponent<CaseIncidentEditionOverview
     CASE_INCIDENT_TYPE,
   );
 
-  const basicShape = {
+  const basicShape = yupShapeConditionalRequired({
     name: Yup.string().trim().min(2),
     severity: Yup.string().nullable(),
     priority: Yup.string().nullable(),
@@ -189,8 +189,8 @@ const CaseIncidentEditionOverview: FunctionComponent<CaseIncidentEditionOverview
     x_opencti_workflow_id: Yup.object().nullable(),
     rating: Yup.number().nullable(),
     confidence: Yup.number().nullable(),
-  };
-  const caseIncidentValidator = useSchemaEditionValidation(CASE_INCIDENT_TYPE, basicShape);
+  }, mandatoryAttributes);
+  const validator = useDynamicSchemaEditionValidation(mandatoryAttributes, basicShape);
 
   const queries = {
     fieldPatch: caseIncidentMutationFieldPatch,
@@ -198,7 +198,7 @@ const CaseIncidentEditionOverview: FunctionComponent<CaseIncidentEditionOverview
     relationDelete: caseIncidentMutationRelationDelete,
     editionFocus: caseIncidentEditionOverviewFocus,
   };
-  const editor = useFormEditor(caseData as GenericData, enableReferences, queries, caseIncidentValidator);
+  const editor = useFormEditor(caseData as GenericData, enableReferences, queries, validator);
 
   const onSubmit: FormikConfig<CaseIncidentEditionFormValues>['onSubmit'] = (values, { setSubmitting }) => {
     const { message, references, ...otherValues } = values;
@@ -232,7 +232,7 @@ const CaseIncidentEditionOverview: FunctionComponent<CaseIncidentEditionOverview
       if (['x_opencti_workflow_id'].includes(name)) {
         finalValue = (value as Option).value;
       }
-      caseIncidentValidator
+      validator
         .validateAt(name, { [name]: value })
         .then(() => {
           editor.fieldPatch({
@@ -268,7 +268,7 @@ const CaseIncidentEditionOverview: FunctionComponent<CaseIncidentEditionOverview
     <Formik
       enableReinitialize={true}
       initialValues={initialValues as never}
-      validationSchema={caseIncidentValidator}
+      validationSchema={validator}
       onSubmit={onSubmit}
     >
       {({
