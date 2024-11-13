@@ -21,79 +21,79 @@ import investigationAddFromContainer from '../../../../utils/InvestigationUtils'
 import withRouter from '../../../../utils/compat_router/withRouter';
 
 export const reportKnowledgeAttackPatternsGraphQuery = graphql`
-  query ReportKnowledgeAttackPatternsGraphQuery($id: String!) {
-    report(id: $id) {
-      id
-      name
-      x_opencti_graph_data
-      published
-      confidence
-      createdBy {
-        ... on Identity {
-          id
-          name
-          entity_type
+    query ReportKnowledgeAttackPatternsGraphQuery($id: String!) {
+        report(id: $id) {
+            id
+            name
+            x_opencti_graph_data
+            published
+            confidence
+            createdBy {
+                ... on Identity {
+                    id
+                    name
+                    entity_type
+                }
+            }
+            objectMarking {
+                id
+                definition_type
+                definition
+                x_opencti_order
+                x_opencti_color
+            }
+            ...ReportKnowledgeAttackPatterns_fragment
         }
-      }
-      objectMarking {
-        id
-        definition_type
-        definition
-        x_opencti_order
-        x_opencti_color
-      }
-      ...ReportKnowledge_fragment
-  }
-  }
+    }
 `;
 
 const ReportAttackPatternsFragment = graphql`
-fragment ReportKnowledge_fragment on Report {
-  objects(all: true, types: ["Attack-Pattern"]) {
-    edges {
-      node {
-        ... on AttackPattern {
-          id
-          entity_type
-          parent_types
-          name
-          description
-          x_mitre_platforms
-          x_mitre_permissions_required
-          x_mitre_id
-          x_mitre_detection
-          isSubAttackPattern
-          parentAttackPatterns {
+    fragment ReportKnowledgeAttackPatterns_fragment on Report {
+        objects(all: true, types: ["Attack-Pattern"]) {
             edges {
-              node {
-                id
-                name
-                description
-                x_mitre_id
-              }
+                node {
+                    ... on AttackPattern {
+                        id
+                        entity_type
+                        parent_types
+                        name
+                        description
+                        x_mitre_platforms
+                        x_mitre_permissions_required
+                        x_mitre_id
+                        x_mitre_detection
+                        isSubAttackPattern
+                        parentAttackPatterns {
+                            edges {
+                                node {
+                                    id
+                                    name
+                                    description
+                                    x_mitre_id
+                                }
+                            }
+                        }
+                        subAttackPatterns {
+                            edges {
+                                node {
+                                    id
+                                    name
+                                    description
+                                    x_mitre_id
+                                }
+                            }
+                        }
+                        killChainPhases {
+                            id
+                            kill_chain_name
+                            phase_name
+                            x_opencti_order
+                        }
+                    }
+                }
             }
-          }
-          subAttackPatterns {
-            edges {
-              node {
-                id
-                name
-                description
-                x_mitre_id
-              }
-            }
-          }
-          killChainPhases {
-            id
-            kill_chain_name
-            phase_name
-            x_opencti_order
-          }
         }
-      }
     }
-  }
-}
 `;
 
 const AttackPatternMatrixComponent = (props) => {

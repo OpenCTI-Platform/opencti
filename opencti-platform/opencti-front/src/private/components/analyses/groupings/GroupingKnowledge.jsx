@@ -18,79 +18,79 @@ import investigationAddFromContainer from '../../../../utils/InvestigationUtils'
 import withRouter from '../../../../utils/compat_router/withRouter';
 
 export const groupingKnowledgeAttackPatternsGraphQuery = graphql`
-  query GroupingKnowledgeAttackPatternsGraphQuery($id: String!) {
-    grouping(id: $id) {
-      id
-      name
-      context
-      x_opencti_graph_data
-      confidence
-      createdBy {
-        ... on Identity {
-          id
-          name
-          entity_type
+    query GroupingKnowledgeAttackPatternsGraphQuery($id: String!) {
+        grouping(id: $id) {
+            id
+            name
+            context
+            x_opencti_graph_data
+            confidence
+            createdBy {
+                ... on Identity {
+                    id
+                    name
+                    entity_type
+                }
+            }
+            objectMarking {
+                id
+                definition_type
+                definition
+                x_opencti_order
+                x_opencti_color
+            }
+            ...GroupingKnowledgeAttackPatterns_fragment
         }
-      }
-      objectMarking {
-        id
-        definition_type
-        definition
-        x_opencti_order
-        x_opencti_color
-      }
-      ...GroupingKnowledge_fragment
     }
-  }
 `;
 
 const GroupingAttackPatternsFragment = graphql`
-  fragment GroupingKnowledge_fragment on Grouping {
-    objects(all: true, types: ["Attack-Pattern"]) {
-      edges {
-        node {
-          ... on AttackPattern {
-            id
-            entity_type
-            parent_types
-            name
-            description
-            x_mitre_platforms
-            x_mitre_permissions_required
-            x_mitre_id
-            x_mitre_detection
-            isSubAttackPattern
-            parentAttackPatterns {
-              edges {
+    fragment GroupingKnowledgeAttackPatterns_fragment on Grouping {
+        objects(all: true, types: ["Attack-Pattern"]) {
+            edges {
                 node {
-                  id
-                  name
-                  description
-                  x_mitre_id
+                    ... on AttackPattern {
+                        id
+                        entity_type
+                        parent_types
+                        name
+                        description
+                        x_mitre_platforms
+                        x_mitre_permissions_required
+                        x_mitre_id
+                        x_mitre_detection
+                        isSubAttackPattern
+                        parentAttackPatterns {
+                            edges {
+                                node {
+                                    id
+                                    name
+                                    description
+                                    x_mitre_id
+                                }
+                            }
+                        }
+                        subAttackPatterns {
+                            edges {
+                                node {
+                                    id
+                                    name
+                                    description
+                                    x_mitre_id
+                                }
+                            }
+                        }
+                        killChainPhases {
+                            id
+                            kill_chain_name
+                            phase_name
+                            x_opencti_order
+                        }
+                    }
                 }
-              }
             }
-            subAttackPatterns {
-              edges {
-                node {
-                  id
-                  name
-                  description
-                  x_mitre_id
-                }
-              }
-            }
-            killChainPhases {
-              id
-              kill_chain_name
-              phase_name
-              x_opencti_order
-            }
-          }
         }
-      }
     }
-  }
 `;
 
 const AttackPatternMatrixComponent = (props) => {
