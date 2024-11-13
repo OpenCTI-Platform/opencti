@@ -12,6 +12,7 @@ import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 import DataTable from '../../../components/dataGrid/DataTable';
 import useHelper from '../../../utils/hooks/useHelper';
+import DraftPopover from './DraftPopover';
 import useAuth from '../../../utils/hooks/useAuth';
 
 const DraftLineFragment = graphql`
@@ -154,6 +155,12 @@ const Drafts: React.FC = () => {
         redirectionModeEnabled
         createButton={!me.draftContext && isFABReplaced && (
           <DraftCreation paginationOptions={queryPaginationOptions} />
+        )}
+        actions={(row) => (
+          <DraftPopover
+            draftId={row.id}
+            paginationOptions={queryPaginationOptions}
+          />
         )}
       />
       )}
