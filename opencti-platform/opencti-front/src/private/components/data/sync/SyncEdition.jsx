@@ -29,6 +29,7 @@ import { Accordion, AccordionSummary } from '../../../../components/Accordion';
 const useStyles = makeStyles((theme) => ({
   buttons: {
     marginTop: 20,
+    paddingBottom: 20,
     textAlign: 'right',
   },
   button: {
