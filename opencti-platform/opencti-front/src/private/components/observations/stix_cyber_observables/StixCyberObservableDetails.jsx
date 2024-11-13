@@ -129,7 +129,7 @@ const StixCyberObservableDetailsComponent = ({ stixCyberObservable }) => {
           </Grid>
           {observableAttributes.map((observableAttribute) => {
             if (observableAttribute.key === 'hashes') {
-              return observableAttribute.value.map((hash) => (
+              return observableAttribute.value.filter(({ hash }) => hash !== '').map((hash) => (
                 <Grid key={hash.algorithm} item xs={6}>
                   <Typography variant="h3" gutterBottom={true}>
                     {hash.algorithm} - hashes
