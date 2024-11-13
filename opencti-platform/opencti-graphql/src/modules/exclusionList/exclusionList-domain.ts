@@ -1,4 +1,5 @@
 import { Readable } from 'stream';
+import { isFeatureEnabled } from '../../config/conf';
 import { type FileUploadData, uploadToStorage } from '../../database/file-storage-helper';
 import { deleteFile } from '../../database/file-storage';
 import { createInternalObject, deleteInternalObject } from '../../domain/internalObject';
@@ -8,6 +9,9 @@ import { type BasicStoreEntityExclusionList, ENTITY_TYPE_EXCLUSION_LIST, type St
 import type { ExclusionListContentAddInput, ExclusionListFileAddInput, QueryExclusionListsArgs } from '../../generated/graphql';
 
 const filePath = 'exclusionLists';
+
+const isExclusionListEnabled = isFeatureEnabled('EXCLUSION_LIST');
+
 export const findById = (context: AuthContext, user: AuthUser, id: string) => {
   return storeLoadById<BasicStoreEntityExclusionList>(context, user, id, ENTITY_TYPE_EXCLUSION_LIST);
 };
@@ -31,6 +35,7 @@ const storeAndCreateExclusionList = async (context: AuthContext, user: AuthUser,
 };
 
 export const addExclusionListContent = async (context: AuthContext, user: AuthUser, input: ExclusionListContentAddInput) => {
+  if (!isExclusionListEnabled) throw new Error('Feature not yet available');
   const file = {
     createReadStream: () => Readable.from(Buffer.from(input.content, 'utf-8')),
     filename: `${input.name}.txt`,
@@ -40,10 +45,12 @@ export const addExclusionListContent = async (context: AuthContext, user: AuthUs
   return storeAndCreateExclusionList(context, user, input, file);
 };
 export const addExclusionListFile = async (context: AuthContext, user: AuthUser, input: ExclusionListFileAddInput) => {
+  if (!isExclusionListEnabled) throw new Error('Feature not yet available');
   return storeAndCreateExclusionList(context, user, input, input.file);
 };
 
 export const deleteExclusionList = async (context: AuthContext, user: AuthUser, exclusionListId: string) => {
+  if (!isExclusionListEnabled) throw new Error('Feature not yet available');
   const exclusionList = await findById(context, user, exclusionListId);
   await deleteFile(context, user, exclusionList.file_id);
   return deleteInternalObject(context, user, exclusionListId, ENTITY_TYPE_EXCLUSION_LIST);

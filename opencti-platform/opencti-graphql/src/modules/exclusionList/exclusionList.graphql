@@ -17,6 +17,7 @@ type ExclusionListConnection {
 }
 
 type ExclusionListEdge {
+  cursor: String!
   node: ExclusionList!
 }
 

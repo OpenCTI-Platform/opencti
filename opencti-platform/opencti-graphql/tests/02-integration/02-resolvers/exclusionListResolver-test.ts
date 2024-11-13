@@ -55,9 +55,7 @@ describe('Exclusion list resolver', () => {
             }
           }
         });
-        if (result?.data?.exclusionListContentAdd) {
-          exclusionListResponse = result.data.exclusionListContentAdd as ExclusionListResponse;
-        }
+        exclusionListResponse = result.data.exclusionListContentAdd as ExclusionListResponse;
       });
 
       it('should create an exclusion list', async () => {
@@ -96,9 +94,7 @@ describe('Exclusion list resolver', () => {
             }
           }
         });
-        if (result?.data?.exclusionListFileAdd) {
-          exclusionListFileResponse = result.data.exclusionListFileAdd as ExclusionListResponse;
-        }
+        exclusionListFileResponse = result.data.exclusionListFileAdd as ExclusionListResponse;
       });
 
       it('should create an exclusion list', async () => {
