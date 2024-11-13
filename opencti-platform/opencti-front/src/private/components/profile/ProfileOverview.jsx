@@ -591,6 +591,7 @@ const ProfileOverviewComponent = (props) => {
               justifyContent: 'space-between',
               alignItems: 'center',
               width: '100%',
+              padding: `${theme.spacing(1)}`,
             }}
           >
             <span style={{ flexGrow: 1 }}>
