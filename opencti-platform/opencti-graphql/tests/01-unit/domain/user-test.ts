@@ -80,7 +80,7 @@ describe.skip('password checker', () => {
 describe('isSensitiveChangesAllowed use case coverage', () => {
   const NOT_INFRA_ADMIN_USER_ID = '1c0925fe-ab65-42a1-8e96-ee6dc7fab4fa';
 
-  it('should user with one role and not can_manage_sensitive_config set be allow change sensitive conf', async () => {
+  it('should user with one role and not can_manage_sensitive_config set be not allowed to change sensitive conf', async () => {
     // subset of role data
     const roles = [{
       base_type: 'ENTITY',
@@ -96,7 +96,7 @@ describe('isSensitiveChangesAllowed use case coverage', () => {
     ];
 
     const result = isSensitiveChangesAllowed(NOT_INFRA_ADMIN_USER_ID, roles);
-    expect(result, 'Role without can_manage_sensitive_config field should be isSensitiveChangesAllowed=true').toBeTruthy();
+    expect(result, 'Role without can_manage_sensitive_config field should be isSensitiveChangesAllowed=false').toBeFalsy();
   });
 
   it('should user with one role can_manage_sensitive_config=true be allow change sensitive conf', async () => {
@@ -168,7 +168,7 @@ describe('isSensitiveChangesAllowed use case coverage', () => {
     ];
 
     const result = isSensitiveChangesAllowed(NOT_INFRA_ADMIN_USER_ID, roles);
-    expect(result, 'Role with one can_manage_sensitive_config true should be isSensitiveChangesAllowed=true').toBeTruthy();
+    expect(result, 'Role with one can_manage_sensitive_config undefined and one false should be isSensitiveChangesAllowed=false').toBeFalsy();
   });
 
   it('should user with 2 roles one without can_manage_sensitive_config, the other is true', async () => {
