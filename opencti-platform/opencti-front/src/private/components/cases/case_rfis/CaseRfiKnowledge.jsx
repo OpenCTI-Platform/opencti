@@ -2,11 +2,11 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
 import { propOr } from 'ramda';
-import { createFragmentContainer, graphql } from 'react-relay';
-import withStyles from '@mui/styles/withStyles';
+import { createFragmentContainer, createRefetchContainer, graphql, useFragment } from 'react-relay';
 import { Route, Routes } from 'react-router-dom';
+import { containerAddStixCoreObjectsLinesRelationAddMutation } from '../../common/containers/ContainerAddStixCoreObjectsLines';
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
-import { QueryRenderer } from '../../../../relay/environment';
+import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import ContainerHeader from '../../common/containers/ContainerHeader';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import AttackPatternsMatrix from '../../techniques/attack_patterns/AttackPatternsMatrix';
@@ -20,83 +20,137 @@ import ContentKnowledgeTimeLineBar from '../../common/containers/ContainertKnowl
 import investigationAddFromContainer from '../../../../utils/InvestigationUtils';
 import withRouter from '../../../../utils/compat_router/withRouter';
 
-const styles = () => ({
-  container: {
-    width: '100%',
-    height: '100%',
-    margin: 0,
-    padding: 0,
-  },
-});
-
 export const caseRfiKnowledgeAttackPatternsGraphQuery = graphql`
-  query CaseRfiKnowledgeAttackPatternsGraphQuery($id: String!) {
-    caseRfi(id: $id) {
-      id
-      name
-      x_opencti_graph_data
-      confidence
-      createdBy {
-        ... on Identity {
-          id
-          name
-          entity_type
-        }
-      }
-      objectMarking {
-        id
-        definition_type
-        definition
-        x_opencti_order
-        x_opencti_color
-      }
-      objects(all: true, types: ["Attack-Pattern"]) {
-        edges {
-          node {
-            ... on AttackPattern {
-              id
-              entity_type
-              parent_types
-              name
-              description
-              x_mitre_platforms
-              x_mitre_permissions_required
-              x_mitre_id
-              x_mitre_detection
-              isSubAttackPattern
-              parentAttackPatterns {
-                edges {
-                  node {
+    query CaseRfiKnowledgeAttackPatternsGraphQuery($id: String!) {
+        caseRfi(id: $id) {
+            id
+            name
+            x_opencti_graph_data
+            confidence
+            createdBy {
+                ... on Identity {
                     id
                     name
-                    description
-                    x_mitre_id
-                  }
+                    entity_type
                 }
-              }
-              subAttackPatterns {
-                edges {
-                  node {
-                    id
-                    name
-                    description
-                    x_mitre_id
-                  }
-                }
-              }
-              killChainPhases {
-                id
-                kill_chain_name
-                phase_name
-                x_opencti_order
-              }
             }
-          }
+            objectMarking {
+                id
+                definition_type
+                definition
+                x_opencti_order
+                x_opencti_color
+            }
+            ...CaseRfiKnowledgeAttackPatterns_fragment
         }
-      }
     }
-  }
 `;
+
+const CaseRfiAttackPatternsFragment = graphql`
+    fragment CaseRfiKnowledgeAttackPatterns_fragment on CaseRfi {
+        objects(all: true, types: ["Attack-Pattern"]) {
+            edges {
+                node {
+                    ... on AttackPattern {
+                        id
+                        entity_type
+                        parent_types
+                        name
+                        description
+                        x_mitre_platforms
+                        x_mitre_permissions_required
+                        x_mitre_id
+                        x_mitre_detection
+                        isSubAttackPattern
+                        parentAttackPatterns {
+                            edges {
+                                node {
+                                    id
+                                    name
+                                    description
+                                    x_mitre_id
+                                }
+                            }
+                        }
+                        subAttackPatterns {
+                            edges {
+                                node {
+                                    id
+                                    name
+                                    description
+                                    x_mitre_id
+                                }
+                            }
+                        }
+                        killChainPhases {
+                            id
+                            kill_chain_name
+                            phase_name
+                            x_opencti_order
+                        }
+                    }
+                }
+            }
+        }
+    }
+`;
+
+const AttackPatternMatrixComponent = (props) => {
+  const {
+    data,
+    caseData,
+    currentKillChain,
+    currentModeOnlyActive,
+    currentColorsReversed,
+    handleChangeKillChain,
+    handleToggleColorsReversed,
+    handleToggleModeOnlyActive,
+  } = props;
+  const attackPatternObjects = useFragment(CaseRfiAttackPatternsFragment, data.caseRfi);
+  const attackPatterns = (attackPatternObjects.objects.edges)
+    .map((n) => n.node)
+    .filter((n) => n.entity_type === 'Attack-Pattern');
+
+  const handleAddEntity = (entity) => {
+    const input = {
+      toId: entity.id,
+      relationship_type: 'object',
+    };
+    commitMutation({
+      mutation: containerAddStixCoreObjectsLinesRelationAddMutation,
+      variables: {
+        id: caseData.id,
+        input,
+      },
+      onCompleted: () => {
+        props.relay.refetch({ id: caseData.id });
+      },
+    });
+  };
+
+  return (
+    <AttackPatternsMatrix
+      entity={caseData}
+      attackPatterns={attackPatterns}
+      currentKillChain={currentKillChain}
+      currentModeOnlyActive={currentModeOnlyActive}
+      currentColorsReversed={currentColorsReversed}
+      handleChangeKillChain={handleChangeKillChain}
+      handleToggleColorsReversed={handleToggleColorsReversed}
+      handleToggleModeOnlyActive={handleToggleModeOnlyActive}
+      handleAdd={handleAddEntity}
+      hideBar={false}
+    />
+  );
+};
+
+const AttackPatternMatrixContainer = createRefetchContainer(
+  AttackPatternMatrixComponent,
+  {
+    data: CaseRfiAttackPatternsFragment,
+  },
+  caseRfiKnowledgeAttackPatternsGraphQuery,
+);
 
 class CaseRfiKnowledgeComponent extends Component {
   constructor(props) {
@@ -217,7 +271,6 @@ class CaseRfiKnowledgeComponent extends Component {
 
   render() {
     const {
-      classes,
       caseData,
       location,
       params: { '*': mode },
@@ -254,7 +307,12 @@ class CaseRfiKnowledgeComponent extends Component {
     };
     return (
       <div
-        className={classes.container}
+        style={{
+          width: '100%',
+          height: '100%',
+          margin: 0,
+          padding: 0,
+        }}
         id={location.pathname.includes('matrix') ? 'parent' : 'container'}
       >
         {mode !== 'graph' && (
@@ -375,27 +433,16 @@ class CaseRfiKnowledgeComponent extends Component {
                 variables={{ id: caseData.id }}
                 render={({ props }) => {
                   if (props && props.caseRfi) {
-                    const attackPatterns = R.pipe(
-                      R.map((n) => n.node),
-                      R.filter((n) => n.entity_type === 'Attack-Pattern'),
-                    )(props.caseRfi.objects.edges);
                     return (
-                      <AttackPatternsMatrix
-                        entity={caseData}
-                        attackPatterns={attackPatterns}
-                        searchTerm=""
+                      <AttackPatternMatrixContainer
+                        data={props}
+                        caseData={caseData}
                         currentKillChain={currentKillChain}
                         currentModeOnlyActive={currentModeOnlyActive}
                         currentColorsReversed={currentColorsReversed}
-                        handleChangeKillChain={this.handleChangeKillChain.bind(
-                          this,
-                        )}
-                        handleToggleColorsReversed={this.handleToggleColorsReversed.bind(
-                          this,
-                        )}
-                        handleToggleModeOnlyActive={this.handleToggleModeOnlyActive.bind(
-                          this,
-                        )}
+                        handleChangeKillChain={this.handleChangeKillChain.bind(this)}
+                        handleToggleColorsReversed={this.handleToggleColorsReversed.bind(this)}
+                        handleToggleModeOnlyActive={this.handleToggleModeOnlyActive.bind(this)}
                       />
                     );
                   }
@@ -445,4 +492,4 @@ const CaseRfiKnowledge = createFragmentContainer(CaseRfiKnowledgeComponent, {
   `,
 });
 
-export default R.compose(withRouter, withStyles(styles))(CaseRfiKnowledge);
+export default R.compose(withRouter)(CaseRfiKnowledge);
