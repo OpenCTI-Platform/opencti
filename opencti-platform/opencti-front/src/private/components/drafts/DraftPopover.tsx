@@ -10,9 +10,8 @@ import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import { graphql } from 'react-relay';
 import { PopoverProps } from '@mui/material/Popover';
-import { Link } from 'react-router-dom';
 import { DraftsLinesPaginationQuery$variables } from '@components/drafts/__generated__/DraftsLinesPaginationQuery.graphql';
-import { DraftPopoverDeleteMutation, DraftPopoverDeleteMutation$data } from '@components/drafts/__generated__/DraftPopoverDeleteMutation.graphql';
+import { DraftPopoverDeleteMutation } from '@components/drafts/__generated__/DraftPopoverDeleteMutation.graphql';
 import { draftContextBannerMutation } from '@components/drafts/DraftContextBanner';
 import { DraftContextBannerMutation, DraftContextBannerMutation$data } from '@components/drafts/__generated__/DraftContextBannerMutation.graphql';
 import DialogTitle from '@mui/material/DialogTitle';
@@ -51,7 +50,15 @@ const DraftPopover: React.FC<DraftPopoverProps> = ({
   const [openSwitch, setOpenSwitch] = useState(false);
   const [switchToDraft, setSwitchToDraft] = useState(false);
   const [commitSwitchToDraft] = useApiMutation<DraftContextBannerMutation>(draftContextBannerMutation);
-  const [commitDeletion] = useApiMutation<DraftPopoverDeleteMutation>(draftPopoverDeleteMutation);
+  const deleteSuccessMessage = t_i18n('', {
+    id: '... successfully deleted',
+    values: { entity_type: t_i18n('entity_DraftWorkspace') },
+  });
+  const [commitDeletion] = useApiMutation<DraftPopoverDeleteMutation>(
+    draftPopoverDeleteMutation,
+    undefined,
+    { successMessage: deleteSuccessMessage },
+  );
   const handleOpen = (event: React.SyntheticEvent) => {
     setAnchorEl(event.currentTarget);
   };
@@ -78,15 +85,12 @@ const DraftPopover: React.FC<DraftPopoverProps> = ({
       variables: {
         id: draftId,
       },
-      onCompleted: (response: DraftPopoverDeleteMutation$data) => {
-        const elementId = response.draftWorkspaceDelete;
-        MESSAGING$.notifySuccess(<span><Link to={`/dashboard/id/${elementId}`}>{t_i18n('Draft successfully deleted')}</Link></span>);
+      onCompleted: () => {
         setDeleting(false);
         handleClose();
       },
       onError: (error) => {
-        const { errors } = (error as unknown as RelayError).res;
-        MESSAGING$.notifyError(errors.at(0)?.message);
+        MESSAGING$.notifyRelayError(error as unknown as RelayError);
         setDeleting(false);
         handleClose();
       },
@@ -109,8 +113,7 @@ const DraftPopover: React.FC<DraftPopoverProps> = ({
         handleClose();
       },
       onError: (error) => {
-        const { errors } = (error as unknown as RelayError).res;
-        MESSAGING$.notifyError(errors.at(0)?.message);
+        MESSAGING$.notifyRelayError(error as unknown as RelayError);
         setSwitchToDraft(false);
         handleCloseSwitch();
         handleClose();
