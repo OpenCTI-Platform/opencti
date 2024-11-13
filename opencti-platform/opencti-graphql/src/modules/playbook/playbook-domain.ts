@@ -81,20 +81,21 @@ export const getPlaybookDefinition = async (context: AuthContext, playbook: Basi
 };
 
 const checkPlaybookFiltersAndBuildConfigWithCorrectFilters = (input: PlaybookAddNodeInput) => {
+  if (!input.configuration) {
+    return '{}';
+  }
   let stringifiedFilters;
-  if (input.configuration) {
-    const config = JSON.parse(input.configuration);
-    if (config.filters) {
-      const filterGroup = JSON.parse(config.filters) as FilterGroup;
-      if (input.component_id === PLAYBOOK_INTERNAL_DATA_CRON.id) {
-        stringifiedFilters = JSON.stringify(checkAndConvertFilters(filterGroup));
-      } else { // our stix matching is currently limited, we need to validate the input filters
-        validateFilterGroupForStixMatch(filterGroup);
-        stringifiedFilters = config.filters;
-      }
+  const config = JSON.parse(input.configuration);
+  if (config.filters) {
+    const filterGroup = JSON.parse(config.filters) as FilterGroup;
+    if (input.component_id === PLAYBOOK_INTERNAL_DATA_CRON.id) {
+      stringifiedFilters = JSON.stringify(checkAndConvertFilters(filterGroup));
+    } else { // our stix matching is currently limited, we need to validate the input filters
+      validateFilterGroupForStixMatch(filterGroup);
+      stringifiedFilters = config.filters;
     }
   }
-  return input.configuration ? JSON.stringify({ ...JSON.parse(input.configuration), filters: stringifiedFilters }) : '{}';
+  return JSON.stringify({ ...config, filters: stringifiedFilters });
 };
 
 export const playbookAddNode = async (context: AuthContext, user: AuthUser, id: string, input: PlaybookAddNodeInput) => {
