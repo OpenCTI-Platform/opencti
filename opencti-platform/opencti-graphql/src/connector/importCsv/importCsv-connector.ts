@@ -128,7 +128,7 @@ export const processCSVforWorkers = async (context: AuthContext, opts: ConsumerO
     const stream: SdkStream<Readable> | null | undefined = await downloadFile(opts.fileId) as SdkStream<Readable> | null | undefined;
     if (stream) {
       const lines: string[] = [];
-      const rl = readline.createInterface({ input: stream, crlfDelay: Infinity });
+      const readStream = readline.createInterface({ input: stream, crlfDelay: Infinity });
       let lineNumber = 0;
       try {
         const startDate = new Date().getTime();
@@ -136,7 +136,7 @@ export const processCSVforWorkers = async (context: AuthContext, opts: ConsumerO
         logApp.debug(`${logPrefix} reading line from ${bulkLineCursor} to ${BULK_LINE_PARSING_NUMBER + bulkLineCursor}`);
         // Need an async interator to prevent blocking
         // eslint-disable-next-line no-restricted-syntax
-        for await (const line of rl) {
+        for await (const line of readStream) {
           if (startingLineNumber <= lineNumber && lineNumber < startingLineNumber + BULK_LINE_PARSING_NUMBER) {
             // We are in the bulk window
             if (removeHeaderIsRequired) {
@@ -155,7 +155,7 @@ export const processCSVforWorkers = async (context: AuthContext, opts: ConsumerO
           }
           lineNumber += 1;
         }
-        rl.close();
+        readStream.close();
 
         hasMoreBulk = bulkLineCursor < lineNumber;
         logApp.debug(`${logPrefix} read lines end on ${new Date().getTime() - startDate} ms; hasMoreBulk=${hasMoreBulk}; lineNumber=${lineNumber}`);
@@ -176,9 +176,19 @@ export const processCSVforWorkers = async (context: AuthContext, opts: ConsumerO
         logApp.error(error);
         const errorData = { error: error.message, source: fileId };
         await reportExpectation(context, applicantUser, workId, errorData);
+
+        // circuit breaker
+        hasMoreBulk = false;
       } finally {
-        rl.close();
+        readStream.close();
       }
+    } else {
+      // stream null means error, to change the day downloadFile throw errors.
+      // circuit breaker
+      hasMoreBulk = false;
+      logApp.error(`${logPrefix} Cannot download file, please check the file storage dependency.`, { fileId, workId });
+      const errorData = { error: 'Cannot download file', source: fileId };
+      await reportExpectation(context, applicantUser, workId, errorData);
     }
   }
   logApp.info(`${logPrefix} processing CSV ${opts.fileId} DONE in ${new Date().getTime() - startDate2} ms for ${totalObjectsCount} objets in ${totalBundlesCount} bundles.`);
@@ -201,6 +211,7 @@ const consumeQueueCallback = async (context: AuthContext, message: string) => {
   const workId = messageParsed.internal.work_id;
   const applicantId = messageParsed.internal.applicant_id ?? OPENCTI_SYSTEM_UUID;
   const fileId = messageParsed.event.file_id;
+  logApp.info(`${logPrefix} Starting to process CSV file.`, { fileId, workId, applicantId });
   const applicantUser = await resolveUserByIdFromCache(context, applicantId) as AuthUser;
   const entityId = messageParsed.event.entity_id;
   const entity = entityId ? await storeLoadByIdWithRefs(context, applicantUser, entityId) : undefined;
