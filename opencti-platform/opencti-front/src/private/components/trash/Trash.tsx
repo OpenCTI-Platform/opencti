@@ -163,9 +163,10 @@ const Trash: React.FC = () => {
   };
   return (
     <ExportContextProvider>
-      <Box sx={{ display: 'flex', gap: 1 }}>
+      <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
         <Breadcrumbs elements={[{ label: t_i18n('Trash'), current: true }]} />
         <Tooltip
+          sx={{ marginBottom: 2 }}
           title={<>
             {t_i18n('Entities and relationships manually deleted from the platform will appear in this view, and can be restored.')}
             <br/>
@@ -174,7 +175,13 @@ const Trash: React.FC = () => {
             { isModuleEnable(GARBAGE_COLLECTION_MANAGER) && (
               t_i18n('', {
                 id: 'An element will persists in the trash for {period} before being permanently deleted.',
-                values: { period: <Box component="span" sx={{ color: 'warning.main' }}>{t_i18n('', { id: '{count} days', values: { count: getTrashRetentionDays() } })}</Box> },
+                values: {
+                  period: (
+                    <Box component="span" sx={{ color: 'warning.main' }}>
+                      {t_i18n('', { id: '{count} days', values: { count: getTrashRetentionDays() } })}
+                    </Box>
+                  ),
+                },
               })
             )}
           </>}
