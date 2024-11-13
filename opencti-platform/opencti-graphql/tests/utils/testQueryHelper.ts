@@ -2,6 +2,9 @@ import { expect } from 'vitest';
 import { print } from 'graphql/index';
 import type { AxiosInstance } from 'axios';
 import readline from 'node:readline';
+import fs from 'node:fs';
+import path from 'node:path';
+import Upload from 'graphql-upload/Upload.mjs';
 import { ADMIN_USER, adminQuery, createUnauthenticatedClient, executeInternalQuery, getOrganizationIdByName, type Organization, queryAsAdmin, testContext } from './testQuery';
 import { downloadFile, streamConverter } from '../../src/database/file-storage';
 import { logApp } from '../../src/config/conf';
@@ -147,7 +150,7 @@ export const readCsvFromFileStream = async (filePath: string, fileName: string) 
 
 /**
  * Enable Enterprise edition and set the platform organisation.
- * @param organization: organization to use as platform organization.
+ * @param organization organization to use as platform organization.
  */
 export const enableEEAndSetOrganization = async (organization: Organization) => {
   const platformOrganizationId = await getOrganizationIdByName(organization.name);
@@ -165,7 +168,7 @@ export const enableEEAndSetOrganization = async (organization: Organization) => 
 };
 
 /**
- * Remove any platform organization and go back to comunity edition.
+ * Remove any platform organization and go back to community edition.
  */
 export const enableCEAndUnSetOrganization = async () => {
   const platformSettings: any = await getSettings(testContext);
@@ -178,4 +181,23 @@ export const enableCEAndUnSetOrganization = async () => {
 
   expect(settingsResult.platform_organization).toBeUndefined();
   expect(settingsResult.enterprise_edition).toBeUndefined();
+};
+
+export const createUploadFromTestDataFile = async (filePathRelativeFromData: string, fileName: string, mimetype: string, encoding?: string) => {
+  const file = fs.createReadStream(
+    path.resolve(__dirname, `../data/${filePathRelativeFromData}`),
+  );
+  const upload = new Upload();
+  const fileUpload = {
+    fieldName: 'fieldName',
+    filename: fileName,
+    mimetype,
+    encoding: encoding || 'utf-8',
+    createReadStream: () => file,
+  };
+  upload.promise = new Promise((executor) => {
+    executor(fileUpload);
+  });
+  upload.file = fileUpload;
+  return upload;
 };

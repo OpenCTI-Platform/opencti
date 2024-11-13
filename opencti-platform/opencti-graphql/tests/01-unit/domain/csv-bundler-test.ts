@@ -291,5 +291,53 @@ describe('CSV bundler', () => {
 
       expect(canAddObjectToBundle(newObjects, objectsInBundle)).toBeTruthy();
     });
+
+    it('Should not request a new bundle when object are exactly the same except for csv line', async () => {
+      const objectsInBundle: StixObject[] = [
+        {
+          color: '#000000',
+          id: 'label--ad140703-c0bd-5572-818e-b480708034b5',
+          spec_version: '2.1',
+          type: 'label',
+          value: 'label2',
+          converter_csv: 'ville du pont;label;label2;#000000;randomDataOne',
+        } as unknown as StixLabel,
+        {
+          city: 'ville du pont',
+          id: 'location--542797f4-36b0-5404-8a1b-05da43029f13',
+          labels: ['label2'],
+          latitude: 46.999873398,
+          longitude: 6.498147193,
+          name: 'ville du pont',
+          spec_version: '2.1',
+          type: 'location',
+          converter_csv: 'ville du pont;label;label2;#000000;randomDataOne',
+        } as unknown as StixLocation
+      ];
+
+      const newObjects: StixObject[] = [
+        {
+          color: '#000000',
+          id: 'label--ad140703-c0bd-5572-818e-b480708034b5',
+          spec_version: '2.1',
+          type: 'label',
+          value: 'label2',
+          converter_csv: 'ville du pont;label;label2;#000000;randomDataDifferent',
+        } as unknown as StixLabel,
+        {
+          city: 'ville du pont',
+          id: 'location--542797f4-36b0-5404-8a1b-05da43029f13',
+          labels: ['label2'],
+          latitude: 46.999873398,
+          longitude: 6.498147193,
+          name: 'ville du pont',
+          spec_version: '2.1',
+          type: 'location',
+          converter_csv: 'ville du pont;label;label2;#000000;randomDataDifferent',
+        } as unknown as StixLocation
+      ];
+
+      expect(canAddObjectToBundle(newObjects, objectsInBundle)).toBeTruthy();
+    });
   });
 });

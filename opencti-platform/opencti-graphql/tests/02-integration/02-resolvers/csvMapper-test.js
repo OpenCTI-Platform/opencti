@@ -2,6 +2,7 @@ import { expect, it, describe, beforeAll, afterAll } from 'vitest';
 import gql from 'graphql-tag';
 import { internalAdminQuery, queryAsAdmin } from '../../utils/testQuery';
 import { ABSTRACT_STIX_CORE_RELATIONSHIP } from '../../../src/schema/general';
+import { createUploadFromTestDataFile } from '../../utils/testQueryHelper';
 
 const MAPPER_INPUT = {
   name: 'super mapper',
@@ -198,6 +199,16 @@ const DELETE_MUTATION = gql`
   mutation CsvMapperDelete($id: ID!) {
     csvMapperDelete(id: $id)
   }
+`;
+
+const TEST_MUTATION = gql`
+    mutation CsvMapperTest($configuration: String!, $file: Upload!) {
+        csvMapperTest(configuration: $configuration, file: $file){
+            objects
+            nbEntities
+            nbRelationships
+        }
+    }
 `;
 
 const LIST_SCHEMAS_QUERY = gql`
@@ -406,5 +417,20 @@ describe('CSV Mapper Resolver', () => {
     const description = attributes.find((attr) => attr.name === 'description');
     expect(description.mandatory).toEqual(true);
     expect(description.defaultValues[0].name).toEqual('hello');
+  });
+
+  it('should test a cvs file against mapper', async () => {
+    const upload = await createUploadFromTestDataFile('csvMapper/test-file.csv', 'test-file.csv', 'application/json');
+
+    const queryResult = await queryAsAdmin({
+      query: TEST_MUTATION,
+      variables: {
+        file: upload,
+        configuration: JSON.stringify(addedMapper),
+      },
+    });
+    expect(queryResult.data.csvMapperTest.objects).toBeDefined();
+    expect(queryResult.data.csvMapperTest.nbEntities).toBe(2); // 1 Administrative-Area, one Malware
+    expect(queryResult.data.csvMapperTest.nbRelationships).toBe(1);
   });
 });

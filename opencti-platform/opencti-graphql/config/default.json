@@ -193,7 +193,7 @@
     "enabled": true,
     "interval": 10000,
     "validate_before_import": false,
-    "bulk_creation_size": 1000
+    "bulk_creation_size": 5000
   },
   "task_scheduler": {
     "enabled": true,
