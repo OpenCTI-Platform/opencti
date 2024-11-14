@@ -17,7 +17,6 @@ import {
 } from '../filters/filtersManageStateUtil';
 import { LocalStorage } from './useLocalStorageModel';
 import useBus from './useBus';
-import { FilterDefinition } from './useAuth';
 import { Filter, FilterGroup, FilterValue, handleFilterHelpers } from '../filters/filtersHelpers-types';
 
 export interface NumberOfElements {
