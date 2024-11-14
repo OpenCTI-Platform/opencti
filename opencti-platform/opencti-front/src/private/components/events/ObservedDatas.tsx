@@ -27,6 +27,10 @@ const observedDataFragment = graphql`
     last_observed
     number_observed
     confidence
+    draftVersion {
+      draft_id
+      draft_operation
+    }
     createdBy {
       ... on Identity {
         id

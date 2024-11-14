@@ -10,6 +10,7 @@ type Event implements BasicObject & StixCoreObject & StixDomainObject & StixObje
     spec_version: String!
     created_at: DateTime!
     updated_at: DateTime!
+    draftVersion: DraftVersion
     # inferences
     x_opencti_inferences: [Inference]
     # StixCoreObject

@@ -26,6 +26,10 @@ const vulnerabilityLineFragment = graphql`
     modified
     confidence
     entity_type
+    draftVersion {
+      draft_id
+      draft_operation
+    }
     objectMarking {
       id
       definition_type

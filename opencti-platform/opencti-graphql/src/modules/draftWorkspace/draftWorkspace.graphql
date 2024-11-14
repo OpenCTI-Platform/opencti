@@ -6,12 +6,16 @@ type DraftWorkspace implements InternalObject & BasicObject {
     parent_types: [String!]!
     # DraftWorkspace
     name: String!
+    created_at: DateTime!
+    creators: [Creator!]
     entity_id: String
 }
 
 # Ordering
 enum DraftWorkspacesOrdering {
     name
+    created_at
+    creator
 }
 
 # Relay connections
@@ -37,14 +41,25 @@ type Query {
         search: String
     ): DraftWorkspaceConnection @auth(for: [KNOWLEDGE])
     draftWorkspaceEntities(
+        draftId: String!,
         types: [String]
         first: Int
         after: ID
-        orderBy: StixDomainObjectsOrdering
+        orderBy: StixCoreObjectsOrdering
         orderMode: OrderingMode
         filters: FilterGroup
         search: String
     ): StixCoreObjectConnection @auth(for: [KNOWLEDGE])
+    draftWorkspaceRelationships(
+        draftId: String!,
+        types: [String]
+        first: Int
+        after: ID
+        orderBy: StixRelationshipsOrdering
+        orderMode: OrderingMode
+        filters: FilterGroup
+        search: String
+    ): StixRelationshipConnection @auth(for: [KNOWLEDGE])
 }
 
 input DraftWorkspaceAddInput {

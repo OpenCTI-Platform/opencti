@@ -25,6 +25,10 @@ const reportLineFragment = graphql`
     description
     published
     report_types
+    draftVersion {
+      draft_id
+      draft_operation
+    }
     createdBy {
       ... on Identity {
         id

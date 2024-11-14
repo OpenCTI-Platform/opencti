@@ -155,6 +155,10 @@ export const entitiesFragment = graphql`
     id
     entity_type
     created_at
+    draftVersion{
+      draft_id
+      draft_operation
+    }
     ... on AttackPattern {
       name
       description

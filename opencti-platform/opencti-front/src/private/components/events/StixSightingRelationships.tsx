@@ -26,6 +26,10 @@ const stixSightingsLineFragment = graphql`
     first_seen
     last_seen
     description
+    draftVersion {
+      draft_id
+      draft_operation
+    }
     status {
       id
       order

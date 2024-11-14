@@ -15,6 +15,10 @@ export const ThreatActorIndividualCardFragment = graphql`
     threat_actor_types
     sophistication
     resource_level
+    draftVersion {
+      draft_id
+      draft_operation
+    }
     creators {
       id
       name

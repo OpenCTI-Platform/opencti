@@ -14,6 +14,10 @@ export const IntrusionSetCardFragment = graphql`
     modified
     primary_motivation
     secondary_motivations
+    draftVersion {
+      draft_id
+      draft_operation
+    }
     objectMarking {
       id
       definition_type

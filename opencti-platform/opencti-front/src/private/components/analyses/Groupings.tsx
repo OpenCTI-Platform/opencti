@@ -31,6 +31,10 @@ const groupingLineFragment = graphql`
     name
     description
     context
+    draftVersion {
+      draft_id
+      draft_operation
+    }
     createdBy {
       ... on Identity {
         id

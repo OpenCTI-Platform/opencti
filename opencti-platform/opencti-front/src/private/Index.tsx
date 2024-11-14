@@ -33,6 +33,7 @@ const RootEntities = lazy(() => import('./components/entities/Root'));
 const RootLocation = lazy(() => import('./components/locations/Root'));
 const RootData = lazy(() => import('./components/data/Root'));
 const RootTrash = lazy(() => import('./components/trash/Root'));
+const RootDrafts = lazy(() => import('./components/drafts/Root'));
 const RootWorkspaces = lazy(() => import('./components/workspaces/Root'));
 const RootSettings = lazy(() => import('./components/settings/Root'));
 const RootAudit = lazy(() => import('./components/settings/activity/audit/Root'));
@@ -47,6 +48,8 @@ const Index = ({ settings }: IndexProps) => {
   const {
     bannerSettings: { bannerHeight },
   } = useAuth();
+  const { isFeatureEnable } = useHelper();
+  const isDraftFeatureEnabled = isFeatureEnable('DRAFT_WORKSPACE');
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
   const boxSx = {
     flexGrow: 1,
@@ -119,10 +122,15 @@ const Index = ({ settings }: IndexProps) => {
               <Route path="/data/*"
                 element={boundaryWrapper(RootData)}
               />
-              { isTrashEnable() && (
+              {isTrashEnable() && (
                 <Route
                   path="/trash/*"
                   element={boundaryWrapper(RootTrash)}
+                />
+              )}
+              {isDraftFeatureEnabled && (
+                <Route path="/drafts/*"
+                  element={boundaryWrapper(RootDrafts)}
                 />
               )}
               <Route

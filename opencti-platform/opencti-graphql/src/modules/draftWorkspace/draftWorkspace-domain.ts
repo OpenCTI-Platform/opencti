@@ -1,15 +1,21 @@
 import type { AuthContext, AuthUser } from '../../types/user';
-import { type EntityOptions, listAllEntities, listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
-import { type DraftWorkspaceAddInput, FilterMode, type QueryDraftWorkspaceEntitiesArgs, type QueryDraftWorkspacesArgs } from '../../generated/graphql';
+import { type EntityOptions, listAllEntities, listEntitiesPaginated, listRelationsPaginated, storeLoadById } from '../../database/middleware-loader';
+import {
+  type DraftWorkspaceAddInput,
+  FilterMode,
+  type QueryDraftWorkspaceEntitiesArgs,
+  type QueryDraftWorkspaceRelationshipsArgs,
+  type QueryDraftWorkspacesArgs
+} from '../../generated/graphql';
 import { createInternalObject } from '../../domain/internalObject';
 import { now } from '../../utils/format';
 import { type BasicStoreEntityDraftWorkspace, ENTITY_TYPE_DRAFT_WORKSPACE, type StoreEntityDraftWorkspace } from './draftWorkspace-types';
 import { elDeleteDraftContextFromUsers, elDeleteDraftElements } from '../../database/draft-engine';
-import { READ_INDEX_DRAFT_OBJECTS, READ_INDEX_INTERNAL_OBJECTS } from '../../database/utils';
+import { isDraftIndex, READ_INDEX_DRAFT_OBJECTS, READ_INDEX_INTERNAL_OBJECTS } from '../../database/utils';
 import { FunctionalError, UnsupportedError } from '../../config/errors';
 import { deleteElementById, stixLoadByIds } from '../../database/middleware';
-import type { BasicStoreEntity } from '../../types/store';
-import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_REF_RELATIONSHIP } from '../../schema/general';
+import type { BasicStoreCommon, BasicStoreEntity, BasicStoreRelation } from '../../types/store';
+import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CORE_RELATIONSHIP, ABSTRACT_STIX_REF_RELATIONSHIP } from '../../schema/general';
 import { isStixCoreObject } from '../../schema/stixCoreObject';
 import { BUS_TOPICS, isFeatureEnabled } from '../../config/conf';
 import { getDraftContext } from '../../utils/draftContext';
@@ -24,6 +30,8 @@ import { createWork, updateExpectationsNumber } from '../../domain/work';
 import { DRAFT_VALIDATION_CONNECTOR } from './draftWorkspace-connector';
 import { isStixRefRelationship } from '../../schema/stixRefRelationship';
 import { notify } from '../../database/redis';
+import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
+import { isStixRelationshipExceptRef } from '../../schema/stixRelationship';
 
 export const findById = (context: AuthContext, user: AuthUser, id: string) => {
   return storeLoadById<BasicStoreEntityDraftWorkspace>(context, user, id, ENTITY_TYPE_DRAFT_WORKSPACE);
@@ -35,14 +43,31 @@ export const findAll = (context: AuthContext, user: AuthUser, args: QueryDraftWo
 
 export const listDraftObjects = (context: AuthContext, user: AuthUser, args: QueryDraftWorkspaceEntitiesArgs) => {
   let types: string[] = [];
-  if (args && args.types) {
+  const { draftId, ...listArgs } = args;
+  if (args.types) {
     types = args.types.filter((t) => t && isStixCoreObject(t)) as string[];
   }
   if (types.length === 0) {
     types.push(ABSTRACT_STIX_CORE_OBJECT);
   }
-  const newArgs: EntityOptions<BasicStoreEntity> = { ...args, types, indices: [READ_INDEX_DRAFT_OBJECTS], includeDeletedInDraft: true };
-  return listEntitiesPaginated<BasicStoreEntity>(context, user, types, newArgs);
+  const newArgs: EntityOptions<BasicStoreEntity> = { ...listArgs, types, indices: [READ_INDEX_DRAFT_OBJECTS], includeDeletedInDraft: true };
+  const draftContext = { ...context, draft_context: draftId };
+  return listEntitiesPaginated<BasicStoreEntity>(draftContext, user, types, newArgs);
+};
+
+export const listDraftRelations = (context: AuthContext, user: AuthUser, args: QueryDraftWorkspaceRelationshipsArgs) => {
+  let types: string[] = [];
+  const { draftId, ...listArgs } = args;
+  if (args.types) {
+    types = args.types.filter((t) => t && isStixRelationshipExceptRef(t)) as string[];
+  }
+  if (types.length === 0) {
+    types.push(ABSTRACT_STIX_CORE_RELATIONSHIP);
+    types.push(STIX_SIGHTING_RELATIONSHIP);
+  }
+  const newArgs: EntityOptions<BasicStoreRelation> = { ...listArgs, types, indices: [READ_INDEX_DRAFT_OBJECTS], includeDeletedInDraft: true };
+  const draftContext = { ...context, draft_context: draftId };
+  return listRelationsPaginated<BasicStoreRelation>(draftContext, user, types, newArgs);
 };
 
 export const addDraftWorkspace = async (context: AuthContext, user: AuthUser, input: DraftWorkspaceAddInput) => {
@@ -85,6 +110,18 @@ export const deleteDraftWorkspace = async (context: AuthContext, user: AuthUser,
   await deleteElementById(context, user, id, ENTITY_TYPE_DRAFT_WORKSPACE);
 
   return id;
+};
+
+export const buildDraftVersion = (object: BasicStoreCommon) => {
+  if (!isDraftIndex(object._index)) {
+    return null;
+  }
+
+  if (!object.draft_ids || object.draft_ids.length === 0) {
+    throw FunctionalError('Cannot find draft ids on draft entity', { id: object.id });
+  }
+
+  return { draft_id: object.draft_ids[0], draft_operation: object.draft_change?.draft_operation };
 };
 
 export const buildDraftValidationBundle = async (context: AuthContext, user: AuthUser, draft_id: string) => {

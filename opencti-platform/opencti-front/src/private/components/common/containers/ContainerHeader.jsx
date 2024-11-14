@@ -22,6 +22,7 @@ import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import CircularProgress from '@mui/material/CircularProgress';
 import { makeStyles, useTheme } from '@mui/styles';
+import { DraftChip } from '../draft/DraftChip';
 import { stixCoreObjectQuickSubscriptionContentQuery } from '../stix_core_objects/stixCoreObjectTriggersUtils';
 import StixCoreObjectAskAI from '../stix_core_objects/StixCoreObjectAskAI';
 import { useSettingsMessagesBannerHeight } from '../../settings/settings_messages/SettingsMessagesBanner';
@@ -777,6 +778,7 @@ const ContainerHeader = (props) => {
     >
       <React.Suspense fallback={<span />}>
         {!knowledge && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <Tooltip
             title={
               container.name
@@ -805,6 +807,10 @@ const ContainerHeader = (props) => {
               )}
             </Typography>
           </Tooltip>
+          {container.draftVersion && (
+            <DraftChip />
+          )}
+        </div>
         )}
         {knowledge && (
           <div>
@@ -1111,6 +1117,10 @@ export default createFragmentContainer(ContainerHeader, {
   container: graphql`
     fragment ContainerHeader_container on Container {
       id
+      draftVersion {
+        draft_id
+        draft_operation
+      }
       entity_type
       standard_id
       confidence

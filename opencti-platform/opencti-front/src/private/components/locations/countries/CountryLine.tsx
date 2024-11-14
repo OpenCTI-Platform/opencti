@@ -52,6 +52,10 @@ const countryLineFragment = graphql`
     x_opencti_aliases
     created
     modified
+    draftVersion {
+      draft_id
+      draft_operation
+    }
     objectMarking {
       id
       definition_type

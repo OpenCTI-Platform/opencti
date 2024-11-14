@@ -75,7 +75,10 @@ const MODIFY_USER_DRAFT_WORKSPACE_QUERY = gql`
     mutation MeUserWorkspaceModify($input: [EditInput]!) {
         meEdit(input: $input) {
             id
-            draft_context
+            draftContext{
+                id
+                name
+            }
         }
     }
 `;
@@ -123,7 +126,11 @@ const modifyAdminDraftContext = async (draftId: string) => {
     query: MODIFY_USER_DRAFT_WORKSPACE_QUERY,
     variables: { input: { key: 'draft_context', value: draftId } },
   });
-  expect(meUserModifyResult.data?.meEdit.draft_context).toEqual(draftId);
+  if (draftId) {
+    expect(meUserModifyResult.data?.meEdit.draftContext.id).toEqual(draftId);
+  } else {
+    expect(meUserModifyResult.data?.meEdit.draftContext).toBeNull();
+  }
 };
 
 describe('Drafts workspace resolver testing', () => {

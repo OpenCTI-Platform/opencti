@@ -52,6 +52,10 @@ export const TaskFragment = graphql`
     description
     workflowEnabled
     entity_type
+    draftVersion {
+      draft_id
+      draft_operation
+    }
     objectMarking {
       definition
       definition_type

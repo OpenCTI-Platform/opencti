@@ -27,6 +27,10 @@ const attackPatternLineFragment = graphql`
     x_mitre_id
     created
     modified
+    draftVersion {
+      draft_id
+      draft_operation
+    }
     objectLabel {
       id
       value
