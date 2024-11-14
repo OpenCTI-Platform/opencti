@@ -18,7 +18,6 @@ import MenuItem from '@mui/material/MenuItem';
 import Tooltip from '@mui/material/Tooltip';
 import Box from '@mui/material/Box';
 import Alert from '@mui/material/Alert';
-import OpenVocabField from '../../common/form/OpenVocabField';
 import Drawer from '../../common/drawer/Drawer';
 import ObjectMembersField from '../../common/form/ObjectMembersField';
 import ObjectOrganizationField from '../../common/form/ObjectOrganizationField';
@@ -49,8 +48,6 @@ import SelectField from '../../../../components/fields/SelectField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import TimePickerField from '../../../../components/TimePickerField';
 import { parse } from '../../../../utils/Time';
-import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
-import ObjectParticipantField from '../../common/form/ObjectParticipantField';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -174,28 +171,48 @@ const PlaybookAddComponentsContent = ({
   };
   const renderFieldOptions = (i, values, setValues) => {
     const disabled = isEmptyField(actionsInputs[i]?.op);
-
-    const options = [
-      { label: t_i18n('Marking definitions'), value: 'objectMarking', isMultiple: true },
-      { label: t_i18n('Labels'), value: 'objectLabel', isMultiple: true },
-      (actionsInputs[i]?.op === 'add' || actionsInputs[i]?.op === 'replace') && { label: t_i18n('Assignees'), value: 'object-assignee', isMultiple: true },
-      (actionsInputs[i]?.op === 'add' || actionsInputs[i]?.op === 'replace') && { label: t_i18n('Participants'), value: 'object-participant', isMultiple: true },
-      ...(actionsInputs[i]?.op === 'replace' ? [
+    let options = [];
+    if (actionsInputs[i]?.op === 'add') {
+      options = [
+        {
+          label: t_i18n('Marking definitions'),
+          value: 'objectMarking',
+          isMultiple: true,
+        },
+        { label: t_i18n('Labels'), value: 'objectLabel', isMultiple: true },
+      ];
+    } else if (actionsInputs[i]?.op === 'replace') {
+      options = [
+        {
+          label: t_i18n('Marking definitions'),
+          value: 'objectMarking',
+          isMultiple: true,
+        },
+        { label: t_i18n('Labels'), value: 'objectLabel', isMultiple: true },
         { label: t_i18n('Author'), value: 'createdBy', isMultiple: false },
         { label: t_i18n('Confidence'), value: 'confidence', isMultiple: false },
         { label: t_i18n('Score'), value: 'x_opencti_score', isMultiple: false },
-        { label: t_i18n('Detection'), value: 'x_opencti_detection', isMultiple: false },
-        { label: t_i18n('Status'), value: 'x_opencti_workflow_id', isMultiple: false },
-        { label: t_i18n('Severity'), value: 'severity', isMultiple: false },
-        { label: t_i18n('Priority'), value: 'priority', isMultiple: false },
-        { label: t_i18n('Incident response type'), value: 'response_types', isMultiple: false },
-        { label: t_i18n('Request for information type'), value: 'information_types', isMultiple: false },
-        { label: t_i18n('Request for takedown type'), value: 'takedown_types', isMultiple: false },
-      ] : []),
-    ].filter(Boolean);
-
-    const sortedOptions = options.sort((a, b) => a.label.localeCompare(b.label));
-
+        {
+          label: t_i18n('Detection'),
+          value: 'x_opencti_detection',
+          isMultiple: false,
+        },
+        {
+          label: t_i18n('Status'),
+          value: 'x_opencti_workflow_id',
+          isMultiple: false,
+        },
+      ];
+    } else if (actionsInputs[i]?.op === 'remove') {
+      options = [
+        {
+          label: t_i18n('Marking definitions'),
+          value: 'objectMarking',
+          isMultiple: true,
+        },
+        { label: t_i18n('Labels'), value: 'objectLabel', isMultiple: true },
+      ];
+    }
     return (
       <Select
         variant="standard"
@@ -206,13 +223,14 @@ const PlaybookAddComponentsContent = ({
           setValues(R.omit([`actions-${i}-value`], values));
         }}
       >
-        {sortedOptions.length > 0 ? (
-          sortedOptions.map(
+        {options.length > 0 ? (
+          R.map(
             (n) => (
               <MenuItem key={n.value} value={n.value}>
                 {n.label}
               </MenuItem>
             ),
+            options,
           )
         ) : (
           <MenuItem value="none">{t_i18n('None')}</MenuItem>
@@ -222,13 +240,6 @@ const PlaybookAddComponentsContent = ({
   };
   const renderValuesOptions = (i, setFieldValue) => {
     const disabled = isEmptyField(actionsInputs[i]?.attribute);
-    const vocabCategories = {
-      severity: 'case_severity_ov',
-      priority: 'case_priority_ov',
-      response_types: 'incident_response_types_ov',
-      information_types: 'request_for_information_types_ov',
-      takedown_types: 'request_for_takedown_types_ov',
-    };
     switch (actionsInputs[i]?.attribute) {
       case 'objectMarking':
         return (
@@ -300,53 +311,6 @@ const PlaybookAddComponentsContent = ({
             label={t_i18n('Value')}
             onChange={(_, value) => handleChangeActionInput(i, 'value', [
               { label: value, value, patch_value: value },
-            ])}
-          />
-        );
-      case 'severity':
-      case 'priority':
-      case 'response_types':
-      case 'information_types':
-      case 'takedown_types': {
-        return (
-          <OpenVocabField
-            name={`actions-${i}-value`}
-            type={vocabCategories[actionsInputs[i]?.attribute]}
-            containerStyle={{ marginTop: 16 }}
-            onChange={(_, value) => handleChangeActionInput(i, 'value', [
-              {
-                label: value.label,
-                value: value.value,
-                patch_value: value.value,
-              },
-            ])
-            }
-          />
-        );
-      }
-      case 'object-assignee':
-        return (
-          <ObjectAssigneeField
-            name={`actions-${i}-value`}
-            onChange={(_, value) => handleChangeActionInput(i, 'value', [
-              {
-                label: value.label,
-                value: value.value,
-                patch_value: value.value,
-              },
-            ])}
-          />
-        );
-      case 'object-participant':
-        return (
-          <ObjectParticipantField
-            name={`actions-${i}-value`}
-            onChange={(_, value) => handleChangeActionInput(i, 'value', [
-              {
-                label: value.label,
-                value: value.value,
-                patch_value: value.value,
-              },
             ])}
           />
         );
