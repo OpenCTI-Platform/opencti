@@ -121,6 +121,7 @@ interface RssItem {
   'content:encoded': { _: string }
   category: { _: string } | { _: string }[]
   pubDate: { _: string }
+  'dc:date': { _: string }
   lastBuildDate: { _: string }
   updated: { _: string }
 }
@@ -154,7 +155,7 @@ const rssItemV2Convert = (turndownService: TurndownService, channel: RssElement,
     link: isNotEmptyField(item.link) ? ((item.link as { _: string })._ ?? '').trim() : '',
     content: turndownService.turndown(item['content:encoded']?._ ?? item.content?._ ?? ''),
     labels: R.uniq(asArray(item.category).filter((c) => isNotEmptyField(c)).map((c) => (c as { _: string })._.trim())),
-    pubDate: utcDate(sanitizeForMomentParsing(item.pubDate?._ ?? pubDate?._ ?? FROM_START_STR)),
+    pubDate: utcDate(sanitizeForMomentParsing(item.pubDate?._ ?? item['dc:date']?._ ?? pubDate?._ ?? FROM_START_STR)),
   };
 };
 
