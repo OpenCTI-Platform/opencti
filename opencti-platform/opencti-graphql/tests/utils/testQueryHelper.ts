@@ -35,6 +35,26 @@ export const adminQueryWithSuccess = async (request: { query: any, variables: an
   return requestResult;
 };
 
+export const adminQueryWithError = async (
+  request: { query: any, variables: any },
+  errorMessage?: string,
+  errorName?: string
+) => {
+  const requestResult = await adminQuery({
+    query: request.query,
+    variables: request.variables,
+  });
+  expect(requestResult, `Something is wrong with this query: ${request.query}`).toBeDefined();
+  expect(requestResult.errors.length).toEqual(1);
+  if (errorMessage) {
+    expect(requestResult.errors[0].message, `error message: ${errorMessage} is expected, but got ${requestResult.errors[0].message}`).toBe(errorMessage);
+  }
+  if (errorName) {
+    expect(requestResult.errors[0].extensions.code, `error is expected but got ${requestResult.errors[0].name}`).toBe(errorName);
+  }
+  return requestResult;
+};
+
 /**
  * Execute the query as some User, and verify success and return query result.
  * @param client
