@@ -1,0 +1,123 @@
+.timerange {
+    width: 100%;
+    height: 100%;
+}
+
+.react_time_range__rail__inner {
+    background-color: transparent !important;
+}
+
+.react_time_range__time_range_container {
+    padding: 30px 10% 0;
+    height: 70px;
+    width: 90%;
+    box-sizing: border-box;
+}
+
+.react_time_range__keyboard_handle {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    z-index: 3;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    box-shadow: 1px 1px 1px 1px rgba(0, 0, 0, 0.3);
+}
+
+.react_time_range__track, .react_time_range__track__disabled {
+    position: absolute;
+    transform: translate(0%, -50%);
+    height: 50px;
+    cursor: pointer;
+    transition: background-color 0.15s ease-in-out, border-color 0.15s ease;
+    z-index: 3;
+}
+
+.react_time_range__track__disabled {
+    z-index: 1;
+    border-left: 1px solid #c8cacc;
+    border-right: 1px solid #c8cacc;
+    background: repeating-linear-gradient(-45deg, transparent, transparent 3px, #d0d3d7 4px, #d0d3d7 2px);
+}
+
+.react_time_range__rail__outer {
+    position: absolute;
+    width: 100%;
+    height: 50px;
+    transform: translate(0%, -50%);
+    cursor: pointer;
+}
+
+.react_time_range__rail__inner {
+    position: absolute;
+    width: 100%;
+    height: 50px;
+    transform: translate(0%, -50%);
+    pointer-events: none;
+    background-color: #f5f7fa;
+    border-bottom: 1px solid #c8cacc;
+}
+
+.react_time_range__handle_wrapper {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    -webkit-tap-highlight-color: #000;
+    z-index: 6;
+    width: 24px;
+    height: 24px;
+    cursor: pointer;
+    background-color: transparent;
+}
+
+.react_time_range__handle_container, .react_time_range__handle_container__disabled {
+    position: absolute;
+    display: flex;
+    transform: translate(-50%, -50%);
+    z-index: 4;
+    width: 10px;
+    height: 24px;
+    border-radius: 4px;
+    box-shadow: 0 0 3px rgba(0, 0, 0, 0.4);
+    background-color: #fff;
+}
+
+.react_time_range__handle_container__disabled {
+    background-color: #666;
+}
+
+.react_time_range__handle_marker, .react_time_range__handle_marker__error {
+    width: 2px;
+    height: 12px;
+    margin: auto;
+    border-radius: 2px;
+    background-color: #62cb66;
+    transition: background-color 0.2s ease;
+}
+
+.react_time_range__handle_marker__error {
+    background-color: #d6000b;
+}
+
+.react_time_range__tick_marker, .react_time_range__tick_marker__large {
+    position: absolute;
+    margin-top: 20px;
+    width: 1px;
+    height: 5px;
+    background-color: #c8cacc;
+    z-index: 2;
+}
+
+.react_time_range__tick_marker__large {
+    margin-top: 15px;
+    height: 10px;
+}
+
+.react_time_range__tick_label {
+    position: absolute;
+    margin-top: 28px;
+    font-size: 10px;
+    text-align: center;
+    z-index: 2;
+    color: #77828c;
+    font-family: sans-serif;
+}

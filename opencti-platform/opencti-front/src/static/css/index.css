@@ -114,15 +114,6 @@ div.markdown table {
   white-space: pre;
 }
 
-.timerange {
-  width: 100%;
-  height: 100%;
-}
-
-.react_time_range__rail__inner {
-  background-color: transparent !important;
-}
-
 input[type="file"] {
   width: 100% !important;
 }
