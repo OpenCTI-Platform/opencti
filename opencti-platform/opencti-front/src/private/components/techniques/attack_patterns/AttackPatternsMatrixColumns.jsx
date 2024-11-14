@@ -16,7 +16,7 @@ import withRouter from '../../../../utils/compat_router/withRouter';
 import { attackPatternsLinesQuery } from '../AttackPatterns';
 import inject18n from '../../../../components/i18n';
 import { computeLevel } from '../../../../utils/Number';
-import AttackPtternsMatrixBar from './AttackPtternsMatrixBar';
+import AttackPtternsMatrixBar from './AttackPatternsMatrixBar';
 import { truncate } from '../../../../utils/String';
 import { MESSAGING$ } from '../../../../relay/environment';
 import { UserContext } from '../../../../utils/hooks/useAuth';
@@ -309,6 +309,7 @@ class AttackPatternsMatrixColumnsComponent extends Component {
 
     const killChains = R.uniq(data.attackPatternsMatrix.attackPatternsOfPhases.map((a) => a.kill_chain_name))
       .sort((a, b) => a.localeCompare(b));
+    console.log('killChains', killChains);
     const attackPatternsOfPhases = data.attackPatternsMatrix.attackPatternsOfPhases
       .filter((a) => a.kill_chain_name === activeKillChain)
       .sort((a, b) => a.x_opencti_order - b.x_opencti_order)
