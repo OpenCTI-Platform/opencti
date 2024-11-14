@@ -4,6 +4,7 @@ import { GARBAGE_COLLECTION_MANAGER_USER, executionContext } from '../utils/acce
 import { confirmDelete, findOldDeleteOperations } from '../modules/deleteOperation/deleteOperation-domain';
 
 const GARBAGE_COLLECTION_MANAGER_ENABLED = booleanConf('garbage_collection_manager:enabled', true);
+const TRASH_ENABLED = booleanConf('app:trash:enabled', true);
 const GARBAGE_COLLECTION_MANAGER_KEY = conf.get('garbage_collection_manager:lock_key') || 'garbage_collection_manager_lock';
 const SCHEDULE_TIME = conf.get('garbage_collection_manager:interval') || 60000; // 1 minute
 const BATCH_SIZE = conf.get('garbage_collection_manager:batch_size') || 10000;
@@ -43,7 +44,7 @@ const GARBAGE_COLLECTION_MANAGER_DEFINITION: ManagerDefinition = {
     interval: SCHEDULE_TIME,
     lockKey: GARBAGE_COLLECTION_MANAGER_KEY,
   },
-  enabledByConfig: GARBAGE_COLLECTION_MANAGER_ENABLED,
+  enabledByConfig: TRASH_ENABLED && GARBAGE_COLLECTION_MANAGER_ENABLED,
   enabledToStart(): boolean {
     return this.enabledByConfig;
   },

@@ -23227,6 +23227,7 @@ export type Settings = BasicObject & InternalObject & {
   platform_theme_light_primary?: Maybe<Scalars['String']['output']>;
   platform_theme_light_secondary?: Maybe<Scalars['String']['output']>;
   platform_title?: Maybe<Scalars['String']['output']>;
+  platform_trash_enabled: Scalars['Boolean']['output'];
   platform_url?: Maybe<Scalars['String']['output']>;
   platform_user_statuses: Array<UserStatus>;
   platform_whitemark?: Maybe<Scalars['Boolean']['output']>;
@@ -38847,6 +38848,7 @@ export type SettingsResolvers<ContextType = any, ParentType extends ResolversPar
   platform_theme_light_primary?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_theme_light_secondary?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_title?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  platform_trash_enabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   platform_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_user_statuses?: Resolver<Array<ResolversTypes['UserStatus']>, ParentType, ContextType>;
   platform_whitemark?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;

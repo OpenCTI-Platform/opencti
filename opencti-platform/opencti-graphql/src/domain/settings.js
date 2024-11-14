@@ -136,6 +136,7 @@ export const getSettings = async (context) => {
     platform_ai_type: `${getAIEndpointType()} ${nconf.get('ai:type')}`,
     platform_ai_model: nconf.get('ai:model'),
     platform_ai_has_token: !!isNotEmptyField(nconf.get('ai:token')),
+    platform_trash_enabled: nconf.get('app:trash:enabled') ?? true,
     platform_feature_flags: [
       { id: 'RUNTIME_SORTING', enable: isRuntimeSortEnable() },
       ...(ENABLED_FEATURE_FLAGS.map((feature) => ({ id: feature, enable: true })))

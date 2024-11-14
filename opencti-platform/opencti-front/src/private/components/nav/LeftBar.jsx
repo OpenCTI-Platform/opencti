@@ -100,6 +100,7 @@ import useGranted, {
 import { fileUri, MESSAGING$ } from '../../../relay/environment';
 import { useHiddenEntities, useIsHiddenEntities } from '../../../utils/hooks/useEntitySettings';
 import useAuth from '../../../utils/hooks/useAuth';
+import useHelper from '../../../utils/hooks/useHelper';
 import { useSettingsMessagesBannerHeight } from '../settings/settings_messages/SettingsMessagesBanner';
 import logoFiligranDark from '../../../static/images/logo_filigran_dark.png';
 import logoFiligranLight from '../../../static/images/logo_filigran_light.png';
@@ -352,6 +353,8 @@ const LeftBar = () => {
     'City',
     'Position',
   );
+
+  const { isTrashEnable } = useHelper();
 
   const {
     bannerSettings: { bannerHeightNumber },
@@ -881,27 +884,31 @@ const LeftBar = () => {
                 ],
               )}
             </Security>
-            <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
-              <StyledTooltip title={!navOpen && t_i18n('Trash')} placement="right">
-                <MenuItem
-                  component={Link}
-                  to="/dashboard/trash"
-                  selected={!navOpen && location.pathname.includes('/dashboard/trash')}
-                  dense={true}
-                  classes={{ root: classes.menuItem }}
-                >
-                  <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
-                    <DeleteOutlined />
-                  </ListItemIcon>
-                  {navOpen && (
-                    <ListItemText
-                      classes={{ primary: classes.menuItemText }}
-                      primary={t_i18n('Trash')}
-                    />
-                  )}
-                </MenuItem>
-              </StyledTooltip>
-            </Security>
+            {
+              isTrashEnable() && (
+                <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
+                  <StyledTooltip title={!navOpen && t_i18n('Trash')} placement="right">
+                    <MenuItem
+                      component={Link}
+                      to="/dashboard/trash"
+                      selected={!navOpen && location.pathname.includes('/dashboard/trash')}
+                      dense={true}
+                      classes={{ root: classes.menuItem }}
+                    >
+                      <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
+                        <DeleteOutlined />
+                      </ListItemIcon>
+                      {navOpen && (
+                        <ListItemText
+                          classes={{ primary: classes.menuItemText }}
+                          primary={t_i18n('Trash')}
+                        />
+                      )}
+                    </MenuItem>
+                  </StyledTooltip>
+                </Security>
+              )
+            }
           </MenuList>
         </Security>
         <Security needs={[

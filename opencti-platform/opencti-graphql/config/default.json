@@ -104,6 +104,9 @@
     },
     "group_confidence_level": {
       "max_confidence_default": 100
+    },
+    "trash": {
+      "enabled": true
     }
   },
   "demo_mode": false,
