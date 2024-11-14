@@ -31,8 +31,7 @@ const StixDomainObjectAttackPatternsKillChainMatrix: FunctionComponent<StixDomai
       marginRight={true}
       handleToggleColorsReversed={handleToggleColorsReversed}
       currentColorsReversed={currentColorsReversed}
-      hideBar={false}
-      hideSwitchKillChainNavOpen={true}
+      noBottomBar={true}
       handleAdd={handleAdd}
       selectedKillChain={selectedKillChain}
     />

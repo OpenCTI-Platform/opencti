@@ -8,9 +8,13 @@ import {
   StixDomainObjectAttackPatternsKillChainQuery$data,
   StixDomainObjectAttackPatternsKillChainQuery$variables,
 } from '@components/common/stix_domain_objects/__generated__/StixDomainObjectAttackPatternsKillChainQuery.graphql';
+import { attackPatternsMatrixColumnsQuery } from '@components/techniques/attack_patterns/AttackPatternsMatrixColumns';
+import { AttackPatternsMatrixColumnsQuery } from '@components/techniques/attack_patterns/__generated__/AttackPatternsMatrixColumnsQuery.graphql';
 import StixDomainObjectAttackPatternsKillChain, { stixDomainObjectAttackPatternsKillChainQuery } from './StixDomainObjectAttackPatternsKillChain';
 import { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
 import { UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
+import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import Loader, { LoaderVariant } from '../../../../components/Loader';
 
 interface StixDomainObjectAttackPatternsKillChainProps {
   helpers: UseLocalStorageHelpers;
@@ -171,25 +175,31 @@ const StixDomainObjectAttackPatternsKillChainContainer: FunctionComponent<StixDo
     stixDomainObjectAttackPatternsKillChainContainerFragment,
     dataPreloaded,
   ) as StixDomainObjectAttackPatternsKillChainContainer_data$data;
-  return (
-    <StixDomainObjectAttackPatternsKillChain
-      data={data}
-      paginationOptions={queryPaginationOptions}
-      stixDomainObjectId={stixDomainObjectId}
-      handleChangeView={helpers.handleChangeView}
-      handleSearch={helpers.handleSearch}
-      helpers={helpers}
-      filters={filters}
-      searchTerm={searchTerm ?? ''}
-      currentView={view}
-      defaultStartTime={defaultStartTime}
-      defaultStopTime={defaultStopTime}
-      exportContext={{ entity_type: 'stix-core-relationship' }}
-      handleToggleExports={disableExport ? undefined : helpers.handleToggleExports}
-      openExports={openExports}
-      availableFilterKeys={availableFilterKeys}
-      storageKey={storageKey}
-    />
+  const killChainDataQueryRef = useQueryLoading<AttackPatternsMatrixColumnsQuery>(attackPatternsMatrixColumnsQuery);
+  return killChainDataQueryRef ? (
+    <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+      <StixDomainObjectAttackPatternsKillChain
+        data={data}
+        paginationOptions={queryPaginationOptions}
+        stixDomainObjectId={stixDomainObjectId}
+        handleChangeView={helpers.handleChangeView}
+        handleSearch={helpers.handleSearch}
+        helpers={helpers}
+        filters={filters}
+        searchTerm={searchTerm ?? ''}
+        currentView={view}
+        defaultStartTime={defaultStartTime}
+        defaultStopTime={defaultStopTime}
+        exportContext={{ entity_type: 'stix-core-relationship' }}
+        handleToggleExports={disableExport ? undefined : helpers.handleToggleExports}
+        openExports={openExports}
+        availableFilterKeys={availableFilterKeys}
+        storageKey={storageKey}
+        killChainDataQueryRef={killChainDataQueryRef}
+      />
+    </React.Suspense>
+  ) : (
+    <Loader variant={LoaderVariant.inElement} />
   );
 };
 

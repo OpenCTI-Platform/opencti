@@ -14,10 +14,9 @@ interface AttackPatternsMatrixProps {
   searchTerm?: string;
   handleToggleColorsReversed: () => void;
   currentColorsReversed: boolean;
-  hideBar: boolean;
   handleAdd: (entity: TargetEntity) => void;
   selectedKillChain?: string;
-  hideSwitchKillChainNavOpen?: boolean;
+  noBottomBar?: boolean;
 }
 const AttackPatternsMatrix: FunctionComponent<AttackPatternsMatrixProps> = ({
   attackPatterns,
@@ -25,10 +24,9 @@ const AttackPatternsMatrix: FunctionComponent<AttackPatternsMatrixProps> = ({
   searchTerm,
   handleToggleColorsReversed,
   currentColorsReversed,
-  hideBar,
   handleAdd,
   selectedKillChain,
-  hideSwitchKillChainNavOpen,
+  noBottomBar,
 }) => {
   return (
     <div style={{
@@ -50,10 +48,9 @@ const AttackPatternsMatrix: FunctionComponent<AttackPatternsMatrixProps> = ({
                 searchTerm={searchTerm ?? ''}
                 handleToggleColorsReversed={handleToggleColorsReversed}
                 currentColorsReversed={currentColorsReversed}
-                hideBar={hideBar}
                 handleAdd={handleAdd}
                 selectedKillChain={selectedKillChain}
-                hideSwitchKillChainNavOpen={hideSwitchKillChainNavOpen}
+                noBottomBar={noBottomBar}
               />
             );
           }

@@ -137,7 +137,6 @@ const AttackPatternMatrixComponent = (props) => {
       handleToggleColorsReversed={handleToggleColorsReversed}
       handleToggleModeOnlyActive={handleToggleModeOnlyActive}
       handleAdd={handleAddEntity}
-      hideBar={false}
     />
   );
 };
