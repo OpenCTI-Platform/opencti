@@ -651,7 +651,13 @@ export const getAvailableOperatorForFilter = (
 };
 
 export const useFetchFilterKeysSchema = () => {
-  const { filterKeysSchema } = useAuth().schema;
+  let filterKeysSchema: Map<string, Map<string, FilterDefinition>>;
+
+  try {
+    filterKeysSchema = useAuth().schema.filterKeysSchema;
+  } catch (e) {
+    filterKeysSchema = new Map();
+  }
   return filterKeysSchema;
 };
 
