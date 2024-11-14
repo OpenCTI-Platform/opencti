@@ -1,27 +1,25 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { scaleTime } from 'd3-scale';
-import { Slider, Rail, Handles, Tracks, Ticks } from 'react-compound-slider';
-import { format, addHours, startOfToday, endOfToday, differenceInMilliseconds, isBefore, isAfter, set, addMinutes } from 'date-fns';
+import { Handles, Rail, Slider, Ticks, Tracks } from 'react-compound-slider';
+import { addHours, addMinutes, differenceInMilliseconds, endOfToday, format, isAfter, isBefore, set, startOfToday } from 'date-fns';
 
-import SliderRail from './components/SliderRail';
 import Track from './components/Track';
 import Tick from './components/Tick';
 import Handle from './components/Handle';
+import RangeSliderRail from './components/SliderRail';
 
 const getTimelineConfig = (timelineStart, timelineLength) => (date) => {
-  const percent = differenceInMilliseconds(date, timelineStart) / timelineLength * 100;
+  const percent = (differenceInMilliseconds(date, timelineStart) / timelineLength) * 100;
   const value = Number(format(date, 'T'));
   return { percent, value };
 };
 
-const getFormattedBlockedIntervals = (blockedDates = [], [startTime, endTime]) => {
-  if (!blockedDates.length) return null;
-
+const getFormattedBlockedIntervals = (blockedDates, [startTime, endTime]) => {
+  if (!blockedDates || blockedDates.length === 0) return null;
   const timelineLength = differenceInMilliseconds(endTime, startTime);
   const getConfig = getTimelineConfig(startTime, timelineLength);
-
-  const formattedBlockedDates = blockedDates.map((interval, index) => {
+  return blockedDates.map((interval, index) => {
     let { start, end } = interval;
 
     if (isBefore(start, startTime)) start = startTime;
@@ -32,8 +30,6 @@ const getFormattedBlockedIntervals = (blockedDates = [], [startTime, endTime]) =
 
     return { id: `blocked-track-${index}`, source, target };
   });
-
-  return formattedBlockedDates;
 };
 
 const getNowConfig = ([startTime, endTime]) => {
@@ -124,7 +120,7 @@ class TimeRange extends React.Component {
           rootStyle={{ position: 'relative', width: '100%' }}
         >
           <Rail>
-            {({ getRailProps }) => <SliderRail className={sliderRailClassName} getRailProps={getRailProps} />}
+            {({ getRailProps }) => <RangeSliderRail className={sliderRailClassName} getRailProps={getRailProps} />}
           </Rail>
 
           <Handles>
@@ -157,7 +153,7 @@ class TimeRange extends React.Component {
             )}
           </Tracks>
 
-          {disabledIntervals?.length && (
+          {disabledIntervals?.length > 0 && (
           <Tracks left={false} right={false}>
             {({ getTrackProps }) => (
               <>
