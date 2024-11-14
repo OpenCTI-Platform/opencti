@@ -249,7 +249,7 @@ const SyncCreation = ({ paginationOptions }) => {
                     style={fieldSpacingContainerStyle}
                   />
                   <ToggleVisibilityField
-                    name="Token"
+                    name="token"
                     label={t_i18n('Remote OpenCTI token')}
                     disabled={streams.length > 0}
                   />

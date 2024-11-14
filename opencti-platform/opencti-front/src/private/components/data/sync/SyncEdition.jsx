@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import Typography from '@mui/material/Typography';
-import { CheckCircleOutlined, WarningOutlined } from '@mui/icons-material';
+import { CheckCircleOutlined, Visibility, VisibilityOff, WarningOutlined } from '@mui/icons-material';
 import * as Yup from 'yup';
 import * as R from 'ramda';
 import Button from '@mui/material/Button';
@@ -12,6 +12,7 @@ import Tooltip from '@mui/material/Tooltip';
 import { InformationOutline } from 'mdi-material-ui';
 import makeStyles from '@mui/styles/makeStyles';
 import AccordionDetails from '@mui/material/AccordionDetails';
+import IconButton from '@mui/material/IconButton';
 import { useFormatter } from '../../../../components/i18n';
 import { commitMutation, fetchQuery, MESSAGING$ } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
@@ -75,6 +76,7 @@ const SyncEditionContainer = ({ synchronizer }) => {
   const classes = useStyles();
   const [streams, setStreams] = useState([]);
   const [openOptions, setOpenOptions] = useState(synchronizer.no_dependencies || synchronizer.synchronized);
+  const [showToken, setShowToken] = useState(false);
   const relatedUser = synchronizer.user ? { label: synchronizer.user.name, value: synchronizer.user.id } : '';
   const initialValues = R.pipe(
     R.assoc('current_state_date', buildDate(synchronizer.current_state_date)),
@@ -153,6 +155,10 @@ const SyncEditionContainer = ({ synchronizer }) => {
     }
   }, []);
 
+  const toggleTokenVisibility = () => {
+    setShowToken(!showToken);
+  };
+
   return (
     <Formik
       enableReinitialize={true}
@@ -208,15 +214,39 @@ const SyncEditionContainer = ({ synchronizer }) => {
               style={{ marginTop: 20 }}
               disabled={true}
             />
-            <Field
-              component={TextField}
-              variant="standard"
-              name="token"
-              label={t_i18n('Remote OpenCTI token')}
-              fullWidth={true}
-              style={{ marginTop: 20 }}
-              disabled={true}
-            />
+            <div
+              style={{
+                position: 'relative',
+                display: 'flex',
+                alignItems: 'center',
+              }}
+            >
+              <Field
+                component={TextField}
+                variant="standard"
+                name="token"
+                type={showToken ? 'text' : 'password'}
+                label={t_i18n('Remote OpenCTI token')}
+                fullWidth={true}
+                style={{ marginTop: 20 }}
+                disabled={true}
+              />
+              <IconButton
+                onClick={toggleTokenVisibility}
+                aria-label={showToken ? t_i18n('Hide') : t_i18n('Show')}
+                style={{
+                  position: 'absolute',
+                  right: 1,
+                  top: '60%',
+                  margin: 0,
+                  padding: 0,
+                  zIndex: 1,
+                }}
+                disableRipple
+              >
+                {showToken ? <VisibilityOff /> : <Visibility />}
+              </IconButton>
+            </div>
             <Field
               component={TextField}
               variant="standard"
