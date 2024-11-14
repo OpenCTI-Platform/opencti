@@ -246,14 +246,11 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
               value={activKillChainValue}
               onChange={handleKillChainChange}
             >
-              {killChains.map((killChainName) => {
-                const stringValue = String(killChainName);
-                return (
-                  <MenuItem key={stringValue} value={stringValue}>
-                    {stringValue}
-                  </MenuItem>
-                );
-              })}
+              {killChains.map((killChainName) => (
+                <MenuItem key={killChainName} value={killChainName}>
+                  {killChainName}
+                </MenuItem>
+              ))}
             </Select>
           </FormControl>
         </div>
