@@ -117,6 +117,7 @@ Here are the configuration keys, for both containers (environment variables) and
 | relations_deduplication:types_overrides:*relationship_type*:past_days        | RELATIONS_DEDUPLICATION__*RELATIONSHIP_TYPE*__PAST_DAYS        |               | Override the past days for a specific type of relationship (ex. *targets*)               |
 | relations_deduplication:types_overrides:*relationship_type*:next_days        | RELATIONS_DEDUPLICATION__*RELATIONSHIP_TYPE*__NEXT_DAYS        |               | Override the next days for a specific type of relationship (ex. *targets*)               |
 | relations_deduplication:types_overrides:*relationship_type*:created_by_based | RELATIONS_DEDUPLICATION__*RELATIONSHIP_TYPE*__CREATED_BY_BASED |               | Override the author duplication for a specific type of relationship (ex. *targets*)      |
+| app:trash:enabled                                                            | APP__TRASH__ENABLED                                            | `true`        | Enable or disable the trash system. If disabled, the trash manager will also be disabled |
 
 #### Technical customization
 
