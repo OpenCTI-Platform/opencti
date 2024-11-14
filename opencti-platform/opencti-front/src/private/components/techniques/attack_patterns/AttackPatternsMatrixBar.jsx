@@ -39,6 +39,12 @@ class AttackPatternsMatrixBar extends Component {
       killChains,
       navOpen,
     } = this.props;
+    let killChainValue;
+    if (killChains.includes(currentKillChain)) {
+      killChainValue = currentKillChain;
+    } else {
+      killChainValue = killChains.length > 0 ? killChains[0] : undefined;
+    }
     return (
       <UserContext.Consumer>
         {({ bannerSettings }) => (
@@ -79,7 +85,7 @@ class AttackPatternsMatrixBar extends Component {
                 >
                   <Select
                     size="small"
-                    value={currentKillChain}
+                    value={killChainValue}
                     onChange={handleChangeKillChain.bind(this)}
                   >
                     {killChains.map((killChainName) => (
