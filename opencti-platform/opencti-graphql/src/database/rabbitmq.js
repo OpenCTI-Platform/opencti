@@ -339,6 +339,9 @@ export const consumeQueue = async (context, connectorId, connectionSetterCallbac
             reject(onConnectError);
           });
           conn.on('error', (onConnectError) => {
+            if (onConnectError) {
+              reject(onConnectError);
+            }
             reject(onConnectError);
           });
           connectionSetterCallback(conn);
