@@ -109,7 +109,6 @@ import logoFiligranTextDark from '../../../static/images/logo_filigran_text_dark
 import logoFiligranTextLight from '../../../static/images/logo_filigran_text_light.png';
 import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
 import useDimensions from '../../../utils/hooks/useDimensions';
-import useHelper from '../../../utils/hooks/useHelper';
 
 export const SMALL_BAR_WIDTH = 55;
 export const OPEN_BAR_WIDTH = 180;
@@ -920,26 +919,26 @@ const LeftBar = () => {
               isTrashEnable() && (
                 <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
                   {!draftContext && (
-                <StyledTooltip title={!navOpen && t_i18n('Trash')} placement="right">
-                  <MenuItem
-                    component={Link}
-                    to="/dashboard/trash"
-                    selected={!navOpen && location.pathname.includes('/dashboard/trash')}
-                    dense={true}
-                    classes={{ root: classes.menuItem }}
-                  >
-                    <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
-                      <DeleteOutlined />
-                    </ListItemIcon>
-                    {navOpen && (
+                  <StyledTooltip title={!navOpen && t_i18n('Trash')} placement="right">
+                    <MenuItem
+                      component={Link}
+                      to="/dashboard/trash"
+                      selected={!navOpen && location.pathname.includes('/dashboard/trash')}
+                      dense={true}
+                      classes={{ root: classes.menuItem }}
+                    >
+                      <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
+                        <DeleteOutlined />
+                      </ListItemIcon>
+                      {navOpen && (
                       <ListItemText
                         classes={{ primary: classes.menuItemText }}
                         primary={t_i18n('Trash')}
                       />
-                    )}
-                  </MenuItem>
-                </StyledTooltip>
-              )}
+                      )}
+                    </MenuItem>
+                  </StyledTooltip>
+                  )}
                 </Security>
               )
             }

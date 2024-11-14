@@ -122,12 +122,12 @@ const Index = ({ settings }: IndexProps) => {
               <Route path="/data/*"
                 element={boundaryWrapper(RootData)}
               />
-            { isTrashEnable() && (
+              {isTrashEnable() && (
                 <Route
-                    path="/trash/*"
-                    element={boundaryWrapper(RootTrash)}
+                  path="/trash/*"
+                  element={boundaryWrapper(RootTrash)}
                 />
-            )}
+              )}
               {isDraftFeatureEnabled && (
                 <Route path="/drafts/*"
                   element={boundaryWrapper(RootDrafts)}
