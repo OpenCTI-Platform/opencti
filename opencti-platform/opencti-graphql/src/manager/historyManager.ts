@@ -52,6 +52,12 @@ export interface HistoryData extends BasicStoreEntity {
   context_data: HistoryContext;
 }
 
+/**
+ * Function to resolve granted_refs when granted_refs_ids are not present (have been added on nov 2024)
+ * This is needed to be able to process older events, and will be removed after a year
+ * @param context
+ * @param events
+ */
 const resolveGrantedRefsIds = async (context: AuthContext, events: Array<SseEvent<StreamDataEvent>>) => {
   const grantedRefsToResolve: StixId[] = [];
   events.forEach((event) => {
