@@ -358,7 +358,7 @@ const WorkspaceHeader = ({
         )}
         {variant === 'dashboard' && (
           <Security needs={[EXPLORE_EXUPDATE_PUBLISH]} hasAccess={canManage}>
-            <div style={{ margin: '-5px 0 0 4px', float: 'right' }}>
+            <div style={{ margin: '-5px 0 0 0px', float: 'right' }}>
               <WorkspaceShareButton workspaceId={workspace.id} />
             </div>
           </Security>
