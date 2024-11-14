@@ -33,7 +33,7 @@ import useAuth from '../../../../utils/hooks/useAuth';
 import useGranted, { SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN } from '../../../../utils/hooks/useGranted';
 import { USER_CHOICE_MARKING_CONFIG } from '../../../../utils/csvMapperUtils';
 import { BASIC_AUTH, BEARER_AUTH, CERT_AUTH, extractCA, extractCert, extractKey, extractPassword, extractUsername } from '../../../../utils/ingestionAuthentificationUtils';
-import ToggleVisibilityField from '../../../../components/ToggleVisibilityField';
+import PasswordTextField from '../../../../components/PasswordTextField';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -420,7 +420,7 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
                 fullWidth={true}
                 style={fieldSpacingContainerStyle}
               />
-              <ToggleVisibilityField
+              <PasswordTextField
                 name="password"
                 label={t_i18n('Password')}
                 onSubmit={handleSubmitField}
@@ -428,7 +428,7 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
             </>
           )}
           {values.authentication_type === BEARER_AUTH && (
-            <ToggleVisibilityField
+            <PasswordTextField
               name="authentication_value"
               label={t_i18n('Token')}
               onSubmit={handleSubmitField}
@@ -445,7 +445,7 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
                 fullWidth={true}
                 style={fieldSpacingContainerStyle}
               />
-              <ToggleVisibilityField
+              <PasswordTextField
                 name="key"
                 label={t_i18n('Key (base64)')}
                 onSubmit={handleSubmitField}

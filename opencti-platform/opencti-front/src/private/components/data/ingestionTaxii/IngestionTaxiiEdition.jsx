@@ -16,7 +16,7 @@ import DateTimePickerField from '../../../../components/DateTimePickerField';
 import Drawer from '../../common/drawer/Drawer';
 import { BASIC_AUTH, BEARER_AUTH, CERT_AUTH, extractCA, extractCert, extractKey, extractPassword, extractUsername } from '../../../../utils/ingestionAuthentificationUtils';
 import SwitchField from '../../../../components/fields/SwitchField';
-import ToggleVisibilityField from '../../../../components/ToggleVisibilityField';
+import PasswordTextField from '../../../../components/PasswordTextField';
 
 export const ingestionTaxiiMutationFieldPatch = graphql`
   mutation IngestionTaxiiEditionFieldPatchMutation(
@@ -248,7 +248,7 @@ const IngestionTaxiiEditionContainer = ({
                   fullWidth={true}
                   style={fieldSpacingContainerStyle}
                 />
-                <ToggleVisibilityField
+                <PasswordTextField
                   name="password"
                   label={t('Password')}
                   onSubmit={handleSubmitField}
@@ -256,7 +256,7 @@ const IngestionTaxiiEditionContainer = ({
               </>
             )}
             {values.authentication_type === BEARER_AUTH && (
-              <ToggleVisibilityField
+              <PasswordTextField
                 name="authentication_value"
                 label={t('Token')}
                 onSubmit={handleSubmitField}
@@ -273,7 +273,7 @@ const IngestionTaxiiEditionContainer = ({
                   fullWidth={true}
                   style={fieldSpacingContainerStyle}
                 />
-                <ToggleVisibilityField
+                <PasswordTextField
                   name="key"
                   label={t('Key (base64)')}
                   onSubmit={handleSubmitField}

@@ -28,7 +28,7 @@ import EnrichedTooltip from '../../../../components/EnrichedTooltip';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { Accordion, AccordionSummary } from '../../../../components/Accordion';
 import { deserializeFilterGroupForFrontend } from '../../../../utils/filters/filtersUtils';
-import ToggleVisibilityField from '../../../../components/ToggleVisibilityField';
+import PasswordTextField from '../../../../components/PasswordTextField';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -248,7 +248,7 @@ const SyncCreation = ({ paginationOptions }) => {
                     disabled={streams.length > 0}
                     style={fieldSpacingContainerStyle}
                   />
-                  <ToggleVisibilityField
+                  <PasswordTextField
                     name="token"
                     label={t_i18n('Remote OpenCTI token')}
                     disabled={streams.length > 0}

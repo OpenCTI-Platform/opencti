@@ -18,7 +18,7 @@ import { insertNode } from '../../../../utils/store';
 import SelectField from '../../../../components/fields/SelectField';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import SwitchField from '../../../../components/fields/SwitchField';
-import ToggleVisibilityField from '../../../../components/ToggleVisibilityField';
+import PasswordTextField from '../../../../components/PasswordTextField';
 
 const styles = (theme) => ({
   buttons: {
@@ -200,14 +200,14 @@ const IngestionTaxiiCreation = (props) => {
                   fullWidth={true}
                   style={fieldSpacingContainerStyle}
                 />
-                <ToggleVisibilityField
+                <PasswordTextField
                   name="password"
                   label={t('Password')}
                 />
               </>
               )}
               {values.authentication_type === BEARER_AUTH && (
-              <ToggleVisibilityField
+              <PasswordTextField
                 name="authentication_value"
                 label={t('Token')}
               />
@@ -222,7 +222,7 @@ const IngestionTaxiiCreation = (props) => {
                   fullWidth={true}
                   style={fieldSpacingContainerStyle}
                 />
-                <ToggleVisibilityField
+                <PasswordTextField
                   name="key"
                   label={t('Key (base64)')}
                 />
