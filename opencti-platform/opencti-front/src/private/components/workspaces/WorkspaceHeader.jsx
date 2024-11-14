@@ -42,7 +42,6 @@ import ExportButtons from '../../../components/ExportButtons';
 import { useFormatter } from '../../../components/i18n';
 import WorkspaceManageAccessDialog from './WorkspaceManageAccessDialog';
 import Transition from '../../../components/Transition';
-import useHelper from '../../../utils/hooks/useHelper';
 import { useGetCurrentUserAccessRight } from '../../../utils/authorizedMembers';
 import { truncate } from '../../../utils/String';
 
@@ -123,7 +122,6 @@ const WorkspaceHeader = ({
   const handleCloseDuplicate = () => setDisplayDuplicate(false);
   const [duplicating, setDuplicating] = useState(false);
   const tags = workspace.tags ? workspace.tags : [];
-  const { isFeatureEnable } = useHelper();
 
   const handleOpenTag = () => {
     setOpenTag(!openTag);
@@ -358,9 +356,9 @@ const WorkspaceHeader = ({
             </div>
           </Security>
         )}
-        {isFeatureEnable('PUBLIC_DASHBOARD') && variant === 'dashboard' && (
+        {variant === 'dashboard' && (
           <Security needs={[EXPLORE_EXUPDATE_PUBLISH]} hasAccess={canManage}>
-            <div style={{ margin: '-5px 0 0 4px', float: 'right' }}>
+            <div style={{ margin: '-5px 0 0 0px', float: 'right' }}>
               <WorkspaceShareButton workspaceId={workspace.id} />
             </div>
           </Security>
