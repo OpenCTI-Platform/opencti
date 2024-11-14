@@ -2,7 +2,7 @@ import * as R from 'ramda';
 import { Dispatch, SetStateAction, SyntheticEvent, useCallback, useState } from 'react';
 import { v4 as uuid } from 'uuid';
 import { OrderMode, PaginationOptions } from '../../components/list_lines';
-import { emptyFilterGroup, findFilterFromKey, isFilterGroupNotEmpty, isUniqFilter } from '../filters/filtersUtils';
+import { emptyFilterGroup, findFilterFromKey, isFilterGroupNotEmpty, isUniqFilter, useFetchFilterKeysSchema } from '../filters/filtersUtils';
 import { isEmptyField, isNotEmptyField, removeEmptyFields } from '../utils';
 import { MESSAGING$ } from '../../relay/environment';
 import {
@@ -17,7 +17,7 @@ import {
 } from '../filters/filtersManageStateUtil';
 import { LocalStorage } from './useLocalStorageModel';
 import useBus from './useBus';
-import useAuth from './useAuth';
+import { FilterDefinition } from './useAuth';
 import { Filter, FilterGroup, FilterValue, handleFilterHelpers } from '../filters/filtersHelpers-types';
 
 export interface NumberOfElements {
@@ -262,7 +262,14 @@ export const usePaginationLocalStorage = <U>(
     count: viewStorage.pageSize ? Number.parseInt(viewStorage.pageSize, 10) : 25,
     ...viewStorage,
   });
-  const { filterKeysSchema } = useAuth().schema;
+
+  let filterKeysSchema: Map<string, Map<string, FilterDefinition>>;
+  try {
+    filterKeysSchema = useFetchFilterKeysSchema();
+  } catch (e) {
+    filterKeysSchema = new Map();
+  }
+
   const [storedSortBy, setStoredSortBy] = useState(viewStorage.sortBy);
   const [storedOrderAsc, setStoredOrderAsc] = useState(viewStorage.orderAsc);
 
