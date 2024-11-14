@@ -299,14 +299,18 @@ class AttackPatternsMatrixColumnsComponent extends Component {
       )(selectedPatterns),
     );
 
-    const activeKillChain = noBottomBar
-      ? selectedKillChain
-      : this.state.currentKillChain;
-
     const killChains = R.uniq(data.attackPatternsMatrix.attackPatternsOfPhases.map((a) => a.kill_chain_name))
       .sort((a, b) => a.localeCompare(b));
+    let activKillChainValue;
+    if (noBottomBar && killChains.includes(selectedKillChain)) {
+      activKillChainValue = selectedKillChain;
+    } else if (!noBottomBar && killChains.includes(this.state.currentKillChain)) {
+      activKillChainValue = this.state.currentKillChain;
+    } else {
+      activKillChainValue = killChains.length > 0 ? killChains[0] : undefined;
+    }
     const attackPatternsOfPhases = data.attackPatternsMatrix.attackPatternsOfPhases
-      .filter((a) => a.kill_chain_name === activeKillChain)
+      .filter((a) => a.kill_chain_name === activKillChainValue)
       .sort((a, b) => a.x_opencti_order - b.x_opencti_order)
       .map((a) => {
         return {
@@ -343,7 +347,7 @@ class AttackPatternsMatrixColumnsComponent extends Component {
                   handleToggleModeOnlyActive={toggleModeOnlyActive.bind(this)}
                   currentColorsReversed={modeColorsReversed}
                   handleToggleColorsReversed={toggleColorsReversed.bind(this)}
-                  currentKillChain={this.state.currentKillChain}
+                  currentKillChain={activKillChainValue}
                   handleChangeKillChain={this.handleChangeKillChain.bind(this)}
                   killChains={killChains}
                   navOpen={navOpen}
@@ -471,30 +475,32 @@ export const attackPatternsMatrixColumnsQuery = graphql`
   }
 `;
 
+export const attackPatternsMatrixColumnsFragment = graphql`
+    fragment AttackPatternsMatrixColumns_data on Query {
+        attackPatternsMatrix {
+            attackPatternsOfPhases {
+                kill_chain_id
+                kill_chain_name
+                phase_name
+                x_opencti_order
+                attackPatterns {
+                    attack_pattern_id
+                    name
+                    description
+                    x_mitre_id
+                    subAttackPatternsIds
+                    subAttackPatternsSearchText
+                    killChainPhasesIds
+                }
+            }
+        }
+    }
+`;
+
 const AttackPatternsMatrixColumns = createRefetchContainer(
   AttackPatternsMatrixColumnsComponent,
   {
-    data: graphql`
-      fragment AttackPatternsMatrixColumns_data on Query {
-        attackPatternsMatrix {
-          attackPatternsOfPhases {
-            kill_chain_id
-            kill_chain_name
-            phase_name
-            x_opencti_order
-            attackPatterns {
-              attack_pattern_id
-              name
-              description
-              x_mitre_id
-              subAttackPatternsIds
-              subAttackPatternsSearchText
-              killChainPhasesIds
-            }
-          }
-        }
-      }
-    `,
+    data: attackPatternsMatrixColumnsFragment,
   },
   attackPatternsLinesQuery,
 );

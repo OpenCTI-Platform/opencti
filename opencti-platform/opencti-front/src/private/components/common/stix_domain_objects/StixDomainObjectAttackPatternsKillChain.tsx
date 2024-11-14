@@ -1,5 +1,5 @@
 import React, { FunctionComponent, useState } from 'react';
-import { graphql, useQueryLoader } from 'react-relay';
+import { graphql, PreloadedQuery, useQueryLoader } from 'react-relay';
 import Tooltip from '@mui/material/Tooltip';
 import { FileDownloadOutlined, InvertColorsOffOutlined, ViewColumnOutlined } from '@mui/icons-material';
 import { ProgressWrench } from 'mdi-material-ui';
@@ -21,6 +21,10 @@ import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
+import { AttackPatternsMatrixColumnsQuery } from '@components/techniques/attack_patterns/__generated__/AttackPatternsMatrixColumnsQuery.graphql';
+import { attackPatternsMatrixColumnsFragment, attackPatternsMatrixColumnsQuery } from '@components/techniques/attack_patterns/AttackPatternsMatrixColumns';
+import * as R from 'ramda';
+import { AttackPatternsMatrixColumns_data$key } from '@components/techniques/attack_patterns/__generated__/AttackPatternsMatrixColumns_data.graphql';
 import StixCoreObjectsExports from '../stix_core_objects/StixCoreObjectsExports';
 import SearchInput from '../../../../components/SearchInput';
 import Security from '../../../../utils/Security';
@@ -35,6 +39,7 @@ import { export_max_size } from '../../../../utils/utils';
 import { useFormatter } from '../../../../components/i18n';
 import { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
 import { UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
+import usePreloadedFragment from '../../../../utils/hooks/usePreloadedFragment';
 
 export const stixDomainObjectAttackPatternsKillChainQuery = graphql`
   query StixDomainObjectAttackPatternsKillChainQuery(
@@ -74,6 +79,7 @@ interface StixDomainObjectAttackPatternsKillChainProps {
   defaultStartTime: string;
   defaultStopTime: string;
   storageKey: string;
+  killChainDataQueryRef: PreloadedQuery<AttackPatternsMatrixColumnsQuery>;
 }
 
 const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjectAttackPatternsKillChainProps> = ({
@@ -93,6 +99,7 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
   defaultStartTime,
   defaultStopTime,
   storageKey,
+  killChainDataQueryRef,
 }) => {
   const { t_i18n } = useFormatter();
   const [currentColorsReversed, setCurrentColorsReversed] = useState(false);
@@ -126,14 +133,14 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
       .map((n) => n?.node);
   }
 
-  const killChains = data.attackPatterns ? Array.from(new Set([
-    'mitre-attack',
-    ...(data.attackPatterns.edges
-      .flatMap((edge) => edge.node.killChainPhases)
-      .map((phase) => phase?.kill_chain_name) ?? []),
-  ]))
-    .filter((name) => typeof name === 'string')
-    : [];
+  const killChainsData = usePreloadedFragment<AttackPatternsMatrixColumnsQuery, AttackPatternsMatrixColumns_data$key>({
+    queryDef: attackPatternsMatrixColumnsQuery,
+    fragmentDef: attackPatternsMatrixColumnsFragment,
+    queryRef: killChainDataQueryRef,
+  });
+  const killChainsPhaseData = killChainsData.attackPatternsMatrix?.attackPatternsOfPhases ?? [];
+  const killChains = R.uniq(killChainsPhaseData.map((a) => a.kill_chain_name))
+    .sort((a, b) => a.localeCompare(b));
 
   const exportDisabled = targetEntities.length > export_max_size;
 
@@ -155,6 +162,12 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
       filterGroups: [],
     },
   };
+  let activKillChainValue;
+  if (killChains.includes(selectedKillChain)) {
+    activKillChainValue = selectedKillChain;
+  } else {
+    activKillChainValue = killChains.length > 0 ? killChains[0] : undefined;
+  }
 
   return (
     <>
@@ -230,7 +243,7 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
           >
             <Select
               size="small"
-              value={selectedKillChain}
+              value={activKillChainValue}
               onChange={handleKillChainChange}
             >
               {killChains.map((killChainName) => {
