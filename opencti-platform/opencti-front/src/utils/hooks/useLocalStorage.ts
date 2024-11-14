@@ -263,12 +263,7 @@ export const usePaginationLocalStorage = <U>(
     ...viewStorage,
   });
 
-  let filterKeysSchema: Map<string, Map<string, FilterDefinition>>;
-  try {
-    filterKeysSchema = useFetchFilterKeysSchema();
-  } catch (e) {
-    filterKeysSchema = new Map();
-  }
+  const filterKeysSchema = useFetchFilterKeysSchema();
 
   const [storedSortBy, setStoredSortBy] = useState(viewStorage.sortBy);
   const [storedOrderAsc, setStoredOrderAsc] = useState(viewStorage.orderAsc);

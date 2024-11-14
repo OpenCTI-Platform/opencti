@@ -5,7 +5,7 @@ import React from 'react';
 import { subDays } from 'date-fns';
 import { useFormatter } from '../../components/i18n';
 import type { FilterGroup as GqlFilterGroup } from './__generated__/useSearchEntitiesStixCoreObjectsSearchQuery.graphql';
-import useAuth, { FilterDefinition } from '../hooks/useAuth';
+import useAuth, { FilterDefinition, SchemaType } from '../hooks/useAuth';
 import { capitalizeFirstLetter } from '../String';
 import { FilterRepresentative } from '../../components/filters/FiltersModel';
 import { generateUniqueItemsArray } from '../utils';
@@ -651,7 +651,13 @@ export const getAvailableOperatorForFilter = (
 };
 
 export const useFetchFilterKeysSchema = () => {
-  const { filterKeysSchema } = useAuth().schema;
+  let filterKeysSchema: Map<string, Map<string, FilterDefinition>>;
+
+  try {
+    filterKeysSchema = useAuth().schema.filterKeysSchema;
+  } catch (e) {
+    filterKeysSchema = new Map();
+  }
   return filterKeysSchema;
 };
 
