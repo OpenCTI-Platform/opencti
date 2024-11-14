@@ -7,6 +7,7 @@ import { fieldSpacingContainerStyle } from '../utils/field';
 import TextField from './TextField';
 
 // TODO remove any when component TextField is typescript
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type PasswordTextFieldProps = any & {
   onToggle?: (isVisible: boolean) => void;
 };
