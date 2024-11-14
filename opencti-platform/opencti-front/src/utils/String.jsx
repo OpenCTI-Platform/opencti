@@ -136,6 +136,4 @@ export const splitMultilines = (str) => (str ?? '')
   .filter((v) => !!v)
   .map((s) => s.trim());
 
-export const toggleTokenVisibility = (currentVisibility) => !currentVisibility;
-
-export const maskToken = (api_token) => (api_token ? '•'.repeat(api_token.length) : '');
+export const maskString = (value) => (value ? '•'.repeat(value.length) : '');

@@ -52,7 +52,7 @@ import useAuth from '../../../../utils/hooks/useAuth';
 import type { Theme } from '../../../../components/Theme';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import ItemCopy from '../../../../components/ItemCopy';
-import { maskToken, toggleTokenVisibility } from '../../../../utils/String';
+import { maskString } from '../../../../utils/String';
 
 const startDate = yearsAgo(1);
 const endDate = now();
@@ -431,7 +431,7 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                 >
                   <span style={{ flexGrow: 1 }}>
                     <ItemCopy
-                      content={showToken ? user.api_token : maskToken(user.api_token)}
+                      content={showToken ? user.api_token : maskString(user.api_token)}
                       value={user.api_token}
                     />
                   </span>
@@ -442,7 +442,7 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                       padding: `0 ${theme.spacing(1)}`,
                     }}
                     disableRipple
-                    onClick={() => setShowToken(toggleTokenVisibility(showToken))}
+                    onClick={() => setShowToken((value) => !value)}
                     aria-label={showToken ? t_i18n('Hide') : t_i18n('Show')}
                   >
                     {showToken ? <VisibilityOff/> : <Visibility/>}

@@ -9,8 +9,6 @@ import { UserEditionOverview_user$data } from '@components/settings/users/editio
 import Typography from '@mui/material/Typography';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import Alert from '@mui/material/Alert';
-import { Visibility, VisibilityOff } from '@mui/icons-material';
-import IconButton from '@mui/material/IconButton';
 import TextField from '../../../../../components/TextField';
 import SelectField from '../../../../../components/fields/SelectField';
 import { SubscriptionFocus } from '../../../../../components/Subscription';
@@ -25,6 +23,7 @@ import { isOnlyOrganizationAdmin } from '../../../../../utils/hooks/useGranted';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 import { Accordion, AccordionSummary } from '../../../../../components/Accordion';
 import SwitchField from '../../../../../components/fields/SwitchField';
+import PasswordTextField from '../../../../../components/PasswordTextField';
 
 export const userMutationFieldPatch = graphql`
   mutation UserEditionOverviewFieldPatchMutation(
@@ -109,7 +108,6 @@ UserEditionOverviewComponentProps
   const [commitOrganizationAdd] = useApiMutation(userMutationOrganizationAdd);
   const [commitOrganizationDelete] = useApiMutation(userMutationOrganizationDelete);
   const [openOptions, setOpenOptions] = useState(user.stateless_session);
-  const [showToken, setShowToken] = useState(false);
 
   const userIsOnlyOrganizationAdmin = isOnlyOrganizationAdmin();
   const external = user.external === true;
@@ -180,10 +178,6 @@ UserEditionOverviewComponentProps
         },
       });
     }
-  };
-
-  const toggleTokenVisibility = () => {
-    setShowToken(!showToken);
   };
 
   return (
@@ -293,44 +287,17 @@ UserEditionOverviewComponentProps
             style={fieldSpacingContainerStyle}
             outlined={false}
           />
-          <div
-            style={{
-              position: 'relative',
-              display: 'flex',
-              alignItems: 'center',
-            }}
-          >
-            <Field
-              component={TextField}
-              variant="standard"
-              name="api_token"
-              type={showToken ? 'text' : 'password'}
-              disabled={true}
-              label={t_i18n('Token')}
-              fullWidth={true}
-              style={{ marginTop: 20 }}
-              onFocus={handleChangeFocus}
-              onSubmit={handleSubmitField}
-              helperText={
-                <SubscriptionFocus context={context} fieldName="api_token"/>
-                  }
-            />
-            <IconButton
-              onClick={toggleTokenVisibility}
-              aria-label={showToken ? t_i18n('Hide') : t_i18n('Show')}
-              style={{
-                position: 'absolute',
-                right: 1,
-                top: '60%',
-                margin: 0,
-                padding: 0,
-                zIndex: 1,
-              }}
-              disableRipple
-            >
-              {showToken ? <VisibilityOff /> : <Visibility />}
-            </IconButton>
-          </div>
+          <PasswordTextField
+            name="api_token"
+            label={t_i18n('Token')}
+            disabled={true}
+            onFocus={handleChangeFocus}
+            onSubmit={handleSubmitField}
+            style={{ marginTop: 20 }}
+            helperText={
+              <SubscriptionFocus context={context} fieldName="api_token"/>
+              }
+          />
           <Field
             component={SelectField}
             variant="standard"

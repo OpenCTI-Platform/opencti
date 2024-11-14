@@ -6,20 +6,13 @@ import { useFormatter } from './i18n';
 import { fieldSpacingContainerStyle } from '../utils/field';
 import TextField from './TextField';
 
-interface PasswordTextFieldProps {
-  label: string;
-  name: string;
+// TODO remove any when component TextField is typescript
+type PasswordTextFieldProps = any & {
   onToggle?: (isVisible: boolean) => void;
-  onSubmit?: (name: string, value: string | number | null) => void;
-  disabled?: boolean,
-}
+};
 
 const PasswordTextField: FunctionComponent<PasswordTextFieldProps> = ({
-  name,
-  label,
-  onToggle,
-  onSubmit,
-  disabled = false,
+  onToggle, ...textFieldProps
 }) => {
   const { t_i18n } = useFormatter();
   const [isVisible, setIsVisible] = useState(false);
@@ -34,13 +27,10 @@ const PasswordTextField: FunctionComponent<PasswordTextFieldProps> = ({
       <Field
         component={TextField}
         variant="standard"
-        name={name}
         type={isVisible ? 'text' : 'password'}
-        label={label}
         fullWidth={true}
-        disabled={disabled}
-        {...(onSubmit ? { onSubmit } : {})}
         style={fieldSpacingContainerStyle}
+        {...textFieldProps}
       />
       <IconButton
         onClick={toggleVisibility}
