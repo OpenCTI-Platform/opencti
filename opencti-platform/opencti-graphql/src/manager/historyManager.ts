@@ -58,7 +58,7 @@ export interface HistoryData extends BasicStoreEntity {
  * @param context
  * @param events
  */
-const resolveGrantedRefsIds = async (context: AuthContext, events: Array<SseEvent<StreamDataEvent>>) => {
+export const resolveGrantedRefsIds = async (context: AuthContext, events: Array<SseEvent<StreamDataEvent>>) => {
   const grantedRefsToResolve: StixId[] = [];
   events.forEach((event) => {
     const stix = event.data.data;
