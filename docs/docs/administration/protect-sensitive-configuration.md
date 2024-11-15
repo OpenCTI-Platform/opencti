@@ -43,17 +43,17 @@ Only users with `Allow modification of sensitive configuration` capability enabl
 
 ## Recommended approach to give yourself access to danger zone
 
-1. With a user having the capability “Manage credentials” or “Bypass all capbilities”, go into parameters/security
-2. Create a new role called “Danger Zone Administration”.
-3. Give it the capability **“**Allow modification of sensitive configuration”
+1. With a user having the capability “Manage credentials” or “Bypass all capabilities”, go into parameters/security
+2. Create a new role called “Danger Zone Administration”
+3. Give it the capability “Allow modification of sensitive configuration”
 4. Create a group “Danger Zone Administrator”
-5. Add a user of your choice (yourself for instance): at this stage you should be all good
+5. Add a user of your choice (yourself for instance): at this stage, you should be able to manage any area under danger zone.
 
 ## Recommended approach to give administrator group access to danger zone
 
 1. Follow the above steps
 2. Once your user can manage the danger zone, go to the administrator group & assign the Danger Zone Administration role to it.
-3. All your admins should not be able to edit anything flagged as danger zone.
+3. All your admins should now be able to edit anything flagged as danger zone.
 
 ## Disable the danger zone
 
