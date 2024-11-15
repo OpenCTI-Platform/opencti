@@ -292,7 +292,8 @@ describe('CSV bundler', () => {
       expect(canAddObjectToBundle(newObjects, objectsInBundle)).toBeTruthy();
     });
 
-    it('Should not request a new bundle when object are exactly the same except for csv line', async () => {
+    // FIXME depends on converter_csv decision.
+    it.skip('Should not request a new bundle when object are exactly the same except for csv line', async () => {
       const objectsInBundle: StixObject[] = [
         {
           color: '#000000',

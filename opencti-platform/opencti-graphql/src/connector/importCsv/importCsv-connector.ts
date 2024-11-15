@@ -26,7 +26,6 @@ import { isEmptyField } from '../../database/utils';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE } from '../../schema/stixMetaObject';
 import { isStixDomainObjectContainer } from '../../schema/stixDomainObject';
 import { objects } from '../../schema/stixRefRelationship';
-import { STIX_EXT_OCTI } from '../../types/stix-extensions';
 
 const RETRY_CONNECTION_PERIOD = 10000;
 const BULK_LINE_PARSING_NUMBER = conf.get('import_csv_built_in_connector:bulk_creation_size') || 5000;
@@ -40,7 +39,7 @@ const connectorConfig: ConnectorConfig = {
     validate_before_import: conf.get('import_csv_built_in_connector:validate_before_import')
   }
 };
-const logPrefix = `[OPENCTI-MODULE] ${connectorConfig.name} `;
+const LOG_PREFIX = `[OPENCTI-MODULE][${connectorConfig.id}]`;
 
 export interface ConsumerOpts {
   workId: string,
@@ -65,22 +64,20 @@ const sendBundleToWorker = async (bundle: BundleBuilder, opts: ConsumerOpts) => 
   const bundleBuilt = bundle.build();
   const bundleContentAsString = Buffer.from(JSON.stringify(bundleBuilt), 'utf-8').toString('base64');
 
-  logApp.info(`[MODULE] push bundle with ${bundleBuilt.objects.length} objects`);
+  logApp.info(`${LOG_PREFIX} push bundle to worker with ${bundleBuilt.objects.length} objects`);
   await pushToWorkerForConnector(connector.internal_id, {
     type: 'bundle',
     update: true,
     applicant_id: opts.applicantId ?? OPENCTI_SYSTEM_UUID,
     work_id: opts.workId,
-    wontent: bundleContentAsString,
+    content: bundleContentAsString,
   });
 };
 
 /**
  * Generate stix bundles and send them.
  * @param context
- * @param user
  * @param lines
- * @param mapper
  * @param opts
  */
 export const generateAndSendBundleProcess = async (
@@ -88,6 +85,7 @@ export const generateAndSendBundleProcess = async (
   lines: string[],
   opts: ConsumerOpts
 ) => {
+  logApp.info(`${LOG_PREFIX} generate and push bundles for a bulk of  ${lines.length}.`);
   let bundleNew = new BundleBuilder();
   const { csvMapper, applicantUser } = opts;
   const rawRecords = await parsingProcess(lines, csvMapper.separator, csvMapper.skipLineChar);
@@ -107,13 +105,14 @@ export const generateAndSendBundleProcess = async (
           // Transform entity to stix
           const stixObjects = withoutInlineInputs.map((input) => {
             const stixObject = convertStoreToStix(input as unknown as StoreCommon);
-            // TODO do we need that ?
-            stixObject.extensions[STIX_EXT_OCTI].converter_csv = record.join(csvMapper.separator);
+            // FIXME do we need that ?
+            // stixObject.extensions[STIX_EXT_OCTI].converter_csv = record.join(csvMapper.separator);
             return stixObject;
           });
 
           // Add to bundle or else send current bundle content and move to next bundle.
-          if (bundleNew.canAddObjects(stixObjects)) {
+          // TODO is it helping to stop at 500 ?
+          if (bundleNew.canAddObjects(stixObjects) && bundleNew.objects.length < 500) {
             bundleNew.addObjects(stixObjects);
           } else {
             await sendBundleToWorker(bundleNew, opts);
@@ -130,6 +129,7 @@ export const generateAndSendBundleProcess = async (
       totalBundleSend += 1;
     }
   }
+  logApp.info(`${LOG_PREFIX} generate and push bundles for a bulk of  ${lines.length} - DONE.`);
   return { bundleCount: totalBundleSend };
 };
 
@@ -168,6 +168,7 @@ const processCSVforWorkbench = async (context: AuthContext, opts: ConsumerOpts) 
 };
 
 export const processCSVforWorkers = async (context: AuthContext, opts: ConsumerOpts) => {
+  logApp.info(`${LOG_PREFIX} processing CSV ${opts.fileId} START.`);
   const { workId, fileId, applicantUser } = opts;
 
   await validateCsvMapper(context, applicantUser, opts.csvMapper);
@@ -194,7 +195,7 @@ export const processCSVforWorkers = async (context: AuthContext, opts: ConsumerO
       try {
         const startDate = new Date().getTime();
         const startingLineNumber = bulkLineCursor;
-        logApp.info(`${logPrefix} reading line from ${bulkLineCursor} to ${BULK_LINE_PARSING_NUMBER + bulkLineCursor}`);
+        logApp.info(`${LOG_PREFIX} reading line from ${bulkLineCursor} to ${BULK_LINE_PARSING_NUMBER + bulkLineCursor}`);
         // Need an async interator to prevent blocking
         // eslint-disable-next-line no-restricted-syntax
         for await (const line of readStream) {
@@ -219,11 +220,11 @@ export const processCSVforWorkers = async (context: AuthContext, opts: ConsumerO
         readStream.close();
 
         hasMoreBulk = bulkLineCursor < lineNumber;
-        logApp.info(`${logPrefix} read lines end on ${new Date().getTime() - startDate} ms; hasMoreBulk=${hasMoreBulk}; lineNumber=${lineNumber}`);
+        logApp.info(`${LOG_PREFIX} read lines end on ${new Date().getTime() - startDate} ms; hasMoreBulk=${hasMoreBulk}; lineNumber=${lineNumber}`);
 
         if (lines.length > 0) {
           try {
-            logApp.info(`${logPrefix} generating bundle with ${lines.length} csv lines`);
+            logApp.info(`${LOG_PREFIX} generating bundle with ${lines.length} csv lines`);
             const { bundleCount } = await generateAndSendBundleProcess(context, lines, opts);
             totalObjectsCount += 1;
             totalBundlesCount += bundleCount;
@@ -247,17 +248,18 @@ export const processCSVforWorkers = async (context: AuthContext, opts: ConsumerO
       // stream null means error, to change the day downloadFile throw errors.
       // circuit breaker
       hasMoreBulk = false;
-      logApp.error(`${logPrefix} Cannot download file, please check the file storage dependency.`, { fileId, workId });
+      logApp.error(`${LOG_PREFIX} Cannot download file, please check the file storage dependency.`, { fileId, workId });
       const errorData = { error: 'Cannot download file', source: fileId };
       await reportExpectation(context, applicantUser, workId, errorData);
     }
   }
-  logApp.info(`${logPrefix} processing CSV ${opts.fileId} DONE in ${new Date().getTime() - startDate2} ms for ${totalObjectsCount} objets in ${totalBundlesCount} bundles.`);
+  logApp.info(`${LOG_PREFIX} processing CSV ${opts.fileId} DONE in ${new Date().getTime() - startDate2} ms for ${totalObjectsCount} objets in ${totalBundlesCount} bundles.`);
 
   // expectation number is going to be increase when worker split bundle. So it's bundle count that should be reported here.
   // TODO do we keep display of bundle count ? objects count ? none of them ? At the end total is totalObjectsCount + totalBundlesCount
   if (totalBundlesCount > 0) {
-    // await updateExpectationsNumber(context, applicantUser, workId, 1); // If zero then job is marked as complete
+    await updateExpectationsNumber(context, applicantUser, workId, 1); // If zero then job is marked as complete
+    await reportExpectation(context, applicantUser, workId);// csv file ends = 1 operation done.
     await updateProcessedTime(context, applicantUser, workId, `${totalBundlesCount} bundle(s) send to worker for import.`);
   } else {
     await updateExpectationsNumber(context, applicantUser, workId, 0);
@@ -272,7 +274,7 @@ const consumeQueueCallback = async (context: AuthContext, message: string) => {
   const workId = messageParsed.internal.work_id;
   const applicantId = messageParsed.internal.applicant_id ?? OPENCTI_SYSTEM_UUID;
   const fileId = messageParsed.event.file_id;
-  logApp.info(`${logPrefix} Starting to process CSV file.`, { fileId, workId, applicantId });
+  logApp.info(`${LOG_PREFIX} Starting to process CSV file.`, { fileId, workId, applicantId });
   const applicantUser = await resolveUserByIdFromCache(context, applicantId) as AuthUser;
   const entityId = messageParsed.event.entity_id;
   const entity = entityId ? await storeLoadByIdWithRefs(context, applicantUser, entityId) : undefined;
@@ -322,7 +324,7 @@ export const initImportCsvConnector = () => {
         try {
           rabbitMqConnection.close();
         } catch (e) {
-          logApp.error(DatabaseError(`${logPrefix} Closing RabbitMQ connection failed`, { cause: e }));
+          logApp.error(DatabaseError(`${LOG_PREFIX} Closing RabbitMQ connection failed`, { cause: e }));
         }
       }
       // TODO REMOVE TYPING, don't know why it's not working
@@ -333,7 +335,7 @@ export const initImportCsvConnector = () => {
   return {
     start: async () => {
       const context = executionContext(connectorConfig.id.toLowerCase());
-      logApp.info(`${logPrefix} Starting ${connectorConfig.name} manager`);
+      logApp.info(`${LOG_PREFIX} Starting ${connectorConfig.name} manager`);
       await registerConnectorQueues(connector.id, connector.name, connector.connector_type, connector.connector_scope);
       await handleCsvImport(context);
     },
@@ -345,7 +347,7 @@ export const initImportCsvConnector = () => {
       };
     },
     shutdown: async () => {
-      logApp.info(`${logPrefix} Stopping ${connectorConfig.name} manager`);
+      logApp.info(`${LOG_PREFIX} Stopping ${connectorConfig.name} manager`);
       if (rabbitMqConnection) rabbitMqConnection.close();
       return true;
     },
