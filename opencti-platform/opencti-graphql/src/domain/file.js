@@ -112,7 +112,7 @@ export const uploadImport = async (context, user, args) => {
   const { file, fileMarkings: file_markings } = args;
   const path = 'import/global';
   const { upload: up } = await uploadToStorage(context, user, path, file, { file_markings });
-  const contextData = buildContextDataForFile(null, path, up.name);
+  const contextData = buildContextDataForFile(null, path, up.name, file_markings);
   await publishUserAction({
     user,
     event_type: 'file',
@@ -157,7 +157,7 @@ export const uploadPending = async (context, user, file, entityId = null, labels
   }
 
   const { upload: up } = await uploadToStorage(context, user, 'import/pending', finalFile, { meta, errorOnExisting, entity });
-  const contextData = buildContextDataForFile(entity, 'import/pending', up.name);
+  const contextData = buildContextDataForFile(entity, 'import/pending', up.name, up.metaData.file_markings);
   await publishUserAction({
     user,
     event_type: 'file',
