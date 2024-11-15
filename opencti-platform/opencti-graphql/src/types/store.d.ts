@@ -84,6 +84,10 @@ interface StoreFile {
   [INPUT_MARKINGS]?: Array<StoreMarkingDefinition>;
 }
 
+interface StoreFileWithRefs extends StoreFile {
+  [INPUT_MARKINGS]?: Array<StoreMarkingDefinition>;
+}
+
 interface BasicStoreIdentifier {
   id: string;
   internal_id: string;
