@@ -560,6 +560,7 @@ class OpenCTIStix2:
                                     file_name=file["name"],
                                     version=file.get("version", None),
                                     data=base64.b64decode(file["data"]),
+                                    fileMarkings=file.get("object_marking_refs", None),
                                     mime_type=file["mime_type"],
                                     no_trigger_import=file.get(
                                         "no_trigger_import", False
@@ -580,6 +581,7 @@ class OpenCTIStix2:
                                     file_name=file["name"],
                                     version=file.get("version", None),
                                     data=base64.b64decode(file["data"]),
+                                    fileMarkings=file.get("object_marking_refs", None),
                                     mime_type=file["mime_type"],
                                     no_trigger_import=file.get(
                                         "no_trigger_import", False
@@ -734,6 +736,7 @@ class OpenCTIStix2:
                                 file_name=file["name"],
                                 version=file.get("version", None),
                                 data=base64.b64decode(file["data"]),
+                                fileMarkings=file.get("object_marking_refs", None),
                                 mime_type=file["mime_type"],
                                 no_trigger_import=file.get("no_trigger_import", False),
                             )
@@ -750,6 +753,7 @@ class OpenCTIStix2:
                                 file_name=file["name"],
                                 version=file.get("version", None),
                                 data=base64.b64decode(file["data"]),
+                                fileMarkings=file.get("object_marking_refs", None),
                                 mime_type=file["mime_type"],
                                 no_trigger_import=file.get("no_trigger_import", False),
                             )
@@ -987,6 +991,7 @@ class OpenCTIStix2:
                             file_name=file["name"],
                             version=file.get("version", None),
                             data=base64.b64decode(file["data"]),
+                            fileMarkings=file.get("object_marking_refs", None),
                             mime_type=file["mime_type"],
                             no_trigger_import=file.get("no_trigger_import", False),
                         )
@@ -1003,6 +1008,7 @@ class OpenCTIStix2:
                             file_name=file["name"],
                             version=file.get("version", None),
                             data=base64.b64decode(file["data"]),
+                            fileMarkings=file.get("object_marking_refs", None),
                             mime_type=file["mime_type"],
                             no_trigger_import=file.get("no_trigger_import", False),
                         )
@@ -1114,6 +1120,7 @@ class OpenCTIStix2:
                             file_name=file["name"],
                             version=file.get("version", None),
                             data=base64.b64decode(file["data"]),
+                            fileMarkings=file.get("object_marking_refs", None),
                             mime_type=file["mime_type"],
                             no_trigger_import=file.get("no_trigger_import", False),
                         )
@@ -1130,6 +1137,7 @@ class OpenCTIStix2:
                             file_name=file["name"],
                             version=file.get("version", None),
                             data=base64.b64decode(file["data"]),
+                            fileMarkings=file.get("object_marking_refs", None),
                             mime_type=file["mime_type"],
                             no_trigger_import=file.get("no_trigger_import", False),
                         )
