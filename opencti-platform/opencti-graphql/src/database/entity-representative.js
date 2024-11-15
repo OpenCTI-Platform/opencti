@@ -58,6 +58,8 @@ export const extractEntityRepresentativeName = (entityData) => {
     mainValue = entityData.observable_value;
   } else if (isNotEmptyField(entityData.indicator_pattern)) {
     mainValue = entityData.indicator_pattern;
+  } else if (isNotEmptyField(entityData.relationship_type)) {
+    mainValue = extractRelationshipRepresentativeName(entityData);
   } else if (isNotEmptyField(entityData.source_name)) {
     mainValue = `${entityData.source_name}${entityData.external_id ? ` (${entityData.external_id})` : ''}`;
   } else if (isNotEmptyField(entityData.phase_name)) {
