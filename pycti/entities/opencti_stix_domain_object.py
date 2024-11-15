@@ -1286,15 +1286,16 @@ class StixDomainObject:
         id = kwargs.get("id", None)
         file_name = kwargs.get("file_name", None)
         data = kwargs.get("data", None)
+        file_markings = kwargs.get("fileMarkings", None)
         version = kwargs.get("version", None)
         mime_type = kwargs.get("mime_type", "text/plain")
         no_trigger_import = kwargs.get("no_trigger_import", False)
         if id is not None and file_name is not None:
             final_file_name = os.path.basename(file_name)
             query = """
-                mutation StixDomainObjectEdit($id: ID!, $file: Upload!, $version: DateTime, $noTriggerImport: Boolean) {
+                mutation StixDomainObjectEdit($id: ID!, $file: Upload!, $fileMarkings: [String], $version: DateTime, $noTriggerImport: Boolean) {
                     stixDomainObjectEdit(id: $id) {
-                        importPush(file: $file, version: $version, noTriggerImport: $noTriggerImport) {
+                        importPush(file: $file, version: $version, fileMarkings: $fileMarkings, noTriggerImport: $noTriggerImport) {
                             id
                             name
                         }
@@ -1316,6 +1317,7 @@ class StixDomainObject:
                 {
                     "id": id,
                     "file": (self.file(final_file_name, data, mime_type)),
+                    "fileMarkings": file_markings,
                     "version": version,
                     "noTriggerImport": (
                         no_trigger_import
