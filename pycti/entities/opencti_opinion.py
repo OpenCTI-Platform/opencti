@@ -1,7 +1,9 @@
 # coding: utf-8
-
+import datetime
 import json
 import uuid
+
+from stix2.canonicalization.Canonicalize import canonicalize
 
 
 class Opinion:
@@ -211,8 +213,22 @@ class Opinion:
         """
 
     @staticmethod
-    def generate_id():
-        return "opinion--" + str(uuid.uuid4())
+    def generate_id(created, opinion):
+        if opinion is None:
+            raise ValueError("opinion is required")
+        if created is not None:
+            if isinstance(created, datetime.datetime):
+                created = created.isoformat()
+            data = {"opinion": opinion, "created": created}
+        else:
+            data = {"opinion": opinion}
+        data = canonicalize(data, utf8=False)
+        id = str(uuid.uuid5(uuid.UUID("00abedb4-aa42-466c-9c01-fed23315a9b7"), data))
+        return "opinion--" + id
+
+    @staticmethod
+    def generate_id_from_data(data):
+        return Opinion.generate_id(data.get("created"), data["opinion"])
 
     """
         List Opinion objects

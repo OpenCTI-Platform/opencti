@@ -28,6 +28,10 @@ class KillChainPhase:
             phase_name=phase_name, kill_chain_name=kill_chain_name
         )
 
+    @staticmethod
+    def generate_id_from_data(data):
+        return KillChainPhase.generate_id(data["phase_name"], data["kill_chain_name"])
+
     """
         List Kill-Chain-Phase objects
 

@@ -202,6 +202,10 @@ class Narrative:
         id = str(uuid.uuid5(uuid.UUID("00abedb4-aa42-466c-9c01-fed23315a9b7"), data))
         return "narrative--" + id
 
+    @staticmethod
+    def generate_id_from_data(data):
+        return Narrative.generate_id(data["name"])
+
     """
         List Narrative objects
 

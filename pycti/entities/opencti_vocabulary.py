@@ -1,4 +1,7 @@
 import json
+import uuid
+
+from stix2.canonicalization.Canonicalize import canonicalize
 
 
 class Vocabulary:
@@ -14,6 +17,18 @@ class Vocabulary:
                 }
             }
         """
+
+    @staticmethod
+    def generate_id(name, category):
+        name = name.lower().strip()
+        data = {"name": name, "category": category}
+        data = canonicalize(data, utf8=False)
+        id = str(uuid.uuid5(uuid.UUID("00abedb4-aa42-466c-9c01-fed23315a9b7"), data))
+        return "vocabulary--" + id
+
+    @staticmethod
+    def generate_id_from_data(data):
+        return Vocabulary.generate_id(data["name"], data["category"])
 
     def list(self, **kwargs):
         filters = kwargs.get("filters", None)
