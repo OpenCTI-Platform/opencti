@@ -2773,6 +2773,7 @@
   "toCreatedAt_lt": "Ingested before",
   "toId": "Target entity",
   "Token": "Token",
+  "token": "token",
   "Tone": "Tone",
   "Too many objects": "Too many objects",
   "Tool": "Tool",

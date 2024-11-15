@@ -23,6 +23,7 @@ import CreatorField from '../../common/form/CreatorField';
 import { isNotEmptyField } from '../../../../utils/utils';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { Accordion, AccordionSummary } from '../../../../components/Accordion';
+import PasswordTextField from '../../../../components/PasswordTextField';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -208,13 +209,9 @@ const SyncEditionContainer = ({ synchronizer }) => {
               style={{ marginTop: 20 }}
               disabled={true}
             />
-            <Field
-              component={TextField}
-              variant="standard"
+            <PasswordTextField
               name="token"
-              label={t_i18n('Remote OpenCTI token')}
-              fullWidth={true}
-              style={{ marginTop: 20 }}
+              label={t_i18n('token')}
               disabled={true}
             />
             <Field

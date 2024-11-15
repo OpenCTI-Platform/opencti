@@ -33,7 +33,7 @@ import { fieldSpacingContainerStyle } from '../../../utils/field';
 import OtpInputField, { OTP_CODE_SIZE } from '../../../public/components/OtpInputField';
 import ItemCopy from '../../../components/ItemCopy';
 import { availableLanguage } from '../../../components/AppIntlProvider';
-import { maskToken, toggleTokenVisibility } from '../../../utils/String';
+import { maskString } from '../../../utils/String';
 
 const styles = () => ({
   container: {
@@ -596,7 +596,7 @@ const ProfileOverviewComponent = (props) => {
           >
             <span style={{ flexGrow: 1 }}>
               <ItemCopy
-                content={showToken ? me.api_token : maskToken(me.api_token)}
+                content={showToken ? me.api_token : maskString(me.api_token)}
                 value={me.api_token}
               />
             </span>
@@ -607,7 +607,7 @@ const ProfileOverviewComponent = (props) => {
                 padding: `0 ${theme.spacing(1)}`,
               }}
               disableRipple
-              onClick={() => setShowToken(toggleTokenVisibility(showToken))}
+              onClick={() => setShowToken((value) => !value)}
               aria-label={showToken ? t('Hide') : t('Show')}
             >
               {showToken ? <VisibilityOff/> : <Visibility/>}
@@ -645,7 +645,7 @@ const ProfileOverviewComponent = (props) => {
                   <>
                     Content-Type: application/json
                     <br/>
-                    Authorization: Bearer {showToken ? me.api_token : maskToken(me.api_token)}
+                    Authorization: Bearer {showToken ? me.api_token : maskString(me.api_token)}
                   </>
                   }
                 value={`Content-Type: application/json\nAuthorization: Bearer ${me.api_token}`}
@@ -660,7 +660,7 @@ const ProfileOverviewComponent = (props) => {
                 top: '-8px',
               }}
               disableRipple
-              onClick={() => setShowToken(toggleTokenVisibility(showToken))}
+              onClick={() => setShowToken((value) => !value)}
               aria-label={showToken ? t('Hide') : t('Show')}
             >
               {showToken ? <VisibilityOff/> : <Visibility/>}

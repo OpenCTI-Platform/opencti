@@ -37,7 +37,7 @@ import { USER_CHOICE_MARKING_CONFIG } from '../../../../utils/csvMapperUtils';
 import { convertMapper, convertUser } from '../../../../utils/edition';
 import { BASIC_AUTH, CERT_AUTH, extractCA, extractCert, extractKey, extractPassword, extractUsername } from '../../../../utils/ingestionAuthentificationUtils';
 import useAuth from '../../../../utils/hooks/useAuth';
-import ToggleVisibilityField from '../../../../components/ToggleVisibilityField';
+import PasswordTextField from '../../../../components/PasswordTextField';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -355,14 +355,14 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
               fullWidth={true}
               style={fieldSpacingContainerStyle}
             />
-            <ToggleVisibilityField
+            <PasswordTextField
               name="password"
               label={t_i18n('Password')}
             />
           </>
           )}
           {values.authentication_type === 'bearer' && (
-            <ToggleVisibilityField
+            <PasswordTextField
               name="authentication_value"
               label={t_i18n('Token')}
             />
@@ -377,7 +377,7 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
               fullWidth={true}
               style={fieldSpacingContainerStyle}
             />
-            <ToggleVisibilityField
+            <PasswordTextField
               name="key"
               label={t_i18n('Key (base64)')}
             />

@@ -2773,6 +2773,7 @@
   "toCreatedAt_lt": "Ingéré avant",
   "toId": "Entité cible",
   "Token": "Token",
+  "token": "token",
   "Tone": "Tonalité",
   "Too many objects": "Nombre trop important d'objets",
   "Tool": "Outil",

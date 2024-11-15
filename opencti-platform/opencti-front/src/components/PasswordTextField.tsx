@@ -6,18 +6,14 @@ import { useFormatter } from './i18n';
 import { fieldSpacingContainerStyle } from '../utils/field';
 import TextField from './TextField';
 
-interface ToggleVisibilityFieldProps {
-  label: string;
-  name: string;
+// TODO remove any when component TextField is typescript
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type PasswordTextFieldProps = any & {
   onToggle?: (isVisible: boolean) => void;
-  onSubmit?: (name: string, value: string | number | null) => void;
-}
+};
 
-const ToggleVisibilityField: FunctionComponent<ToggleVisibilityFieldProps> = ({
-  name,
-  label,
-  onToggle,
-  onSubmit,
+const PasswordTextField: FunctionComponent<PasswordTextFieldProps> = ({
+  onToggle, ...textFieldProps
 }) => {
   const { t_i18n } = useFormatter();
   const [isVisible, setIsVisible] = useState(false);
@@ -32,12 +28,10 @@ const ToggleVisibilityField: FunctionComponent<ToggleVisibilityFieldProps> = ({
       <Field
         component={TextField}
         variant="standard"
-        name={name}
         type={isVisible ? 'text' : 'password'}
-        label={label}
         fullWidth={true}
-        onSubmit={onSubmit}
         style={fieldSpacingContainerStyle}
+        {...textFieldProps}
       />
       <IconButton
         onClick={toggleVisibility}
@@ -58,4 +52,4 @@ const ToggleVisibilityField: FunctionComponent<ToggleVisibilityFieldProps> = ({
   );
 };
 
-export default ToggleVisibilityField;
+export default PasswordTextField;
