@@ -41,3 +41,48 @@ Only users with `Allow modification of sensitive configuration` capability enabl
 
 ![role_allow_modification_sensitive_conf.png](assets%2Frole_allow_modification_sensitive_conf.png)
 
+## Recommended approach to give yourself access to danger zone
+
+1. With a user having the capability “Manage credentials” or “Bypass all capbilities”, go into parameters/security
+2. Create a new role called “Danger Zone Administration”.
+3. Give it the capability **“**Allow modification of sensitive configuration”
+4. Create a group “Danger Zone Administrator”
+5. Add a user of your choice (yourself for instance): at this stage you should be all good
+
+## Recommended approach to give administrator group access to danger zone
+
+1. Follow the above steps
+2. Once your user can manage the danger zone, go to the administrator group & assign the Danger Zone Administration role to it.
+3. All your admins should not be able to edit anything flagged as danger zone.
+
+## Disable the danger zone
+
+1. Edit your config file to apply this configuration
+
+```jsx
+"protected_sensitive_config": {
+      "enabled": false,
+      "markings": {
+        "enabled": true,
+        "protected_definitions": ["TLP:CLEAR", "TLP:GREEN", "TLP:AMBER", "TLP:AMBER+STRICT", "TLP:RED", "PAP:CLEAR", "PAP:GREEN", "PAP:AMBER", "PAP:AMBER"]
+      },
+      "groups": {
+        "enabled": true,
+        "protected_names": ["Administrators", "Connectors", "Default"]
+      },
+      "roles": {
+        "enabled": true,
+        "protected_names": ["Administrator", "Connector", "Default"]
+      },
+      "rules": {
+        "enabled": true
+      },
+      "ce_ee_toggle": {
+        "enabled": true
+      },
+      "file_indexing": {
+        "enabled": true
+      }
+    }
+  },
+```
