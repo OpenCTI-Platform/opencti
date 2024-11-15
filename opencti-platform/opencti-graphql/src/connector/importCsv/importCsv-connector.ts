@@ -7,7 +7,7 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import { consumeQueue, pushToWorkerForConnector, registerConnectorQueues } from '../../database/rabbitmq';
 import { downloadFile } from '../../database/file-storage';
 import { reportExpectation, updateExpectationsNumber, updateProcessedTime, updateReceivedTime } from '../../domain/work';
-import { bundleAllowUpsertProcess, bundleProcess } from '../../parser/csv-bundler';
+import { bundleProcess } from '../../parser/csv-bundler';
 import { OPENCTI_SYSTEM_UUID } from '../../schema/general';
 import { resolveUserByIdFromCache } from '../../domain/user';
 import { parseCsvMapper, sanitized, validateCsvMapper } from '../../modules/internal/csvMapper/csvMapper-utils';
@@ -17,8 +17,16 @@ import { uploadToStorage } from '../../database/file-storage-helper';
 import { storeLoadByIdWithRefs } from '../../database/middleware';
 import type { ConnectorConfig } from '../internalConnector';
 import type { CsvMapperParsed } from '../../modules/internal/csvMapper/csvMapper-types';
-import type { BasicStoreBase } from '../../types/store';
+import type { BasicStoreBase, StoreCommon } from '../../types/store';
 import { BundleBuilder } from '../../parser/bundle-creator';
+import { convertStoreToStix } from '../../database/stix-converter';
+import { parsingProcess } from '../../parser/csv-parser';
+import { handleRefEntities, mappingProcess } from '../../parser/csv-mapper';
+import { isEmptyField } from '../../database/utils';
+import { ENTITY_TYPE_EXTERNAL_REFERENCE } from '../../schema/stixMetaObject';
+import { isStixDomainObjectContainer } from '../../schema/stixDomainObject';
+import { objects } from '../../schema/stixRefRelationship';
+import { STIX_EXT_OCTI } from '../../types/stix-extensions';
 
 const RETRY_CONNECTION_PERIOD = 10000;
 const BULK_LINE_PARSING_NUMBER = conf.get('import_csv_built_in_connector:bulk_creation_size') || 5000;
@@ -41,35 +49,88 @@ export interface ConsumerOpts {
   entity: BasicStoreBase | undefined,
   csvMapper: CsvMapperParsed,
   fileId: string,
+  maxRecordNumber?: number,
 }
 
+const inlineEntityTypes = [ENTITY_TYPE_EXTERNAL_REFERENCE];
+
+const sendBundleToWorker = async (bundle: BundleBuilder, opts: ConsumerOpts) => {
+  // Handle container
+  if (opts.entity && isStixDomainObjectContainer(opts.entity.entity_type)) {
+    const refs = bundle.ids();
+    const stixEntity = { ...convertStoreToStix(opts.entity), [objects.stixName]: refs };
+    bundle.addObject(stixEntity);
+  }
+
+  const bundleBuilt = bundle.build();
+  const bundleContentAsString = Buffer.from(JSON.stringify(bundleBuilt), 'utf-8').toString('base64');
+
+  logApp.info(`[MODULE] push bundle with ${bundleBuilt.objects.length} objects`);
+  await pushToWorkerForConnector(connector.internal_id, {
+    type: 'bundle',
+    update: true,
+    applicant_id: opts.applicantId ?? OPENCTI_SYSTEM_UUID,
+    work_id: opts.workId,
+    wontent: bundleContentAsString,
+  });
+};
+
 /**
- * Generate stix bundle and then push them all to the queue (for workers).
+ * Generate stix bundles and send them.
  * @param context
- * @param csvLines
+ * @param user
+ * @param lines
+ * @param mapper
  * @param opts
  */
-export const generateBundlesAndSendToWorkers = async (context: AuthContext, csvLines: string[], opts: ConsumerOpts) => {
-  let objectsInBundlesCount = 0;
-  const { workId, applicantUser, applicantId, csvMapper, entity } = opts;
-  const bundlesBuilder: BundleBuilder[] = await bundleAllowUpsertProcess(context, applicantUser, csvLines, csvMapper, { entity });
-  logApp.info(`${logPrefix} preparing ${bundlesBuilder.length} bundles`);
-  for (let i = 0; i < bundlesBuilder.length; i += 1) {
-    const bundle = bundlesBuilder[i].build();
-    const content = Buffer.from(JSON.stringify(bundle), 'utf-8').toString('base64');
-    if (bundle.objects.length > 0) {
-      logApp.info(`${logPrefix} push bundle with ${bundle.objects.length} objects`);
-      objectsInBundlesCount += bundle.objects.length;
-      await pushToWorkerForConnector(connector.internal_id, {
-        type: 'bundle',
-        update: true,
-        applicant_id: applicantId ?? OPENCTI_SYSTEM_UUID,
-        work_id: workId,
-        content
-      });
+export const generateAndSendBundleProcess = async (
+  context: AuthContext,
+  lines: string[],
+  opts: ConsumerOpts
+) => {
+  let bundleNew = new BundleBuilder();
+  const { csvMapper, applicantUser } = opts;
+  const rawRecords = await parsingProcess(lines, csvMapper.separator, csvMapper.skipLineChar);
+  const records = opts.maxRecordNumber ? rawRecords.slice(0, opts.maxRecordNumber) : rawRecords;
+  const refEntities = await handleRefEntities(context, applicantUser, csvMapper);
+  let totalBundleSend = 0;
+  if (records) {
+    for (let rec = 0; rec < records.length; rec += 1) {
+      const record = records[rec];
+      const isEmptyLine = record.length === 1 && isEmptyField(record[0]);
+      if (!isEmptyLine) {
+        try {
+          // Compute input by representation
+          const inputs = await mappingProcess(context, applicantUser, csvMapper, record, refEntities);
+          // Remove inline elements
+          const withoutInlineInputs = inputs.filter((input) => !inlineEntityTypes.includes(input.entity_type as string));
+          // Transform entity to stix
+          const stixObjects = withoutInlineInputs.map((input) => {
+            const stixObject = convertStoreToStix(input as unknown as StoreCommon);
+            // TODO do we need that ?
+            stixObject.extensions[STIX_EXT_OCTI].converter_csv = record.join(csvMapper.separator);
+            return stixObject;
+          });
+
+          // Add to bundle or else send current bundle content and move to next bundle.
+          if (bundleNew.canAddObjects(stixObjects)) {
+            bundleNew.addObjects(stixObjects);
+          } else {
+            await sendBundleToWorker(bundleNew, opts);
+            totalBundleSend += 1;
+            bundleNew = new BundleBuilder();
+          }
+        } catch (e) {
+          logApp.error(e);
+        }
+      }
+    }
+    if (bundleNew.objects.length > 0) {
+      await sendBundleToWorker(bundleNew, opts);
+      totalBundleSend += 1;
     }
   }
-  return { objectsInBundlesCount, bundleCount: bundlesBuilder.length };
+  return { bundleCount: totalBundleSend };
 };
 
 /** @deprecated Will be removed when workbench are replaced by draft */
@@ -133,7 +194,7 @@ export const processCSVforWorkers = async (context: AuthContext, opts: ConsumerO
       try {
         const startDate = new Date().getTime();
         const startingLineNumber = bulkLineCursor;
-        logApp.debug(`${logPrefix} reading line from ${bulkLineCursor} to ${BULK_LINE_PARSING_NUMBER + bulkLineCursor}`);
+        logApp.info(`${logPrefix} reading line from ${bulkLineCursor} to ${BULK_LINE_PARSING_NUMBER + bulkLineCursor}`);
         // Need an async interator to prevent blocking
         // eslint-disable-next-line no-restricted-syntax
         for await (const line of readStream) {
@@ -158,13 +219,13 @@ export const processCSVforWorkers = async (context: AuthContext, opts: ConsumerO
         readStream.close();
 
         hasMoreBulk = bulkLineCursor < lineNumber;
-        logApp.debug(`${logPrefix} read lines end on ${new Date().getTime() - startDate} ms; hasMoreBulk=${hasMoreBulk}; lineNumber=${lineNumber}`);
+        logApp.info(`${logPrefix} read lines end on ${new Date().getTime() - startDate} ms; hasMoreBulk=${hasMoreBulk}; lineNumber=${lineNumber}`);
 
         if (lines.length > 0) {
           try {
-            logApp.debug(`${logPrefix} generating bundle with ${lines.length} csv lines`);
-            const { objectsInBundlesCount, bundleCount } = await generateBundlesAndSendToWorkers(context, lines, opts);
-            totalObjectsCount += objectsInBundlesCount;
+            logApp.info(`${logPrefix} generating bundle with ${lines.length} csv lines`);
+            const { bundleCount } = await generateAndSendBundleProcess(context, lines, opts);
+            totalObjectsCount += 1;
             totalBundlesCount += bundleCount;
           } catch (error: any) {
             const errorData = { error: error.message, source: `${fileId}, from ${lineNumber} and ${BULK_LINE_PARSING_NUMBER} following lines.` };

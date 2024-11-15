@@ -336,12 +336,11 @@ export const consumeQueue = async (context, connectorId, connectionSetterCallbac
         } else { // Connection success
           logApp.info('[QUEUEING] Starting connector queue consuming', { connectorId });
           conn.on('close', (onConnectError) => {
-            reject(onConnectError);
-          });
-          conn.on('error', (onConnectError) => {
             if (onConnectError) {
               reject(onConnectError);
             }
+          });
+          conn.on('error', (onConnectError) => {
             reject(onConnectError);
           });
           connectionSetterCallback(conn);

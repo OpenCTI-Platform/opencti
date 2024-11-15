@@ -14,12 +14,22 @@ import { isEmptyField } from '../database/utils';
 import { logApp } from '../config/conf';
 import { STIX_EXT_OCTI } from '../types/stix-extensions';
 import type { StixBundle, StixObject } from '../types/stix-common';
+import { pushToWorkerForConnector } from '../database/rabbitmq';
+import { OPENCTI_SYSTEM_UUID } from '../schema/general';
 
 const inlineEntityTypes = [ENTITY_TYPE_EXTERNAL_REFERENCE];
 
 export interface BundleProcessOpts {
   entity?: BasicStoreBase
-  maxRecordNumber?: number
+  maxRecordNumber?: number,
+}
+
+export interface BundleProcessAndSendOpts {
+  entity?: BasicStoreBase
+  maxRecordNumber?: number,
+  connectorId: string,
+  workId: string,
+  applicantId?: string,
 }
 
 /** @deprecated Will be removed when workbench are replaced by draft.
