@@ -155,6 +155,8 @@ const depsToOptimize = [
   "ckeditor5/translations/ja",
   "ckeditor5/translations/ko",
   "ckeditor5/translations/zh",
+  "d3-scale",
+  "react-compound-slider"
 ];
 
 const logger = createLogger();
