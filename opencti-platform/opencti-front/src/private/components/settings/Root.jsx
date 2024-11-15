@@ -46,6 +46,7 @@ const Alerting = lazy(() => import('./activity/alerting/Alerting'));
 const DecayRules = lazy(() => import('./decay/DecayRules'));
 const DecayRule = lazy(() => import('./decay/DecayRule'));
 const SupportPackage = lazy(() => import('./support/SupportPackages'));
+const ExclusionLists = lazy(() => import('./exclusion_lists/ExclusionLists'));
 
 const Root = () => {
   const adminOrga = isOnlyOrganizationAdmin();
@@ -325,6 +326,14 @@ const Root = () => {
             element={
               <Security needs={[SETTINGS_SETCUSTOMIZATION]} placeholder={<Navigate to={urlWithCapabilities()} />}>
                 <DecayRule />
+              </Security>
+            }
+          />
+          <Route
+            path="customization/exclusion_lists"
+            element={
+              <Security needs={[SETTINGS_SETCUSTOMIZATION]} placeholder={<Navigate to={urlWithCapabilities()} />}>
+                <ExclusionLists />
               </Security>
             }
           />
