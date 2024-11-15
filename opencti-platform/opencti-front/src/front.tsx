@@ -6,6 +6,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import { RelayEnvironmentProvider } from 'react-relay/hooks';
 import './static/css/index.css';
 import './static/css/leaflet.css';
+import './static/css/timerange.css';
 import 'ckeditor5/ckeditor5.css';
 import './static/css/CKEditorDark.css';
 import './static/css/CKEditorLight.css';

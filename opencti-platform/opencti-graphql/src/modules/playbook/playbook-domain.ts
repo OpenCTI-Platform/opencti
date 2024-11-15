@@ -32,14 +32,14 @@ import {
 } from '../../generated/graphql';
 import type { BasicStoreEntityPlaybook, ComponentDefinition, LinkDefinition, NodeDefinition } from './playbook-types';
 import { ENTITY_TYPE_PLAYBOOK } from './playbook-types';
-import { PLAYBOOK_COMPONENTS, type SharingConfiguration, type StreamConfiguration } from './playbook-components';
+import { PLAYBOOK_COMPONENTS, PLAYBOOK_INTERNAL_DATA_CRON, type SharingConfiguration, type StreamConfiguration } from './playbook-components';
 import { UnsupportedError } from '../../config/errors';
 import { type BasicStoreEntityOrganization, ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-types';
 import { isStixMatchFilterGroup, validateFilterGroupForStixMatch } from '../../utils/filtering/filtering-stix/stix-filtering';
 import { registerConnectorQueues, unregisterConnector } from '../../database/rabbitmq';
 import { getEntitiesListFromCache } from '../../database/cache';
 import { SYSTEM_USER } from '../../utils/access';
-import { findFiltersFromKey } from '../../utils/filtering/filtering-utils';
+import { findFiltersFromKey, checkAndConvertFilters } from '../../utils/filtering/filtering-utils';
 
 export const findById: DomainFindById<BasicStoreEntityPlaybook> = (context: AuthContext, user: AuthUser, playbookId: string) => {
   return storeLoadById(context, user, playbookId, ENTITY_TYPE_PLAYBOOK);
@@ -116,15 +116,27 @@ export const getPlaybookDefinition = async (context: AuthContext, playbook: Basi
   return playbook.playbook_definition;
 };
 
-export const playbookAddNode = async (context: AuthContext, user: AuthUser, id: string, input: PlaybookAddNodeInput) => {
-  // our stix matching is currently limited, we need to validate the input filters
-  if (input.configuration) {
-    const config = JSON.parse(input.configuration);
-    if (config.filters) {
-      const filterGroup = JSON.parse(config.filters) as FilterGroup;
+const checkPlaybookFiltersAndBuildConfigWithCorrectFilters = (input: PlaybookAddNodeInput) => {
+  if (!input.configuration) {
+    return '{}';
+  }
+  let stringifiedFilters;
+  const config = JSON.parse(input.configuration);
+  if (config.filters) {
+    const filterGroup = JSON.parse(config.filters) as FilterGroup;
+    if (input.component_id === PLAYBOOK_INTERNAL_DATA_CRON.id) {
+      stringifiedFilters = JSON.stringify(checkAndConvertFilters(filterGroup));
+    } else { // our stix matching is currently limited, we need to validate the input filters
       validateFilterGroupForStixMatch(filterGroup);
+      stringifiedFilters = config.filters;
     }
   }
+  return JSON.stringify({ ...config, filters: stringifiedFilters });
+};
+
+export const playbookAddNode = async (context: AuthContext, user: AuthUser, id: string, input: PlaybookAddNodeInput) => {
+  const configuration = checkPlaybookFiltersAndBuildConfigWithCorrectFilters(input);
+
   const playbook = await findById(context, user, id);
   const definition = JSON.parse(playbook.playbook_definition ?? '{}') as ComponentDefinition;
   const relatedComponent = PLAYBOOK_COMPONENTS[input.component_id];
@@ -141,7 +153,7 @@ export const playbookAddNode = async (context: AuthContext, user: AuthUser, id: 
     name: input.name,
     position: input.position,
     component_id: input.component_id,
-    configuration: input.configuration ?? '{}' // TODO Check valid json
+    configuration, // TODO Check valid json
   });
   const patch: any = { playbook_definition: JSON.stringify(definition) };
   if (relatedComponent.is_entry_point) {
@@ -200,14 +212,7 @@ export const playbookUpdatePositions = async (context: AuthContext, user: AuthUs
 };
 
 export const playbookReplaceNode = async (context: AuthContext, user: AuthUser, id: string, nodeId: string, input: PlaybookAddNodeInput) => {
-  // our stix matching is currently limited, we need to validate the input filters
-  if (input.configuration) {
-    const config = JSON.parse(input.configuration);
-    if (config.filters) {
-      const filterGroup = JSON.parse(config.filters) as FilterGroup;
-      validateFilterGroupForStixMatch(filterGroup);
-    }
-  }
+  const configuration = checkPlaybookFiltersAndBuildConfigWithCorrectFilters(input);
 
   const playbook = await findById(context, user, id);
   const definition = JSON.parse(playbook.playbook_definition) as ComponentDefinition;
@@ -243,7 +248,7 @@ export const playbookReplaceNode = async (context: AuthContext, user: AuthUser, 
         name: input.name,
         position: input.position,
         component_id: input.component_id,
-        configuration: input.configuration ?? '{}' // TODO Check valid json
+        configuration, // TODO Check valid json
       };
     }
     return n;

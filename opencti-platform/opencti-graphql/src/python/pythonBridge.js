@@ -6,14 +6,19 @@ import { DEV_MODE, logApp } from '../config/conf';
 import { UnknownError, UnsupportedError } from '../config/errors';
 import { telemetry } from '../config/tracing';
 import { cleanupIndicatorPattern, STIX_PATTERN_TYPE } from '../utils/syntax';
-import { isEmptyField } from '../database/utils';
+import { isEmptyField, isNotEmptyField } from '../database/utils';
 
 const PYTHON_EXECUTOR = nconf.get('app:python_execution') ?? 'native';
+const PYTHON_VENV = nconf.get('app:python_execution_venv');
 const USE_NATIVE_EXEC = PYTHON_EXECUTOR === 'native';
 const SUPPORTED_CHECKED_PATTERN_TYPES = ['stix', 'yara', 'sigma', 'snort', 'suricata', 'eql'];
 
 // Importing python runtime scripts
 const py = nodecallspython.interpreter;
+// In a venv is available import the site-packages
+if (DEV_MODE && isNotEmptyField(PYTHON_VENV)) {
+  py.addImportPath(PYTHON_VENV);
+}
 const pyCheckIndicator = py.importSync('./src/python/runtime/check_indicator.py');
 const CHECK_INDICATOR_SCRIPT = { fn: 'check_indicator', py: pyCheckIndicator };
 

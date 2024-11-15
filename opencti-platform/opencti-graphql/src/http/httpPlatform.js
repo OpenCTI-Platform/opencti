@@ -190,7 +190,7 @@ const createApp = async (app) => {
   archiver.registerFormat('zip-encrypted', archiverZipEncrypted);
 
   // -- File download
-  app.get(`${basePath}/storage/get/:file(*)`, async (req, res, next) => {
+  app.get(`${basePath}/storage/get/:file(*)`, async (req, res) => {
     try {
       const executeContext = executionContext('storage_get');
       const auth = await authenticateUserFromRequest(executeContext, req, res);
@@ -206,13 +206,14 @@ const createApp = async (app) => {
       res.attachment(file);
       stream.pipe(res);
     } catch (e) {
-      setCookieError(res, e?.message);
-      next(e);
+      setCookieError(res, e.message);
+      logApp.error(e);
+      res.status(503).send({ status: 'error', error: e.message });
     }
   });
 
   // -- File view
-  app.get(`${basePath}/storage/view/:file(*)`, async (req, res, next) => {
+  app.get(`${basePath}/storage/view/:file(*)`, async (req, res) => {
     try {
       const executeContext = executionContext('storage_view');
       const auth = await authenticateUserFromRequest(executeContext, req, res);
@@ -235,13 +236,14 @@ const createApp = async (app) => {
       const stream = await downloadFile(file);
       stream.pipe(res);
     } catch (e) {
-      setCookieError(res, e?.message);
-      next(e);
+      setCookieError(res, e.message);
+      logApp.error(e);
+      res.status(503).send({ status: 'error', error: e.message });
     }
   });
 
   // -- Pdf view
-  app.get(`${basePath}/storage/html/:file(*)`, async (req, res, next) => {
+  app.get(`${basePath}/storage/html/:file(*)`, async (req, res) => {
     try {
       const executeContext = executionContext('storage_html');
       const auth = await authenticateUserFromRequest(executeContext, req, res);
@@ -264,13 +266,14 @@ const createApp = async (app) => {
         res.send('Unsupported file type');
       }
     } catch (e) {
-      setCookieError(res, e?.message);
-      next(e);
+      setCookieError(res, e.message);
+      logApp.error(e);
+      res.status(503).send({ status: 'error', error: e.message });
     }
   });
 
   // -- Encrypted view
-  app.get(`${basePath}/storage/encrypted/:file(*)`, async (req, res, next) => {
+  app.get(`${basePath}/storage/encrypted/:file(*)`, async (req, res) => {
     try {
       const executeContext = executionContext('storage_encrypted');
       const auth = await authenticateUserFromRequest(executeContext, req, res);
@@ -288,13 +291,14 @@ const createApp = async (app) => {
       res.attachment(`${filename}.zip`);
       archive.pipe(res);
     } catch (e) {
-      setCookieError(res, e?.message);
-      next(e);
+      setCookieError(res, e.message);
+      logApp.error(e);
+      res.status(503).send({ status: 'error', error: e.message });
     }
   });
 
   // -- Client HTTPS Cert login custom strategy
-  app.get(`${basePath}/auth/cert`, (req, res, next) => {
+  app.get(`${basePath}/auth/cert`, (req, res) => {
     try {
       const context = executionContext('cert_strategy');
       const redirect = extractRefererPathFromReq(req) ?? '/';
@@ -327,13 +331,14 @@ const createApp = async (app) => {
         }
       }
     } catch (e) {
-      setCookieError(res, e?.message);
-      next(e);
+      setCookieError(res, e.message);
+      logApp.error(e);
+      res.status(503).send({ status: 'error', error: e.message });
     }
   });
 
   // Logout
-  app.get(`${basePath}/logout`, async (req, res, next) => {
+  app.get(`${basePath}/logout`, async (req, res) => {
     try {
       const referer = extractRefererPathFromReq(req) ?? '/';
       const provider = req.session.session_provider?.provider;
@@ -358,7 +363,7 @@ const createApp = async (app) => {
               strategy.logout(req, (error, request) => {
                 if (error) {
                   setCookieError(res, 'Error generating logout uri');
-                  next(error);
+                  res.status(503).send({ status: 'error', error: error.message });
                 } else {
                   res.redirect(request);
                 }
@@ -378,8 +383,9 @@ const createApp = async (app) => {
         });
       }
     } catch (e) {
-      setCookieError(res, e?.message);
-      next(e);
+      setCookieError(res, e.message);
+      logApp.error(e);
+      res.status(503).send({ status: 'error', error: e.message });
     }
   });
 
@@ -401,8 +407,9 @@ const createApp = async (app) => {
         next(err);
       })(req, res, next);
     } catch (e) {
-      setCookieError(res, e?.message);
-      next(e);
+      setCookieError(res, e.message);
+      logApp.error(e);
+      res.status(503).send({ status: 'error', error: e.message });
     }
   });
 
@@ -424,9 +431,10 @@ const createApp = async (app) => {
       const context = executionContext(`${provider}_strategy`);
       const logged = await callbackLogin();
       await authenticateUser(context, req, logged, provider);
-    } catch (err) {
-      logApp.error(err, { provider });
+    } catch (e) {
+      logApp.error(e, { provider });
       setCookieError(res, 'Invalid authentication, please ask your administrator');
+      res.status(503).send({ status: 'error', error: e.message });
     } finally {
       res.redirect(referer ?? '/');
     }
@@ -477,24 +485,25 @@ const createApp = async (app) => {
       res.set('Cache-Control', 'private, no-cache, no-store, must-revalidate');
       res.set('Expires', '-1');
       res.set('Pragma', 'no-cache');
-      return res.send(withOptionValued);
+      res.send(withOptionValued);
     }
-    return res.status(503).send({ status: 'error', error: 'Interface is disabled by configuration' });
+    res.status(503).send({ status: 'error', error: 'Interface is disabled by configuration' });
   });
 
   // Any random unexpected request not GET
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   app.use((req, res, next) => {
     res.status(404).send({ status: 'error', error: 'Path not found' });
-    next();
   });
 
   // Error handling
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   app.use((err, req, res, next) => {
     const error = UnknownError('Http call interceptor fail', { cause: err, referer: req.headers?.referer });
     logApp.error(error);
     res.status(500).send({ status: 'error', error: err.stack });
-    next();
   });
+
   return { sseMiddleware };
 };
 

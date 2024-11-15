@@ -28,7 +28,6 @@ import Checkbox from '@mui/material/Checkbox';
 import Drawer from '@mui/material/Drawer';
 import Popover from '@mui/material/Popover';
 import Divider from '@mui/material/Divider';
-import TimeRange from 'react-timeline-range-slider';
 import { ResponsiveContainer, Scatter, ScatterChart, YAxis, ZAxis } from 'recharts';
 import Badge from '@mui/material/Badge';
 import Dialog from '@mui/material/Dialog';
@@ -61,6 +60,7 @@ import { isStixNestedRefRelationship } from '../../../../utils/Relation';
 import { convertCreatedBy, convertMarkings } from '../../../../utils/edition';
 import { UserContext } from '../../../../utils/hooks/useAuth';
 import ContainerAddStixCoreObjectsInGraph from '../../common/containers/ContainerAddStixCoreObjectsInGraph';
+import TimeRange from '../../../../components/range_slider/RangeSlider';
 
 const styles = () => ({
   bottomNav: {

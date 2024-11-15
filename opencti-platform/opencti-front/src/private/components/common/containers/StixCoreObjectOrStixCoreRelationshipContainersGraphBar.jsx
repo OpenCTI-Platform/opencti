@@ -16,7 +16,6 @@ import Checkbox from '@mui/material/Checkbox';
 import Drawer from '@mui/material/Drawer';
 import Popover from '@mui/material/Popover';
 import Divider from '@mui/material/Divider';
-import TimeRange from 'react-timeline-range-slider';
 import { ResponsiveContainer, Scatter, ScatterChart, YAxis, ZAxis } from 'recharts';
 import Slide from '@mui/material/Slide';
 import inject18n from '../../../../components/i18n';
@@ -25,6 +24,7 @@ import { truncate } from '../../../../utils/String';
 import { resolveLink } from '../../../../utils/Entity';
 import { parseDomain } from '../../../../utils/Graph';
 import { UserContext } from '../../../../utils/hooks/useAuth';
+import TimeRange from '../../../../components/range_slider/RangeSlider';
 
 const styles = () => ({
   bottomNav: {

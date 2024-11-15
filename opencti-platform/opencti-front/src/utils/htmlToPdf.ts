@@ -178,7 +178,7 @@ export const htmlToPdf = (fileName: string, content: string) => {
   htmlData = setImagesWidth(htmlData);
 
   // Improve render for markdown files.
-  if (fileName.endsWith('.md')) {
+  if (fileName && fileName.endsWith('.md')) {
     htmlData = renderToString(compiler(htmlData, { wrapper: null }));
   }
 

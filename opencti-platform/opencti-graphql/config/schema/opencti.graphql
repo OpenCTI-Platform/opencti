@@ -13945,7 +13945,7 @@ type ExternalReferenceEditMutations {
   relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
   relationDelete(fromId: StixRef!, relationship_type: String!): ExternalReference @auth(for: [KNOWLEDGE_KNUPDATE])
   askEnrichment(connectorId: ID!): Work @auth(for: [KNOWLEDGE_KNENRICHMENT])
-  importPush(file: Upload!, version: DateTime, noTriggerImport: Boolean): File @auth(for: [KNOWLEDGE_KNUPLOAD])
+  importPush(file: Upload!, fileMarkings: [String], version: DateTime, noTriggerImport: Boolean): File @auth(for: [KNOWLEDGE_KNUPLOAD])
 }
 type KillChainPhaseEditMutations {
   delete: ID
@@ -14238,7 +14238,7 @@ type StixCyberObservableEditMutations {
   relationsAdd(input: StixRefRelationshipsAddInput!): StixCyberObservable @auth(for: [KNOWLEDGE_KNUPDATE])
   relationDelete(toId: StixRef!, relationship_type: String!): StixCyberObservable @auth(for: [KNOWLEDGE_KNUPDATE])
   promoteToIndicator: Indicator  @auth(for: [KNOWLEDGE_KNUPDATE])
-  importPush(file: Upload!, version: DateTime, noTriggerImport: Boolean): File @auth(for: [KNOWLEDGE_KNUPLOAD])
+  importPush(file: Upload!, fileMarkings: [String], version: DateTime, noTriggerImport: Boolean): File @auth(for: [KNOWLEDGE_KNUPLOAD])
   exportAsk(format: String!, exportType: String!, maxMarkingDefinition: String): [File!] @auth(for: [KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
   exportPush(file: Upload!): Boolean @auth(for: [CONNECTORAPI])
 }

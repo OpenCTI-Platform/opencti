@@ -37,7 +37,6 @@ import { AutoFix, FamilyTree, SelectAll, SelectGroup, SelectionDrag, Video3d } f
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
 import React, { Component } from 'react';
-import TimeRange from 'react-timeline-range-slider';
 import { ResponsiveContainer, Scatter, ScatterChart, YAxis, ZAxis } from 'recharts';
 import { getPreExpansionStateList } from './utils/investigationStorage';
 import InvestigationAddStixCoreObjects from './InvestigationAddStixCoreObjects';
@@ -54,6 +53,7 @@ import StixDomainObjectEdition from '../../common/stix_domain_objects/StixDomain
 import StixCyberObservableEdition from '../../observations/stix_cyber_observables/StixCyberObservableEdition';
 import { UserContext } from '../../../../utils/hooks/useAuth';
 import StixSightingRelationshipEdition from '../../events/stix_sighting_relationships/StixSightingRelationshipEdition';
+import TimeRange from '../../../../components/range_slider/RangeSlider';
 
 const styles = () => ({
   bottomNav: {

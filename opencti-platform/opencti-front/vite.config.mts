@@ -165,9 +165,10 @@ const depsToOptimize = [
   "remark-parse",
   "three-spritetext",
   "use-analytics",
-  "uuid"
-  ]
-;
+  "uuid",
+  "d3-scale",
+  "react-compound-slider"
+ ];
 
 const logger = createLogger();
 const loggerError = logger.error;

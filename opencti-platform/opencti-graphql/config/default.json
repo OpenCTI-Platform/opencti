@@ -95,6 +95,7 @@
     "map_tile_server_light": "https://map.opencti.io/styles/filigran-light2/{z}/{x}/{y}.png",
     "reference_attachment": false,
     "python_execution": "native",
+    "python_execution_venv": "../../../.python-venv/lib/python3.12/site-packages",
     "artifact_zip_password": "infected",
     "admin": {
       "email": "admin@opencti.io",

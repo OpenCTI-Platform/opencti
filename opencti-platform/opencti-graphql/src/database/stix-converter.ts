@@ -43,7 +43,7 @@ import type * as SDO from '../types/stix-sdo';
 import type * as SRO from '../types/stix-sro';
 import type * as SCO from '../types/stix-sco';
 import type * as SMO from '../types/stix-smo';
-import type { StoreCommon, StoreCyberObservable, StoreEntity, StoreEntityIdentity, StoreObject, StoreRelation } from '../types/store';
+import type { StoreCommon, StoreCyberObservable, StoreEntity, StoreEntityIdentity, StoreFileWithRefs, StoreObject, StoreRelation } from '../types/store';
 import {
   ENTITY_TYPE_ATTACK_PATTERN,
   ENTITY_TYPE_CAMPAIGN,
@@ -212,11 +212,12 @@ export const buildOCTIExtensions = (instance: StoreObject): S.StixOpenctiExtensi
     created_at: convertToStixDate(instance.created_at),
     updated_at: convertToStixDate(instance.updated_at),
     aliases: instance.x_opencti_aliases ?? [],
-    files: (instance.x_opencti_files ?? []).map((file) => ({
+    files: (instance.x_opencti_files ?? []).map((file: StoreFileWithRefs) => ({
       name: file.name,
       uri: `/storage/get/${file.id}`,
       version: file.version,
       mime_type: file.mime_type,
+      object_marking_refs: (file[INPUT_MARKINGS] ?? []).map((f) => f.standard_id),
     })),
     stix_ids: (instance.x_opencti_stix_ids ?? []).filter((stixId: string) => isTrustedStixId(stixId)),
     is_inferred: instance._index ? isInferredIndex(instance._index) : undefined, // TODO Use case for empty _index?

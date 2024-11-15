@@ -15,6 +15,7 @@ import {
   CONNECTOR_INTERNAL_ENRICHMENT,
   ENTITY_TYPE_CONTAINER,
   INPUT_EXTERNAL_REFS,
+  INPUT_MARKINGS,
   REL_INDEX_PREFIX
 } from '../schema/general';
 import { RELATION_CREATED_BY, RELATION_EXTERNAL_REFERENCE, RELATION_OBJECT, RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
@@ -670,17 +671,32 @@ export const stixCoreObjectImportPush = async (context, user, id, file, args = {
       x_opencti_files: files
     });
     // Stream event generation
+    const fileMarkings = R.uniq(R.flatten(files.map((f) => f.file_markings)));
+    let fileMarkingsPromise = Promise.resolve();
+    if (fileMarkings.length > 0) {
+      const argsMarkings = { type: ENTITY_TYPE_MARKING_DEFINITION, toMap: true, connectionFormat: false, baseData: true };
+      fileMarkingsPromise = elFindByIds(context, SYSTEM_USER, R.uniq(fileMarkings), argsMarkings);
+    }
+    const fileMarkingsMap = await fileMarkingsPromise;
+    const resolvedFiles = [];
+    files.forEach((f) => {
+      if (isNotEmptyField(f.file_markings)) {
+        resolvedFiles.push({ ...f, [INPUT_MARKINGS]: f.file_markings.map((m) => fileMarkingsMap[m]) });
+      } else {
+        resolvedFiles.push(f);
+      }
+    });
     if (addedExternalRef) {
       const newExternalRefs = [...(previous[INPUT_EXTERNAL_REFS] ?? []), addedExternalRef];
-      const instance = { ...previous, x_opencti_files: files, [INPUT_EXTERNAL_REFS]: newExternalRefs };
+      const instance = { ...previous, x_opencti_files: resolvedFiles, [INPUT_EXTERNAL_REFS]: newExternalRefs };
       const message = `adds \`${up.name}\` in \`files\` and \`external_references\``;
       await storeUpdateEvent(context, user, previous, instance, message);
     } else {
-      const instance = { ...previous, x_opencti_files: files };
+      const instance = { ...previous, x_opencti_files: resolvedFiles };
       await storeUpdateEvent(context, user, previous, instance, `adds \`${up.name}\` in \`files\``);
     }
     // Add in activity only for notifications
-    const contextData = buildContextDataForFile(previous, filePath, up.name);
+    const contextData = buildContextDataForFile(previous, filePath, up.name, up.metaData.file_markings);
     await publishUserAction({
       user,
       event_type: 'file',

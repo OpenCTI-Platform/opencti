@@ -190,13 +190,14 @@ export const completeContextDataForEntity = <T extends BasicStoreCommon, C exten
   return contextData;
 };
 
-export const buildContextDataForFile = (entity: BasicStoreObject, path: string, filename: string) => {
+export const buildContextDataForFile = (entity: BasicStoreObject, path: string, filename: string, file_markings: string[] = []) => {
   const baseData: UserFileActionContextData = {
     path,
     id: entity?.internal_id,
     entity_name: entity ? extractEntityRepresentativeName(entity) : 'global',
     entity_type: entity?.entity_type ?? 'global',
     file_name: filename,
+    object_marking_refs_ids: file_markings
   };
   return completeContextDataForEntity(baseData, entity);
 };

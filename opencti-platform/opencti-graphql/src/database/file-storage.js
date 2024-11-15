@@ -235,6 +235,7 @@ export const storeFileConverter = (user, file) => {
     name: file.name,
     version: file.metaData.version,
     mime_type: file.metaData.mimetype,
+    file_markings: file.metaData.file_markings ?? [],
   };
 };
 

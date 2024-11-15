@@ -201,7 +201,7 @@ const PLAYBOOK_INTERNAL_DATA_CRON_SCHEMA: JSONSchemaType<CronConfiguration> = {
   },
   required: ['period', 'triggerTime', 'onlyLast', 'filters'],
 };
-const PLAYBOOK_INTERNAL_DATA_CRON: PlaybookComponent<CronConfiguration> = {
+export const PLAYBOOK_INTERNAL_DATA_CRON: PlaybookComponent<CronConfiguration> = {
   id: 'PLAYBOOK_INTERNAL_DATA_CRON',
   name: 'Query knowledge on a regular basis',
   description: 'Query knowledge on the platform',
@@ -253,7 +253,7 @@ const PLAYBOOK_MATCHING_COMPONENT_SCHEMA: JSONSchemaType<MatchConfiguration> = {
   },
   required: ['filters'],
 };
-const PLAYBOOK_MATCHING_COMPONENT: PlaybookComponent<MatchConfiguration> = {
+export const PLAYBOOK_MATCHING_COMPONENT: PlaybookComponent<MatchConfiguration> = {
   id: 'PLAYBOOK_FILTERING_COMPONENT',
   name: 'Match knowledge',
   description: 'Match STIX data according to filter (pass if match)',
