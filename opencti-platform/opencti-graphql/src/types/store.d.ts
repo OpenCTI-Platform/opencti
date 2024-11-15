@@ -80,6 +80,8 @@ interface StoreFile {
   description: string;
   order?: number;
   inCarousel?: boolean;
+  file_markings?: string[];
+  [INPUT_MARKINGS]?: Array<StoreMarkingDefinition>;
 }
 
 interface BasicStoreIdentifier {

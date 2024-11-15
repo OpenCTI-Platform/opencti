@@ -7982,7 +7982,7 @@ type ExternalReferenceEditMutations {
   relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship
   relationDelete(fromId: StixRef!, relationship_type: String!): ExternalReference
   askEnrichment(connectorId: ID!): Work
-  importPush(file: Upload!, version: DateTime, noTriggerImport: Boolean): File
+  importPush(file: Upload!, fileMarkings: [String], version: DateTime, noTriggerImport: Boolean): File
 }
 
 type KillChainPhaseEditMutations {
@@ -8289,7 +8289,7 @@ type StixCyberObservableEditMutations {
   relationsAdd(input: StixRefRelationshipsAddInput!): StixCyberObservable
   relationDelete(toId: StixRef!, relationship_type: String!): StixCyberObservable
   promoteToIndicator: Indicator
-  importPush(file: Upload!, version: DateTime, noTriggerImport: Boolean): File
+  importPush(file: Upload!, fileMarkings: [String], version: DateTime, noTriggerImport: Boolean): File
   exportAsk(format: String!, exportType: String!, maxMarkingDefinition: String): [File!]
   exportPush(file: Upload!): Boolean
   promote: StixCyberObservable @deprecated(reason: "[>=6.2 & <6.5]. Use `promoteToIndicator`.")

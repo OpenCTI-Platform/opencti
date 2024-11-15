@@ -141,7 +141,7 @@ import {
   resolveAliasesField,
   STIX_ORGANIZATIONS_UNRESTRICTED
 } from '../schema/stixDomainObject';
-import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_LABEL } from '../schema/stixMetaObject';
+import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_LABEL, ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import { ENTITY_HASHED_OBSERVABLE_ARTIFACT, ENTITY_HASHED_OBSERVABLE_STIX_FILE, isStixCyberObservable, isStixCyberObservableHashedObservable } from '../schema/stixCyberObservable';
 import conf, { BUS_TOPICS, extendedErrors, isFeatureEnabled, logApp } from '../config/conf';
@@ -340,8 +340,10 @@ const loadElementMetaDependencies = async (context, user, elements, args = {}) =
 };
 
 const loadElementsWithDependencies = async (context, user, elements, opts = {}) => {
+  const fileMarkings = [];
   const elementsToDeps = [...elements];
   let fromAndToPromise = Promise.resolve();
+  let fileMarkingsPromise = Promise.resolve();
   const targetsToResolved = [];
   elements.forEach((e) => {
     const isRelation = e.base_type === BASE_TYPE_RELATION;
@@ -350,6 +352,13 @@ const loadElementsWithDependencies = async (context, user, elements, opts = {}) 
       elementsToDeps.push({ internal_id: e.toId, entity_type: e.toType });
       targetsToResolved.push(...[e.fromId, e.toId]);
     }
+    if (isNotEmptyField(e.x_opencti_files)) {
+      e.x_opencti_files.forEach((f) => {
+        if (isNotEmptyField(f.file_markings)) {
+          fileMarkings.push(...f.file_markings);
+        }
+      });
+    }
   });
   const depsPromise = loadElementMetaDependencies(context, user, elementsToDeps, opts);
   if (targetsToResolved.length > 0) {
@@ -357,16 +366,33 @@ const loadElementsWithDependencies = async (context, user, elements, opts = {}) 
     // Load with System user, access rights will be dynamically change after
     fromAndToPromise = elFindByIds(context, SYSTEM_USER, targetsToResolved, args);
   }
-  const [fromAndToMap, depsElementsMap] = await Promise.all([fromAndToPromise, depsPromise]);
+  if (fileMarkings.length > 0) {
+    const args = { type: ENTITY_TYPE_MARKING_DEFINITION, toMap: true, connectionFormat: false, baseData: true };
+    fileMarkingsPromise = elFindByIds(context, SYSTEM_USER, R.uniq(fileMarkings), args);
+  }
+  const [fromAndToMap, depsElementsMap, fileMarkingsMap] = await Promise.all([fromAndToPromise, depsPromise, fileMarkingsPromise]);
   const loadedElements = [];
   let startProcessingTime = new Date().getTime();
   for (let i = 0; i < elements.length; i += 1) {
     const element = elements[i];
+    const files = [];
+    if (isNotEmptyField(element.x_opencti_files) && isNotEmptyField(fileMarkingsMap)) {
+      element.x_opencti_files.forEach((f) => {
+        if (isNotEmptyField(f.file_markings)) {
+          files.push({ ...f, [INPUT_MARKINGS]: f.file_markings.map((m) => fileMarkingsMap[m]) });
+        } else {
+          files.push(f);
+        }
+      });
+    }
+    const deps = depsElementsMap.get(element.id);
+    if (isNotEmptyField(files)) {
+      deps.x_opencti_files = files;
+    }
     const isRelation = element.base_type === BASE_TYPE_RELATION;
     if (isRelation) {
       const rawFrom = fromAndToMap[element.fromId];
       const rawTo = fromAndToMap[element.toId];
-      const deps = depsElementsMap.get(element.id);
       // Check relations consistency
       if (isEmptyField(rawFrom) || isEmptyField(rawTo)) {
         const validFrom = isEmptyField(rawFrom) ? 'invalid' : 'valid';
@@ -386,7 +412,6 @@ const loadElementsWithDependencies = async (context, user, elements, opts = {}) 
         }
       }
     } else {
-      const deps = depsElementsMap.get(element.id);
       loadedElements.push(R.mergeRight(element, { ...deps }));
     }
     // Prevent event loop locking more than MAX_EVENT_LOOP_PROCESSING_TIME
