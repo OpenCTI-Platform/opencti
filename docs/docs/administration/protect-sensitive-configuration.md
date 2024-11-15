@@ -25,9 +25,9 @@ The sensitive configurations identified are:
 
 ## Configuration
 
-The configuration is done in the application configuration file. By default (in ``default.json``), ``platform_protected_sensitive_config`` is disabled.
+The configuration is done in the application configuration file. By default (in ``default.json``), ``platform_protected_sensitive_config`` is enabled.
 
-Once the protection is enabled, it is possible to activate it around specific areas in the platform, as listed previously. It is also possible to choose which `Roles`, `Groups`  or `Marking definitions` will be protected.
+It is possible to activate it around specific areas in the platform, as listed previously. It is also possible to choose which `Roles`, `Groups`  or `Marking definitions` will be protected.
 
 By default, built-in `Groups` , `Roles` and `Markings` are protected:
 - Roles ``default``, ``administrator`` and ``connector``
