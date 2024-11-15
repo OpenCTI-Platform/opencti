@@ -292,13 +292,13 @@ class StixCoreRelationshipCreation extends Component {
           ),
         )(values);
         // eslint-disable-next-line no-await-in-loop
-        latestResponse = await commitWithPromise(finalValues, this.props.handleResult);
-        this.props.handleResult(latestResponse, true);
+        latestResponse = await commitWithPromise(finalValues);
+        const lastObject = current === total;
+        this.props.handleResult(latestResponse, !lastObject);
         current += 1;
         this.setState({ progress: Math.round((current * 100) / total) });
       }
     }
-    this.props.handleResult(latestResponse);
     this.setState({ progress: 0, displayProgress: false });
   }
 
