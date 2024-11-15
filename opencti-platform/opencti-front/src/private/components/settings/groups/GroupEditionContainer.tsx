@@ -100,7 +100,7 @@ const GroupEditionContainer: FunctionComponent<GroupEditionContainerProps> = ({
     },
     true,
   );
-  const userQueryRef = useQueryLoading<UsersLinesSearchQuery>(usersLinesSearchQuery, { search: searchTerm });
+  const userQueryRef = useQueryLoading<UsersLinesSearchQuery>(usersLinesSearchQuery, { search: searchTerm, orderBy: 'name', orderMode: 'asc' });
 
   const { editContext } = group;
   return (
