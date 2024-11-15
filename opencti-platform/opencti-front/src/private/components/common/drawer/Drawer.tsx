@@ -1,4 +1,4 @@
-import React, { CSSProperties, useEffect, useState, forwardRef } from 'react';
+import React, { CSSProperties, forwardRef, useEffect, useState } from 'react';
 import DrawerMUI from '@mui/material/Drawer';
 import makeStyles from '@mui/styles/makeStyles';
 import IconButton from '@mui/material/IconButton';
@@ -43,7 +43,6 @@ const useStyles = makeStyles<Theme, { bannerHeightNumber: number }>((theme) => c
   },
   container: {
     padding: `0 ${theme.spacing(2)} ${theme.spacing(2)} ${theme.spacing(2)}`,
-    height: '100%',
   },
   mainButton: ({ bannerHeightNumber }) => ({
     position: 'fixed',
