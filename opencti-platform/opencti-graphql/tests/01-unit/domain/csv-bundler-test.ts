@@ -300,7 +300,11 @@ describe('CSV bundler', () => {
           spec_version: '2.1',
           type: 'label',
           value: 'label2',
-          converter_csv: 'ville du pont;label;label2;#000000;randomDataOne',
+          extensions: {
+            'extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba': {
+              converter_csv: 'ville du pont;label;label2;#000000;randomDataOne',
+            }
+          }
         } as unknown as StixLabel,
         {
           city: 'ville du pont',
@@ -311,7 +315,11 @@ describe('CSV bundler', () => {
           name: 'ville du pont',
           spec_version: '2.1',
           type: 'location',
-          converter_csv: 'ville du pont;label;label2;#000000;randomDataOne',
+          extensions: {
+            'extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba': {
+              converter_csv: 'ville du pont;label;label2;#000000;randomDataOne',
+            }
+          }
         } as unknown as StixLocation
       ];
 
@@ -322,7 +330,11 @@ describe('CSV bundler', () => {
           spec_version: '2.1',
           type: 'label',
           value: 'label2',
-          converter_csv: 'ville du pont;label;label2;#000000;randomDataDifferent',
+          extensions: {
+            'extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba': {
+              converter_csv: 'ville du pont;label;label2;#000000;randomDataDifferent',
+            }
+          }
         } as unknown as StixLabel,
         {
           city: 'ville du pont',
@@ -333,7 +345,11 @@ describe('CSV bundler', () => {
           name: 'ville du pont',
           spec_version: '2.1',
           type: 'location',
-          converter_csv: 'ville du pont;label;label2;#000000;randomDataDifferent',
+          extensions: {
+            'extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba': {
+              converter_csv: 'ville du pont;label;label2;#000000;randomDataDifferent',
+            }
+          }
         } as unknown as StixLocation
       ];
 

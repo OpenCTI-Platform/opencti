@@ -12,30 +12,29 @@ import { STIX_EXT_OCTI } from '../types/stix-extensions';
  * @param bundles
  */
 export const canAddObjectToBundle = (objectsToAdd: StixObject[], bundles: StixObject[]): boolean => {
-  let canAdd = true;
+  const canAdd = true;
   for (let i = 0; i < objectsToAdd.length; i += 1) {
     const currentToCheck = objectsToAdd[i];
-    const existingObjectWithDifferentContent = bundles.find((item: StixObject) => {
+    const existingObjectWithDifferentContent = bundles.find((item) => {
       if (item.id === currentToCheck.id && item.type === currentToCheck.type) {
-        const itemClone = JSON.parse(JSON.stringify(item));
-        itemClone.converter_csv = undefined;
+        const itemClone = structuredClone(item);
         if (itemClone.extensions) {
           itemClone.extensions[STIX_EXT_OCTI].converter_csv = undefined;
         }
 
-        const currentToCheckClone = JSON.parse(JSON.stringify(currentToCheck));
-        currentToCheckClone.converter_csv = undefined;
+        const currentToCheckClone = structuredClone(currentToCheck);
         if (currentToCheckClone.extensions) {
           currentToCheckClone.extensions[STIX_EXT_OCTI].converter_csv = undefined;
         }
-
         const itemAsJson = JSON.stringify(itemClone);
         const currentAsJson = JSON.stringify(currentToCheckClone);
         return itemAsJson !== currentAsJson;
       }
       return false;
     });
-    canAdd = canAdd && !existingObjectWithDifferentContent;
+    if (existingObjectWithDifferentContent) {
+      return false;
+    }
   }
   return canAdd;
 };
@@ -47,14 +46,10 @@ export class BundleBuilder {
 
   objects: StixObject[];
 
-  // TODO
-  hashes: string[];
-
   constructor() {
     this.id = `bundle--${uuidv4()}`;
     this.type = 'bundle';
     this.objects = [];
-    this.hashes = [];
   }
 
   canAddObjects(objectsToCheck: StixObject[]) {
