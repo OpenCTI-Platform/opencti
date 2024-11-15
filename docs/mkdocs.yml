@@ -187,7 +187,9 @@ nav:
       - Parameters: administration/parameters.md
       - Security:
         - Policies: administration/policies.md
-        - Users and RBAC: administration/users.md
+        - Users and RBAC:
+          - Users and RBAC: administration/users.md
+          - Protect sensitive configuration: administration/protect-sensitive-configuration.md
         - Data segregation:
           - Marking restriction: administration/segregation.md
           - Organization segregation: administration/organization-segregation.md
