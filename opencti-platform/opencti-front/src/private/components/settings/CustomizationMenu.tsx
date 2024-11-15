@@ -23,6 +23,10 @@ const CustomizationMenu: FunctionComponent = () => {
       path: '/dashboard/settings/customization/decay',
       label: 'Decay rules',
     },
+    {
+      path: '/dashboard/settings/customization/exclusion_lists',
+      label: 'Exclusion lists',
+    },
   ];
   return <NavToolbarMenu entries={entries} />;
 };
