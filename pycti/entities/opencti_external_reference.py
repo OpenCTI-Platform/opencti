@@ -68,6 +68,12 @@ class ExternalReference:
         id = str(uuid.uuid5(uuid.UUID("00abedb4-aa42-466c-9c01-fed23315a9b7"), data))
         return "external-reference--" + id
 
+    @staticmethod
+    def generate_id_from_data(data):
+        return ExternalReference.generate_id(
+            data.get("url"), data.get("source_name"), data.get("external_id")
+        )
+
     """
         List External-Reference objects
 

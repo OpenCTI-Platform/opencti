@@ -142,12 +142,19 @@ class ThreatActor:
         """
 
     @staticmethod
-    def generate_id(name):
-        name = name.lower().strip()
-        data = {"name": name}
+    def generate_id(name, opencti_type):
+        data = {"name": name.lower().strip(), "opencti_type": opencti_type}
         data = canonicalize(data, utf8=False)
         id = str(uuid.uuid5(uuid.UUID("00abedb4-aa42-466c-9c01-fed23315a9b7"), data))
         return "threat-actor--" + id
+
+    def generate_id_from_data(self, data):
+        data_type = "Threat-Actor-Group"
+        if "x_opencti_type" in data:
+            data_type = data["x_opencti_type"]
+        elif self.opencti.get_attribute_in_extension("type", data) is not None:
+            data_type = self.opencti.get_attribute_in_extension("type", data)
+        return ThreatActor.generate_id(data["name"], data_type)
 
     def list(self, **kwargs) -> dict:
         """List Threat-Actor objects

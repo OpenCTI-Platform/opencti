@@ -176,7 +176,10 @@ class OpenCTIStix2:
         return None
 
     def import_bundle_from_file(
-        self, file_path: str, update: bool = False, types: List = None
+        self,
+        file_path: str,
+        update: bool = False,
+        types: List = None,
     ) -> Optional[List]:
         """import a stix2 bundle from a file
 
@@ -194,7 +197,7 @@ class OpenCTIStix2:
             return None
         with open(os.path.join(file_path), encoding="utf-8") as file:
             data = json.load(file)
-        return self.import_bundle(data, update, types)
+        return self.import_bundle(data, update, types, None)
 
     def import_bundle_from_json(
         self,
@@ -852,6 +855,59 @@ class OpenCTIStix2:
 
     # endregion
 
+    def get_stix_helper(self):
+        # Import
+        return {
+            # entities
+            "attack-pattern": self.opencti.attack_pattern,
+            "campaign": self.opencti.campaign,
+            "note": self.opencti.note,
+            "observed-data": self.opencti.observed_data,
+            "opinion": self.opencti.opinion,
+            "report": self.opencti.report,
+            "course-of-action": self.opencti.course_of_action,
+            "identity": self.opencti.identity,
+            "infrastructure": self.opencti.infrastructure,
+            "intrusion-set": self.opencti.intrusion_set,
+            "location": self.opencti.location,
+            "malware": self.opencti.malware,
+            "threat-actor": self.opencti.threat_actor,
+            "tool": self.opencti.tool,
+            "vulnerability": self.opencti.vulnerability,
+            "incident": self.opencti.incident,
+            "marking-definition": self.opencti.marking_definition,
+            "case-rfi": self.opencti.case_rfi,
+            "x-opencti-case-rfi": self.opencti.case_rfi,
+            "case-rft": self.opencti.case_rft,
+            "x-opencti-case-rft": self.opencti.case_rft,
+            "case-incident": self.opencti.case_incident,
+            "x-opencti-case-incident": self.opencti.case_incident,
+            "feedback": self.opencti.feedback,
+            "x-opencti-feedback": self.opencti.feedback,
+            "channel": self.opencti.channel,
+            "data-component": self.opencti.data_component,
+            "x-mitre-data-component": self.opencti.data_component,
+            "data-source": self.opencti.data_source,
+            "x-mitre-data-source": self.opencti.data_source,
+            "event": self.opencti.event,
+            "grouping": self.opencti.grouping,
+            "indicator": self.opencti.indicator,
+            "language": self.opencti.language,
+            "malware-analysis": self.opencti.malware_analysis,
+            "narrative": self.opencti.narrative,
+            "task": self.opencti.task,
+            "x-opencti-task": self.opencti.task,
+            "vocabulary": self.opencti.vocabulary,
+            # relationships
+            "relationship": self.opencti.stix_core_relationship,
+            "sighting": self.opencti.stix_sighting_relationship,
+        }
+
+    def generate_standard_id_from_stix(self, data):
+        stix_helpers = self.get_stix_helper()
+        helper = stix_helpers.get(data["type"])
+        return helper.generate_id_from_data(data)
+
     # region import
     def import_object(
         self, stix_object: Dict, update: bool = False, types: List = None
@@ -898,53 +954,16 @@ class OpenCTIStix2:
             "sample_ids": sample_refs_ids,
         }
 
-        # Import
-        importer = {
-            "marking-definition": self.opencti.marking_definition.import_from_stix2,
-            "attack-pattern": self.opencti.attack_pattern.import_from_stix2,
-            "campaign": self.opencti.campaign.import_from_stix2,
-            "channel": self.opencti.channel.import_from_stix2,
-            "event": self.opencti.event.import_from_stix2,
-            "note": self.opencti.note.import_from_stix2,
-            "observed-data": self.opencti.observed_data.import_from_stix2,
-            "opinion": self.opencti.opinion.import_from_stix2,
-            "report": self.opencti.report.import_from_stix2,
-            "grouping": self.opencti.grouping.import_from_stix2,
-            "case-rfi": self.opencti.case_rfi.import_from_stix2,
-            "x-opencti-case-rfi": self.opencti.case_rfi.import_from_stix2,
-            "case-rft": self.opencti.case_rft.import_from_stix2,
-            "x-opencti-case-rft": self.opencti.case_rft.import_from_stix2,
-            "task": self.opencti.task.import_from_stix2,
-            "x-opencti-task": self.opencti.task.import_from_stix2,
-            "case-incident": self.opencti.case_incident.import_from_stix2,
-            "x-opencti-case-incident": self.opencti.case_incident.import_from_stix2,
-            "feedback": self.opencti.feedback.import_from_stix2,
-            "x-opencti-feedback": self.opencti.feedback.import_from_stix2,
-            "course-of-action": self.opencti.course_of_action.import_from_stix2,
-            "data-component": self.opencti.data_component.import_from_stix2,
-            "x-mitre-data-component": self.opencti.data_component.import_from_stix2,
-            "data-source": self.opencti.data_source.import_from_stix2,
-            "x-mitre-data-source": self.opencti.data_source.import_from_stix2,
-            "identity": self.opencti.identity.import_from_stix2,
-            "indicator": self.opencti.indicator.import_from_stix2,
-            "infrastructure": self.opencti.infrastructure.import_from_stix2,
-            "intrusion-set": self.opencti.intrusion_set.import_from_stix2,
-            "location": self.opencti.location.import_from_stix2,
-            "malware": self.opencti.malware.import_from_stix2,
-            "malware-analysis": self.opencti.malware_analysis.import_from_stix2,
-            "threat-actor": self.opencti.threat_actor.import_from_stix2,
-            "tool": self.opencti.tool.import_from_stix2,
-            "narrative": self.opencti.narrative.import_from_stix2,
-            "vulnerability": self.opencti.vulnerability.import_from_stix2,
-            "incident": self.opencti.incident.import_from_stix2,
-        }
-        do_import = importer.get(
-            stix_object["type"],
-            lambda **kwargs: self.unknown_type(stix_object),
-        )
-        stix_object_results = do_import(
-            stixObject=stix_object, extras=extras, update=update
-        )
+        stix_helper = self.get_stix_helper().get(stix_object["type"])
+        if stix_helper:
+            stix_object_results = stix_helper.import_from_stix2(
+                stixObject=stix_object, extras=extras, update=update
+            )
+        else:
+            stix_object_results = None
+            self.opencti.app_logger.error(
+                "Unknown object type, doing nothing...", {"type": stix_object["type"]}
+            )
 
         if stix_object_results is None:
             return None
@@ -1371,6 +1390,11 @@ class OpenCTIStix2:
             x_opencti_workflow_id=(
                 stix_sighting["x_opencti_workflow_id"]
                 if "x_opencti_workflow_id" in stix_sighting
+                else None
+            ),
+            x_opencti_stix_ids=(
+                stix_sighting["x_opencti_stix_ids"]
+                if "x_opencti_stix_ids" in stix_sighting
                 else None
             ),
             update=update,
@@ -2403,7 +2427,7 @@ class OpenCTIStix2:
                 # region Resolve the to
                 to_ids = []
                 if "x_opencti_where_sighted_refs" in item:
-                    for where_sighted_ref in item["_opencti_where_sighted_refs"]:
+                    for where_sighted_ref in item["x_opencti_where_sighted_refs"]:
                         to_ids.append(where_sighted_ref)
                 elif "where_sighted_refs" in item:
                     for where_sighted_ref in item["where_sighted_refs"]:
@@ -2623,6 +2647,7 @@ class OpenCTIStix2:
             if "x_opencti_event_version" in stix_bundle
             else None
         )
+
         stix2_splitter = OpenCTIStix2Splitter()
         _, bundles = stix2_splitter.split_bundle_with_expectations(
             stix_bundle, False, event_version

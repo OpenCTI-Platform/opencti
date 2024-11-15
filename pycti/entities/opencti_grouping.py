@@ -396,15 +396,22 @@ class Grouping:
         """
 
     @staticmethod
-    def generate_id(name, context, created):
+    def generate_id(name, context, created=None):
         name = name.lower().strip()
         context = context.lower().strip()
         if isinstance(created, datetime.datetime):
             created = created.isoformat()
-        data = {"name": name, "context": context, "created": created}
+        if created is None:
+            data = {"name": name, "context": context}
+        else:
+            data = {"name": name, "context": context, "created": created}
         data = canonicalize(data, utf8=False)
         id = str(uuid.uuid5(uuid.UUID("00abedb4-aa42-466c-9c01-fed23315a9b7"), data))
         return "grouping--" + id
+
+    @staticmethod
+    def generate_id_from_data(data):
+        return Grouping.generate_id(data["name"], data["context"], data["created"])
 
     """
         List Grouping objects

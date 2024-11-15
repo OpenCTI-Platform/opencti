@@ -210,14 +210,32 @@ class Location:
 
     @staticmethod
     def generate_id(name, x_opencti_location_type, latitude=None, longitude=None):
-        name = name.lower().strip()
-        if x_opencti_location_type == "position":
-            data = {"name": name, "latitude": latitude, "longitude": longitude}
+        if x_opencti_location_type == "Position":
+            if latitude is not None and longitude is None:
+                data = {"latitude": latitude}
+            elif latitude is None and longitude is not None:
+                data = {"longitude": longitude}
+            elif latitude is not None and longitude is not None:
+                data = {"latitude": latitude, "longitude": longitude}
+            else:
+                data = {"name": name.lower().strip()}
         else:
-            data = {"name": name, "x_opencti_location_type": x_opencti_location_type}
+            data = {
+                "name": name.lower().strip(),
+                "x_opencti_location_type": x_opencti_location_type,
+            }
         data = canonicalize(data, utf8=False)
         id = str(uuid.uuid5(uuid.UUID("00abedb4-aa42-466c-9c01-fed23315a9b7"), data))
         return "location--" + id
+
+    @staticmethod
+    def generate_id_from_data(data):
+        return Location.generate_id(
+            data.get("name"),
+            data.get("x_opencti_location_type"),
+            data.get("latitude"),
+            data.get("longitude"),
+        )
 
     """
         List Location objects

@@ -226,13 +226,16 @@ class Task:
 
     @staticmethod
     def generate_id(name, created):
-        name = name.lower().strip()
         if isinstance(created, datetime.datetime):
             created = created.isoformat()
-        data = {"name": name, "created": created}
+        data = {"name": name.lower().strip(), "created": created}
         data = canonicalize(data, utf8=False)
         id = str(uuid.uuid5(uuid.UUID("00abedb4-aa42-466c-9c01-fed23315a9b7"), data))
         return "task--" + id
+
+    @staticmethod
+    def generate_id_from_data(data):
+        return Task.generate_id(data["name"], data["created"])
 
     """
         List Task objects
