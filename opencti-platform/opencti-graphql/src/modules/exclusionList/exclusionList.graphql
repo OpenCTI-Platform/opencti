@@ -1,0 +1,66 @@
+type ExclusionList implements InternalObject & BasicObject {
+  id: ID!
+  name: String!
+  description: String
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String]!
+  created_at: DateTime!
+  enabled: Boolean!
+  list_entity_types: [ExclusionListEntityTypes!]!
+  file_id: String!
+}
+
+type ExclusionListConnection {
+  pageInfo: PageInfo!
+  edges: [ExclusionListEdge!]
+}
+
+type ExclusionListEdge {
+  cursor: String!
+  node: ExclusionList!
+}
+
+enum ExclusionListOrdering {
+  name
+  created_at
+}
+
+enum ExclusionListEntityTypes {
+  IPV4_ADDR
+  IPV6_ADDR
+  DOMAIN_NAME
+  URL
+}
+
+input ExclusionListContentAddInput {
+  name: String!
+  description: String
+  list_entity_types: [ExclusionListEntityTypes!]!
+  content: String!
+}
+
+input ExclusionListFileAddInput {
+  name: String!
+  description: String
+  list_entity_types: [ExclusionListEntityTypes!]!
+  file: Upload!
+}
+
+type Query {
+  exclusionList(id: String!): ExclusionList @auth(for: [SETTINGS_SETCUSTOMIZATION])
+  exclusionLists(
+    first: Int
+    after: ID
+    orderBy: ExclusionListOrdering
+    orderMode: OrderingMode
+    filters: FilterGroup
+    search: String
+  ): ExclusionListConnection @auth(for: [SETTINGS_SETCUSTOMIZATION])
+}
+
+type Mutation {
+  exclusionListContentAdd(input: ExclusionListContentAddInput!): ExclusionList @auth(for: [SETTINGS_SETCUSTOMIZATION])
+  exclusionListFileAdd(input: ExclusionListFileAddInput!): ExclusionList @auth(for: [SETTINGS_SETCUSTOMIZATION])
+  exclusionListDelete(id: ID!): ID @auth(for: [SETTINGS_SETCUSTOMIZATION])
+}

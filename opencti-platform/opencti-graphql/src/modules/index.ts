@@ -61,6 +61,7 @@ import './internal/document/document';
 import './publicDashboard/publicDashboard';
 import './deleteOperation/deleteOperation';
 import './support/support';
+import './exclusionList/exclusionList';
 import './draftWorkspace/draftWorkspace';
 
 // incomplete modules
@@ -118,6 +119,7 @@ import './ai/ai-graphql';
 import './xtm/xtm-graphql';
 import './deleteOperation/deleteOperation-graphql';
 import './support/support-graphql';
+import './exclusionList/exclusionList-graphql';
 import './draftWorkspace/draftWorkspace-graphql';
 // import './internal/document/document-graphql'; # Not needed as document is not fully registered
 // endregion
