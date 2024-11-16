@@ -3,6 +3,7 @@ import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as R from 'ramda';
 import * as Yup from 'yup';
+import { useTheme } from '@mui/styles';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
@@ -85,6 +86,7 @@ export const attackPatternMutationRelationDelete = graphql`
 const AttackPatternEditionOverviewComponent = (props) => {
   const { attackPattern, enableReferences, context, handleClose } = props;
   const { t_i18n } = useFormatter();
+  const theme = useTheme();
 
   const basicShape = {
     name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
@@ -193,7 +195,7 @@ const AttackPatternEditionOverviewComponent = (props) => {
         isValid,
         dirty,
       }) => (
-        <Form style={{ margin: '20px 0 20px 0' }}>
+        <Form style={{ margin: `${theme.spacing(2)} 0` }}>
           <AlertConfidenceForEntity entity={attackPattern} />
           <Field
             component={TextField}

@@ -125,7 +125,7 @@ const IngestionRssCreation = (props) => {
           onReset={onClose}
         >
           {({ submitForm, handleReset, isSubmitting, setFieldValue }) => (
-            <Form style={{ margin: '20px 0 20px 0' }}>
+            <Form>
               <Field
                 component={TextField}
                 variant="standard"

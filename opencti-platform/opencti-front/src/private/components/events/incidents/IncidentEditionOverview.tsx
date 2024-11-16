@@ -3,6 +3,7 @@ import { graphql, useFragment } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import { FormikConfig } from 'formik/dist/types';
+import { useTheme } from '@mui/styles';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
@@ -24,6 +25,7 @@ import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEdito
 import ObjectParticipantField from '../../common/form/ObjectParticipantField';
 import { GenericContext } from '../../common/model/GenericContextModel';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
+import type { Theme } from '../../../../components/Theme';
 
 const incidentMutationFieldPatch = graphql`
   mutation IncidentEditionOverviewFieldPatchMutation(
@@ -156,6 +158,8 @@ const IncidentEditionOverviewComponent: FunctionComponent<
 IncidentEditionOverviewProps
 > = ({ incidentRef, context, enableReferences = false, handleClose }) => {
   const { t_i18n } = useFormatter();
+  const theme = useTheme<Theme>();
+
   const incident = useFragment(incidentEditionOverviewFragment, incidentRef);
   const basicShape = {
     name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
@@ -256,7 +260,7 @@ IncidentEditionOverviewProps
         isValid,
         dirty,
       }) => (
-        <Form style={{ margin: '20px 0 20px 0' }}>
+        <Form style={{ margin: `${theme.spacing(2)} 0` }}>
           <AlertConfidenceForEntity entity={incident} />
           <Field
             component={TextField}

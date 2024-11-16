@@ -134,7 +134,7 @@ const OpinionEditionOverviewComponent = (props) => {
     >
       {({ setFieldValue }) => (
         <div>
-          <Form style={{ margin: '20px 0 20px 0' }}>
+          <Form>
             <AlertConfidenceForEntity entity={opinion} />
             <OpenVocabField
               label={t_i18n('Opinion')}

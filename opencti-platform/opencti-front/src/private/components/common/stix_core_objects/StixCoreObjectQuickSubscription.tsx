@@ -11,7 +11,7 @@ import ListItemText from '@mui/material/ListItemText';
 import MenuItem from '@mui/material/MenuItem';
 import ToggleButton from '@mui/material/ToggleButton';
 import Tooltip from '@mui/material/Tooltip';
-import { makeStyles } from '@mui/styles';
+import { makeStyles, useTheme } from '@mui/styles';
 import { Field, Form, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
 import { pick, uniq } from 'ramda';
@@ -74,14 +74,13 @@ const useStyles = makeStyles<Theme>((theme) => ({
     },
   },
   container: {
-    padding: '10px 20px 20px 20px',
+    padding: theme.spacing(1),
   },
   subcontainer: {
-    padding: '10px 20px 20px 40px',
+    padding: `${theme.spacing(1)} ${theme.spacing(3)}`,
   },
   nested: {
-    marginLeft: '20px',
-    marginRight: '20px',
+    margin: `0 ${theme.spacing(1)}`,
     width: 'auto',
     backgroundColor: theme.palette.background.nav,
   },
@@ -98,8 +97,10 @@ const StixCoreObjectQuickSubscription: FunctionComponent<
 StixCoreObjectQuickSubscriptionContentProps
 > = ({ triggerData, instanceId, paginationOptions, instanceName }) => {
   const classes = useStyles();
+  const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const { me } = useAuth();
+
   const [open, setOpen] = useState(false);
   const [deleting, setDeleting] = useState<boolean>(false);
   const [expandedLines, setExpandedLines] = useState<boolean>(false);
@@ -304,7 +305,7 @@ StixCoreObjectQuickSubscriptionContentProps
           onSubmit={onSubmitUpdate}
         >
           {({ submitForm, isSubmitting, values, setFieldValue }) => (
-            <Form style={{ margin: '20px 0 20px 0' }}>
+            <Form style={{ margin: `${theme.spacing(1)} 0` }}>
               <Field
                 component={TextField}
                 variant="standard"
@@ -424,7 +425,7 @@ StixCoreObjectQuickSubscriptionContentProps
         onClose={handleClose}
       >
         <>
-          <Alert severity="info" style={{ margin: '15px 15px 0 15px' }}>
+          <Alert severity="info">
             {t_i18n(instanceTriggerDescription)}
           </Alert>
           <div>

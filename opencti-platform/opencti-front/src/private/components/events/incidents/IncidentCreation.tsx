@@ -182,7 +182,7 @@ export const IncidentCreationForm: FunctionComponent<IncidentCreationProps> = ({
       onReset={onReset}
     >
       {({ submitForm, handleReset, isSubmitting, setFieldValue, values }) => (
-        <Form style={{ margin: '20px 0 20px 0' }}>
+        <Form>
           <Field
             component={TextField}
             variant="standard"

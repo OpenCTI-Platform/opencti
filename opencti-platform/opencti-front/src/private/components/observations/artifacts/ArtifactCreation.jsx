@@ -206,8 +206,12 @@ const ArtifactCreation = ({
               values,
               errors,
             }) => (
-              <Form style={{ margin: '20px 0 20px 0' }}>
-                <CustomFileUploader setFieldValue={setFieldValue} formikErrors={errors}/>
+              <Form>
+                <CustomFileUploader
+                  setFieldValue={setFieldValue}
+                  formikErrors={errors}
+                  noMargin
+                />
                 <Field
                   component={MarkdownField}
                   name="x_opencti_description"

@@ -256,7 +256,7 @@ DataSourceEditionOverviewProps
         isValid,
         dirty,
       }) => (
-        <Form style={{ margin: '20px 0 20px 0' }}>
+        <Form>
           <AlertConfidenceForEntity entity={dataSource} />
           <Field
             component={TextField}

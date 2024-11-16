@@ -8,7 +8,6 @@ import Tooltip from '@mui/material/Tooltip';
 import { InformationOutline } from 'mdi-material-ui';
 import Box from '@mui/material/Box';
 import makeStyles from '@mui/styles/makeStyles';
-import { Theme } from '@mui/material/styles/createTheme';
 import { RetentionLinesPaginationQuery$variables } from '@components/settings/retention/__generated__/RetentionLinesPaginationQuery.graphql';
 import { FormikConfig } from 'formik/dist/types';
 import { Option } from '@components/common/form/ReferenceField';
@@ -28,6 +27,7 @@ import useFiltersState from '../../../../utils/filters/useFiltersState';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import SelectField from '../../../../components/fields/SelectField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import type { Theme } from '../../../../components/Theme';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   buttons: {
@@ -155,7 +155,7 @@ const RetentionCreation = ({ paginationOptions }: { paginationOptions: Retention
           onReset={onClose}
         >
           {({ submitForm, handleReset, isSubmitting, values: formValues, setFieldValue }) => (
-            <Form style={{ margin: '20px 0 20px 0' }}>
+            <Form>
               <Field
                 component={TextField}
                 variant="standard"

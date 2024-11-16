@@ -200,7 +200,7 @@ IntrusionSetFormProps
           >
             <BulkResult variablesToString={(v) => v.input.name} />
           </ProgressBar>
-          <Form style={{ margin: '20px 0 20px 0' }}>
+          <Form>
             <Field
               component={BulkTextField}
               name="name"

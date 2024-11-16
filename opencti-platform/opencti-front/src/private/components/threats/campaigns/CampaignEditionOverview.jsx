@@ -3,6 +3,7 @@ import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import * as R from 'ramda';
+import { useTheme } from '@mui/styles';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
@@ -84,6 +85,7 @@ export const campaignMutationRelationDelete = graphql`
 const CampaignEditionOverviewComponent = (props) => {
   const { campaign, enableReferences, context, handleClose } = props;
   const { t_i18n } = useFormatter();
+  const theme = useTheme();
 
   const basicShape = {
     name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
@@ -181,7 +183,7 @@ const CampaignEditionOverviewComponent = (props) => {
         isValid,
         dirty,
       }) => (
-        <Form style={{ margin: '20px 0 20px 0' }}>
+        <Form style={{ margin: `${theme.spacing(2)} 0` }}>
           <AlertConfidenceForEntity entity={campaign} />
           <Field
             component={TextField}

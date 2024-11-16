@@ -144,7 +144,7 @@ const TaxiiCollectionEditionContainer: FunctionComponent<{ taxiiCollection: Taxi
       validationSchema={taxiiCollectionValidation(t_i18n('This field is required'))}
     >
       {() => (
-        <Form style={{ margin: '20px 0 20px 0' }}>
+        <Form>
           <Field
             component={TextField}
             variant="standard"

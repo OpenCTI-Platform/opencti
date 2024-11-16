@@ -3,6 +3,7 @@ import { graphql, useFragment } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import { FormikConfig } from 'formik/dist/types';
+import { useTheme } from '@mui/styles';
 import { isNone, useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
@@ -17,6 +18,7 @@ import { parse } from '../../../../utils/Time';
 import { GenericContext } from '../../common/model/GenericContextModel';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import type { Theme } from '../../../../components/Theme';
 
 const incidentMutationFieldPatch = graphql`
   mutation IncidentEditionDetailsFieldPatchMutation(
@@ -93,6 +95,7 @@ const IncidentEditionDetails: FunctionComponent<
 IncidentEditionDetailsProps
 > = ({ incidentRef, context, enableReferences = false, handleClose }) => {
   const { t_i18n } = useFormatter();
+  const theme = useTheme<Theme>();
 
   const incident = useFragment(incidentEditionDetailsFragment, incidentRef);
   const isInferred = incident.is_inferred;
@@ -179,7 +182,7 @@ IncidentEditionDetailsProps
         isValid,
         dirty,
       }) => (
-        <Form style={{ margin: '20px 0 20px 0' }}>
+        <Form style={{ margin: `${theme.spacing(2)} 0` }}>
           <AlertConfidenceForEntity entity={incident} />
           <Field
             component={DateTimePickerField}

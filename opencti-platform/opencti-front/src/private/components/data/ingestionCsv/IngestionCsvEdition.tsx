@@ -299,7 +299,7 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
         isValid,
         dirty,
       }) => (
-        <Form style={{ margin: '20px 0 20px 0' }}>
+        <Form>
           <Field
             component={TextField}
             variant="standard"

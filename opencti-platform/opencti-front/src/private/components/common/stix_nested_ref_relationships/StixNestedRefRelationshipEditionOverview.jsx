@@ -208,7 +208,7 @@ class StixNestedRefRelationshipEditionOverview extends Component {
             initialValues={initialValues}
             validationSchema={stixNestedRefRelationshipValidation(t)}
             render={() => (
-              <Form style={{ margin: '20px 0 20px 0' }}>
+              <Form>
                 <Field
                   component={DateTimePickerField}
                   name="start_time"

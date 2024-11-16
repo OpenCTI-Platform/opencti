@@ -172,7 +172,7 @@ export const OpinionCreationFormKnowledgeEditor: FunctionComponent<OpinionFormPr
       onReset={onReset}
     >
       {({ submitForm, handleReset, isSubmitting, setFieldValue, values }) => (
-        <Form style={{ margin: '20px 0 20px 0' }}>
+        <Form>
           <OpenVocabField
             label={t_i18n('Opinion')}
             type="opinion_ov"
@@ -335,7 +335,7 @@ export const OpinionCreationFormKnowledgeParticipant: FunctionComponent<OpinionF
       onReset={onReset}
     >
       {({ submitForm, handleReset, isSubmitting, setFieldValue, values }) => (
-        <Form style={{ margin: '20px 0 20px 0' }}>
+        <Form>
           <OpenVocabField
             label={t_i18n('Opinion')}
             type="opinion_ov"

@@ -40,9 +40,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
   marginTop: {
     marginTop: 20,
   },
-  formContainer: {
-    margin: '20px 0',
-  },
   representationContainer: {
     marginTop: 20,
     display: 'flex',
@@ -180,7 +177,7 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({ csvMapper, onSub
       >
         {({ submitForm, isSubmitting, setFieldValue, values }) => {
           return (
-            <Form className={classes.formContainer}>
+            <Form>
               <Field
                 component={TextField}
                 variant="standard"

@@ -48,7 +48,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
     display: 'flex',
   },
   buttons: {
-    margin: '20px 0 5px 0',
+    margin: `${theme.spacing(2)} 0 ${theme.spacing(0.5)} 0`,
   },
   buttonMore: {
     float: 'left',

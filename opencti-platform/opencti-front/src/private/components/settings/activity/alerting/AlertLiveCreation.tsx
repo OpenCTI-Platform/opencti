@@ -259,7 +259,7 @@ const TriggerActivityLiveCreation: FunctionComponent<TriggerLiveCreationProps> =
               setFieldValue,
               values,
             }) => (
-              <Form style={{ margin: '20px 0 20px 0' }}>
+              <Form>
                 {liveFields(setFieldValue, values)}
                 <div className={classes.buttons}>
                   <Button

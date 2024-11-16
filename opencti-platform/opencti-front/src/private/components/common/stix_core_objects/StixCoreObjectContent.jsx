@@ -91,8 +91,7 @@ const styles = (theme) => ({
   editorContainer: {
     height: '100%',
     minHeight: '100%',
-    margin: '20px 0 0 0',
-    padding: '0 0 15px 0',
+    padding: `0 0 ${theme.spacing(2)} 0`,
     borderRadius: 4,
     position: 'relative',
   },

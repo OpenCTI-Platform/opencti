@@ -250,7 +250,7 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
       onReset={handleClose}
     >
       {({ submitForm, handleReset, isSubmitting, values, setFieldValue }) => (
-        <Form style={{ margin: '20px 0 20px 0' }}>
+        <Form>
           <Field
             component={TextField}
             variant="standard"

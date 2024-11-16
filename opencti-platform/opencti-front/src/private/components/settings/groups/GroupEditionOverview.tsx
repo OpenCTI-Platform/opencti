@@ -5,6 +5,7 @@ import * as Yup from 'yup';
 import { ObjectShape } from 'yup';
 import { GenericContext } from '@components/common/model/GenericContextModel';
 import FormHelperText from '@mui/material/FormHelperText';
+import { useTheme } from '@mui/styles';
 import { useFormatter } from '../../../../components/i18n';
 import MarkdownField from '../../../../components/fields/MarkdownField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
@@ -14,6 +15,7 @@ import DashboardField from '../../common/form/DashboardField';
 import { GroupEditionOverview_group$data } from './__generated__/GroupEditionOverview_group.graphql';
 import GroupHiddenTypesField from './GroupHiddenTypesField';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
+import type { Theme } from '../../../../components/Theme';
 
 export const groupMutationFieldPatch = graphql`
   mutation GroupEditionOverviewFieldPatchMutation(
@@ -78,6 +80,7 @@ interface GroupEditionOverviewComponentProps {
 }
 const GroupEditionOverviewComponent: FunctionComponent<GroupEditionOverviewComponentProps> = ({ group, context }) => {
   const { t_i18n } = useFormatter();
+  const theme = useTheme<Theme>();
 
   const basicShape: ObjectShape = {
     name: Yup.string().required(t_i18n('This field is required')),
@@ -123,7 +126,7 @@ const GroupEditionOverviewComponent: FunctionComponent<GroupEditionOverviewCompo
         }}
       >
         {() => (
-          <Form style={{ margin: '20px 0 20px 0' }}>
+          <Form style={{ margin: `${theme.spacing(2)} 0` }}>
             <Field
               component={TextField}
               name="name"
