@@ -46,7 +46,7 @@ import DataTable from '../../../../components/dataGrid/DataTable';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
-const useStyles = makeStyles<Theme>(() => ({
+const useStyles = makeStyles<Theme>((theme) => ({
   createButton: {
     position: 'fixed',
     bottom: 30,
@@ -60,6 +60,7 @@ const useStyles = makeStyles<Theme>(() => ({
     zIndex: 1001,
   },
   container: {
+    paddingTop: theme.spacing(2),
     width: '100%',
     height: '100%',
     maxHeight: '100%',
