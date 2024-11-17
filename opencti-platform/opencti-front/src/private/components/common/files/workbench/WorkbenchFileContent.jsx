@@ -63,6 +63,8 @@ import RichTextField from '../../../../../components/fields/RichTextField';
 import Drawer from '../../drawer/Drawer';
 import Transition from '../../../../../components/Transition';
 import { markingDefinitionsLinesSearchQuery } from '../../../settings/marking_definitions/MarkingDefinitionsLines';
+import { KNOWLEDGE_KNUPDATE } from '../../../../../utils/hooks/useGranted';
+import Security from '../../../../../utils/Security';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -4111,16 +4113,18 @@ const WorkbenchFileContentComponent = ({
       <div className={classes.popover}>
         <WorkbenchFilePopover file={file} />
       </div>
-      <div style={{ float: 'right' }}>
-        <Button
-          variant="contained"
-          onClick={handleOpenValidate}
-          startIcon={<CheckCircleOutlined />}
-          size="small"
-        >
-          {t_i18n('Validate this workbench')}
-        </Button>
-      </div>
+      <Security needs={[KNOWLEDGE_KNUPDATE]}>
+        <div style={{ float: 'right' }}>
+          <Button
+            variant="contained"
+            onClick={handleOpenValidate}
+            startIcon={<CheckCircleOutlined />}
+            size="small"
+          >
+            {t_i18n('Validate this workbench')}
+          </Button>
+        </div>
+      </Security>
       <div className="clearfix" />
       <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
         <Tabs value={currentTab} onChange={handleChangeTab}>
