@@ -38,7 +38,12 @@ import { getMainRepresentative } from '../../../../utils/defaultRepresentatives'
 import { stixCoreRelationshipCreationMutation } from '../stix_core_relationships/StixCoreRelationshipCreation';
 import { containerAddStixCoreObjectsLinesRelationAddMutation } from './ContainerAddStixCoreObjectsLines';
 import StixCoreObjectSharing from '../stix_core_objects/StixCoreObjectSharing';
-import useGranted, { KNOWLEDGE_KNENRICHMENT, KNOWLEDGE_KNGETEXPORT_KNASKEXPORT, KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS } from '../../../../utils/hooks/useGranted';
+import useGranted, {
+  KNOWLEDGE_KNENRICHMENT,
+  KNOWLEDGE_KNGETEXPORT_KNASKEXPORT,
+  KNOWLEDGE_KNUPDATE,
+  KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS,
+} from '../../../../utils/hooks/useGranted';
 import StixCoreObjectQuickSubscription from '../stix_core_objects/StixCoreObjectQuickSubscription';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 import StixCoreObjectFileExport from '../stix_core_objects/StixCoreObjectFileExport';
