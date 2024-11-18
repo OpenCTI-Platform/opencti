@@ -99,7 +99,7 @@ const StixCoreObjectContentFilesList = ({
         htmlToPdf(id, data).download(`${currentName}.pdf`);
       }
     } catch (e) {
-      MESSAGING$.notifyError('pouet');
+      MESSAGING$.notifyError('Error trying to download in PDF');
     }
   };
 

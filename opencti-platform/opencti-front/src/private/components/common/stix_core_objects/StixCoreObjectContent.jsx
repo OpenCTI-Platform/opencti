@@ -24,7 +24,7 @@ import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 import withRouter from '../../../../utils/compat_router/withRouter';
 import CKEditor from '../../../../components/CKEditor';
-import { htmlToPdf, htmlToPdfReport } from '../../../../utils/htmlToPdf';
+import { htmlToPdf } from '../../../../utils/htmlToPdf';
 
 pdfjs.GlobalWorkerOptions.workerSrc = `${APP_BASE_PATH}/static/ext/pdf.worker.mjs`;
 
@@ -424,21 +424,16 @@ class StixCoreObjectContentComponent extends Component {
     this.setState({ markdownSelectedTab: tab });
   }
 
-  async handleDownloadPdf() {
-    const { currentFileId, currentContent } = this.state;
+  async handleDownloadMappableContentInPdf() {
+    const { currentContent } = this.state;
     const { stixCoreObject } = this.props;
-    if (currentFileId) {
-      if (currentFileId.startsWith('fromTemplate')) {
-        const file = stixCoreObject.contentsFromTemplate.edges.find((e) => e.node.id === currentFileId);
-        const name = currentFileId.split('/').pop().split('.')[0];
-        const markings = file?.node.objectMarking.map((m) => m.representative.main) ?? [];
-        htmlToPdfReport(stixCoreObject, currentContent, name, markings).download(`${name}.pdf`);
-      } else {
-        const fragment = stixCoreObject.name.split('/');
-        const currentName = R.last(fragment);
-        htmlToPdf(currentFileId, currentContent).download(`${currentName}.pdf`);
-      }
-    }
+    const regex = /<img[^>]+src=(\\?["'])[^'"]+\.gif\1[^>]*\/?>/gi;
+    const htmlData = currentContent
+      .replaceAll('id="undefined" ', '')
+      .replaceAll(regex, '');
+    const fragment = stixCoreObject.name.split('/');
+    const currentName = R.last(fragment);
+    htmlToPdf('content', htmlData).download(`${currentName}.pdf`);
   }
 
   render() {
@@ -488,7 +483,7 @@ class StixCoreObjectContentComponent extends Component {
             {contentSelected && (
               <StixCoreObjectMappableContent
                 containerData={stixCoreObject}
-                handleDownloadPdf={this.handleDownloadPdf.bind(this)}
+                handleDownloadPdf={this.handleDownloadMappableContentInPdf.bind(this)}
                 askAi={true}
                 editionMode={true}
               />
