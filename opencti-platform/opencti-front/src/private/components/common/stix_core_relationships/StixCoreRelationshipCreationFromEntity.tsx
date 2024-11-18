@@ -507,7 +507,7 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
     openExports = false,
     handleReverseRelation = undefined,
   } = props;
-  const LOCAL_STORAGE_KEY = `${entityId}_stixCoreRelationshipCreationFromEntity`;
+  const LOCAL_STORAGE_KEY = `stixCoreRelationshipCreationFromEntity-${entityId}-${targetStixDomainObjectTypes?.join('-')}-${targetStixCyberObservableTypes?.join('-')}`;
 
   let isOnlySDOs = false;
   let isOnlySCOs = false;
