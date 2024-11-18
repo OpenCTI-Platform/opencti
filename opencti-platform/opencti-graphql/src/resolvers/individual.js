@@ -15,7 +15,7 @@ const individualResolvers = {
   },
   Individual: {
     organizations: (individual, args, context) => partOfOrganizationsPaginated(context, context.user, individual.id, args),
-    isUser: (individual, _, context) => isUser(context, individual.contact_information),
+    isUser: (individual, _, context) => isUser(context, individual),
   },
   Mutation: {
     individualEdit: (_, { id }, context) => ({

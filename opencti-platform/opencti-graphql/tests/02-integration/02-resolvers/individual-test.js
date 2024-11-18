@@ -1,6 +1,7 @@
 import { expect, it, describe } from 'vitest';
 import gql from 'graphql-tag';
 import { ADMIN_USER, testContext, queryAsAdmin } from '../../utils/testQuery';
+import { adminQueryWithError } from '../../utils/testQueryHelper';
 import { elLoadById } from '../../../src/database/engine';
 
 const LIST_QUERY = gql`
@@ -38,6 +39,7 @@ const READ_QUERY = gql`
       standard_id
       name
       description
+      isUser
       organizations {
         edges {
           node {
@@ -93,6 +95,7 @@ describe('Individual resolver standard behavior', () => {
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.individual).not.toBeNull();
     expect(queryResult.data.individual.id).toEqual(individualInternalId);
+    expect(queryResult.data.individual.isUser).toBeFalsy();
   });
   it('should individual organizations to be accurate', async () => {
     const individual = await elLoadById(testContext, ADMIN_USER, 'identity--d37acc64-4a6f-4dc2-879a-a4c138d0a27f');
@@ -229,5 +232,47 @@ describe('Individual resolver standard behavior', () => {
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: individualStixId } });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.individual).toBeNull();
+  });
+});
+
+describe('Individual associated to user tests', () => {
+  const individualUserId = 'identity--d37acc64-4a6f-4dc2-879a-a4c138d0a27f'; // in DATA-TEST-STIX2_v2.json
+  it('should individual loaded by internal id', async () => {
+    const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: individualUserId } });
+    expect(queryResult).not.toBeNull();
+    expect(queryResult.data.individual).not.toBeNull();
+    expect(queryResult.data.individual.isUser).toBeTruthy();
+  });
+  it('should not delete individual associated to user', async () => {
+    const DELETE_QUERY = gql`
+      mutation individualDelete($id: ID!) {
+        individualEdit(id: $id) {
+          delete
+        }
+      }
+    `;
+    // Delete the individual
+    await adminQueryWithError({
+      query: DELETE_QUERY,
+      variables: { id: individualUserId },
+    }, 'Cannot delete an individual corresponding to a user', 'FUNCTIONAL_ERROR');
+  });
+  it('should not update individual if user', async () => {
+    const UPDATE_QUERY = gql`
+      mutation IndividualEdit($id: ID!, $input: [EditInput]!) {
+        individualEdit(id: $id) {
+          fieldPatch(input: $input) {
+            id
+            name
+            contact_information
+            isUser
+          }
+        }
+      }
+    `;
+    await adminQueryWithError({
+      query: UPDATE_QUERY,
+      variables: { id: individualUserId, input: [{ key: 'name', value: ['Individual - test'] }] },
+    }, 'Cannot update an individual corresponding to a user', 'FUNCTIONAL_ERROR');
   });
 });
