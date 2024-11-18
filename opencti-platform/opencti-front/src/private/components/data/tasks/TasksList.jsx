@@ -306,7 +306,7 @@ const TasksList = ({ data }) => {
                                       {action.context.field && (
                                         <span>
                                           <strong>
-                                            {action.context.field}
+                                            {t_i18n(action.context.field)}
                                           </strong>
                                           :{' '}
                                         </span>
