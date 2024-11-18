@@ -7,6 +7,7 @@ import {
   ThreatActorIndividualMutationRelationDelete,
   threatActorIndividualRelationAddMutation,
 } from '@components/threats/threat_actors_individual/ThreatActorIndividualEditionOverview';
+import { useTheme } from '@mui/styles';
 import { GenericContext } from '../../common/model/GenericContextModel';
 import { isNone, useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
@@ -24,6 +25,7 @@ import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySet
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import type { Theme } from '../../../../components/Theme';
 
 const threatActorIndividualMutationFieldPatch = graphql`
   mutation ThreatActorIndividualEditionDetailsFieldPatchMutation(
@@ -98,6 +100,8 @@ const ThreatActorIndividualEditionDetailsComponent: FunctionComponent<
 ThreatActorIndividualEditionDetailsProps
 > = ({ threatActorIndividualRef, context, enableReferences, handleClose }) => {
   const { t_i18n } = useFormatter();
+  const theme = useTheme<Theme>();
+
   const threatActorIndividual = useFragment(
     threatActorIndividualEditionDetailsFragment,
     threatActorIndividualRef,
@@ -246,7 +250,7 @@ ThreatActorIndividualEditionDetailsProps
           dirty,
         }) => (
           <div>
-            <Form style={{ margin: '20px 0 20px 0' }}>
+            <Form style={{ marginTop: theme.spacing(2) }}>
               <AlertConfidenceForEntity entity={threatActorIndividual} />
               <Field
                 component={DateTimePickerField}

@@ -185,7 +185,7 @@ const ThreatActorIndividualEditionDemographicsComponent = ({
       >
         {({ submitForm, isSubmitting, setFieldValue, isValid, dirty }) => (
           <div>
-            <Form style={{ margin: '20px 0 20px 0' }}>
+            <Form>
               <AlertConfidenceForEntity entity={threatActorIndividual} />
               <CountryField
                 id="PlaceOfBirth"

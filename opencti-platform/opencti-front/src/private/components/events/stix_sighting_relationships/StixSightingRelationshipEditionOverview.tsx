@@ -309,7 +309,7 @@ const StixSightingRelationshipEditionOverviewComponent: FunctionComponent<Omit<S
           onSubmit={onSubmit}
         >
           {({ submitForm, isSubmitting, setFieldValue, values, isValid, dirty }) => (
-            <Form style={{ margin: '20px 0 20px 0' }}>
+            <Form>
               <AlertConfidenceForEntity entity={stixSightingRelationship} />
               <Field
                 component={TextField}

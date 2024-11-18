@@ -30,7 +30,6 @@ import PasswordTextField from '../../../../components/PasswordTextField';
 const useStyles = makeStyles((theme) => ({
   buttons: {
     marginTop: 20,
-    paddingBottom: 20,
     textAlign: 'right',
   },
   button: {
@@ -161,7 +160,7 @@ const SyncEditionContainer = ({ synchronizer }) => {
       validationSchema={syncValidation(t_i18n)}
     >
       {({ values }) => (
-        <Form style={{ margin: '20px 0 20px 0' }}>
+        <Form>
           <Field
             component={TextField}
             variant="standard"

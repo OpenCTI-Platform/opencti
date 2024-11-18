@@ -27,7 +27,6 @@ import CsvMapperTestDialog from './CsvMapperTestDialog';
 const useStyles = makeStyles<Theme>((theme) => ({
   buttons: {
     marginTop: 20,
-    paddingBottom: 20,
     textAlign: 'right',
   },
   button: {
@@ -39,9 +38,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
   marginTop: {
     marginTop: 20,
-  },
-  formContainer: {
-    margin: '20px 0',
   },
   representationContainer: {
     marginTop: 20,
@@ -180,7 +176,7 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({ csvMapper, onSub
       >
         {({ submitForm, isSubmitting, setFieldValue, values }) => {
           return (
-            <Form className={classes.formContainer}>
+            <Form>
               <Field
                 component={TextField}
                 variant="standard"

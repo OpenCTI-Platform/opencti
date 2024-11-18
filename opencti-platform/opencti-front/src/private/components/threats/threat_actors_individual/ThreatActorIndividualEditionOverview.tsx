@@ -3,6 +3,7 @@ import { graphql, useFragment } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import { FormikConfig } from 'formik/dist/types';
+import { useTheme } from '@mui/styles';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import CreatedByField from '../../common/form/CreatedByField';
@@ -22,6 +23,7 @@ import { Option } from '../../common/form/ReferenceField';
 import { ThreatActorIndividualEditionOverview_ThreatActorIndividual$key } from './__generated__/ThreatActorIndividualEditionOverview_ThreatActorIndividual.graphql';
 import { GenericContext } from '../../common/model/GenericContextModel';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
+import type { Theme } from '../../../../components/Theme';
 
 const ThreatActorIndividualMutationFieldPatch = graphql`
   mutation ThreatActorIndividualEditionOverviewFieldPatchMutation(
@@ -138,6 +140,8 @@ const ThreatActorIndividualEditionOverviewComponent: FunctionComponent<
 ThreatActorIndividualEditionOverviewProps
 > = ({ threatActorIndividualRef, enableReferences, handleClose, context }) => {
   const { t_i18n } = useFormatter();
+  const theme = useTheme<Theme>();
+
   const threatActorIndividual = useFragment(
     threatActorIndividualEditionOverviewFragment,
     threatActorIndividualRef,
@@ -248,7 +252,7 @@ ThreatActorIndividualEditionOverviewProps
         isValid,
         dirty,
       }) => (
-        <Form style={{ margin: '20px 0 20px 0' }}>
+        <Form style={{ marginTop: theme.spacing(2) }}>
           <AlertConfidenceForEntity entity={threatActorIndividual} />
           <Field
             component={TextField}

@@ -65,6 +65,7 @@ const CaseTaskOverview: FunctionComponent<CaseTaskOverviewProps> = ({
   enableReferences,
 }) => {
   const { t_i18n, fldt } = useFormatter();
+
   const data: CaseTaskOverview_task$data = useFragment(
     CaseTaskOverviewFragment,
     tasksData,
@@ -128,14 +129,14 @@ const CaseTaskOverview: FunctionComponent<CaseTaskOverviewProps> = ({
             </>
           )}
         </Grid>
-        <div style={{ width: '100%', margin: '20px 10px 0 25px' }}>
+        <Grid item xs={12}>
           <ContainerStixObjectsOrStixRelationships
             isSupportParticipation={false}
             container={data}
             variant="noPaper"
             enableReferences={enableReferences}
           />
-        </div>
+        </Grid>
       </Grid>
     </>
   );

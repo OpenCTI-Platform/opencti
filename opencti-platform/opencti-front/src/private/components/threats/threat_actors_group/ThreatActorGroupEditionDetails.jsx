@@ -3,6 +3,7 @@ import { createFragmentContainer, graphql } from 'react-relay';
 import * as Yup from 'yup';
 import * as R from 'ramda';
 import { Field, Form, Formik } from 'formik';
+import { useTheme } from '@mui/styles';
 import { ThreatActorGroupEditionOverviewFocus, ThreatActorGroupMutationRelationAdd, ThreatActorGroupMutationRelationDelete } from './ThreatActorGroupEditionOverview';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
@@ -58,6 +59,8 @@ const ThreatActorGroupEditionDetailsComponent = ({
   handleClose,
 }) => {
   const { t_i18n } = useFormatter();
+  const theme = useTheme();
+
   const basicShape = {
     first_seen: Yup.date()
       .nullable()
@@ -199,7 +202,7 @@ const ThreatActorGroupEditionDetailsComponent = ({
           dirty,
         }) => (
           <div>
-            <Form style={{ margin: '20px 0 20px 0' }}>
+            <Form style={{ marginTop: theme.spacing(2) }}>
               <AlertConfidenceForEntity entity={threatActorGroup} />
               <Field
                 component={DateTimePickerField}

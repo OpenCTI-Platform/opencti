@@ -136,7 +136,7 @@ const FeedbackCreation: FunctionComponent<{
           setFieldValue,
           values,
         }) => (
-          <Form style={{ margin: '20px 0 20px 0' }}>
+          <Form>
             <Field
               component={SimpleMarkdownField}
               name="description"

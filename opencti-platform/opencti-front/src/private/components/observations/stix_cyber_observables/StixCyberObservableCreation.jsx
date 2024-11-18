@@ -17,6 +17,7 @@ import List from '@mui/material/List';
 import ListItemText from '@mui/material/ListItemText';
 import makeStyles from '@mui/styles/makeStyles';
 import { ListItemButton } from '@mui/material';
+import { useTheme } from '@mui/styles';
 import useHelper from '../../../../utils/hooks/useHelper';
 import { handleErrorInForm, QueryRenderer } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
@@ -277,6 +278,7 @@ const StixCyberObservableCreation = ({
   onCompleted,
 }) => {
   const classes = useStyles();
+  const theme = useTheme();
   const { t_i18n } = useFormatter();
   const { isFeatureEnable } = useHelper();
   const { isVocabularyField, fieldToCategory } = useVocabularyCategory();
@@ -655,7 +657,7 @@ const StixCyberObservableCreation = ({
                     )}
                     <Form
                       style={{
-                        margin: contextual ? '10px 0 0 0' : '20px 0 20px 0',
+                        margin: contextual ? `${theme.spacing(1)} 0 0 0` : `${theme.spacing(1)} 0`,
                       }}
                     >
                       <div>

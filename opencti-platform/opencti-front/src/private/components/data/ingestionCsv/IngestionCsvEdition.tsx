@@ -40,7 +40,6 @@ import PasswordTextField from '../../../../components/PasswordTextField';
 const useStyles = makeStyles<Theme>((theme) => ({
   buttons: {
     marginTop: 20,
-    paddingBottom: 20,
     textAlign: 'right',
   },
   button: {
@@ -299,7 +298,7 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
         isValid,
         dirty,
       }) => (
-        <Form style={{ margin: '20px 0 20px 0' }}>
+        <Form>
           <Field
             component={TextField}
             variant="standard"

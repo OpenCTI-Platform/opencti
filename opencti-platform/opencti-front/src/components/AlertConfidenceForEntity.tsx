@@ -1,7 +1,9 @@
 import React from 'react';
 import Alert from '@mui/material/Alert';
+import { useTheme } from '@mui/styles';
 import useConfidenceLevel from '../utils/hooks/useConfidenceLevel';
 import { useFormatter } from './i18n';
+import type { Theme } from './Theme';
 
 type AlertConfidenceForEntityProps = {
   entity: {
@@ -11,6 +13,7 @@ type AlertConfidenceForEntityProps = {
 };
 
 const AlertConfidenceForEntity: React.FC<AlertConfidenceForEntityProps> = ({ entity }) => {
+  const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const { checkConfidenceForEntity } = useConfidenceLevel();
 
@@ -22,7 +25,7 @@ const AlertConfidenceForEntity: React.FC<AlertConfidenceForEntityProps> = ({ ent
     <Alert
       severity="warning"
       variant="outlined"
-      style={{ marginTop: 20, marginBottom: 20 }}
+      style={{ marginBottom: theme.spacing(2) }}
     >
       {t_i18n('Your confidence level is insufficient to edit this object.')}
     </Alert>

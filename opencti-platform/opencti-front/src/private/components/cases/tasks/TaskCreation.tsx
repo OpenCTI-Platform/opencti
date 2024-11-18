@@ -145,7 +145,7 @@ export const TaskCreationForm: FunctionComponent<TaskCreationProps> = ({
       validationSchema={taskValidator}
     >
       {({ isSubmitting, handleReset, submitForm, setFieldValue }) => (
-        <Form style={{ margin: '20px 0 20px 0' }}>
+        <Form>
           <Field
             style={{ marginBottom: 20 }}
             component={TextField}

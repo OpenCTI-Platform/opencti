@@ -3,6 +3,7 @@ import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as R from 'ramda';
 import * as Yup from 'yup';
+import { useTheme } from '@mui/styles';
 import { intrusionSetEditionOverviewFocus, intrusionSetMutationRelationAdd, intrusionSetMutationRelationDelete } from './IntrusionSetEditionOverview';
 import { useFormatter } from '../../../../components/i18n';
 import { SubscriptionFocus } from '../../../../components/Subscription';
@@ -54,6 +55,7 @@ const intrusionSetEditionDetailsFocus = graphql`
 const IntrusionSetEditionDetailsComponent = (props) => {
   const { intrusionSet, enableReferences, context, handleClose } = props;
   const { t_i18n } = useFormatter();
+  const theme = useTheme();
 
   const basicShape = {
     first_seen: Yup.date()
@@ -193,7 +195,7 @@ const IntrusionSetEditionDetailsComponent = (props) => {
         isValid,
         dirty,
       }) => (
-        <Form style={{ margin: '20px 0 20px 0' }}>
+        <Form style={{ marginTop: theme.spacing(2) }}>
           <AlertConfidenceForEntity entity={intrusionSet} />
           <Field
             component={DateTimePickerField}

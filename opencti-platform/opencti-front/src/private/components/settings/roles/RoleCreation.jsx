@@ -123,7 +123,7 @@ class RoleCreation extends Component {
             onReset={onClose}
           >
             {({ submitForm, handleReset, isSubmitting, isValid }) => (
-              <Form style={{ margin: '20px 0 20px 0' }}>
+              <Form>
                 <Field
                   component={TextField}
                   name="name"

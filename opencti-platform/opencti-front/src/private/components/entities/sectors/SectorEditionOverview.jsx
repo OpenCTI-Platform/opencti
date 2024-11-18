@@ -180,7 +180,7 @@ const SectorEditionOverviewComponent = (props) => {
         isValid,
         dirty,
       }) => (
-        <Form style={{ margin: '20px 0 20px 0' }}>
+        <Form>
           <AlertConfidenceForEntity entity={sector} />
           <Field
             component={TextField}

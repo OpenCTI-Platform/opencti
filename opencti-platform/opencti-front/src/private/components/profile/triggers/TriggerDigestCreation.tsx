@@ -310,7 +310,7 @@ const TriggerDigestCreation: FunctionComponent<TriggerDigestCreationProps> = ({
             setFieldValue,
             values,
           }) => (
-            <Form style={{ margin: '20px 0 20px 0' }}>
+            <Form>
               {digestFields(setFieldValue, values)}
               <div className={classes.buttons}>
                 <Button

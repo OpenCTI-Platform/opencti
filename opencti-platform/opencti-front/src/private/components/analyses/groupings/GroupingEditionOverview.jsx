@@ -204,7 +204,7 @@ const GroupingEditionOverviewComponent = (props) => {
         dirty,
       }) => (
         <div>
-          <Form style={{ margin: '20px 0 20px 0' }}>
+          <Form>
             <AlertConfidenceForEntity entity={grouping} />
             <Field
               component={TextField}

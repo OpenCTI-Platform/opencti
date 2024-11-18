@@ -274,7 +274,7 @@ const CaseIncidentEditionOverview: FunctionComponent<CaseIncidentEditionOverview
         isValid,
         dirty,
       }) => (
-        <Form style={{ margin: '20px 0 20px 0' }}>
+        <Form>
           <AlertConfidenceForEntity entity={caseData} />
           <Field
             component={TextField}

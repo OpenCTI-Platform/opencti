@@ -65,7 +65,7 @@ const PlaybookEditionContainer = ({ handleClose, playbook, open }) => {
         validationSchema={playbookValidation(t_i18n)}
       >
         {() => (
-          <Form style={{ margin: '20px 0 20px 0' }}>
+          <Form>
             <Field
               component={TextField}
               variant="standard"

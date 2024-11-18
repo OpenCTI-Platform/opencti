@@ -9,6 +9,7 @@ import { UserEditionOverview_user$data } from '@components/settings/users/editio
 import Typography from '@mui/material/Typography';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import Alert from '@mui/material/Alert';
+import { useTheme } from '@mui/styles';
 import TextField from '../../../../../components/TextField';
 import SelectField from '../../../../../components/fields/SelectField';
 import { SubscriptionFocus } from '../../../../../components/Subscription';
@@ -24,6 +25,7 @@ import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 import { Accordion, AccordionSummary } from '../../../../../components/Accordion';
 import SwitchField from '../../../../../components/fields/SwitchField';
 import PasswordTextField from '../../../../../components/PasswordTextField';
+import type { Theme } from '../../../../../components/Theme';
 
 export const userMutationFieldPatch = graphql`
   mutation UserEditionOverviewFieldPatchMutation(
@@ -102,6 +104,7 @@ UserEditionOverviewComponentProps
 > = ({ user, context }) => {
   const { t_i18n } = useFormatter();
   const { me, settings } = useAuth();
+  const theme = useTheme<Theme>();
 
   const [commitFocus] = useApiMutation(userEditionOverviewFocus);
   const [commitFieldPatch] = useApiMutation(userMutationFieldPatch);
@@ -188,7 +191,7 @@ UserEditionOverviewComponentProps
       onSubmit={() => {}}
     >
       {() => (
-        <Form style={{ margin: '20px 0 20px 0' }}>
+        <Form style={{ marginTop: theme.spacing(2) }}>
           <Field
             component={TextField}
             variant="standard"

@@ -249,7 +249,7 @@ AdministrativeAreaEditionOverviewProps
         isValid,
         dirty,
       }) => (
-        <Form style={{ margin: '20px 0 20px 0' }}>
+        <Form>
           <AlertConfidenceForEntity entity={administrativeArea} />
           <Field
             component={TextField}

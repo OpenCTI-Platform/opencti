@@ -159,7 +159,7 @@ class IdentityCreation extends Component {
             setFieldValue,
             values,
           }) => (
-            <Form style={{ margin: '20px 0 20px 0' }}>
+            <Form>
               <Dialog
                 PaperProps={{ elevation: 1 }}
                 open={open}
