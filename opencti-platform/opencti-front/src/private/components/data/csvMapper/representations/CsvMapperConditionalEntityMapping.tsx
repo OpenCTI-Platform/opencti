@@ -1,4 +1,4 @@
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useEffect } from 'react';
 import MuiTextField from '@mui/material/TextField';
 import MUIAutocomplete from '@mui/material/Autocomplete';
 import { Field, FieldProps } from 'formik';
@@ -26,16 +26,19 @@ CsvMapperConditionalEntityMappingProps
     { label: t_i18n('Not equal'), value: 'not_eq' }];
   const { setFieldValue } = form;
   const columnBased = representation.column_based;
-  const { columnIndex, setColumnIndex } = useCsvMapperContext();
+  const { dynamicMappingColumn, setDynamicMappingColumn } = useCsvMapperContext();
 
   const handleColumnSelect = async (column: string | null) => {
     await setFieldValue(`${representationName}.column_based.column_reference`, column);
-    if (!columnIndex && column) {
-      setColumnIndex(column);
-    } else {
-      setColumnIndex('');
+    if (!dynamicMappingColumn && column) {
+      setDynamicMappingColumn(column);
     }
   };
+  useEffect(() => {
+    if (dynamicMappingColumn) {
+      handleColumnSelect(dynamicMappingColumn);
+    }
+  }, []);
 
   const handleOperatorSelect = async (operator: { label: string, value: string } | null) => {
     await setFieldValue(`${representationName}.column_based.operator`, operator?.value);
@@ -81,7 +84,7 @@ CsvMapperConditionalEntityMappingProps
         options={columnOptions}
         disabled={!columnBased?.enabled}
         value={columnBased?.enabled
-          ? columnBased?.column_reference || columnIndex
+          ? columnBased?.column_reference
           : null
           }
         onChange={(_, val) => handleColumnSelect(val)}
@@ -96,7 +99,7 @@ CsvMapperConditionalEntityMappingProps
               ...params.InputProps,
               sx: {
                 '& fieldset': {
-                  borderColor: (!columnIndex && !columnBased?.column_reference)
+                  borderColor: (!columnBased?.column_reference)
                     ? 'rgb(244, 67, 54)'
                     : '',
                 },
