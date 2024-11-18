@@ -30,7 +30,6 @@ import PasswordTextField from '../../../../components/PasswordTextField';
 const useStyles = makeStyles((theme) => ({
   buttons: {
     marginTop: 20,
-    paddingBottom: 20,
     textAlign: 'right',
   },
   button: {

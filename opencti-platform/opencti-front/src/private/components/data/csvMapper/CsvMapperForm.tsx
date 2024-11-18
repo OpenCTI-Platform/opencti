@@ -27,7 +27,6 @@ import CsvMapperTestDialog from './CsvMapperTestDialog';
 const useStyles = makeStyles<Theme>((theme) => ({
   buttons: {
     marginTop: 20,
-    paddingBottom: 20,
     textAlign: 'right',
   },
   button: {

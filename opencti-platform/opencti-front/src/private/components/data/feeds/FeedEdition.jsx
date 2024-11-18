@@ -56,7 +56,7 @@ const styles = (theme) => ({
     color: 'inherit',
   },
   buttons: {
-    paddingBottom: 20,
+    marginTop: 20,
     textAlign: 'right',
   },
   button: {
