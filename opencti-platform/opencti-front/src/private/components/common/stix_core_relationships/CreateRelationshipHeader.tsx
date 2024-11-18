@@ -6,16 +6,27 @@ import StixCyberObservableCreation from '@components/observations/stix_cyber_obs
 import { computeTargetStixCyberObservableTypes, computeTargetStixDomainObjectTypes } from '../../../../utils/stixTypeUtils';
 import { useFormatter } from '../../../../components/i18n';
 import { PaginationOptions } from '../../../../components/list_lines';
+import BulkRelationDialogContainer from '../bulk/dialog/BulkRelationDialogContainer';
+import { TargetEntity } from './StixCoreRelationshipCreationFromEntity';
+
+export interface HeaderOpts {
+  stixDomainObjectId: string,
+  stixDomainObjectName: string,
+  stixDomainObjectType: string,
+  selectedEntities: TargetEntity[],
+}
 
 interface CreateRelationshipHeaderProps {
   showCreates: boolean,
   searchPaginationOptions?: PaginationOptions,
+  bulkDialogOptions?: HeaderOpts,
 }
 
 // Custom header prop for entity/observable creation buttons in initial step
 const CreateRelationshipHeader: FunctionComponent<CreateRelationshipHeaderProps> = ({
   showCreates,
   searchPaginationOptions,
+  bulkDialogOptions,
 }) => {
   const { t_i18n } = useFormatter();
 
@@ -48,22 +59,25 @@ const CreateRelationshipHeader: FunctionComponent<CreateRelationshipHeaderProps>
     }}
     >
       <Typography variant='subtitle2'>{t_i18n('Create a relationship')}</Typography>
-      {showCreates
-        && <div>
+      {showCreates && (
+        <div style={{
+          display: 'flex',
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          gap: '3px',
+          marginRight: '15px',
+        }}
+        >
           {showSDOCreation && (
             <Button
               onClick={handleOpenCreateEntity}
               variant='outlined'
               disableElevation
               size='small'
-              aria-label={t_i18n('Create an entity')}
-              style={{
-                marginLeft: '3px',
-                marginRight: showSCOCreation ? undefined : '15px',
-                fontSize: 'small',
-              }}
+              aria-label={t_i18n('Create entity')}
+              style={{ fontSize: 'small' }}
             >
-              {t_i18n('Create an entity')}
+              {t_i18n('Create entity')}
             </Button>
           )}
           {showSCOCreation && (
@@ -72,15 +86,24 @@ const CreateRelationshipHeader: FunctionComponent<CreateRelationshipHeaderProps>
               variant='outlined'
               disableElevation
               size='small'
-              aria-label={t_i18n('Create an observable')}
-              style={{
-                marginLeft: '3px',
-                marginRight: '15px',
-                fontSize: 'small',
-              }}
+              aria-label={t_i18n('Create observable')}
+              style={{ fontSize: 'small' }}
             >
-              {t_i18n('Create an observable')}
+              {t_i18n('Create observable')}
             </Button>
+          )}
+          {bulkDialogOptions && (
+            <BulkRelationDialogContainer
+              targetObjectTypes={['Stix-Domain-Object', 'Stix-Cyber-Observable']}
+              paginationOptions={searchPaginationOptions ?? {}}
+              paginationKey="Pagination_stixCoreObjects"
+              key="BulkRelationDialogContainer"
+              stixDomainObjectId={bulkDialogOptions.stixDomainObjectId}
+              stixDomainObjectName={bulkDialogOptions.stixDomainObjectName}
+              stixDomainObjectType={bulkDialogOptions.stixDomainObjectType}
+              selectedEntities={bulkDialogOptions.selectedEntities}
+              variant={'contained'}
+            />
           )}
           <StixDomainObjectCreation
             display={true}
@@ -112,7 +135,7 @@ const CreateRelationshipHeader: FunctionComponent<CreateRelationshipHeaderProps>
             onCompleted={undefined}
           />
         </div>
-      }
+      )}
     </div>
   );
 };
