@@ -194,6 +194,12 @@ const stixCyberObservableMutation = graphql`
           entity_type
         }
       }
+      creators {
+        ... on Creator {
+          id,
+          name,
+        }
+      }
       objectMarking {
         id
         definition_type
