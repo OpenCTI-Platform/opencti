@@ -18,7 +18,7 @@ import {
   StixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery$variables,
 } from '@components/common/stix_core_relationships/__generated__/StixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery.graphql';
 import CreateRelationshipControlledDial from '@components/common/stix_core_relationships/CreateRelationshipControlledDial';
-import CreateRelationshipHeader from '@components/common/stix_core_relationships/CreateRelationshipHeader';
+import CreateRelationshipHeader, { HeaderOpts } from '@components/common/stix_core_relationships/CreateRelationshipHeader';
 import Drawer from '@components/common/drawer/Drawer';
 import StixCoreRelationshipCreationForm from '@components/common/stix_core_relationships/StixCoreRelationshipCreationForm';
 import { FormikConfig } from 'formik/dist/types';
@@ -28,7 +28,6 @@ import {
 } from '@components/common/stix_core_relationships/__generated__/StixCoreRelationshipCreationFromEntityStixCoreObjectsLines_data.graphql';
 import { ChevronRightOutlined } from '@mui/icons-material';
 import Fab from '@mui/material/Fab';
-import BulkRelationDialogContainer from '@components/common/bulk/dialog/BulkRelationDialogContainer';
 import { PaginationOptions } from '../../../../components/list_lines';
 import { UseLocalStorageHelpers, usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../../utils/filters/filtersUtils';
@@ -47,18 +46,12 @@ import { formatDate } from '../../../../utils/Time';
 
 /**
  * The first page of the create relationship drawer: selecting the entity/entites
- * @param props.name The source entity's name
- * @param props.entity_id The source entity's id
- * @param props.entity_type The source entity's type
  * @param props.setTargetEntities Dispatch to set relationship target entities
  * @param props.targetEntities
  * @param props.handleNextStep Function to continue on to the next step
  * @returns JSX.Element
  */
 const SelectEntity = ({
-  name = '',
-  entity_id,
-  entity_type,
   setTargetEntities,
   targetEntities,
   handleNextStep,
@@ -68,9 +61,6 @@ const SelectEntity = ({
   contextFilters,
   virtualEntityTypes,
 }: {
-  name?: string,
-  entity_id: string,
-  entity_type: string,
   setTargetEntities: React.Dispatch<TargetEntity[]>,
   targetEntities: TargetEntity[],
   handleNextStep: () => void,
@@ -172,18 +162,6 @@ const SelectEntity = ({
             toolbarFilters={contextFilters}
             preloadedPaginationProps={preloadedPaginationProps}
             entityTypes={virtualEntityTypes}
-            additionalHeaderButtons={[(
-              <BulkRelationDialogContainer
-                targetObjectTypes={['Stix-Domain-Object', 'Stix-Cyber-Observable']}
-                paginationOptions={searchPaginationOptions}
-                paginationKey="Pagination_stixCoreObjects"
-                key="BulkRelationDialogContainer"
-                stixDomainObjectId={entity_id}
-                stixDomainObjectName={name}
-                stixDomainObjectType={entity_type}
-                selectedEntities={targetEntities}
-              />
-            )]}
           />
         </div>
       )}
@@ -434,13 +412,27 @@ const StixCoreRelationshipCreationFromControlledDialContent: FunctionComponent<S
   if (!data.stixCoreObject) {
     throw Error('Can\'t resolve this entity');
   }
-  const { name, entity_type, observable_value } = data.stixCoreObject;
+  const { name, entity_type } = data.stixCoreObject;
+
+  const headerOpts: HeaderOpts = {
+    stixDomainObjectId: entityId,
+    stixDomainObjectName: name ?? '',
+    stixDomainObjectType: entity_type,
+    selectedEntities: targetEntities,
+  };
+
   return (
     <Drawer
       title={''} // Defined in custom header prop
       controlledDial={controlledDial ?? CreateRelationshipControlledDial}
       onClose={reset}
-      header={<CreateRelationshipHeader showCreates={step === 0} searchPaginationOptions={searchPaginationOptions} />}
+      header={(
+        <CreateRelationshipHeader
+          showCreates={step === 0}
+          searchPaginationOptions={searchPaginationOptions}
+          bulkDialogOptions={headerOpts}
+        />
+      )}
       containerStyle={{
         minHeight: '100vh',
       }}
@@ -454,9 +446,6 @@ const StixCoreRelationshipCreationFromControlledDialContent: FunctionComponent<S
         >
           {step === 0 && (
             <SelectEntity
-              name={name ?? observable_value}
-              entity_id={entityId}
-              entity_type={entity_type}
               setTargetEntities={setTargetEntities}
               targetEntities={targetEntities}
               handleNextStep={() => setStep(1)}
