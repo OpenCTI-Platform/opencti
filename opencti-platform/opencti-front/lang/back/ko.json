@@ -260,6 +260,8 @@
   "Event types": "이벤트 유형",
   "Event user metadata": "이벤트 사용자 메타데이터",
   "Excluded IDs": "제외된 ID",
+  "Exclusion list cache build manager": "제외 목록 캐시 빌드 관리자",
+  "Exclusion list cache sync manager": "제외 목록 캐시 동기화 관리자",
   "Exclusion list entity types": "제외 목록 엔티티 유형",
   "Expected import number": "예상 가져오기 수",
   "Expected number": "예상 수",

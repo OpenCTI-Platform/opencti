@@ -260,6 +260,8 @@
   "Event types": "Types d'événements",
   "Event user metadata": "Métadonnées de l'utilisateur de l'événement",
   "Excluded IDs": "ID exclus",
+  "Exclusion list cache build manager": "Manager de construction de cache de liste d'exclusion",
+  "Exclusion list cache sync manager": "Manager de synchronisation de cache de liste d'exclusion",
   "Exclusion list entity types": "Types d'entités de la liste d'exclusion",
   "Expected import number": "Numéro d'importation attendu",
   "Expected number": "Nombre attendu",

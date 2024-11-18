@@ -6,13 +6,14 @@ import { fileToReadStream } from '../../../src/database/file-storage-helper';
 import { elLoadById } from '../../../src/database/engine';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import { queryAsAdminWithSuccess } from '../../utils/testQueryHelper';
-import { ExclusionListEntityTypes } from '../../../src/generated/graphql';
+import { ENTITY_DOMAIN_NAME, ENTITY_IPV4_ADDR } from '../../../src/schema/stixCyberObservable';
 
 const CREATE_CONTENT_MUTATION = gql`
   mutation exclusionListContentAdd($input: ExclusionListContentAddInput!) {
     exclusionListContentAdd(input: $input) {
       id
       file_id
+      exclusion_list_entity_types
     }
   }
 `;
@@ -22,6 +23,7 @@ const CREATE_FILE_MUTATION = gql`
     exclusionListFileAdd(input: $input) {
       id
       file_id
+      exclusion_list_entity_types
     }
   }
 `;
@@ -29,6 +31,34 @@ const CREATE_FILE_MUTATION = gql`
 const DELETE_MUTATION = gql`
   mutation exclusionListDelete($id: ID!) {
     exclusionListDelete(id: $id)
+  }
+`;
+
+const LIST_QUERY = gql`
+  query exclusionLists(
+    $first: Int
+    $after: ID
+    $orderBy: ExclusionListOrdering
+    $orderMode: OrderingMode
+    $filters: FilterGroup
+    $search: String
+  ) {
+    exclusionLists(
+      first: $first
+      after: $after
+      orderBy: $orderBy
+      orderMode: $orderMode
+      filters: $filters
+      search: $search
+    ) {
+      edges {
+        node {
+          id
+          name
+          exclusion_list_entity_types
+        }
+      }
+    }
   }
 `;
 
@@ -50,7 +80,7 @@ describe('Exclusion list resolver', () => {
             input: {
               name: 'test_name',
               description: 'test_description',
-              list_entity_types: [ExclusionListEntityTypes.DomainName],
+              exclusion_list_entity_types: ENTITY_DOMAIN_NAME,
               content: 'test_content.fr'
             }
           }
@@ -89,7 +119,7 @@ describe('Exclusion list resolver', () => {
             input: {
               name: 'test_name_file',
               description: 'test_description_file',
-              list_entity_types: [ExclusionListEntityTypes.Ipv4Addr],
+              exclusion_list_entity_types: ENTITY_IPV4_ADDR,
               file: upload,
             }
           }
@@ -99,7 +129,7 @@ describe('Exclusion list resolver', () => {
 
       it('should create an exclusion list', async () => {
         expect(exclusionListFileResponse.id).toBeDefined();
-        expect(exclusionListFileResponse.file_id).toBe('exclusionLists/testfileexclusionlist.txt');
+        expect(exclusionListFileResponse.file_id).toBe('exclusionLists/test_name_file.txt');
       });
 
       it('should create a file', async () => {
@@ -107,6 +137,34 @@ describe('Exclusion list resolver', () => {
         expect(fileStream).not.toBeNull();
         const data = await streamConverter(fileStream);
         expect(data).toEqual('127.0.0.1\n10.10.0.0\n2.2.2.2');
+      });
+
+      it('should list exclusion lists', async () => {
+        const listResult = await queryAsAdminWithSuccess({
+          query: LIST_QUERY,
+          variables: { first: 5 },
+        });
+        const exclusionLists = listResult.data?.exclusionLists.edges;
+        expect(exclusionLists).toBeDefined();
+        expect(exclusionLists.length).toEqual(2);
+
+        const filters = {
+          mode: 'and',
+          filters: [{
+            key: 'exclusion_list_entity_types',
+            operator: 'eq',
+            values: [ENTITY_IPV4_ADDR],
+            mode: 'or',
+          }],
+          filterGroups: [],
+        };
+        const listWithFilterResult = await queryAsAdminWithSuccess({
+          query: LIST_QUERY,
+          variables: { first: 5, filters },
+        });
+        const exclusionListsWithFilter = listWithFilterResult.data?.exclusionLists.edges;
+        expect(exclusionListsWithFilter).toBeDefined();
+        expect(exclusionListsWithFilter.length).toEqual(1);
       });
     });
   });

@@ -9,7 +9,7 @@ import { ADMIN_USER, createTestUsers, isPlatformAlive, testContext } from './tes
 import { elDeleteIndices, elPlatformIndices, initializeSchema, searchEngineInit } from '../../src/database/engine';
 import { wait } from '../../src/database/utils';
 import { createRedisClient, initializeRedisClients, shutdownRedisClients } from '../../src/database/redis';
-import { logApp, environment } from '../../src/config/conf';
+import { logApp, environment, isFeatureEnabled } from '../../src/config/conf';
 import cacheManager from '../../src/manager/cacheManager';
 import { initializeAdminUser } from '../../src/config/providers';
 import { initDefaultNotifiers } from '../../src/modules/notifier/notifier-domain';
@@ -18,6 +18,7 @@ import { executionContext } from '../../src/utils/access';
 import { initializeData } from '../../src/database/data-initialization';
 import { shutdownModules, startModules } from '../../src/managers';
 import { deleteAllBucketContent } from '../../src/database/file-storage-helper';
+import { initExclusionListCache } from '../../src/database/exclusionListCache';
 /**
  * Vitest setup is configurable with environment variables, as you can see in our package.json scripts
  *   INIT_TEST_PLATFORM=1 > cleanup the test platform, removing elastic indices, and setup it again
@@ -49,6 +50,10 @@ const testPlatformStart = async () => {
   try {
     // Init the cache manager
     await cacheManager.start();
+    // Init the exclusion list cache
+    if (isFeatureEnabled('EXCLUSION_LIST')) {
+      await initExclusionListCache();
+    }
     // Init the platform default if it was cleaned up
     if (!SKIP_CLEANUP_PLATFORM) {
       await initializePlatform();

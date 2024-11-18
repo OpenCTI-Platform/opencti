@@ -2,7 +2,7 @@ import * as R from 'ramda';
 import moment from 'moment/moment';
 import { createEntity, createRelation, distributionEntities, patchAttribute, storeLoadByIdWithRefs, timeSeriesEntities } from '../../database/middleware';
 import { type EntityOptions, listAllEntities, listEntitiesPaginated, listEntitiesThroughRelationsPaginated, storeLoadById } from '../../database/middleware-loader';
-import { BUS_TOPICS, extendedErrors, logApp } from '../../config/conf';
+import { BUS_TOPICS, extendedErrors, isFeatureEnabled, logApp } from '../../config/conf';
 import { notify } from '../../database/redis';
 import { checkIndicatorSyntax } from '../../python/pythonBridge';
 import { DatabaseError, FunctionalError, ValidationError } from '../../config/errors';
@@ -52,6 +52,7 @@ import {
 import { isModuleActivated } from '../../domain/settings';
 import { stixDomainObjectEditField } from '../../domain/stixDomainObject';
 import { prepareDate, utcDate } from '../../utils/format';
+import { checkObservableVlue } from '../../database/exclusionListCache';
 
 export const findById = (context: AuthContext, user: AuthUser, indicatorId: string) => {
   return storeLoadById<BasicStoreEntityIndicator>(context, user, indicatorId, ENTITY_TYPE_INDICATOR);
@@ -228,6 +229,21 @@ export const addIndicator = async (context: AuthContext, user: AuthUser, indicat
   if (check === false) {
     throw FunctionalError(`Indicator of type ${indicator.pattern_type} is not correctly formatted.`, { doc_code: 'INCORRECT_INDICATOR_FORMAT' });
   }
+
+  // Check that indicator is not excluded from an exclusion list
+  if (isFeatureEnabled('EXCLUSION_LIST')) {
+    const observableValues = getObservableValuesFromPattern(formattedPattern);
+    for (let i = 0; i < observableValues.length; i += 1) {
+      const exclusionListCheck = await checkObservableVlue(observableValues[i]);
+      if (exclusionListCheck) {
+        throw FunctionalError(`Indicator of type ${indicator.pattern_type} is contained in exclusion list.`, {
+          excludedValue: exclusionListCheck.value,
+          exclusionList: exclusionListCheck.listId
+        });
+      }
+    }
+  }
+
   const indicatorBaseScore = indicator.x_opencti_score ?? 50;
   const isDecayActivated = await isModuleActivated('INDICATOR_DECAY_MANAGER');
   // find default decay rule (even if decay is not activated, it is used to compute default validFrom and validUntil)

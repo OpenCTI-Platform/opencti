@@ -263,6 +263,15 @@
     "stream_lock_key": "file_index_manager_stream_lock",
     "interval": 60000
   },
+  "exclusion_list_cache_build_manager": {
+    "enabled": true,
+    "lock_key": "exclusion_list_cache_build_manager_lock",
+    "interval": 10000
+  },
+  "exclusion_list_cache_sync_manager": {
+    "lock_key": "exclusion_list_cache_sync_manager_lock",
+    "interval": 10000
+  },
   "redis": {
     "mode": "single",
     "namespace": "",

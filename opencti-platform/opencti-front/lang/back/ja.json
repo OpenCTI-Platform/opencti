@@ -260,6 +260,8 @@
   "Event types": "パターンタイプ",
   "Event user metadata": "イベントユーザメタデータ",
   "Excluded IDs": "除外ID",
+  "Exclusion list cache build manager": "キャッシュビルドマネージャーの除外リスト",
+  "Exclusion list cache sync manager": "除外リストキャッシュ同期マネージャ",
   "Exclusion list entity types": "除外リストのエンティティタイプ",
   "Expected import number": "インポート予定番号",
   "Expected number": "予想番号",

@@ -1,5 +1,5 @@
 import type { Resolvers } from '../../generated/graphql';
-import { findById, findAll, addExclusionListContent, addExclusionListFile, deleteExclusionList } from './exclusionList-domain';
+import { findById, findAll, addExclusionListContent, addExclusionListFile, deleteExclusionList, fieldPatchExclusionList } from './exclusionList-domain';
 
 const exclusionListResolver: Resolvers = {
   Query: {
@@ -12,6 +12,9 @@ const exclusionListResolver: Resolvers = {
     },
     exclusionListFileAdd: (_, { input }, context) => {
       return addExclusionListFile(context, context.user, input);
+    },
+    exclusionListFieldPatch: (_, { id, input }, context) => {
+      return fieldPatchExclusionList(context, context.user, id, input);
     },
     exclusionListDelete: (_, { id }, context) => {
       return deleteExclusionList(context, context.user, id);
