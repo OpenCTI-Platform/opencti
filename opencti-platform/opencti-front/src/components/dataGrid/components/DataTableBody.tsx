@@ -146,7 +146,7 @@ const DataTableBody = ({
       if (!rootRef) {
         throw Error('Invalid configuration for widget list');
       }
-      colSizes['--table-height'] = rootRef.offsetHeight + (hideHeaders ? 0 : 50);
+      colSizes['--table-height'] = rootRef.offsetHeight;
     } else if (rootRef) {
       colSizes['--table-height'] = rootRef.offsetHeight - 42; // SIZE OF CONTAINER - Nb Elements - Line Size
     } else {
