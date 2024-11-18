@@ -38,6 +38,11 @@ CsvMapperConditionalEntityMappingProps
     if (dynamicMappingColumn) {
       handleColumnSelect(dynamicMappingColumn);
     }
+    if (columnBased?.operator) {
+      setFieldValue(`${representationName}.column_based.operator`, columnBased.operator);
+    } else {
+      setFieldValue(`${representationName}.column_based.operator`, 'eq');
+    }
   }, []);
 
   const handleOperatorSelect = async (operator: { label: string, value: string } | null) => {
