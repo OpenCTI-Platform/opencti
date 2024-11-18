@@ -26,6 +26,7 @@ import { isEmptyField } from '../../database/utils';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE } from '../../schema/stixMetaObject';
 import { isStixDomainObjectContainer } from '../../schema/stixDomainObject';
 import { objects } from '../../schema/stixRefRelationship';
+import { STIX_EXT_OCTI } from '../../types/stix-extensions';
 
 const RETRY_CONNECTION_PERIOD = 10000;
 const BULK_LINE_PARSING_NUMBER = conf.get('import_csv_built_in_connector:bulk_creation_size') || 5000;
@@ -85,13 +86,14 @@ export const generateAndSendBundleProcess = async (
   lines: string[],
   opts: ConsumerOpts
 ) => {
-  logApp.info(`${LOG_PREFIX} generate and push bundles for a bulk of  ${lines.length}.`);
+  logApp.info(`${LOG_PREFIX} generate and push bundles for a bulk of ${lines.length}.`);
   let bundleNew = new BundleBuilder();
   const { csvMapper, applicantUser } = opts;
   const rawRecords = await parsingProcess(lines, csvMapper.separator, csvMapper.skipLineChar);
   const records = opts.maxRecordNumber ? rawRecords.slice(0, opts.maxRecordNumber) : rawRecords;
   const refEntities = await handleRefEntities(context, applicantUser, csvMapper);
   let totalBundleSend = 0;
+  let totalObjectSend = 0;
   if (records) {
     for (let rec = 0; rec < records.length; rec += 1) {
       const record = records[rec];
@@ -117,6 +119,7 @@ export const generateAndSendBundleProcess = async (
           } else {
             await sendBundleToWorker(bundleNew, opts);
             totalBundleSend += 1;
+            totalObjectSend += bundleNew.objects.length;
             bundleNew = new BundleBuilder();
           }
         } catch (e) {
@@ -126,11 +129,12 @@ export const generateAndSendBundleProcess = async (
     }
     if (bundleNew.objects.length > 0) {
       await sendBundleToWorker(bundleNew, opts);
+      totalObjectSend += bundleNew.objects.length;
       totalBundleSend += 1;
     }
   }
-  logApp.info(`${LOG_PREFIX} generate and push bundles for a bulk of  ${lines.length} - DONE.`);
-  return { bundleCount: totalBundleSend };
+  logApp.info(`${LOG_PREFIX} generate and push bundles for a bulk of ${lines.length} - DONE.`);
+  return { bundleCount: totalBundleSend, objectCount: totalObjectSend };
 };
 
 /** @deprecated Will be removed when workbench are replaced by draft */
@@ -225,8 +229,8 @@ export const processCSVforWorkers = async (context: AuthContext, opts: ConsumerO
         if (lines.length > 0) {
           try {
             logApp.info(`${LOG_PREFIX} generating bundle with ${lines.length} csv lines`);
-            const { bundleCount } = await generateAndSendBundleProcess(context, lines, opts);
-            totalObjectsCount += 1;
+            const { bundleCount, objectCount } = await generateAndSendBundleProcess(context, lines, opts);
+            totalObjectsCount += objectCount;
             totalBundlesCount += bundleCount;
           } catch (error: any) {
             const errorData = { error: error.message, source: `${fileId}, from ${lineNumber} and ${BULK_LINE_PARSING_NUMBER} following lines.` };

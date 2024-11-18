@@ -14,8 +14,6 @@ import { isEmptyField } from '../database/utils';
 import { logApp } from '../config/conf';
 import { STIX_EXT_OCTI } from '../types/stix-extensions';
 import type { StixBundle, StixObject } from '../types/stix-common';
-import { pushToWorkerForConnector } from '../database/rabbitmq';
-import { OPENCTI_SYSTEM_UUID } from '../schema/general';
 
 const inlineEntityTypes = [ENTITY_TYPE_EXTERNAL_REFERENCE];
 
