@@ -12,7 +12,7 @@ import { READ_INDEX_INTERNAL_OBJECTS, READ_INDEX_STIX_DOMAIN_OBJECTS } from '../
 import { DatabaseError } from '../../../src/config/errors';
 import { deleteFile, loadFile } from '../../../src/database/file-storage';
 import { deleteElementById } from '../../../src/database/middleware';
-import { ENTITY_TYPE_CONTAINER_REPORT } from '../../../src/schema/stixDomainObject';
+import { ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_IDENTITY_INDIVIDUAL } from '../../../src/schema/stixDomainObject';
 
 describe('Retention Manager tests ', () => {
   const context = testContext;
@@ -326,5 +326,10 @@ describe('Retention Manager tests ', () => {
   it('should not delete organization with members', async () => {
     await expect(() => deleteElement(context, 'knowledge', TEST_ORGANIZATION.id, ENTITY_TYPE_IDENTITY_ORGANIZATION))
       .rejects.toThrowError('Cannot delete an organization that has members.');
+  });
+  it('should not delete individual associated to user', async () => {
+    const individualUserId = 'identity--d37acc64-4a6f-4dc2-879a-a4c138d0a27f'; // in DATA-TEST-STIX2_v2.json
+    await expect(() => deleteElement(context, 'knowledge', individualUserId, ENTITY_TYPE_IDENTITY_INDIVIDUAL))
+      .rejects.toThrowError('Cannot delete an individual corresponding to a user');
   });
 });
