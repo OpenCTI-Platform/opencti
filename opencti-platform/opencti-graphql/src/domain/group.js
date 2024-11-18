@@ -139,7 +139,7 @@ export const groupEditField = async (context, user, groupId, input) => {
     message: `updates \`${input.map((i) => i.key).join(', ')}\` for group \`${element.name}\``,
     context_data: { id: groupId, entity_type: ENTITY_TYPE_GROUP, input }
   });
-  // on editing the group confidence level, all memebers might have changed their effective level
+  // on editing the group confidence level, all members might have changed their effective level
   if (input.find((i) => ['group_confidence_level', 'max_shareable_markings'].includes(i.key))) {
     await groupSessionRefresh(context, user, groupId);
   }

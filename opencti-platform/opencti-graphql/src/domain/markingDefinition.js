@@ -8,6 +8,7 @@ import { ENTITY_TYPE_GROUP } from '../schema/internalObject';
 import { SYSTEM_USER } from '../utils/access';
 import { RELATION_ACCESSES_TO } from '../schema/internalRelationship';
 import { groupAddRelation, groupEditField } from './group';
+import { EditOperation } from '../generated/graphql';
 
 export const findById = (context, user, markingDefinitionId) => {
   return storeLoadById(context, user, markingDefinitionId, ENTITY_TYPE_MARKING_DEFINITION);
@@ -24,6 +25,7 @@ export const addAllowedMarkingDefinition = async (context, user, markingDefiniti
   const markingToCreate = R.assoc('x_opencti_color', markingColor, markingDefinition);
   const result = await createEntity(context, user, markingToCreate, ENTITY_TYPE_MARKING_DEFINITION, { complete: true });
   const { element } = result;
+  // marking creation --> update the markings of the groups with auto_new_marking = true
   if (result.isCreation) {
     const filters = {
       mode: 'and',
@@ -31,14 +33,25 @@ export const addAllowedMarkingDefinition = async (context, user, markingDefiniti
       filterGroups: [],
     };
     // Bypass current right to read group
-    const groups = await listEntities(context, SYSTEM_USER, [ENTITY_TYPE_GROUP], { filters, connectionFormat: false });
-    if (groups && groups.length > 0) {
+    const groupsWithAutoNewMarking = await listEntities(context, SYSTEM_USER, [ENTITY_TYPE_GROUP], { filters, connectionFormat: false });
+    if (groupsWithAutoNewMarking && groupsWithAutoNewMarking.length > 0) {
+      // add marking in allowed markings
       await Promise.all(
-        groups.map((group) => {
+        groupsWithAutoNewMarking.map((group) => {
           return groupAddRelation(context, SYSTEM_USER, group.id, {
             relationship_type: RELATION_ACCESSES_TO,
             toId: element.id,
           });
+        })
+      );
+      // add marking in max shareable markings
+      await Promise.all(
+        groupsWithAutoNewMarking.map((group) => {
+          return groupEditField(context, SYSTEM_USER, group.id, [{
+            key: 'max_shareable_markings',
+            value: [{ type: element.defintion_type, value: element.id }],
+            operation: EditOperation.Add,
+          }]);
         })
       );
     }

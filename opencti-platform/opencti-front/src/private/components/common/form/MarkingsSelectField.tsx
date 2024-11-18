@@ -40,15 +40,15 @@ const MarkingsSelectField = ({
   ));
   const initialValues: Record<string, string> = {};
   markingTypes.forEach((type) => {
-    if (!value.find((v) => v.definition_type === type)) {
-      initialValues[type] = ALL_ID;
-    } else if (value.find((v) => v.definition_type === type && v.id === 'none')) {
-      initialValues[type] = NOT_SHAREABLE_ID;
-    } else {
-      const val = value.find((v) => v.definition_type === type);
-      if (val) {
-        initialValues[type] = val.id;
+    const sortedValuesOfType = value.filter((v) => v.definition_type === type).sort((a, b) => b.x_opencti_order - a.x_opencti_order);
+    if (sortedValuesOfType.length > 0) {
+      if (sortedValuesOfType.find((v) => v.id === 'none')) {
+        initialValues[type] = NOT_SHAREABLE_ID;
+      } else {
+        initialValues[type] = sortedValuesOfType[0].id;
       }
+    } else {
+      initialValues[type] = ALL_ID;
     }
   });
 
