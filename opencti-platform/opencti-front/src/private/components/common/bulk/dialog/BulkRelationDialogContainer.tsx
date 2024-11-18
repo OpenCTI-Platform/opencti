@@ -14,6 +14,7 @@ type BulkRelationDialogContainerProps = {
   paginationKey: string;
   paginationOptions: PaginationOptions;
   targetObjectTypes: string[];
+  variant?: 'outlined' | 'text' | 'contained';
 };
 
 const inlinedStyle = {
@@ -32,6 +33,7 @@ const BulkRelationDialogContainer = ({
   paginationKey,
   paginationOptions,
   targetObjectTypes,
+  variant = 'outlined',
 }: BulkRelationDialogContainerProps) => {
   const { t_i18n } = useFormatter();
 
@@ -43,7 +45,7 @@ const BulkRelationDialogContainer = ({
 
   return (
     <>
-      <Button onClick={handleOpenDialog} color="primary" variant="outlined" sx={inlinedStyle.button} size="small">
+      <Button onClick={handleOpenDialog} color="primary" variant={variant} sx={inlinedStyle.button} size="small">
         {t_i18n('Create relations in bulk')}
       </Button>
       {isDialogOpen && (
