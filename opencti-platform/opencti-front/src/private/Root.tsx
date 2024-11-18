@@ -123,6 +123,14 @@ const meUserFragment = graphql`
       name
       authorized_authorities
     }
+    objectOrganization {
+      edges {
+        node {
+          id
+          name
+        }
+      }
+    }
     allowed_marking {
       id
       entity_type
