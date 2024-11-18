@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useEffect } from 'react';
+import React, { FunctionComponent } from 'react';
 import MuiTextField from '@mui/material/TextField';
 import MUIAutocomplete from '@mui/material/Autocomplete';
 import { Field, FieldProps } from 'formik';
@@ -6,7 +6,6 @@ import { CsvMapperColumnBasedFormData, CsvMapperRepresentationFormData } from '@
 import Tooltip from '@mui/material/Tooltip';
 import { InformationOutline } from 'mdi-material-ui';
 import { alphabet } from '@components/data/csvMapper/representations/attributes/AttributeUtils';
-import { useCsvMapperContext } from '@components/data/csvMapper/representations/CsvMapperContext';
 import { useFormatter } from '../../../../../components/i18n';
 import TextField from '../../../../../components/TextField';
 import SwitchField from '../../../../../components/fields/SwitchField';
@@ -22,27 +21,19 @@ CsvMapperConditionalEntityMappingProps
   const { t_i18n } = useFormatter();
   const columnOptions = alphabet(26);
   const operatorOptions = [
-    { label: t_i18n('Equal'), value: 'eq' },
+    { label: t_i18n('Equal'), value: ('eq') },
     { label: t_i18n('Not equal'), value: 'not_eq' }];
   const { setFieldValue } = form;
   const columnBased = representation.column_based;
-  const { dynamicMappingColumn, setDynamicMappingColumn } = useCsvMapperContext();
 
   const handleColumnSelect = async (column: string | null) => {
     await setFieldValue(`${representationName}.column_based.column_reference`, column);
-    if (!dynamicMappingColumn && column) {
-      setDynamicMappingColumn(column);
-    }
   };
-  useEffect(() => {
-    if (dynamicMappingColumn) {
-      handleColumnSelect(dynamicMappingColumn);
-    }
-  }, []);
 
   const handleOperatorSelect = async (operator: { label: string, value: string } | null) => {
     await setFieldValue(`${representationName}.column_based.operator`, operator?.value);
   };
+
   return (
     <div style={{
       width: '100%',
@@ -83,9 +74,10 @@ CsvMapperConditionalEntityMappingProps
         autoHighlight
         options={columnOptions}
         disabled={!columnBased?.enabled}
-        value={columnBased?.enabled
-          ? columnBased?.column_reference
-          : null
+        value={
+          columnBased?.enabled
+            ? columnBased?.column_reference
+            : null
           }
         onChange={(_, val) => handleColumnSelect(val)}
         sx={{ width: '100%' }}
@@ -117,10 +109,11 @@ CsvMapperConditionalEntityMappingProps
         disabled={!columnBased?.enabled}
         value={
           columnBased?.enabled
-            ? (operatorOptions.find((opt) => (opt.value === columnBased?.operator)) ?? operatorOptions.find((opt) => opt.value === 'eq'))
+            ? (operatorOptions.find((opt) => (opt.value === columnBased?.operator)) ?? undefined)
             : null
           }
         onChange={(_, val) => handleOperatorSelect(val)}
+        defaultValue={operatorOptions.find((opt) => opt.value === 'eq')}
         sx={{ width: '100%' }}
         renderInput={(params) => (
           <MuiTextField
@@ -128,6 +121,16 @@ CsvMapperConditionalEntityMappingProps
             label={t_i18n('Operator')}
             variant="outlined"
             size="small"
+            InputProps={{
+              ...params.InputProps,
+              sx: {
+                '& fieldset': {
+                  borderColor: (!columnBased?.operator)
+                    ? 'rgb(244, 67, 54)'
+                    : '',
+                },
+              },
+            }}
           />
         )}
       />
