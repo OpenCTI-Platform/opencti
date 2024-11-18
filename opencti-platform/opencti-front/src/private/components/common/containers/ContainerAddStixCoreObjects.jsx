@@ -350,6 +350,10 @@ const ContainerAddStixCoreObjects = (props) => {
         disableExport={true}
         availableEntityTypes={targetStixCoreObjectTypes}
         entityTypes={targetStixCoreObjectTypes}
+        additionalFilterKeys={{
+          filterKeys: ['entity_type'],
+          filtersRestrictions: { preventRemoveFor: ['entity_type'], preventLocalModeSwitchingFor: ['entity_type'] } }
+        }
       >
         <QueryRenderer
           query={containerAddStixCoreObjectsLinesQuery}
