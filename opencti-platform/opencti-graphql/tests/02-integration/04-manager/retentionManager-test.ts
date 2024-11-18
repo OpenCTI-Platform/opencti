@@ -328,7 +328,7 @@ describe('Retention Manager tests ', () => {
       .rejects.toThrowError('Cannot delete an organization that has members.');
   });
   it('should not delete individual associated to user', async () => {
-    const individualUserId = 'identity--d37acc64-4a6f-4dc2-879a-a4c138d0a27f'; // in DATA-TEST-STIX2_v2.json
+    const individualUserId = 'identity--cfb1de38-c40a-5f51-81f3-35036a4e3b91'; // admin individual
     await expect(() => deleteElement(context, 'knowledge', individualUserId, ENTITY_TYPE_IDENTITY_INDIVIDUAL))
       .rejects.toThrowError('Cannot delete an individual corresponding to a user');
   });

@@ -475,7 +475,6 @@
       "type": "identity",
       "spec_version": "2.1",
       "name": "John Doe",
-      "contact_information": "participate@opencti.io",
       "identity_class": "individual",
       "labels": ["identity"],
       "created": "2020-03-27T08:39:45.676Z",

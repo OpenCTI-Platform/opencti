@@ -236,7 +236,7 @@ describe('Individual resolver standard behavior', () => {
 });
 
 describe('Individual associated to user tests', () => {
-  const individualUserId = 'identity--d37acc64-4a6f-4dc2-879a-a4c138d0a27f'; // in DATA-TEST-STIX2_v2.json
+  const individualUserId = 'identity--cfb1de38-c40a-5f51-81f3-35036a4e3b91'; // admin individual
   it('should individual loaded by internal id', async () => {
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: individualUserId } });
     expect(queryResult).not.toBeNull();
