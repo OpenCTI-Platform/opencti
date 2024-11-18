@@ -67,7 +67,7 @@ export const findPlaybooksForEntity = async (context: AuthContext, user: AuthUse
         const jsonFilters = filters ? JSON.parse(filters) : null;
         const newFilters = {
           mode: FilterMode.And,
-          filters: findFiltersFromKey(jsonFilters.filters ?? [], 'entity_type'),
+          filters: findFiltersFromKey(jsonFilters?.filters ?? [], 'entity_type'),
           filterGroups: []
         };
         const isMatch = await isStixMatchFilterGroup(context, SYSTEM_USER, stixEntity, newFilters);
