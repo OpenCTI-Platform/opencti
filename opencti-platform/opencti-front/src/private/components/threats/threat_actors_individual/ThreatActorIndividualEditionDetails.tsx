@@ -250,7 +250,7 @@ ThreatActorIndividualEditionDetailsProps
           dirty,
         }) => (
           <div>
-            <Form style={{ margin: `${theme.spacing(2)} 0` }}>
+            <Form style={{ marginTop: theme.spacing(2) }}>
               <AlertConfidenceForEntity entity={threatActorIndividual} />
               <Field
                 component={DateTimePickerField}

@@ -195,7 +195,7 @@ const AttackPatternEditionOverviewComponent = (props) => {
         isValid,
         dirty,
       }) => (
-        <Form style={{ margin: `${theme.spacing(2)} 0` }}>
+        <Form style={{ marginTop: theme.spacing(2) }}>
           <AlertConfidenceForEntity entity={attackPattern} />
           <Field
             component={TextField}

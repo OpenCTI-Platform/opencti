@@ -155,7 +155,7 @@ const AttackPatternEditionDetailsComponent = (props) => {
         isValid,
         dirty,
       }) => (
-        <Form style={{ margin: `${theme.spacing(2)} 0` }}>
+        <Form style={{ marginTop: theme.spacing(2) }}>
           <AlertConfidenceForEntity entity={attackPattern} />
           <OpenVocabField
             label={t_i18n('Platforms')}
