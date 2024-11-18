@@ -8,7 +8,7 @@ import type { ChainableCommander } from 'ioredis/built/utils/RedisCommander';
 import type { ClusterOptions } from 'ioredis/built/cluster/ClusterOptions';
 import type { SentinelConnectionOptions } from 'ioredis/built/connectors/SentinelConnector';
 import conf, { booleanConf, configureCA, DEV_MODE, getStoppingState, loadCert, logApp, REDIS_PREFIX } from '../config/conf';
-import { asyncListTransformation, EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE, EVENT_TYPE_UPDATE, fromBase64, isEmptyField, toBase64, waitInSec } from './utils';
+import { asyncListTransformation, EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE, EVENT_TYPE_UPDATE, isEmptyField, waitInSec } from './utils';
 import { isStixExportableData } from '../schema/stixCoreObject';
 import { DatabaseError, LockTimeoutError, UnsupportedError } from '../config/errors';
 import { mergeDeepRightAll, now, utcDate } from '../utils/format';
@@ -27,7 +27,6 @@ import { generateCreateMessage, generateDeleteMessage, generateMergeMessage, gen
 import { INPUT_OBJECTS } from '../schema/general';
 import { enrichWithRemoteCredentials } from '../config/credentials';
 import { getDraftContext } from '../utils/draftContext';
-import type { ExclusionListCacheItem } from './exclusionListCache';
 
 const USE_SSL = booleanConf('redis:use_ssl', false);
 const REDIS_CA = conf.get('redis:ca').map((path: string) => loadCert(path));
@@ -889,7 +888,6 @@ export const redisDeleteSupportPackageNodeStatus = (supportPackageId: string) =>
 // region - exclusion list cache handling
 
 const EXCLUSION_LIST_STATUS_KEY = 'exclusion_list_status';
-const EXCLUSION_LIST_CACHE_KEY = 'exclusion_list_cache';
 export const redisUpdateExclusionListStatus = async (exclusionListStatus: object) => {
   const clientBase = getClientBase();
   await redisTx(clientBase, async (tx) => {
@@ -898,15 +896,6 @@ export const redisUpdateExclusionListStatus = async (exclusionListStatus: object
 };
 export const redisGetExclusionListStatus = async () => {
   return getClientBase().hgetall(EXCLUSION_LIST_STATUS_KEY);
-};
-
-export const redisGetExclusionListCache = async () => {
-  const rawCache = await getClientBase().get(EXCLUSION_LIST_CACHE_KEY);
-  return JSON.parse(fromBase64(rawCache) ?? '[]');
-};
-export const redisSetExclusionListCache = async (cache: ExclusionListCacheItem[]) => {
-  const stringifiedCache = toBase64(JSON.stringify(cache)) as string;
-  await getClientBase().set(EXCLUSION_LIST_CACHE_KEY, stringifiedCache);
 };
 
 // endregion - exclusion list cache handling

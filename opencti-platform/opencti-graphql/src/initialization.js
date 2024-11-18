@@ -19,7 +19,7 @@ import { initCreateEntitySettings } from './modules/entitySetting/entitySetting-
 import { initDecayRules } from './modules/decayRule/decayRule-domain';
 import { initManagerConfigurations } from './modules/managerConfiguration/managerConfiguration-domain';
 import { initializeData } from './database/data-initialization';
-import { initExclusionListCache } from './database/exclusionListCache';
+import { initExclusionListCache } from './database/exclusionListCacheTree';
 
 // region Platform constants
 const PLATFORM_LOCK_ID = 'platform_init_lock';
@@ -126,7 +126,7 @@ const platformInit = async (withMarkings = true) => {
       await initDecayRules(context, SYSTEM_USER);
     }
     if (isFeatureEnabled('EXCLUSION_LIST')) {
-      await initExclusionListCache();
+      await initExclusionListCache(context);
     }
   } catch (e) {
     if (e.name === TYPE_LOCK_ERROR) {
