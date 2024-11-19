@@ -6,9 +6,7 @@ import { DragDropContext, Draggable, DraggableLocation, Droppable } from '@hello
 import MenuItem from '@mui/material/MenuItem';
 import { PopoverProps } from '@mui/material/Popover/Popover';
 import { useTheme } from '@mui/styles';
-import Box from '@mui/material/Box';
-import { SxProps } from '@mui/material';
-import { DataTableColumn, DataTableColumns, DataTableHeadersProps, DataTableVariant } from '../dataTableTypes';
+import { DataTableColumn, DataTableColumns, DataTableHeadersProps } from '../dataTableTypes';
 import DataTableHeader, { SELECT_COLUMN_SIZE } from './DataTableHeader';
 import type { Theme } from '../../Theme';
 import { useDataTableContext } from './DataTableContext';
@@ -31,8 +29,8 @@ const DataTableHeaders: FunctionComponent<DataTableHeadersProps> = ({
     onSort,
     disableToolBar,
     disableSelectAll,
-    actions,
-    variant,
+    startsWithAction,
+    endsWithAction,
     useDataTablePaginationLocalStorage: {
       viewStorage: { sortBy, orderAsc },
     },
@@ -58,146 +56,125 @@ const DataTableHeaders: FunctionComponent<DataTableHeadersProps> = ({
 
   const draggableColumns = useMemo(() => columns.filter(({ id }) => !['select', 'navigate'].includes(id)), [columns]);
 
-  const hasSelectCheckboxes = columns.some(({ id }) => id === 'select');
   const hasSelectedElements = numberOfSelectedElements > 0 || selectAll;
-  const endsWithNavigate = columns.at(-1)?.id === 'navigate';
-
-  let offset = 0;
-  if (hasSelectCheckboxes) offset += SELECT_COLUMN_SIZE;
-  if (endsWithNavigate || actions) offset += SELECT_COLUMN_SIZE;
-
-  const bgColor = variant === DataTableVariant.widget
-    ? theme.palette.background.paper
-    : theme.palette.background.default;
-
   const checkboxStyle: CSSProperties = {
     background: hasSelectedElements
       ? theme.palette.background.accent
-      : bgColor,
+      : 'transparent',
     width: SELECT_COLUMN_SIZE,
   };
 
   const showToolbar = numberOfSelectedElements > 0 && !disableToolBar;
-  const containerStyle: SxProps = {
-    paddingRight: showToolbar ? 0 : `${offset}px`,
-    position: 'sticky',
-    top: 0,
-    width: '100%',
-    zIndex: 10,
-    '& > div > div': {
-      background: bgColor,
-    },
-  };
 
   return (
-    <Box ref={containerRef} sx={containerStyle}>
-      <div style={{ display: 'flex', height: 42 }}>
-        {hasSelectCheckboxes && (
-          <div data-testid="dataTableCheckAll" style={checkboxStyle}>
-            <Checkbox
-              checked={selectAll}
-              sx={{
-                marginRight: 1,
-                flex: '0 0 auto',
-                '&:hover': {
-                  background: 'transparent',
-                },
-              }}
-              onChange={handleToggleSelectAll}
-              disabled={!handleToggleSelectAll || disableSelectAll}
-            />
-          </div>
-        )}
-        {showToolbar ? dataTableToolBarComponent : (
-          <>
-            {anchorEl && (
-              <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
-                {columns.some(({ id }) => id === 'todo-navigate') && (
-                  <DragDropContext
-                    key={(new Date()).toString()}
-                    onDragEnd={({ source, destination }) => {
-                      const result = Array.from(draggableColumns);
-                      const [removed] = result.splice(source.index, 1);
-                      result.splice((destination as DraggableLocation).index, 0, removed);
-
-                      const newColumns: DataTableColumns = [
-                        columns.at(0),
-                        ...(result.map((c, index) => {
-                          const currentColumn = columns.find(({ id }) => id === c.id);
-                          return ({ ...currentColumn, order: index });
-                        })),
-                        columns.at(-1),
-                      ] as DataTableColumns;
-
-                      setColumns(newColumns);
-                    }}
-                  >
-                    <Droppable droppableId="droppable-list">
-                      {(provided) => (
-                        <div ref={provided.innerRef} {...provided.droppableProps}>
-                          {draggableColumns.map((c, index) => (
-                            <Draggable
-                              key={index}
-                              draggableId={c.id}
-                              index={index}
-                            >
-                              {(item) => (
-                                <MenuItem
-                                  ref={item.innerRef}
-                                  {...item.draggableProps}
-                                  {...item.dragHandleProps}
-                                >
-                                  <DragIndicatorOutlined fontSize="small" />
-                                  <Checkbox
-                                    onClick={() => handleToggleVisibility(c.id)}
-                                    checked={c.visible}
-                                  />
-                                  {c.label}
-                                </MenuItem>
-                              )}
-                            </Draggable>
-                          ))}
-                          {provided.placeholder}
-                        </div>
-                      )}
-                    </Droppable>
-                  </DragDropContext>
-                )}
-                {activeColumn?.isSortable && (<MenuItem onClick={() => onSort(activeColumn.id, true)}>{t_i18n('Sort Asc')}</MenuItem>)}
-                {activeColumn?.isSortable && (<MenuItem onClick={() => onSort(activeColumn.id, false)}>{t_i18n('Sort Desc')}</MenuItem>)}
-                {(activeColumn && availableFilterKeys?.includes(activeColumn.id)) && (
-                  <MenuItem
-                    onClick={() => {
-                      onAddFilter(activeColumn.id);
-                      handleClose();
-                    }}
-                  >
-                    {t_i18n('Add filtering')}
-                  </MenuItem>
-                )}
-              </Menu>
-            )}
-            {columns
-              .filter(({ id }) => !['select', 'navigate'].includes(id))
-              .map((column) => (
-                <DataTableHeader
-                  key={column.id}
-                  column={column}
-                  setAnchorEl={setAnchorEl}
-                  isActive={activeColumn?.id === column.id}
-                  setActiveColumn={setActiveColumn}
-                  containerRef={containerRef}
-                  sortBy={sortBy === column.id}
-                  orderAsc={!!orderAsc}
-                />
-              ))}
-            {(actions || endsWithNavigate) && (
-              <div style={{ width: '42px', flex: '0 0 auto' }} />
-            )}
-          </>
-        )}
+    <div ref={containerRef} style={{ display: 'flex', height: 42 }}>
+      {startsWithAction && (
+      <div data-testid="dataTableCheckAll" style={checkboxStyle}>
+        <Checkbox
+          checked={selectAll}
+          sx={{
+            marginRight: 1,
+            flex: '0 0 auto',
+            paddingLeft: 0,
+            '&:hover': {
+              background: 'transparent',
+            },
+          }}
+          onChange={handleToggleSelectAll}
+          disabled={!handleToggleSelectAll || disableSelectAll}
+        />
       </div>
-    </Box>
+      )}
+
+      {showToolbar ? dataTableToolBarComponent : (
+        <>
+          {anchorEl && (
+          <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
+            {columns.some(({ id }) => id === 'todo-navigate') && (
+            <DragDropContext
+              key={(new Date()).toString()}
+              onDragEnd={({ source, destination }) => {
+                const result = Array.from(draggableColumns);
+                const [removed] = result.splice(source.index, 1);
+                result.splice((destination as DraggableLocation).index, 0, removed);
+
+                const newColumns: DataTableColumns = [
+                  columns.at(0),
+                  ...(result.map((c, index) => {
+                    const currentColumn = columns.find(({ id }) => id === c.id);
+                    return ({ ...currentColumn, order: index });
+                  })),
+                  columns.at(-1),
+                ] as DataTableColumns;
+
+                setColumns(newColumns);
+              }}
+            >
+              <Droppable droppableId="droppable-list">
+                {(provided) => (
+                  <div ref={provided.innerRef} {...provided.droppableProps}>
+                    {draggableColumns.map((c, index) => (
+                      <Draggable
+                        key={index}
+                        draggableId={c.id}
+                        index={index}
+                      >
+                        {(item) => (
+                          <MenuItem
+                            ref={item.innerRef}
+                            {...item.draggableProps}
+                            {...item.dragHandleProps}
+                          >
+                            <DragIndicatorOutlined fontSize="small" />
+                            <Checkbox
+                              onClick={() => handleToggleVisibility(c.id)}
+                              checked={c.visible}
+                            />
+                            {c.label}
+                          </MenuItem>
+                        )}
+                      </Draggable>
+                    ))}
+                    {provided.placeholder}
+                  </div>
+                )}
+              </Droppable>
+            </DragDropContext>
+            )}
+            {activeColumn?.isSortable && (<MenuItem onClick={() => onSort(activeColumn.id, true)}>{t_i18n('Sort Asc')}</MenuItem>)}
+            {activeColumn?.isSortable && (<MenuItem onClick={() => onSort(activeColumn.id, false)}>{t_i18n('Sort Desc')}</MenuItem>)}
+            {(activeColumn && availableFilterKeys?.includes(activeColumn.id)) && (
+              <MenuItem
+                onClick={() => {
+                  onAddFilter(activeColumn.id);
+                  handleClose();
+                }}
+              >
+                {t_i18n('Add filtering')}
+              </MenuItem>
+            )}
+          </Menu>
+          )}
+
+          {columns
+            .filter(({ id }) => !['select', 'navigate'].includes(id))
+            .map((column) => (
+              <DataTableHeader
+                key={column.id}
+                column={column}
+                setAnchorEl={setAnchorEl}
+                isActive={activeColumn?.id === column.id}
+                setActiveColumn={setActiveColumn}
+                containerRef={containerRef}
+                sortBy={sortBy === column.id}
+                orderAsc={!!orderAsc}
+              />
+            ))}
+
+          {(endsWithAction) && <div style={{ width: SELECT_COLUMN_SIZE, flex: '0 0 auto' }} />}
+        </>
+      )}
+    </div>
   );
 };
 

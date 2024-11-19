@@ -67,6 +67,10 @@ export interface DataTableContextProps {
   onLineClick: DataTableProps['onLineClick']
   page: number
   setPage:Dispatch<SetStateAction<number>>
+  tableWidthState: [number, Dispatch<SetStateAction<number>>]
+  startsWithAction: boolean
+  endsWithAction: boolean
+  endsWithNavigate: boolean
 }
 
 export interface DataTableProps {
@@ -140,6 +144,7 @@ export interface DataTableBodyProps {
   pageSize: number
   pageStart: number
   hideHeaders: DataTableProps['hideHeaders']
+  tableRef: MutableRefObject<HTMLDivElement | null>
 }
 
 export interface DataTableDisplayFiltersProps {

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import * as R from 'ramda';
 import { DataTableLinesDummy } from './DataTableLine';
 import DataTableBody from './DataTableBody';
@@ -108,6 +108,10 @@ const DataTableComponent = ({
     });
   }, [columns]);
 
+  const startsWithAction = useMemo(() => columns.at(0)?.id === 'select', [columns]);
+  const endsWithNavigate = useMemo(() => columns.at(-1)?.id === 'navigate', [columns]);
+  const endsWithAction = useMemo(() => endsWithNavigate || !!actions, [endsWithNavigate, actions]);
+
   // QUERY PART
   const [page, setPage] = useState<number>(1);
   const defaultPageSize = variant === DataTableVariant.default ? 25 : 100;
@@ -115,6 +119,9 @@ const DataTableComponent = ({
   const pageStart = useMemo(() => {
     return page ? (page - 1) * currentPageSize : 0;
   }, [page, currentPageSize]);
+
+  const tableWidthState = useState(0);
+  const tableRef = useRef<HTMLDivElement | null>(null);
 
   return (
     <DataTableProvider
@@ -148,16 +155,24 @@ const DataTableComponent = ({
         onLineClick,
         page,
         setPage,
+        tableWidthState,
+        startsWithAction,
+        endsWithAction,
+        endsWithNavigate,
       }}
     >
       {filtersComponent && <div>{filtersComponent}</div>}
-      <>
+      <div
+        className="datatable-container"
+        style={{ width: '100%', overflow: 'auto hidden' }}
+        ref={tableRef}
+      >
         <React.Suspense
           fallback={(
-            <div style={{ width: '100%' }}>
+            <>
               <DataTableHeaders dataTableToolBarComponent={dataTableToolBarComponent} />
-              {<DataTableLinesDummy number={Math.max(currentPageSize, 25)} />}
-            </div>
+              <DataTableLinesDummy number={Math.max(currentPageSize, 10)} />
+            </>
           )}
         >
           <DataTableBody
@@ -167,9 +182,10 @@ const DataTableComponent = ({
             pageStart={pageStart}
             pageSize={currentPageSize}
             hideHeaders={hideHeaders}
+            tableRef={tableRef}
           />
         </React.Suspense>
-      </>
+      </div>
     </DataTableProvider>
   );
 };

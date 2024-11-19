@@ -18,7 +18,6 @@ const useStyles = makeStyles<MuiTheme, { column: DataTableColumn }>((theme) => c
     flex: '0 0 auto',
     position: 'relative',
     display: 'flex',
-    width: ({ column }) => `${column.percentWidth}%`,
     fontWeight: 'bold',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -80,6 +79,7 @@ const DataTableHeader: FunctionComponent<DataTableHeaderProps> = ({
     onSort,
     variant,
     formatter: { t_i18n },
+    tableWidthState: [tableWidth],
   } = useDataTableContext();
 
   // To avoid spamming sorting (and calling API)
@@ -96,9 +96,14 @@ const DataTableHeader: FunctionComponent<DataTableHeaderProps> = ({
   };
 
   const hasColumnMenu = column.isSortable || (availableFilterKeys ?? []).includes(column.id);
+  const cellWidth = Math.round(tableWidth * (column.percentWidth / 100));
 
   return (
-    <div key={column.id} className={classes.headerContainer}>
+    <div
+      key={column.id}
+      className={classes.headerContainer}
+      style={{ width: cellWidth }}
+    >
       <div className={classes.label} onClick={throttleSortColumn}>
         <Tooltip title={t_i18n(column.label)}>
           {t_i18n(column.label).toUpperCase()}

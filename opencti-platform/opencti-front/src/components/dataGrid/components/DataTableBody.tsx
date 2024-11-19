@@ -1,9 +1,11 @@
-import React, { CSSProperties, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import React, { CSSProperties, useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import * as R from 'ramda';
 import DataTableHeaders from './DataTableHeaders';
 import { DataTableBodyProps, DataTableLineProps, DataTableVariant } from '../dataTableTypes';
 import DataTableLine, { DataTableLinesDummy } from './DataTableLine';
 import { useDataTableContext } from './DataTableContext';
+import { SELECT_COLUMN_SIZE } from './DataTableHeader';
+import callbackResizeObserver from '../../../utils/resizeObservers';
 
 const DataTableBody = ({
   settingsMessagesBannerHeight = 0,
@@ -12,11 +14,17 @@ const DataTableBody = ({
   pageStart,
   pageSize,
   hideHeaders = false,
+  tableRef,
 }: DataTableBodyProps) => {
   const {
     rootRef,
     variant,
     resolvePath,
+    tableWidthState: [tableWidth, setTableWidth],
+    startsWithAction,
+    endsWithAction,
+    actions,
+    columns,
     useDataTable: {
       data: queryData,
       isLoading,
@@ -45,8 +53,23 @@ const DataTableBody = ({
     }
   }, [resolvedData]);
 
-  // TABLE HANDLING
-  const containerRef = useRef<HTMLDivElement | null>(null);
+  // Keep table width up to date.
+  useLayoutEffect(() => {
+    let observer: ResizeObserver;
+    if (tableRef.current) {
+      const resize = (el: Element) => {
+        let offset = 10;
+        if (startsWithAction) offset += SELECT_COLUMN_SIZE;
+        if (endsWithAction) offset += SELECT_COLUMN_SIZE;
+        if ((el.clientWidth - offset) !== tableWidth) {
+          setTableWidth(el.clientWidth - offset);
+        }
+      };
+      resize(tableRef.current);
+      observer = callbackResizeObserver(tableRef.current, resize);
+    }
+    return () => { observer?.disconnect(); };
+  }, [tableRef.current, tableWidth, startsWithAction, endsWithAction]);
 
   const onToggleShiftEntity: DataTableLineProps['onToggleShiftEntity'] = (currentIndex, currentEntity, event) => {
     if (selectedElements && !R.isEmpty(selectedElements)) {
@@ -98,28 +121,38 @@ const DataTableBody = ({
       const rootHeight = (document.getElementById('root')?.offsetHeight ?? 0) - settingsMessagesBannerHeight;
       const headerHeight = 64;
       const breadcrumbHeight = document.getElementById('page-breadcrumb') ? 38 : 0;
-      const mainPadding = 24;
+      const mainPadding = 40;
       const tabsHeight = document.getElementById('tabs-container')?.children.length ? 72 : 0;
       setTableHeight(rootHeight - headerHeight - breadcrumbHeight - mainPadding - filtersHeight - tabsHeight);
     }
   }, [setTableHeight, settingsMessagesBannerHeight, rootRef, filters]);
 
-  const containerStyle: CSSProperties = {
-    overflow: 'auto',
-    maxHeight: `${tableHeight}px`,
-  };
+  const rowWidth = useMemo(() => (
+    columns.reduce((acc, col) => {
+      const width = col.percentWidth
+        ? Math.round(tableWidth * (col.percentWidth / 100))
+        : SELECT_COLUMN_SIZE;
+      return acc + width;
+    }, actions ? SELECT_COLUMN_SIZE + 9 : 9)
+  ), [columns, tableWidth]);
 
   const containerLinesStyle: CSSProperties = {
-    position: 'relative',
+    overflow: 'hidden auto',
+    maxHeight: `calc(${tableHeight}px - ${hideHeaders ? 0 : 42}px)`,
+    width: rowWidth,
   };
 
-  return (
-    <div style={containerStyle} ref={containerRef}>
-      <div style={containerLinesStyle}>
-        {!hideHeaders && (
-          <DataTableHeaders dataTableToolBarComponent={dataTableToolBarComponent} />
-        )}
+  if (!tableWidth) {
+    return null;
+  }
 
+  return (
+    <>
+      {!hideHeaders && (
+        <DataTableHeaders dataTableToolBarComponent={dataTableToolBarComponent} />
+      )}
+
+      <div style={containerLinesStyle}>
         {/* If we have perf issues we should find a way to memoize this */}
         {resolvedData.map((row: { id: string }, index: number) => {
           return (
@@ -131,9 +164,9 @@ const DataTableBody = ({
             />
           );
         })}
-        {isLoading && <DataTableLinesDummy number={Math.max(pageSize, 25)} />}
+        {isLoading && <DataTableLinesDummy number={Math.max(pageSize, 10)} />}
       </div>
-    </div>
+    </>
   );
 };
 

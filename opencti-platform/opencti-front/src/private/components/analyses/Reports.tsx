@@ -3,6 +3,7 @@ import useHelper from 'src/utils/hooks/useHelper';
 import { graphql } from 'react-relay';
 import { ReportsLinesPaginationQuery, ReportsLinesPaginationQuery$variables } from '@components/analyses/__generated__/ReportsLinesPaginationQuery.graphql';
 import { ReportsLines_data$data } from '@components/analyses/__generated__/ReportsLines_data.graphql';
+import IndicatorObservablePopover from '@components/observations/indicators/IndicatorObservablePopover';
 import ReportCreation from './reports/ReportCreation';
 import Security from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
@@ -224,6 +225,12 @@ const Reports: FunctionComponent = () => {
             <Security needs={[KNOWLEDGE_KNUPDATE]}>
               <ReportCreation paginationOptions={queryPaginationOptions} />
             </Security>
+          )}
+          actions={(observable) => (
+            <IndicatorObservablePopover
+              indicatorId={observable.id}
+              observableId={observable.id}
+            />
           )}
         />
       )}
