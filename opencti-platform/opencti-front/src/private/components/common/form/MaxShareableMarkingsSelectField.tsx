@@ -17,7 +17,7 @@ interface MarkingsSelectFieldInternalValue {
   [key: string]: string
 }
 
-interface MarkingsSelectFieldProps extends FieldProps<MarkingsSelectFieldValue> {
+interface MaxShareableMarkingsSelectFieldProps extends FieldProps<MarkingsSelectFieldValue> {
   markingDefinitions: EntityMarkingDefinition[]
   onChange?: (type: string, val: string) => void
 }
@@ -25,12 +25,12 @@ interface MarkingsSelectFieldProps extends FieldProps<MarkingsSelectFieldValue> 
 const ALL_ID = 'all';
 const NOT_SHAREABLE_ID = 'none';
 
-const MarkingsSelectField = ({
+const MaxShareableMarkingsSelectField = ({
   form,
   field,
   markingDefinitions,
   onChange,
-}: MarkingsSelectFieldProps) => {
+}: MaxShareableMarkingsSelectFieldProps) => {
   const { t_i18n } = useFormatter();
   const { setFieldValue } = form;
   const { value, name } = field;
@@ -97,4 +97,4 @@ const MarkingsSelectField = ({
   );
 };
 
-export default MarkingsSelectField;
+export default MaxShareableMarkingsSelectField;

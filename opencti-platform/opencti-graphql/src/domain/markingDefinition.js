@@ -7,7 +7,6 @@ import { ENTITY_TYPE_GROUP } from '../schema/internalObject';
 import { SYSTEM_USER } from '../utils/access';
 import { RELATION_ACCESSES_TO } from '../schema/internalRelationship';
 import { groupAddRelation, groupEditField } from './group';
-import { EditOperation } from '../generated/graphql';
 
 export const findById = (context, user, markingDefinitionId) => {
   return storeLoadById(context, user, markingDefinitionId, ENTITY_TYPE_MARKING_DEFINITION);
@@ -37,22 +36,31 @@ export const addAllowedMarkingDefinition = async (context, user, markingDefiniti
     // Bypass current right to read group
     const groupsWithAutoNewMarking = await listEntities(context, SYSTEM_USER, [ENTITY_TYPE_GROUP], { filters, connectionFormat: false });
     if (groupsWithAutoNewMarking && groupsWithAutoNewMarking.length > 0) {
+      const markingType = element.definition_type;
+      const markingId = element.id;
       // add marking in allowed markings
       await Promise.all(
         groupsWithAutoNewMarking.map((group) => {
           return groupAddRelation(context, SYSTEM_USER, group.id, {
             relationship_type: RELATION_ACCESSES_TO,
-            toId: element.id,
+            toId: markingId,
           });
         })
       );
       // add marking in max shareable markings
+      const groupsWithShareableMarkingToUpdate = groupsWithAutoNewMarking
+        .filter((g) => !g.max_shareable_markings
+          .find((m) => m.definition_type === markingType && m.x_opencti_order > element.x_opencti_order));
       await Promise.all(
-        groupsWithAutoNewMarking.map((group) => {
+        groupsWithShareableMarkingToUpdate.map((group) => {
+          const currentMarkings = group.max_shareable_markings;
+          const finalMarkings = [
+            ...currentMarkings.filter(({ type: t }) => t !== markingType),
+            ...[{ type: markingType, value: markingId }],
+          ];
           return groupEditField(context, SYSTEM_USER, group.id, [{
             key: 'max_shareable_markings',
-            value: [{ type: element.definition_type, value: element.id }],
-            operation: EditOperation.Add,
+            value: finalMarkings,
           }]);
         })
       );
