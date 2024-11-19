@@ -110,7 +110,7 @@
       "enabled": true
     },
     "csv_ingestion": {
-      "max_bundle_size": 500
+      "max_bundle_size": 300
     }
   },
   "demo_mode": false,

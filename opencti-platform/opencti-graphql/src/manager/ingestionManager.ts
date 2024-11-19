@@ -455,7 +455,7 @@ export const processCsvLines = async (
   const linesContent = csvLines.join('');
   const hashedIncomingData = hashSHA256(linesContent);
   const isUnchangedData = compareHashSHA256(linesContent, ingestion.current_state_hash ?? '');
-  const objectsInBundleCount = 0;
+  let objectsInBundleCount = 0;
   if (isUnchangedData) {
     logApp.info(`[OPENCTI-MODULE] INGESTION - Unchanged data for csv ingest: ${ingestion.name}`);
     await updateBuiltInConnectorInfo(context, ingestion.user_id, ingestion.id);
@@ -475,8 +475,9 @@ export const processCsvLines = async (
     };
 
     const { bundleCount, objectCount } = await generateAndSendBundleProcess(context, csvLines, bundlerOpts);
+    objectsInBundleCount = objectCount;
 
-    logApp.info(`[OPENCTI-MODULE] INGESTION - Sent: ${bundleCount} bundles for ${objectCount} objects.`);
+    logApp.info(`[OPENCTI-MODULE] INGESTION - Sent: ${bundleCount} bundles for ${objectsInBundleCount} objects.`);
     const state = { current_state_hash: hashedIncomingData, added_after_start: utcDate(addedLast) };
     await patchCsvIngestion(context, SYSTEM_USER, ingestion.internal_id, state);
     await updateBuiltInConnectorInfo(context, ingestion.user_id, ingestion.id, { state });
