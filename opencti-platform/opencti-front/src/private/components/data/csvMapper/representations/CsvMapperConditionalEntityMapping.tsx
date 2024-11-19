@@ -30,7 +30,7 @@ CsvMapperConditionalEntityMappingProps
 
   const handleColumnSelect = async (column: string | null) => {
     await setFieldValue(`${representationName}.column_based.column_reference`, column);
-    if (!dynamicMappingColumn && column) {
+    if (column) {
       setDynamicMappingColumn(column);
     }
   };
@@ -88,9 +88,10 @@ CsvMapperConditionalEntityMappingProps
         autoHighlight
         options={columnOptions}
         disabled={!columnBased?.enabled}
-        value={columnBased?.enabled
-          ? columnBased?.column_reference
-          : null
+        value={
+          columnBased?.enabled
+            ? columnBased?.column_reference
+            : null
           }
         onChange={(_, val) => handleColumnSelect(val)}
         sx={{ width: '100%' }}

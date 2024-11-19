@@ -11,7 +11,7 @@ interface CsvMapperProviderProps {
 
 const CsvMapperContext = createContext<CsvMapperContextProps | undefined>(undefined);
 export const CsvMapperProvider: React.FC<CsvMapperProviderProps> = ({ children }) => {
-  const [dynamicMappingColumn, setDynamicMappingColumn] = useState<string>('');
+  const [dynamicMappingColumn, setDynamicMappingColumn] = useState<string | null>(null);
   return (
     <CsvMapperContext.Provider value={{ dynamicMappingColumn, setDynamicMappingColumn }}>
       {children}
