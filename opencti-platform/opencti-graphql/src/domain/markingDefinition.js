@@ -49,13 +49,11 @@ export const addAllowedMarkingDefinition = async (context, user, markingDefiniti
       );
       // add marking in max shareable markings
       const groupsWithShareableMarkingToUpdate = groupsWithAutoNewMarking
-        .filter((g) => !g.max_shareable_markings
-          .find((m) => m.definition_type === markingType && m.x_opencti_order > element.x_opencti_order));
+        .filter((g) => !(g.max_shareable_markings ?? []).find((m) => m.definition_type === markingType && m.x_opencti_order > element.x_opencti_order));
       await Promise.all(
         groupsWithShareableMarkingToUpdate.map((group) => {
-          const currentMarkings = group.max_shareable_markings;
           const finalMarkings = [
-            ...currentMarkings.filter(({ type: t }) => t !== markingType),
+            ...(group.max_shareable_markings ?? []).filter(({ type: t }) => t !== markingType),
             ...[{ type: markingType, value: markingId }],
           ];
           return groupEditField(context, SYSTEM_USER, group.id, [{
