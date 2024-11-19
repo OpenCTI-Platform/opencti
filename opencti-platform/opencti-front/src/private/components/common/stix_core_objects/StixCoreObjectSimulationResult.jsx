@@ -298,40 +298,46 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
           return (
             <div className={classes.charts}>
               <div className={classes.chartContainer}>
-                <Chart
-                  options={options}
-                  series={chartData}
-                  type="donut"
-                  width={95}
-                  height={95}
-                />
-                <Tooltip title={`${t_i18n('Prevention')}`} placement="bottom">
-                  <ShieldOutlined className={classes.iconOverlay} />
-                </Tooltip>
+                <div className={classes.chart}>
+                  <Chart
+                    options={options}
+                    series={chartData}
+                    type="donut"
+                    width={50}
+                    height={50}
+                  />
+                  <Tooltip title={`${t_i18n('Prevention')}`} placement="bottom">
+                    <ShieldOutlined className={classes.iconOverlay} />
+                  </Tooltip>
+                </div>
               </div>
               <div className={classes.chartContainer}>
-                <Chart
-                  options={options}
-                  series={chartData}
-                  type="donut"
-                  width={95}
-                  height={95}
-                />
-                <Tooltip title={`${t_i18n('Detection')}`} placement="bottom">
-                  <TrackChangesOutlined className={classes.iconOverlay} />
-                </Tooltip>
+                <div className={classes.chart}>
+                  <Chart
+                    options={options}
+                    series={chartData}
+                    type="donut"
+                    width={50}
+                    height={50}
+                  />
+                  <Tooltip title={`${t_i18n('Detection')}`} placement="bottom">
+                    <TrackChangesOutlined className={classes.iconOverlay} />
+                  </Tooltip>
+                </div>
               </div>
               <div className={classes.chartContainer}>
-                <Chart
-                  options={options}
-                  series={chartData}
-                  type="donut"
-                  width={95}
-                  height={95}
-                />
-                <Tooltip title={`${t_i18n('Human response')}`} placement="bottom">
-                  <SensorOccupiedOutlined className={classes.iconOverlay} />
-                </Tooltip>
+                <div className={classes.chart}>
+                  <Chart
+                    options={options}
+                    series={chartData}
+                    type="donut"
+                    width={50}
+                    height={50}
+                  />
+                  <Tooltip title={`${t_i18n('Human response')}`} placement="bottom">
+                    <SensorOccupiedOutlined className={classes.iconOverlay} />
+                  </Tooltip>
+                </div>
               </div>
             </div>
           );
