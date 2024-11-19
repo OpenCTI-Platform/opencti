@@ -51,7 +51,7 @@ export const addAllowedMarkingDefinition = async (context, user, markingDefiniti
         groupsWithAutoNewMarking.map((group) => {
           return groupEditField(context, SYSTEM_USER, group.id, [{
             key: 'max_shareable_markings',
-            value: [{ type: element.defintion_type, value: element.id }],
+            value: [{ type: element.definition_type, value: element.id }],
             operation: EditOperation.Add,
           }]);
         })

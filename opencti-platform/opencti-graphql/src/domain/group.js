@@ -51,10 +51,11 @@ export const groupAllowedMarkings = async (context, user, groupId) => {
 export const groupNotShareableMarkingTypes = (group) => group.max_shareable_markings?.filter(({ value }) => value === 'none')
   .map(({ type }) => type) ?? [];
 
-export const groupMaxShareableMarkings = async (context, user, group) => {
+export const groupMaxShareableMarkings = async (context, group) => {
   const markings = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
   return group.max_shareable_markings?.filter(({ value }) => value !== 'none')
-    .map(({ value }) => markings.get(value)) ?? [];
+    .map(({ value }) => markings.get(value))
+    ?? [];
 };
 
 export const defaultMarkingDefinitions = async (context, group) => {

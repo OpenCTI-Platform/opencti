@@ -2,6 +2,8 @@ import { expect, it, describe, beforeAll, afterAll } from 'vitest';
 import gql from 'graphql-tag';
 import { queryAsAdmin, TESTING_GROUPS } from '../../utils/testQuery';
 import { OPENCTI_ADMIN_UUID } from '../../../src/schema/general';
+import { resetCacheForEntity } from '../../../src/database/cache';
+import { ENTITY_TYPE_MARKING_DEFINITION } from '../../../src/schema/stixMetaObject';
 
 const LIST_QUERY = gql`
   query groups($first: Int, $after: ID, $orderBy: GroupsOrdering, $orderMode: OrderingMode, $search: String) {
@@ -39,6 +41,7 @@ const READ_QUERY = gql`
 describe('Group resolver standard behavior', () => {
   let groupInternalId; // the one we will use in all tests
   const groupsToDeleteIds = []; // keep track for deletion at the end of the tests
+  let markingDefinitionInternalId; // the marking used in these tests
   it('should group created', async () => {
     const CREATE_QUERY = gql`
       mutation GroupAdd($input: GroupAddInput!) {
@@ -240,6 +243,10 @@ describe('Group resolver standard behavior', () => {
       variables: { id: groupInternalId, input: { key: 'auto_new_marking', value: [true] } },
     });
     expect(updateQueryResult.data.groupEdit.fieldPatch.auto_new_marking).toEqual(true);
+    // check the group markings before creating a new marking
+    const queryResultBefore = await queryAsAdmin({ query: READ_QUERY, variables: { id: groupInternalId } });
+    expect(queryResultBefore.data.group.allowedMarking).toBeUndefined();
+    expect(queryResultBefore.data.group.max_shareable_marking).toEqual([]);
     // create a new marking definition
     const CREATE_MARKING_QUERY = gql`
         mutation MarkingDefinitionAdd($input: MarkingDefinitionAddInput!) {
@@ -254,8 +261,8 @@ describe('Group resolver standard behavior', () => {
     const MARKING_DEFINITION_TO_CREATE = {
       input: {
         stix_id: markingDefinitionStixId,
-        definition_type: 'DEF',
-        definition: 'DEF:TEST_AUTO_MARKING',
+        definition_type: 'TLP',
+        definition: 'TLP:TEST_AUTO_MARKING',
         x_opencti_order: 0,
       },
     };
@@ -265,16 +272,20 @@ describe('Group resolver standard behavior', () => {
     });
     expect(markingDefinition).not.toBeNull();
     expect(markingDefinition.data.markingDefinitionAdd).not.toBeNull();
-    expect(markingDefinition.data.markingDefinitionAdd.definition).toEqual('DEF:TEST_AUTO_MARKING');
-    const markingDefinitionInternalId = markingDefinition.data.markingDefinitionAdd.id;
+    expect(markingDefinition.data.markingDefinitionAdd.definition).toEqual('TLP:TEST_AUTO_MARKING');
+    markingDefinitionInternalId = markingDefinition.data.markingDefinitionAdd.id;
+    // reset the cache for markings
+    resetCacheForEntity(ENTITY_TYPE_MARKING_DEFINITION);
     // check the added marking is allowed and shareable for the group
-    const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: groupInternalId } });
-    const allowedMarking = queryResult.data.group.allowed_marking;
-    const maxShareableMarking = queryResult.data.group.max_shareable_marking;
+    const queryResultAfter = await queryAsAdmin({ query: READ_QUERY, variables: { id: groupInternalId } });
+    const allowedMarking = queryResultAfter.data.group.allowed_marking;
+    const maxShareableMarking = queryResultAfter.data.group.max_shareable_marking;
     expect(allowedMarking.length).toEqual(1);
     expect(allowedMarking[0].id).toEqual(markingDefinitionInternalId);
     expect(maxShareableMarking.length).toEqual(1);
     expect(maxShareableMarking[0].id).toEqual(markingDefinitionInternalId);
+  });
+  it('deleted markings should not be in allowed markings and max shareable markings of groups', async () => {
     // delete the marking definition
     const DELETE_QUERY = gql`
         mutation markingDefinitionDelete($id: ID!) {
@@ -287,9 +298,13 @@ describe('Group resolver standard behavior', () => {
       query: DELETE_QUERY,
       variables: { id: markingDefinitionInternalId },
     });
-    const deleteQueryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: markingDefinitionStixId } });
+    const deleteQueryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: markingDefinitionInternalId } });
     expect(deleteQueryResult).not.toBeNull();
     expect(deleteQueryResult.data.markingDefinition).toBeUndefined();
+    // check the deleted marking is not in allowed marking and max shareable marking of the group
+    const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: groupInternalId } });
+    expect(queryResult.data.group.allowedMarking).toBeUndefined();
+    expect(queryResult.data.group.max_shareable_marking).toEqual([]);
   });
   it('should update group confidence level', async () => {
     const UPDATE_QUERY = gql`
