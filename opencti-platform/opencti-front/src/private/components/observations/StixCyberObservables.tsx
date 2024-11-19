@@ -163,6 +163,7 @@ const StixCyberObservables: FunctionComponent = () => {
                 speeddial={false}
                 inputValue={undefined}
                 controlledDialStyles={{ marginLeft: 1 }}
+                defaultCreatedBy={undefined}
               />
             </Security>
           }
